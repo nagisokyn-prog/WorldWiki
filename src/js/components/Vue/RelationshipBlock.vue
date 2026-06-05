@@ -115,7 +115,7 @@
                 <button class="btn-icon-danger-sm" @click="removeNestedItem(item, subConf, nIdx)">✕</button>
               </div>
 
-              <div v-for="nField in allTemplates[subConf.template]?.fields" :key="nField.class" class="nested-field-group">
+              <div v-for="nField in getResolvedFields(subConf)" :key="nField.class" class="nested-field-group">
                 <div class="field-label-row">
                   <label v-if="nField.label" class="nested-field-label">{{ nField.label }}</label>
                   <button 
@@ -254,7 +254,7 @@
                   <button class="btn-icon-danger-sm" @click="removeNestedItem(foreignItem, subConf, nIdx)">✕</button>
                 </div>
 
-                <div v-for="nField in allTemplates[subConf.template]?.fields" :key="nField.class" class="nested-field-group">
+                <div v-for="nField in getResolvedFields(subConf)" :key="'nff-'+nField.class" class="nested-field-group">
                   <div class="field-label-row">
                     <label v-if="nField.label" class="nested-field-label">{{ nField.label }}</label>
                     <button 
@@ -355,6 +355,21 @@ const foreignItem = ref<any>(null);
 const foreignLoading = ref(false);
 const foreignError = ref('');
 const foreignModified = ref(false);
+
+const getResolvedFields = (subConf: any) => {
+  const tpl = props.allTemplates[subConf.template];
+  if (!tpl || !tpl.fields) return [];
+  if (!subConf.fieldOverrides) return tpl.fields;
+  
+  return tpl.fields.map((f: any) => {
+    const override = subConf.fieldOverrides[f.class];
+    if (override) {
+      if (override.hidden) return null;
+      return { ...f, ...override };
+    }
+    return f;
+  }).filter((f: any) => f !== null);
+};
 
 // Имя поля-ссылки (персонаж / родственник)
 const linkClass = computed(() => props.templateConf.bidirectionalLinkClass || '');

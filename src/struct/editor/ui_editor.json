@@ -263,7 +263,8 @@
   "templates": {
     "Базовая хронология": {
       "type": "timeline",
-      "headerTitle": "Состояние",
+      "description": "Универсальный модуль хронологии.",
+      "headerTitle": "Запись",
       "fields": [
         {
           "type": "select",
@@ -280,116 +281,110 @@
           "placeholder": "Выберите главу..."
         },
         {
-          "type": "text",
-          "class": "значение",
-          "placeholder": "Значение параметра"
-        },
-        {
-          "type": "textarea",
-          "class": "описание",
-          "rows": 2,
-          "placeholder": "Дополнительное описание..."
-        }
-      ],
-      "itemClass": "timeline-item"
-    },
-    "Событие": {
-      "type": "timeline",
-      "headerTitle": "Событие",
-      "fields": [
-        {
           "type": "select",
-          "class": "начальная_глава",
-          "label": "Начальная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
-        },
-        {
-          "type": "select",
-          "class": "конечная_глава",
-          "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
-        },
-        {
-          "type": "text",
-          "class": "название",
-          "placeholder": "Название события"
-        },
-        {
-          "type": "select",
-          "class": "тип",
+          "class": "статус_категория",
+          "label": "Статус / Категория",
           "options": [
             {
               "value": "",
               "label": "Не указано"
-            },
-            {
-              "value": "создание",
-              "label": "Создание"
-            },
-            {
-              "value": "изменение",
-              "label": "Изменение"
-            },
-            {
-              "value": "кризис",
-              "label": "Кризис"
-            },
-            {
-              "value": "достижение",
-              "label": "Достижение"
             }
-          ]
+          ],
+          "placeholder": "Выберите..."
+        },
+        {
+          "type": "text",
+          "class": "название",
+          "label": "Название",
+          "placeholder": "Введите название..."
         },
         {
           "type": "textarea",
-          "class": "описание",
-          "rows": 3,
-          "placeholder": "Описание события..."
+          "class": "описание_1",
+          "label": "Описание",
+          "rows": 2,
+          "placeholder": "..."
         },
         {
-          "type": "multiselect",
-          "class": "участники",
-          "label": "Участники",
-          "entityType": "character",
-          "placeholder": "Выберите участников..."
+          "type": "textarea",
+          "class": "описание_2",
+          "label": "Дополнительно",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_3",
+          "label": "Дополнительно 2",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "range",
+          "class": "числовой_показатель",
+          "label": "Показатель",
+          "placeholder": "0",
+          "min": 0,
+          "max": 100
         }
       ],
       "itemClass": "timeline-item"
     },
     "Динамический элемент": {
       "type": "dynamic",
+      "description": "Универсальный модуль без привязки к главам.",
       "headerTitle": "Элемент",
       "fields": [
         {
           "type": "text",
           "class": "название",
-          "placeholder": "Название элемента"
+          "label": "Название",
+          "placeholder": "..."
         },
         {
           "type": "select",
-          "class": "тип",
+          "class": "статус_категория",
+          "label": "Статус / Категория",
           "options": [
             {
               "value": "",
               "label": "Не указано"
-            },
-            {
-              "value": "основной",
-              "label": "Основной"
-            },
-            {
-              "value": "вторичный",
-              "label": "Вторичный"
             }
-          ]
+          ],
+          "placeholder": "Выберите..."
         },
         {
           "type": "textarea",
-          "class": "описание",
+          "class": "описание_1",
+          "label": "Описание",
           "rows": 2,
-          "placeholder": "Описание..."
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_2",
+          "label": "Дополнительно",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_3",
+          "label": "Дополнительно 2",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "calendar_date",
+          "class": "дата",
+          "label": "Дата",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "range",
+          "class": "числовой_показатель",
+          "label": "Показатель",
+          "placeholder": "0"
         }
       ],
       "itemClass": "dynamic-item"
@@ -397,253 +392,78 @@
     "Двунаправленная связь": {
       "type": "dynamic",
       "isBidirectional": true,
-      "bidirectionalLinkClass": "целевая_сущность",
+      "description": "Универсальная связь с другой сущностью.",
       "headerTitle": "Связь",
       "fields": [
         {
           "type": "select",
-          "class": "тип_сущности_1",
-          "label": "Тип сущности 1",
-          "options": [
-            {
-              "value": "character",
-              "label": "👤 Персонаж"
-            },
-            {
-              "value": "organization",
-              "label": "🏢 Организация"
-            },
-            {
-              "value": "state",
-              "label": "🗺️ Государство"
-            },
-            {
-              "value": "chapter",
-              "label": "📖 Глава"
-            },
-            {
-              "value": "generic",
-              "label": "🧩 Универсальная"
-            }
-          ],
-          "placeholder": "Выберите тип первой сущности..."
-        },
-        {
-          "type": "select",
           "class": "целевая_сущность",
-          "label": "Сущность 1",
+          "label": "Связанная сущность",
           "entityType": "generic",
-          "placeholder": "Выберите конкретную сущность..."
+          "placeholder": "Выберите сущность..."
         },
         {
           "type": "select",
-          "class": "тип_связи",
+          "class": "тип_отношения",
           "label": "Тип связи",
           "options": [
             {
               "value": "",
               "label": "Не указано"
-            },
-            {
-              "value": "связь1",
-              "label": "🔗 Связь 1"
-            },
-            {
-              "value": "связь2",
-              "label": "🔗 Связь 2"
             }
           ],
-          "placeholder": "Выберите тип связи..."
+          "placeholder": "Выберите тип..."
         },
         {
-          "type": "select",
-          "class": "тип_сущности_2",
-          "label": "Тип сущности 2",
-          "options": [
-            {
-              "value": "character",
-              "label": "👤 Персонаж"
-            },
-            {
-              "value": "organization",
-              "label": "🏢 Организация"
-            },
-            {
-              "value": "state",
-              "label": "🗺️ Государство"
-            },
-            {
-              "value": "chapter",
-              "label": "📖 Глава"
-            },
-            {
-              "value": "generic",
-              "label": "🧩 Универсальная"
-            }
-          ],
-          "placeholder": "Выберите тип второй сущности..."
+          "type": "text",
+          "class": "название",
+          "label": "Название/Роль",
+          "placeholder": "..."
         },
-        {
-          "type": "select",
-          "class": "целевая_сущность_2",
-          "label": "Сущность 2",
-          "entityType": "generic",
-          "placeholder": "Выберите конкретную сущность..."
-        }
-      ],
-      "dynamicContainers": [
-        {
-          "id": "statesTimeline",
-          "type": "timeline",
-          "title": "Динамика состояний",
-          "emptyMessage": "Динамика не добавлена",
-          "template": "Изменение состояния",
-          "dataPath": "динамика_состояний"
-        }
-      ],
-      "itemClass": "dynamic-item"
-    },
-    "Изменение состояния": {
-      "type": "timeline",
-      "headerTitle": "Состояние",
-      "fields": [
-        {
-          "type": "select",
-          "class": "начальная_глава",
-          "label": "Начальная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
-        },
-        {
-          "type": "select",
-          "class": "конечная_глава",
-          "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
-        },
-        {
-          "type": "select",
-          "class": "тип_состояния",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "состояние1",
-              "label": "Состояние 1"
-            },
-            {
-              "value": "состояние2",
-              "label": "Состояние 2"
-            }
-          ]
-        },
-        {
-          "type": "range",
-          "class": "сила",
-          "min": -100,
-          "max": 100,
-          "value": 0,
-          "label": "Сила (-100 .. 100)"
-        },
-        {
-          "type": "textarea",
-          "class": "причина",
-          "rows": 2,
-          "placeholder": "Причина изменения..."
-        }
-      ],
-      "itemClass": "relationship-state-item"
-    },
-    "Вложенная хронология": {
-      "type": "dynamic",
-      "headerTitle": "Элемент с историей",
-      "fields": [
-        {
-          "type": "select",
-          "class": "сущность",
-          "label": "Связанная сущность",
-          "entityType": "generic",
-          "placeholder": "Выберите сущность..."
-        }
-      ],
-      "nestedContainer": {
-        "id": "nestedHistory",
-        "type": "timeline",
-        "title": "История изменений",
-        "template": "Базовая хронология",
-        "dataPath": "история_изменений"
-      },
-      "itemClass": "dynamic-item"
-    },
-    "Одиночный параметр": {
-      "type": "dynamic",
-      "headerTitle": "Значение",
-      "fields": [
         {
           "type": "calendar_date",
           "class": "дата",
           "label": "Дата",
-          "placeholder": "Выберите дату по календарю"
-        }
-      ],
-      "itemClass": "dynamic-item"
-    },
-    "Иерархическая структура": {
-      "type": "dynamic",
-      "headerTitle": "Родительский элемент",
-      "fields": [
-        {
-          "type": "text",
-          "class": "название",
-          "placeholder": "Название"
-        },
-        {
-          "type": "select",
-          "class": "тип",
-          "options": [
-            {
-              "value": "",
-              "label": "Не указано"
-            },
-            {
-              "value": "тип_а",
-              "label": "Тип А"
-            },
-            {
-              "value": "тип_б",
-              "label": "Тип Б"
-            }
-          ]
-        }
-      ],
-      "dynamicContainers": [
-        {
-          "id": "childItems",
-          "type": "dynamic",
-          "title": "Дочерние элементы",
-          "emptyMessage": "Дочерние элементы не добавлены",
-          "template": "Дочерний элемент",
-          "dataPath": "дочерние_элементы"
-        }
-      ],
-      "itemClass": "dynamic-item"
-    },
-    "Дочерний элемент": {
-      "type": "dynamic",
-      "headerTitle": "Дочерний элемент",
-      "fields": [
-        {
-          "type": "text",
-          "class": "название",
-          "placeholder": "Название"
+          "placeholder": "Выберите дату..."
         },
         {
           "type": "textarea",
-          "class": "описание",
+          "class": "описание_1",
+          "label": "Детали",
           "rows": 2,
-          "placeholder": "Описание..."
+          "placeholder": "..."
+        },
+        {
+          "type": "textarea",
+          "class": "описание_2",
+          "label": "Дополнительно",
+          "rows": 2,
+          "placeholder": "..."
+        },
+        {
+          "type": "range",
+          "class": "числовой_показатель",
+          "label": "Показатель",
+          "placeholder": "0"
+        }
+      ],
+      "itemClass": "dynamic-item"
+    },
+    "Одиночный параметр": {
+      "type": "dynamic",
+      "headerTitle": "Параметр",
+      "fields": [
+        {
+          "type": "calendar_date",
+          "class": "значение_дата",
+          "label": "Дата",
+          "placeholder": "Выберите дату..."
+        },
+        {
+          "type": "text",
+          "class": "значение_текст",
+          "label": "Значение",
+          "placeholder": "..."
         }
       ],
       "itemClass": "dynamic-item"

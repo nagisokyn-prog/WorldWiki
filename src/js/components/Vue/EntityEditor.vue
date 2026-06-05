@@ -120,13 +120,13 @@
                     
                      <div v-else style="position: relative; z-index: 50;">
                       <!-- Двусторонние связи — свой компонент -->
-                      <template v-if="(config as any).templates[container.template]?.isBidirectional">
+                      <template v-if="getResolvedTemplate(container)?.isBidirectional">
                         <RelationshipBlock
                           v-for="(item, idx) in getProp(container.dataPath || container.id)"
                           :key="idx"
                           :item="item"
                           :idx="idx as any"
-                          :template-conf="(config as any).templates[container.template]"
+                          :template-conf="getResolvedTemplate(container)"
                           :all-templates="(config as any).templates"
                           :reference-data="referenceData"
                           :entity-id="props.entityId"
@@ -161,8 +161,8 @@
                           </div>
                           
                           <!-- Рендерим шаблон -->
-                          <div v-if="config.templates && config.templates[container.template]">
-                            <div v-for="tField in config.templates[container.template].fields" :key="tField.id || tField.class" class="form-group" style="margin-bottom:12px;">
+                          <div v-if="getResolvedTemplate(container)">
+                            <div v-for="tField in getResolvedTemplate(container).fields" :key="tField.id || tField.class" class="form-group" style="margin-bottom:12px;">
                               <label v-if="tField.label" class="form-label" style="font-size:10px;">{{ tField.label }}</label>
                               
                               <textarea v-if="tField.type === 'textarea'" 
@@ -314,6 +314,34 @@ const setProp = (obj: any, path: any, val?: any) => {
   current[parts[parts.length - 1]] = val;
 };
 
+const getResolvedTemplate = (container: any) => {
+  const baseTpl = config.value?.templates?.[container.template];
+  if (!baseTpl) return null;
+  
+  let resolvedFields = baseTpl.fields || [];
+  if (container.fieldOverrides) {
+    resolvedFields = resolvedFields.map((f: any) => {
+      const override = container.fieldOverrides[f.class];
+      if (override) {
+        if (override.hidden) return null;
+        return { ...f, ...override };
+      }
+      return f;
+    }).filter((f: any) => f !== null);
+  }
+  
+  let resolvedChildContainers = baseTpl.dynamicContainers;
+  if (container.customChildContainers) {
+    resolvedChildContainers = container.customChildContainers;
+  }
+  
+  return {
+    ...baseTpl,
+    fields: resolvedFields,
+    dynamicContainers: resolvedChildContainers
+  };
+};
+
 const loadConfigAndData = async () => {
   loading.value = true;
   isInitializing.value = true; // запрещаем dirty во время загрузки
@@ -335,6 +363,22 @@ const loadConfigAndData = async () => {
           config.value = await res.json();
         }
       }
+    }
+
+    // 3. Load global templates from ui_editor.json
+    try {
+      const uiRes = await fetch('/struct/editor/ui_editor.json');
+      if (uiRes.ok) {
+        const uiData = await uiRes.json();
+        if (!config.value.templates) {
+          config.value.templates = {};
+        }
+        if (uiData.templates) {
+          Object.assign(config.value.templates, uiData.templates);
+        }
+      }
+    } catch (e) {
+      console.warn('[EntityEditor] Failed to load ui_editor.json templates', e);
     }
 
      // Ensure a section is selected after config is loaded

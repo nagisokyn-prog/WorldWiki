@@ -407,15 +407,23 @@
           </div>
           
           <div style="margin: 20px 0 12px 0; font-size: 9px; opacity: 0.4; font-weight: 900; letter-spacing: 1px;">⏱️ TIMELINE-МОДУЛИ</div>
-          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, tpl, 'module', String(key))" style="padding: 12px; margin-bottom: 6px; border-radius: 8px;">
-              <span style="font-size: 20px;">⏱️</span>
+          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, tpl, 'module', String(key))" style="padding: 12px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center;">
+              <span style="font-size: 20px; margin-right: 8px;">⏱️</span>
               <div style="display: flex; flex-direction: column;"><span style="font-weight: 900; font-size: 12px; color: var(--text-main);">{{ key }}</span><span style="font-size: 8px; opacity: 0.3;">timeline</span></div>
+              <div style="margin-left: auto; display: flex; gap: 8px;">
+                <span :title="tpl.description || 'Нет описания'" style="cursor: help; opacity: 0.5; font-size: 14px;">❓</span>
+                <span title="Посмотреть где используется" style="cursor: pointer; opacity: 0.5; font-size: 14px;" @click.stop="findTemplateUsages(String(key))">🔍</span>
+              </div>
           </div>
           
           <div style="margin: 20px 0 12px 0; font-size: 9px; opacity: 0.4; font-weight: 900; letter-spacing: 1px;">📋 DYNAMIC-МОДУЛИ</div>
-          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, tpl, 'module', String(key))" style="padding: 12px; margin-bottom: 6px; border-radius: 8px;">
-              <span style="font-size: 20px;">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>
+          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, tpl, 'module', String(key))" style="padding: 12px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center;">
+              <span style="font-size: 20px; margin-right: 8px;">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>
               <div style="display: flex; flex-direction: column;"><span style="font-weight: 900; font-size: 12px; color: var(--text-main);">{{ key }}</span><span style="font-size: 8px; opacity: 0.3;">{{ tpl.isBidirectional ? 'relationship' : 'dynamic' }}</span></div>
+              <div style="margin-left: auto; display: flex; gap: 8px;">
+                <span :title="tpl.description || 'Нет описания'" style="cursor: help; opacity: 0.5; font-size: 14px;">❓</span>
+                <span title="Посмотреть где используется" style="cursor: pointer; opacity: 0.5; font-size: 14px;" @click.stop="findTemplateUsages(String(key))">🔍</span>
+              </div>
           </div>
         </div>
       </aside>
@@ -434,6 +442,63 @@
          </div>
       </div>
     </div>
+
+    <!-- USAGE MODAL -->
+    <div v-if="showUsageModal" class="glass-modal-overlay visible" @click="showUsageModal = false" style="z-index: 100000;">
+      <div class="glass-modal glass-panel" @click.stop style="width: 700px; max-height: 80vh; display: flex; flex-direction: column;">
+         <div class="glass-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px;">
+            <span>ГДЕ ИСПОЛЬЗУЕТСЯ: {{ usageTemplateName }}</span>
+            <button class="btn-new" @click="showUsageModal = false" style="font-size: 10px; padding: 4px 12px;">ЗАКРЫТЬ</button>
+         </div>
+         <div style="padding: 24px; overflow-y: auto;">
+            <div v-if="usageResults.length === 0" style="opacity: 0.5; text-align: center; padding: 20px;">
+              Этот блок пока нигде не используется.
+            </div>
+            <div v-else style="display: flex; flex-direction: column; gap: 16px;">
+              <div v-for="(res, idx) in usageResults" :key="idx" style="padding: 16px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <div>
+                      <div style="font-size: 10px; opacity: 0.5; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px;">Тип сущности: <span style="color: var(--accent); opacity: 1; font-weight: 900;">{{ res.entityType }}</span></div>
+                      <div style="font-size: 10px; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px;">Страница: <span style="color: #fff; opacity: 1;">{{ res.page }}</span></div>
+                    </div>
+                 </div>
+                 
+                 <!-- ЗДЕСЬ РЕНДЕРИМ САМ БЛОК -->
+                 <div class="glass-panel" style="padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                       <span style="font-size: 20px;">{{ getModuleIcon(res.container.template) || '📋' }}</span>
+                       <span style="font-weight: 900; font-size: 16px; color: var(--text-main);">{{ res.block }}</span>
+                    </div>
+                    
+                    <div class="glass-grid-2" style="gap: 8px;">
+                       <div v-for="(tField, fIdx) in getResolvedFields(res.container)" :key="fIdx" style="padding: 8px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--bg-input);">
+                          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                             <label class="form-label-micro" style="opacity: 0.8; color: var(--accent);">{{ tField.label || tField.class }}</label>
+                             <div style="font-size: 10px; color: var(--text-muted); font-family: monospace; opacity: 0.5;">{{ tField.class }} ({{ tField.type }})</div>
+                          </div>
+                          
+                          <div v-if="tField.placeholder" style="font-size: 10px; color: var(--text-muted); margin-bottom: 4px; font-style: italic;">
+                             "{{ tField.placeholder }}"
+                          </div>
+                          
+                          <div v-if="tField.type === 'select' && tField.options" style="font-size: 10px; color: #fff; background: rgba(255,255,255,0.05); padding: 4px 6px; border-radius: 4px; line-height: 1.4; margin-top: 4px;">
+                             <span style="opacity:0.5;">Опции: </span>
+                             <span v-for="(opt, oIdx) in tField.options" :key="oIdx">
+                               {{ opt.label }}<span v-if="Number(oIdx) < tField.options.length - 1">, </span>
+                             </span>
+                          </div>
+                          <div v-else-if="tField.entityType" style="font-size: 10px; color: #fff; background: rgba(255,255,255,0.05); padding: 4px 6px; border-radius: 4px; margin-top: 4px;">
+                             <span style="opacity:0.5;">Сущность: </span>{{ tField.entityType }}
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            </div>
+         </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -441,6 +506,9 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import XboxWheel from './XboxWheel.vue'
 import RelationshipBlock from './RelationshipBlock.vue'
+
+import uiEditorData from '../../../struct/editor/ui_editor.json'
+
 
 const entityName = ref('Universal Entity')
 const sections = ref<any[]>([])
@@ -451,6 +519,44 @@ const dragOver = ref(false)
 const draggedOverIdx = ref(-1)
 const draggedOverModuleIdx = ref(-1)
 const isPreviewMode = ref(false)
+
+const showUsageModal = ref(false)
+const usageResults = ref<any[]>([])
+const usageTemplateName = ref('')
+
+const findTemplateUsages = (templateKey: string) => {
+  usageTemplateName.value = templateKey
+  usageResults.value = []
+  
+  const rawSchemas = (import.meta as any).glob('../../../struct/editor/*.json', { eager: true });
+  
+  const allSchemas: any[] = [];
+  for (const path in rawSchemas) {
+    const data = (rawSchemas[path] as any).default || rawSchemas[path];
+    if (data && data.sections) {
+      allSchemas.push({ type: data.name || data.entityType || 'Сущность', data });
+    }
+  }
+  
+  for (const schema of allSchemas) {
+    const sections = schema.data.sections || []
+    for (const sec of sections) {
+      const containers = sec.dynamicContainers || []
+      for (const cont of containers) {
+        if (cont.template === templateKey) {
+          usageResults.value.push({
+            entityType: schema.type,
+            page: sec.title || sec.id,
+            block: cont.title || cont.id,
+            container: cont
+          })
+        }
+      }
+    }
+  }
+  
+  showUsageModal.value = true
+}
 
 const activeSection = computed(() => sections.value[activeSectionIdx.value])
 
@@ -575,8 +681,6 @@ onMounted(async () => {
 })
 
 
-import uiEditorData from '../../../struct/editor/ui_editor.json'
-
 const loadTemplates = async () => {
   try {
     const data = uiEditorData;
@@ -665,8 +769,38 @@ const deleteSection = (idx: number) => {
 }
 
 const isAtomicField = (item: any) => atomicBricks.some(b => b.val === item.type)
-const getResolvedTemplate = (key: string) => fullConfig.value.templates?.[key]
-const getResolvedFields = (key: string) => getResolvedTemplate(key)?.fields || []
+
+const getResolvedTemplate = (itemOrContainer: any) => {
+  const tplName = typeof itemOrContainer === 'string' ? itemOrContainer : itemOrContainer.template;
+  const baseTpl = fullConfig.value.templates?.[tplName];
+  if (!baseTpl) return null;
+  
+  if (typeof itemOrContainer !== 'string' && itemOrContainer.fieldOverrides) {
+    const resolvedFields = (baseTpl.fields || []).map((f: any) => {
+      const override = itemOrContainer.fieldOverrides[f.class];
+      if (override) {
+        if (override.hidden) return null;
+        return { ...f, ...override };
+      }
+      return f;
+    }).filter((f: any) => f !== null);
+    
+    let resolvedChildContainers = baseTpl.dynamicContainers;
+    if (itemOrContainer.customChildContainers) {
+      resolvedChildContainers = itemOrContainer.customChildContainers;
+    }
+    
+    return {
+      ...baseTpl,
+      fields: resolvedFields,
+      dynamicContainers: resolvedChildContainers
+    };
+  }
+  return baseTpl;
+};
+
+const getResolvedFields = (itemOrContainer: any) => getResolvedTemplate(itemOrContainer)?.fields || [];
+
 const getOptions = (field: any) => (field.entityType && mockReferenceData.value[field.entityType]) ? mockReferenceData.value[field.entityType] : (field.options || [])
 
 const isItemSelected = (field: any, val: any) => Array.isArray(field._val) && field._val.includes(val)

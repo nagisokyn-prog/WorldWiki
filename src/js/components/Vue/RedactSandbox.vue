@@ -124,7 +124,9 @@
             @click="activeSectionIdx = idx"
             style="padding: 6px 16px; font-size: 11px; border-radius: 8px;">
           {{ sec.icon || '📄' }} {{ sec.title }}
-          <span v-if="sections.length > 1 && !sec.items.some((i: any) => i._isSystemName)" style="margin-left: 8px; opacity: 0.3; font-size: 9px;" @click.stop="deleteSection(idx)">✕</span>
+          <span v-if="sections.length > 1 && !sec.items.some((i: any) => i._isSystemName)" 
+                style="margin-left: 8px; opacity: 0.5; font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);" 
+                @mousedown.stop="deleteSection(idx)">✕</span>
        </div>
     </div>
 
@@ -586,9 +588,12 @@ const addNewPage = () => {
 }
 
 const deleteSection = (idx: number) => {
-  if (confirm('Удалить страницу и все её поля?')) {
-    sections.value.splice(idx, 1)
-    if (activeSectionIdx.value >= sections.value.length) activeSectionIdx.value = Math.max(0, sections.value.length - 1)
+  const sec = sections.value[idx];
+  if (sec.items.length === 0 || confirm('Удалить эту страницу? Все поля на ней будут удалены.')) {
+    sections.value.splice(idx, 1);
+    if (activeSectionIdx.value >= sections.value.length) {
+      activeSectionIdx.value = Math.max(0, sections.value.length - 1);
+    }
   }
 }
 

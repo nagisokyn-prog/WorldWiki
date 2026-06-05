@@ -465,6 +465,9 @@ const loadForeignItem = async (targetId: any): Promise<void> => {
     console.log('[RelationshipBlock] loadForeignItem: загружаю данные для', { targetEntityType, targetId, currentEntityId: props.entityId, linkClass: linkClass.value });
     
     const targetData = await apiService.getEntity(props.project, targetEntityType, String(targetId));
+    if (!targetData) {
+      throw new Error(`Entity ${targetId} not found or returned null`);
+    }
 
     // Ищем в данных чужого персонажа запись, ссылающуюся на нас
     const containerConf = tpl; // шаблон = контейнер

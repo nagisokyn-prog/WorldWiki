@@ -109,6 +109,7 @@
 
       <div style="display: flex; gap: 8px; align-items: center;">
         <button class="btn-new btn-outline-new" style="font-size: 10px; border-color: var(--accent); color: var(--accent); padding: 4px 12px;" @click="addNewPage">+ СТРАНИЦА</button>
+        <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px; color: #f55; border-color: rgba(255,85,85,0.3);" @click="resetState">Сбросить</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="openPreview">ПРЕДПРОСМОТР</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="showJsonPreview = true">Схема</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="exportSchema">Экспорт</button>
@@ -132,7 +133,8 @@
 
     <div style="flex: 1; display: flex; overflow: hidden; background: var(--bg-base);">
       <!-- MAIN CANVAS -->
-      <main class="content-area-new" style="flex: 1; padding: 24px; overflow-y: auto;" 
+      <main ref="mainScrollEl" class="content-area-new" style="flex: 1; padding: 24px; overflow-y: auto;" 
+            @scroll="saveUiState"
             @dragenter.prevent="dragOver = true" @dragover.prevent="handleDragOverCanvas($event)" @dragleave="dragOver = false" @drop="handleDropNew">
         
         <div v-if="activeSection" style="width: 100%;">
@@ -396,7 +398,7 @@
       <!-- SIDEBAR (Catalog) -->
       <aside class="sidebar-new glass-panel" style="width: 280px; border-radius: 0; border: none; border-left: 1px solid var(--border-color); background: rgba(0,0,0,0.6); backdrop-filter: blur(40px);">
         <div class="sidebar-header" style="height: 50px; font-size: 10px; letter-spacing: 2px; font-weight: 900; color: var(--accent); display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--bg-input);">LEGO CATALOG</div>
-        <div class="sidebar-list" style="padding: 12px; overflow-y: auto; height: calc(100% - 60px);">
+        <div ref="sidebarScrollEl" class="sidebar-list" style="padding: 12px; overflow-y: auto; height: calc(100% - 60px);" @scroll="saveUiState">
           
           <div style="margin-bottom: 12px; font-size: 9px; opacity: 0.4; font-weight: 900; letter-spacing: 1px;">🔹 ПОЛЯ</div>
           <div v-for="b in atomicBricks" :key="b.val" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, b, 'atomic')" style="padding: 12px; margin-bottom: 6px; border-radius: 8px;">
@@ -513,7 +515,62 @@ const getModuleIcon = (templateKey: string) => {
 
 const editableJson = ref('')
 
-onMounted(async () => { await loadTemplates() })
+const mainScrollEl = ref<HTMLElement | null>(null)
+const sidebarScrollEl = ref<HTMLElement | null>(null)
+
+let uiStateTimeout: any;
+const saveUiState = () => {
+  clearTimeout(uiStateTimeout);
+  uiStateTimeout = setTimeout(() => {
+    localStorage.setItem('redact_sandbox_ui_state', JSON.stringify({
+      activeSectionIdx: activeSectionIdx.value,
+      mainScroll: mainScrollEl.value ? mainScrollEl.value.scrollTop : 0,
+      sidebarScroll: sidebarScrollEl.value ? sidebarScrollEl.value.scrollTop : 0,
+      isPreviewMode: isPreviewMode.value,
+      showJsonPreview: showJsonPreview.value
+    }))
+  }, 100) // debounce
+}
+
+watch(activeSectionIdx, () => saveUiState())
+watch(isPreviewMode, () => saveUiState())
+watch(showJsonPreview, () => saveUiState())
+
+onMounted(async () => {
+  const savedState = localStorage.getItem('redact_sandbox_state')
+  if (savedState) {
+    try {
+      const data = JSON.parse(savedState)
+      // Validate that it has minimum required fields to avoid breaking the UI
+      if (data && data.name && data.sections) {
+        importConfig(data)
+      } else {
+        await loadTemplates()
+      }
+    } catch (e) {
+      console.warn('Failed to parse saved redact sandbox state:', e)
+      await loadTemplates()
+    }
+  } else {
+    await loadTemplates()
+  }
+
+  // Restore UI state
+  const uiStateStr = localStorage.getItem('redact_sandbox_ui_state')
+  if (uiStateStr) {
+    try {
+      const state = JSON.parse(uiStateStr)
+      if (typeof state.activeSectionIdx === 'number') activeSectionIdx.value = state.activeSectionIdx
+      if (typeof state.isPreviewMode === 'boolean') isPreviewMode.value = state.isPreviewMode
+      if (typeof state.showJsonPreview === 'boolean') showJsonPreview.value = state.showJsonPreview
+      setTimeout(() => {
+        if (mainScrollEl.value) mainScrollEl.value.scrollTop = state.mainScroll || 0
+        if (sidebarScrollEl.value) sidebarScrollEl.value.scrollTop = state.sidebarScroll || 0
+      }, 50)
+    } catch (e) {}
+  }
+})
+
 
 import uiEditorData from '../../../struct/editor/ui_editor.json'
 
@@ -581,6 +638,13 @@ watch(showJsonPreview, (val) => {
     editableJson.value = jsonPreviewContent.value
   }
 })
+
+const resetState = async () => {
+  if (confirm('Сбросить состояние редактора до исходного? Все несохраненные изменения будут потеряны.')) {
+    localStorage.removeItem('redact_sandbox_state')
+    await loadTemplates()
+  }
+}
 
 const addNewPage = () => {
   sections.value.push({ title: 'НОВАЯ СТРАНИЦА', icon: '📄', items: [] })
@@ -761,6 +825,12 @@ const jsonPreviewContent = computed(() => {
   }
   return JSON.stringify(result, null, 2)
 })
+
+watch(() => jsonPreviewContent.value, (newVal) => {
+  if (newVal) {
+    localStorage.setItem('redact_sandbox_state', newVal)
+  }
+}, { deep: true })
 
 const exportSchema = () => {
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonPreviewContent.value)

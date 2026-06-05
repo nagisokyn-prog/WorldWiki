@@ -1,6 +1,6 @@
 [package]
 name = "world-wiki"
-version = "0.6.2"
+version = "0.6.3"
 description = "A Tauri App"
 authors = ["Danila"]
 edition = "2021"

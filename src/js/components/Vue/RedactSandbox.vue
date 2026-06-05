@@ -256,126 +256,67 @@
                             <div style="display: flex; align-items: center; gap: 16px;">
                                <span style="opacity: 0.2;">⠿</span>
                                <span style="font-size: 24px;">{{ getModuleIcon(item.template) }}</span>
-                               <input v-model="item.title" class="input-base" style="background: transparent; border: none; font-weight: 900; font-size: 18px; color: var(--text-main); width: 400px;" placeholder="НАЗВАНИЕ МОДУЛЯ">
+                               <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+                                  <input v-model="item.title" class="input-base" style="background: transparent; border: none; font-weight: 900; font-size: 18px; color: var(--text-main); padding: 0;" placeholder="НАЗВАНИЕ МОДУЛЯ">
+                                  <div style="display: flex; align-items: center; gap: 8px;">
+                                     <span style="font-size: 10px; color: var(--text-muted); opacity: 0.5;">Текст при пустоте:</span>
+                                     <input v-model="item.emptyMessage" class="input-base" style="background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.2); font-size: 10px; color: var(--text-muted); padding: 0; width: 300px;" placeholder="Пусто...">
+                                  </div>
+                               </div>
                             </div>
-                            <div style="display: flex; gap: 12px;">
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
                                <button class="btn-new" style="font-size: 10px; padding: 6px 16px;" @click="addDynamicItem(item)">+ НОВАЯ ЗАПИСЬ</button>
                                <button style="color: #f55; background: none; border: none; font-size: 16px; cursor: pointer;" @click="activeSection.items.splice(iIdx, 1)">✕</button>
                             </div>
                          </div>
                          
                          
-                         <!-- TEMPLATE FIELDS SECTION -->
-                         <div style="margin-bottom: 20px; padding: 16px; background: var(--bg-panel); border-radius: 12px; border: 1px solid var(--border-color);">
-                            <div style="font-size: 10px; font-weight: 900; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">📋 Стандартные поля шаблона</div>
-                            <div class="glass-grid-2" style="gap: 12px; margin-bottom: 12px;">
-                               <div v-for="(tField, fIdx) in getResolvedFields(item.template)" :key="fIdx" style="padding: 8px; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px solid var(--bg-input);">
-                                  <label class="form-label-micro" style="opacity: 0.5;">{{ tField.label || tField.class }}</label>
-                                  <div style="font-size: 10px; color: var(--text-muted); font-family: monospace;">{{ tField.type }}</div>
-                               </div>
-                            </div>
-                            
-                            <!-- CUSTOM FIELDS -->
-                            <div v-if="item.customFields && item.customFields.length" style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-bottom: 12px;">
-                               <div style="font-size: 10px; font-weight: 900; color: var(--accent); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">✨ Добавленные поля</div>
-                               <div style="display: flex; flex-direction: column; gap: 12px;">
-                                  <div v-for="(cField, cIdx) in item.customFields" :key="cIdx" style="padding: 12px; background: rgba(255,165,0,0.08); border-radius: 8px; border: 1px solid rgba(255,165,0,0.2);">
-                                     <!-- Header with name and delete -->
-                                     <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 12px;">
-                                        <div style="flex: 1;">
-                                           <input v-model="cField.label" class="input-base" style="font-size: 10px; padding: 4px; font-weight: 900;" placeholder="Название поля">
-                                        </div>
-                                        <button style="color: #f55; background: none; border: none; font-size: 12px; cursor: pointer;" @click="item.customFields.splice(Number(cIdx), 1)">✕</button>
-                                     </div>
+                          <!-- UNIFIED MODULE CONFIGURATOR -->
+                          <div class="glass-grid-2" style="gap: 20px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border-color); margin-top: 16px;">
+                             <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="fIdx" :style="{ opacity: getFieldOverride(item, bField.class).hidden ? 0.3 : 1 }">
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                   <label class="form-label-micro" style="color: var(--accent); opacity: 0.8;">{{ getFieldOverride(item, bField.class).label || bField.label || bField.class }}</label>
+                                   <button style="background: none; border: none; cursor: pointer; font-size: 10px; opacity: 0.8;" @click="toggleFieldOverride(item, bField.class)">
+                                      {{ getFieldOverride(item, bField.class).hidden ? 'Скрыто 👁️‍🗨️' : 'Видимо 👁️' }}
+                                   </button>
+                                </div>
 
-                                     <!-- Type badge -->
-                                     <div style="font-size: 9px; color: rgba(255,165,0,0.6); margin-bottom: 12px; font-family: monospace;">{{ cField.type }}</div>
+                                <XboxWheel v-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
+                                <input v-else class="input-base" style="font-size: 12px; pointer-events: none;" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'">
 
-                                     <!-- Common settings -->
-                                     <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-                                        <div>
-                                           <label class="form-label-micro">Подсказка (Placeholder)</label>
-                                           <input v-model="cField.placeholder" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="...">
-                                        </div>
-                                     </div>
-
-                                     <!-- Type-specific settings -->
-                                     <div v-if="cField.type === 'textarea'" style="border-top: 1px solid rgba(255,165,0,0.1); padding-top: 8px;">
-                                        <label class="form-label-micro">Строк</label>
-                                        <input v-model.number="cField.rows" class="input-base" type="number" style="font-size: 10px; padding: 4px;" placeholder="2">
-                                     </div>
-
-                                     <div v-if="cField.type === 'range' || cField.type === 'number'" style="border-top: 1px solid rgba(255,165,0,0.1); padding-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                        <div>
-                                           <label class="form-label-micro">Min</label>
-                                           <input v-model.number="cField.min" class="input-base" type="number" style="font-size: 10px; padding: 4px;" placeholder="0">
-                                        </div>
-                                        <div>
-                                           <label class="form-label-micro">Max</label>
-                                           <input v-model.number="cField.max" class="input-base" type="number" style="font-size: 10px; padding: 4px;" placeholder="100">
-                                        </div>
-                                     </div>
-
-                                     <div v-if="cField.type === 'range'" style="border-top: 1px solid rgba(255,165,0,0.1); padding-top: 8px;">
-                                        <label class="form-label-micro">Дефолтное значение</label>
-                                        <input v-model.number="cField.value" class="input-base" type="number" style="font-size: 10px; padding: 4px;" placeholder="50">
-                                     </div>
-
-                                     <!-- Select/Multiselect options -->
-                                     <div v-if="cField.type === 'select' || cField.type === 'multiselect'" style="border-top: 1px solid rgba(255,165,0,0.1); padding-top: 8px;">
-                                        <label class="form-label-micro">Варианты</label>
-                                        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
-                                           <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" style="display: flex; gap: 6px; align-items: center;">
-                                              <input v-model="opt.label" class="input-base" style="font-size: 10px; padding: 4px; flex: 1;" placeholder="Вариант">
-                                              <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="cField.options.splice(Number(oIdx), 1)">✕</button>
-                                           </div>
-                                           <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 6px; margin-top: 6px;" @click="if (!cField.options) cField.options = []; cField.options.push({ label: 'Вариант', value: 'v' + Math.random().toString(36).substr(2, 4) })">+ ВАРИАНТ</button>
-                                        </div>
-                                     </div>
-                                  </div>
-                               </div>
-                            </div>
-                            
-                            <!-- DROP ZONE FOR CUSTOM FIELDS -->
-                            <div style="margin-top: 12px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
-                                 @dragenter.prevent="draggedOverModuleIdx = Number(iIdx)" 
-                                 @dragover.prevent="handleDragOverModule($event, Number(iIdx))" 
-                                 @dragleave="draggedOverModuleIdx = -1"
-                                 @drop.stop="handleDropIntoModule(Number(iIdx))"
-                                 :style="{ borderColor: draggedOverModuleIdx === Number(iIdx) ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: draggedOverModuleIdx === Number(iIdx) ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }">
-                               <div style="font-size: 12px; font-weight: 900; color: rgba(255,165,0,0.6);">🎯 СЮДА КИДАЙ ПОЛЯ</div>
-                               <div style="font-size: 10px; color: rgba(255,165,0,0.4); margin-top: 4px;">Захвати поле из левой панели</div>
-                            </div>
-                         </div>
-
-                         <!-- EMPTY MODULE STATE -->
-                         <div v-if="!(item.items && item.items.length)" style="display: flex; flex-direction: column; align-items: center; padding: 40px; border: 1px dashed var(--border-color); border-radius: 16px; margin-bottom: 16px;">
-                            <span style="font-size: 32px; opacity: 0.1; margin-bottom: 8px;">{{ getModuleIcon(item.template) }}</span>
-                            <span style="font-size: 11px; color: var(--text-muted); font-weight: 900;">МОДУЛЬ ПУСТ</span>
-                            <span style="font-size: 10px; color: var(--border-color); margin-top: 4px;">Нажмите «+ НОВАЯ ЗАПИСЬ»</span>
-                         </div>
-                         
-                         <!-- Complex Module Preview -->
-                         <div v-if="item.type === 'relationship' || getResolvedTemplate(item.template)?.isBidirectional">
-                            <RelationshipBlock v-for="(sub, sIdx) in (item.items || [])" :key="sIdx" :item="sub" :idx="Number(sIdx)" :templateConf="getResolvedTemplate(item.template)" :allTemplates="fullConfig.templates" :referenceData="mockReferenceData" :sandboxMode="true" entityId="s" entityType="g" project="s" @remove="item.items.splice(Number(sIdx), 1)" />
-                         </div>
-                         <div v-else class="items-stack" style="display: flex; flex-direction: column; gap: 16px;">
-                            <div v-for="(sub, sIdx) in (item.items || [])" :key="sIdx" class="glass-card-container" style="background: var(--bg-secondary); border-radius: 12px;">
-                               <div class="glass-card-content" style="padding: 20px;">
-                                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                     <span style="font-size: 10px; font-weight: 900; color: var(--accent); opacity: 0.5;">#{{ Number(sIdx) + 1 }}</span>
-                                     <button style="color: #f55; background: none; border: none; font-size: 10px; cursor: pointer;" @click="item.items.splice(Number(sIdx), 1)">УДАЛИТЬ</button>
-                                  </div>
-                                  <div class="glass-grid-2" style="gap: 20px;">
-                                     <div v-for="(tField, fIdx) in getResolvedFields(item.template)" :key="fIdx">
-                                        <label class="form-label-micro">{{ tField.label || tField.class }}</label>
-                                        <XboxWheel v-if="tField.type === 'select'" v-model="sub[tField.class]" :options="getOptions(tField)" />
-                                        <input v-else v-model="sub[tField.class]" class="input-base" style="font-size: 12px;" :placeholder="tField.placeholder || '...'">
-                                     </div>
-                                  </div>
-                               </div>
-                            </div>
-                         </div>
+                                <!-- INLINE SETTINGS -->
+                                <div style="margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                      <div>
+                                         <label class="form-label-micro">Название (Label)</label>
+                                         <input v-model="ensureFieldOverride(item, bField.class).label" class="input-base" style="font-size: 10px; padding: 4px;" :placeholder="bField.label || bField.class">
+                                      </div>
+                                      <div>
+                                         <label class="form-label-micro">Подсказка</label>
+                                         <input v-model="ensureFieldOverride(item, bField.class).placeholder" class="input-base" style="font-size: 10px; padding: 4px;" :placeholder="bField.placeholder || '...'">
+                                      </div>
+                                   </div>
+                                   
+                                   <div style="margin-top: 8px;">
+                                      <label class="form-label-micro">Переопределить тип</label>
+                                      <XboxWheel :model-value="ensureFieldOverride(item, bField.class).type || ''" @update:modelValue="val => ensureFieldOverride(item, bField.class).type = val" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" />
+                                   </div>
+                                   
+                                   <div v-if="(ensureFieldOverride(item, bField.class).type || bField.type) === 'select' || (ensureFieldOverride(item, bField.class).type || bField.type) === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                                      <label class="form-label-micro">Варианты (Options)</label>
+                                      <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                                         <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" style="display: flex; gap: 6px; align-items: center;">
+                                            <input v-model="opt.value" class="input-base" style="font-size: 10px; padding: 4px; flex: 1; font-family: monospace;" placeholder="value">
+                                            <input v-model="opt.label" class="input-base" style="font-size: 10px; padding: 4px; flex: 2;" placeholder="Label">
+                                            <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="ensureFieldOverride(item, bField.class).options.splice(Number(oIdx), 1)">✕</button>
+                                         </div>
+                                         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 6px;" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
+                                      </div>
+                                   </div>
+                                </div>
+                             </div>
+                          </div>
                       </div>
 
                    </div>
@@ -797,6 +738,33 @@ const getResolvedTemplate = (itemOrContainer: any) => {
     };
   }
   return baseTpl;
+};
+
+const getRawTemplateFields = (templateName: string) => {
+  return fullConfig.value.templates?.[templateName]?.fields || [];
+};
+
+const ensureFieldOverride = (item: any, fieldClass: string) => {
+  if (!item.fieldOverrides) item.fieldOverrides = {};
+  if (!item.fieldOverrides[fieldClass]) {
+    item.fieldOverrides[fieldClass] = {};
+  }
+  return item.fieldOverrides[fieldClass];
+};
+
+const getFieldOverride = (item: any, fieldClass: string) => {
+  return item.fieldOverrides?.[fieldClass] || {};
+};
+
+const toggleFieldOverride = (item: any, fieldClass: string) => {
+  const override = ensureFieldOverride(item, fieldClass);
+  override.hidden = !override.hidden;
+};
+
+const addFieldOption = (item: any, fieldClass: string) => {
+  const override = ensureFieldOverride(item, fieldClass);
+  if (!override.options) override.options = [];
+  override.options.push({ value: 'new_val', label: 'Новый вариант' });
 };
 
 const getResolvedFields = (itemOrContainer: any) => getResolvedTemplate(itemOrContainer)?.fields || [];

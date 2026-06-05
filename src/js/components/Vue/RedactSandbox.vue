@@ -543,6 +543,9 @@ onMounted(async () => {
       const data = JSON.parse(savedState)
       // Validate that it has minimum required fields to avoid breaking the UI
       if (data && data.name && data.sections) {
+        if (!data.templates || Object.keys(data.templates).length === 0) {
+          data.templates = uiEditorData.templates || {}
+        }
         importConfig(data)
       } else {
         await loadTemplates()
@@ -811,6 +814,7 @@ const jsonPreviewContent = computed(() => {
     tagsField: fullConfig.value.tagsField || "",
     titleField: fullConfig.value.titleField || "",
     entityType: fullConfig.value.entityType || "generic",
+    templates: fullConfig.value.templates || {},
     sections: sections.value.map(s => {
       const fields = s.items.filter((i: any) => isAtomicField(i))
       const dynamicContainers = s.items.filter((i: any) => !isAtomicField(i))

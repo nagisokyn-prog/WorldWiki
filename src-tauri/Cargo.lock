@@ -8246,7 +8246,7 @@ dependencies = [
 
 [[package]]
 name = "world-wiki"
-version = "0.6.4"
+version = "0.8.0"
 dependencies = [
  "chrono",
  "rusqlite",

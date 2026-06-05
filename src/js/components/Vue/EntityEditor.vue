@@ -449,8 +449,16 @@ const loadReferenceData = async () => {
       scanFields(s.fields);
       if(s.dynamicContainers) {
         s.dynamicContainers.forEach((c: any) => {
-          const t = (config.value as any).templates?.[c.template];
-          if (t) scanFields(t.fields);
+          const resolvedTpl = getResolvedTemplate(c);
+          if (resolvedTpl) {
+            scanFields(resolvedTpl.fields);
+            if (resolvedTpl.dynamicContainers) {
+              resolvedTpl.dynamicContainers.forEach((nested: any) => {
+                const nTpl = getResolvedTemplate(nested);
+                if (nTpl) scanFields(nTpl.fields);
+              });
+            }
+          }
         });
       }
     });

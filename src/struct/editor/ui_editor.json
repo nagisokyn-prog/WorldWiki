@@ -447,7 +447,8 @@
           "placeholder": "0"
         }
       ],
-      "itemClass": "dynamic-item"
+      "itemClass": "dynamic-item",
+      "bidirectionalLinkClass": "целевая_сущность"
     },
     "Одиночный параметр": {
       "type": "dynamic",

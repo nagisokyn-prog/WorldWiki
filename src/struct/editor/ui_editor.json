@@ -180,7 +180,7 @@
           "type": "timeline",
           "title": "Эволюция параметра по главам",
           "emptyMessage": "Записи эволюции не добавлены. Нажмите «Добавить», чтобы создать первую запись.",
-          "template": "genericTimelineTemplate",
+          "template": "Базовая хронология",
           "dataPath": "эволюция_параметра"
         },
         {
@@ -188,7 +188,7 @@
           "type": "timeline",
           "title": "Ключевые события",
           "emptyMessage": "События не добавлены",
-          "template": "eventTimelineTemplate",
+          "template": "Событие",
           "dataPath": "события"
         }
       ]
@@ -204,7 +204,7 @@
           "type": "dynamic",
           "title": "Простой динамический список",
           "emptyMessage": "Элементы не добавлены. Нажмите «Добавить».",
-          "template": "genericDynamicTemplate",
+          "template": "Динамический элемент",
           "dataPath": "простой_список"
         },
         {
@@ -212,7 +212,7 @@
           "type": "dynamic",
           "title": "Двунаправленная связь с сущностью",
           "emptyMessage": "Связи не добавлены",
-          "template": "bidirectionalLinkTemplate",
+          "template": "Двунаправленная связь",
           "dataPath": "двунаправленные_связи"
         },
         {
@@ -220,7 +220,7 @@
           "type": "dynamic",
           "title": "Элемент с вложенной хронологией",
           "emptyMessage": "Элементы не добавлены",
-          "template": "nestedTimelineTemplate",
+          "template": "Вложенная хронология",
           "dataPath": "вложенная_хронология"
         },
         {
@@ -229,7 +229,7 @@
           "title": "Ограниченный список (макс. 1 элемент)",
           "limit": 1,
           "emptyMessage": "Элемент не добавлен. Нажмите «Добавить», чтобы указать значение.",
-          "template": "singleItemTemplate",
+          "template": "Одиночный параметр",
           "dataPath": "ограниченный_список"
         }
       ]
@@ -254,14 +254,14 @@
           "type": "dynamic",
           "title": "Иерархический элемент (с вложенными динамическими контейнерами)",
           "emptyMessage": "Элементы не добавлены",
-          "template": "hierarchicalTemplate",
+          "template": "Иерархическая структура",
           "dataPath": "иерархический_список"
         }
       ]
     }
   ],
   "templates": {
-    "genericTimelineTemplate": {
+    "Базовая хронология": {
       "type": "timeline",
       "headerTitle": "Состояние",
       "fields": [
@@ -293,7 +293,7 @@
       ],
       "itemClass": "timeline-item"
     },
-    "eventTimelineTemplate": {
+    "Событие": {
       "type": "timeline",
       "headerTitle": "Событие",
       "fields": [
@@ -358,7 +358,7 @@
       ],
       "itemClass": "timeline-item"
     },
-    "genericDynamicTemplate": {
+    "Динамический элемент": {
       "type": "dynamic",
       "headerTitle": "Элемент",
       "fields": [
@@ -394,7 +394,7 @@
       ],
       "itemClass": "dynamic-item"
     },
-    "bidirectionalLinkTemplate": {
+    "Двунаправленная связь": {
       "type": "dynamic",
       "isBidirectional": true,
       "bidirectionalLinkClass": "целевая_сущность",
@@ -497,13 +497,13 @@
           "type": "timeline",
           "title": "Динамика состояний",
           "emptyMessage": "Динамика не добавлена",
-          "template": "stateChangeTemplate",
+          "template": "Изменение состояния",
           "dataPath": "динамика_состояний"
         }
       ],
       "itemClass": "dynamic-item"
     },
-    "stateChangeTemplate": {
+    "Изменение состояния": {
       "type": "timeline",
       "headerTitle": "Состояние",
       "fields": [
@@ -556,7 +556,7 @@
       ],
       "itemClass": "relationship-state-item"
     },
-    "nestedTimelineTemplate": {
+    "Вложенная хронология": {
       "type": "dynamic",
       "headerTitle": "Элемент с историей",
       "fields": [
@@ -572,12 +572,12 @@
         "id": "nestedHistory",
         "type": "timeline",
         "title": "История изменений",
-        "template": "genericTimelineTemplate",
+        "template": "Базовая хронология",
         "dataPath": "история_изменений"
       },
       "itemClass": "dynamic-item"
     },
-    "singleItemTemplate": {
+    "Одиночный параметр": {
       "type": "dynamic",
       "headerTitle": "Значение",
       "fields": [
@@ -590,7 +590,7 @@
       ],
       "itemClass": "dynamic-item"
     },
-    "hierarchicalTemplate": {
+    "Иерархическая структура": {
       "type": "dynamic",
       "headerTitle": "Родительский элемент",
       "fields": [
@@ -624,13 +624,13 @@
           "type": "dynamic",
           "title": "Дочерние элементы",
           "emptyMessage": "Дочерние элементы не добавлены",
-          "template": "childItemTemplate",
+          "template": "Дочерний элемент",
           "dataPath": "дочерние_элементы"
         }
       ],
       "itemClass": "dynamic-item"
     },
-    "childItemTemplate": {
+    "Дочерний элемент": {
       "type": "dynamic",
       "headerTitle": "Дочерний элемент",
       "fields": [

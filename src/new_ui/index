@@ -1,0 +1,2675 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>World Wiki Ultimate — The Customization Sandbox Engine</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=SF+Pro+Display:wght@300;400;500;600&family=Segoe+UI:wght@300;400;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           0. DYNAMIC CSS ENGINE (MAPPED TO VUE SETTINGS)
+           ========================================================================== */
+        :root {
+            /* 1. Цветовая схема */
+            --bg-base: #09090b;
+            --bg-secondary: #121214;
+            --bg-panel: rgba(15, 15, 18, 0.7);
+            --bg-input: rgba(22, 22, 26, 0.6);
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.65);
+            --text-heading: #ffffff;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --accent-active: #6d28d9;
+            --accent-disabled: #4c1d95;
+            --accent-glow: rgba(139, 92, 246, 0.3);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --border-active: rgba(139, 92, 246, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.5);
+
+            /* 2. Прозрачность и стекло */
+            --glass-island-alpha: 0.45;
+            --glass-card-alpha: 0.03;
+            --glass-blur: 24px;
+            --glass-border-alpha: 0.1;
+            --glass-highlight: rgba(255, 255, 255, 0.08);
+            --glass-bg: rgba(20, 20, 25, var(--glass-island-alpha));
+            --glass-card: rgba(255, 255, 255, var(--glass-card-alpha));
+
+            /* 3. Скругления */
+            --radius-island: 28px;
+            --radius-card: 20px;
+            --radius-btn: 40px;
+            --radius-input: 16px;
+            --radius-dropdown: 16px;
+
+            /* 4. Тени и объем */
+            --shadow-island-y: 20px;
+            --shadow-island-blur: 35px;
+            --shadow-card-hover: 0 25px 40px -12px var(--shadow-color);
+            --shadow-btn: 0 4px 12px rgba(0, 0, 0, 0.2);
+            --shadow-dropdown: 0 25px 50px rgba(0, 0, 0, 0.8);
+            --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            --shadow-glow: 0 0 20px var(--accent-glow);
+
+            /* 5. Анимации */
+            --anim-speed: 0.3s;
+            --anim-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --anim-entrance: 0.4s;
+            --scale-push: 0.98;
+            --scale-pull: 1.05;
+
+            /* 6. Шрифты */
+            --font-family: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            --font-size-base: 14px;
+            --font-weight-base: 400;
+            --font-weight-bold: 600;
+            --line-height-base: 1.5;
+            --letter-spacing-base: 0px;
+
+            /* 7. Отступы и плотность */
+            --density-mult: 1;
+            --pad-card: calc(24px * var(--density-mult));
+            --gap-elements: calc(16px * var(--density-mult));
+            --sidebar-width: 280px;
+            --panel-height: 250px;
+            --activity-bar-width: 60px;
+            --toolbar-height: 48px;
+
+            /* 8. Компоновка */
+            --layout-columns: 2;
+            
+            /* Utils */
+            --sidebar-pos: row; /* row or row-reverse */
+            --tab-pos: row;
+        }
+
+        /* ==========================================================================
+           1. RESET & BASE
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-base);
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-base);
+            line-height: var(--line-height-base);
+            letter-spacing: var(--letter-spacing-base);
+            color: var(--text-main);
+            overflow: hidden;
+            transition: background var(--anim-speed) var(--anim-ease), 
+                        color var(--anim-speed) var(--anim-ease);
+        }
+
+        /* Фоновые сферы */
+        .bg-glow {
+            position: fixed;
+            border-radius: 50%;
+            background: var(--accent);
+            filter: blur(150px);
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+            transition: all var(--anim-speed) var(--anim-ease);
+        }
+        .bg-glow.top-left {
+            top: -25%;
+            left: -25%;
+            width: 80vw;
+            height: 80vw;
+        }
+        .bg-glow.bottom-right {
+            bottom: -25%;
+            right: -25%;
+            width: 90vw;
+            height: 90vw;
+        }
+
+        /* 19. Скроллбары */
+        ::-webkit-scrollbar {
+            width: var(--scrollbar-width, 8px);
+            height: var(--scrollbar-width, 8px);
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: var(--radius-btn);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* ==========================================================================
+           2. MAIN LAYOUT
+           ========================================================================== */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        .app-main {
+            display: flex;
+            flex-direction: var(--sidebar-pos);
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Activity Bar */
+        .activity-bar {
+            width: var(--activity-bar-width);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: calc(20px * var(--density-mult)) 0;
+            gap: calc(12px * var(--density-mult));
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-right: 1px solid var(--border-color);
+            z-index: 100;
+            transition: width var(--anim-speed);
+        }
+        
+        .activity-icon {
+            width: calc(var(--activity-bar-width) * 0.7);
+            height: calc(var(--activity-bar-width) * 0.7);
+            border-radius: var(--radius-btn);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--anim-speed) var(--anim-ease);
+            position: relative;
+        }
+        
+        .activity-icon:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(var(--scale-pull));
+        }
+        
+        .activity-icon.active {
+            color: var(--text-main);
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        
+        .activity-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            border: 2px solid var(--bg-base);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            background: var(--bg-panel);
+            backdrop-filter: blur(var(--glass-blur));
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width var(--anim-speed);
+            position: relative;
+        }
+        
+        .sidebar-header {
+            padding: calc(16px * var(--density-mult));
+            border-bottom: 1px solid var(--border-color);
+            font-weight: var(--font-weight-bold);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .sidebar-search {
+            padding: calc(12px * var(--density-mult)) calc(16px * var(--density-mult));
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-search input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-input);
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+            transition: all var(--anim-speed);
+        }
+        
+        .sidebar-search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        
+        .sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: calc(8px * var(--density-mult));
+        }
+        
+        .sidebar-item {
+            padding: calc(10px * var(--density-mult)) calc(12px * var(--density-mult));
+            margin-bottom: 4px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--anim-speed);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            border-left: 2px solid transparent;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .sidebar-item.active {
+            background: var(--accent-glow);
+            border-left-color: var(--accent);
+            color: var(--text-main);
+        }
+
+        /* Editor Area */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        /* Tabs */
+        .editor-tabs {
+            display: flex;
+            flex-direction: var(--tab-pos);
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            padding-left: 8px;
+            min-height: 40px;
+            align-items: center;
+        }
+        
+        .editor-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: transparent;
+            border-right: 1px solid var(--border-color);
+            border-top: 2px solid transparent;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all var(--anim-speed);
+            white-space: nowrap;
+            color: var(--text-muted);
+        }
+        
+        .editor-tab:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+        
+        .editor-tab.active {
+            background: rgba(0, 0, 0, 0.6);
+            border-top-color: var(--accent);
+            color: var(--text-main);
+        }
+        
+        .tab-close {
+            margin-left: 8px;
+            opacity: 0.5;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all var(--anim-speed);
+        }
+        
+        .tab-close:hover {
+            opacity: 1;
+            color: #ff5555;
+        }
+        
+        .tab-unsaved::after {
+            content: '●';
+            font-size: 8px;
+            color: var(--accent);
+            margin-left: 6px;
+        }
+
+        /* Content Area */
+        .editor-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ==========================================================================
+           3. UI COMPONENTS (Buttons, Inputs, Cards, etc.)
+           ========================================================================== */
+        
+        /* Interactive Engine (Push/Pull) */
+        .interactive-el {
+            transition: all var(--anim-speed) var(--anim-ease);
+            transform-origin: center center;
+            position: relative;
+            z-index: 10;
+        }
+        
+        .interactive-el:hover {
+            transform: scale(var(--scale-pull));
+            z-index: 20;
+        }
+        
+        .interactive-el:active {
+            transform: scale(var(--scale-push));
+        }
+
+        /* Glass Cards */
+        .glass-card-container {
+            position: relative;
+            z-index: 1;
+            border-radius: var(--radius-card);
+        }
+        
+        .glass-card-bg {
+            position: absolute;
+            inset: 0;
+            background: var(--glass-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-island-y) rgba(0,0,0,0.2);
+            z-index: -1;
+            pointer-events: none;
+            transition: all var(--anim-speed) var(--anim-ease);
+            transform-origin: center center;
+        }
+        
+        .glass-card-container:hover .glass-card-bg {
+            background: rgba(255, 255, 255, calc(var(--glass-card-alpha) + 0.02));
+            border-color: rgba(255, 255, 255, calc(var(--glass-border-alpha) + 0.1));
+            box-shadow: var(--shadow-card-hover);
+        }
+        
+        .glass-card-container.is-pushed .glass-card-bg {
+            transform: scale(var(--scale-push));
+            box-shadow: var(--shadow-inset);
+            border-color: var(--accent);
+        }
+        
+        .glass-card-content {
+            position: relative;
+            padding: var(--pad-card);
+            z-index: 2;
+        }
+
+        /* Typography */
+        .card-title {
+            font-size: calc(var(--font-size-base) * 1.5);
+            font-weight: var(--font-weight-bold);
+            margin: 0 0 20px 0;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: calc(var(--font-size-base) * 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: var(--font-weight-bold);
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        /* Inputs */
+        .input-base {
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-input);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: var(--font-size-base);
+            transition: all var(--anim-speed);
+        }
+        
+        .input-base:focus {
+            border-color: var(--accent);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            outline: none;
+            transform: scale(1) !important;
+        }
+        
+        textarea.input-base {
+            resize: vertical;
+            min-height: 120px;
+            border-radius: var(--radius-card);
+            line-height: 1.6;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            background: var(--accent);
+            border: 1px solid transparent;
+            border-radius: var(--radius-btn);
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: var(--font-weight-bold);
+            transition: all var(--anim-speed);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: var(--accent-hover);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
+        
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Grid */
+        .grid-dynamic {
+            display: grid;
+            grid-template-columns: repeat(var(--layout-columns), 1fr);
+            gap: var(--gap-elements);
+        }
+        
+        .form-group {
+            margin-bottom: var(--gap-elements);
+        }
+
+        /* Sub Tabs (Used in Character Editor) */
+        .sub-tabs-bar {
+            display: flex;
+            align-items: center;
+            padding: 0 var(--pad-card);
+            height: var(--toolbar-height);
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        
+        .sub-tab-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: all var(--anim-speed);
+        }
+        
+        .sub-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+        
+        .sub-tab-btn.active {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        /* ==========================================================================
+           4. CHAPTER EDITOR SPECIFICS
+           ========================================================================== */
+        .chapter-editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            width: 100%;
+        }
+        
+        .chapter-toolbar {
+            height: var(--toolbar-height);
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 8px;
+        }
+        
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-right: 12px;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+        
+        .toolbar-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all var(--anim-speed);
+        }
+        
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+        
+        .toolbar-select {
+            padding: 4px 8px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .chapter-header {
+            padding: 20px 24px 16px;
+            background: transparent;
+        }
+        
+        .chapter-title-input {
+            width: 100%;
+            font-size: 28px;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            outline: none;
+            padding: 0;
+            margin-bottom: 12px;
+        }
+        
+        .chapter-title-input::placeholder {
+            color: var(--text-subtle);
+        }
+        
+        .chapter-meta-bar {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .meta-item.editable {
+            padding: 4px 10px;
+            background: var(--bg-input);
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all var(--anim-speed);
+        }
+        
+        .meta-item.editable:hover {
+            border-color: var(--accent);
+        }
+        
+        /* Toast UI Overrides */
+        .toastui-editor-defaultUI { border: none !important; background: transparent !important; }
+        .toastui-editor-defaultUI-toolbar { display: none !important; }
+        .toastui-editor-md-container, .toastui-editor-ww-container { background: transparent !important; }
+        .toastui-editor-contents { font-family: var(--font-family) !important; font-size: 16px !important; line-height: 1.8 !important; color: var(--text-main) !important; }
+        .toastui-editor-contents p { margin: 0.8em 0; }
+        .toastui-editor-contents h1, .toastui-editor-contents h2, .toastui-editor-contents h3 { color: var(--text-heading) !important; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+        .toastui-editor-contents blockquote { border-left: 4px solid var(--accent); background: var(--bg-input); padding: 12px 16px; margin: 1em 0; border-radius: 0 8px 8px 0; }
+        
+        .split-view {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .split-editor-core {
+            flex: 1;
+            min-width: 0;
+            padding: 0 24px 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #chapterEditor {
+            flex: 1;
+            border-radius: var(--radius-card);
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        
+        .chapter-tools {
+            width: 300px;
+            flex-shrink: 0;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .tools-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tools-section:last-child {
+            border-bottom: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: var(--font-weight-bold);
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .timeline-event {
+            padding: 12px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all var(--anim-speed);
+        }
+        
+        .timeline-event:hover {
+            border-color: var(--accent);
+            transform: translateX(-4px);
+        }
+        
+        .event-date {
+            font-size: 10px;
+            color: var(--accent-secondary);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: 4px;
+        }
+        
+        .event-title {
+            font-size: 13px;
+            color: var(--text-main);
+        }
+        
+        .participant-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+        
+        .participant-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .add-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all var(--anim-speed);
+        }
+        
+        .add-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ==========================================================================
+           5. CHARACTER EDITOR (Relationships & Trauma)
+           ========================================================================== */
+        .advanced-editor-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--pad-card);
+            display: flex;
+            flex-direction: column;
+            gap: var(--gap-elements);
+        }
+
+        /* Split Relationships */
+        .relationship-split-wrapper {
+            display: flex;
+            gap: var(--gap-elements);
+            flex-wrap: wrap;
+        }
+        
+        .split-pane-container {
+            flex: 1;
+            position: relative;
+            z-index: 1;
+            min-width: 300px;
+            border-radius: var(--radius-card);
+        }
+        
+        .split-pane-bg {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-card);
+            z-index: -1;
+            pointer-events: none;
+            transition: all var(--anim-speed);
+        }
+        
+        .split-pane-container:hover .split-pane-bg {
+            border-style: solid;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .split-pane-container.is-pushed .split-pane-bg {
+            transform: scale(var(--scale-push));
+            box-shadow: var(--shadow-inset);
+            border-color: var(--accent);
+        }
+        
+        .split-pane-content {
+            padding: var(--pad-card);
+        }
+        
+        .split-header {
+            text-align: center;
+            font-weight: var(--font-weight-bold);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        /* Trauma Tags */
+        .tags-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-input);
+            min-height: 60px;
+        }
+        
+        .tag-chip {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+            padding: 6px 14px;
+            border-radius: var(--radius-btn);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: tagIn 0.3s ease;
+        }
+        
+        @keyframes tagIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .tag-remove {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.7;
+            transition: all var(--anim-speed);
+        }
+        
+        .tag-remove:hover {
+            opacity: 1;
+            color: white;
+            transform: scale(1.2);
+        }
+        
+        .multiselect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all var(--anim-speed);
+            border: 1px solid transparent;
+        }
+        
+        .checkbox-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .checkbox-item:has(input:checked) {
+            background: var(--accent-glow);
+            border-color: var(--accent);
+            color: var(--text-main);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+        }
+        
+        .checkbox-item input {
+            accent-color: var(--accent);
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* ==========================================================================
+           6. SETTINGS ENGINE (UI Customization Panel)
+           ========================================================================== */
+        .settings-layout {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .settings-sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 16px;
+            flex-shrink: 0;
+        }
+
+        .settings-nav-item {
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-muted);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .settings-nav-item.active {
+            background: var(--accent-glow);
+            color: var(--text-main);
+            border-left: 3px solid var(--accent);
+        }
+
+        .settings-content-area {
+            flex: 1;
+            padding: var(--pad-card);
+            overflow-y: auto;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: var(--gap-elements);
+            margin-bottom: 40px;
+        }
+        
+        .settings-group {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-card);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .val-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent);
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 5px;
+            outline: none;
+            margin-bottom: 24px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+        }
+        
+        .color-picker-wrap {
+            display: flex;
+            gap: 12px;
+        }
+        
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+            padding: 0;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+        
+        input[type="color"]:hover {
+            transform: scale(1.1);
+        }
+        
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .radio-btn {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--anim-speed);
+        }
+        
+        .radio-btn:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .radio-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.1);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* ==========================================================================
+           7. 3D XBOX WHEEL
+           ========================================================================== */
+        .dropdown-container {
+            position: relative;
+            width: 100%;
+            z-index: 100;
+        }
+        
+        .status-trigger {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 14px 20px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-dropdown);
+            color: var(--text-main);
+            font-size: 14px;
+            transition: all var(--anim-speed);
+        }
+        
+        .status-trigger:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .status-trigger.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .arrow-icon {
+            font-size: 12px;
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+        
+        .arrow-icon.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .wheel-wrapper {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 100%;
+            height: 0;
+            opacity: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background: rgba(15, 15, 20, 0.98);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-dropdown);
+            box-shadow: var(--shadow-dropdown);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            z-index: 1000;
+            outline: none;
+        }
+        
+        .wheel-wrapper.expanded {
+            height: 240px;
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .wheel-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15px;
+            right: 15px;
+            height: 44px;
+            margin-top: -22px;
+            border-top: 1px solid var(--glass-highlight);
+            border-bottom: 1px solid var(--glass-highlight);
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 12px;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+        }
+        
+        .wheel-container {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+        }
+        
+        .wheel-item {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            height: 44px;
+            line-height: 44px;
+            font-size: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            margin-top: -22px;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-weight: 500;
+        }
+        
+        .wheel-item:hover {
+            color: var(--text-main);
+        }
+        
+        .wheel-item.active {
+            color: var(--text-main);
+            font-weight: bold;
+            text-shadow: 0 0 15px rgba(139, 92, 246, 0.8);
+            font-size: 17px;
+        }
+
+        /* ==========================================================================
+           8. BOTTOM PANEL & CONSOLE
+           ========================================================================== */
+        .panel {
+            height: var(--panel-height);
+            background: var(--bg-panel);
+            backdrop-filter: blur(var(--glass-blur));
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: height var(--anim-speed);
+            z-index: 50;
+        }
+        
+        .panel.collapsed {
+            height: 36px;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            gap: 16px;
+            min-height: 36px;
+        }
+        
+        .panel-tab {
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            transition: all var(--anim-speed);
+        }
+        
+        .panel-tab:hover {
+            color: var(--text-main);
+        }
+        
+        .panel-tab.active {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+        
+        .panel-toggle {
+            margin-left: auto;
+            font-size: 10px;
+            opacity: 0.7;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 16px;
+            font-size: 13px;
+            position: relative;
+        }
+        
+        .console-line {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            margin-bottom: 4px;
+            color: #aaa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            padding-bottom: 4px;
+        }
+        
+        .console-line.success { color: #55ff55; }
+        .console-line.info { color: #5555ff; }
+        .console-line.warn { color: #ffaa00; }
+        .console-line.error { color: #ff5555; }
+        
+        .console-time {
+            color: var(--text-muted);
+            margin-right: 8px;
+        }
+        
+        .graph-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .graph-canvas {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .graph-node {
+            position: absolute;
+            padding: 8px 16px;
+            background: var(--accent-glow);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            transform: translate(-50%, -50%);
+        }
+        
+        .graph-node:hover {
+            box-shadow: 0 0 20px var(--accent-glow);
+            z-index: 10;
+        }
+
+        /* ==========================================================================
+           9. UTILS (Modals, Palettes, Toasts)
+           ========================================================================== */
+        
+        /* Command Palette */
+        .command-palette-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .command-palette-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .command-palette {
+            position: fixed;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%) scale(0.96);
+            width: 640px;
+            max-width: 90vw;
+            background: rgba(20, 20, 25, 0.98);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .command-palette.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) scale(1);
+        }
+        
+        .command-palette input {
+            width: 100%;
+            padding: 18px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-size: 18px;
+            outline: none;
+        }
+        
+        .command-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .command-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.15s;
+            font-size: 14px;
+            border-left: 3px solid transparent;
+        }
+        
+        .command-item:hover, .command-item.selected {
+            background: rgba(139, 92, 246, 0.15);
+            border-left-color: var(--accent);
+        }
+
+        /* Toasts */
+        .toast-container {
+            position: fixed;
+            /* Dynamic positions applied via inline styles or specific classes if needed */
+            bottom: 40px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10000;
+            pointer-events: none;
+        }
+        
+        .toast {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-card);
+            padding: 16px 24px;
+            color: var(--text-main);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            pointer-events: auto;
+            min-width: 300px;
+        }
+
+        /* Loaders & Tooltips placeholders for settings demo */
+        .tooltip {
+            position: absolute;
+            background: var(--bg-secondary);
+            color: var(--text-main);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .fade-enter-active, .fade-leave-active {
+            transition: opacity var(--anim-speed), transform var(--anim-speed);
+        }
+        .fade-enter-from, .fade-leave-to {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow top-left"></div>
+<div class="bg-glow bottom-right"></div>
+<div class="bg-glow accent-2"></div>
+
+<div id="app" class="app-container">
+
+    <div class="command-palette-overlay" :class="{ visible: commandPaletteVisible }" @click="closeCommandPalette"></div>
+    <div class="command-palette" :class="{ visible: commandPaletteVisible }">
+        <input type="text" v-model="commandQuery" placeholder="> Введите команду, имя персонажа или главу..." @keydown="onCommandKeydown" ref="commandInput">
+        <div class="command-results">
+            <div v-for="(cmd, idx) in filteredCommands" :key="cmd.id" class="command-item" :class="{ selected: commandIndex === idx }" @click="executeCommand(cmd)" @mouseenter="commandIndex = idx">
+                <span style="font-size: 18px; width: 24px; text-align: center;">{{ cmd.icon }}</span>
+                <span style="flex:1;">{{ cmd.name }}</span>
+                <span v-if="cmd.hotkey" style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">{{ cmd.hotkey }}</span>
+            </div>
+            <div v-if="filteredCommands.length === 0" style="padding: 20px; color: var(--text-muted); text-align: center;">Ничего не найдено</div>
+        </div>
+    </div>
+
+    <div class="app-main">
+        
+        <div class="activity-bar">
+            <div v-for="tab in mainTabs" :key="tab.id" class="activity-icon" :class="{ active: currentMainTab === tab.id && !showSettings }" @click="switchMainTab(tab.id)" :title="tab.name">
+                {{ tab.icon }}
+                <div v-if="tab.id === 'chapters' && unsavedChapters > 0" class="activity-badge"></div>
+                <div v-if="tab.id === 'characters' && unsavedCharacters > 0" class="activity-badge"></div>
+            </div>
+            <div style="flex:1"></div>
+            <div class="activity-icon" :class="{ active: showSettings }" @click="toggleSettings" title="Настройки UI">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+        </div>
+
+        <div class="sidebar" v-show="currentMainTab !== 'welcome' && !showSettings && !settings.layout.focusMode">
+            <div class="sidebar-header">
+                <span>{{ sidebarTitle }}</span>
+                <span style="opacity: 0.5;">{{ filteredEntities.length }}</span>
+            </div>
+            <div class="sidebar-search">
+                <input type="text" v-model="sidebarSearch" placeholder="Фильтр... (Ctrl+F)">
+            </div>
+            <div class="sidebar-list">
+                <div v-for="entity in filteredEntities" :key="entity.id" class="sidebar-item" :class="{ active: activeEditorId === entity.id }" @click="openEntity(entity)">
+                    <span>{{ entity.icon }}</span>
+                    <span style="flex:1; overflow: hidden; text-overflow: ellipsis;">{{ entity.title || entity.name }}</span>
+                    <span v-if="entity.unsaved" style="color: var(--accent); font-size: 8px;">●</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-area">
+            
+            <div class="editor-tabs" v-if="openEditors.length > 0 && !showSettings && !settings.layout.focusMode">
+                <div v-for="editor in openEditors" :key="editor.id" class="editor-tab" :class="{ active: activeEditorId === editor.id, 'tab-unsaved': editor.unsaved }" @click="setActiveEditor(editor.id)">
+                    <span>{{ editor.icon }} {{ editor.title || editor.name }}</span>
+                    <span class="tab-close" @click.stop="closeEditor(editor.id)">×</span>
+                </div>
+            </div>
+
+            <div class="editor-content">
+                
+                <div v-if="currentMainTab === 'welcome' && !showSettings && openEditors.length === 0" style="flex:1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 20px;">
+                    <div style="font-size: 72px; opacity: 0.3;">📚</div>
+                    <h1 style="font-size: 32px; font-weight: 600;">World Wiki Sandbox Engine</h1>
+                    <p style="color: var(--text-muted); max-width: 400px; text-align: center;">Выберите раздел в боковой панели, откройте настройки или нажмите <kbd style="background: var(--bg-input); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">Ctrl+P</kbd> для поиска</p>
+                    <div style="display: flex; gap: 12px; margin-top: 8px;">
+                        <button class="btn interactive-el" @click="switchMainTab('chapters')">📝 База Глав</button>
+                        <button class="btn btn-outline interactive-el" @click="switchMainTab('characters')">👤 База Персонажей</button>
+                    </div>
+                </div>
+
+                <div v-else-if="showSettings" class="settings-layout fade-enter-active">
+                    
+                    <div class="settings-sidebar">
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; font-weight: bold; letter-spacing: 1px;">Категории настроек</div>
+                        <div v-for="cat in settingsCategories" :key="cat.id" class="settings-nav-item" :class="{ active: activeSettingsCategory === cat.id }" @click="activeSettingsCategory = cat.id">
+                            <span>{{ cat.icon }}</span> {{ cat.title }}
+                        </div>
+                    </div>
+
+                    <div class="settings-content-area">
+                        <div class="glass-card-container" :class="{ 'is-pushed': pushStates.settings }">
+                            <div class="glass-card-bg" style="border-color: var(--accent);"></div>
+                            <div class="glass-card-content">
+                                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 24px;">
+                                    <h2 class="card-title" style="border: none; margin: 0; padding: 0;">⚙️ UI Customization Engine</h2>
+                                    <button class="btn btn-outline interactive-el" style="padding: 6px 12px;" @click="resetSettings">Сбросить по умолчанию</button>
+                                </div>
+                                
+                                <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 13px;">Изменения применяются мгновенно ко всем CSS-переменным корневого элемента. Активная категория: <strong>{{ getCategoryTitle(activeSettingsCategory) }}</strong>.</p>
+                                
+                                <div class="settings-grid">
+                                    
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'colors' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">1. Цветовая схема</h3>
+                                        <div class="control-row"><label>Цвет фона (Основной)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.bgBase" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет фона (Вторичный)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.bgSecondary" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет панелей (Резерв)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.bgPanel" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет инпутов</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.bgInput" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет текста (Основной)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.textMain" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет текста (Второстепенный)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.textMuted" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет текста (Заголовки)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.textHeading" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет акцента (Кнопки, Ссылки)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.accent" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет акцента (Hover)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.accentHover" class="interactive-el"></div></div>
+                                        <div class="control-row"><label>Цвет границ (Карточки, Разделители)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.borderColor" class="interactive-el"></div></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'glass' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">2. Прозрачность и стекло (Glassmorphism)</h3>
+                                        <div class="control-row"><label>Прозрачность фона островков</label><span class="val-badge">{{ Math.round(settings.glass.islandAlpha * 100) }}%</span></div>
+                                        <input type="range" min="0" max="1" step="0.05" v-model="settings.glass.islandAlpha">
+                                        <div class="control-row"><label>Прозрачность карточек (Внутренняя)</label><span class="val-badge">{{ Math.round(settings.glass.cardAlpha * 100) }}%</span></div>
+                                        <input type="range" min="0" max="0.5" step="0.01" v-model="settings.glass.cardAlpha">
+                                        <div class="control-row"><label>Интенсивность размытия (Blur)</label><span class="val-badge">{{ settings.glass.blur }}px</span></div>
+                                        <input type="range" min="0" max="100" v-model="settings.glass.blur">
+                                        <div class="control-row"><label>Прозрачность границ</label><span class="val-badge">{{ Math.round(settings.glass.borderAlpha * 100) }}%</span></div>
+                                        <input type="range" min="0" max="1" step="0.05" v-model="settings.glass.borderAlpha">
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'radius' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">3. Скругления (Border Radius)</h3>
+                                        <div class="control-row"><label>Скругление островков (Главные блоки)</label><span class="val-badge">{{ settings.radii.island }}px</span></div>
+                                        <input type="range" min="0" max="60" v-model="settings.radii.island">
+                                        <div class="control-row"><label>Скругление карточек</label><span class="val-badge">{{ settings.radii.card }}px</span></div>
+                                        <input type="range" min="0" max="40" v-model="settings.radii.card">
+                                        <div class="control-row"><label>Скругление кнопок</label><span class="val-badge">{{ settings.radii.btn }}px</span></div>
+                                        <input type="range" min="0" max="40" v-model="settings.radii.btn">
+                                        <div class="control-row"><label>Скругление инпутов и селектов</label><span class="val-badge">{{ settings.radii.input }}px</span></div>
+                                        <input type="range" min="0" max="30" v-model="settings.radii.input">
+                                        <div class="control-row"><label>Скругление выпадающих меню</label><span class="val-badge">{{ settings.radii.dropdown }}px</span></div>
+                                        <input type="range" min="0" max="30" v-model="settings.radii.dropdown">
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'shadows' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">4. Тени и объем</h3>
+                                        <div class="control-row"><label>Смещение теней островков (Y)</label><span class="val-badge">{{ settings.shadows.islandY }}px</span></div>
+                                        <input type="range" min="0" max="50" v-model="settings.shadows.islandY">
+                                        <div class="control-row"><label>Размытие теней островков (Blur)</label><span class="val-badge">{{ settings.shadows.islandBlur }}px</span></div>
+                                        <input type="range" min="0" max="100" v-model="settings.shadows.islandBlur">
+                                        <div class="control-row"><label>Внутренние тени активных (Inset)</label><label class="toggle-switch"><input type="checkbox" v-model="settings.shadows.useInset"><span class="slider"></span></label></div>
+                                        <div class="control-row"><label>Цвет теней (Базовый)</label><div class="color-picker-wrap"><input type="color" v-model="settings.colors.shadowColor" class="interactive-el"></div></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'animations' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">5. Анимации</h3>
+                                        <div class="control-row"><label>Включение анимаций интерфейса</label><label class="toggle-switch"><input type="checkbox" v-model="settings.animations.enabled"><span class="slider"></span></label></div>
+                                        <div class="control-row"><label>Скорость анимаций</label><span class="val-badge">{{ settings.animations.speed }}s</span></div>
+                                        <input type="range" min="0.1" max="1.0" step="0.05" v-model="settings.animations.speed" :disabled="!settings.animations.enabled">
+                                        <div class="control-row"><label>Тип анимации (Easing)</label></div>
+                                        <div class="radio-group">
+                                            <div v-for="ease in ['linear', 'ease', 'ease-in-out', 'cubic-bezier(0.2, 0.8, 0.2, 1)']" :key="ease" class="radio-btn" :class="{ active: settings.animations.ease === ease }" @click="settings.animations.ease = ease" style="font-size: 11px;">{{ ease.split('(')[0] }}</div>
+                                        </div>
+                                        <div class="control-row"><label>Анимация появления (Entrance)</label><span class="val-badge">{{ settings.animations.entrance }}s</span></div>
+                                        <input type="range" min="0.1" max="2.0" step="0.1" v-model="settings.animations.entrance">
+                                        <div class="control-row"><label>Пульсация активных элементов</label><label class="toggle-switch"><input type="checkbox" v-model="settings.animations.pulse"><span class="slider"></span></label></div>
+                                        <div class="control-row"><label>Сила Push (При нажатии)</label><span class="val-badge">{{ settings.animations.scalePush }}x</span></div>
+                                        <input type="range" min="0.8" max="1.0" step="0.01" v-model="settings.animations.scalePush">
+                                        <div class="control-row"><label>Сила Pull (При наведении)</label><span class="val-badge">{{ settings.animations.scalePull }}x</span></div>
+                                        <input type="range" min="1.0" max="1.2" step="0.01" v-model="settings.animations.scalePull">
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'fonts' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">6. Шрифты</h3>
+                                        <div class="control-row"><label>Семейство шрифтов</label></div>
+                                        <div class="radio-group" style="flex-direction: column;">
+                                            <div v-for="font in fontOptions" :key="font.val" class="radio-btn" :class="{ active: settings.fonts.family === font.val }" @click="settings.fonts.family = font.val">{{ font.name }}</div>
+                                        </div>
+                                        <div class="control-row" style="margin-top: 12px;"><label>Базовый размер шрифта</label><span class="val-badge">{{ settings.fonts.size }}px</span></div>
+                                        <input type="range" min="12" max="24" v-model="settings.fonts.size">
+                                        <div class="control-row"><label>Межстрочный интервал</label><span class="val-badge">{{ settings.fonts.lineHeight }}</span></div>
+                                        <input type="range" min="1.0" max="2.0" step="0.1" v-model="settings.fonts.lineHeight">
+                                        <div class="control-row"><label>Межбуквенный интервал (Кернинг)</label><span class="val-badge">{{ settings.fonts.letterSpacing }}px</span></div>
+                                        <input type="range" min="-1" max="3" step="0.1" v-model="settings.fonts.letterSpacing">
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'spacing' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">7. Отступы и плотность</h3>
+                                        <div class="control-row"><label>Режим плотности (Множитель)</label><span class="val-badge">{{ settings.spacing.density }}x</span></div>
+                                        <input type="range" min="0.5" max="2.0" step="0.1" v-model="settings.spacing.density">
+                                        <div class="control-row"><label>Ширина боковой панели (Сайдбар)</label><span class="val-badge">{{ settings.spacing.sidebarWidth }}px</span></div>
+                                        <input type="range" min="200" max="500" step="10" v-model="settings.spacing.sidebarWidth">
+                                        <div class="control-row"><label>Высота нижней панели</label><span class="val-badge">{{ settings.spacing.panelHeight }}px</span></div>
+                                        <input type="range" min="150" max="500" step="10" v-model="settings.spacing.panelHeight">
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'layout' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">8. Компоновка</h3>
+                                        <div class="control-row"><label>Количество колонок в формах</label></div>
+                                        <div class="radio-group">
+                                            <div v-for="n in [1,2,3,4]" :key="n" class="radio-btn" :class="{ active: settings.layout.columns === n }" @click="settings.layout.columns = n">{{ n }}</div>
+                                        </div>
+                                        <div class="control-row"><label>Положение сайдбара</label></div>
+                                        <div class="radio-group">
+                                            <div class="radio-btn" :class="{ active: settings.layout.sidebarPos === 'row' }" @click="settings.layout.sidebarPos = 'row'">Слева</div>
+                                            <div class="radio-btn" :class="{ active: settings.layout.sidebarPos === 'row-reverse' }" @click="settings.layout.sidebarPos = 'row-reverse'">Справа</div>
+                                        </div>
+                                        <div class="control-row"><label>Режим фокуса (Скрыть всё, кроме редактора)</label><label class="toggle-switch"><input type="checkbox" v-model="settings.layout.focusMode"><span class="slider"></span></label></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'inputs' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">9. Инпуты и формы</h3>
+                                        <div class="control-row"><label>Стиль инпутов</label></div>
+                                        <div class="radio-group">
+                                            <div class="radio-btn" :class="{ active: settings.inputs.style === 'outline' }" @click="settings.inputs.style = 'outline'">С обводкой</div>
+                                            <div class="radio-btn" :class="{ active: settings.inputs.style === 'filled' }" @click="settings.inputs.style = 'filled'">С подложкой</div>
+                                        </div>
+                                        <div class="control-row" style="margin-top:12px;"><label>Анимация фокуса</label><label class="toggle-switch"><input type="checkbox" v-model="settings.inputs.focusAnim"><span class="slider"></span></label></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'buttons' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">10. Кнопки</h3>
+                                        <div class="control-row"><label>Эффект при наведении (Масштаб)</label><label class="toggle-switch"><input type="checkbox" v-model="settings.buttons.hoverScale"><span class="slider"></span></label></div>
+                                        <div class="control-row"><label>Эффект при нажатии (Продавливание)</label><label class="toggle-switch"><input type="checkbox" v-model="settings.buttons.clickPress"><span class="slider"></span></label></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'tabs' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">11. Вкладки (Табы)</h3>
+                                        <div class="control-row"><label>Позиция вкладок редактора</label></div>
+                                        <div class="radio-group">
+                                            <div class="radio-btn" :class="{ active: settings.tabs.pos === 'row' }" @click="settings.tabs.pos = 'row'">Сверху</div>
+                                            <div class="radio-btn" :class="{ active: settings.tabs.pos === 'column' }" @click="settings.tabs.pos = 'column'">Слева (Вертикально)</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'dropdowns' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">12. Выпадающие списки</h3>
+                                        <div class="control-row"><label>3D-эффект колеса</label><label class="toggle-switch"><input type="checkbox" v-model="settings.dropdowns.use3DWheel"><span class="slider"></span></label></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'cards' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">14. Карточки и списки</h3>
+                                        <div class="control-row"><label>Компактный режим списка (Сайдбар)</label><label class="toggle-switch"><input type="checkbox" v-model="settings.cards.compactList"><span class="slider"></span></label></div>
+                                        <div class="control-row"><label>Показ иконок</label><label class="toggle-switch"><input type="checkbox" v-model="settings.cards.showIcons"><span class="slider"></span></label></div>
+                                    </div>
+
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'editor' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">17. Редактор текста</h3>
+                                        <div class="control-row"><label>Тема редактора</label></div>
+                                        <div class="radio-group">
+                                            <div class="radio-btn active">Тёмная (Dark)</div>
+                                            <div class="radio-btn" style="opacity:0.5; cursor:not-allowed;">Светлая</div>
+                                        </div>
+                                        <div class="control-row" style="margin-top:12px;"><label>Показ счётчика слов</label><label class="toggle-switch"><input type="checkbox" v-model="settings.editor.showWordCount"><span class="slider"></span></label></div>
+                                    </div>
+                                    
+                                    <div class="settings-group" v-show="activeSettingsCategory === 'notifications' || activeSettingsCategory === 'all'">
+                                        <h3 class="form-label" style="color: var(--accent); margin-bottom: 16px;">21. Уведомления</h3>
+                                        <div class="control-row"><label>Длительность показа (Мс)</label><span class="val-badge">{{ settings.notifications.duration }}ms</span></div>
+                                        <input type="range" min="1000" max="10000" step="500" v-model="settings.notifications.duration">
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <template v-else-if="activeEditor">
+                    
+                    <div v-show="activeEditor.type === 'chapter'" class="chapter-editor fade-enter-active">
+                        <div class="chapter-toolbar">
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn interactive-el" @click="editorAction('bold')" title="Жирный">𝐁</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('italic')" title="Курсив">𝐼</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('strike')" title="Зачеркнутый">S̶</button>
+                            </div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn interactive-el" @click="editorAction('heading')" title="Заголовок">H</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('quote')" title="Цитата">❝</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('code')" title="Код">&lt;/&gt;</button>
+                            </div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn interactive-el" @click="editorAction('link')" title="Ссылка">🔗</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('image')" title="Изображение">🖼️</button>
+                            </div>
+                            <div class="toolbar-group">
+                                <button class="toolbar-btn interactive-el" @click="editorAction('ul')" title="Маркированный список">•</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('ol')" title="Нумерованный список">1.</button>
+                                <button class="toolbar-btn interactive-el" @click="editorAction('table')" title="Таблица">▦</button>
+                            </div>
+                            <div class="toolbar-group" style="margin-left: auto; border:none; gap: 12px;">
+                                <select class="toolbar-select interactive-el" v-model="editorMode" @change="switchEditorMode">
+                                    <option value="markdown">Markdown</option>
+                                    <option value="wysiwyg">WYSIWYG</option>
+                                </select>
+                                <button class="btn interactive-el" @click="saveAll" title="Сохранить (Ctrl+S)">💾 Сохранить</button>
+                            </div>
+                        </div>
+
+                        <div class="chapter-header">
+                            <input type="text" class="chapter-title-input" v-model="activeEditor.title" @input="markEditorUnsaved" placeholder="Название главы...">
+                            <div class="chapter-meta-bar" v-if="settings.editor.showWordCount">
+                                <div class="meta-item">📊 {{ chapterStats.words }} слов | {{ chapterStats.chars }} символов</div>
+                                <div class="meta-item editable interactive-el">📅 {{ activeEditor.data.date || 'Дата не указана' }}</div>
+                                <div class="meta-item editable interactive-el">📍 {{ activeEditor.data.location || 'Локация не указана' }}</div>
+                                <div class="meta-item" style="margin-left: auto; color: var(--accent);">⏱️ ~{{ Math.ceil(chapterStats.words / 200) }} мин чтения</div>
+                            </div>
+                        </div>
+
+                        <div class="split-view">
+                            <div class="split-editor-core">
+                                <div id="chapterEditor"></div>
+                            </div>
+                            
+                            <div class="chapter-tools" v-show="!settings.layout.focusMode">
+                                <div class="tools-section">
+                                    <div class="section-title">📅 Таймлайн Событий</div>
+                                    <div v-for="event in activeEditor.data.timeline" :key="event.id" class="timeline-event interactive-el">
+                                        <div class="event-date">{{ event.date }}</div>
+                                        <div class="event-title">{{ event.title }}</div>
+                                    </div>
+                                    <button class="add-btn interactive-el" @click="addTimelineEvent">+ Добавить событие</button>
+                                </div>
+                                <div class="tools-section">
+                                    <div class="section-title">👥 Участники Сцены</div>
+                                    <div v-for="p in activeEditor.data.participants" :key="p.id" class="participant-chip interactive-el">
+                                        <div class="participant-avatar">{{ p.avatar }}</div>
+                                        <span style="flex:1;">{{ p.name }}</span>
+                                        <span style="color: var(--text-subtle); font-size: 10px;">{{ p.role }}</span>
+                                    </div>
+                                    <button class="add-btn interactive-el" @click="addParticipant">+ Добавить участника</button>
+                                </div>
+                                <div class="tools-section" style="border-top: 1px solid var(--border-color);">
+                                    <div class="section-title">📈 Быстрый Анализ Текста</div>
+                                    <div style="font-size: 12px; color: var(--text-muted); line-height: 1.8;">
+                                        <div style="display: flex; justify-content: space-between;"><span>Диалогов:</span> <strong style="color:var(--text-main)">{{ chapterStats.dialogues }}</strong></div>
+                                        <div style="display: flex; justify-content: space-between;"><span>Описаний:</span> <strong style="color:var(--text-main)">{{ chapterStats.descriptions }}</strong></div>
+                                        <div style="display: flex; justify-content: space-between;"><span>Действий:</span> <strong style="color:var(--text-main)">{{ chapterStats.actions }}</strong></div>
+                                        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); color: var(--accent); font-weight: 600; text-align: center;">Доминирующий тон: {{ chapterStats.tone }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="activeEditor.type === 'character'" style="display: flex; flex-direction: column; height: 100%; width: 100%;">
+                        
+                        <div class="sub-tabs-bar">
+                            <button v-for="sec in entitySections" :key="sec.id" class="sub-tab-btn interactive-el" :class="{ active: currentEntityTab === sec.id }" @click="currentEntityTab = sec.id">
+                                {{ sec.icon }} {{ sec.name }}
+                            </button>
+                            <div style="flex:1"></div>
+                            <button class="btn interactive-el" style="padding: 6px 16px;" @click="saveAll">💾 Сохранить Изменения</button>
+                        </div>
+                        
+                        <div class="advanced-editor-scroll">
+                            
+                            <div v-if="currentEntityTab === 'basic'" class="fade-enter-active">
+                                <div class="glass-card-container" :class="{ 'is-pushed': pushStates.basic }">
+                                    <div class="glass-card-bg"></div>
+                                    <div class="glass-card-content">
+                                        <h2 class="card-title">👤 Основной профиль: {{ activeEditor.data.name }}</h2>
+                                        <div class="grid-dynamic">
+                                            <div class="form-group">
+                                                <label class="form-label">Имя персонажа</label>
+                                                <input type="text" class="input-base interactive-el" v-model="activeEditor.data.name" @input="markEditorUnsaved" @mouseenter="pushStates.basic = true" @mouseleave="pushStates.basic = false">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Текущий Статус</label>
+                                                <vanilla-xbox-wheel v-if="settings.dropdowns.use3DWheel" v-model="activeEditor.data.status" :options="['🟢 Жив', '🔴 Мёртв', '🟡 Пропал', '⚫ В плену', '⚪ Неизвестно']" @update:modelValue="markEditorUnsaved" @hover-start="pushStates.basic = true" @hover-end="pushStates.basic = false"></vanilla-xbox-wheel>
+                                                <select v-else class="input-base" v-model="activeEditor.data.status" @change="markEditorUnsaved"><option v-for="opt in ['🟢 Жив', '🔴 Мёртв', '🟡 Пропал', '⚫ В плену', '⚪ Неизвестно']" :value="opt">{{opt}}</option></select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Сюжетная Роль</label>
+                                                <vanilla-xbox-wheel v-if="settings.dropdowns.use3DWheel" v-model="activeEditor.data.role" :options="['Главный герой', 'Антагонист', 'Союзник', 'Ментор', 'Трикстер', 'Жертва']" @update:modelValue="markEditorUnsaved" @hover-start="pushStates.basic = true" @hover-end="pushStates.basic = false"></vanilla-xbox-wheel>
+                                                <select v-else class="input-base" v-model="activeEditor.data.role" @change="markEditorUnsaved"><option v-for="opt in ['Главный герой', 'Антагонист', 'Союзник', 'Ментор', 'Трикстер', 'Жертва']" :value="opt">{{opt}}</option></select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Период появления в сюжете</label>
+                                                <vanilla-xbox-wheel v-if="settings.dropdowns.use3DWheel" v-model="activeEditor.data.period" :options="['Главы 1-3', 'Главы 4-6', 'Главы 7-9', 'Главы 10-12', 'Весь сюжет']" @update:modelValue="markEditorUnsaved" @hover-start="pushStates.basic = true" @hover-end="pushStates.basic = false"></vanilla-xbox-wheel>
+                                                <select v-else class="input-base" v-model="activeEditor.data.period" @change="markEditorUnsaved"><option v-for="opt in ['Главы 1-3', 'Главы 4-6', 'Главы 7-9', 'Главы 10-12', 'Весь сюжет']" :value="opt">{{opt}}</option></select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top:20px;">
+                                            <label class="form-label">Полная Биография / Внешность</label>
+                                            <textarea class="input-base interactive-el" v-model="activeEditor.data.bio" @input="markEditorUnsaved" @mouseenter="pushStates.basic = true" @mouseleave="pushStates.basic = false" placeholder="Детально опишите историю жизни, особенности внешности, привычки..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="currentEntityTab === 'relationships'" class="fade-enter-active">
+                                <h2 class="card-title" style="margin-bottom: 20px; border: none; padding: 0;">🤝 Сеть Социальных Связей</h2>
+                                <div class="relationship-split-wrapper">
+                                    <div class="split-pane-container" :class="{ 'is-pushed': pushStates.relLeft }">
+                                        <div class="split-pane-bg"></div>
+                                        <div class="split-pane-content">
+                                            <div class="split-header">ОТ ЛИЦА: {{ activeEditor.data.name }}</div>
+                                            <div class="form-group">
+                                                <label class="form-label">Выберите цель связи</label>
+                                                <vanilla-xbox-wheel v-if="settings.dropdowns.use3DWheel" v-model="activeEditor.data.relationshipTarget" :options="availableRelTargets" @update:modelValue="markEditorUnsaved" @hover-start="pushStates.relLeft = true" @hover-end="pushStates.relLeft = false"></vanilla-xbox-wheel>
+                                                <select v-else class="input-base" v-model="activeEditor.data.relationshipTarget" @change="markEditorUnsaved"><option v-for="opt in availableRelTargets" :value="opt">{{opt}}</option></select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Уровень доверия к цели: {{ activeEditor.data.trust || 0 }}%</label>
+                                                <input type="range" class="interactive-el" min="-100" max="100" v-model="activeEditor.data.trust" @input="markEditorUnsaved" @mouseenter="pushStates.relLeft = true" @mouseleave="pushStates.relLeft = false">
+                                                <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-top: 4px;"><span>Абсолютная вражда</span><span>Нейтралитет</span><span>Слепое доверие</span></div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Официальный тип связи</label>
+                                                <vanilla-xbox-wheel v-if="settings.dropdowns.use3DWheel" v-model="activeEditor.data.relType" :options="['Друзья', 'Враги', 'Семья', 'Наставник-ученик', 'Влюблённые', 'Коллеги', 'Предательство', 'Ненависть']" @update:modelValue="markEditorUnsaved" @hover-start="pushStates.relLeft = true" @hover-end="pushStates.relLeft = false"></vanilla-xbox-wheel>
+                                                <select v-else class="input-base" v-model="activeEditor.data.relType" @change="markEditorUnsaved"><option v-for="opt in ['Друзья', 'Враги', 'Семья', 'Наставник-ученик', 'Влюблённые', 'Коллеги', 'Предательство', 'Ненависть']" :value="opt">{{opt}}</option></select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="split-pane-container" :class="{ 'is-pushed': pushStates.relRight }">
+                                        <div class="split-pane-bg" style="background: rgba(139, 92, 246, 0.05);"></div>
+                                        <div class="split-pane-content">
+                                            <div class="split-header">ЗЕРКАЛО: {{ activeEditor.data.relationshipTarget || 'Не выбрано' }}</div>
+                                            <div class="form-group">
+                                                <label class="form-label">Статус обратной связи</label>
+                                                <div class="input-base" style="opacity: 0.6; display: flex; align-items: center; gap: 10px;">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                                    Автоматическая синхронизация графа
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Взаимное доверие (от цели к герою): {{ activeEditor.data.mutualTrust || 0 }}%</label>
+                                                <input type="range" class="interactive-el" min="-100" max="100" v-model="activeEditor.data.mutualTrust" @input="markEditorUnsaved" @mouseenter="pushStates.relRight = true" @mouseleave="pushStates.relRight = false">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Контекст и история отношений</label>
+                                                <textarea class="input-base interactive-el" rows="4" v-model="activeEditor.data.relHistory" @input="markEditorUnsaved" @mouseenter="pushStates.relRight = true" @mouseleave="pushStates.relRight = false" placeholder="Где познакомились? Какие были конфликты? Как развивались отношения в прошлом?"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div v-else-if="currentEntityTab === 'trauma'" class="fade-enter-active">
+                                <div class="glass-card-container" :class="{ 'is-pushed': pushStates.trauma }">
+                                    <div class="glass-card-bg"></div>
+                                    <div class="glass-card-content">
+                                        <h2 class="card-title">🧠 Психологический Портрет и Травмы</h2>
+                                        
+                                        <div class="form-group">
+                                            <label class="form-label">Установленные психические профили и диагнозы</label>
+                                            <div class="tags-area">
+                                                <span v-if="!activeEditor.data.diagnoses || activeEditor.data.diagnoses.length === 0" style="color: var(--text-subtle); font-style: italic; padding: 4px 8px;">Диагнозы отсутствуют...</span>
+                                                <div v-for="(diag, idx) in activeEditor.data.diagnoses || []" :key="idx" class="tag-chip interactive-el" @mouseenter="pushStates.trauma = true" @mouseleave="pushStates.trauma = false">
+                                                    {{ diag }}
+                                                    <button class="tag-remove" @click="removeDiagnosis(idx)" title="Удалить">×</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <label class="form-label" style="margin-top: 24px;">База возможных расстройств (МКБ-11 адаптация)</label>
+                                        <div class="multiselect-grid">
+                                            <label v-for="disorder in disorderList" :key="disorder" class="checkbox-item interactive-el" @mouseenter="pushStates.trauma = true" @mouseleave="pushStates.trauma = false">
+                                                <input type="checkbox" :value="disorder" v-model="activeEditor.data.diagnoses" @change="markEditorUnsaved"> 
+                                                <span>{{ disorder }}</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                                            <label class="form-label">Детальная история формирования травм (Хронология)</label>
+                                            <textarea class="input-base interactive-el" rows="6" v-model="activeEditor.data.traumaHistory" @input="markEditorUnsaved" @mouseenter="pushStates.trauma = true" @mouseleave="pushStates.trauma = false" placeholder="Опишите ключевые травмирующие события, триггеры, механизмы копинга, фобии и паттерны поведения, сформированные в результате травм..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel" :class="{ collapsed: panelCollapsed }" v-show="!settings.layout.focusMode">
+        <div class="panel-header" @click="panelCollapsed = !panelCollapsed">
+            <div v-for="tab in panelTabs" :key="tab.id" class="panel-tab" :class="{ active: activePanelTab === tab.id }" @click.stop="activePanelTab = tab.id; panelCollapsed = false;">
+                {{ tab.icon }} {{ tab.name }}
+            </div>
+            <div class="panel-toggle">{{ panelCollapsed ? '▲ Развернуть панель' : '▼ Свернуть панель' }}</div>
+        </div>
+        <div class="panel-content" v-show="!panelCollapsed">
+            
+            <div v-if="activePanelTab === 'console'">
+                <div v-for="(log, i) in consoleLogs" :key="i" class="console-line" :class="log.type">
+                    <span class="console-time">[{{ log.time }}]</span>
+                    <span style="font-weight: 600;">{{ log.message }}</span>
+                </div>
+            </div>
+
+            <div v-if="activePanelTab === 'stats'">
+                <div class="grid-dynamic" style="--layout-columns: 4;">
+                    <div class="glass-card-container interactive-el" v-for="stat in statsItems" :key="stat.label">
+                        <div class="glass-card-bg"></div>
+                        <div class="glass-card-content" style="padding: 24px; text-align: center;">
+                            <div style="font-size: 36px; font-weight: bold; color: var(--accent); margin-bottom: 8px;">{{ stat.value }}</div>
+                            <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">{{ stat.label }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="activePanelTab === 'graph'" class="graph-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Глобальная нейросеть связей (Все персонажи)</span>
+                    <span style="font-size: 11px; color: var(--accent); background: var(--accent-glow); padding: 4px 10px; border-radius: 12px;">Mouse Wheel to Zoom: {{ Math.round(graphZoom * 100) }}%</span>
+                </div>
+                <div class="graph-canvas" @wheel.prevent="onGraphWheel">
+                    <div v-for="(node, i) in graphNodes" :key="node.id" class="graph-node interactive-el" :style="{ left: node.x + '%', top: node.y + '%', transform: `translate(-50%, -50%) scale(${graphZoom})` }" :title="node.name">
+                        <span style="font-size: 16px; margin-right: 6px;">{{ node.icon }}</span>
+                        <span style="font-weight: 600;">{{ node.name.split(' ')[0] }}</span>
+                    </div>
+                    <svg style="position: absolute; inset: 0; pointer-events: none; width: 100%; height: 100%;">
+                        <line v-for="(edge, i) in graphEdges" :key="i" :x1="edge.x1 + '%'" :y1="edge.y1 + '%'" :x2="edge.x2 + '%'" :y2="edge.y2 + '%'" stroke="var(--accent)" stroke-width="2" opacity="0.6" stroke-dasharray="4" :style="{ transform: `scale(${graphZoom})`, transformOrigin: 'center' }"/>
+                    </svg>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
+
+    // --- Vanilla 3D Xbox Wheel Class ---
+    class VanillaXboxWheel {
+        constructor(triggerEl, wrapperEl, containerEl, arrowEl, textEl, options, defaultValue, onUpdate) {
+            this.trigger = triggerEl; this.wrapper = wrapperEl; this.container = containerEl;
+            this.arrow = arrowEl; this.textEl = textEl; this.options = options;
+            this.currentIndex = Math.max(0, options.indexOf(defaultValue));
+            this.LEN = options.length; this.ITEM_HEIGHT = 44; this.wheelAcc = 0;
+            this.onUpdate = onUpdate; this.isOpen = false;
+            this.init();
+        }
+        init() {
+            this.render(); this.updateWheel();
+            this.trigger.addEventListener('click', (e) => { e.stopPropagation(); this.toggle(); });
+            this.wrapper.addEventListener('wheel', (e) => {
+                e.preventDefault(); this.wheelAcc += e.deltaY;
+                if (Math.abs(this.wheelAcc) > 30) {
+                    if (this.wheelAcc > 0) this.next(); else this.prev();
+                    this.wheelAcc = 0;
+                }
+            });
+            this.wrapper.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); this.next(); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); this.prev(); }
+                else if (e.key === 'Enter' || e.key === 'Escape') this.close();
+            });
+        }
+        render() {
+            this.container.innerHTML = '';
+            this.options.forEach((opt, i) => {
+                const div = document.createElement('div'); div.className = 'wheel-item'; div.textContent = opt;
+                div.addEventListener('click', (e) => { e.stopPropagation(); this.select(i); });
+                this.container.appendChild(div);
+            });
+            this.items = this.container.querySelectorAll('.wheel-item');
+        }
+        updateWheel() {
+            if (!this.items) return;
+            this.items.forEach((item, i) => {
+                let diff = i - this.currentIndex;
+                const half = Math.floor(this.LEN / 2);
+                if (diff > half) diff -= this.LEN;
+                if (diff < -half) diff += this.LEN;
+                let scale = 1, opacity = 1;
+                if (diff === 0) { item.classList.add('active'); scale = 1.15; opacity = 1; }
+                else if (Math.abs(diff) === 1) { item.classList.remove('active'); scale = 0.9; opacity = 0.5; }
+                else if (Math.abs(diff) === 2) { item.classList.remove('active'); scale = 0.75; opacity = 0.2; }
+                else { item.classList.remove('active'); opacity = 0; }
+                item.style.transform = `translateY(${diff * this.ITEM_HEIGHT}px) scale(${scale})`;
+                item.style.opacity = opacity; item.style.zIndex = 10 - Math.abs(diff);
+            });
+            const val = this.options[this.currentIndex];
+            this.textEl.textContent = val;
+            if (this.onUpdate) this.onUpdate(val);
+        }
+        next() { this.currentIndex = (this.currentIndex + 1) % this.LEN; this.updateWheel(); }
+        prev() { this.currentIndex = (this.currentIndex - 1 + this.LEN) % this.LEN; this.updateWheel(); }
+        select(index) { this.currentIndex = index; this.updateWheel(); setTimeout(() => this.close(), 150); }
+        toggle() { if (this.isOpen) this.close(); else this.open(); }
+        open() {
+            document.querySelectorAll('.wheel-wrapper.expanded').forEach(w => { w.classList.remove('expanded'); w.previousElementSibling?.classList.remove('active'); });
+            this.wrapper.classList.add('expanded'); this.trigger.classList.add('active'); this.arrow.classList.add('rotated');
+            this.isOpen = true; this.wrapper.focus();
+        }
+        close() { this.wrapper.classList.remove('expanded'); this.trigger.classList.remove('active'); this.arrow.classList.remove('rotated'); this.isOpen = false; }
+    }
+
+    // --- Vue Wrapper for Xbox Wheel ---
+    const XboxWheelComponent = {
+        name: 'VanillaXboxWheel',
+        template: `
+            <div class="dropdown-container">
+                <div class="status-trigger interactive-el" ref="trigger">
+                    <span ref="text" style="font-weight: 500;">{{ modelValue }}</span>
+                    <span class="arrow-icon" ref="arrow">▼</span>
+                </div>
+                <div class="wheel-wrapper" ref="wrapper" tabindex="0">
+                    <div class="wheel-container" ref="container"></div>
+                </div>
+            </div>
+        `,
+        props: ['modelValue', 'options'], emits: ['update:modelValue', 'hover-start', 'hover-end'],
+        data() { return { wheel: null } },
+        mounted() {
+            this.wheel = new VanillaXboxWheel(this.$refs.trigger, this.$refs.wrapper, this.$refs.container, this.$refs.arrow, this.$refs.text, this.options, this.modelValue, (val) => this.$emit('update:modelValue', val));
+            this.$refs.trigger.addEventListener('mouseenter', () => this.$emit('hover-start'));
+            this.$refs.trigger.addEventListener('mouseleave', () => this.$emit('hover-end'));
+        }
+    };
+
+    // --- Main App Setup ---
+    createApp({
+        components: { 'vanilla-xbox-wheel': XboxWheelComponent },
+        setup() {
+            // -- App State --
+            const currentMainTab = ref('welcome');
+            const showSettings = ref(false);
+            const activeSettingsCategory = ref('colors'); // Default settings tab
+            const sidebarSearch = ref('');
+            const panelCollapsed = ref(false);
+            const activePanelTab = ref('console');
+            const graphZoom = ref(1);
+            
+            // -- Command Palette State --
+            const commandPaletteVisible = ref(false);
+            const commandQuery = ref('');
+            const commandIndex = ref(0);
+
+            // -- Editor State --
+            const openEditors = ref([]);
+            const activeEditorId = ref(null);
+            const currentEntityTab = ref('basic');
+            const editorMode = ref('markdown');
+            let toastEditorInstance = null;
+            
+            // -- Anti-Jitter Interactive State --
+            const pushStates = ref({ basic: false, relLeft: false, relRight: false, trauma: false, settings: false });
+
+            // -- MASSIVE MOCK DATA --
+            const chapters = ref([
+                { 
+                    id: 'chap_1', type: 'chapter', icon: '📄', title: 'Глава 1: Пробуждение в Пустошах', unsaved: false,
+                    data: {
+                        content: '# Пробуждение\n\nАларак с трудом открыл глаза. Пустоши раскинулись перед ним, бескрайние, жестокие и выжженные тысячелетним магическим пламенем.\n\n— Ты жив? — голос принадлежал незнакомке. Элиана стояла над ним, её огромные орлиные крылья отбрасывали спасительную тень на его обожженное лицо.\n\nОн попытался встать, но острая боль в боку свела его снова на горячую землю. "Империя пала," — пронеслось в его замутненном сознании.\n\n— Не двигайся, — строго сказала она, опускаясь на колени и доставая из поясной сумки фиал с мерцающей зеленой жидкостью. — Яды Пустошей действуют быстро. Пей.',
+                        date: '15-й день Лунного Прилива, 847 год Н.Э.', location: 'Северные Пустоши Эрана',
+                        timeline: [
+                            { id: 't1', date: 'Рассвет (06:00)', title: 'Аларак приходит в сознание после падения' },
+                            { id: 't2', date: 'Полдень (12:30)', title: 'Встреча с Элианой Ветрокрылой' },
+                            { id: 't3', date: 'Вечер (18:00)', title: 'Первый привал и лечение ран' }
+                        ],
+                        participants: [
+                            { id: 'p1', name: 'Аларак Громобой', avatar: '⚔️', role: 'Протагонист' },
+                            { id: 'p2', name: 'Элиана Ветрокрылая', avatar: '🧝‍♀️', role: 'Спаситель / Союзник' }
+                        ]
+                    }
+                },
+                { 
+                    id: 'chap_2', type: 'chapter', icon: '📄', title: 'Глава 2: Тень Магнуса', unsaved: false,
+                    data: {
+                        content: '# Тень Магнуса\n\nЦитадель Тьмы возвышалась над пепельными облаками. Магнус Черный стоял у обсидианового окна, наблюдая за мертвыми землями.\n\n— Мой повелитель, — прошипел слуга, кланяясь так низко, что его лоб коснулся холодного пола. — Последний из рода Громобоев выжил.\n\nМагнус медленно повернулся. Его глаза светились неестественным багровым светом. \n\n— Выжил? — его голос был тихим, но стены тронного зала задрожали от скрытой в нем силы. — Найдите его. И принесите мне его голову.',
+                        date: '16-й день Лунного Прилива, 847 год Н.Э.', location: 'Цитадель Тьмы',
+                        timeline: [
+                            { id: 't4', date: 'Полночь', title: 'Доклад шпионов Магнусу' },
+                            { id: 't5', date: 'Глубокая ночь', title: 'Отправка отрядов Охотников за головами' }
+                        ],
+                        participants: [
+                            { id: 'p3', name: 'Магнус Чёрный', avatar: '👹', role: 'Главный Антагонист' },
+                            { id: 'p4', name: 'Слуга-шпион', avatar: '🐀', role: 'Второстепенный' }
+                        ]
+                    }
+                }
+            ]);
+            
+            const characters = ref([
+                { 
+                    id: 'char_1', type: 'character', icon: '⚔️', name: 'Аларак Громобой', unsaved: false,
+                    data: {
+                        name: 'Аларак Громобой', status: '🟢 Жив', role: 'Главный герой', period: 'Весь сюжет', 
+                        bio: 'Последний наследник павшей Империи Эран. Родился в роскоши, но потерял все в возрасте 15 лет во время Великого Катаклизма. Его тело покрыто шрамами от магического огня. Обладает врожденным сопротивлением к темной магии, но скрывает это.',
+                        relationshipTarget: 'Элиана Ветрокрылая', trust: 85, relType: 'Союзник', mutualTrust: 80, 
+                        relHistory: 'Встретились во время осады Крепости, когда она спасла его от отравления ядом Пустошей. Изначально Аларак не доверял представителям крылатой расы, но Элиана доказала свою преданность в бою.',
+                        diagnoses: ['Комплексное ПТСР (C-PTSD)', 'Паническое расстройство', 'Агорафобия'], 
+                        traumaHistory: '- Возраст 15: Стал свидетелем убийства родителей Магнусом.\n- Возраст 18: Провел три месяца в плену у работорговцев Пустошей.\n- Текущее время: Страдает от ночных кошмаров и панических атак при виде обсидиана (символа Магнуса).'
+                    }
+                },
+                { 
+                    id: 'char_2', type: 'character', icon: '🧝‍♀️', name: 'Элиана Ветрокрылая', unsaved: false,
+                    data: {
+                        name: 'Элиана Ветрокрылая', status: '🟢 Жив', role: 'Союзник', period: 'Главы 1-12', 
+                        bio: 'Последняя из древнего рода Ветрокрылых. Ее народ был истреблен во время очищения Небесных Островов. Хладнокровная, расчетливая, но скрывает глубокое сострадание. Великолепно владеет луком и воздушной магией.',
+                        relationshipTarget: 'Аларак Громобой', trust: 80, relType: 'Друзья', mutualTrust: 85, 
+                        relHistory: 'Нашла Аларака умирающим в Пустошах. Видит в нем потенциал для восстановления баланса сил в мире. Постепенно их прагматичный союз перерастает в глубокую дружбу.',
+                        diagnoses: ['Социальная фобия', 'Мажорная депрессия'], 
+                        traumaHistory: '- Уничтожение Небесных Островов: видела, как ее народ падает с небес.\n- Вынуждена скрывать свои крылья под тяжелым плащом, чтобы избежать преследований.'
+                    }
+                },
+                { 
+                    id: 'char_3', type: 'character', icon: '👹', name: 'Магнус Чёрный', unsaved: false,
+                    data: {
+                        name: 'Магнус Чёрный', status: '🟢 Жив', role: 'Антагонист', period: 'Весь сюжет', 
+                        bio: 'Бывший архимаг Империи, который предал своего короля ради силы Бездны. Теперь правит Цитаделью Тьмы. Его тело наполовину состоит из кристаллизованной темной энергии.',
+                        relationshipTarget: 'Аларак Громобой', trust: -100, relType: 'Враги', mutualTrust: -100, 
+                        relHistory: 'Магнус был наставником отца Аларака. Он убил его собственными руками. Теперь он охотится за Алараком, чтобы завершить ритуал полного уничтожения кровной линии.',
+                        diagnoses: ['Нарциссическое расстройство', 'Антисоциальное расстройство', 'Шизоидное расстройство'], 
+                        traumaHistory: '- В молодости был изгнан из Академии Света за несанкционированные эксперименты.\n- Механизм копинга: полное подавление эмпатии и жажда абсолютного контроля.'
+                    }
+                },
+                { 
+                    id: 'char_4', type: 'character', icon: '🧙‍♂️', name: 'Старец Веларий', unsaved: false,
+                    data: {
+                        name: 'Старец Веларий', status: '🟡 Пропал', role: 'Ментор', period: 'Главы 4-6', 
+                        bio: 'Хранитель забытых знаний. Обитает в Подземной Библиотеке. Эксцентричный, говорит загадками, страдает от провалов в памяти из-за длительного контакта с запретными свитками.',
+                        relationshipTarget: 'Магнус Чёрный', trust: -50, relType: 'Наставник-ученик', mutualTrust: 0, 
+                        relHistory: 'Веларий был первым учителем Магнуса. Он винит себя в том, что не распознал тьму в сердце ученика.',
+                        diagnoses: ['Диссоциативная амнезия', 'Обсессивно-компульсивное (ОКР)'], 
+                        traumaHistory: '- Потерял рассудок при расшифровке Древнего Пророчества.\n- Компульсивно переписывает одни и те же защитные руны каждый день.'
+                    }
+                }
+            ]);
+
+            // -- SETTINGS ENGINE STATE (24 CATEGORIES FULL FIDELITY) --
+            const settings = ref({
+                colors: { 
+                    bgBase: '#09090b', bgSecondary: '#121214', bgPanel: 'rgba(15, 15, 18, 0.7)', bgInput: 'rgba(22, 22, 26, 0.6)',
+                    textMain: '#ffffff', textMuted: 'rgba(255, 255, 255, 0.65)', textHeading: '#ffffff',
+                    accent: '#8b5cf6', accentHover: '#7c3aed', borderColor: 'rgba(255, 255, 255, 0.1)', shadowColor: 'rgba(0,0,0,0.5)'
+                },
+                glass: { islandAlpha: 0.45, cardAlpha: 0.03, blur: 24, borderAlpha: 0.1 },
+                radii: { island: 28, card: 20, btn: 40, input: 16, dropdown: 16 },
+                shadows: { islandY: 20, islandBlur: 35, useInset: true },
+                animations: { enabled: true, speed: 0.3, ease: 'cubic-bezier(0.2, 0.8, 0.2, 1)', entrance: 0.4, pulse: true, scalePush: 0.98, scalePull: 1.05 },
+                fonts: { family: `'Inter', system-ui, sans-serif`, size: 14, lineHeight: 1.5, letterSpacing: 0 },
+                spacing: { density: 1.0, sidebarWidth: 280, panelHeight: 250 },
+                layout: { columns: 2, sidebarPos: 'row', focusMode: false },
+                inputs: { style: 'filled', focusAnim: true },
+                buttons: { hoverScale: true, clickPress: true },
+                tabs: { pos: 'row' },
+                dropdowns: { use3DWheel: true },
+                cards: { compactList: false, showIcons: true },
+                editor: { showWordCount: true },
+                notifications: { duration: 3000 }
+            });
+            const defaultSettings = JSON.parse(JSON.stringify(settings.value));
+            
+            const consoleLogs = ref([]);
+
+            // -- COMPUTED PROPERTIES --
+            const activeEditor = computed(() => openEditors.value.find(e => e.id === activeEditorId.value));
+            
+            const sidebarTitle = computed(() => {
+                const map = { chapters: 'База Глав', characters: 'База Персонажей' };
+                return map[currentMainTab.value] || 'Сущности';
+            });
+            
+            const filteredEntities = computed(() => {
+                const list = currentMainTab.value === 'chapters' ? chapters.value : currentMainTab.value === 'characters' ? characters.value : [];
+                if (!sidebarSearch.value) return list;
+                const q = sidebarSearch.value.toLowerCase();
+                return list.filter(e => (e.title || e.name).toLowerCase().includes(q));
+            });
+
+            const unsavedChapters = computed(() => chapters.value.filter(c => c.unsaved).length);
+            const unsavedCharacters = computed(() => characters.value.filter(c => c.unsaved).length);
+            const totalWords = computed(() => chapters.value.reduce((sum, ch) => sum + (ch.data.content?.split(/\s+/).length || 0), 0));
+
+            const chapterStats = computed(() => {
+                if (!activeEditor.value || activeEditor.value.type !== 'chapter') return { words: 0, chars: 0, dialogues: 0, descriptions: 0, actions: 0, tone: 'Нейтральный' };
+                const text = activeEditor.value.data.content || '';
+                const words = text.split(/\s+/).filter(w => w.length > 0).length;
+                const dialogues = (text.match(/[—–-].*?["']/g) || []).length;
+                const descriptions = (text.match(/\b(был|была|стоял|лежал|казался|выглядел|раскинулись|возвышалась)\b/gi) || []).length;
+                const actions = (text.match(/\b(встал|пошёл|взял|ударил|бросил|открыл|повернулся|прошипел)\b/gi) || []).length;
+                return { 
+                    words, chars: text.length, dialogues, descriptions, actions, 
+                    tone: words > 10 ? (dialogues > descriptions ? 'Диалоговый' : (actions > descriptions ? 'Динамичный Экшен' : 'Описательный')) : 'Нейтральный' 
+                };
+            });
+
+            const availableRelTargets = computed(() => characters.value.filter(c => c.id !== activeEditor.value?.id).map(c => c.name));
+            
+            const statsItems = computed(() => [
+                { label: 'Всего Написано Слов', value: totalWords.value },
+                { label: 'Сущностей в Базе', value: chapters.value.length + characters.value.length },
+                { label: 'Открыто Вкладок', value: openEditors.value.length },
+                { label: 'Несохраненных', value: unsavedChapters.value + unsavedCharacters.value }
+            ]);
+
+            // Graph visualization logic
+            const graphNodes = computed(() => characters.value.map((c, i) => {
+                // simple grid layout
+                const cols = 3;
+                return { id: c.id, name: c.name, icon: c.icon, x: 20 + (i % cols) * 30, y: 20 + Math.floor(i / cols) * 30 };
+            }));
+            const graphEdges = computed(() => {
+                const edges = [];
+                characters.value.forEach((c, i) => {
+                    if (c.data.relationshipTarget) {
+                        const targetIdx = characters.value.findIndex(t => t.name === c.data.relationshipTarget);
+                        if (targetIdx !== -1) {
+                            const cols = 3;
+                            edges.push({ 
+                                x1: 20 + (i % cols) * 30, y1: 20 + Math.floor(i / cols) * 30, 
+                                x2: 20 + (targetIdx % cols) * 30, y2: 20 + Math.floor(targetIdx / cols) * 30 
+                            });
+                        }
+                    }
+                });
+                return edges;
+            });
+
+            const commands = computed(() => [
+                { id: 'save', name: '💾 Сохранить весь прогресс', icon: '💾', hotkey: 'Ctrl+S', action: saveAll },
+                { id: 'settings', name: '⚙️ Открыть Customization Engine', icon: '⚙️', hotkey: 'Ctrl+,', action: toggleSettings },
+                { id: 'focus', name: '🎯 Переключить режим фокуса', icon: '🎯', action: () => { settings.value.layout.focusMode = !settings.value.layout.focusMode; showToast('Режим фокуса', settings.value.layout.focusMode ? 'Включен' : 'Выключен', '🎯'); } },
+                ...chapters.value.map(c => ({ id: `open_chap_${c.id}`, name: `📄 Открыть главу: ${c.title}`, icon: '📄', action: () => { switchMainTab('chapters'); openEntity(c); }})),
+                ...characters.value.map(c => ({ id: `open_char_${c.id}`, name: `👤 Профиль: ${c.name}`, icon: '👤', action: () => { switchMainTab('characters'); openEntity(c); }}))
+            ]);
+            
+            const filteredCommands = computed(() => {
+                const q = commandQuery.value.toLowerCase();
+                return commands.value.filter(c => c.name.toLowerCase().includes(q));
+            });
+
+            // -- METHODS --
+            
+            const addLog = (msg, type = 'info') => {
+                const ms = new Date().getMilliseconds().toString().padStart(3, '0');
+                consoleLogs.value.unshift({ time: `${new Date().toLocaleTimeString()}.${ms}`, message: msg, type });
+                if (consoleLogs.value.length > 50) consoleLogs.value.pop();
+            };
+
+            const showToast = (title, msg, icon) => {
+                const container = document.getElementById('toastContainer');
+                if(!container) return;
+                const toast = document.createElement('div'); toast.className = 'toast';
+                toast.innerHTML = `<span style="font-size:28px;">${icon}</span><div style="display:flex; flex-direction:column; gap:4px;"><div style="font-weight:700; font-size:14px;">${title}</div><div style="font-size:12px;opacity:0.8; line-height:1.4;">${msg}</div></div>`;
+                container.appendChild(toast);
+                gsap.fromTo(toast, { x: 100, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "back.out(1.5)" });
+                setTimeout(() => gsap.to(toast, { x: 100, opacity: 0, duration: 0.4, onComplete: () => toast.remove() }), settings.value.notifications.duration);
+            };
+
+            const switchMainTab = (tab) => { 
+                currentMainTab.value = tab; 
+                showSettings.value = false; 
+                addLog(`Navigation -> Changed context to ${tab.toUpperCase()}`, 'info');
+            };
+            
+            const toggleSettings = () => { 
+                showSettings.value = !showSettings.value; 
+                if(showSettings.value) addLog('System -> UI Customization Engine opened', 'warn');
+            };
+
+            const openEntity = (entity) => {
+                let editor = openEditors.value.find(e => e.id === entity.id);
+                if (!editor) {
+                    editor = { ...entity, unsaved: false, data: JSON.parse(JSON.stringify(entity.data)) };
+                    openEditors.value.push(editor);
+                    addLog(`Editor -> Opened ${entity.type} [${entity.id}]`, 'info');
+                }
+                setActiveEditor(editor.id);
+            };
+
+            const setActiveEditor = (id) => {
+                activeEditorId.value = id;
+                showSettings.value = false;
+                nextTick(() => {
+                    if (activeEditor.value?.type === 'chapter') mountToastUI();
+                });
+            };
+
+            const closeEditor = (id) => {
+                const idx = openEditors.value.findIndex(e => e.id === id);
+                if (idx > -1) {
+                    if (openEditors.value[idx].unsaved) {
+                        if(!confirm('Есть несохраненные изменения. Точно закрыть?')) return;
+                    }
+                    openEditors.value.splice(idx, 1);
+                    addLog(`Editor -> Closed entity [${id}]`, 'warn');
+                    if (activeEditorId.value === id) activeEditorId.value = openEditors.value.length ? openEditors.value[0].id : null;
+                    if (activeEditorId.value && activeEditor.value?.type === 'chapter') nextTick(mountToastUI);
+                }
+            };
+
+            const markEditorUnsaved = () => {
+                if (activeEditor.value) {
+                    activeEditor.value.unsaved = true;
+                    const sourceList = activeEditor.value.type === 'chapter' ? chapters.value : characters.value;
+                    const source = sourceList.find(c => c.id === activeEditor.value.id);
+                    if (source) source.unsaved = true;
+                }
+            };
+
+            const saveAll = () => {
+                let savedCount = 0;
+                openEditors.value.forEach(editor => {
+                    if (!editor.unsaved) return;
+                    const sourceList = editor.type === 'chapter' ? chapters.value : characters.value;
+                    const source = sourceList.find(s => s.id === editor.id);
+                    if (source) {
+                        source.data = JSON.parse(JSON.stringify(editor.data));
+                        if(editor.type === 'chapter') source.title = editor.title;
+                        if(editor.type === 'character') source.name = editor.data.name;
+                        source.unsaved = false;
+                        savedCount++;
+                    }
+                    editor.unsaved = false;
+                });
+                
+                if(savedCount > 0) {
+                    addLog(`System -> Successfully saved ${savedCount} entities to Memory`, 'success');
+                    showToast('Синхронизация успешна', `Сохранено изменений: ${savedCount}`, '💾');
+                } else {
+                    showToast('Нет изменений', 'Все данные уже актуальны', '✅');
+                }
+            };
+
+            // Toast UI integration
+            const mountToastUI = () => {
+                const el = document.getElementById('chapterEditor');
+                if (!el || !activeEditor.value || activeEditor.value.type !== 'chapter') return;
+                
+                if (toastEditorInstance) toastEditorInstance.destroy();
+                
+                toastEditorInstance = new toastui.Editor({
+                    el: el, height: '100%', initialEditType: editorMode.value, previewStyle: 'vertical',
+                    initialValue: activeEditor.value.data.content || '', theme: 'dark', toolbarItems: [],
+                    events: {
+                        change: () => {
+                            if (activeEditor.value && activeEditor.value.type === 'chapter') {
+                                activeEditor.value.data.content = toastEditorInstance.getMarkdown();
+                                markEditorUnsaved();
+                            }
+                        }
+                    }
+                });
+                addLog('ToastUI -> Re-mounted instance', 'info');
+            };
+
+            const editorAction = (act) => {
+                if (!toastEditorInstance) return;
+                const map = {
+                    bold: () => toastEditorInstance.exec('bold'), italic: () => toastEditorInstance.exec('italic'),
+                    strike: () => toastEditorInstance.exec('strike'), heading: () => toastEditorInstance.exec('heading', { level: 2 }),
+                    quote: () => toastEditorInstance.exec('blockQuote'), code: () => toastEditorInstance.exec('code'),
+                    ul: () => toastEditorInstance.exec('bulletList'), ol: () => toastEditorInstance.exec('orderedList'),
+                    table: () => toastEditorInstance.exec('table', { rowCount: 3, colCount: 3 }),
+                    link: () => { const u=prompt('URL:','https://'); const t=prompt('Текст:',''); if(u&&t) toastEditorInstance.exec('addLink',{linkText:t,url:u}); },
+                    image: () => { const u=prompt('URL Изображения:',''); if(u) toastEditorInstance.exec('addImage',{imageUrl:u,altText:'img'}); }
+                };
+                map[act]?.();
+                addLog(`ToastUI -> Executed action [${act}]`, 'info');
+            };
+            const switchEditorMode = () => { if (toastEditorInstance) toastEditorInstance.changeMode(editorMode.value); };
+
+            // Editor tools actions
+            const addTimelineEvent = () => { const t = prompt('Название нового события:'); if (t) { activeEditor.value.data.timeline.push({id:`t${Date.now()}`, date:'Уточняется', title:t}); markEditorUnsaved(); }};
+            const addParticipant = () => { const n = prompt('Имя персонажа:'); if (n) { activeEditor.value.data.participants.push({id:`p${Date.now()}`, name:n, avatar:'👤', role:'Участник'}); markEditorUnsaved(); }};
+            const removeDiagnosis = (idx) => { activeEditor.value.data.diagnoses.splice(idx, 1); markEditorUnsaved(); };
+
+            // Command Palette Logic
+            const toggleCommandPalette = () => { 
+                commandPaletteVisible.value = !commandPaletteVisible.value; 
+                commandQuery.value = ''; 
+                commandIndex.value = 0; 
+                if (commandPaletteVisible.value) nextTick(() => document.querySelector('.command-palette input')?.focus()); 
+            };
+            const closeCommandPalette = () => { commandPaletteVisible.value = false; };
+            const onCommandKeydown = (e) => {
+                if (e.key === 'ArrowDown') { e.preventDefault(); commandIndex.value = (commandIndex.value + 1) % filteredCommands.value.length; }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); commandIndex.value = commandIndex.value <= 0 ? filteredCommands.value.length - 1 : commandIndex.value - 1; }
+                else if (e.key === 'Enter') { const c = filteredCommands.value[commandIndex.value]; if (c) { c.action(); closeCommandPalette(); e.preventDefault(); } }
+                else if (e.key === 'Escape') closeCommandPalette();
+            };
+            const executeCommand = (cmd) => { cmd.action(); closeCommandPalette(); };
+
+            // -- SETTINGS ENGINE WATCHER (The core of the customization) --
+            watch(settings, (n) => {
+                const r = document.documentElement.style;
+                // 1. Colors
+                r.setProperty('--bg-base', n.colors.bgBase);
+                r.setProperty('--bg-secondary', n.colors.bgSecondary);
+                r.setProperty('--bg-panel', n.colors.bgPanel);
+                r.setProperty('--bg-input', n.colors.bgInput);
+                r.setProperty('--text-main', n.colors.textMain);
+                r.setProperty('--text-muted', n.colors.textMuted);
+                r.setProperty('--text-heading', n.colors.textHeading);
+                r.setProperty('--accent', n.colors.accent);
+                r.setProperty('--accent-hover', n.colors.accentHover);
+                r.setProperty('--accent-glow', n.colors.accent + '4D'); // 30% opacity hex
+                r.setProperty('--border-color', n.colors.borderColor);
+                r.setProperty('--shadow-color', n.colors.shadowColor);
+                // 2. Glass
+                r.setProperty('--glass-island-alpha', n.glass.islandAlpha);
+                r.setProperty('--glass-card-alpha', n.glass.cardAlpha);
+                r.setProperty('--glass-blur', n.glass.blur + 'px');
+                r.setProperty('--glass-border-alpha', n.glass.borderAlpha);
+                // 3. Radii
+                r.setProperty('--radius-island', n.radii.island + 'px');
+                r.setProperty('--radius-card', n.radii.card + 'px');
+                r.setProperty('--radius-btn', n.radii.btn + 'px');
+                r.setProperty('--radius-input', n.radii.input + 'px');
+                r.setProperty('--radius-dropdown', n.radii.dropdown + 'px');
+                // 4. Shadows
+                r.setProperty('--shadow-island-y', n.shadows.islandY + 'px');
+                r.setProperty('--shadow-island-blur', n.shadows.islandBlur + 'px');
+                r.setProperty('--shadow-inset', n.shadows.useInset ? 'inset 0 2px 4px rgba(0,0,0,0.4)' : 'none');
+                // 5. Animations
+                if(!n.animations.enabled) {
+                    r.setProperty('--anim-speed', '0s');
+                    r.setProperty('--anim-entrance', '0s');
+                } else {
+                    r.setProperty('--anim-speed', n.animations.speed + 's');
+                    r.setProperty('--anim-entrance', n.animations.entrance + 's');
+                }
+                r.setProperty('--anim-ease', n.animations.ease);
+                r.setProperty('--scale-push', n.animations.scalePush);
+                r.setProperty('--scale-pull', n.animations.scalePull);
+                // 6. Fonts
+                r.setProperty('--font-family', n.fonts.family);
+                r.setProperty('--font-size-base', n.fonts.size + 'px');
+                r.setProperty('--line-height-base', n.fonts.lineHeight);
+                r.setProperty('--letter-spacing-base', n.fonts.letterSpacing + 'px');
+                // 7. Spacing & Layout
+                r.setProperty('--density-mult', n.spacing.density);
+                r.setProperty('--sidebar-width', n.spacing.sidebarWidth + 'px');
+                r.setProperty('--panel-height', n.spacing.panelHeight + 'px');
+                r.setProperty('--layout-columns', n.layout.columns);
+                r.setProperty('--sidebar-pos', n.layout.sidebarPos);
+                r.setProperty('--tab-pos', n.tabs.pos);
+
+            }, { deep: true });
+            
+            const resetSettings = () => { 
+                settings.value = JSON.parse(JSON.stringify(defaultSettings)); 
+                addLog('Settings -> Reset to default values', 'warn');
+                showToast('Сброс завершен', 'Восстановлены стандартные настройки движка', '🔄'); 
+            };
+            
+            const getCategoryTitle = (id) => {
+                const cat = settingsCategories.find(c => c.id === id);
+                return cat ? cat.title : 'Все настройки';
+            };
+
+            const onGraphWheel = (e) => { 
+                if (e.ctrlKey) {
+                    graphZoom.value = Math.max(0.5, Math.min(2, graphZoom.value + (e.deltaY > 0 ? -0.1 : 0.1))); 
+                }
+            };
+
+            // Init Mount
+            onMounted(() => {
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 'p') { e.preventDefault(); toggleCommandPalette(); }
+                    if (e.ctrlKey && e.key === 's') { e.preventDefault(); saveAll(); }
+                    if (e.ctrlKey && e.key === ',') { e.preventDefault(); toggleSettings(); }
+                    if (e.ctrlKey && e.key === 'f') { e.preventDefault(); document.querySelector('.sidebar-search input')?.focus(); }
+                });
+                
+                // Close wheel wrappers when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.dropdown-container')) {
+                        document.querySelectorAll('.wheel-wrapper.expanded').forEach(w => { 
+                            w.classList.remove('expanded'); 
+                            w.previousElementSibling?.classList.remove('active'); 
+                        });
+                    }
+                });
+                
+                addLog('System -> UI Framework Initialized (Glass Engine v3)', 'success');
+                addLog('System -> Loaded 2 Chapters, 4 Characters', 'info');
+            });
+
+            return {
+                currentMainTab, showSettings, activeSettingsCategory, sidebarSearch, panelCollapsed, activePanelTab, graphZoom,
+                commandPaletteVisible, commandQuery, commandIndex, openEditors, activeEditorId, activeEditor, currentEntityTab,
+                pushStates, editorMode, settings, chapters, characters, consoleLogs, sidebarTitle, filteredEntities,
+                unsavedChapters, unsavedCharacters, chapterStats, availableRelTargets, statsItems, graphNodes, graphEdges,
+                commands, filteredCommands, switchMainTab, toggleSettings, openEntity, setActiveEditor, closeEditor, markEditorUnsaved, saveAll,
+                editorAction, switchEditorMode, addTimelineEvent, addParticipant, removeDiagnosis, toggleCommandPalette, closeCommandPalette,
+                onCommandKeydown, executeCommand, resetSettings, getCategoryTitle, onGraphWheel,
+                
+                // Navigation Configs
+                mainTabs: [
+                    { id: 'welcome', name: 'Главная', icon: '🏠' },
+                    { id: 'chapters', name: 'База Глав', icon: '📝' },
+                    { id: 'characters', name: 'Персонажи', icon: '👤' }
+                ],
+                panelTabs: [
+                    { id: 'console', name: 'Терминал Системы', icon: '💻' },
+                    { id: 'stats', name: 'Аналитика', icon: '📊' },
+                    { id: 'graph', name: 'Нейросеть Связей', icon: '🕸️' }
+                ],
+                entitySections: [
+                    { id: 'basic', name: 'Основной Профиль', icon: '👤' },
+                    { id: 'relationships', name: 'Сеть Отношений', icon: '🤝' },
+                    { id: 'trauma', name: 'Психология и Травмы', icon: '🧠' }
+                ],
+                settingsCategories: [
+                    { id: 'colors', title: '1. Цветовая схема', icon: '🎨' },
+                    { id: 'glass', title: '2. Прозрачность и стекло', icon: '🪟' },
+                    { id: 'radius', title: '3. Скругления', icon: '📐' },
+                    { id: 'shadows', title: '4. Тени и объем', icon: '🌒' },
+                    { id: 'animations', title: '5. Анимации', icon: '⚡' },
+                    { id: 'fonts', title: '6. Шрифты', icon: '📝' },
+                    { id: 'spacing', title: '7. Отступы и плотность', icon: '📏' },
+                    { id: 'layout', title: '8. Компоновка', icon: '🗂️' },
+                    { id: 'inputs', title: '9. Инпуты и формы', icon: '⌨️' },
+                    { id: 'buttons', title: '10. Кнопки', icon: '🔘' },
+                    { id: 'tabs', title: '11. Вкладки (табы)', icon: '📑' },
+                    { id: 'dropdowns', title: '12. Выпадающие списки', icon: '🔽' },
+                    { id: 'cards', title: '14. Карточки и списки', icon: '📇' },
+                    { id: 'editor', title: '17. Редактор текста', icon: '✍️' },
+                    { id: 'notifications', title: '21. Уведомления', icon: '🔔' }
+                ],
+                disorderList: [
+                    "ПТСР (Посттравматическое)", "Комплексное ПТСР (C-PTSD)", "Диссоциативная амнезия", "Деперсонализация/Дереализация",
+                    "Паническое расстройство", "Агорафобия", "Генерализованное тревожное", "Социальная фобия",
+                    "Мажорная депрессия", "Биполярное расстройство", "Пограничное расстройство (BPD)", "Антисоциальное расстройство",
+                    "Нарциссическое расстройство", "Шизоидное расстройство", "Обсессивно-компульсивное (ОКР)", "Соматоформное расстройство",
+                    "Шизофрения", "Параноидное расстройство", "Расстройство пищевого поведения", "Синдром самозванца"
+                ],
+                fontOptions: [
+                    { name: 'Inter (System Base)', val: `'Inter', system-ui, sans-serif` },
+                    { name: 'Roboto (Google Standard)', val: `'Roboto', sans-serif` },
+                    { name: 'SF Pro (Apple Design)', val: `'SF Pro Display', sans-serif` },
+                    { name: 'Segoe UI (Windows Fluent)', val: `'Segoe UI', sans-serif` }
+                ]
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>

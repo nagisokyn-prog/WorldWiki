@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src/js",
+    "declaration": true,
+    "sourceMap": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "checkJs": false,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/js/*"],
+      "@services/*": ["./src/js/services/*"],
+      "@components/*": ["./src/js/components/*"],
+      "@utils/*": ["./src/js/utils/*"],
+      "@types/*": ["./src/js/types/*"]
+    }
+  },
+  "include": ["src/js/**/*.ts", "src/js/**/*.d.ts", "src/js/**/*.vue"],
+  "exclude": ["src/js/libs/**", "src/js/toastui/**", "node_modules", "dist"]
+}

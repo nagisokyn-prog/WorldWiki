@@ -1,0 +1,101 @@
+#V2
+-- ===============================================
+DEFINE TABLE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;
+DEFINE FIELD project_id ON appears_in TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD role       ON appears_in TYPE option<string>; -- "??????????????", "????????????????????"
+DEFINE FIELD notes      ON appears_in TYPE option<string>;
+-- ===============================================
+-- ?????????? (?????????????????????? ????????????)
+-- ===============================================
+DEFINE TABLE chapters SCHEMAFULL;
+DEFINE FIELD project_id  ON chapters TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD title       ON chapters TYPE string;
+DEFINE FIELD content     ON chapters TYPE string;
+DEFINE FIELD summary     ON chapters TYPE option<string>;   -- AI: ?????????????? ????????????????????
+DEFINE FIELD arc_id      ON chapters TYPE option<record<arcs> | string> VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD volume_id   ON chapters TYPE option<record<volumes> | string> VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD word_count  ON chapters TYPE int DEFAULT 0;
+DEFINE FIELD sort_order  ON chapters TYPE int DEFAULT 0;
+DEFINE FIELD embedding   ON chapters TYPE option<array<float>>; -- AI: 1536d
+DEFINE FIELD created_at  ON chapters TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at  ON chapters TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_chapter_ft  ON chapters FIELDS content FULLTEXT;
+DEFINE INDEX idx_chapter_emb ON chapters FIELDS embedding HNSW DIMENSION 1536 DIST COSINE;
+-- ===============================================
+-- ?????????? (?? ?????????????????????? Record-????????????????)
+-- ===============================================
+DEFINE TABLE plans SCHEMAFULL;
+DEFINE FIELD project_id  ON plans TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD title       ON plans TYPE string;
+DEFINE FIELD parent_ref  ON plans TYPE record<chapters | arcs | volumes | plans> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD parent_type ON plans TYPE string;             -- "chapter"|"arc"|"volume"
+DEFINE FIELD sort_order  ON plans TYPE int DEFAULT 0;
+DEFINE FIELD completed   ON plans TYPE bool DEFAULT false;
+DEFINE FIELD created_at  ON plans TYPE datetime DEFAULT time::now();
+DEFINE FIELD updated_at  ON plans TYPE datetime DEFAULT time::now();
+-- ===============================================
+-- AI: ?????????? ???????????? (?????????????????????????? ??????????????: ??????????, ??????????????, ????????????????)
+-- ===============================================
+DEFINE TABLE text_blocks SCHEMAFULL;
+DEFINE FIELD project_id  ON text_blocks TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD chapter_id  ON text_blocks TYPE record<chapters> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD block_type  ON text_blocks TYPE string; -- "thought", "dialogue", "description"
+DEFINE FIELD order_index ON text_blocks TYPE int;
+DEFINE FIELD content     ON text_blocks TYPE string;
+DEFINE FIELD embedding   ON text_blocks TYPE option<array<float>>;
+DEFINE INDEX idx_blocks_ft  ON text_blocks FIELDS content FULLTEXT;
+DEFINE INDEX idx_blocks_emb ON text_blocks FIELDS embedding HNSW DIMENSION 1536 DIST COSINE;
+-- ===============================================
+-- AI: ?????????????????????? ?????? (?? ???????????????????? ?? ????????????????????????)
+-- ===============================================
+DEFINE TABLE chat_messages SCHEMAFULL;
+DEFINE FIELD project_id    ON chat_messages TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD role          ON chat_messages TYPE string; -- "user", "assistant"
+DEFINE FIELD content       ON chat_messages TYPE string;
+DEFINE FIELD parent_msg_id ON chat_messages TYPE option<record<chat_messages> | string> VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD version       ON chat_messages TYPE int DEFAULT 0;
+DEFINE FIELD quoted_context ON chat_messages TYPE option<object>; -- ???? ?????? ??????????????????
+-- ???????????????? RLHF (?????????????????????? ???????????? ???????????? ????????????)
+DEFINE FIELD edited_content   ON chat_messages TYPE option<string>;
+DEFINE FIELD feedback_comment ON chat_messages TYPE option<string>;
+DEFINE FIELD rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
+DEFINE FIELD embedding     ON chat_messages TYPE option<array<float>>;
+DEFINE FIELD created_at    ON chat_messages TYPE datetime DEFAULT time::now();
+-- ===============================================
+-- AI: ???????????????????????? ??????????????
+-- ===============================================
+DEFINE TABLE user_dictionary SCHEMAFULL;
+DEFINE FIELD project_id   ON user_dictionary TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD word         ON user_dictionary TYPE string;
+DEFINE FIELD definition   ON user_dictionary TYPE option<string>;
+DEFINE FIELD is_approved  ON user_dictionary TYPE bool DEFAULT true;
+DEFINE FIELD confidence   ON user_dictionary TYPE float;
+DEFINE INDEX idx_dict_word ON user_dictionary FIELDS project_id, word UNIQUE;
+-- ===============================================
+-- AI: ?????? ??????????????????
+-- ===============================================
+DEFINE TABLE web_cache SCHEMAFULL;
+DEFINE FIELD project_id   ON web_cache TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD url          ON web_cache TYPE string;
+DEFINE FIELD source_type  ON web_cache TYPE string;
+DEFINE FIELD content      ON web_cache TYPE string;
+DEFINE FIELD embedding    ON web_cache TYPE option<array<float>>;
+DEFINE FIELD fetched_at   ON web_cache TYPE datetime DEFAULT time::now();
+DEFINE FIELD expires_at   ON web_cache TYPE option<datetime>;
+-- ===============================================
+-- AI: ???????????????????? ???????????? ?? ???????????? ????????????????
+-- ===============================================
+DEFINE TABLE agent_memory SCHEMAFULL;
+DEFINE FIELD project_id   ON agent_memory TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
+DEFINE FIELD memory_type  ON agent_memory TYPE string; -- "summary", "preference", "fact"
+DEFINE FIELD content      ON agent_memory TYPE string;
+DEFINE FIELD embedding    ON agent_memory TYPE option<array<float>>;
+DEFINE FIELD importance   ON agent_memory TYPE int DEFAULT 5;
+DEFINE FIELD created_at   ON agent_memory TYPE datetime DEFAULT time::now();
+DEFINE INDEX idx_memory_emb ON agent_memory FIELDS embedding HNSW DIMENSION 1536 DIST COSINE;
+DEFINE TABLE IF NOT EXISTS test SCHEMAFULL; DEFINE TABLE IF NOT EXISTS test SCHEMAFULL;
+DEFINE TABLE test SCHEMAFULL; DEFINE FIELD r ON test TYPE string; DEFINE FIELD r ON test TYPE int; DEFINE INDEX i ON test FIELDS r; DEFINE INDEX i ON test FIELDS r;
+DEFINE TABLE test SCHEMAFULL; DEFINE FIELD r ON test TYPE string; DEFINE FIELD OVERWRITE r ON test TYPE int;
+DEFINE TABLE test SCHEMAFULL; DEFINE TABLE OVERWRITE test SCHEMAFULL;
+DEFINE TABLE test SCHEMAFULL; DEFINE FIELD r ON test TYPE string; DEFINE INDEX i ON test FIELDS r; DEFINE INDEX OVERWRITE i ON test FIELDS r;
+DEFINE TABLE test SCHEMAFULL; DEFINE FIELD project_id ON test TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END; CREATE test:1 CONTENT { project_id: 'projects:123' }; SELECT * FROM test WHERE project_id = 'projects:123';

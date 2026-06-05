@@ -1,0 +1,36 @@
+[
+  {
+    "type": "static",
+    "url": "project_launcher.html",
+    "icon": "fa-home",
+    "emoji": "🚀",
+    "title": "Менеджер проектов"
+  },
+  {
+    "type": "entity",
+    "entityType": "character",
+    "icon": "fa-user",
+    "emoji": "👤",
+    "title": "Персонажи"
+  },
+  {
+    "type": "entity",
+    "entityType": "organization",
+    "icon": "fa-building",
+    "emoji": "🏢",
+    "title": "Организации"
+  },
+  {
+    "type": "entity",
+    "entityType": "state",
+    "icon": "fa-landmark",
+    "emoji": "🏛️",
+    "title": "Государства"
+  },
+  {
+    "type": "chapters",
+    "icon": "fa-book",
+    "emoji": "📖",
+    "title": "Главы"
+  }
+]

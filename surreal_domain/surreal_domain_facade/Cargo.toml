@@ -1,0 +1,8 @@
+[package]
+name = "surreal_domain"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+surreal_domain_core = { path = "../surreal_domain_core" }
+surreal_domain_macros = { path = "../surreal_domain_macros" }

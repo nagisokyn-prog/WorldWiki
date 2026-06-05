@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "surreal_domain_core",
+    "surreal_domain_macros",
+    "surreal_domain_facade"
+]
+resolver = "2"

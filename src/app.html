@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>World Wiki Ultimate</title>
+    <link rel="stylesheet" href="css/fonts.css">
+    <link href="css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/glass-theme.css">
+    <link rel="stylesheet" href="css/modules/settings.css">
+    <link rel="stylesheet" href="css/new-ui-theme.css">
+    <link rel="stylesheet" href="css/chapter-tree.css">
+</head>
+<body>
+    <div class="bg-glow top-left"></div>
+    <div class="bg-glow bottom-right"></div>
+    
+    <div id="app" class="app-container-new" v-cloak>
+        <div class="app-main-new">
+            <!-- Universal Sidebar (VS Code Explorer Style) -->
+            <div class="sidebar-universal" v-show="sidebarVisible" :style="{ width: sidebarWidth + 'px' }">
+                <chapter-tree-vue
+                    :ref="el => chapterTreeRef = el"
+                    :project="projectName"
+                    :active-editor-id="activeEditorId"
+                    @open-entity="openEntity"
+                    @select-chapter="openChapterTab"
+                    @select-node="selectTreeNode"
+                    @add-entity="addNewEntity"
+                    @create-chapter-in="createChapterIn"
+                    @rename-chapter="renameChapter"
+                    @delete-chapter="deleteChapter"
+                    @delete-entity="deleteEntity"
+                    @delete-volume="deleteVolume"
+                    @delete-arc="deleteArc"
+                    @open-sandbox="openSandbox"
+                ></chapter-tree-vue>
+            </div>
+            
+            <!-- Sidebar resize handle -->
+            <div class="sidebar-resize-handle" @mousedown.prevent="startSidebarResize"></div>
+
+            <!-- Главная область редактора -->
+            <div class="content-area-new">
+                <!-- ЕДИНАЯ ПАНЕЛЬ ВКЛАДОК (всегда видна если есть открытые вкладки, кроме режима песочницы) -->
+                <div class="editor-tabs-new" v-if="openEditors.length > 0 && activeView !== 'sandbox'">
+                    <div v-for="editor in openEditors" :key="editor.id"
+                         class="editor-tab-new interactive-el" :class="{ active: activeEditorId === editor.id }"
+                         @click="activeEditorId = editor.id">
+                        <!-- Иконка типа -->
+                        <span class="tab-type-icon">
+                            {{ editor.tabType === 'chapter' ? '📖' : '🗂️' }}
+                        </span>
+                        <span>{{ editor.title }}</span>
+                        <span v-if="editor.unsaved" class="tab-unsaved">●</span>
+                        <span class="tab-close interactive-el" @click.stop="closeEditor(editor.id)">×</span>
+                    </div>
+                </div>
+
+                <!-- КОНТЕНТ: зависит от типа активной вкладки -->
+                <!-- SANDBOX VIEW (Наивысший приоритет) -->
+                <div v-if="activeView === 'sandbox'" style="flex:1; display:flex; overflow:hidden;">
+                    <redact-sandbox-vue style="flex:1; width:100%; height:100%;" />
+                </div>
+
+                <div v-else-if="currentSidebarTab === 'chapters' && !activeEditor" style="flex:1; display:flex; overflow:hidden;">
+                    <!-- Показываем ChaptersMain для управления главами (когда нет активной вкладки) -->
+                    <chapters-main-vue
+                        :project="projectName"
+                        :active-tree-node="activeTreeNode"
+                        @open-chapter-as-tab="openChapterTab"
+                        @chapter-unsaved="markUnsaved"
+                        @chapter-saved="markSaved"
+                        @chapter-renamed="onChapterRenamed"
+                        @scroll-change="handleScrollChange"
+                        style="flex:1;"
+                    />
+                </div>
+
+                <div v-else-if="activeEditor?.tabType === 'chapter'" style="flex:1; display:flex; overflow:hidden;">
+                    <!-- Вкладка главы - показываем ChaptersMain в управляемом режиме -->
+                    <chapters-main-vue
+                        :project="projectName"
+                        :controlled-chapter-id="activeEditorId"
+                        :active-tree-node="activeTreeNode"
+                        @chapter-unsaved="markUnsaved"
+                        @chapter-saved="markSaved"
+                        @chapter-renamed="onChapterRenamed"
+                        @open-chapter-as-tab="openChapterTab"
+                        @scroll-change="handleScrollChange"
+                        style="flex:1;"
+                    />
+                </div>
+
+                <!-- ENTITY EDITOR VIEW -->
+                <div v-else-if="activeEditor?.tabType === 'entity' || (activeEditor && !activeEditor.tabType)" style="display:flex; flex-direction:column; flex:1; min-height:0; width:100%;">
+                    <div class="chapter-editor" v-if="activeEditor" style="flex:1; padding:24px; display:flex; flex-direction:column; min-height:0; overflow:hidden;">
+                        <!-- Glass Card Wrapper for Editor -->
+                        <div class="glass-card-container" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+                            <div class="glass-card-bg"></div>
+                            <div class="glass-card-content" style="flex:1; display:flex; flex-direction:column; min-height:0; padding:0; overflow:hidden;">
+                                
+                                <!-- Header -->
+                                <div class="chapter-toolbar" style="display:flex; justify-content:space-between; align-items:center; padding:12px 24px; border-bottom:1px solid var(--border-color);">
+                                    <div class="toolbar-group">
+                                        <button class="btn-outline-new interactive-el" @click="closeEditor(activeEditorId)" style="padding:6px 12px; border-radius:8px; border:1px solid var(--border-color); background:transparent; color:var(--text-main); cursor:pointer;">← Назад</button>
+                                    </div>
+                                    <div class="toolbar-group" style="flex:1; margin-left: 16px;">
+                                        <h1 style="font-size:16px;font-weight:600;margin:0;color:var(--accent);">
+                                            {{ activeEditor?.title || 'Загрузка...' }}
+                                        </h1>
+                                    </div>
+                                    <div class="toolbar-group" style="border:none; display:flex; gap: 8px;">
+                                        <button class="btn-new interactive-el" style="background:var(--bg-input);">📤 Экспорт</button>
+                                        <button class="btn-new interactive-el" @click="saveAll">💾 Сохранить</button>
+                                        <button class="btn-new interactive-el" style="background:var(--bg-input);">📋</button>
+                                        <button class="btn-new interactive-el" style="background:rgba(239,68,68,0.4);" @click="deleteEntity(activeEditor.id, activeEditor.entityType)">🗑️ Удалить</button>
+                                    </div>
+                                </div>
+
+                                <!-- The Vue Editor Form Component -->
+                                <entity-editor-vue 
+                                    v-if="activeEditor"
+                                    :entity-id="activeEntityRawId"
+                                    :entity-type="activeEditor.entityType"
+                                    :project="projectName || 'default'"
+                                    :initial-data="activeEditor.data"
+                                    :initial-section="activeEditor.activeSection"
+                                    :initial-scroll-pos="activeEditor.scrollPos"
+                                    @update-data="handleUpdateData"
+                                    @modified="markUnsaved"
+                                    @section-change="handleSectionChange"
+                                    @scroll-change="handleScrollChange"
+                                ></entity-editor-vue>
+                            
+                            <div class="status-bar" style="display:flex; justify-content:space-between; padding:8px 24px; border-top:1px solid var(--border-color); font-size:11px; color:var(--text-muted); background:var(--bg-input);">
+                                <div class="status-left">
+                                    <span>Готов</span>
+                                    <span v-if="activeEditor.unsaved" style="color:var(--accent);margin-left:12px;">● Есть изменения</span>
+                                </div>
+                                <div class="status-right">
+                                    <span>ID: {{ activeEditor.id }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div> <!-- End of ENTITY EDITOR VIEW -->
+
+                <!-- Empty state when no editor is active -->
+                <div v-else style="flex:1; display:flex; align-items:center; justify-content:center; color: var(--text-muted);">
+                    <div class="interactive-el" style="text-align:center;">
+                        <div style="font-size:64px; opacity:0.5; margin-bottom:16px;">📚</div>
+                        <div style="font-size:24px; color:var(--accent); font-weight:bold;">World Wiki Ultimate</div>
+                        <div style="font-size:14px; margin-top:8px;">Выберите элемент в левом меню для начала работы</div>
+                    </div>
+                </div>
+            </div> <!-- End of content-area-new -->
+        </div> <!-- End of app-main-new -->
+
+        <!-- Нижняя панель (за пределами основной раскладки) -->
+        <div class="panel-new" :style="activePanelTab !== '' ? { height: panelHeight + 'px' } : { height: '36px' }">
+            <!-- Terminal resize handle — тянуть вверх -->
+            <div v-if="activePanelTab !== ''" class="terminal-resize-handle" @mousedown.prevent="startResize"></div>
+            <div class="panel-header-new" @click="activePanelTab = activePanelTab === '' ? 'console' : ''" style="justify-content:space-between;">
+                <div style="display:flex; gap: 8px;">
+                    <div class="panel-tab-new interactive-el" :class="{ active: activePanelTab === 'console' }" @click.stop="activePanelTab = 'console'">💻 Терминал Системы</div>
+                    <div class="panel-tab-new interactive-el" :class="{ active: activePanelTab === 'stats' }" @click.stop="activePanelTab = 'stats'">📊 Аналитика</div>
+                </div>
+                <div style="font-size:11px; padding-right:16px; opacity:0.5;">
+                    {{ activePanelTab === '' ? '▲ Развернуть панель' : '▼ Свернуть панель' }}
+                </div>
+            </div>
+            <div class="panel-content-new" v-show="activePanelTab !== ''">
+                <div v-if="activePanelTab === 'console'">
+                    <div v-for="log in consoleLogs.slice(0, 100)" :key="log.id" class="console-line" :class="log.type">
+                        <span class="console-time">[{{ log.timestamp }}]</span>
+                        <span>{{ log.text }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Global Modals (inside #app for Vue context, Teleport to body) -->
+        <quick-open-vue
+            :ref="el => quickOpenRef = el"
+            :project="projectName"
+            :sidebar-items="sidebarItems"
+            @open-entity="openEntity"
+            @open-chapter="openChapterTab"
+        ></quick-open-vue>
+
+        <command-palette-vue
+            :ref="el => commandPaletteRef = el"
+            @save-all="saveAll"
+            @new-entity="addNewEntity(currentSidebarTab || '')"
+            @new-chapter="createChapterIn({})"
+            @open-settings="toggleSettings()"
+            @toggle-sidebar="sidebarVisible = !sidebarVisible"
+            @toggle-panel="activePanelTab = activePanelTab === '' ? 'console' : ''"
+            @close-all-tabs="closeAllTabs()"
+            @zoom-in="applyZoom(zoomLevel + 0.1)"
+            @zoom-out="applyZoom(zoomLevel - 0.1)"
+            @zoom-reset="applyZoom(1)"
+            @open-quick="quickOpenRef?.open()"
+            @open-tags="openTagsManager()"
+            @open-sandbox="openSandbox()"
+        ></command-palette-vue>
+
+        <tags-manager-modal-vue
+            :ref="el => tagsManagerRef = el"
+            :project="projectName"
+        ></tags-manager-modal-vue>
+
+        <!-- Floating Editors -->
+        <floating-entity-editor-vue
+            v-for="fe in floatingEditors"
+            :key="fe.id"
+            :project="projectName"
+            :entity-type="fe.entityType"
+            :entity-id="fe.entityId"
+            :is-open="true"
+            :style="{ zIndex: fe.zIndex }"
+            @close="closeFloatingEditor(fe.id)"
+            @focus="focusFloatingEditor(fe.id)"
+            @saved="addToast('Сохранено в плавающем окне', 'success')"
+        ></floating-entity-editor-vue>
+
+        <!-- Toasts -->
+        <div class="toast-container-new" :class="settings.notifications.position">
+            <transition-group name="fade">
+                <div v-for="toast in toasts" :key="toast.id" class="toast-new">
+                    <i :class="getToastIcon(toast.type)"></i>
+                    <span>{{ toast.text }}</span>
+                </div>
+            </transition-group>
+        </div>
+    </div> <!-- end #app -->
+    
+    <script type="module" src="js/app/app.ts"></script>
+</body>
+</html>

@@ -1,0 +1,2310 @@
+{
+  "name": "Государство",
+  "icon": "fa-flag",
+  "iconEmoji": "🗺️",
+  "titleField": "название",
+  "sections": [
+    {
+      "id": "basic",
+      "title": "Основное",
+      "icon": "📝",
+      "fields": [
+        {
+          "id": "stateName",
+          "type": "text",
+          "label": "Название",
+          "required": true,
+          "placeholder": "Название: Римская Империя, СССР, Галактическая Республика...",
+          "path": "название"
+        },
+        {
+          "id": "stateOfficialName",
+          "type": "text",
+          "label": "Официальное название",
+          "placeholder": "Официальное название: Соединенные Штаты Америки, Французская Республика...",
+          "path": "официальное_название"
+        },
+        {
+          "id": "stateStatus",
+          "type": "select",
+          "label": "Статус",
+          "options": [
+            { "value": "", "label": "Не указано" },
+            { "value": "суверенное", "label": "Суверенное" },
+            { "value": "зависимое", "label": "Зависимое" },
+            { "value": "бывшее", "label": "Бывшее (исчезнувшее)" },
+            { "value": "оспариваемое", "label": "Оспариваемое" },
+            { "value": "автономное", "label": "Автономное" }
+          ],
+          "path": "статус"
+        },
+        {
+          "id": "stateStructureType",
+          "type": "select",
+          "label": "Тип устройства",
+          "options": [
+            { "value": "", "label": "Не указано" },
+            { "value": "унитарное", "label": "Унитарное" },
+            { "value": "федерация", "label": "Федерация" },
+            { "value": "конфедерация", "label": "Конфедерация" },
+            { "value": "союз", "label": "Союз государств" }
+          ],
+          "path": "тип_устройства"
+        },
+        {
+          "id": "stateGovForm",
+          "type": "select",
+          "label": "Форма правления",
+          "options": [
+            { "value": "", "label": "Не указано" },
+            { "value": "республика", "label": "Республика" },
+            { "value": "монархия", "label": "Монархия" },
+            { "value": "диктатура", "label": "Диктатура" },
+            { "value": "теократия", "label": "Теократия" },
+            { "value": "анархия", "label": "Анархия" },
+            { "value": "олигархия", "label": "Олигархия" }
+          ],
+          "path": "форма_правления"
+        },
+        {
+          "id": "stateFoundedDate",
+          "type": "calendar_date",
+          "label": "Дата основания",
+          "placeholder": "Выберите дату по календарю",
+          "path": "дата_основания"
+        },
+        {
+          "id": "stateCapital",
+          "type": "text",
+          "label": "Столица",
+          "placeholder": "Столица: Москва, Вашингтон, Лондон, Корусант...",
+          "path": "столица"
+        },
+        {
+          "id": "stateLanguages",
+          "type": "text",
+          "label": "Официальные языки",
+          "placeholder": "Официальные языки: английский, испанский, эльфийский...",
+          "path": "официальные_языки"
+        },
+        {
+          "id": "stateCurrency",
+          "type": "text",
+          "label": "Валюта",
+          "placeholder": "Валюта: доллар, евро, рубль, золотой дублон...",
+          "path": "валюта"
+        },
+        {
+          "id": "stateDescription",
+          "type": "textarea",
+          "label": "Описание",
+          "rows": 4,
+          "placeholder": "Описание: краткая история, суть и место государства в мире...",
+          "path": "описание"
+        },
+        {
+          "id": "stateSymbolism",
+          "type": "textarea",
+          "label": "Символика (флаг, герб, гимн)",
+          "rows": 3,
+          "placeholder": "Символика: красно-синий флаг с орлом, гимн 'Славься, Империя'...",
+          "path": "символика"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "collapseDate",
+          "type": "dynamic",
+          "title": "Дата распада",
+          "limit": 1,
+          "emptyMessage": "Дата распада не указана. Нажмите «Добавить», чтобы указать дату.",
+          "template": "stateCollapseDateTemplate",
+          "dataPath": "дата_распада_динамическая"
+        },
+        {
+          "id": "recognitionEvolution",
+          "type": "timeline",
+          "title": "Эволюция признания",
+          "emptyMessage": "Данные о признании не добавлены",
+          "template": "stateRecognitionTemplate",
+          "dataPath": "эволюция_признания_ключ"
+        }
+      ]
+    },
+    {
+      "id": "geography",
+      "title": "География",
+      "icon": "⛰️",
+      "fields": [
+        {
+          "id": "totalArea",
+          "type": "text",
+          "label": "Общая площадь",
+          "placeholder": "Общая площадь: 17 125 191 кв. км, 500 тыс. кв. миль...",
+          "path": "общая_площадь"
+        },
+        {
+          "id": "landArea",
+          "type": "text",
+          "label": "Площадь суши",
+          "placeholder": "Площадь суши: 16 376 870 кв. км...",
+          "path": "площадь_суши"
+        },
+        {
+          "id": "waterArea",
+          "type": "text",
+          "label": "Площадь воды",
+          "placeholder": "Площадь воды: 748 320 кв. км...",
+          "path": "площадь_воды"
+        },
+        {
+          "id": "geoFeatures",
+          "type": "textarea",
+          "label": "Географические особенности",
+          "rows": 3,
+          "placeholder": "Географические особенности: горы на юге, густые леса на севере, пустыни...",
+          "path": "географические_особенности"
+        },
+        {
+          "id": "climateZones",
+          "type": "text",
+          "label": "Климатические зоны",
+          "placeholder": "Климатические зоны: умеренный, субтропический, арктический...",
+          "path": "климатические_зоны"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "territoryEvolution",
+          "type": "timeline",
+          "title": "Эволюция территории",
+          "emptyMessage": "Территориальные изменения не добавлены",
+          "template": "stateTerritoryEvolutionTemplate",
+          "dataPath": "эволюция_территории_ключ"
+        },
+        {
+          "id": "borders",
+          "type": "dynamic",
+          "title": "Границы",
+          "emptyMessage": "Соседи не добавлены",
+          "template": "stateBorderTemplate",
+          "dataPath": "границы_ключ"
+        },
+        {
+          "id": "naturalResources",
+          "type": "dynamic",
+          "title": "Природные ресурсы",
+          "emptyMessage": "Ресурсы не добавлены",
+          "template": "stateResourceTemplate",
+          "dataPath": "природные_ресурсы_ключ"
+        }
+      ]
+    },
+    {
+      "id": "governance",
+      "title": "Правление",
+      "icon": "🏛️",
+      "fields": [
+        {
+          "id": "govSystem",
+          "type": "text",
+          "label": "Система управления",
+          "placeholder": "Система управления: парламентская республика, абсолютная монархия...",
+          "path": "система_управления"
+        },
+        {
+          "id": "stateIdeology",
+          "type": "text",
+          "label": "Государственная идеология",
+          "placeholder": "Государственная идеология: демократия, коммунизм, капитализм...",
+          "path": "государственная_идеология"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "govEvolution",
+          "type": "timeline",
+          "title": "Эволюция правительства",
+          "emptyMessage": "События не добавлены",
+          "template": "stateGovEvolutionTemplate",
+          "dataPath": "эволюция_правительства_ключ"
+        },
+        {
+          "id": "govMembers",
+          "type": "dynamic",
+          "title": "Члены правительства",
+          "emptyMessage": "Политики не добавлены",
+          "template": "stateGovMemberTemplate",
+          "dataPath": "члены_правительства_ключ"
+        },
+        {
+          "id": "politicalParties",
+          "type": "dynamic",
+          "title": "Политические партии",
+          "emptyMessage": "Партии не добавлены",
+          "template": "statePoliticalPartyTemplate",
+          "dataPath": "политические_партии_ключ"
+        },
+        {
+          "id": "adminDivisions",
+          "type": "dynamic",
+          "title": "Административное деление",
+          "emptyMessage": "Регионы не добавлены",
+          "template": "stateAdminDivisionTemplate",
+          "dataPath": "административное_деление_ключ"
+        },
+        {
+          "id": "linkedOrgs",
+          "type": "dynamic",
+          "title": "Связанные организации (гос. аппарат)",
+          "emptyMessage": "Организации не добавлены",
+          "template": "stateLinkedOrgTemplate",
+          "dataPath": "связанные_организации_ключ"
+        }
+      ]
+    },
+    {
+      "id": "economy",
+      "title": "Экономика",
+      "icon": "📈",
+      "fields": [
+        {
+          "id": "gdpTotal",
+          "type": "text",
+          "label": "ВВП общий",
+          "placeholder": "ВВП общий: 21 трлн долларов, 500 тыс. золотых...",
+          "path": "ввп_общий"
+        },
+        {
+          "id": "gdpPerCapita",
+          "type": "text",
+          "label": "ВВП на душу населения",
+          "placeholder": "ВВП на душу населения: 60 000 долларов, 150 монет...",
+          "path": "ввп_на_душу"
+        },
+        {
+          "id": "economicGrowth",
+          "type": "text",
+          "label": "Рост экономики",
+          "placeholder": "Рост экономики: 2.5% в год, спад на 1%...",
+          "path": "рост_экономики"
+        },
+        {
+          "id": "economicSystem",
+          "type": "select",
+          "label": "Экономическая система",
+          "options": [
+            { "value": "", "label": "Не указано" },
+            { "value": "рыночная", "label": "Рыночная" },
+            { "value": "плановая", "label": "Плановая" },
+            { "value": "смешанная", "label": "Смешанная" },
+            { "value": "традиционная", "label": "Традиционная" },
+            { "value": "командная", "label": "Командная" }
+          ],
+          "path": "экономическая_система"
+        },
+        {
+          "id": "mainExport",
+          "type": "text",
+          "label": "Основной экспорт",
+          "placeholder": "Основной экспорт: нефть, электроника, автомобили, зерно...",
+          "path": "основной_экспорт"
+        },
+        {
+          "id": "mainImport",
+          "type": "text",
+          "label": "Основной импорт",
+          "placeholder": "Основной импорт: продовольствие, медикаменты, технологии...",
+          "path": "основной_импорт"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "ecoEvolution",
+          "type": "timeline",
+          "title": "Экономическая эволюция",
+          "emptyMessage": "События не добавлены",
+          "template": "stateEcoEvolutionTemplate",
+          "dataPath": "экономическая_эволюция_ключ"
+        },
+        {
+          "id": "keyIndustries",
+          "type": "dynamic",
+          "title": "Ключевые отрасли",
+          "emptyMessage": "Отрасли не добавлены",
+          "template": "stateIndustryTemplate",
+          "dataPath": "ключевые_отрасли_ключ"
+        },
+        {
+          "id": "tradePartners",
+          "type": "dynamic",
+          "title": "Торговые партнеры",
+          "emptyMessage": "Партнеры не добавлены",
+          "template": "stateTradePartnerTemplate",
+          "dataPath": "торговые_партнеры_ключ"
+        },
+        {
+          "id": "largeCompanies",
+          "type": "dynamic",
+          "title": "Крупные компании (Корпорации)",
+          "emptyMessage": "Компании не добавлены",
+          "template": "stateLargeCompanyTemplate",
+          "dataPath": "крупные_компании_ключ"
+        }
+      ]
+    },
+    {
+      "id": "military",
+      "title": "Военная система",
+      "icon": "⚔️",
+      "fields": [
+        {
+          "id": "militaryBudget",
+          "type": "text",
+          "label": "Военный бюджет",
+          "placeholder": "Военный бюджет: 700 млрд долларов, 20% от ВВП...",
+          "path": "военный_бюджет"
+        },
+        {
+          "id": "militaryPersonnel",
+          "type": "text",
+          "label": "Численность военных",
+          "placeholder": "Численность военных: 1.5 млн человек в строю...",
+          "path": "численность_военных"
+        },
+        {
+          "id": "militaryPowerIndex",
+          "type": "text",
+          "label": "Индекс военной мощи",
+          "placeholder": "Индекс военной мощи: топ 3 в мире, сильнейший флот на континенте...",
+          "path": "индекс_военной_мощи"
+        },
+        {
+          "id": "militaryDoctrine",
+          "type": "textarea",
+          "label": "Военная доктрина",
+          "rows": 3,
+          "placeholder": "Военная доктрина: сугубо оборонительная, ставка на превентивные удары, ядерное сдерживание...",
+          "path": "военная_доктрина"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "militaryEvolution",
+          "type": "timeline",
+          "title": "Военная эволюция",
+          "emptyMessage": "Записи отсутствуют",
+          "template": "stateMilitaryEvolutionTemplate",
+          "dataPath": "военная_эволюция_ключ"
+        },
+        {
+          "id": "militaryBranches",
+          "type": "dynamic",
+          "title": "Виды войск",
+          "emptyMessage": "Войска не добавлены",
+          "template": "stateMilitaryBranchTemplate",
+          "dataPath": "виды_войск_ключ"
+        },
+        {
+          "id": "militaryBases",
+          "type": "dynamic",
+          "title": "Военные базы",
+          "emptyMessage": "Базы не добавлены",
+          "template": "stateMilitaryBaseTemplate",
+          "dataPath": "военные_базы_ключ"
+        },
+        {
+          "id": "micCompanies",
+          "type": "dynamic",
+          "title": "Компании ВПК",
+          "emptyMessage": "Компании ВПК не добавлены",
+          "template": "stateMicCompanyTemplate",
+          "dataPath": "впк_компании_ключ"
+        },
+        {
+          "id": "alliedMilitaryOrgs",
+          "type": "dynamic",
+          "title": "Союзные организации (ЧВК, ордены и т.д.)",
+          "emptyMessage": "Организации не добавлены",
+          "template": "stateAlliedMilitaryOrgTemplate",
+          "dataPath": "союзные_организации_ключ"
+        }
+      ]
+    },
+    {
+      "id": "demographics",
+      "title": "Демография",
+      "icon": "👥",
+      "fields": [
+        {
+          "id": "totalPopulation",
+          "type": "text",
+          "label": "Общая численность",
+          "placeholder": "Общая численность: 144 млн человек, около 1 миллиарда...",
+          "path": "общая_численность"
+        },
+        {
+          "id": "populationGrowth",
+          "type": "text",
+          "label": "Рост населения",
+          "placeholder": "Рост населения: -0.2% в год, высокая рождаемость...",
+          "path": "рост_населения"
+        },
+        {
+          "id": "populationDensity",
+          "type": "text",
+          "label": "Плотность населения",
+          "placeholder": "Плотность населения: 8.5 чел/кв. км, перенаселение в городах...",
+          "path": "плотность_населения"
+        },
+        {
+          "id": "ageStructure",
+          "type": "text",
+          "label": "Возрастная структура",
+          "placeholder": "Возрастная структура: 0-14 лет (15%), 15-64 (65%), 65+ (20%)...",
+          "path": "возрастная_структура"
+        },
+        {
+          "id": "urbanizationLevel",
+          "type": "text",
+          "label": "Уровень урбанизации",
+          "placeholder": "Уровень урбанизации: 75% городского населения...",
+          "path": "уровень_урбанизации"
+        },
+        {
+          "id": "lifeExpectancy",
+          "type": "text",
+          "label": "Ожидаемая продолжительность жизни",
+          "placeholder": "Ожидаемая продолжительность жизни: 73 года (мужчины - 68, женщины - 78)...",
+          "path": "ожидаемая_продолжительность_жизни"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "demographicEvolution",
+          "type": "timeline",
+          "title": "Демографическая эволюция",
+          "emptyMessage": "Данные не добавлены",
+          "template": "stateDemographicEvolutionTemplate",
+          "dataPath": "демографическая_эволюция_ключ"
+        },
+        {
+          "id": "ethnicGroups",
+          "type": "dynamic",
+          "title": "Этнические группы",
+          "emptyMessage": "Этносы не добавлены",
+          "template": "stateEthnicGroupTemplate",
+          "dataPath": "этнические_группы_ключ"
+        },
+        {
+          "id": "majorCities",
+          "type": "dynamic",
+          "title": "Крупные города",
+          "emptyMessage": "Города не добавлены",
+          "template": "stateMajorCityTemplate",
+          "dataPath": "крупные_города_ключ"
+        }
+      ]
+    },
+    {
+      "id": "infrastructure",
+      "title": "Инфраструктура",
+      "icon": "🏗️",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "infraEvolution",
+          "type": "timeline",
+          "title": "Инфраструктурная эволюция",
+          "emptyMessage": "Изменения не добавлены",
+          "template": "stateInfraEvolutionTemplate",
+          "dataPath": "инфраструктурная_эволюция_ключ"
+        },
+        {
+          "id": "transportSystems",
+          "type": "dynamic",
+          "title": "Транспортные системы",
+          "emptyMessage": "Транспорт не добавлен",
+          "template": "stateTransportTemplate",
+          "dataPath": "транспортные_системы_ключ"
+        },
+        {
+          "id": "energySystems",
+          "type": "dynamic",
+          "title": "Энергетические системы",
+          "emptyMessage": "Энергетика не добавлена",
+          "template": "stateEnergyTemplate",
+          "dataPath": "энергетические_системы_ключ"
+        },
+        {
+          "id": "commSystems",
+          "type": "dynamic",
+          "title": "Коммуникационная инфраструктура",
+          "emptyMessage": "Связь не добавлена",
+          "template": "stateCommTemplate",
+          "dataPath": "коммуникационная_инфраструктура_ключ"
+        },
+        {
+          "id": "educationSystems",
+          "type": "dynamic",
+          "title": "Образовательные учреждения",
+          "emptyMessage": "Учреждения не добавлены",
+          "template": "stateEducationTemplate",
+          "dataPath": "образовательные_учреждения_ключ"
+        },
+        {
+          "id": "medicalSystems",
+          "type": "dynamic",
+          "title": "Медицинские учреждения",
+          "emptyMessage": "Учреждения не добавлены",
+          "template": "stateMedicalTemplate",
+          "dataPath": "медицинские_учреждения_ключ"
+        }
+      ]
+    },
+    {
+      "id": "culture",
+      "title": "Культура",
+      "icon": "🎭",
+      "fields": [
+        {
+          "id": "culturalDescription",
+          "type": "textarea",
+          "label": "Культурное описание",
+          "rows": 4,
+          "placeholder": "Культурное описание: богатая литературная традиция, сильное влияние религии...",
+          "path": "культурное_описание"
+        },
+        {
+          "id": "nationalCuisine",
+          "type": "textarea",
+          "label": "Национальная кухня",
+          "rows": 3,
+          "placeholder": "Национальная кухня: борщ, пельмени, пицца, морепродукты...",
+          "path": "национальная_кухня"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "cultureEvolution",
+          "type": "timeline",
+          "title": "Культурная эволюция",
+          "emptyMessage": "Изменения не добавлены",
+          "template": "stateCultureEvolutionTemplate",
+          "dataPath": "культурная_эволюция_ключ"
+        },
+        {
+          "id": "traditions",
+          "type": "dynamic",
+          "title": "Традиции и обычаи",
+          "emptyMessage": "Традиции не добавлены",
+          "template": "stateTraditionTemplate",
+          "dataPath": "традиции_и_обычаи_ключ"
+        },
+        {
+          "id": "religions",
+          "type": "dynamic",
+          "title": "Религии",
+          "emptyMessage": "Религии не добавлены",
+          "template": "stateReligionTemplate",
+          "dataPath": "религии_ключ"
+        },
+        {
+          "id": "holidays",
+          "type": "dynamic",
+          "title": "Праздники",
+          "emptyMessage": "Праздники не добавлены",
+          "template": "stateHolidayTemplate",
+          "dataPath": "праздники_ключ"
+        },
+        {
+          "id": "arts",
+          "type": "dynamic",
+          "title": "Искусство и литература",
+          "emptyMessage": "Искусство не добавлено",
+          "template": "stateArtTemplate",
+          "dataPath": "искусство_и_литература_ключ"
+        },
+        {
+          "id": "sports",
+          "type": "dynamic",
+          "title": "Спорт",
+          "emptyMessage": "Спорт не добавлен",
+          "template": "stateSportTemplate",
+          "dataPath": "спорт_ключ"
+        }
+      ]
+    },
+    {
+      "id": "diplomacy",
+      "title": "Дипломатия",
+      "icon": "🤝",
+      "fields": [
+        {
+          "id": "foreignGoals",
+          "type": "textarea",
+          "label": "Внешнеполитические цели",
+          "rows": 3,
+          "placeholder": "Внешнеполитические цели: вступление в торговый союз, расширение влияния в регионе...",
+          "path": "внешнеполитические_цели"
+        },
+        {
+          "id": "foreignPrinciples",
+          "type": "textarea",
+          "label": "Внешнеполитические принципы",
+          "rows": 3,
+          "placeholder": "Внешнеполитические принципы: невмешательство, защита прав человека, мирный диалог...",
+          "path": "внешнеполитические_принципы"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "diplomacyEvolution",
+          "type": "timeline",
+          "title": "Дипломатическая эволюция",
+          "emptyMessage": "События не добавлены",
+          "template": "stateDiplomacyEvolutionTemplate",
+          "dataPath": "дипломатическая_эволюция_ключ"
+        },
+        {
+          "id": "diplomaticRelations",
+          "type": "dynamic",
+          "title": "Дипломатические отношения",
+          "emptyMessage": "Отношения не добавлены",
+          "template": "stateDiplomaticRelationTemplate",
+          "dataPath": "дипломатические_отношения_ключ"
+        },
+        {
+          "id": "relationsWithOrgs",
+          "type": "dynamic",
+          "title": "Отношения с организациями",
+          "emptyMessage": "Отношения не добавлены",
+          "template": "stateOrgRelationTemplate",
+          "dataPath": "отношения_с_организациями_ключ"
+        },
+        {
+          "id": "treaties",
+          "type": "dynamic",
+          "title": "Международные договоры",
+          "emptyMessage": "Договоры не добавлены",
+          "template": "stateTreatyTemplate",
+          "dataPath": "международные_договоры_ключ"
+        },
+        {
+          "id": "intlOrgs",
+          "type": "dynamic",
+          "title": "Международные организации",
+          "emptyMessage": "Организации не добавлены",
+          "template": "stateIntlOrgTemplate",
+          "dataPath": "международные_организации_ключ"
+        },
+        {
+          "id": "diplomaticMissions",
+          "type": "dynamic",
+          "title": "Дипломатические представительства",
+          "emptyMessage": "Миссии не добавлены",
+          "template": "stateDiplomaticMissionTemplate",
+          "dataPath": "дипломатические_представительства_ключ"
+        }
+      ]
+    },
+    {
+      "id": "legal",
+      "title": "Правовая система",
+      "icon": "⚖️",
+      "fields": [
+        {
+          "id": "legalSystemType",
+          "type": "select",
+          "label": "Тип правовой системы",
+          "options": [
+            { "value": "", "label": "Не указано" },
+            { "value": "гражданское_право", "label": "Гражданское право" },
+            { "value": "общее_право", "label": "Общее право" },
+            { "value": "религиозное_право", "label": "Религиозное право" },
+            { "value": "обычное_право", "label": "Обычное право" },
+            { "value": "смешанная", "label": "Смешанная" }
+          ],
+          "path": "правовая_система"
+        },
+        {
+          "id": "constitution",
+          "type": "text",
+          "label": "Конституция (Название / Статус)",
+          "placeholder": "Конституция: Конституция 1993 года, действует...",
+          "path": "конституция"
+        },
+        {
+          "id": "civilRights",
+          "type": "textarea",
+          "label": "Гражданские права и свободы",
+          "rows": 3,
+          "placeholder": "Гражданские права: свобода слова, право на собрания, равенство перед законом...",
+          "path": "гражданские_права_и_свободы"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "legalEvolution",
+          "type": "timeline",
+          "title": "Правовая эволюция",
+          "emptyMessage": "События не добавлены",
+          "template": "stateLegalEvolutionTemplate",
+          "dataPath": "правовая_эволюция_ключ"
+        },
+        {
+          "id": "courts",
+          "type": "dynamic",
+          "title": "Судебная система",
+          "emptyMessage": "Суды не добавлены",
+          "template": "stateCourtTemplate",
+          "dataPath": "судебная_система_ключ"
+        },
+        {
+          "id": "laws",
+          "type": "dynamic",
+          "title": "Ключевые законодательные акты",
+          "emptyMessage": "Акты не добавлены",
+          "template": "stateLawTemplate",
+          "dataPath": "ключевые_законодательные_акты_ключ"
+        },
+        {
+          "id": "lawEnforcement",
+          "type": "dynamic",
+          "title": "Правоохранительные органы",
+          "emptyMessage": "Органы не добавлены",
+          "template": "stateLawEnforcementTemplate",
+          "dataPath": "правоохранительные_органы_ключ"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "title": "История",
+      "icon": "📜",
+      "fields": [
+        {
+          "id": "historicalDevelopment",
+          "type": "textarea",
+          "label": "Историческое развитие (Эссе)",
+          "rows": 5,
+          "placeholder": "Историческое развитие: основано в 9 веке, пережило несколько войн и революций...",
+          "path": "историческое_развитие"
+        },
+        {
+          "id": "historicalConflicts",
+          "type": "textarea",
+          "label": "Исторические конфликты",
+          "rows": 4,
+          "placeholder": "Исторические конфликты: Столетняя война, Гражданская война 1918-1922...",
+          "path": "исторические_конфликты"
+        },
+        {
+          "id": "historicalAchievements",
+          "type": "textarea",
+          "label": "Исторические достижения",
+          "rows": 4,
+          "placeholder": "Исторические достижения: первый полет в космос, изобретение радио...",
+          "path": "исторические_достижения"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "historyTimeline",
+          "type": "timeline",
+          "title": "Хронология ключевых событий",
+          "emptyMessage": "События не добавлены",
+          "template": "stateHistoryTimelineTemplate",
+          "dataPath": "хронология_ключевых_событий_ключ"
+        },
+        {
+          "id": "historicalEras",
+          "type": "dynamic",
+          "title": "Исторические эпохи",
+          "emptyMessage": "Эпохи не добавлены",
+          "template": "stateEraTemplate",
+          "dataPath": "исторические_эпохи_ключ"
+        },
+        {
+          "id": "historicalFigures",
+          "type": "dynamic",
+          "title": "Важные исторические личности",
+          "emptyMessage": "Личности не добавлены",
+          "template": "stateHistoricalFigureTemplate",
+          "dataPath": "важные_исторические_личности_ключ"
+        }
+      ]
+    },
+    {
+      "id": "regions",
+      "title": "Регионы",
+      "icon": "🗺️",
+      "fields": [],
+      "dynamicContainers": [
+        {
+          "id": "regionEvolution",
+          "type": "timeline",
+          "title": "Региональная эволюция",
+          "emptyMessage": "Изменения не добавлены",
+          "template": "stateRegionEvolutionTemplate",
+          "dataPath": "региональная_эволюция_ключ"
+        },
+        {
+          "id": "adminRegions",
+          "type": "dynamic",
+          "title": "Административные регионы",
+          "emptyMessage": "Регионы не добавлены",
+          "template": "stateAdminRegionTemplate",
+          "dataPath": "административные_регионы_ключ"
+        },
+        {
+          "id": "autonomousRegions",
+          "type": "dynamic",
+          "title": "Автономные образования",
+          "emptyMessage": "Автономии не добавлены",
+          "template": "stateAutonomousRegionTemplate",
+          "dataPath": "автономные_образования_ключ"
+        },
+        {
+          "id": "regionalCapitals",
+          "type": "dynamic",
+          "title": "Региональные столицы",
+          "emptyMessage": "Столицы не добавлены",
+          "template": "stateRegionalCapitalTemplate",
+          "dataPath": "региональные_столицы_ключ"
+        },
+        {
+          "id": "regionalEconomies",
+          "type": "dynamic",
+          "title": "Региональные экономики",
+          "emptyMessage": "Экономики не добавлены",
+          "template": "stateRegionalEconomyTemplate",
+          "dataPath": "региональные_экономики_ключ"
+        }
+      ]
+    },
+    {
+      "id": "challenges",
+      "title": "Вызовы и угрозы",
+      "icon": "⚠️",
+      "fields": [
+        {
+          "id": "futurePerspectives",
+          "type": "textarea",
+          "label": "Перспективы развития",
+          "rows": 4,
+          "placeholder": "Перспективы развития: переход на зеленую энергетику, демографический кризис...",
+          "path": "перспективы_развития"
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "crisisHistory",
+          "type": "timeline",
+          "title": "История кризисов",
+          "emptyMessage": "Кризисы не добавлены",
+          "template": "stateCrisisHistoryTemplate",
+          "dataPath": "история_кризисов_ключ"
+        },
+        {
+          "id": "currentChallenges",
+          "type": "dynamic",
+          "title": "Текущие вызовы",
+          "emptyMessage": "Вызовы не добавлены",
+          "template": "stateCurrentChallengeTemplate",
+          "dataPath": "текущие_вызовы_ключ"
+        },
+        {
+          "id": "internalThreats",
+          "type": "dynamic",
+          "title": "Внутренние угрозы",
+          "emptyMessage": "Угрозы не добавлены",
+          "template": "stateInternalThreatTemplate",
+          "dataPath": "внутренние_угрозы_ключ"
+        },
+        {
+          "id": "externalThreats",
+          "type": "dynamic",
+          "title": "Внешние угрозы",
+          "emptyMessage": "Угрозы не добавлены",
+          "template": "stateExternalThreatTemplate",
+          "dataPath": "внешние_угрозы_ключ"
+        },
+        {
+          "id": "ecologicalProblems",
+          "type": "dynamic",
+          "title": "Экологические проблемы",
+          "emptyMessage": "Проблемы не добавлены",
+          "template": "stateEcoProblemTemplate",
+          "dataPath": "экологические_проблемы_ключ"
+        },
+        {
+          "id": "socialProblems",
+          "type": "dynamic",
+          "title": "Социальные проблемы",
+          "emptyMessage": "Проблемы не добавлены",
+          "template": "stateSocialProblemTemplate",
+          "dataPath": "социальные_проблемы_ключ"
+        },
+        {
+          "id": "economicRisks",
+          "type": "dynamic",
+          "title": "Экономические риски",
+          "emptyMessage": "Риски не добавлены",
+          "template": "stateEconomicRiskTemplate",
+          "dataPath": "экономические_риски_ключ"
+        }
+      ]
+    }
+  ],
+  "templates": {
+    "stateRecognitionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "статус_признания", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "полное", "label": "Полное признание" },
+          { "value": "частичное", "label": "Частичное признание" },
+          { "value": "ограниченное", "label": "Ограниченное признание" },
+          { "value": "непризнанное", "label": "Непризнанное государство" },
+          { "value": "оспариваемое", "label": "Оспариваемое" }
+        ]},
+        { "type": "multiselect", "class": "признающие_государства", "label": "Признающие государства", "entityType": "state" },
+        { "type": "textarea", "class": "причины_изменений", "rows": 2, "placeholder": "Причины изменений: смена власти, подписание мирного договора..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Статус признания"
+    },
+    "stateTerritoryEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "расширение", "label": "Расширение" },
+          { "value": "потеря", "label": "Потеря" },
+          { "value": "аннексия", "label": "Аннексия" },
+          { "value": "уступка", "label": "Уступка" },
+          { "value": "раздел", "label": "Раздел" },
+          { "value": "объединение", "label": "Объединение" }
+        ]},
+        { "type": "textarea", "class": "территории", "rows": 2, "placeholder": "Территории: полуостров Крым, остров Сахалин..." },
+        { "type": "textarea", "class": "причины_изменений", "rows": 2, "placeholder": "Причины изменений: военная аннексия, добровольное присоединение..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Изменение территорий"
+    },
+    "stateBorderTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "государство", "label": "Соседнее государство", "entityType": "state" },
+        { "type": "text", "class": "длина_границы", "placeholder": "Длина границы: 1500 км, 300 миль..." },
+        { "type": "select", "class": "тип_границы", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "сухопутная", "label": "Сухопутная" },
+          { "value": "морская", "label": "Морская" },
+          { "value": "речная", "label": "Речная" },
+          { "value": "горная", "label": "Горная" }
+        ]},
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "открытая", "label": "Открытая" },
+          { "value": "контролируемая", "label": "Контролируемая" },
+          { "value": "закрытая", "label": "Закрытая" },
+          { "value": "оспариваемая", "label": "Оспариваемая" }
+        ]},
+        { "type": "select", "class": "спорные_территории", "label": "Есть ли спорные территории?", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "да", "label": "Да" },
+          { "value": "нет", "label": "Нет" },
+          { "value": "частично", "label": "Частично" }
+        ]},
+        { "type": "textarea", "class": "особенности", "rows": 2, "placeholder": "Особенности: горный рельеф, наличие демаркационной линии..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Граница"
+    },
+    "stateResourceTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название ресурса: нефть, золото, пресная вода..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "минеральный", "label": "Минеральный" },
+          { "value": "энергетический", "label": "Энергетический" },
+          { "value": "биологический", "label": "Биологический" },
+          { "value": "водный", "label": "Водный" }
+        ]},
+        { "type": "text", "class": "запасы", "placeholder": "Оценка запасов: 100 млрд баррелей, 500 тонн..." },
+        { "type": "text", "class": "добыча_в_год", "placeholder": "Объем добычи в год: 10 млн тонн..." },
+        { "type": "textarea", "class": "месторождения", "rows": 2, "placeholder": "Месторождения: Западная Сибирь, Урал..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Ресурс"
+    },
+    "stateGovEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "революция", "label": "Революция" },
+          { "value": "переворот", "label": "Переворот" },
+          { "value": "выборы", "label": "Выборы" },
+          { "value": "реформа", "label": "Реформа" },
+          { "value": "реставрация", "label": "Реставрация" }
+        ]},
+        { "type": "text", "class": "новое_правительство", "placeholder": "Новое правительство: Временное правительство, Совет Министров..." },
+        { "type": "textarea", "class": "причины_изменений", "rows": 2, "placeholder": "Причины изменений: массовые протесты, военный переворот..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Смена правительства"
+    },
+    "stateGovMemberTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "персонаж", "label": "Персонаж", "entityType": "character" },
+        { "type": "text", "class": "должность", "placeholder": "Должность: Министр обороны, Канцлер..." },
+        { "type": "calendar_date", "class": "дата_начала_полномочий", "label": "Дата начала полномочий", "placeholder": "Выберите дату по календарю" },
+        { "type": "text", "class": "партия", "placeholder": "Партийная принадлежность: Единая Россия, Консерваторы..." },
+        { "type": "textarea", "class": "полномочия", "rows": 2, "placeholder": "Полномочия: командование армией, управление бюджетом..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата окончания полномочий",
+          "limit": 1,
+          "emptyMessage": "Полномочия не окончены. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "конец_полномочий_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Член правительства"
+    },
+    "statePoliticalPartyTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Либерально-демократическая партия..." },
+        { "type": "select", "class": "идеология", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "консерватизм", "label": "Консерватизм" },
+          { "value": "либерализм", "label": "Либерализм" },
+          { "value": "социализм", "label": "Социализм" },
+          { "value": "национализм", "label": "Национализм" },
+          { "value": "центризм", "label": "Центризм" }
+        ]},
+        { "type": "calendar_date", "class": "дата_основания", "label": "Дата основания", "placeholder": "Выберите дату по календарю" },
+        { "type": "select", "class": "лидер", "label": "Лидер партии", "entityType": "character" },
+        { "type": "textarea", "class": "программа", "rows": 2, "placeholder": "Программа: снижение налогов, защита экологии..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "disbandDate",
+          "type": "dynamic",
+          "title": "Дата роспуска",
+          "limit": 1,
+          "emptyMessage": "Партия не распущена. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicDisbandDateTemplate",
+          "dataPath": "дата_роспуска_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Политическая партия"
+    },
+    "stateAdminDivisionTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Московская область, Техас..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "область", "label": "Область" },
+          { "value": "республика", "label": "Республика" },
+          { "value": "край", "label": "Край" },
+          { "value": "округ", "label": "Округ" },
+          { "value": "город", "label": "Город" }
+        ]},
+        { "type": "text", "class": "столица", "placeholder": "Столица: Москва, Остин..." },
+        { "type": "text", "class": "площадь", "placeholder": "Площадь: 44 300 кв. км..." },
+        { "type": "text", "class": "население", "placeholder": "Население: 7.7 млн человек..." },
+        { "type": "select", "class": "губернатор", "label": "Губернатор/Глава", "entityType": "character" },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: промышленный регион, аграрный центр..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Административная единица"
+    },
+    "stateLinkedOrgTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "организация", "label": "Организация", "entityType": "organization" },
+        { "type": "select", "class": "тип_связи", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "подчинение", "label": "Подчинение государству" },
+          { "value": "сотрудничество", "label": "Сотрудничество" },
+          { "value": "спонсорство", "label": "Государственное спонсорство" },
+          { "value": "контроль", "label": "Контроль государством" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: контролирует добычу ресурсов, спонсирует исследования..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Связанная организация"
+    },
+    "stateEcoEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "кризис", "label": "Кризис" },
+          { "value": "бум", "label": "Экономический бум" },
+          { "value": "реформа", "label": "Реформа" },
+          { "value": "санкции", "label": "Санкции" },
+          { "value": "открытие_ресурсов", "label": "Открытие ресурсов" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: обвал фондового рынка, открытие крупного месторождения..." },
+        { "type": "text", "class": "эффект_на_ввп", "placeholder": "Эффект на ВВП: падение на 10%, рост на 5%..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Экономическое событие"
+    },
+    "stateIndustryTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: машиностроение, IT-сектор..." },
+        { "type": "text", "class": "доля_в_ввп", "placeholder": "Доля в ВВП: 15%, 5%..." },
+        { "type": "text", "class": "занятость", "placeholder": "Занятость: 2 млн человек, 500 тыс. человек..." },
+        { "type": "text", "class": "рост", "placeholder": "Рост: 3% в год, стагнация..." },
+        { "type": "textarea", "class": "ключевые_компании", "rows": 2, "placeholder": "Ключевые компании: Газпром, Apple, Роскосмос..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Отрасль экономики"
+    },
+    "stateTradePartnerTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "государство", "label": "Государство-партнер", "entityType": "state" },
+        { "type": "text", "class": "объём_торговли", "placeholder": "Объём торговли: 100 млрд долларов..." },
+        { "type": "text", "class": "экспорт", "placeholder": "Экспорт: нефть, газ, металлы..." },
+        { "type": "text", "class": "импорт", "placeholder": "Импорт: автомобили, электроника..." },
+        { "type": "textarea", "class": "торговые_соглашения", "rows": 2, "placeholder": "Торговые соглашения: зона свободной торговли, таможенный союз..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Торговый партнер"
+    },
+    "stateLargeCompanyTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Организация (Корпорация)", "entityType": "organization" },
+        { "type": "select", "class": "отрасль", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "энергетика", "label": "Энергетика" },
+          { "value": "финансы", "label": "Финансы" },
+          { "value": "промышленность", "label": "Промышленность" },
+          { "value": "технологии", "label": "Технологии" },
+          { "value": "розничная_торговля", "label": "Розничная торговля" }
+        ]},
+        { "type": "select", "class": "форма_собственности", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "государственная", "label": "Государственная" },
+          { "value": "частная", "label": "Частная" },
+          { "value": "смешанная", "label": "Смешанная" },
+          { "value": "иностранная", "label": "Иностранная" }
+        ]},
+        { "type": "text", "class": "выручка", "placeholder": "Выручка: 50 млрд долларов..." },
+        { "type": "text", "class": "сотрудники", "placeholder": "Сотрудники: 100 000 человек..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: монополист на рынке энергетики, крупнейший банк..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Крупная компания"
+    },
+    "stateMilitaryEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "война", "label": "Война" },
+          { "value": "модернизация", "label": "Модернизация" },
+          { "value": "сокращение", "label": "Сокращение армии" },
+          { "value": "расширение", "label": "Расширение армии" },
+          { "value": "поражение", "label": "Военное поражение" },
+          { "value": "победа", "label": "Военная победа" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: переход на контрактную армию, закупка новых истребителей..." },
+        { "type": "text", "class": "изменение_численности", "placeholder": "Изменение численности: сокращение на 100 тыс., увеличение на 50 тыс...." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Военное событие"
+    },
+    "stateMilitaryBranchTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Сухопутные войска, ВВС, Космофлот..." },
+        { "type": "text", "class": "численность", "placeholder": "Численность: 500 000 человек..." },
+        { "type": "select", "class": "командующий", "label": "Командующий", "entityType": "character" },
+        { "type": "text", "class": "бюджет", "placeholder": "Бюджет: 20 млрд долларов..." },
+        { "type": "textarea", "class": "основное_вооружение", "rows": 2, "placeholder": "Основное вооружение: танки Т-90, истребители Су-35..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Вид войск"
+    },
+    "stateMilitaryBaseTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: База ВМФ в Севастополе, Зона 51..." },
+        { "type": "select", "class": "тип_базы", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "авиационная", "label": "Авиационная" },
+          { "value": "военно-морская", "label": "Военно-морская" },
+          { "value": "сухопутная", "label": "Сухопутная" },
+          { "value": "ракетная", "label": "Ракетная" },
+          { "value": "объединённая", "label": "Объединённая" }
+        ]},
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "действующая", "label": "Действующая" },
+          { "value": "законсервированная", "label": "Законсервированная" },
+          { "value": "закрытая", "label": "Закрытая" },
+          { "value": "строящаяся", "label": "Строящаяся" }
+        ]},
+        { "type": "text", "class": "местоположение", "placeholder": "Местоположение: побережье Черного моря, пустыня Невада..." },
+        { "type": "text", "class": "численность", "placeholder": "Численность: 5 000 военнослужащих..." },
+        { "type": "textarea", "class": "вооружение", "rows": 2, "placeholder": "Вооружение: системы ПВО С-400, ракетные крейсеры..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Военная база"
+    },
+    "stateMicCompanyTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Организация (ВПК)", "entityType": "organization" },
+        { "type": "select", "class": "специализация", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "бронетехника", "label": "Бронетехника" },
+          { "value": "авиация", "label": "Авиация" },
+          { "value": "кораблестроение", "label": "Кораблестроение" },
+          { "value": "ракетные_системы", "label": "Ракетные системы" },
+          { "value": "электроника", "label": "Электроника" }
+        ]},
+        { "type": "text", "class": "выручка", "placeholder": "Выручка: 10 млрд долларов..." },
+        { "type": "text", "class": "сотрудники", "placeholder": "Сотрудники: 50 000 человек..." },
+        { "type": "textarea", "class": "основная_продукция", "rows": 2, "placeholder": "Основная продукция: танки, беспилотники, радары..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Компания ВПК"
+    },
+    "stateAlliedMilitaryOrgTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "организация", "label": "Организация", "entityType": "organization" },
+        { "type": "select", "class": "тип_сотрудничества", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "военная_поддержка", "label": "Военная поддержка" },
+          { "value": "логистика", "label": "Логистика" },
+          { "value": "разведка", "label": "Разведка" },
+          { "value": "обучение", "label": "Обучение" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: предоставляет наемников, осуществляет разведку..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Союзная организация"
+    },
+    "stateDemographicEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "рост", "label": "Рост" },
+          { "value": "спад", "label": "Спад" },
+          { "value": "миграция", "label": "Массовая миграция" },
+          { "value": "эпидемия", "label": "Эпидемия" },
+          { "value": "военные_потери", "label": "Военные потери" }
+        ]},
+        { "type": "text", "class": "изменение_численности", "placeholder": "Изменение численности: -2 млн человек, +5 млн человек..." },
+        { "type": "textarea", "class": "причины", "rows": 2, "placeholder": "Причины: Вторая мировая война, экономический бум..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Демографический скачок"
+    },
+    "stateEthnicGroupTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: русские, татары, индейцы..." },
+        { "type": "text", "class": "доля_населения", "placeholder": "Доля населения: 80%, 5%..." },
+        { "type": "text", "class": "язык", "placeholder": "Язык: русский, татарский, английский..." },
+        { "type": "select", "class": "религия", "label": "Основная религия (Организация)", "entityType": "organization" },
+        { "type": "text", "class": "регионы_проживания", "placeholder": "Регионы проживания: Поволжье, Сибирь, резервации..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Этническая группа"
+    },
+    "stateMajorCityTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Москва, Нью-Йорк, Токио..." },
+        { "type": "text", "class": "население", "placeholder": "Население: 12 млн человек..." },
+        { "type": "text", "class": "площадь", "placeholder": "Площадь: 2511 кв. км..." },
+        { "type": "calendar_date", "class": "дата_основания", "label": "Дата основания", "placeholder": "Выберите дату по календарю" },
+        { "type": "text", "class": "экономическая_специализация", "placeholder": "Экономическая специализация: финансовый центр, тяжелая промышленность..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "destroyDate",
+          "type": "dynamic",
+          "title": "Дата разрушения/запустения",
+          "limit": 1,
+          "emptyMessage": "Город существует. Нажмите «Добавить», чтобы указать дату окончания.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_разрушения_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Крупный город"
+    },
+    "stateInfraEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "строительство", "label": "Строительство" },
+          { "value": "модернизация", "label": "Модернизация" },
+          { "value": "разрушение", "label": "Разрушение" },
+          { "value": "расширение", "label": "Расширение сети" },
+          { "value": "приватизация", "label": "Приватизация/Национализация" }
+        ]},
+        { "type": "text", "class": "объект", "placeholder": "Объект: Транссибирская магистраль, космодром Байконур..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: соединяет восток и запад страны, крупнейший космодром..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Изменение инфраструктуры"
+    },
+    "stateTransportTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: РЖД, Метрополитен..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "метро", "label": "Метро/Монорельс" },
+          { "value": "железная_дорога", "label": "Железная дорога" },
+          { "value": "автомобильный", "label": "Автомобильный" },
+          { "value": "авиационный", "label": "Авиационный" },
+          { "value": "водный", "label": "Водный" }
+        ]},
+        { "type": "text", "class": "протяженность", "placeholder": "Протяженность: 85 000 км..." },
+        { "type": "text", "class": "пассажиропоток", "placeholder": "Пассажиропоток: 1 млрд человек в год..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: основная транспортная артерия страны..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Транспортная сеть"
+    },
+    "stateEnergyTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Росэнергоатом, Единая энергосистема..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "электрическая", "label": "Электрическая" },
+          { "value": "газовая", "label": "Газовая" },
+          { "value": "нефтяная", "label": "Нефтяная" },
+          { "value": "атомная", "label": "Атомная" },
+          { "value": "возобновляемая", "label": "Возобновляемая" }
+        ]},
+        { "type": "text", "class": "мощность", "placeholder": "Мощность: 250 ГВт..." },
+        { "type": "text", "class": "выработка_в_год", "placeholder": "Выработка: 1 трлн кВт*ч..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: обеспечивает 90% потребностей страны в электроэнергии..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Энергетическая сеть"
+    },
+    "stateCommTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Ростелеком, Чебурнет..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "телекоммуникации", "label": "Телекоммуникации (проводные)" },
+          { "value": "интернет", "label": "Интернет/Киберсеть" },
+          { "value": "мобильная_связь", "label": "Мобильная связь" },
+          { "value": "спутниковая_связь", "label": "Спутниковая связь" },
+          { "value": "вещание", "label": "Теле/Радиовещание" }
+        ]},
+        { "type": "text", "class": "абоненты", "placeholder": "Абоненты: 50 млн человек..." },
+        { "type": "text", "class": "покрытие", "placeholder": "Покрытие: 95% территории страны..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: крупнейший провайдер интернета и связи..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Коммуникационная сеть"
+    },
+    "stateEducationTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Учреждение (Организация)", "entityType": "organization" },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "университет", "label": "Университет" },
+          { "value": "колледж", "label": "Колледж" },
+          { "value": "школа", "label": "Школа/Академия" },
+          { "value": "нии", "label": "НИИ" },
+          { "value": "профессиональное", "label": "Профессиональное" }
+        ]},
+        { "type": "text", "class": "студенты", "placeholder": "Студенты: 50 000 обучающихся..." },
+        { "type": "text", "class": "преподаватели", "placeholder": "Преподаватели: 5 000 профессоров..." },
+        { "type": "text", "class": "специализация", "placeholder": "Специализация: технические науки, медицина..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Образовательное учреждение"
+    },
+    "stateMedicalTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Медицинское учреждение (Организация)", "entityType": "organization" },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "больница", "label": "Больница" },
+          { "value": "поликлиника", "label": "Поликлиника" },
+          { "value": "нии", "label": "НИИ/Лаборатория" },
+          { "value": "специализированный", "label": "Специализированный центр" },
+          { "value": "скорая_помощь", "label": "Скорая помощь" }
+        ]},
+        { "type": "text", "class": "койко_мест", "placeholder": "Койко-мест: 1 500 мест..." },
+        { "type": "text", "class": "врачи", "placeholder": "Врачи: 300 специалистов..." },
+        { "type": "text", "class": "специализация", "placeholder": "Специализация: кардиология, онкология..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Медицинское учреждение"
+    },
+    "stateCultureEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "возрождение", "label": "Возрождение (Ренессанс)" },
+          { "value": "упадок", "label": "Упадок/Деградация" },
+          { "value": "синтез", "label": "Культурный синтез (слияние)" },
+          { "value": "революция", "label": "Культурная революция" },
+          { "value": "изоляция", "label": "Изоляция" }
+        ]},
+        { "type": "text", "class": "сфера_культуры", "placeholder": "Сфера культуры: литература, архитектура, музыка..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: переход от классицизма к модернизму..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Смена культурной парадигмы"
+    },
+    "stateTraditionTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Масленица, День Благодарения..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "праздник", "label": "Праздник" },
+          { "value": "ритуал", "label": "Ритуал" },
+          { "value": "обычай", "label": "Обычай" },
+          { "value": "фестиваль", "label": "Фестиваль" },
+          { "value": "церемония", "label": "Церемония" }
+        ]},
+        { "type": "calendar_date", "class": "дата_начала", "label": "Дата проведения (начало)", "placeholder": "Выберите дату по календарю" },
+        { "type": "text", "class": "регион", "placeholder": "Регион: повсеместно, южные провинции..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: сжигание чучела, поедание блинов..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата окончания проведения",
+          "limit": 1,
+          "emptyMessage": "Традиция продолжается. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Традиция/Обычай"
+    },
+    "stateReligionTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Религия (Организация)", "entityType": "organization" },
+        { "type": "text", "class": "верующих", "placeholder": "Количество верующих: 100 млн человек..." },
+        { "type": "text", "class": "основной_регион", "placeholder": "Основной регион: центральная часть страны, столица..." },
+        { "type": "select", "class": "глава", "label": "Духовный лидер", "entityType": "character" },
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "государственная", "label": "Государственная" },
+          { "value": "традиционная", "label": "Традиционная" },
+          { "value": "признанная", "label": "Признанная" },
+          { "value": "непризнанная", "label": "Непризнанная" },
+          { "value": "запрещённая", "label": "Запрещённая" }
+        ]},
+        { "type": "textarea", "class": "особенности", "rows": 2, "placeholder": "Особенности: строгий пост, ежедневные молитвы..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Религия"
+    },
+    "stateHolidayTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: День Независимости, Новый Год..." },
+        { "type": "calendar_date", "class": "дата_начала", "label": "Дата праздника (начало)", "placeholder": "Выберите дату по календарю" },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "государственный", "label": "Государственный" },
+          { "value": "религиозный", "label": "Религиозный" },
+          { "value": "национальный", "label": "Национальный" },
+          { "value": "культурный", "label": "Культурный" },
+          { "value": "профессиональный", "label": "Профессиональный" }
+        ]},
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "официальный_выходной", "label": "Официальный выходной" },
+          { "value": "рабочий_день", "label": "Рабочий день (отмечается)" },
+          { "value": "памятный_день", "label": "Памятный день" }
+        ]},
+        { "type": "textarea", "class": "традиции", "rows": 2, "placeholder": "Традиции: парад, фейерверки, семейный ужин..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата окончания праздника",
+          "limit": 1,
+          "emptyMessage": "Праздник однодневный или не имеет конца. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Празник"
+    },
+    "stateArtTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Название направления/организации", "entityType": "organization" },
+        { "type": "select", "class": "вид_искусства", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "живопись", "label": "Живопись" },
+          { "value": "литература", "label": "Литература" },
+          { "value": "музыка", "label": "Музыка" },
+          { "value": "театр", "label": "Театр" },
+          { "value": "кино", "label": "Кинематограф" },
+          { "value": "архитектура", "label": "Архитектура" }
+        ]},
+        { "type": "calendar_date", "class": "дата_начала", "label": "Начало периода", "placeholder": "Выберите дату по календарю" },
+        { "type": "text", "class": "представители", "placeholder": "Представители: Пушкин, Толстой, Пикассо..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: романтизм, акцент на человеческих чувствах..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Конец периода",
+          "limit": 1,
+          "emptyMessage": "Период не окончен. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Искусство"
+    },
+    "stateSportTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "вид_спорта", "placeholder": "Вид спорта: футбол, хоккей, шахматы..." },
+        { "type": "text", "class": "популярность", "placeholder": "Популярность: спорт №1 в стране..." },
+        { "type": "text", "class": "профессиональные_лиги", "placeholder": "Профессиональные лиги: КХЛ, РПЛ, НХЛ..." },
+        { "type": "text", "class": "участие_в_олимпиадах", "placeholder": "Участие в олимпиадах: регулярно, более 100 золотых медалей..." },
+        { "type": "textarea", "class": "достижения", "rows": 2, "placeholder": "Достижения: чемпионы мира 2018 года, победители Кубка..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Спорт"
+    },
+    "stateDiplomacyEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "союз", "label": "Новый союз" },
+          { "value": "конфликт", "label": "Дипломатический конфликт" },
+          { "value": "договор", "label": "Важный договор" },
+          { "value": "признание", "label": "Признание" },
+          { "value": "санкции", "label": "Санкции" }
+        ]},
+        { "type": "select", "class": "с_государством", "label": "С государством", "entityType": "state" },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: подписание мирного договора, объявление войны..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Дипломатическое событие"
+    },
+    "stateDiplomaticRelationTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "государство", "label": "Государство-партнер", "entityType": "state" },
+        { "type": "select", "class": "уровень_отношений", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "стратегическое_партнёрство", "label": "Стратегическое партнёрство" },
+          { "value": "союзник", "label": "Союзник" },
+          { "value": "дружественные", "label": "Дружественные" },
+          { "value": "нейтральные", "label": "Нейтральные" },
+          { "value": "напряжённые", "label": "Напряжённые" },
+          { "value": "враждебные", "label": "Враждебные" },
+          { "value": "война", "label": "Состояние войны" }
+        ]},
+        { "type": "text", "class": "дипломатический_статус", "placeholder": "Дипломатический статус: есть посольства, безвизовый режим..." },
+        { "type": "calendar_date", "class": "дата_установления", "label": "Дата установления", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "договоры_и_соглашения", "rows": 2, "placeholder": "Договоры и соглашения: пакт о ненападении, договор о свободной торговле..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата разрыва отношений",
+          "limit": 1,
+          "emptyMessage": "Отношения поддерживаются. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_разрыва_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Дипломатическое отношение"
+    },
+    "stateOrgRelationTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "организация", "label": "Организация", "entityType": "organization" },
+        { "type": "select", "class": "тип_отношений", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "союзнические", "label": "Союзнические" },
+          { "value": "сотрудничество", "label": "Сотрудничество" },
+          { "value": "нейтральные", "label": "Нейтральные" },
+          { "value": "соперничество", "label": "Соперничество" },
+          { "value": "враждебные", "label": "Враждебные" },
+          { "value": "война", "label": "Война" }
+        ]},
+        { "type": "range", "class": "уровень_доверия", "min": 0, "max": 100, "value": 50, "label": "Уровень доверия (0% - 100%)" },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: активное сотрудничество в сфере безопасности, совместные учения..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Связь с организацией"
+    },
+    "stateTreatyTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Варшавский договор, НАТО..." },
+        { "type": "calendar_date", "class": "дата_подписания", "label": "Дата подписания", "placeholder": "Выберите дату по календарю" },
+        { "type": "multiselect", "class": "стороны", "label": "Стороны (Государства)", "entityType": "state" },
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "действующий", "label": "Действующий" },
+          { "value": "приостановлен", "label": "Приостановлен" },
+          { "value": "расторгнут", "label": "Расторгнут" },
+          { "value": "истёк", "label": "Истёк срок" }
+        ]},
+        { "type": "textarea", "class": "основные_положения", "rows": 2, "placeholder": "Основные положения: коллективная оборона, снижение таможенных пошлин..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата прекращения действия",
+          "limit": 1,
+          "emptyMessage": "Договор действует. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_прекращения_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Международный договор"
+    },
+    "stateIntlOrgTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Организация", "entityType": "organization" },
+        { "type": "select", "class": "участие", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "полноправный_член", "label": "Полноправный член" },
+          { "value": "наблюдатель", "label": "Наблюдатель" },
+          { "value": "ассоциированный", "label": "Ассоциированный член" },
+          { "value": "приостановлено", "label": "Участие приостановлено" },
+          { "value": "не_участвует", "label": "Не участвует" }
+        ]},
+        { "type": "calendar_date", "class": "дата_вступления", "label": "Дата вступления", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "роль_и_участие", "rows": 2, "placeholder": "Роль и участие: страна-основатель, один из главных спонсоров..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата выхода",
+          "limit": 1,
+          "emptyMessage": "Состоит в организации. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_выхода_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Участие в международной организации"
+    },
+    "stateDiplomaticMissionTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "государство", "label": "Государство размещения", "entityType": "state" },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "посольство", "label": "Посольство" },
+          { "value": "консульство", "label": "Консульство" },
+          { "value": "миссия", "label": "Дипломатическая миссия" },
+          { "value": "представительство", "label": "Представительство" }
+        ]},
+        { "type": "text", "class": "город", "placeholder": "Город: Вашингтон, Париж, Пекин..." },
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "действующее", "label": "Действующее" },
+          { "value": "закрыто", "label": "Закрыто" },
+          { "value": "приостановлено", "label": "Приостановлено" }
+        ]},
+        { "type": "textarea", "class": "дополнительная_информация", "rows": 2, "placeholder": "Дополнительная информация: крупнейшее посольство в регионе, подвергалось нападениям..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Представительство"
+    },
+    "stateLegalEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "конституция", "label": "Принятие/смена конституции" },
+          { "value": "реформа", "label": "Правовая реформа" },
+          { "value": "кодификация", "label": "Кодификация законов" },
+          { "value": "либерализация", "label": "Либерализация права" },
+          { "value": "ограничение", "label": "Ограничение прав/Ужесточение" }
+        ]},
+        { "type": "text", "class": "закон_акт", "placeholder": "Закон/Акт: Конституция 1993 года, Билль о правах..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: закрепил свободу слова, ввел суд присяжных..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Изменение в праве"
+    },
+    "stateCourtTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Верховный Суд, Конституционный Суд..." },
+        { "type": "select", "class": "уровень", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "конституционный", "label": "Конституционный/Высший" },
+          { "value": "верховный", "label": "Верховный" },
+          { "value": "федеральный", "label": "Федеральный" },
+          { "value": "региональный", "label": "Региональный" },
+          { "value": "местный", "label": "Местный" }
+        ]},
+        { "type": "select", "class": "инстанция", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "первая", "label": "Первая" },
+          { "value": "апелляционная", "label": "Апелляционная" },
+          { "value": "кассационная", "label": "Кассационная" },
+          { "value": "надзорная", "label": "Надзорная" }
+        ]},
+        { "type": "text", "class": "местоположение", "placeholder": "Местоположение: столица, историческое здание..." },
+        { "type": "calendar_date", "class": "дата_основания", "label": "Дата основания", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "компетенция", "rows": 2, "placeholder": "Компетенция: толкование конституции, рассмотрение особо важных дел..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата упразднения",
+          "limit": 1,
+          "emptyMessage": "Суд действует. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicAbolitionDateTemplate",
+          "dataPath": "дата_упразднения_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Суд"
+    },
+    "stateLawTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Уголовный кодекс, Закон об образовании..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "кодекс", "label": "Кодекс" },
+          { "value": "федеральный_закон", "label": "Федеральный/Общий закон" },
+          { "value": "указ_правителя", "label": "Указ правителя/президента" },
+          { "value": "постановление_правительства", "label": "Постановление правительства" },
+          { "value": "конституция", "label": "Конституция/Устав" }
+        ]},
+        { "type": "calendar_date", "class": "дата_принятия", "label": "Дата принятия", "placeholder": "Выберите дату по календарю" },
+        { "type": "select", "class": "статус", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "действующий", "label": "Действующий" },
+          { "value": "изменён", "label": "Изменён/Дополнен" },
+          { "value": "отменён", "label": "Отменён" },
+          { "value": "проект", "label": "Проект (не принят)" }
+        ]},
+        { "type": "textarea", "class": "основные_положения", "rows": 2, "placeholder": "Основные положения: устанавливает наказания за преступления, регулирует школы..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата отмены",
+          "limit": 1,
+          "emptyMessage": "Закон действует. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicAbolitionDateTemplate",
+          "dataPath": "дата_отмены_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Законодательный акт"
+    },
+    "stateLawEnforcementTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "название", "label": "Организация", "entityType": "organization" },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "полиция", "label": "Полиция/Милиция" },
+          { "value": "следственный", "label": "Следственный орган" },
+          { "value": "служба_безопасности", "label": "Служба гос. безопасности/Разведка" },
+          { "value": "прокуратура", "label": "Прокуратура" },
+          { "value": "таможня", "label": "Таможня/Пограничная служба" }
+        ]},
+        { "type": "text", "class": "сотрудники", "placeholder": "Сотрудники: 1 млн человек..." },
+        { "type": "calendar_date", "class": "дата_основания", "label": "Дата основания", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "функции", "rows": 2, "placeholder": "Функции: охрана порядка, расследование тяжких преступлений, контрразведка..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата упразднения",
+          "limit": 1,
+          "emptyMessage": "Орган действует. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicAbolitionDateTemplate",
+          "dataPath": "дата_упразднения_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Орган правопорядка"
+    },
+    "stateHistoryTimelineTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_события", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "война", "label": "Война" },
+          { "value": "революция", "label": "Революция/Восстание" },
+          { "value": "договор", "label": "Подписание договора" },
+          { "value": "открытие", "label": "Научное/Географическое открытие" },
+          { "value": "катастрофа", "label": "Катастрофа" },
+          { "value": "достижение", "label": "Великое достижение" }
+        ]},
+        { "type": "text", "class": "название_события", "placeholder": "Название: Великая Французская Революция, Первая мировая война..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: свержение монархии, установление республики..." },
+        { "type": "textarea", "class": "последствия", "rows": 2, "placeholder": "Последствия: казнь короля, эпоха террора, принятие новой конституции..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Ключевое историческое событие"
+    },
+    "stateEraTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Викторианская эпоха, Эпоха Сражающихся царств..." },
+        { "type": "calendar_date", "class": "дата_начала_эпохи", "label": "Дата начала эпохи", "placeholder": "Выберите дату по календарю" },
+        { "type": "multiselect", "class": "правители", "label": "Правители", "entityType": "character" },
+        { "type": "text", "class": "столица", "placeholder": "Столица: Киото, Санкт-Петербург..." },
+        { "type": "textarea", "class": "основные_события", "rows": 3, "placeholder": "Основные события: индустриализация, колониальные войны..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата окончания эпохи",
+          "limit": 1,
+          "emptyMessage": "Эпоха продолжается. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Историческая эпоха"
+    },
+    "stateHistoricalFigureTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "select", "class": "имя", "label": "Личность", "entityType": "character" },
+        { "type": "calendar_date", "class": "дата_рождения", "label": "Дата рождения", "placeholder": "Выберите дату по календарю" },
+        { "type": "text", "class": "титул_должность", "placeholder": "Титул/Должность: Император, Президент, Генерал..." },
+        { "type": "calendar_date", "class": "дата_начала_правления", "label": "Дата начала правления", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "вклад_и_достижения", "rows": 2, "placeholder": "Вклад: выиграл войну, провел успешные реформы экономики..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endRuleDate",
+          "type": "dynamic",
+          "title": "Дата окончания правления",
+          "limit": 1,
+          "emptyMessage": "Правление продолжается. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_правления_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Историческая личность"
+    },
+    "stateRegionEvolutionTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_изменения", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "создание", "label": "Создание региона" },
+          { "value": "упразднение", "label": "Упразднение региона" },
+          { "value": "объединение", "label": "Объединение регионов" },
+          { "value": "разделение", "label": "Разделение региона" },
+          { "value": "автономия", "label": "Предоставление автономии" }
+        ]},
+        { "type": "text", "class": "регион", "placeholder": "Регион: Аляска, Сибирь, Крым..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: регион получил автономию после серии протестов..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Изменение в делении"
+    },
+    "stateAdminRegionTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Уральская область, Бавария..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "область", "label": "Область" },
+          { "value": "республика", "label": "Республика" },
+          { "value": "край", "label": "Край/Провинция" },
+          { "value": "автономный_округ", "label": "Автономный округ" },
+          { "value": "федеральный_город", "label": "Город федерального значения" }
+        ]},
+        { "type": "text", "class": "столица", "placeholder": "Столица: Екатеринбург, Мюнхен..." },
+        { "type": "text", "class": "площадь", "placeholder": "Площадь: 100 000 кв. км..." },
+        { "type": "text", "class": "население", "placeholder": "Население: 5 млн человек..." },
+        { "type": "select", "class": "губернатор", "label": "Губернатор", "entityType": "character" },
+        { "type": "text", "class": "экономическая_специализация", "placeholder": "Специализация: металлургия, автомобилестроение..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Административный регион"
+    },
+    "stateAutonomousRegionTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: Республика Татарстан, Каталония..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "республика", "label": "Республика" },
+          { "value": "автономный_округ", "label": "Автономный округ" },
+          { "value": "автономная_область", "label": "Автономная область" },
+          { "value": "особый_статус", "label": "Регион с особым статусом" }
+        ]},
+        { "type": "text", "class": "столица", "placeholder": "Столица: Казань, Барселона..." },
+        { "type": "calendar_date", "class": "дата_образования", "label": "Дата образования", "placeholder": "Выберите дату по календарю" },
+        { "type": "text", "class": "население", "placeholder": "Население: 4 млн человек..." },
+        { "type": "text", "class": "официальные_языки", "placeholder": "Официальные языки: татарский, русский, каталанский..." },
+        { "type": "textarea", "class": "особые_права", "rows": 2, "placeholder": "Особые права: собственная конституция, парламент, налоговая автономия..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата упразднения",
+          "limit": 1,
+          "emptyMessage": "Автономия существует. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicAbolitionDateTemplate",
+          "dataPath": "дата_упразднения_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Автономия"
+    },
+    "stateRegionalCapitalTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "город", "placeholder": "Город: Новосибирск, Лос-Анджелес..." },
+        { "type": "text", "class": "регион", "placeholder": "Регион: Сибирский ФО, Калифорния..." },
+        { "type": "text", "class": "население", "placeholder": "Население: 1.6 млн человек..." },
+        { "type": "calendar_date", "class": "дата_основания", "label": "Дата основания", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "функции", "rows": 2, "placeholder": "Функции: административный центр, научный кластер..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата разрушения/статуса",
+          "limit": 1,
+          "emptyMessage": "Город существует. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Региональная столица"
+    },
+    "stateRegionalEconomyTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "регион", "placeholder": "Регион: Дальний Восток, Техас..." },
+        { "type": "text", "class": "врп", "placeholder": "Валовой региональный продукт (ВРП): 100 млрд долларов..." },
+        { "type": "textarea", "class": "основные_отрасли", "rows": 2, "placeholder": "Основные отрасли: добыча угля, рыболовство, IT..." },
+        { "type": "textarea", "class": "крупнейшие_предприятия", "rows": 2, "placeholder": "Крупнейшие предприятия: Норникель, SpaceX..." },
+        { "type": "textarea", "class": "особенности", "rows": 2, "placeholder": "Особенности: высокая зависимость от федерального бюджета, наличие особых экономических зон..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Экономика региона"
+    },
+    "stateCrisisHistoryTemplate": {
+      "type": "timeline",
+      "fields": [
+        { "type": "select", "class": "начальная_глава", "label": "Начальная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "конечная_глава", "label": "Конечная глава", "entityType": "chapter", "placeholder": "Выберите главу..." },
+        { "type": "select", "class": "тип_кризиса", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "экономический", "label": "Экономический" },
+          { "value": "политический", "label": "Политический" },
+          { "value": "социальный", "label": "Социальный" },
+          { "value": "военный", "label": "Военный" },
+          { "value": "экологический", "label": "Экологический" }
+        ]},
+        { "type": "text", "class": "название_кризиса", "placeholder": "Название: Великая депрессия, Карибский кризис..." },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: обвал биржи, рост безработицы до 25%..." },
+        { "type": "textarea", "class": "последствия", "rows": 2, "placeholder": "Последствия: смена правительства, программа 'Новый курс'..." }
+      ],
+      "itemClass": "timeline-item",
+      "headerTitle": "Исторический кризис"
+    },
+    "stateCurrentChallengeTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: старение населения, инфляция..." },
+        { "type": "select", "class": "сфера", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "демографический", "label": "Демографический" },
+          { "value": "экономический", "label": "Экономический" },
+          { "value": "политический", "label": "Политический" },
+          { "value": "социальный", "label": "Социальный" },
+          { "value": "экологический", "label": "Экологический" }
+        ]},
+        { "type": "select", "class": "уровень_серьезности", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "низкий", "label": "Низкий" },
+          { "value": "средний", "label": "Средний" },
+          { "value": "высокий", "label": "Высокий" },
+          { "value": "критический", "label": "Критический" }
+        ]},
+        { "type": "calendar_date", "class": "дата_начала_проблемы", "label": "Дата возникновения проблемы", "placeholder": "Выберите дату по календарю" },
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: рождаемость упала ниже уровня воспроизводства..." }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата решения/окончания",
+          "limit": 1,
+          "emptyMessage": "Проблема актуальна. Нажмите «Добавить», чтобы указать дату.",
+          "template": "dynamicEndDateTemplate",
+          "dataPath": "дата_окончания_ключ"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Текущий вызов"
+    },
+    "stateInternalThreatTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: сепаратизм на юге, наркокартели..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "сепаратизм", "label": "Сепаратизм" },
+          { "value": "терроризм", "label": "Терроризм" },
+          { "value": "коррупция", "label": "Коррупция" },
+          { "value": "беспорядки", "label": "Массовые беспорядки" },
+          { "value": "экономическая", "label": "Экономическая угроза" }
+        ]},
+        { "type": "text", "class": "регион", "placeholder": "Регион: южные провинции, столица..." },
+        { "type": "select", "class": "уровень_опасности", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "низкий", "label": "Низкий" },
+          { "value": "средний", "label": "Средний" },
+          { "value": "высокий", "label": "Высокий" },
+          { "value": "критический", "label": "Критический" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: вооруженные группировки контролируют часть территории..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Внутренняя угроза"
+    },
+    "stateExternalThreatTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: территориальные претензии соседа, торговое эмбарго..." },
+        { "type": "select", "class": "источник", "label": "Государство-источник угрозы", "entityType": "state" },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "военная", "label": "Военная" },
+          { "value": "экономическая", "label": "Экономическая" },
+          { "value": "политическая", "label": "Политическая" },
+          { "value": "санкции", "label": "Санкции" },
+          { "value": "гибридная", "label": "Гибридная война" }
+        ]},
+        { "type": "select", "class": "уровень_опасности", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "низкий", "label": "Низкий" },
+          { "value": "средний", "label": "Средний" },
+          { "value": "высокий", "label": "Высокий" },
+          { "value": "критический", "label": "Критический" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: соседняя империя наращивает войска на границе..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Внешняя угроза"
+    },
+    "stateEcoProblemTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: загрязнение реки Амур, смог в столице..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "загрязнение", "label": "Загрязнение" },
+          { "value": "вырубка_лесов", "label": "Вырубка лесов" },
+          { "value": "изменение_климата", "label": "Изменение климата" },
+          { "value": "потеря_биоразнообразия", "label": "Потеря биоразнообразия" },
+          { "value": "истощение_ресурсов", "label": "Истощение ресурсов" }
+        ]},
+        { "type": "text", "class": "регион", "placeholder": "Регион: промышленные центры, крупные реки..." },
+        { "type": "select", "class": "серьезность", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "низкая", "label": "Низкая" },
+          { "value": "средняя", "label": "Средняя" },
+          { "value": "высокая", "label": "Высокая" },
+          { "value": "критическая", "label": "Критическая" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: выбросы заводов привели к кислотным дождям..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Экологическая проблема"
+    },
+    "stateSocialProblemTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: нехватка школ, эпидемия нового вируса..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "бедность", "label": "Бедность" },
+          { "value": "неравенство", "label": "Социальное неравенство" },
+          { "value": "безработица", "label": "Безработица" },
+          { "value": "здравоохранение", "label": "Кризис здравоохранения" },
+          { "value": "образование", "label": "Кризис образования" }
+        ]},
+        { "type": "text", "class": "масштаб", "placeholder": "Масштаб: затрагивает 30% населения, национальная проблема..." },
+        { "type": "select", "class": "тенденция", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "улучшается", "label": "Улучшается" },
+          { "value": "стабильная", "label": "Стабильная" },
+          { "value": "ухудшается", "label": "Ухудшается" },
+          { "value": "критическая", "label": "Критическая" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: больницы переполнены, не хватает врачей..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Социальная проблема"
+    },
+    "stateEconomicRiskTemplate": {
+      "type": "dynamic",
+      "fields": [
+        { "type": "text", "class": "название", "placeholder": "Название: падение цен на нефть, дефолт по госдолгу..." },
+        { "type": "select", "class": "тип", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "сырьевая_зависимость", "label": "Сырьевая зависимость" },
+          { "value": "государственный_долг", "label": "Государственный долг" },
+          { "value": "инфляция", "label": "Высокая инфляция" },
+          { "value": "санкции", "label": "Санкционное давление" },
+          { "value": "рыночный", "label": "Рыночный обвал" }
+        ]},
+        { "type": "select", "class": "вероятность", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "низкая", "label": "Низкая" },
+          { "value": "средняя", "label": "Средняя" },
+          { "value": "высокая", "label": "Высокая" },
+          { "value": "очень_высокая", "label": "Очень высокая" }
+        ]},
+        { "type": "select", "class": "возможный_ущерб", "options": [
+          { "value": "", "label": "Не указано" },
+          { "value": "низкий", "label": "Низкий" },
+          { "value": "средний", "label": "Средний" },
+          { "value": "высокий", "label": "Высокий" },
+          { "value": "критический", "label": "Критический" }
+        ]},
+        { "type": "textarea", "class": "описание", "rows": 2, "placeholder": "Описание: если цены упадут ниже $40, бюджет недополучит 30% доходов..." }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Экономический риск"
+    },
+    "dynamicEndDateTemplate": {
+      "type": "dynamic",
+      "limit": 1,
+      "fields": [
+        { "type": "calendar_date", "class": "дата_окончания", "label": "Дата окончания", "placeholder": "Выберите дату по календарю" }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Дата окончания"
+    },
+    "dynamicDisbandDateTemplate": {
+      "type": "dynamic",
+      "limit": 1,
+      "fields": [
+        { "type": "calendar_date", "class": "дата_роспуска", "label": "Дата роспуска/упразднения", "placeholder": "Выберите дату по календарю" }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Дата роспуска"
+    },
+    "dynamicAbolitionDateTemplate": {
+      "type": "dynamic",
+      "limit": 1,
+      "fields": [
+        { "type": "calendar_date", "class": "дата_упразднения", "label": "Дата упразднения/отмены", "placeholder": "Выберите дату по календарю" }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Дата упразднения/отмены"
+    },
+    "stateCollapseDateTemplate": {
+      "type": "dynamic",
+      "limit": 1,
+      "fields": [
+        { "type": "calendar_date", "class": "дата_распада", "label": "Дата распада", "placeholder": "Выберите дату по календарю" }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Дата распада"
+    }
+  },
+  "api": {
+    "list": "/api/project/{project}/states",
+    "save": "/api/project/{project}/states",
+    "delete": "/api/project/{project}/states/{id}"
+  },
+  "entityType": "state"
+}

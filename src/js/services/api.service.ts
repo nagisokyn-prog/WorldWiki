@@ -224,13 +224,19 @@ export const apiService = {
       }
     }
 
+    const SYSTEM_FIELDS = new Set(['id', 'project_id', 'entity_type', 'name', 'description', 'tags', 'embedding', 'created_at', 'updated_at', 'attributes']);
+    const cleanAttributes: Record<string, unknown> = {};
+    for (const k of Object.keys(actualData)) {
+      if (!SYSTEM_FIELDS.has(k)) cleanAttributes[k] = actualData[k];
+    }
+
     const entity = {
       id: id ?? null,
       project_id: `projects:${project}`,
       entity_type: type,
       name: extractedName,
       description: actualData.description || null,
-      attributes: actualData,
+      attributes: cleanAttributes,
       tags: actualData.tags || [],
     };
     return invoke('save_entity', { project, entity });

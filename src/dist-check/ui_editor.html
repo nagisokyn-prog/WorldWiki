@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Редактор сущности</title>
+    <style>
+        :root {
+            --bg-window: #09090b;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: var(--bg-window);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+        .window-header {
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            -webkit-app-region: drag; /* Позволяет таскать окно за заголовок в Tauri */
+        }
+        .window-header button {
+            -webkit-app-region: no-drag;
+        }
+        .entity-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .entity-type-badge {
+            background: var(--accent);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .entity-id-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .save-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+        .save-btn:hover {
+            transform: translateY(-1px);
+            background: var(--accent-hover);
+        }
+        .save-btn:active {
+            transform: translateY(1px);
+        }
+        .save-btn.unsaved {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+        }
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow: hidden;
+            padding: 20px;
+        }
+    </style>
+  <script type="module" crossorigin src="./assets/ui_editor-D0g--d7s.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/_plugin-vue_export-helper-4QX4Hymy.js">
+  <link rel="modulepreload" crossorigin href="./assets/calendar.service-ChdCg3ES.js">
+  <link rel="modulepreload" crossorigin href="./assets/EntityEditor-CufCHzud.js">
+  <link rel="stylesheet" crossorigin href="./assets/_plugin-vue_export-helper-D6vV6Oqc.css">
+  <link rel="stylesheet" crossorigin href="./assets/calendar-Bq1qvpJr.css">
+  <link rel="stylesheet" crossorigin href="./assets/EntityEditor-D2BrHarT.css">
+</head>
+<body>
+    <div id="app" v-cloak>
+        <div class="window-header">
+            <div class="entity-info">
+                <span class="entity-type-badge">{{ entityType }}</span>
+                <span style="font-weight: 600; font-size: 15px;">{{ initialData?.name || 'Загрузка...' }}</span>
+                <span class="entity-id-text">#{{ entityId }}</span>
+            </div>
+            <button class="save-btn" :class="{ 'unsaved': isUnsaved }" @click="save">
+                <i class="fas fa-save"></i>
+                {{ isUnsaved ? 'Сохранить изменения' : 'Сохранено' }}
+            </button>
+        </div>
+        
+        <div class="editor-container">
+            <entity-editor-vue 
+                v-if="entityId && entityType && project && !isLoadingData"
+                :entity-id="entityId"
+                :entity-type="entityType"
+                :project="project"
+                :initial-data="initialData"
+                ref="editorRef"
+                @modified="isUnsaved = true"
+                @saved="isUnsaved = false"
+            ></entity-editor-vue>
+            
+            <div v-else-if="isLoadingData" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 16px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                <span>Загрузка данных сущности...</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -576,99 +576,8 @@
           "type": "dynamic",
           "title": "Ключевые члены организации",
           "emptyMessage": "Участники не добавлены",
-          "template": "Двунаправленная связь",
-          "dataPath": "члены_организации_ключ",
-          "fieldOverrides": {
-            "целевая_сущность": {
-              "label": "Участник",
-              "placeholder": "Выберите персонажа...",
-              "type": "select",
-              "entityType": "character"
-            },
-            "название": {
-              "label": "Позиция в организации",
-              "placeholder": "Позиция в организации",
-              "type": "text"
-            },
-            "дата": {
-              "label": "Дата вступления",
-              "placeholder": "Выберите дату вступления",
-              "type": "calendar_date"
-            },
-            "описание_1": {
-              "label": "Описание отношений",
-              "type": "textarea",
-              "rows": 3
-            },
-            "тип_отношения": {
-              "label": "Тип отношений",
-              "type": "select",
-              "options": [
-                {
-                  "value": "",
-                  "label": "Не указано"
-                },
-                {
-                  "value": "союз",
-                  "label": "🤝 Союз / Партнерство"
-                },
-                {
-                  "value": "вражда",
-                  "label": "⚔️ Вражда / Конфликт"
-                },
-                {
-                  "value": "нейтралитет",
-                  "label": "Нейтралитет"
-                },
-                {
-                  "value": "зависимость",
-                  "label": "Вассал / Зависимость"
-                }
-              ]
-            },
-            "описание_2": {
-              "hidden": true
-            },
-            "числовой_показатель": {
-              "hidden": true
-            }
-          },
-          "customChildContainers": [
-            {
-              "id": "endDate",
-              "type": "dynamic",
-              "title": "Дата выхода",
-              "limit": 1,
-              "emptyMessage": "Состоит в организации. Нажмите «Добавить», чтобы указать дату.",
-              "template": "Динамический элемент",
-              "dataPath": "дата_выхода_ключ",
-              "fieldOverrides": {
-                "дата": {
-                  "label": "Дата окончания",
-                  "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
-                },
-                "название": {
-                  "hidden": true
-                },
-                "статус_категория": {
-                  "hidden": true
-                },
-                "описание_1": {
-                  "hidden": true
-                },
-                "описание_2": {
-                  "hidden": true
-                },
-                "описание_3": {
-                  "hidden": true
-                },
-                "числовой_показатель": {
-                  "hidden": true
-                }
-              }
-            }
-          ]
+          "template": "membersTemplate",
+          "dataPath": "члены_организации_ключ"
         }
       ]
     },
@@ -921,342 +830,24 @@
           "type": "dynamic",
           "title": "Отношения с другими организациями",
           "emptyMessage": "Связи с организациями не добавлены",
-          "template": "Двунаправленная связь",
-          "dataPath": "отношения_с_организациями_ключ",
-          "fieldOverrides": {
-            "целевая_сущность": {
-              "label": "Организация",
-              "placeholder": "Выберите организацию...",
-              "type": "select",
-              "entityType": "organization"
-            },
-            "тип_отношения": {
-              "label": "Тип отношений",
-              "type": "select",
-              "options": [
-                {
-                  "value": "",
-                  "label": "Не указано"
-                },
-                {
-                  "value": "союз",
-                  "label": "🤝 Союз / Партнерство"
-                },
-                {
-                  "value": "вражда",
-                  "label": "⚔️ Вражда / Конфликт"
-                },
-                {
-                  "value": "нейтралитет",
-                  "label": "Нейтралитет"
-                },
-                {
-                  "value": "зависимость",
-                  "label": "Вассал / Зависимость"
-                }
-              ]
-            },
-            "название": {
-              "hidden": true
-            },
-            "дата": {
-              "hidden": true
-            },
-            "описание_1": {
-              "label": "Описание отношений",
-              "type": "textarea",
-              "rows": 3
-            },
-            "описание_2": {
-              "hidden": true
-            },
-            "числовой_показатель": {
-              "hidden": true
-            }
-          },
-          "customChildContainers": [
-            {
-              "id": "динамика_отношений",
-              "title": "ДИНАМИКА ОТНОШЕНИЙ",
-              "type": "dynamic",
-              "template": "Динамический элемент",
-              "dataPath": "отношения_с_организациями_ключ_states",
-              "emptyMessage": "Добавьте изменения в отношениях",
-              "fieldOverrides": {
-                "название": {
-                  "hidden": true
-                },
-                "статус_категория": {
-                  "label": "Статус / Уровень",
-                  "type": "select",
-                  "options": [
-                    {
-                      "value": "",
-                      "label": "Не указано"
-                    },
-                    {
-                      "value": "улучшение",
-                      "label": "📈 Улучшение"
-                    },
-                    {
-                      "value": "ухудшение",
-                      "label": "📉 Ухудшение"
-                    },
-                    {
-                      "value": "разрыв",
-                      "label": "❌ Разрыв отношений"
-                    }
-                  ]
-                },
-                "дата": {
-                  "label": "Дата / Период",
-                  "type": "calendar_date"
-                },
-                "описание_1": {
-                  "label": "Описание события",
-                  "type": "textarea",
-                  "rows": 2
-                },
-                "описание_2": {
-                  "hidden": true
-                },
-                "описание_3": {
-                  "hidden": true
-                },
-                "числовой_показатель": {
-                  "hidden": true
-                }
-              }
-            }
-          ]
+          "template": "organizationRelationshipsTemplate",
+          "dataPath": "отношения_с_организациями_ключ"
         },
         {
           "id": "allies",
           "type": "dynamic",
           "title": "Ключевые союзники",
           "emptyMessage": "Союзники не добавлены",
-          "template": "Двунаправленная связь",
-          "dataPath": "союзники_ключ",
-          "fieldOverrides": {
-            "целевая_сущность": {
-              "label": "Организация-союзник",
-              "placeholder": "Выберите организацию...",
-              "type": "select",
-              "entityType": "organization"
-            },
-            "тип_отношения": {
-              "label": "Тип отношений",
-              "type": "select",
-              "options": [
-                {
-                  "value": "",
-                  "label": "Не указано"
-                },
-                {
-                  "value": "союз",
-                  "label": "🤝 Союз / Партнерство"
-                },
-                {
-                  "value": "вражда",
-                  "label": "⚔️ Вражда / Конфликт"
-                },
-                {
-                  "value": "нейтралитет",
-                  "label": "Нейтралитет"
-                },
-                {
-                  "value": "зависимость",
-                  "label": "Вассал / Зависимость"
-                }
-              ]
-            },
-            "название": {
-              "hidden": true
-            },
-            "дата": {
-              "hidden": true
-            },
-            "описание_1": {
-              "label": "Описание отношений",
-              "type": "textarea",
-              "rows": 3
-            },
-            "описание_2": {
-              "hidden": true
-            },
-            "числовой_показатель": {
-              "hidden": true
-            }
-          },
-          "customChildContainers": [
-            {
-              "id": "динамика_отношений",
-              "title": "ДИНАМИКА ОТНОШЕНИЙ",
-              "type": "dynamic",
-              "template": "Динамический элемент",
-              "dataPath": "союзники_ключ_states",
-              "emptyMessage": "Добавьте изменения в отношениях",
-              "fieldOverrides": {
-                "название": {
-                  "hidden": true
-                },
-                "статус_категория": {
-                  "label": "Статус / Уровень",
-                  "type": "select",
-                  "options": [
-                    {
-                      "value": "",
-                      "label": "Не указано"
-                    },
-                    {
-                      "value": "улучшение",
-                      "label": "📈 Улучшение"
-                    },
-                    {
-                      "value": "ухудшение",
-                      "label": "📉 Ухудшение"
-                    },
-                    {
-                      "value": "разрыв",
-                      "label": "❌ Разрыв отношений"
-                    }
-                  ]
-                },
-                "дата": {
-                  "label": "Дата / Период",
-                  "type": "calendar_date"
-                },
-                "описание_1": {
-                  "label": "Описание события",
-                  "type": "textarea",
-                  "rows": 2
-                },
-                "описание_2": {
-                  "hidden": true
-                },
-                "описание_3": {
-                  "hidden": true
-                },
-                "числовой_показатель": {
-                  "hidden": true
-                }
-              }
-            }
-          ]
+          "template": "alliesTemplate",
+          "dataPath": "союзники_ключ"
         },
         {
           "id": "enemies",
           "type": "dynamic",
           "title": "Ключевые враги",
           "emptyMessage": "Враги не добавлены",
-          "template": "Двунаправленная связь",
-          "dataPath": "враги_ключ",
-          "fieldOverrides": {
-            "целевая_сущность": {
-              "label": "Организация-враг",
-              "placeholder": "Выберите организацию...",
-              "type": "select",
-              "entityType": "organization"
-            },
-            "тип_отношения": {
-              "label": "Тип отношений",
-              "type": "select",
-              "options": [
-                {
-                  "value": "",
-                  "label": "Не указано"
-                },
-                {
-                  "value": "союз",
-                  "label": "🤝 Союз / Партнерство"
-                },
-                {
-                  "value": "вражда",
-                  "label": "⚔️ Вражда / Конфликт"
-                },
-                {
-                  "value": "нейтралитет",
-                  "label": "Нейтралитет"
-                },
-                {
-                  "value": "зависимость",
-                  "label": "Вассал / Зависимость"
-                }
-              ]
-            },
-            "название": {
-              "hidden": true
-            },
-            "дата": {
-              "hidden": true
-            },
-            "описание_1": {
-              "label": "Описание отношений",
-              "type": "textarea",
-              "rows": 3
-            },
-            "описание_2": {
-              "hidden": true
-            },
-            "числовой_показатель": {
-              "hidden": true
-            }
-          },
-          "customChildContainers": [
-            {
-              "id": "динамика_отношений",
-              "title": "ДИНАМИКА ОТНОШЕНИЙ",
-              "type": "dynamic",
-              "template": "Динамический элемент",
-              "dataPath": "враги_ключ_states",
-              "emptyMessage": "Добавьте изменения в отношениях",
-              "fieldOverrides": {
-                "название": {
-                  "hidden": true
-                },
-                "статус_категория": {
-                  "label": "Статус / Уровень",
-                  "type": "select",
-                  "options": [
-                    {
-                      "value": "",
-                      "label": "Не указано"
-                    },
-                    {
-                      "value": "улучшение",
-                      "label": "📈 Улучшение"
-                    },
-                    {
-                      "value": "ухудшение",
-                      "label": "📉 Ухудшение"
-                    },
-                    {
-                      "value": "разрыв",
-                      "label": "❌ Разрыв отношений"
-                    }
-                  ]
-                },
-                "дата": {
-                  "label": "Дата / Период",
-                  "type": "calendar_date"
-                },
-                "описание_1": {
-                  "label": "Описание события",
-                  "type": "textarea",
-                  "rows": 2
-                },
-                "описание_2": {
-                  "hidden": true
-                },
-                "описание_3": {
-                  "hidden": true
-                },
-                "числовой_показатель": {
-                  "hidden": true
-                }
-              }
-            }
-          ]
+          "template": "enemiesTemplate",
+          "dataPath": "враги_ключ"
         },
         {
           "id": "internalConflicts",
@@ -3174,5 +2765,426 @@
     "save": "/api/project/{project}/organizations",
     "delete": "/api/project/{project}/organizations/{id}"
   },
-  "entityType": "organization"
+  "entityType": "organization",
+  "templates": {
+    "membersTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Участник",
+          "entityType": "character",
+          "placeholder": "Выберите персонажа..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип отношений",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "союз",
+              "label": "🤝 Союз / Партнерство"
+            },
+            {
+              "value": "вражда",
+              "label": "⚔️ Вражда / Конфликт"
+            },
+            {
+              "value": "нейтралитет",
+              "label": "Нейтралитет"
+            },
+            {
+              "value": "зависимость",
+              "label": "Вассал / Зависимость"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание отношений",
+          "rows": 3
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Ключевые члены организации",
+      "dynamicContainers": [
+        {
+          "id": "endDate",
+          "type": "dynamic",
+          "title": "Дата выхода",
+          "emptyMessage": "Состоит в организации. Нажмите «Добавить», чтобы указать дату.",
+          "template": "membersStateTemplate",
+          "dataPath": "дата_выхода_ключ"
+        }
+      ]
+    },
+    "membersStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "select",
+          "class": "начальная_глава",
+          "label": "Начальная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "конечная_глава",
+          "label": "Конечная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус",
+          "options": []
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "Дата выхода"
+    },
+    "organizationRelationshipsTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Организация",
+          "entityType": "organization",
+          "placeholder": "Выберите организацию..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип отношений",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "союз",
+              "label": "🤝 Союз / Партнерство"
+            },
+            {
+              "value": "вражда",
+              "label": "⚔️ Вражда / Конфликт"
+            },
+            {
+              "value": "нейтралитет",
+              "label": "Нейтралитет"
+            },
+            {
+              "value": "зависимость",
+              "label": "Вассал / Зависимость"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание отношений",
+          "rows": 3
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Отношения с другими организациями",
+      "dynamicContainers": [
+        {
+          "id": "динамика_отношений",
+          "type": "dynamic",
+          "title": "ДИНАМИКА ОТНОШЕНИЙ",
+          "emptyMessage": "Добавьте изменения в отношениях",
+          "template": "organizationRelationshipsStateTemplate",
+          "dataPath": "отношения_с_организациями_ключ_states"
+        }
+      ]
+    },
+    "organizationRelationshipsStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "select",
+          "class": "начальная_глава",
+          "label": "Начальная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "конечная_глава",
+          "label": "Конечная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус / Уровень",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "улучшение",
+              "label": "📈 Улучшение"
+            },
+            {
+              "value": "ухудшение",
+              "label": "📉 Ухудшение"
+            },
+            {
+              "value": "разрыв",
+              "label": "❌ Разрыв отношений"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание события",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "ДИНАМИКА ОТНОШЕНИЙ"
+    },
+    "alliesTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Организация-союзник",
+          "entityType": "organization",
+          "placeholder": "Выберите организацию..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип отношений",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "союз",
+              "label": "🤝 Союз / Партнерство"
+            },
+            {
+              "value": "вражда",
+              "label": "⚔️ Вражда / Конфликт"
+            },
+            {
+              "value": "нейтралитет",
+              "label": "Нейтралитет"
+            },
+            {
+              "value": "зависимость",
+              "label": "Вассал / Зависимость"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание отношений",
+          "rows": 3
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Ключевые союзники",
+      "dynamicContainers": [
+        {
+          "id": "динамика_отношений",
+          "type": "dynamic",
+          "title": "ДИНАМИКА ОТНОШЕНИЙ",
+          "emptyMessage": "Добавьте изменения в отношениях",
+          "template": "alliesStateTemplate",
+          "dataPath": "союзники_ключ_states"
+        }
+      ]
+    },
+    "alliesStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "select",
+          "class": "начальная_глава",
+          "label": "Начальная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "конечная_глава",
+          "label": "Конечная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус / Уровень",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "улучшение",
+              "label": "📈 Улучшение"
+            },
+            {
+              "value": "ухудшение",
+              "label": "📉 Ухудшение"
+            },
+            {
+              "value": "разрыв",
+              "label": "❌ Разрыв отношений"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание события",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "ДИНАМИКА ОТНОШЕНИЙ"
+    },
+    "enemiesTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "целевая_сущность",
+      "fields": [
+        {
+          "type": "select",
+          "class": "целевая_сущность",
+          "label": "Организация-враг",
+          "entityType": "organization",
+          "placeholder": "Выберите организацию..."
+        },
+        {
+          "type": "select",
+          "class": "тип_отношения",
+          "label": "Тип отношений",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "союз",
+              "label": "🤝 Союз / Партнерство"
+            },
+            {
+              "value": "вражда",
+              "label": "⚔️ Вражда / Конфликт"
+            },
+            {
+              "value": "нейтралитет",
+              "label": "Нейтралитет"
+            },
+            {
+              "value": "зависимость",
+              "label": "Вассал / Зависимость"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание отношений",
+          "rows": 3
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Ключевые враги",
+      "dynamicContainers": [
+        {
+          "id": "динамика_отношений",
+          "type": "dynamic",
+          "title": "ДИНАМИКА ОТНОШЕНИЙ",
+          "emptyMessage": "Добавьте изменения в отношениях",
+          "template": "enemiesStateTemplate",
+          "dataPath": "враги_ключ_states"
+        }
+      ]
+    },
+    "enemiesStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "select",
+          "class": "начальная_глава",
+          "label": "Начальная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "конечная_глава",
+          "label": "Конечная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "статус_категория",
+          "label": "Статус / Уровень",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "улучшение",
+              "label": "📈 Улучшение"
+            },
+            {
+              "value": "ухудшение",
+              "label": "📉 Ухудшение"
+            },
+            {
+              "value": "разрыв",
+              "label": "❌ Разрыв отношений"
+            }
+          ]
+        },
+        {
+          "type": "textarea",
+          "class": "описание_1",
+          "label": "Описание события",
+          "rows": 2
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "ДИНАМИКА ОТНОШЕНИЙ"
+    }
+  }
 }

@@ -1752,254 +1752,16 @@
           "type": "dynamic",
           "title": "Связи с персонажами",
           "emptyMessage": "Связи с персонажами не добавлены",
-          "template": "Двунаправленная связь",
-          "dataPath": "связи_с_персонажами",
-          "fieldOverrides": {
-            "целевая_сущность": {
-              "label": "Персонаж",
-              "placeholder": "Выберите персонажа...",
-              "type": "select",
-              "entityType": "character"
-            },
-            "статус_категория": {
-              "label": "Тип связи",
-              "type": "select",
-              "options": [
-                {
-                  "value": "",
-                  "label": "Не указано"
-                },
-                {
-                  "value": "семья",
-                  "label": "👪 Семья"
-                },
-                {
-                  "value": "друг",
-                  "label": "👥 Друг"
-                },
-                {
-                  "value": "романтика",
-                  "label": "❤️ Романтика"
-                },
-                {
-                  "value": "профессиональные",
-                  "label": "💼 Профессиональные"
-                },
-                {
-                  "value": "конфликтные",
-                  "label": "⚔️ Конфликтные"
-                }
-              ]
-            },
-            "тип_отношения": {
-              "hidden": true
-            },
-            "название": {
-              "hidden": true
-            },
-            "дата": {
-              "hidden": true
-            },
-            "описание_1": {
-              "hidden": true
-            },
-            "описание_2": {
-              "hidden": true
-            },
-            "числовой_показатель": {
-              "hidden": true
-            }
-          },
-          "customChildContainers": [
-            {
-              "id": "relationshipStates",
-              "type": "timeline",
-              "title": "Динамика отношений",
-              "emptyMessage": "Динамика не добавлена",
-              "template": "Динамический элемент",
-              "dataPath": "динамика_отношений",
-              "fieldOverrides": {
-                "статус_категория": {
-                  "label": "тип_связи",
-                  "type": "select",
-                  "options": [
-                    {
-                      "value": "",
-                      "label": "Не указано"
-                    },
-                    {
-                      "value": "друг",
-                      "label": "Друг"
-                    },
-                    {
-                      "value": "враг",
-                      "label": "Враг"
-                    },
-                    {
-                      "value": "союзник",
-                      "label": "Союзник"
-                    },
-                    {
-                      "value": "нейтральный",
-                      "label": "Нейтральный"
-                    },
-                    {
-                      "value": "романтический",
-                      "label": "Романтический"
-                    }
-                  ]
-                },
-                "числовой_показатель": {
-                  "label": "Отношение (-100 вражда .. 100 союз)",
-                  "type": "range"
-                },
-                "описание_1": {
-                  "label": "Почему изменились отношения...",
-                  "placeholder": "Почему изменились отношения...",
-                  "type": "textarea"
-                },
-                "название": {
-                  "hidden": true
-                },
-                "описание_2": {
-                  "hidden": true
-                },
-                "описание_3": {
-                  "hidden": true
-                },
-                "дата": {
-                  "hidden": true
-                }
-              }
-            }
-          ]
+          "template": "characterRelationshipTemplate",
+          "dataPath": "отношения_ключ.связи_с_персонажами"
         },
         {
           "id": "familyRelations",
           "type": "dynamic",
           "title": "Семейные отношения",
           "emptyMessage": "Семейные отношения не добавлены",
-          "template": "Двунаправленная связь",
-          "dataPath": "семейные_отношения",
-          "fieldOverrides": {
-            "целевая_сущность": {
-              "label": "Родственник",
-              "placeholder": "Выберите персонажа...",
-              "type": "select",
-              "entityType": "character"
-            },
-            "статус_категория": {
-              "label": "тип_родства",
-              "type": "select",
-              "options": [
-                {
-                  "value": "",
-                  "label": "Не указано"
-                },
-                {
-                  "value": "родитель",
-                  "label": "Родитель"
-                },
-                {
-                  "value": "ребенок",
-                  "label": "Ребёнок"
-                },
-                {
-                  "value": "брат/сестра",
-                  "label": "Брат/Сестра"
-                },
-                {
-                  "value": "супруг",
-                  "label": "Супруг/Супруга"
-                },
-                {
-                  "value": "другой",
-                  "label": "Другой"
-                }
-              ]
-            },
-            "тип_отношения": {
-              "hidden": true
-            },
-            "название": {
-              "hidden": true
-            },
-            "дата": {
-              "hidden": true
-            },
-            "описание_1": {
-              "hidden": true
-            },
-            "описание_2": {
-              "hidden": true
-            },
-            "числовой_показатель": {
-              "hidden": true
-            }
-          },
-          "customChildContainers": [
-            {
-              "id": "familyRelationshipStates",
-              "type": "timeline",
-              "title": "Динамика семейных отношений",
-              "emptyMessage": "Динамика не добавлена",
-              "template": "Динамический элемент",
-              "dataPath": "динамика_отношений",
-              "fieldOverrides": {
-                "статус_категория": {
-                  "label": "тип_связи",
-                  "type": "select",
-                  "options": [
-                    {
-                      "value": "",
-                      "label": "Не указано"
-                    },
-                    {
-                      "value": "друг",
-                      "label": "Друг"
-                    },
-                    {
-                      "value": "враг",
-                      "label": "Враг"
-                    },
-                    {
-                      "value": "союзник",
-                      "label": "Союзник"
-                    },
-                    {
-                      "value": "нейтральный",
-                      "label": "Нейтральный"
-                    },
-                    {
-                      "value": "романтический",
-                      "label": "Романтический"
-                    }
-                  ]
-                },
-                "числовой_показатель": {
-                  "label": "Отношение (-100 вражда .. 100 союз)",
-                  "type": "range"
-                },
-                "описание_1": {
-                  "label": "Почему изменились отношения...",
-                  "placeholder": "Почему изменились отношения...",
-                  "type": "textarea"
-                },
-                "название": {
-                  "hidden": true
-                },
-                "описание_2": {
-                  "hidden": true
-                },
-                "описание_3": {
-                  "hidden": true
-                },
-                "дата": {
-                  "hidden": true
-                }
-              }
-            }
-          ]
+          "template": "familyRelationTemplate",
+          "dataPath": "отношения_ключ.семейные_отношения"
         }
       ]
     },
@@ -2462,5 +2224,184 @@
     "save": "/api/project/{project}/characters",
     "delete": "/api/project/{project}/characters/{id}"
   },
-  "entityType": "character"
+  "entityType": "character",
+  "templates": {
+    "characterRelationshipTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "персонаж",
+      "fields": [
+        {
+          "type": "select",
+          "class": "персонаж",
+          "label": "Персонаж",
+          "entityType": "character",
+          "placeholder": "Выберите персонажа..."
+        },
+        {
+          "type": "select",
+          "class": "базовый_тип_связи",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "семья",
+              "label": "👪 Семья"
+            },
+            {
+              "value": "друг",
+              "label": "👥 Друг"
+            },
+            {
+              "value": "романтика",
+              "label": "❤️ Романтика"
+            },
+            {
+              "value": "профессиональные",
+              "label": "💼 Профессиональные"
+            },
+            {
+              "value": "конфликтные",
+              "label": "⚔️ Конфликтные"
+            }
+          ]
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "relationshipStates",
+          "type": "timeline",
+          "title": "Динамика отношений",
+          "emptyMessage": "Динамика не добавлена",
+          "template": "relationshipStateTemplate",
+          "dataPath": "динамика_отношений"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Связь с персонажем"
+    },
+    "relationshipStateTemplate": {
+      "type": "timeline",
+      "fields": [
+        {
+          "type": "select",
+          "class": "начальная_глава",
+          "label": "Начальная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "конечная_глава",
+          "label": "Конечная глава",
+          "entityType": "chapter",
+          "placeholder": "Выберите главу..."
+        },
+        {
+          "type": "select",
+          "class": "тип_связи",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "друг",
+              "label": "Друг"
+            },
+            {
+              "value": "враг",
+              "label": "Враг"
+            },
+            {
+              "value": "союзник",
+              "label": "Союзник"
+            },
+            {
+              "value": "нейтральный",
+              "label": "Нейтральный"
+            },
+            {
+              "value": "романтический",
+              "label": "Романтический"
+            }
+          ]
+        },
+        {
+          "type": "range",
+          "class": "сила_отношений",
+          "min": -100,
+          "max": 100,
+          "value": 0,
+          "label": "Отношение (-100 вражда .. 100 союз)"
+        },
+        {
+          "type": "textarea",
+          "class": "описание_причина",
+          "rows": 2,
+          "placeholder": "Почему изменились отношения..."
+        }
+      ],
+      "itemClass": "relationship-state-item",
+      "headerTitle": "Состояние отношений"
+    },
+    "familyRelationTemplate": {
+      "type": "dynamic",
+      "isBidirectional": true,
+      "bidirectionalLinkClass": "родственник",
+      "fields": [
+        {
+          "type": "select",
+          "class": "родственник",
+          "label": "Родственник",
+          "entityType": "character",
+          "placeholder": "Выберите персонажа..."
+        },
+        {
+          "type": "select",
+          "class": "тип_родства",
+          "options": [
+            {
+              "value": "",
+              "label": "Не указано"
+            },
+            {
+              "value": "родитель",
+              "label": "Родитель"
+            },
+            {
+              "value": "ребенок",
+              "label": "Ребёнок"
+            },
+            {
+              "value": "брат/сестра",
+              "label": "Брат/Сестра"
+            },
+            {
+              "value": "супруг",
+              "label": "Супруг/Супруга"
+            },
+            {
+              "value": "другой",
+              "label": "Другой"
+            }
+          ]
+        }
+      ],
+      "dynamicContainers": [
+        {
+          "id": "familyRelationshipStates",
+          "type": "timeline",
+          "title": "Динамика семейных отношений",
+          "emptyMessage": "Динамика не добавлена",
+          "template": "relationshipStateTemplate",
+          "dataPath": "динамика_отношений"
+        }
+      ],
+      "itemClass": "dynamic-item",
+      "headerTitle": "Семейное отношение"
+    }
+  }
 }

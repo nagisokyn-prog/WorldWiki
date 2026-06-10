@@ -413,38 +413,58 @@
             }
           ],
           "placeholder": "Выберите тип..."
-        },
+        }
+      ],
+      "dynamicContainers": [
         {
-          "type": "text",
-          "class": "название",
-          "label": "Название/Роль",
-          "placeholder": "..."
-        },
-        {
-          "type": "calendar_date",
-          "class": "дата",
-          "label": "Дата",
-          "placeholder": "Выберите дату..."
-        },
-        {
-          "type": "textarea",
-          "class": "описание_1",
-          "label": "Детали",
-          "rows": 2,
-          "placeholder": "..."
-        },
-        {
-          "type": "textarea",
-          "class": "описание_2",
-          "label": "Дополнительно",
-          "rows": 2,
-          "placeholder": "..."
-        },
-        {
-          "type": "range",
-          "class": "числовой_показатель",
-          "label": "Показатель",
-          "placeholder": "0"
+          "id": "relationshipStates",
+          "type": "timeline",
+          "title": "Динамика отношений",
+          "emptyMessage": "Динамика не добавлена",
+          "dataPath": "динамика_отношений",
+          "fields": [
+            {
+              "type": "select",
+              "class": "начальная_глава",
+              "label": "Начальная глава",
+              "placeholder": "Выберите главу..."
+            },
+            {
+              "type": "select",
+              "class": "конечная_глава",
+              "label": "Конечная глава",
+              "placeholder": "Выберите главу..."
+            },
+            {
+              "type": "select",
+              "class": "тип_связи",
+              "label": "Тип связи (состояние)",
+              "options": [
+                {
+                  "value": "",
+                  "label": "Не указано"
+                }
+              ],
+              "placeholder": "Выберите тип..."
+            },
+            {
+              "type": "range",
+              "class": "сила_отношений",
+              "min": -100,
+              "max": 100,
+              "value": 0,
+              "label": "Отношение / Сила (-100 .. 100)"
+            },
+            {
+              "type": "textarea",
+              "class": "описание_причина",
+              "rows": 2,
+              "label": "Описание / Причина",
+              "placeholder": "Почему изменились отношения..."
+            }
+          ],
+          "itemClass": "timeline-item",
+          "headerTitle": "Состояние отношений"
         }
       ],
       "itemClass": "dynamic-item",
@@ -469,6 +489,7 @@
       ],
       "itemClass": "dynamic-item"
     }
+
   },
   "api": {
     "list": "/api/project/{project}/generic",

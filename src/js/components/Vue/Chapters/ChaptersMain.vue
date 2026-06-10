@@ -378,6 +378,11 @@ onMounted(async () => {
   await loadChapters();
   await timelineService.init(props.project);
   
+  // Если нам передали controlledChapterId — сразу открываем главу
+  if (props.controlledChapterId) {
+    await openChapter(props.controlledChapterId);
+  }
+  
   const savedWidth = localStorage.getItem('chapters-tools-panel-width');
   if (savedWidth) rightPanelWidth.value = parseInt(savedWidth);
   
@@ -392,6 +397,14 @@ onMounted(async () => {
   document.addEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
   document.addEventListener('ww:hierarchy-changed', loadChapters as EventListener);
 });
+
+// Когда родитель меняет активную вкладку — загружаем нужную главу
+watch(() => props.controlledChapterId, async (newId) => {
+  if (newId && newId !== currentChapterId.value) {
+    await openChapter(newId);
+  }
+});
+
 
 const triggerSave = () => {
   saveChapter();

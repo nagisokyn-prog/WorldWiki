@@ -1,6 +1,4 @@
 #V2
--- ===============================================
-DEFINE TABLE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;
 DEFINE FIELD project_id ON appears_in TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END;
 DEFINE FIELD role       ON appears_in TYPE option<string>; -- "??????????????", "????????????????????"
 DEFINE FIELD notes      ON appears_in TYPE option<string>;
@@ -99,3 +97,5 @@ DEFINE TABLE test SCHEMAFULL; DEFINE FIELD r ON test TYPE string; DEFINE FIELD O
 DEFINE TABLE test SCHEMAFULL; DEFINE TABLE OVERWRITE test SCHEMAFULL;
 DEFINE TABLE test SCHEMAFULL; DEFINE FIELD r ON test TYPE string; DEFINE INDEX i ON test FIELDS r; DEFINE INDEX OVERWRITE i ON test FIELDS r;
 DEFINE TABLE test SCHEMAFULL; DEFINE FIELD project_id ON test TYPE record<projects> | string VALUE IF $value != NONE THEN type::record($value) ELSE NONE END; CREATE test:1 CONTENT { project_id: 'projects:123' }; SELECT * FROM test WHERE project_id = 'projects:123';
+DEFINE TABLE test SCHEMAFULL; DEFINE INDEX test_idx ON test FIELDS name FULLTEXT ANALYZER like BM25;
+DEFINE TABLE test SCHEMAFULL; DEFINE FIELD name ON test TYPE string; DEFINE INDEX test_idx ON test COLUMNS name FULLTEXT ANALYZER like BM25;

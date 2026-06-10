@@ -8,12 +8,15 @@ import { createApp, ref, computed, watch, onMounted, nextTick, shallowRef, trigg
 import { settingsService } from '../services/settings.service';
 import { apiService } from '../services/api.service';
 import { connectionsManager } from '../services/connections.service';
+import { useEditorGroups } from '../composables/useEditorGroups';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу (видны при старте)
 import QuickOpenVue from '../components/Vue/QuickOpen.vue';
 import CommandPaletteVue from '../components/Vue/CommandPalette.vue';
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
 import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
+import EditorTabBarVue from '../components/Vue/EditorTabBar.vue';
+import EditorGroupPaneVue from '../components/Vue/EditorGroupPane.vue';
 
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт (lazy loading)
 const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/EntityEditor.vue'));
@@ -110,20 +113,37 @@ async function init() {
 
     const app = createApp({
     setup() {
+      // ─── Editor Groups (VS Code-style split panels) ─────────────────────────
+      const eg = useEditorGroups();
+
+      // Compat aliases для всего старого кода
+      const openEditors = computed(() => eg.allTabs.value);
+      const activeEditorId = computed({
+        get: () => eg.activeGroup.value?.activeTabId ?? null,
+        set: (id: string | null) => {
+          if (id) {
+            // Активируем вкладку в той группе где она есть
+            const g = eg.findGroupByTab(id);
+            if (g) {
+              g.activeTabId = id;
+              eg.activeGroupId.value = g.id;
+            }
+          }
+        }
+      });
+      const activeEditor = computed(() => eg.activeTab.value);
+
       // State
       const activeView = ref<'entity' | 'chapters' | 'static' | 'sandbox'>('entity');
       const currentSidebarTab = ref<string | null>(null);
       const showSettings = ref(false);
       const sidebarSearch = ref('');
       const activePanelTab = ref('');
-      
-      // ✅ ОПТИМИЗАЦИЯ: shallowRef для больших данных (не отслеживаем изменения внутри массивов)
-      const openEditors = shallowRef<EditorTab[]>([]);
+
       const consoleLogs = shallowRef<ConsoleLog[]>([]);
       const entityLists = shallowRef<Record<string, Array<Record<string, unknown>>>>({});
       const chapters = shallowRef<Array<any>>([]);
-      
-      const activeEditorId = ref<string | null>(null);
+
       const activeField = ref('name');
       const panelHeight = ref(parseInt(localStorage.getItem('app-panel-height') || '150'));
       const sidebarWidth = ref(parseInt(localStorage.getItem('app-sidebar-width') || '280'));
@@ -192,18 +212,10 @@ async function init() {
         const state = {
           activeView: activeView.value,
           currentSidebarTab: currentSidebarTab.value,
-          activeEditorId: activeEditorId.value,
           activePanelTab: activePanelTab.value,
           activeTreeNode: activeTreeNode.value,
-          openTabs: openEditors.value.map(e => ({
-            id: e.id,
-            rawId: e.rawId,
-            title: e.title,
-            entityType: e.entityType,
-            tabType: e.tabType,
-            scrollPos: e.scrollPos,
-            activeSection: e.activeSection
-          }))
+          editorGroups: eg.serializeState(),
+          activeGroupId: eg.activeGroupId.value,
         };
         localStorage.setItem(STATE_KEY, JSON.stringify(state));
       };
@@ -218,37 +230,44 @@ async function init() {
           currentSidebarTab.value = state.currentSidebarTab || null;
           activePanelTab.value = state.activePanelTab !== undefined ? state.activePanelTab : '';
           activeTreeNode.value = state.activeTreeNode || null;
-          
-          if (state.openTabs && Array.isArray(state.openTabs)) {
-            const tabData = [];
-            for (const tab of state.openTabs) {
-              try {
-                if (tab.tabType === 'entity') {
-                  await loadSchema(tab.entityType);
-                  const detail = await apiService.getEntity(projectName, tab.entityType, tab.rawId);
-                  tabData.push({
-                    ...tab,
-                    data: detail as Record<string, unknown>,
-                    unsaved: false
-                  });
-                } else if (tab.tabType === 'chapter') {
-                  const chapter = await apiService.getChapter(projectName, tab.rawId);
-                  if (chapter) {
-                    tabData.push({
-                      ...tab,
-                      data: chapter,
-                      unsaved: false
-                    });
-                  }
-                }
-              } catch (e) { console.warn(`Failed to restore tab ${tab.id}`, e); }
+
+          // Новый формат: editorGroups
+          const rawGroups = state.editorGroups;
+          const rawTabs = state.openTabs; // обратная совместимость
+
+          const tabSources: Array<{id:string;rawId:string;title:string;entityType:string;tabType:string;scrollPos?:number;activeSection?:string}> =
+            rawGroups ? rawGroups.flatMap((g: any) => g.tabs) : (rawTabs || []);
+
+          const loadedTabs = new Map<string, any>();
+          for (const tab of tabSources) {
+            if (loadedTabs.has(tab.id)) continue;
+            try {
+              if (tab.tabType === 'entity') {
+                await loadSchema(tab.entityType);
+                const detail = await apiService.getEntity(projectName, tab.entityType, tab.rawId);
+                loadedTabs.set(tab.id, { ...tab, data: detail, unsaved: false });
+              } else if (tab.tabType === 'chapter') {
+                const chapter = await apiService.getChapter(projectName, tab.rawId);
+                if (chapter) loadedTabs.set(tab.id, { ...tab, data: chapter, unsaved: false });
+              }
+            } catch (e) { console.warn(`Failed to restore tab ${tab.id}`, e); }
+          }
+
+          if (rawGroups) {
+            eg.restoreState(rawGroups, loadedTabs);
+          } else {
+            // Обратная совместимость: старый формат openTabs -> одна группа
+            const group = eg.groups.value[0];
+            for (const [, tab] of loadedTabs) {
+              group.tabs.push(tab as any);
             }
-            openEditors.value = tabData;
+            if (state.activeEditorId && loadedTabs.has(state.activeEditorId)) {
+              group.activeTabId = state.activeEditorId;
+            } else if (group.tabs.length > 0) {
+              group.activeTabId = group.tabs[0].id;
+            }
           }
-          
-          if (state.activeEditorId) {
-            activeEditorId.value = state.activeEditorId;
-          }
+
           isRestoring = false;
           return true;
         } catch (e) {
@@ -317,8 +336,7 @@ async function init() {
         return `[${String(entity.id || 'Unknown').substring(0, 8)}]`;
       };
 
-      // Computed
-      const activeEditor = computed(() => openEditors.value.find(e => e.id === activeEditorId.value) || null);
+      // Computed (activeEditor уже объявлен выше через eg)
       // Чистый ID сущности для передачи в EntityEditor + API (без префикса entityType:)
       const activeEntityRawId = computed(() => activeEditor.value?.rawId || '');
       const activeSidebarItem = computed(() =>
@@ -414,57 +432,43 @@ async function init() {
         }
 
         const rawId = String(entity.id);
-        // Составной ключ — исключает коллизии между разными типами с одинаковым ID.
-        // Формат: "entity:type:id" для синхронизации с ChapterTree.
         const tabId = `entity:${entityType}:${rawId}`;
-        const existing = openEditors.value.find(e => e.id === tabId);
-        if (!existing) {
+        if (!eg.findTabGlobal(tabId)) {
           try {
-            // Сначала грузим схему, чтобы getEntityDisplayName знал titleField
             await loadSchema(entityType);
             const detail = await apiService.getEntity(projectName, entityType, rawId);
             const tabTitle = (entity as any).Name || (entity as any).name || (entity as any).title || getEntityDisplayName(detail as Record<string, unknown>, entityType);
-
-            openEditors.value.push({
-              id: tabId,
-              rawId: rawId,
-              title: tabTitle,
-              entityType: entityType,
-              tabType: 'entity',
-              data: detail as Record<string, unknown>,
-              unsaved: false
+            eg.openTab({
+              id: tabId, rawId, title: tabTitle, entityType,
+              tabType: 'entity', data: detail as Record<string, unknown>, unsaved: false
             });
-            triggerRef(openEditors);
             addLog(`Editor -> Opened ${entityType} [${tabTitle}]`, 'info');
           } catch (e) {
             addLog(`Editor -> Error opening: ${e}`, 'error');
             return;
           }
+        } else {
+          // Вкладка уже есть — просто активируем
+          const g = eg.findGroupByTab(tabId);
+          if (g) { g.activeTabId = tabId; eg.activeGroupId.value = g.id; }
         }
-        activeEditorId.value = tabId;
         showSettings.value = false;
         activeView.value = 'entity';
-        nextTick(() => {
-          nextTick(() => mountEntityEditor(tabId));
-        });
       };
 
       const openChapterTab = (chapter: any) => {
         const id = String(chapter.id);
-        const existing = openEditors.value.find(e => e.id === id);
-        if (!existing) {
-          openEditors.value.push({
-            id,
-            rawId: id,
+        if (!eg.findTabGlobal(id)) {
+          eg.openTab({
+            id, rawId: id,
             title: chapter.title || `Глава ${id}`,
-            entityType: 'chapter',
-            tabType: 'chapter',
-            data: chapter,
-            unsaved: false,
+            entityType: 'chapter', tabType: 'chapter',
+            data: chapter, unsaved: false,
           });
-          triggerRef(openEditors);
+        } else {
+          const g = eg.findGroupByTab(id);
+          if (g) { g.activeTabId = id; eg.activeGroupId.value = g.id; }
         }
-        activeEditorId.value = id;
         activeView.value = 'entity';
         addLog(`Editor -> Chapter [${chapter.title}]`, 'info');
       };
@@ -567,20 +571,11 @@ async function init() {
 
       const renameChapter = async (chapter: any, newTitle: string) => {
         try {
-          // Если есть открытый редактор для этой главы - обновляем его
-          const tab = openEditors.value.find(e => e.id === chapter.id);
-          if (tab) {
-            tab.title = newTitle;
-            triggerRef(openEditors);
-          }
-          
-          // Сохраняем в БД
+          eg.updateTabData(chapter.id, { title: newTitle });
           const fullData = await apiService.getChapter(projectName, chapter.id);
           fullData.title = newTitle;
           await apiService.saveChapter(projectName, fullData);
-          
           addLog(`Chapter renamed: ${newTitle}`, 'success');
-          // Дерево само себя обновит через load(), который вызывается в ChapterTree после commitRename
         } catch (e) {
           console.error('Failed to rename chapter:', e);
           addLog(`Error renaming chapter: ${e}`, 'error');
@@ -588,16 +583,8 @@ async function init() {
       };
 
       const closeEditor = (id: string, force = false) => {
-        const idx = openEditors.value.findIndex(e => e.id === id);
-        if (idx > -1) {
-          if (!force && openEditors.value[idx].unsaved && !confirm('Есть несохраненные изменения. Закрыть?')) return;
-          openEditors.value.splice(idx, 1);
-          triggerRef(openEditors);
-          addLog(`Editor -> Closed [${id}]`, 'warn');
-          if (activeEditorId.value === id) {
-            activeEditorId.value = openEditors.value.length ? openEditors.value[0].id : null;
-          }
-        }
+        eg.closeTab(id, force);
+        addLog(`Editor -> Closed [${id}]`, 'warn');
       };
 
       const deleteEntity = async (tabId: string, entityType: string, silent = false) => {
@@ -739,40 +726,29 @@ async function init() {
         }
       };
 
-      const markUnsaved = () => {
-        const editor = activeEditor.value;
-        if (editor) {
-          editor.unsaved = true;
-          triggerRef(openEditors);
-        }
+      const markUnsaved = (tabId?: string) => {
+        const id = tabId ?? activeEditor.value?.id;
+        if (id) eg.markTabUnsaved(id);
       };
 
       const onChapterRenamed = ({ id, title }: { id: string; title: string }) => {
-        const tab = openEditors.value.find(e => e.id === id);
-        if (tab && tab.title !== title) {
-          tab.title = title;
-          // triggerRef(openEditors); // shallowRef - нужно пнуть если меняем свойство внутри
-          // Но так как title это реактивное свойство если бы это был ref... 
-          // Но у нас массив объектов в shallowRef.
-          // Самый надежный способ для shallowRef:
-          triggerRef(openEditors);
-        }
+        eg.updateTabData(id, { title });
       };
 
-      const markSaved = () => {
-        const editor = activeEditor.value;
-        if (editor) {
-          editor.unsaved = false;
-          triggerRef(openEditors);
+      const markSaved = (tabId?: string) => {
+        const id = tabId ?? activeEditor.value?.id;
+        if (id) {
+          eg.markTabSaved(id);
           addToast('Глава сохранена', 'success');
         }
       };
 
       // 🔴 Обработчик update-data - делает глубокий merge вместо полной перезаписи
-      const handleUpdateData = (newData: any) => {
-        if (!activeEditor.value) return;
+      const handleUpdateData = (tabId: string, newData: any) => {
+        const tabsToUpdate = eg.allTabs.value.filter(t => t.id === tabId);
+        if (tabsToUpdate.length === 0) return;
         
-        console.log('[app.ts] 🔄 handleUpdateData вызвана, merging данные');
+        console.log(`[app.ts] 🔄 handleUpdateData вызвана для ${tabId}, merging данные в ${tabsToUpdate.length} вкладок`);
         
         // 🔴 ЛОГИРОВАНИЕ: что приходит в newData для динамика_отношений
         const newDataAny = newData as any;
@@ -812,12 +788,14 @@ async function init() {
           }
         };
         
-        merge(activeEditor.value.data, newData);
+        for (const tab of tabsToUpdate) {
+            merge(tab.data, newData);
+        }
         
-        // 🔴 ЛОГИРОВАНИЕ: что стало в activeEditor ПОСЛЕ merge
-        const editorData = activeEditor.value.data as any;
+        // 🔴 ЛОГИРОВАНИЕ: что стало ПОСЛЕ merge (проверим первую вкладку)
+        const editorData = tabsToUpdate[0].data as any;
         if (editorData.characterRelationships?.[0]?.динамика_отношений?.[0]) {
-          console.log('[app.ts] 📤 После merge, activeEditor.data.characterRelationships[0].динамика_отношений[0]:', JSON.stringify(editorData.characterRelationships[0].динамика_отношений[0]));
+          console.log('[app.ts] 📤 После merge, tab.data.characterRelationships[0].динамика_отношений[0]:', JSON.stringify(editorData.characterRelationships[0].динамика_отношений[0]));
         }
         
         console.log('[app.ts] ✅ handleUpdateData merge завершен');
@@ -1324,6 +1302,33 @@ async function init() {
         document.addEventListener('mouseup', onUp);
       };
 
+      // Ресайзер для сплит-панели (хранит % в CSS-переменной --split-left-width)
+      const splitLeftWidth = ref(parseFloat(localStorage.getItem('app-split-width') || '50'));
+      const startSplitResize = (e: MouseEvent) => {
+        const wrapper = (e.target as HTMLElement).closest('.split-layout-wrapper') as HTMLElement;
+        if (!wrapper) return;
+        const totalW = wrapper.getBoundingClientRect().width;
+        const startX = e.clientX;
+        const startPct = splitLeftWidth.value;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'ew-resize';
+        const onMove = (ev: MouseEvent) => {
+          const pct = Math.max(20, Math.min(80, startPct + ((ev.clientX - startX) / totalW) * 100));
+          splitLeftWidth.value = pct;
+          wrapper.style.setProperty('--split-left-width', `${pct}%`);
+          localStorage.setItem('app-split-width', String(pct));
+        };
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      };
+
+
       const toggleSettings = () => { showSettings.value = !showSettings.value; };
 
       const resetSettings = () => {
@@ -1331,27 +1336,58 @@ async function init() {
         addLog('Settings -> Reset', 'warn');
       };
 
-      // Watch activeEditor для монтирования редактора
+      // ─── Group resize (drag between editor groups) ─────────────────────────
+      const startGroupResize = (e: MouseEvent, groupIdx: number) => {
+        const container = (e.currentTarget as HTMLElement).closest('.editor-groups-container') as HTMLElement;
+        if (!container) return;
+        const totalW = container.getBoundingClientRect().width;
+        const startX = e.clientX;
+        const groups = eg.groups.value;
+        const left = groups[groupIdx];
+        const right = groups[groupIdx + 1];
+        if (!left || !right) return;
+        const startLeftPct = left.flexBasis;
+        const startRightPct = right.flexBasis;
+
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'ew-resize';
+
+        const onMove = (ev: MouseEvent) => {
+          const deltaPct = ((ev.clientX - startX) / totalW) * 100;
+          const newLeft = Math.max(15, Math.min(85, startLeftPct + deltaPct));
+          const newRight = Math.max(15, Math.min(85, startRightPct - deltaPct));
+          if (newLeft + newRight > 100 || newLeft < 15 || newRight < 15) return;
+          left.flexBasis = newLeft;
+          right.flexBasis = newRight;
+        };
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+          // Сохраняем после resize
+          saveState();
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      };
+
+
+      // Watch activeEditor
       watch(activeEditorId, (newId) => {
-        if (newId) nextTick(() => mountEntityEditor(newId));
+        if (newId) nextTick(() => mountEntityEditor(newId as string));
       });
 
-      // Watch for state persistence
-      watch([activeView, currentSidebarTab, activeEditorId, activePanelTab, activeTreeNode], saveState);
-      watch(openEditors, saveState, { deep: true });
+      // Watch for state persistence (eg.groups is reactive)
+      watch([activeView, currentSidebarTab, activePanelTab, activeTreeNode], saveState);
+      watch(eg.groups, saveState, { deep: true });
 
       // Settings watcher
       watch(() => settingsService.getSettings(), (n) => {
         settingsService.saveSettings(n);
       }, { deep: true });
 
-      const closeAllTabs = () => {
-        const hasUnsaved = openEditors.value.some(e => e.unsaved);
-        if (hasUnsaved && !confirm('Есть несохранённые изменения. Закрыть все вкладки?')) return;
-        openEditors.value = [];
-        activeEditorId.value = null;
-        addLog('Editor -> All tabs closed', 'warn');
-      };
+      const closeAllTabs = () => eg.closeAll();
 
       const openTagsManager = () => tagsManagerRef.value?.open();
 
@@ -1421,6 +1457,7 @@ async function init() {
               'Comma', 'Minus', 'Equal', 'Digit0', 'Backquote',
               'Tab', 'Digit1','Digit2','Digit3','Digit4','Digit5',
               'Digit6','Digit7','Digit8','Digit9', 'F11', 'KeyT',
+              'Backslash',
             ]);
             if (BROWSER_OVERRIDES.has(e.code)) {
               e.preventDefault(); // блокируем браузер ВСЕГДА для этих клавиш
@@ -1478,6 +1515,12 @@ async function init() {
                 const n = parseInt(e.code.replace('Digit', ''));
                 const tab = openEditors.value[n - 1];
                 if (tab) activeEditorId.value = tab.id;
+                return;
+              }
+              case 'Backslash': {
+                e.preventDefault();
+                eg.splitRight();
+                addLog(`Layout -> Split added (groups: ${eg.groups.value.length})`, 'info');
                 return;
               }
             }
@@ -1571,7 +1614,7 @@ async function init() {
       return {
         projectName, activeView, currentSidebarTab, showSettings, sidebarSearch, activePanelTab,
         openEditors, activeEditorId, activeEditor, activeEntityRawId, consoleLogs, activeField, panelHeight, sidebarWidth,
-        sidebarItems, activeSidebarItem, filteredEntityList, unsavedCount, chapters, chapterTreeRef,
+        sidebarItems, activeSidebarItem, filteredEntityList, chapters, chapterTreeRef,
         sidebarVisible, zoomLevel, quickOpenRef, commandPaletteRef,
         settings, toasts, addToast, getToastIcon,
         selectSidebarTab, openEntity, openChapterTab, closeEditor, markUnsaved, markSaved, saveAll, closeAllTabs,
@@ -1587,7 +1630,6 @@ async function init() {
         handleSectionChange: (sectionId: string) => {
           if (activeEditor.value) {
             activeEditor.value.activeSection = sectionId;
-            
             const newTitle = getEntityDisplayName(activeEditor.value.data as Record<string, unknown>, activeEditor.value.entityType);
             if (newTitle && newTitle !== activeEditor.value.title) {
               activeEditor.value.title = newTitle;
@@ -1595,9 +1637,7 @@ async function init() {
               if (currentSidebarTab.value === activeEditor.value.entityType) {
                 loadEntityList(currentSidebarTab.value);
               }
-              triggerRef(openEditors);
             }
-            
             saveState();
           }
         },
@@ -1609,7 +1649,20 @@ async function init() {
         closeFloatingEditor,
         focusFloatingEditor,
         onChapterRenamed,
-        openSandbox: () => { activeView.value = 'sandbox'; sidebarVisible.value = false; }
+        openSandbox: () => { activeView.value = 'sandbox'; sidebarVisible.value = false; },
+        // ─── Editor Groups API (для шаблона) ───
+        editorGroups: eg.groups,
+        activeGroupId: eg.activeGroupId,
+        splitRight: () => eg.splitRight(),
+        closeGroup: (gid: string) => eg.removeGroup(gid),
+        moveTab: (p: any) => eg.moveTab(p.tabId, p.toGroupId, p.toIndex),
+        reorderTab: (p: any) => eg.reorderTab(p.groupId, p.fromIdx, p.toIdx),
+        activateTabInGroup: (gid: string, tid: string) => {
+          const g = eg.groups.value.find(g => g.id === gid);
+          if (g) { g.activeTabId = tid; eg.activeGroupId.value = gid; }
+        },
+        focusGroup: (gid: string) => { eg.activeGroupId.value = gid; },
+        startGroupResize,
       };
     }
   });
@@ -1630,7 +1683,10 @@ async function init() {
   app.component('tags-field-vue', TagsField);
   app.component('floating-entity-editor-vue', FloatingEntityEditorVue);
   app.component('redact-sandbox-vue', RedactSandboxVue);
+  app.component('editor-tab-bar-vue', EditorTabBarVue);
+  app.component('editor-group-pane-vue', EditorGroupPaneVue);
   app.mount('#app');
 }
 
 init().catch(e => console.error('[app] init error:', e));
+

@@ -315,7 +315,12 @@ const setProp = (obj: any, path: any, val?: any) => {
 };
 
 const getResolvedTemplate = (container: any) => {
-  const baseTpl = config.value?.templates?.[container.template];
+  let baseTpl: any = null;
+  if (container.fields && !container.template) {
+    baseTpl = container;
+  } else {
+    baseTpl = config.value?.templates?.[container.template];
+  }
   if (!baseTpl) return null;
   
   let resolvedFields = baseTpl.fields || [];

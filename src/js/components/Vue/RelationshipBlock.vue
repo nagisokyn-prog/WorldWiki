@@ -357,7 +357,12 @@ const foreignError = ref('');
 const foreignModified = ref(false);
 
 const getResolvedFields = (subConf: any) => {
-  const tpl = props.allTemplates[subConf.template];
+  let tpl: any = null;
+  if (subConf.fields && !subConf.template) {
+    tpl = subConf;
+  } else {
+    tpl = props.allTemplates[subConf.template];
+  }
   if (!tpl || !tpl.fields) return [];
   if (!subConf.fieldOverrides) return tpl.fields;
   
@@ -620,7 +625,12 @@ const addNestedItem = (sourceItem: any, subConf: any): void => {
     sourceItem[key] = [];
   }
   
-  const tpl = props.allTemplates[subConf.template];
+  let tpl: any = null;
+  if (subConf.fields && !subConf.template) {
+    tpl = subConf;
+  } else {
+    tpl = props.allTemplates[subConf.template];
+  }
   const newEntry: any = {};
   tpl?.fields?.forEach((f: any) => { newEntry[f.class] = f.value ?? ''; });
   

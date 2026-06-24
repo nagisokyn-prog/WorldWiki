@@ -178,19 +178,19 @@ export const apiService = {
   },
 
   // Проекты
-  getProjects: (): Promise<unknown[]> => invoke('get_projects'),
+  getProjects: (): Promise<unknown[]> => invoke<unknown[]>('get_projects'),
   createProject: (data: Record<string, unknown>): Promise<{ success: boolean }> =>
-    invoke('create_project', { projectData: data }),
+    invoke<{ success: boolean }>('create_project', { projectData: data }),
   getProjectConfig: (name: string): Promise<ProjectConfig> =>
-    invoke('get_project_config', { name }),
+    invoke<ProjectConfig>('get_project_config', { name }),
   deleteProject: (name: string): Promise<{ success: boolean }> =>
-    invoke('delete_project', { name }),
+    invoke<{ success: boolean }>('delete_project', { name }),
   saveProjectConfig: (name: string, config: ProjectConfig): Promise<{ success: boolean }> =>
-    invoke('save_project_config', { name, config }),
+    invoke<{ success: boolean }>('save_project_config', { name, config }),
 
   // Сущности
   getEntityList: async (project: string, type: string, filters?: Record<string, unknown>): Promise<EntityData[]> => {
-    const list = await invoke('get_entities', { project, entityType: type, filters }) as any[];
+    const list = await invoke<any[]>('get_entities', { project, entityType: type, filters });
     return list.map(processIds).map(item => {
       if (item && item.data && typeof item.data === 'object') {
         return { ...item.data, id: item.id };
@@ -199,7 +199,7 @@ export const apiService = {
     });
   },
   getEntity: async (project: string, type: string, id: string): Promise<any> => {
-    const detail: any = await invoke('get_entity', { id });
+    const detail: any = await invoke<any>('get_entity', { id });
     const processed = processIds(detail);
     // Всегда возвращаем раскрытые атрибуты (без обертки в attributes)
     if (processed && processed.attributes && typeof processed.attributes === 'object') {
@@ -245,28 +245,28 @@ export const apiService = {
       attributes: cleanAttributes,
       tags: actualData.tags || [],
     };
-    return invoke('save_entity', { project, entity });
+    return invoke<{ success: boolean; id?: string }>('save_entity', { project, entity });
   },
   deleteEntity: (project: string, type: string, id: string): Promise<{ success: boolean }> =>
-    invoke('delete_entity', { id }),
+    invoke<{ success: boolean }>('delete_entity', { id }),
 
   // Таймлайны глав
   getGlobalTimeline: (project: string): Promise<unknown> =>
-    invoke('get_global_timeline', { project }),
+    invoke<unknown>('get_global_timeline', { project }),
   saveGlobalTimeline: (project: string, data: unknown): Promise<{ success: boolean }> =>
-    invoke('save_global_timeline', { project, data }),
+    invoke<{ success: boolean }>('save_global_timeline', { project, data }),
 
   // Календари
   getCalendars: (project: string): Promise<any[]> =>
-    invoke('get_calendars', { project }),
+    invoke<any[]>('get_calendars', { project }),
   saveCalendar: (project: string, calendarData: unknown): Promise<{ success: boolean }> =>
-    invoke('save_calendar', { data: calendarData }),
+    invoke<{ success: boolean }>('save_calendar', { data: calendarData }),
   deleteCalendar: (id: string): Promise<void> =>
-    invoke('delete_calendar', { id }),
+    invoke<void>('delete_calendar', { id }),
 
   // Схемы для редактора
   getSchemas: async (project: string): Promise<Record<string, SchemaInfo>> => {
-    const list = await invoke('get_entity_schemas', { project }) as any[];
+    const list = await invoke<any[]>('get_entity_schemas', { project });
     const map: Record<string, SchemaInfo> = {};
     for (const item of list) {
       map[item.type_key] = { name: item.type_name, icon: item.icon, full_schema: item.full_schema };
@@ -274,12 +274,12 @@ export const apiService = {
     return map;
   },
   saveSchema: (project: string, schema: any): Promise<{ success: boolean }> =>
-    invoke('save_entity_schema', { project, schema }),
+    invoke<{ success: boolean }>('save_entity_schema', { project, schema }),
 
 
   // Теги
   getTags: async (project: string): Promise<TagData[]> => {
-    const list = await invoke('get_tags', { project }) as any[];
+    const list = await invoke<any[]>('get_tags', { project });
     return list.map(processIds);
   },
   saveTag: (project: string, tagData: TagData): Promise<{ success: boolean }> => {
@@ -287,14 +287,14 @@ export const apiService = {
       ...tagData,
       project_id: `projects:${project}`
     };
-    return invoke('save_tag', { data });
+    return invoke<{ success: boolean }>('save_tag', { data });
   },
   deleteTag: (project: string, tagId: string): Promise<{ success: boolean }> =>
-    invoke('delete_tag', { id: tagId }),
+    invoke<{ success: boolean }>('delete_tag', { id: tagId }),
 
   // Главы
   getChaptersList: async (project: string): Promise<ChapterData[]> => {
-    const list = await invoke('get_chapters', { project }) as any[];
+    const list = await invoke<any[]>('get_chapters', { project });
     return list.map(processIds).filter((c: any) => c).map((c: any) => ({
       ...c,
       sortOrder: c.sort_order ?? c.sortOrder,
@@ -305,7 +305,7 @@ export const apiService = {
     }));
   },
   getChapter: async (project: string, chapterId: string): Promise<ChapterData> => {
-    const c: any = await invoke('get_chapter', { id: chapterId });
+    const c: any = await invoke<any>('get_chapter', { id: chapterId });
     if (!c) return null as any;
     return {
       ...c,
@@ -333,7 +333,7 @@ export const apiService = {
     delete data.timelineEvents;
     delete data.updatedAt;
     
-    const res = await invoke('save_chapter', { data }) as { success: boolean };
+    const res = await invoke<{ success: boolean }>('save_chapter', { data });
     
     // Extract and save text blocks
     if (data.content && typeof DOMParser !== 'undefined') {
@@ -355,7 +355,7 @@ export const apiService = {
         });
         
         if (data.id) {
-          await invoke('save_text_blocks', { project, chapterId: data.id, blocks });
+          await invoke<void>('save_text_blocks', { project, chapterId: data.id, blocks });
         }
       } catch (err) {
         console.error('Failed to parse text blocks:', err);
@@ -365,23 +365,23 @@ export const apiService = {
     return res;
   },
   deleteChapter: (project: string, id: string): Promise<{ success: boolean }> =>
-    invoke('delete_chapter', { id }),
+    invoke<{ success: boolean }>('delete_chapter', { id }),
 
   // Связи
   getConnections: async (project: string, chapter: string): Promise<ConnectionData[]> => {
-    const list = await invoke('get_connections', { project, chapter }) as any[];
+    const list = await invoke<any[]>('get_connections', { project, chapter });
     return list.map(processIds);
   },
   getConnectionsByEntity: (project: string, entityType: string, entityId: string): Promise<ConnectionData[]> =>
-    invoke('get_connections_by_entity', { project, entityType, entityId }),
+    invoke<ConnectionData[]>('get_connections_by_entity', { project, entityType, entityId }),
   removeConnectionsBySource: (project: string, entityType: string, entityId: string): Promise<{ success: boolean }> =>
-    invoke('remove_connections_by_source', { project, entityType, entityId }),
+    invoke<{ success: boolean }>('remove_connections_by_source', { project, entityType, entityId }),
   saveConnections: (project: string, data: ConnectionData[]): Promise<{ success: boolean }> =>
-    invoke('save_connections', { project, data }),
+    invoke<{ success: boolean }>('save_connections', { project, data }),
 
   // Экспорт
   exportChapters: (project: string, chapters: unknown[], format: string, options: Record<string, unknown>): Promise<{ path: string }> =>
-    invoke('export_chapters', { project, chapters, format, options }),
+    invoke<{ path: string }>('export_chapters', { project, chapters, format, options }),
 
   // Типы сущностей
   getEntityTypes: async (project: string): Promise<EntityType[]> => {

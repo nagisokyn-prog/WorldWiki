@@ -191,7 +191,7 @@ export const apiService = {
   // Сущности
   getEntityList: async (project: string, type: string, filters?: Record<string, unknown>): Promise<EntityData[]> => {
     const list = await invoke<any[]>('get_entities', { project, entityType: type, filters });
-    return list.map(processIds).map(item => {
+    return list.map(processIds).map((item: any) => {
       if (item && item.data && typeof item.data === 'object') {
         return { ...item.data, id: item.id };
       }
@@ -200,7 +200,7 @@ export const apiService = {
   },
   getEntity: async (project: string, type: string, id: string): Promise<any> => {
     const detail: any = await invoke<any>('get_entity', { id });
-    const processed = processIds(detail);
+    const processed: any = processIds(detail);
     // Всегда возвращаем раскрытые атрибуты (без обертки в attributes)
     if (processed && processed.attributes && typeof processed.attributes === 'object') {
       return { ...processed.attributes, id: processed.id };
@@ -280,7 +280,7 @@ export const apiService = {
   // Теги
   getTags: async (project: string): Promise<TagData[]> => {
     const list = await invoke<any[]>('get_tags', { project });
-    return list.map(processIds);
+    return list.map(processIds) as TagData[];
   },
   saveTag: (project: string, tagData: TagData): Promise<{ success: boolean }> => {
     const data = {
@@ -370,7 +370,7 @@ export const apiService = {
   // Связи
   getConnections: async (project: string, chapter: string): Promise<ConnectionData[]> => {
     const list = await invoke<any[]>('get_connections', { project, chapter });
-    return list.map(processIds);
+    return list.map(processIds) as ConnectionData[];
   },
   getConnectionsByEntity: (project: string, entityType: string, entityId: string): Promise<ConnectionData[]> =>
     invoke<ConnectionData[]>('get_connections_by_entity', { project, entityType, entityId }),

@@ -5,18 +5,18 @@
  */
 
 import { createApp, ref, computed, watch, onMounted, nextTick, shallowRef, triggerRef, defineAsyncComponent } from 'vue';
-import { settingsService } from '../services/settings.service';
-import { apiService } from '../services/api.service';
+import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
+import { apiService } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 import { connectionsManager } from '../services/connections.service';
-import { useEditorGroups } from '../composables/useEditorGroups';
+import { useEditorGroups } from '../../../tauri-surreal-kit/frontend/src/js/composables/useEditorGroups';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу (видны при старте)
-import QuickOpenVue from '../components/Vue/QuickOpen.vue';
-import CommandPaletteVue from '../components/Vue/CommandPalette.vue';
+import QuickOpenVue from '../../../tauri-surreal-kit/frontend/src/components/Vue/QuickOpen.vue';
+import CommandPaletteVue from '../../../tauri-surreal-kit/frontend/src/components/Vue/CommandPalette.vue';
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
 import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
-import EditorTabBarVue from '../components/Vue/EditorTabBar.vue';
-import EditorGroupPaneVue from '../components/Vue/EditorGroupPane.vue';
+import EditorTabBarVue from '../../../tauri-surreal-kit/frontend/src/components/Vue/EditorTabBar.vue';
+import EditorGroupPaneVue from '../../../tauri-surreal-kit/frontend/src/components/Vue/EditorGroupPane.vue';
 
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт (lazy loading)
 const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/EntityEditor.vue'));
@@ -28,7 +28,7 @@ const PlanningPanelVue = defineAsyncComponent(() => import('../components/Vue/Ch
 const ExportModalVue = defineAsyncComponent(() => import('../components/Vue/Chapters/ExportModal.vue'));
 const WowilonDrawerVue = defineAsyncComponent(() => import('../components/Vue/Chapters/WowilonDrawer.vue'));
 const TagsManagerModalVue = defineAsyncComponent(() => import('../components/Vue/TagsManagerModal.vue'));
-const TagsField = defineAsyncComponent(() => import('../components/Vue/TagsField.vue'));
+const TagsField = defineAsyncComponent(() => import('../../../tauri-surreal-kit/frontend/src/components/Vue/TagsField.vue'));
 const FloatingEntityEditorVue = defineAsyncComponent(() => import('../components/Vue/FloatingEntityEditor.vue'));
 const RedactSandboxVue = defineAsyncComponent(() => import('../components/Vue/RedactSandbox.vue'));
 

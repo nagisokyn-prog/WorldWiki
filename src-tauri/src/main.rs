@@ -67,8 +67,9 @@ fn main() {
     use logic::entities::*;
     use logic::export::*;
     use logic::projects::*;
-    use logic::system::*;
     use logic::volumes::*;
+    use tauri_shell::logic::system::*;
+    use tauri_shell::logic::performance::*;
     tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
             // --- Проекты ---

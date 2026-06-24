@@ -675,6 +675,42 @@ watch(() => props.entityId, () => {
   loadConfigAndData();
 });
 
+// Синхронизация данных из других сплитов
+watch(() => props.initialData, (newVal) => {
+  if (isInitializing.value) return;
+  // Чтобы не перезаписать локальные изменения и не сбросить курсор, 
+  // используем глубокий merge, как и в app.ts
+  const merge = (target: any, source: any) => {
+    for (const key in source) {
+      if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        if (!target[key] || typeof target[key] !== 'object') target[key] = {};
+        merge(target[key], source[key]);
+      } else if (Array.isArray(source[key])) {
+        if (!Array.isArray(target[key])) target[key] = [];
+        for (let i = 0; i < source[key].length; i++) {
+          if (i < target[key].length) {
+            if (typeof source[key][i] === 'object' && source[key][i] !== null) {
+              merge(target[key][i], source[key][i]);
+            } else {
+              target[key][i] = source[key][i];
+            }
+          } else {
+            target[key].push(source[key][i]);
+          }
+        }
+        target[key].length = source[key].length;
+      } else {
+        target[key] = source[key];
+      }
+    }
+  };
+  
+  // Отключаем на секунду отправку update-data, чтобы не было бесконечного цикла (эхо)
+  const previousState = lastEmittedData.value;
+  merge(formData.value, newVal);
+  lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: foreignUpdates.value });
+}, { deep: true });
+
 onMounted(() => {
   loadConfigAndData();
 

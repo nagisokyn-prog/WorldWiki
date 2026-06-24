@@ -1,6 +1,6 @@
 [package]
 name = "world-wiki"
-version = "0.9.3"
+version = "0.8.0"
 description = "A Tauri App"
 authors = ["Danila"]
 edition = "2021"
@@ -20,4 +20,5 @@ serde_json = "1"
 surrealdb = { version = "3.0.4", features = ["kv-surrealkv"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
-surreal_domain = { path = "../surreal_domain/surreal_domain_facade" }
+surreal_domain = { path = "../tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade" }
+tauri-shell = { path = "../tauri-surreal-kit/backend/tauri_shell" }

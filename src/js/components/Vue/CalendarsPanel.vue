@@ -253,7 +253,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { calendarService } from '../../services/calendar.service';
-import XboxWheel from './XboxWheel.vue';
+import XboxWheel from "../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue";
 import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
 const props = defineProps({
@@ -441,4 +441,5 @@ defineExpose({ saveAll });
 .item-duration { width: 60px; }
 .item-actions { display: flex; gap: 4px; }
 </style>
+
 

@@ -238,7 +238,7 @@
 
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { apiService } from '../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
+import { apiService } from '../../services/api.service';
 import XboxWheel from './XboxWheel.vue';
 import DateWheels from './DateWheels.vue';
 import RelationshipBlock from './RelationshipBlock.vue';

@@ -333,7 +333,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import XboxWheel from './XboxWheel.vue';
 import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
-import { apiService } from '../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
+import { apiService } from '../../services/api.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
 

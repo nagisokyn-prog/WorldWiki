@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { apiService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
+import { apiService } from '../../../services/api.service';
 
 const props = defineProps({
   project: { type: String, required: true },

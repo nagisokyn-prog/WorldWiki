@@ -282,7 +282,7 @@ onMounted(() => {
   document.addEventListener('ww:hierarchy-changed', handler);
   onUnmounted(() => document.removeEventListener('ww:hierarchy-changed', handler));
 });
-import { apiService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
+import { apiService } from '../../../services/api.service';
 import { useTreeSelection } from '../../../composables/useTreeSelection.js';
 
 const props = defineProps({

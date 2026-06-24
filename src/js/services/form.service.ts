@@ -179,11 +179,7 @@ export class FormService extends BaseFormService {
   }
 }
 
-declare global {
-  interface Window {
-    FormService: typeof FormService;
-  }
-}
+
 
 if (typeof window !== 'undefined') {
   window.FormService = FormService;

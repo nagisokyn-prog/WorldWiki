@@ -4,7 +4,7 @@
  * @rust-ready ✅ CRUD операции с проектами
  */
 
-import { apiService } from "../../../tauri-surreal-kit/frontend/src/js/services/api.service";
+import { apiService } from "./api.service";
 
 interface ProjectStats {
   characters: number;

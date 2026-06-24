@@ -4,7 +4,7 @@
  * @rust-ready ✅ Расчёт дат, конвертация календарей
  */
 
-import { apiService } from "../../../tauri-surreal-kit/frontend/src/js/services/api.service";
+import { apiService } from "./api.service";
 import { projectService } from './project.service';
 
 interface CalendarMonth {

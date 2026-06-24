@@ -6,7 +6,7 @@
 
 import { createApp, ref, computed, watch, onMounted, nextTick, shallowRef, triggerRef, defineAsyncComponent } from 'vue';
 import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
-import { apiService } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
+import { apiService } from '../services/api.service';
 import { connectionsManager } from '../services/connections.service';
 import { useEditorGroups } from '../../../tauri-surreal-kit/frontend/src/js/composables/useEditorGroups';
 

@@ -183,7 +183,7 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { Extension } from '@tiptap/core';
-import { settingsService } from '../../../services/settings.service';
+import { settingsService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 import TurndownService from 'turndown';
 import MarkdownIt from 'markdown-it';
 import Paragraph from '@tiptap/extension-paragraph';
@@ -956,3 +956,4 @@ onUnmounted(() => {
   transform: scale(1.05);
 }
 </style>
+

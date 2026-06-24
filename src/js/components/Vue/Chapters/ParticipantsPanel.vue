@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { apiService } from '../../../services/api.service';
+import { apiService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
 const props = defineProps({
   project: { type: String, required: true },
@@ -117,3 +117,4 @@ const removeParticipant = (idx: number) => {
 .tool-section { margin-bottom: 24px; }
 .tool-section h4 { margin: 0 0 12px 0; font-size: 13px; text-transform: uppercase; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
 </style>
+

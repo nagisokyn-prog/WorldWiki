@@ -7,7 +7,7 @@
 import * as Vue from 'vue';
 import { createApp, ref, computed, onMounted, nextTick, shallowRef } from 'vue';
 import { projectService } from '../services/project.service';
-import { settingsService } from '../services/settings.service';
+import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 import XboxWheel from '../components/Vue/XboxWheel.vue';
 import CalendarsPanel from '../components/Vue/CalendarsPanel.vue';
 
@@ -348,3 +348,4 @@ const appEl = document.getElementById('app');
 if (appEl) {
   app.mount('#app');
 }
+

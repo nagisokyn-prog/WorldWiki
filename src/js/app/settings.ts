@@ -4,7 +4,7 @@
  */
 
 import { createApp } from 'vue';
-import { settingsService } from '../services/settings.service';
+import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 import Settings from '../components/Vue/Settings.vue';
 
 async function init() {
@@ -46,3 +46,4 @@ async function init() {
 }
 
 init().catch(e => console.error('[settings] init error:', e));
+

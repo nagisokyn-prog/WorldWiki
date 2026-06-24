@@ -66,7 +66,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import XboxWheel from './XboxWheel.vue';
 import { calendarService } from '../../services/calendar.service';
-import { settingsService } from '../../services/settings.service';
+import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
 
@@ -240,3 +240,4 @@ watch(() => props.modelValue, (newVal) => {
   background: var(--bg-input-focus, rgba(255,255,255,0.1));
 }
 </style>
+

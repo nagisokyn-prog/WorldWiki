@@ -332,8 +332,8 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
 import XboxWheel from './XboxWheel.vue';
-import { settingsService } from '../../services/settings.service';
-import { apiService } from '../../services/api.service';
+import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
+import { apiService } from '../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
 
@@ -915,3 +915,4 @@ const getDeepProp = (obj: any, path: string): any => {
   color: #fbbf24;
 }
 </style>
+

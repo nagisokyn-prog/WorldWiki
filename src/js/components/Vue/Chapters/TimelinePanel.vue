@@ -131,7 +131,7 @@ import { ref, onMounted, computed } from 'vue';
 import { PropType } from 'vue';
 import { calendarService } from '../../../services/calendar.service';
 import XboxWheel from '../XboxWheel.vue';
-import { settingsService } from '../../../services/settings.service';
+import { settingsService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
 
@@ -719,3 +719,4 @@ const onChange = () => {
   color: var(--text-main);
 }
 </style>
+

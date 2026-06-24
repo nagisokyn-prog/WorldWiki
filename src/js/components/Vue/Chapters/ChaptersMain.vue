@@ -179,7 +179,7 @@
 import { ref, onMounted, onUnmounted, watch, computed, type PropType } from 'vue';
 import { chapterService } from '../../../services/chapter.service';
 import { timelineService } from '../../../services/timeline.service';
-import { apiService } from '../../../services/api.service';
+import { apiService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
 import EditorCore from './EditorCoreTiptap.vue';
 import TimelinePanel from './TimelinePanel.vue';
@@ -809,3 +809,4 @@ onUnmounted(() => {
   border: none !important;
 }
 </style>
+

@@ -7,7 +7,7 @@
  */
 
 import { createApp, ref, computed, watch, onMounted, shallowRef, defineAsyncComponent } from 'vue';
-import { apiService } from '../services/api.service';
+import { apiService } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 import { connectionsManager } from '../services/connections.service';
 import { useShellApp } from '../../../tauri-surreal-kit/frontend/src/js/composables/useShellApp';
 
@@ -145,3 +145,4 @@ async function init() {
 }
 
 init();
+

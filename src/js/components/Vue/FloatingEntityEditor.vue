@@ -39,7 +39,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import FloatingWindow from '../../../tauri-surreal-kit/frontend/src/components/Vue/FloatingWindow.vue';
 import EntityEditorVue from './EntityEditor.vue';
-import { apiService } from '../../services/api.service';
+import { apiService } from '../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
 const props = defineProps<{
   project: string;
@@ -158,3 +158,4 @@ const close = () => {
   color: #ef4444;
 }
 </style>
+

@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { apiService } from '../../services/api.service';
+import { apiService } from '../../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
 const props = defineProps<{
   project: string;
@@ -289,3 +289,4 @@ defineExpose({ open, close });
   font-style: italic;
 }
 </style>
+

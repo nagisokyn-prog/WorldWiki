@@ -1108,7 +1108,7 @@ const exportSchema = () => {
   downloadAnchorNode.remove()
 }
 
-import { apiService } from '../../services/api.service'
+import { apiService } from '../../../../tauri-surreal-kit/frontend/src/js/services/api.service'
 
 const saveToProject = async () => {
   try {

@@ -4,8 +4,8 @@
  */
 
 import { createApp, ref, onMounted } from 'vue';
-import { settingsService } from '../services/settings.service';
-import { apiService } from '../services/api.service';
+import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
+import { apiService } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 import EntityEditorVue from '../components/Vue/EntityEditor.vue';
 
 // Глобальный доступ к Vue для legacy скриптов (если нужно)
@@ -78,3 +78,4 @@ async function init() {
 }
 
 init();
+

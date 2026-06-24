@@ -545,7 +545,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import XboxWheel from './XboxWheel.vue'
+import XboxWheel from '../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue'
 import RelationshipBlock from './RelationshipBlock.vue'
 import EntityEditor from './EntityEditor.vue'
 

@@ -5,7 +5,7 @@
 
 import { createApp } from 'vue';
 import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
-import Settings from '../components/Vue/Settings.vue';
+import Settings from '../../../tauri-surreal-kit/frontend/src/components/Vue/Settings.vue';
 
 async function init() {
   console.log('[settings] initializing...');

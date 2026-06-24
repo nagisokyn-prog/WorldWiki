@@ -130,7 +130,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { PropType } from 'vue';
 import { calendarService } from '../../../services/calendar.service';
-import XboxWheel from '../XboxWheel.vue';
+import XboxWheel from '../../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 import { settingsService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');

@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import FloatingWindow from '../../../tauri-surreal-kit/frontend/src/components/Vue/FloatingWindow.vue';
+import FloatingWindow from '../../../../tauri-surreal-kit/frontend/src/components/Vue/FloatingWindow.vue';
 import EntityEditorVue from './EntityEditor.vue';
 import { apiService } from '../../services/api.service';
 

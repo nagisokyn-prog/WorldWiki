@@ -331,7 +331,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import XboxWheel from './XboxWheel.vue';
+import XboxWheel from '../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 import { apiService } from '../../services/api.service';
 

@@ -86,7 +86,10 @@ const stringifyId = (val: any): string => {
     let s = val;
     // Очистка от SurrealDB-специфичных оберток, если они затесались в строку
     if (s.includes('{String:')) {
-       s = s.replace(/.*String:\"?([^\"]+)\"?.*/, '$1');
+      const match = s.match(/String:"?([^"]+)"?/);
+      if (match && match[1]) {
+        s = match[1];
+      }
     }
     return s.replace(/"/g, '').normalize('NFC').trim();
   }

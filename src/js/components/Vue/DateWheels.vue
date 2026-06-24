@@ -64,7 +64,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import XboxWheel from './XboxWheel.vue';
+import XboxWheel from '../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 import { calendarService } from '../../services/calendar.service';
 import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 

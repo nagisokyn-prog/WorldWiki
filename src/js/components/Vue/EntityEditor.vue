@@ -239,10 +239,10 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { apiService } from '../../services/api.service';
-import XboxWheel from './XboxWheel.vue';
+import XboxWheel from '../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 import DateWheels from './DateWheels.vue';
 import RelationshipBlock from './RelationshipBlock.vue';
-import TagsField from './TagsField.vue';
+import TagsField from '../../../../tauri-surreal-kit/frontend/src/components/Vue/TagsField.vue';
 import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');

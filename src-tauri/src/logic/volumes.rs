@@ -56,7 +56,7 @@ pub async fn create_volume(
     
     // Получаем следующий sort_order
     let mut max_order_res = db.query(r#"
-        SELECT math::max(sort_order) AS max_order FROM contains WHERE in = type::record($proj) GROUP BY in
+        SELECT math::max(sort_order) AS max_order FROM contains WHERE in = type::record($proj) GROUP ALL
     "#).bind(("proj", proj_id.clone())).await.map_err(|e| e.to_string())?;
     let max_orders: Vec<Value> = max_order_res.take(0).unwrap_or_default();
     let next_order = max_orders.first()
@@ -66,7 +66,8 @@ pub async fn create_volume(
 
     let mut create_res = db.query(r#"
         LET $vol = (CREATE volumes SET project_id = type::record($proj), title = $title RETURN VALUE id)[0];
-        RELATE type::record($proj) -> contains -> $vol SET sort_order = $order;
+        LET $proj_rec = type::record($proj);
+        RELATE $proj_rec -> contains -> $vol SET sort_order = $order;
         SELECT id, title, project_id, $order AS sort_order FROM $vol;
     "#).bind(("proj", proj_id.clone())).bind(("title", title)).bind(("order", next_order)).await.map_err(|e| e.to_string())?;
     
@@ -103,7 +104,7 @@ pub async fn create_arc(
     let clean_vol_id = if vol_id.contains(':') { vol_id } else { format!("volumes:{}", vol_id) };
     
     let mut max_order_res = db.query(r#"
-        SELECT math::max(sort_order) AS max_order FROM contains WHERE in = type::record($parent) GROUP BY in
+        SELECT math::max(sort_order) AS max_order FROM contains WHERE in = type::record($parent) GROUP ALL
     "#).bind(("parent", clean_vol_id.clone())).await.map_err(|e| e.to_string())?;
     let max_orders: Vec<Value> = max_order_res.take(0).unwrap_or_default();
     let next_order = max_orders.first()
@@ -113,7 +114,8 @@ pub async fn create_arc(
 
     let mut create_res = db.query(r#"
         LET $arc = (CREATE arcs SET project_id = type::record($proj), title = $title RETURN VALUE id)[0];
-        RELATE type::record($parent) -> contains -> $arc SET sort_order = $order;
+        LET $parent_rec = type::record($parent);
+        RELATE $parent_rec -> contains -> $arc SET sort_order = $order;
         SELECT id, title, project_id, type::record($parent) AS volume_id, $order AS sort_order FROM $arc;
     "#)
     .bind(("proj", proj_id.clone()))
@@ -167,7 +169,9 @@ pub async fn assign_chapter(
     // Удаляем старые связи и создаем новую
     db.query(r#"
         DELETE <-contains WHERE out = type::record($chap);
-        RELATE type::record($parent) -> contains -> type::record($chap) SET sort_order = 0;
+        LET $parent_rec = type::record($parent);
+        LET $chap_rec = type::record($chap);
+        RELATE $parent_rec -> contains -> $chap_rec SET sort_order = 0;
     "#)
     .bind(("chap", clean_chap))
     .bind(("parent", new_parent))

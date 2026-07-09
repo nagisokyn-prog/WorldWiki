@@ -205,7 +205,9 @@ declare module 'turndown';
 // @ts-ignore
 declare module 'markdown-it';
 
-// Расширение для обработки Enter/Shift+Enter
+import { apiService } from '../../../services/api.service';
+
+// Расширение для обработки Enter/Shift+Enter и Ctrl+Q
 const EnterHandler = Extension.create({
   name: 'enterHandler',
   addKeyboardShortcuts() {
@@ -218,6 +220,23 @@ const EnterHandler = Extension.create({
         // Shift+Enter создает hard break (перевод строки внутри параграфа)
         return editor.commands.setHardBreak();
       },
+      'Mod-q': ({ editor }) => {
+        const { state } = editor;
+        const { $from } = state.selection;
+        const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
+        const match = textBefore.match(/\[([^\]]+)\]$/);
+        
+        if (match) {
+          const name = match[1].trim();
+          const startPos = $from.pos - match[0].length;
+          const endPos = $from.pos;
+          
+          // Эмитим событие, которое мы перехватим в setup
+          document.dispatchEvent(new CustomEvent('ww:quick-link', { detail: { name, startPos, endPos } }));
+          return true;
+        }
+        return false;
+      }
     };
   },
 });
@@ -755,6 +774,34 @@ onMounted(() => {
     console.log('[EditorCore EVENT] ww:toggle-structure - showStructure now:', showStructure.value);
   };
   document.addEventListener('ww:toggle-structure', handleToggleStructure);
+  
+  // Обработчик Ctrl+Q (ww:quick-link)
+  const handleQuickLink = async (e: Event) => {
+    const { name, startPos, endPos } = (e as CustomEvent).detail;
+    if (!name || !editor.value) return;
+    
+    try {
+      const response = await apiService.searchEntities(props.project, name);
+      if (response && response.length > 0) {
+        const entity = response[0];
+        const url = `?type=${entity._type}&id=${entity.id}`;
+        
+        editor.value.chain()
+          .focus()
+          .deleteRange({ from: startPos, to: endPos })
+          .insertContent(`<a href="${url}">${name}</a>`)
+          .run();
+          
+        console.log(`[EditorCore] Created quick link for ${name} -> ${entity.id}`);
+      } else {
+        alert(`Сущность "${name}" не найдена.`);
+      }
+    } catch (err) {
+      console.error('[EditorCore] Quick link search error:', err);
+      alert(`Ошибка при поиске сущности "${name}"`);
+    }
+  };
+  document.addEventListener('ww:quick-link', handleQuickLink);
   
   // Загрузить сохранённые ширины панелей
   const savedLeftWidth = localStorage.getItem('split-view-left-width');

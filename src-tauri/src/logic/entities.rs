@@ -127,13 +127,19 @@ pub async fn delete_entity(
     let db = &state.db;
     let parts: Vec<&str> = id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 { parts[1] } else { &id };
+    let full_id = format!("entities:{}", actual_id);
 
-    db.query("DELETE entity_rel WHERE in = type::record($id) OR out = type::record($id)")
-        .bind(("id", format!("entities:{}", actual_id)))
-        .await.map_err(|e| e.to_string())?;
+    db.query("
+        BEGIN TRANSACTION;
+        DELETE entity_rel WHERE in = type::record($id) OR out = type::record($id);
+        DELETE appears_in WHERE in = type::record($id);
+        DELETE entity_revisions WHERE target_id = type::record($id);
+        DELETE type::record($id);
+        COMMIT TRANSACTION;
+    ")
+    .bind(("id", full_id))
+    .await.map_err(|e| e.to_string())?;
 
-    let _: Option<Value> = db.delete(("entities", actual_id))
-        .await.map_err(|e| e.to_string())?;
     Ok(())
 }
 

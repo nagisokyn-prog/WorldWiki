@@ -153,33 +153,15 @@ const exchangeCode = async () => {
   authError.value = '';
   
   try {
-    const response = await fetch('https://oauth.yandex.ru/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'authorization_code',
-        code: authCode.value.trim(),
-        client_id: YANDEX_CLIENT_ID,
-        client_secret: YANDEX_CLIENT_SECRET
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.access_token) {
-      localStorage.setItem('yandex_disk_token', data.access_token);
-      yandexToken.value = data.access_token;
-      showAuthCodeInput.value = false;
-      authCode.value = '';
-      emit('toast', { text: 'Яндекс.Диск успешно подключен!', type: 'success' });
-    } else {
-      authError.value = data.error_description || data.error || 'Неверный код подтверждения';
-    }
+    const token = await (window as any).__TAURI__.core.invoke('exchange_yandex_token', { code: authCode.value.trim() });
+    localStorage.setItem('yandex_disk_token', token);
+    yandexToken.value = token;
+    showAuthCodeInput.value = false;
+    authCode.value = '';
+    emit('toast', { text: 'Яндекс.Диск успешно подключен!', type: 'success' });
   } catch (err: any) {
     console.error(err);
-    authError.value = 'Ошибка сети при проверке кода';
+    authError.value = typeof err === 'string' ? err : 'Ошибка сети при проверке кода';
   } finally {
     isLoading.value = false;
   }
@@ -196,50 +178,19 @@ const uploadBackup = async () => {
     const backupFilePath = await apiService.createCloudBackup();
     emit('toast', { text: 'Бекап создан, отправляем в облако...', type: 'info' });
     
-    const { basename } = await import('@tauri-apps/api/path');
-    
-    // Используем готовый бэкенд метод вместо plugin-fs
-    const fileBytes = await (window as any).__TAURI__.core.invoke('get_local_file', { path: backupFilePath }) as Uint8Array | ArrayBuffer;
-    const fileName = await basename(backupFilePath);
-    const uploadBytes = fileBytes instanceof ArrayBuffer ? new Uint8Array(fileBytes) : new Uint8Array(fileBytes);
-    
-    // 3. Запрашиваем URL для загрузки у Яндекса
-    const getUrlRes = await fetch(`https://cloud-api.yandex.net/v1/disk/resources/upload?path=app:/${fileName}&overwrite=true`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `OAuth ${yandexToken.value}`
-      }
+    // 2. Отправляем в Яндекс.Диск через Rust-бэкенд
+    await (window as any).__TAURI__.core.invoke('upload_to_yandex_disk', { 
+        token: yandexToken.value, 
+        filePath: backupFilePath 
     });
     
-    if (getUrlRes.status === 401) {
-      disconnectYandex();
-      throw new Error('Токен устарел, пожалуйста, подключитесь заново');
-    }
-    
-    const urlData = await getUrlRes.json();
-    if (!urlData.href) {
-      throw new Error(urlData.message || 'Не удалось получить ссылку для загрузки');
-    }
-    
-    // 4. Загружаем файл
-    const blob = new Blob([uploadBytes], { type: 'application/zip' });
-    const uploadRes = await fetch(urlData.href, {
-      method: 'PUT',
-      body: blob,
-      headers: {
-        'Content-Type': 'application/zip'
-      }
-    });
-    
-    if (uploadRes.ok || uploadRes.status === 201) {
-      emit('toast', { text: 'Бекап успешно сохранен в Яндекс.Диск!', type: 'success' });
-    } else {
-      throw new Error('Ошибка при загрузке файла в облако');
-    }
+    emit('toast', { text: 'Бекап успешно сохранен в Яндекс.Диск!', type: 'success' });
     
   } catch (err: any) {
     console.error(err);
-    emit('toast', { text: `Ошибка: ${err.message}`, type: 'error' });
+    const errMsg = typeof err === 'string' ? err : err.message;
+    if (errMsg && errMsg.includes('Token expired')) disconnectYandex();
+    emit('toast', { text: `Ошибка: ${errMsg}`, type: 'error' });
   } finally {
     isSyncing.value = false;
   }

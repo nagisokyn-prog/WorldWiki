@@ -1,30 +1,80 @@
+use serde::{Deserialize, Serialize};
 use surreal_domain::*;
 
 // =====================================================
 // AI-ИНФРАСТРУКТУРА (системные таблицы)
 // =====================================================
 
-// 1. Семантический чанкинг
 surreal_entity! {
-    #[table = "text_blocks"]
+    #[table = "auto_approval_settings"]
     #[project_scoped]
     #[tauri_commands]
-    pub struct TextBlock {
-        pub chapter_id: String,
-        pub block_type: String, // "thought", "dialogue", "description"
-        pub order_index: i64,
-        #[fulltext] pub content: String,
-        #[hnsw] pub embedding: Option<Vec<f32>>,
+    pub struct AutoApprovalSettings {
+        pub enabled: bool,
+        #[flexible] pub categories: serde_json::Value,
+        #[flexible] pub allowlist: serde_json::Value,
+        #[flexible] pub denylist: serde_json::Value,
     }
 }
 
-// 2. Древовидный чат с ветвлением и цитированием
+surreal_entity! {
+    #[table = "ai_profiles"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct AiProfile {
+        pub name: String,
+        pub provider: String,
+        pub base_url: Option<String>,
+        pub api_key: Option<String>,
+        #[flexible] pub settings: serde_json::Value,
+        pub is_active: bool,
+    }
+}
+
+surreal_entity! {
+    #[table = "artifacts"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct Artifact {
+        pub chat_id: Option<String>,
+        pub r#type: String, // document, code, table, graph
+        pub title: String,
+        #[fulltext] pub content: String,
+        pub version: i64,
+    }
+}
+
+surreal_entity! {
+    #[table = "ai_skills"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct AiSkill {
+        pub name: String,
+        pub description: String,
+        pub prompt_text: String,
+        pub is_unlocked: bool,
+        pub is_custom_author_style: bool,
+    }
+}
+
+surreal_entity! {
+    #[table = "chats"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct Chat {
+        pub title: String,
+        pub tag: Option<String>,
+        pub parent_chat_id: Option<String>,
+        #[flexible] pub session_context: Vec<serde_json::Value>,
+    }
+}
+
 surreal_entity! {
     #[table = "chat_messages"]
     #[project_scoped]
     #[tauri_commands]
     pub struct ChatMessage {
-        pub session_id: String,
+        pub chat_id: String,
         pub role: String, // "user", "assistant"
         #[fulltext] pub content: String,
         pub parent_msg_id: Option<String>,
@@ -33,11 +83,10 @@ surreal_entity! {
         #[fulltext] pub edited_content: Option<String>,
         pub feedback_comment: Option<String>,
         pub rag_was_bad: bool,
-        #[hnsw] pub embedding: Option<Vec<f32>>,
+        #[flexible] pub embeddings: Option<serde_json::Value>,
     }
 }
 
-// 3. Динамический словарь
 surreal_entity! {
     #[table = "user_dictionary"]
     #[project_scoped]
@@ -50,7 +99,6 @@ surreal_entity! {
     }
 }
 
-// 4. Кэш знаний из интернета
 surreal_entity! {
     #[table = "web_cache"]
     #[project_scoped]
@@ -59,13 +107,12 @@ surreal_entity! {
         pub url: String,
         pub source_type: String,
         #[fulltext] pub content: String,
-        #[hnsw] pub embedding: Option<Vec<f32>>,
+        #[flexible] pub embeddings: Option<serde_json::Value>,
         pub fetched_at: String,
         pub expires_at: Option<String>,
     }
 }
 
-// 5. Межчатовая память
 surreal_entity! {
     #[table = "agent_memory"]
     #[project_scoped]
@@ -73,8 +120,21 @@ surreal_entity! {
     pub struct AgentMemory {
         pub memory_type: String, // "summary", "user_preference", "fact"
         #[fulltext] pub content: String,
-        #[hnsw] pub embedding: Option<Vec<f32>>,
+        #[flexible] pub embeddings: Option<serde_json::Value>,
         pub importance: i64,
+    }
+}
+
+surreal_entity! {
+    #[table = "text_blocks"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct TextBlock {
+        pub chapter_id: String,
+        pub block_type: String, // "thought", "dialogue", "description"
+        pub order_index: i64,
+        #[fulltext] pub content: String,
+        #[flexible] pub embeddings: Option<serde_json::Value>,
     }
 }
 
@@ -82,7 +142,6 @@ surreal_entity! {
 // СИСТЕМНЫЕ СУЩНОСТИ (фиксированная схема)
 // =====================================================
 
-// Forced rebuild for macro update
 surreal_entity! {
     #[table = "calendars"]
     #[project_scoped]
@@ -101,7 +160,6 @@ surreal_entity! {
     #[tauri_commands]
     pub struct Volume {
         pub title: String,
-        pub sort_order: i64,
     }
 }
 
@@ -111,8 +169,6 @@ surreal_entity! {
     #[tauri_commands]
     pub struct Arc {
         pub title: String,
-        #[serde(rename = "volumeId")] pub volume_id: Option<String>,
-        pub sort_order: i64,
     }
 }
 
@@ -123,11 +179,9 @@ surreal_entity! {
     pub struct Chapter {
         pub title: String,
         pub content: String,
-        #[serde(alias = "arcId", skip_serializing_if = "Option::is_none")] pub arc_id: Option<String>,
-        #[serde(alias = "volumeId", skip_serializing_if = "Option::is_none")] pub volume_id: Option<String>,
+        pub summary: Option<String>,
         #[serde(default, alias = "wordCount")] pub word_count: i64,
-        #[serde(default, alias = "sortOrder")] pub sort_order: i64,
-        // Поля которые раньше терялись в normalize_chapter_data (#8 fix)
+        #[flexible] pub embeddings: Option<serde_json::Value>,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub footnotes: Option<serde_json::Value>,
         #[serde(alias = "timelineEvents", skip_serializing_if = "Option::is_none")] #[flexible] pub timeline_events: Option<serde_json::Value>,
         #[serde(skip_serializing_if = "Option::is_none")] pub participants: Option<Vec<String>>,
@@ -150,8 +204,8 @@ surreal_entity! {
     #[tauri_commands]
     pub struct Plan {
         pub title: String,
-        pub parent_ref: Option<String>,  // RecordId как строка
-        pub parent_type: String,         // "chapter" | "arc" | "volume"
+        pub parent_ref: Option<String>,
+        pub parent_type: String,
         pub sort_order: i64,
         pub completed: bool,
     }
@@ -159,61 +213,53 @@ surreal_entity! {
 
 // =====================================================
 // ПОЛЬЗОВАТЕЛЬСКИЕ СУЩНОСТИ (универсальная таблица)
-// Не используют surreal_entity! — они DTO поверх `entities` таблицы
 // =====================================================
 
-use serde::{Deserialize, Serialize};
-
-/// Пользовательская сущность — Персонаж, Корабль, Фракция и т.д.
-/// Все хранятся в одной таблице `entities` с разными `entity_type`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Entity {
     #[serde(skip_serializing_if = "Option::is_none")] pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")] pub project_id: Option<String>,
-    pub entity_type: String,              // ключ из entity_schemas
+    pub entity_type: String,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
-    #[serde(default)] pub attributes: serde_json::Value,    // FLEXIBLE: все пользовательские поля
+    #[serde(default)] pub attributes: serde_json::Value,
     #[serde(default)] pub tags: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub embedding: Option<Vec<f32>>,
+    #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")] pub created_at: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")] pub updated_at: Option<String>,
 }
 
-/// Схема типа сущности — определяет пользователь через UI (RedactSandbox)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntitySchema {
     pub id: Option<String>,
     pub project_id: Option<String>,
-    pub type_key: String,               // "character", "location", "ship"
-    pub type_name: String,              // "Персонаж", "Локация", "Корабль"
+    pub type_key: String,
+    pub type_name: String,
     pub icon: String,
     pub color: String,
-    pub fields_schema: Vec<FieldDef>,   // определения полей типа
-    pub full_schema: Option<serde_json::Value>, // полный JSON макет UI
+    pub fields_schema: Vec<FieldDef>,
+    pub full_schema: Option<serde_json::Value>,
     pub created_at: Option<String>,
 }
 
-/// Определение одного поля в схеме сущности
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FieldDef {
-    pub key: String,                         // "birth_year"
-    pub label: String,                       // "Год рождения"
-    pub field_type: String,                  // "string" | "number" | "date" | "text" | "select" | "entity_ref"
+    pub key: String,
+    pub label: String,
+    pub field_type: String,
     pub required: bool,
-    pub options: Option<Vec<String>>,        // для select
-    pub ref_entity_type: Option<String>,     // для entity_ref
+    pub options: Option<Vec<String>>,
+    pub ref_entity_type: Option<String>,
     pub default_value: Option<serde_json::Value>,
 }
 
-/// Связь между двумя сущностями
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EntityRel {
     pub id: Option<String>,
-    pub r#in: Option<String>,               // entities:xxx
-    pub out: Option<String>,                // entities:yyy
+    pub r#in: Option<String>,
+    pub out: Option<String>,
     pub project_id: Option<String>,
-    pub rel_type: String,                   // "knows", "owns", "lives_in"
+    pub rel_type: String,
     pub description: Option<String>,
     pub strength: Option<i64>,
     #[serde(default)] pub attributes: serde_json::Value,
@@ -222,7 +268,6 @@ pub struct EntityRel {
     pub created_at: Option<String>,
 }
 
-/// Схема типа связи — определяет пользователь
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RelationSchema {
     pub id: Option<String>,
@@ -232,12 +277,12 @@ pub struct RelationSchema {
     pub icon: String,
     pub color: String,
     pub directed: bool,
-    pub from_types: Vec<String>,  // допустимые типы source
-    pub to_types: Vec<String>,    // допустимые типы target
+    pub from_types: Vec<String>,
+    pub to_types: Vec<String>,
 }
 
 // =====================================================
-// ГРАФ СВЯЗЕЙ (системное ребро для AI)
+// ГРАФ СВЯЗЕЙ (системные ребра)
 // =====================================================
 
 surreal_relation! {
@@ -250,11 +295,43 @@ surreal_relation! {
     }
 }
 
-// Только системные сущности регистрируем через макрос (для DDL и CRUD)
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = volumes]
+    #[to = arcs]
+    #[tauri_commands]
+    pub struct VolumeContainsArc {
+        pub sort_order: i64,
+    }
+}
+
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = arcs]
+    #[to = chapters]
+    #[tauri_commands]
+    pub struct ArcContainsChapter {
+        pub sort_order: i64,
+    }
+}
+
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = projects]
+    #[to = volumes]
+    #[tauri_commands]
+    pub struct ProjectContainsVolume {
+        pub sort_order: i64,
+    }
+}
+
 surreal_schema! {
     entities: [
-        TextBlock, ChatMessage, DictionaryWord, WebCache, AgentMemory,
+        TextBlock, ChatMessage, Chat, DictionaryWord, WebCache, AgentMemory,
+        AutoApprovalSettings, AiProfile, Artifact, AiSkill,
         Calendar, Volume, Arc, Chapter, Tag, Plan
     ],
-    relations: [Cites]
+    relations: [
+        Cites, VolumeContainsArc, ArcContainsChapter, ProjectContainsVolume
+    ]
 }

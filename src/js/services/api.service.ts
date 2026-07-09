@@ -520,6 +520,16 @@ export const apiService = {
     return false;
   },
 
+  // ═══════════════════════════════════════════════════════
+  //  CLOUD & BACKUPS
+  // ═══════════════════════════════════════════════════════
+
+  createCloudBackup: async (): Promise<string> => invoke('create_cloud_backup'),
+  exchangeYandexToken: async (code: string): Promise<string> => invoke('exchange_yandex_token', { code }),
+  uploadToYandexDisk: async (token: string, filePath: string): Promise<void> => invoke('upload_to_yandex_disk', { token, filePath }),
+  restoreFromBackup: async (backupPath: string): Promise<void> => invoke('restore_from_backup', { backupPath }),
+  getLaunchArgs: async (): Promise<string | null> => invoke('get_launch_args'),
+
 };
 
 // Глобальный доступ для совместимости

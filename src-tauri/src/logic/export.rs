@@ -127,3 +127,150 @@ pub async fn create_cloud_backup(
 
     Ok(zip_path.to_string_lossy().to_string())
 }
+
+const YANDEX_CLIENT_ID: &str = "200295d252b44387a21ec64a80d7d124";
+const YANDEX_CLIENT_SECRET: &str = "2c1d8dd57f5e4271a74249f6c4b58895";
+
+#[tauri::command]
+pub async fn exchange_yandex_token(code: String) -> Result<String, String> {
+    let client = reqwest::Client::new();
+    let params = [
+        ("grant_type", "authorization_code"),
+        ("code", &code),
+        ("client_id", YANDEX_CLIENT_ID),
+        ("client_secret", YANDEX_CLIENT_SECRET),
+    ];
+
+    let res = client
+        .post("https://oauth.yandex.ru/token")
+        .form(&params)
+        .send()
+        .await
+        .map_err(|e| format!("Network error: {}", e))?;
+
+    let json: serde_json::Value = res.json().await.map_err(|e| format!("JSON error: {}", e))?;
+    
+    if let Some(token) = json.get("access_token").and_then(|v| v.as_str()) {
+        Ok(token.to_string())
+    } else {
+        let err_desc = json.get("error_description")
+            .or_else(|| json.get("error"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("Invalid confirmation code");
+        Err(err_desc.to_string())
+    }
+}
+
+#[tauri::command]
+pub async fn upload_to_yandex_disk(token: String, file_path: String) -> Result<(), String> {
+    let path = std::path::Path::new(&file_path);
+    if !path.exists() {
+        return Err("Backup file does not exist".to_string());
+    }
+
+    let file_name = path.file_name().unwrap_or_default().to_string_lossy();
+    let client = reqwest::Client::new();
+
+    // 1. Get upload URL
+    let url_res = client
+        .get(&format!("https://cloud-api.yandex.net/v1/disk/resources/upload?path=app:/{}&overwrite=true", file_name))
+        .header("Authorization", format!("OAuth {}", token))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to get upload URL: {}", e))?;
+
+    if url_res.status() == 401 {
+        return Err("Token expired or invalid".to_string());
+    }
+
+    let url_json: serde_json::Value = url_res.json().await.map_err(|e| format!("JSON error: {}", e))?;
+    let upload_url = url_json.get("href").and_then(|v| v.as_str()).ok_or_else(|| {
+        url_json.get("message").and_then(|v| v.as_str()).unwrap_or("Failed to get upload link").to_string()
+    })?;
+
+    // 2. Upload file
+    let file_content = fs::read(&file_path).map_err(|e| format!("Failed to read file: {}", e))?;
+
+    let upload_res = client
+        .put(upload_url)
+        .header("Content-Type", "application/zip")
+        .body(file_content)
+        .send()
+        .await
+        .map_err(|e| format!("Failed to upload file: {}", e))?;
+
+    if upload_res.status().is_success() {
+        Ok(())
+    } else {
+        Err(format!("Upload failed with status: {}", upload_res.status()))
+    }
+}
+
+#[tauri::command]
+pub async fn restore_from_backup(
+    backup_path: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<(), String> {
+    let db = &state.db;
+    let path = std::path::Path::new(&backup_path);
+    if !path.exists() {
+        return Err("Backup file does not exist".to_string());
+    }
+
+    let file = fs::File::open(&path).map_err(|e| format!("Failed to open backup: {}", e))?;
+    let mut zip = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read zip: {}", e))?;
+
+    let temp_dir = env::temp_dir().join(format!("wwiki_restore_{}", chrono::Local::now().timestamp()));
+    fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+
+    // 1. Extract database.surql
+    let mut surql_found = false;
+    let surql_path = temp_dir.join("database.surql");
+    
+    for i in 0..zip.len() {
+        let mut file = zip.by_index(i).map_err(|e| e.to_string())?;
+        let file_name = file.name().to_string();
+        
+        if file_name == "database.surql" {
+            let mut out = fs::File::create(&surql_path).map_err(|e| e.to_string())?;
+            std::io::copy(&mut file, &mut out).map_err(|e| e.to_string())?;
+            surql_found = true;
+        } else if file_name.starts_with("images/") {
+            let out_path = env::current_dir().unwrap_or_default().join("data").join("user_images").join(file_name.trim_start_matches("images/"));
+            if let Some(p) = out_path.parent() { fs::create_dir_all(p).ok(); }
+            if let Ok(mut out) = fs::File::create(&out_path) {
+                std::io::copy(&mut file, &mut out).ok();
+            }
+        } else if file_name.starts_with("settings/") {
+            let out_path = env::current_dir().unwrap_or_default().join("data").join(file_name.trim_start_matches("settings/"));
+            if let Some(p) = out_path.parent() { fs::create_dir_all(p).ok(); }
+            if let Ok(mut out) = fs::File::create(&out_path) {
+                std::io::copy(&mut file, &mut out).ok();
+            }
+        }
+    }
+
+    if !surql_found {
+        return Err("Invalid backup file: database.surql not found".to_string());
+    }
+
+    // Clear current database before importing to prevent duplicates?
+    // In SurrealDB, importing a dump usually overwrites records with the same ID,
+    // but we might want to clear it first. Let's assume import handles it.
+    db.import(surql_path.to_str().unwrap()).await.map_err(|e| format!("Database import failed: {}", e))?;
+
+    // Clean up
+    let _ = fs::remove_dir_all(temp_dir);
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_launch_args() -> Option<String> {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 && args[1].ends_with(".wwiki") {
+        Some(args[1].clone())
+    } else {
+        None
+    }
+}

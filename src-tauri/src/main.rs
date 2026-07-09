@@ -122,6 +122,10 @@ fn main() {
             // --- Экспорт и История ---
             export_chapters,
             create_cloud_backup,
+            exchange_yandex_token,
+            upload_to_yandex_disk,
+            get_launch_args,
+            restore_from_backup,
             get_chapter_revisions,
             get_entity_revisions,
 
@@ -139,6 +143,22 @@ fn main() {
             let db = tauri::async_runtime::block_on(init_database());
             app.manage(AppState { db });
             Ok(())
+        })
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { .. } => {
+                println!("[DEBUG] Emergency backup before close...");
+                let state = window.state::<AppState>();
+                let db = state.db.clone();
+                let backup_path = std::env::current_dir().unwrap_or_default().join("data").join("backup_latest.surql");
+                tauri::async_runtime::block_on(async move {
+                    if let Err(e) = db.export(backup_path).await {
+                        eprintln!("[ERROR] Failed to export backup: {}", e);
+                    } else {
+                        println!("[DEBUG] Backup completed successfully.");
+                    }
+                });
+            }
+            _ => {}
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

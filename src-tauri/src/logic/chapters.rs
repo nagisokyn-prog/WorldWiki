@@ -1,5 +1,6 @@
 use crate::logic::models::Chapter;
 use serde_json::{json, Value};
+use surreal_domain::SurrealRepository;
 
 #[tauri::command]
 pub async fn get_global_timeline(
@@ -37,61 +38,45 @@ pub async fn save_text_blocks(
 
     println!("[DEBUG] -> save_text_blocks: chapter_id='{}', blocks count={}", chapter_id_safe, blocks.len());
     
-    let _ = match db.query("DELETE text_blocks WHERE chapter_id = type::record($chapter_id) AND project_id = type::record($project_id)")
-        .bind(("chapter_id", chapter_id_safe.clone()))
-        .bind(("project_id", proj_id.clone()))
-        .await
-    {
-        Ok(res) => match res.check() {
-            Ok(r) => r,
-            Err(e) => {
-                eprintln!("[ERROR] save_text_blocks check error: {}", e);
-                return Err(e.to_string());
-            }
-        },
-        Err(e) => {
-            eprintln!("[ERROR] save_text_blocks query error: {}", e);
-            return Err(e.to_string());
-        }
-    };
-
-    println!("[DEBUG] -> save_text_blocks: deleted old blocks");
-
+    let mut sql = String::new();
+    sql.push_str("BEGIN TRANSACTION;\n");
+    sql.push_str("DELETE text_blocks WHERE chapter_id = type::record($chapter_id) AND project_id = type::record($project_id);\n");
+    
+    let mut bindings: Vec<(String, String)> = Vec::new();
     let blocks_count = blocks.len();
-    // Then insert new ones
+    
     for (i, block) in blocks.into_iter().enumerate() {
-        let block_type = block.get("block_type").and_then(|v| v.as_str()).unwrap_or("description");
-        let content = block.get("content").and_then(|v| v.as_str()).unwrap_or("");
+        let btype = block.get("block_type").and_then(|v| v.as_str()).unwrap_or("description").to_string();
+        let content = block.get("content").and_then(|v| v.as_str()).unwrap_or("").to_string();
         
-        let _ = match db.query(r#"
-            CREATE text_blocks SET 
-                project_id = type::record($project_id),
-                chapter_id = type::record($chapter_id),
-                block_type = $block_type,
-                order_index = $order_index,
-                content = $content
-        "#)
+        sql.push_str(&format!(
+            "CREATE text_blocks SET project_id = type::record($project_id), chapter_id = type::record($chapter_id), block_type = $btype_{}, order_index = {}, content = $content_{};\n",
+            i, i, i
+        ));
+        
+        bindings.push((format!("btype_{}", i), btype));
+        bindings.push((format!("content_{}", i), content));
+    }
+    
+    sql.push_str("COMMIT TRANSACTION;\n");
+    
+    let mut q = db.query(sql)
         .bind(("project_id", proj_id.clone()))
-        .bind(("chapter_id", chapter_id_safe.clone()))
-        .bind(("block_type", block_type))
-        .bind(("order_index", i as i64))
-        .bind(("content", content))
-        .await {
-            Ok(res) => match res.check() {
-                Ok(r) => r,
-                Err(e) => {
-                    eprintln!("[ERROR] save_text_blocks create check error on block {}: {}", i, e);
-                    return Err(e.to_string());
-                }
-            },
-            Err(e) => {
-                eprintln!("[ERROR] save_text_blocks create query error on block {}: {}", i, e);
-                return Err(e.to_string());
-            }
-        };
+        .bind(("chapter_id", chapter_id_safe.clone()));
+        
+    for (k, v) in bindings {
+        q = q.bind((k, v));
+    }
+    
+    let mut res = q.await.map_err(|e| e.to_string())?;
+    let errs = res.take_errors();
+    if !errs.is_empty() {
+        let e = errs.values().next().unwrap();
+        eprintln!("[ERROR] save_text_blocks transaction error: {}", e);
+        return Err(e.to_string());
     }
 
-    println!("[DEBUG] <- save_text_blocks: successfully saved {} blocks", blocks_count);
+    println!("[DEBUG] <- save_text_blocks: successfully saved {} blocks with ACID", blocks_count);
     Ok(())
 }
 

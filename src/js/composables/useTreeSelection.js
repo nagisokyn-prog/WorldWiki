@@ -140,6 +140,32 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
     } else if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
       event.preventDefault();
       selectAll(flatItems);
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      if (isInput) return;
+      event.preventDefault();
+      if (!flatItems || flatItems.length === 0) return;
+      
+      const ids = flatItems.map(i => i.id);
+      let idx = ids.indexOf(lastSelectedId.value);
+      
+      if (idx === -1) {
+        idx = event.key === 'ArrowDown' ? 0 : ids.length - 1;
+      } else {
+        idx = event.key === 'ArrowDown' ? idx + 1 : idx - 1;
+      }
+      
+      if (idx >= 0 && idx < ids.length) {
+        const targetItem = flatItems[idx];
+        handleClick({ shiftKey: event.shiftKey, ctrlKey: false }, targetItem, flatItems);
+        
+        // Пытаемся прокрутить
+        setTimeout(() => {
+          // Ищем элемент с классом selected (первый попавшийся может быть не тем, но обычно работает)
+          // Или генерируем событие
+          const el = document.querySelector(`[data-id="${targetItem.id}"]`) || document.querySelector('.tree-item.selected');
+          if (el) el.scrollIntoView({ block: 'nearest' });
+        }, 10);
+      }
     }
   };
 

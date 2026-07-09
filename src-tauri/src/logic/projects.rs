@@ -75,11 +75,37 @@ pub async fn save_project_config(
 
 #[tauri::command]
 pub async fn delete_project(name: String, state: tauri::State<'_, crate::AppState>) -> Result<String, String> {
-    let record_id = format!("projects:{}", name);
     state
         .db
-        .query("DELETE FROM projects WHERE id = $rid")
-        .bind(("rid", record_id))
+        .query("
+            BEGIN TRANSACTION;
+            LET $pid = type::record('projects', $name);
+            LET $pid_str = string::concat('projects:', $name);
+            
+            -- Удаляем все зависимые сущности (каскадное удаление на уровне проекта)
+            DELETE FROM volumes WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM arcs WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM chapters WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM text_blocks WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM entity_schemas WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM relation_schemas WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM schema_history WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM tags WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM calendars WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM entities WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM chat_messages WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM user_dictionary WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM agent_memory WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM web_cache WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM plans WHERE project_id = $pid OR project_id = $pid_str;
+            DELETE FROM dynamic_entities WHERE project_id = $pid OR project_id = $pid_str;
+            
+            -- Удаление самого проекта
+            DELETE $pid;
+            
+            COMMIT TRANSACTION;
+        ")
+        .bind(("name", name.clone()))
         .await
         .map_err(|e| e.to_string())?;
     Ok(name)

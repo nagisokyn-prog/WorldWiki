@@ -1,7 +1,6 @@
 // src-tauri/src/main.rs
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde_json::{json, Value};
 use std::env;
 use std::fs;
 use surrealdb::engine::local::Db;
@@ -69,7 +68,6 @@ fn main() {
     use logic::projects::*;
     use logic::volumes::*;
     use tauri_shell::logic::system::*;
-    use tauri_shell::logic::performance::*;
     tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
             // --- Проекты ---
@@ -87,6 +85,10 @@ fn main() {
             get_entity_schemas,
             save_entity_schema,
             delete_entity_schema,
+            get_schema_history,
+            toggle_schema_history_pin,
+            toggle_entity_history_pin,
+            toggle_chapter_history_pin,
             get_entity_relations,
             create_entity_relation,
             delete_entity_relation,
@@ -117,8 +119,11 @@ fn main() {
             save_connections,
             remove_connections_by_source,
             get_global_timeline,
-            // --- Экспорт ---
+            // --- Экспорт и История ---
             export_chapters,
+            create_cloud_backup,
+            get_chapter_revisions,
+            get_entity_revisions,
 
             // --- Текстовые блоки ---
             save_text_blocks,
@@ -128,6 +133,8 @@ fn main() {
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache],
             @relations: [Cites]
         ])
+        .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             let db = tauri::async_runtime::block_on(init_database());
             app.manage(AppState { db });

@@ -3,8 +3,9 @@
  * @description Страница настроек
  */
 
-import { createApp } from 'vue';
+import { createApp, type Plugin } from 'vue';
 import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
+import { i18n, setLocale } from '../../../tauri-surreal-kit/frontend/src/js/i18n';
 import Settings from '../../../tauri-surreal-kit/frontend/src/components/Vue/Settings.vue';
 
 async function init() {
@@ -16,18 +17,18 @@ async function init() {
   
   // Применяем настройки
   settingsService.applySettings();
+  setLocale(settingsService.getSettings().locale || 'ru');
   
   // Монтируем Vue компонент Settings
   const app = createApp(Settings);
-  app.mount('#settingsContent');
+  app.use(i18n as unknown as Plugin).mount('#settingsContent');
   console.log('[settings] Settings component mounted');
   
   // Кнопка "Сохранить"
   document.getElementById('saveBtn')?.addEventListener('click', async () => {
     console.log('[saveBtn] clicked');
     try {
-      await settingsService.saveSettings();
-      console.log('[saveBtn] settings saved');
+      await settingsService.saveSettings(null, true);
       
       const btn = document.getElementById('saveBtn');
       if (btn) {

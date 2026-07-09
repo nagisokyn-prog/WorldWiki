@@ -33,6 +33,16 @@ async function init() {
       const isUnsaved = ref(false);
       const editorRef = ref<any>(null);
 
+      // История версий
+      const showHistory = ref(false);
+      const isLoadingHistory = ref(false);
+      const revisions = ref<any[]>([]);
+      
+      const isPreviewingHistory = ref(false);
+      const previewingRevId = ref<string | null>(null);
+      const previewData = ref<any>(null);
+      const previewKey = ref(0);
+
       const loadData = async () => {
         try {
           if (project && entityType && entityId) {
@@ -46,10 +56,59 @@ async function init() {
         }
       };
 
+      const loadHistory = async () => {
+        if (!project || !entityId || !window.__TAURI__) return;
+        isLoadingHistory.value = true;
+        try {
+          // Вызываем нашу новую команду
+          revisions.value = await window.__TAURI__.core.invoke('get_entity_revisions', {
+            project,
+            entityId
+          });
+        } catch (e) {
+          console.error('Ошибка загрузки истории:', e);
+        } finally {
+          isLoadingHistory.value = false;
+        }
+      };
+
+      const toggleHistory = () => {
+        showHistory.value = !showHistory.value;
+        if (showHistory.value && revisions.value.length === 0) {
+          loadHistory();
+        }
+      };
+
+      const previewHistory = (rev: any) => {
+        isPreviewingHistory.value = true;
+        previewingRevId.value = rev.id;
+        previewData.value = rev.content;
+        previewKey.value++; // Перемонтируем редактор с новыми данными
+      };
+
+      const exitHistoryPreview = () => {
+        isPreviewingHistory.value = false;
+        previewingRevId.value = null;
+        previewData.value = null;
+        previewKey.value++;
+      };
+
+      const restoreHistory = () => {
+        // Мы просто выключаем режим "превью", но оставляем данные как "несохраненные" в редакторе!
+        initialData.value = JSON.parse(JSON.stringify(previewData.value));
+        isPreviewingHistory.value = false;
+        previewingRevId.value = null;
+        previewData.value = null;
+        previewKey.value++;
+        isUnsaved.value = true;
+      };
+
       const save = async () => {
         if (editorRef.value && editorRef.value.save) {
           await editorRef.value.save();
           isUnsaved.value = false;
+          // Обновляем историю после сохранения
+          if (showHistory.value) loadHistory();
         }
       };
 
@@ -69,7 +128,19 @@ async function init() {
         initialData,
         isUnsaved,
         editorRef,
-        save
+        save,
+        // История
+        showHistory,
+        isLoadingHistory,
+        revisions,
+        toggleHistory,
+        isPreviewingHistory,
+        previewingRevId,
+        previewData,
+        previewKey,
+        previewHistory,
+        exitHistoryPreview,
+        restoreHistory
       };
     }
   });

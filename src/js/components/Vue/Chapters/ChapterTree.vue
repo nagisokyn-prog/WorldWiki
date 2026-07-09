@@ -154,6 +154,9 @@
         <div class="tree-section-header" @click="toggleSection(sect.type)">
           <i :class="expandedSections.has(sect.type) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>{{ sect.title }}</span>
+          <div class="section-actions" style="margin-left: auto; display: flex; gap: 8px;">
+            <i class="fas fa-pencil-alt" @click.stop="$emit('edit-schema', sect.type)" title="Редактировать схему (поля)" style="opacity: 0.5; font-size: 11px;"></i>
+          </div>
         </div>
 
 
@@ -293,7 +296,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   'select-node', 'select-chapter', 'create-chapter-in', 'rename-chapter', 'delete-chapter',
-  'open-entity', 'add-entity', 'delete-entity', 'delete-volume', 'delete-arc', 'open-sandbox'
+  'open-entity', 'add-entity', 'delete-entity', 'delete-volume', 'delete-arc', 'open-sandbox', 'edit-schema'
 ]);
 
 const hierarchy = ref({ volumes: [] as any[], arcs: [] as any[], chapters: [] as any[] });

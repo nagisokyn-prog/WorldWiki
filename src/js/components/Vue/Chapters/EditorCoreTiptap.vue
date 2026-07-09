@@ -42,16 +42,25 @@
         <button class="btn-new interactive-el" @click="$emit('save')" :class="{ 'unsaved-glow': hasUnsavedChanges }" style="background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; height: 32px; white-space: nowrap;">
           💾 {{ hasUnsavedChanges ? 'Сохранить*' : 'Сохранено' }}
         </button>
+        <button class="btn-new interactive-el" @click="$emit('toggle-history')" style="background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 500; height: 32px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="История изменений">
+          <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg" style="display: inline; vertical-align: middle;"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
+        </button>
       </div>
     </div>
 
     <!-- Title -->
-    <div class="chapter-header" style="margin-bottom: 20px;">
+    <div class="chapter-header" style="margin-bottom: 20px; position: relative;" :class="{ 'history-changed': changedFields.includes('title') }">
+      <div v-if="changedFields.includes('title')" class="changed-indicator" style="position: absolute; right: -8px; top: -8px; z-index: 5;" title="Поле было изменено">
+          <span style="background: var(--accent); color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Изменено</span>
+      </div>
       <input type="text" :value="title" @input="updateTitle" placeholder="Название главы..." style="width: 100%; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--accent); font-size: 24px; font-weight: 700; outline: none; transition: all 0.3s; padding-bottom: 4px;" class="chapter-title-input">
     </div>
 
     <!-- Editor Container -->
-    <div class="editor-container" style="flex: 1; display: flex; gap: 16px; overflow: hidden; min-width: 0;">
+    <div class="editor-container" style="flex: 1; display: flex; gap: 16px; overflow: hidden; min-width: 0; position: relative;" :class="{ 'history-changed': changedFields.includes('content') }">
+      <div v-if="changedFields.includes('content')" class="changed-indicator" style="position: absolute; right: 10px; top: 10px; z-index: 5;" title="Текст был изменен">
+          <span style="background: var(--accent); color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Изменено</span>
+      </div>
       
       <!-- NEW: GLOBAL SEMANTIC TAGS LEFT PANEL -->
       <div class="global-semantic-panel" style="width: 44px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 0; align-items: center; gap: 8px;">
@@ -162,7 +171,10 @@
     </div>
 
     <!-- Footnotes Panel -->
-    <div v-if="Object.keys(footnotes).length > 0" class="footnotes-panel" style="margin-top: 20px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+    <div v-if="Object.keys(footnotes).length > 0" class="footnotes-panel" style="margin-top: 20px; padding-top: 10px; border-top: 1px solid var(--border-color); position: relative;" :class="{ 'history-changed': changedFields.includes('footnotes') }">
+      <div v-if="changedFields.includes('footnotes')" class="changed-indicator" style="position: absolute; right: 0; top: -10px; z-index: 5;" title="Сноски были изменены">
+          <span style="background: var(--accent); color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Изменено</span>
+      </div>
       <div v-for="(fn, id) in footnotes" :key="id" style="display: flex; gap: 8px; margin-bottom: 4px; font-size: 13px;">
         <span style="color: var(--accent);">[{{ id }}]</span>
         <span style="flex: 1;">{{ fn.text }}</span>
@@ -232,10 +244,11 @@ const props = defineProps({
   content: { type: String, default: '' },
   hasUnsavedChanges: { type: Boolean, default: false },
   footnotesData: { type: Object, default: () => ({}) },
-  initialScrollPos: { type: Number, default: 0 }
+  initialScrollPos: { type: Number, default: 0 },
+  changedFields: { type: Array as () => string[], default: () => [] }
 });
 
-const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change']);
+const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history']);
 
 const getStateKey = () => `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
@@ -804,6 +817,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.history-changed {
+  position: relative;
+  background-color: rgba(245, 166, 35, 0.05) !important;
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
+  box-shadow: inset 0 0 0 2px rgba(245, 166, 35, 0.5);
+}
+
+.changed-indicator {
+  animation: pulse-border 2s infinite;
+}
+
+@keyframes pulse-border {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 .toolbar-btn {
   background: transparent;
   border: 1px solid transparent;

@@ -1753,7 +1753,7 @@
           "title": "Связи с персонажами",
           "emptyMessage": "Связи с персонажами не добавлены",
           "template": "characterRelationshipTemplate",
-          "dataPath": "отношения_ключ.связи_с_персонажами"
+          "dataPath": "связи_с_персонажами"
         },
         {
           "id": "familyRelations",
@@ -1761,7 +1761,7 @@
           "title": "Семейные отношения",
           "emptyMessage": "Семейные отношения не добавлены",
           "template": "familyRelationTemplate",
-          "dataPath": "отношения_ключ.семейные_отношения"
+          "dataPath": "семейные_отношения"
         }
       ]
     },

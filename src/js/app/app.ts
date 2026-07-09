@@ -4,11 +4,13 @@
  * ОПТИМИЗИРОВАН: shallowRef для больших данных, defineAsyncComponent для компонентов
  */
 
-import { createApp, ref, computed, watch, onMounted, nextTick, shallowRef, triggerRef, defineAsyncComponent } from 'vue';
+import { createApp, ref, computed, watch, onMounted, nextTick, shallowRef, triggerRef, defineAsyncComponent, type Plugin } from 'vue';
+import { i18n, setLocale } from '../../../tauri-surreal-kit/frontend/src/js/i18n';
 import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 import { apiService } from '../services/api.service';
 import { connectionsManager } from '../services/connections.service';
 import { useEditorGroups } from '../../../tauri-surreal-kit/frontend/src/js/composables/useEditorGroups';
+import { prepareEntityForSave, saveForeignRelationships } from '../services/relationship-save.service';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу (видны при старте)
 import QuickOpenVue from '../../../tauri-surreal-kit/frontend/src/components/Vue/QuickOpen.vue';
@@ -31,6 +33,8 @@ const TagsManagerModalVue = defineAsyncComponent(() => import('../components/Vue
 const TagsField = defineAsyncComponent(() => import('../../../tauri-surreal-kit/frontend/src/components/Vue/TagsField.vue'));
 const FloatingEntityEditorVue = defineAsyncComponent(() => import('../components/Vue/FloatingEntityEditor.vue'));
 const RedactSandboxVue = defineAsyncComponent(() => import('../components/Vue/RedactSandbox.vue'));
+const SchemaEditorMainVue = defineAsyncComponent(() => import('../components/Vue/SchemaEditor/SchemaEditorMain.vue'));
+const CloudSyncModalVue = defineAsyncComponent(() => import('../components/Vue/CloudSyncModal.vue'));
 
 // Типы
 interface SidebarItem {
@@ -110,6 +114,7 @@ async function init() {
   // Применяем настройки
   settingsService.applySettings();
   await settingsService.loadSettings().catch(e => console.warn('Failed to load settings:', e));
+  setLocale(settingsService.getSettings().locale || 'ru');
 
     const app = createApp({
     setup() {
@@ -249,6 +254,8 @@ async function init() {
               } else if (tab.tabType === 'chapter') {
                 const chapter = await apiService.getChapter(projectName, tab.rawId);
                 if (chapter) loadedTabs.set(tab.id, { ...tab, data: chapter, unsaved: false });
+              } else if (tab.tabType === 'schema-editor') {
+                loadedTabs.set(tab.id, { ...tab, data: {}, unsaved: false });
               }
             } catch (e) { console.warn(`Failed to restore tab ${tab.id}`, e); }
           }
@@ -419,6 +426,20 @@ async function init() {
         } catch (e) {
           addLog(`Data -> Error loading chapters: ${e}`, 'error');
           chapters.value = [];
+        }
+      };
+
+      const openSchemaEditor = async (entityType: string) => {
+        if (!entityType) return;
+        const tabId = `schema-editor:${entityType}`;
+        if (!eg.findTabGlobal(tabId)) {
+          eg.openTab({
+            id: tabId, rawId: entityType, title: `Схема: ${entityType}`, entityType,
+            tabType: 'schema-editor', data: {}, unsaved: false
+          });
+          addLog(`Editor -> Opened Schema Editor for ${entityType}`, 'info');
+        } else {
+          eg.openTab({ id: tabId } as any); // just switch focus
         }
       };
 
@@ -731,6 +752,11 @@ async function init() {
         if (id) eg.markTabUnsaved(id);
       };
 
+      const toggleEntityHistory = (rawId: string) => {
+        console.log(`[app.ts] toggleEntityHistory called for rawId:`, rawId);
+        document.dispatchEvent(new CustomEvent('ww:toggle-entity-history', { detail: { id: rawId } }));
+      };
+
       const onChapterRenamed = ({ id, title }: { id: string; title: string }) => {
         eg.updateTabData(id, { title });
       };
@@ -750,13 +776,7 @@ async function init() {
         
         console.log(`[app.ts] 🔄 handleUpdateData вызвана для ${tabId}, merging данные в ${tabsToUpdate.length} вкладок`);
         
-        // 🔴 ЛОГИРОВАНИЕ: что приходит в newData для динамика_отношений
-        const newDataAny = newData as any;
-        if (newDataAny.characterRelationships?.[0]?.динамика_отношений?.[0]) {
-          console.log('[app.ts] 📥 newData.characterRelationships[0].динамика_отношений[0]:', JSON.stringify(newDataAny.characterRelationships[0].динамика_отношений[0]));
-        }
-        
-        // ВАЖНО: Просто мержим без изменений - characterRelationships это основной источник
+        // ВАЖНО: Просто мержим без изменений - schema определяет хранение
         const merge = (target: any, source: any) => {
           for (const key in source) {
             if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
@@ -789,16 +809,16 @@ async function init() {
         };
         
         for (const tab of tabsToUpdate) {
-            merge(tab.data, newData);
+            // ВАЖНО: НЕ мержим __foreignUpdates в tab.data!
+            // Это внутренное состояние EntityEditor и его попадание в tab.data
+            // вызывает бесконечный цикл: handleUpdateData → initialData change → watch → markModified → повтор.
+            const { __foreignUpdates, ...dataToMerge } = newData as any;
+            merge(tab.data, dataToMerge);
+            // Храним __foreignUpdates отдельно от tab.data, чтобы saveAll мог их прочитать
+            if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) {
+                (tab as any)._foreignUpdates = __foreignUpdates;
+            }
         }
-        
-        // 🔴 ЛОГИРОВАНИЕ: что стало ПОСЛЕ merge (проверим первую вкладку)
-        const editorData = tabsToUpdate[0].data as any;
-        if (editorData.characterRelationships?.[0]?.динамика_отношений?.[0]) {
-          console.log('[app.ts] 📤 После merge, tab.data.characterRelationships[0].динамика_отношений[0]:', JSON.stringify(editorData.characterRelationships[0].динамика_отношений[0]));
-        }
-        
-        console.log('[app.ts] ✅ handleUpdateData merge завершен');
       };
 
       const saveAll = async () => {
@@ -828,63 +848,17 @@ async function init() {
                 console.log(`[saveAll] первый элемент characterRelationships:`, charRelArray[0]);
               }
             }
+            // 🔄 СИНХРОНИЗАЦИЯ ДАННЫХ НА ОСНОВЕ JSON-СХЕМЫ (БЕЗ ХАРДКОДА)
+            // Это синхронизирует вложенные массивы (например, динамика_отношений -> relationshipStates)
+            // согласно настройкам из /struct/editor/${entityType}.json
+            await prepareEntityForSave(editor.entityType, dataToSave);
             
-            // 🔄 СИНХРОНИЗАЦИЯ ДАННЫХ МЕЖДУ ПЛОСКИМ И СТРУКТУРИРОВАННЫМ ПУТЯМИ
-            console.log('[saveAll] === СИНХРОНИЗАЦИЯ МЕЖДУ ПЛОСКИМ И СТРУКТУРИРОВАННЫМ ПУТЯМИ ===');
-            if (!dataToSave['отношения_ключ']) {
-              dataToSave['отношения_ключ'] = {};
-            }
+            // Считываем foreignUpdates из tab._foreignUpdates
+            const foreignUpdatesToProcess = (editor as any)._foreignUpdates;
+            // Сбрасываем после чтения
+            (editor as any)._foreignUpdates = null;
             
-            // Если у нас есть изменения в плоском пути (левая панель) - копируем в структурированный
-            if (dataToSave['characterRelationships'] && Array.isArray(dataToSave['characterRelationships'])) {
-              console.log(`[saveAll] Синхронизирую characterRelationships (${(dataToSave['characterRelationships'] as Array<any>).length} элементов) → отношения_ключ.связи_с_персонажами`);
-              
-              // 🔴 ВАЖНО: копируем динамика_отношений в relationshipStates В ПЛОСКОМ ПУТИ
-              (dataToSave['characterRelationships'] as Array<any>).forEach((rel: any) => {
-                if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                  rel.relationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                }
-              });
-              
-              dataToSave['отношения_ключ']['связи_с_персонажами'] = JSON.parse(JSON.stringify(dataToSave['characterRelationships']));
-              
-              // 🔴 Логируем синхронизацию
-              (dataToSave['отношения_ключ']['связи_с_персонажами'] as Array<any>).forEach((rel: any) => {
-                if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                  rel.relationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                  console.log('[saveAll]   ✅ Скопирована динамика_отношений → relationshipStates');
-                }
-              });
-            }
-            
-            // Если у нас есть изменения в плоском пути для семьи - копируем в структурированный
-            if (dataToSave['familyRelations'] && Array.isArray(dataToSave['familyRelations'])) {
-              console.log(`[saveAll] Синхронизирую familyRelations (${(dataToSave['familyRelations'] as Array<any>).length} элементов) → отношения_ключ.семейные_отношения`);
-              
-              // 🔴 ВАЖНО: копируем динамика_отношений в familyRelationshipStates В ПЛОСКОМ ПУТИ
-              (dataToSave['familyRelations'] as Array<any>).forEach((rel: any) => {
-                if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                  rel.familyRelationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                }
-              });
-              
-              dataToSave['отношения_ключ']['семейные_отношения'] = JSON.parse(JSON.stringify(dataToSave['familyRelations']));
-              
-              // 🔴 Логируем синхронизацию
-              (dataToSave['отношения_ключ']['семейные_отношения'] as Array<any>).forEach((rel: any) => {
-                if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                  rel.familyRelationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                  console.log('[saveAll]   ✅ Скопирована динамика_отношений → familyRelationshipStates');
-                }
-              });
-            }
-            
-            console.log('[saveAll] === СИНХРОНИЗАЦИЯ ЗАВЕРШЕНА ===');
-            
-            // 🔴 СОХРАНЯЕМ __foreignUpdates перед удалением, они нужны для встречных отношений
-            const foreignUpdatesToProcess = dataToSave.__foreignUpdates;
-            
-            // Удаляем __foreignUpdates перед сохранением основной сущности (это служебное поле)
+            // Удаляем __foreignUpdates из dataToSave если вдруг попал туда старым способом
             delete dataToSave.__foreignUpdates;
             
             // 1. Save main entity data and child tables
@@ -895,9 +869,8 @@ async function init() {
             // 2. Save relationships to Connections table
             if (connectionsManager) {
               try {
-                console.log(`[saveAll] Saving connections for ${editor.entityType} ${editor.rawId}`);
                 connectionsManager.setCurrentEntity(editor.entityType, editor.rawId);
-                connectionsManager.setFormData(editor.data);
+                connectionsManager.setFormData(dataToSave);
                 
                 // Load config for the entity type
                 try {
@@ -907,13 +880,9 @@ async function init() {
                     const config = await configRes.json();
                     connectionsManager.setConfig(config);
                     await connectionsManager.saveConnections();
-                    console.log(`[saveAll] Connections saved for ${editor.entityType} ${editor.rawId}`);
-
-                  } else {
-                    console.warn(`[saveAll] Config not found (${configRes.status}): /struct/editor/${editor.entityType}.json`);
                   }
                 } catch (configError) {
-                  console.warn(`[saveAll] Could not load config for ${editor.entityType}:`, configError);
+                  // Ignore
                 }
               } catch (connError) {
                 console.error(`[saveAll] Error saving connections:`, connError);
@@ -921,196 +890,70 @@ async function init() {
             }
 
             // 🔥 ОБРАБОТКА ВСТРЕЧНЫХ ОТНОШЕНИЙ, ОТРЕДАКТИРОВАННЫХ ПОЛЬЗОВАТЕЛЕМ 🔥
-            // Это отношения B→A, которые пользователь редактировал в правой панели RelationshipBlock
+            let foreignUpdatesFinal = foreignUpdatesToProcess || {};
+            
+            // --- СБОР УДАЛЕННЫХ ВСТРЕЧНЫХ СВЯЗЕЙ (ORPHAN CLEANUP) ---
             try {
-              if (foreignUpdatesToProcess && Object.keys(foreignUpdatesToProcess).length > 0) {
-                console.log(`[saveAll] === ОБРАБОТКА ВСТРЕЧНЫХ ОТНОШЕНИЙ (ПРАВАЯ ПАНЕЛЬ) ===`);
-                console.log(`[saveAll] Найдено встречных отношений для сохранения: ${Object.keys(foreignUpdatesToProcess).length}`);
+              const configRes = await fetch(`/struct/editor/${editor.entityType}.json`);
+              if (configRes.ok) {
+                const schema = await configRes.json();
+                const oldStateReq = await apiService.getEntity(projectName, editor.entityType, editor.rawId);
+                const oldState = (oldStateReq as any)?.data || oldStateReq;
                 
-                for (const key in foreignUpdatesToProcess) {
-                  const update = foreignUpdatesToProcess[key];
-                  console.log(`[saveAll] 📋 Встречное отношение [${key}]:`, {
-                    entityType: update.entityType,
-                    entityId: update.entityId,
-                    dataKeys: Object.keys(update.data),
-                    data: update.data
-                  });
-                  if (!update.entityType || !update.entityId) {
-                    console.warn(`[saveAll] Пропускаю неполную запись: ${key}`);
-                    continue;
-                  }
-                  
-                  try {
-                    console.log(`[saveAll] 🔄 Сохраняю встречное отношение для ${update.entityType}/${update.entityId}`);
-                    console.log(`[saveAll] Данные встречного отношения:`, update.data);
-                    
-                    // Загружаем целевую сущность
-                    const targetEntity = await apiService.getEntity(projectName, update.entityType, update.entityId);
-                    if (!targetEntity) {
-                      console.warn(`[saveAll] ❌ Целевая сущность ${update.entityType}/${update.entityId} не найдена`);
-                      continue;
-                    }
-                    
-                    // Получаем контейнер отношений целевой сущности
-                    // Определяем путь контейнера по типу отношения
-                    const relationshipContainers = [
-                      'characterRelationships', 'отношения_ключ.связи_с_персонажами',
-                      'familyRelations', 'отношения_ключ.семейные_отношения',
-                      'organizationRelationships', 'отношения_ключ.связи_с_организациями',
-                      'stateRelationships', 'отношения_ключ.связи_с_государствами'
-                    ];
-                    
-                    let relationshipArray = null;
-                    let containerPath = '';
-                    
-                    // Утилита для получения значения по пути
-                    const getDeepProp = (obj: any, path: string) => {
-                      if (!path || !obj) return undefined;
-                      return path.split('.').reduce((cur, k) => (cur && cur[k] !== undefined ? cur[k] : undefined), obj);
-                    };
-                    
-                    for (const path of relationshipContainers) {
-                      const val = getDeepProp(targetEntity, path);
-                      if (Array.isArray(val)) {
-                        relationshipArray = val;
-                        containerPath = path;
-                        break;
-                      }
-                    }
-                    
-                    if (!Array.isArray(relationshipArray)) {
-                      // Пытаемся использовать плоский путь по умолчанию
-                      if (update.linkClass && (update.linkClass === 'персонаж' || update.linkClass === 'character')) {
-                        relationshipArray = targetEntity.characterRelationships || [];
-                        containerPath = 'characterRelationships';
-                      } else if (update.linkClass === 'родственник') {
-                        relationshipArray = targetEntity.familyRelations || [];
-                        containerPath = 'familyRelations';
-                      }
-                    }
-                    
-                    if (!Array.isArray(relationshipArray)) {
-                      relationshipArray = [];
-                      containerPath = 'characterRelationships'; // Используем по умолчанию
-                    }
-
-                    console.log(`[saveAll] Найден контейнер отношений: ${containerPath} (${relationshipArray.length} элементов)`);
-
-                    // Удаляем старое встречное отношение от этой сущности если есть
-                    const filtered = relationshipArray.filter(r => String(r[update.linkClass]) !== String(editor.rawId));
-                    
-                    // Добавляем обновленное встречное отношение
-                    const reverseRelationship = JSON.parse(JSON.stringify(update.data));
-                    reverseRelationship[update.linkClass] = editor.rawId;
-                    
-                    // 🔴 СИНХРОНИЗИРУЕМ динамика_отношений ↔ relationshipStates для Rust
-                    if (reverseRelationship['динамика_отношений'] && Array.isArray(reverseRelationship['динамика_отношений'])) {
-                      reverseRelationship['relationshipStates'] = JSON.parse(JSON.stringify(reverseRelationship['динамика_отношений']));
-                      console.log('[saveAll]   ✅ Скопирована динамика_отношений → relationshipStates в встречном отношении');
-                    }
-                    if (reverseRelationship['семейные_отношения'] && Array.isArray(reverseRelationship['семейные_отношения'])) {
-                      reverseRelationship['familyRelationshipStates'] = JSON.parse(JSON.stringify(reverseRelationship['семейные_отношения']));
-                      console.log('[saveAll]   ✅ Скопирована семейные_отношения → familyRelationshipStates в встречном отношении');
-                    }
-                    
-                    console.log(`[saveAll] Добавляю встречное отношение (с вложенными контейнерами):`, reverseRelationship);
-                    filtered.push(reverseRelationship);
-                    
-                    // Устанавливаем обновленный массив в целевую сущность
-                    const pathParts = containerPath.split('.');
-                    let current = targetEntity as any;
-                    for (let i = 0; i < pathParts.length - 1; i++) {
-                      if (current[pathParts[i]] === undefined) {
-                        current[pathParts[i]] = {};
-                      }
-                      current = current[pathParts[i]];
-                    }
-                    current[pathParts[pathParts.length - 1]] = filtered;
-                    
-                    // Копируем в плоский ИЛИ структурированный путь в зависимости от того где были данные
-                    if (containerPath.includes('.')) {
-                      // Ищем данные в структурированном пути - копируем в плоский путь
-                      if (containerPath.includes('связи_с_персонажами')) {
-                        (targetEntity as any).characterRelationships = JSON.parse(JSON.stringify(filtered));
-                        
-                        // 🔴 СИНХРОНИЗИРУЕМ динамика_отношений → relationshipStates в плоском пути
-                        ((targetEntity as any).characterRelationships as Array<any>).forEach((rel: any) => {
-                          if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                            rel.relationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                          }
-                        });
-                      } else if (containerPath.includes('семейные_отношения')) {
-                        (targetEntity as any).familyRelations = JSON.parse(JSON.stringify(filtered));
-                        
-                        // 🔴 СИНХРОНИЗИРУЕМ динамика_отношений → familyRelationshipStates в плоском пути
-                        ((targetEntity as any).familyRelations as Array<any>).forEach((rel: any) => {
-                          if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                            rel.familyRelationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                          }
-                        });
-                      }
-                    } else {
-                      // Ищем данные в плоском пути - копируем в структурированный путь
-                      if (containerPath === 'characterRelationships') {
-                        if (!(targetEntity as any).отношения_ключ) {
-                          (targetEntity as any).отношения_ключ = {};
+                if (oldState) {
+                  for (const section of schema.sections || []) {
+                    for (const dc of section.dynamicContainers || []) {
+                      const tpl = schema.templates?.[dc.template];
+                      if (tpl && tpl.isBidirectional) {
+                        const dataPath = dc.dataPath || dc.id;
+                        const linkClass = tpl.bidirectionalLinkClass;
+                        // Находим поле ссылки в шаблоне, чтобы узнать entityType целевой сущности
+                        let targetType = '';
+                        if (tpl.fields) {
+                           const targetField = tpl.fields.find((f:any) => f.class === linkClass);
+                           if (targetField && targetField.entityType) {
+                              targetType = targetField.entityType;
+                           }
                         }
-                        if (!(targetEntity as any).отношения_ключ.связи_с_персонажами) {
-                          (targetEntity as any).отношения_ключ.связи_с_персонажами = [];
-                        }
-                        (targetEntity as any).отношения_ключ.связи_с_персонажами = JSON.parse(JSON.stringify(filtered));
                         
-                        // 🔴 СИНХРОНИЗИРУЕМ динамика_отношений → relationshipStates
-                        ((targetEntity as any).отношения_ключ.связи_с_персонажами as Array<any>).forEach((rel: any) => {
-                          if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                            rel.relationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
+                        if (linkClass && targetType) {
+                          const oldArr = Array.isArray(oldState[dataPath]) ? oldState[dataPath] : 
+                                         (Array.isArray(oldState[dc.id]) ? oldState[dc.id] : []);
+                          const newArr = Array.isArray(dataToSave[dataPath]) ? dataToSave[dataPath] : 
+                                         (Array.isArray(dataToSave[dc.id]) ? dataToSave[dc.id] : []);
+                          
+                          for (const oldItem of oldArr) {
+                            const oldTarget = String(oldItem[linkClass] || '');
+                            if (!oldTarget) continue;
+                            
+                            const stillExists = newArr.some((newItem: any) => String(newItem[linkClass]) === oldTarget);
+                            if (!stillExists) {
+                              // Был удален!
+                              const targetEntityId = oldTarget;
+                              const updateKey = `${targetType}:${targetEntityId}_delete`;
+                              foreignUpdatesFinal[updateKey] = {
+                                entityType: targetType,
+                                entityId: targetEntityId,
+                                data: {},
+                                linkClass: linkClass,
+                                backLinkValue: `entities:${editor.rawId}`,
+                                __deleted: true
+                              };
+                              console.log(`[saveAll] 🗑️ Обнаружено удаление связи с ${targetEntityId}, планирую удаление встречной связи`);
+                            }
                           }
-                        });
-                      } else if (containerPath === 'familyRelations') {
-                        if (!(targetEntity as any).отношения_ключ) {
-                          (targetEntity as any).отношения_ключ = {};
                         }
-                        if (!(targetEntity as any).отношения_ключ.семейные_отношения) {
-                          (targetEntity as any).отношения_ключ.семейные_отношения = [];
-                        }
-                        (targetEntity as any).отношения_ключ.семейные_отношения = JSON.parse(JSON.stringify(filtered));
-                        
-                        // 🔴 СИНХРОНИЗИРУЕМ динамика_отношений → familyRelationshipStates
-                        ((targetEntity as any).отношения_ключ.семейные_отношения as Array<any>).forEach((rel: any) => {
-                          if (rel.динамика_отношений && Array.isArray(rel.динамика_отношений)) {
-                            rel.familyRelationshipStates = JSON.parse(JSON.stringify(rel.динамика_отношений));
-                          }
-                        });
                       }
                     }
-                    
-                    // Сохраняем целевую сущность
-                    console.log(`[saveAll] 💾 Сохраняю встречное отношение B→A для ${update.entityType}/${update.entityId}`);
-                    console.log(`[saveAll] ℹ️ Проверка синхронизации перед сохранением:`);
-                    console.log(`[saveAll]   - Плоский путь (${containerPath}):`, (targetEntity as any)[containerPath] ? `${((targetEntity as any)[containerPath] as Array<any>).length} элементов` : 'пусто');
-                    console.log(`[saveAll]   - Структурированный путь (отношения_ключ):`, {
-                      связи_с_персонажами: (targetEntity as any).отношения_ключ?.связи_с_персонажами ? ((targetEntity as any).отношения_ключ.связи_с_персонажами as Array<any>).length : 'пусто',
-                      семейные_отношения: (targetEntity as any).отношения_ключ?.семейные_отношения ? ((targetEntity as any).отношения_ключ.семейные_отношения as Array<any>).length : 'пусто'
-                    });
-                    console.log(`[saveAll] Финальные данные встречного отношения:`, {
-                      containerPath,
-                      count: filtered.length,
-                      lastItem: filtered[filtered.length - 1]
-                    });
-                    const newTitle = getEntityDisplayName(targetEntity, update.entityType);
-                    await apiService.saveEntity(projectName, update.entityType, targetEntity, update.entityId, newTitle);
-                    console.log(`[saveAll] ✅ Встречное отношение B→A сохранено для ${update.entityType}/${update.entityId}`);
-                  } catch (err) {
-                    console.error(`[saveAll] ❌ Ошибка при сохранении встречного отношения для ${update.entityType}/${update.entityId}:`, err);
                   }
                 }
-                
-                console.log(`[saveAll] === ОБРАБОТКА ВСТРЕЧНЫХ ОТНОШЕНИЙ ЗАВЕРШЕНА ===`);
-              } else {
-                console.log(`[saveAll] Встречных отношений для сохранения не найдено (foreignUpdatesToProcess: ${foreignUpdatesToProcess ? Object.keys(foreignUpdatesToProcess).length + ' записей' : 'пусто'})`);
               }
             } catch (e) {
-              console.error(`[saveAll] ❌ Критическая ошибка при обработке встречных отношений:`, e);
+              console.error('[saveAll] Ошибка при поиске удаленных связей:', e);
+            }
+
+            if (foreignUpdatesFinal && Object.keys(foreignUpdatesFinal).length > 0) {
+              await saveForeignRelationships(projectName, editor.rawId, foreignUpdatesFinal);
             }
             
             const newTitle = getEntityDisplayName(editor.data as Record<string, unknown>, editor.entityType);
@@ -1611,30 +1454,81 @@ async function init() {
         });
       });
 
+      const quickOpenDataSource = async (): Promise<any[]> => {
+        const items: any[] = [];
+        try {
+          const list = await apiService.getChaptersList(projectName);
+          for (const c of list as Array<any>) {
+            items.push({
+              id: `chapter_${c.id}`,
+              rawId: String(c.id),
+              title: c.title || `Глава ${c.id}`,
+              typeLabel: 'Глава',
+              entityType: 'chapter',
+              emoji: '📝',
+              data: c
+            });
+          }
+        } catch(e) {}
+
+        for (const tab of sidebarItems) {
+          if (tab.type === 'entity' && tab.entityType) {
+            try {
+              const list = await apiService.getEntityList(projectName, tab.entityType);
+              for (const e of list as Array<any>) {
+                items.push({
+                  id: `entity_${tab.entityType}_${e.id}`,
+                  rawId: String(e.id),
+                  title: getEntityDisplayName(e, tab.entityType),
+                  typeLabel: tab.title,
+                  entityType: tab.entityType,
+                  emoji: tab.icon || '📄',
+                  data: {...e, entityType: tab.entityType} // В openEntity нужен entityType
+                });
+              }
+            } catch(e) {}
+          }
+        }
+        return items;
+      };
+
+      const handleQuickOpenSelect = (item: any) => {
+        if (item.entityType === 'chapter') {
+          openChapterTab(item.data);
+        } else {
+          openEntity(item.data);
+        }
+      };
+
       return {
         projectName, activeView, currentSidebarTab, showSettings, sidebarSearch, activePanelTab,
         openEditors, activeEditorId, activeEditor, activeEntityRawId, consoleLogs, activeField, panelHeight, sidebarWidth,
         sidebarItems, activeSidebarItem, filteredEntityList, chapters, chapterTreeRef,
         sidebarVisible, zoomLevel, quickOpenRef, commandPaletteRef,
         settings, toasts, addToast, getToastIcon,
-        selectSidebarTab, openEntity, openChapterTab, closeEditor, markUnsaved, markSaved, saveAll, closeAllTabs,
+        selectSidebarTab, openEntity, openSchemaEditor, openChapterTab, closeEditor, markUnsaved, markSaved, saveAll, closeAllTabs,
         addNewEntity, startResize, startSidebarResize, toggleSettings, resetSettings, addLog, handleUpdateData,
         getEntityDisplayName, deleteEntity, deleteVolume, deleteArc, createChapterIn, deleteChapter, renameChapter, activeTreeNode, applyZoom,
+        quickOpenDataSource, handleQuickOpenSelect,
         selectTreeNode: (node: any) => { activeTreeNode.value = node; },
-        handleScrollChange: (scroll: number) => {
-          if (activeEditor.value) {
-            activeEditor.value.scrollPos = scroll;
+        handleScrollChange: (groupId: string, tabId: string, scroll: number) => {
+          const group = eg.groups.value.find(g => g.id === groupId);
+          const tab = group?.tabs.find(t => t.id === tabId);
+          if (tab) {
+            tab.scrollPos = scroll;
             saveState();
           }
         },
-        handleSectionChange: (sectionId: string) => {
-          if (activeEditor.value) {
-            activeEditor.value.activeSection = sectionId;
-            const newTitle = getEntityDisplayName(activeEditor.value.data as Record<string, unknown>, activeEditor.value.entityType);
-            if (newTitle && newTitle !== activeEditor.value.title) {
-              activeEditor.value.title = newTitle;
+        handleSectionChange: (groupId: string, tabId: string, sectionId: string) => {
+          const group = eg.groups.value.find(g => g.id === groupId);
+          const tab = group?.tabs.find(t => t.id === tabId);
+          if (tab) {
+            tab.activeSection = sectionId;
+            const newTitle = getEntityDisplayName(tab.data as Record<string, unknown>, tab.entityType);
+            if (newTitle && newTitle !== tab.title) {
+              tab.title = newTitle;
               if (chapterTreeRef.value) chapterTreeRef.value.load();
-              if (currentSidebarTab.value === activeEditor.value.entityType) {
+              if (currentSidebarTab.value === tab.entityType) {
                 loadEntityList(currentSidebarTab.value);
               }
             }
@@ -1649,6 +1543,7 @@ async function init() {
         closeFloatingEditor,
         focusFloatingEditor,
         onChapterRenamed,
+        toggleEntityHistory,
         openSandbox: () => { activeView.value = 'sandbox'; sidebarVisible.value = false; },
         // ─── Editor Groups API (для шаблона) ───
         editorGroups: eg.groups,
@@ -1683,9 +1578,11 @@ async function init() {
   app.component('tags-field-vue', TagsField);
   app.component('floating-entity-editor-vue', FloatingEntityEditorVue);
   app.component('redact-sandbox-vue', RedactSandboxVue);
+  app.component('schema-editor-main-vue', SchemaEditorMainVue);
   app.component('editor-tab-bar-vue', EditorTabBarVue);
   app.component('editor-group-pane-vue', EditorGroupPaneVue);
-  app.mount('#app');
+  app.component('cloud-sync-modal-vue', CloudSyncModalVue);
+  app.use(i18n as unknown as Plugin).mount('#app');
 }
 
 init().catch(e => console.error('[app] init error:', e));

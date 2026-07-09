@@ -1,6 +1,5 @@
-use surrealdb::Surreal;
-use surrealdb::engine::local::Db;
 use serde_json::Value;
+use serde::{Serialize, Deserialize};
 use crate::logic::models::{Entity, EntitySchema, EntityRel, RelationSchema};
 
 // =====================================================
@@ -174,6 +173,17 @@ pub async fn search_entities(
 // ENTITY SCHEMA CRUD
 // =====================================================
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SchemaHistoryEntry {
+    pub id: Option<String>,
+    pub schema_id: String,
+    pub project_id: String,
+    pub snapshot: serde_json::Value,
+    pub saved_at: String,
+    pub is_pinned: bool,
+    pub commit_msg: Option<String>,
+}
+
 #[tauri::command]
 pub async fn get_entity_schemas(
     project: String,
@@ -192,6 +202,7 @@ pub async fn get_entity_schemas(
 pub async fn save_entity_schema(
     project: String,
     schema: EntitySchema,
+    max_saves: Option<usize>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<EntitySchema, String> {
     let db = &state.db;
@@ -200,12 +211,87 @@ pub async fn save_entity_schema(
     let mut val = serde_json::to_value(&schema).map_err(|e| e.to_string())?;
     if let Some(obj) = val.as_object_mut() {
         obj.remove("id");
-        obj.insert("project_id".into(), Value::String(proj_id));
+        obj.remove("created_at");
+        obj.insert("project_id".into(), Value::String(proj_id.clone()));
     }
 
-    let result: Option<Value> = if let Some(id_str) = &schema.id {
+    // FIND EXISTING SCHEMA ID
+    let mut res = db.query("SELECT id FROM entity_schemas WHERE project_id = $pid AND type_key = $t_key LIMIT 1")
+        .bind(("pid", proj_id.clone()))
+        .bind(("t_key", schema.type_key.clone()))
+        .await.map_err(|e| e.to_string())?;
+    
+    let mut existing_records: Vec<Value> = res.take(0).unwrap_or_default();
+    
+    // Flatten the Thing ID objects so we get plain "table:id" strings
+    for rec in existing_records.iter_mut() {
+        flatten_thing(rec);
+    }
+    
+    eprintln!("[DEBUG] schema lookup result for '{}': {:?}", schema.type_key, existing_records);
+    
+    let actual_id_str = if let Some(first) = existing_records.first() {
+        // After flatten_thing, id field should be "entity_schemas:xxxx"
+        if let Some(id_val) = first.get("id") {
+            let id_string = id_val.as_str().unwrap_or("");
+            eprintln!("[DEBUG] found schema id_string: '{}'", id_string);
+            let parts: Vec<&str> = id_string.splitn(2, ':').collect();
+            if parts.len() == 2 { parts[1].to_string() } else { id_string.to_string() }
+        } else {
+            "".to_string()
+        }
+    } else if let Some(id_str) = &schema.id {
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
+        if parts.len() == 2 { parts[1].to_string() } else { id_str.clone() }
+    } else {
+        "".to_string()
+    };
+    
+    eprintln!("[DEBUG] actual_id_str: '{}'", actual_id_str);
+
+    let result: Option<Value> = if !actual_id_str.is_empty() {
+        let actual_id = actual_id_str.as_str();
+        
+        // --- BACKUP OLD SCHEMA ---
+        let old_res: Option<Value> = db.select(("entity_schemas", actual_id)).await.map_err(|e| e.to_string())?;
+        if let Some(old_schema_val) = old_res {
+            let mut snap = serde_json::Map::new();
+            snap.insert("schema_id".into(), Value::String(format!("entity_schemas:{}", actual_id)));
+            snap.insert("type_key".into(), Value::String(schema.type_key.clone()));
+            snap.insert("project_id".into(), Value::String(proj_id.clone()));
+            snap.insert("snapshot".into(), old_schema_val);
+            snap.insert("saved_at".into(), Value::String(chrono::Utc::now().to_rfc3339()));
+            snap.insert("is_pinned".into(), Value::Bool(false));
+            let max_limit = max_saves.unwrap_or(30);
+            
+            let query_str = "
+                BEGIN TRANSACTION;
+                
+                CREATE schema_history CONTENT $snap;
+                
+                LET $target = type::record('entity_schemas', $actual_id);
+                LET $unpinned = (SELECT id FROM schema_history WHERE schema_id = $target AND is_pinned = false ORDER BY saved_at DESC);
+                IF (array::len($unpinned) > $max_limit) {
+                    LET $to_delete = array::slice($unpinned, $max_limit, array::len($unpinned));
+                    DELETE $to_delete;
+                };
+                
+                COMMIT TRANSACTION;
+            ";
+
+            let mut tx_res = db.query(query_str)
+                .bind(("snap", Value::Object(snap)))
+                .bind(("actual_id", actual_id))
+                .bind(("max_limit", max_limit))
+                .await.map_err(|e| e.to_string())?;
+                
+            let errors = tx_res.take_errors();
+            if !errors.is_empty() {
+                eprintln!("[ERROR] Transaction failed: {:?}", errors);
+            }
+        }
+        // -------------------------
+
         db.upsert(("entity_schemas", actual_id))
             .merge(val)
             .await.map_err(|e| e.to_string())?
@@ -242,6 +328,39 @@ pub async fn delete_entity_schema(
     .bind(("type_key", type_key))
     .await.map_err(|e| e.to_string())?;
 
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_schema_history(
+    project: String,
+    type_key: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<Vec<SchemaHistoryEntry>, String> {
+    let db = &state.db;
+    let proj_id = format!("projects:{}", project);
+    let mut res = db.query("SELECT * FROM schema_history WHERE project_id = $pid AND type_key = $tk ORDER BY saved_at DESC")
+        .bind(("pid", proj_id))
+        .bind(("tk", type_key))
+        .await.map_err(|e| e.to_string())?;
+    let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
+    Ok(deserialize_list(values))
+}
+
+#[tauri::command]
+pub async fn toggle_schema_history_pin(
+    history_id: String,
+    is_pinned: bool,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<(), String> {
+    let db = &state.db;
+    let parts: Vec<&str> = history_id.splitn(2, ':').collect();
+    let actual_id = if parts.len() == 2 { parts[1] } else { history_id.as_str() };
+    
+    db.query("UPDATE type::record('schema_history', $id) SET is_pinned = $is_pinned")
+        .bind(("id", actual_id))
+        .bind(("is_pinned", is_pinned))
+        .await.map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -387,5 +506,45 @@ pub async fn delete_relation_schema(
     .bind(("pid", proj_id))
     .bind(("rel_key", rel_key))
     .await.map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn get_entity_revisions(
+    project: String,
+    entity_id: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<Vec<Value>, String> {
+    let db = &state.db;
+    let proj_id = format!("projects:{}", project);
+    
+    let mut result = db.query(
+        "SELECT * FROM entity_revisions WHERE target_id = type::record($target_id) AND project_id = $project_id ORDER BY created_at DESC"
+    )
+    .bind(("target_id", entity_id))
+    .bind(("project_id", proj_id))
+    .await
+    .map_err(|e| e.to_string())?;
+
+    let revisions: Vec<Value> = result.take(0).map_err(|e| e.to_string())?;
+    Ok(revisions)
+}
+
+#[tauri::command]
+pub async fn toggle_entity_history_pin(
+    history_id: String,
+    is_pinned: bool,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<(), String> {
+    let db = &state.db;
+    let parts: Vec<&str> = history_id.splitn(2, ':').collect();
+    let actual_id = if parts.len() == 2 { parts[1] } else { &history_id };
+    
+    db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
+        .bind(("id", format!("entity_revisions:{}", actual_id)))
+        .bind(("is_pinned", is_pinned))
+        .await
+        .map_err(|e| e.to_string())?;
+        
     Ok(())
 }

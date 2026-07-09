@@ -10,6 +10,7 @@ import { projectService } from '../services/project.service';
 import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 import XboxWheel from "../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue";
 import CalendarsPanel from '../components/Vue/CalendarsPanel.vue';
+import CloudSyncModalVue from '../components/Vue/CloudSyncModal.vue';
 
 // Export Vue globally for components that use window.Vue
 if (typeof window !== 'undefined') {
@@ -319,6 +320,20 @@ const genres = [
       loadProjects();
     });
 
+    const cloudSyncModalRef = ref<any>(null);
+    const cloudSyncMode = ref<'import' | 'export'>('export');
+
+    function openCloudSync(mode: 'import' | 'export') {
+      console.log('Button clicked! Mode:', mode);
+      cloudSyncMode.value = mode;
+      window.dispatchEvent(new CustomEvent('open-cloud-sync', { detail: mode }));
+    }
+
+    function showToast(toast: any) {
+      // Implement toast or reuse existing logic
+      console.log('Toast:', toast);
+    }
+
     return {
       projects,
       sortedProjects,
@@ -334,7 +349,10 @@ const genres = [
       editProject,
       confirmDelete,
       submitForm,
-      closeModal
+      closeModal,
+      cloudSyncModalRef,
+      openCloudSync,
+      showToast
     };
   }
 });
@@ -342,6 +360,7 @@ const genres = [
 // Register CalendarsPanel
 app.component('calendars-panel', CalendarsPanel);
 app.component('vanilla-xbox-wheel', XboxWheel);
+app.component('cloud-sync-modal', CloudSyncModalVue);
 
 // Get the HTML template content and use it as Vue template
 const appEl = document.getElementById('app');

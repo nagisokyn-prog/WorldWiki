@@ -12,10 +12,12 @@
         v-model:footnotesData="currentChapter.footnotes"
         :hasUnsavedChanges="hasUnsavedChanges"
         :initialScrollPos="currentChapter.scrollPos || 0"
+        :changedFields="changedFields"
         @change="markUnsaved"
         @save="saveChapter"
         @openEntity="handleOpenEntity"
         @scroll-change="handleScrollChange"
+        @toggle-history="toggleHistory"
       />
 
       <!-- Right Panel Resizer -->
@@ -109,6 +111,45 @@
         </div>
 
       </div>
+      
+      <!-- HISTORY PANEL -->
+      <aside v-if="showHistory" style="width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 10;">
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+              <span>История изменений</span>
+              <button style="background: none; border: none; cursor: pointer; color: var(--text-muted);" @click="showHistory = false">✕</button>
+          </div>
+          
+          <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+            <label style="font-size: 10px; color: var(--text-muted);">Хранить последних версий:</label>
+            <input type="number" v-model="maxSaves" class="input-base" style="width: 100%; font-size: 12px; padding: 4px; margin-top: 4px;">
+          </div>
+          
+          <div v-if="isLoadingHistory" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
+              Загрузка истории...
+          </div>
+          <div v-else style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <div v-if="revisions.length === 0" style="font-size: 10px; color: var(--text-muted); text-align: center;">Нет сохраненных версий</div>
+              
+              <div v-for="(rev, idx) in revisions" :key="rev.id" 
+                   @click="previewHistory(rev)"
+                   :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
+                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                      <span style="font-size: 11px; font-weight: bold;">{{ new Date(rev.created_at).toLocaleString() }}</span>
+                      <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" @click.stop="togglePin(rev)" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'">
+                        {{ rev.is_pinned ? '📍' : '📌' }}
+                      </button>
+                  </div>
+                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                      <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
+                      <span v-else>Базовая версия</span>
+                  </div>
+                  <div v-if="previewingRevId === rev.id" style="margin-top: 8px;">
+                      <span style="font-size: 9px; color: #f5a623;">Режим предпросмотра</span>
+                  </div>
+              </div>
+          </div>
+      </aside>
     </div>
     
     <div v-else class="empty-state" style="flex: 1; display: flex; justify-content: center; align-items: center; color: var(--text-muted); flex-direction: column;">
@@ -298,6 +339,109 @@ const isZenMode = ref(false);
 // Состояние для плавающих редакторов
 const floatingEditors = ref<Array<{ id: string; project: string; type: string; entityId: string }>>([]);
 
+// Состояние истории
+const showHistory = ref(false);
+const isLoadingHistory = ref(false);
+const revisions = ref<any[]>([]);
+const previewingRevId = ref<string | null>(null);
+const maxSaves = ref(20);
+
+// Храним оригинальные данные для восстановления после предпросмотра
+const originalData = ref<{ content: any; title: string; footnotes: any } | null>(null);
+
+const toggleHistory = () => {
+  showHistory.value = !showHistory.value;
+  if (showHistory.value && currentChapterId.value) {
+    loadHistory();
+  }
+};
+
+const loadHistory = async () => {
+  if (!currentChapterId.value) return;
+  try {
+    isLoadingHistory.value = true;
+    const history = await apiService.getChapterRevisions(props.project, currentChapterId.value);
+    revisions.value = history || [];
+  } catch (err) {
+    console.error('Failed to load history:', err);
+  } finally {
+    isLoadingHistory.value = false;
+  }
+};
+
+const previewHistory = (rev: any) => {
+  if (!currentChapter.value) return;
+  if (previewingRevId.value === rev.id) {
+    // Отмена предпросмотра
+    if (originalData.value) {
+      currentChapter.value.content = originalData.value.content;
+      currentChapter.value.title = originalData.value.title;
+      currentChapter.value.footnotes = originalData.value.footnotes;
+      originalData.value = null;
+    }
+    previewingRevId.value = null;
+    return;
+  }
+
+  // Включение предпросмотра
+  if (!originalData.value) {
+    originalData.value = {
+      content: currentChapter.value.content,
+      title: currentChapter.value.title,
+      footnotes: JSON.parse(JSON.stringify(currentChapter.value.footnotes || {}))
+    };
+  }
+  
+  const snap = rev.content;
+  currentChapter.value.content = snap.content || snap.attributes?.content || '';
+  currentChapter.value.title = snap.title || snap.attributes?.title || '';
+  currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};
+  previewingRevId.value = rev.id;
+};
+
+const togglePin = async (rev: any) => {
+  try {
+    rev.is_pinned = !rev.is_pinned;
+    await apiService.toggleChapterHistoryPin(rev.id, rev.is_pinned);
+  } catch (err) {
+    console.error('Failed to toggle pin:', err);
+    rev.is_pinned = !rev.is_pinned; // revert
+  }
+};
+
+const getDiffSummary = (current: any, previous: any) => {
+  if (!previous) return 'Первая версия';
+  const currSnap = current.content.attributes || current.content;
+  const prevSnap = previous.content.attributes || previous.content;
+  
+  let changes = [];
+  if (currSnap.title !== prevSnap.title) changes.push('Название');
+  if (currSnap.content !== prevSnap.content) changes.push('Текст');
+  if (JSON.stringify(currSnap.footnotes) !== JSON.stringify(prevSnap.footnotes)) changes.push('Сноски');
+  
+  if (changes.length > 0) {
+    return `<span style="color:var(--accent)">Изменено:</span> ${changes.join(', ')}`;
+  }
+  return 'Нет визуальных изменений';
+};
+
+const changedFields = computed(() => {
+  if (!previewingRevId.value || !originalData.value) return [];
+  
+  const currentSnap = revisions.value.find(r => r.id === previewingRevId.value);
+  if (!currentSnap) return [];
+
+  const snapData = currentSnap.content.attributes || currentSnap.content;
+  const original = originalData.value;
+  
+  let changes = [];
+  if (snapData.title !== original.title) changes.push('title');
+  if (snapData.content !== original.content) changes.push('content');
+  if (JSON.stringify(snapData.footnotes) !== JSON.stringify(original.footnotes)) changes.push('footnotes');
+  
+  return changes;
+});
+
 const toggleZenMode = () => {
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(err => {
@@ -459,6 +603,12 @@ const saveChapter = async () => {
     
     hasUnsavedChanges.value = false;
     emit('chapter-saved');
+    if (showHistory.value) {
+      // SurrealDB event `log_chapter_revision` needs a moment to create the revision
+      setTimeout(() => {
+        loadHistory();
+      }, 500);
+    }
     
     const listIdx = chapters.value.findIndex(c => c.id === currentChapterId.value);
     if (listIdx !== -1) chapters.value[listIdx].title = currentChapter.value.title;
@@ -493,6 +643,11 @@ const openChapter = async (id: string) => {
     if (!full.footnotes) full.footnotes = {};
     
     currentChapter.value = JSON.parse(JSON.stringify(full));
+    previewingRevId.value = null;
+    originalData.value = null;
+    if (showHistory.value) {
+      loadHistory();
+    }
     console.log('📖 openChapter: currentChapter.value установлен:', currentChapter.value);
     console.log('📖 openChapter: currentChapter.title =', currentChapter.value?.title);
     currentChapterId.value = id;

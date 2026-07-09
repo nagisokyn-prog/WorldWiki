@@ -18,11 +18,22 @@ DEFINE FIELD OVERWRITE title      ON volumes TYPE string;
 DEFINE FIELD OVERWRITE project_id ON volumes TYPE record<projects> | string;
 DEFINE FIELD OVERWRITE sort_order ON volumes TYPE int DEFAULT 0;
 
+DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
+    DELETE arcs WHERE volumeId = $before.id OR volumeId = type::string($before.id);
+    DELETE chapters WHERE volume_id = $before.id OR volume_id = type::string($before.id);
+    DELETE plans WHERE parent_ref = $before.id OR parent_ref = type::string($before.id);
+};
+
 DEFINE TABLE OVERWRITE arcs SCHEMAFULL;
 DEFINE FIELD OVERWRITE title      ON arcs TYPE string;
 DEFINE FIELD OVERWRITE project_id ON arcs TYPE record<projects> | string;
 DEFINE FIELD OVERWRITE volumeId   ON arcs TYPE option<record<volumes> | string>;
 DEFINE FIELD OVERWRITE sort_order ON arcs TYPE int DEFAULT 0;
+
+DEFINE EVENT OVERWRITE cascade_arc_delete ON TABLE arcs WHEN $event = "DELETE" THEN {
+    DELETE chapters WHERE arc_id = $before.id OR arc_id = type::string($before.id);
+    DELETE plans WHERE parent_ref = $before.id OR parent_ref = type::string($before.id);
+};
 
 DEFINE TABLE OVERWRITE tags SCHEMAFULL;
 DEFINE FIELD OVERWRITE name       ON tags TYPE string;
@@ -55,6 +66,18 @@ DEFINE FIELD OVERWRITE full_schema   ON entity_schemas TYPE option<object> FLEXI
 DEFINE FIELD OVERWRITE created_at    ON entity_schemas TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_schema_type ON entity_schemas FIELDS project_id, type_key UNIQUE;
+
+-- ===============================================
+-- ИСТОРИЯ СХЕМ
+-- ===============================================
+DEFINE TABLE OVERWRITE schema_history SCHEMAFULL;
+DEFINE FIELD OVERWRITE schema_id  ON schema_history TYPE record<entity_schemas> | string;
+DEFINE FIELD OVERWRITE type_key   ON schema_history TYPE string;
+DEFINE FIELD OVERWRITE project_id ON schema_history TYPE record<projects> | string;
+DEFINE FIELD OVERWRITE snapshot   ON schema_history TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE saved_at   ON schema_history TYPE string;
+DEFINE FIELD OVERWRITE is_pinned  ON schema_history TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE commit_msg ON schema_history TYPE option<string>;
 
 -- ===============================================
 -- СУЩНОСТИ (универсальная таблица)
@@ -135,6 +158,11 @@ DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT []
 DEFINE INDEX OVERWRITE idx_chapter_ft  ON chapters COLUMNS content FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_chapter_emb ON chapters COLUMNS embedding HNSW DIMENSION 1536 DIST COSINE;
 
+DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
+    DELETE text_blocks WHERE chapter_id = $before.id OR chapter_id = type::string($before.id);
+    DELETE plans WHERE parent_ref = $before.id OR parent_ref = type::string($before.id);
+};
+
 -- ===============================================
 -- ПЛАНЫ
 -- ===============================================
@@ -147,6 +175,10 @@ DEFINE FIELD OVERWRITE sort_order  ON plans TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at  ON plans TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at  ON plans TYPE datetime DEFAULT time::now();
+
+DEFINE EVENT OVERWRITE cascade_plan_delete ON TABLE plans WHEN $event = "DELETE" THEN {
+    DELETE plans WHERE parent_ref = $before.id OR parent_ref = type::string($before.id);
+};
 
 -- ===============================================
 -- AI: Блоки текста
@@ -214,3 +246,50 @@ DEFINE FIELD OVERWRITE importance  ON agent_memory TYPE int DEFAULT 5;
 DEFINE FIELD OVERWRITE created_at  ON agent_memory TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_memory_emb ON agent_memory FIELDS embedding HNSW DIMENSION 1536 DIST COSINE;
+
+-- ===============================================
+-- ИСТОРИЯ СУЩНОСТЕЙ (РЕВИЗИИ)
+-- ===============================================
+DEFINE TABLE OVERWRITE entity_revisions TYPE NORMAL;
+DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities>;
+DEFINE FIELD OVERWRITE project_id  ON entity_revisions TYPE string;
+DEFINE FIELD OVERWRITE content     ON entity_revisions TYPE object;
+DEFINE FIELD OVERWRITE commit_msg  ON entity_revisions TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at  ON entity_revisions TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE is_pinned   ON entity_revisions TYPE bool DEFAULT false;
+
+DEFINE INDEX OVERWRITE idx_entity_rev_target ON entity_revisions FIELDS target_id;
+DEFINE INDEX OVERWRITE idx_entity_rev_project ON entity_revisions FIELDS project_id;
+
+-- ===============================================
+-- ИСТОРИЯ ГЛАВ (РЕВИЗИИ)
+-- ===============================================
+DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
+DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters> | string;
+DEFINE FIELD OVERWRITE project_id  ON chapter_revisions TYPE record<projects> | string;
+DEFINE FIELD OVERWRITE content     ON chapter_revisions TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_chapter_rev_target ON chapter_revisions FIELDS target_id;
+DEFINE INDEX OVERWRITE idx_chapter_rev_project ON chapter_revisions FIELDS project_id;
+
+-- ===============================================
+-- ТРИГГЕРЫ (АВТО-РЕВИЗИИ)
+-- ===============================================
+
+DEFINE EVENT OVERWRITE log_entity_revision ON TABLE entities WHEN $event = "UPDATE" THEN {
+    CREATE entity_revisions SET 
+        target_id = $before.id,
+        project_id = $before.project_id,
+        content = $before,
+        created_at = time::now();
+};
+
+DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters WHEN $event = "UPDATE" THEN {
+    CREATE chapter_revisions SET 
+        target_id = $before.id,
+        project_id = $before.project_id,
+        content = $before,
+        created_at = time::now();
+};

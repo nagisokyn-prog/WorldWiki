@@ -249,6 +249,18 @@ export const apiService = {
   },
   deleteEntity: (project: string, type: string, id: string): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('delete_entity', { id }),
+    
+  toggleEntityHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
+    invoke<void>('toggle_entity_history_pin', { historyId, isPinned }),
+
+  getChapterRevisions: (projectId: string, chapterId: string): Promise<any[]> =>
+    invoke<any[]>('get_chapter_revisions', { project: projectId, chapterId }),
+    
+  toggleChapterHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
+    invoke<void>('toggle_chapter_history_pin', { historyId, isPinned }),
+
+  // Backup & Export
+  createCloudBackup: (): Promise<string> => invoke<string>('create_cloud_backup'),
 
   // Таймлайны глав
   getGlobalTimeline: (project: string): Promise<unknown> =>
@@ -273,8 +285,14 @@ export const apiService = {
     }
     return map;
   },
-  saveSchema: (project: string, schema: any): Promise<{ success: boolean }> =>
-    invoke<{ success: boolean }>('save_entity_schema', { project, schema }),
+  saveSchema: (project: string, schema: any, maxSaves?: number): Promise<{ success: boolean }> =>
+    invoke<{ success: boolean }>('save_entity_schema', { project, schema, maxSaves }),
+    
+  getSchemaHistory: (project: string, typeKey: string): Promise<any[]> =>
+    invoke<any[]>('get_schema_history', { project, typeKey }),
+    
+  toggleSchemaHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
+    invoke<void>('toggle_schema_history_pin', { historyId, isPinned }),
 
 
   // Теги
@@ -376,8 +394,8 @@ export const apiService = {
     invoke<ConnectionData[]>('get_connections_by_entity', { project, entityType, entityId }),
   removeConnectionsBySource: (project: string, entityType: string, entityId: string): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('remove_connections_by_source', { project, entityType, entityId }),
-  saveConnections: (project: string, data: ConnectionData[]): Promise<{ success: boolean }> =>
-    invoke<{ success: boolean }>('save_connections', { project, data }),
+  saveConnections: (project: string, sourceId: string, data: ConnectionData[]): Promise<{ success: boolean }> =>
+    invoke<{ success: boolean }>('save_connections', { project, sourceId, data }),
 
   // Экспорт
   exportChapters: (project: string, chapters: unknown[], format: string, options: Record<string, unknown>): Promise<{ path: string }> =>

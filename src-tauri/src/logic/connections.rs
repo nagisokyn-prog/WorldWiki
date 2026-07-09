@@ -49,9 +49,10 @@ pub async fn remove_connections_by_source(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<usize, String> {
     let db = &state.db;
-    // Entities now use `entities:` prefix
     let rid = format!("entities:{}", e_id);
-    let mut res = db.query("DELETE entity_rel WHERE in = type::record($rid) OR out = type::record($rid)")
+    // When manually requested by source, only delete outgoing relationships!
+    // If the entity is being fully deleted, we'd delete both, but this is used for saving.
+    let mut res = db.query("DELETE entity_rel WHERE in = type::record($rid)")
         .bind(json!({ "rid": rid }))
         .await.map_err(|e| e.to_string())?;
     
@@ -62,20 +63,27 @@ pub async fn remove_connections_by_source(
 #[tauri::command]
 pub async fn save_connections(
     project: String,
+    source_id: String,
     data: Value,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     let db = &state.db;
     let connections_arr = data.as_array().ok_or("Connections array expected")?;
     let proj_id = format!("projects:{}", project);
+    let src_rid = format!("entities:{}", source_id);
 
-    db.query("DELETE entity_rel WHERE project_id = $proj OR project_id = type::record($proj)")
-        .bind(json!({ "proj": proj_id.clone() }))
+    // Удаляем все связи, где текущая сущность является источником ИЛИ целью
+    // Таким образом мы гарантируем, что при удалении связи в UI, обратная связь (B->A) также будет удалена из БД.
+    db.query("DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND (project_id = $proj OR project_id = type::record($proj))")
+        .bind(json!({ "proj": proj_id.clone(), "src": src_rid }))
         .await.map_err(|e| e.to_string())?;
 
     for c in connections_arr {
-        let s_id = c["source"]["entityId"].as_str().unwrap_or("");
-        let t_id = c["target"]["entityId"].as_str().unwrap_or("");
+        let mut s_id = c["source"]["entityId"].as_str().unwrap_or("").to_string();
+        let mut t_id = c["target"]["entityId"].as_str().unwrap_or("").to_string();
+        
+        if s_id.starts_with("entities:") { s_id = s_id.replace("entities:", ""); }
+        if t_id.starts_with("entities:") { t_id = t_id.replace("entities:", ""); }
         
         if s_id.is_empty() || t_id.is_empty() { continue; }
 

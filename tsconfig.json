@@ -24,6 +24,6 @@
       "@types/*": ["./src/js/types/*"]
     }
   },
-  "include": ["src/js/**/*.ts", "src/js/**/*.d.ts", "src/js/**/*.vue", "tauri-surreal-kit/frontend/src/**/*.ts", "tauri-surreal-kit/frontend/src/**/*.vue"],
+  "include": ["src/js/**/*.ts", "src/js/**/*.d.ts", "src/js/**/*.vue"],
   "exclude": ["src/js/libs/**", "src/js/toastui/**", "node_modules", "dist"]
 }

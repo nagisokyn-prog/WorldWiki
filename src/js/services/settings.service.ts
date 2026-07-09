@@ -157,6 +157,13 @@ class SettingsService {
   }
 
   /**
+   * Заглушка для совместимости типов с tauri-surreal-kit
+   */
+  applyLocale(lang?: string): void {
+    // В старом приложении эта логика не используется, но нужна для TS
+  }
+
+  /**
    * Применяет настройки к CSS переменным
    */
   applySettings(): void {
@@ -339,12 +346,6 @@ class SettingsService {
 export const settingsService = new SettingsService();
 
 // Глобальный доступ для совместимости
-declare global {
-  interface Window {
-    settingsService: SettingsService;
-  }
-}
-
 if (typeof window !== 'undefined') {
-  window.settingsService = settingsService;
+  (window as any).settingsService = settingsService;
 }

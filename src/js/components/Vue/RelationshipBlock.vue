@@ -517,6 +517,16 @@ const loadForeignItem = async (targetId: any): Promise<void> => {
 
     // Ищем запись где linkClass === наш id
     let matched: any = relArray.find((r: any) => String(r[linkClass.value]) === String(props.entityId));
+    
+    // Надежный фоллбэк: сравниваем ID без префиксов (entities:)
+    if (!matched) {
+      const rawEntityId = String(props.entityId).split(':').pop() || String(props.entityId);
+      matched = relArray.find((r: any) => {
+        const rawTargetId = String(r[linkClass.value]).split(':').pop() || String(r[linkClass.value]);
+        return rawTargetId === rawEntityId;
+      });
+    }
+    
     console.log('[RelationshipBlock] найдено встречное отношение:', matched);
     
     if (!matched) {

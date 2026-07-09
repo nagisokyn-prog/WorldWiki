@@ -10,107 +10,129 @@
     </div>
   </div>
   <div v-else class="entity-editor-vue" style="display:flex; flex-direction:column; flex:1; min-height:0;">
-    <!-- Вкладки (Sub Tabs) -->
     <div class="editor-tabs-new" v-if="(config as any)?.sections && (config as any).sections.length > 1">
-      <div 
-        v-for="(section, idx) in (config as any).sections" 
-        :key="section.id"
-        class="editor-tab-new interactive-el" 
-        :class="{ active: activeSection === section.id }"
-        @click="activeSection = section.id; $emit('section-change', section.id)"
-      >
-        {{ section.icon || '' }} {{ section.title }}
+      <template v-for="(section, idx) in (config as any).sections" :key="section.id">
+        <div 
+          v-if="!section.hidden"
+          class="editor-tab-new interactive-el" 
+          :class="{ active: activeSection === section.id }"
+          @click="activeSection = section.id; $emit('section-change', section.id)"
+        >
+          {{ section.icon || '' }} {{ section.title }}
+        </div>
+      </template>
+    </div>
+
+    <!-- Предупреждение о режиме истории -->
+    <div v-if="isPreviewingHistory" style="background: rgba(245,166,35,0.1); border-bottom: 1px solid rgba(245,166,35,0.3); padding: 8px 24px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+      <span style="font-size: 11px; color: #f5a623; font-weight: bold;">⚠️ ВЫ ПРОСМАТРИВАЕТЕ СТАРУЮ ВЕРСИЮ СУЩНОСТИ</span>
+      <div style="display: flex; gap: 8px;">
+         <button class="btn-new btn-outline-new" style="font-size: 10px; border: 1px solid rgba(245,166,35,0.3); background: transparent; color: #f5a623; padding: 4px 8px; border-radius: 4px; cursor: pointer;" @click="exitHistoryPreview">Отмена</button>
+         <button class="btn-new" style="font-size: 10px; background: #f5a623; color: #000; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;" @click="restoreHistory">Восстановить эту версию</button>
       </div>
     </div>
 
     <!-- Область формы -->
-    <div class="split-view" style="flex:1; display:flex; flex-direction:column; min-height:0;">
-      <div class="split-editor-core" style="flex:1; padding: 24px; overflow-y:auto; overflow-x:hidden;">
+    <div class="split-view" style="flex:1; display:flex; flex-direction:row; min-height:0;">
+      <div ref="scrollContainer" class="split-editor-core" style="flex:1; padding: 24px; overflow-y:auto; overflow-x:hidden;">
         <transition name="fade" mode="out-in">
           <div :key="activeSection">
             <template v-for="section in config.sections" :key="'sec-'+section.id">
-              <div v-if="activeSection === section.id" class="section-content">
+              <div v-if="activeSection === section.id && !section.hidden" class="section-content">
                 
                 <!-- Простые поля (Fields) -->
                 <div v-if="section.fields && section.fields.length > 0" class="glass-card" style="margin-bottom:24px;">
                   <h2 class="card-title">{{ section.title }}</h2>
                     <div class="grid-dynamic">
-                      <div v-for="field in section.fields" :key="field.id" class="form-group" :class="{ 'full-width': field.fullWidth }" style="position: relative; overflow: visible;">
-                        <label class="form-label" :for="field.id">{{ field.label }} <span v-if="field.required" style="color:var(--accent)">*</span></label>
-                        
-                        <textarea v-if="field.type === 'textarea'" 
-                                  :value="getProp(field.path || field.id)"
-                                  @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }"
-                                  class="input-base interactive-el" 
-                                  :rows="field.rows || 3" 
-                                  :placeholder="field.placeholder"></textarea>
-
-                        <!-- Photo upload field -->
-                        <div v-else-if="field.type === 'photo'" class="photo-upload-zone" @click="triggerPhotoUpload(field.path || field.id)" @dragover.prevent @drop.prevent="e => handlePhotoDrop(e, field.path || field.id)">
-                          <input type="file" accept="image/*" style="display:none" :ref="el => photoInputs[field.path || field.id] = el" @change="e => handlePhotoFile(e, field.path || field.id)" />
-                          <div v-if="getProp(field.path || field.id)" class="photo-preview">
-                            <img :src="getPhotoUrl(getProp(field.path || field.id))" alt="Фото" />
-                            <button class="photo-remove-btn" @click.stop="removePhoto(field.path || field.id)" title="Удалить фото">✕</button>
-                          </div>
-                          <div v-else class="photo-placeholder">
-                            <div class="photo-icon">🖼️</div>
-                            <div class="photo-hint">{{ field.placeholder || 'Нажмите или перетащите изображение' }}</div>
-                          </div>
-                        </div>
-
-                        <XboxWheel v-else-if="field.type === 'select'"
-                                   :horizontal="wheelHorizontal"
-                                   :model-value="getProp(field.path || field.id)"
-                                   @update:modelValue="val => { setProp(field.path || field.id, val); markModified(); }"
-                                   :options="getOptionsFor(field)" />
-
-                        <div v-else-if="field.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
-                          <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
-                            <input type="checkbox" 
-                                   :value="opt.value" 
-                                   :checked="(getProp(field.path || field.id) || []).includes(opt.value)"
-                                   @change="e => { 
-                                     let arr = getProp(field.path || field.id) || []; 
-                                     if (!Array.isArray(arr)) arr = [];
-                                     if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
-                                     else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
-                                     setProp(field.path || field.id, arr);
-                                     markModified();
-                                   }"
-                                   style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"> 
-                            <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
+                      <template v-for="field in section.fields" :key="field.id">
+                        <div v-if="!field.hidden" class="form-group" :class="{ 'full-width': field.fullWidth, 'history-changed': isFieldChanged(field.path || field.id) }" style="position: relative; overflow: visible;">
+                          <label class="form-label" :for="field.id">
+                            {{ field.label }} 
+                            <span v-if="field.required" style="color:var(--accent)">*</span>
+                            <span v-if="isFieldChanged(field.path || field.id)" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
                           </label>
+                          
+                          <textarea v-if="field.type === 'textarea'" 
+                                    :value="getProp(field.path || field.id)"
+                                    @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }"
+                                    class="input-base interactive-el" 
+                                    :rows="field.rows || 3" 
+                                    :placeholder="field.placeholder"></textarea>
+
+                          <!-- Photo upload field -->
+                          <div v-else-if="field.type === 'photo'" class="photo-upload-zone" @click="triggerPhotoUpload(field.path || field.id)" @dragover.prevent @drop.prevent="e => handlePhotoDrop(e, field.path || field.id)">
+                            <input type="file" accept="image/*" style="display:none" :ref="el => photoInputs[field.path || field.id] = el" @change="e => handlePhotoFile(e, field.path || field.id)" />
+                            <div v-if="getProp(field.path || field.id)" class="photo-preview">
+                              <img :src="getPhotoUrl(getProp(field.path || field.id))" alt="Фото" />
+                              <button class="photo-remove-btn" @click.stop="removePhoto(field.path || field.id)" title="Удалить фото">✕</button>
+                            </div>
+                            <div v-else class="photo-placeholder">
+                              <div class="photo-icon">🖼️</div>
+                              <div class="photo-hint">{{ field.placeholder || 'Нажмите или перетащите изображение' }}</div>
+                            </div>
+                          </div>
+
+                          <XboxWheel v-else-if="field.type === 'select'"
+                                     :horizontal="wheelHorizontal"
+                                     :model-value="getProp(field.path || field.id)"
+                                     @update:modelValue="val => { setProp(field.path || field.id, val); markModified(); }"
+                                     :options="getOptionsFor(field)" />
+
+                          <div v-else-if="field.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
+                            <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
+                              <input type="checkbox" 
+                                     :value="opt.value" 
+                                     :checked="(getProp(field.path || field.id) || []).includes(opt.value)"
+                                     @change="e => { 
+                                       let arr = getProp(field.path || field.id) || []; 
+                                       if (!Array.isArray(arr)) arr = [];
+                                       if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
+                                       else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
+                                       setProp(field.path || field.id, arr);
+                                       markModified();
+                                     }"
+                                     style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"> 
+                              <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
+                            </label>
+                          </div>
+
+                          <DateWheels v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base'"
+                                      :model-value="getProp(field.path || field.id)"
+                                      :project="project"
+                                      @update:modelValue="val => { setProp(field.path || field.id, val); markModified(); }" />
+                          
+                          <TagsField v-else-if="field.type === 'tags'"
+                                     :model-value="getProp(field.path || field.id)"
+                                     :project="project"
+                                     :placeholder="field.placeholder"
+                                     @update:modelValue="val => { setProp(field.path || field.id, val); markModified(); }"
+                                     @modified="markModified" />
+
+                          <input v-else 
+                                 :type="field.type || 'text'" 
+                                 :value="getProp(field.path || field.id)"
+                                 @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }"
+                                 class="input-base interactive-el"
+                                 :placeholder="field.placeholder">
+                                 
+                          <div v-if="field.hint" class="form-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;">{{ field.hint }}</div>
                         </div>
-
-                        <DateWheels v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base'"
-                                    :model-value="getProp(field.path || field.id)"
-                                    :project="project"
-                                    @update:modelValue="val => { setProp(field.path || field.id, val); markModified(); }" />
-                        
-                        <TagsField v-else-if="field.type === 'tags'"
-                                   :model-value="getProp(field.path || field.id)"
-                                   :project="project"
-                                   :placeholder="field.placeholder"
-                                   @update:modelValue="val => { setProp(field.path || field.id, val); markModified(); }"
-                                   @modified="markModified" />
-
-                        <input v-else 
-                               :type="field.type || 'text'" 
-                               :value="getProp(field.path || field.id)"
-                               @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }"
-                               class="input-base interactive-el"
-                               :placeholder="field.placeholder">
-                               
-                        <div v-if="field.hint" class="form-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;">{{ field.hint }}</div>
-                      </div>
+                      </template>
                     </div>
                 </div>
 
                 <!-- Динамические контейнеры (Массивы записей) -->
                 <div v-if="section.dynamicContainers && section.dynamicContainers.length > 0" style="margin-top:24px;">
-                  <div v-for="(container, cIdx) in section.dynamicContainers" :key="container.id" style="margin-bottom:24px; position: relative; overflow: visible;" :style="{ zIndex: 100 - (cIdx as any) }">
+                  <template v-for="(container, cIdx) in section.dynamicContainers" :key="container.id">
+                    <div v-if="!container.hidden" 
+                         :class="{ 'history-changed': isFieldChanged(container.dataPath || container.id) }"
+                         style="margin-bottom:24px; position: relative; overflow: visible;" 
+                         :style="{ zIndex: 100 - (cIdx as any) }">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                      <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; font-weight:600; letter-spacing:1px;">{{ container.title || 'Дополнительно' }}</h4>
+                      <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; font-weight:600; letter-spacing:1px;">
+                        {{ container.title || 'Дополнительно' }}
+                        <span v-if="isFieldChanged(container.dataPath || container.id)" class="changed-indicator" title="Связи отличаются от текущей версии">Изменено</span>
+                      </h4>
                       <button class="btn btn-small btn-outline interactive-el" @click="addDynamicItem(container.dataPath || container.id, container.template)">➕ Добавить</button>
                     </div>
 
@@ -141,12 +163,7 @@
                               structuredArr[itemIdx] = updatedItem;
                               console.log('[EntityEditor.vue] 🔄 item-updated: обновил структурированный путь', itemIdx, 'в', container.dataPath || container.id);
                               
-                              // ТАКЖЕ обновляем плоский путь если он отличается
-                              const flatArr = getProp('characterRelationships');
-                              if (flatArr && Array.isArray(flatArr) && itemIdx < flatArr.length && container.dataPath !== 'characterRelationships') {
-                                flatArr[itemIdx] = JSON.parse(JSON.stringify(updatedItem));
-                                console.log('[EntityEditor.vue] 🔄 item-updated: синхронизирован плоский путь characterRelationships[' + itemIdx + ']');
-                              }
+                              // ТАКЖЕ обновляем плоский путь если он отличается (Удалено по просьбе пользователя)
                             }
                           }"
                         />
@@ -224,7 +241,8 @@
                         </div>
                       </template>
                     </div>
-                  </div>
+                    </div>
+                  </template>
                 </div>
 
               </div>
@@ -232,6 +250,45 @@
           </div>
         </transition>
       </div>
+
+      <!-- RIGHT SIDEBAR (HISTORY) -->
+      <aside v-if="showHistory" style="width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 10;">
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+              <span>История изменений</span>
+              <button style="background: none; border: none; cursor: pointer; color: var(--text-muted);" @click="showHistory = false">✕</button>
+          </div>
+          
+          <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+            <label style="font-size: 10px; color: var(--text-muted);">Хранить последних версий:</label>
+            <input type="number" v-model="maxSaves" class="input-base" style="width: 100%; font-size: 12px; padding: 4px; margin-top: 4px;">
+          </div>
+          
+          <div v-if="isLoadingHistory" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
+              Загрузка истории...
+          </div>
+          <div v-else style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <div v-if="revisions.length === 0" style="font-size: 10px; color: var(--text-muted); text-align: center;">Нет сохраненных версий</div>
+              
+              <div v-for="(rev, idx) in revisions" :key="rev.id" 
+                   @click="previewHistory(rev)"
+                   :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
+                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                      <span style="font-size: 11px; font-weight: bold;">{{ new Date(rev.created_at).toLocaleString() }}</span>
+                      <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" @click.stop="togglePin(rev)" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'">
+                        {{ rev.is_pinned ? '📍' : '📌' }}
+                      </button>
+                  </div>
+                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                      <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
+                      <span v-else>Базовая версия</span>
+                  </div>
+                  <div v-if="previewingRevId === rev.id" style="margin-top: 8px;">
+                      <span style="font-size: 9px; color: #f5a623;">Режим предпросмотра</span>
+                  </div>
+              </div>
+          </div>
+      </aside>
     </div>
   </div>
 </template>
@@ -268,6 +325,128 @@ const activeSection = ref('');
 const referenceData = ref<any>({});
 const photoInputs: any = {};
 const hoverState = ref(false);
+const scrollContainer = ref<HTMLElement | null>(null);
+
+// История версий
+const showHistory = ref(false);
+const isLoadingHistory = ref(false);
+const revisions = ref<any[]>([]);
+const isPreviewingHistory = ref(false);
+const previewingRevId = ref<string | null>(null);
+const currentSavedData = ref<any>(null);
+
+const maxSaves = ref(30);
+
+const togglePin = async (rev: any) => {
+  const newStatus = !rev.is_pinned;
+  try {
+    await apiService.toggleEntityHistoryPin(rev.id, newStatus);
+    rev.is_pinned = newStatus;
+  } catch (e) {
+    console.error('Ошибка при пине ревизии:', e);
+  }
+};
+
+const loadHistory = async () => {
+  console.log(`[EntityEditor.vue] loadHistory called for project=`, props.project, ` entityId=`, props.entityId);
+  if (!props.project || !props.entityId || !(window as any).__TAURI__) {
+    console.warn(`[EntityEditor.vue] loadHistory aborted due to missing props or TAURI`);
+    return;
+  }
+  isLoadingHistory.value = true;
+  try {
+    console.log(`[EntityEditor.vue] invoking get_entity_revisions...`);
+    revisions.value = await (window as any).__TAURI__.core.invoke('get_entity_revisions', {
+      project: props.project,
+      entityId: props.entityId
+    });
+    console.log(`[EntityEditor.vue] get_entity_revisions returned:`, revisions.value);
+  } catch (e) {
+    console.error('Ошибка загрузки истории:', e);
+  } finally {
+    isLoadingHistory.value = false;
+  }
+};
+
+const toggleHistory = () => {
+  showHistory.value = !showHistory.value;
+  if (showHistory.value && revisions.value.length === 0) {
+    loadHistory();
+  }
+};
+
+const previewHistory = (rev: any) => {
+  if (!isPreviewingHistory.value) {
+    // Сохраняем текущие данные редактора, чтобы можно было отменить
+    currentSavedData.value = JSON.parse(JSON.stringify(formData.value));
+  }
+  isPreviewingHistory.value = true;
+  previewingRevId.value = rev.id;
+  
+  console.log('[EntityEditor] previewHistory rev:', rev);
+  console.log('[EntityEditor] previewHistory rev.content:', rev.content);
+  console.log('[EntityEditor] previewHistory rev.content.attributes:', rev.content?.attributes);
+  console.log('[EntityEditor] previewHistory rev.content.data:', rev.content?.data);
+
+  // Подменяем данные в форме. Данные сущности лежат в rev.content.attributes или rev.content.data
+  formData.value = JSON.parse(JSON.stringify(rev.content?.attributes || rev.content?.data || rev.content || {}));
+};
+
+const exitHistoryPreview = () => {
+  if (currentSavedData.value) {
+    formData.value = JSON.parse(JSON.stringify(currentSavedData.value));
+  }
+  isPreviewingHistory.value = false;
+  previewingRevId.value = null;
+  currentSavedData.value = null;
+};
+
+const restoreHistory = () => {
+  isPreviewingHistory.value = false;
+  previewingRevId.value = null;
+  currentSavedData.value = null;
+  // Помечаем форму как измененную
+  emit('modified');
+  lastEmittedData.value = null; 
+  markModified();
+};
+
+const getDiffSummary = (current: any, previous: any) => {
+  if (!previous) return '';
+  const currData = current.content?.attributes || current.content?.data || current.content || {};
+  const prevData = previous.content?.attributes || previous.content?.data || previous.content || {};
+  
+  const changes = [];
+  
+  // Проверяем измененные/добавленные поля
+  for (const key of Object.keys(currData)) {
+    const cVal = JSON.stringify(currData[key]);
+    const pVal = JSON.stringify(prevData[key]);
+    if (cVal !== pVal) {
+      if (!prevData[key] && currData[key]) {
+        changes.push(`<span style="color: #10b981;">+ ${key}</span>`);
+      } else {
+        changes.push(`<span style="color: #f5a623;">~ ${key}</span>`);
+      }
+    }
+  }
+  
+  // Проверяем удаленные поля
+  for (const key of Object.keys(prevData)) {
+    if (!(key in currData)) {
+      changes.push(`<span style="color: #ef4444;">- ${key}</span>`);
+    }
+  }
+  
+  if (changes.length === 0) return 'Без изменений';
+  return changes.join(', ');
+};
+const isFieldChanged = (path: string) => {
+  if (!isPreviewingHistory.value || !currentSavedData.value) return false;
+  const currentVal = path.split('.').reduce((obj: any, key: string) => (obj && obj[key] !== 'undefined') ? obj[key] : undefined, currentSavedData.value);
+  const historyVal = getProp(path);
+  return JSON.stringify(currentVal) !== JSON.stringify(historyVal);
+};
 
 const photoUrlCache = ref<Record<string, string>>({});
 const getPhotoUrl = (path: string) => {
@@ -387,11 +566,14 @@ const loadConfigAndData = async () => {
     }
 
      // Ensure a section is selected after config is loaded
+     console.log(`[EntityEditor.vue ${props.entityId}] config loaded. initialSection prop is:`, props.initialSection);
      if (config.value && config.value.sections && config.value.sections.length > 0) {
        if (props.initialSection && config.value.sections.some((s: any) => s.id === props.initialSection)) {
          activeSection.value = props.initialSection;
+         console.log(`[EntityEditor.vue ${props.entityId}] Applied initialSection:`, props.initialSection);
        } else {
          activeSection.value = config.value.sections[0].id;
+         console.log(`[EntityEditor.vue ${props.entityId}] initialSection not found or empty. Using default:`, activeSection.value);
        }
        // Emit initial section change so parent can react if needed
        emit('section-change', activeSection.value);
@@ -414,16 +596,14 @@ const loadConfigAndData = async () => {
     // Restore scroll position
     if (props.initialScrollPos > 0) {
       setTimeout(() => {
-        const el = document.querySelector('.split-editor-core');
-        if (el) el.scrollTop = props.initialScrollPos;
+        if (scrollContainer.value) scrollContainer.value.scrollTop = props.initialScrollPos;
       }, 100);
     }
     
     // Add scroll listener
     nextTick(() => {
-      const el = document.querySelector('.split-editor-core');
-      if (el) {
-        el.addEventListener('scroll', (e: any) => {
+      if (scrollContainer.value) {
+        scrollContainer.value.addEventListener('scroll', (e: any) => {
           emit('scroll-change', e.target.scrollTop);
         });
       }
@@ -435,7 +615,11 @@ const loadConfigAndData = async () => {
 // ensure we set a default section to trigger rendering.
 watch(() => config.value, (newConfig) => {
   if (newConfig && newConfig.sections && newConfig.sections.length > 0 && !activeSection.value) {
-    activeSection.value = newConfig.sections[0].id;
+    if (props.initialSection && newConfig.sections.some((s: any) => s.id === props.initialSection)) {
+      activeSection.value = props.initialSection;
+    } else {
+      activeSection.value = newConfig.sections[0].id;
+    }
     emit('section-change', activeSection.value);
   }
 });
@@ -514,11 +698,8 @@ const loadReferenceData = async () => {
         };
       });
       
-      // Интеллектуальное автопродление:
-      // Бэкенд (advance_timelines) сдвигает ID *предыдущей* последней главы на *новую*.
-      // Значит "Автопродление" должно просто возвращать ID самой свежей главы на данный момент!
       if (type === 'chapter' && list.length > 0) {
-        const latestChapter = list[list.length - 1]; // Т.к. с бэка они идут ORDER BY updated_at ASC
+        const latestChapter = list[list.length - 1];
         mappedList.unshift({ 
           value: String(latestChapter.id), 
           label: '➡️ Текущая (Автопродление)' 
@@ -551,18 +732,8 @@ const markModified = () => {
 };
 
 const _doMarkModified = () => {
-  const rel = (formData.value).characterRelationships;
-  if (rel && Array.isArray(rel) && rel.length > 0) {
-    const dinamika = rel[0].динамика_отношений || [];
-    console.log('[EntityEditor.vue]   characterRelationships[0]:', {
-      персонаж: rel[0].персонаж,
-      базовый_тип_связи: rel[0].базовый_тип_связи,
-      динамика_отношений_len: dinamika.length
-    });
-  }
-  
   // 🔴 ВАЖНО: НЕ используем JSON.parse(JSON.stringify) - это теряет изменения!
-  // RelationshipBlock редактирует characterRelationships через прямые ссылки на объекты
+  // Компоненты динамических списков редактируют объекты через прямые ссылки на объекты
   // Отправляем formData.value напрямую - это Proxy который отслеживает все изменения
   
   const dataWithForeignUpdates = {
@@ -570,24 +741,11 @@ const _doMarkModified = () => {
     __foreignUpdates: foreignUpdates.value
   };
   
-  const rel2 = dataWithForeignUpdates.characterRelationships;
-  if (rel2 && Array.isArray(rel2) && rel2.length > 0) {
-    const dinamika2 = rel2[0].динамика_отношений || [];
-    console.log('[EntityEditor.vue] 📨 После материализации: динамика_отношений.length:', dinamika2.length);
-    if (dinamika2.length > 0) {
-      console.log('[EntityEditor.vue] 📨   [0]:', JSON.stringify(dinamika2[0]));
-    }
-  }
-  
+  // Лог для отладки
   console.log('[EntityEditor.vue] 📨 markModified отправляет update-data');
   
   // 🔴 GUARD: Не отправляем если данные идентичны
   const serialized = JSON.stringify(dataWithForeignUpdates);
-  console.log('[EntityEditor.vue] 🔍 Проверка данных:', {
-    lastEmitted: lastEmittedData.value ? lastEmittedData.value.substring(0, 50) : 'null',
-    current: serialized.substring(0, 50),
-    equal: lastEmittedData.value === serialized
-  });
   
   if (lastEmittedData.value === serialized) {
     console.log('[EntityEditor.vue] ⏭️  Пропускаю emit - данные не изменились');
@@ -707,7 +865,25 @@ watch(() => props.initialData, (newVal) => {
   
   // Отключаем на секунду отправку update-data, чтобы не было бесконечного цикла (эхо)
   const previousState = lastEmittedData.value;
-  merge(formData.value, newVal);
+  // ВАЖНО: Не перезаписываем массивы связей через merge из initialData!
+  // Эти массивы редактируются напрямую через компоненты списков (по ссылке на объекты formData).
+  // Собираем пути динамических контейнеров из схемы, чтобы исключить их из merge.
+  const skipKeys = new Set(['__foreignUpdates']);
+  if (config.value && config.value.sections) {
+    for (const sec of config.value.sections) {
+      if (sec.dynamicContainers) {
+        for (const dc of sec.dynamicContainers) {
+          const path = dc.dataPath || dc.id;
+          skipKeys.add(path.split('.')[0]); // Исключаем корневой ключ
+        }
+      }
+    }
+  }
+  const filteredNewVal: any = {};
+  for (const k in newVal) {
+    if (!skipKeys.has(k)) filteredNewVal[k] = (newVal as any)[k];
+  }
+  merge(formData.value, filteredNewVal);
   lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: foreignUpdates.value });
 }, { deep: true });
 
@@ -725,16 +901,38 @@ onMounted(() => {
     }
   };
   document.addEventListener('ww:switch-section', onSwitchSection as EventListener);
-  document.addEventListener('ww:entity-saved', loadReferenceData);
+  const onEntitySaved = () => {
+    loadReferenceData();
+    if (showHistory.value) {
+      setTimeout(() => {
+        loadHistory();
+      }, 500);
+    }
+  };
+  document.addEventListener('ww:entity-saved', onEntitySaved);
+  
+  const handleToggleHistory = (e: any) => {
+    console.log(`[EntityEditor.vue] handleToggleHistory triggered, detail.id=`, e.detail?.id, ` props.entityId=`, props.entityId);
+    if (e.detail && e.detail.id === props.entityId) {
+      console.log(`[EntityEditor.vue] MATCH! calling toggleHistory()`);
+      toggleHistory();
+    }
+  };
+  document.addEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
 
   onUnmounted(() => {
     document.removeEventListener('ww:switch-section', onSwitchSection as EventListener);
-    document.removeEventListener('ww:entity-saved', loadReferenceData);
+    document.removeEventListener('ww:entity-saved', onEntitySaved);
+    document.removeEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
   });
 
   settingsService.onChange((newSettings) => {
     wheelHorizontal.value = newSettings?.dropdowns?.wheelOrientation === 'horizontal';
   });
+});
+
+defineExpose({
+  toggleHistory
 });
 </script>
 
@@ -820,6 +1018,28 @@ onMounted(() => {
 }
 .photo-remove-btn:hover {
   background: #ef4444;
+}
+
+.history-changed {
+  position: relative;
+  background-color: rgba(245, 166, 35, 0.05) !important;
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
+  margin-bottom: 16px;
+  box-shadow: inset 0 0 0 1px rgba(245, 166, 35, 0.3);
+  transition: all 0.3s ease;
+}
+
+.changed-indicator {
+  font-size: 9px;
+  background: #f5a623;
+  color: #000;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+  font-weight: bold;
+  vertical-align: middle;
 }
 </style>
 

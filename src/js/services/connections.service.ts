@@ -482,7 +482,7 @@ class ConnectionsService {
       }
 
       console.log(`📤 [Connections] Отправляю ${connectionsList.length} связей в БД...`);
-      return await apiService.saveConnections(this.currentProject!, connectionsList);
+      return await apiService.saveConnections(this.currentProject!, sourceId, connectionsList);
     } catch (error) {
       console.error('❌ [Connections] Ошибка сохранения связей:', error);
       return { success: false };

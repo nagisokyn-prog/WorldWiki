@@ -1,5 +1,5 @@
 const fs = require('fs');
-const version = '0.8.0';
+const version = '0.25.0';
 
 const tauriConfPath = 'src-tauri/tauri.conf.json';
 const tauriConf = JSON.parse(fs.readFileSync(tauriConfPath, 'utf8'));

@@ -83,7 +83,7 @@ surreal_entity! {
         #[fulltext] pub edited_content: Option<String>,
         pub feedback_comment: Option<String>,
         pub rag_was_bad: bool,
-        #[flexible] pub embeddings: Option<serde_json::Value>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
     }
 }
 
@@ -107,7 +107,7 @@ surreal_entity! {
         pub url: String,
         pub source_type: String,
         #[fulltext] pub content: String,
-        #[flexible] pub embeddings: Option<serde_json::Value>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
         pub fetched_at: String,
         pub expires_at: Option<String>,
     }
@@ -120,7 +120,7 @@ surreal_entity! {
     pub struct AgentMemory {
         pub memory_type: String, // "summary", "user_preference", "fact"
         #[fulltext] pub content: String,
-        #[flexible] pub embeddings: Option<serde_json::Value>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
         pub importance: i64,
     }
 }
@@ -134,7 +134,7 @@ surreal_entity! {
         pub block_type: String, // "thought", "dialogue", "description"
         pub order_index: i64,
         #[fulltext] pub content: String,
-        #[flexible] pub embeddings: Option<serde_json::Value>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
     }
 }
 
@@ -181,7 +181,7 @@ surreal_entity! {
         pub content: String,
         pub summary: Option<String>,
         #[serde(default, alias = "wordCount")] pub word_count: i64,
-        #[flexible] pub embeddings: Option<serde_json::Value>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub footnotes: Option<serde_json::Value>,
         #[serde(alias = "timelineEvents", skip_serializing_if = "Option::is_none")] #[flexible] pub timeline_events: Option<serde_json::Value>,
         #[serde(skip_serializing_if = "Option::is_none")] pub participants: Option<Vec<String>>,

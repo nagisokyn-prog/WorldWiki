@@ -22,7 +22,7 @@ DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
 DEFINE FIELD OVERWRITE title      ON volumes TYPE string;
-DEFINE FIELD OVERWRITE project_id ON volumes TYPE record<projects>;
+DEFINE FIELD OVERWRITE project_id ON volumes TYPE record<projects> VALUE <record> $value;
 
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
     -- При удалении тома удаляем все вложенные арки и главы через граф
@@ -33,15 +33,15 @@ DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DEL
 
 DEFINE TABLE OVERWRITE arcs SCHEMAFULL;
 DEFINE FIELD OVERWRITE title      ON arcs TYPE string;
-DEFINE FIELD OVERWRITE project_id ON arcs TYPE record<projects>;
+DEFINE FIELD OVERWRITE project_id ON arcs TYPE record<projects> VALUE <record> $value;
 
 DEFINE EVENT OVERWRITE cascade_arc_delete ON TABLE arcs WHEN $event = "DELETE" THEN {
     DELETE ->contains->chapters;
     DELETE plans WHERE parent_ref = $before.id;
 };
 
-DEFINE TABLE OVERWRITE chapters SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id      ON chapters TYPE record<projects>;
+DEFINE TABLE OVERWRITE chapters SCHEMAFULL CHANGEFEED 30d;
+DEFINE FIELD OVERWRITE project_id      ON chapters TYPE record<projects> VALUE <record> $value;
 DEFINE FIELD OVERWRITE title           ON chapters TYPE string;
 DEFINE FIELD OVERWRITE content         ON chapters TYPE string;
 DEFINE FIELD OVERWRITE summary         ON chapters TYPE option<string>;
@@ -113,8 +113,8 @@ DEFINE FIELD OVERWRITE commit_msg ON schema_history TYPE option<string>;
 -- ===============================================
 -- СУЩНОСТИ (универсальная таблица)
 -- ===============================================
-DEFINE TABLE OVERWRITE entities SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id   ON entities TYPE record<projects>;
+DEFINE TABLE OVERWRITE entities SCHEMAFULL CHANGEFEED 30d;
+DEFINE FIELD OVERWRITE project_id   ON entities TYPE record<projects> VALUE <record> $value;
 DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string;
 DEFINE FIELD OVERWRITE name         ON entities TYPE string;
 DEFINE FIELD OVERWRITE description  ON entities TYPE option<string>;
@@ -166,9 +166,9 @@ DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string>;
 -- ПЛАНЫ
 -- ===============================================
 DEFINE TABLE OVERWRITE plans SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON plans TYPE record<projects>;
+DEFINE FIELD OVERWRITE project_id  ON plans TYPE record<projects> VALUE <record> $value;
 DEFINE FIELD OVERWRITE title       ON plans TYPE string;
-DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE record<chapters | arcs | volumes | plans>;
+DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE record<chapters> | record<arcs> | record<volumes> | record<plans>;
 DEFINE FIELD OVERWRITE parent_type ON plans TYPE string;
 DEFINE FIELD OVERWRITE sort_order  ON plans TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
@@ -309,4 +309,21 @@ DEFINE EVENT OVERWRITE log_entity_revision ON TABLE entities WHEN $event = "UPDA
 
 DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters WHEN $event = "UPDATE" THEN {
     CREATE chapter_revisions SET target_id = $before.id, project_id = $before.project_id, content = $before, created_at = time::now();
+};
+
+-- ===============================================
+-- АНАЛИТИКА И AI АГЕНТЫ: Встроенные функции
+-- ===============================================
+
+DEFINE FUNCTION OVERWRITE fn::project_word_count($proj: record<projects>) {
+    RETURN math::sum((SELECT VALUE word_count FROM chapters WHERE project_id = $proj));
+};
+
+DEFINE FUNCTION OVERWRITE fn::get_rag_context($proj: record<projects>, $emb: array<float>, $limit: int) {
+    RETURN (
+        SELECT id, title, content, vector::similarity::cosine(embeddings.openai, $emb) AS vec_score 
+        FROM chapters 
+        WHERE project_id = $proj AND embeddings.openai != NONE 
+        ORDER BY vec_score ASC LIMIT $limit
+    );
 };

@@ -208,16 +208,47 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                     println!("[DEBUG] -> {}: data={}", stringify!(#save_fn), data);
                     let mut data = data.clone();
                     if let Some(obj) = data.as_object_mut() {
-                        for key_ref in [#(#field_idents,)* "project_id", "volume_id", "arc_id", "parent_ref"].iter() {
-                            let key: &str = key_ref;
-                            if let Some(val) = obj.get(key) {
-                                if val.is_string() {
-                                    let s = val.as_str().unwrap();
-                                    let parts: Vec<&str> = s.splitn(2, ':').collect();
-                                    if parts.len() == 2 {
-                                        obj.insert(key.to_string(), serde_json::json!({ "tb": parts[0], "id": parts[1] }));
+                        // Helper to normalize a value to a record-reference STRING "table:id".
+                        // SurrealDB coerces "table:id" strings into record<...> automatically,
+                        // but it CANNOT coerce a JSON object {"tb","id"} into a record.
+                        // So: keep strings as-is, convert objects {"tb","id"} back to strings.
+                        let normalize_thing = |val: &serde_json::Value| -> serde_json::Value {
+                            match val {
+                                // Already a string reference -> keep unchanged
+                                serde_json::Value::String(s) => val.clone(),
+                                // Object {tb, id} -> convert to "tb:id" string
+                                serde_json::Value::Object(map) => {
+                                    let tb = map.get("tb").and_then(|v| v.as_str());
+                                    let id = map.get("id").and_then(|v| v.as_str());
+                                    match (tb, id) {
+                                        (Some(tb), Some(id)) => serde_json::json!(format!("{}:{}", tb, id)),
+                                        _ => val.clone(),
                                     }
                                 }
+                                // Anything else (null, number) -> keep unchanged
+                                _ => val.clone(),
+                            }
+                        };
+
+                        // Helper to normalize an array of record references
+                        let normalize_thing_array = |arr: &serde_json::Value| -> serde_json::Value {
+                            if let Some(items) = arr.as_array() {
+                                serde_json::json!(items.iter().map(normalize_thing).collect::<Vec<_>>())
+                            } else {
+                                arr.clone()
+                            }
+                        };
+
+                        for key_ref in [#(#field_idents,)* "project_id", "volume_id", "arc_id", "parent_ref", "participants"].iter() {
+                            let key: &str = key_ref;
+                            if let Some(val) = obj.get(key) {
+                                // Handle both single values and arrays
+                                let converted = if val.is_array() {
+                                    normalize_thing_array(val)
+                                } else {
+                                    normalize_thing(val)
+                                };
+                                obj.insert(key.to_string(), converted);
                             }
                         }
                     }

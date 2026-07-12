@@ -68,21 +68,22 @@ export const stringifyId = (val: unknown): string => {
         const inner = actualId as Record<string, unknown>;
         actualId = inner.String ?? inner.Int ?? inner.Uuid ?? JSON.stringify(actualId);
       }
-      return `${obj.tb}:${String(actualId).replace(/[\"⟨⟩]/g, '')}`.normalize('NFC').trim();
+      return `${obj.tb}:${String(actualId).replace(/["⟨⟩]/g, '')}`.normalize('NFC').trim();
     }
 
     // { String: "..." }
     if (obj.String) {
-      return String(obj.String).replace(/[\"⟨⟩]/g, '').normalize('NFC').trim();
+      return String(obj.String).replace(/["⟨⟩]/g, '').normalize('NFC').trim();
     }
   }
 
-  return String(val).replace(/[\"⟨⟩]/g, '').normalize('NFC').trim();
+  return String(val).replace(/["⟨⟩]/g, '').normalize('NFC').trim();
 };
 
 /**
  * Recursively walk an object/array and replace all "id"-like fields with
  * their normalised string form using stringifyId().
+ * Now also handles arrays of RecordId objects (e.g., participants field).
  */
 export const processIds = (data: unknown): any => {
   if (data === null || data === undefined) return data;
@@ -96,11 +97,21 @@ export const processIds = (data: unknown): any => {
     const result: Record<string, unknown> = {};
     for (const key of Object.keys(obj)) {
       const val = obj[key];
+
+      // Handle array of RecordId objects (e.g., participants field)
+      if (Array.isArray(val)) {
+        const arr = val as unknown[];
+        // Check if array items look like RecordId objects
+        if (arr.length > 0 && typeof arr[0] === 'object' && arr[0] !== null && ('tb' in (arr[0] as object) || 'String' in (arr[0] as object))) {
+          result[key] = arr.map(item => stringifyId(item));
+        } else {
+          result[key] = arr.map(item => processIds(item));
+        }
+      }
       // Normalise any key that looks like a SurrealDB RecordId object
-      if (
+      else if (
         val !== null &&
         typeof val === 'object' &&
-        !Array.isArray(val) &&
         ('tb' in (val as object) || 'String' in (val as object))
       ) {
         result[key] = stringifyId(val);

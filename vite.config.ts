@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'vue': 'vue/dist/vue.esm-browser.js',
+      'vue-i18n': resolve(__dirname, 'node_modules/vue-i18n/dist/vue-i18n.esm-browser.js'),
       '@': resolve(__dirname, 'src/js'),
       '@services': resolve(__dirname, 'src/js/services'),
       '@components': resolve(__dirname, 'src/js/components'),
@@ -19,6 +20,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
+    cssMinify: 'esbuild',
     rollupOptions: {
       input: {
         splash: resolve(__dirname, 'src/splash.html'),
@@ -33,7 +35,10 @@ export default defineConfig({
     port: 3000,
     host: '0.0.0.0',
     open: false,
-    strictPort: true
+    strictPort: true,
+    fs: {
+      allow: ['..']
+    }
   },
   logLevel: 'info',
   clearScreen: false

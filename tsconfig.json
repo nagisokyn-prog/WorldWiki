@@ -17,13 +17,13 @@
     "isolatedModules": true,
     "noEmit": true,
     "paths": {
-      "@/*": ["./src/js/*"],
-      "@services/*": ["./src/js/services/*"],
-      "@components/*": ["./src/js/components/*"],
-      "@utils/*": ["./src/js/utils/*"],
-      "@types/*": ["./src/js/types/*"]
+      "@/*": ["src/ts/*"],
+      "@services/*": ["src/ts/services/*"],
+      "@components/*": ["src/ts/components/*"],
+      "@utils/*": ["src/ts/utils/*"],
+      "@types/*": ["src/ts/types/*"]
     }
   },
-  "include": ["src/js/**/*.ts", "src/js/**/*.d.ts", "src/js/**/*.vue"],
-  "exclude": ["src/js/libs/**", "src/js/toastui/**", "node_modules", "dist"]
+  "include": ["src/ts/**/*.ts", "src/ts/**/*.d.ts", "src/ts/**/*.vue"],
+  "exclude": ["src/ts/libs/**", "src/ts/toastui/**", "node_modules", "dist"]
 }

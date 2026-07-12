@@ -30,6 +30,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
 
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     
+    let mut field_idents: Vec<proc_macro2::TokenStream> = Vec::new();
     let mut struct_fields = Vec::new();
 
     if let Data::Struct(data_struct) = &ast.data {
@@ -53,6 +54,8 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                     true
                 });
                 
+                let f_ident = field.ident.as_ref().unwrap();
+                field_idents.push(quote! { stringify!(#f_ident) });
                 struct_fields.push(quote! { #clean_field });
             }
         }
@@ -203,6 +206,21 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                     state: tauri::State<'_, crate::AppState>
                 ) -> Result<serde_json::Value, String> {
                     println!("[DEBUG] -> {}: data={}", stringify!(#save_fn), data);
+                    let mut data = data.clone();
+                    if let Some(obj) = data.as_object_mut() {
+                        for key_ref in [#(#field_idents,)* "project_id", "volume_id", "arc_id", "parent_ref"].iter() {
+                            let key: &str = key_ref;
+                            if let Some(val) = obj.get(key) {
+                                if val.is_string() {
+                                    let s = val.as_str().unwrap();
+                                    let parts: Vec<&str> = s.splitn(2, ':').collect();
+                                    if parts.len() == 2 {
+                                        obj.insert(key.to_string(), serde_json::json!({ "tb": parts[0], "id": parts[1] }));
+                                    }
+                                }
+                            }
+                        }
+                    }
                     let entity: #name = serde_json::from_value(data.clone()).map_err(|e| {
                         println!("[ERROR] {}: failed to parse data: {:?}", stringify!(#save_fn), e);
                         e.to_string()
@@ -244,7 +262,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
             #[serde(skip_serializing_if = "Option::is_none")]
             pub id: Option<String>,
             #[serde(skip_serializing_if = "Option::is_none")]
-            pub project_id: Option<String>,
+            pub project_id: Option<serde_json::Value>,
             #(#struct_fields,)*
         }
 

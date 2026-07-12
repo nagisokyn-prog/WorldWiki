@@ -1,0 +1,24 @@
+[package]
+name = "tauri-shell"
+version = "0.1.0"
+description = "tauri-surreal-kit shell template — domain-agnostic Tauri + SurrealDB bootstrap"
+authors = []
+edition = "2021"
+
+# [lib] intentionally removed — Tauri shell must compile as a binary only.
+# If you need to share logic, extract it to a separate crate in backend/
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri      = { version = "2", features = [] }
+serde      = { version = "1", features = ["derive"] }
+serde_json = "1"
+surrealdb  = { version = "3.0.4", features = ["kv-surrealkv"] }
+chrono     = { version = "0.4", features = ["serde"] }
+uuid       = { version = "1", features = ["v4"] }
+open       = "5.3"
+
+# Point to the local surreal_domain crate (adjust the path when using as a dependency)
+surreal_domain = { path = "../surreal_domain/surreal_domain_facade" }

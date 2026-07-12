@@ -1,0 +1,96 @@
+/* glass-animations.css - Анимации для glass UI */
+
+:root {
+    --anim-speed: 0.3s;
+    --anim-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --anim-entrance: 0.4s;
+    --anim-breathe: 3s;
+    --scale-push: 0.98;
+    --scale-pull: 1.05;
+}
+
+.interactive-el {
+    transition: all var(--anim-speed) var(--anim-ease);
+    transform-origin: center center;
+    position: relative;
+    z-index: 10;
+    will-change: transform;
+}
+
+.interactive-el:hover {
+    transform: scale(var(--scale-pull));
+    z-index: 20;
+}
+
+.interactive-el:active {
+    transform: scale(var(--scale-push));
+}
+
+.breathe {
+    animation: breathe var(--anim-breathe) ease-in-out infinite;
+}
+
+.breathe-slow {
+    animation: breathe calc(var(--anim-breathe) * 1.5) ease-in-out infinite;
+}
+
+.breathe-fast {
+    animation: breathe calc(var(--anim-breathe) * 0.7) ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.02); opacity: 0.95; }
+}
+
+.entrance-fade {
+    animation: entranceFade var(--anim-entrance) var(--anim-ease forwards);
+}
+
+.entrance-slide-up {
+    animation: entranceSlideUp var(--anim-entrance) var(--anim-ease forwards);
+}
+
+.entrance-scale {
+    animation: entranceScale var(--anim-entrance) var(--anim-ease forwards);
+}
+
+@keyframes entranceFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes entranceSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes entranceScale {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.ripple-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: rippleEffect 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes rippleEffect {
+    to { transform: scale(4); opacity: 0; }
+}
+
+.hidden { display: none !important; }
+.text-center { text-align: center; }
+.mt-10 { margin-top: 10px; }
+.mb-10 { margin-bottom: 10px; }
+.mt-20 { margin-top: 20px; }
+.mb-20 { margin-bottom: 20px; }

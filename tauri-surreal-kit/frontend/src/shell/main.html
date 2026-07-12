@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tauri Surreal Kit</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0f;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 20px 32px;
+            border-bottom: 1px solid #1e1e2e;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 16px; color: white;
+        }
+
+        header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            margin-left: auto;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            color: #c4b5fd;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .hero {
+            text-align: center;
+            max-width: 760px;
+        }
+
+        .hero h2 {
+            font-size: clamp(2.5rem, 4vw, 3.6rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, #c4b5fd, #67e8f9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 16px;
+            color: #94a3b8;
+            line-height: 1.7;
+            margin-bottom: 32px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        .card {
+            background: rgba(15, 15, 24, 0.94);
+            border: 1px solid #1f2937;
+            border-radius: 18px;
+            padding: 22px 18px;
+            text-align: left;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            border-color: rgba(139, 92, 246, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 60px rgba(14, 12, 30, 0.18);
+        }
+
+        .card-icon {
+            font-size: 24px;
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 12px;
+            border-radius: 14px;
+            background: rgba(139, 92, 246, 0.12);
+        }
+        .card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+        .card p  { font-size: 13px; color: #cbd5e1; line-height: 1.6; }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: linear-gradient(135deg, #8b5cf6, #06b6d4); color: white; box-shadow: 0 18px 42px rgba(15, 23, 42, 0.22); }
+        .btn-secondary { background: rgba(255,255,255,0.05); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.18); }
+        .btn-accent { background: rgba(59, 130, 246, 0.16); color: #bfdbfe; border: 1px solid rgba(59, 130, 246, 0.24); }
+
+        .status-card {
+            max-width: 900px;
+            margin: 0 auto 28px;
+            background: rgba(6, 8, 18, 0.92);
+            border: 1px solid #1f2937;
+            border-radius: 20px;
+            padding: 22px 24px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: center;
+        }
+        .status-item { text-align: left; }
+        .status-label { display: block; margin-bottom: 8px; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: #94a3b8; }
+        .status-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 16px; border-radius: 999px; background: rgba(255,255,255,0.05); color: #e2e8f0; font-weight: 700; font-size: 13px; }
+        .status-highlight { color: #4ade80; }
+        .status-warning { color: #facc15; }
+        .status-error { color: #fb7185; }
+        .status-accent { color: #60a5fa; }
+
+        .feature-list {
+            margin-top: 24px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .feature-list li {
+            position: relative;
+            padding-left: 18px;
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .feature-list li::before { content: '•'; position: absolute; left: 0; top: 0; color: #8b5cf6; }
+
+        .footer-note {
+            margin-top: 26px;
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.75;
+            max-width: 780px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (max-width: 880px) {
+            .cards, .feature-list, .status-card { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">S</div>
+        <h1 id="appTitle">Tauri Surreal Kit</h1>
+        <span class="badge" id="shellDemoBadge" data-i18n="shell.common.shellDemo">Shell Demo</span>
+    </header>
+
+    <main>
+        <div class="hero">
+            <h2 data-i18n="shell.main.heroTitle">Ready-made Tauri + SurrealDB shell</h2>
+            <p data-i18n="shell.main.heroDescription">This page demonstrates the power of `tauri-surreal-kit`: backend integration, UI shell, generic services and ready-made components for editors, trees, quick commands and history.</p>
+
+            <div class="cards">
+                <div class="card">
+                    <span class="card-icon">🦀</span>
+                    <h3 data-i18n="shell.main.card.backendTitle">Backend & SurrealDB</h3>
+                    <p data-i18n="shell.main.card.backendDesc">Full Tauri + SurrealDB backend with `entity_commands!` for automatic CRUD generation.</p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">🎛️</span>
+                    <h3 data-i18n="shell.main.card.shellTitle">Shell UI</h3>
+                    <p data-i18n="shell.main.card.shellDesc">Split panes, draggable tabs, hotkeys and layout persistence via `useShellApp`.</p>
+                </div>
+                <div class="card">
+                    <span class="card-icon">📦</span>
+                    <h3 data-i18n="shell.main.card.componentsTitle">Ready-made components</h3>
+                    <p data-i18n="shell.main.card.componentsDesc">CommandPalette, QuickOpen, ExplorerTree, WorkspaceLayout and HistorySidebar out of the box.</p>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" id="settingsBtn" data-i18n="shell.main.actions.settings" onclick="openSettings()">⚙️ Settings</button>
+                <button class="btn btn-secondary" id="fullscreenBtn" data-i18n="shell.main.actions.fullscreen" onclick="toggleFullscreen()">🖥️ Fullscreen</button>
+                <button class="btn btn-accent" id="benchmarkBtn" data-i18n="shell.main.actions.benchmark" onclick="runBenchmark()">⚡ Benchmark</button>
+                <button class="btn btn-secondary" id="docsBtn" data-i18n="shell.main.actions.docs" onclick="openDocs()">📖 Docs</button>
+            </div>
+
+            <div class="status-card">
+                <div class="status-item">
+                    <span class="status-label" data-i18n="shell.main.status.tauriApi">Tauri API</span>
+                    <span id="tauriStatus" class="status-pill" data-i18n="shell.main.status.loading">loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label" data-i18n="shell.main.status.backendCheck">Backend check</span>
+                    <span id="backendStatus" class="status-pill" data-i18n="shell.main.status.checking">checking…</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label" data-i18n="shell.main.status.lastPerf">Last perf</span>
+                    <span id="featureStatus" class="status-pill" data-i18n="shell.main.status.notSet">not set</span>
+                </div>
+            </div>
+
+            <ul class="feature-list">
+                <li data-i18n="shell.main.features.item1">CRUD via `entity_commands!`</li>
+                <li data-i18n="shell.main.features.item2">CommandPalette and QuickOpen</li>
+                <li data-i18n="shell.main.features.item3">ExplorerTree and WorkspaceLayout</li>
+                <li data-i18n="shell.main.features.item4">HistorySidebar and entity history</li>
+                <li data-i18n="shell.main.features.item5">EntityService for arbitrary models</li>
+                <li data-i18n="shell.main.features.item6">Themes, settings and localStorage via `__APP_CONFIG__`</li>
+            </ul>
+
+            <p class="footer-note" data-i18n="shell.main.footerNote">Use this page as a starter shell demo. It is already connected to Tauri system commands and shows the framework’s main capabilities.</p>
+        </div>
+    </main>
+
+    <script src="./shell-i18n.js"></script>
+    <script>
+        const cfg = window.__APP_CONFIG__ || {};
+        shellI18n.init(cfg.lang || cfg.locale);
+        const appName = cfg.name || shellI18n.t('shell.common.appName');
+        document.title = shellI18n.t('shell.main.pageTitle', { appName });
+        document.getElementById('appTitle').textContent = appName;
+
+        var isTauri = typeof window !== 'undefined' && !!window.__TAURI__?.core;
+
+        function openSettings() {
+            window.location.href = 'settings.html';
+        }
+
+        function openDocs() {
+            const url = 'https://github.com/nagisokyn-prog/tauri-surreal-kit';
+            if (window.open) {
+                window.open(url, '_blank');
+                return;
+            }
+            alert(shellI18n.t('shell.main.openDocsAlert', { url }));
+        }
+
+        async function invokeCommand(name, args = {}) {
+            if (!isTauri) {
+                console.warn('Tauri API unavailable:', name);
+                return null;
+            }
+            try {
+                return await window.__TAURI__.core.invoke(name, args);
+            } catch (error) {
+                console.error(`Invoke failed: ${name}`, error);
+                return null;
+            }
+        }
+
+        async function toggleFullscreen() {
+            const result = await invokeCommand('toggle_fullscreen');
+            if (result === null) {
+                alert(shellI18n.t('shell.main.fullscreenError'));
+            }
+        }
+
+        async function runBenchmark() {
+            const result = await invokeCommand('run_performance_benchmark');
+            const statusNode = document.getElementById('backendStatus');
+            const featureNode = document.getElementById('featureStatus');
+            if (!result) {
+                statusNode.textContent = shellI18n.t('shell.main.benchmarkFailed');
+                statusNode.className = 'status-pill status-error';
+                featureNode.textContent = shellI18n.t('shell.main.runFailed');
+                featureNode.className = 'status-pill status-error';
+                return;
+            }
+            statusNode.textContent = shellI18n.t('shell.main.cpuRamCores', {
+              cpu: result.cpu_score,
+              ram: result.memory_mb,
+              cores: result.cores,
+            });
+            statusNode.className = 'status-pill status-highlight';
+            featureNode.textContent = shellI18n.t('shell.main.perfLevel', { level: result.level });
+            featureNode.className = 'status-pill status-accent';
+        }
+
+        async function checkBackend() {
+            const tauriNode = document.getElementById('tauriStatus');
+            const backendNode = document.getElementById('backendStatus');
+            const featureNode = document.getElementById('featureStatus');
+
+            if (!isTauri) {
+                tauriNode.textContent = shellI18n.t('shell.main.status.offline');
+                tauriNode.className = 'status-pill status-error';
+                backendNode.textContent = shellI18n.t('shell.main.status.browserMode');
+                backendNode.className = 'status-pill status-warning';
+                featureNode.textContent = shellI18n.t('shell.main.status.noNativeCommands');
+                featureNode.className = 'status-pill status-warning';
+                return;
+            }
+
+            tauriNode.textContent = shellI18n.t('shell.main.status.available');
+            tauriNode.className = 'status-pill status-highlight';
+
+            const settings = await invokeCommand('load_settings');
+            if (settings !== null) {
+                backendNode.textContent = shellI18n.t('shell.main.status.settingsLoaded');
+                backendNode.className = 'status-pill status-highlight';
+            } else {
+                backendNode.textContent = shellI18n.t('shell.main.status.backendReachable');
+                backendNode.className = 'status-pill status-accent';
+            }
+
+            const perfLevel = cfg.id ? localStorage.getItem(`${cfg.id}:perf:level`) : null;
+            if (perfLevel) {
+                featureNode.textContent = shellI18n.t('shell.main.status.cachedPerf', { level: perfLevel });
+                featureNode.className = 'status-pill status-accent';
+            } else {
+                featureNode.textContent = shellI18n.t('shell.main.status.shellReady');
+                featureNode.className = 'status-pill status-accent';
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkBackend();
+        });
+    </script>
+</body>
+</html>

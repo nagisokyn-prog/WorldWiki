@@ -1,0 +1,103 @@
+{
+  "animations": {
+    "ease": "cubic-bezier(0.2,0.8,0.2,1)",
+    "enabled": true,
+    "entrance": 0.4,
+    "pulse": true,
+    "scalePull": 1.05,
+    "scalePush": 0.98,
+    "speed": 0.3
+  },
+  "buttons": {
+    "clickPress": true,
+    "hoverScale": true
+  },
+  "cards": {
+    "compactList": false,
+    "showIcons": true
+  },
+  "colors": {
+    "accent": "#8b5cf6",
+    "accentActive": "#6d28d9",
+    "accentDisabled": "#4c1d95",
+    "accentGlow": "rgba(139,92,246,0.3)",
+    "accentHover": "#7c3aed",
+    "bgBase": "#141414",
+    "bgInput": "rgba(22,22,26,0.6)",
+    "bgPanel": "rgba(15,15,18,0.7)",
+    "bgSecondary": "#121214",
+    "borderActive": "rgba(139,92,246,0.5)",
+    "borderColor": "rgba(255,255,255,0.1)",
+    "shadowColor": "rgba(0,0,0,0.5)",
+    "textHeading": "#ffffff",
+    "textMain": "#ffffff",
+    "textMuted": "rgba(255,255,255,0.65)"
+  },
+  "dropdowns": {
+    "use3DWheel": true,
+    "wheelOrientation": "vertical"
+  },
+  "editor": {
+    "requireCtrlForLinks": false,
+    "showWordCount": true
+  },
+  "fonts": {
+    "family": "Inter",
+    "letterSpacing": 0,
+    "lineHeight": 1.5,
+    "size": 14,
+    "weight": 400,
+    "weightBold": 600
+  },
+  "glass": {
+    "blur": 24,
+    "borderAlpha": 0.1,
+    "cardAlpha": 0.03,
+    "highlight": "rgba(255,255,255,0.08)",
+    "islandAlpha": 0.45
+  },
+  "inputs": {
+    "focusAnim": true,
+    "style": "outline"
+  },
+  "layout": {
+    "columns": 2,
+    "focusMode": false,
+    "sidebarPos": "row",
+    "tabPos": "row"
+  },
+  "locale": "ru",
+  "notifications": {
+    "duration": 3000,
+    "position": "bottom-right"
+  },
+  "perf": {
+    "fpsLimit": 60,
+    "level": "auto",
+    "loadMeter": 0
+  },
+  "radii": {
+    "btn": 40,
+    "card": 20,
+    "dropdown": 16,
+    "input": 16,
+    "island": 28
+  },
+  "shadows": {
+    "islandBlur": 35,
+    "islandY": 20,
+    "useInset": false
+  },
+  "spacing": {
+    "activityBarWidth": 60,
+    "density": 1,
+    "gap": 16,
+    "panelHeight": 250,
+    "sidebarWidth": 280,
+    "toolbarHeight": 48
+  },
+  "tabs": {
+    "pos": "row"
+  },
+  "theme": "theme-123"
+}

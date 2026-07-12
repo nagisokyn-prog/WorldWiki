@@ -1,0 +1,1515 @@
+/**
+ * @file new-ui-theme.css
+ * @description Дизайн из new_ui/index.html — VSCode-подобный интерфейс с glassmorphism
+ * Применяется к существующим страницам: ui_menu, ui_editor, chapters
+ */
+
+/* ==========================================================================
+   CSS VARIABLES (применяются из settings.service.ts)
+   ========================================================================== */
+:root {
+    /* 1. Цветовая схема */
+    --bg-base: #09090b;
+    --bg-secondary: #121214;
+    --bg-panel: rgba(15, 15, 18, 0.7);
+    --bg-input: rgba(22, 22, 26, 0.6);
+    --text-main: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.65);
+    --text-heading: #ffffff;
+    --accent: #8b5cf6;
+    --accent-hover: #7c3aed;
+    --accent-active: #6d28d9;
+    --accent-disabled: #4c1d95;
+    --accent-glow: rgba(139, 92, 246, 0.3);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --border-active: rgba(139, 92, 246, 0.5);
+    --shadow-color: rgba(0, 0, 0, 0.5);
+
+    /* 2. Прозрачность и стекло */
+    --glass-island-alpha: 0.45;
+    --glass-card-alpha: 0.03;
+    --glass-blur: 24px;
+    --glass-border-alpha: 0.1;
+    --glass-highlight: rgba(255, 255, 255, 0.08);
+    --glass-bg: rgba(20, 20, 25, var(--glass-island-alpha));
+    --glass-card: rgba(255, 255, 255, var(--glass-card-alpha));
+
+    /* 3. Скругления */
+    --radius-island: 28px;
+    --radius-card: 20px;
+    --radius-btn: 40px;
+    --radius-input: 16px;
+    --radius-dropdown: 16px;
+    --radius-sm: 8px;
+
+    /* 4. Тени и объем */
+    --shadow-island-y: 20px;
+    --shadow-island-blur: 35px;
+    --shadow-card-hover: 0 25px 40px -12px var(--shadow-color);
+    --shadow-btn: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-dropdown: 0 25px 50px rgba(0, 0, 0, 0.8);
+    --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-glow: 0 0 20px var(--accent-glow);
+
+    /* 5. Анимации */
+    --anim-speed: 0.3s;
+    --anim-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --anim-entrance: 0.4s;
+    --scale-push: 0.98;
+    --scale-pull: 1.05;
+
+    /* 6. Шрифты */
+    --font-family: 'Inter', system-ui, sans-serif;
+    --font-mono: 'Fira Code', monospace;
+    --font-size-base: 14px;
+    --font-weight-base: 400;
+    --font-weight-bold: 600;
+    --line-height-base: 1.5;
+    --letter-spacing-base: 0px;
+
+    /* 7. Отступы и плотность */
+    --density-mult: 1;
+    --pad-card: calc(24px * var(--density-mult));
+    --gap-elements: calc(16px * var(--density-mult));
+    --sidebar-width: 280px;
+    --panel-height: 250px;
+    --activity-bar-width: 60px;
+    --toolbar-height: 48px;
+
+    /* 8. Компоновка */
+    --layout-columns: 2;
+    
+    /* Utils */
+    --sidebar-pos: row;
+    --tab-pos: row;
+}
+
+/* ==========================================================================
+   RESET & BASE
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--bg-base);
+    font-family: var(--font-family);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-base);
+    line-height: var(--line-height-base);
+    letter-spacing: var(--letter-spacing-base);
+    color: var(--text-main);
+    overflow: hidden;
+    transition: background var(--anim-speed) var(--anim-ease), 
+                color var(--anim-speed) var(--anim-ease);
+}
+
+/* Фоновые сферы */
+.bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    background: var(--accent);
+    filter: blur(150px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+    transition: all var(--anim-speed) var(--anim-ease);
+}
+.bg-glow.top-left {
+    top: -25%;
+    left: -25%;
+    width: 80vw;
+    height: 80vw;
+}
+.bg-glow.bottom-right {
+    bottom: -25%;
+    right: -25%;
+    width: 90vw;
+    height: 90vw;
+}
+
+/* Скроллбары */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: var(--radius-btn);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* ==========================================================================
+   MAIN LAYOUT — Activity Bar + Sidebar + Content
+   ========================================================================== */
+.app-container-new {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+}
+
+.app-main-new {
+    display: flex;
+    flex-direction: var(--sidebar-pos);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Activity Bar */
+.activity-bar {
+    width: var(--activity-bar-width);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(20px * var(--density-mult)) 0;
+    gap: calc(12px * var(--density-mult));
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border-right: 1px solid var(--border-color);
+    z-index: 100;
+    transition: width var(--anim-speed);
+}
+
+.activity-icon {
+    width: calc(var(--activity-bar-width) * 0.7);
+    height: calc(var(--activity-bar-width) * 0.7);
+    border-radius: var(--radius-btn);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--anim-speed) var(--anim-ease);
+    position: relative;
+}
+
+.activity-icon:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(var(--scale-pull));
+}
+
+.activity-icon.active {
+    color: var(--text-main);
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.activity-badge {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 2px solid var(--bg-base);
+}
+
+/* Sidebar */
+.sidebar-new {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background: var(--bg-panel);
+    backdrop-filter: blur(var(--glass-blur));
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* НЕТ transition: width — иначе перетаскивание лагает */
+    position: relative;
+}
+
+/* ── Resize handles ─────────────────────────────────── */
+
+/* Левый сайдбар — тянуть вправо/влево */
+.sidebar-resize-handle {
+    width: 4px;
+    flex-shrink: 0;
+    cursor: ew-resize;
+    background: transparent;
+    position: relative;
+    z-index: 200;
+    transition: background 0.15s;
+}
+.sidebar-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 40px;
+    border-radius: 2px;
+    background: rgba(139,92,246,0);
+    transition: background 0.15s, height 0.15s;
+}
+.sidebar-resize-handle:hover { background: rgba(139,92,246,0.08); }
+.sidebar-resize-handle:hover::after { background: rgba(139,92,246,0.6); height: 60px; }
+.sidebar-resize-handle:active { background: rgba(139,92,246,0.15); }
+
+/* Нижняя панель — тянуть вверх/вниз */
+.terminal-resize-handle {
+    height: 4px;
+    cursor: ns-resize;
+    background: transparent;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.15s;
+}
+.terminal-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 2px;
+    width: 40px;
+    border-radius: 2px;
+    background: rgba(139,92,246,0);
+    transition: background 0.15s, width 0.15s;
+}
+.terminal-resize-handle:hover { background: rgba(139,92,246,0.08); }
+.terminal-resize-handle:hover::after { background: rgba(139,92,246,0.6); width: 60px; }
+.terminal-resize-handle:active { background: rgba(139,92,246,0.15); }
+
+.sidebar-header {
+    padding: calc(16px * var(--density-mult));
+    border-bottom: 1px solid var(--border-color);
+    font-weight: var(--font-weight-bold);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-search {
+    padding: calc(12px * var(--density-mult)) calc(16px * var(--density-mult));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-search input {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-input);
+    color: var(--text-main);
+    font-size: 13px;
+    outline: none;
+    transition: all var(--anim-speed);
+}
+
+.sidebar-search input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.sidebar-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: calc(8px * var(--density-mult));
+}
+
+.sidebar-item {
+    padding: calc(10px * var(--density-mult)) calc(12px * var(--density-mult));
+    margin-bottom: 4px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--anim-speed);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    border-left: 2px solid transparent;
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-item.active {
+    background: var(--accent-glow);
+    border-left-color: var(--accent);
+    color: var(--text-main);
+}
+
+/* Content Area */
+.content-area-new {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   EDITOR GROUPS — VS Code-style multi-column split editors
+   ========================================================================== */
+
+/* Горизонтальный контейнер для всех групп */
+.editor-groups-container {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Одна группа (колонка редактора) */
+.editor-group {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+    /* flex-basis задаётся динамически через :style */
+    flex-shrink: 0;
+    flex-grow: 0;
+    position: relative;
+}
+
+/* Body группы (всё кроме таббара) */
+.editor-group-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* Подсветка активной группы тонкой рамкой */
+.editor-group.is-active-group > .editor-tab-bar {
+    box-shadow: inset 0 -1px 0 var(--accent, #8b5cf6);
+}
+
+/* Ресайзер между группами */
+.group-resize-handle {
+    width: 4px;
+    flex-shrink: 0;
+    cursor: ew-resize;
+    background: transparent;
+    position: relative;
+    z-index: 200;
+    transition: background 0.15s;
+}
+.group-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 52px;
+    border-radius: 2px;
+    background: rgba(139, 92, 246, 0);
+    transition: background 0.15s, height 0.15s;
+}
+.group-resize-handle:hover { background: rgba(139, 92, 246, 0.08); }
+.group-resize-handle:hover::after { background: rgba(139, 92, 246, 0.7); height: 80px; }
+.group-resize-handle:active { background: rgba(139, 92, 246, 0.18); }
+
+/* ==========================================================================
+   SPLIT VIEW (legacy — kept for backwards compat)
+   ========================================================================== */
+
+.split-layout-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    min-height: 0;
+    overflow: hidden;
+    --split-left-width: 50%;
+}
+
+/* В нормальном режиме левая панель занимает 100% */
+.split-pane-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    transition: flex 0s; /* без анимации — перетаскивание */
+}
+
+/* В сплит-режиме левая панель занимает --split-left-width */
+.split-layout-wrapper.is-split .split-pane-left {
+    flex: none;
+    width: var(--split-left-width);
+    min-width: 20%;
+    max-width: 80%;
+}
+
+/* Ресайзер между панелями */
+.split-resize-handle {
+    width: 4px;
+    flex-shrink: 0;
+    cursor: ew-resize;
+    background: transparent;
+    position: relative;
+    z-index: 200;
+    transition: background 0.15s;
+}
+.split-resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 48px;
+    border-radius: 2px;
+    background: rgba(139, 92, 246, 0);
+    transition: background 0.15s, height 0.15s;
+}
+.split-resize-handle:hover { background: rgba(139, 92, 246, 0.08); }
+.split-resize-handle:hover::after { background: rgba(139, 92, 246, 0.7); height: 72px; }
+.split-resize-handle:active { background: rgba(139, 92, 246, 0.18); }
+
+/* Правая панель сплита */
+.split-pane-right {
+    flex: 1;
+    min-width: 20%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Хедер правой панели */
+.split-right-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px 0 4px;
+    min-height: 40px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.split-tab-selector {
+    flex: 1;
+    min-width: 0;
+}
+
+.split-select {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-main);
+    font-size: 12px;
+    padding: 4px 8px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+.split-select:focus { border-color: var(--accent); }
+
+.split-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: color 0.2s, background 0.2s;
+    flex-shrink: 0;
+}
+.split-close-btn:hover { color: #ff5555; background: rgba(255, 85, 85, 0.1); }
+
+/* Кнопка активации сплита в таббаре */
+.split-toggle-btn:hover { color: var(--accent) !important; }
+
+/* Контент правой панели */
+.split-pane-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ==========================================================================
+   UI COMPONENTS (Buttons, Inputs, Cards)
+   ========================================================================== */
+
+/* Interactive Elements (Push/Pull) */
+
+.interactive-el {
+    transition: all var(--anim-speed) var(--anim-ease);
+    transform-origin: center center;
+    position: relative;
+    z-index: 10;
+}
+
+.interactive-el:hover {
+    transform: scale(var(--scale-pull));
+    z-index: 20;
+}
+
+.interactive-el:active {
+    transform: scale(var(--scale-push));
+}
+
+/* Glass Cards */
+.glass-card-container {
+    position: relative;
+    z-index: 1;
+    border-radius: var(--radius-card);
+}
+
+.glass-card-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--glass-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-island-y) rgba(0,0,0,0.2);
+    z-index: -1;
+    pointer-events: none;
+    transition: all var(--anim-speed) var(--anim-ease);
+    transform-origin: center center;
+}
+
+.glass-card-container:hover .glass-card-bg {
+    background: rgba(255, 255, 255, calc(var(--glass-card-alpha) + 0.02));
+    border-color: rgba(255, 255, 255, calc(var(--glass-border-alpha) + 0.1));
+    box-shadow: var(--shadow-card-hover);
+}
+
+.glass-card-container.is-pushed .glass-card-bg {
+    transform: scale(var(--scale-push));
+    box-shadow: var(--shadow-inset);
+    border-color: var(--accent);
+}
+
+.glass-card-content {
+    position: relative;
+    padding: var(--pad-card);
+    z-index: 2;
+}
+
+/* Typography */
+.card-title {
+    font-size: calc(var(--font-size-base) * 1.5);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 20px 0;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-label {
+    display: block;
+    font-size: calc(var(--font-size-base) * 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    padding-left: 4px;
+}
+
+/* Inputs */
+.input-base {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-input);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: var(--font-size-base);
+    transition: all var(--anim-speed);
+}
+
+.input-base:focus {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    outline: none;
+    transform: scale(1) !important;
+}
+
+textarea.input-base {
+    resize: vertical;
+    min-height: 120px;
+    border-radius: var(--radius-card);
+    line-height: 1.6;
+}
+
+/* Buttons */
+.btn-new {
+    padding: 10px 20px;
+    background: var(--accent);
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: var(--font-weight-bold);
+    transition: all var(--anim-speed);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-new:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-outline-new {
+    background: transparent;
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+.btn-outline-new:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Grid */
+.grid-dynamic {
+    display: grid;
+    grid-template-columns: repeat(var(--layout-columns), 1fr);
+    gap: var(--gap-elements);
+}
+
+.form-group {
+    margin-bottom: var(--gap-elements);
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Focus Mode */
+body.focus-mode .sidebar-universal,
+body.focus-mode .activity-bar,
+body.focus-mode .sidebar-resize-handle {
+    display: none !important;
+}
+
+body.focus-mode .app-main-new {
+    padding: 0;
+}
+
+
+/* ==========================================================================
+   TABS
+   ========================================================================== */
+.editor-tabs-new {
+    display: flex;
+    flex-direction: var(--tab-pos);
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    overflow: auto;
+    padding: 0 8px;
+    min-height: 40px;
+}
+
+.editor-tabs-new[style*="column"] {
+    width: 200px;
+    border-bottom: none;
+    border-right: 1px solid var(--border-color);
+    flex-direction: column;
+}
+
+
+.editor-tab-new {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border-right: 1px solid var(--border-color);
+    border-top: 2px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all var(--anim-speed);
+    white-space: nowrap;
+    color: var(--text-muted);
+}
+
+.editor-tab-new:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.editor-tab-new.active {
+    background: var(--bg-base);
+    border-top-color: var(--accent);
+    color: var(--text-main);
+}
+
+.tab-close {
+    margin-left: 8px;
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all var(--anim-speed);
+}
+
+.tab-close:hover {
+    opacity: 1;
+    color: #ff5555;
+}
+
+/* ==========================================================================
+   BOTTOM PANEL
+   ========================================================================== */
+.panel-new {
+    height: var(--panel-height);
+    background: var(--bg-panel);
+    backdrop-filter: blur(var(--glass-blur));
+    border-top: 1px solid var(--border-color);
+    display: flex;  
+    flex-direction: column;
+    transition: height var(--anim-speed);
+    z-index: 50;
+}
+
+body.resizing .panel-new,
+body.resizing .sidebar-new,
+body.resizing .chapter-right-panel {
+    transition: none !important;
+}
+
+.panel-collapsed {
+    height: 36px;
+}
+
+.panel-header-new {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    gap: 16px;
+    min-height: 36px;
+}
+
+.panel-tab-new {
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    transition: all var(--anim-speed);
+}
+
+.panel-tab-new:hover {
+    color: var(--text-main);
+}
+
+.panel-tab-new.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+}
+
+.panel-content-new {
+    flex: 1;
+    overflow: auto;
+    padding: 16px;
+    font-size: 13px;
+}
+
+/* Console */
+.console-line {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-bottom: 4px;
+    color: #aaa;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    padding-bottom: 4px;
+}
+
+.console-line.success { color: #55ff55; }
+.console-line.info { color: #5555ff; }
+.console-line.warn { color: #ffaa00; }
+.console-line.error { color: #ff5555; }
+
+.console-time {
+    color: var(--text-muted);
+    margin-right: 8px;
+}
+
+/* ==========================================================================
+   TOASTS
+   ========================================================================== */
+.toast-container-new {
+    position: fixed;
+    bottom: 40px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 10000;
+    pointer-events: none;
+}
+
+.toast-new {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-card);
+    padding: 16px 24px;
+    color: var(--text-main);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    pointer-events: auto;
+    min-width: 300px;
+    transition: all 0.3s var(--anim-ease);
+}
+
+/* Позиционирование контейнера */
+.toast-container-new.top-left { top: 24px; left: 24px; bottom: auto; right: auto; flex-direction: column; }
+.toast-container-new.top-right { top: 24px; right: 24px; bottom: auto; left: auto; flex-direction: column; }
+.toast-container-new.bottom-left { bottom: 24px; left: 24px; top: auto; right: auto; flex-direction: column-reverse; }
+.toast-container-new.bottom-right { bottom: 24px; right: 24px; top: auto; left: auto; flex-direction: column-reverse; }
+
+.toast-new i.fa-check-circle { color: #4ade80; }
+.toast-new i.fa-exclamation-triangle { color: #fbbf24; }
+.toast-new i.fa-times-circle { color: #f87171; }
+.toast-new i.fa-info-circle { color: #60a5fa; }
+
+/* ==========================================================================
+   COMMAND PALETTE
+   ========================================================================== */
+.command-palette-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.command-palette-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.command-palette {
+    position: fixed;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%) scale(0.96);
+    width: 640px;
+    max-width: 90vw;
+    background: rgba(20, 20, 25, 0.98);
+    backdrop-filter: blur(30px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.command-palette.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1);
+}
+
+.command-palette input {
+    width: 100%;
+    padding: 18px 24px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+    font-size: 18px;
+    outline: none;
+}
+
+.command-results {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.command-item {
+    padding: 12px 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.15s;
+    font-size: 14px;
+    border-left: 3px solid transparent;
+}
+
+.command-item:hover, .command-item.selected {
+    background: rgba(139, 92, 246, 0.15);
+    border-left-color: var(--accent);
+}
+
+/* ==========================================================================
+   ANIMATIONS
+   ========================================================================== */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity var(--anim-speed), transform var(--anim-speed);
+}
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+@keyframes tagIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ==========================================================================
+   ADAPTATIONS FOR EXISTING PAGES
+   ========================================================================== */
+
+/* ui_menu.html адаптация */
+.app-header {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border-bottom: 1px solid var(--border-color);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: var(--text-main);
+}
+
+.header-content i {
+    color: var(--accent);
+}
+
+.app-title {
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+}
+
+/* Список сущностей */
+.list-page-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.list-control-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.panel-header h2 {
+    font-size: 14px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.list-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.list-item {
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--anim-speed);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 2px solid transparent;
+}
+
+.list-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--accent);
+}
+
+.list-item.active {
+    background: var(--accent-glow);
+    border-left-color: var(--accent);
+}
+
+.list-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.list-item-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent-glow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.list-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.list-item-details {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.list-item-actions {
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity var(--anim-speed);
+}
+
+.list-item:hover .list-item-actions {
+    opacity: 1;
+}
+
+/* Кнопки */
+.btn {
+    padding: 8px 16px;
+    background: var(--accent);
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: var(--font-weight-bold);
+    transition: all var(--anim-speed);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.4);
+}
+
+.btn-primary {
+    background: var(--accent);
+}
+
+.create-btn {
+    padding: 8px 16px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-btn);
+    color: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: var(--font-weight-bold);
+    transition: all var(--anim-speed);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.create-btn:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-glow);
+}
+
+/* Пустое состояние */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.empty-state .empty-icon {
+    font-size: 48px;
+    opacity: 0.3;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+/* ui_editor.html адаптация */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-left h1 {
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-main);
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.editor-nav {
+    display: flex;
+    gap: 4px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.nav-tab {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--anim-speed);
+    white-space: nowrap;
+}
+
+.nav-tab:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.nav-tab.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+}
+
+.editor-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--pad-card);
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.status-left, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* chapters.html адаптация */
+.chapters-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.chapters-list-panel {
+    display: none;
+}
+
+.chapters-header {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chapters-header h2 {
+    font-size: 14px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chapters-scroll-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.chapter-item {
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--anim-speed);
+    border-left: 2px solid transparent;
+}
+
+.chapter-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--accent);
+}
+
+.chapter-item.active {
+    background: var(--accent-glow);
+    border-left-color: var(--accent);
+}
+
+.chapter-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.chapter-item-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.word-editor-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.editor-controls {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.title-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-input);
+    color: var(--text-main);
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    transition: all var(--anim-speed);
+}
+
+.title-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.editor-mode-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.mode-btn {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all var(--anim-speed);
+}
+
+.mode-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.mode-btn.active {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.toastui-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Toast UI Overrides */
+.toastui-editor-defaultUI { border: none !important; background: transparent !important; }
+.toastui-editor-defaultUI-toolbar { display: none !important; }
+.toastui-editor-md-container, .toastui-editor-ww-container { background: transparent !important; }
+.toastui-editor-contents { font-family: var(--font-family) !important; font-size: 16px !important; line-height: 1.8 !important; color: var(--text-main) !important; }
+.toastui-editor-contents p { margin: 0.8em 0; }
+.toastui-editor-contents h1, .toastui-editor-contents h2, .toastui-editor-contents h3 { color: var(--text-heading) !important; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
+.toastui-editor-contents blockquote { border-left: 4px solid var(--accent); background: var(--bg-input); padding: 12px 16px; margin: 1em 0; border-radius: 0 8px 8px 0; }
+
+/* Модальные окна */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-content h3 {
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-main);
+    margin-bottom: 16px;
+}
+
+.modal-content p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+/* Утилиты */
+.hidden { display: none !important; }
+.flex-1 { flex: 1; }
+.gap-sm { gap: 8px; }
+.gap-md { gap: 16px; }
+.text-muted { color: var(--text-muted); }
+.text-accent { color: var(--accent); }
+.font-bold { font-weight: var(--font-weight-bold); }

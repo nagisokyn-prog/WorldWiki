@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+      tauri-surreal-kit / splash.html
+      Customize via window.__APP_CONFIG__ before this file loads:
+
+        window.__APP_CONFIG__ = {
+          id:        'my-app',          // localStorage key prefix
+          name:      'My App',          // shown as title
+          subtitle:  'Loading world...', // shown under ASCII art
+          asciiArt:  '....',            // optional custom ASCII
+        };
+    -->
+    <title id="pageTitle">App — Loading</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #000; color: #fff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        .splash-container { text-align: center; max-width: 700px; padding: 20px; }
+
+        .ascii-art {
+            font-family: 'Courier New', monospace;
+            font-size: 8px; line-height: 10px;
+            color: #8b5cf6; white-space: pre; margin-bottom: 20px;
+            text-align: center; opacity: 0;
+            animation: fadeIn 1s ease forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        .app-name {
+            font-size: 32px; font-weight: 700; margin-bottom: 8px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle   { font-size: 14px; color: #666; margin-bottom: 30px; }
+
+        .progress-container { background: #1a1a1a; border-radius: 8px; height: 8px; overflow: hidden; margin-bottom: 16px; }
+        .progress-bar {
+            height: 100%; background: linear-gradient(90deg, #8b5cf6, #06b6d4);
+            border-radius: 8px; transition: width 0.3s ease; width: 0%;
+        }
+        .status-text { font-size: 13px; color: #888; min-height: 20px; }
+
+        .perf-badge {
+            display: inline-block; margin-top: 15px; padding: 6px 16px;
+            border-radius: 20px; font-size: 12px; font-weight: 600;
+            opacity: 0; transition: opacity 0.5s ease;
+        }
+        .perf-badge.high   { background: rgba(34,197,94,0.2);  color: #22c55e; }
+        .perf-badge.medium { background: rgba(234,179,8,0.2);  color: #eab308; }
+        .perf-badge.low    { background: rgba(239,68,68,0.2);  color: #ef4444; }
+        .perf-badge.visible { opacity: 1; }
+        .perf-details { font-size: 11px; color: #555; margin-top: 5px; }
+
+        .locale-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .locale-card {
+            width: min(100%, 420px);
+            background: rgba(15, 15, 20, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-shadow: 0 32px 120px rgba(0, 0, 0, 0.45);
+            text-align: center;
+        }
+        .locale-card h2 {
+            margin: 0 0 16px;
+            font-size: 24px;
+            color: #ffffff;
+        }
+        .locale-card p {
+            margin: 0 0 24px;
+            color: #b3b3b3;
+            line-height: 1.6;
+        }
+        .locale-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        .locale-btn {
+            border: none;
+            border-radius: 14px;
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .locale-btn:hover { transform: translateY(-1px); }
+        .locale-btn.primary { background: linear-gradient(135deg, #8b5cf6, #06b6d4); color: #fff; }
+        .locale-btn.secondary { background: rgba(255,255,255,0.08); color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="ascii-art" id="asciiArt"></div>
+        <div class="app-name" id="appName"></div>
+        <div class="subtitle" id="subtitle"></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div class="status-text" id="statusText" data-i18n="shell.splash.initializing">Initializing...</div>
+        <div class="perf-badge" id="perfBadge" data-i18n="shell.splash.perfBadge">⚡ Performance: ---</div>
+        <div class="perf-details" id="perfDetails"></div>
+    </div>
+
+    <div id="localeModal" class="locale-modal-overlay">
+        <div class="locale-card">
+            <h2>Выберите язык интерфейса</h2>
+            <p>Чтобы продолжить, выберите предпочитаемый язык. Это обязательный шаг.</p>
+            <div class="locale-actions">
+                <button id="localeRu" class="locale-btn primary">Русский</button>
+                <button id="localeEn" class="locale-btn secondary">English</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./shell-i18n.js"></script>
+    <script>
+        // ── Config ─────────────────────────────────────────────────────────
+        const cfg = window.__APP_CONFIG__ || {};
+        const APP_ID   = cfg.id       || 'app';
+        const APP_NAME = cfg.name     || 'App';
+        const STORAGE_KEY = cfg.storageKey || 'app:settings';
+        const storedLocale = (function() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                return saved ? JSON.parse(saved).locale : null;
+            } catch (e) {
+                return null;
+            }
+        })();
+        shellI18n.init(storedLocale || cfg.lang || cfg.locale);
+        const SUBTITLE = cfg.subtitle || shellI18n.t('shell.splash.defaultSubtitle');
+        const NEXT_URL = cfg.nextUrl  || '/shell/main.html';
+
+        const DEFAULT_ASCII = `
+ x=i+1;                                                      x=i+1;
+  x=i+1;                                                    x=i+1;                    x=arr[i]
+   x=i+1;                                                  x=i+1;                      double
+    x=i+1;  idx=arr[i];                  x=i+1;  idx=arr[i];   double  return; double; double
+     x=i+1;   x=i+1;                   x=i+1;    idx=arr[i];   x=i+1; return;double;  return
+      x=i+1;    x=i+1;                x=i+1;      return         return  x=i+1;return;  double
+       x=i+1;     x=i+1;            x=i+1;         double        double  x=i+1;x=10;    return
+        x=i+1;      x=i+1;        x=i+1;            return        return  return         double
+         x=i+1;       x=i+1;    x=i+1;               double       double  double          return
+          x=i+1;        x=i+1; x=i+1;                  idx=arr[i];idx=arr[i]  return        double
+`;
+
+        document.getElementById('appName').textContent  = APP_NAME;
+        document.getElementById('subtitle').textContent = SUBTITLE;
+        document.getElementById('asciiArt').textContent = cfg.asciiArt || DEFAULT_ASCII;
+        document.title = shellI18n.t('shell.splash.pageTitle', { appName: APP_NAME });
+
+        // ── Helpers ────────────────────────────────────────────────────────
+        const progressBar = document.getElementById('progressBar');
+        const statusText  = document.getElementById('statusText');
+        const perfBadge   = document.getElementById('perfBadge');
+        const perfDetails = document.getElementById('perfDetails');
+
+        function setProgress(pct, text) {
+            progressBar.style.width = pct + '%';
+            statusText.textContent  = text;
+        }
+
+        function waitForTauri(timeout) {
+            timeout = timeout || 8000;
+            return new Promise(function(resolve, reject) {
+                if (window.__TAURI__?.core?.invoke) { resolve(window.__TAURI__.core.invoke); return; }
+                var start = Date.now();
+                var iv = setInterval(function() {
+                    if (window.__TAURI__?.core?.invoke) { clearInterval(iv); resolve(window.__TAURI__.core.invoke); }
+                    else if (Date.now() - start > timeout) { clearInterval(iv); reject(new Error('Tauri API not ready')); }
+                }, 50);
+            });
+        }
+
+        // ── Startup ────────────────────────────────────────────────────────
+        async function runStartup() {
+            // F11 fullscreen shortcut
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'F11') { e.preventDefault(); window.__TAURI__?.core?.invoke('toggle_fullscreen').catch(() => {}); }
+            }, true);
+
+            try {
+                setProgress(10, shellI18n.t('shell.splash.preparingDatabase'));
+                await new Promise(r => setTimeout(r, 300));
+
+                setProgress(30, shellI18n.t('shell.splash.loadingSchemas'));
+                await new Promise(r => setTimeout(r, 200));
+
+                setProgress(50, shellI18n.t('shell.splash.runningBenchmark'));
+                const invoke = await waitForTauri(8000);
+
+                const perf = await invoke('run_performance_benchmark');
+
+                setProgress(80, shellI18n.t('shell.splash.benchmarkResult', {
+                  cpu: perf.cpu_score,
+                  ram: perf.memory_mb,
+                  cores: perf.cores,
+                }));
+                await new Promise(r => setTimeout(r, 300));
+
+                const levelNames   = { low: '🐢 Low', medium: '⚡ Medium', high: '🚀 High' };
+                perfBadge.textContent = shellI18n.t('shell.splash.performanceLabel') + ' ' + (levelNames[perf.level] || '---');
+                perfBadge.className   = 'perf-badge visible ' + (perf.level || 'medium');
+                perfDetails.textContent = `CPU: ${perf.cpu_score}ms | Memory: ${perf.memory_mb}ms | Cores: ${perf.cores}`;
+
+                setProgress(100, shellI18n.t('shell.splash.readyLaunching'));
+                await new Promise(r => setTimeout(r, 500));
+
+                // Persist perf data with APP_ID prefix
+                localStorage.setItem(`${APP_ID}:perf:level`,    perf.level);
+                localStorage.setItem(`${APP_ID}:perf:cpu`,      perf.cpu_score);
+                localStorage.setItem(`${APP_ID}:perf:memory`,   perf.memory_mb);
+                localStorage.setItem(`${APP_ID}:perf:cores`,    perf.cores);
+
+                window.location.href = NEXT_URL;
+
+            } catch (error) {
+                console.error('Startup error:', error);
+                setProgress(100, shellI18n.t('shell.splash.errorPrefix') + ' ' + (error.message || String(error)));
+                await new Promise(r => setTimeout(r, 2000));
+                window.location.href = NEXT_URL;
+            }
+        }
+
+        const localeModal = document.getElementById('localeModal');
+        const localeRuBtn = document.getElementById('localeRu');
+        const localeEnBtn = document.getElementById('localeEn');
+
+        function saveLocale(lang) {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                const settings = saved ? JSON.parse(saved) : {};
+                settings.locale = lang;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+            } catch (e) {
+                console.warn('Failed to save locale:', e);
+            }
+            shellI18n.init(lang);
+            const newSubtitle = cfg.subtitle || shellI18n.t('shell.splash.defaultSubtitle');
+            const statusTextNode = document.getElementById('statusText');
+            if (localeModal) localeModal.style.display = 'none';
+            if (statusTextNode) statusTextNode.textContent = shellI18n.t('shell.splash.initializing');
+            if (document.getElementById('subtitle')) document.getElementById('subtitle').textContent = newSubtitle;
+            document.title = shellI18n.t('shell.splash.pageTitle', { appName: APP_NAME });
+            setProgress(0, '');
+            runStartup();
+        }
+
+        if (!storedLocale) {
+            if (localeModal) localeModal.style.display = 'flex';
+            if (localeRuBtn) localeRuBtn.addEventListener('click', () => saveLocale('ru'));
+            if (localeEnBtn) localeEnBtn.addEventListener('click', () => saveLocale('en'));
+        } else {
+            runStartup();
+        }
+    </script>
+</body>
+</html>

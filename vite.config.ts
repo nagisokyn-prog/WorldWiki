@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
 
@@ -10,11 +10,11 @@ export default defineConfig({
     alias: {
       'vue': 'vue/dist/vue.esm-browser.js',
       'vue-i18n': resolve(__dirname, 'node_modules/vue-i18n/dist/vue-i18n.esm-browser.js'),
-      '@': resolve(__dirname, 'src/js'),
-      '@services': resolve(__dirname, 'src/js/services'),
-      '@components': resolve(__dirname, 'src/js/components'),
-      '@utils': resolve(__dirname, 'src/js/utils'),
-      '@types': resolve(__dirname, 'src/js/types')
+      '@': resolve(__dirname, 'src/ts'),
+      '@services': resolve(__dirname, 'src/ts/services'),
+      '@components': resolve(__dirname, 'src/ts/components'),
+      '@utils': resolve(__dirname, 'src/ts/utils'),
+      '@types': resolve(__dirname, 'src/ts/types')
     }
   },
   build: {
@@ -39,6 +39,10 @@ export default defineConfig({
     fs: {
       allow: ['..']
     }
+  },
+  test: {
+    globals: true,
+    include: ['../test/**/*.test.ts', 'js/__tests__/**/*.test.ts', 'ts/__tests__/**/*.test.ts'],
   },
   logLevel: 'info',
   clearScreen: false

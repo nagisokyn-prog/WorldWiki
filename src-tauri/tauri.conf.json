@@ -4,7 +4,8 @@
   "version": "0.20.0",
   "identifier": "com.worldwiki.app",
   "build": {
-    "beforeDevCommand": "npx vite",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:3000",
     "frontendDist": "../dist"
   },

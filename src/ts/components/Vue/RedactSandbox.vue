@@ -408,7 +408,8 @@
                        </div>
                        
                        <!-- DROP ZONE FOR CUSTOM FIELDS -->
-                       <div style="margin-top: 16px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
+                       <div v-if="['dynamic', 'timeline'].includes(item.type)"
+                            style="margin-top: 16px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
                             @dragenter.prevent="draggedOverModuleIdx = Number(iIdx)" 
                             @dragover.prevent="handleDragOverModule($event, Number(iIdx))" 
                             @dragleave="draggedOverModuleIdx = -1"

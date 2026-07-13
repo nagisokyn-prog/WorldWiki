@@ -78,6 +78,7 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
         let mut val = serde_json::to_value(&entity).unwrap();
         if let Some(map) = val.as_object_mut() {
             map.remove("id");
+            map.retain(|_, v| !v.is_null()); // Strip nulls
         }
         let res: Option<serde_json::Value> = db.create(Self::TABLE)
             .content(val)
@@ -159,17 +160,47 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
             let actual_id = if parts.len() == 2 { parts[1] } else { &id_str };
             
             let mut val = serde_json::to_value(entity).unwrap();
-            if let Some(map) = val.as_object_mut() {
-                map.remove("id");
+            let map = val.as_object_mut().unwrap();
+            map.remove("id");
+            map.retain(|_, v| !v.is_null()); // Strip nulls to avoid 'expected NONE found NULL' errors
+
+            let mut query = String::from("UPSERT $__record_id SET ");
+            let mut assign_clauses = Vec::new();
+            for key in map.keys() {
+                assign_clauses.push(format!("{} = ${}", key, key));
             }
+            query.push_str(&assign_clauses.join(", "));
+
+            let tb = Self::TABLE;
+            let mut db_query = db.query(query).bind(("__record_id", surrealdb::types::RecordId::new(tb, actual_id)));
             
-            let res: Option<serde_json::Value> = db.upsert((Self::TABLE, actual_id))
-                .merge(val)
-                .await?;
-            if let Some(val) = res {
-                Ok(serde_json::from_value(val).unwrap())
-            } else {
-                Self::create(db, entity.clone()).await
+            // Bind all parameters
+            for (k, v) in map.iter() {
+                if let Some(s) = v.as_str() {
+                    let parts: Vec<&str> = s.split(':').collect();
+                    if parts.len() == 2 && !s.contains(' ') && !s.contains('{') {
+                        // Bind as RecordId
+                        db_query = db_query.bind((k.as_str(), surrealdb::types::RecordId::new(parts[0], parts[1])));
+                    } else {
+                        db_query = db_query.bind((k.as_str(), v.clone()));
+                    }
+                } else {
+                    db_query = db_query.bind((k.as_str(), v.clone()));
+                }
+            }
+
+            let mut res = db_query.await?;
+            let items: Result<Vec<serde_json::Value>, _> = res.take(0);
+            
+            match items {
+                Ok(items) => {
+                    if let Some(saved_val) = items.into_iter().next() {
+                        Ok(serde_json::from_value(saved_val).unwrap())
+                    } else {
+                        Self::create(db, entity.clone()).await
+                    }
+                },
+                Err(e) => Err(e)
             }
         } else {
             Self::create(db, entity.clone()).await

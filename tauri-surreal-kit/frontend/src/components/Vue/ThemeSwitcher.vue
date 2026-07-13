@@ -49,7 +49,7 @@
     </div>
 
     <div class="theme-actions">
-      <button class="btn btn-secondary btn-sm" style="width: 100%; margin-bottom: 16px;" @click="saveCurrentAsTheme">
+      <button class="glass-btn" style="width: 100%; margin-bottom: 16px; border-radius: 8px; padding: 10px;" @click="saveCurrentAsTheme">
         💾 {{ t('settings.saveTheme') }}
       </button>
     </div>
@@ -93,21 +93,7 @@ const switchToDark = async () => {
   if (currentTheme.value === 'dark') return;
   isSaving.value = true;
   try {
-    // Загружаем тёмную тему из settings.json
-    let newSettings = settingsService.getSettings();
-    if (window.__TAURI__?.core) {
-      const themeSettings = await window.__TAURI__.core.invoke('load_theme', { theme: 'dark' });
-      if (themeSettings) {
-        newSettings = { ...newSettings, ...themeSettings, theme: 'dark' };
-      } else {
-        newSettings = { ...newSettings, ...settingsService.getDefaultSettings(), theme: 'dark' };
-      }
-    } else {
-      newSettings = { ...newSettings, ...settingsService.getDefaultSettings(), theme: 'dark' };
-    }
-    
-    // Сохраняем с указанием текущей темы
-    await settingsService.saveSettings({ ...newSettings, theme: 'dark' });
+    await settingsService.switchTheme('dark');
     currentTheme.value = 'dark';
     saveMessage.value = { type: 'success', text: t('settings.themeActivated', { theme: t('settings.themes.dark') }) };
     setTimeout(() => { saveMessage.value = null; }, 2000);
@@ -123,17 +109,7 @@ const switchToLight = async () => {
   if (currentTheme.value === 'light') return;
   isSaving.value = true;
   try {
-    // Загружаем светлую тему из settings-light.json
-    let newSettings = settingsService.getSettings();
-    if (window.__TAURI__?.core) {
-      const themeSettings = await window.__TAURI__.core.invoke('load_theme', { theme: 'light' });
-      if (themeSettings) {
-        newSettings = { ...newSettings, ...themeSettings, theme: 'light' };
-      }
-    }
-    
-    // Сохраняем с указанием текущей темы
-    await settingsService.saveSettings({ ...newSettings, theme: 'light' });
+    await settingsService.switchTheme('light');
     currentTheme.value = 'light';
     saveMessage.value = { type: 'success', text: t('settings.themeActivated', { theme: t('settings.themes.light') }) };
     setTimeout(() => { saveMessage.value = null; }, 2000);

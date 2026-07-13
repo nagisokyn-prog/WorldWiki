@@ -5,16 +5,16 @@
     <!-- Селектор типа календаря -->
     <div class="calendar-selector">
       <label for="calendar-select">Выбрать календарь:</label>
-      <select 
-        id="calendar-select"
-        v-model="selectedCalendarId" 
-        @change="onCalendarChange"
-        class="calendar-select"
-      >
-        <option v-for="cal in availableCalendars" :key="cal.id" :value="cal.id">
-          {{ cal.data.название || 'Календарь' }}
-        </option>
-      </select>
+      <XboxWheel 
+        v-if="calendarOptions.length > 0"
+        :horizontal="wheelHorizontal"
+        :model-value="selectedCalendarId" 
+        :options="calendarOptions"
+        @update:model-value="(val) => { selectedCalendarId = val; onCalendarChange(); }"
+      />
+      <div v-else style="font-size: 12px; color: var(--text-muted);">
+        Нет доступных календарей
+      </div>
     </div>
     
     <div class="timeline-events-list">
@@ -180,6 +180,13 @@ const toggleExpand = (idx: number) => {
 };
 
 // Вычисляемые опции для wheel
+const calendarOptions = computed(() => {
+  return availableCalendars.value.map(cal => ({
+    value: cal.id,
+    label: cal.data.название || 'Календарь'
+  }));
+});
+
 const eraOptions = computed(() => {
   return eras.value.map((era, idx) => ({
     value: idx,

@@ -3,7 +3,16 @@
     <h4><i class="fas fa-calendar-alt"></i> Календари проекта</h4>
     
     <div class="timeline-events-list">
-      <div v-if="calendars.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
+      <div
+        v-if="!project"
+        style="color: #e74c3c; font-size: 12px; padding: 10px; text-align: center; border: 1px dashed var(--border-color); border-radius: 8px;"
+      >
+        ⚠️ Пожалуйста, введите название произведения выше, чтобы создавать календари.
+      </div>
+      <div
+        v-else-if="calendars.length === 0"
+        style="color: var(--text-muted); font-size: 12px; padding: 10px"
+      >
         Нет календарей в проекте. Создайте первый календарь!
       </div>
       

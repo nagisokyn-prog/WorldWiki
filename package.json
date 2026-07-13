@@ -4,17 +4,17 @@
   "version": "0.13.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview",
     "tauri": "tauri",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "oxlint src/js",
-    "lint:fix": "oxlint --fix src/js",
-    "format": "prettier --write src/js",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "lint": "oxlint src/ts",
+    "lint:fix": "oxlint --fix src/ts",
+    "format": "oxfmt --write src/ts",
+    "test": "vp test",
+    "test:run": "vp test run",
+    "test:coverage": "vp test run --coverage"
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.2.7",
@@ -53,5 +53,8 @@
     "vite": "^8.1.4",
     "vitest": "^4.1.10",
     "vue-tsc": "^3.3.7"
+  },
+  "overrides": {
+    "typescript": "^7.0.2"
   }
 }

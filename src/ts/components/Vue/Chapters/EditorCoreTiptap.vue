@@ -34,11 +34,13 @@
         </button>
 
         <button class="toolbar-btn interactive-el" @click="analyzeText" title="Анализ текста"><i class="fas fa-chart-bar"></i></button>
-        <select v-model="editorMode" @change="switchEditorMode" style="background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 6px; padding: 4px 8px; outline: none; height: 32px; min-width: 150px;">
-          <option value="wysiwyg">📝 WYSIWYG</option>
-          <option value="markdown">✏️ Markdown</option>
-          <option value="split">📑 Split View</option>
-        </select>
+        <XboxWheel 
+          class="editor-mode-wheel"
+          v-model="editorMode" 
+          @update:model-value="switchEditorMode" 
+          :options="modeOptions" 
+          style="width: 150px; flex-shrink: 0;"
+        />
         <button class="btn-new interactive-el" @click="$emit('save')" :class="{ 'unsaved-glow': hasUnsavedChanges }" style="background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; height: 32px; white-space: nowrap;">
           💾 {{ hasUnsavedChanges ? 'Сохранить*' : 'Сохранено' }}
         </button>
@@ -62,17 +64,7 @@
           <span style="background: var(--accent); color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Изменено</span>
       </div>
       
-      <!-- NEW: GLOBAL SEMANTIC TAGS LEFT PANEL -->
-      <div class="global-semantic-panel" style="width: 44px; flex-shrink: 0; display: flex; flex-direction: column; overflow-y: auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 0; align-items: center; gap: 8px;">
-        <div style="font-size: 10px; font-weight: bold; color: var(--text-muted); margin-bottom: 4px;">ТЕГИ</div>
-        <div v-for="(block, idx) in paragraphBlocks" :key="idx" 
-             @click="cycleGlobalTag(idx)"
-             class="global-tag-badge interactive-el" 
-             :class="block.semanticTag || 'desc'"
-             :title="'Абзац ' + (idx + 1)">
-          {{ block.semanticTag === 'desc' ? '!о' : block.semanticTag === 'dialog' ? '!д' : '!м' }}
-        </div>
-      </div>
+
 
       <!-- WYSIWYG Mode -->
       <div v-if="editorMode === 'wysiwyg'" class="editor-wrapper" style="flex: 1; overflow: auto; border-radius: 8px; border: 1px solid var(--border-color); background: #ffffff; color: #000000;">
@@ -199,6 +191,9 @@ import { settingsService } from '../../../../../tauri-surreal-kit/frontend/src/j
 import TurndownService from 'turndown';
 import MarkdownIt from 'markdown-it';
 import Paragraph from '@tiptap/extension-paragraph';
+import { VueNodeViewRenderer } from '@tiptap/vue-3';
+import SemanticParagraphNode from './SemanticParagraphNode.vue';
+import XboxWheel from '../../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 
 // @ts-ignore
 declare module 'turndown';
@@ -254,6 +249,9 @@ const SemanticParagraph = Paragraph.extend({
         },
       },
     }
+  },
+  addNodeView() {
+    return VueNodeViewRenderer(SemanticParagraphNode);
   }
 });
 
@@ -268,6 +266,12 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history']);
+
+const modeOptions = [
+  { value: 'wysiwyg', label: '📝 WYSIWYG' },
+  { value: 'markdown', label: '✏️ Markdown' },
+  { value: 'split', label: '📑 Split View' }
+];
 
 const getStateKey = () => `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
@@ -439,37 +443,7 @@ const documentStructure = computed(() => {
   return blocks;
 });
 
-const paragraphBlocks = computed(() => {
-  return documentStructure.value.filter(b => b.type === 'Paragraph');
-});
 
-const cycleGlobalTag = (pIndex: number) => {
-  if (!editor.value) return;
-  const tags = ['desc', 'dialog', 'thought'];
-  
-  let pCount = 0;
-  let targetPos = -1;
-  let currentTag = 'desc';
-  
-  editor.value.state.doc.descendants((node, pos) => {
-    if (node.type.name === 'paragraph') {
-      if (pCount === pIndex) {
-        targetPos = pos;
-        currentTag = node.attrs.semanticTag || 'desc';
-      }
-      pCount++;
-      return false; // Don't traverse inside the paragraph
-    }
-  });
-  
-  if (targetPos !== -1) {
-    const currentIndex = tags.indexOf(currentTag);
-    const nextTag = tags[(currentIndex + 1) % tags.length];
-    
-    editor.value.chain().focus().setNodeSelection(targetPos).updateAttributes('paragraph', { semanticTag: nextTag }).run();
-    editorUpdateKey.value++; // Ensure UI updates instantly
-  }
-};
 
 const editor = useEditor({
   extensions: [

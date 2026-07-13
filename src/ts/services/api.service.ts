@@ -60,6 +60,8 @@ interface EntityType {
 
 import { invoke, stringifyId, processIds } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
+export const projectRecordId = (p: string): string => "projects:" + p;
+
 /*
 const isTauri = typeof window !== 'undefined' && !!(window as any).__TAURI__?.core;
 
@@ -238,7 +240,7 @@ export const apiService = {
 
     const entity = {
       id: id ?? null,
-      project_id: `projects:${project}`,
+      project_id: projectRecordId(project),
       entity_type: type,
       name: extractedName,
       description: actualData.description || null,
@@ -303,7 +305,7 @@ export const apiService = {
   saveTag: (project: string, tagData: TagData): Promise<{ success: boolean }> => {
     const data = {
       ...tagData,
-      project_id: `projects:${project}`
+      project_id: projectRecordId(project)
     };
     return invoke<{ success: boolean }>('save_tag', { data });
   },
@@ -323,8 +325,9 @@ export const apiService = {
     }));
   },
   getChapter: async (project: string, chapterId: string): Promise<ChapterData> => {
-    const c: any = await invoke<any>('get_chapter', { id: chapterId });
+    let c: any = await invoke<any>('get_chapter', { id: chapterId });
     if (!c) return null as any;
+    c = processIds(c);
     return {
       ...c,
       sortOrder: c.sort_order ?? c.sortOrder,
@@ -337,7 +340,7 @@ export const apiService = {
   saveChapter: async (project: string, chapterData: any): Promise<{ success: boolean }> => {
     const data = { 
       ...chapterData, 
-      project_id: `projects:${project}`,
+      project_id: projectRecordId(project),
       sort_order: chapterData.sortOrder ?? chapterData.sort_order,
       word_count: chapterData.wordCount ?? chapterData.word_count,
       arc_id: chapterData.arcId ?? chapterData.arc_id,
@@ -353,7 +356,24 @@ export const apiService = {
     
     const res = await invoke<{ success: boolean }>('save_chapter', { data });
     
+    // Создаём contains-ребро для дерева (только при наличии привязки к арке/тому)
+    if (data.arc_id || data.volume_id) {
+      try {
+        const rawChapterId = (data.id as string).replace(/^chapters:/, '');
+        await invoke('assign_chapter', {
+          project,
+          chapterId: rawChapterId,
+          arcId: data.arc_id ?? null,
+          volumeId: data.volume_id ?? null
+        });
+      } catch (e) {
+        // Не критично — глава сохранена, просто ребро не создалось
+        console.warn('assign_chapter skipped:', e);
+      }
+    }
+    
     // Extract and save text blocks
+
     if (data.content && typeof DOMParser !== 'undefined') {
       try {
         const doc = new DOMParser().parseFromString(data.content, 'text/html');
@@ -495,7 +515,7 @@ export const apiService = {
   }): Promise<string> {
     const data = {
       id: item.id || null,
-      project_id: `projects:${project}`,
+      project_id: projectRecordId(project),
       title: item.text,
       parent_ref: item.parentId,
       parent_type: item.parentType,

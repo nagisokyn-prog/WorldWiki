@@ -1,72 +1,82 @@
 <template>
   <div class="calendar-section interactive-el">
-    <h4>🏛️ Эпохи</h4>
-    <div class="item-list">
-      <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" style="margin-bottom: 10px">
-        <div class="item-row">
-          <input
-            type="text"
-            v-model="era.название"
-            class="item-name interactive-el"
-            placeholder="Название эпохи"
-          />
-          <input
-            type="number"
-            v-model.number="era.год_начала"
-            class="item-duration interactive-el"
-            placeholder="Начало"
-          />
-          <input
-            type="number"
-            v-model.number="era.год_конца"
-            class="item-duration interactive-el"
-            placeholder="Конец"
-          />
-          <div class="item-actions">
-            <button
-              class="btn-icon interactive-el"
-              @click.prevent="moveItem(Number(eIdx), -1)"
-              :disabled="Number(eIdx) === 0"
+    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+      <h4 style="margin: 0;">🏛️ Эпохи</h4>
+      <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
+    </div>
+    
+    <div v-show="!isCollapsed" style="margin-top: 12px;">
+      <div class="item-list">
+        <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" style="margin-bottom: 10px">
+          <div class="item-row">
+            <input
+              type="text"
+              v-model="era.название"
+              class="item-name interactive-el"
+              placeholder="Название эпохи"
+            />
+            <input
+              type="number"
+              v-model.number="era.год_начала"
+              class="item-duration interactive-el"
+              placeholder="Начало"
+            />
+            <input
+              type="number"
+              v-model.number="era.год_конца"
+              class="item-duration interactive-el"
+              placeholder="Конец"
+            />
+            <div class="item-actions">
+              <button
+                class="btn-icon interactive-el"
+                @click.prevent="moveItem(Number(eIdx), -1)"
+                :disabled="Number(eIdx) === 0"
+              >
+                ↑
+              </button>
+              <button
+                class="btn-icon interactive-el"
+                @click.prevent="moveItem(Number(eIdx), 1)"
+                :disabled="Number(eIdx) === (modelValue.эпохи?.length || 0) - 1"
+              >
+                ↓
+              </button>
+              <button
+                class="btn-icon interactive-el"
+                @click.prevent="modelValue.эпохи.splice(Number(eIdx), 1)"
+              >
+                🗑️
+              </button>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; margin-top: 5px">
+            <label
+              style="
+                font-size: 11px;
+                color: var(--text-muted);
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                cursor: pointer;
+              "
             >
-              ↑
-            </button>
-            <button
-              class="btn-icon interactive-el"
-              @click.prevent="moveItem(Number(eIdx), 1)"
-              :disabled="Number(eIdx) === (modelValue.эпохи?.length || 0) - 1"
-            >
-              ↓
-            </button>
-            <button
-              class="btn-icon interactive-el"
-              @click.prevent="modelValue.эпохи.splice(Number(eIdx), 1)"
-            >
-              🗑️
-            </button>
+              <input type="checkbox" v-model="era.обратный_отсчет" />
+              Считать назад (До нашей эры)
+            </label>
           </div>
         </div>
-        <div style="display: flex; align-items: center; margin-top: 5px">
-          <label
-            style="
-              font-size: 11px;
-              color: var(--text-muted);
-              display: flex;
-              align-items: center;
-              gap: 5px;
-              cursor: pointer;
-            "
-          >
-            <input type="checkbox" v-model="era.обратный_отсчет" />
-            Считать назад (До нашей эры)
-          </label>
-        </div>
       </div>
+      <button class="btn-add interactive-el" @click.prevent="addEra">➕ Добавить эпоху</button>
     </div>
-    <button class="btn-add interactive-el" @click.prevent="addEra">➕ Добавить эпоху</button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+
+const isCollapsed = ref(false);
+
 const props = defineProps({
   modelValue: { type: Object, required: true },
 });

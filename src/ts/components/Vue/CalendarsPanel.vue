@@ -45,15 +45,17 @@
             </div>
           </div>
 
-          <CalendarSettings v-model="cal.data" />
-          <CalendarWeekdays v-model="cal.data" />
-          <CalendarMonths v-model="cal.data" />
-          <CalendarLeapYear v-model="cal.data" />
-          <CalendarOrigin v-model="cal.data" />
-          <CalendarEras v-model="cal.data" />
-          <CalendarSeasons v-model="cal.data" />
-          <CalendarMoons v-model="cal.data" />
-          <CalendarHolidays v-model="cal.data" />
+          <div class="calendar-sections-grid">
+            <CalendarSettings v-model="cal.data" />
+            <CalendarWeekdays v-model="cal.data" />
+            <CalendarMonths v-model="cal.data" />
+            <CalendarLeapYear v-model="cal.data" />
+            <CalendarOrigin v-model="cal.data" />
+            <CalendarEras v-model="cal.data" />
+            <CalendarSeasons v-model="cal.data" />
+            <CalendarMoons v-model="cal.data" />
+            <CalendarHolidays v-model="cal.data" />
+          </div>
           <CalendarPlayground :calendar="cal.data" />
 
         </div>
@@ -219,4 +221,25 @@ defineExpose({ saveAll });
 .delete-btn { background: transparent; border: none; cursor: pointer; opacity: 0.7; }
 .delete-btn:hover { opacity: 1; }
 .btn-add-event { font-weight: 600; }
+
+.calendar-sections-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1200px) {
+  .calendar-sections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-sections-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

@@ -286,7 +286,9 @@ onMounted(() => {
   onUnmounted(() => document.removeEventListener('ww:hierarchy-changed', handler));
 });
 import { apiService } from '../../../services/api.service';
-import { useTreeSelection } from '../../../composables/useTreeSelection.js';
+import { useTreeSelection } from '../../../composables/useTreeSelection';
+
+import { useEntityTree } from '../../../services/Entity/entity.tree';
 
 const props = defineProps({
   project: { type: String, required: true },
@@ -300,11 +302,13 @@ const emit = defineEmits([
 ]);
 
 const hierarchy = ref({ volumes: [] as any[], arcs: [] as any[], chapters: [] as any[] });
-const entities  = ref<Record<string, any[]>>({});
-const entitySections = ref<any[]>([]);
 const expanded   = ref(new Set<string>());
-const expandedSections = ref<Set<string>>(new Set(['manuscript']));
-const titleFields = ref<Record<string, string>>({}); // Карта: тип сущности -> путь к полю заголовка
+
+const { 
+  entities, entitySections, expandedSections, entityCtx, entityCtxStyle, 
+  entitySelection, flatEntityItems, loadEntities, getEntityName, 
+  handleEntityClick, openEntityCtx, toggleSection, entitySelectedInSection, entityKey 
+} = useEntityTree(props.project, emit);
 
 // --- Persistence Logic ---
 const EXPANDED_KEY = `worldwiki-expanded-${props.project}`;
@@ -334,11 +338,7 @@ const restoreTreeState = () => {
   }
 };
 
-// Хелпер для получения значения по пути "key1.key2"
-const getValueByPath = (obj: any, path: string): any => {
-  if (!path) return undefined;
-  return path.split('.').reduce((cur: any, k: string) => (cur != null ? cur[k] : undefined), obj);
-};
+// Removed getValueByPath as it's handled in the composable
 
 const renaming   = ref(null as any);
 const renameInput = ref(null as any);
@@ -540,23 +540,35 @@ const expandToId = (targetId: string) => {
   saveTreeState();
 };
 
+const loadEntities = async () => {
+  for (const sect of entitySections.value) {
+    try {
+      if (!titleFields.value[sect.type]) {
+        try {
+          const schemaResp = await fetch(`/struct/editor/${sect.type}.json`);
+          if (schemaResp.ok) {
+            const schema = await schemaResp.json();
+            if (schema.titleField) titleFields.value[sect.type] = schema.titleField;
+          }
+        } catch (se) {
+          console.warn(`Could not load schema for ${sect.type}`, se);
+        }
+      }
+
+      const list = await apiService.getEntityList(props.project, sect.type);
+      entities.value[sect.type] = list;
+    } catch (e) {
+      console.warn(`Could not load entities for ${sect.type}`, e);
+    }
+  }
+};
+
 const load = async (expandId?: string) => {
   try {
     console.log('🌳 ChapterTree.load: загружаю иерархию и сущности для проекта', props.project);
     
     // Восстанавливаем состояние перед загрузкой (или после, если загрузка может его затереть)
     restoreTreeState();
-
-    // Загружаем структуру сайдбара из JSON
-    const sidebarResp = await fetch('/struct/sidebar.json');
-    const sidebarData = await sidebarResp.json();
-    entitySections.value = sidebarData
-      .filter((i: any) => i.type === 'entity')
-      .map((i: any) => ({
-        type: i.entityType,
-        title: i.title.toUpperCase(),
-        emoji: i.emoji || '📄'
-      }));
 
     // Загружаем главы
     hierarchy.value = await apiService.getHierarchy(props.project);
@@ -565,41 +577,14 @@ const load = async (expandId?: string) => {
     if (expandId) {
       expandToId(expandId);
     }
-    if (hierarchy.value.chapters && hierarchy.value.chapters.length > 0) {
-      console.log('📖 ChapterTree.load: FIRST CHAPTER:', hierarchy.value.chapters[0]);
-      console.log('📖 ChapterTree.load: arcId type:', typeof hierarchy.value.chapters[0].arcId);
-    }
-    if (hierarchy.value.arcs && hierarchy.value.arcs.length > 0) {
-      console.log('🌈 ChapterTree.load: FIRST ARC:', hierarchy.value.arcs[0]);
-    }
     // Если состояние не было восстановлено (например, первый запуск), раскрываем всё по умолчанию
     if (expanded.value.size === 0) {
-      hierarchy.value.volumes.forEach(v => expanded.value.add('vol-' + v.id));
-      hierarchy.value.arcs.forEach(a => expanded.value.add('arc-' + a.id));
+      hierarchy.value.volumes.forEach((v: any) => expanded.value.add('vol-' + v.id));
+      hierarchy.value.arcs.forEach((a: any) => expanded.value.add('arc-' + a.id));
     }
     
-    // Загружаем сущности всех типов
-    for (const sect of entitySections.value) {
-      try {
-        // Пытаемся загрузить схему, чтобы узнать titleField
-        if (!titleFields.value[sect.type]) {
-          try {
-            const schemaResp = await fetch(`/struct/editor/${sect.type}.json`);
-            if (schemaResp.ok) {
-              const schema = await schemaResp.json();
-              if (schema.titleField) titleFields.value[sect.type] = schema.titleField;
-            }
-          } catch (se) {
-            console.warn(`Could not load schema for ${sect.type}`, se);
-          }
-        }
-
-        const list = await apiService.getEntityList(props.project, sect.type);
-        entities.value[sect.type] = list;
-      } catch (e) {
-        console.warn(`Could not load entities for ${sect.type}`, e);
-      }
-    }
+    // Загружаем сущности
+    await loadEntities();
 
     expanded.value = new Set(expanded.value);
     console.log('✅ ChapterTree.load: всё загружено');

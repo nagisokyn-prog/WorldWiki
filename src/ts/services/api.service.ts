@@ -61,8 +61,8 @@ interface EntityType {
 import { invoke, stringifyId, processIds } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
 export const projectRecordId = (p: string): string => {
-  if (p.startsWith('projects:')) return p;
-  return `projects:\`${p}\``;
+  const cleanP = p.replace(/^projects:/, '').replace(/[`'"]/g, '');
+  return `projects:\`${cleanP}\``;
 };
 
 /*

@@ -1,5 +1,5 @@
 /**
- * @file useTreeSelection.js
+ * @file useTreeSelection.ts
  * @description Composable для управления выделением в древовидных списках.
  * Поддерживает: одиночный клик, Ctrl+Click (тогл), Shift+Click (диапазон).
  * Переиспользуется для глав, сущностей и любых других списков.
@@ -27,8 +27,8 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
   // ─── Computed ─────────────────────────────────────────
 
   const selectedCount = computed(() => selected.value.size);
-  const hasSelection  = computed(() => selected.value.size > 0);
-  const selectedIds   = computed(() => [...selected.value]);
+  const hasSelection = computed(() => selected.value.size > 0);
+  const selectedIds = computed(() => [...selected.value]);
 
   // ─── Helpers ──────────────────────────────────────────
 
@@ -61,7 +61,7 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
       // Shift+Click: диапазон от последнего выбранного до текущего
       const ids = flatItems.map(i => i.id);
       const fromIdx = ids.indexOf(lastSelectedId.value);
-      const toIdx   = ids.indexOf(id);
+      const toIdx = ids.indexOf(id);
       if (fromIdx !== -1 && toIdx !== -1) {
         const lo = Math.min(fromIdx, toIdx);
         const hi = Math.max(fromIdx, toIdx);
@@ -127,10 +127,10 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
     // Если фокус в текстовом поле — не перехватываем системные клавиши
     const target = event.target;
     const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
-    
+
     if (event.key === 'Delete' || event.key === 'Backspace') {
       if (isInput) return; // Печатаем, не удаляем
-      
+
       if (selected.value.size > 0) {
         event.preventDefault();
         await deleteSelected();

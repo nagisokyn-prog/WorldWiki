@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted } from 'vue';
-import { useTreeSelection } from '../../js/composables/useTreeSelection.js';
+import { useTreeSelection } from '../../js/composables/useTreeSelection';
 import TreeNodes from './TreeNodes.vue'; // Recursive component
 
 export interface TreeNodeData {

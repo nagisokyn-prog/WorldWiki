@@ -14,7 +14,7 @@
             class="item-name interactive-el"
             placeholder="Название праздника"
           />
-          <div class="item-duration" style="display: flex; gap: 5px; align-items: center">
+          <div style="display: flex; gap: 5px; align-items: center">
             <XboxWheel
               :horizontal="wheelHorizontal"
               :options="

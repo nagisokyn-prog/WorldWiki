@@ -12,6 +12,7 @@
             type="text"
             v-model="modelValue.названия_дней_недели[dIdx]"
             class="item-name interactive-el"
+            style="max-width: 140px;"
           />
           <div class="item-actions">
             <button

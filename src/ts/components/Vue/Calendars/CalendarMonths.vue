@@ -8,13 +8,14 @@
     <div v-show="!isCollapsed" style="margin-top: 12px;">
       <div class="item-list">
         <div v-for="(month, mIdx) in modelValue.месяцы" :key="mIdx" class="item-row">
-          <input type="text" v-model="month.название" class="item-name interactive-el" />
+          <input type="text" v-model="month.название" class="item-name interactive-el" style="max-width: 120px;" />
           <input
             type="number"
             v-model.number="month.дней"
             min="1"
             max="100"
             class="item-duration interactive-el"
+            style="max-width: 60px;"
           />
           <div class="item-actions">
             <button

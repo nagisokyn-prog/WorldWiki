@@ -57,7 +57,7 @@ DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array DEFAULT [];
 DEFINE FIELD OVERWRITE timeline_events.* ON chapters TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE timeline_events.*.date ON chapters TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE timeline_events.*.epoch ON chapters TYPE option<string>;
-DEFINE FIELD OVERWRITE timeline_events.*.time ON chapters TYPE option<string>;
+DEFINE FIELD OVERWRITE timeline_events.*.time ON chapters TYPE option<object> FLEXIBLE;
 
 DEFINE INDEX OVERWRITE idx_chapter_ft  ON chapters COLUMNS content FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_chapter_emb_openai ON chapters COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;

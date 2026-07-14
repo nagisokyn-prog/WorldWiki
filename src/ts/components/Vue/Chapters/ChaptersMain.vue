@@ -221,6 +221,7 @@ import { ref, onMounted, onUnmounted, watch, computed, type PropType } from 'vue
 import { chapterService } from '../../../services/chapter.service';
 import { timelineService } from '../../../services/timeline.service';
 import { apiService } from '../../../services/api.service';
+import { calendarService } from '../../../services/calendar.service';
 
 import EditorCore from './EditorCoreTiptap.vue';
 import TimelinePanel from '../Calendars/TimelinePanel.vue';
@@ -686,6 +687,27 @@ const createNewChapter = async (arcId?: string, volumeId?: string) => {
   const newCh = chapterService.createNew(`Глава ${num}`);
   if (arcId) newCh.arc_id = arcId;
   if (volumeId) newCh.volume_id = volumeId;
+  
+  if (num === 1) {
+    try {
+      const cal = await calendarService.loadCalendar(props.project);
+      if (cal && cal.точка_отсчета) {
+        newCh.timelineEvents = [{
+          date: {
+            era: cal.точка_отсчета.эпоха || 0,
+            year: cal.точка_отсчета.год || 1,
+            month: cal.точка_отсчета.месяц || 0,
+            day: cal.точка_отсчета.день || 1
+          },
+          time: { hour: 12, minute: 0 },
+          description: "Начало истории"
+        }];
+      }
+    } catch (e) {
+      console.warn("Failed to attach default timeline event", e);
+    }
+  }
+
   await chapterService.save(props.project, newCh);
   await chapterTreeRef.value?.load();
   // Обновляем локальную иерархию

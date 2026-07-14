@@ -56,7 +56,6 @@
           <div class="calendar-middle-row-grid">
             <CalendarSeasons v-model="cal.data" />
             <CalendarMoons v-model="cal.data" />
-            <CalendarOrigin v-model="cal.data" />
           </div>
 
           <div class="calendar-full-row-grid">
@@ -82,7 +81,6 @@ import CalendarSettings from "./Calendars/CalendarSettings.vue";
 import CalendarWeekdays from "./Calendars/CalendarWeekdays.vue";
 import CalendarMonths from "./Calendars/CalendarMonths.vue";
 import CalendarLeapYear from "./Calendars/CalendarLeapYear.vue";
-import CalendarOrigin from "./Calendars/CalendarOrigin.vue";
 import CalendarEras from "./Calendars/CalendarEras.vue";
 import CalendarSeasons from "./Calendars/CalendarSeasons.vue";
 import CalendarMoons from "./Calendars/CalendarMoons.vue";

@@ -76,19 +76,52 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
     #[allow(async_fn_in_trait)]
     async fn create<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, mut entity: Self) -> Result<Self, surrealdb::Error> {
         let mut val = serde_json::to_value(&entity).unwrap();
-        if let Some(map) = val.as_object_mut() {
+        let map = if let Some(map) = val.as_object_mut() {
             map.remove("id");
             map.retain(|_, v| !v.is_null()); // Strip nulls
-        }
-        let res: Option<serde_json::Value> = db.create(Self::TABLE)
-            .content(val)
-            .await?;
-        if let Some(res_val) = res {
-            let created: Self = serde_json::from_value(res_val).unwrap();
-            entity.set_id(created.get_id().unwrap_or_default());
-            Ok(created)
+            map.clone()
         } else {
-            Err(surrealdb::Error::thrown("Failed to create entity".to_string()))
+            return Err(surrealdb::Error::thrown("Entity is not an object".to_string()));
+        };
+
+        let mut query = format!("CREATE {} SET ", Self::TABLE);
+        let mut assign_clauses = Vec::new();
+        for key in map.keys() {
+            assign_clauses.push(format!("{} = ${}", key, key));
+        }
+        query.push_str(&assign_clauses.join(", "));
+
+        let mut db_query = db.query(query);
+        
+        // Bind all parameters
+        for (k, v) in map.iter() {
+            if let Some(s) = v.as_str() {
+                let parts: Vec<&str> = s.split(':').collect();
+                if parts.len() == 2 && !s.contains(' ') && !s.contains('{') {
+                    // Bind as RecordId
+                    db_query = db_query.bind((k.as_str(), surrealdb::types::RecordId::new(parts[0], parts[1])));
+                } else {
+                    db_query = db_query.bind((k.as_str(), v.clone()));
+                }
+            } else {
+                db_query = db_query.bind((k.as_str(), v.clone()));
+            }
+        }
+
+        let mut res = db_query.await?;
+        let items: Result<Vec<serde_json::Value>, _> = res.take(0);
+        
+        match items {
+            Ok(items) => {
+                if let Some(res_val) = items.into_iter().next() {
+                    let created: Self = serde_json::from_value(res_val).unwrap();
+                    entity.set_id(created.get_id().unwrap_or_default());
+                    Ok(created)
+                } else {
+                    Err(surrealdb::Error::thrown("Failed to retrieve created entity".to_string()))
+                }
+            },
+            Err(e) => Err(e)
         }
     }
 

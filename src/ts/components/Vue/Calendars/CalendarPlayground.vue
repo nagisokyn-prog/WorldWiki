@@ -11,26 +11,40 @@
       <div class="playground-controls">
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
           <!-- Era -->
-          <select v-model.number="testDate.era_index" class="interactive-el glass-select" v-if="calendar.эпохи && calendar.эпохи.length > 0">
-            <option v-for="(era, idx) in calendar.эпохи" :key="idx" :value="idx">{{ era.название }}</option>
+          <select v-model.number="origin.эпоха" class="interactive-el glass-select" v-if="calendar.эпохи && calendar.эпохи.length > 0">
+            <option v-for="(era, idx) in calendar.эпохи" :key="idx" :value="idx">{{ era.название || `Эра ${idx+1}` }}</option>
           </select>
           
           <!-- Year -->
           <div style="display: flex; align-items: center; gap: 6px;">
             <label style="font-size: 11px; color: var(--text-muted);">Год:</label>
-            <input type="number" v-model.number="testDate.year" class="interactive-el glass-input" style="width: 70px;">
+            <input type="number" v-model.number="origin.год" class="interactive-el glass-input" style="width: 70px;">
           </div>
           
           <!-- Month Nav -->
           <div style="display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 4px;">
             <button class="btn-icon interactive-el" @click="prevMonth" title="Предыдущий месяц">◀</button>
-            <select v-model.number="testDate.month" class="interactive-el glass-select" style="min-width: 120px;">
-              <option v-for="(m, idx) in calendar.месяцы" :key="idx" :value="idx">{{ m.название }}</option>
+            <select v-model.number="origin.месяц" class="interactive-el glass-select" style="min-width: 120px;">
+              <option v-for="(m, idx) in calendar.месяцы" :key="idx" :value="idx">{{ m.название || `Месяц ${idx+1}` }}</option>
             </select>
             <button class="btn-icon interactive-el" @click="nextMonth" title="Следующий месяц">▶</button>
           </div>
+          
+          <!-- Day -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label style="font-size: 11px; color: var(--text-muted);">День:</label>
+            <input type="number" v-model.number="origin.день" class="interactive-el glass-input" style="width: 50px;" min="1" :max="currentDaysCount">
+          </div>
+          
+          <!-- Weekday -->
+          <div style="display: flex; align-items: center; gap: 6px;" v-if="calendar.названия_дней_недели && calendar.названия_дней_недели.length > 0">
+            <label style="font-size: 11px; color: var(--text-muted);">День недели:</label>
+            <select v-model.number="origin.день_недели" class="interactive-el glass-select">
+              <option v-for="(day, idx) in calendar.названия_дней_недели" :key="idx" :value="idx">{{ day }}</option>
+            </select>
+          </div>
         </div>
-        
+
         <div class="filters">
           <label class="filter-label"><input type="checkbox" v-model="filters.seasons"> Сезоны</label>
           <label class="filter-label"><input type="checkbox" v-model="filters.moons"> Луны</label>
@@ -98,26 +112,27 @@ const props = defineProps<{
 
 const isCollapsed = ref(false);
 
-const testDate = ref({
-  era_index: 0,
-  year: 1,
-  month: 0
-});
-
 const filters = ref({
   seasons: true,
   moons: true,
   holidays: true
 });
 
-watch(() => props.calendar, (cal) => {
-  if (cal && cal.точка_отсчета) {
-    if (testDate.value.year === 1 && testDate.value.month === 0) {
-      testDate.value.year = cal.точка_отсчета.год || 1;
-      testDate.value.month = cal.точка_отсчета.месяц || 0;
-    }
+const initOrigin = () => {
+  if (!props.calendar.точка_отсчета) {
+    props.calendar.точка_отсчета = {
+      эпоха: 0,
+      год: 1,
+      месяц: 0,
+      день: 1,
+      день_недели: 0
+    };
   }
-}, { immediate: true });
+};
+
+watch(() => props.calendar, () => initOrigin(), { immediate: true });
+
+const origin = computed(() => props.calendar.точка_отсчета!);
 
 const daysInWeek = computed(() => props.calendar.дней_в_неделе || 7);
 const weekdayNames = computed(() => {
@@ -126,29 +141,29 @@ const weekdayNames = computed(() => {
 });
 
 const prevMonth = () => {
-  if (testDate.value.month > 0) {
-    testDate.value.month--;
+  if (origin.value.месяц > 0) {
+    origin.value.месяц--;
   } else {
-    testDate.value.month = (props.calendar.месяцы?.length || 1) - 1;
-    testDate.value.year--;
+    origin.value.месяц = (props.calendar.месяцы?.length || 1) - 1;
+    origin.value.год--;
   }
 };
 
 const nextMonth = () => {
-  if (testDate.value.month < (props.calendar.месяцы?.length || 1) - 1) {
-    testDate.value.month++;
+  if (origin.value.месяц < (props.calendar.месяцы?.length || 1) - 1) {
+    origin.value.месяц++;
   } else {
-    testDate.value.month = 0;
-    testDate.value.year++;
+    origin.value.месяц = 0;
+    origin.value.год++;
   }
 };
 
 const currentDaysCount = computed(() => {
-  return CalendarMath.getDaysInMonth(props.calendar, testDate.value.year, testDate.value.month);
+  return CalendarMath.getDaysInMonth(props.calendar, origin.value.год, origin.value.месяц);
 });
 
 const startWeekdayOffset = computed(() => {
-  const inputDate = { ...testDate.value, day: 1, hour: 12, minute: 0 };
+  const inputDate = { era_index: origin.value.эпоха, year: origin.value.год, month: origin.value.месяц, day: 1, hour: 12, minute: 0 };
   const absMinute = CalendarMath.getAbsoluteMinute(inputDate, props.calendar);
   const settings = props.calendar.настройки_времени;
   const minutesInDay = (settings?.часов_в_сутках || 24) * (settings?.минут_в_часе || 60);
@@ -192,7 +207,7 @@ const gridDays = computed(() => {
   const cal = props.calendar;
   
   for (let i = 1; i <= count; i++) {
-    const inputDate = { ...testDate.value, day: i, hour: 12, minute: 0 };
+    const inputDate = { era_index: origin.value.эпоха, year: origin.value.год, month: origin.value.месяц, day: i, hour: 12, minute: 0 };
     const absMinute = CalendarMath.getAbsoluteMinute(inputDate, cal);
     
     // Moon phases for the day
@@ -217,7 +232,7 @@ const gridDays = computed(() => {
     }
     
     // Origin
-    const isOrigin = (cal.точка_отсчета?.год === inputDate.year && cal.точка_отсчета?.месяц === inputDate.month && cal.точка_отсчета?.день === i);
+    const isOrigin = (origin.value.год === inputDate.year && origin.value.месяц === inputDate.month && origin.value.день === i);
 
     days.push({
       day: i,

@@ -93,7 +93,7 @@ const stringifyId = (val: any): string => {
         s = match[1];
       }
     }
-    return s.replace(/"/g, '').normalize('NFC').trim();
+    return s.replace(/["`]/g, '').normalize('NFC').trim();
   }
 
   // Если это объект RecordId { tb: "...", id: "..." }
@@ -106,15 +106,15 @@ const stringifyId = (val: any): string => {
       actualId = actualId.String ?? actualId.Int ?? actualId.Uuid ?? JSON.stringify(actualId);
     }
     
-    return `${table}:${String(actualId).replace(/["⟨⟩]/g, '')}`.normalize('NFC').trim();
+    return `${table}:${String(actualId).replace(/["⟨⟩`]/g, '')}`.normalize('NFC').trim();
   }
 
   // Если это просто обертка { String: "..." }
   if (typeof val === 'object' && val.String) {
-    return String(val.String).replace(/["⟨⟩]/g, '').normalize('NFC').trim();
+    return String(val.String).replace(/["⟨⟩`]/g, '').normalize('NFC').trim();
   }
 
-  return String(val).replace(/["⟨⟩]/g, '').normalize('NFC').trim();
+  return String(val).replace(/["⟨⟩`]/g, '').normalize('NFC').trim();
 };
 
 const processIds = (data: any): any => {
@@ -285,12 +285,9 @@ export const apiService = {
   getCalendars: (project: string): Promise<any[]> =>
     invoke<any[]>('get_calendars', { project }),
   saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
-    const rawProjectId = project.replace(/^projects:/, '');
-    const rawCalId = calendarData.id ? calendarData.id.replace(/^calendars:/, '') : undefined;
-    
     const rustCalendar = {
-      id: rawCalId ? { tb: 'calendars', id: { String: rawCalId } } : null,
-      project_id: { tb: 'projects', id: { String: rawProjectId } },
+      id: calendarData.id || null,
+      project_id: project.startsWith('projects:') ? project : `projects:${project}`,
       name: calendarData.название || 'Новый календарь',
       is_default: calendarData.is_default || false,
       data: calendarData

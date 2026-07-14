@@ -223,7 +223,7 @@ import { timelineService } from '../../../services/timeline.service';
 import { apiService } from '../../../services/api.service';
 
 import EditorCore from './EditorCoreTiptap.vue';
-import TimelinePanel from './TimelinePanel.vue';
+import TimelinePanel from '../Calendars/TimelinePanel.vue';
 import ParticipantsPanel from './ParticipantsPanel.vue';
 import WowilonDrawer from './WowilonDrawer.vue';
 import ExportModal from './ExportModal.vue';

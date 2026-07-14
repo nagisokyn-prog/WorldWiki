@@ -24,7 +24,7 @@ import EditorGroupPaneVue from '../../../tauri-surreal-kit/frontend/src/componen
 const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/EntityEditor.vue'));
 const ChaptersViewVue = defineAsyncComponent(() => import('../components/Vue/ChaptersView.vue'));
 const EditorCoreVue = defineAsyncComponent(() => import('../components/Vue/Chapters/EditorCoreTiptap.vue'));
-const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/TimelinePanel.vue'));
+const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Calendars/TimelinePanel.vue'));
 const ParticipantsPanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/ParticipantsPanel.vue'));
 const PlanningPanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/PlanningPanel.vue'));
 const ExportModalVue = defineAsyncComponent(() => import('../components/Vue/Chapters/ExportModal.vue'));

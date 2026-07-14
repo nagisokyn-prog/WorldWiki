@@ -62,9 +62,9 @@ import XboxWheel from "../../../../../tauri-surreal-kit/frontend/src/components/
 
 const isCollapsed = ref(false);
 import { settingsService } from "../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service";
-import { calendarService } from "../../../services/calendar.service";
+import { CalendarMath } from "../../../services/Calendars/calendar.math";
 
-const getDaysInMonth = (cal: any, year: number, monthIdx: number) => calendarService.getDaysInMonth(cal, year, monthIdx);
+const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
 
 import { CalendarData } from "../../../services/Calendars/calendar.types";
 

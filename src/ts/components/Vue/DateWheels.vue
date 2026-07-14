@@ -66,6 +66,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import XboxWheel from '../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 import { calendarService } from '../../services/calendar.service';
+import { CalendarMath } from '../../services/Calendars/calendar.math';
 import { settingsService } from '../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
@@ -117,7 +118,7 @@ const monthOptions = computed(() => {
 
 const maxDaysInMonth = computed(() => {
   if (!calendar.value) return 30;
-  return calendarService.getDaysInMonth(calendar.value, currentYear.value, currentMonthIdx.value);
+  return CalendarMath.getDaysInMonth(calendar.value, currentYear.value, currentMonthIdx.value);
 });
 
 const dayOptions = computed(() => {
@@ -197,7 +198,7 @@ const onDayChange = () => {
 
 onMounted(async () => {
   let cal = await calendarService.loadCalendar(props.project);
-  if (!cal) cal = calendarService.getDefaultCalendar();
+  if (!cal) cal = CalendarMath.getDefaultCalendar();
   calendar.value = cal;
   
   syncFromProps();

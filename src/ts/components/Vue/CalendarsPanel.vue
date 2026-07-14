@@ -56,11 +56,11 @@
           <div class="calendar-middle-row-grid">
             <CalendarSeasons v-model="cal.data" />
             <CalendarMoons v-model="cal.data" />
+            <CalendarOrigin v-model="cal.data" />
           </div>
 
-          <div class="calendar-bottom-row-grid">
+          <div class="calendar-full-row-grid">
             <CalendarHolidays v-model="cal.data" />
-            <CalendarOrigin v-model="cal.data" />
           </div>
           <CalendarPlayground :calendar="cal.data" />
 
@@ -77,6 +77,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed, nextTick } from 'vue';
 import { calendarService } from "../../services/calendar.service";
+import { CalendarMath } from "../../services/Calendars/calendar.math";
 import CalendarSettings from "./Calendars/CalendarSettings.vue";
 import CalendarWeekdays from "./Calendars/CalendarWeekdays.vue";
 import CalendarMonths from "./Calendars/CalendarMonths.vue";
@@ -115,7 +116,7 @@ const loadCalendars = async () => {
     
     // Auto-create default calendar if none exist
     if (list.length === 0) {
-      const defaultData = calendarService.getDefaultCalendar();
+      const defaultData = CalendarMath.getDefaultCalendar();
       await calendarService.saveCalendar(project.value, { ...defaultData, is_default: true, tempId: `temp_${Date.now()}` });
       const newList = await calendarService.getCalendars(project.value);
       calendars.value = newList.map(c => ({
@@ -144,7 +145,7 @@ watch(() => project.value, () => {
 }, { immediate: true });
 
 const addCalendar = () => {
-  const newCal = calendarService.getDefaultCalendar();
+  const newCal = CalendarMath.getDefaultCalendar();
   newCal.название = `Новый календарь ${calendars.value.length + 1}`;
   
   calendars.value.push({
@@ -236,10 +237,17 @@ defineExpose({ saveAll });
   margin-top: 16px;
 }
 
-.calendar-middle-row-grid,
-.calendar-bottom-row-grid {
+.calendar-middle-row-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+.calendar-full-row-grid {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: start;
   margin-top: 16px;
@@ -261,8 +269,7 @@ defineExpose({ saveAll });
   .calendar-top-row-grid {
     grid-template-columns: 1fr;
   }
-  .calendar-middle-row-grid,
-  .calendar-bottom-row-grid {
+  .calendar-middle-row-grid {
     grid-template-columns: 1fr;
   }
 }

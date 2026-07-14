@@ -21,7 +21,7 @@ import EditorGroupPaneVue from '../../../tauri-surreal-kit/frontend/src/componen
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
 import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
 const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/EntityEditor.vue'));
-const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/TimelinePanel.vue'));
+const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Calendars/TimelinePanel.vue'));
 // ... other async domain components ...
 
 async function init() {
@@ -37,8 +37,8 @@ async function init() {
       const shell = useShellApp({
         storagePrefix: `worldwiki-state-${projectName}`,
         appId: 'world-wiki',
-        quickOpenRef,
-        commandPaletteRef,
+        quickOpenRef: quickOpenRef as any,
+        commandPaletteRef: commandPaletteRef as any,
         
         // 1. Hook: Handle Ctrl+S / CommandPalette Save
         onSave: async () => {

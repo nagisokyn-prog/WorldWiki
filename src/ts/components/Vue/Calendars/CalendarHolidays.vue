@@ -7,14 +7,15 @@
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
       <div class="item-list">
-        <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row">
+        <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row" style="display: flex; gap: 12px; align-items: center; width: 100%;">
           <input
             type="text"
             v-model="holiday.название"
             class="item-name interactive-el"
             placeholder="Название праздника"
+            style="flex: 1;"
           />
-          <div style="display: flex; gap: 5px; align-items: center">
+          <div style="display: flex; gap: 12px; align-items: center; flex: 2;">
             <XboxWheel
               :horizontal="wheelHorizontal"
               :options="
@@ -24,10 +25,10 @@
                 }))
               "
               v-model.number="holiday.дата_начала.месяц"
-              style="width: 120px"
+              style="flex: 1; min-width: 0;"
             >
             </XboxWheel>
-            <input
+              <input
               type="number"
               v-model.number="holiday.дата_начала.день"
               min="1"
@@ -38,7 +39,7 @@
                   holiday.дата_начала.месяц,
                 )
               "
-              style="width: 50px"
+              style="width: 60px"
               class="interactive-el"
             />
             <span v-if="holiday.дата_конца">—</span>
@@ -52,7 +53,7 @@
                 }))
               "
               v-model.number="holiday.дата_конца.месяц"
-              style="width: 120px"
+              style="flex: 1; min-width: 0;"
             >
             </XboxWheel>
             <input
@@ -67,7 +68,7 @@
                   holiday.дата_конца.месяц,
                 )
               "
-              style="width: 50px"
+              style="width: 60px"
               class="interactive-el"
             />
           </div>
@@ -106,9 +107,9 @@ import XboxWheel from "../../../../../tauri-surreal-kit/frontend/src/components/
 
 const isCollapsed = ref(false);
 import { settingsService } from "../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service";
-import { calendarService } from "../../../services/calendar.service";
+import { CalendarMath } from "../../../services/Calendars/calendar.math";
 
-const getDaysInMonth = (cal: any, year: number, monthIdx: number) => calendarService.getDaysInMonth(cal, year, monthIdx);
+const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
 
 import { CalendarData } from "../../../services/Calendars/calendar.types";
 

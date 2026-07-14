@@ -694,10 +694,10 @@ const createNewChapter = async (arcId?: string, volumeId?: string) => {
       if (cal && cal.точка_отсчета) {
         newCh.timelineEvents = [{
           date: {
-            era: cal.точка_отсчета.эпоха || 0,
-            year: cal.точка_отсчета.год || 1,
-            month: cal.точка_отсчета.месяц || 0,
-            day: cal.точка_отсчета.день || 1
+            era: cal.точка_отсчета.эпоха ?? 0,
+            year: cal.точка_отсчета.год ?? 1,
+            month: cal.точка_отсчета.месяц ?? 0,
+            day: cal.точка_отсчета.день ?? 1
           },
           time: { hour: 12, minute: 0 },
           description: "Начало истории"

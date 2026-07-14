@@ -92,7 +92,7 @@ export interface CalendarData {
   эпохи: CalendarEra[];
   правило_високосного_года: string;
   пользовательское_високосное_правило?: { месяц: number; день_смещения: number };
-  точка_отсчета?: { эпоха: number; год: number; месяц: number; день: number; день_недели: number };
+  точка_отсчета?: { эпоха?: number; год: number; месяц: number; день: number; день_недели: number };
   настройки_времени?: CalendarSettings;
   сезоны?: CalendarSeason[];
   праздники?: CalendarHoliday[];

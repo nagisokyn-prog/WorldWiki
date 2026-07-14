@@ -11,7 +11,6 @@ DEFINE FIELD OVERWRITE data        ON projects TYPE object FLEXIBLE DEFAULT 
 DEFINE FIELD OVERWRITE type        ON projects TYPE option<string>;
 DEFINE FIELD OVERWRITE genres      ON projects TYPE option<array<string>>;
 DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string>;
-DEFINE FIELD OVERWRITE calendar    ON projects TYPE option<object> FLEXIBLE;
 
 -- ===============================================
 -- ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)

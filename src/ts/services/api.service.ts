@@ -60,7 +60,10 @@ interface EntityType {
 
 import { invoke, stringifyId, processIds } from '../../../tauri-surreal-kit/frontend/src/js/services/api.service';
 
-export const projectRecordId = (p: string): string => "projects:" + p;
+export const projectRecordId = (p: string): string => {
+  if (p.startsWith('projects:')) return p;
+  return `projects:\`${p}\``;
+};
 
 /*
 const isTauri = typeof window !== 'undefined' && !!(window as any).__TAURI__?.core;
@@ -285,13 +288,17 @@ export const apiService = {
   getCalendars: (project: string): Promise<any[]> =>
     invoke<any[]>('get_calendars', { project }),
   saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
+    // Делаем глубокую копию, чтобы снять обёртки Vue Proxy, которые могут терять данные при передаче в Rust
+    const plainData = JSON.parse(JSON.stringify(calendarData));
+    const { id, is_default, _id, ...calendarPayload } = plainData;
     const rustCalendar = {
-      id: calendarData.id || null,
-      project_id: project.startsWith('projects:') ? project : `projects:${project}`,
-      name: calendarData.название || 'Новый календарь',
-      is_default: calendarData.is_default || false,
-      data: calendarData
+      id: id || null,
+      project_id: projectRecordId(project),
+      name: plainData.название || 'Новый календарь',
+      is_default: is_default || false,
+      data: calendarPayload
     };
+    console.log('[API saveCalendar] Отправка на бэкенд (отладка):', rustCalendar);
     return invoke<{ success: boolean }>('save_calendar', { data: rustCalendar });
   },
   deleteCalendar: (id: string): Promise<void> =>

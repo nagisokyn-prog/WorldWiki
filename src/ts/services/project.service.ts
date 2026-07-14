@@ -23,7 +23,7 @@ interface ProjectCalendar {
 interface ProjectConfig {
   type: string;
   genres: string[];
-  calendar: ProjectCalendar | null;
+
   created?: string;
   updated?: string;
   [key: string]: unknown;
@@ -36,7 +36,7 @@ interface ProjectMetadata {
   created: string;
   updated: string;
   stats: ProjectStats;
-  calendar: ProjectCalendar | null;
+
 }
 
 interface ProjectData {
@@ -117,8 +117,7 @@ export const projectService = {
       genres: config.genres || [],
       created: config.created || new Date().toISOString(),
       updated: config.updated || new Date().toISOString(),
-      stats: projectData.stats || { characters: 0, organizations: 0, states: 0, chapters: 0 },
-      calendar: config.calendar || null
+      stats: projectData.stats || { characters: 0, organizations: 0, states: 0, chapters: 0 }
     };
   }
 };

@@ -40,20 +40,7 @@ class CalendarService {
   async saveCalendar(projectName: string, calendar: CalendarData): Promise<boolean> {
     try {
       await apiService.saveCalendar(projectName, calendar);
-      
-      // Если это календарь по умолчанию, синхронизируем его в поле calendar таблицы projects
-      if (calendar.is_default) {
-        try {
-          const config = await projectService.getProjectConfig(projectName);
-          if (config) {
-            config.calendar = calendar;
-            await projectService.saveProjectConfig(projectName, config);
-          }
-        } catch (err) {
-          console.warn('Ошибка синхронизации календаря в конфиг проекта:', err);
-        }
-      }
-      
+
       console.log("✅ Календарь успешно сохранён в БД");
       return true;
     } catch (error) {

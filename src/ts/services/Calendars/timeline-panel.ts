@@ -99,29 +99,36 @@ export default defineComponent({
 
     onMounted(async () => {
       try {
+        console.log('[Timeline] Loading calendars for project:', props.project);
         const calendarsList = await calendarService.getCalendars(props.project);
+        console.log('[Timeline] Raw calendars from DB:', calendarsList);
+        
         availableCalendars.value = calendarsList.map(c => ({
           id: c.id,
           is_default: c.is_default,
           data: c.data || CalendarMath.getDefaultCalendar()
         }));
+        console.log('[Timeline] Processed availableCalendars:', availableCalendars.value);
 
         const defaultCal = availableCalendars.value.find(c => c.is_default) || availableCalendars.value[0];
+        console.log('[Timeline] Selected default calendar:', defaultCal);
         if (defaultCal) {
           selectedCalendarId.value = defaultCal.id;
           loadCalendarData(defaultCal);
 
           const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
+          console.log('[Timeline] Current events in chapter:', newEvents);
           let hasChanges = false;
 
           if (newEvents.length === 0) {
-            const origin = defaultCal.data.точка_отсчета || { год: 1, месяц: 0, день: 1 };
+            const origin = defaultCal.data.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
+            console.log('[Timeline] Auto-creating first event with origin:', origin);
             newEvents.push({
               date: {
-                era: 0,
-                year: origin.год || 1,
-                month: origin.месяц || 0,
-                day: origin.день || 1
+                era: origin.эпоха ?? 0,
+                year: origin.год ?? 1,
+                month: origin.месяц ?? 0,
+                day: origin.день ?? 1
               },
               time: { hour: 12, minute: 0 },
               description: '',
@@ -157,13 +164,13 @@ export default defineComponent({
         let hasChanges = false;
 
         if (newEvents.length === 0) {
-          const origin = defaultCal.data.точка_отсчета || { год: 1, месяц: 0, день: 1 };
+          const origin = defaultCal.data.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
           newEvents.push({
             date: {
-              era: 0,
-              year: origin.год || 1,
-              month: origin.месяц || 0,
-              day: origin.день || 1
+              era: origin.эпоха ?? 0,
+              year: origin.год ?? 1,
+              month: origin.месяц ?? 0,
+              day: origin.день ?? 1
             },
             time: { hour: 12, minute: 0 },
             description: '',
@@ -289,10 +296,26 @@ export default defineComponent({
     };
 
     const addEvent = () => {
+      console.log('[Timeline] addEvent clicked');
       const newEvents = [...(props.events as TimelineEvent[])];
+      const cal = calendar.value;
+      console.log('[Timeline] Current selected calendar value:', cal);
+      
+      const origin = cal?.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
+      console.log('[Timeline] Fallback origin for new event:', origin);
+      
+      let defaultDate = { era: origin.эпоха ?? 0, year: origin.год ?? 1, month: origin.месяц ?? 0, day: origin.день ?? 1 };
+      let defaultTime = { hour: 12, minute: 0 };
+      
+      if (newEvents.length > 0) {
+        const last = newEvents[newEvents.length - 1];
+        defaultDate = { ...last.date };
+        if (last.time) defaultTime = { hour: last.time.hour ?? 12, minute: last.time.minute ?? 0 };
+      }
+      
       newEvents.push({
-        date: { era: 0, year: 1, month: 0, day: 1 },
-        time: { hour: 12, minute: 0 },
+        date: defaultDate,
+        time: defaultTime,
         description: '',
         calendar_id: selectedCalendarId.value || undefined
       });

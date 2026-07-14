@@ -81,7 +81,7 @@ onMounted(() => {
     (s) => (wheelHorizontal.value = s.dropdowns?.wheelOrientation === "horizontal"),
   );
   if (!props.modelValue.точка_отсчета) {
-    props.modelValue.точка_отсчета = { год: 1, месяц: 0, день: 1, день_недели: 0 };
+    props.modelValue.точка_отсчета = { эпоха: 0, год: 1, месяц: 0, день: 1, день_недели: 0 };
   }
 });
 </script>

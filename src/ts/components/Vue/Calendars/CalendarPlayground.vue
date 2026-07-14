@@ -163,14 +163,26 @@ const currentDaysCount = computed(() => {
 });
 
 const startWeekdayOffset = computed(() => {
-  const inputDate = { era_index: origin.value.эпоха, year: origin.value.год, month: origin.value.месяц, day: 1, hour: 12, minute: 0 };
+  const inputDate = { era_index: origin.value.эпоха ?? 0, year: origin.value.год, month: origin.value.месяц, day: 1, hour: 12, minute: 0 };
   const absMinute = CalendarMath.getAbsoluteMinute(inputDate, props.calendar);
+  
+  const originDate = { 
+    era_index: props.calendar.точка_отсчета?.эпоха ?? 0, 
+    year: props.calendar.точка_отсчета?.год ?? 1, 
+    month: props.calendar.точка_отсчета?.месяц ?? 0, 
+    day: props.calendar.точка_отсчета?.день ?? 1, 
+    hour: 12, minute: 0 
+  };
+  const originAbsMinute = CalendarMath.getAbsoluteMinute(originDate, props.calendar);
+
   const settings = props.calendar.настройки_времени;
   const minutesInDay = (settings?.часов_в_сутках || 24) * (settings?.минут_в_часе || 60);
+  
   const absoluteDay = Math.floor(absMinute / minutesInDay);
+  const originAbsoluteDay = Math.floor(originAbsMinute / minutesInDay);
   
   const startOffset = props.calendar.точка_отсчета?.день_недели || 0;
-  return ((absoluteDay + startOffset) % daysInWeek.value + daysInWeek.value) % daysInWeek.value;
+  return ((absoluteDay - originAbsoluteDay + startOffset) % daysInWeek.value + daysInWeek.value) % daysInWeek.value;
 });
 
 const getHolidayForDate = (cal: CalendarData, year: number, monthIdx: number, day: number) => {
@@ -207,7 +219,7 @@ const gridDays = computed(() => {
   const cal = props.calendar;
   
   for (let i = 1; i <= count; i++) {
-    const inputDate = { era_index: origin.value.эпоха, year: origin.value.год, month: origin.value.месяц, day: i, hour: 12, minute: 0 };
+    const inputDate = { era_index: origin.value.эпоха ?? 0, year: origin.value.год, month: origin.value.месяц, day: i, hour: 12, minute: 0 };
     const absMinute = CalendarMath.getAbsoluteMinute(inputDate, cal);
     
     // Moon phases for the day

@@ -55,7 +55,7 @@ DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT 
 -- Исправление ошибки timeline_events
 DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array DEFAULT [];
 DEFINE FIELD OVERWRITE timeline_events.* ON chapters TYPE object FLEXIBLE;
-DEFINE FIELD OVERWRITE timeline_events.*.date ON chapters TYPE string;
+DEFINE FIELD OVERWRITE timeline_events.*.date ON chapters TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE timeline_events.*.epoch ON chapters TYPE option<string>;
 DEFINE FIELD OVERWRITE timeline_events.*.time ON chapters TYPE option<string>;
 

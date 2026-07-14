@@ -630,6 +630,39 @@ const scrollToBlock = (idx: number) => {
   selectedBlockIdx.value = idx;
 };
 
+const cycleGlobalTag = (pIndex: number) => {
+  if (!editor.value) return;
+  
+  let currentPIndex = 0;
+  let targetPos = -1;
+  let targetNode: any = null;
+  
+  editor.value.state.doc.descendants((node, pos) => {
+    if (node.type.name === 'paragraph') {
+      if (currentPIndex === pIndex) {
+        targetPos = pos;
+        targetNode = node;
+        return false;
+      }
+      currentPIndex++;
+    }
+  });
+  
+  if (targetPos !== -1 && targetNode) {
+    const currentTag = targetNode.attrs.semanticTag || 'desc';
+    const nextTag = currentTag === 'desc' ? 'dialog' : (currentTag === 'dialog' ? 'thought' : 'desc');
+    
+    editor.value.view.dispatch(
+      editor.value.state.tr.setNodeMarkup(targetPos, undefined, {
+        ...targetNode.attrs,
+        semanticTag: nextTag
+      })
+    );
+    editorUpdateKey.value++;
+    emit('change');
+  }
+};
+
 // Resizing функционал для Split View
 const startResizeLeft = (e: MouseEvent) => {
   e.preventDefault();

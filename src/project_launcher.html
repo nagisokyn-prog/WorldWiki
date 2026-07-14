@@ -133,41 +133,48 @@
             </div>
             <div class="modal-body">
                 <form id="createProjectForm" @submit.prevent="submitForm">
-                    <div class="form-group">
-                        <label class="glass-label" for="projectName">Название произведения</label>
-                        <input type="text" id="projectName" class="glass-input" 
-                               v-model="formData.name" :disabled="isEditing"
-                               placeholder="Введите название произведения" required>
-                        <small class="glass-label">Название вашего произведения</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="glass-label">Тип произведения</label>
-                        <vanilla-xbox-wheel v-model="formData.type" :options="projectTypes"></vanilla-xbox-wheel>
-                    </div>
+                    <div class="project-creation-grid">
+                        <div class="project-creation-left">
+                            <div class="form-group">
+                                <label class="glass-label" for="projectName">Название произведения</label>
+                                <input type="text" id="projectName" class="glass-input" 
+                                       v-model="formData.name" :disabled="isEditing"
+                                       placeholder="Введите название произведения" required>
+                                <small class="glass-label">Название вашего произведения</small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="glass-label">Тип произведения</label>
+                                <vanilla-xbox-wheel v-model="formData.type" :options="projectTypes"></vanilla-xbox-wheel>
+                            </div>
 
-                    <div class="form-group">
-                        <label class="glass-label">Жанры произведения</label>
-                        <div class="genres-grid glass-card">
-                            <div class="glass-card-bg"></div>
-                            <div class="glass-card-content" style="padding: 12px;">
-                                <div class="genres-grid-inner">
-                                    <label v-for="genre in genres" :key="genre.value" class="genre-checkbox">
-                                        <input type="checkbox" :value="genre.value" v-model="formData.genres">
-                                        <span>{{ genre.icon }} {{ genre.label }}</span>
-                                    </label>
+                            <div class="form-group">
+                                <label class="glass-label">Жанры произведения</label>
+                                <div class="genres-grid glass-card">
+                                    <div class="glass-card-bg"></div>
+                                    <div class="glass-card-content" style="padding: 12px;">
+                                        <div class="genres-grid-inner">
+                                            <label v-for="genre in genres" :key="genre.value" class="genre-checkbox">
+                                                <input type="checkbox" :value="genre.value" v-model="formData.genres">
+                                                <span>{{ genre.icon }} {{ genre.label }}</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
+                                <small class="glass-label">Выберите один или нескольких жанров</small>
                             </div>
                         </div>
-                        <small class="glass-label">Выберите один или нескольких жанров</small>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="glass-label">📅 Календарь мира</label>
-                        <calendars-panel ref="calendarsPanelRef" :project="formData.name"></calendars-panel>
-                        <small class="glass-label">Управление календарями мира. Эти настройки будут сохранены независимо.</small>
+                        <div class="project-creation-right">
+                            <div class="form-group" style="height: 100%; display: flex; flex-direction: column;">
+                                <label class="glass-label">📅 Календарь мира</label>
+                                <div style="flex: 1; overflow-y: auto; margin-bottom: 8px;">
+                                    <calendars-panel ref="calendarsPanelRef" :project="formData.name" style="min-height: 400px;"></calendars-panel>
+                                </div>
+                                <small class="glass-label">Управление календарями мира. Эти настройки будут сохранены независимо.</small>
+                            </div>
+                        </div>
                     </div>
-
                 </form>
             </div>
             <div class="modal-footer">

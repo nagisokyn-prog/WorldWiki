@@ -147,6 +147,17 @@ const processIds = (data: any): any => {
 */
 
 export const apiService = {
+  // ═══════════════════════════════════════════════════════
+  //  GLOBAL SEARCH
+  // ═══════════════════════════════════════════════════════
+  searchEntities: async (projectName: string, query: string): Promise<EntityData[]> => {
+    try {
+      return await invoke('search_entities', { project: projectName, query });
+    } catch (error) {
+      console.error('API Error (search_entities):', error);
+      return [];
+    }
+  },
   uploadPhoto: async (file: File): Promise<string> => {
     const buffer = await file.arrayBuffer();
     const bytes = Array.from(new Uint8Array(buffer));
@@ -273,8 +284,16 @@ export const apiService = {
   // Календари
   getCalendars: (project: string): Promise<any[]> =>
     invoke<any[]>('get_calendars', { project }),
-  saveCalendar: (project: string, calendarData: unknown): Promise<{ success: boolean }> =>
-    invoke<{ success: boolean }>('save_calendar', { data: calendarData }),
+  saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
+    const rustCalendar = {
+      id: calendarData.id,
+      project_id: project.startsWith('projects:') ? project : `projects:${project}`,
+      name: calendarData.название || 'Новый календарь',
+      is_default: calendarData.is_default || false,
+      data: calendarData
+    };
+    return invoke<{ success: boolean }>('save_calendar', { data: rustCalendar });
+  },
   deleteCalendar: (id: string): Promise<void> =>
     invoke<void>('delete_calendar', { id }),
 

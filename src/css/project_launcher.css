@@ -192,8 +192,27 @@
 }
 
 .large-modal {
-    max-width: 800px;
-    width: 90%;
+    max-width: calc(100vw - 64px);
+    width: 100%;
+}
+
+/* ===== Project Creation Grid ===== */
+.project-creation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: calc(24px * var(--density-mult, 1));
+}
+
+.project-creation-left, .project-creation-right {
+    display: flex;
+    flex-direction: column;
+    gap: calc(16px * var(--density-mult, 1));
+}
+
+@media (max-width: 768px) {
+    .project-creation-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .modal-header {

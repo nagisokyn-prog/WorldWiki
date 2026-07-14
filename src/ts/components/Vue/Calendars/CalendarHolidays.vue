@@ -98,7 +98,9 @@
 import { ref, onMounted } from "vue";
 import XboxWheel from "../../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue";
 import { settingsService } from "../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service";
-import { getDaysInMonth } from "../../../services/Calendars/calendar.math";
+import { calendarService } from "../../../services/calendar.service";
+
+const getDaysInMonth = (cal: any, year: number, monthIdx: number) => calendarService.getDaysInMonth(cal, year, monthIdx);
 
 import { CalendarData } from "../../../services/Calendars/calendar.types";
 

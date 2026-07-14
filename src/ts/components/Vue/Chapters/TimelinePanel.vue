@@ -116,6 +116,12 @@
             placeholder="Описание события..." 
             class="event-description"
           ></textarea>
+
+          <!-- Авто-шаг -->
+          <div class="auto-step-container">
+            <input type="text" v-model="relativeInput[idx]" placeholder="Спустя... (напр: 2 месяца 1 день)" class="interactive-el relative-input">
+            <button class="btn-icon interactive-el" @click.stop="createNextEvent(idx)" title="Создать следующее событие с вычисленной датой">➡️</button>
+          </div>
         </div>
       </div>
     </div>
@@ -130,6 +136,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { PropType } from 'vue';
 import { calendarService } from '../../../services/calendar.service';
+import { CalendarMath } from '../../../services/calendar.math';
 import XboxWheel from '../../../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue';
 import { settingsService } from '../../../../../tauri-surreal-kit/frontend/src/js/services/settings.service';
 
@@ -432,6 +439,50 @@ const addEvent = () => {
 const removeEvent = (idx: number) => {
   const newEvents = [...(props.events as TimelineEvent[])];
   newEvents.splice(idx, 1);
+  emit('update:events', newEvents);
+  onChange();
+};
+
+const relativeInput = ref<Record<number, string>>({});
+
+const createNextEvent = (idx: number) => {
+  const currentEvent = props.events[idx];
+  const input = relativeInput.value[idx];
+  if (!input || !calendar.value) return;
+
+  const inputObj = {
+    era_index: currentEvent.date.era,
+    year: currentEvent.date.year,
+    month: currentEvent.date.month,
+    day: currentEvent.date.day,
+    hour: currentEvent.time?.hour || 0,
+    minute: currentEvent.time?.minute || 0
+  };
+
+  const absMins = CalendarMath.getAbsoluteMinute(inputObj, calendar.value);
+  const delta = CalendarMath.parseDurationString(input, calendar.value);
+  
+  const nextDateObj = CalendarMath.getDateFromAbsolute(absMins + delta, calendar.value, currentEvent.date.era);
+  
+  const newEvents = [...(props.events as TimelineEvent[])];
+  newEvents.splice(idx + 1, 0, {
+    date: {
+      era: nextDateObj.era_index,
+      year: nextDateObj.year,
+      month: nextDateObj.month,
+      day: nextDateObj.day
+    },
+    time: {
+      hour: nextDateObj.hour,
+      minute: nextDateObj.minute
+    },
+    description: '',
+    calendar_id: selectedCalendarId.value || undefined
+  });
+  
+  expandedIndices.value.add(idx + 1);
+  relativeInput.value[idx] = ''; // clear input
+  
   emit('update:events', newEvents);
   onChange();
 };

@@ -254,6 +254,7 @@ const genres = [
           formData.value.type = (config.type as string) || 'book';
           formData.value.genres = (config.genres as string[]) || [];
           formData.value.perfLevel = (config.perfLevel as string) || 'auto';
+          formData.value.calendar = config.calendar || {};
         }
       } catch (e) {
         console.error('Ошибка загрузки конфигурации:', e);

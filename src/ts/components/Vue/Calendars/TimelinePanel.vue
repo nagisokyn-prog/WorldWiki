@@ -60,7 +60,7 @@
             <input 
               type="number" 
               :value="ev.date.year" 
-              @input="(e) => updateEventDate(idx, 'year', parseInt((e.target as HTMLInputElement).value))"
+              @input="onYearInput(idx, $event)"
               class="year-input"
             >
           </div>
@@ -81,7 +81,7 @@
             <input 
               type="number" 
               :value="ev.date.day" 
-              @input="(e) => updateEventDate(idx, 'day', parseInt((e.target as HTMLInputElement).value))"
+              @input="onDayInput(idx, $event)"
               class="day-input"
               :max="getDaysInMonth(ev.date.month)"
             >

@@ -90,7 +90,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
-import { calendarService } from '../../../services/calendar.service';
 import { CalendarData } from '../../../services/Calendars/calendar.types';
 
 const props = defineProps<{

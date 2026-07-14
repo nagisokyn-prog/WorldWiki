@@ -285,9 +285,12 @@ export const apiService = {
   getCalendars: (project: string): Promise<any[]> =>
     invoke<any[]>('get_calendars', { project }),
   saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
+    const rawProjectId = project.replace(/^projects:/, '');
+    const rawCalId = calendarData.id ? calendarData.id.replace(/^calendars:/, '') : undefined;
+    
     const rustCalendar = {
-      id: calendarData.id,
-      project_id: project.startsWith('projects:') ? project : `projects:${project}`,
+      id: rawCalId ? { tb: 'calendars', id: { String: rawCalId } } : null,
+      project_id: { tb: 'projects', id: { String: rawProjectId } },
       name: calendarData.название || 'Новый календарь',
       is_default: calendarData.is_default || false,
       data: calendarData

@@ -269,6 +269,16 @@ export default defineComponent({
       onChange();
     };
 
+    const onYearInput = (idx: number, e: Event) => {
+      const el = e.target as HTMLInputElement;
+      updateEventDate(idx, 'year', parseInt(el.value) || 1);
+    };
+
+    const onDayInput = (idx: number, e: Event) => {
+      const el = e.target as HTMLInputElement;
+      updateEventDate(idx, 'day', parseInt(el.value) || 1);
+    };
+
     const updateEventTime = (idx: number, field: string, value: number) => {
       const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
       if (!newEvents[idx].time) newEvents[idx].time = { hour: 0, minute: 0 };
@@ -351,6 +361,8 @@ export default defineComponent({
       formatEventDate,
       eraOptions,
       updateEventDate,
+      onYearInput,
+      onDayInput,
       monthOptions,
       getDaysInMonth,
       hourOptions,

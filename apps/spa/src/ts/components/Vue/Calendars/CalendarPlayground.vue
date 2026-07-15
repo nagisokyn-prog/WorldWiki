@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-section interactive-el playground-section" style="width: 100%;">
-    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="color: var(--accent); margin: 0;"><i class="fas fa-calendar-alt"></i> Точка отсчёта в произведении</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
@@ -11,33 +11,33 @@
       <div class="playground-controls">
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
           <!-- Era -->
-          <select v-model.number="origin.эпоха" class="interactive-el glass-select" v-if="calendar.эпохи && calendar.эпохи.length > 0">
+          <select v-if="calendar.эпохи && calendar.эпохи.length > 0" v-model.number="origin.эпоха" class="interactive-el glass-select">
             <option v-for="(era, idx) in calendar.эпохи" :key="idx" :value="idx">{{ era.название || `Эра ${idx+1}` }}</option>
           </select>
           
           <!-- Year -->
           <div style="display: flex; align-items: center; gap: 6px;">
             <label style="font-size: 11px; color: var(--text-muted);">Год:</label>
-            <input type="number" v-model.number="origin.год" class="interactive-el glass-input" style="width: 70px;">
+            <input v-model.number="origin.год" type="number" class="interactive-el glass-input" style="width: 70px;">
           </div>
           
           <!-- Month Nav -->
           <div style="display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 4px;">
-            <button class="btn-icon interactive-el" @click="prevMonth" title="Предыдущий месяц">◀</button>
+            <button class="btn-icon interactive-el" title="Предыдущий месяц" @click="prevMonth">◀</button>
             <select v-model.number="origin.месяц" class="interactive-el glass-select" style="min-width: 120px;">
               <option v-for="(m, idx) in calendar.месяцы" :key="idx" :value="idx">{{ m.название || `Месяц ${idx+1}` }}</option>
             </select>
-            <button class="btn-icon interactive-el" @click="nextMonth" title="Следующий месяц">▶</button>
+            <button class="btn-icon interactive-el" title="Следующий месяц" @click="nextMonth">▶</button>
           </div>
           
           <!-- Day -->
           <div style="display: flex; align-items: center; gap: 6px;">
             <label style="font-size: 11px; color: var(--text-muted);">День:</label>
-            <input type="number" v-model.number="origin.день" class="interactive-el glass-input" style="width: 50px;" min="1" :max="currentDaysCount">
+            <input v-model.number="origin.день" type="number" class="interactive-el glass-input" style="width: 50px;" min="1" :max="currentDaysCount">
           </div>
           
           <!-- Weekday -->
-          <div style="display: flex; align-items: center; gap: 6px;" v-if="calendar.названия_дней_недели && calendar.названия_дней_недели.length > 0">
+          <div v-if="calendar.названия_дней_недели && calendar.названия_дней_недели.length > 0" style="display: flex; align-items: center; gap: 6px;">
             <label style="font-size: 11px; color: var(--text-muted);">День недели:</label>
             <select v-model.number="origin.день_недели" class="interactive-el glass-select">
               <option v-for="(day, idx) in calendar.названия_дней_недели" :key="idx" :value="idx">{{ day }}</option>
@@ -46,9 +46,9 @@
         </div>
 
         <div class="filters">
-          <label class="filter-label"><input type="checkbox" v-model="filters.seasons"> Сезоны</label>
-          <label class="filter-label"><input type="checkbox" v-model="filters.moons"> Луны</label>
-          <label class="filter-label"><input type="checkbox" v-model="filters.holidays"> Праздники</label>
+          <label class="filter-label"><input v-model="filters.seasons" type="checkbox"> Сезоны</label>
+          <label class="filter-label"><input v-model="filters.moons" type="checkbox"> Луны</label>
+          <label class="filter-label"><input v-model="filters.holidays" type="checkbox"> Праздники</label>
         </div>
       </div>
 
@@ -64,7 +64,8 @@
           <div v-for="empty in startWeekdayOffset" :key="'e'+empty" class="day-cell empty-cell"></div>
           
           <!-- Actual Days -->
-          <div v-for="day in gridDays" :key="'d'+day.day" 
+          <div
+v-for="day in gridDays" :key="'d'+day.day" 
                class="day-cell" 
                :class="{ 'is-holiday': day.holidayText, 'is-origin': day.isOrigin }"
                :style="{ backgroundColor: filters.seasons ? day.seasonColor : 'transparent' }"
@@ -83,10 +84,11 @@
             </div>
 
             <!-- Moons Overlay -->
-            <div class="moons-container" v-if="filters.moons && day.moons.length">
+            <div v-if="filters.moons && day.moons.length" class="moons-container">
               <template v-for="m in day.moons" :key="m.moon.name">
-                <div class="moon-dot" 
-                     v-if="isSignificantPhase(m.phase)" 
+                <div
+v-if="isSignificantPhase(m.phase)" 
+                     class="moon-dot" 
                      :style="{ backgroundColor: m.moon.color || '#fff' }"
                      :title="`${m.emoji} ${m.moon.name}: ${m.name}`">
                 </div>
@@ -260,7 +262,7 @@ const gridDays = computed(() => {
 });
 
 const getDayTooltip = (day: any) => {
-  let lines = [`День ${day.day}`];
+  const lines = [`День ${day.day}`];
   if (day.seasonName && filters.value.seasons) lines.push(`❄️ ${day.seasonName}`);
   if (day.holidayText && filters.value.holidays) lines.push(`🎉 Праздник: ${day.holidayText}`);
   if (day.moons && day.moons.length && filters.value.moons) {

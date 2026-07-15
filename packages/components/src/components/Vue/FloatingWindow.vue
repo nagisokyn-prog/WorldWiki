@@ -14,7 +14,7 @@
           <span class="window-title">{{ title }}</span>
         </div>
         <div class="header-actions">
-          <button class="action-btn close-btn" @click.stop="close" :title="t('common.closeWindow')">&times;</button>
+          <button class="action-btn close-btn" :title="t('common.closeWindow')" @click.stop="close">&times;</button>
         </div>
       </div>
 

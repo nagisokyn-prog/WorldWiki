@@ -4,7 +4,7 @@
     <!-- Шапка элемента -->
     <div class="rel-header">
       <strong class="rel-title">{{ templateConf.headerTitle || 'Связь' }} #{{ idx + 1 }}</strong>
-      <button class="btn-icon-danger" @click="$emit('remove', idx)" title="Удалить">🗑️</button>
+      <button class="btn-icon-danger" title="Удалить" @click="$emit('remove', idx)">🗑️</button>
     </div>
 
     <!-- ======= Split-view: Я / Он ======= -->
@@ -22,8 +22,8 @@
             <button 
               v-if="sandboxMode && tField.type === 'select' && !tField.entityType" 
               class="btn-edit-options-tiny"
-              @click="tField._editingOptions = !tField._editingOptions"
               title="Изменить варианты выбора"
+              @click="tField._editingOptions = !tField._editingOptions"
             >
               {{ tField._editingOptions ? '✅' : '✏️' }}
             </button>
@@ -41,21 +41,23 @@
           </div>
 
           <!-- Поле линка (персонаж/родственник) -->
-          <XboxWheel :horizontal="wheelHorizontal"
-            v-if="tField.class === linkClass"
+          <XboxWheel
+v-if="tField.class === linkClass"
+            :horizontal="wheelHorizontal"
             :model-value="String(item[tField.class] || '')"
-            @update:modelValue="val => onLinkChange(tField.class, val)"
             :options="getOptions(tField)"
             :placeholder="tField.placeholder"
+            @update:model-value="val => onLinkChange(tField.class, val)"
           />
 
-          <XboxWheel :horizontal="wheelHorizontal"
-            v-else-if="tField.type === 'select'"
+          <XboxWheel
+v-else-if="tField.type === 'select'"
             :key="tField.class + '-select'"
+            :horizontal="wheelHorizontal"
             :model-value="String(item[tField.class] || '')"
-            @update:modelValue="val => { item[tField.class] = val; notifyItemUpdate(); }"
             :options="getOptions(tField)"
             :placeholder="tField.placeholder"
+            @update:model-value="val => { item[tField.class] = val; notifyItemUpdate(); }"
           />
 
           <div v-else-if="tField.type === 'range'" class="range-wrap-vertical">
@@ -65,27 +67,27 @@
               :min="tField.min ?? -100"
               :max="tField.max ?? 100"
               :value="item[tField.class] ?? 0"
-              @input="e => { const input = e.target as HTMLInputElement; item[tField.class] = Number(input.value); notifyItemUpdate(); }"
               class="range-input"
+              @input="e => { const input = e.target as HTMLInputElement; item[tField.class] = Number(input.value); notifyItemUpdate(); }"
             >
           </div>
 
           <textarea
             v-else-if="tField.type === 'textarea'"
             :value="item[tField.class] || ''"
-            @input="e => { item[tField.class] = (e.target as HTMLTextAreaElement).value; notifyItemUpdate(); }"
             class="input-base"
             :placeholder="tField.placeholder"
             rows="3"
+            @input="e => { item[tField.class] = (e.target as HTMLTextAreaElement).value; notifyItemUpdate(); }"
           ></textarea>
 
           <input
             v-else
             :type="tField.type || 'text'"
             :value="item[tField.class] || ''"
-            @input="e => { item[tField.class] = (e.target as HTMLInputElement).value; notifyItemUpdate(); }"
             class="input-base"
             :placeholder="tField.placeholder"
+            @input="e => { item[tField.class] = (e.target as HTMLInputElement).value; notifyItemUpdate(); }"
           >
         </div>
 
@@ -138,26 +140,28 @@
                    <button class="btn-small-add" style="margin-top:8px; width: 100%;" @click="nField.options.push({label: 'Новый вариант', value: 'new_val'})">➕ Добавить</button>
                 </div>
 
-                <XboxWheel :horizontal="wheelHorizontal"
-                  v-if="nField.type === 'select'"
+                <XboxWheel
+v-if="nField.type === 'select'"
+                  :horizontal="wheelHorizontal"
                   :model-value="String(nItem[nField.class] || '')"
-                  @update:modelValue="val => { 
+                  :options="getOptions(nField)"
+                  :placeholder="nField.placeholder"
+                  @update:model-value="val => { 
                     console.log('[RelationshipBlock.nested] select в контейнере:', { nFieldClass: nField.class, val, nItemBefore: nItem[nField.class] });
                     nItem[nField.class] = val;
                     notifyNestedItemUpdate(subConf.dataPath || subConf.id);
                     console.log('[RelationshipBlock.nested] nItem обновлен:', { nItemAfter: nItem[nField.class] });
                   }"
-                  :options="getOptions(nField)"
-                  :placeholder="nField.placeholder"
                 />
 
                 <div v-else-if="nField.type === 'range'" class="range-wrap">
-                  <input type="range"
+                  <input
+type="range"
                     :min="nField.min ?? -100"
                     :max="nField.max ?? 100"
                     :value="nItem[nField.class] ?? 0"
-                    @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = Number(input.value); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                     class="range-input"
+                    @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = Number(input.value); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                   >
                   <span class="range-label">{{ nItem[nField.class] ?? 0 }}</span>
                 </div>
@@ -165,19 +169,19 @@
                 <textarea
                   v-else-if="nField.type === 'textarea'"
                   :value="nItem[nField.class] || ''"
-                  @input="e => { const input = e.target as HTMLTextAreaElement; nItem[nField.class] = input.value; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                   class="input-base"
                   :rows="nField.rows || 2"
                   :placeholder="nField.placeholder"
+                  @input="e => { const input = e.target as HTMLTextAreaElement; nItem[nField.class] = input.value; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                 ></textarea>
 
                 <input
                   v-else
                   :type="nField.type || 'text'"
                   :value="nItem[nField.class] || ''"
-                  @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = input.value; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                   class="input-base"
                   :placeholder="nField.placeholder"
+                  @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = input.value; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                 >
               </div>
             </div>
@@ -201,29 +205,32 @@
           <div v-for="tField in templateConf.fields" :key="'f-'+tField.class" class="form-group" style="margin-bottom:10px;">
             <label v-if="tField.label" class="form-label" style="font-size:11px;">{{ tField.label }}</label>
 
-            <XboxWheel :horizontal="wheelHorizontal"
-              v-if="tField.class === linkClass"
+            <XboxWheel
+v-if="tField.class === linkClass"
+              :horizontal="wheelHorizontal"
               :model-value="String(entityId)"
               :options="[{ value: String(entityId), label: myLabel }]"
               :disabled="true"
               :placeholder="myLabel"
             />
 
-            <XboxWheel :horizontal="wheelHorizontal"
-              v-else-if="tField.type === 'select'"
+            <XboxWheel
+v-else-if="tField.type === 'select'"
+              :horizontal="wheelHorizontal"
               :model-value="String(foreignItem[tField.class] || '')"
-              @update:modelValue="val => { (foreignItem as any)[tField.class] = val; $emit('modified'); }"
               :options="getOptions(tField)"
               :placeholder="tField.placeholder"
+              @update:model-value="val => { (foreignItem as any)[tField.class] = val; $emit('modified'); }"
             />
 
             <div v-else-if="tField.type === 'range'" class="range-wrap">
-              <input type="range"
+              <input
+type="range"
                 :min="tField.min ?? -100"
                 :max="tField.max ?? 100"
                 :value="foreignItem[tField.class] ?? 0"
-                @input="e => { const input = e.target as HTMLInputElement; (foreignItem as any)[tField.class] = Number(input.value); $emit('modified'); }"
                 class="range-input"
+                @input="e => { const input = e.target as HTMLInputElement; (foreignItem as any)[tField.class] = Number(input.value); $emit('modified'); }"
               >
               <span class="range-label">{{ foreignItem[tField.class] ?? 0 }}</span>
             </div>
@@ -232,9 +239,9 @@
               v-else-if="tField.type !== 'range'"
               :type="tField.type || 'text'"
               :value="foreignItem[tField.class] || ''"
-              @input="e => { const input = e.target as HTMLInputElement; (foreignItem as any)[tField.class] = input.value; $emit('modified'); }"
               class="input-base"
               :placeholder="tField.placeholder"
+              @input="e => { const input = e.target as HTMLInputElement; (foreignItem as any)[tField.class] = input.value; $emit('modified'); }"
             >
           </div>
 
@@ -277,21 +284,23 @@
                      <button class="btn-small-add" style="margin-top:8px; width: 100%;" @click="nField.options.push({label: 'Новый вариант', value: 'new_val'})">➕ Добавить</button>
                   </div>
 
-                  <XboxWheel :horizontal="wheelHorizontal"
-                    v-if="nField.type === 'select'"
+                  <XboxWheel
+v-if="nField.type === 'select'"
+                    :horizontal="wheelHorizontal"
                     :model-value="String(nItem[nField.class] || '')"
-                    @update:modelValue="val => { nItem[nField.class] = val; foreignModified = true; $emit('modified'); }"
                     :options="getOptions(nField)"
                     :placeholder="nField.placeholder"
+                    @update:model-value="val => { nItem[nField.class] = val; foreignModified = true; $emit('modified'); }"
                   />
 
                   <div v-else-if="nField.type === 'range'" class="range-wrap">
-                    <input type="range"
+                    <input
+type="range"
                       :min="nField.min ?? -100"
                       :max="nField.max ?? 100"
                       :value="nItem[nField.class] ?? 0"
-                      @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = Number(input.value); foreignModified = true; $emit('modified'); }"
                       class="range-input"
+                      @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = Number(input.value); foreignModified = true; $emit('modified'); }"
                     >
                     <span class="range-label">{{ nItem[nField.class] ?? 0 }}</span>
                   </div>
@@ -299,19 +308,19 @@
                   <textarea
                     v-else-if="nField.type === 'textarea'"
                     :value="nItem[nField.class] || ''"
-                    @input="e => { const input = e.target as HTMLTextAreaElement; nItem[nField.class] = input.value; foreignModified = true; $emit('modified'); }"
                     class="input-base"
                     :rows="nField.rows || 2"
                     :placeholder="nField.placeholder"
+                    @input="e => { const input = e.target as HTMLTextAreaElement; nItem[nField.class] = input.value; foreignModified = true; $emit('modified'); }"
                   ></textarea>
 
                   <input
                     v-else
                     :type="nField.type || 'text'"
                     :value="nItem[nField.class] || ''"
-                    @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = input.value; foreignModified = true; $emit('modified'); }"
                     class="input-base"
                     :placeholder="nField.placeholder"
+                    @input="e => { const input = e.target as HTMLInputElement; nItem[nField.class] = input.value; foreignModified = true; $emit('modified'); }"
                   >
                 </div>
               </div>

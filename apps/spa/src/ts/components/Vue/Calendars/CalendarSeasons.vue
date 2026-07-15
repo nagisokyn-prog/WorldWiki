@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-section interactive-el">
-    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">🌤️ Сезоны</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
@@ -15,8 +15,8 @@
         >
           <div style="display: flex; gap: 10px; margin-bottom: 10px">
             <input
-              type="text"
               v-model="season.название"
+              type="text"
               class="item-name interactive-el"
               placeholder="Название сезона"
               style="flex: 1"
@@ -24,15 +24,15 @@
             <div class="item-actions">
               <button
                 class="btn-icon interactive-el"
-                @click.prevent="moveItem(Number(sIdx), -1)"
                 :disabled="Number(sIdx) === 0"
+                @click.prevent="moveItem(Number(sIdx), -1)"
               >
                 ↑
               </button>
               <button
                 class="btn-icon interactive-el"
-                @click.prevent="moveItem(Number(sIdx), 1)"
                 :disabled="Number(sIdx) === (modelValue.сезоны?.length || 0) - 1"
+                @click.prevent="moveItem(Number(sIdx), 1)"
               >
                 ↓
               </button>
@@ -78,9 +78,9 @@
                 "
               >
                 <input
+                  v-model="season.месяцы"
                   type="checkbox"
                   :value="mIdx"
-                  v-model="season.месяцы"
                   style="display: none"
                 />
                 {{ m.название }}

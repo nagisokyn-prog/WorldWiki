@@ -2,14 +2,14 @@
   <div class="chapter-tree" tabindex="0" @keydown="onTreeKeydown" @click.self="clearSelection(); entitySelection.clearSelection()">
     <!-- Шапка -->
     <div class="tree-header" style="display: flex; align-items: center;">
-      <button class="tree-back-btn" @click="goBack" title="Вернуться к проектам">
+      <button class="tree-back-btn" title="Вернуться к проектам" @click="goBack">
         <i class="fas fa-arrow-left"></i>
       </button>
       <span class="tree-title">
         <i class="fas fa-book-open"></i>
         Структура
       </span>
-      <button class="tree-action-btn" @click="$emit('open-sandbox')" title="Редактор сущностей (Sandbox)" style="margin-left: auto; background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">
+      <button class="tree-action-btn" title="Редактор сущностей (Sandbox)" style="margin-left: auto; background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5" @click="$emit('open-sandbox')">
         <i class="fas fa-puzzle-piece"></i>
       </button>
     </div>
@@ -22,7 +22,7 @@
           <i :class="expandedSections.has('manuscript') ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>ПРОИЗВЕДЕНИЕ</span>
           <div class="section-actions">
-            <i class="fas fa-plus" @click.stop="createVolume" title="Добавить том"></i>
+            <i class="fas fa-plus" title="Добавить том" @click.stop="createVolume"></i>
           </div>
         </div>
 
@@ -36,9 +36,10 @@
                 </span>
                 <span class="tree-item-icon">📚</span>
                 <span v-if="renaming?.id !== vol.id" class="tree-item-label">{{ vol.title || 'Без названия' }}</span>
-                <input v-else class="tree-rename-input" v-model="renaming.title"
-                  @keydown.enter="commitRename" @keydown.escape="renaming = null"
-                  @blur="commitRename" ref="renameInput" autofocus />
+                <input
+v-else ref="renameInput" v-model="renaming.title"
+                  class="tree-rename-input" autofocus
+                  @keydown.enter="commitRename" @keydown.escape="renaming = null" @blur="commitRename" />
               </div>
 
               <div v-if="expanded.has('vol-' + vol.id)" class="tree-children">
@@ -51,13 +52,15 @@
                       </span>
                       <span class="tree-item-icon">🌀</span>
                       <span v-if="renaming?.id !== arc.id" class="tree-item-label">{{ arc.title || 'Без названия' }}</span>
-                      <input v-else class="tree-rename-input" v-model="renaming.title"
-                        @keydown.enter="commitRename" @keydown.escape="renaming = null"
-                        @blur="commitRename" autofocus />
+                      <input
+v-else v-model="renaming.title" class="tree-rename-input"
+                        autofocus @keydown.enter="commitRename"
+                        @keydown.escape="renaming = null" @blur="commitRename" />
                     </div>
                     <!-- Главы арки -->
                     <div v-if="expanded.has('arc-' + arc.id)" class="tree-children">
-                      <div v-for="ch in getChaptersForArc(arc.id)" :key="'ch-' + ch.id"
+                      <div
+v-for="ch in getChaptersForArc(arc.id)" :key="'ch-' + ch.id"
                         class="tree-item tree-chapter" :class="{ active: activeNode?.node?.id === ch.id, selected: isSelected(ch.id) }"
                         @click="handleManuscriptClick($event, ch, 'chapter')"
                         @dblclick.stop="startChapterRename(ch)"
@@ -65,9 +68,10 @@
                         <div class="tree-item-row chapter-row">
                           <span class="tree-item-icon chapter-icon">📖</span>
                           <template v-if="renaming?.id === ch.id">
-                            <input class="tree-rename-input" v-model="renaming.title"
-                              @keydown.enter="commitRename" @keydown.escape="renaming = null"
-                              @blur="commitRename" ref="renameInput" autofocus @click.stop />
+                            <input
+ref="renameInput" v-model="renaming.title"
+                              class="tree-rename-input" autofocus
+                              @keydown.enter="commitRename" @keydown.escape="renaming = null" @blur="commitRename" @click.stop />
                           </template>
                           <template v-else>
                             <span class="tree-item-label">{{ ch.title || 'Без названия' }}</span>
@@ -98,12 +102,14 @@
                 </span>
                 <span class="tree-item-icon">🌀</span>
                 <span v-if="renaming?.id !== arc.id" class="tree-item-label">{{ arc.title || 'Без названия' }}</span>
-                <input v-else class="tree-rename-input" v-model="renaming.title"
-                  @keydown.enter="commitRename" @keydown.escape="renaming = null"
-                  @blur="commitRename" autofocus />
+                <input
+v-else v-model="renaming.title" class="tree-rename-input"
+                  autofocus @keydown.enter="commitRename"
+                  @keydown.escape="renaming = null" @blur="commitRename" />
               </div>
               <div v-if="expanded.has('arc-' + arc.id)" class="tree-children">
-                <div v-for="ch in getChaptersForArc(arc.id)" :key="'ch-' + ch.id"
+                <div
+v-for="ch in getChaptersForArc(arc.id)" :key="'ch-' + ch.id"
                   class="tree-item tree-chapter" :class="{ active: activeNode?.node?.id === ch.id, selected: isSelected(ch.id) }"
                   @click="handleManuscriptClick($event, ch, 'chapter')"
                   @dblclick.stop="startChapterRename(ch)"
@@ -111,9 +117,10 @@
                   <div class="tree-item-row chapter-row">
                     <span class="tree-item-icon chapter-icon">📖</span>
                     <template v-if="renaming?.id === ch.id">
-                      <input class="tree-rename-input" v-model="renaming.title"
-                        @keydown.enter="commitRename" @keydown.escape="renaming = null"
-                        @blur="commitRename" autofocus @click.stop />
+                      <input
+v-model="renaming.title" class="tree-rename-input"
+                        autofocus @keydown.enter="commitRename"
+                        @keydown.escape="renaming = null" @blur="commitRename" @click.stop />
                     </template>
                     <template v-else>
                       <span class="tree-item-label">{{ ch.title || 'Без названия' }}</span>
@@ -129,7 +136,8 @@
           </template>
 
           <!-- Корневые главы (без арки и тома) -->
-          <div v-for="ch in getRootChapters()" :key="'root-ch-' + ch.id"
+          <div
+v-for="ch in getRootChapters()" :key="'root-ch-' + ch.id"
               class="tree-item tree-chapter" :class="{ active: activeNode?.node?.id === ch.id, selected: isSelected(ch.id) }"
               @click="handleManuscriptClick($event, ch, 'chapter')"
               @dblclick.stop="startChapterRename(ch)"
@@ -137,9 +145,10 @@
               <div class="tree-item-row chapter-row">
                 <span class="tree-item-icon chapter-icon">📖</span>
                 <template v-if="renaming?.id === ch.id">
-                  <input class="tree-rename-input" v-model="renaming.title"
-                    @keydown.enter="commitRename" @keydown.escape="renaming = null"
-                    @blur="commitRename" autofocus @click.stop />
+                  <input
+v-model="renaming.title" class="tree-rename-input"
+                    autofocus @keydown.enter="commitRename"
+                    @keydown.escape="renaming = null" @blur="commitRename" @click.stop />
                 </template>
                 <template v-else>
                   <span class="tree-item-label">{{ ch.title || 'Без названия' }}</span>
@@ -155,13 +164,14 @@
           <i :class="expandedSections.has(sect.type) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>{{ sect.title }}</span>
           <div class="section-actions" style="margin-left: auto; display: flex; gap: 8px;">
-            <i class="fas fa-pencil-alt" @click.stop="$emit('edit-schema', sect.type)" title="Редактировать схему (поля)" style="opacity: 0.5; font-size: 11px;"></i>
+            <i class="fas fa-pencil-alt" title="Редактировать схему (поля)" style="opacity: 0.5; font-size: 11px;" @click.stop="$emit('edit-schema', sect.type)"></i>
           </div>
         </div>
 
 
         <div v-if="expandedSections.has(sect.type)" class="tree-section-content">
-          <div v-for="entity in entities[sect.type] || []" :key="entity.id"
+          <div
+v-for="entity in entities[sect.type] || []" :key="entity.id"
             class="tree-item tree-entity"
             :class="{
               active: activeEditorId === entityKey(sect.type, entity.id),
@@ -180,13 +190,13 @@
              <div class="tree-item-row">
                 <span class="tree-item-icon">{{ sect.emoji }}</span>
                 <input 
-                  class="tree-rename-input" 
-                  v-model="creatingEntity.name"
-                  @keydown.enter="commitCreateEntity" 
-                  @keydown.escape="creatingEntity = null"
-                  @blur="commitCreateEntity"
                   ref="createEntityInput" 
-                  autofocus 
+                  v-model="creatingEntity.name"
+                  class="tree-rename-input" 
+                  autofocus
+                  @keydown.enter="commitCreateEntity"
+                  @keydown.escape="creatingEntity = null" 
+                  @blur="commitCreateEntity" 
                 />
              </div>
           </div>
@@ -200,7 +210,8 @@
       </div>
 
     <!-- Футер -->
-      <div v-if="!hierarchy.volumes.length && !hierarchy.arcs.length && !hierarchy.chapters.length"
+      <div
+v-if="!hierarchy.volumes.length && !hierarchy.arcs.length && !hierarchy.chapters.length"
         class="tree-empty">
         <i class="fas fa-book" style="font-size: 28px; opacity: 0.2; margin-bottom: 10px;"></i>
         <div>Нет глав</div>
@@ -215,18 +226,21 @@
       <transition name="ctx-pop">
         <div v-if="ctx" class="tree-ctx-menu" :style="ctxStyle">
 
-          <div class="ctx-item"
+          <div
+class="ctx-item"
             @click="ctx.type === 'chapter' ? (startChapterRename(ctx.node), ctx = null) : startRename()">
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
           </div>
 
-          <div v-if="ctx.type === 'volume'" class="ctx-item"
+          <div
+v-if="ctx.type === 'volume'" class="ctx-item"
             @click="createArc(ctx.node.id); ctx = null">
             <span class="ctx-label"><i class="fas fa-layer-group ctx-icon"></i> Добавить арку</span>
           </div>
 
-          <div v-if="ctx.type === 'arc'" class="ctx-item"
+          <div
+v-if="ctx.type === 'arc'" class="ctx-item"
             @click="$emit('create-chapter-in', { arcId: ctx.node.id, volumeId: ctx.node.volumeId }); ctx = null">
             <span class="ctx-label"><i class="fas fa-file-alt ctx-icon"></i> Добавить главу</span>
           </div>

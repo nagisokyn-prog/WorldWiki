@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-section interactive-el">
-    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">🌙 Луны и фазы</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
@@ -9,25 +9,25 @@
       <div class="item-list">
         <div v-for="(moon, mIdx) in calendar.moons" :key="mIdx" class="item-row moon-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
           <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="text" v-model="moon.name" class="item-name interactive-el" placeholder="Название луны">
+            <input v-model="moon.name" type="text" class="item-name interactive-el" placeholder="Название луны">
             <label class="glass-label" style="font-size: 11px;">Период (дней):</label>
-            <input type="number" v-model.number="moon.period_days" min="1" step="0.1" class="item-duration interactive-el" style="width: 80px;">
+            <input v-model.number="moon.period_days" type="number" min="1" step="0.1" class="item-duration interactive-el" style="width: 80px;">
             
             <label class="glass-label" style="font-size: 11px;">Старт. фаза (0-1):</label>
-            <input type="number" v-model.number="moon.initial_phase" min="0" max="1" step="0.05" class="item-duration interactive-el" style="width: 70px;" title="0 = Новолуние, 0.5 = Полнолуние">
+            <input v-model.number="moon.initial_phase" type="number" min="0" max="1" step="0.05" class="item-duration interactive-el" style="width: 70px;" title="0 = Новолуние, 0.5 = Полнолуние">
             
             <div class="item-actions">
-              <button class="btn-icon interactive-el" @click.prevent="moveItem(calendar.moons, Number(mIdx), -1)" :disabled="Number(mIdx)===0">↑</button>
-              <button class="btn-icon interactive-el" @click.prevent="moveItem(calendar.moons, Number(mIdx), 1)" :disabled="Number(mIdx)===(calendar.moons?.length || 0)-1">↓</button>
+              <button class="btn-icon interactive-el" :disabled="Number(mIdx)===0" @click.prevent="moveItem(calendar.moons, Number(mIdx), -1)">↑</button>
+              <button class="btn-icon interactive-el" :disabled="Number(mIdx)===(calendar.moons?.length || 0)-1" @click.prevent="moveItem(calendar.moons, Number(mIdx), 1)">↓</button>
               <button class="btn-icon interactive-el" @click.prevent="calendar.moons.splice(Number(mIdx), 1)">🗑️</button>
             </div>
           </div>
           
-          <div style="display: flex; gap: 8px; font-size: 12px; margin-left: 8px;" v-if="moon.phase_names">
-            <input type="text" v-model="moon.phase_names.new" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Новолуние">
-            <input type="text" v-model="moon.phase_names.waxing" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Растущая">
-            <input type="text" v-model="moon.phase_names.full" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Полнолуние">
-            <input type="text" v-model="moon.phase_names.waning" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Убывающая">
+          <div v-if="moon.phase_names" style="display: flex; gap: 8px; font-size: 12px; margin-left: 8px;">
+            <input v-model="moon.phase_names.new" type="text" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Новолуние">
+            <input v-model="moon.phase_names.waxing" type="text" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Растущая">
+            <input v-model="moon.phase_names.full" type="text" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Полнолуние">
+            <input v-model="moon.phase_names.waning" type="text" class="interactive-el" style="width: 100px; padding: 2px 4px;" placeholder="Убывающая">
           </div>
         </div>
       </div>

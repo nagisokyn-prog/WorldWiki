@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-section interactive-el">
-    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">📆 Месяцы</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
@@ -8,10 +8,10 @@
     <div v-show="!isCollapsed" style="margin-top: 12px;">
       <div class="item-list">
         <div v-for="(month, mIdx) in modelValue.месяцы" :key="mIdx" class="item-row">
-          <input type="text" v-model="month.название" class="item-name interactive-el" style="max-width: 120px;" />
+          <input v-model="month.название" type="text" class="item-name interactive-el" style="max-width: 120px;" />
           <input
-            type="number"
             v-model.number="month.дней"
+            type="number"
             min="1"
             max="100"
             class="item-duration interactive-el"
@@ -20,15 +20,15 @@
           <div class="item-actions">
             <button
               class="btn-icon interactive-el"
-              @click.prevent="moveItem(Number(mIdx), -1)"
               :disabled="Number(mIdx) === 0"
+              @click.prevent="moveItem(Number(mIdx), -1)"
             >
               ↑
             </button>
             <button
               class="btn-icon interactive-el"
-              @click.prevent="moveItem(Number(mIdx), 1)"
               :disabled="Number(mIdx) === (modelValue.месяцы?.length || 0) - 1"
+              @click.prevent="moveItem(Number(mIdx), 1)"
             >
               ↓
             </button>

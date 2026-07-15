@@ -6,8 +6,8 @@
       contenteditable="false" 
       class="semantic-tag-badge interactive-el" 
       :title="tagTooltip"
-      @click="cycleTag"
       :style="badgeStyle"
+      @click="cycleTag"
     >
       {{ tagLabel }}
     </div>

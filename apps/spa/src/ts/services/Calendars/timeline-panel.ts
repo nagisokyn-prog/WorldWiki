@@ -1,4 +1,5 @@
-import { defineComponent, ref, onMounted, computed, type PropType } from 'vue';
+import { defineComponent, ref, onMounted, computed } from 'vue';
+import type { PropType } from 'vue';
 import { calendarService } from '../calendar.service';
 import { CalendarMath } from './calendar.math';
 

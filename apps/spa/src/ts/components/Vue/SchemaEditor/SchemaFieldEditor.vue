@@ -8,13 +8,15 @@
         <input v-model="item.label" class="form-label" style="margin: 0; background: transparent; border: none; font-size: 11px; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; width: 100%;" placeholder="НАЗВАНИЕ ПОЛЯ" :disabled="isFirst">
       </div>
       
-      <div style="display: flex; gap: 8px; align-items: center;" v-if="!isFirst">
-        <button style="background: none; border: none; cursor: pointer; font-size: 12px;" 
-                @click="item.hidden = !item.hidden"
-                :title="item.hidden ? 'Показать поле' : 'Скрыть поле'">
+      <div v-if="!isFirst" style="display: flex; gap: 8px; align-items: center;">
+        <button
+style="background: none; border: none; cursor: pointer; font-size: 12px;" 
+                :title="item.hidden ? 'Показать поле' : 'Скрыть поле'"
+                @click="item.hidden = !item.hidden">
           {{ item.hidden ? '👁️‍🗨️' : '👁️' }}
         </button>
-        <button style="color: #f55; background: none; border: none; font-size: 10px; cursor: pointer;" 
+        <button
+style="color: #f55; background: none; border: none; font-size: 10px; cursor: pointer;" 
                 @click="$emit('remove')">
           УДАЛИТЬ
         </button>

@@ -1,14 +1,15 @@
 <template>
-  <div class="date-wheels-container" v-if="calendar" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color);">
+  <div v-if="calendar" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color);">
     
     <!-- Эпоха -->
     <div v-if="eras.length > 1" class="date-wheel-group" style="flex: 1; min-width: 120px;">
       <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Эпоха</div>
-      <XboxWheel :horizontal="wheelHorizontal" 
-        v-model="currentEraIdx"
+      <XboxWheel
+v-model="currentEraIdx" 
+        :horizontal="wheelHorizontal"
         :options="eraOptions"
         placeholder="Эпоха"
-        @update:modelValue="onEraChange"
+        @update:model-value="onEraChange"
       />
     </div>
 
@@ -17,8 +18,8 @@
       <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Год</div>
       <template v-if="yearInputMode">
         <input 
-          type="number" 
-          v-model.number="currentYear"
+          v-model.number="currentYear" 
+          type="number"
           :min="currentEra.год_начала" 
           :max="currentEra.год_конца"
           class="input-base"
@@ -27,11 +28,12 @@
         />
       </template>
       <template v-else>
-        <XboxWheel :horizontal="wheelHorizontal" 
-          v-model="currentYear"
+        <XboxWheel
+v-model="currentYear" 
+          :horizontal="wheelHorizontal"
           :options="yearOptions"
           placeholder="Год"
-          @update:modelValue="onYearChange"
+          @update:model-value="onYearChange"
         />
       </template>
     </div>
@@ -39,22 +41,24 @@
     <!-- Месяц -->
     <div class="date-wheel-group" style="flex: 1.5; min-width: 140px;">
       <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Месяц</div>
-      <XboxWheel :horizontal="wheelHorizontal" 
-        v-model="currentMonthIdx"
+      <XboxWheel
+v-model="currentMonthIdx" 
+        :horizontal="wheelHorizontal"
         :options="monthOptions"
         placeholder="Месяц"
-        @update:modelValue="onMonthChange"
+        @update:model-value="onMonthChange"
       />
     </div>
 
     <!-- День -->
     <div class="date-wheel-group" style="flex: 0.8; min-width: 70px;">
       <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">День</div>
-      <XboxWheel :horizontal="wheelHorizontal" 
-        v-model="currentDay"
+      <XboxWheel
+v-model="currentDay" 
+        :horizontal="wheelHorizontal"
         :options="dayOptions"
         placeholder="День"
-        @update:modelValue="onDayChange"
+        @update:model-value="onDayChange"
       />
     </div>
 

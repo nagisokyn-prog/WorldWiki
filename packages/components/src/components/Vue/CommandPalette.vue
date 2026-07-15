@@ -20,7 +20,7 @@
           </div>
 
           <!-- Results -->
-          <div class="cp-results" ref="resultsRef">
+          <div ref="resultsRef" class="cp-results">
             <template v-if="filtered.length > 0">
               <div
                 v-for="(cmd, idx) in filtered"
@@ -36,7 +36,7 @@
                   <span class="cp-item-desc">{{ cmd.desc }}</span>
                 </div>
                 <kbd v-if="cmd.hotkey" class="cp-kbd">{{ cmd.hotkey }}</kbd>
-                <kbd class="cp-enter-hint" v-if="idx === activeIdx">↵</kbd>
+                <kbd v-if="idx === activeIdx" class="cp-enter-hint">↵</kbd>
               </div>
             </template>
             <div v-else class="cp-empty">No command found</div>

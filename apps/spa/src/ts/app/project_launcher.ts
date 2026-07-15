@@ -374,9 +374,9 @@ const app = createApp({
 });
 
 // Register CalendarsPanel
-app.component('calendars-panel', CalendarsPanel);
-app.component('vanilla-xbox-wheel', XboxWheel);
-app.component('cloud-sync-modal', CloudSyncModalVue);
+app.component('CalendarsPanel', CalendarsPanel);
+app.component('VanillaXboxWheel', XboxWheel);
+app.component('CloudSyncModal', CloudSyncModalVue);
 
 // Get the HTML template content and use it as Vue template
 const appEl = document.getElementById('app');

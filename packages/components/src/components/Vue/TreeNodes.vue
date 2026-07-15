@@ -20,20 +20,20 @@
           </span>
           <span v-else class="tree-expand-btn spacer"></span>
 
-          <span class="tree-node-icon" v-if="node.emoji || node.icon">
+          <span v-if="node.emoji || node.icon" class="tree-node-icon">
             <template v-if="node.emoji">{{ node.emoji }}</template>
             <i v-else :class="node.icon"></i>
           </span>
           
           <template v-if="renamingId === node.id">
             <input 
-              class="tree-rename-input" 
-              :value="renamingValue"
-              @input="$emit('update:renaming-value', ($event.target as HTMLInputElement).value)"
-              @keydown.enter="$emit('commit-rename')" 
-              @keydown.escape="$emit('cancel-rename')"
-              @blur="$emit('commit-rename')" 
               v-focus 
+              class="tree-rename-input"
+              :value="renamingValue"
+              @input="$emit('update:renaming-value', ($event.target as HTMLInputElement).value)" 
+              @keydown.enter="$emit('commit-rename')"
+              @keydown.escape="$emit('cancel-rename')" 
+              @blur="$emit('commit-rename')" 
               @click.stop 
             />
           </template>

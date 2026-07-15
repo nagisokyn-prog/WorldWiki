@@ -9,8 +9,8 @@
       <main style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
         <EntityEditor
           :key="previewKey"
-          entityId="preview"
-          :entityType="entityName"
+          entity-id="preview"
+          :entity-type="entityName"
           project="default"
         />
       </main>
@@ -39,13 +39,15 @@
 
     <!-- TABS BAR -->
     <div v-if="sections.length > 0" class="editor-tabs-new" style="flex-shrink: 0; padding: 8px 24px; background: var(--bg-panel); border-bottom: 1px solid var(--bg-input); display: flex; gap: 4px; overflow-x: auto;">
-       <div v-for="(sec, idx) in sections" :key="idx" 
+       <div
+v-for="(sec, idx) in sections" :key="idx" 
             class="editor-tab-new interactive-el" 
             :class="{ active: activeSectionIdx === idx }"
-            @click="activeSectionIdx = idx"
-            style="padding: 6px 16px; font-size: 11px; border-radius: 8px;">
+            style="padding: 6px 16px; font-size: 11px; border-radius: 8px;"
+            @click="activeSectionIdx = idx">
           {{ sec.icon || '📄' }} {{ sec.title }}
-          <span v-if="sections.length > 1 && !sec.items.some((i: any) => i._isSystemName)" 
+          <span
+v-if="sections.length > 1 && !sec.items.some((i: any) => i._isSystemName)" 
                 style="margin-left: 8px; opacity: 0.5; font-size: 10px; cursor: pointer; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1);" 
                 @mousedown.stop="deleteSection(idx)">✕</span>
        </div>
@@ -53,7 +55,8 @@
 
     <div style="flex: 1; display: flex; overflow: hidden; background: var(--bg-base);">
       <!-- MAIN CANVAS -->
-      <main ref="mainScrollEl" class="content-area-new" style="flex: 1; padding: 24px; overflow-y: auto;" 
+      <main
+ref="mainScrollEl" class="content-area-new" style="flex: 1; padding: 24px; overflow-y: auto;" 
             @scroll="saveUiState"
             @dragenter.prevent="dragOver = true" @dragover.prevent="handleDragOverCanvas($event)" @dragleave="dragOver = false" @drop="handleDropNew">
         
@@ -85,14 +88,15 @@
                 </div>
 
                 <div class="unified-items-stack" style="display: flex; flex-direction: column; gap: 20px;">
-                    <div v-for="(item, iIdx) in activeSection.items" :key="iIdx" 
+                    <div
+v-for="(item, iIdx) in activeSection.items" :key="iIdx" 
                          class="lego-brick-wrap draggable-item" 
                          draggable="true" 
+                         :class="{ 'is-dragging-over': draggedOverIdx === Number(iIdx) }"
                          @dragstart="handleItemDragStart($event, Number(iIdx))"
                          @dragenter.prevent="draggedOverIdx = Number(iIdx)"
                          @dragover.prevent="handleDragOverItem($event, Number(iIdx))"
-                         @drop.stop="handleItemDrop(Number(iIdx))"
-                         :class="{ 'is-dragging-over': draggedOverIdx === Number(iIdx) }">
+                         @drop.stop="handleItemDrop(Number(iIdx))">
                       
                       <!-- 1. ATOMIC FIELD -->
                       <div v-if="isAtomicField(item)" class="field-brick-card" style="background: var(--bg-secondary); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color);">
@@ -110,7 +114,7 @@
                             
                             <!-- Multiselect / Tags -->
                             <div v-if="item.type === 'multiselect' || item.type === 'tags'" class="tags-grid" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                               <div v-for="(opt, oIdx) in getOptions(item)" :key="oIdx" class="glass-pill interactive-el" :class="{ active: isItemSelected(item, opt.value) }" @click="toggleSelection(item, opt.value)" style="padding: 6px 14px; font-size: 11px;">{{ opt.label }}</div>
+                               <div v-for="(opt, oIdx) in getOptions(item)" :key="oIdx" class="glass-pill interactive-el" :class="{ active: isItemSelected(item, opt.value) }" style="padding: 6px 14px; font-size: 11px;" @click="toggleSelection(item, opt.value)">{{ opt.label }}</div>
                                <div v-if="item.type === 'tags'" class="glass-pill" style="opacity: 0.3; border-style: dashed;">+ ТЕГ</div>
                             </div>
 
@@ -126,7 +130,7 @@
 
                             <!-- RANGE -->
                             <div v-else-if="item.type === 'range'" style="display: flex; align-items: center; gap: 20px;">
-                               <input type="range" v-model.number="item._val" :min="item.min || 0" :max="item.max || 100" style="flex: 1; accent-color: var(--accent);">
+                               <input v-model.number="item._val" type="range" :min="item.min || 0" :max="item.max || 100" style="flex: 1; accent-color: var(--accent);">
                                <div style="background: var(--accent); color: var(--text-main); padding: 4px 12px; border-radius: 8px; font-family: monospace; font-weight: 900; font-size: 16px; min-width: 60px; text-align: center; box-shadow: 0 0 15px var(--accent-glow);">{{ item._val || (item.value || 0) }}</div>
                             </div>
 
@@ -146,7 +150,7 @@
                                <div>
                                   <label class="form-label-micro">ТИП КИРПИЧА</label>
                                   <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                                     <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini" @click="!item._isSystemName && (item.type = t.val)" :disabled="item._isSystemName" :style="{ padding: '4px 8px', fontSize: '10px', opacity: item._isSystemName && item.type !== t.val ? 0.2 : 1, cursor: item._isSystemName ? 'not-allowed' : 'pointer' }">{{ t.icon }} {{ t.label }}</button>
+                                     <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini" :disabled="item._isSystemName" :style="{ padding: '4px 8px', fontSize: '10px', opacity: item._isSystemName && item.type !== t.val ? 0.2 : 1, cursor: item._isSystemName ? 'not-allowed' : 'pointer' }" @click="!item._isSystemName && (item.type = t.val)">{{ t.icon }} {{ t.label }}</button>
                                   </div>
                                </div>
                                <div>
@@ -307,7 +311,7 @@
                                    
                                    <div style="margin-top: 8px;">
                                       <label class="form-label-micro">Переопределить тип</label>
-                                      <XboxWheel :model-value="ensureFieldOverride(item, bField.class).type || ''" @update:modelValue="val => ensureFieldOverride(item, bField.class).type = val" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" />
+                                      <XboxWheel :model-value="ensureFieldOverride(item, bField.class).type || ''" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" @update:model-value="val => ensureFieldOverride(item, bField.class).type = val" />
                                    </div>
                                    
                                    <div v-if="(ensureFieldOverride(item, bField.class).type || bField.type) === 'select' || (ensureFieldOverride(item, bField.class).type || bField.type) === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
@@ -371,7 +375,7 @@
                                 
                                 <div style="margin-top: 8px;">
                                    <label class="form-label-micro">Тип</label>
-                                   <XboxWheel :model-value="cField.type || ''" @update:modelValue="val => cField.type = val" :options="atomicBricks" />
+                                   <XboxWheel :model-value="cField.type || ''" :options="atomicBricks" @update:model-value="val => cField.type = val" />
                                 </div>
                                 
                                 <div v-if="cField.type === 'select' || cField.type === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
@@ -408,13 +412,14 @@
                        </div>
                        
                        <!-- DROP ZONE FOR CUSTOM FIELDS -->
-                       <div v-if="['dynamic', 'timeline'].includes(item.type)"
+                       <div
+v-if="['dynamic', 'timeline'].includes(item.type)"
                             style="margin-top: 16px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
+                            :style="{ borderColor: draggedOverModuleIdx === Number(iIdx) ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: draggedOverModuleIdx === Number(iIdx) ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }" 
                             @dragenter.prevent="draggedOverModuleIdx = Number(iIdx)" 
-                            @dragover.prevent="handleDragOverModule($event, Number(iIdx))" 
+                            @dragover.prevent="handleDragOverModule($event, Number(iIdx))"
                             @dragleave="draggedOverModuleIdx = -1"
-                            @drop.stop="handleDropIntoModule(Number(iIdx))"
-                            :style="{ borderColor: draggedOverModuleIdx === Number(iIdx) ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: draggedOverModuleIdx === Number(iIdx) ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }">
+                            @drop.stop="handleDropIntoModule(Number(iIdx))">
                           <div style="font-size: 12px; font-weight: 900; color: rgba(255,165,0,0.6);">🎯 СЮДА КИДАЙ ПОЛЯ</div>
                           <div style="font-size: 10px; color: rgba(255,165,0,0.4); margin-top: 4px;">Захвати поле из левой панели</div>
                        </div>
@@ -437,19 +442,19 @@
       </main>
 
       <!-- SIDEBAR (Catalog) -->
-      <div v-if="showCatalog" class="catalog-resizer" @mousedown="startResize" style="width: 8px; cursor: ew-resize; background: transparent; z-index: 100; transition: background 0.2s;" onmouseover="this.style.background='var(--accent)'" onmouseout="this.style.background='transparent'"></div>
+      <div v-if="showCatalog" class="catalog-resizer" style="width: 8px; cursor: ew-resize; background: transparent; z-index: 100; transition: background 0.2s;" onmouseover="this.style.background='var(--accent)'" onmouseout="this.style.background='transparent'" @mousedown="startResize"></div>
       <aside v-if="showCatalog" class="sidebar-new glass-panel" :style="{ width: catalogWidth + 'px', borderRadius: 0, border: 'none', borderLeft: '1px solid var(--border-color)', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(40px)', flexShrink: 0 }">
         <div class="sidebar-header" style="height: 50px; font-size: 10px; letter-spacing: 2px; font-weight: 900; color: var(--accent); display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--bg-input);">LEGO CATALOG</div>
         <div ref="sidebarScrollEl" class="sidebar-list" style="padding: 12px; overflow-y: auto; height: calc(100% - 60px);" @scroll="saveUiState">
           
           <div style="margin-bottom: 12px; font-size: 9px; opacity: 0.4; font-weight: 900; letter-spacing: 1px;">🔹 ПОЛЯ</div>
-          <div v-for="b in atomicBricks" :key="b.val" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, b, 'atomic')" style="padding: 12px; margin-bottom: 6px; border-radius: 8px;">
+          <div v-for="b in atomicBricks" :key="b.val" class="sidebar-item-brick glass-panel" draggable="true" style="padding: 12px; margin-bottom: 6px; border-radius: 8px;" @dragstart="startDragNew($event, b, 'atomic')">
              <span style="font-size: 20px;">{{ b.icon }}</span>
              <div style="display: flex; flex-direction: column;"><span style="font-weight: 900; font-size: 12px; color: var(--text-main);">{{ b.label }}</span><span style="font-size: 8px; opacity: 0.3;">FIELD</span></div>
           </div>
           
           <div style="margin: 20px 0 12px 0; font-size: 9px; opacity: 0.4; font-weight: 900; letter-spacing: 1px;">⏱️ TIMELINE-МОДУЛИ</div>
-          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, tpl, 'module', String(key))" style="padding: 12px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center;">
+          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" style="padding: 12px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center;" @dragstart="startDragNew($event, tpl, 'module', String(key))">
               <span style="font-size: 20px; margin-right: 8px;">⏱️</span>
               <div style="display: flex; flex-direction: column;"><span style="font-weight: 900; font-size: 12px; color: var(--text-main);">{{ key }}</span><span style="font-size: 8px; opacity: 0.3;">timeline</span></div>
               <div style="margin-left: auto; display: flex; gap: 8px;">
@@ -459,7 +464,7 @@
           </div>
           
           <div style="margin: 20px 0 12px 0; font-size: 9px; opacity: 0.4; font-weight: 900; letter-spacing: 1px;">📋 DYNAMIC-МОДУЛИ</div>
-          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" @dragstart="startDragNew($event, tpl, 'module', String(key))" style="padding: 12px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center;">
+          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="sidebar-item-brick glass-panel" draggable="true" style="padding: 12px; margin-bottom: 6px; border-radius: 8px; display: flex; align-items: center;" @dragstart="startDragNew($event, tpl, 'module', String(key))">
               <span style="font-size: 20px; margin-right: 8px;">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>
               <div style="display: flex; flex-direction: column;"><span style="font-weight: 900; font-size: 12px; color: var(--text-main);">{{ key }}</span><span style="font-size: 8px; opacity: 0.3;">{{ tpl.isBidirectional ? 'relationship' : 'dynamic' }}</span></div>
               <div style="margin-left: auto; display: flex; gap: 8px;">
@@ -474,10 +479,10 @@
 
     <!-- JSON (IMPORT / EXPORT) -->
     <div v-if="showJsonPreview" class="glass-modal-overlay visible" @click="showJsonPreview = false">
-      <div class="glass-modal glass-panel" @click.stop style="width: 1100px; height: 85vh; display: flex; flex-direction: column;">
+      <div class="glass-modal glass-panel" style="width: 1100px; height: 85vh; display: flex; flex-direction: column;" @click.stop>
          <div class="glass-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px;">
             <span>SCHEMA (IMPORT / EXPORT)</span>
-            <button class="btn-new" @click="applyImportedJson" style="font-size: 10px; padding: 4px 12px; background: var(--accent);">APPLY CHANGES</button>
+            <button class="btn-new" style="font-size: 10px; padding: 4px 12px; background: var(--accent);" @click="applyImportedJson">APPLY CHANGES</button>
          </div>
          <div style="flex: 1; padding: 24px; overflow: hidden;">
             <textarea v-model="editableJson" class="input-base" style="width: 100%; height: 100%; background: #000; color: #0f0; font-family: monospace; font-size: 12px; padding: 20px; border: 1px solid var(--border-color); resize: none;"></textarea>
@@ -486,11 +491,11 @@
     </div>
 
     <!-- USAGE MODAL -->
-    <div v-if="showUsageModal" class="glass-modal-overlay visible" @click="showUsageModal = false" style="z-index: 100000;">
-      <div class="glass-modal glass-panel" @click.stop style="width: 700px; max-height: 80vh; display: flex; flex-direction: column;">
+    <div v-if="showUsageModal" class="glass-modal-overlay visible" style="z-index: 100000;" @click="showUsageModal = false">
+      <div class="glass-modal glass-panel" style="width: 700px; max-height: 80vh; display: flex; flex-direction: column;" @click.stop>
          <div class="glass-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px;">
             <span>ГДЕ ИСПОЛЬЗУЕТСЯ: {{ usageTemplateName }}</span>
-            <button class="btn-new" @click="showUsageModal = false" style="font-size: 10px; padding: 4px 12px;">ЗАКРЫТЬ</button>
+            <button class="btn-new" style="font-size: 10px; padding: 4px 12px;" @click="showUsageModal = false">ЗАКРЫТЬ</button>
          </div>
          <div style="padding: 24px; overflow-y: auto;">
             <div v-if="usageResults.length === 0" style="opacity: 0.5; text-align: center; padding: 20px;">

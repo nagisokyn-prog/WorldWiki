@@ -23,12 +23,12 @@
       </div>
       
       <div v-for="(ev, idx) in events" :key="idx" class="timeline-event-item">
-        <div class="event-header" @click="toggleExpand(idx)" style="cursor: pointer;">
+        <div class="event-header" style="cursor: pointer;" @click="toggleExpand(idx)">
           <div class="header-left">
             <span class="expand-icon">{{ isExpanded(idx) ? '▼' : '▶' }}</span>
             <span class="event-title">Событие {{ idx + 1 }}</span>
           </div>
-          <button @click.stop="removeEvent(idx)" class="delete-btn">🗑️</button>
+          <button class="delete-btn" @click.stop="removeEvent(idx)">🗑️</button>
         </div>
         
         <div v-show="isExpanded(idx)" class="event-content">
@@ -47,7 +47,8 @@
           <!-- Эра -->
           <div class="wheel-wrapper-container">
             <label>Эра</label>
-            <XboxWheel :horizontal="wheelHorizontal"
+            <XboxWheel
+:horizontal="wheelHorizontal"
               :model-value="ev.date.era"
               :options="eraOptions"
               @update:model-value="(val: any) => updateEventDate(idx, 'era', val)"
@@ -60,15 +61,16 @@
             <input 
               type="number" 
               :value="ev.date.year" 
-              @input="onYearInput(idx, $event)"
               class="year-input"
+              @input="onYearInput(idx, $event)"
             >
           </div>
           
           <!-- Месяц -->
           <div class="wheel-wrapper-container">
             <label>Месяц</label>
-            <XboxWheel :horizontal="wheelHorizontal"
+            <XboxWheel
+:horizontal="wheelHorizontal"
               :model-value="ev.date.month"
               :options="monthOptions"
               @update:model-value="(val: any) => updateEventDate(idx, 'month', val)"
@@ -81,9 +83,9 @@
             <input 
               type="number" 
               :value="ev.date.day" 
-              @input="onDayInput(idx, $event)"
               class="day-input"
               :max="getDaysInMonth(ev.date.month)"
+              @input="onDayInput(idx, $event)"
             >
           </div>
         </div>
@@ -92,13 +94,15 @@
         <div class="time-selector">
           <label>🕒 Время суток</label>
           <div class="time-wheels-container">
-            <XboxWheel :horizontal="wheelHorizontal"
+            <XboxWheel
+:horizontal="wheelHorizontal"
               :model-value="ev.time?.hour || 0"
               :options="hourOptions"
               @update:model-value="(val: any) => updateEventTime(idx, 'hour', val)"
             />
             <span class="time-separator">:</span>
-            <XboxWheel :horizontal="wheelHorizontal"
+            <XboxWheel
+:horizontal="wheelHorizontal"
               :model-value="ev.time?.minute || 0"
               :options="minuteOptions"
               @update:model-value="(val: any) => updateEventTime(idx, 'minute', val)"
@@ -112,15 +116,15 @@
         <!-- Описание события -->
           <textarea 
             v-model="ev.description" 
-            @input="onChange" 
             placeholder="Описание события..." 
-            class="event-description"
+            class="event-description" 
+            @input="onChange"
           ></textarea>
 
           <!-- Авто-шаг -->
           <div class="auto-step-container">
-            <input type="text" v-model="relativeInput[idx]" placeholder="Спустя... (напр: 2 месяца 1 день)" class="interactive-el relative-input">
-            <button class="btn-icon interactive-el" @click.stop="createNextEvent(idx)" title="Создать следующее событие с вычисленной датой">➡️</button>
+            <input v-model="relativeInput[idx]" type="text" placeholder="Спустя... (напр: 2 месяца 1 день)" class="interactive-el relative-input">
+            <button class="btn-icon interactive-el" title="Создать следующее событие с вычисленной датой" @click.stop="createNextEvent(idx)">➡️</button>
           </div>
         </div>
       </div>

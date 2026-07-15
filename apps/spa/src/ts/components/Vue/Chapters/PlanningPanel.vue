@@ -6,18 +6,18 @@
         <span class="plan-icon">{{ nodeIcon }}</span>
         <span class="plan-name">{{ nodeName }}</span>
       </div>
-      <div class="plan-stats" v-if="items.length">
+      <div v-if="items.length" class="plan-stats">
         <span class="plan-done">{{ doneCount }}</span>/<span class="plan-total">{{ items.length }}</span>
       </div>
     </div>
 
     <!-- Прогресс бар -->
-    <div class="plan-progress-bar" v-if="items.length">
+    <div v-if="items.length" class="plan-progress-bar">
       <div class="plan-progress-fill" :style="{ width: progressPct + '%' }"></div>
     </div>
 
     <!-- Список пунктов -->
-    <div class="plan-list" ref="listEl">
+    <div ref="listEl" class="plan-list">
       <div
         v-for="(item, idx) in items"
         :key="item.id"
@@ -28,8 +28,8 @@
         <button
           class="plan-toggle"
           :class="{ done: item.done }"
-          @click="toggleItem(item)"
           :title="item.done ? 'Отметить как невыполненное' : 'Отметить как выполненное'"
+          @click="toggleItem(item)"
         >
           <span v-if="item.done">✓</span>
           <span v-else class="circle-empty"></span>
@@ -37,19 +37,19 @@
 
         <!-- Текст пункта -->
         <input
+          v-model="item.text"
           class="plan-text"
           :class="{ done: item.done }"
-          v-model="item.text"
+          placeholder="Пункт плана..."
           @blur="saveItem(item)"
           @keydown.enter.prevent="addItemAfter(idx, item.indent)"
           @keydown.tab.prevent="indentItem(item, 1)"
           @keydown.shift.tab.prevent="indentItem(item, -1)"
           @keydown.delete="onDeleteKey($event, item, idx)"
-          placeholder="Пункт плана..."
         />
 
         <!-- Кнопка удаления -->
-        <button class="plan-delete" @click="deleteItem(item, idx)" title="Удалить">×</button>
+        <button class="plan-delete" title="Удалить" @click="deleteItem(item, idx)">×</button>
       </div>
 
       <!-- Пусто -->

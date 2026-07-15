@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-section interactive-el">
-    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">⚙️ Физика времени и планеты</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
@@ -9,35 +9,35 @@
       <div class="grid-2">
         <div class="calendar-field">
           <label class="glass-label">Часов в сутках</label>
-          <input type="number" v-model.number="settings.часов_в_сутках" min="1" class="interactive-el" style="max-width: 50%;">
+          <input v-model.number="settings.часов_в_сутках" type="number" min="1" class="interactive-el" style="max-width: 50%;">
         </div>
         <div class="calendar-field">
           <label class="glass-label">Минут в часе</label>
-          <input type="number" v-model.number="settings.минут_в_часе" min="1" class="interactive-el" style="max-width: 50%;">
+          <input v-model.number="settings.минут_в_часе" type="number" min="1" class="interactive-el" style="max-width: 50%;">
         </div>
       </div>
       
       <div style="margin-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;">
         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-color);">
-          <input type="checkbox" v-model="settings.учитывать_сезонную_длительность_дня" class="interactive-el">
+          <input v-model="settings.учитывать_сезонную_длительность_дня" type="checkbox" class="interactive-el">
           Учитывать световой день и солнцестояния
         </label>
         
         <div v-if="settings.учитывать_сезонную_длительность_дня" style="margin-top: 12px; display: flex; flex-direction: column; gap: 12px;">
           <div class="calendar-field">
             <label class="glass-label">Широта (0 = экватор, 90 = полюс)</label>
-            <input type="number" v-model.number="settings.широта" min="-90" max="90" class="interactive-el" style="max-width: 33.3%;">
+            <input v-model.number="settings.широта" type="number" min="-90" max="90" class="interactive-el" style="max-width: 33.3%;">
             <small class="glass-label">Влияет только на лор, реальный расчет идет по часам ниже.</small>
           </div>
           
-          <div class="grid-2" v-if="dayLengthAnchor">
+          <div v-if="dayLengthAnchor" class="grid-2">
             <div class="calendar-field">
               <label class="glass-label" style="color: #f39c12;">Летнее солнцестояние (часы света)</label>
-              <input type="number" v-model.number="dayLengthAnchor.summer_solstice_hours" min="1" max="100" step="0.1" class="interactive-el" style="max-width: 50%;">
+              <input v-model.number="dayLengthAnchor.summer_solstice_hours" type="number" min="1" max="100" step="0.1" class="interactive-el" style="max-width: 50%;">
             </div>
             <div class="calendar-field">
               <label class="glass-label" style="color: #3498db;">Зимнее солнцестояние (часы света)</label>
-              <input type="number" v-model.number="dayLengthAnchor.winter_solstice_hours" min="0" max="100" step="0.1" class="interactive-el" style="max-width: 50%;">
+              <input v-model.number="dayLengthAnchor.winter_solstice_hours" type="number" min="0" max="100" step="0.1" class="interactive-el" style="max-width: 50%;">
             </div>
           </div>
         </div>

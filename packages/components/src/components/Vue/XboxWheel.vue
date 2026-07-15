@@ -1,12 +1,12 @@
 <template>
-  <div class="dropdown-container" ref="wrapper" :style="{ zIndex: isOpen ? 10005 : 1000 }">
+  <div ref="wrapper" class="dropdown-container" :style="{ zIndex: isOpen ? 10005 : 1000 }">
     <div 
-      class="status-trigger interactive-el" 
+      ref="trigger" 
+      class="status-trigger interactive-el"
       :class="{ active: isOpen }"
       @click.stop="toggle"
       @mouseenter="$emit('hover-start')"
       @mouseleave="$emit('hover-end')"
-      ref="trigger"
     >
       <span style="font-weight: 500;">{{ selectedLabel }}</span>
       <span class="arrow-icon" :class="{ rotated: isOpen }">▼</span>
@@ -17,15 +17,15 @@
       <transition name="wheel-fade">
         <div 
           v-if="isOpen"
-          class="wheel-wrapper expanded" 
-          :class="{ 'is-horizontal': horizontal }"
           ref="dropdownRef" 
+          class="wheel-wrapper expanded"
+          :class="{ 'is-horizontal': horizontal }" 
           tabindex="0"
+          :style="dropdownStyle"
           @wheel.prevent="onWheel"
           @keydown="onKeydown"
-          :style="dropdownStyle"
         >
-          <div class="wheel-container" v-if="normalizedOptions.length > 0">
+          <div v-if="normalizedOptions.length > 0" class="wheel-container">
             <div 
               v-for="(opt, i) in normalizedOptions" 
               :key="i"

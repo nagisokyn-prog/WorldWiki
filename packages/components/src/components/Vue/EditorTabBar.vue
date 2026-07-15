@@ -26,7 +26,7 @@
       <span class="tab-icon">{{ tab.tabType === 'chapter' ? '📖' : '🗂️' }}</span>
       <span class="tab-title">{{ tab.title }}</span>
       <span v-if="tab.unsaved" class="tab-dot">●</span>
-      <button class="tab-close" @click.stop="$emit('close', tab.id)" tabindex="-1">×</button>
+      <button class="tab-close" tabindex="-1" @click.stop="$emit('close', tab.id)">×</button>
 
       <!-- Drop indicator line -->
       <div v-if="dragOverIdx === idx && dropSide === 'left'"  class="tab-drop-line tab-drop-line--left" />

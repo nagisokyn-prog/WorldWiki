@@ -11,17 +11,17 @@
           <h3>Формат файла</h3>
           <div class="format-grid">
             <label class="format-option">
-              <input type="radio" v-model="format" value="txt">
+              <input v-model="format" type="radio" value="txt">
               <div class="format-icon"><i class="fas fa-file-alt"></i></div>
               <span>TXT</span><small>Текст</small>
             </label>
             <label class="format-option">
-              <input type="radio" v-model="format" value="docx">
+              <input v-model="format" type="radio" value="docx">
               <div class="format-icon"><i class="fas fa-file-word"></i></div>
               <span>DOCX</span><small>Word</small>
             </label>
             <label class="format-option">
-              <input type="radio" v-model="format" value="pdf">
+              <input v-model="format" type="radio" value="pdf">
               <div class="format-icon"><i class="fas fa-file-pdf"></i></div>
               <span>PDF</span><small>Документ</small>
             </label>
@@ -32,15 +32,15 @@
           <h3>Главы для экспорта</h3>
           <div class="chapters-selection">
             <label class="selection-option">
-              <input type="radio" v-model="selectionMode" value="current">
+              <input v-model="selectionMode" type="radio" value="current">
               <span>Текущая глава</span>
             </label>
             <label class="selection-option">
-              <input type="radio" v-model="selectionMode" value="all">
+              <input v-model="selectionMode" type="radio" value="all">
               <span>Все главы</span>
             </label>
             <label class="selection-option">
-              <input type="radio" v-model="selectionMode" value="selected">
+              <input v-model="selectionMode" type="radio" value="selected">
               <span>Выбрать главы</span>
             </label>
           </div>
@@ -53,10 +53,10 @@
                     Выбрано: {{ selectedChapters.length }} глав
                   </div>
                   <div class="control-buttons" style="display: flex; gap: 8px;">
-                    <button class="small-btn" @click="selectAll" style="padding: 4px 8px; font-size: 12px;">
+                    <button class="small-btn" style="padding: 4px 8px; font-size: 12px;" @click="selectAll">
                       <i class="fas fa-check-double"></i> Все
                     </button>
-                    <button class="small-btn" @click="clearSelection" style="padding: 4px 8px; font-size: 12px;">
+                    <button class="small-btn" style="padding: 4px 8px; font-size: 12px;" @click="clearSelection">
                       <i class="fas fa-times"></i> Очистить
                     </button>
                   </div>
@@ -64,7 +64,7 @@
                 <div class="chapters-list" style="max-height: 200px; overflow-y: auto; padding: 10px;">
                   <div v-for="ch in allChapters" :key="ch.id" style="margin-bottom: 5px;">
                     <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
-                      <input type="checkbox" :value="ch.id" v-model="selectedChapters">
+                      <input v-model="selectedChapters" type="checkbox" :value="ch.id">
                       {{ ch.title || 'Без названия' }}
                     </label>
                   </div>
@@ -78,15 +78,15 @@
           <h3>Дополнительно</h3>
           <div class="export-options">
             <label class="option-checkbox">
-              <input type="checkbox" v-model="addTOC">
+              <input v-model="addTOC" type="checkbox">
               <span>Добавить оглавление</span>
             </label>
             <label class="option-checkbox">
-              <input type="checkbox" v-model="addPageNumbers">
+              <input v-model="addPageNumbers" type="checkbox">
               <span>Нумерация страниц</span>
             </label>
             <label class="option-checkbox">
-              <input type="checkbox" v-model="includeMetadata">
+              <input v-model="includeMetadata" type="checkbox">
               <span>Включить метаданные</span>
             </label>
           </div>
@@ -95,7 +95,7 @@
       
       <div class="modal-footer">
         <button class="btn btn-secondary" @click="$emit('close')">Отмена</button>
-        <button class="btn btn-primary" @click="exportData" :disabled="loading">
+        <button class="btn btn-primary" :disabled="loading" @click="exportData">
           {{ loading ? 'Экспорт...' : 'Экспортировать' }}
         </button>
       </div>

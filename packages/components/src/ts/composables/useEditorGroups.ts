@@ -91,7 +91,7 @@ export function useEditorGroups() {
   /** Открыть/активировать вкладку в группе (по умолчанию — активная группа) */
   const openTab = (tab: EditorTab, groupId?: string) => {
     const gid = groupId ?? activeGroupId.value;
-    let g = state.groups.find(g => g.id === gid) ?? state.groups[0];
+    const g = state.groups.find(g => g.id === gid) ?? state.groups[0];
 
     // Если вкладка уже есть в этой группе — просто активируем
     const existing = g.tabs.find(t => t.id === tab.id);

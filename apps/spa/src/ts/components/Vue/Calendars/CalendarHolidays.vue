@@ -1,6 +1,6 @@
 <template>
   <div class="calendar-section interactive-el">
-    <div class="section-header" @click="isCollapsed = !isCollapsed" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">🎉 Праздники</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
@@ -9,14 +9,15 @@
       <div class="item-list">
         <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row" style="display: flex; gap: 12px; align-items: center; width: 100%;">
           <input
-            type="text"
             v-model="holiday.название"
+            type="text"
             class="item-name interactive-el"
             placeholder="Название праздника"
             style="flex: 1;"
           />
           <div style="display: flex; gap: 12px; align-items: center; flex: 2;">
             <XboxWheel
+              v-model.number="holiday.дата_начала.месяц"
               :horizontal="wheelHorizontal"
               :options="
                 (modelValue.месяцы || []).map((m: any, mi: number) => ({
@@ -24,13 +25,12 @@
                   label: m.название,
                 }))
               "
-              v-model.number="holiday.дата_начала.месяц"
               style="flex: 1; min-width: 0;"
             >
             </XboxWheel>
               <input
-              type="number"
               v-model.number="holiday.дата_начала.день"
+              type="number"
               min="1"
               :max="
                 getDaysInMonth(
@@ -45,6 +45,7 @@
             <span v-if="holiday.дата_конца">—</span>
             <XboxWheel
               v-if="holiday.дата_конца"
+              v-model.number="holiday.дата_конца.месяц"
               :horizontal="wheelHorizontal"
               :options="
                 (modelValue.месяцы || []).map((m: any, mi: number) => ({
@@ -52,14 +53,13 @@
                   label: m.название,
                 }))
               "
-              v-model.number="holiday.дата_конца.месяц"
               style="flex: 1; min-width: 0;"
             >
             </XboxWheel>
             <input
               v-if="holiday.дата_конца"
-              type="number"
               v-model.number="holiday.дата_конца.день"
+              type="number"
               min="1"
               :max="
                 getDaysInMonth(
@@ -75,15 +75,15 @@
           <div class="item-actions">
             <button
               class="btn-icon interactive-el"
-              @click.prevent="moveItem(Number(hIdx), -1)"
               :disabled="Number(hIdx) === 0"
+              @click.prevent="moveItem(Number(hIdx), -1)"
             >
               ↑
             </button>
             <button
               class="btn-icon interactive-el"
-              @click.prevent="moveItem(Number(hIdx), 1)"
               :disabled="Number(hIdx) === (modelValue.праздники?.length || 0) - 1"
+              @click.prevent="moveItem(Number(hIdx), 1)"
             >
               ↓
             </button>
@@ -113,9 +113,13 @@ const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMat
 
 import type { CalendarData } from "../../../services/Calendars/calendar.types";
 
-const props = defineProps<{
-  modelValue: CalendarData;
-}>();
+import type { PropType } from "vue";
+const props = defineProps({
+  modelValue: {
+    type: Object as PropType<CalendarData>,
+    required: true,
+  },
+});
 
 const wheelHorizontal = ref(
   settingsService.getSettings()?.dropdowns?.wheelOrientation === "horizontal",

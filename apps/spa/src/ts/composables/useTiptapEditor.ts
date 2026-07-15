@@ -206,7 +206,7 @@ const documentStructure = computed(() => {
       node.forEach(n => traverse(n, depth));
     } else if (node.type) {
       let text = '';
-      let type = node.type;
+      const type = node.type;
       
       // Extract text from node
       if (node.content) {
@@ -623,7 +623,7 @@ onMounted(() => {
     const link = (e.target as HTMLElement).closest('a');
     if (!link) return;
 
-    let url = link.getAttribute('href') || link.getAttribute('data-href') || '';
+    const url = link.getAttribute('href') || link.getAttribute('data-href') || '';
     if (!url) return;
 
     console.log('[EditorCore] Link clicked:', url);

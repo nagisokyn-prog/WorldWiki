@@ -31,8 +31,8 @@
         <div v-if="showAuthCodeInput" class="auth-code-section glass-panel">
           <p class="help-text">Вам должен был открыться браузер. Разрешите доступ и скопируйте 7-значный код подтверждения, затем вставьте его сюда:</p>
           <div class="code-input-group">
-            <input type="text" v-model="authCode" placeholder="Код подтверждения..." class="interactive-el">
-            <button class="btn-new interactive-el" @click="exchangeCode" :disabled="!authCode || isLoading">
+            <input v-model="authCode" type="text" placeholder="Код подтверждения..." class="interactive-el">
+            <button class="btn-new interactive-el" :disabled="!authCode || isLoading" @click="exchangeCode">
               {{ isLoading ? 'Проверка...' : 'Подтвердить' }}
             </button>
           </div>

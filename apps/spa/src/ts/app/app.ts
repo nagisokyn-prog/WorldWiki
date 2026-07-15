@@ -904,7 +904,7 @@ async function init() {
             }
 
             // 🔥 ОБРАБОТКА ВСТРЕЧНЫХ ОТНОШЕНИЙ, ОТРЕДАКТИРОВАННЫХ ПОЛЬЗОВАТЕЛЕМ 🔥
-            let foreignUpdatesFinal = foreignUpdatesToProcess || {};
+            const foreignUpdatesFinal = foreignUpdatesToProcess || {};
             
             // --- СБОР УДАЛЕННЫХ ВСТРЕЧНЫХ СВЯЗЕЙ (ORPHAN CLEANUP) ---
             try {
@@ -1043,7 +1043,7 @@ async function init() {
               'name';
 
             const initialData: any = {};
-            let nameToSet = preDefinedName || prompt(`Введите название для нового элемента:`, 'Без названия');
+            const nameToSet = preDefinedName || prompt(`Введите название для нового элемента:`, 'Без названия');
             
             if (nameToSet === null) {
               isCreatingEntity.value = false;
@@ -1547,24 +1547,24 @@ async function init() {
     }
   });
 
-  app.component('entity-editor-vue', EntityEditorVue);
-  app.component('chapters-view-vue', ChaptersViewVue);
-  app.component('chapters-main-vue', ChaptersMainVue);
-  app.component('chapter-tree-vue', ChapterTreeVue);
-  app.component('editor-core-vue', EditorCoreVue);
-  app.component('timeline-panel-vue', TimelinePanelVue);
-  app.component('participants-panel-vue', ParticipantsPanelVue);
-  app.component('planning-panel-vue', PlanningPanelVue);
-  app.component('export-modal-vue', ExportModalVue);
-  app.component('wowilon-drawer-vue', WowilonDrawerVue);
-  app.component('quick-open-vue', QuickOpenVue);
-  app.component('command-palette-vue', CommandPaletteVue);
-  app.component('tags-manager-modal-vue', TagsManagerModalVue);
-  app.component('tags-field-vue', TagsField);
-  app.component('schema-editor-main-vue', SchemaEditorMainVue);
-  app.component('editor-tab-bar-vue', EditorTabBarVue);
-  app.component('editor-group-pane-vue', EditorGroupPaneVue);
-  app.component('cloud-sync-modal-vue', CloudSyncModalVue);
+  app.component('EntityEditorVue', EntityEditorVue);
+  app.component('ChaptersViewVue', ChaptersViewVue);
+  app.component('ChaptersMainVue', ChaptersMainVue);
+  app.component('ChapterTreeVue', ChapterTreeVue);
+  app.component('EditorCoreVue', EditorCoreVue);
+  app.component('TimelinePanelVue', TimelinePanelVue);
+  app.component('ParticipantsPanelVue', ParticipantsPanelVue);
+  app.component('PlanningPanelVue', PlanningPanelVue);
+  app.component('ExportModalVue', ExportModalVue);
+  app.component('WowilonDrawerVue', WowilonDrawerVue);
+  app.component('QuickOpenVue', QuickOpenVue);
+  app.component('CommandPaletteVue', CommandPaletteVue);
+  app.component('TagsManagerModalVue', TagsManagerModalVue);
+  app.component('TagsFieldVue', TagsField);
+  app.component('SchemaEditorMainVue', SchemaEditorMainVue);
+  app.component('EditorTabBarVue', EditorTabBarVue);
+  app.component('EditorGroupPaneVue', EditorGroupPaneVue);
+  app.component('CloudSyncModalVue', CloudSyncModalVue);
   app.use(autoAnimatePlugin);
   app.use(MotionPlugin);
   setupGlass(app);

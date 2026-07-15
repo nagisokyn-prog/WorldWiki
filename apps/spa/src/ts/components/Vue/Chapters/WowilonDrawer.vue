@@ -21,7 +21,7 @@
         
         <div class="query-input-container">
           <textarea v-model="query" placeholder="Введите ваш запрос..." rows="3"></textarea>
-          <button class="send-query-btn" @click="sendQuery" :disabled="loading">
+          <button class="send-query-btn" :disabled="loading" @click="sendQuery">
             <i class="fas fa-paper-plane"></i> Отправить
           </button>
         </div>

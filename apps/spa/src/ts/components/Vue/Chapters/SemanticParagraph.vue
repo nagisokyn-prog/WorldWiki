@@ -3,9 +3,9 @@
     <div 
       class="semantic-tag-badge interactive-el" 
       contenteditable="false" 
-      @click="cycleTag"
       :class="currentTag"
       :title="tagTitle"
+      @click="cycleTag"
     >
       {{ tagDisplay }}
     </div>

@@ -6,22 +6,22 @@
       
       <!-- Editor -->
       <EditorCore
-        :project="project"
         v-model:title="currentChapter.title"
         v-model:content="currentChapter.content"
-        v-model:footnotesData="currentChapter.footnotes"
-        :hasUnsavedChanges="hasUnsavedChanges"
-        :initialScrollPos="currentChapter.scrollPos || 0"
-        :changedFields="changedFields"
+        v-model:footnotes-data="currentChapter.footnotes"
+        :project="project"
+        :has-unsaved-changes="hasUnsavedChanges"
+        :initial-scroll-pos="currentChapter.scrollPos || 0"
+        :changed-fields="changedFields"
         @change="markUnsaved"
         @save="saveChapter"
-        @openEntity="handleOpenEntity"
+        @open-entity="handleOpenEntity"
         @scroll-change="handleScrollChange"
         @toggle-history="toggleHistory"
       />
 
       <!-- Right Panel Resizer -->
-      <div v-if="isRightPanelVisible" class="panel-resize-handle" @mousedown="startResize" style="width: 4px; cursor: col-resize; background: transparent; transition: background 0.2s;"></div>
+      <div v-if="isRightPanelVisible" class="panel-resize-handle" style="width: 4px; cursor: col-resize; background: transparent; transition: background 0.2s;" @mousedown="startResize"></div>
 
       <!-- Right Panel -->
       <div v-if="isRightPanelVisible" class="chapter-right-panel" :style="{ width: rightPanelWidth + 'px' }" style="background: rgba(0,0,0,0.15); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;">
@@ -39,22 +39,22 @@
         <!-- Глава открыта: таймлайн → участники → план -->
         <div v-else-if="currentChapter" style="padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0;">
           <TimelinePanel
-            :project="project"
             v-model:events="currentChapter.timelineEvents"
+            :project="project"
             @change="markUnsaved"
           />
           <ParticipantsPanel
-            :project="project"
             v-model:participants="currentChapter.participants"
+            :project="project"
             @change="markUnsaved"
           />
           <div class="parent-plans-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
             <!-- План тома -->
             <div v-if="currentVolume" class="parent-plan-accordion" style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin: 0 14px;">
-              <div class="accordion-header" @click="isVolumePlanOpen = !isVolumePlanOpen" style="cursor: pointer; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); transition: background 0.2s;">
+              <div class="accordion-header" style="cursor: pointer; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); transition: background 0.2s;" @click="isVolumePlanOpen = !isVolumePlanOpen">
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;"><i class="fas fa-book" style="color: var(--accent);"></i> План тома: {{ currentVolume.title }}</span>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <button @click.stop="addVolumePlanItem" style="background: none; border: none; color: var(--accent); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 14px; transition: background 0.2s;" class="add-from-header-btn">+</button>
+                  <button style="background: none; border: none; color: var(--accent); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 14px; transition: background 0.2s;" class="add-from-header-btn" @click.stop="addVolumePlanItem">+</button>
                   <span style="font-size: 10px; color: var(--text-muted); transition: transform 0.2s;" :style="{ transform: isVolumePlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
                 </div>
               </div>
@@ -71,10 +71,10 @@
 
             <!-- План арки -->
             <div v-if="currentArc" class="parent-plan-accordion" style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin: 0 14px;">
-              <div class="accordion-header" @click="isArcPlanOpen = !isArcPlanOpen" style="cursor: pointer; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); transition: background 0.2s;">
+              <div class="accordion-header" style="cursor: pointer; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); transition: background 0.2s;" @click="isArcPlanOpen = !isArcPlanOpen">
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 6px;"><i class="fas fa-bookmark" style="color: var(--accent);"></i> План арки: {{ currentArc.title }}</span>
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <button @click.stop="addArcPlanItem" style="background: none; border: none; color: var(--accent); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 14px; transition: background 0.2s;" class="add-from-header-btn">+</button>
+                  <button style="background: none; border: none; color: var(--accent); cursor: pointer; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 14px; transition: background 0.2s;" class="add-from-header-btn" @click.stop="addArcPlanItem">+</button>
                   <span style="font-size: 10px; color: var(--text-muted); transition: transform 0.2s;" :style="{ transform: isArcPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
                 </div>
               </div>
@@ -121,7 +121,7 @@
           
           <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
             <label style="font-size: 10px; color: var(--text-muted);">Хранить последних версий:</label>
-            <input type="number" v-model="maxSaves" class="input-base" style="width: 100%; font-size: 12px; padding: 4px; margin-top: 4px;">
+            <input v-model="maxSaves" type="number" class="input-base" style="width: 100%; font-size: 12px; padding: 4px; margin-top: 4px;">
           </div>
           
           <div v-if="isLoadingHistory" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
@@ -130,13 +130,14 @@
           <div v-else style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
               <div v-if="revisions.length === 0" style="font-size: 10px; color: var(--text-muted); text-align: center;">Нет сохраненных версий</div>
               
-              <div v-for="(rev, idx) in revisions" :key="rev.id" 
-                   @click="previewHistory(rev)"
+              <div
+v-for="(rev, idx) in revisions" :key="rev.id" 
                    :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
-                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;">
+                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;"
+                   @click="previewHistory(rev)">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                       <span style="font-size: 11px; font-weight: bold;">{{ rev.formattedDate }}</span>
-                      <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" @click.stop="togglePin(rev)" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'">
+                      <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'" @click.stop="togglePin(rev)">
                         {{ rev.is_pinned ? '📍' : '📌' }}
                       </button>
                   </div>
@@ -158,14 +159,14 @@
     </div>
 
     <!-- Floating UI Elements -->
-    <button v-show="!isWowilonOpen" class="wowilon-toggle-btn" @click="isWowilonOpen = true" style="position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999;">
+    <button v-show="!isWowilonOpen" class="wowilon-toggle-btn" style="position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999;" @click="isWowilonOpen = true">
       <i class="fas fa-robot"></i>
     </button>
 
     <div v-if="showQuickLinkHint" class="quick-link-info-panel" style="position: fixed; bottom: 80px; right: 20px; width: 320px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; z-index: 999; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
       <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
         <strong style="color: var(--accent);"><i class="fas fa-bolt"></i> Быстрые ссылки Ctrl+Q</strong>
-        <button @click="showQuickLinkHint = false" style="background:none; border:none; color:var(--text-muted); cursor:pointer;">✕</button>
+        <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;" @click="showQuickLinkHint = false">✕</button>
       </div>
       <ol style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-main);">
         <li>Напишите текст в квадратных скобках: <code>[Имя]</code></li>
@@ -175,7 +176,7 @@
     </div>
 
     <!-- Кнопка-кружок для показа подсказки -->
-    <button v-if="!showQuickLinkHint" @click="showQuickLinkHint = true" class="quick-link-hint-circle" title="Показать подсказку Ctrl+Q" style="position: fixed; bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 998; transition: all 0.2s;">
+    <button v-if="!showQuickLinkHint" class="quick-link-hint-circle" title="Показать подсказку Ctrl+Q" style="position: fixed; bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 998; transition: all 0.2s;" @click="showQuickLinkHint = true">
       ?
     </button>
 
@@ -207,7 +208,7 @@
     <div v-if="debugError" style="position: fixed; top: 20px; right: 20px; width: 300px; background: #ff6b6b; color: white; padding: 16px; border-radius: 8px; z-index: 9999; font-family: monospace; font-size: 12px;">
       <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
         <strong>⚠️ Ошибка</strong>
-        <button @click="debugError = null" style="background: none; border: none; color: white; cursor: pointer;">✕</button>
+        <button style="background: none; border: none; color: white; cursor: pointer;" @click="debugError = null">✕</button>
       </div>
       <div style="white-space: pre-wrap; word-break: break-all;">{{ debugError }}</div>
       <div style="margin-top: 8px; opacity: 0.8;">Проект: {{ project }}</div>
@@ -418,7 +419,7 @@ const getDiffSummary = (current: any, previous: any) => {
   const currSnap = current.content.attributes || current.content;
   const prevSnap = previous.content.attributes || previous.content;
   
-  let changes = [];
+  const changes = [];
   if (currSnap.title !== prevSnap.title) changes.push('Название');
   if (currSnap.content !== prevSnap.content) changes.push('Текст');
   if (JSON.stringify(currSnap.footnotes) !== JSON.stringify(prevSnap.footnotes)) changes.push('Сноски');
@@ -438,7 +439,7 @@ const changedFields = computed(() => {
   const snapData = currentSnap.content.attributes || currentSnap.content;
   const original = originalData.value;
   
-  let changes = [];
+  const changes = [];
   if (snapData.title !== original.title) changes.push('title');
   if (snapData.content !== original.content) changes.push('content');
   if (JSON.stringify(snapData.footnotes) !== JSON.stringify(original.footnotes)) changes.push('footnotes');

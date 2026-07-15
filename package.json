@@ -10,8 +10,8 @@
     "preview": "vp preview",
     "tauri": "tauri",
     "typecheck": "turbo typecheck",
-    "lint": "turbo lint",
-    "lint:fix": "oxlint --fix src/ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "oxfmt --write src/ts",
     "test": "turbo test",
     "test:run": "vp test run",
@@ -58,15 +58,12 @@
     "jsdom": "^29.1.1",
     "prettier": "^3.9.4",
     "turbo": "^2.2.3",
-    "typescript": "^7.0.2",
+    "typescript": "~5.7.2",
     "typescript-eslint": "^8.13.0",
     "vite": "^8.1.4",
     "vite-plugin-checker": "^0.8.0",
     "vite-plugin-vue-devtools": "^7.6.4",
     "vitest": "^4.1.10",
     "vue-tsc": "^3.3.7"
-  },
-  "overrides": {
-    "typescript": "^7.0.2"
   }
 }

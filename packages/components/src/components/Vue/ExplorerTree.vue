@@ -2,7 +2,7 @@
   <div class="explorer-tree" tabindex="0" @keydown="onTreeKeydown" @click.self="clearSelection()">
     <!-- Header -->
     <div v-if="title" class="tree-header" style="display: flex; align-items: center;">
-      <button v-if="showBack" class="tree-back-btn" @click="$emit('back')" title="Back">
+      <button v-if="showBack" class="tree-back-btn" title="Back" @click="$emit('back')">
         <i class="fas fa-arrow-left"></i>
       </button>
       <span class="tree-title">
@@ -22,7 +22,7 @@
           <i :class="expandedSections.has(sect.id) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>{{ sect.title.toUpperCase() }}</span>
           <div v-if="sect.canAdd" class="section-actions">
-            <i class="fas fa-plus" @click.stop="$emit('create', { sectionId: sect.id })" title="Add"></i>
+            <i class="fas fa-plus" title="Add" @click.stop="$emit('create', { sectionId: sect.id })"></i>
           </div>
         </div>
 
@@ -51,12 +51,12 @@
              <div class="tree-item-row">
                 <span class="tree-node-icon">{{ sect.icon || '📄' }}</span>
                 <input
-                  class="tree-rename-input"
                   v-model="creating.name"
+                  v-focus
+                  class="tree-rename-input"
                   @keydown.enter="commitCreate"
                   @keydown.escape="creating = null"
                   @blur="commitCreate"
-                  v-focus
                 />
              </div>
           </div>
@@ -84,7 +84,7 @@
       <transition name="ctx-pop">
         <div v-if="ctx" class="tree-ctx-menu" :style="ctxStyle">
           <!-- Inject context menu items via slot, passing the active node context -->
-          <slot name="context-menu" :node="ctx.node" :sectionId="ctx.sectionId" :close="() => ctx = null"></slot>
+          <slot name="context-menu" :node="ctx.node" :section-id="ctx.sectionId" :close="() => ctx = null"></slot>
         </div>
       </transition>
     </Teleport>

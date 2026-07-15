@@ -20,7 +20,7 @@
           </div>
 
           <!-- Results -->
-          <div class="qo-results" ref="resultsRef">
+          <div ref="resultsRef" class="qo-results">
             <div v-if="loading" class="qo-loading">
               <i class="fas fa-spinner fa-spin"></i> Searching...
             </div>
@@ -44,7 +44,7 @@
                   <span class="qo-item-title" v-html="highlight(item.title)"></span>
                   <span class="qo-item-type">{{ item.typeLabel }}</span>
                 </div>
-                <kbd class="qo-enter-hint" v-if="idx === activeIdx">↵</kbd>
+                <kbd v-if="idx === activeIdx" class="qo-enter-hint">↵</kbd>
               </div>
             </template>
           </div>

@@ -1,6 +1,6 @@
 <template>
-  <div class="tags-field-vue" ref="wrapperRef" :style="{ zIndex: isDropdownOpen ? 10005 : 10 }">
-    <div class="tags-input-container interactive-el" ref="inputContainerRef" @click="focusInput">
+  <div ref="wrapperRef" class="tags-field-vue" :style="{ zIndex: isDropdownOpen ? 10005 : 10 }">
+    <div ref="inputContainerRef" class="tags-input-container interactive-el" @click="focusInput">
       <div v-for="tag in selectedTags" :key="tag" class="tag-pill" :style="{ borderColor: getTagColor(tag) }">
         <span class="tag-text">{{ tag }}</span>
         <button class="tag-remove" @click.stop="removeTag(tag)">&times;</button>

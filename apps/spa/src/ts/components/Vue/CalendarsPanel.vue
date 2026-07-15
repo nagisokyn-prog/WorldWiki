@@ -17,16 +17,16 @@
       </div>
       
       <div v-for="(cal, idx) in calendars" :key="cal.id || idx" class="timeline-event-item">
-        <div class="event-header" @click="toggleExpand(idx)" style="cursor: pointer;">
+        <div class="event-header" style="cursor: pointer;" @click="toggleExpand(idx)">
           <div class="header-left">
             <span class="expand-icon">{{ isExpanded(idx) ? '▼' : '▶' }}</span>
             <span class="event-title">{{ cal.data?.название || 'Новый календарь' }}</span>
             <span v-if="cal.is_default" class="badge-default" style="margin-left: 8px; font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px;">По умолчанию</span>
           </div>
           <div style="display: flex; gap: 8px;">
-            <button type="button" @click.stop="setDefault(idx)" class="btn-icon interactive-el" title="Сделать основным" :style="{ opacity: cal.is_default ? 1 : 0.5 }">🌟</button>
-            <button type="button" @click.stop="saveCalendar(idx)" class="btn-icon interactive-el" title="Сохранить">💾</button>
-            <button type="button" @click.stop="removeCalendar(idx)" class="delete-btn">🗑️</button>
+            <button type="button" class="btn-icon interactive-el" title="Сделать основным" :style="{ opacity: cal.is_default ? 1 : 0.5 }" @click.stop="setDefault(idx)">🌟</button>
+            <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(idx)">💾</button>
+            <button type="button" class="delete-btn" @click.stop="removeCalendar(idx)">🗑️</button>
           </div>
         </div>
         
@@ -36,11 +36,11 @@
             <div class="grid-2">
               <div class="calendar-field">
                 <label>Название календаря</label>
-                <input type="text" v-model="cal.data.название" class="interactive-el">
+                <input v-model="cal.data.название" type="text" class="interactive-el">
               </div>
               <div class="calendar-field">
                 <label>Дней в неделе</label>
-                <input type="number" v-model.number="cal.data.дней_в_неделе" min="1" max="20" class="interactive-el">
+                <input v-model.number="cal.data.дней_в_неделе" type="number" min="1" max="20" class="interactive-el">
               </div>
             </div>
           </div>
@@ -66,7 +66,7 @@
         </div>
       </div>
       
-      <button type="button" v-if="project" class="glass-btn btn-add-event interactive-el" @click.prevent="addCalendar" style="width: 100%; justify-content: center; margin-top: 10px;">
+      <button v-if="project" type="button" class="glass-btn btn-add-event interactive-el" style="width: 100%; justify-content: center; margin-top: 10px;" @click.prevent="addCalendar">
         <i class="fas fa-plus"></i> Создать новый календарь
       </button>
     </div>

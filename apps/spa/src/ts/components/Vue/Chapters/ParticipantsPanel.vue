@@ -12,7 +12,7 @@
           <span>{{ getIcon(p.type) }}</span>
           <span style="font-size: 13px; font-weight: 500;">{{ p.name || resolveEntityName(p.id, p.type) }}</span>
         </div>
-        <button v-if="!p.autoParsed" @click="removeParticipant(idx)" style="background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;">✕</button>
+        <button v-if="!p.autoParsed" style="background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;" @click="removeParticipant(idx)">✕</button>
         <span v-else style="font-size: 10px; color: var(--accent); opacity: 0.7;" title="Автоматически найдено в тексте">Авто</span>
       </div>
     </div>

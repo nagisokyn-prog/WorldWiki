@@ -184,7 +184,7 @@ export class FormService {
     if ((element as HTMLInputElement).type === 'number') {
       const input = element as HTMLInputElement;
       if (value !== undefined && value !== null && value !== '') {
-        let num = parseFloat(value as string);
+        const num = parseFloat(value as string);
         if (!isNaN(num)) {
           input.value = String(num);
           this.normalizeNumberInput(input, true);
@@ -204,7 +204,7 @@ export class FormService {
     const min = parseFloat(input.getAttribute('min') || '');
     const max = parseFloat(input.getAttribute('max') || '');
     if (isNaN(min) && isNaN(max)) return;
-    let val = input.value.trim();
+    const val = input.value.trim();
     if (val === '') {
       if (fillEmpty && !isNaN(min)) input.value = String(min);
       return;

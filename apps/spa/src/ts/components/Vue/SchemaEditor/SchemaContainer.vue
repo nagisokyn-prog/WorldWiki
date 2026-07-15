@@ -13,9 +13,10 @@
         </div>
       </div>
       <div style="display: flex; gap: 12px; align-items: flex-start; margin-top: 4px;">
-        <button style="background: none; border: none; cursor: pointer; font-size: 16px;" 
-                @click="item.hidden = !item.hidden"
-                :title="item.hidden ? 'Показать модуль' : 'Скрыть модуль'">
+        <button
+style="background: none; border: none; cursor: pointer; font-size: 16px;" 
+                :title="item.hidden ? 'Показать модуль' : 'Скрыть модуль'"
+                @click="item.hidden = !item.hidden">
           {{ item.hidden ? '👁️‍🗨️' : '👁️' }}
         </button>
         <button style="color: #f55; background: none; border: none; font-size: 16px; cursor: pointer;" @click="$emit('remove')">✕</button>
@@ -138,7 +139,7 @@
             
             <div style="margin-top: 8px;">
               <label class="form-label-micro">Переопределить тип</label>
-              <XboxWheel :model-value="ensureFieldOverride(item, bField.class).type || ''" @update:modelValue="val => ensureFieldOverride(item, bField.class).type = val" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" />
+              <XboxWheel :model-value="ensureFieldOverride(item, bField.class).type || ''" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" @update:model-value="val => ensureFieldOverride(item, bField.class).type = val" />
             </div>
             
             <div v-if="(ensureFieldOverride(item, bField.class).type || bField.type) === 'select' || (ensureFieldOverride(item, bField.class).type || bField.type) === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">

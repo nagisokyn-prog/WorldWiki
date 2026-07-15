@@ -44,7 +44,7 @@ async fn init_database() -> Surreal<Db> {
 
     // Загружаем пользовательский DDL через include_str! чтобы он был вкомпилирован
     println!("[DEBUG] Applying surreal_schema.surql...");
-    let sql = include_str!("../../src/logic/surreal_schema.surql");
+    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
 
     match db.query(sql).await {
         Ok(mut res) => {

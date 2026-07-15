@@ -319,5 +319,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-@import '../../../../../src/css/modules/settings.css';
+@import '../../../../resources/src/styles/modules/settings.css';
 </style>

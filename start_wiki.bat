@@ -9,8 +9,8 @@ if exist target (
 )
 cd ..
 
-rem Install npm dependencies silently
-call npm install --legacy-peer-deps 2>nul || call npm install --legacy-peer-deps --no-fund --no-audit
+rem Install pnpm dependencies silently
+call pnpm install
 
 echo Starting dev build...
-cmd /k npx tauri dev
+cmd /k pnpm tauri dev

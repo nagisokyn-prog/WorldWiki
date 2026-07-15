@@ -12,7 +12,8 @@
     "vue": "^3.5.0",
     "vue-i18n": "^9.14.0",
     "@worldwiki/components": "workspace:*",
-    "@worldwiki/resources": "workspace:*"
+    "@worldwiki/resources": "workspace:*",
+    "@tauri-apps/api": "^2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",

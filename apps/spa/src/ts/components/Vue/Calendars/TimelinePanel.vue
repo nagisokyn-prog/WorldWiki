@@ -132,4 +132,4 @@
   </div>
 </template>
 <script src="../../../services/Calendars/timeline-panel.ts" lang="ts"></script>
-<style src="../../../../css/modules/timeline-panel.css" scoped></style>
+<style src="../../../../../../../packages/resources/src/styles/modules/timeline-panel.css" scoped></style>

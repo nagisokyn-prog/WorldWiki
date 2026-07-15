@@ -7,11 +7,10 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
-    checker({
-      typescript: true,
-      vueTsc: true
-    })
+    // checker({
+    //   typescript: true,
+    //   vueTsc: true
+    // })
   ],
   root: '.',
   base: './',

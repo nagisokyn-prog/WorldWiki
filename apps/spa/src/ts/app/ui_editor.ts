@@ -4,6 +4,12 @@
  */
 
 import { createApp, ref, onMounted } from 'vue';
+
+import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/font-awesome.min.css';
+import '@worldwiki/resources/styles/glass-theme.css';
+import '@worldwiki/resources/styles/new-ui-theme.css';
+
 import { settingsService } from '@worldwiki/components';
 import { apiService } from '../services/api.service';
 import EntityEditorVue from '../components/Vue/EntityEditor.vue';

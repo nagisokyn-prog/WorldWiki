@@ -5,6 +5,13 @@
 
 import { createApp, type Plugin } from 'vue';
 
+import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/font-awesome.min.css';
+import '@worldwiki/resources/styles/glass-theme.css';
+import '@worldwiki/resources/styles/glass-animations.css';
+import '@worldwiki/resources/styles/modules/settings.css';
+
+
 
 import { settingsService, i18n, setLocale, Settings } from '@worldwiki/components';
 

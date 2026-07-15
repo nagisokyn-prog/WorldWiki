@@ -6,6 +6,14 @@
 
 import { createApp, ref, computed, watch, onMounted, nextTick, shallowRef, triggerRef, defineAsyncComponent, type Plugin } from 'vue';
 
+import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/font-awesome.min.css';
+import '@worldwiki/resources/styles/glass-theme.css';
+import '@worldwiki/resources/styles/modules/settings.css';
+import '@worldwiki/resources/styles/new-ui-theme.css';
+import '@worldwiki/resources/styles/chapter-tree.css';
+
+
 
 import { apiService } from '../services/api.service';
 import { connectionsManager } from '../services/connections.service';

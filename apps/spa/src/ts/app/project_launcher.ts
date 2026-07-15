@@ -5,6 +5,15 @@
  */
 
 import * as Vue from 'vue';
+
+import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/font-awesome.min.css';
+import '@worldwiki/resources/styles/new-ui-theme.css';
+import '@worldwiki/resources/styles/glass-theme.css';
+import '@worldwiki/resources/styles/glass-animations.css';
+import '@worldwiki/resources/styles/project_launcher.css';
+import '@worldwiki/resources/styles/modules/settings.css';
+
 import { createApp, ref, computed, onMounted, nextTick, shallowRef } from 'vue';
 import { projectService } from '../services/project.service';
 

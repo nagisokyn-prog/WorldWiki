@@ -13,7 +13,7 @@ import Paragraph from '@tiptap/extension-paragraph';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import SemanticParagraphNode from '../components/Vue/Chapters/SemanticParagraphNode.vue';
 import { settingsService } from '@worldwiki/components';
-import { apiService } from '../../services/api.service';
+import { apiService } from '../services/api.service';
 
 const EnterHandler = Extension.create({
   name: 'enterHandler',

@@ -38,6 +38,9 @@ importers:
       '@tiptap/extension-link':
         specifier: ^3.27.3
         version: 3.27.4(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))(@tiptap/pm@3.27.4)
+      '@tiptap/extension-paragraph':
+        specifier: ^3.27.3
+        version: 3.27.4(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
       '@tiptap/extension-table':
         specifier: ^3.27.3
         version: 3.27.4(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))(@tiptap/pm@3.27.4)

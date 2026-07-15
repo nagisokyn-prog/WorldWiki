@@ -66,7 +66,7 @@ import { CalendarMath } from "../../../services/Calendars/calendar.math";
 
 const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
 
-import { CalendarData } from "../../../services/Calendars/calendar.types";
+import type { CalendarData } from "../../../services/Calendars/calendar.types";
 
 const props = defineProps<{
   modelValue: CalendarData;

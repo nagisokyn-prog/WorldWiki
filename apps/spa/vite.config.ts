@@ -16,8 +16,8 @@ export default defineConfig({
   base: './',
   resolve: {
     alias: {
-      'vue': 'vue/dist/vue.esm-browser.js',
-      'vue-i18n': resolve(__dirname, '../../node_modules/vue-i18n/dist/vue-i18n.esm-browser.js'),
+      'vue': 'vue/dist/vue.esm-bundler.js',
+      'vue-i18n': 'vue-i18n/dist/vue-i18n.esm-bundler.js',
       '@worldwiki/components': resolve(__dirname, '../../packages/components/src'),
       '@worldwiki/resources': resolve(__dirname, '../../packages/resources/src'),
       '@': resolve(__dirname, 'src/ts'),

@@ -1,9 +1,8 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
-import { apiService } from '../../services/api.service';
+import { apiService } from "../services/api.service";
 import { settingsService } from '@worldwiki/components';
 
 export function useEntityEditor(props: any, emit: any) {
-
 const loading = ref(true);
 const isInitializing = ref(false); 
 const config = shallowRef<any>(null);

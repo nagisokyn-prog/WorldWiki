@@ -275,8 +275,10 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
+import { apiService } from '../../../services/api.service';
+import { useTreeSelection } from '../../../composables/useTreeSelection';
+import { useEntityTree } from '../../../services/Entity/entity.tree';
 
-// ... (in setup) ...
 onMounted(() => {
   const handler = () => {
     console.log('🌳 ChapterTree: hierarchy changed, reloading...');
@@ -285,10 +287,6 @@ onMounted(() => {
   document.addEventListener('ww:hierarchy-changed', handler);
   onUnmounted(() => document.removeEventListener('ww:hierarchy-changed', handler));
 });
-import { apiService } from '../../../services/api.service';
-import { useTreeSelection } from '../../../composables/useTreeSelection';
-
-import { useEntityTree } from '../../../services/Entity/entity.tree';
 
 const props = defineProps({
   project: { type: String, required: true },
@@ -307,7 +305,8 @@ const expanded   = ref(new Set<string>());
 const { 
   entities, entitySections, expandedSections, entityCtx, entityCtxStyle, 
   entitySelection, flatEntityItems, loadEntities, getEntityName, 
-  handleEntityClick, openEntityCtx, toggleSection, entitySelectedInSection, entityKey 
+  handleEntityClick, openEntityCtx, toggleSection, entitySelectedInSection, entityKey,
+  deleteEntityCtxNode
 } = useEntityTree(props.project, emit);
 
 // --- Persistence Logic ---
@@ -404,100 +403,7 @@ const {
   },
 });
 
-// Ключ: "entity:entityType:id" — для синхронизации с вкладками в app.ts
-const entityKey = (type: string, id: any) => `entity:${type}:${id}`;
 
-const entityCtx = ref(null as any);
-const entityCtxStyle = computed(() => {
-  if (!entityCtx.value) return {};
-  const x = entityCtx.value.x + 220 > window.innerWidth  ? entityCtx.value.x - 220 : entityCtx.value.x;
-  const y = entityCtx.value.y + 120 > window.innerHeight ? entityCtx.value.y - 120 : entityCtx.value.y;
-  return { top: y + 'px', left: x + 'px' };
-});
-
-// Flat-список всех видимых сущностей (для Shift-диапазона)
-const flatEntityItems = computed(() => {
-  const result: any[] = [];
-  for (const sect of entitySections.value) {
-    if (!expandedSections.value.has(sect.type)) continue;
-    for (const entity of entities.value[sect.type] || []) {
-      result.push({ id: entityKey(sect.type, entity.id), _entity: entity, _type: sect.type });
-    }
-  }
-  return result;
-});
-
-const entitySelection = useTreeSelection({
-  onDelete: async (keys: any[]) => {
-    if (!keys.length) return;
-    if (!confirm(`Удалить выбранные сущности (${keys.length})?`)) return;
-
-    for (const key of keys) {
-      const [etype, eid] = key.split(':');
-      emit('delete-entity', key, etype, true);
-    }
-    await load();
-  },
-});
-
-// Количество выбранных сущностей данного типа
-const entitySelectedInSection = (type: string) => {
-  let count = 0;
-  for (const key of entitySelection.selected.value) {
-    if (String(key).startsWith(type + ':')) count++;
-  }
-  return count;
-};
-
-const handleEntityClick = (event: MouseEvent, type: string, entity: any, sect: any) => {
-  // Снимаем выделение с глав при клике на сущность
-  clearSelection();
-  
-  const key = entityKey(type, entity.id);
-  entitySelection.handleClick(event, { id: key }, flatEntityItems.value);
-  // При обычном клике (без модификаторов) — открываем сущность
-  if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
-    emit('open-entity', { ...entity, entityType: type });
-  }
-};
-
-const openEntityCtx = (e: MouseEvent, type: string, entity: any, sect: any) => {
-  // Если сущность не выделена — выделяем её одну
-  const key = entityKey(type, entity.id);
-  if (!entitySelection.isSelected(key)) {
-    entitySelection.handleClick(new MouseEvent('click'), { id: key }, flatEntityItems.value);
-  }
-  entityCtx.value = { x: e.clientX, y: e.clientY, entityType: type, entity, sect };
-};
-
-const deleteSelectedEntities = async (sectionType?: string) => {
-  if (sectionType) {
-    // Удаляем только выделенные сущности данного типа
-    const keys = [...entitySelection.selected.value].filter((k: any) => String(k).startsWith(sectionType + ':'));
-    if (!keys.length) return;
-    entitySelection.selected.value = new Set([...entitySelection.selected.value].filter((k: any) => !String(k).startsWith(sectionType + ':')));
-    for (const key of keys) {
-      const [etype, eid] = String(key).split(':');
-      try { await apiService.deleteEntity(props.project, etype, eid); } catch (e) { console.error(e); }
-    }
-    await load();
-  } else {
-    await entitySelection.deleteSelected();
-  }
-};
-
-const deleteEntityCtxNode = async () => {
-  if (!entityCtx.value) return;
-  const { entityType, entity } = entityCtx.value;
-  entityCtx.value = null;
-  const key = entityKey(entityType, entity.id);
-  if (entitySelection.hasSelection.value && entitySelection.isSelected(key) && entitySelection.selectedCount.value > 1) {
-    await deleteSelectedEntities();
-  } else {
-    try { await apiService.deleteEntity(props.project, entityType, entity.id); } catch (e) { console.error(e); }
-    await load();
-  }
-};
 
 
 // ─── Load ───────────────────────────────────────────────
@@ -540,28 +446,7 @@ const expandToId = (targetId: string) => {
   saveTreeState();
 };
 
-const loadEntities = async () => {
-  for (const sect of entitySections.value) {
-    try {
-      if (!titleFields.value[sect.type]) {
-        try {
-          const schemaResp = await fetch(`/struct/editor/${sect.type}.json`);
-          if (schemaResp.ok) {
-            const schema = await schemaResp.json();
-            if (schema.titleField) titleFields.value[sect.type] = schema.titleField;
-          }
-        } catch (se) {
-          console.warn(`Could not load schema for ${sect.type}`, se);
-        }
-      }
 
-      const list = await apiService.getEntityList(props.project, sect.type);
-      entities.value[sect.type] = list;
-    } catch (e) {
-      console.warn(`Could not load entities for ${sect.type}`, e);
-    }
-  }
-};
 
 const load = async (expandId?: string) => {
   try {
@@ -594,33 +479,7 @@ const load = async (expandId?: string) => {
   }
 };
 
-const toggleSection = (id: string) => {
-  if (expandedSections.value.has(id)) expandedSections.value.delete(id);
-  else expandedSections.value.add(id);
-  expandedSections.value = new Set(expandedSections.value);
-  saveTreeState();
-};
 
-const getEntityName = (entity: any, type: string) => {
-  if (!entity) return 'Пусто';
-  
-  // 1. Проверка по titleField из схемы (ПРИОРИТЕТ - первый инпут)
-  const path = titleFields.value[type];
-  if (path) {
-    const val = getValueByPath(entity, path);
-    if (val && String(val).trim().length > 0) {
-      return String(val).trim();
-    }
-  }
-
-  // 2. Прямая гарантия пользователя (на случай если схема не загрузилась)
-  const topName = entity.Name || entity.name || entity.название;
-  if (topName && String(topName).trim().length > 0) {
-    return String(topName).trim();
-  }
-
-  return `[${String(entity.id || '').substring(0, 6)}]`;
-};
 
 const startCreateEntity = (type: string) => {
   creatingEntity.value = { type, name: '' };

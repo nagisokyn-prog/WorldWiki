@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     bgBase: '#09090b', bgSecondary: '#121214', bgPanel: 'rgba(15,15,18,0.7)',
     bgInput: 'rgba(22,22,26,0.6)', textMain: '#ffffff', textMuted: 'rgba(255,255,255,0.65)',
     textHeading: '#ffffff', accent: '#8b5cf6', accentHover: '#7c3aed',
-    accentActive: '#6d28d9', accentDisabled: '#4c1d95', accentGlow: 'rgba(139,92,246,0.3)',
+    accentActive: '#6d28d9', accentDisabled: '#4c1d95', accentGlow: 'rgba(139,92,246,0.3)', accentText: '#ffffff',
     borderColor: 'rgba(255,255,255,0.1)', borderActive: 'rgba(139,92,246,0.5)',
     shadowColor: 'rgba(0,0,0,0.5)'
   },
@@ -192,6 +192,7 @@ class SettingsService {
     root.style.setProperty('--accent-active', s.colors.accentActive);
     root.style.setProperty('--accent-disabled', s.colors.accentDisabled);
     root.style.setProperty('--accent-glow', s.colors.accentGlow);
+    root.style.setProperty('--accent-text', s.colors.accentText);
     root.style.setProperty('--border-color', s.colors.borderColor);
     root.style.setProperty('--border-active', s.colors.borderActive);
     root.style.setProperty('--shadow-color', s.colors.shadowColor);

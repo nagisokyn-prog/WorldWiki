@@ -66,8 +66,8 @@ export function useEntityTree(project: string, emit: any) {
 
       entitySections.value = Object.keys(schemas).map(key => ({
         type: key,
-        label: schemas[key].name || key,
-        icon: schemas[key].iconEmoji || '📄'
+        title: schemas[key].name || key,
+        emoji: schemas[key].icon || schemas[key].iconEmoji || '📄'
       }));
 
       titleFields.value = {};
@@ -128,6 +128,24 @@ export function useEntityTree(project: string, emit: any) {
     }
   };
 
+  const deleteEntityCtxNode = async () => {
+    if (!entityCtx.value) return;
+    const { entityType, entity } = entityCtx.value;
+    entityCtx.value = null;
+    const key = entityKey(entityType, entity.id);
+    
+    if (entitySelection.hasSelection.value && entitySelection.isSelected(key) && entitySelection.selectedCount.value > 1) {
+      await entitySelection.deleteSelected();
+    } else {
+      if (confirm(`Удалить сущность "${getEntityName(entity, entityType)}"?`)) {
+        emit('delete-entity', key, entityType, true);
+        if (entities.value[entityType]) {
+          entities.value[entityType] = entities.value[entityType].filter(e => String(e.id) !== String(entity.id));
+        }
+      }
+    }
+  };
+
   return {
     entities,
     entitySections,
@@ -142,6 +160,7 @@ export function useEntityTree(project: string, emit: any) {
     openEntityCtx,
     toggleSection,
     entitySelectedInSection,
-    entityKey
+    entityKey,
+    deleteEntityCtxNode
   };
 }

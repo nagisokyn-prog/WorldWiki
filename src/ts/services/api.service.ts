@@ -62,7 +62,7 @@ import { invoke, stringifyId, processIds } from '../../../tauri-surreal-kit/fron
 
 export const projectRecordId = (p: string): string => {
   const cleanP = p.replace(/^projects:/, '').replace(/[`'"]/g, '');
-  return `projects:\`${cleanP}\``;
+  return `projects:${cleanP}`;
 };
 
 /*
@@ -380,7 +380,7 @@ export const apiService = {
     delete data.timelineEvents;
     delete data.updatedAt;
     
-    const res = await invoke<{ success: boolean }>('save_chapter', { data });
+    const res = await invoke<any>('save_chapter', { data });
     
     // Создаём contains-ребро для дерева (только при наличии привязки к арке/тому)
     if (data.arc_id || data.volume_id) {
@@ -426,7 +426,7 @@ export const apiService = {
       }
     }
     
-    return res;
+    return { success: true, id: res.id ? stringifyId(res.id) : data.id };
   },
   deleteChapter: (project: string, id: string): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('delete_chapter', { id }),

@@ -1187,7 +1187,7 @@ input[type="color"]::-webkit-color-swatch {
 .radio-btn.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--accent-text);
     box-shadow: 0 0 20px var(--accent-glow);
 }
 

@@ -1,1 +1,0 @@
-// This file has been moved to src/ts/services/Entity/entity.service.ts

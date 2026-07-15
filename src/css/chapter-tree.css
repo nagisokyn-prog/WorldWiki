@@ -31,7 +31,7 @@
 
 .tree-section-header:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
+    color: var(--text-heading, #ffffff);
 }
 
 .tree-section-header i {
@@ -75,8 +75,8 @@
 }
 
 .tree-item.active > .tree-item-row {
-    background: rgba(124, 58, 237, 0.15);
-    color: #ffffff;
+    background: var(--accent-glow, rgba(124, 58, 237, 0.15));
+    color: var(--text-main);
 }
 
 .tree-item.active > .tree-item-row::after {
@@ -140,9 +140,9 @@
 
 /* --- Inputs --- */
 .tree-rename-input {
-    background: #2a2d2e;
+    background: var(--bg-input, #2a2d2e);
     border: 1px solid var(--accent, #7c3aed);
-    color: #ffffff;
+    color: var(--text-main, #ffffff);
     font-size: 12px;
     padding: 1px 4px;
     width: 100%;

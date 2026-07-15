@@ -20,6 +20,7 @@ export interface ColorSettings {
   accentActive: string;     // Акцент при нажатии
   accentDisabled: string;   // Акцент для disabled
   accentGlow: string;       // Свечение акцента
+  accentText: string;       // Цвет текста на акценте
   borderColor: string;      // Цвет границ
   borderActive: string;     // Активные границы
   shadowColor: string;      // Цвет теней

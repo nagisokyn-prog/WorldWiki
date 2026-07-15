@@ -18,7 +18,7 @@ export const entityApi = {
   },
 
   getEntityList: (project: string, type: string, filters?: Record<string, unknown>): Promise<any[]> =>
-    invoke<any[]>('list_entities', { project, entityType: type, filters: filters || null }),
+    invoke<any[]>('get_entities', { project, entityType: type, filters: filters || null }),
 
   getEntity: (project: string, type: string, id: string): Promise<Record<string, unknown>> =>
     invoke<Record<string, unknown>>('get_entity', { id }),
@@ -62,8 +62,49 @@ export const entityApi = {
     const list = await invoke<any[]>('get_entity_schemas', { project });
     const dict: Record<string, SchemaInfo> = {};
     for (const s of list) {
-      if (s.name) dict[s.name] = s;
+      dict[s.type_key] = {
+        name: s.type_name || s.type_key,
+        icon: s.icon || '📄',
+        full_schema: s.full_schema
+      };
     }
+
+    // КОСТЫЛЬ: Если база пустая, подтягиваем локальные JSON-файлы и сохраняем в БД
+    if (Object.keys(dict).length === 0) {
+      console.warn('⚠️ Схемы в БД не найдены! Загружаю базовые из /struct/editor/ ...');
+      const defaultTypes = ['character', 'organization', 'state'];
+      for (const type of defaultTypes) {
+        try {
+          const res = await fetch(`/struct/editor/${type}.json`);
+          if (res.ok) {
+            const schemaData = await res.json();
+            const rustSchema = {
+              type_key: type,
+              type_name: schemaData.name || type,
+              icon: schemaData.iconEmoji || '📄',
+              color: schemaData.color || '#444444',
+              fields_schema: [],
+              full_schema: schemaData
+            };
+            
+            await invoke<{ success: boolean }>('save_entity_schema', {
+              project,
+              schema: rustSchema
+            });
+
+            dict[type] = {
+              name: rustSchema.type_name,
+              icon: rustSchema.icon,
+              full_schema: schemaData
+            };
+            console.log(`✅ Базовая схема "${type}" успешно сохранена в БД.`);
+          }
+        } catch (e) {
+          console.error(`❌ Ошибка загрузки дефолтной схемы ${type}:`, e);
+        }
+      }
+    }
+
     return dict;
   },
 

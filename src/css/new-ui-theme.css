@@ -672,7 +672,7 @@ textarea.input-base {
     background: var(--accent);
     border: 1px solid transparent;
     border-radius: var(--radius-btn);
-    color: #fff;
+    color: var(--accent-text);
     cursor: pointer;
     font-size: 13px;
     font-weight: var(--font-weight-bold);
@@ -1138,7 +1138,7 @@ body.resizing .chapter-right-panel {
     background: var(--accent);
     border: 1px solid transparent;
     border-radius: var(--radius-btn);
-    color: #fff;
+    color: var(--accent-text);
     cursor: pointer;
     font-size: 13px;
     font-weight: var(--font-weight-bold);
@@ -1184,7 +1184,7 @@ body.resizing .chapter-right-panel {
     background: var(--accent);
     border: none;
     border-radius: var(--radius-btn);
-    color: #fff;
+    color: var(--accent-text);
     cursor: pointer;
     font-size: 13px;
     font-weight: var(--font-weight-bold);

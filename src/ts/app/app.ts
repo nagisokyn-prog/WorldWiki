@@ -494,7 +494,10 @@ async function init() {
         addLog(`Editor -> Chapter [${chapter.title}]`, 'info');
       };
 
+      let isCreatingChapter = false;
       const createChapterIn = async ({ arcId, volumeId }: { arcId?: string; volumeId?: string }) => {
+        if (isCreatingChapter) return;
+        isCreatingChapter = true;
         try {
           const hierarchy = await apiService.getHierarchy(projectName);
           const allChapters = hierarchy.chapters || [];
@@ -543,7 +546,10 @@ async function init() {
           };
 
           // 1. Сохраняем саму главу
-          await apiService.saveChapter(projectName, newCh);
+          const saveRes = await apiService.saveChapter(projectName, newCh);
+          if (saveRes && saveRes.id) {
+            newCh.id = saveRes.id;
+          }
           
           // 2. Явно привязываем её к иерархии (на случай если saveChapter не учитывает arcId)
           if (arcId || volumeId) {
@@ -565,6 +571,8 @@ async function init() {
           openChapterTab(newCh);
         } catch (e) {
           addLog(`Manuscript -> Error creating chapter: ${e}`, 'error');
+        } finally {
+          isCreatingChapter = false;
         }
       };
 

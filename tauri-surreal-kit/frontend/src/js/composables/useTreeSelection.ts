@@ -15,14 +15,15 @@
 
 import { ref, computed } from 'vue';
 
-/**
- * @param {Object} options
- * @param {Function} options.onDelete - async (ids: string[]) => void, вызывается при удалении
- * @param {Function} [options.onSelectionChange] - (ids: string[]) => void, при изменении выделения
- */
-export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
-  const selected = ref(new Set());
-  const lastSelectedId = ref(null);
+export interface TreeSelectionOptions {
+  onDelete?: (ids: any[]) => Promise<void> | void;
+  onSelectionChange?: (ids: any[]) => void;
+}
+
+export function useTreeSelection(options: TreeSelectionOptions = {}) {
+  const { onDelete, onSelectionChange } = options;
+  const selected = ref(new Set<any>());
+  const lastSelectedId = ref<any>(null);
 
   // ─── Computed ─────────────────────────────────────────
 
@@ -32,7 +33,7 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
 
   // ─── Helpers ──────────────────────────────────────────
 
-  const isSelected = (id) => selected.value.has(id);
+  const isSelected = (id: any) => selected.value.has(id);
 
   const notify = () => {
     onSelectionChange?.([...selected.value]);
@@ -46,7 +47,7 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
    * @param {Object} item - элемент с полем id
    * @param {Object[]} flatItems - все видимые элементы в порядке отображения (для Shift-range)
    */
-  const handleClick = (event, item, flatItems) => {
+  const handleClick = (event: MouseEvent | { ctrlKey?: boolean; shiftKey?: boolean; metaKey?: boolean }, item: any, flatItems: any[]) => {
     const id = item.id;
 
     if (event.ctrlKey || event.metaKey) {
@@ -59,14 +60,14 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
 
     } else if (event.shiftKey && lastSelectedId.value) {
       // Shift+Click: диапазон от последнего выбранного до текущего
-      const ids = flatItems.map(i => i.id);
+      const ids = flatItems.map((i: any) => i.id);
       const fromIdx = ids.indexOf(lastSelectedId.value);
       const toIdx = ids.indexOf(id);
       if (fromIdx !== -1 && toIdx !== -1) {
         const lo = Math.min(fromIdx, toIdx);
         const hi = Math.max(fromIdx, toIdx);
         const next = new Set(selected.value);
-        ids.slice(lo, hi + 1).forEach(rid => next.add(rid));
+        ids.slice(lo, hi + 1).forEach((rid: any) => next.add(rid));
         selected.value = next;
       }
       // lastSelectedId не меняем при Shift
@@ -88,12 +89,12 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
     notify();
   };
 
-  const selectAll = (flatItems) => {
-    selected.value = new Set(flatItems.map(i => i.id));
+  const selectAll = (flatItems: any[]) => {
+    selected.value = new Set(flatItems.map((i: any) => i.id));
     notify();
   };
 
-  const addToSelection = (id) => {
+  const addToSelection = (id: any) => {
     const next = new Set(selected.value);
     next.add(id);
     selected.value = next;
@@ -123,10 +124,10 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
    * Escape → снять выделение.
    * Ctrl+A → выбрать всё.
    */
-  const handleKeydown = async (event, flatItems) => {
+  const handleKeydown = async (event: KeyboardEvent, flatItems: any[]) => {
     // Если фокус в текстовом поле — не перехватываем системные клавиши
     const target = event.target;
-    const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+    const isInput = (target as HTMLElement).tagName === 'INPUT' || (target as HTMLElement).tagName === 'TEXTAREA' || (target as HTMLElement).isContentEditable;
 
     if (event.key === 'Delete' || event.key === 'Backspace') {
       if (isInput) return; // Печатаем, не удаляем
@@ -140,6 +141,32 @@ export function useTreeSelection({ onDelete, onSelectionChange } = {}) {
     } else if ((event.ctrlKey || event.metaKey) && event.key === 'a') {
       event.preventDefault();
       selectAll(flatItems);
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+      if (isInput) return;
+      event.preventDefault();
+      if (!flatItems || flatItems.length === 0) return;
+
+      const ids = flatItems.map((i: any) => i.id);
+      let idx = ids.indexOf(lastSelectedId.value);
+
+      if (idx === -1) {
+        idx = event.key === 'ArrowDown' ? 0 : ids.length - 1;
+      } else {
+        idx = event.key === 'ArrowDown' ? idx + 1 : idx - 1;
+      }
+
+      if (idx >= 0 && idx < ids.length) {
+        const targetItem = flatItems[idx];
+        handleClick({ shiftKey: event.shiftKey, ctrlKey: false }, targetItem, flatItems);
+
+        // Пытаемся прокрутить
+        setTimeout(() => {
+          // Ищем элемент с классом selected (первый попавшийся может быть не тем, но обычно работает)
+          // Или генерируем событие
+          const el = document.querySelector(`[data-id="${targetItem.id}"]`) || document.querySelector('.tree-item.selected');
+          if (el) el.scrollIntoView({ block: 'nearest' });
+        }, 10);
+      }
     }
   };
 

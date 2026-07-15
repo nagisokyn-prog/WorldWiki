@@ -1,7 +1,9 @@
 /* src/css/modules/settings.css - Settings Modal Styles */
 
 /* Hide uncompiled Vue templates */
-[v-cloak] { display: none; }
+[v-cloak] {
+    display: none;
+}
 
 /* Settings Modal Content */
 .settings-modal-content {
@@ -102,12 +104,12 @@
 }
 
 /* Settings Group Gap Fix */
-.settings-group { 
+.settings-group {
     background: rgba(0, 0, 0, 0.2);
     border-radius: var(--radius-card);
     padding: 16px;
     border: 1px solid var(--border-color);
-    width: 100%; 
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -134,12 +136,12 @@
     font-size: 12px;
 }
 
-.control-row > div:not(:first-child) {
+.control-row>div:not(:first-child) {
     flex: 1 1 auto;
     min-width: 0;
 }
 
-.control-row > input[type="text"],
+.control-row>input[type="text"],
 input.color-text-input {
     flex: 1 1 auto !important;
     min-width: 0 !important;
@@ -207,7 +209,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border-radius: 8px;
     border: 2px solid var(--border-color);
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .color-value {
@@ -312,7 +314,7 @@ input[type="text"].color-text-input {
 .radio-btn.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--accent-text);
     box-shadow: 0 0 20px var(--accent-glow);
 }
 
@@ -320,6 +322,7 @@ input[type="text"].color-text-input {
     position: relative;
     display: inline-block;
     width: 2.75em;
+    min-width: unset !important;
     height: 1.5em;
 }
 
@@ -332,8 +335,11 @@ input[type="text"].color-text-input {
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(255,255,255,0.1);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
     transition: .4s;
     border-radius: 1.5em;
 }
@@ -350,11 +356,11 @@ input[type="text"].color-text-input {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: var(--accent);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(1.25em);
 }
 

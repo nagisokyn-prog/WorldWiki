@@ -195,7 +195,7 @@ body {
 }
 
 .glass-btn:active { transform: scale(var(--scale-push)); box-shadow: var(--shadow-inset); }
-.glass-btn.primary { background: var(--accent); border-color: var(--accent); }
+.glass-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .glass-btn.primary:hover { background: var(--accent-hover); box-shadow: 0 0 30px var(--accent-glow); }
 .glass-btn.outline { background: transparent; border-color: var(--border-color); color: var(--text-muted); }
 .glass-btn.outline:hover { border-color: var(--accent); color: var(--accent); }

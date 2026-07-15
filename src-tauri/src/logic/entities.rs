@@ -98,19 +98,48 @@ pub async fn save_entity(
         obj.remove("id");
         obj.remove("created_at");
         obj.remove("updated_at");
-        obj.insert("project_id".into(), Value::String(proj_id.clone()));
+        obj.remove("project_id");
     }
 
     let result: Option<Value> = if let Some(id_str) = &entity.id {
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
         let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
-        db.upsert(("entities", actual_id))
-            .content(val)
-            .await.map_err(|e| e.to_string())?
+        let mut query = "
+            UPSERT type::record('entities', $id) SET
+                project_id = type::record('projects', $raw_pid),
+                entity_type = $data.entity_type,
+                name = $data.name
+        ".to_string();
+        
+        if val.get("description").is_some() { query.push_str(", description = $data.description"); }
+        if val.get("attributes").is_some() { query.push_str(", attributes = $data.attributes"); }
+        if val.get("tags").is_some() { query.push_str(", tags = $data.tags"); }
+        if val.get("embeddings").is_some() { query.push_str(", embeddings = $data.embeddings"); }
+
+        let mut res = db.query(query)
+            .bind(("id", actual_id))
+            .bind(("data", val.clone()))
+            .bind(("raw_pid", project.as_str()))
+            .await.map_err(|e| e.to_string())?;
+        res.take(0).map_err(|e| e.to_string())?
     } else {
-        db.create("entities")
-            .content(val)
-            .await.map_err(|e| e.to_string())?
+        let mut query = "
+            CREATE entities SET
+                project_id = type::record('projects', $raw_pid),
+                entity_type = $data.entity_type,
+                name = $data.name
+        ".to_string();
+
+        if val.get("description").is_some() { query.push_str(", description = $data.description"); }
+        if val.get("attributes").is_some() { query.push_str(", attributes = $data.attributes"); }
+        if val.get("tags").is_some() { query.push_str(", tags = $data.tags"); }
+        if val.get("embeddings").is_some() { query.push_str(", embeddings = $data.embeddings"); }
+
+        let mut res = db.query(query)
+            .bind(("data", val))
+            .bind(("raw_pid", project.as_str()))
+            .await.map_err(|e| e.to_string())?;
+        res.take(0).map_err(|e| e.to_string())?
     };
 
     match result {
@@ -218,7 +247,7 @@ pub async fn save_entity_schema(
     if let Some(obj) = val.as_object_mut() {
         obj.remove("id");
         obj.remove("created_at");
-        obj.insert("project_id".into(), Value::String(proj_id.clone()));
+        obj.remove("project_id");
     }
 
     // FIND EXISTING SCHEMA ID
@@ -298,13 +327,38 @@ pub async fn save_entity_schema(
         }
         // -------------------------
 
-        db.upsert(("entity_schemas", actual_id))
-            .merge(val)
-            .await.map_err(|e| e.to_string())?
+        let query = "
+            UPDATE type::record('entity_schemas', $id) SET 
+                project_id = type::record('projects', $raw_pid),
+                type_key = $data.type_key,
+                type_name = $data.type_name,
+                icon = $data.icon,
+                color = $data.color,
+                fields_schema = $data.fields_schema,
+                full_schema = $data.full_schema
+        ";
+        let mut res = db.query(query)
+            .bind(("id", actual_id))
+            .bind(("data", val))
+            .bind(("raw_pid", project.as_str()))
+            .await.map_err(|e| e.to_string())?;
+        res.take(0).map_err(|e| e.to_string())?
     } else {
-        db.create("entity_schemas")
-            .content(val)
-            .await.map_err(|e| e.to_string())?
+        let query = "
+            CREATE entity_schemas SET 
+                project_id = type::record('projects', $raw_pid),
+                type_key = $data.type_key,
+                type_name = $data.type_name,
+                icon = $data.icon,
+                color = $data.color,
+                fields_schema = $data.fields_schema,
+                full_schema = $data.full_schema
+        ";
+        let mut res = db.query(query)
+            .bind(("data", val))
+            .bind(("raw_pid", project.as_str()))
+            .await.map_err(|e| e.to_string())?;
+        res.take(0).map_err(|e| e.to_string())?
     };
 
     match result {

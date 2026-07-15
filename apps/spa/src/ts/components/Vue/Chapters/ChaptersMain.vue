@@ -27,12 +27,12 @@
       <div v-if="isRightPanelVisible" class="chapter-right-panel" :style="{ width: rightPanelWidth + 'px' }" style="background: rgba(0,0,0,0.15); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;">
 
         <!-- Том или Арка выбрана: показываем только план -->
-        <div v-if="activeTreeNode && activeTreeNode.type !== 'chapter'" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+        <div v-if="localActiveTreeNode && localActiveTreeNode.type !== 'chapter'" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
           <PlanningPanel
             :project="project"
-            :parent-type="activeTreeNode.type"
-            :parent-id="activeTreeNode.node.id"
-            :parent-title="activeTreeNode.node.title"
+            :parent-type="localActiveTreeNode.type"
+            :parent-id="localActiveTreeNode.node.id"
+            :parent-title="localActiveTreeNode.node.title"
           />
         </div>
 
@@ -308,7 +308,7 @@ const addArcPlanItem = async () => {
 };
 
 const hasUnsavedChanges = ref(false);
-const activeTreeNode = ref<{ type: string; node: any } | undefined>(undefined);
+const localActiveTreeNode = ref<{ type: string; node: any } | undefined>(undefined);
 const chaptersSidebarWidth = ref(parseInt(localStorage.getItem('chapters-sidebar-width') || '280'));
 const debugError = ref<string | null>(null);
 
@@ -542,9 +542,9 @@ onMounted(async () => {
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('mouseup', onMouseUp);
   document.addEventListener('fullscreenchange', onFullscreenChange);
-  document.addEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as EventListener);
-  document.addEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
-  document.addEventListener('ww:hierarchy-changed', loadChapters as EventListener);
+  document.addEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as any);
+  document.addEventListener('ww:trigger-chapter-save', triggerSave as any);
+  document.addEventListener('ww:hierarchy-changed', loadChapters as any);
 });
 
 // Когда родитель меняет активную вкладку — загружаем нужную главу
@@ -568,9 +568,9 @@ onUnmounted(() => {
   document.removeEventListener('mousemove', onMouseMove);
   document.removeEventListener('mouseup', onMouseUp);
   document.removeEventListener('fullscreenchange', onFullscreenChange);
-  document.removeEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as EventListener);
-  document.removeEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
-  document.removeEventListener('ww:hierarchy-changed', loadChapters as EventListener);
+  document.removeEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as any);
+  document.removeEventListener('ww:trigger-chapter-save', triggerSave as any);
+  document.removeEventListener('ww:hierarchy-changed', loadChapters as any);
   if (saveTimeout) clearTimeout(saveTimeout);
 });
 
@@ -669,12 +669,12 @@ const openChapter = async (id: string) => {
 
 const onTreeNodeSelect = (nodeData: { type: string; node: any }) => {
   console.log('📖 ChaptersMain.onTreeNodeSelect: получено select-node', nodeData.type, nodeData.node.id);
-  activeTreeNode.value = nodeData;
+  localActiveTreeNode.value = nodeData;
 };
 
 const openChapterFromTree = async (ch: any) => {
   console.log('📖 ChaptersMain.openChapterFromTree: получено событие select-chapter', ch.id, ch.title);
-  activeTreeNode.value = { type: 'chapter', node: ch };
+  localActiveTreeNode.value = { type: 'chapter', node: ch };
   // Всегда эмитируем событие - пусть родитель решает, что делать
   console.log('📖 ChaptersMain.openChapterFromTree: эмитируем open-chapter-as-tab');
   emit('open-chapter-as-tab', ch);
@@ -736,7 +736,7 @@ const onDeleteChapter = async (chapter: any) => {
   if (currentChapterId.value === chapter.id) {
     currentChapterId.value = undefined;
     currentChapter.value = null;
-    activeTreeNode.value = undefined;
+    localActiveTreeNode.value = undefined;
   }
   await chapterTreeRef.value?.load();
 };
@@ -775,9 +775,9 @@ watch(() => props.controlledChapterId, async (id) => {
 watch(() => props.activeTreeNode, (node) => {
   if (node) {
     console.log('📖 ChaptersMain: внешнее уведомление о смене узла в дереве', node.type, node.node.id);
-    activeTreeNode.value = node;
+    localActiveTreeNode.value = node;
   } else {
-    activeTreeNode.value = undefined;
+    localActiveTreeNode.value = undefined;
     if (!props.controlledChapterId) {
       currentChapter.value = null;
       currentChapterId.value = undefined;

@@ -11,7 +11,7 @@
   </div>
   <div v-else class="entity-editor-vue" style="display:flex; flex-direction:column; flex:1; min-height:0;">
     <div v-if="(config as any)?.sections && (config as any).sections.length > 1" class="editor-tabs-new">
-      <template v-for="(section, idx) in (config as any).sections" :key="section.id">
+      <template v-for="section in (config as any).sections" :key="section.id">
         <div 
           v-if="!section.hidden"
           class="editor-tab-new interactive-el" 

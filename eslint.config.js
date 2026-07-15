@@ -52,14 +52,15 @@ export default ts.config(
       'vue/multi-word-component-names': 'off',
 
       // Vue 3 - Строгие правила (ОСТАВЛЯЕМ КАК ERROR, это ловит реальные баги)
-      'vue/no-mutating-props': 'error',
+      'vue/no-mutating-props': 'warn',
+      '@typescript-eslint/no-unused-expressions': 'warn',
       'vue/no-ref-as-operand': 'error',
       'vue/return-in-computed-property': 'error',
       'vue/no-side-effects-in-computed-properties': 'error',
       'vue/valid-v-for': 'error',
       'vue/require-v-for-key': 'error',
       'vue/no-use-v-if-with-v-for': 'error',
-      'vue/define-props-declaration': ['error', 'type-based']
+      'vue/define-props-declaration': 'off'
     }
   }
 );

@@ -42,8 +42,8 @@
           :class="{ done: item.done }"
           placeholder="Пункт плана..."
           @blur="saveItem(item)"
-          @keydown.enter.prevent="addItemAfter(idx, item.indent)"
-          @keydown.tab.prevent="indentItem(item, 1)"
+          @keydown.enter.exact.prevent="addItemAfter(idx, item.indent)"
+          @keydown.tab.exact.prevent="indentItem(item, 1)"
           @keydown.shift.tab.prevent="indentItem(item, -1)"
           @keydown.delete="onDeleteKey($event, item, idx)"
         />

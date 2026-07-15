@@ -11,6 +11,8 @@ import { settingsService } from '../../../tauri-surreal-kit/frontend/src/js/serv
 import XboxWheel from "../../../tauri-surreal-kit/frontend/src/components/Vue/XboxWheel.vue";
 import CalendarsPanel from '../components/Vue/CalendarsPanel.vue';
 import CloudSyncModalVue from '../components/Vue/CloudSyncModal.vue';
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
+import { MotionPlugin } from '@vueuse/motion';
 
 // Export Vue globally for components that use window.Vue
 if (typeof window !== 'undefined') {
@@ -370,6 +372,8 @@ app.component('cloud-sync-modal', CloudSyncModalVue);
 // Get the HTML template content and use it as Vue template
 const appEl = document.getElementById('app');
 if (appEl) {
+  app.use(autoAnimatePlugin);
+  app.use(MotionPlugin);
   app.mount('#app');
 }
 

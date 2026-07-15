@@ -2,6 +2,8 @@ import { createApp, h } from 'vue';
 import { settingsService } from '../services/settings.service';
 import Settings from '../../components/Vue/Settings.vue';
 import { i18n } from '../i18n';
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
+import { MotionPlugin } from '@vueuse/motion';
 
 const cfg = (window as any).__APP_CONFIG__ || {};
 
@@ -28,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   });
 
+  app.use(autoAnimatePlugin);
+  app.use(MotionPlugin);
   app.use(i18n).mount(root);
 
   document.getElementById('saveBtn')?.addEventListener('click', async () => {

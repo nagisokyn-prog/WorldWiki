@@ -11,6 +11,8 @@ import { apiService } from '../services/api.service';
 import { connectionsManager } from '../services/connections.service';
 import { useEditorGroups } from '../../../tauri-surreal-kit/frontend/src/js/composables/useEditorGroups';
 import { prepareEntityForSave, saveForeignRelationships } from '../services/relationship-save.service';
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
+import { MotionPlugin } from '@vueuse/motion';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу (видны при старте)
 import QuickOpenVue from '../../../tauri-surreal-kit/frontend/src/components/Vue/QuickOpen.vue';
@@ -1590,6 +1592,8 @@ async function init() {
   app.component('editor-tab-bar-vue', EditorTabBarVue);
   app.component('editor-group-pane-vue', EditorGroupPaneVue);
   app.component('cloud-sync-modal-vue', CloudSyncModalVue);
+  app.use(autoAnimatePlugin);
+  app.use(MotionPlugin);
   app.use(i18n as unknown as Plugin).mount('#app');
 }
 

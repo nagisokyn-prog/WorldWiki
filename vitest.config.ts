@@ -7,11 +7,11 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': '/src/js',
-      '@services': '/src/js/services',
-      '@components': '/src/js/components',
-      '@utils': '/src/js/utils',
-      '@types': '/src/js/types'
+      '@': '/src/ts',
+      '@services': '/src/ts/services',
+      '@components': '/src/ts/components',
+      '@utils': '/src/ts/utils',
+      '@types': '/src/ts/types'
     }
   }
 });

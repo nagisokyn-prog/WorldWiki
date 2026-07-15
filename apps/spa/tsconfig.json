@@ -1,0 +1,52 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "sourceMap": true,
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "allowJs": true,
+    "checkJs": false,
+    "paths": {
+      "@worldwiki/components": [
+        "../../packages/components/src/index.ts"
+      ],
+      "@worldwiki/resources": [
+        "../../packages/resources/src/index.ts"
+      ],
+      "@worldwiki/resources/*": [
+        "../../packages/resources/src/*"
+      ],
+      "@/*": [
+        "./src/ts/*"
+      ],
+      "@services/*": [
+        "./src/ts/services/*"
+      ],
+      "@components/*": [
+        "./src/ts/components/*"
+      ],
+      "@utils/*": [
+        "./src/ts/utils/*"
+      ],
+      "@types/*": [
+        "./src/ts/types/*"
+      ]
+    }
+  },
+  "include": [
+    "src/ts/**/*.ts",
+    "src/ts/**/*.d.ts",
+    "src/ts/**/*.vue"
+  ],
+  "exclude": [
+    "src/ts/libs/**",
+    "src/ts/toastui/**",
+    "node_modules",
+    "dist"
+  ]
+}

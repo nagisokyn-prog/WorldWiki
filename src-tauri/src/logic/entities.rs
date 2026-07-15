@@ -91,7 +91,7 @@ pub async fn save_entity(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Entity, String> {
     let db = &state.db;
-    let proj_id = format!("projects:{}", project);
+    let _proj_id = format!("projects:{}", project);
 
     let mut val = serde_json::to_value(&entity).map_err(|e| e.to_string())?;
     if let Some(obj) = val.as_object_mut() {

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>World Wiki - Выбор проекта</title>
+
+    <!-- Подключаем шрифты -->
+    <link rel="stylesheet" href="@worldwiki/resources/styles/fonts.css">
+
+    <!-- Font Awesome -->
+    <link href="@worldwiki/resources/styles/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Glass Theme -->
+    <link rel="stylesheet" href="@worldwiki/resources/styles/new-ui-theme.css">
+    <link rel="stylesheet" href="@worldwiki/resources/styles/glass-theme.css">
+    <link rel="stylesheet" href="@worldwiki/resources/styles/glass-animations.css">
+
+    <!-- Project Launcher Styles -->
+    <link rel="stylesheet" href="@worldwiki/resources/styles/project_launcher.css">
+    <!-- Settings Module (shared across all pages) -->
+    <link rel="stylesheet" href="@worldwiki/resources/styles/modules/settings.css">
+
+    <!-- Vue v-cloak: скрывает неоткомпилированные шаблоны -->
+    <style>
+        [v-cloak] {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Фоновые сферы (Ambient Glow) -->
+    <div class="bg-glow top-left"></div>
+    <div class="bg-glow bottom-right"></div>
+
+    <!-- Основной контейнер лаунчера -->
+    <div id="app" class="app-container">
+        <!-- Хедер -->
+        <header class="launcher-header glass-panel">
+            <div class="logo">
+                <h1>📚 World Wiki</h1>
+                <p>Выберите или создайте проект</p>
+            </div>
+            <div class="header-actions" style="display:flex;gap:8px;align-items:center;">
+                <button class="glass-btn outline interactive-el" @click="openCloudSync('import')"
+                    title="Загрузить из облака">
+                    ☁️ Импорт
+                </button>
+                <button class="glass-btn outline interactive-el" @click="openCloudSync('export')"
+                    title="Сохранить в облако">
+                    ☁️ Экспорт
+                </button>
+                <a href="settings.html" class="glass-btn outline interactive-el" title="Настройки"
+                    style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;">
+                    <i class="fas fa-cog"></i>
+                </a>
+                <button class="glass-btn primary interactive-el" @click="openCreateModal">
+                    <i class="fas fa-plus"></i> Новый проект
+                </button>
+            </div>
+        </header>
+
+        <!-- Основной контент -->
+        <main class="launcher-main">
+            <div class="projects-section">
+                <h2 class="glass-title">Ваши проекты</h2>
+
+                <!-- Сетка проектов -->
+                <div class="projects-grid glass-grid-auto">
+                    <div v-for="project in sortedProjects" :key="project.name"
+                        class="glass-card push-pull-container interactive-el project-card"
+                        @click="openProject(project.name)">
+                        <div class="glass-card-bg"></div>
+                        <div class="glass-card-content">
+                            <div class="project-actions">
+                                <button class="glass-btn outline" @click.stop="editProject(project.name)"
+                                    title="Редактировать">✏️</button>
+                                <button class="glass-btn outline" @click.stop="confirmDelete(project.name)"
+                                    title="Удалить">🗑️</button>
+                            </div>
+                            <div class="project-icon">{{ project.icon }}</div>
+                            <h3>{{ project.name }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Пустое состояние -->
+                <div v-if="projects.length === 0" class="empty-state glass-card">
+                    <div class="glass-card-bg"></div>
+                    <div class="glass-card-content" style="text-align: center;">
+                        <div class="empty-icon">📁</div>
+                        <h3>Нет проектов</h3>
+                        <p>Создайте свой первый проект чтобы начать работу</p>
+                        <button class="glass-btn primary interactive-el" @click="openCreateModal">
+                            <i class="fas fa-plus"></i> Создать проект
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hotkeys reminder -->
+            <div class="hotkeys-reminder glass-card" style="margin-top: 32px;" v-once>
+                <div class="glass-card-bg"></div>
+                <div class="glass-card-content" style="padding: 20px 24px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                        <span style="font-size: 18px;">⌨️</span>
+                        <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--text-main);">Горячие
+                            клавиши в редакторе</h3>
+                        <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Ctrl+Shift+P —
+                            открыть список всех команд</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;">
+                        <div class="hk-item"><kbd>Ctrl+P</kbd> <span>Быстрое открытие</span></div>
+                        <div class="hk-item"><kbd>Ctrl+Shift+P</kbd> <span>Командная панель</span></div>
+                        <div class="hk-item"><kbd>Ctrl+S</kbd> <span>Сохранить всё</span></div>
+                        <div class="hk-item"><kbd>Ctrl+W</kbd> <span>Закрыть вкладку</span></div>
+                        <div class="hk-item"><kbd>Ctrl+Tab</kbd> <span>Следующая вкладка</span></div>
+                        <div class="hk-item"><kbd>Ctrl+1…9</kbd> <span>Вкладка по номеру</span></div>
+                        <div class="hk-item"><kbd>Ctrl+B</kbd> <span>Скрыть сайдбар</span></div>
+                        <div class="hk-item"><kbd>Ctrl+`</kbd> <span>Скрыть терминал</span></div>
+                        <div class="hk-item"><kbd>Ctrl+N</kbd> <span>Новая сущность</span></div>
+                        <div class="hk-item"><kbd>Ctrl+Shift+N</kbd> <span>Новая глава</span></div>
+                        <div class="hk-item"><kbd>Ctrl+= / Ctrl+-</kbd> <span>Масштаб</span></div>
+                        <div class="hk-item"><kbd>Alt+1…9</kbd> <span>Секция в редакторе</span></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Модальное окно создания/редактирования проекта -->
+        <div id="createProjectModal" class="glass-modal-overlay" :class="{ visible: modalVisible }" aria-hidden="true">
+            <div class="glass-modal large-modal">
+                <div class="modal-header">
+                    <h2 class="glass-title">{{ modalTitle }}</h2>
+                    <button class="close-btn glass-btn" @click="closeModal">×</button>
+                </div>
+                <div class="modal-body">
+                    <form id="createProjectForm" @submit.prevent="submitForm">
+                        <div class="project-compact-header">
+                            <div class="form-group flex-1">
+                                <label class="glass-label" for="projectName">Название произведения</label>
+                                <input type="text" id="projectName" class="glass-input" v-model="formData.name"
+                                    :disabled="isEditing" placeholder="Введите название произведения" required>
+                                <small class="glass-label">Название вашего произведения</small>
+                            </div>
+
+                            <div class="form-group" style="width: 300px; flex-shrink: 0;">
+                                <label class="glass-label">Тип произведения</label>
+                                <vanilla-xbox-wheel v-model="formData.type"
+                                    :options="projectTypes"></vanilla-xbox-wheel>
+                            </div>
+                        </div>
+
+                        <div class="form-group genres-fullwidth">
+                            <label class="glass-label">Жанры произведения</label>
+                            <div class="genres-grid glass-card">
+                                <div class="glass-card-bg"></div>
+                                <div class="glass-card-content" style="padding: 12px;">
+                                    <div class="genres-grid-inner">
+                                        <label v-for="genre in genres" :key="genre.value" class="genre-checkbox">
+                                            <input type="checkbox" :value="genre.value" v-model="formData.genres">
+                                            <span>{{ genre.icon }} {{ genre.label }}</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <small class="glass-label">Выберите один или нескольких жанров</small>
+                        </div>
+
+                        <div class="form-group calendar-fullwidth">
+                            <label class="glass-label">📅 Календарь мира</label>
+                            <calendars-panel ref="calendarsPanelRef" :project="formData.name"></calendars-panel>
+                            <small class="glass-label">Управление календарями мира. Эти настройки будут сохранены
+                                независимо.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="glass-btn secondary" @click="closeModal">Отмена</button>
+                    <button type="button" class="glass-btn primary" @click="submitForm">{{ submitButtonText }}</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div class="toast-container" id="toastContainer"></div>
+
+        <cloud-sync-modal @toast="showToast"></cloud-sync-modal>
+    </div>
+
+    <!-- Debug script -->
+    <script>
+        console.log('=== DEBUG START ===');
+        console.log('URL:', window.location.href);
+        console.log('Protocol:', window.location.protocol);
+
+        // Check Vue
+        window.addEventListener('load', () => {
+            console.log('Window loaded');
+            console.log('Vue in window:', 'Vue' in window);
+            if (window.Vue) {
+                console.log('Vue version:', window.Vue.version || '3.x');
+            }
+        });
+    </script>
+
+    <!-- Performance styles -->
+    <style id="perfStyles"></style>
+
+    <!-- Libraries (load before module script) -->
+
+    <!-- Apply performance settings before main app -->
+    <script>
+        (async function () {
+            const perfLevel = localStorage.getItem('perfLevel');
+            if (perfLevel === 'low') {
+                document.getElementById('perfStyles').textContent = `
+                    * {
+                        backdrop-filter: none !important;
+                        -webkit-backdrop-filter: none !important;
+                    }
+                    .bg-glow {
+                        display: none !important;
+                    }
+                `;
+                console.log('🎨 Applied client-side low performance styles fallback');
+            }
+            if (perfLevel && window.__TAURI__?.core) {
+                try {
+                    const css = await window.__TAURI__.core.invoke('get_performance_styles', { level: perfLevel });
+                    document.getElementById('perfStyles').textContent = css;
+                    console.log(`🎨 Applied performance styles: ${perfLevel}`);
+                } catch (e) {
+                    console.warn('⚠️ Could not load performance styles:', e);
+                }
+            }
+        })();
+    </script>
+
+    <!-- Main module (load last) -->
+    <script type="module" src="ts/app/project_launcher.ts"></script>
+
+</body>
+
+</html>

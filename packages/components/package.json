@@ -1,0 +1,17 @@
+{
+  "name": "@worldwiki/components",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "vue": "^3.5.0",
+    "vite": "^8.1.4"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  }
+}

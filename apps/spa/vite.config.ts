@@ -47,7 +47,7 @@ export default defineConfig({
     open: false,
     strictPort: true,
     fs: {
-      allow: ['..']
+      allow: ['../..']
     }
   },
   test: {

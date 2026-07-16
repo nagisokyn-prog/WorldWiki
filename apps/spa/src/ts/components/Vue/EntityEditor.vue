@@ -316,6 +316,7 @@ import RelationshipBlock from './RelationshipBlock.vue';
 import { useEntityEditor } from '../../composables/useEntityEditor';
 
 const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
+const photoInputs = ref<Record<string, any>>({});
 
 const props = defineProps({
   entityId: { type: String, required: true },

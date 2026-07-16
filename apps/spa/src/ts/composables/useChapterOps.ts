@@ -1,68 +1,55 @@
-import { triggerRef } from 'vue';
-import { apiService } from '../services/api.service';
+import { ref, triggerRef, type ComputedRef } from 'vue';
 
-export interface UseChapterOpsProps {
+export function useChapterOps(ctx: {
   projectName: string;
-  addLog: (msg: string, type: string) => void;
-  addToast: (msg: string, type: string) => void;
-  chapterTreeRef: any;
-  chapters: any;
-  openChapterTab: (chapter: any) => void;
+  addLog: (text: string, type?: 'info' | 'warn' | 'error' | 'success') => void;
+  addToast: (text: string, type?: 'success' | 'warn' | 'error' | 'info') => void;
   closeEditor: (id: string, force?: boolean) => void;
-  activeTreeNode: any;
-  openEditors: any;
-  eg: any; // Editor groups
-}
-
-export function useChapterOps({
-  projectName,
-  addLog,
-  addToast,
-  chapterTreeRef,
-  chapters,
-  openChapterTab,
-  closeEditor,
-  activeTreeNode,
-  openEditors,
-  eg
-}: UseChapterOpsProps) {
+  openChapterTab: (chapter: any) => void;
+  chapterTreeRef?: { value: { load?: (id?: string) => void } | null };
+  openEditors: ComputedRef<any[]>;
+  lists: {
+    chapters: { value: any[] };
+    currentSidebarTab: { value: string | null };
+    loadEntityList: (entityType: string) => Promise<void>;
+  };
+  tabs: {
+    activeTreeNode: { value: { type: string; node: any } | null };
+  };
+}) {
   let isCreatingChapter = false;
 
-  const createChapterIn = async ({ arcId, volumeId }: { arcId?: string; volumeId?: string }) => {
+  const createChapterIn = async ({ arcId, volumeId }: { arcId?: string; volumeId?: string } = {}) => {
     if (isCreatingChapter) return;
     isCreatingChapter = true;
     try {
-      const hierarchy = await apiService.getHierarchy(projectName);
+      const { apiService } = await import('../services/api.service');
+      const hierarchy = await apiService.getHierarchy(ctx.projectName);
       const allChapters = hierarchy.chapters || [];
-      
       let maxNum = 0;
       let relevantCount = 0;
-      
-      if (allChapters && Array.isArray(allChapters)) {
-        const relevantChapters = allChapters.filter(c => {
+      if (Array.isArray(allChapters)) {
+        const relevantChapters = allChapters.filter((c: any) => {
           const cArcId = c.arcId ? String(c.arcId) : null;
           const cVolId = c.volumeId ? String(c.volumeId) : null;
           const targetArcId = arcId ? String(arcId) : null;
           const targetVolId = volumeId ? String(volumeId) : null;
-
           if (targetArcId) return cArcId === targetArcId;
           if (targetVolId) return cVolId === targetVolId && !cArcId;
           return !cArcId && !cVolId;
         });
-
         relevantCount = relevantChapters.length;
-        relevantChapters.forEach(c => {
-          const m = (c.title || "").match(/Глава\s*(\d+)/i);
+        relevantChapters.forEach((c: any) => {
+          const m = (c.title || '').match(/Глава\s*(\d+)/i);
           if (m) {
             const n = parseInt(m[1]);
             if (n > maxNum) maxNum = n;
           }
         });
       }
-      
       const num = maxNum + 1;
-      addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
-      const newCh = {
+      ctx.addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
+      const newCh: any = {
         id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         title: `Глава ${num}`,
         content: '# Новая глава\n\n',
@@ -73,30 +60,20 @@ export function useChapterOps({
         timelineEvents: [],
         participants: [],
         arcId,
-        volumeId
+        volumeId,
       };
-
-      const saveRes = await apiService.saveChapter(projectName, newCh);
-      if (saveRes && (saveRes as any).id) {
-        newCh.id = (saveRes as any).id;
-      }
-      
-      if (arcId || volumeId) {
-        await apiService.assignChapter(projectName, newCh.id, arcId, volumeId);
-      }
-
-      addLog(`Manuscript -> Created new chapter`, 'success');
-      await chapterTreeRef.value?.load(newCh.id);
+      const saveRes = await apiService.saveChapter(ctx.projectName, newCh);
+      if (saveRes && (saveRes as any).id) newCh.id = (saveRes as any).id;
+      if (arcId || volumeId) await apiService.assignChapter(ctx.projectName, newCh.id, arcId, volumeId);
+      ctx.addLog('Manuscript -> Created new chapter', 'success');
+      if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load(newCh.id);
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
-      
-      if (chapters.value) {
-        chapters.value.push(newCh);
-        triggerRef(chapters);
+      if (ctx.lists.chapters.value) {
+        ctx.lists.chapters.value = [...ctx.lists.chapters.value, newCh];
       }
-
-      openChapterTab(newCh);
+      ctx.openChapterTab(newCh);
     } catch (e) {
-      addLog(`Manuscript -> Error creating chapter: ${e}`, 'error');
+      ctx.addLog(`Manuscript -> Error creating chapter: ${e}`, 'error');
     } finally {
       isCreatingChapter = false;
     }
@@ -105,127 +82,115 @@ export function useChapterOps({
   const deleteChapter = async (chapter: any, silent = false) => {
     if (!silent && !confirm(`Удалить главу "${chapter.title}"?`)) return;
     try {
-      await apiService.deleteChapter(projectName, chapter.id);
-      addLog(`Manuscript -> Deleted chapter [${chapter.id}]`, 'warn');
-      closeEditor(chapter.id, true);
-      if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === chapter.id) {
-        activeTreeNode.value = null;
+      const { apiService } = await import('../services/api.service');
+      await apiService.deleteChapter(ctx.projectName, chapter.id);
+      ctx.addLog(`Manuscript -> Deleted chapter [${chapter.id}]`, 'warn');
+      ctx.closeEditor(chapter.id, true);
+      if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'chapter' && ctx.tabs.activeTreeNode.value.node.id === chapter.id) {
+        ctx.tabs.activeTreeNode.value = null;
       }
-      await chapterTreeRef.value?.load();
-      addToast(`Глава "${chapter.title}" удалена`, 'warn');
+      if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
+      ctx.addToast(`Глава "${chapter.title}" удалена`, 'warn');
+      if (ctx.lists.currentSidebarTab.value === 'chapters') ctx.lists.loadEntityList('chapters');
     } catch (e) {
-      addLog(`Manuscript -> Error deleting chapter: ${e}`, 'error');
+      ctx.addLog(`Manuscript -> Error deleting chapter: ${e}`, 'error');
     }
   };
 
   const renameChapter = async (chapter: any, newTitle: string) => {
     try {
-      eg.updateTabData(chapter.id, { title: newTitle });
-      const fullData = await apiService.getChapter(projectName, chapter.id);
+      const { apiService } = await import('../services/api.service');
+      ctx.lists.chapters.value = ctx.lists.chapters.value.map((c: any) => c.id === chapter.id ? { ...c, title: newTitle } : c);
+      const fullData = await apiService.getChapter(ctx.projectName, chapter.id);
       fullData.title = newTitle;
-      await apiService.saveChapter(projectName, fullData);
-      addLog(`Chapter renamed: ${newTitle}`, 'success');
+      await apiService.saveChapter(ctx.projectName, fullData);
+      ctx.addLog(`Chapter renamed: ${newTitle}`, 'success');
     } catch (e) {
       console.error('Failed to rename chapter:', e);
-      addLog(`Error renaming chapter: ${e}`, 'error');
+      ctx.addLog(`Error renaming chapter: ${e}`, 'error');
+    }
+  };
+
+  const compareIds = (id1: any, id2: any) => {
+    if (!id1 && !id2) return true;
+    if (!id1 || !id2) return false;
+    return String(id1.id || id1).split(':').pop() === String(id2.id || id2).split(':').pop();
+  };
+
+  const closeEditorsFor = (predicate: (e: any) => boolean) => {
+    for (const ed of ctx.openEditors.value.filter(predicate)) {
+      ctx.closeEditor(ed.id, true);
+      if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'chapter' && ctx.tabs.activeTreeNode.value.node.id === ed.id) {
+        ctx.tabs.activeTreeNode.value = null;
+      }
     }
   };
 
   const deleteVolume = async (volume: any, chaptersInVol: any[] = [], arcsInVol: any[] = [], silent: boolean = false) => {
     if (!silent && !confirm(`Удалить том "${volume.title}" и все его содержимое?`)) return;
     try {
-      const compareIds = (id1: any, id2: any) => {
-        if (!id1 && !id2) return true;
-        if (!id1 || !id2) return false;
-        return String(id1.id || id1).split(':').pop() === String(id2.id || id2).split(':').pop();
-      };
-
-      const editorsToClose = openEditors.value.filter((e: any) => 
-        e.tabType === 'chapter' && 
-        (
-          compareIds(e.data.volumeId, volume.id) || 
+      const { apiService } = await import('../services/api.service');
+      // Закрываем все открытые вкладки глав, относящихся к этому тому/аркам
+      closeEditorsFor(e =>
+        e.tabType === 'chapter' && (
+          compareIds(e.data.volumeId, volume.id) ||
           arcsInVol.some(arcId => compareIds(e.data.arcId, arcId)) ||
           chaptersInVol.some(c => String(c.id) === e.id)
         )
       );
-      for (const ed of editorsToClose) {
-        closeEditor(ed.id, true);
-        if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ed.id) {
-          activeTreeNode.value = null;
-        }
-      }
-
       for (const ch of chaptersInVol) {
-        try {
-          await apiService.deleteChapter(projectName, ch.id);
-        } catch (err) {}
-        closeEditor(String(ch.id), true);
-        if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ch.id) {
-          activeTreeNode.value = null;
+        try { await apiService.deleteChapter(ctx.projectName, ch.id); } catch (err) { console.error('Ошибка удаления главы (vol):', err); }
+        ctx.closeEditor(String(ch.id), true);
+        if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'chapter' && ctx.tabs.activeTreeNode.value.node.id === ch.id) {
+          ctx.tabs.activeTreeNode.value = null;
         }
       }
       for (const arcId of arcsInVol) {
-        await apiService.deleteArc(projectName, arcId);
-        if (activeTreeNode.value && activeTreeNode.value.type === 'arc' && activeTreeNode.value.node.id === arcId) {
-          activeTreeNode.value = null;
+        await apiService.deleteArc(ctx.projectName, arcId);
+        if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'arc' && ctx.tabs.activeTreeNode.value.node.id === arcId) {
+          ctx.tabs.activeTreeNode.value = null;
         }
       }
-
-      await apiService.deleteVolume(projectName, volume.id);
-      addLog(`Deleted volume [${volume.id}]`, 'warn');
-      
-      if (activeTreeNode.value && activeTreeNode.value.type === 'volume' && activeTreeNode.value.node.id === volume.id) {
-        activeTreeNode.value = null;
+      await apiService.deleteVolume(ctx.projectName, volume.id);
+      ctx.addLog(`Deleted volume [${volume.id}]`, 'warn');
+      if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'volume' && ctx.tabs.activeTreeNode.value.node.id === volume.id) {
+        ctx.tabs.activeTreeNode.value = null;
       }
-
-      await chapterTreeRef.value?.load();
-      addToast(`Том "${volume.title}" удален`, 'warn');
+      if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
+      ctx.addToast(`Том "${volume.title}" удален`, 'warn');
+      if (ctx.lists.currentSidebarTab.value === 'chapters') ctx.lists.loadEntityList('chapters');
     } catch (e) {
-      addLog(`Error deleting volume: ${e}`, 'error');
+      ctx.addLog(`Error deleting volume: ${e}`, 'error');
     }
   };
 
   const deleteArc = async (arc: any, chaptersInArc: any[] = [], silent: boolean = false) => {
     if (!silent && !confirm(`Удалить арку "${arc.title}" и все ее главы?`)) return;
     try {
-      const compareIds = (id1: any, id2: any) => {
-        if (!id1 && !id2) return true;
-        if (!id1 || !id2) return false;
-        return String(id1.id || id1).split(':').pop() === String(id2.id || id2).split(':').pop();
-      };
-
-      const editorsToClose = openEditors.value.filter((e: any) => 
-        e.tabType === 'chapter' && 
-        (compareIds(e.data.arcId, arc.id) || chaptersInArc.some(c => String(c.id) === e.id))
+      const { apiService } = await import('../services/api.service');
+      closeEditorsFor(e =>
+        e.tabType === 'chapter' && (
+          compareIds(e.data.arcId, arc.id) ||
+          chaptersInArc.some(c => String(c.id) === e.id)
+        )
       );
-      for (const ed of editorsToClose) {
-        closeEditor(ed.id, true);
-        if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ed.id) {
-          activeTreeNode.value = null;
-        }
-      }
-
       for (const ch of chaptersInArc) {
-        try {
-          await apiService.deleteChapter(projectName, ch.id);
-        } catch (err) {}
-        closeEditor(String(ch.id), true);
-        if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ch.id) {
-          activeTreeNode.value = null;
+        try { await apiService.deleteChapter(ctx.projectName, ch.id); } catch (err) { console.error('Ошибка удаления главы (arc):', err); }
+        ctx.closeEditor(String(ch.id), true);
+        if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'chapter' && ctx.tabs.activeTreeNode.value.node.id === ch.id) {
+          ctx.tabs.activeTreeNode.value = null;
         }
       }
-
-      await apiService.deleteArc(projectName, arc.id);
-      addLog(`Deleted arc [${arc.id}]`, 'warn');
-      
-      if (activeTreeNode.value && activeTreeNode.value.type === 'arc' && activeTreeNode.value.node.id === arc.id) {
-        activeTreeNode.value = null;
+      await apiService.deleteArc(ctx.projectName, arc.id);
+      ctx.addLog(`Deleted arc [${arc.id}]`, 'warn');
+      if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'arc' && ctx.tabs.activeTreeNode.value.node.id === arc.id) {
+        ctx.tabs.activeTreeNode.value = null;
       }
-
-      await chapterTreeRef.value?.load();
-      addToast(`Арка "${arc.title}" удалена`, 'warn');
+      if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
+      ctx.addToast(`Арка "${arc.title}" удалена`, 'warn');
+      if (ctx.lists.currentSidebarTab.value === 'chapters') ctx.lists.loadEntityList('chapters');
     } catch (e) {
-      addLog(`Error deleting arc: ${e}`, 'error');
+      ctx.addLog(`Error deleting arc: ${e}`, 'error');
     }
   };
 
@@ -234,6 +199,6 @@ export function useChapterOps({
     deleteChapter,
     renameChapter,
     deleteVolume,
-    deleteArc
+    deleteArc,
   };
 }

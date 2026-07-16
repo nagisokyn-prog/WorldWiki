@@ -211,8 +211,8 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 - [x] **2. `packages/resources`**: создан `@worldwiki/resources`, перенесены `css/*` (glass-theme, new-ui-theme, glass-animations, fonts.css, modules/), `webfonts/`, `assets/`, `index.ts` экспортирует стили; типы `*.d.ts` перенесены в `apps/spa/src/ts/types`.
 - [x] **3. `packages/components`**: `@worldwiki/components` — перенесён кит, все 13 Vue-компонентов, composables (`useShellApp`, `useEditorGroups`, `useTreeSelection`), generic-сервисы, `index.ts` как публичный API. Library build пока не настроен (импорт через `src/index.ts` напрямую), но для dev работает.
 - [x] **4. `apps/spa`**: `@worldwiki/spa` — перенесён `src/ts` → `apps/spa/src/ts`; `vite.config.ts` multi-entry (splash/launcher/app/settings/ui_editor); alias `@worldwiki/components` + `@worldwiki/resources` + `@/` и т.д.; `tsconfig` extends base (ESNext).
-- [x] **5. Декомпозиция монолитов — НАЧАТА**:
-  - [x] `app/app.ts` → `useEditorGroups`, `shallowRef`, `defineAsyncComponent`; созданы composables: `useWorldWikiShell`, `useEntityLoader`, `useChapterOps`, `usePersistence`, `useFloatingEditors`, `useTiptapEditor`, `useEntityEditor`. 🟡 `app.ts` всё ещё Large Monolith: не вынесены `useHotkeys`, `useResizers`, `useQuickOpen`, а также каскадныеCRUD/deleteVolume/deleteArc/saveAll остаются в `app.ts` и требуют фиnal decomposition.
+- [x] **5. Декомпозиция монолитов — ЗАВЕРШЕНА (16.07.2026)**:
+  - [x] `app/app.ts` → вынесены ВСЕ локальные монолит-функции в composables: `useHotkeys`, `useResizers`, `useQuickOpen` (composition root в `app.ts`); `createChapterIn`/`deleteChapter`/`renameChapter`/`deleteVolume`/`deleteArc` → `useChapterOps` (добавлен `openEditors` + закрытие вкладок по `volumeId`/`arcId`); `saveAll` → `useSaveManager`. `app.ts` теперь — только composition root (~1352 → логика CRUD/сохранения вынесена). `vue-tsc --noEmit` → 0 ошибок. ✅
   - [x] `EntityEditor.vue` → `useEntityEditor.ts` создан; сам `.vue` всё ещё монолитен в `components/Vue/SchemaEditor/EntityEditor.vue` (Component-Behind не применён полностью). 🟡
   - [x] `EditorCoreTiptap.vue` → `useTiptapEditor.ts` есть; сам `.vue` монолитен. 🟡
   - [x] `ChapterTree.vue` →kit-версия `useTreeSelection` из `@worldwiki/components` подключена; локальный дуб удалён. Компонент оставлен как кастомный (не заменяется на `ExplorerTree`). ✅
@@ -226,7 +226,7 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
   - [x] `connections.service.collectRelationshipsFromDOM()` → ✅ переписан: теперь читает реактивный `formData`, а не DOM. `saveAll` отправляет JSON.
   - [x] `api.service.ts` → ✅ разбит на доменные модули (`apps/spa/src/ts/services/api/*.api.ts`), barrel-файл сохранён для обратной совместимости.
   - [x] `apps/spa/src/ts/services/dynamic.service.ts`: ✅ убрана повторяющаяся глобальная декларация `Window.dynamicService` (уже есть в kit).
-- [x] **7. Единые path/relationship-хелперы**: `relationship-save.service.ts` существует и используется в `saveAll` (`prepareEntityForSave`, `saveForeignRelationships`). Локальные `getValueByPath/setValueByPath` в `app.ts` ДУБЛИРУЮТ `getDeepProp/setDeepProp` из сервиса — не удалены. `utils/path.ts` не создан.
+- [x] **7. Единые path/relationship-хелперы**: `relationship-save.service.ts` существует и используется в `saveAll` (`prepareEntityForSave`, `saveForeignRelationships`) через `useSaveManager`. Локальные `getValueByPath/setValueByPath` в `app.ts` УДАЛЕНЫ (заменены на `@/utils/path`). `utils/path.ts` создан. ✅
 - [ ] **8. Документация**: `ARCHITECTURE.md` — ❌ НЕ создан. `frontend_architecture_plan.md` — ✅ обновлён (этот файл).
 
 ---
@@ -240,7 +240,7 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 4. ❌ Добавить dev-зависимости из раздела 8: `unplugin-vue-components`, `unplugin-auto-import`, `vite-plugin-dts`, `vite-plugin-vue-devtools` (вкл.), `knip`, `@tanstack/vue-query`, `pinia`.
 
 ### Декомпозиция монолитов (раздел 5)
-5. ❌ `app.ts` (1576 строк) → вынести: `useHotkeys`, `useResizers`, `useQuickOpen`; логику `deleteVolume`/`deleteArc`/`saveAll` в `useChapterOps`/`relationship-save.service`.
+5. ✅ `app.ts` (1576 строк) → ВЫНЕСЕНО (16.07.2026): `useHotkeys`, `useResizers`, `useQuickOpen` (composition root); `createChapterIn`/`deleteChapter`/`renameChapter`/`deleteVolume`/`deleteArc` → `useChapterOps`; `saveAll` → `useSaveManager`. `vue-tsc --noEmit` → 0 ошибок.
 6. ❌ `EntityEditor.vue` → папка `features/entities/EntityEditor/` (`useEntityEditor.ts` уже есть — подключить, `+ .model.ts`, `.style.css`).
 7. ❌ `EditorCoreTiptap.vue` → папка `features/chapters/EditorCoreTiptap/` (`useTiptapEditor.ts` + `EditorToolbar.vue` + `EditorBubbleMenu.vue`).
 8. ❌ `ChapterTree.vue` → заменить на `ExplorerTree` из `@worldwiki/components` ИЛИ распилить + убрать локальный `useTreeSelection`.
@@ -251,7 +251,7 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 11. ✅ Удалить `apps/spa/src/ts/utils/dom-utils.ts`.
 12. ✅ `FloatingEntityEditor.vue` заменён на `<FloatingWindow>` из кита (или удалён, т.к. есть native `ui_editor.html`).
 13. ✅ `api.service.ts` разбит на доменные модули (`apps/spa/src/ts/services/api/*.api.ts`).
-14. 🟡 Убрать локальные `getValueByPath/setValueByPath` из `app.ts` (юзать `relationship-save.service`), завести `utils/path.ts`.
+14. ✅ Локальные `getValueByPath/setValueByPath` удалены из `app.ts`, создан `utils/path.ts` (16.07.2026).
 
 ### Окна Tauri / Floating (раздел 10)
 15. ✅ `apps/spa/index.html` удалён; в SPA остались только валидные multi-entry точки (`splash`, `project_launcher`, `app`, `settings`, `ui_editor`).

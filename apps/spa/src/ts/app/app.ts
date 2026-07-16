@@ -12,6 +12,7 @@ import '@worldwiki/resources/styles/glass-theme.css';
 import '@worldwiki/resources/styles/modules/settings.css';
 import '@worldwiki/resources/styles/new-ui-theme.css';
 import '@worldwiki/resources/styles/chapter-tree.css';
+import '../ui_perf.css';
 
 
 

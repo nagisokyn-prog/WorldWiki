@@ -290,7 +290,7 @@ v-if="ctx.type === 'arc'" class="ctx-item"
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
 import { apiService } from '../../../services/api.service';
-import { useTreeSelection } from '../../../composables/useTreeSelection';
+import { useTreeSelection } from '@worldwiki/components';
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 
 onMounted(() => {

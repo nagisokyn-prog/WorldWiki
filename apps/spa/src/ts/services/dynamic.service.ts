@@ -54,13 +54,3 @@ export class DynamicService {
 }
 
 export const dynamicService = new DynamicService();
-
-declare global {
-  interface Window {
-    dynamicService: DynamicService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.dynamicService = dynamicService;
-}

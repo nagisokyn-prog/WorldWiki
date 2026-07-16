@@ -1,60 +1,42 @@
 <template>
-  <!--
-    WorkspaceLayout.vue — VS Code-style multi-pane editor layout.
-
-    Usage:
-      <WorkspaceLayout>
-        <template #explorer>
-          <MyProjectTree />
-        </template>
-        <template #tab-content="{ tab }">
-          <MyEntityEditor v-if="tab.tabType === 'entity'" :tab="tab" />
-        </template>
-      </WorkspaceLayout>
-  -->
   <div class="workspace-root">
-    <!-- Left Sidebar (Explorer) -->
     <aside v-if="sidebarVisible" class="workspace-sidebar" :style="{ width: sidebarWidth + 'px' }">
       <slot name="explorer" />
     </aside>
 
-    <!-- Sidebar resize handle -->
     <div v-if="sidebarVisible" class="resize-handle resize-handle--sidebar" @mousedown="startSidebarResize" />
 
-    <!-- Editor Groups (split panes) -->
     <div class="workspace-editor-area">
       <div
         v-for="(group, gIdx) in groups"
         :key="group.id"
         class="workspace-group"
-        :class="{ 'workspace-group--active': gIdx === activeGroupIndex }"
-        :style="{ flex: group.flex }"
-        @click.capture="setActiveGroup(gIdx)"
+        :class="{ 'workspace-group--active': group.id === activeGroupId }"
+        :style="{ flex: group.flexBasis }"
+        @click.capture="setActiveGroup(group.id)"
       >
-        <!-- Tab Bar -->
         <div class="workspace-tabbar">
           <div
             v-for="tab in group.tabs"
             :key="tab.id"
             class="workspace-tab"
             :class="{ 'workspace-tab--active': tab.id === group.activeTabId, 'workspace-tab--unsaved': tab.unsaved }"
-            @click.stop="activateTab(gIdx, tab.id)"
+            @click.stop="activateTab(group.id, tab.id)"
           >
             <span class="workspace-tab__title">{{ tab.title }}</span>
             <span v-if="tab.unsaved" class="workspace-tab__dot" title="Unsaved changes" />
-            <button class="workspace-tab__close" @click.stop="closeTab(gIdx, tab.id)">×</button>
+            <button class="workspace-tab__close" @click.stop="closeTab(tab.id)">×</button>
           </div>
 
           <div class="workspace-tabbar__spacer" />
 
-          <button v-if="groups.length > 1" class="workspace-btn" title="Close pane" @click="closeGroup(gIdx)">⊠</button>
-          <button class="workspace-btn" title="Split right (Ctrl+\)" @click="splitGroup(gIdx)">⊞</button>
+          <button v-if="groups.length > 1" class="workspace-btn" title="Close pane" @click="closeGroup(group.id)">⊠</button>
+          <button class="workspace-btn" title="Split right (Ctrl+\)" @click="splitGroup(group.id)">⊞</button>
         </div>
 
-        <!-- Active Tab Content -->
         <div class="workspace-content">
-          <template v-if="activeTab(gIdx)">
-            <slot name="tab-content" :tab="activeTab(gIdx)" :group-index="gIdx" />
+          <template v-if="activeTab(group.id)">
+            <slot name="tab-content" :tab="activeTab(group.id)" :group-index="gIdx" />
           </template>
           <div v-else class="workspace-empty">
             <div class="workspace-empty__icon">⬡</div>
@@ -64,7 +46,6 @@
         </div>
       </div>
 
-      <!-- Group resize handles -->
       <div
         v-for="gIdx in groups.length - 1"
         :key="'r' + gIdx"
@@ -76,12 +57,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useEditorGroups } from '../../ts/composables/useEditorGroups';
 
 const {
   groups,
-  activeGroupIndex,
+  activeGroupId,
   setActiveGroup,
   openTab,
   closeTab,
@@ -100,27 +81,24 @@ const props = withDefaults(defineProps<{
 
 const sidebarWidth = ref(props.defaultSidebarWidth);
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function activeTab(gIdx: number) {
-  const g = groups[gIdx];
+function activeTab(groupId: string) {
+  const g = groups.value.find(item => item.id === groupId);
   return g?.tabs.find(t => t.id === g.activeTabId) || null;
 }
 
-function splitGroup(gIdx: number) {
-  splitRight(gIdx);
+function splitGroup(groupId: string) {
+  splitRight(groupId);
 }
 
-// ── Keyboard shortcut: Ctrl+\ ──────────────────────────────────────────────
 function onKeydown(e: KeyboardEvent) {
   if (e.ctrlKey && e.key === '\\') {
     e.preventDefault();
-    splitGroup(activeGroupIndex.value);
+    splitGroup(activeGroupId.value);
   }
 }
 onMounted(() => window.addEventListener('keydown', onKeydown));
 onUnmounted(() => window.removeEventListener('keydown', onKeydown));
 
-// ── Sidebar resize ─────────────────────────────────────────────────────────
 function startSidebarResize(e: MouseEvent) {
   e.preventDefault();
   const startX = e.clientX;
@@ -136,15 +114,13 @@ function startSidebarResize(e: MouseEvent) {
   window.addEventListener('mouseup', onUp);
 }
 
-// ── Group resize ───────────────────────────────────────────────────────────
 function startGroupResize(gIdx: number) {
   const onMove = (ev: MouseEvent) => {
-    // simple delta-based flex redistribution
-    const left = groups[gIdx];
-    const right = groups[gIdx + 1];
+    const left = groups.value[gIdx];
+    const right = groups.value[gIdx + 1];
     if (!left || !right) return;
-    left.flex = Math.max(0.1, (left.flex || 1) + ev.movementX / 400);
-    right.flex = Math.max(0.1, (right.flex || 1) - ev.movementX / 400);
+    left.flexBasis = Math.max(0.1, (left.flexBasis || 1) + ev.movementX / 400);
+    right.flexBasis = Math.max(0.1, (right.flexBasis || 1) - ev.movementX / 400);
   };
   const onUp = () => {
     window.removeEventListener('mousemove', onMove);
@@ -154,8 +130,7 @@ function startGroupResize(gIdx: number) {
   window.addEventListener('mouseup', onUp);
 }
 
-// Expose for parent
-defineExpose({ openTab, closeTab, groups, activeGroupIndex });
+defineExpose({ openTab, closeTab, groups });
 </script>
 
 <style scoped>
@@ -168,7 +143,6 @@ defineExpose({ openTab, closeTab, groups, activeGroupIndex });
   color: var(--ws-text, #e2e8f0);
 }
 
-/* ── Sidebar ── */
 .workspace-sidebar {
   flex-shrink: 0;
   height: 100%;
@@ -177,7 +151,6 @@ defineExpose({ openTab, closeTab, groups, activeGroupIndex });
   border-right: 1px solid var(--ws-border, #1e1e2e);
 }
 
-/* ── Editor Area ── */
 .workspace-editor-area {
   flex: 1;
   display: flex;
@@ -196,7 +169,6 @@ defineExpose({ openTab, closeTab, groups, activeGroupIndex });
 .workspace-group:last-child { border-right: none; }
 .workspace-group--active .workspace-tabbar { border-bottom-color: #8b5cf6; }
 
-/* ── Tab bar ── */
 .workspace-tabbar {
   display: flex;
   align-items: center;
@@ -253,7 +225,6 @@ defineExpose({ openTab, closeTab, groups, activeGroupIndex });
 }
 .workspace-btn:hover { color: #e2e8f0; }
 
-/* ── Content ── */
 .workspace-content {
   flex: 1;
   overflow: hidden;
@@ -272,7 +243,6 @@ defineExpose({ openTab, closeTab, groups, activeGroupIndex });
 .workspace-empty p { font-size: 14px; }
 .workspace-empty small { font-size: 12px; }
 
-/* ── Resize handles ── */
 .resize-handle {
   flex-shrink: 0;
   background: transparent;

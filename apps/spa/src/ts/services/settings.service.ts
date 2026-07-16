@@ -257,6 +257,13 @@ class SettingsService {
     body.classList.toggle('cards-compact', s.cards.compactList);
     body.classList.toggle('cards-show-icons', s.cards.showIcons);
     body.classList.toggle('editor-word-count', s.editor.showWordCount);
+
+    // Perf: при низком уровне производительности отключаем backdrop-filter (тяжёлый для GPU)
+    const isLowPerf = s.perf?.level === 'low';
+    body.classList.toggle('perf-low', isLowPerf);
+    if (isLowPerf) {
+      root.style.setProperty('--glass-blur', '0px');
+    }
   }
 
   /**

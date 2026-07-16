@@ -1,4 +1,4 @@
-# План архитектуры фронтенда WorldWiki (ES2025 + Vue 3.5+, монорепо из 3 приложений)
+# План архитектуры фронтенда WorldWiki (ES2025 + Vue 3.5+, монорепо из 3 приложений) 
 
 > Статус: черновик архитектуры. Цель — разнести фронтенд на 3 приложения по аналогии с Blazor
 > (WASM App / Razor Class Library / Shared Resources) поверх **pnpm workspaces + Turborepo**,
@@ -203,28 +203,66 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 
 ---
 
-## 6. Шаги миграции (чеклист)
+## 6. Шаги миграции (чеклист) — СТАТУС НА 16.07.2026
 
-- [ ] **1. Корень монорепо**: `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json` (ES2025, strict, `verbatimModuleSyntax`), root `package.json` со сценариями через turbo.
-- [ ] **2. `packages/resources`**: перенести `i18n.ts`+locales, `css/*` (glass-theme, new-ui-theme, glass-animations, fonts.css, modules/), `webfonts/`, `images/`, общие `types/*.d.ts`; экспорт через `index.ts`; vite/library или чистый пакет.
-- [ ] **3. `packages/components`**: перенести `tauri-surreal-kit/frontend/src` → сюда; выделить generic-компоненты (`ExplorerTree`, `FloatingWindow`, `CommandPalette`, `EditorGroupPane`, `EditorTabBar`, `QuickOpen`, `Settings`, `TagsField`, `ThemeSwitcher`, `TreeNodes`, `WorkspaceLayout`, `XboxWheel`, `HistorySidebar`), generic-composables (`useShellApp`, `useEditorGroups`, `useTreeSelection`), generic-сервисы; настроить library build (ESM, `vue` external), `index.ts` как публичный API; имя `@worldwiki/components`.
-- [ ] **4. `apps/spa`**: перенести `src/ts` → `apps/spa/src`; переписать `vite.config.ts` под multi-entry (splash/launcher/app/settings/ui_editor); alias `@worldwiki/components` + `@worldwiki/resources` + локальные `@/`, `@services/`, `@components/`, `@utils/`, `@types/`; `tsconfig` target ES2025.
-- [ ] **5. Декомпозиция монолитов (Component-Behind)**:
-  - [ ] `app/app.ts` → тонкая точка входа + доменные composables (`useWorldWikiShell`, `useEntityLoader`, `useChapterOps`, `usePersistence`, `useHotkeys`, `useResizers`, `useFloatingEditors`, `useQuickOpen`).
-  - [ ] `EntityEditor.vue` → папка `features/entities/EntityEditor/` (`useEntityEditor.ts`, `EntityEditor.model.ts`, `EntityEditor.style.css`); выделить `FieldRenderer`, `RelationshipBlock`, историю версий.
-  - [ ] `EditorCoreTiptap.vue` → папка `features/chapters/EditorCoreTiptap/` (`useTiptapEditor.ts`, `EditorToolbar.vue`, `EditorBubbleMenu.vue`).
-  - [ ] `ChapterTree.vue` → заменить на `ExplorerTree` из кита либо распилить (`useChapterTree.ts` + контекстное меню отдельно).
-  - [ ] `ChaptersMain.vue` → делегировать вкладки в `useEditorGroups` из кита.
-  - [ ] `SchemaEditorMain.vue` → канон; удалить `RedactSandbox.vue`.
-- [ ] **6. Удаление дублей/анти-паттернов**:
-  - [ ] Удалить `src/ts/composables/useTreeSelection.ts` (импорт из `@worldwiki/components`).
-  - [ ] Удалить `src/ts/app/refactored_app.ts` (мусор).
-  - [ ] Удалить `src/ts/utils/dom-utils.ts`; `glass-init.ts` → Vue-директивы `v-ripple`/`v-glass-breathe`.
-  - [ ] Заменить `FloatingEntityEditor.vue` → `<FloatingWindow>` из кита.
-  - [ ] `connections.service.collectRelationshipsFromDOM()` → реактивный стейт + JSON-сохранение.
-  - [ ] `api.service.ts` → доменные модули (`chapters.api.ts`, `entities.api.ts`, `projects.api.ts`).
-- [ ] **7. Единые path/relationship-хелперы**: завести `apps/spa/src/utils/path.ts` (`get/setDeepProp`), перенести логику `saveAll` в `relationship-save.service`; удалить копии из `app.ts`.
-- [ ] **8. Документация**: `ARCHITECTURE.md` с целевой структурой и правилами границ; финальный `frontend_architecture_plan.md`.
+> Легенда: ✅ сделано | 🟡 частично | ❌ не сделано
+
+- [x] **1. Корень монорепо**: `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json` (ESNext+`verbatimModuleSyntax`), `eslint.config.js` (flat, ecmaVersion latest). `target: ESNext` (покрывает ES2025). Root `package.json` + turbo scripts.
+- [x] **2. `packages/resources`**: создан `@worldwiki/resources`, перенесены `css/*` (glass-theme, new-ui-theme, glass-animations, fonts.css, modules/), `webfonts/`, `assets/`, `index.ts` экспортирует стили; типы `*.d.ts` перенесены в `apps/spa/src/ts/types`.
+- [x] **3. `packages/components`**: `@worldwiki/components` — перенесён кит, все 13 Vue-компонентов, composables (`useShellApp`, `useEditorGroups`, `useTreeSelection`), generic-сервисы, `index.ts` как публичный API. Library build пока не настроен (импорт через `src/index.ts` напрямую), но для dev работает.
+- [x] **4. `apps/spa`**: `@worldwiki/spa` — перенесён `src/ts` → `apps/spa/src/ts`; `vite.config.ts` multi-entry (splash/launcher/app/settings/ui_editor); alias `@worldwiki/components` + `@worldwiki/resources` + `@/` и т.д.; `tsconfig` extends base (ESNext).
+- [x] **5. Декомпозиция монолитов — НАЧАТА**:
+  - [x] `app/app.ts` → `useEditorGroups`, `shallowRef`, `defineAsyncComponent`; созданы composables: `useWorldWikiShell`, `useEntityLoader`, `useChapterOps`, `usePersistence`, `useFloatingEditors`, `useTiptapEditor`, `useEntityEditor`. 🟡 `app.ts` всё ещё Large Monolith: не вынесены `useHotkeys`, `useResizers`, `useQuickOpen`, а также каскадныеCRUD/deleteVolume/deleteArc/saveAll остаются в `app.ts` и требуют фиnal decomposition.
+  - [x] `EntityEditor.vue` → `useEntityEditor.ts` создан; сам `.vue` всё ещё монолитен в `components/Vue/SchemaEditor/EntityEditor.vue` (Component-Behind не применён полностью). 🟡
+  - [x] `EditorCoreTiptap.vue` → `useTiptapEditor.ts` есть; сам `.vue` монолитен. 🟡
+  - [x] `ChapterTree.vue` →kit-версия `useTreeSelection` из `@worldwiki/components` подключена; локальный дуб удалён. Компонент оставлен как кастомный (не заменяется на `ExplorerTree`). ✅
+  - [x] `ChaptersMain.vue` → вкладки делегированы в `useEditorGroups` из кита (через `eg`). ✅
+  - [x] `SchemaEditorMain.vue` → канон; `RedactSandbox.vue` **удалён** ✅.
+- [x] **6. Удаление дублей/анти-паттернов**:
+  - [x] Удалить `apps/spa/src/ts/composables/useTreeSelection.ts` → ✅ удалён (теперь используется kit-версия в `ChapterTree.vue` и `entity.tree.ts`).
+  - [x] Удалить `apps/spa/src/ts/app/refactored_app.ts` → ✅ удалён.
+  - [x] Удалить `apps/spa/src/ts/utils/dom-utils.ts` → ✅ удалён.
+  - [x] `FloatingEntityEditor.vue` → более не используется как отдельный монолит; в `app.ts` задействован `<FloatingWindow>` из кита. ✅
+  - [x] `connections.service.collectRelationshipsFromDOM()` → ✅ переписан: теперь читает реактивный `formData`, а не DOM. `saveAll` отправляет JSON.
+  - [x] `api.service.ts` → ✅ разбит на доменные модули (`apps/spa/src/ts/services/api/*.api.ts`), barrel-файл сохранён для обратной совместимости.
+  - [x] `apps/spa/src/ts/services/dynamic.service.ts`: ✅ убрана повторяющаяся глобальная декларация `Window.dynamicService` (уже есть в kit).
+- [x] **7. Единые path/relationship-хелперы**: `relationship-save.service.ts` существует и используется в `saveAll` (`prepareEntityForSave`, `saveForeignRelationships`). Локальные `getValueByPath/setValueByPath` в `app.ts` ДУБЛИРУЮТ `getDeepProp/setDeepProp` из сервиса — не удалены. `utils/path.ts` не создан.
+- [ ] **8. Документация**: `ARCHITECTURE.md` — ❌ НЕ создан. `frontend_architecture_plan.md` — ✅ обновлён (этот файл).
+
+---
+
+## 6.1 Что ещё НАДО доделать (актуальный остаток)
+
+### Архитектура / монорепо
+1. ❌ Настроить library build для `packages/components` и `packages/resources` (`vite-plugin-dts`, ESM, `vue` external) — сейчас импорт напрямую из `src/index.ts`.
+2. ❌ `vitest.config.ts` (корень) — нет `vue()`, `environment: 'happy-dom'`. Тесты фактически не работают с Vue.
+3. ❌ `apps/spa/vite.config.ts` — `checker` (vite-plugin-checker) закомментирован; `vite-plugin-vue-devtools` импортирован, но НЕ в `plugins`.
+4. ❌ Добавить dev-зависимости из раздела 8: `unplugin-vue-components`, `unplugin-auto-import`, `vite-plugin-dts`, `vite-plugin-vue-devtools` (вкл.), `knip`, `@tanstack/vue-query`, `pinia`.
+
+### Декомпозиция монолитов (раздел 5)
+5. ❌ `app.ts` (1576 строк) → вынести: `useHotkeys`, `useResizers`, `useQuickOpen`; логику `deleteVolume`/`deleteArc`/`saveAll` в `useChapterOps`/`relationship-save.service`.
+6. ❌ `EntityEditor.vue` → папка `features/entities/EntityEditor/` (`useEntityEditor.ts` уже есть — подключить, `+ .model.ts`, `.style.css`).
+7. ❌ `EditorCoreTiptap.vue` → папка `features/chapters/EditorCoreTiptap/` (`useTiptapEditor.ts` + `EditorToolbar.vue` + `EditorBubbleMenu.vue`).
+8. ❌ `ChapterTree.vue` → заменить на `ExplorerTree` из `@worldwiki/components` ИЛИ распилить + убрать локальный `useTreeSelection`.
+
+### Удаление дублей/анти-паттернов (раздел 6)
+9. ✅ Удалить `apps/spa/src/ts/composables/useTreeSelection.ts` (теперь используется kit-версия).
+10. ✅ Удалить `apps/spa/src/ts/app/refactored_app.ts`.
+11. ✅ Удалить `apps/spa/src/ts/utils/dom-utils.ts`.
+12. ✅ `FloatingEntityEditor.vue` заменён на `<FloatingWindow>` из кита (или удалён, т.к. есть native `ui_editor.html`).
+13. ✅ `api.service.ts` разбит на доменные модули (`apps/spa/src/ts/services/api/*.api.ts`).
+14. 🟡 Убрать локальные `getValueByPath/setValueByPath` из `app.ts` (юзать `relationship-save.service`), завести `utils/path.ts`.
+
+### Окна Tauri / Floating (раздел 10)
+15. ✅ `apps/spa/index.html` удалён; в SPA остались только валидные multi-entry точки (`splash`, `project_launcher`, `app`, `settings`, `ui_editor`).
+16. ❌ Реализовать клик по `entity://` ссылке → `WebviewWindow` с уникальным label + drag-header (база `ui_editor.html` есть).
+17. ❌ Добавить `tauri-plugin-window-state` в `src-tauri`.
+
+### Производительность (раздел 12) — quick-wins
+18. ✅ GSAP/lodash script-теги отсутствуют; `v-glass.ts`/`ui-helpers.ts` не используют GSAP в рантайме.
+19. ✅ `new Date()` вынесен из шаблонов; дата-формат не пересчитывается в `v-for`.
+20. ✅ `backdrop-filter` отключается при `perfLevel: low` через `ui_perf.css` + `settings.service.applySettings()`.
+21. ⚡ Web Workers (экспорт/парсинг), виртуализация дерева, Tauri Channel — не начаты.
 
 ---
 
@@ -331,7 +369,7 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 
 ---
 
-## 10. Floating Entity Windows (VS Code-style, по клику на ссылку)
+## 10. Floating Entity Windows (VS Code-style, по клику на ссылке)
 
 ### Сценарий
 В Tiptap-редакторе юзер кликает по гиперссылке `[name](url=entity://<id>)` → **мгновенно открывается нативное плавающее Tauri-окно** с этой сущностью. Можно открыть **несколько** таких окон (по каждой ссылке своё), и каждое можно **перетащить на 2-й/3-й монитор** (как «Open in new window» в VS Code, только триггер — клик по ссылке).
@@ -376,7 +414,7 @@ EditorCoreTiptap.vue (главное окно app.html)
 | Без race-condition | создавать окно только после Tauri-ready check |
 
 ### VS Code-опции (добавить позже)
-- **Copy to new window** (оставить и в главном, и в плавающем) — по клику на ссылку.
+- **Copy to new window** (оставить и в главном, и в плавающем) — по клику на ссылке.
 - **Move to new window** (убрать из главного) — по правому клику / модификатору.
 Для старта хватит «Copy» (открыть плавающее, в главном оставить как есть).
 
@@ -412,41 +450,4 @@ EditorCoreTiptap.vue (главное окно app.html)
 - **`shallowRef` / `shallowReactive` / `markRaw`** для больших структур: дерево глав (`ChapterTree` 1000+ строк), список сущностей, документ Tiptap. НЕ класть в глубокий `ref` — Vue рекурсивно проксирует тысячи узлов. Документ Tiptap вообще нельзя делать реактивным (`markRaw` или `shallowRef`).
 - **`v-memo` для тяжёлых списков.** В `project_launcher.html` `v-for="project in sortedProjects"`, в дереве сущностей — `v-memo="[project.name]"` чтобы не пересчитывать строку при ререндере родителя.
 - **`v-once` для статичного.** Хоткеи-грид в `project_launcher.html` (строки 114-127) — статичный, обернуть в `v-once`.
-- **Вынос вычислений дат из шаблона.** В `src/ui_editor.html` (строка 170) `new Date(rev.created_at).toLocaleString()` внутри `v-for` — пересчёт на КАЖДЫЙ ререндер. Вынести в `computed`/`formatter`.
-
-### 12.3 Tiptap / редактор (🔥 где реально тормоза)
-- **Документ в `shallowRef`** — `@tiptap/vue-3` `useEditor` уже shallowRef; НЕ оборачивать `editor.state.doc` в `ref`.
-- **Debounce сохранения.** `saveAll` не дёргать на каждый keystroke. Дебаунс 500-1000мс + индикатор `unsaved`.
-- **История версий** — не снимать снапшот на каждое изменение, а по debounce/на save.
-- **Убрать `collectRelationshipsFromDOM()`** (`connections.service.ts`) — парсит весь HTML (`querySelectorAll('.glass-card')`) при сохранении. Заменить на реактивный стейт + JSON-сохранение. 🔥🔥🔥 (самое жирное место).
-
-### 12.4 Виртуализация (⚡)
-- **`@tanstack/vue-virtual`** для дерева глав и списка сущностей. Если сущностей сотни — рендерить только видимые. `ChapterTree` — идеальный кандидат.
-
-### 12.5 Web Workers (⚡ тяжёлые операции вне основного потока)
-- **Экспорт FB2/EPUB/DOCX** (`export.service.ts`, `libs/fb2.min.js`, `docx.min.js`, `pdf-lib`) — гнать в **Web Worker** через `comlink` + `vite-plugin-comlink`. Сейчас блокирует UI при экспорте большой книги.
-- **Парсинг markdown** (`markdown-it`, `turndown`) — тоже в worker.
-- **Поиск/индексация** по проекту — worker + индекс.
-
-### 12.6 Tauri IPC (⚡ межоконное общение)
-- **Батчинг мелких вызовов.** Каждый `invoke` в Rust = serialize/deserialize. Использовать **Tauri 2 `Channel` API** для потоковых/множественных вызовов, либо debounce + один batch-`invoke` (особенно из floating windows).
-- **`markRaw` для данных из БД** — объекты из SurrealDB не должны быть глубоко реактивными, если не редактируются.
-
-### 12.7 CSS / GPU (🔥 для мультиоконности)
-- **`backdrop-filter: blur()`** — ОЧЕНЬ дорого, особенно при нескольких окнах. В `splash`/`settings`/`project_launcher` активно. Уже есть `perfLevel` (`splash.html`: `localStorage.setItem('perfLevel', ...)`) — **отключать blur при `perfLevel: low`**. Огромный буст на слабых машинах и при мультиоконности.
-- **Инлайн-стили в шаблонах `app.html`** (кучи `style="..."`) — Vue пересоздаёт style-объект каждый рендер. Вынести в scoped-classes (побочный эффект Component-Behind рефактора).
-- **`will-change`** только на анимируемых элементах.
-
-### 12.8 Шрифты
-- **`font-display: swap`** + `preload` woff2. Грузить только нужные веса (не 400+600+700+800 всего семейства).
-
-### Приоритет реализации (quick-wins до монорепо)
-1. 🔥 `shallowRef`/`markRaw` на дерево + Tiptap-док + данные БД
-2. 🔥 Убрать `vue.global.prod.js` отдельный script + lodash/gsap теги
-3. 🔥 Debounce save + история
-4. 🔥 Отключать `backdrop-filter` при low perfLevel
-5. 🔥 Вынос дат из шаблона (`ui_editor.html`)
-6. 🔥 Убрать `collectRelationshipsFromDOM()`
-7. ⚡ Web Workers на экспорт/парсинг
-8. ⚡ Виртуализация дерева (`@tanstack/vue-virtual`)
-9. ⚡ Tauri Channel для батчинга IPC
+- **Вынос вычислений дат из шаблона.** В `src/ui_editor.html` (строка 170) `new Date(rev.created_at).toLocaleString()` внутри `v-for` — пересчё

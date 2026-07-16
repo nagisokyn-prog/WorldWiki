@@ -78,6 +78,22 @@ export function useEditorGroups() {
   const findGroupByTab = (tabId: string): EditorGroup | null =>
     state.groups.find(g => g.tabs.some(t => t.id === tabId)) ?? null;
 
+  const setActiveGroup = (groupId: string) => {
+    activeGroupId.value = groupId;
+  };
+
+  const activateTab = (groupId: string, tabId: string) => {
+    const g = state.groups.find(g => g.id === groupId);
+    if (g) {
+      g.activeTabId = tabId;
+      activeGroupId.value = groupId;
+    }
+  };
+
+  const closeGroup = (groupId: string) => {
+    removeGroup(groupId);
+  };
+
   const rebalance = () => {
     const n = state.groups.length;
     if (n === 0) return;
@@ -302,5 +318,8 @@ export function useEditorGroups() {
     restoreState,
     findTabGlobal,
     findGroupByTab,
+    setActiveGroup,
+    activateTab,
+    closeGroup,
   };
 }

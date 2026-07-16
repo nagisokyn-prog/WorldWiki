@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "rootDir": "../..",
     "outDir": "./dist",
     "declaration": true,
     "sourceMap": true,
@@ -41,7 +42,10 @@
   "include": [
     "src/ts/**/*.ts",
     "src/ts/**/*.d.ts",
-    "src/ts/**/*.vue"
+    "src/ts/**/*.vue",
+    "../../packages/components/src/**/*.ts",
+    "../../packages/components/src/**/*.vue",
+    "../../packages/resources/src/**/*.ts"
   ],
   "exclude": [
     "src/ts/libs/**",

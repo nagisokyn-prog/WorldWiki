@@ -5,7 +5,7 @@
 
 import { ref, computed } from 'vue';
 import { entityApi } from './entity.api';
-import { useTreeSelection } from '../../composables/useTreeSelection';
+import { useTreeSelection } from '@worldwiki/components';
 
 export function useEntityTree(project: string, emit: any) {
   const entities = ref<Record<string, any[]>>({});

@@ -3,13 +3,17 @@
     
     <header class="glass-panel" style="border-radius: 0; border: none; border-bottom: 1px solid var(--border-color); padding: 0 24px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; height: 50px; background: var(--bg-panel); backdrop-filter: blur(20px); flex-shrink: 0;">
       <div style="display: flex; align-items: center; gap: 30px;">
-        <div style="font-weight: 900; color: var(--accent); font-size: 14px;">
-          ⚙️ НАСТРОЙКА СХЕМЫ: {{ entityType.toUpperCase() }}
+        <div style="font-weight: 900; color: var(--accent); font-size: 14px; display: flex; align-items: center; gap: 8px;">
+          ⚙️ СХЕМА:
+          <input v-model="localEntityType" class="input-base" style="background: transparent; border: none; font-weight: 900; color: var(--accent); font-size: 14px; text-transform: uppercase; padding: 0;" placeholder="ИМЯ СХЕМЫ" />
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <button v-if="isHistoryPreviewMode" class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px; color: #f5a623; border-color: rgba(245,166,35,0.3);" @click="exitPreviewMode">Вернуться к текущей</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px; color: #f55; border-color: rgba(255,85,85,0.3);" @click="loadSchema(true)">Сбросить изменения</button>
+        <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="openPreview">ПРЕДПРОСМОТР</button>
+        <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="showJsonPreview = true">Схема</button>
+        <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="exportSchema">Экспорт</button>
         <button class="btn-new" style="font-size: 10px; padding: 4px 12px; background: var(--accent);" @click="saveSchema">Сохранить</button>
         <button class="btn-new btn-outline-new" style="font-size: 14px; padding: 4px 8px; border-color: var(--border-color); color: var(--text-muted);" title="История изменений" @click="toggleHistoryPanel">
           <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
@@ -18,8 +22,19 @@
     </header>
 
     <div style="flex: 1; display: flex; overflow: hidden; background: var(--bg-base);">
+      <!-- ПРЕДПРОСМОТР -->
+      <div v-if="isPreviewMode" style="flex: 1; display: flex; flex-direction: column;">
+        <div style="padding: 12px; background: rgba(245,166,35,0.1); border-bottom: 1px solid rgba(245,166,35,0.3); display: flex; justify-content: space-between; align-items: center;">
+           <span style="color: #f5a623; font-weight: bold; font-size: 11px;">👁️ РЕЖИМ ПРЕДПРОСМОТРА</span>
+           <button class="btn-new" style="background: #f5a623; color: #000; padding: 4px 12px; font-size: 10px;" @click="isPreviewMode = false">ВЕРНУТЬСЯ В РЕДАКТОР</button>
+        </div>
+        <div style="flex: 1; position: relative;">
+          <EntityEditorVue :key="previewKey" entity-id="preview" entity-type="sandbox_preview" project="sandbox" :initial-data="{}" />
+        </div>
+      </div>
+
       <!-- ЦЕНТРАЛЬНЫЙ ХОЛСТ -->
-      <main class="content-area-new" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main v-else class="content-area-new" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
         <!-- ЖЕЛТАЯ ПЛАШКА ИСТОРИИ -->
         <div v-if="isHistoryPreviewMode" style="background: rgba(245,166,35,0.1); border-bottom: 1px solid rgba(245,166,35,0.3); padding: 8px 24px; display: flex; justify-content: space-between; align-items: center;">
           <span style="font-size: 11px; color: #f5a623; font-weight: bold;">⚠️ ВЫ ПРОСМАТРИВАЕТЕ СТАРУЮ ВЕРСИЮ СХЕМЫ</span>
@@ -65,14 +80,16 @@ v-if="activeSectionIdx > 0" style="background: none; border: none; cursor: point
                 v-else
                 :item="item"
                 @remove="removeItem(Number(iIdx))"
+                @drop-custom="handleDropIntoModule(Number(iIdx))"
               />
             </div>
           </div>
         </div>
       </main>
 
-      <!-- ПРАВОЕ МЕНЮ (Паллитра компонентов) -->
-      <aside v-show="showCatalog" class="schema-catalog" style="width: 250px; border-left: 1px solid var(--border-color); background: var(--bg-panel); display: flex; flex-direction: column; overflow-y: auto;">
+      <!-- SIDEBAR (Catalog) -->
+      <div v-if="showCatalog" class="catalog-resizer" style="width: 8px; cursor: ew-resize; background: transparent; z-index: 100; transition: background 0.2s;" onmouseover="this.style.background='var(--accent)'" onmouseout="this.style.background='transparent'" @mousedown="startResize"></div>
+      <aside v-show="showCatalog" class="schema-catalog" :style="{ width: catalogWidth + 'px' }" style="border-left: 1px solid var(--border-color); background: var(--bg-panel); display: flex; flex-direction: column; overflow-y: auto; flex-shrink: 0;">
         <div style="padding: 16px; font-weight: 900; font-size: 12px; opacity: 0.5;">БАЗОВЫЕ ПОЛЯ</div>
         <div style="padding: 0 16px; display: flex; flex-direction: column; gap: 8px;">
           <div v-for="brick in atomicBricks" :key="brick.val" class="catalog-item interactive-el" draggable="true" style="padding: 12px; background: var(--bg-input); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 10px; cursor: grab;" @dragstart="handleDragStartPalette($event, 'atomic', brick.val, brick.label)">
@@ -131,15 +148,28 @@ v-for="h in schemaHistory" :key="h.id"
         </div>
       </aside>
     </div>
+    <!-- JSON ПРЕВЬЮ -->
+    <div v-if="showJsonPreview" class="glass-modal-overlay visible" @click="showJsonPreview = false">
+      <div class="glass-modal glass-panel" style="width: 1100px; height: 85vh; display: flex; flex-direction: column;" @click.stop>
+         <div class="glass-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px;">
+            <span>SCHEMA (JSON)</span>
+            <button class="btn-new" style="font-size: 10px; padding: 4px 12px;" @click="showJsonPreview = false">ЗАКРЫТЬ</button>
+         </div>
+         <div style="flex: 1; padding: 24px; overflow: hidden;">
+            <textarea :value="jsonPreviewContent" readonly class="input-base" style="width: 100%; height: 100%; background: #000; color: #0f0; font-family: monospace; font-size: 12px; padding: 20px; border: 1px solid var(--border-color); resize: none;"></textarea>
+         </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, shallowRef } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, nextTick, shallowRef } from 'vue';
 import { apiService } from '../../../services/api.service';
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
-import uiEditorData from '../../../../struct/editor/ui_editor.json';
+import EntityEditorVue from './EntityEditor.vue';
+import uiEditorData from '../../../../../public/struct/editor/ui_editor.json';
 
 const props = withDefaults(defineProps<{
   entityType: string;
@@ -152,6 +182,23 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits(['scroll-change', 'section-change']);
+
+const localEntityType = ref(props.entityType);
+const catalogWidth = ref(250);
+
+const startResize = (e: MouseEvent) => {
+  const startX = e.clientX;
+  const startWidth = catalogWidth.value;
+  const onMouseMove = (moveEvent: MouseEvent) => {
+    catalogWidth.value = Math.max(200, Math.min(600, startWidth - (moveEvent.clientX - startX)));
+  };
+  const onMouseUp = () => {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  };
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+};
 
 const schema = ref<any>({ sections: [] });
 const scrollContainer = ref<HTMLElement | null>(null);
@@ -175,6 +222,30 @@ watch(activeSectionIdx, (newIdx) => {
 });
 const draggedOverIdx = ref(-1);
 let draggedItemInfo: any = null;
+
+const isPreviewMode = ref(false);
+const showJsonPreview = ref(false);
+const previewKey = ref(0);
+
+const jsonPreviewContent = computed(() => {
+  return JSON.stringify(schema.value, null, 2);
+});
+
+const openPreview = () => {
+  sessionStorage.setItem('sandbox_preview_config', jsonPreviewContent.value);
+  previewKey.value++; // Force EntityEditor remount
+  isPreviewMode.value = true;
+};
+
+const exportSchema = () => {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonPreviewContent.value);
+  const downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download", `${props.entityType || 'schema'}.json`);
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
+};
 
 const atomicBricks = [
   { val: 'text', icon: '📝', label: 'Текст' },
@@ -330,9 +401,9 @@ const saveSchema = async () => {
     });
 
     const dataToSave = {
-      id: `entity_schemas:${props.entityType}`,
-      type_key: props.entityType,
-      type_name: schemaCopy.name || props.entityType,
+      id: `entity_schemas:${localEntityType.value}`,
+      type_key: localEntityType.value,
+      type_name: schemaCopy.name || localEntityType.value,
       icon: schemaCopy.icon || '📄',
       color: schemaCopy.color || '#333333',
       fields_schema: [],
@@ -340,7 +411,7 @@ const saveSchema = async () => {
       is_custom: true
     };
     await apiService.saveSchema(props.project, dataToSave, maxSaves.value);
-    document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: props.entityType } }));
+    document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
     
     if (isHistoryPreviewMode.value) {
       exitPreviewMode();
@@ -472,6 +543,14 @@ const handleDropNew = (e: DragEvent) => {
       label: draggedItemInfo.label.toUpperCase(),
       placeholder: '...'
     });
+  } else if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'module') {
+    activeSection.value.items.push({
+      type: draggedItemInfo.template?.includes('timeline') ? 'timeline' : 'dynamic',
+      template: draggedItemInfo.val,
+      title: 'НОВЫЙ МОДУЛЬ',
+      emptyMessage: 'Пусто...',
+      customFields: []
+    });
   }
   draggedItemInfo = null;
 };
@@ -488,11 +567,38 @@ const handleItemDrop = (targetIdx: number) => {
     const insertIdx = srcIdx < targetIdx ? targetIdx : targetIdx;
     activeSection.value.items.splice(insertIdx, 0, item);
   } else if (draggedItemInfo.source === 'palette') {
-    activeSection.value.items.splice(targetIdx, 0, {
+    if (draggedItemInfo.kind === 'atomic') {
+      activeSection.value.items.splice(targetIdx, 0, {
+        type: draggedItemInfo.val,
+        class: `field_${Date.now()}`,
+        label: draggedItemInfo.label.toUpperCase(),
+        placeholder: '...'
+      });
+    } else if (draggedItemInfo.kind === 'module') {
+      activeSection.value.items.splice(targetIdx, 0, {
+        type: draggedItemInfo.template?.includes('timeline') ? 'timeline' : 'dynamic',
+        template: draggedItemInfo.val,
+        title: 'НОВЫЙ МОДУЛЬ',
+        emptyMessage: 'Пусто...',
+        customFields: []
+      });
+    }
+  }
+  draggedItemInfo = null;
+};
+
+const handleDropIntoModule = (moduleIdx: number) => {
+  if (!draggedItemInfo) return;
+  if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'atomic') {
+    const mod = activeSection.value.items[moduleIdx];
+    if (!mod.customFields) mod.customFields = [];
+    mod.customFields.push({
       type: draggedItemInfo.val,
-      class: `field_${Date.now()}`,
+      class: `custom_${Date.now()}`,
       label: draggedItemInfo.label.toUpperCase(),
-      placeholder: '...'
+      placeholder: '...',
+      sourceType: '',
+      targetType: ''
     });
   }
   draggedItemInfo = null;

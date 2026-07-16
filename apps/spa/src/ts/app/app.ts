@@ -33,7 +33,7 @@ import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
 import { i18n, setLocale, settingsService, useEditorGroups, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue, EditorTabBar as EditorTabBarVue, EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
 
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт (lazy loading)
-const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/EntityEditor.vue'));
+const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/SchemaEditor/EntityEditor.vue'));
 const ChaptersViewVue = defineAsyncComponent(() => import('../components/Vue/ChaptersView.vue'));
 const EditorCoreVue = defineAsyncComponent(() => import('../components/Vue/Chapters/EditorCoreTiptap.vue'));
 const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Calendars/TimelinePanel.vue'));
@@ -1529,7 +1529,7 @@ async function init() {
         openFloatingEditor,
         onChapterRenamed,
         toggleEntityHistory,
-        openSandbox: () => { activeView.value = 'sandbox'; sidebarVisible.value = false; },
+        openSandbox: () => { openSchemaEditor('universal'); },
         // ─── Editor Groups API (для шаблона) ───
         editorGroups: eg.groups,
         activeGroupId: eg.activeGroupId,

@@ -38,7 +38,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { FloatingWindow } from '@worldwiki/components';
-import EntityEditorVue from './EntityEditor.vue';
+import EntityEditorVue from './SchemaEditor/EntityEditor.vue';
 import { apiService } from '../../services/api.service';
 
 const props = defineProps<{

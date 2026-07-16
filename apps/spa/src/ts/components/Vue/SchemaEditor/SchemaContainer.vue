@@ -157,12 +157,87 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
         </div>
       </div>
     </template>
+
+    <!-- CUSTOM FIELDS -->
+    <div v-for="(cField, cIdx) in (item.customFields || [])" :key="'cf_'+cIdx">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <label class="form-label-micro" style="color: var(--accent); opacity: 0.8;">{{ cField.label || 'Новое поле' }} (Кастомное)</label>
+        <button style="background: none; border: none; cursor: pointer; color: #f55; font-size: 10px; opacity: 0.8;" @click="item.customFields.splice(Number(cIdx), 1)">
+            Удалить ✕
+        </button>
+      </div>
+
+      <XboxWheel v-if="cField.type === 'select'" :model-value="''" :options="cField.options || []" :placeholder="cField.placeholder || '...'" />
+      <input v-else class="input-base" style="font-size: 12px; pointer-events: none;" :placeholder="cField.placeholder || '...'">
+
+      <!-- INLINE SETTINGS -->
+      <div style="margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+              <label class="form-label-micro">Название (Label)</label>
+              <input v-model="cField.label" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="Название поля">
+            </div>
+            <div>
+              <label class="form-label-micro">Подсказка</label>
+              <input v-model="cField.placeholder" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="...">
+            </div>
+        </div>
+        
+        <div style="margin-top: 8px;">
+            <label class="form-label-micro">Тип</label>
+            <XboxWheel :model-value="cField.type || ''" :options="atomicBricks" @update:model-value="(val: any) => cField.type = val" />
+        </div>
+        
+        <div v-if="cField.type === 'select' || cField.type === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+            <template v-if="fullConfig.templates[item.template]?.isBidirectional">
+              <div style="display: flex; gap: 8px; justify-content: space-between;">
+                  <div style="flex: 1;">
+                    <label class="form-label-micro">ИСТОЧНИК (SOURCE)</label>
+                    <select v-model="cField.sourceType" class="input-base" style="font-size: 10px; padding: 4px; width: 100%;">
+                      <option v-for="t in availableEntityTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
+                    </select>
+                  </div>
+                  <div style="flex: 1;">
+                    <label class="form-label-micro">ЦЕЛЬ (TARGET)</label>
+                    <select v-model="cField.targetType" class="input-base" style="font-size: 10px; padding: 4px; width: 100%;">
+                      <option v-for="t in availableEntityTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
+                    </select>
+                  </div>
+              </div>
+            </template>
+            <template v-else>
+              <label class="form-label-micro">Варианты (Options)</label>
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                  <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" style="display: flex; gap: 6px; align-items: center;">
+                    <input v-model="opt.value" class="input-base" style="font-size: 10px; padding: 4px; flex: 1; font-family: monospace;" placeholder="value" />
+                    <input v-model="opt.label" class="input-base" style="font-size: 10px; padding: 4px; flex: 2;" placeholder="Label" />
+                    <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="cField.options.splice(Number(oIdx), 1)">✕</button>
+                  </div>
+                  <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 6px;" @click="() => { if(!cField.options) cField.options=[]; cField.options.push({label:'', value:''}) }">+ ДОБАВИТЬ ВАРИАНТ</button>
+              </div>
+            </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- DROP ZONE FOR CUSTOM FIELDS -->
+    <div
+v-if="['dynamic', 'timeline'].includes(item.type)"
+        style="margin-top: 16px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
+        :style="{ borderColor: isDraggedOver ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: isDraggedOver ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }"
+        @dragenter.prevent="isDraggedOver = true"
+        @dragover.prevent="isDraggedOver = true"
+        @dragleave="isDraggedOver = false"
+        @drop.stop="isDraggedOver = false; $emit('drop-custom')">
+      <div style="font-size: 12px; font-weight: 900; color: rgba(255,165,0,0.6);">🎯 СЮДА КИДАЙ ПОЛЯ</div>
+      <div style="font-size: 10px; color: rgba(255,165,0,0.4); margin-top: 4px;">Захвати поле из левой панели</div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import uiEditorData from '../../../../struct/editor/ui_editor.json';
+import uiEditorData from '../../../../../public/struct/editor/ui_editor.json';
 import { XboxWheel } from '@worldwiki/components';
 
 const props = defineProps<{
@@ -171,12 +246,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   remove: [];
+  'drop-custom': [];
 }>();
 
+const isDraggedOver = ref(false);
 const fullConfig = ref<any>(uiEditorData);
 
 const availableEntityTypes = computed(() => {
-  const rawSchemas = (import.meta as any).glob('../../../../struct/editor/*.json', { eager: true });
+  const rawSchemas = (import.meta as any).glob('../../../../../public/struct/editor/*.json', { eager: true });
   const types = [];
   for (const path in rawSchemas) {
     if (path.includes('ui_editor')) continue;

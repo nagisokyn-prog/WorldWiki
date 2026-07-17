@@ -50,7 +50,7 @@ export function useChapterOps(ctx: {
       const num = maxNum + 1;
       ctx.addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
       const newCh: any = {
-        id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `chapters:chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         title: `Глава ${num}`,
         content: '# Новая глава\n\n',
         createdAt: new Date().toISOString(),

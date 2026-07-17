@@ -7,12 +7,14 @@
       :sections="explorerSections"
       storage-key="worldwiki-explorer"
       :active-id="activeId"
+      ref="explorerTreeRef"
       @back="goBack"
       @select="handleSelect"
       @open="handleOpen"
       @create="handleCreate"
       @create-inline="handleCreateInline"
       @rename="handleRename"
+      @cancel-rename="handleCancelRename"
       @delete="handleDelete"
     >
       <template #header-actions>
@@ -37,6 +39,9 @@
           </div>
           <div class="ctx-item" @click="handleCreate({ sectionId: 'manuscript', parentId: node.id }); close()">
             <span class="ctx-label"><i class="fas fa-layer-group ctx-icon"></i> Добавить арку</span>
+          </div>
+          <div class="ctx-item" @click="$emit('create-chapter-in', { arcId: null, volumeId: node.id }); close()">
+            <span class="ctx-label"><i class="fas fa-file-alt ctx-icon"></i> Добавить главу</span>
           </div>
         </template>
         
@@ -70,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { apiService } from '../../../services/api.service';
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 import { ExplorerTree } from '@worldwiki/components';
@@ -285,48 +290,66 @@ const handleOpen = (node: any) => {
   }
 };
 
-const handleCreate = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
+const explorerTreeRef = ref<any>(null);
+
+const startRename = (node: any, closeCtx: Function) => {
+  closeCtx();
+  explorerTreeRef.value?.startRename(node);
+};
+
+const handleCreate = async ({ sectionId, parentId, name }: { sectionId: string, parentId?: string, name?: string }) => {
+  console.log('CHAPTERTREE: handleCreate called with', { sectionId, parentId, name });
   if (sectionId === 'manuscript') {
     if (!parentId) {
-      const title = prompt('Название тома:');
-      if (title) {
-        await apiService.createVolume(props.project, title);
-        await load();
-      }
+      const tempId = '__new_volume__';
+      hierarchy.value.volumes.push({ id: tempId, title: 'Новый том', sort_order: 999 } as any);
+      await nextTick();
+      const node = findNodeById(tempId);
+      if (node) explorerTreeRef.value?.startRename(node);
     } else {
-      const title = prompt('Название арки:');
-      if (title) {
-        await apiService.createArc(props.project, title, parentId);
-        await load();
-      }
+      const tempId = '__new_arc__';
+      hierarchy.value.arcs.push({ id: tempId, title: 'Новая арка', volumeId: parentId, sort_order: 999 } as any);
+      explorerTreeRef.value?.expandNode(String(parentId));
+      await nextTick();
+      const node = findNodeById(tempId);
+      if (node) explorerTreeRef.value?.startRename(node);
     }
+  } else if (name) {
+    emit('add-entity', sectionId, name);
   }
 };
 
-const handleCreateInline = ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
+const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
+  console.log('CHAPTERTREE: handleCreateInline called with', { sectionId, parentId });
   if (sectionId === 'manuscript') {
     if (parentId) {
       const arc = hierarchy.value.arcs.find(a => String(a.id) === String(parentId));
       if (arc) {
          emit('create-chapter-in', { arcId: arc.id, volumeId: arc.volumeId });
       } else {
-         emit('create-chapter-in', { arcId: null, volumeId: parentId });
+         const vol = hierarchy.value.volumes.find(v => String(v.id) === String(parentId));
+         if (vol) {
+           handleCreate({ sectionId: 'manuscript', parentId });
+         } else {
+           emit('create-chapter-in', { arcId: null, volumeId: parentId });
+         }
       }
     } else {
        emit('create-chapter-in', { arcId: null, volumeId: null });
     }
   } else {
-    const name = prompt('Название сущности:');
-    if (name) {
-      emit('add-entity', sectionId, name);
-    }
+    explorerTreeRef.value?.startCreate(sectionId);
   }
 };
 
 const handleRename = async (node: any, newName: string) => {
   if (!newName.trim()) return;
   try {
-    if (node.data?.type === 'volume') {
+    if (String(node.id) === '__new_volume__') {
+      await apiService.createVolume(props.project, newName);
+    } else if (String(node.id) === '__new_arc__') {
+      await apiService.createArc(props.project, newName, node.data.original.volumeId);
+    } else if (node.data?.type === 'volume') {
       await apiService.updateVolume(props.project, node.data.original.id, newName);
     } else if (node.data?.type === 'arc') {
       await apiService.updateArc(props.project, node.data.original.id, newName);
@@ -336,6 +359,12 @@ const handleRename = async (node: any, newName: string) => {
     await load();
   } catch (e) {
     console.error('Rename error:', e);
+  }
+};
+
+const handleCancelRename = async (node: any) => {
+  if (String(node.id) === '__new_volume__' || String(node.id) === '__new_arc__') {
+    await load(); // Just reload from server to wipe out temp object
   }
 };
 
@@ -383,14 +412,7 @@ const findNodeById = (id: string): any => {
   return null;
 };
 
-// Start inline rename from context menu
-const startRename = (node: any, closeCtx: Function) => {
-  closeCtx();
-  const newName = prompt('Новое название:', node.label);
-  if (newName !== null) {
-    handleRename(node, newName);
-  }
-};
+
 
 defineExpose({ load });
 </script>

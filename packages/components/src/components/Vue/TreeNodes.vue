@@ -63,7 +63,7 @@
         </div>
 
         <!-- Add Button -->
-        <div v-if="node.canAdd && expanded.has(node.id)" class="tree-add-inline group-add" @click.stop="$emit('create-in', node)">
+        <div v-if="node.canAdd && expanded.has(node.id)" class="tree-add-inline group-add" @click.stop="() => { console.log('TREENODES: CLICKED ADD BUTTON for node', node); $emit('create-in', node); }">
           <i class="fas fa-plus"></i> <span>{{ node.addLabel || 'Add' }}</span>
         </div>
       </div>

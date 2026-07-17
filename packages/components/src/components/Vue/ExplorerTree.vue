@@ -40,7 +40,7 @@
             @click-node="handleNodeClick"
             @dblclick-node="handleNodeDblClick"
             @ctx-node="handleCtxMenu"
-            @create-in="handleCreateIn"
+            @create-in="node => { console.log('EXPLORERTREE: CAUGHT create-in FOR', node); $emit('create-inline', { sectionId: sect.id, parentId: node.id }); }"
             @update:renaming-value="val => { if (renaming) renaming.value = val; }"
             @commit-rename="commitRename"
             @cancel-rename="renaming = null"
@@ -131,9 +131,10 @@ const emit = defineEmits<{
   (e: 'back'): void;
   (e: 'select', nodes: TreeNodeData[], event: MouseEvent): void;
   (e: 'open', node: TreeNodeData): void;
-  (e: 'create', parent: { sectionId: string; parentId?: string }): void;
+  (e: 'create', parent: { sectionId: string; parentId?: string; name?: string }): void;
   (e: 'create-inline', parent: { sectionId: string; parentId?: string }): void;
   (e: 'rename', node: TreeNodeData, newName: string): void;
+  (e: 'cancel-rename', node: TreeNodeData): void;
   (e: 'delete', ids: string[]): void;
 }>();
 
@@ -234,11 +235,7 @@ const handleNodeDblClick = (node: TreeNodeData) => {
   startRename(node);
 };
 
-const handleCreateIn = (node: TreeNodeData) => {
-  emit('create-inline', { sectionId: '', parentId: node.id });
-};
 
-// ─── Renaming & Creating ────────────────────────────────────────────────────
 const renaming = ref<{ id: string; value: string; node: TreeNodeData } | null>(null);
 const creating = ref<{ sectionId: string; name: string } | null>(null);
 
@@ -249,6 +246,8 @@ const commitRename = () => {
   if (renaming.value) {
     if (renaming.value.value.trim() !== renaming.value.node.label) {
       emit('rename', renaming.value.node, renaming.value.value.trim());
+    } else {
+      emit('cancel-rename', renaming.value.node);
     }
   }
   renaming.value = null;
@@ -259,8 +258,7 @@ const startCreate = (sectionId: string) => {
 };
 const commitCreate = () => {
   if (creating.value && creating.value.name.trim()) {
-    emit('create', { sectionId: creating.value.sectionId });
-    // In a real app, you might emit the name too, but keeping it simple
+    emit('create', { sectionId: creating.value.sectionId, name: creating.value.name.trim() });
   }
   creating.value = null;
 };
@@ -281,12 +279,17 @@ const handleCtxMenu = (e: MouseEvent, node: TreeNodeData, sectionId: string) => 
   ctx.value = { x: e.clientX, y: e.clientY, node, sectionId };
 };
 
+const expandNode = (id: string) => {
+  expanded.value.add(id);
+};
+
 // Expose methods for parent
 defineExpose({
   startRename,
   startCreate,
   deleteSelected,
-  clearSelection
+  clearSelection,
+  expandNode
 });
 </script>
 

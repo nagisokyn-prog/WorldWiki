@@ -217,6 +217,17 @@ const {
 
 const onTreeKeydown = (e: KeyboardEvent) => {
   if (renaming.value || creating.value) return;
+  
+  if (e.key === 'F2') {
+    if (selected.value.size === 1) {
+      e.preventDefault();
+      const id = [...selected.value][0];
+      const node = flatItems.value.find((n: TreeNodeData) => n.id === id);
+      if (node) startRename(node);
+    }
+    return;
+  }
+
   handleKeydown(e, flatItems.value);
 };
 

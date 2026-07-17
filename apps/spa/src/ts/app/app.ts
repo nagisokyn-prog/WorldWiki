@@ -54,14 +54,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const projectName = params.get('project') || 'default';
 
-  // Загружаем sidebar.json
   let sidebarItems: SidebarItem[] = [];
-  try {
-    const res = await fetch('./struct/sidebar.json');
-    sidebarItems = await res.json();
-  } catch (e) {
-    console.warn('Failed to load sidebar.json:', e);
-  }
 
   // Загружаем схемы сущностей
   try {

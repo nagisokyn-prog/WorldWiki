@@ -731,24 +731,19 @@ const onRenameChapter = async (chapter: any, newTitle: string) => {
 };
 
 // Удаление главы из контекстного меню дерева (confirm уже был в ChapterTree)
-const onDeleteChapter = async (chapter: any) => {
-  await chapterService.delete(props.project, chapter.id);
-  if (currentChapterId.value === chapter.id) {
+const onDeleteChapter = (original: any, multi: boolean) => {
+  if (multi) return;
+  deleteChapter(original.id);
+};
+
+const deleteChapter = async (id: string) => {
+  await chapterService.delete(props.project, id);
+  if (currentChapterId.value === id) {
     currentChapterId.value = undefined;
     currentChapter.value = null;
     localActiveTreeNode.value = undefined;
   }
   await chapterTreeRef.value?.load();
-};
-
-const deleteChapter = async (id: string) => {
-  if (!confirm('Удалить главу?')) return;
-  await chapterService.delete(props.project, id);
-  if (currentChapterId.value === id) {
-    currentChapterId.value = undefined;
-    currentChapter.value = null;
-  }
-  chapterTreeRef.value?.load();
 };
 
 const markUnsaved = () => {

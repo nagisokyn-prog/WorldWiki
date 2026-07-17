@@ -368,7 +368,6 @@ export function useAppShell(ctx: {
   };
 
   const deleteEntity = async (tabId: string, entityType: string, silent = false) => {
-    if (!silent && !confirm(`Удалить эту запись безвозвратно?`)) return;
     const colonIdx = tabId.indexOf(':');
     const rawId = colonIdx > -1 ? tabId.slice(colonIdx + 1) : tabId;
     try {

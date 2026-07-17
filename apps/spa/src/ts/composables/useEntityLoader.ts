@@ -6,6 +6,8 @@ export function useEntityLoader(projectName: string, addLog: Function) {
   const chapters = shallowRef<Array<any>>([]);
   const schemaCache: Record<string, any> = {};
 
+
+
   const loadSchema = async (entityType: string): Promise<any> => {
     if (schemaCache[entityType]) return schemaCache[entityType];
     try {

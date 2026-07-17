@@ -80,18 +80,12 @@ export function useChapterOps(ctx: {
   };
 
   const deleteChapter = async (chapter: any, silent = false) => {
-    if (!silent && !confirm(`Удалить главу "${chapter.title}"?`)) return;
     try {
       const { apiService } = await import('../services/api.service');
       await apiService.deleteChapter(ctx.projectName, chapter.id);
-      ctx.addLog(`Manuscript -> Deleted chapter [${chapter.id}]`, 'warn');
-      ctx.closeEditor(chapter.id, true);
-      if (ctx.tabs.activeTreeNode.value && ctx.tabs.activeTreeNode.value.type === 'chapter' && ctx.tabs.activeTreeNode.value.node.id === chapter.id) {
-        ctx.tabs.activeTreeNode.value = null;
-      }
-      if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
-      ctx.addToast(`Глава "${chapter.title}" удалена`, 'warn');
-      if (ctx.lists.currentSidebarTab.value === 'chapters') ctx.lists.loadEntityList('chapters');
+      ctx.addLog(`Manuscript -> Deleted chapter ${chapter.title}`, 'success');
+      document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+      ctx.closeEditor(chapter.id);
     } catch (e) {
       ctx.addLog(`Manuscript -> Error deleting chapter: ${e}`, 'error');
     }

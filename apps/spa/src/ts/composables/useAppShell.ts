@@ -368,11 +368,15 @@ export function useAppShell(ctx: {
   };
 
   const deleteEntity = async (tabId: string, entityType: string, silent = false) => {
-    const colonIdx = tabId.indexOf(':');
-    const rawId = colonIdx > -1 ? tabId.slice(colonIdx + 1) : tabId;
     try {
+      const parts = tabId.split(':');
+      // Tab ID is usually "entity:type:actualId"
+      // actualId might contain colons (e.g. "entities:person_123")
+      const rawId = parts.length > 2 ? parts.slice(2).join(':') : tabId;
+
       await apiService.deleteEntity(projectName, entityType, rawId);
       closeEditor(tabId, true);
+
       if (activeTreeNode.value && activeTreeNode.value.type === entityType && activeTreeNode.value.node.id === rawId) {
         activeTreeNode.value = null;
       }
@@ -442,8 +446,37 @@ export function useAppShell(ctx: {
     };
     for (const tab of tabsToUpdate) {
       const { __foreignUpdates, ...dataToMerge } = newData as any;
+      const oldTitle = tab.title;
       merge(tab.data, dataToMerge);
       if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) (tab as any)._foreignUpdates = __foreignUpdates;
+      
+      const newTitle = getEntityDisplayName(tab.data as Record<string, unknown>, tab.entityType);
+      if (newTitle && newTitle !== oldTitle) {
+        tab.title = newTitle;
+        document.dispatchEvent(new CustomEvent('ww:entity-renamed', { 
+          detail: { id: tab.rawId, type: tab.entityType, name: newTitle } 
+        }));
+      }
+    }
+  };
+
+  const renameEntity = async (entityType: string, idToUpdate: string, newName: string) => {
+    try {
+      const detail = await apiService.getEntity(projectName, entityType, idToUpdate);
+      const titleField = Object.keys(detail).find(k => k.toLowerCase() === 'name') || Object.keys(detail)[0];
+      if (titleField) {
+        detail[titleField] = newName;
+        await apiService.saveEntity(projectName, entityType, detail, idToUpdate);
+        
+        const tabId = `entity:${entityType}:${idToUpdate}`;
+        eg.updateTabData(tabId, { title: newName });
+        
+        document.dispatchEvent(new CustomEvent('ww:entity-renamed', { 
+          detail: { id: idToUpdate, type: entityType, name: newName } 
+        }));
+      }
+    } catch(e) {
+      addLog(`Error renaming entity: ${e}`, 'error');
     }
   };
 
@@ -606,7 +639,7 @@ export function useAppShell(ctx: {
     startSplitResize: resizers.startSplitResize, startGroupResize: resizers.startGroupResize,
     toggleSettings, resetSettings, addLog, handleUpdateData, getEntityDisplayName,
     deleteEntity, deleteVolume: chaptersOps.deleteVolume, deleteArc: chaptersOps.deleteArc,
-    createChapterIn, deleteChapter, renameChapter, activeTreeNode, applyZoom,
+    createChapterIn, deleteChapter, renameChapter, renameEntity, activeTreeNode, applyZoom,
     quickOpenDataSource, handleQuickOpenSelect,
     selectTreeNode: (node: any) => { activeTreeNode.value = node; },
     handleScrollChange: (groupId: string, tabId: string, scroll: number) => {

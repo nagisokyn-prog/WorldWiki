@@ -122,6 +122,11 @@
     color: #ffffff;
 }
 
+.tree-item.selected > .tree-item-row {
+    background: rgba(59, 130, 246, 0.2);
+    color: #ffffff;
+}
+
 .tree-item.active > .tree-item-row::after {
     content: '';
     position: absolute;
@@ -222,7 +227,18 @@
 }
 
 /* --- Context Menu --- */
+.tree-ctx-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+}
+
 .tree-ctx-menu {
+    position: fixed;
+    z-index: 10000;
     background: #1e1e1e;
     border: 1px solid #454545;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);

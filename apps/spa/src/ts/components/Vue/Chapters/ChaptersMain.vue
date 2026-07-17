@@ -571,7 +571,21 @@ onUnmounted(() => {
   document.removeEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as any);
   document.removeEventListener('ww:trigger-chapter-save', triggerSave as any);
   document.removeEventListener('ww:hierarchy-changed', loadChapters as any);
+  document.removeEventListener('ww:chapter-renamed', handleGlobalChapterRename as any);
   if (saveTimeout) clearTimeout(saveTimeout);
+});
+
+const handleGlobalChapterRename = (e: any) => {
+  const { id, title } = e.detail;
+  if (currentChapter.value && String(currentChapter.value.id) === String(id)) {
+    if (currentChapter.value.title !== title) {
+      currentChapter.value.title = title;
+    }
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('ww:chapter-renamed', handleGlobalChapterRename as any);
 });
 
 const loadChapters = async () => {

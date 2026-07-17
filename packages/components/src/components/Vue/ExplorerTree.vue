@@ -22,7 +22,7 @@
           <i :class="expandedSections.has(sect.id) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>{{ sect.title.toUpperCase() }}</span>
           <div v-if="sect.canAdd" class="section-actions">
-            <i class="fas fa-plus" title="Add" @click.stop="$emit('create', { sectionId: sect.id })"></i>
+            <i class="fas fa-plus" title="Добавить" @click.stop="$emit('create', { sectionId: sect.id })"></i>
           </div>
         </div>
 
@@ -37,9 +37,9 @@
             :renaming-id="renaming?.id"
             :renaming-value="renaming?.value"
             @toggle-expand="toggleExpand"
-            @click-node="handleNodeClick"
+            @click-node="(e, n) => handleNodeClick(e, n, sect.id)"
             @dblclick-node="handleNodeDblClick"
-            @ctx-node="handleCtxMenu"
+            @ctx-node="(e, n) => handleCtxMenu(e, n, sect.id)"
             @create-in="node => { console.log('EXPLORERTREE: CAUGHT create-in FOR', node); $emit('create-inline', { sectionId: sect.id, parentId: node.id }); }"
             @update:renaming-value="val => { if (renaming) renaming.value = val; }"
             @commit-rename="commitRename"
@@ -84,7 +84,7 @@
       <transition name="ctx-pop">
         <div v-if="ctx" class="tree-ctx-menu" :style="ctxStyle">
           <!-- Inject context menu items via slot, passing the active node context -->
-          <slot name="context-menu" :node="ctx.node" :section-id="ctx.sectionId" :close="() => ctx = null"></slot>
+          <slot name="context-menu" :node="ctx.node" :sectionId="ctx.sectionId" :close="() => ctx = null"></slot>
         </div>
       </transition>
     </Teleport>

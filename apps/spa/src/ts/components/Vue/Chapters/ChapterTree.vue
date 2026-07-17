@@ -89,7 +89,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   'select-node', 'select-chapter', 'create-chapter-in', 'rename-chapter', 'delete-chapter',
-  'open-entity', 'add-entity', 'delete-entity', 'delete-volume', 'delete-arc', 'open-sandbox', 'edit-schema'
+  'open-entity', 'add-entity', 'rename-entity', 'delete-entity', 'delete-volume', 'delete-arc', 'open-sandbox', 'edit-schema'
 ]);
 
 const hierarchy = ref({ volumes: [] as any[], arcs: [] as any[], chapters: [] as any[] });
@@ -254,8 +254,26 @@ const load = async () => {
 watch(() => props.project, load, { immediate: true });
 
 const hierarchyChangedHandler = () => load();
-onMounted(() => document.addEventListener('ww:hierarchy-changed', hierarchyChangedHandler));
-onUnmounted(() => document.removeEventListener('ww:hierarchy-changed', hierarchyChangedHandler));
+
+const entityRenamedHandler = (e: any) => {
+  const { id, type, name } = e.detail;
+  if (entities.value[type]) {
+    const ent = entities.value[type].find((en: any) => String(en.id) === String(id) || String(en.id).endsWith(`:${id}`));
+    if (ent) {
+      const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
+      if (titleField) ent[titleField] = name;
+    }
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
+  document.addEventListener('ww:entity-renamed', entityRenamedHandler);
+});
+onUnmounted(() => {
+  document.removeEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
+  document.removeEventListener('ww:entity-renamed', entityRenamedHandler);
+});
 
 // ─── Actions ────────────────────────────────────────────────────────────────
 const goBack = () => {
@@ -346,16 +364,40 @@ const handleRename = async (node: any, newName: string) => {
   try {
     if (String(node.id).startsWith('__new_volume__')) {
       await apiService.createVolume(props.project, newName);
+      await load();
     } else if (String(node.id).startsWith('__new_arc__')) {
       await apiService.createArc(props.project, newName, node.data.original.volumeId);
+      await load();
     } else if (node.data?.type === 'volume') {
+      const vol = hierarchy.value.volumes.find((v: any) => String(v.id) === String(node.data.original.id));
+      if (vol) vol.title = newName;
       await apiService.updateVolume(props.project, node.data.original.id, newName);
+      await load();
     } else if (node.data?.type === 'arc') {
+      const arc = hierarchy.value.arcs.find((a: any) => String(a.id) === String(node.data.original.id));
+      if (arc) arc.title = newName;
       await apiService.updateArc(props.project, node.data.original.id, newName);
+      await load();
     } else if (node.data?.type === 'chapter') {
+      const ch = hierarchy.value.chapters.find((c: any) => String(c.id) === String(node.data.original.id));
+      if (ch) ch.title = newName;
+      document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: node.data.original.id, title: newName } }));
       emit('rename-chapter', node.data.original, newName);
+    } else if (node.data?.isEntity) {
+      const entityType = node.data.type;
+      const originalId = node.data.original.id;
+      const idToUpdate = String(originalId).split(':').pop()!;
+      
+      if (entities.value[entityType]) {
+        const ent = entities.value[entityType].find((en: any) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate));
+        if (ent) {
+          const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
+          if (titleField) ent[titleField] = newName;
+        }
+      }
+      
+      emit('rename-entity', entityType, idToUpdate, newName);
     }
-    await load();
   } catch (e) {
     console.error('Rename error:', e);
     await load(); // Reload to restore previous state

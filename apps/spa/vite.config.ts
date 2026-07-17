@@ -57,12 +57,16 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    // Bust cache to force reload components
     host: '0.0.0.0',
     open: false,
     strictPort: true,
     fs: {
       allow: ['../..']
     }
+  },
+  optimizeDeps: {
+    force: true
   },
   test: {
     globals: true,

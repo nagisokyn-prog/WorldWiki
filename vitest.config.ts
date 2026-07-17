@@ -1,9 +1,13 @@
 import { defineConfig } from 'vitest/config';
+import vue from '@vitejs/plugin-vue';
+import { resolve } from 'path';
 
 export default defineConfig({
+  plugins: [vue()],
   test: {
     globals: true,
-    include: ['test/**/*.test.ts', 'src/js/__tests__/**/*.test.ts'],
+    environment: 'happy-dom',
+    include: ['test/**/*.test.ts', 'src/**/*.test.ts'],
   },
   resolve: {
     alias: {

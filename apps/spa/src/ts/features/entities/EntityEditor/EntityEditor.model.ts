@@ -1,0 +1,61 @@
+export interface SchemaField {
+  id: string;
+  class?: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'multiselect' | 'photo' | 'calendar_date' | 'calendar_date_base' | 'tags' | 'range' | string;
+  path?: string;
+  required?: boolean;
+  hidden?: boolean;
+  fullWidth?: boolean;
+  placeholder?: string;
+  hint?: string;
+  rows?: number;
+  min?: number;
+  max?: number;
+  options?: Array<{ value: string; label: string }>;
+  entityType?: string;
+}
+
+export interface DynamicContainer {
+  id: string;
+  title?: string;
+  dataPath?: string;
+  hidden?: boolean;
+  template?: string;
+  fieldOverrides?: Record<string, any>;
+  customChildContainers?: DynamicContainer[];
+  emptyMessage?: string;
+  isBidirectional?: boolean;
+}
+
+export interface SchemaSection {
+  id: string;
+  title: string;
+  icon?: string;
+  hidden?: boolean;
+  fields?: SchemaField[];
+  dynamicContainers?: DynamicContainer[];
+}
+
+export interface SchemaConfig {
+  sections: SchemaSection[];
+  templates?: Record<string, { fields: SchemaField[]; dynamicContainers?: DynamicContainer[] }>;
+  titleField?: string;
+}
+
+export interface EntityRevision {
+  id: string;
+  created_at: string;
+  content: any;
+  formattedDate?: string;
+  is_pinned?: boolean;
+}
+
+export interface EntityEditorProps {
+  entityId: string;
+  entityType: string;
+  project: string;
+  initialData?: Record<string, any>;
+  initialSection?: string;
+  initialScrollPos?: number;
+}

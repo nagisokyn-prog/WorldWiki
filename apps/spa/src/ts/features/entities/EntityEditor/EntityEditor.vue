@@ -53,7 +53,7 @@
                           </label>
                           
                           <textarea
-v-if="field.type === 'textarea'" 
+ v-if="field.type === 'textarea'" 
                                     :value="getProp(field.path || field.id)"
                                     class="input-base interactive-el"
                                     :rows="field.rows || 3" 
@@ -74,53 +74,53 @@ v-if="field.type === 'textarea'"
                           </div>
 
                           <XboxWheel
-v-else-if="field.type === 'select'"
-                                     :horizontal="wheelHorizontal"
-                                     :model-value="getProp(field.path || field.id)"
-                                     :options="getOptionsFor(field)"
-                                     @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
+ v-else-if="field.type === 'select'"
+                                    :horizontal="wheelHorizontal"
+                                    :model-value="getProp(field.path || field.id)"
+                                    :options="getOptionsFor(field)"
+                                    @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
 
                           <div v-else-if="field.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
                             <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
                               <input
-type="checkbox" 
-                                     :value="opt.value" 
-                                     :checked="(getProp(field.path || field.id) || []).includes(opt.value)"
-                                     style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
-                                     @change="e => { 
-                                       let arr = getProp(field.path || field.id) || []; 
-                                       if (!Array.isArray(arr)) arr = [];
-                                       if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
-                                       else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
-                                       setProp(field.path || field.id, arr);
-                                       markModified();
-                                     }"> 
+ type="checkbox" 
+                                    :value="opt.value" 
+                                    :checked="(getProp(field.path || field.id) || []).includes(opt.value)"
+                                    style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
+                                    @change="e => { 
+                                      let arr = getProp(field.path || field.id) || []; 
+                                      if (!Array.isArray(arr)) arr = [];
+                                      if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
+                                      else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
+                                      setProp(field.path || field.id, arr);
+                                      markModified();
+                                    }"> 
                               <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
                             </label>
                           </div>
 
                           <DateWheels
-v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base'"
-                                      :model-value="getProp(field.path || field.id)"
-                                      :project="project"
-                                      @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
-                          
-                          <TagsField
-v-else-if="field.type === 'tags'"
+ v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base'"
                                      :model-value="getProp(field.path || field.id)"
                                      :project="project"
-                                     :placeholder="field.placeholder"
-                                     @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }"
-                                     @modified="markModified" />
+                                     @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
+                          
+                          <TagsField
+ v-else-if="field.type === 'tags'"
+                                    :model-value="getProp(field.path || field.id)"
+                                    :project="project"
+                                    :placeholder="field.placeholder"
+                                    @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }"
+                                    @modified="markModified" />
 
                           <input
-v-else 
-                                 :type="field.type || 'text'" 
-                                 :value="getProp(field.path || field.id)"
-                                 class="input-base interactive-el"
-                                 :placeholder="field.placeholder"
-                                 @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }">
-                                 
+ v-else 
+                                :type="field.type || 'text'" 
+                                :value="getProp(field.path || field.id)"
+                                class="input-base interactive-el"
+                                :placeholder="field.placeholder"
+                                @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }">
+                                
                           <div v-if="field.hint" class="form-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;">{{ field.hint }}</div>
                         </div>
                       </template>
@@ -131,7 +131,7 @@ v-else
                 <div v-if="section.dynamicContainers && section.dynamicContainers.length > 0" style="margin-top:24px;">
                   <template v-for="(container, cIdx) in section.dynamicContainers" :key="container.id">
                     <div
-v-if="!container.hidden" 
+ v-if="!container.hidden" 
                          :class="{ 'history-changed': isFieldChanged(container.dataPath || container.id) }"
                          style="margin-bottom:24px; position: relative; overflow: visible;" 
                          :style="{ zIndex: 100 - (cIdx as any) }">
@@ -169,8 +169,6 @@ v-if="!container.hidden"
                             if (structuredArr && Array.isArray(structuredArr) && (itemIdx as any) < structuredArr.length) {
                               structuredArr[itemIdx] = updatedItem;
                               console.log('[EntityEditor.vue] 🔄 item-updated: обновил структурированный путь', itemIdx, 'в', container.dataPath || container.id);
-                              
-                              // ТАКЖЕ обновляем плоский путь если он отличается (Удалено по просьбе пользователя)
                             }
                           }"
                         />
@@ -181,7 +179,7 @@ v-if="!container.hidden"
                         <div v-for="(item, idx) in getProp(container.dataPath || container.id)" :key="idx" class="glass-card" :style="{ marginBottom: '16px', padding: '16px', overflow: 'visible', position: 'relative', zIndex: 50 - (idx as any) }">
                           <div style="display:flex; justify-content:space-between; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
                             <strong style="color:var(--accent);">Элемент #{{ (idx as any) + 1 }}</strong>
-                            <button class="btn-danger-icon interactive-el" style="background:transparent; border:none; color:#ef4444; cursor:pointer;" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id, idx)">🗑️</button>
+                            <button class="btn-danger-icon interactive-el" style="background:transparent; border:none; color:#ef4444; cursor:pointer;" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id, idx as number)">🗑️</button>
                           </div>
                           
                           <!-- Рендерим шаблон -->
@@ -190,43 +188,43 @@ v-if="!container.hidden"
                               <label v-if="tField.label" class="form-label" style="font-size:10px;">{{ tField.label }}</label>
                               
                               <textarea
-v-if="tField.type === 'textarea'" 
-                                    :value="getProp(item, tField.id || tField.class)"
-                                    class="input-base"
-                                    :rows="tField.rows || 2" 
-                                    :placeholder="tField.placeholder" 
-                                    @input="e => { setProp(item, tField.id || tField.class, (e.target as any).value); markModified(); }"></textarea>
-                                    
+ v-if="tField.type === 'textarea'" 
+                                   :value="getProp(item, tField.id || tField.class)"
+                                   class="input-base"
+                                   :rows="tField.rows || 2" 
+                                   :placeholder="tField.placeholder" 
+                                   @input="e => { setProp(item, tField.id || tField.class, (e.target as any).value); markModified(); }"></textarea>
+                                   
                               <XboxWheel
-v-else-if="tField.type === 'select'"
-                                         :horizontal="wheelHorizontal"
-                                         :model-value="getProp(item, tField.id || tField.class)"
-                                         :options="getOptionsFor(tField)"
-                                         :placeholder="tField.placeholder"
-                                         @update:model-value="(val: any) => { setProp(item, tField.id || tField.class, val); markModified(); }" />
-                                         
+ v-else-if="tField.type === 'select'"
+                                      :horizontal="wheelHorizontal"
+                                      :model-value="getProp(item, tField.id || tField.class)"
+                                      :options="getOptionsFor(tField)"
+                                      :placeholder="tField.placeholder"
+                                      @update:model-value="(val: any) => { setProp(item, tField.id || tField.class, val); markModified(); }" />
+                                      
                               <div v-else-if="tField.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
                                 <label v-for="opt in getOptionsFor(tField)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
                                   <input
-type="checkbox" 
-                                         :value="opt.value" 
-                                         :checked="(getProp(item, tField.id || tField.class) || []).includes(opt.value)"
-                                         style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
-                                         @change="e => { 
-                                           let arr = getProp(item, tField.id || tField.class) || []; 
-                                           if (!Array.isArray(arr)) arr = [];
-                                           if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
-                                           else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
-                                           setProp(item, tField.id || tField.class, arr);
-                                           markModified();
-                                         }"> 
+ type="checkbox" 
+                                        :value="opt.value" 
+                                        :checked="(getProp(item, tField.id || tField.class) || []).includes(opt.value)"
+                                        style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
+                                        @change="e => { 
+                                          let arr = getProp(item, tField.id || tField.class) || []; 
+                                          if (!Array.isArray(arr)) arr = [];
+                                          if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
+                                          else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
+                                          setProp(item, tField.id || tField.class, arr);
+                                          markModified();
+                                        }"> 
                                   <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
                                 </label>
                               </div>
                               
                               <div v-else-if="tField.type === 'range'" class="range-wrap">
                                 <input
-type="range"
+ type="range"
                                   :min="tField.min ?? -100"
                                   :max="tField.max ?? 100"
                                   :value="getProp(item, tField.id || tField.class) ?? 0"
@@ -237,18 +235,18 @@ type="range"
                               </div>
 
                               <DateWheels
-v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base'"
-                                          :model-value="getProp(item, tField.id || tField.class)"
-                                          :project="project"
-                                          @update:model-value="(val: any) => { setProp(item, tField.id || tField.class, val); markModified(); }" />
+ v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base'"
+                                         :model-value="getProp(item, tField.id || tField.class)"
+                                         :project="project"
+                                         @update:model-value="(val: any) => { setProp(item, tField.id || tField.class, val); markModified(); }" />
 
                               <input
-v-else 
-                                     :type="tField.type || 'text'" 
-                                     :value="getProp(item, tField.id || tField.class)"
-                                     class="input-base"
-                                     :placeholder="tField.placeholder"
-                                     @input="e => { setProp(item, tField.id || tField.class, (e.target as any).value); markModified(); }">
+ v-else 
+                                    :type="tField.type || 'text'" 
+                                    :value="getProp(item, tField.id || tField.class)"
+                                    class="input-base"
+                                    :placeholder="tField.placeholder"
+                                    @input="e => { setProp(item, tField.id || tField.class, (e.target as any).value); markModified(); }">
                             </div>
                           </div>
                         </div>
@@ -283,23 +281,23 @@ v-else
               <div v-if="revisions.length === 0" style="font-size: 10px; color: var(--text-muted); text-align: center;">Нет сохраненных версий</div>
               
               <div
-v-for="(rev, idx) in revisions" :key="rev.id" 
+ v-for="(rev, idx) in revisions" :key="rev.id" 
                    :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
                    style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;"
                    @click="previewHistory(rev)">
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                      <span style="font-size: 11px; font-weight: bold;">{{ rev.formattedDate }}</span>
-                      <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'" @click.stop="togglePin(rev)">
-                        {{ rev.is_pinned ? '📍' : '📌' }}
-                      </button>
-                  </div>
-                  <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
-                      <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
-                      <span v-else>Базовая версия</span>
-                  </div>
-                  <div v-if="previewingRevId === rev.id" style="margin-top: 8px;">
-                      <span style="font-size: 9px; color: #f5a623;">Режим предпросмотра</span>
-                  </div>
+                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                       <span style="font-size: 11px; font-weight: bold;">{{ rev.formattedDate }}</span>
+                       <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'" @click.stop="togglePin(rev)">
+                         {{ rev.is_pinned ? '📍' : '📌' }}
+                       </button>
+                   </div>
+                   <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                       <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
+                       <span v-else>Базовая версия</span>
+                   </div>
+                   <div v-if="previewingRevId === rev.id" style="margin-top: 8px;">
+                       <span style="font-size: 9px; color: #f5a623;">Режим предпросмотра</span>
+                   </div>
               </div>
           </div>
       </aside>
@@ -308,25 +306,17 @@ v-for="(rev, idx) in revisions" :key="rev.id"
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
-import { apiService } from '../../../services/api.service';
+import { ref } from 'vue';
 import { XboxWheel, TagsField, settingsService } from '@worldwiki/components';
 import DateWheels from '../DateWheels.vue';
 import RelationshipBlock from './RelationshipBlock.vue';
-import { useEntityEditor } from '../../../services/Entity/useEntityEditor';
+import { useEntityEditor } from './useEntityEditor';
+import type { EntityEditorProps } from './EntityEditor.model';
+
+const props = defineProps<EntityEditorProps>();
+const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change']);
 
 const photoInputs = ref<Record<string, any>>({});
-
-const props = defineProps({
-  entityId: { type: String, required: true },
-  entityType: { type: String, required: true },
-  project: { type: String, required: true },
-  initialData: { type: Object, default: () => ({}) },
-  initialSection: { type: String, default: '' },
-  initialScrollPos: { type: Number, default: 0 }
-});
-
-const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change']);
 
 const {
     loading,
@@ -371,7 +361,7 @@ const {
     handlePhotoFile,
     handlePhotoDrop,
     removePhoto
-} = useEntityEditor(props, emit);
+  } = useEntityEditor(props, emit);
 
 defineExpose({
   toggleHistory

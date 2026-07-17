@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
-import { apiService } from "../api.service";
+import { apiService } from '../../../services/api.service';
 import { settingsService } from '@worldwiki/components';
 
 export function useEntityEditor(props: any, emit: any) {
@@ -70,7 +70,6 @@ const toggleHistory = () => {
 
 const previewHistory = (rev: any) => {
   if (!isPreviewingHistory.value) {
-    // Сохраняем текущие данные редактора, чтобы можно было отменить
     currentSavedData.value = JSON.parse(JSON.stringify(formData.value));
   }
   isPreviewingHistory.value = true;
@@ -81,7 +80,6 @@ const previewHistory = (rev: any) => {
   console.log('[EntityEditor] previewHistory rev.content.attributes:', rev.content?.attributes);
   console.log('[EntityEditor] previewHistory rev.content.data:', rev.content?.data);
 
-  // Подменяем данные в форме. Данные сущности лежат в rev.content.attributes или rev.content.data
   formData.value = JSON.parse(JSON.stringify(rev.content?.attributes || rev.content?.data || rev.content || {}));
 };
 
@@ -98,7 +96,6 @@ const restoreHistory = () => {
   isPreviewingHistory.value = false;
   previewingRevId.value = null;
   currentSavedData.value = null;
-  // Помечаем форму как измененную
   emit('modified');
   lastEmittedData.value = null; 
   markModified();
@@ -111,7 +108,6 @@ const getDiffSummary = (current: any, previous: any) => {
   
   const changes = [];
   
-  // Проверяем измененные/добавленные поля
   for (const key of Object.keys(currData)) {
     const cVal = JSON.stringify(currData[key]);
     const pVal = JSON.stringify(prevData[key]);
@@ -124,7 +120,6 @@ const getDiffSummary = (current: any, previous: any) => {
     }
   }
   
-  // Проверяем удаленные поля
   for (const key of Object.keys(prevData)) {
     if (!(key in currData)) {
       changes.push(`<span style="color: #ef4444;">- ${key}</span>`);
@@ -221,20 +216,17 @@ const getResolvedTemplate = (container: any) => {
 
 const loadConfigAndData = async () => {
   loading.value = true;
-  isInitializing.value = true; // запрещаем dirty во время загрузки
+  isInitializing.value = true;
   try {
-    // 0. Check for sandbox preview injection
     const sandboxConfig = sessionStorage.getItem('sandbox_preview_config');
     if (props.entityId === 'preview' && sandboxConfig) {
       console.log('[EntityEditor] 🛠️ Using Sandbox Preview Config from sessionStorage');
       config.value = JSON.parse(sandboxConfig);
     } else {
-      // 1. Try to load config from DB first
       const schemas = await apiService.getSchemas(props.project);
       if (schemas[props.entityType] && schemas[props.entityType].full_schema) {
         config.value = schemas[props.entityType].full_schema;
       } else {
-        // 2. Fallback to file
         const res = await fetch(`/struct/editor/${props.entityType}.json`);
         if (res.ok) {
           config.value = await res.json();
@@ -242,7 +234,6 @@ const loadConfigAndData = async () => {
       }
     }
 
-    // 3. Load global templates from ui_editor.json
     try {
       const uiRes = await fetch('/struct/editor/ui_editor.json');
       if (uiRes.ok) {
@@ -258,7 +249,6 @@ const loadConfigAndData = async () => {
       console.warn('[EntityEditor] Failed to load ui_editor.json templates', e);
     }
 
-     // Ensure a section is selected after config is loaded
      console.log(`[EntityEditor.vue ${props.entityId}] config loaded. initialSection prop is:`, props.initialSection);
      if (config.value && config.value.sections && config.value.sections.length > 0) {
        if (props.initialSection && config.value.sections.some((s: any) => s.id === props.initialSection)) {
@@ -268,17 +258,16 @@ const loadConfigAndData = async () => {
          activeSection.value = config.value.sections[0].id;
          console.log(`[EntityEditor.vue ${props.entityId}] initialSection not found or empty. Using default:`, activeSection.value);
        }
-       // Emit initial section change so parent can react if needed
        emit('section-change', activeSection.value);
      }
-    
-    formData.value = JSON.parse(JSON.stringify(props.initialData));
-    foreignUpdates.value = {}; 
-    
-    lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: {} });
-    
-    await loadReferenceData();
-    
+     
+     formData.value = JSON.parse(JSON.stringify(props.initialData));
+     foreignUpdates.value = {}; 
+     
+     lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: {} });
+     
+     await loadReferenceData();
+     
   } catch (e) {
     console.error('[EntityEditor] Error loading:', e);
   } finally {
@@ -286,14 +275,12 @@ const loadConfigAndData = async () => {
     loading.value = false;
     isInitializing.value = false;
 
-    // Restore scroll position
     if (props.initialScrollPos > 0) {
       setTimeout(() => {
         if (scrollContainer.value) scrollContainer.value.scrollTop = props.initialScrollPos;
       }, 100);
     }
     
-    // Add scroll listener
     nextTick(() => {
       if (scrollContainer.value) {
         scrollContainer.value.addEventListener('scroll', (e: any) => {
@@ -304,8 +291,6 @@ const loadConfigAndData = async () => {
   }
 };
 
-// In case config loads after component mount and activeSection is still empty,
-// ensure we set a default section to trigger rendering.
 watch(() => config.value, (newConfig) => {
   if (newConfig && newConfig.sections && newConfig.sections.length > 0 && !activeSection.value) {
     if (props.initialSection && newConfig.sections.some((s: any) => s.id === props.initialSection)) {
@@ -398,278 +383,161 @@ const loadReferenceData = async () => {
           label: '➡️ Текущая (Автопродление)' 
         });
       }
-      
+
       newRefData[type] = mappedList;
-    } catch(e) {
-      console.error(`[EntityEditor] Error loading reference data for ${type}:`, e);
+    } catch (e) {
+      console.warn(`[EntityEditor.vue] Failed to load reference data for ${type}:`, e);
       newRefData[type] = [];
     }
   }
+  
   referenceData.value = newRefData;
 };
 
 const getOptionsFor = (field: any) => {
-  if (field.options && field.options.length > 0) return field.options;
-  if (field.entityType && referenceData.value[field.entityType]) {
-    return referenceData.value[field.entityType];
+  if (field.type === 'select' || field.type === 'multiselect') {
+    if (field.options) return field.options;
+    if (field.entityType && referenceData.value[field.entityType]) {
+      return referenceData.value[field.entityType];
+    }
   }
   return [];
 };
 
 const markModified = () => {
-  if (isInitializing.value) return; // программная загрузка — не dirty
-  console.log('[EntityEditor.vue] 📤 markModified вызвана');
-  nextTick(() => {
-    _doMarkModified();
-  });
-};
-
-const _doMarkModified = () => {
-  // 🔴 ВАЖНО: НЕ используем JSON.parse(JSON.stringify) - это теряет изменения!
-  // Компоненты динамических списков редактируют объекты через прямые ссылки на объекты
-  // Отправляем formData.value напрямую - это Proxy который отслеживает все изменения
-  
-  const dataWithForeignUpdates = {
-    ...formData.value,
-    __foreignUpdates: foreignUpdates.value
-  };
-  
-  // Лог для отладки
-  console.log('[EntityEditor.vue] 📨 markModified отправляет update-data');
-  
-  // 🔴 GUARD: Не отправляем если данные идентичны
-  const serialized = JSON.stringify(dataWithForeignUpdates);
-  
-  if (lastEmittedData.value === serialized) {
-    console.log('[EntityEditor.vue] ⏭️  Пропускаю emit - данные не изменились');
-    return;
-  }
-  
-  console.log('[EntityEditor.vue] ✅ Отправляю update-data - данные изменились!');
-  lastEmittedData.value = serialized;
-  emit('update-data', dataWithForeignUpdates);
-  
-  // Также уведомляем родителя что данные изменены (для отметки как "с изменениями")
+  console.log('[EntityEditor] markModified called → emit modified');
   emit('modified');
+  const dataToEmit = JSON.parse(JSON.stringify(formData.value));
+  (dataToEmit as any).__foreignUpdates = JSON.parse(JSON.stringify(foreignUpdates.value));
+  emit('update-data', dataToEmit);
+  lastEmittedData.value = JSON.stringify(dataToEmit);
 };
 
-// Обработка обновлений "чужой" стороны связи (для сохранения потом)
-const handleForeignUpdate = ({ entityType, entityId, data, linkClass, backLinkValue }: any) => {
-  if (!entityType || !entityId) return;
-  const key = `${entityType}:${entityId}`;
-  console.log('[EntityEditor.vue] 🔄 handleForeignUpdate сохраняет данные:', { key, entityType, entityId, dataKeys: Object.keys(data) });
-  foreignUpdates.value[key] = { entityType, entityId, data, linkClass, backLinkValue };
-  console.log('[EntityEditor.vue] 🔄 foreignUpdates.value ключи обновлены:', Object.keys(foreignUpdates.value));
-  
-  // ВАЖНО: Вызываем markModified, чтобы прокинуть __foreignUpdates наверх в app.ts
-  markModified();
-};
-
-const addDynamicItem = (path: any, templateId: any) => {
-  if (!getProp(path) || !Array.isArray(getProp(path))) setProp(path, []);
-  
-  const newItem: any = {};
-  const tpl = (config.value as any).templates?.[templateId as string];
-  if (tpl && tpl.fields) {
-    tpl.fields.forEach((f: any) => {
-      newItem[(f.id || f.class) as string] = '';
-    });
+const handleForeignUpdate = (payload: any) => {
+  console.log('[EntityEditor.vue] 🔗 handleForeignUpdate:', payload);
+  try {
+    const { target, value } = payload;
+    if (target) {
+      setProp(formData.value, target, value);
+    }
+    if (!foreignUpdates.value[target]) {
+      foreignUpdates.value[target] = [];
+    }
+    foreignUpdates.value[target].push({ value, timestamp: Date.now() });
+    markModified();
+  } catch (e) {
+    console.error('[EntityEditor.vue] Error in handleForeignUpdate:', e);
   }
-  
-  getProp(path).push(newItem);
+};
+
+const addDynamicItem = (path: string, template: any) => {
+  const arr = getProp(formData.value, path);
+  if (!Array.isArray(arr)) {
+    setProp(formData.value, path, []);
+  }
+  const newItem = JSON.parse(JSON.stringify(template?.template || {}));
+  const currentArr = getProp(formData.value, path);
+  currentArr.push(newItem);
   markModified();
 };
 
-const removeDynamicItem = (path: any, idx: any) => {
-  if(confirm('Удалить элемент?')) {
-    getProp(path).splice(idx, 1);
+const removeDynamicItem = (path: string, index: number) => {
+  const arr = getProp(formData.value, path);
+  if (Array.isArray(arr) && index >= 0 && index < arr.length) {
+    arr.splice(index, 1);
     markModified();
   }
 };
 
+const triggerPhotoUpload = (path: string) => {
+  if (photoInputs.value[path]) {
+    photoInputs.value[path].click();
+  }
+};
 
-  const triggerPhotoUpload = (fieldClass: string) => {
-    const input = photoInputs.value[fieldClass];
-    if (input && input.click) {
-      input.click();
-    }
-  };
-
-const handlePhotoFile = async (e: any, path: string) => {
-  const file = (e.target as any).files?.[0];
+const handlePhotoFile = async (event: any, path: string) => {
+  const file = event.target.files?.[0];
   if (!file) return;
   try {
-    const savedPath = await apiService.uploadPhoto(file);
-    setProp(path, savedPath);
-    markModified();
-  } catch (err) {
-    console.error('Failed to upload photo:', err);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProp(formData.value, path, reader.result as string);
+      markModified();
+    };
+    reader.readAsDataURL(file);
+  } catch (e) {
+    console.error('[EntityEditor.vue] Error handling photo file:', e);
   }
 };
 
-const handlePhotoDrop = async (e: any, path: string) => {
-  const file = e.dataTransfer.files?.[0];
-  if (!file || !file.type.startsWith('image/')) return;
-  try {
-    const savedPath = await apiService.uploadPhoto(file);
-    setProp(path, savedPath);
+const handlePhotoDrop = (event: any, path: string) => {
+  const file = event.dataTransfer?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    setProp(formData.value, path, reader.result as string);
     markModified();
-  } catch (err) {
-    console.error('Failed to upload photo:', err);
-  }
+  };
+  reader.readAsDataURL(file);
 };
 
 const removePhoto = (path: string) => {
-  setProp(path, '');
-  if (photoInputs.value[path]) photoInputs.value[path].value = '';
+  setProp(formData.value, path, '');
   markModified();
 };
 
-watch(() => props.entityId, () => {
-  loadConfigAndData();
-});
-
-// Синхронизация данных из других сплитов
-watch(() => props.initialData, (newVal) => {
-  if (isInitializing.value) return;
-  // Чтобы не перезаписать локальные изменения и не сбросить курсор, 
-  // используем глубокий merge, как и в app.ts
-  const merge = (target: any, source: any) => {
-    for (const key in source) {
-      if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!target[key] || typeof target[key] !== 'object') target[key] = {};
-        merge(target[key], source[key]);
-      } else if (Array.isArray(source[key])) {
-        if (!Array.isArray(target[key])) target[key] = [];
-        for (let i = 0; i < source[key].length; i++) {
-          if (i < target[key].length) {
-            if (typeof source[key][i] === 'object' && source[key][i] !== null) {
-              merge(target[key][i], source[key][i]);
-            } else {
-              target[key][i] = source[key][i];
-            }
-          } else {
-            target[key].push(source[key][i]);
-          }
-        }
-        target[key].length = source[key].length;
-      } else {
-        target[key] = source[key];
-      }
-    }
-  };
-  
-  // Отключаем на секунду отправку update-data, чтобы не было бесконечного цикла (эхо)
-  const previousState = lastEmittedData.value;
-  // ВАЖНО: Не перезаписываем массивы связей через merge из initialData!
-  // Эти массивы редактируются напрямую через компоненты списков (по ссылке на объекты formData).
-  // Собираем пути динамических контейнеров из схемы, чтобы исключить их из merge.
-  const skipKeys = new Set(['__foreignUpdates']);
-  if (config.value && config.value.sections) {
-    for (const sec of config.value.sections) {
-      if (sec.dynamicContainers) {
-        for (const dc of sec.dynamicContainers) {
-          const path = dc.dataPath || dc.id;
-          skipKeys.add(path.split('.')[0]); // Исключаем корневой ключ
-        }
-      }
-    }
-  }
-  const filteredNewVal: any = {};
-  for (const k in newVal) {
-    if (!skipKeys.has(k)) filteredNewVal[k] = (newVal as any)[k];
-  }
-  merge(formData.value, filteredNewVal);
-  lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: foreignUpdates.value });
-}, { deep: true });
-
 onMounted(() => {
   loadConfigAndData();
-
-  // Alt+1..9 — switch section
-  const onSwitchSection = (e: CustomEvent) => {
-    if (!config.value?.sections) return;
-    const idx = e.detail as number;
-    const section = config.value.sections[idx];
-    if (section) {
-      activeSection.value = section.id;
-      emit('section-change', section.id);
-    }
-  };
-  document.addEventListener('ww:switch-section', onSwitchSection as EventListener);
-  const onEntitySaved = () => {
-    loadReferenceData();
-    if (showHistory.value) {
-      setTimeout(() => {
-        loadHistory();
-      }, 500);
-    }
-  };
-  document.addEventListener('ww:entity-saved', onEntitySaved);
-  
-  const handleToggleHistory = (e: any) => {
-    console.log(`[EntityEditor.vue] handleToggleHistory triggered, detail.id=`, e.detail?.id, ` props.entityId=`, props.entityId);
-    if (e.detail && e.detail.id === props.entityId) {
-      console.log(`[EntityEditor.vue] MATCH! calling toggleHistory()`);
-      toggleHistory();
-    }
-  };
-  document.addEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
-
-  onUnmounted(() => {
-    document.removeEventListener('ww:switch-section', onSwitchSection as EventListener);
-    document.removeEventListener('ww:entity-saved', onEntitySaved);
-    document.removeEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
-  });
-
-  settingsService.onChange((newSettings: any) => {
-    wheelHorizontal.value = newSettings?.dropdowns?.wheelOrientation === 'horizontal';
-  });
 });
 
-  return {
-    loading,
-    isInitializing,
-    wheelHorizontal,
-    photoInputs,
-    config,
-    formData,
-    lastEmittedData,
-    foreignUpdates,
-    activeSection,
-    referenceData,
-    hoverState,
-    scrollContainer,
-    showHistory,
-    isLoadingHistory,
-    revisions,
-    isPreviewingHistory,
-    previewingRevId,
-    currentSavedData,
-    maxSaves,
-    togglePin,
-    loadHistory,
-    toggleHistory,
-    previewHistory,
-    exitHistoryPreview,
-    restoreHistory,
-    getDiffSummary,
-    isFieldChanged,
-    photoUrlCache,
-    getPhotoUrl,
-    getProp,
-    setProp,
-    getResolvedTemplate,
-    loadConfigAndData,
-    loadReferenceData,
-    getOptionsFor,
-    markModified,
-    handleForeignUpdate,
-    addDynamicItem,
-    removeDynamicItem,
-    triggerPhotoUpload,
-    handlePhotoFile,
-    handlePhotoDrop,
-    removePhoto
-  };
+onUnmounted(() => {
+  if (scrollContainer.value) {
+    scrollContainer.value.removeEventListener('scroll', () => {});
+  }
+});
+
+return {
+  loading,
+  isInitializing,
+  wheelHorizontal,
+  config,
+  formData,
+  lastEmittedData,
+  foreignUpdates,
+  activeSection,
+  referenceData,
+  hoverState,
+  scrollContainer,
+  showHistory,
+  isLoadingHistory,
+  revisions,
+  isPreviewingHistory,
+  previewingRevId,
+  currentSavedData,
+  maxSaves,
+  togglePin,
+  loadHistory,
+  toggleHistory,
+  previewHistory,
+  exitHistoryPreview,
+  restoreHistory,
+  getDiffSummary,
+  isFieldChanged,
+  photoUrlCache,
+  getPhotoUrl,
+  getProp,
+  setProp,
+  getResolvedTemplate,
+  loadConfigAndData,
+  loadReferenceData,
+  getOptionsFor,
+  markModified,
+  handleForeignUpdate,
+  addDynamicItem,
+  removeDynamicItem,
+  triggerPhotoUpload,
+  handlePhotoFile,
+  handlePhotoDrop,
+  removePhoto
+};
 }

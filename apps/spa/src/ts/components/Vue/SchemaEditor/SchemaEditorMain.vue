@@ -168,7 +168,7 @@ import { ref, onMounted, onUnmounted, computed, watch, nextTick, shallowRef } fr
 import { apiService } from '../../../services/api.service';
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
-import EntityEditorVue from './EntityEditor.vue';
+import EntityEditorVue from '../../../features/entities/EntityEditor/EntityEditor.vue';
 import uiEditorData from '../../../../../public/struct/editor/ui_editor.json';
 
 const props = withDefaults(defineProps<{

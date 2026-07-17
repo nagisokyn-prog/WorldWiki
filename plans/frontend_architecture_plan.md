@@ -212,7 +212,7 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 - [x] **3. `packages/components`**: `@worldwiki/components` — перенесён кит, все 13 Vue-компонентов, composables (`useShellApp`, `useEditorGroups`, `useTreeSelection`), generic-сервисы, `index.ts` как публичный API. Library build пока не настроен (импорт через `src/index.ts` напрямую), но для dev работает.
 - [x] **4. `apps/spa`**: `@worldwiki/spa` — перенесён `src/ts` → `apps/spa/src/ts`; `vite.config.ts` multi-entry (splash/launcher/app/settings/ui_editor); alias `@worldwiki/components` + `@worldwiki/resources` + `@/` и т.д.; `tsconfig` extends base (ESNext).
 - [x] **5. Декомпозиция монолитов — ЗАВЕРШЕНА (16.07.2026)**:
-  - [x] `app/app.ts` → вынесены ВСЕ локальные монолит-функции в composables: `useHotkeys`, `useResizers`, `useQuickOpen` (composition root в `app.ts`); `createChapterIn`/`deleteChapter`/`renameChapter`/`deleteVolume`/`deleteArc` → `useChapterOps` (добавлен `openEditors` + закрытие вкладок по `volumeId`/`arcId`); `saveAll` → `useSaveManager`. `app.ts` теперь — только composition root (~1352 → логика CRUD/сохранения вынесена). `vue-tsc --noEmit` → 0 ошибок. ✅
+  - [x] `app/app.ts` → ВЕСЬ `setup()` вынесен в `useAppShell.ts` (648 строк). `app.ts` сокращён до 106 строк: только init + createApp + регистрация компонентов. `vue-tsc --noEmit` → 0 ошибок. ✅
   - [x] `EntityEditor.vue` → `useEntityEditor.ts` создан; сам `.vue` всё ещё монолитен в `components/Vue/SchemaEditor/EntityEditor.vue` (Component-Behind не применён полностью). 🟡
   - [x] `EditorCoreTiptap.vue` → `useTiptapEditor.ts` есть; сам `.vue` монолитен. 🟡
   - [x] `ChapterTree.vue` →kit-версия `useTreeSelection` из `@worldwiki/components` подключена; локальный дуб удалён. Компонент оставлен как кастомный (не заменяется на `ExplorerTree`). ✅
@@ -235,12 +235,12 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 
 ### Архитектура / монорепо
 1. ❌ Настроить library build для `packages/components` и `packages/resources` (`vite-plugin-dts`, ESM, `vue` external) — сейчас импорт напрямую из `src/index.ts`.
-2. ❌ `vitest.config.ts` (корень) — нет `vue()`, `environment: 'happy-dom'`. Тесты фактически не работают с Vue.
-3. ❌ `apps/spa/vite.config.ts` — `checker` (vite-plugin-checker) закомментирован; `vite-plugin-vue-devtools` импортирован, но НЕ в `plugins`.
-4. ❌ Добавить dev-зависимости из раздела 8: `unplugin-vue-components`, `unplugin-auto-import`, `vite-plugin-dts`, `vite-plugin-vue-devtools` (вкл.), `knip`, `@tanstack/vue-query`, `pinia`.
+2. ✅ `vitest.config.ts` (корень) — добавлен `vue()`, `environment: 'happy-dom'` (16.07.2026).
+3. ✅ `apps/spa/vite.config.ts` — `checker` (vueTsc) и `vite-plugin-vue-devtools` включены в `plugins` (16.07.2026).
+4. 🟡 Добавлены: `knip`, `happy-dom`. Осталось: `unplugin-vue-components`, `unplugin-auto-import`, `vite-plugin-dts`, `pinia`, `@tanstack/vue-query`.
 
 ### Декомпозиция монолитов (раздел 5)
-5. ✅ `app.ts` (1576 строк) → ВЫНЕСЕНО (16.07.2026): `useHotkeys`, `useResizers`, `useQuickOpen` (composition root); `createChapterIn`/`deleteChapter`/`renameChapter`/`deleteVolume`/`deleteArc` → `useChapterOps`; `saveAll` → `useSaveManager`. `vue-tsc --noEmit` → 0 ошибок.
+5. ✅ `app.ts` (1576 → 106 строк, 16.07.2026): ВЕСЬ `setup()` вынесен в `useAppShell.ts` (648 строк). `app.ts` — только init + createApp + регистрация компонентов. `vue-tsc --noEmit` → 0 ошибок.
 6. ❌ `EntityEditor.vue` → папка `features/entities/EntityEditor/` (`useEntityEditor.ts` уже есть — подключить, `+ .model.ts`, `.style.css`).
 7. ❌ `EditorCoreTiptap.vue` → папка `features/chapters/EditorCoreTiptap/` (`useTiptapEditor.ts` + `EditorToolbar.vue` + `EditorBubbleMenu.vue`).
 8. ❌ `ChapterTree.vue` → заменить на `ExplorerTree` из `@worldwiki/components` ИЛИ распилить + убрать локальный `useTreeSelection`.

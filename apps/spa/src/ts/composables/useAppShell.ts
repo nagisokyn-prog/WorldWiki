@@ -45,7 +45,7 @@ export function useAppShell(ctx: {
   const { projectName, sidebarItems } = ctx;
 
   // ─── Editor Groups ─────────────────────────
-  const eg = useEditorGroups();
+  const eg = useEditorGroups() as any;
 
   // Compat aliases
   const openEditors = computed(() => eg.allTabs.value);
@@ -76,7 +76,7 @@ export function useAppShell(ctx: {
   const quickOpenRef = ref<any>(null);
   const commandPaletteRef = ref<any>(null);
   const tagsManagerRef = ref<any>(null);
-  const settings = ref(settingsService.getSettings());
+  const settings = ref<any>(settingsService.getSettings());
 
   // ─── Log ─────────────────────────
   let logCounter = 0;
@@ -259,7 +259,7 @@ export function useAppShell(ctx: {
     const list = entityLists.value[currentSidebarTab.value || ''] || [];
     return q ? list.filter((e: any) => getEntityDisplayName(e, currentSidebarTab.value || undefined).toLowerCase().includes(q)) : list;
   });
-  const unsavedCount = computed(() => openEditors.value.filter(e => e.unsaved).length);
+  const unsavedCount = computed(() => openEditors.value.filter((e: any) => e.unsaved).length);
 
   // ─── Methods ─────────────────────────
   const selectSidebarTab = (item: SidebarItem) => {
@@ -624,7 +624,7 @@ export function useAppShell(ctx: {
         if (newTitle && newTitle !== tab.title) {
           tab.title = newTitle;
           if (chapterTreeRef.value) chapterTreeRef.value.load();
-          if (currentSidebarTab.value === tab.entityType) loadEntityList(currentSidebarTab.value);
+          if (currentSidebarTab.value === tab.entityType) loadEntityList(currentSidebarTab.value as string);
         }
         saveState();
       }

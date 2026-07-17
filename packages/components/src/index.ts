@@ -1,8 +1,10 @@
 // Components
+import './css/explorer-tree.css';
 export { default as CommandPalette } from './components/Vue/CommandPalette.vue';
 export { default as EditorGroupPane } from './components/Vue/EditorGroupPane.vue';
 export { default as EditorTabBar } from './components/Vue/EditorTabBar.vue';
 export { default as ExplorerTree } from './components/Vue/ExplorerTree.vue';
+export type { TreeNodeData, TreeSectionData } from './components/Vue/ExplorerTree.vue';
 export { default as FloatingWindow } from './components/Vue/FloatingWindow.vue';
 export { default as HistorySidebar } from './components/Vue/HistorySidebar.vue';
 export { default as QuickOpen } from './components/Vue/QuickOpen.vue';

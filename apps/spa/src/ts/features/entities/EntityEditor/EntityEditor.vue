@@ -308,8 +308,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { XboxWheel, TagsField, settingsService } from '@worldwiki/components';
-import DateWheels from '../DateWheels.vue';
-import RelationshipBlock from './RelationshipBlock.vue';
+import DateWheels from '../../../components/Vue/DateWheels.vue';
+import RelationshipBlock from '../../../components/Vue/SchemaEditor/RelationshipBlock.vue';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
 

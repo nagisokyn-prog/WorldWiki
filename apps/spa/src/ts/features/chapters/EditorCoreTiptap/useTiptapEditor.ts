@@ -20,15 +20,17 @@ const EnterHandler = Extension.create({
   addKeyboardShortcuts() {
     return {
       Enter: ({ editor }) => {
-        return false;
+        // Enter создает новый параграф (поведение по-умолчанию)
+        return false; // Разрешить стандартную обработку
       },
       'Shift-Enter': ({ editor }) => {
+        // Shift+Enter создает hard break (перевод строки внутри параграфа)
         return editor.commands.setHardBreak();
       },
       'Mod-q': ({ editor }) => {
         const { state } = editor;
         const { $from } = state.selection;
-        const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '');
+        const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
         const match = textBefore.match(/\[([^\]]+)\]$/);
         
         if (match) {
@@ -36,8 +38,7 @@ const EnterHandler = Extension.create({
           const startPos = $from.pos - match[0].length;
           const endPos = $from.pos;
           
-          editor.chain().focus().insertContentAt({ from: startPos, to: endPos }, '').run();
-          
+          // Эмитим событие, которое мы перехватим в setup
           document.dispatchEvent(new CustomEvent('ww:quick-link', { detail: { name, startPos, endPos } }));
           return true;
         }
@@ -66,50 +67,50 @@ const SemanticParagraph = Paragraph.extend({
   }
 });
 
+
 export function useTiptapEditor(props: any, emit: any) {
+  const modeOptions = [
+    { value: 'wysiwyg', label: '📝 WYSIWYG' },
+    { value: 'markdown', label: '✏️ Markdown' },
+    { value: 'split', label: '📑 Split View' }
+  ];
 
-const modeOptions = [
-  { value: 'wysiwyg', label: '📝 WYSIWYG' },
-  { value: 'markdown', label: '✏️ Markdown' },
-  { value: 'split', label: '📑 Split View' }
-];
+  const getStateKey = () => `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
-const getStateKey = () => `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const loadInitialMode = (): 'wysiwyg' | 'markdown' | 'split' => {
+    const saved = localStorage.getItem(getStateKey());
+    if (saved) {
+      try {
+        const { mode } = JSON.parse(saved);
+        if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split') {
+          return mode;
+        }
+      } catch (e) {}
+    }
+    return (localStorage.getItem('default-editor-mode') as 'wysiwyg' | 'markdown' | 'split') || 'wysiwyg';
+  };
 
-const loadInitialMode = (): 'wysiwyg' | 'markdown' | 'split' => {
-  const saved = localStorage.getItem(getStateKey());
-  if (saved) {
-    try {
-      const { mode } = JSON.parse(saved);
-      if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split') {
-        return mode;
-      }
-    } catch (e) {}
-  }
-  return (localStorage.getItem('default-editor-mode') as 'wysiwyg' | 'markdown' | 'split') || 'wysiwyg';
-};
+  const editorMode = ref<'wysiwyg' | 'markdown' | 'split'>(loadInitialMode());
+  const settings = ref<any>(settingsService.getSettings());
+  const editorUpdateKey = ref(0);
+  const wordCount = ref(0);
+  const charCount = ref(0);
+  const footnotes = ref<Record<string, {id: string, text: string}>>({});
+  const ctrlPressed = ref(false);
+  const markdownContent = ref('');
+  const selectedBlockIdx = ref(-1);
+  const showStructure = ref(localStorage.getItem('split-view-show-structure') !== 'false');
+  const leftPanelWidth = ref(40); // percentage
+  const rightPanelWidth = ref(35); // percentage
+  const resizing = ref<'left' | 'middle' | null>(null);
 
-const editorMode = ref<'wysiwyg' | 'markdown' | 'split'>(loadInitialMode());
-const settings = ref(settingsService.getSettings());
-const editorUpdateKey = ref(0);
-const wordCount = ref(0);
-const charCount = ref(0);
-const footnotes = ref<Record<string, {id: string, text: string}>>({});
-const ctrlPressed = ref(false);
-const markdownContent = ref('');
-const selectedBlockIdx = ref(-1);
-const showStructure = ref(localStorage.getItem('split-view-show-structure') !== 'false');
-const leftPanelWidth = ref(40);
-const rightPanelWidth = ref(35);
-const resizing = ref<'left' | 'middle' | null>(null);
-
-const turndownService = new TurndownService();
-turndownService.addRule('denseParagraph', {
-  filter: 'p',
-  replacement: function (content) {
-    return '\n' + content + '\n';
-  }
-});
+  const turndownService = new TurndownService();
+  turndownService.addRule('denseParagraph', {
+    filter: 'p',
+    replacement: function (content) {
+      return '\n' + content + '\n';
+    }
+  });
 const mdIt = new MarkdownIt();
 
 const savePositionState = () => {
@@ -188,8 +189,9 @@ const handleBeforeUnload = (e: BeforeUnloadEvent) => {
   }
 };
 
+// Document structure for Split View
 const documentStructure = computed(() => {
-  editorUpdateKey.value;
+  editorUpdateKey.value; // Track dependency
   if (!editor.value) return [];
   const doc = editor.value.getJSON();
   const blocks: Array<{ type: string; text: string; level?: number; semanticTag?: string; pIndex?: number }> = [];
@@ -205,15 +207,18 @@ const documentStructure = computed(() => {
       let text = '';
       const type = node.type;
       
+      // Extract text from node
       if (node.content) {
         node.content.forEach((c: any) => {
           if (c.type === 'text' && c.text) text += c.text;
         });
       }
       
+      // Shorten long text
       text = text.substring(0, 60);
       if (text.length === 60) text += '...';
       
+      // Add to structure based on type
       if (type === 'heading') {
         blocks.push({ type: `H${node.attrs?.level || 1}`, text, level: node.attrs?.level });
       } else if (type === 'paragraph') {
@@ -229,6 +234,7 @@ const documentStructure = computed(() => {
         blocks.push({ type: 'Table', text: `(${node.content?.length || 0} rows)` });
       }
       
+      // Traverse children
       if (node.content) {
         node.content.forEach((c: any) => traverse(c, depth + 1));
       }
@@ -238,6 +244,8 @@ const documentStructure = computed(() => {
   if (doc.content) traverse(doc);
   return blocks;
 });
+
+
 
 const editor = useEditor({
   extensions: [
@@ -310,6 +318,7 @@ const preprocessMarkdown = (text: string) => {
   return out.join('\n');
 };
 
+// Sync markdown to editor when markdown is edited
 const onMarkdownInput = () => {
   try {
     const processed = preprocessMarkdown(markdownContent.value);
@@ -325,6 +334,7 @@ const onMarkdownInput = () => {
   }
 };
 
+// Sync markdown from editor when WYSIWYG is edited
 const syncMarkdownFromEditor = () => {
   if (!editor.value) return;
   const html = editor.value.getHTML();
@@ -335,6 +345,7 @@ const syncMarkdownFromEditor = () => {
   }
 };
 
+// Toolbar actions for WYSIWYG
 const toggleBold = () => editor.value?.chain().focus().toggleBold().run();
 const toggleItalic = () => editor.value?.chain().focus().toggleItalic().run();
 const toggleStrike = () => editor.value?.chain().focus().toggleStrike().run();
@@ -406,8 +417,8 @@ const analyzeText = () => {
   const text = editor.value.getText();
   console.log('Text analysis:', {
     chars: text.length,
-    words: text.trim().split(/\s+/).filter(w => w.length > 0).length,
-    paragraphs: text.split(/\n\n+/).filter(p => p.trim()).length,
+    words: text.trim().split(/\s+/).filter((w: string) => w.length > 0).length,
+    paragraphs: text.split(/\n\n+/).filter((p: string) => p.trim()).length,
     blocks: documentStructure.value.length
   });
 };
@@ -454,6 +465,7 @@ const cycleGlobalTag = (pIndex: number) => {
   }
 };
 
+// Resizing функционал для Split View
 const startResizeLeft = (e: MouseEvent) => {
   e.preventDefault();
   resizing.value = 'left';
@@ -510,6 +522,7 @@ const startResizeRight = (e: MouseEvent) => {
   document.addEventListener('mouseup', onMouseUp);
 };
 
+// Watchers
 watch(() => props.content, (newContent) => {
   if (editor.value && editor.value.getHTML() !== newContent) {
     editor.value.commands.setContent(newContent || '');
@@ -522,13 +535,14 @@ watch(() => props.footnotesData, (newFootnotes) => {
   footnotes.value = { ...newFootnotes };
 });
 
+// Link handling
 let handleLinkInteraction: ((e: MouseEvent) => void) | null = null;
 let downHandler: ((e: KeyboardEvent) => void) | null = null;
 let upHandler: ((e: KeyboardEvent) => void) | null = null;
 let handleToggleStructure: (() => void) | null = null;
 
 onMounted(() => {
-  settingsService.onChange((newS) => { settings.value = newS; });
+  settingsService.onChange((newS: any) => { settings.value = newS; });
   updateStats();
   syncMarkdownFromEditor();
   
@@ -546,6 +560,7 @@ onMounted(() => {
       return;
     }
 
+    // Ctrl+Alt+B - скрыть/показать правую панель
     if (e.ctrlKey && e.altKey && e.code === 'KeyB' && !e.shiftKey) {
       console.log('[EditorCore] Ctrl+Alt+B pressed');
       e.preventDefault();
@@ -560,14 +575,16 @@ onMounted(() => {
   document.addEventListener('keyup', upHandler);
   window.addEventListener('blur', () => ctrlPressed.value = false);
   
+  // Слушатель для toggle структуры от app.ts или других компонентов
   handleToggleStructure = () => {
     const storedValue = localStorage.getItem('split-view-show-structure');
-    const shouldShow = storedValue !== 'false';
+    const shouldShow = storedValue !== 'false'; // 'true' или null = показать, 'false' = скрыть
     showStructure.value = shouldShow;
     console.log('[EditorCore EVENT] ww:toggle-structure - showStructure now:', showStructure.value);
   };
   document.addEventListener('ww:toggle-structure', handleToggleStructure);
   
+  // Обработчик Ctrl+Q (ww:quick-link)
   const handleQuickLink = async (e: Event) => {
     const { name, startPos, endPos } = (e as CustomEvent).detail;
     if (!name || !editor.value) return;
@@ -595,6 +612,7 @@ onMounted(() => {
   };
   document.addEventListener('ww:quick-link', handleQuickLink);
   
+  // Загрузить сохранённые ширины панелей
   const savedLeftWidth = localStorage.getItem('split-view-left-width');
   const savedRightWidth = localStorage.getItem('split-view-right-width');
   if (savedLeftWidth) leftPanelWidth.value = parseFloat(savedLeftWidth);

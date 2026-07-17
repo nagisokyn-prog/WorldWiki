@@ -7,7 +7,7 @@
 import { createApp } from 'vue';
 import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
-import EditorCoreVue from '../components/Vue/Chapters/EditorCoreTiptap.vue';
+import EditorCoreVue from '../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanelVue from '../components/Vue/Calendars/TimelinePanel.vue';
 import ParticipantsPanelVue from '../components/Vue/Chapters/ParticipantsPanel.vue';
 import PlanningPanelVue from '../components/Vue/Chapters/PlanningPanel.vue';

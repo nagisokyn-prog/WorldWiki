@@ -28,9 +28,9 @@ import {
 } from '@worldwiki/components';
 
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт
-const EntityEditorVue = defineAsyncComponent(() => import('../components/Vue/SchemaEditor/EntityEditor.vue'));
+const EntityEditorVue = defineAsyncComponent(() => import('../features/entities/EntityEditor/EntityEditor.vue'));
 const ChaptersViewVue = defineAsyncComponent(() => import('../components/Vue/ChaptersView.vue'));
-const EditorCoreVue = defineAsyncComponent(() => import('../components/Vue/Chapters/EditorCoreTiptap.vue'));
+const EditorCoreVue = defineAsyncComponent(() => import('../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue'));
 const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Calendars/TimelinePanel.vue'));
 const ParticipantsPanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/ParticipantsPanel.vue'));
 const PlanningPanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/PlanningPanel.vue'));

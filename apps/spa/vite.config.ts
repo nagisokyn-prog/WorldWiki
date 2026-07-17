@@ -4,12 +4,25 @@ import vue from '@vitejs/plugin-vue';
 import checker from 'vite-plugin-checker';
 import vueDevTools from 'vite-plugin-vue-devtools';
 
+import AutoImport from 'unplugin-auto-import/vite';
+import Components from 'unplugin-vue-components/vite';
+
 export default defineConfig({
   plugins: [
     vue(),
     checker({
-      typescript: true,
-      vueTsc: true,
+      vueTsc: {
+        tsconfigPath: './tsconfig.json'
+      }
+    }),
+    AutoImport({
+      imports: ['vue'],
+      dts: 'src/auto-imports.d.ts',
+      dirs: ['src/ts/composables'],
+    }),
+    Components({
+      dirs: ['src/ts/components'],
+      dts: 'src/components.d.ts',
     }),
     vueDevTools(),
   ],

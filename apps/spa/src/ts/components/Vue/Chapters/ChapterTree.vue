@@ -298,7 +298,7 @@ const startRename = (node: any, closeCtx: Function) => {
 };
 
 const handleCreate = async ({ sectionId, parentId, name }: { sectionId: string, parentId?: string, name?: string }) => {
-  console.log('CHAPTERTREE: handleCreate called with', { sectionId, parentId, name });
+  alert(`handleCreate called! sectionId: ${sectionId}, parentId: ${parentId}`);
   if (sectionId === 'manuscript') {
     if (!parentId) {
       const tempId = '__new_volume__';
@@ -306,13 +306,16 @@ const handleCreate = async ({ sectionId, parentId, name }: { sectionId: string, 
       await nextTick();
       const node = findNodeById(tempId);
       if (node) explorerTreeRef.value?.startRename(node);
+      else alert(`Node NOT FOUND: ${tempId}`);
     } else {
-      const tempId = '__new_arc__';
+      const tempId = '__new_arc__' + Date.now();
       hierarchy.value.arcs.push({ id: tempId, title: 'Новая арка', volumeId: parentId, sort_order: 999 } as any);
       explorerTreeRef.value?.expandNode(String(parentId));
       await nextTick();
       const node = findNodeById(tempId);
+      alert(`findNodeById returned: ${node ? node.id : 'null'}`);
       if (node) explorerTreeRef.value?.startRename(node);
+      else alert(`Node NOT FOUND: ${tempId}`);
     }
   } else if (name) {
     emit('add-entity', sectionId, name);
@@ -320,7 +323,7 @@ const handleCreate = async ({ sectionId, parentId, name }: { sectionId: string, 
 };
 
 const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
-  console.log('CHAPTERTREE: handleCreateInline called with', { sectionId, parentId });
+  // alert(`TREENODES clicked! sectionId: ${sectionId}, parentId: ${parentId}`);
   if (sectionId === 'manuscript') {
     if (parentId) {
       const arc = hierarchy.value.arcs.find(a => String(a.id) === String(parentId));
@@ -359,6 +362,8 @@ const handleRename = async (node: any, newName: string) => {
     await load();
   } catch (e) {
     console.error('Rename error:', e);
+    alert(`Ошибка при сохранении: ${e}`);
+    await load(); // Reload to restore previous state
   }
 };
 

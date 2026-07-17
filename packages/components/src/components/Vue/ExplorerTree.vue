@@ -43,7 +43,7 @@
             @create-in="node => { console.log('EXPLORERTREE: CAUGHT create-in FOR', node); $emit('create-inline', { sectionId: sect.id, parentId: node.id }); }"
             @update:renaming-value="val => { if (renaming) renaming.value = val; }"
             @commit-rename="commitRename"
-            @cancel-rename="renaming = null"
+            @cancel-rename="cancelRename"
           />
 
           <!-- Inline creation field -->
@@ -244,13 +244,20 @@ const startRename = (node: TreeNodeData) => {
 };
 const commitRename = () => {
   if (renaming.value) {
-    if (renaming.value.value.trim() !== renaming.value.node.label) {
+    if (renaming.value.value.trim() !== renaming.value.node.label || renaming.value.node.id.toString().startsWith('__new_')) {
       emit('rename', renaming.value.node, renaming.value.value.trim());
     } else {
       emit('cancel-rename', renaming.value.node);
     }
   }
   renaming.value = null;
+};
+
+const cancelRename = () => {
+  if (renaming.value) {
+    emit('cancel-rename', renaming.value.node);
+    renaming.value = null;
+  }
 };
 
 const startCreate = (sectionId: string) => {

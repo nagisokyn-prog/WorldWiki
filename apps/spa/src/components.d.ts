@@ -28,6 +28,8 @@ declare module 'vue' {
     ParticipantsPanel: typeof import('./ts/components/Vue/Chapters/ParticipantsPanel.vue')['default']
     PlanningPanel: typeof import('./ts/components/Vue/Chapters/PlanningPanel.vue')['default']
     RelationshipBlock: typeof import('./ts/components/Vue/SchemaEditor/RelationshipBlock.vue')['default']
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
     SchemaContainer: typeof import('./ts/components/Vue/SchemaEditor/SchemaContainer.vue')['default']
     SchemaEditorMain: typeof import('./ts/components/Vue/SchemaEditor/SchemaEditorMain.vue')['default']
     SchemaFieldEditor: typeof import('./ts/components/Vue/SchemaEditor/SchemaFieldEditor.vue')['default']

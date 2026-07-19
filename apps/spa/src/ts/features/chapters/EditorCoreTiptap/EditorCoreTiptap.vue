@@ -1,4 +1,4 @@
-<template>
+. <template>
   <div class="editor-core" style="flex: 1; display: flex; flex-direction: column; padding: 24px; overflow: hidden; min-width: 0;">
     
     <!-- Toolbar -->
@@ -19,7 +19,7 @@
     />
 
     <!-- Title -->
-    <div class="chapter-header" style="margin-bottom: 20px; position: relative;" :class="{ 'history-changed': changedFields.includes('title') }">
+    <div class="chapter-header" style="margin-bottom: 20px; position: relative;" v-if="false">
       <div v-if="changedFields.includes('title')" class="changed-indicator" style="position: absolute; right: -8px; top: -8px; z-index: 5;" title="Поле было изменено">
           <span style="background: var(--accent); color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">Изменено</span>
       </div>
@@ -219,4 +219,3 @@ const {
 </script>
 
 <style src="./EditorCoreTiptap.style.css"></style>
-<style src="./EditorCoreTiptap.global.css"></style>

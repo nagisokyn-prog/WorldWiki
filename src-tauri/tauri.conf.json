@@ -17,7 +17,7 @@
         "width": 1400,
         "height": 900,
         "resizable": true,
-        "url": "splash.html",
+        "url": "app.html",
         "dragDropEnabled": false,
         "visible": false
       }

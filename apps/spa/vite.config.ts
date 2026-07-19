@@ -47,8 +47,6 @@ export default defineConfig({
     cssMinify: 'esbuild',
     rollupOptions: {
       input: {
-        splash: resolve(__dirname, 'splash.html'),
-        project_launcher: resolve(__dirname, 'project_launcher.html'),
         app: resolve(__dirname, 'app.html'),
         settings: resolve(__dirname, 'settings.html'),
         ui_editor: resolve(__dirname, 'ui_editor.html')

@@ -213,8 +213,8 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 - [x] **4. `apps/spa`**: `@worldwiki/spa` — перенесён `src/ts` → `apps/spa/src/ts`; `vite.config.ts` multi-entry (splash/launcher/app/settings/ui_editor); alias `@worldwiki/components` + `@worldwiki/resources` + `@/` и т.д.; `tsconfig` extends base (ESNext).
 - [x] **5. Декомпозиция монолитов — ЗАВЕРШЕНА (16.07.2026)**:
   - [x] `app/app.ts` → ВЕСЬ `setup()` вынесен в `useAppShell.ts` (648 строк). `app.ts` сокращён до 106 строк: только init + createApp + регистрация компонентов. `vue-tsc --noEmit` → 0 ошибок. ✅
-  - [x] `EntityEditor.vue` → `useEntityEditor.ts` создан; сам `.vue` всё ещё монолитен в `components/Vue/SchemaEditor/EntityEditor.vue` (Component-Behind не применён полностью). 🟡
-  - [x] `EditorCoreTiptap.vue` → `useTiptapEditor.ts` есть; сам `.vue` монолитен. 🟡
+  - [x] `EntityEditor.vue` → папка `features/entities/EntityEditor/` (`EntityEditor.vue` + `useEntityEditor.ts` + `EntityEditor.model.ts` + `EntityEditor.style.css`).
+  - [x] `EditorCoreTiptap.vue` → папка `features/chapters/EditorCoreTiptap/` (`EditorCoreTiptap.vue` + `useTiptapEditor.ts` + `EditorToolbar.vue` + `EditorCoreTiptap.style.css`).
   - [x] `ChapterTree.vue` →kit-версия `useTreeSelection` из `@worldwiki/components` подключена; локальный дуб удалён. Компонент оставлен как кастомный (не заменяется на `ExplorerTree`). ✅
   - [x] `ChaptersMain.vue` → вкладки делегированы в `useEditorGroups` из кита (через `eg`). ✅
   - [x] `SchemaEditorMain.vue` → канон; `RedactSandbox.vue` **удалён** ✅.
@@ -438,6 +438,26 @@ EditorCoreTiptap.vue (главное окно app.html)
 ## 12. Производительность: полный чеклист бустов (с привязкой к коду)
 
 > Архитектурная перестройка (разделы 0–11) сама по себе буст НЕ даёт — она про масштабируемость.
+
+## 13. Bug Fix: обновление дерева/списков после переименования (F2 / Ctrl+S)
+
+### Проблема
+После переименования главы/сущности в редакторе и сохранения (`Ctrl+S`) дерево глав и списки сущностей в сайдбаре не обновлялись до перезагрузки (`F5`).
+
+### Коренные причины
+1. В `useSaveManager.ts` вызов `chapterTreeRef.load()` и `loadEntityList()` был только внутри ветки `if (newTitle && newTitle !== editor.title)`, поэтому при обычном сохранении без изменения заголовка UI не перезагружался.
+2. В `useChapterOps.ts` `renameChapter` не вызывал обновление дерева и не эмитил событие `ww:hierarchy-changed`.
+3. В `ChaptersMain.vue` после `saveChapter` отсутствовал dispatch события `ww:hierarchy-changed`.
+4. В `useEntityLists.ts` реактивность была сломана: `entityLists.value[entityType] = list` мутировал вложенное свойство `shallowRef` без создания нового reference, поэтому Vue не детектил изменение.
+
+### Исправления
+- `apps/spa/src/ts/composables/useSaveManager.ts`: переместить вызовы `chapterTreeRef.value.load()` и `loadEntityList()` вне зависимости от смены заголовка.
+- `apps/spa/src/ts/composables/useChapterOps.ts`: после сохранения главы вызывать `chapterTreeRef.value.load()` и `document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'))`.
+- `apps/spa/src/ts/components/Vue/Chapters/ChaptersMain.vue`: после сохранения главы dispatчить `ww:hierarchy-changed`.
+- `apps/spa/src/ts/composables/useEntityLists.ts`: обновлять список через новый reference: `entityLists.value = { ...entityLists.value, [entityType]: list }`.
+
+### Итог
+Дерево глав и списки сущностей теперь refreshed immediately после переименования/сохранения. Без F5.
 > Реальный буст дают только целевые оптимизации ниже. Приоритет: 🔥 quick-win (делать до/вне монорепо), ⚡ среднее.
 
 ### 12.1 Бандл / загрузка (🔥)

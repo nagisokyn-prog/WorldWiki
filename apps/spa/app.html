@@ -57,10 +57,8 @@
             <h2>Песочница удалена в рамках Phase 5.</h2>
           </div>
 
-          <!-- ── Мульти-групповой редактор (VS Code split) ─────────── -->
           <div v-else class="editor-groups-container" @mousedown.stop>
             <template v-for="(group, gIdx) in editorGroups" :key="group.id">
-              <!-- Одна группа (колонка) -->
               <editor-group-pane-vue
                 :group="group"
                 :is-active="activeGroupId === group.id"
@@ -75,7 +73,6 @@
                 @move-tab="moveTab"
                 @reorder-tab="reorderTab"
               >
-                <!-- СЛОТ ДЛЯ ГЛАВЫ -->
                 <template #chapter="{ tab, groupId }">
                   <chapters-main-vue
                     :key="tab.id + '-' + groupId"
@@ -91,7 +88,6 @@
                   ></chapters-main-vue>
                 </template>
 
-                <!-- СЛОТ ДЛЯ СУЩНОСТИ -->
                 <template #entity="{ tab, groupId }">
                   <div
                     class="chapter-editor"
@@ -125,7 +121,6 @@
                           overflow: hidden;
                         "
                       >
-                        <!-- Toolbar -->
                         <div
                           class="chapter-toolbar"
                           style="
@@ -152,10 +147,7 @@
                               ← Назад
                             </button>
                           </div>
-                          <div
-                            class="toolbar-group"
-                            style="flex: 1; margin-left: 16px"
-                          >
+                          <div class="toolbar-group" style="flex: 1; margin-left: 16px">
                             <h1
                               style="
                                 font-size: 16px;
@@ -167,10 +159,7 @@
                               {{ tab.title }}
                             </h1>
                           </div>
-                          <div
-                            class="toolbar-group"
-                            style="border: none; display: flex; gap: 8px"
-                          >
+                          <div class="toolbar-group" style="border: none; display: flex; gap: 8px">
                             <button
                               class="btn-new btn-outline-new interactive-el"
                               @click="toggleEntityHistory(tab.rawId)"
@@ -178,10 +167,7 @@
                             >
                               <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
                             </button>
-                            <button
-                              class="btn-new interactive-el"
-                              @click="saveAll"
-                            >
+                            <button class="btn-new interactive-el" @click="saveAll">
                               💾 Сохранить
                             </button>
                             <button
@@ -202,7 +188,6 @@
                           </div>
                         </div>
 
-                        <!-- Редактор сущности -->
                         <entity-editor-vue
                           :key="tab.id + '-' + groupId"
                           :entity-id="tab.rawId"
@@ -217,7 +202,6 @@
                           @scroll-change="(scroll) => handleScrollChange(groupId, tab.id, scroll)"
                         ></entity-editor-vue>
 
-                        <!-- Status bar -->
                         <div
                           class="status-bar"
                           style="
@@ -245,7 +229,6 @@
                   </div>
                 </template>
 
-                <!-- СЛОТ ДЛЯ РЕДАКТОРА СХЕМЫ -->
                 <template #schema-editor="{ tab, groupId }">
                   <div
                     class="chapter-editor"
@@ -271,7 +254,6 @@
                 </template>
               </editor-group-pane-vue>
 
-              <!-- ── Ресайзер между группами ── -->
               <div
                 v-if="gIdx < editorGroups.length - 1"
                 :key="'resize-'+group.id"
@@ -280,19 +262,13 @@
               ></div>
             </template>
           </div>
-          <!-- /.editor-groups-container -->
         </div>
-        <!-- /.content-area-new -->
       </div>
-      <!-- End of app-main-new -->
-
-      <!-- Нижняя панель (за пределами основной раскладки) -->
 
       <div
         class="panel-new"
         :style="activePanelTab !== '' ? { height: panelHeight + 'px' } : { height: '36px' }"
       >
-        <!-- Terminal resize handle — тянуть вверх -->
         <div
           v-if="activePanelTab !== ''"
           class="terminal-resize-handle"
@@ -338,7 +314,6 @@
         </div>
       </div>
 
-      <!-- Global Modals (inside #app for Vue context, Teleport to body) -->
       <quick-open-vue
         :ref="el => quickOpenRef = el"
         :data-source="quickOpenDataSource"
@@ -367,9 +342,6 @@
         :project="projectName"
       ></tags-manager-modal-vue>
 
-
-
-      <!-- Toasts -->
       <div class="toast-container-new" :class="settings.notifications.position">
         <transition-group name="fade">
           <div v-for="toast in toasts" :key="toast.id" class="toast-new">

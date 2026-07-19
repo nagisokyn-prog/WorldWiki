@@ -68,6 +68,7 @@ declare global {
   const useAppShell: typeof import('./ts/composables/useAppShell')['useAppShell']
   const useAttrs: typeof import('vue')['useAttrs']
   const useChapterOps: typeof import('./ts/composables/useChapterOps')['useChapterOps']
+  const useChapterTreeAdapter: typeof import('./ts/composables/useChapterTreeAdapter')['useChapterTreeAdapter']
   const useConsole: typeof import('./ts/composables/useConsole')['useConsole']
   const useCssModule: typeof import('vue')['useCssModule']
   const useCssVars: typeof import('vue')['useCssVars']

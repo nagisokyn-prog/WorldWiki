@@ -1,8 +1,6 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import vue from '@vitejs/plugin-vue';
-import checker from 'vite-plugin-checker';
-import vueDevTools from 'vite-plugin-vue-devtools';
 
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
@@ -10,21 +8,15 @@ import Components from 'unplugin-vue-components/vite';
 export default defineConfig({
   plugins: [
     vue(),
-    checker({
-      vueTsc: {
-        tsconfigPath: './tsconfig.json'
-      }
-    }),
     AutoImport({
-      imports: ['vue'],
+      imports: ['vue', 'vue-router', 'pinia'],
       dts: 'src/auto-imports.d.ts',
-      dirs: ['src/ts/composables'],
+      dirs: ['src/ts/composables']
     }),
     Components({
       dirs: ['src/ts/components'],
-      dts: 'src/components.d.ts',
-    }),
-    vueDevTools(),
+      dts: 'src/components.d.ts'
+    })
   ],
   root: '.',
   base: './',
@@ -55,7 +47,6 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    // Bust cache to force reload components
     host: '0.0.0.0',
     open: false,
     strictPort: true,
@@ -65,11 +56,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     force: true
-  },
-  test: {
-    globals: true,
-    include: ['../test/**/*.test.ts', 'js/__tests__/**/*.test.ts', 'ts/__tests__/**/*.test.ts'],
-  },
-  logLevel: 'info',
-  clearScreen: false
+  }
 });

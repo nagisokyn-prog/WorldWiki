@@ -17,7 +17,8 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
 import { setupGlass } from '../utils/v-glass';
 import { i18n, setLocale, settingsService } from '@worldwiki/components';
-import { useAppShell } from '@/composables/useAppShell';
+import AppSwitcher from '../features/shell/AppSwitcher.vue';
+import { router } from './router';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
@@ -54,7 +55,7 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const projectName = params.get('project') || 'default';
 
-  let sidebarItems: SidebarItem[] = [];
+  const sidebarItems: SidebarItem[] = [];
 
   // Загружаем схемы сущностей
   try {
@@ -77,11 +78,9 @@ async function init() {
   await settingsService.loadSettings().catch(e => console.warn('Failed to load settings:', e));
   setLocale(settingsService.getSettings().locale || 'ru');
 
-  const app = createApp({
-    setup() {
-      return useAppShell({ projectName, sidebarItems });
-    },
-  });
+  const app = createApp(AppSwitcher);
+  
+  app.use(router);
 
   // Регистрация компонентов
   app.component('EntityEditorVue', EntityEditorVue);

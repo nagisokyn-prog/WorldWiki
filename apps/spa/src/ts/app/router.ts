@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter } from 'vue-router';
+import { createWebHashHistory, createRouter } from 'vue-router';
 import Splash from '../features/shell/Splash.vue';
 import ProjectLauncher from '../features/shell/ProjectLauncher.vue';
 import EditorView from '../features/shell/EditorView.vue';
@@ -11,7 +11,7 @@ const routes = [
 ];
 
 export const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHashHistory(),
   strict: true,
   routes,
 });

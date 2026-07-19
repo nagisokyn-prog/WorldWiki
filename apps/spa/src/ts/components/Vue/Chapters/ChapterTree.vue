@@ -1,13 +1,13 @@
 <template>
   <div class="chapter-tree-wrapper" style="height: 100%; display: flex; flex-direction: column;">
     <ExplorerTree
+      ref="explorerTreeRef"
       title="Структура"
       icon="fas fa-book-open"
-      :showBack="true"
+      :show-back="true"
       :sections="explorerSections"
       storage-key="worldwiki-explorer"
       :active-id="activeId"
-      ref="explorerTreeRef"
       @back="goBack"
       @select="handleSelect"
       @open="handleOpen"
@@ -76,10 +76,13 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, triggerRef } from 'vue';
+import { useRouter } from 'vue-router';
 import { apiService } from '../../../services/api.service';
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 import { ExplorerTree } from '@worldwiki/components';
 import type { TreeSectionData, TreeNodeData } from '@worldwiki/components';
+
+const router = useRouter();
 
 const props = defineProps({
   project: { type: String, required: true },
@@ -278,7 +281,7 @@ onUnmounted(() => {
 
 // ─── Actions ────────────────────────────────────────────────────────────────
 const goBack = () => {
-  window.location.href = '../../../project_launcher.html';
+  router.push('/launcher');
 };
 
 const handleSelect = (nodes: any[], event: MouseEvent) => {

@@ -84,7 +84,7 @@
       <transition name="ctx-pop">
         <div v-if="ctx" class="tree-ctx-menu" :style="ctxStyle">
           <!-- Inject context menu items via slot, passing the active node context -->
-          <slot name="context-menu" :node="ctx.node" :sectionId="ctx.sectionId" :close="() => ctx = null"></slot>
+          <slot name="context-menu" :node="ctx.node" :section-id="ctx.sectionId" :close="() => ctx = null"></slot>
         </div>
       </transition>
     </Teleport>

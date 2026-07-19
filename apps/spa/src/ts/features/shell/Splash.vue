@@ -1,18 +1,26 @@
 <template>
-  <div class="app-container-new" v-cloak>
-    <div class="app-main-new">
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; color: var(--text-main);">
-        <div style="font-size: 18px; font-weight: 700;">World Wiki Ultimate</div>
-        <div style="font-size: 12px; color: var(--text-muted);">Загрузка...</div>
-      </div>
+      <div class="splash-wrapper">
+    <div class="splash-container">
+  <div class="splash-container">
+    <!-- ASCII Art -->
+    <div id="asciiArt" ref="asciiArtRef" class="ascii-art"></div>
+    
+    <div class="subtitle">Загрузка мира...</div>
+    
+    <div class="progress-container">
+      <div id="progressBar" ref="progressBarRef" class="progress-bar"></div>
     </div>
+    <div id="statusText" ref="statusTextRef" class="status-text">Инициализация...</div>
+    
+    <div id="perfBadge" ref="perfBadgeRef" class="perf-badge">⚡ Производительность: ---</div>
+    <div id="perfDetails" ref="perfDetailsRef" class="perf-details"></div>
   </div>
+  </div>
+ </div>
 </template>
 
-<script setup lang="ts">
-import { onMounted } from 'vue';
+<script src="./Splash.vue.ts" lang="ts"></script>
 
-onMounted(async () => {
-  // init project via app shell later
-});
-</script>
+
+<style src="./Splash.vue.css"></style>
+

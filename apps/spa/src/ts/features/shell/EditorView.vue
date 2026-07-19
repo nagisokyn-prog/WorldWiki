@@ -1,14 +1,14 @@
 <template>
-  <div class="app-container-new" v-cloak>
+  <div v-cloak class="app-container-new">
     <div class="app-main-new">
       <!-- Universal Sidebar (VS Code Explorer Style) -->
       <div
-        class="sidebar-universal"
         v-show="sidebarVisible"
+        class="sidebar-universal"
         :style="{ width: sidebarWidth + 'px' }"
       >
         <chapter-tree-vue
-          :ref="el => chapterTreeRef = el"
+          ref="chapterTreeRef"
           :project="projectName"
           :active-editor-id="activeEditorId"
           @open-entity="openEntity"
@@ -52,7 +52,7 @@
               :style="{ flexBasis: group.flexBasis + '%' }"
               @focus="focusGroup(group.id)"
               @activate-tab="activateTabInGroup"
-              @close-tab="(g, t) => closeEditor(t)"
+              @close-tab="onGroupCloseTab"
               @split="splitRight"
               @close-group="closeGroup"
               @move-tab="moveTab"
@@ -64,12 +64,12 @@
                   :project="projectName"
                   :controlled-chapter-id="tab.id"
                   :active-tree-node="activeTreeNode"
+                  style="flex: 1"
                   @chapter-unsaved="markUnsaved(tab.id)"
                   @chapter-saved="markSaved(tab.id)"
                   @chapter-renamed="onChapterRenamed"
                   @open-chapter-as-tab="openChapterTab"
-                  @scroll-change="(s) => handleScrollChange(groupId, tab.id, s)"
-                  style="flex: 1"
+                  @scroll-change="handleScrollChange(groupId, tab.id, $event)"
                 ></chapters-main-vue>
               </template>
 
@@ -119,7 +119,6 @@
                         <div class="toolbar-group">
                           <button
                             class="btn-outline-new interactive-el"
-                            @click="closeEditor(tab.id)"
                             style="
                               padding: 6px 12px;
                               border-radius: 8px;
@@ -128,6 +127,7 @@
                               color: var(--text-main);
                               cursor: pointer;
                             "
+                            @click="closeEditor(tab.id)"
                           >
                             ← Назад
                           </button>
@@ -147,8 +147,8 @@
                         <div class="toolbar-group" style="border: none; display: flex; gap: 8px">
                           <button
                             class="btn-new btn-outline-new interactive-el"
-                            @click="toggleEntityHistory(tab.rawId)"
                             title="История изменений"
+                            @click="toggleEntityHistory(tab.rawId)"
                           >
                             <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
                           </button>
@@ -164,9 +164,9 @@
                           </button>
                           <button
                             class="btn-new interactive-el"
-                            @click="splitRight()"
                             title="Открыть в новой панели (Ctrl+\)"
                             style="background: rgba(139, 92, 246, 0.2)"
+                            @click="splitRight()"
                           >
                             ⬜⬜
                           </button>
@@ -181,10 +181,10 @@
                         :initial-data="tab.data"
                         :initial-section="tab.activeSection"
                         :initial-scroll-pos="tab.scrollPos"
-                        @update-data="(newData) => handleUpdateData(tab.id, newData)"
+                        @update-data="handleUpdateData(tab.id, $event)"
                         @modified="markUnsaved(tab.id)"
-                        @section-change="(sec) => handleSectionChange(groupId, tab.id, sec)"
-                        @scroll-change="(scroll) => handleScrollChange(groupId, tab.id, scroll)"
+                        @section-change="handleSectionChange(groupId, tab.id, $event)"
+                        @scroll-change="handleScrollChange(groupId, tab.id, $event)"
                       ></entity-editor-vue>
 
                       <div
@@ -231,8 +231,8 @@
                     :entity-type="tab.entityType"
                     :initial-scroll-pos="tab.scrollPos"
                     :initial-section="tab.activeSection"
-                    @scroll-change="(scroll) => handleScrollChange(groupId, tab.id, scroll)"
-                    @section-change="(sec) => handleSectionChange(groupId, tab.id, sec)"
+                    @scroll-change="handleScrollChange(groupId, tab.id, $event)"
+                    @section-change="handleSectionChange(groupId, tab.id, $event)"
                     @close="closeEditor(tab.id)"
                   ></schema-editor-main-vue>
                 </div>
@@ -240,10 +240,10 @@
             </editor-group-pane-vue>
 
             <div
-              v-if="gIdx < editorGroups.length - 1"
+              v-if="Number(gIdx) < editorGroups.length - 1"
               :key="'resize-'+group.id"
               class="group-resize-handle"
-              @mousedown.prevent="startGroupResize($event, gIdx)"
+              @mousedown.prevent="startGroupResize($event, Number(gIdx))"
             ></div>
           </template>
         </div>
@@ -261,8 +261,8 @@
       ></div>
       <div
         class="panel-header-new"
-        @click="activePanelTab = activePanelTab === '' ? 'console' : ''"
         style="justify-content: space-between"
+        @click="activePanelTab = activePanelTab === '' ? 'console' : ''"
       >
         <div style="display: flex; gap: 8px">
           <div
@@ -284,7 +284,7 @@
           {{ activePanelTab === '' ? '▲ Развернуть панель' : '▼ Свернуть панель' }}
         </div>
       </div>
-      <div class="panel-content-new" v-show="activePanelTab !== ''">
+      <div v-show="activePanelTab !== ''" class="panel-content-new">
         <div v-if="activePanelTab === 'console'">
           <div
             v-for="log in consoleLogs.slice(0, 100)"
@@ -300,13 +300,13 @@
     </div>
 
     <quick-open-vue
-      :ref="el => quickOpenRef = el"
+      ref="quickOpenRef"
       :data-source="quickOpenDataSource"
       @select="handleQuickOpenSelect"
     ></quick-open-vue>
 
     <command-palette-vue
-      :ref="el => commandPaletteRef = el"
+      ref="commandPaletteRef"
       @save-all="saveAll"
       @new-entity="addNewEntity(currentSidebarTab || '')"
       @new-chapter="createChapterIn({})"
@@ -323,7 +323,7 @@
     ></command-palette-vue>
 
     <tags-manager-modal-vue
-      :ref="el => tagsManagerRef = el"
+      ref="tagsManagerRef"
       :project="projectName"
     ></tags-manager-modal-vue>
 
@@ -339,6 +339,26 @@
 </template>
 
 <script setup lang="ts">
+import { useRoute } from 'vue-router';
 import { useAppShell } from '@/composables/useAppShell';
-useAppShell({ projectName: 'default', sidebarItems: [] });
+
+const route = useRoute();
+const routeProject = typeof route.query.project === 'string' ? route.query.project : 'default';
+
+const {
+  projectName, activeView, currentSidebarTab, showSettings, sidebarSearch, activePanelTab,
+  openEditors, activeEditorId, activeEditor, activeEntityRawId, consoleLogs, activeField,
+  panelHeight, sidebarWidth, sidebarItems, activeSidebarItem, filteredEntityList, chapters,
+  chapterTreeRef, sidebarVisible, zoomLevel, quickOpenRef, commandPaletteRef, tagsManagerRef,
+  settings, toasts, addToast, getToastIcon, unsavedCount,
+  selectSidebarTab, openEntity, openSchemaEditor, openChapterTab, closeEditor, markUnsaved, markSaved,
+  saveAll, closeAllTabs, addNewEntity, startResize, startSidebarResize, startSplitResize, startGroupResize,
+  toggleSettings, resetSettings, addLog, handleUpdateData, getEntityDisplayName,
+  deleteEntity, deleteVolume, deleteArc, createChapterIn, deleteChapter, renameChapter, renameEntity,
+  activeTreeNode, applyZoom, quickOpenDataSource, handleQuickOpenSelect, selectTreeNode, handleScrollChange,
+  handleSectionChange, openQuickOpen, openTagsManager, openFloatingEditor, onChapterRenamed, toggleEntityHistory,
+  openSandbox, editorGroups, activeGroupId, splitRight, closeGroup, moveTab, reorderTab, activateTabInGroup, focusGroup
+} = useAppShell({ projectName: routeProject, sidebarItems: [] });
+
+const onGroupCloseTab = (g: any, t: any) => closeEditor(t);
 </script>

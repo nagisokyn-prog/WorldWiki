@@ -1,0 +1,66 @@
+/* ChapterTree styles moved from scoped block */
+.chapter-tree-wrapper {
+  background: transparent;
+}
+.ctx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #cccccc;
+  cursor: pointer;
+  transition: background 0.08s;
+  gap: 12px;
+}
+.ctx-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.ctx-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+}
+.ctx-icon {
+  width: 14px;
+  font-size: 12px;
+  text-align: center;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.ctx-item:hover .ctx-icon { opacity: 0.9; }
+.ctx-kbd {
+  font-size: 11px;
+  font-family: 'Consolas', monospace;
+  color: #666;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+  transition: color 0.08s;
+}
+.ctx-item:hover .ctx-kbd { color: #999; }
+.ctx-kbd-danger { color: rgba(248,113,113,0.5); border-color: rgba(248,113,113,0.15); }
+.ctx-item:hover .ctx-kbd-danger { color: rgba(252,165,165,0.8); }
+.ctx-danger { color: #f87171; }
+.ctx-danger:hover { background: rgba(239,68,68,0.12) !important; color: #fca5a5; }
+.ctx-danger .ctx-icon { opacity: 0.7; }
+.ctx-sep {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 3px 2px;
+}
+.tree-action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  opacity: 0.5;
+  font-size: 14px;
+  transition: 0.2s;
+}
+.tree-action-btn:hover {
+  opacity: 1;
+}

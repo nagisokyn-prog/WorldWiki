@@ -632,6 +632,7 @@ const saveChapter = async () => {
     const listIdx = chapters.value.findIndex(c => c.id === currentChapterId.value);
     if (listIdx !== -1) chapters.value[listIdx].title = currentChapter.value.title;
     await chapterService.updateIndex(props.project);
+    document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
     console.log('✅ saveChapter: глава сохранена');
     debugError.value = null;
   } catch (e: any) {

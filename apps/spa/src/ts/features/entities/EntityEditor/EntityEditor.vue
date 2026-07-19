@@ -369,3 +369,4 @@ defineExpose({
 </script>
 
 <style scoped src="@worldwiki/components/css/modules/entity-editor.css"></style>
+<style scoped src="./EntityEditor.style.css"></style>

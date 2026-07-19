@@ -41,11 +41,11 @@ export function useEntityLists(ctx: {
     try {
       await ctx.schema.loadSchema(entityType);
       const list = await (await import('../services/api.service')).apiService.getEntityList(ctx.projectName, entityType);
-      entityLists.value[entityType] = list as Array<Record<string, unknown>>;
+      entityLists.value = { ...entityLists.value, [entityType]: list as Array<Record<string, unknown>> };
       ctx.addLog(`Data -> Loaded ${(list as any[]).length} ${entityType}(s)`, 'info');
     } catch (e) {
       ctx.addLog(`Data -> Error loading ${entityType}: ${e}`, 'error');
-      entityLists.value[entityType] = [];
+      entityLists.value = { ...entityLists.value, [entityType]: [] };
     }
   };
 

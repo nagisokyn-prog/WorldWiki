@@ -421,8 +421,13 @@ export function useAppShell(ctx: {
 
   // 🔴 handleUpdateData
   const handleUpdateData = (tabId: string, newData: any) => {
+    console.log('[handleUpdateData] called with:', { tabId, newData });
     const tabsToUpdate = eg.allTabs.value.filter((t: any) => t.id === tabId);
-    if (tabsToUpdate.length === 0) return;
+    console.log('[handleUpdateData] tabsToUpdate:', tabsToUpdate.length, tabsToUpdate.map((t: any) => ({ id: t.id, title: t.title, data: t.data })));
+    if (tabsToUpdate.length === 0) {
+      console.warn('[handleUpdateData] No tabs found for tabId:', tabId);
+      return;
+    }
     const merge = (target: any, source: any) => {
       for (const key in source) {
         if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
@@ -453,29 +458,60 @@ export function useAppShell(ctx: {
       const newTitle = getEntityDisplayName(tab.data as Record<string, unknown>, tab.entityType);
       if (newTitle && newTitle !== oldTitle) {
         tab.title = newTitle;
-        document.dispatchEvent(new CustomEvent('ww:entity-renamed', { 
-          detail: { id: tab.rawId, type: tab.entityType, name: newTitle } 
-        }));
       }
     }
   };
 
   const renameEntity = async (entityType: string, idToUpdate: string, newName: string) => {
+    console.log('[renameEntity] called with:', { entityType, idToUpdate, newName });
     try {
       const detail = await apiService.getEntity(projectName, entityType, idToUpdate);
-      const titleField = Object.keys(detail).find(k => k.toLowerCase() === 'name') || Object.keys(detail)[0];
+      console.log('[renameEntity] detail from server:', detail);
+      
+      // Use schema's titleField if available, fallback to detection
+      const sch = await loadSchema(entityType);
+      const schemaTitleField = sch?.titleField || sch?.sections?.[0]?.fields?.find((f: any) => f.isTitle)?.path;
+      const titleField = schemaTitleField || Object.keys(detail).find(k => k.toLowerCase() === 'name') || Object.keys(detail)[0];
+      console.log('[renameEntity] titleField:', titleField, 'from schema:', schemaTitleField);
+      
       if (titleField) {
         detail[titleField] = newName;
         await apiService.saveEntity(projectName, entityType, detail, idToUpdate);
         
-        const tabId = `entity:${entityType}:${idToUpdate}`;
-        eg.updateTabData(tabId, { title: newName });
+        // The rawId in the tab may include a prefix like "entities:" — try both formats
+        const rawId = String(detail.id || idToUpdate);
+        const tabId = `entity:${entityType}:${rawId}`;
+        const tabIdShort = `entity:${entityType}:${idToUpdate}`;
+        console.log('[renameEntity] tabId:', tabId, 'tabIdShort:', tabIdShort);
+        console.log('[renameEntity] allTabs before update:', eg.allTabs.value.map((t: any) => ({ id: t.id, title: t.title, rawId: t.rawId, data: t.data })));
         
+        // Try both tab ID formats
+        const actualTabId = eg.findTabGlobal(tabId) ? tabId : (eg.findTabGlobal(tabIdShort) ? tabIdShort : null);
+        console.log('[renameEntity] actualTabId found:', actualTabId);
+        
+        if (actualTabId) {
+          eg.updateTabData(actualTabId, { title: newName });
+          // Use handleUpdateData to properly update tab.data and trigger reactivity
+          handleUpdateData(actualTabId, { [titleField]: newName });
+        } else {
+          console.warn('[renameEntity] Could not find tab for either format:', { tabId, tabIdShort });
+          // Still dispatch event even if tab not found
+        }
+        
+        console.log('[renameEntity] allTabs after update:', eg.allTabs.value.map((t: any) => ({ id: t.id, title: t.title, data: t.data })));
+        
+        // Refresh tree and entity list
+        if (chapterTreeRef.value) chapterTreeRef.value.load();
+        if (currentSidebarTab.value === entityType) await loadEntityList(entityType);
+        
+        // Dispatch with the full rawId (with prefix) so EntityEditor can match by props.entityId
         document.dispatchEvent(new CustomEvent('ww:entity-renamed', { 
-          detail: { id: idToUpdate, type: entityType, name: newName } 
+          detail: { id: rawId, type: entityType, name: newName } 
         }));
+        console.log('[renameEntity] dispatched ww:entity-renamed with id:', rawId);
       }
     } catch(e) {
+      console.error('[renameEntity] Error:', e);
       addLog(`Error renaming entity: ${e}`, 'error');
     }
   };

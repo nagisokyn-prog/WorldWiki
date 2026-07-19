@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, triggerRef } from 'vue';
 import { apiService } from '../../../services/api.service';
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 import { ExplorerTree } from '@worldwiki/components';
@@ -262,6 +262,7 @@ const entityRenamedHandler = (e: any) => {
     if (ent) {
       const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
       if (titleField) ent[titleField] = name;
+      triggerRef(entities);
     }
   }
 };
@@ -458,59 +459,4 @@ const findNodeById = (id: string): any => {
 defineExpose({ load });
 </script>
 
-<style scoped>
-.chapter-tree-wrapper {
-  background: transparent;
-}
-/* VS-code style context menu items styling */
-.ctx-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px 10px;
-  border-radius: 4px;
-  font-size: 13px;
-  color: #cccccc;
-  cursor: pointer;
-  transition: background 0.08s;
-  gap: 12px;
-}
-.ctx-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
-.ctx-label {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex: 1;
-}
-.ctx-icon {
-  width: 14px;
-  font-size: 12px;
-  text-align: center;
-  opacity: 0.6;
-  flex-shrink: 0;
-}
-.ctx-item:hover .ctx-icon { opacity: 0.9; }
-.ctx-kbd {
-  font-size: 11px;
-  font-family: 'Consolas', monospace;
-  color: #666;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 3px;
-  padding: 1px 5px;
-  flex-shrink: 0;
-  letter-spacing: 0.03em;
-  transition: color 0.08s;
-}
-.ctx-item:hover .ctx-kbd { color: #999; }
-.ctx-kbd-danger { color: rgba(248,113,113,0.5); border-color: rgba(248,113,113,0.15); }
-.ctx-item:hover .ctx-kbd-danger { color: rgba(252,165,165,0.8); }
-.ctx-danger { color: #f87171; }
-.ctx-danger:hover { background: rgba(239,68,68,0.12) !important; color: #fca5a5; }
-.ctx-danger .ctx-icon { opacity: 0.7; }
-.ctx-sep {
-  height: 1px;
-  background: rgba(255,255,255,0.07);
-  margin: 3px 2px;
-}
-</style>
+<style scoped src="./ChapterTree/ChapterTree.style.css"></style>

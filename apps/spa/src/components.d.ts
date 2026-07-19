@@ -23,7 +23,6 @@ declare module 'vue' {
     ChapterTree: typeof import('./ts/components/Vue/Chapters/ChapterTree.vue')['default']
     CloudSyncModal: typeof import('./ts/components/Vue/CloudSyncModal.vue')['default']
     DateWheels: typeof import('./ts/components/Vue/DateWheels.vue')['default']
-    EditorCoreTiptap: typeof import('./ts/components/Vue/Chapters/EditorCoreTiptap.vue')['default']
     ExportModal: typeof import('./ts/components/Vue/Chapters/ExportModal.vue')['default']
     FloatingEntityEditor: typeof import('./ts/components/Vue/FloatingEntityEditor.vue')['default']
     ParticipantsPanel: typeof import('./ts/components/Vue/Chapters/ParticipantsPanel.vue')['default']

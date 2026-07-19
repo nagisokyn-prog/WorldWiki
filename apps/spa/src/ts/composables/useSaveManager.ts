@@ -104,9 +104,9 @@ export function useSaveManager(ctx: {
         const newTitle = ctx.schema.getEntityDisplayName(editor.data as Record<string, unknown>, editor.entityType);
         if (newTitle && newTitle !== editor.title) {
           editor.title = newTitle;
-          if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
-        if (ctx.lists.currentSidebarTab.value === editor.entityType) ctx.lists.loadEntityList(ctx.lists.currentSidebarTab.value as string);
         }
+        if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
+        if (ctx.lists.currentSidebarTab.value === editor.entityType) ctx.lists.loadEntityList(ctx.lists.currentSidebarTab.value as string);
         editor.unsaved = false;
         ctx.tabs.markTabSaved(editor.id);
         triggerRef(ctx.tabs.openEditors);

@@ -486,13 +486,56 @@ const removePhoto = (path: string) => {
   markModified();
 };
 
+watch(() => props.initialData, (newData) => {
+  if (newData && !isInitializing.value && !isPreviewingHistory.value) {
+    formData.value = JSON.parse(JSON.stringify(newData));
+    foreignUpdates.value = {};
+    lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: {} });
+  }
+}, { deep: true });
+
 onMounted(() => {
   loadConfigAndData();
+  
+  // Listen for entity rename events to update formData directly
+  const handleRename = (e: Event) => {
+    const detail = (e as CustomEvent).detail;
+    console.log('[EntityEditor] ww:entity-renamed received:', detail, 'props.entityId:', props.entityId, 'props.entityType:', props.entityType);
+    if (detail && detail.id === props.entityId && detail.type === props.entityType) {
+      console.log('[EntityEditor] ww:entity-renamed MATCH, updating formData name:', detail.name);
+      // Find the title field and update it
+      const titleField = config.value?.titleField || 'name';
+      console.log('[EntityEditor] titleField from config:', config.value?.titleField, 'fallback:', 'name');
+      console.log('[EntityEditor] formData before update:', JSON.parse(JSON.stringify(formData.value)));
+      if (formData.value && detail.name) {
+        setProp(formData.value, titleField, detail.name);
+        // Also try common name fields
+        for (const key of Object.keys(formData.value)) {
+          if (key.toLowerCase() === 'name' || key.toLowerCase() === 'title') {
+            formData.value[key] = detail.name;
+          }
+        }
+        console.log('[EntityEditor] formData after update:', JSON.parse(JSON.stringify(formData.value)));
+      }
+    } else {
+      console.log('[EntityEditor] ww:entity-renamed NO MATCH');
+    }
+  };
+  document.addEventListener('ww:entity-renamed', handleRename);
+  
+  // Store cleanup
+  (window as any).__entityEditorCleanup = handleRename;
 });
 
 onUnmounted(() => {
   if (scrollContainer.value) {
     scrollContainer.value.removeEventListener('scroll', () => {});
+  }
+  // Cleanup event listener
+  const cleanup = (window as any).__entityEditorCleanup;
+  if (cleanup) {
+    document.removeEventListener('ww:entity-renamed', cleanup);
+    delete (window as any).__entityEditorCleanup;
   }
 });
 

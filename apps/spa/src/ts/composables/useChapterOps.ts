@@ -99,6 +99,8 @@ export function useChapterOps(ctx: {
       fullData.title = newTitle;
       await apiService.saveChapter(ctx.projectName, fullData);
       ctx.addLog(`Chapter renamed: ${newTitle}`, 'success');
+      if (ctx.chapterTreeRef?.value?.load) ctx.chapterTreeRef.value.load();
+      document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
     } catch (e) {
       console.error('Failed to rename chapter:', e);
       ctx.addLog(`Error renaming chapter: ${e}`, 'error');

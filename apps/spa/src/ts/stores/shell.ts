@@ -16,7 +16,6 @@ import { useSchemaStore } from './schema';
 import { useConsoleStore } from './console';
 import { useZoomStore } from './zoom';
 import { useFloatingStore } from './floating';
-import { useHotkeys } from '@/composables/useHotkeys';
 import { getValueByPath, setValueByPath } from '@/utils/path';
 import { connectionsManager } from '@/services/connections.service';
 

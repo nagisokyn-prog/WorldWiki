@@ -123,6 +123,9 @@ export interface CardSettings {
 export interface EditorSettings {
   showWordCount: boolean; // Показ счётчика слов
   requireCtrlForLinks: boolean; // Открывать ссылки только с Ctrl
+  autoSaveInterval: number; // интервал автосохранения (секунды, 0 = выкл)
+  snapshotInterval: number; // интервал снапшотов (минуты, 0 = выкл)
+  maxSnapshots: number;     // максимум снапшотов на главу
 }
 
 // Уведомления
@@ -137,6 +140,18 @@ export interface PerfSettings {
   level: 'auto' | 'high' | 'medium' | 'low';  // Уровень производительности
   fpsLimit: number;  // Лимит FPS: 30, 60, 90, 120, 144, 165, 240
   loadMeter: number;      // Нагрузка на систему (0-100%)
+  qualityLevel: number;   // Качество визуала (0-100)
+}
+
+// Пользовательский фон
+export interface BackgroundSettings {
+  type: 'none' | 'color' | 'image' | 'video';
+  imagePath?: string;       // путь к файлу изображения
+  videoPath?: string;       // путь к видеофайлу
+  opacity: number;          // прозрачность фона (0-1)
+  blur: number;             // размытие фона (0-20px)
+  fit: 'cover' | 'contain' | 'fill' | 'tile';
+  fpsLimit?: number;        // лимит FPS для видео (например, 30 или 60)
 }
 
 // Полные настройки приложения
@@ -159,6 +174,7 @@ export interface AppSettings {
   editor: EditorSettings;
   notifications: NotificationSettings;
   perf: PerfSettings;
+  background?: BackgroundSettings;
 }
 
 // Результат расчёта нагрузки

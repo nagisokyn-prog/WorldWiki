@@ -20,7 +20,7 @@
 
             <p style="color:var(--text-muted);margin-bottom:24px;font-size:13px;">{{ t('settings.description', { category: getCategoryTitle(activeCategory) }) }}</p>
 
-            <div class="settings-grid">
+            <div class="settings-grid" v-auto-animate>
               <!-- 1. ТЕМА ОФОРМЛЕНИЯ -->
               <div v-show="activeCategory === 'theme' || activeCategory === 'all'" class="settings-group">
                 <h3 class="form-label" style="color:var(--accent);margin-bottom:16px;">{{ t('settings.groupTitles.theme') }}</h3>
@@ -198,6 +198,51 @@
                   <div class="radio-btn" :class="{ active: settings.notifications.position === 'bottom-right' }" @click="settings.notifications.position = 'bottom-right'; save()">{{ t('settings.fields.bottomRight') }}</div>
                 </div>
               </div>
+
+              <!-- 17. ПРОИЗВОДИТЕЛЬНОСТЬ -->
+              <div v-show="activeCategory === 'perf' || activeCategory === 'all'" class="settings-group">
+                <h3 class="form-label" style="color:var(--accent);margin-bottom:16px;">{{ t('settings.groupTitles.perf') || 'Производительность' }}</h3>
+                <div class="control-row"><label>Качество визуала (Master Quality)</label><span class="val-badge">{{ settings.perf.qualityLevel }}%</span></div>
+                <input v-model.number="settings.perf.qualityLevel" type="range" min="0" max="100" step="5" class="interactive-el" @change="applyQuality()">
+              </div>
+
+              <!-- 18. ФОН -->
+              <div v-show="activeCategory === 'background' || activeCategory === 'all'" class="settings-group">
+                <h3 class="form-label" style="color:var(--accent);margin-bottom:16px;">Фон</h3>
+                <div class="control-row"><label>Тип фона</label></div>
+                <div class="radio-group" style="flex-wrap: wrap; gap: 8px;">
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'none' }" @click="settings.background.type = 'none'; save()">Нет</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'color' }" @click="settings.background.type = 'color'; save()">Цвет</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'image' }" @click="settings.background.type = 'image'; save()">Изображение</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'video' }" @click="settings.background.type = 'video'; save()">Видео</div>
+                </div>
+                
+                <div v-if="settings.background?.type === 'image' || settings.background?.type === 'video'" style="margin-top:12px;">
+                  <button class="interactive-el" style="padding: 8px 16px; border-radius: var(--radius-btn); background: var(--accent); color: #fff; border: none; cursor: pointer;" @click="pickBackgroundFile()">Выбрать файл...</button>
+                  <div v-if="settings.background.type === 'image' && settings.background.imagePath" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">{{ settings.background.imagePath }}</div>
+                  <div v-if="settings.background.type === 'video' && settings.background.videoPath" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">{{ settings.background.videoPath }}</div>
+                </div>
+
+                <div class="control-row" style="margin-top:12px;"><label>Прозрачность</label><span class="val-badge">{{ Math.round(settings.background?.opacity * 100) }}%</span></div>
+                <input v-model.number="settings.background.opacity" type="range" min="0" max="1" step="0.05" class="interactive-el" @change="save()">
+                
+                <div class="control-row"><label>Размытие</label><span class="val-badge">{{ settings.background?.blur }}px</span></div>
+                <input v-model.number="settings.background.blur" type="range" min="0" max="50" class="interactive-el" @change="save()">
+              </div>
+
+              <!-- 19. РЕДАКТОР -->
+              <div v-show="activeCategory === 'editor' || activeCategory === 'all'" class="settings-group">
+                <h3 class="form-label" style="color:var(--accent);margin-bottom:16px;">Редактор (Сохранение)</h3>
+                
+                <div class="control-row"><label>Интервал автосохранения</label><span class="val-badge">{{ settings.editor.autoSaveInterval === 0 ? 'Выкл' : settings.editor.autoSaveInterval + ' сек' }}</span></div>
+                <input v-model.number="settings.editor.autoSaveInterval" type="range" min="0" max="300" step="10" class="interactive-el" @change="save()">
+                
+                <div class="control-row"><label>Интервал снапшотов</label><span class="val-badge">{{ settings.editor.snapshotInterval === 0 ? 'Выкл' : settings.editor.snapshotInterval + ' мин' }}</span></div>
+                <input v-model.number="settings.editor.snapshotInterval" type="range" min="0" max="60" step="5" class="interactive-el" @change="save()">
+                
+                <div class="control-row"><label>Максимум снапшотов на главу</label><span class="val-badge">{{ settings.editor.maxSnapshots }}</span></div>
+                <input v-model.number="settings.editor.maxSnapshots" type="range" min="1" max="50" step="1" class="interactive-el" @change="save()">
+              </div>
             </div>
           </div>
         </div>
@@ -213,6 +258,7 @@ import ThemeSwitcher from './ThemeSwitcher.vue';
 import { settingsService } from '../../ts/services/settings.service.js';
 import { setLocale } from '../../ts/i18n.js';
 import type { AppSettings } from '../../ts/types/settings.js';
+import { open } from '@tauri-apps/plugin-dialog';
 
 defineEmits(['close', 'back']);
 
@@ -236,7 +282,10 @@ const categories = [
   { id: 'tabs', icon: '📑', titleKey: 'settings.categories.tabs' },
   { id: 'dropdowns', icon: '📋', titleKey: 'settings.categories.dropdowns' },
   { id: 'cards', icon: '🃏', titleKey: 'settings.categories.cards' },
-  { id: 'notifications', icon: '🔔', titleKey: 'settings.categories.notifications' }
+  { id: 'notifications', icon: '🔔', titleKey: 'settings.categories.notifications' },
+  { id: 'perf', icon: '⚡', titleKey: 'settings.groupTitles.perf' },
+  { id: 'background', icon: '🖼️', titleKey: 'settings.categories.background' },
+  { id: 'editor', icon: '📝', titleKey: 'settings.categories.editor' }
 ];
 
 const fontOptions = [
@@ -294,10 +343,42 @@ const changeLocale = async (lang: 'ru' | 'en') => {
 };
 
 const save = async () => {
+  if (settings.value.locale !== (settingsService.getSettings() as any).locale) {
+    setLocale(settings.value.locale as 'ru' | 'en');
+  }
   try {
     await settingsService.saveSettings(settings.value);
   } catch (e) {
     console.error('Failed to save settings:', e);
+  }
+};
+
+const applyQuality = () => {
+  settingsService.applyQualityLevel(settings.value.perf.qualityLevel);
+  settings.value = settingsService.getSettings();
+};
+
+const pickBackgroundFile = async () => {
+  if (!(window as any).__TAURI__) return;
+  const isVideo = settings.value.background?.type === 'video';
+  try {
+    const selected = await open({
+      multiple: false,
+      filters: [{
+        name: isVideo ? 'Video' : 'Image',
+        extensions: isVideo ? ['mp4', 'webm'] : ['jpg', 'png', 'gif', 'jpeg', 'webp']
+      }]
+    });
+    if (selected && typeof selected === 'string') {
+      if (isVideo) {
+        settings.value.background!.videoPath = selected;
+      } else {
+        settings.value.background!.imagePath = selected;
+      }
+      save();
+    }
+  } catch(e) {
+    console.error(e);
   }
 };
 

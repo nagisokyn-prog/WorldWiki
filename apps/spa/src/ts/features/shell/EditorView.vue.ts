@@ -1,11 +1,12 @@
-import { defineComponent, computed, ref, onMounted } from 'vue';
+import { defineComponent, computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useShellStore } from '@/stores/shell';
 import { useConsoleStore } from '@/stores/console';
 import { useZoomStore } from '@/stores/zoom';
 import { useSchemaStore } from '@/stores/schema';
 import { useFloatingStore } from '@/stores/floating';
-import type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/shell';
+import { useHotkeysStore } from '@/stores/hotkeys';
+export type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/shell';
 
 // Component imports for template
 import ChapterTreeVue from '@/components/Vue/Chapters/ChapterTree.vue';
@@ -29,7 +30,8 @@ export default defineComponent({
     CommandPaletteVue,
     TagsManagerModalVue,
   },
-  setup() {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  setup(): Record<string, any> {
     const route = useRoute();
     const routeProject = typeof route.query.project === 'string' ? route.query.project : 'default';
 
@@ -38,6 +40,22 @@ export default defineComponent({
     const zoom = useZoomStore();
     const schema = useSchemaStore();
     const floating = useFloatingStore();
+    const hotkeys = useHotkeysStore();
+
+    onMounted(() => {
+      shell.quickOpenRef = quickOpenRef.value;
+      shell.commandPaletteRef = commandPaletteRef.value;
+      shell.tagsManagerRef = tagsManagerRef.value;
+      shell.chapterTreeRef = chapterTreeRef.value;
+      hotkeys.register();
+
+      // Восстанавливаем состояние (открытые вкладки, скролл, боковую панель)
+      shell.restoreState();
+    });
+
+    onUnmounted(() => {
+      hotkeys.unregister();
+    });
 
     // Initialize shell with project name
     shell.projectName = routeProject;
@@ -50,16 +68,16 @@ export default defineComponent({
     const showSettings = computed(() => shell.showSettings);
     const sidebarSearch = computed(() => shell.sidebarSearch);
     const activePanelTab = computed(() => shell.activePanelTab);
-    const openEditors = computed(() => shell.openEditors);
+    const openEditors = computed(() => shell.openEditors as any);
     const activeEditorId = computed(() => shell.activeEditorId);
-    const activeEditor = computed(() => shell.activeEditor);
+    const activeEditor = computed(() => shell.activeEditor as any);
     const activeEntityRawId = computed(() => shell.activeEntityRawId);
-    const consoleLogs = computed(() => shell.consoleLogs);
+    const consoleLogs = computed(() => shell.consoleLogs as any);
     const activeField = computed(() => shell.activeField);
     const panelHeight = computed(() => shell.panelHeight);
     const sidebarWidth = computed(() => shell.sidebarWidth);
-    const sidebarItems = computed(() => shell.sidebarItems);
-    const activeSidebarItem = computed(() => shell.activeSidebarItem);
+    const sidebarItems = computed(() => shell.sidebarItems as any);
+    const activeSidebarItem = computed(() => shell.activeSidebarItem as any);
     const filteredEntityList = computed(() => shell.filteredEntityList);
     const chapters = computed(() => shell.chapters);
     const chapterTreeRef = ref<any>(null);
@@ -72,7 +90,7 @@ export default defineComponent({
     const settings = computed(() => shell.settings);
     const toasts = computed(() => console.toasts);
     const activeTreeNode = computed(() => shell.activeTreeNode);
-    const editorGroups = computed(() => shell.editorGroups);
+    const editorGroups = computed(() => shell.editorGroups as any);
     const activeGroupId = computed(() => shell.activeGroupId);
 
     // Methods - direct references from store
@@ -127,8 +145,7 @@ export default defineComponent({
 
     const onGroupCloseTab = (g: any, t: any) => closeEditor(t);
 
-    // Initialize chapterTreeRef with shell's ref
-    Object.assign(chapterTreeRef, { value: shell.chapterTreeRef });
+    // Refs are synced to shell store in onMounted
 
     return {
       // Refs

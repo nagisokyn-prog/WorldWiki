@@ -13,6 +13,7 @@ import '@worldwiki/resources/styles/modules/settings.css';
 
 
 
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { settingsService, i18n, setLocale, Settings } from '@worldwiki/components';
 
 async function init() {
@@ -28,6 +29,7 @@ async function init() {
   
   // Монтируем Vue компонент Settings
   const app = createApp(Settings);
+  app.use(autoAnimatePlugin);
   app.use(i18n as unknown as Plugin).mount('#settingsContent');
   console.log('[settings] Settings component mounted');
   

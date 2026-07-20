@@ -39,6 +39,12 @@
   background: #ffffff;
   color: #000000;
 }
+.editor-content .ProseMirror,
+.editor-content-split .ProseMirror {
+  column-count: var(--layout-columns, 1);
+  column-gap: 40px;
+  column-rule: 1px solid var(--border-color);
+}
 .status-bar {
   display: flex;
   justify-content: space-between;

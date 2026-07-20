@@ -541,8 +541,26 @@ let downHandler: ((e: KeyboardEvent) => void) | null = null;
 let upHandler: ((e: KeyboardEvent) => void) | null = null;
 let handleToggleStructure: (() => void) | null = null;
 
+let autoSaveTimer: any = null;
+
 onMounted(() => {
-  settingsService.onChange((newS: any) => { settings.value = newS; });
+  const startAutoSave = () => {
+    if (autoSaveTimer) clearInterval(autoSaveTimer);
+    const interval = settings.value?.editor?.autoSaveInterval;
+    if (interval && interval > 0) {
+      autoSaveTimer = setInterval(() => {
+        if (props.hasUnsavedChanges) emit('save');
+      }, interval * 1000);
+    }
+  };
+
+  settingsService.onChange((newS: any) => { 
+    settings.value = newS; 
+    startAutoSave();
+  });
+  
+  startAutoSave();
+  
   updateStats();
   syncMarkdownFromEditor();
   
@@ -662,6 +680,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  if (autoSaveTimer) clearInterval(autoSaveTimer);
   if (handleLinkInteraction) document.removeEventListener('click', handleLinkInteraction, true);
   if (downHandler) document.removeEventListener('keydown', downHandler);
   if (upHandler) document.removeEventListener('keyup', upHandler);

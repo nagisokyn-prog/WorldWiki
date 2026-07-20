@@ -4,7 +4,7 @@
  */
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
-import { settingsService } from '../services/settings.service';
+import { settingsService } from '@worldwiki/components';
 
 export const useSettingsStore = defineStore('settings', () => {
   const settings = computed(() => settingsService.getSettings());

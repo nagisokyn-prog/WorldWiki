@@ -29,9 +29,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   tabs: { pos: 'row' },
   dropdowns: { use3DWheel: true, wheelOrientation: 'vertical' },
   cards: { compactList: false, showIcons: true },
-  editor: { showWordCount: true, requireCtrlForLinks: false },
+  editor: { showWordCount: true, requireCtrlForLinks: false, autoSaveInterval: 60, snapshotInterval: 15, maxSnapshots: 10 },
   notifications: { duration: 3000, position: 'bottom-right' },
-  perf: { level: 'auto', fpsLimit: 60, loadMeter: 0 }
+  perf: { level: 'auto', fpsLimit: 60, loadMeter: 0, qualityLevel: 100 },
+  background: { type: 'none', opacity: 1, blur: 0, fit: 'cover', fpsLimit: 30 }
 };
 
 class SettingsService {
@@ -172,12 +173,92 @@ class SettingsService {
   }
 
   /**
-   * ÐŸÑ€Ð¸Ð¼ÐµÐ½ÑÐµÑ‚ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ðº CSS Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ð¼
+   * Применяет "Уровень красоты" ко всем связанным параметрам
+   */
+  applyQualityLevel(level: number): void {
+    this.settings.perf.qualityLevel = level;
+    
+    // Масштабируем параметры от 0 до 100
+    const ratio = level / 100;
+    
+    // Blur от 0 до 24
+    this.settings.glass.blur = Math.round(24 * ratio);
+    
+    // Анимации отключаем при < 20%
+    this.settings.animations.enabled = level >= 20;
+    
+    // Скорость анимации: при 100% - 0.3s, при 20% - 0.6s
+    this.settings.animations.speed = 0.6 - (0.3 * ratio);
+    
+    // Прозрачность островков: при 100% - 0.45, при 0% - 0.9 (менее прозрачно для экономии)
+    this.settings.glass.islandAlpha = 0.9 - (0.45 * ratio);
+    
+    this.saveSettings();
+  }
+
+  /**
+   * Применяет пользовательский фон (создает видео или картинку подложку)
+   */
+  applyBackground(): void {
+    const bg = this.settings.background;
+    if (!bg) return;
+    
+    let container = document.getElementById('ww-background');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'ww-background';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '100vw';
+      container.style.height = '100vh';
+      container.style.zIndex = '-1';
+      container.style.pointerEvents = 'none';
+      document.body.appendChild(container);
+    }
+    
+    container.innerHTML = ''; // Очищаем старый фон
+    container.style.opacity = String(bg.opacity);
+    container.style.filter = `blur(${bg.blur}px)`;
+    
+    if (bg.type === 'color') {
+      container.style.backgroundColor = 'var(--bg-base)';
+    } else if (bg.type === 'image' && bg.imagePath) {
+      const img = document.createElement('img');
+      // В Tauri для локальных файлов нужно использовать протокол tauri:// или asset://
+      // Для простоты здесь предполагаем, что путь уже преобразован в asset:// URL
+      img.src = window.__TAURI__ ? window.__TAURI__.core.convertFileSrc(bg.imagePath) : bg.imagePath;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = bg.fit;
+      container.appendChild(img);
+    } else if (bg.type === 'video' && bg.videoPath) {
+      const video = document.createElement('video');
+      video.src = window.__TAURI__ ? window.__TAURI__.core.convertFileSrc(bg.videoPath) : bg.videoPath;
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.objectFit = bg.fit;
+      
+      // Логика лимита FPS для видео может потребовать requestAnimationFrame, 
+      // но в браузере аппаратное ускорение обычно справляется само.
+      // Пока просто рендерим как обычное видео.
+      
+      container.appendChild(video);
+    }
+  }
+
+  /**
+   * ÐŸÑ€Ð¸Ð¼ÐµÐ½Ñ ÐµÑ‚ Ð½Ð°Ñ Ñ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ðº CSS Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ð¼
    */
   applySettings(): void {
     const root = document.documentElement;
     if (!root) return;
     const s = this.settings;
+    
+    this.applyBackground();
 
     // Colors
     root.style.setProperty('--bg-base', s.colors.bgBase);

@@ -1,1 +1,1 @@
-// This file has been moved to src/ts/features/chapters/EditorCoreTiptap/useTiptapEditor.ts
+// DEPRECATED: This file is no longer used. Functionality has been migrated to Pinia stores. Safe to delete.

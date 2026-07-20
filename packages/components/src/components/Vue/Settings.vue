@@ -211,10 +211,10 @@
                 <h3 class="form-label" style="color:var(--accent);margin-bottom:16px;">Фон</h3>
                 <div class="control-row"><label>Тип фона</label></div>
                 <div class="radio-group" style="flex-wrap: wrap; gap: 8px;">
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'none' }" @click="settings.background.type = 'none'; save()">Нет</div>
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'color' }" @click="settings.background.type = 'color'; save()">Цвет</div>
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'image' }" @click="settings.background.type = 'image'; save()">Изображение</div>
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'video' }" @click="settings.background.type = 'video'; save()">Видео</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'none' }" @click="settings.background!.type = 'none'; save()">Нет</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'color' }" @click="settings.background!.type = 'color'; save()">Цвет</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'image' }" @click="settings.background!.type = 'image'; save()">Изображение</div>
+                  <div class="radio-btn" :class="{ active: settings.background?.type === 'video' }" @click="settings.background!.type = 'video'; save()">Видео</div>
                 </div>
                 
                 <div v-if="settings.background?.type === 'image' || settings.background?.type === 'video'" style="margin-top:12px;">
@@ -223,11 +223,11 @@
                   <div v-if="settings.background.type === 'video' && settings.background.videoPath" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">{{ settings.background.videoPath }}</div>
                 </div>
 
-                <div class="control-row" style="margin-top:12px;"><label>Прозрачность</label><span class="val-badge">{{ Math.round(settings.background?.opacity * 100) }}%</span></div>
-                <input v-model.number="settings.background.opacity" type="range" min="0" max="1" step="0.05" class="interactive-el" @change="save()">
+                <div class="control-row" style="margin-top:12px;"><label>Прозрачность</label><span class="val-badge">{{ Math.round((settings.background?.opacity || 0) * 100) }}%</span></div>
+                <input v-model.number="settings.background!.opacity" type="range" min="0" max="1" step="0.05" class="interactive-el" @change="save()">
                 
-                <div class="control-row"><label>Размытие</label><span class="val-badge">{{ settings.background?.blur }}px</span></div>
-                <input v-model.number="settings.background.blur" type="range" min="0" max="50" class="interactive-el" @change="save()">
+                <div class="control-row"><label>Размытие</label><span class="val-badge">{{ settings.background?.blur || 0 }}px</span></div>
+                <input v-model.number="settings.background!.blur" type="range" min="0" max="50" class="interactive-el" @change="save()">
               </div>
 
               <!-- 19. РЕДАКТОР -->
@@ -258,6 +258,7 @@ import ThemeSwitcher from './ThemeSwitcher.vue';
 import { settingsService } from '../../ts/services/settings.service.js';
 import { setLocale } from '../../ts/i18n.js';
 import type { AppSettings } from '../../ts/types/settings.js';
+// @ts-ignore
 import { open } from '@tauri-apps/plugin-dialog';
 
 defineEmits(['close', 'back']);

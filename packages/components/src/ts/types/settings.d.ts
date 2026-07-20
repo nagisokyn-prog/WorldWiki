@@ -174,7 +174,7 @@ export interface AppSettings {
   editor: EditorSettings;
   notifications: NotificationSettings;
   perf: PerfSettings;
-  background?: BackgroundSettings;
+  background: BackgroundSettings;
 }
 
 // Результат расчёта нагрузки

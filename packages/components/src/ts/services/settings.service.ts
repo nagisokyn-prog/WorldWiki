@@ -1,11 +1,19 @@
 /**
  * @file settings.service.ts
- * @description Ð¡ÐµÑ€Ð²Ð¸Ñ Ð´Ð»Ñ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ñ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ°Ð¼Ð¸ Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
- * @rust-ready âœ… loadSettings, saveSettings, calculateLoadMeter, autoDetectFPS
+ * @description Сервис для управления настройками приложения
+ * @rust-ready ✅ loadSettings, saveSettings, calculateLoadMeter, autoDetectFPS
  */
 
 import { setLocale } from '../i18n';
 import type { AppSettings } from '../types/settings';
+
+let convertFileSrc: any = null;
+if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+  // @ts-ignore
+  import('@tauri-apps/api/core').then(m => {
+    convertFileSrc = m.convertFileSrc;
+  }).catch(() => {});
+}
 
 const DEFAULT_SETTINGS: AppSettings = {
   locale: 'ru',
@@ -60,12 +68,12 @@ class SettingsService {
   }
 
   /**
-   * Ð—Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÑ‚ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð¸Ð· Tauri Ð¸Ð»Ð¸ localStorage
-   * @rust-ready âœ…
+   * Загружает настройки из Tauri или localStorage
+   * @rust-ready ✅
    */
   async loadSettings(): Promise<AppSettings> {
     console.log('[settingsService] loading settings...');
-    // Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð¿Ñ€Ð¾Ð±ÑƒÐµÐ¼ Ð·Ð°Ð³Ñ€ÑƒÐ·Ð¸Ñ‚ÑŒ Ð¸Ð· Tauri
+    // Сначала пробуем загрузить из Tauri
     if (window.__TAURI__?.core) {
       try {
         const saved = await window.__TAURI__.core.invoke<AppSettings | null>('load_settings');
@@ -81,7 +89,7 @@ class SettingsService {
       }
     }
 
-    // Fallback Ð½Ð° localStorage
+    // Fallback на localStorage
     try {
       const saved = localStorage.getItem((window as any).__APP_CONFIG__?.storageKey ?? 'app:settings');
       if (saved) {
@@ -102,8 +110,8 @@ class SettingsService {
   private saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
   /**
-   * Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÑ‚ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð² Tauri Ð¸ localStorage
-   * @rust-ready âœ…
+   * Сохраняет настройки в Tauri и localStorage
+   * @rust-ready ✅
    */
   async saveSettings(settings: AppSettings | null = null, immediate = false): Promise<void> {
     if (settings) {
@@ -146,14 +154,14 @@ class SettingsService {
   }
 
   /**
-   * Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°ÐµÑ‚ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ
+   * Возвращает настройки по умолчанию
    */
   getDefaultSettings(): AppSettings {
     return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
   }
 
   /**
-   * Ð¡Ð±Ñ€Ð°ÑÑ‹Ð²Ð°ÐµÑ‚ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ðº Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸ÑÐ¼ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ
+   * Сбрасывает настройки к значениям по умолчанию
    */
   resetSettings(): void {
     this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
@@ -161,7 +169,7 @@ class SettingsService {
   }
 
   /**
-   * Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°ÐµÑ‚ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ðµ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸
+   * Возвращает текущие настройки
    */
   getSettings(): AppSettings {
     return this.settings;
@@ -225,16 +233,14 @@ class SettingsService {
       container.style.backgroundColor = 'var(--bg-base)';
     } else if (bg.type === 'image' && bg.imagePath) {
       const img = document.createElement('img');
-      // В Tauri для локальных файлов нужно использовать протокол tauri:// или asset://
-      // Для простоты здесь предполагаем, что путь уже преобразован в asset:// URL
-      img.src = window.__TAURI__ ? window.__TAURI__.core.convertFileSrc(bg.imagePath) : bg.imagePath;
+      img.src = convertFileSrc ? convertFileSrc(bg.imagePath) : bg.imagePath;
       img.style.width = '100%';
       img.style.height = '100%';
       img.style.objectFit = bg.fit;
       container.appendChild(img);
     } else if (bg.type === 'video' && bg.videoPath) {
       const video = document.createElement('video');
-      video.src = window.__TAURI__ ? window.__TAURI__.core.convertFileSrc(bg.videoPath) : bg.videoPath;
+      video.src = convertFileSrc ? convertFileSrc(bg.videoPath) : bg.videoPath;
       video.autoplay = true;
       video.loop = true;
       video.muted = true;
@@ -251,7 +257,7 @@ class SettingsService {
   }
 
   /**
-   * ÐŸÑ€Ð¸Ð¼ÐµÐ½Ñ ÐµÑ‚ Ð½Ð°Ñ Ñ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ðº CSS Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ð¼
+   * Применяет настройки к CSS переменным
    */
   applySettings(): void {
     const root = document.documentElement;
@@ -349,7 +355,7 @@ class SettingsService {
   }
 
   /**
-   * ÐŸÐµÑ€ÐµÐºÐ»ÑŽÑ‡Ð°ÐµÑ‚ Ñ‚ÐµÐ¼Ñƒ (dark/light)
+   * Переключает тему (dark/light)
    */
   async switchTheme(themeName: 'dark' | 'light'): Promise<void> {
     console.log(`[settingsService] switching to ${themeName} theme`);
@@ -375,9 +381,9 @@ class SettingsService {
       this.settings = this.deepMerge(this.settings, this.getDefaultSettings());
     }
 
-    // Fallback: Ð»Ð¾ÐºÐ°Ð»ÑŒÐ½Ð¾Ðµ Ñ…Ñ€Ð°Ð½Ð¸Ð»Ð¸Ñ‰Ðµ
+    // Fallback: локальное хранилище
     try {
-      const themeKey = `\${(window as any).__APP_CONFIG__?.id ?? "app"}:theme:\${themeName}`;
+      const themeKey = `${(window as any).__APP_CONFIG__?.id ?? "app"}:theme:${themeName}`;
       const saved = localStorage.getItem(themeKey);
       if (saved) {
         const themeSettings = JSON.parse(saved) as Partial<AppSettings>;
@@ -391,15 +397,15 @@ class SettingsService {
   }
 
   /**
-   * Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‰Ð°ÐµÑ‚ Ñ‚ÐµÐºÑƒÑ‰ÑƒÑŽ Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð½ÑƒÑŽ Ñ‚ÐµÐ¼Ñƒ
+   * Возвращает текущую выбранную тему
    */
   getCurrentTheme(): 'dark' | 'light' {
     return (this.settings as any).theme || 'dark';
   }
 
   /**
-   * Ð“Ð»ÑƒÐ±Ð¾ÐºÐ¾Ðµ ÑÐ»Ð¸ÑÐ½Ð¸Ðµ Ð¾Ð±ÑŠÐµÐºÑ‚Ð¾Ð²
-   * @rust-ready âœ…
+   * Глубокое слияние объектов
+   * @rust-ready ✅
    */
   private deepMerge(target: AppSettings, source: Partial<AppSettings>): AppSettings {
     const result = { ...target } as unknown as Record<string, unknown>;
@@ -419,14 +425,14 @@ class SettingsService {
   }
 
   /**
-   * ÐŸÐ¾Ð´Ð¿Ð¸ÑÐºÐ° Ð½Ð° Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð½Ð°ÑÑ‚Ñ€Ð¾ÐµÐº
+   * Подписка на изменения настроек
    */
   onChange(listener: (settings: AppSettings) => void): void {
     this.listeners.push(listener);
   }
 
   /**
-   * Ð£Ð²ÐµÐ´Ð¾Ð¼Ð»ÑÐµÑ‚ Ð¿Ð¾Ð´Ð¿Ð¸ÑÑ‡Ð¸ÐºÐ¾Ð² Ð¾Ð± Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸ÑÑ…
+   * Уведомляет подписчиков об изменениях
    */
   private notifyListeners(): void {
     this.listeners.forEach(fn => fn(this.settings));
@@ -435,7 +441,7 @@ class SettingsService {
 
 export const settingsService = new SettingsService();
 
-// Ð“Ð»Ð¾Ð±Ð°Ð»ÑŒÐ½Ñ‹Ð¹ Ð´Ð¾ÑÑ‚ÑƒÐ¿ Ð´Ð»Ñ ÑÐ¾Ð²Ð¼ÐµÑÑ‚Ð¸Ð¼Ð¾ÑÑ‚Ð¸
+// Глобальный доступ для совместимости
 declare global {
   interface Window {
     settingsService: SettingsService;

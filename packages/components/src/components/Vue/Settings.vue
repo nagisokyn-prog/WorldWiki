@@ -256,11 +256,9 @@ import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ThemeSwitcher from './ThemeSwitcher.vue';
 import { settingsService } from '../../ts/services/settings.service.js';
-import { setLocale } from '../../ts/i18n.js';
-import type { AppSettings } from '../../ts/types/settings.js';
-// @ts-ignore
+import { setLocale } from "../../ts/i18n.js";
 import { open } from '@tauri-apps/plugin-dialog';
-
+import type { AppSettings } from '../../ts/types/settings.js';
 defineEmits(['close', 'back']);
 
 const { t } = useI18n();
@@ -370,16 +368,48 @@ const pickBackgroundFile = async () => {
         extensions: isVideo ? ['mp4', 'webm'] : ['jpg', 'png', 'gif', 'jpeg', 'webp']
       }]
     });
+    
     if (selected && typeof selected === 'string') {
-      if (isVideo) {
-        settings.value.background!.videoPath = selected;
-      } else {
-        settings.value.background!.imagePath = selected;
+      try {
+        const readFile = (window as any).__TAURI__?.fs?.readFile;
+        const invoke = (window as any).__TAURI__?.core?.invoke;
+        
+        if (readFile && invoke) {
+          const bytes = await readFile(selected);
+          const filename = selected.replace(/\\/g, '/').split('/').pop() || 'background';
+          const savedPath = await invoke('upload_photo', { 
+            bytes: Array.from(bytes), 
+            filename 
+          });
+          
+          if (isVideo) {
+            settings.value.background!.videoPath = savedPath as string;
+          } else {
+            settings.value.background!.imagePath = savedPath as string;
+          }
+        } else {
+          // Fallback if window.__TAURI__.fs is not injected
+          if (isVideo) {
+            settings.value.background!.videoPath = selected;
+          } else {
+            settings.value.background!.imagePath = selected;
+          }
+        }
+        save();
+      } catch (err) {
+        console.error('Failed to copy file to data folder:', err);
+        // Fallback
+        if (isVideo) {
+          settings.value.background!.videoPath = selected;
+        } else {
+          settings.value.background!.imagePath = selected;
+        }
+        save();
       }
-      save();
     }
   } catch(e) {
-    console.error(e);
+    console.warn('Failed to invoke dialog plugin (is it installed?). Error:', e);
+    alert('Плагин диалогов не установлен. Пожалуйста, выполните: pnpm add @tauri-apps/plugin-dialog');
   }
 };
 

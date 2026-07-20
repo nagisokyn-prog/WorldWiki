@@ -12,7 +12,8 @@ export interface ProjectConfig {
 }
 
 export const projectRecordId = (p: string): string => {
-  const cleanP = p.replace(/^projects:/, '').replace(/[`'"]/g, '');
+  const pStr = p || 'default';
+  const cleanP = pStr.replace(/^projects:/, '').replace(/[`'"]/g, '');
   return `projects:${cleanP}`;
 };
 

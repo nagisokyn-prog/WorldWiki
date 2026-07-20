@@ -26,3 +26,4 @@ tauri-plugin-window-state = "2.4.1"
 zip = "8.6.0"
 reqwest = { version = "0.12", features = ["json"] }
 tokio = { version = "1", features = ["fs", "io-util"] }
+tauri-plugin-dialog = "2"

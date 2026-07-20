@@ -72,7 +72,7 @@ export const entityApi = {
     }
 
     const entity = {
-      id: id ?? null,
+      id: (id && id !== 'undefined' && id !== '') ? id : null,
       project_id: projectRecordId(project),
       entity_type: type,
       name: extractedName,

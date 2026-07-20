@@ -29,7 +29,7 @@ world_wiki_normalized.db
 
 # Tauri
 src-tauri/target
-src-tauri/data/surreal_db
+/src-tauri/data/surreal_db
 surreal_domain/target
 
 # Temp/scratch

@@ -24,7 +24,7 @@
       </template>
 
       <!-- Контекстное меню -->
-      <template #context-menu="{ node, sectionId, close }">
+      <template #context-menu="{ node, close }">
         <template v-if="node.data?.type === 'chapter'">
           <div class="ctx-item" @click="startRename(node, close)">
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>

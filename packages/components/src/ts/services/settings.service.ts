@@ -7,13 +7,7 @@
 import { setLocale } from '../i18n';
 import type { AppSettings } from '../types/settings';
 
-let convertFileSrc: any = null;
-if (typeof window !== 'undefined' && (window as any).__TAURI__) {
-  // @ts-ignore
-  import('@tauri-apps/api/core').then(m => {
-    convertFileSrc = m.convertFileSrc;
-  }).catch(() => {});
-}
+// Dynamically accessed via window.__TAURI__ to avoid bundler issues in shared components
 
 const DEFAULT_SETTINGS: AppSettings = {
   locale: 'ru',
@@ -208,51 +202,58 @@ class SettingsService {
    * Применяет пользовательский фон (создает видео или картинку подложку)
    */
   applyBackground(): void {
-    const bg = this.settings.background;
-    if (!bg) return;
-    
-    let container = document.getElementById('ww-background');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'ww-background';
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '0';
-      container.style.width = '100vw';
-      container.style.height = '100vh';
-      container.style.zIndex = '-1';
-      container.style.pointerEvents = 'none';
-      document.body.appendChild(container);
-    }
-    
-    container.innerHTML = ''; // Очищаем старый фон
-    container.style.opacity = String(bg.opacity);
-    container.style.filter = `blur(${bg.blur}px)`;
-    
-    if (bg.type === 'color') {
-      container.style.backgroundColor = 'var(--bg-base)';
-    } else if (bg.type === 'image' && bg.imagePath) {
-      const img = document.createElement('img');
-      img.src = convertFileSrc ? convertFileSrc(bg.imagePath) : bg.imagePath;
-      img.style.width = '100%';
-      img.style.height = '100%';
-      img.style.objectFit = bg.fit;
-      container.appendChild(img);
-    } else if (bg.type === 'video' && bg.videoPath) {
-      const video = document.createElement('video');
-      video.src = convertFileSrc ? convertFileSrc(bg.videoPath) : bg.videoPath;
-      video.autoplay = true;
-      video.loop = true;
-      video.muted = true;
-      video.style.width = '100%';
-      video.style.height = '100%';
-      video.style.objectFit = bg.fit;
+    try {
+      const bg = this.settings.background;
+      if (!bg) return;
       
-      // Логика лимита FPS для видео может потребовать requestAnimationFrame, 
-      // но в браузере аппаратное ускорение обычно справляется само.
-      // Пока просто рендерим как обычное видео.
+      let container = document.getElementById('ww-background');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'ww-background';
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100vw';
+        container.style.height = '100vh';
+        container.style.zIndex = '-1';
+        container.style.pointerEvents = 'none';
+        document.body.appendChild(container);
+      }
       
-      container.appendChild(video);
+      container.innerHTML = ''; // Очищаем старый фон
+      container.style.opacity = String(bg.opacity);
+      container.style.filter = `blur(${bg.blur}px)`;
+      
+      const applySrc = (el: HTMLImageElement | HTMLVideoElement, path: string) => {
+        if ((window as any).__TAURI__?.core?.convertFileSrc) {
+          el.src = (window as any).__TAURI__.core.convertFileSrc(path);
+        } else {
+          el.src = path;
+        }
+      };
+
+      if (bg.type === 'color') {
+        container.style.backgroundColor = 'var(--bg-base)';
+      } else if (bg.type === 'image' && bg.imagePath) {
+        const img = document.createElement('img');
+        applySrc(img, bg.imagePath);
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = bg.fit;
+        container.appendChild(img);
+      } else if (bg.type === 'video' && bg.videoPath) {
+        const video = document.createElement('video');
+        applySrc(video, bg.videoPath);
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = bg.fit;
+        container.appendChild(video);
+      }
+    } catch (e) {
+      console.error('Error applying background:', e);
     }
   }
 

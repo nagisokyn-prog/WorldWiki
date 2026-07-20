@@ -327,7 +327,7 @@
       :project="projectName"
     ></tags-manager-modal-vue>
 
-    <div class="toast-container-new" :class="settings.notifications.position">
+    <div class="toast-container-new" :class="settings.settings?.notifications?.position || 'bottom-right'">
       <transition-group name="fade">
         <div v-for="toast in toasts" :key="toast.id" class="toast-new">
           <i :class="getToastIcon(toast.type)"></i>
@@ -338,27 +338,4 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { useRoute } from 'vue-router';
-import { useAppShell } from '@/composables/useAppShell';
-
-const route = useRoute();
-const routeProject = typeof route.query.project === 'string' ? route.query.project : 'default';
-
-const {
-  projectName, activeView, currentSidebarTab, showSettings, sidebarSearch, activePanelTab,
-  openEditors, activeEditorId, activeEditor, activeEntityRawId, consoleLogs, activeField,
-  panelHeight, sidebarWidth, sidebarItems, activeSidebarItem, filteredEntityList, chapters,
-  chapterTreeRef, sidebarVisible, zoomLevel, quickOpenRef, commandPaletteRef, tagsManagerRef,
-  settings, toasts, addToast, getToastIcon, unsavedCount,
-  selectSidebarTab, openEntity, openSchemaEditor, openChapterTab, closeEditor, markUnsaved, markSaved,
-  saveAll, closeAllTabs, addNewEntity, startResize, startSidebarResize, startSplitResize, startGroupResize,
-  toggleSettings, resetSettings, addLog, handleUpdateData, getEntityDisplayName,
-  deleteEntity, deleteVolume, deleteArc, createChapterIn, deleteChapter, renameChapter, renameEntity,
-  activeTreeNode, applyZoom, quickOpenDataSource, handleQuickOpenSelect, selectTreeNode, handleScrollChange,
-  handleSectionChange, openQuickOpen, openTagsManager, openFloatingEditor, onChapterRenamed, toggleEntityHistory,
-  openSandbox, editorGroups, activeGroupId, splitRight, closeGroup, moveTab, reorderTab, activateTabInGroup, focusGroup
-} = useAppShell({ projectName: routeProject, sidebarItems: [] });
-
-const onGroupCloseTab = (g: any, t: any) => closeEditor(t);
-</script>
+<script src="./EditorView.vue.ts" lang="ts"></script>

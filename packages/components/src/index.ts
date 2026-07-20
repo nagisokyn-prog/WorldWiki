@@ -4,7 +4,6 @@ export { default as CommandPalette } from './components/Vue/CommandPalette.vue';
 export { default as EditorGroupPane } from './components/Vue/EditorGroupPane.vue';
 export { default as EditorTabBar } from './components/Vue/EditorTabBar.vue';
 export { default as ExplorerTree } from './components/Vue/ExplorerTree.vue';
-export type { TreeNodeData, TreeSectionData } from './components/Vue/ExplorerTree.vue';
 export { default as FloatingWindow } from './components/Vue/FloatingWindow.vue';
 export { default as HistorySidebar } from './components/Vue/HistorySidebar.vue';
 export { default as QuickOpen } from './components/Vue/QuickOpen.vue';
@@ -14,6 +13,9 @@ export { default as ThemeSwitcher } from './components/Vue/ThemeSwitcher.vue';
 export { default as TreeNodes } from './components/Vue/TreeNodes.vue';
 export { default as WorkspaceLayout } from './components/Vue/WorkspaceLayout.vue';
 export { default as XboxWheel } from './components/Vue/XboxWheel.vue';
+
+// Types
+export type { TreeNodeData, TreeSectionData } from './types';
 
 // Composables
 export { useEditorGroups } from './ts/composables/useEditorGroups.js';
@@ -29,5 +31,4 @@ export { dynamicService, DynamicService } from './ts/services/dynamic.service.js
 export { editorService } from './ts/services/editor.service.js';
 export { EntityService } from './ts/services/entity.service.js';
 export { footnoteService } from './ts/services/footnote.service.js';
-export * from './ts/services/form.service.js';
 export { settingsService } from './ts/services/settings.service.js';

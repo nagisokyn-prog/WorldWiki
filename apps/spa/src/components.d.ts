@@ -19,7 +19,6 @@ declare module 'vue' {
     CalendarsPanel: typeof import('./ts/components/Vue/CalendarsPanel.vue')['default']
     CalendarWeekdays: typeof import('./ts/components/Vue/Calendars/CalendarWeekdays.vue')['default']
     ChaptersMain: typeof import('./ts/components/Vue/Chapters/ChaptersMain.vue')['default']
-    ChaptersTree: typeof import('./ts/components/Vue/Chapters/ChaptersTree.vue')['default']
     ChaptersView: typeof import('./ts/components/Vue/ChaptersView.vue')['default']
     ChapterTree: typeof import('./ts/components/Vue/Chapters/ChapterTree.vue')['default']
     CloudSyncModal: typeof import('./ts/components/Vue/CloudSyncModal.vue')['default']

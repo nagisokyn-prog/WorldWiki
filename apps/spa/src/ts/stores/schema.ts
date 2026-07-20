@@ -1,12 +1,20 @@
+/**
+ * @file schema.ts
+ * @description Pinia store для кеша схем сущностей
+ */
+import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { getValueByPath } from '@/utils/path';
 
-export type SchemaCacheLike = {
-  loadSchema: (entityType: string) => Promise<any>;
-  getEntityDisplayName: (entity: Record<string, unknown>, entityType?: string) => string;
-};
+export interface EntitySchema {
+  titleField?: string;
+  sections?: Array<{
+    title: string;
+    fields: Array<{ path: string; isTitle?: boolean }>;
+  }>;
+}
 
-export function useSchemaCache() {
+export const useSchemaStore = defineStore('schema', () => {
   const schemaCache = ref<Record<string, any>>({});
 
   const loadSchema = async (entityType: string): Promise<any> => {
@@ -40,4 +48,4 @@ export function useSchemaCache() {
     loadSchema,
     getEntityDisplayName,
   };
-}
+});

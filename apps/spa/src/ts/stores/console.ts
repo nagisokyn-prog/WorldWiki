@@ -1,4 +1,9 @@
-import { ref, triggerRef } from 'vue';
+/**
+ * @file console.ts
+ * @description Pinia store для консоли (логи и тосты)
+ */
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export interface Toast {
   id: number;
@@ -6,11 +11,17 @@ export interface Toast {
   type: 'success' | 'warn' | 'error' | 'info';
 }
 
-export function useConsole(ctx?: {
-  settings?: { value: { notifications?: { duration?: number } } };
-}) {
-  const consoleLogs = ref<Array<{ id: number; text: string; type: 'info' | 'warn' | 'error' | 'success'; timestamp: string }>>([]);
+export interface ConsoleLog {
+  id: number;
+  text: string;
+  type: 'info' | 'warn' | 'error' | 'success';
+  timestamp: string;
+}
+
+export const useConsoleStore = defineStore('console', () => {
+  const consoleLogs = ref<ConsoleLog[]>([]);
   const toasts = ref<Toast[]>([]);
+  
   let logCounter = 0;
   let toastIdCounter = 0;
 
@@ -18,20 +29,17 @@ export function useConsole(ctx?: {
     const logs = consoleLogs.value;
     logs.unshift({ id: ++logCounter, text, type, timestamp: new Date().toLocaleTimeString() });
     if (logs.length > 100) logs.splice(100);
-    triggerRef(consoleLogs);
   };
 
   const addToast = (text: string, type: Toast['type'] = 'info') => {
-    const duration = ctx?.settings?.value?.notifications?.duration;
     const id = ++toastIdCounter;
     toasts.value.push({ id, text, type });
-    const ms = typeof duration === 'number' ? duration : 3000;
     setTimeout(() => {
       toasts.value = toasts.value.filter(t => t.id !== id);
-    }, ms);
+    }, 3000);
   };
 
-  const getToastIcon = (type: Toast['type']) => {
+  const getToastIcon = (type: Toast['type']): string => {
     switch (type) {
       case 'success': return 'fas fa-check-circle';
       case 'warn': return 'fas fa-exclamation-triangle';
@@ -47,4 +55,4 @@ export function useConsole(ctx?: {
     addToast,
     getToastIcon,
   };
-}
+});

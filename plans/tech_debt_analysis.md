@@ -1,6 +1,25 @@
 # Анализ технического долга и багов (Версия 1.0.0)
 
-В данном артефакте собран глубокий анализ 22 проблемных пунктов, описанных пользователем, с указанием корневых причин и путей их архитектурного или локального решения.
+В данном артефакте собран глубокий анализ проблемных пунктов, описанных пользователем, с указанием корневых причин и путей их архитектурного или локального решения.
+
+## Статус архитектурной переписи (19.07.2026)
+
+### ✅ Выполнено:
+- **Монорепо**: pnpm workspaces + Turborepo, tsconfig.base.json, eslint.config.js
+- **Пакеты**: `@worldwiki/components` (13+ компонентов, composables, типы), `@worldwiki/resources` (стили, шрифты, i18n)
+- **Декомпозиция**: `app.ts` → `useAppShell.ts` (716 строк), EntityEditor → папка, EditorCoreTiptap → папка
+- **Дубли удалены**: `useTreeSelection` (kit), `RedactSandbox`, `dom-utils`, `refactored_app`
+- **API разбит**: `api.service.ts` → `api/*.api.ts`
+- **Foundation**: vitest, vite (UnoCSS, AutoImport), library build, ARCHITECTURE.md
+- **Pinia**: `createPinia()` + `app.use(pinia)`, `stores/settings.ts`, `plans/PINIA_EXPORT.md`
+- **ChapterTree**: использует `ExplorerTree` из `@worldwiki/components`
+
+### ❌ Осталось:
+- **Pinia stores**: миграция 9 composables (shell, editor, entities, chapters, save, schema, console, floating, zoom)
+- **UnoCSS**: плагин отключён (Vite 8 applyHtmlTransforms bug)
+- **@tanstack/vue-query**: не внедрён
+
+---
 
 ## UI / UX и Стили
 **1. 3D-колесо для выбора календаря ✅**

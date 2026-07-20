@@ -4,6 +4,7 @@
  * Вся логика в useAppShell.
  */
 import { createApp, defineAsyncComponent, type Plugin } from 'vue';
+import { createPinia } from 'pinia';
 
 import '@worldwiki/resources/styles/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
@@ -42,33 +43,13 @@ const TagsField = defineAsyncComponent(() => import('@worldwiki/components').the
 const SchemaEditorMainVue = defineAsyncComponent(() => import('../components/Vue/SchemaEditor/SchemaEditorMain.vue'));
 const CloudSyncModalVue = defineAsyncComponent(() => import('../components/Vue/CloudSyncModal.vue'));
 
-interface SidebarItem {
-  type: 'static' | 'entity' | 'chapters';
-  url?: string;
-  entityType?: string;
-  icon: string;
-  emoji: string;
-  title: string;
-}
-
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const projectName = params.get('project') || 'default';
 
-  const sidebarItems: SidebarItem[] = [];
-
   // Загружаем схемы сущностей
   try {
-    const entitySchemas = await apiService.getSchemas(projectName);
-    for (const [typeKey, schema] of Object.entries(entitySchemas)) {
-      if (!sidebarItems.find(item => item.entityType === typeKey)) {
-        sidebarItems.push({
-          type: 'entity', entityType: typeKey,
-          icon: 'fas fa-cube', emoji: schema.icon || '🧩',
-          title: schema.name || typeKey,
-        });
-      }
-    }
+    await apiService.getSchemas(projectName);
   } catch (e) {
     console.warn('Failed to load schemas:', e);
   }
@@ -80,6 +61,8 @@ async function init() {
 
   const app = createApp(AppSwitcher);
   
+  const pinia = createPinia();
+  app.use(pinia);
   app.use(router);
 
   // Регистрация компонентов

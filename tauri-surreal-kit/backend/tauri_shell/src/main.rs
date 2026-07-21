@@ -82,6 +82,7 @@ fn main() {
         .invoke_handler(surreal_domain::entity_commands![
             // ── System commands (always included) ──────────────────────────
             upload_photo,
+            copy_background_file,
             get_local_file,
             run_performance_benchmark,
             get_performance_styles,

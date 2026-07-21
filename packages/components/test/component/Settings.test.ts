@@ -205,9 +205,9 @@ describe('Settings.vue', () => {
     wrapper = mount(Settings, {
       global: {
         plugins: [i18n],
-        components: {
+        stubs: {
           ThemeSwitcher: {
-            template: '<div data-testid="theme-switcher" />'
+            template: '<div data-testid="theme-switcher"></div>'
           }
         },
         directives: {

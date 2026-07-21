@@ -39,13 +39,13 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 class SettingsService {
   private settings: AppSettings;
-  private listeners: Array<(settings: AppSettings) => void>;
+  private listeners: ((settings: AppSettings) => void)[] = [];
 
   constructor() {
     this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-    this.listeners = [];
 
     if (typeof window !== 'undefined') {
+      // Синхронизация между вкладками браузера
       window.addEventListener('storage', (e) => {
         if (e.key === ((window as any).__APP_CONFIG__?.storageKey ?? 'app:settings') && e.newValue) {
           try {
@@ -58,6 +58,18 @@ class SettingsService {
           }
         }
       });
+
+      // Синхронизация между окнами Tauri
+      if ((window as any).__TAURI__?.event) {
+        (window as any).__TAURI__.event.listen('settings-updated', (event: { payload: AppSettings }) => {
+          if (event.payload) {
+            this.settings = this.deepMerge(DEFAULT_SETTINGS, event.payload);
+            this.applySettings();
+            this.applyLocale();
+            this.notifyListeners();
+          }
+        }).catch((e: any) => console.warn('Failed to listen to settings-updated', e));
+      }
     }
   }
 
@@ -127,6 +139,9 @@ class SettingsService {
       if (window.__TAURI__?.core) {
         try {
           await window.__TAURI__.core.invoke('save_settings', { settings: this.settings });
+          if (window.__TAURI__.event) {
+            await window.__TAURI__.event.emit('settings-updated', this.settings);
+          }
         } catch (e) {
           console.warn('Tauri settings save failed:', e);
         }
@@ -225,7 +240,9 @@ class SettingsService {
       container.style.filter = `blur(${bg.blur}px)`;
       
       const applySrc = (el: HTMLImageElement | HTMLVideoElement, path: string) => {
-        if ((window as any).__TAURI__?.core?.convertFileSrc) {
+        // Не конвертируем, если путь уже является URL (asset.localhost, blob:, data:, http:)
+        const isAlreadyUrl = path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:');
+        if (!isAlreadyUrl && (window as any).__TAURI__?.core?.convertFileSrc) {
           el.src = (window as any).__TAURI__.core.convertFileSrc(path);
         } else {
           el.src = path;

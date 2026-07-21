@@ -97,6 +97,7 @@ fn main() {
             delete_relation_schema,
             // --- Вспомогательные ---
             upload_photo,
+            copy_background_file,
             get_local_file,
             run_performance_benchmark,
             get_performance_styles,

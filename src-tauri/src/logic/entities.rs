@@ -51,10 +51,10 @@ pub async fn get_entities(
     let db = &state.db;
     let query = match &entity_type {
         Some(_et) => format!(
-            "SELECT * FROM entities WHERE (project_id = $pid OR project_id = type::record('projects', $pid_raw)) AND entity_type = $et"
+            "SELECT * FROM entities WHERE (project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))) AND entity_type = $et"
         ),
         None => format!(
-            "SELECT * FROM entities WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw)"
+            "SELECT * FROM entities WHERE project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))"
         ),
     };
 
@@ -105,8 +105,8 @@ pub async fn save_entity(
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
         let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
         let mut query = "
-            UPSERT type::record('entities', $id) SET
-                project_id = type::record('projects', $raw_pid),
+            UPSERT type::record(string::concat('entities:', $id)) SET
+                project_id = type::record(string::concat('projects:', $raw_pid)),
                 entity_type = $data.entity_type,
                 name = $data.name
         ".to_string();
@@ -125,7 +125,7 @@ pub async fn save_entity(
     } else {
         let mut query = "
             CREATE entities SET
-                project_id = type::record('projects', $raw_pid),
+                project_id = type::record(string::concat('projects:', $raw_pid)),
                 entity_type = $data.entity_type,
                 name = $data.name
         ".to_string();
@@ -185,7 +185,7 @@ pub async fn search_entities(
     } else { "" };
 
     let sql = format!(
-        "SELECT * FROM entities WHERE (project_id = $pid OR project_id = type::record('projects', $pid_raw)) \
+        "SELECT * FROM entities WHERE (project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))) \
          AND (name @@ $q OR description @@ $q){} LIMIT 50",
         type_filter
     );
@@ -225,7 +225,7 @@ pub async fn get_entity_schemas(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<EntitySchema>, String> {
     let db = &state.db;
-    let mut res = db.query("SELECT * FROM entity_schemas WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw)")
+    let mut res = db.query("SELECT * FROM entity_schemas WHERE project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))")
         .bind(("pid", format!("projects:{}", project)))
         .bind(("pid_raw", project))
         .await.map_err(|e| e.to_string())?;
@@ -304,7 +304,7 @@ pub async fn save_entity_schema(
                 
                 CREATE schema_history CONTENT $snap;
                 
-                LET $target = type::record('entity_schemas', $actual_id);
+                LET $target = type::record(string::concat('entity_schemas:', $actual_id));
                 LET $unpinned = (SELECT id FROM schema_history WHERE schema_id = $target AND is_pinned = false ORDER BY saved_at DESC);
                 IF (array::len($unpinned) > $max_limit) {
                     LET $to_delete = array::slice($unpinned, $max_limit, array::len($unpinned));
@@ -328,8 +328,8 @@ pub async fn save_entity_schema(
         // -------------------------
 
         let query = "
-            UPDATE type::record('entity_schemas', $id) SET 
-                project_id = type::record('projects', $raw_pid),
+            UPDATE type::record(string::concat('entity_schemas:', $id)) SET 
+                project_id = type::record(string::concat('projects:', $raw_pid)),
                 type_key = $data.type_key,
                 type_name = $data.type_name,
                 icon = $data.icon,
@@ -346,7 +346,7 @@ pub async fn save_entity_schema(
     } else {
         let query = "
             CREATE entity_schemas SET 
-                project_id = type::record('projects', $raw_pid),
+                project_id = type::record(string::concat('projects:', $raw_pid)),
                 type_key = $data.type_key,
                 type_name = $data.type_name,
                 icon = $data.icon,
@@ -417,7 +417,7 @@ pub async fn toggle_schema_history_pin(
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 { parts[1] } else { history_id.as_str() };
     
-    db.query("UPDATE type::record('schema_history', $id) SET is_pinned = $is_pinned")
+    db.query("UPDATE type::record(string::concat('schema_history:', $id)) SET is_pinned = $is_pinned")
         .bind(("id", actual_id))
         .bind(("is_pinned", is_pinned))
         .await.map_err(|e| e.to_string())?;
@@ -436,7 +436,7 @@ pub async fn get_entity_relations(
 ) -> Result<Vec<EntityRel>, String> {
     let db = &state.db;
     let sql = match &entity_id {
-        Some(_) => "SELECT * FROM entity_rel WHERE project_id = $pid AND (in = type::record('entities', $eid_raw) OR out = type::record('entities', $eid_raw))",
+        Some(_) => "SELECT * FROM entity_rel WHERE project_id = $pid AND (in = type::record(string::concat('entities:', $eid_raw)) OR out = type::record(string::concat('entities:', $eid_raw)))",
         None => "SELECT * FROM entity_rel WHERE project_id = $pid",
     };
 
@@ -509,7 +509,7 @@ pub async fn get_relation_schemas(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<RelationSchema>, String> {
     let db = &state.db;
-    let mut res = db.query("SELECT * FROM relation_schemas WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw)")
+    let mut res = db.query("SELECT * FROM relation_schemas WHERE project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))")
         .bind(("pid", format!("projects:{}", project)))
         .bind(("pid_raw", project))
         .await.map_err(|e| e.to_string())?;

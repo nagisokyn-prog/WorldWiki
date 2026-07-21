@@ -25,6 +25,7 @@ describe('SettingsService', () => {
   let originalTauri: typeof globalThis.__TAURI__;
 
   beforeEach(() => {
+    vi.restoreAllMocks();
     vi.clearAllMocks();
     
     // Reset the service to default settings
@@ -250,13 +251,21 @@ describe('SettingsService', () => {
       const applyLocaleSpy = vi.spyOn(settingsService as any, 'applyLocale');
       const notifySpy = vi.spyOn(settingsService as any, 'notifyListeners');
       
-      const s = settingsService.getSettings();
-      s.locale = 'en';
-      await settingsService.saveSettings(s, true);
-      
-      expect(applySpy).toHaveBeenCalled();
-      expect(applyLocaleSpy).toHaveBeenCalled();
-      expect(notifySpy).toHaveBeenCalled();
+      try {
+        const s = settingsService.getSettings();
+        s.locale = 'en';
+        await settingsService.saveSettings(s, true);
+        
+        if (applySpy.mock.calls.length === 0) {
+          throw new Error('applySpy had 0 calls! Timeout? ' + !!settingsService.saveSettings);
+        }
+        
+        expect(applySpy).toHaveBeenCalled();
+        expect(applyLocaleSpy).toHaveBeenCalled();
+        expect(notifySpy).toHaveBeenCalled();
+      } catch (e) {
+        throw new Error('TEST FAILED WITH: ' + e);
+      }
     });
 
     it('should save to Tauri immediately when immediate=true', async () => {
@@ -440,10 +449,11 @@ describe('SettingsService', () => {
   describe('applyBackground', () => {
     it('should create background container if not exists', () => {
       vi.mocked(document.getElementById).mockReturnValue(null);
+      const spy = vi.spyOn(document, 'createElement');
       
       settingsService.applyBackground();
       
-      expect(document.createElement).toHaveBeenCalledWith('div');
+      expect(spy).toHaveBeenCalledWith('div');
       expect(document.body.appendChild).toHaveBeenCalled();
     });
 
@@ -461,49 +471,42 @@ describe('SettingsService', () => {
     });
 
     it('should set opacity and blur on container', () => {
-      const container = document.createElement('div');
-      container.style.cssText = '';
-      vi.spyOn(document, 'getElementById').mockReturnValue(container);
+      const el = document.createElement('div');
+      vi.mocked(document.getElementById).mockReturnValue(el);
       
       settingsService.getSettings().background = { opacity: 0.5, blur: 10, type: 'color', fit: 'cover' };
       settingsService.applyBackground();
       
-      expect(container.style.opacity).toBe('0.5');
-      expect(container.style.filter).toBe('blur(10px)');
+      const container = document.getElementById('ww-background');
+      expect(container).toBeDefined();
+      expect(container!.style.opacity).toBe('0.5');
+      expect(container!.style.filter).toBe('blur(10px)');
     });
 
     it('should handle color background type', () => {
-      const container = document.createElement('div');
-      container.style.cssText = '';
-      vi.spyOn(document, 'getElementById').mockReturnValue(container);
+      const el = document.createElement('div');
+      vi.mocked(document.getElementById).mockReturnValue(el);
       
       settingsService.getSettings().background = { type: 'color', opacity: 1, blur: 0, fit: 'cover' };
       settingsService.applyBackground();
       
-      expect(container.style.backgroundColor).toBe('var(--bg-base)');
+      const container = document.getElementById('ww-background');
+      expect(container!.style.backgroundColor).toBe('var(--bg-base)');
     });
 
     it('should create image element for image background', () => {
-      const container = document.createElement('div');
-      container.style.cssText = '';
-      container.appendChild = vi.fn();
-      vi.spyOn(document, 'getElementById').mockReturnValue(container);
+      const el = document.createElement('div');
+      el.appendChild = function(child) { this.innerHTML += child.outerHTML; return child; };
+      vi.mocked(document.getElementById).mockReturnValue(el);
       
-      const img = document.createElement('img');
-      img.style.cssText = '';
-      vi.mocked(document.createElement).mockReturnValue(img);
-      
-      settingsService.getSettings().background = { 
-        type: 'image', 
-        imagePath: '/test.jpg', 
-        opacity: 1, 
-        blur: 0,
-        fit: 'cover'
-      };
+      settingsService.getSettings().background = { type: 'image', imagePath: '/test.jpg', opacity: 1, blur: 0, fit: 'cover' };
       settingsService.applyBackground();
       
-      expect(document.createElement).toHaveBeenCalledWith('img');
-      expect(img.style.objectFit).toBe('cover');
+      const container = document.getElementById('ww-background');
+      const img = container!.querySelector('img');
+      expect(img).not.toBeNull();
+      expect(img!.style.objectFit).toBe('cover');
+      expect(img!.src).toContain('/test.jpg');
     });
 
     it('should create video element for video background', () => {
@@ -514,7 +517,7 @@ describe('SettingsService', () => {
       
       const video = document.createElement('video');
       video.style.cssText = '';
-      vi.mocked(document.createElement).mockReturnValue(video);
+      vi.spyOn(document, 'createElement').mockReturnValue(video);
       
       settingsService.getSettings().background = { 
         type: 'video', 
@@ -532,14 +535,9 @@ describe('SettingsService', () => {
     });
 
     it('should use Tauri convertFileSrc when available', () => {
-      const container = document.createElement('div');
-      container.style.cssText = '';
-      container.appendChild = vi.fn();
-      vi.spyOn(document, 'getElementById').mockReturnValue(container);
-      
-      const img = document.createElement('img');
-      img.style.cssText = '';
-      vi.mocked(document.createElement).mockReturnValue(img);
+      const el = document.createElement('div');
+      el.appendChild = function(child) { this.innerHTML += child.outerHTML; return child; };
+      vi.mocked(document.getElementById).mockReturnValue(el);
       
       globalThis.__TAURI__ = {
         core: { convertFileSrc: vi.fn((path) => `tauri://${path}`) }
@@ -554,19 +552,16 @@ describe('SettingsService', () => {
       };
       settingsService.applyBackground();
       
+      const container = document.getElementById('ww-background');
+      const img = container!.querySelector('img');
       expect(globalThis.__TAURI__!.core!.convertFileSrc).toHaveBeenCalledWith('/local/path.jpg');
-      expect(img.src).toBe('tauri:///local/path.jpg');
+      expect(img!.src).toContain('tauri:///local/path.jpg');
     });
 
     it('should fallback to raw path when convertFileSrc not available', () => {
-      const container = document.createElement('div');
-      container.style.cssText = '';
-      container.appendChild = vi.fn();
-      vi.spyOn(document, 'getElementById').mockReturnValue(container);
-      
-      const img = document.createElement('img');
-      img.style.cssText = '';
-      vi.mocked(document.createElement).mockReturnValue(img);
+      const el = document.createElement('div');
+      el.appendChild = function(child) { this.innerHTML += child.outerHTML; return child; };
+      vi.mocked(document.getElementById).mockReturnValue(el);
       
       globalThis.__TAURI__ = { core: {} } as any;
       
@@ -579,7 +574,9 @@ describe('SettingsService', () => {
       };
       settingsService.applyBackground();
       
-      expect(img.src).toBe('/local/path.jpg');
+      const container = document.getElementById('ww-background');
+      const img = container!.querySelector('img');       
+      expect(img!.src).toContain('/local/path.jpg');     
     });
 
     it('should catch and log errors', () => {

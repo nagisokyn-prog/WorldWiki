@@ -65,18 +65,7 @@ Object.defineProperty(document, 'body', {
   }
 });
 
-// Mock document.createElement
-const originalCreateElement = document.createElement.bind(document);
-document.createElement = vi.fn((tagName: string) => {
-  const element = originalCreateElement(tagName);
-  if (tagName === 'div' || tagName === 'img' || tagName === 'video') {
-    element.style = {};
-    element.appendChild = vi.fn();
-    element.setAttribute = vi.fn();
-    element.getAttribute = vi.fn();
-  }
-  return element;
-});
+// Removed broken document.createElement mock that destroyed Vue rendering
 
 // Mock getElementById
 const mockGetElementById = vi.fn((id: string) => {

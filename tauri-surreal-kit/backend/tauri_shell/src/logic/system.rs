@@ -4,14 +4,28 @@ use std::fs;
 
 // ─── File system ──────────────────────────────────────────────────────────────
 
+fn get_data_dir() -> std::path::PathBuf {
+    if let Ok(exe) = env::current_exe() {
+        // Dev: target/debug/app.exe -> target/debug -> target -> tauri_shell
+        if let Some(debug_dir) = exe.parent() {
+            if let Some(target_dir) = debug_dir.parent() {
+                if target_dir.ends_with("target") {
+                    if let Some(root) = target_dir.parent() {
+                        return root.join("data");
+                    }
+                }
+            }
+        }
+    }
+    // Prod or fallback
+    env::current_dir().unwrap_or_default().join("data")
+}
+
 /// Upload a photo/image bytes → saves to `data/user_images/` with a timestamp prefix.
 /// Returns the absolute path of the saved file.
 #[tauri::command]
 pub async fn upload_photo(bytes: Vec<u8>, filename: String) -> Result<String, String> {
-    let mut path = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join("user_images");
+    let mut path = get_data_dir().join("user_images");
     fs::create_dir_all(&path).ok();
     let new_name = format!(
         "{}_{}",
@@ -23,6 +37,29 @@ pub async fn upload_photo(bytes: Vec<u8>, filename: String) -> Result<String, St
     );
     path.push(new_name);
     fs::write(&path, bytes).map_err(|e| e.to_string())?;
+    Ok(path.to_string_lossy().to_string())
+}
+
+/// Copy a background file from absolute path -> saves to `data/user_images/`
+/// Returns the absolute path of the copied file.
+#[tauri::command]
+pub async fn copy_background_file(source_path: String) -> Result<String, String> {
+    let mut path = get_data_dir().join("user_images");
+    fs::create_dir_all(&path).ok();
+    
+    let source = std::path::Path::new(&source_path);
+    let filename = source.file_name().unwrap_or_default().to_string_lossy();
+    
+    let new_name = format!(
+        "{}_{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis(),
+        filename
+    );
+    path.push(new_name);
+    fs::copy(&source_path, &path).map_err(|e| e.to_string())?;
     Ok(path.to_string_lossy().to_string())
 }
 
@@ -56,10 +93,7 @@ pub fn get_performance_styles(level: String) -> String {
 /// Persist app settings JSON to `data/settings.json`.
 #[tauri::command]
 pub async fn save_settings(settings: Value) -> Result<(), String> {
-    let path = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join("settings.json");
+    let path = get_data_dir().join("settings.json");
     fs::create_dir_all(path.parent().unwrap()).ok();
     fs::write(&path, serde_json::to_string_pretty(&settings).unwrap())
         .map_err(|e| e.to_string())?;
@@ -69,10 +103,7 @@ pub async fn save_settings(settings: Value) -> Result<(), String> {
 /// Load app settings JSON from `data/settings.json`. Returns `null` if not found.
 #[tauri::command]
 pub async fn load_settings() -> Result<Value, String> {
-    let path = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join("settings.json");
+    let path = get_data_dir().join("settings.json");
     if path.exists() {
         let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
         Ok(serde_json::from_str(&content).unwrap_or(Value::Null))
@@ -99,7 +130,7 @@ pub async fn toggle_fullscreen(window: tauri::Window) -> Result<(), String> {
 /// (excludes built-in "light" and "dark").
 #[tauri::command]
 pub async fn get_custom_themes() -> Result<Vec<String>, String> {
-    let path = env::current_dir().unwrap_or_default().join("data");
+    let path = get_data_dir();
     if !path.exists() {
         return Ok(vec![]);
     }
@@ -109,14 +140,24 @@ pub async fn get_custom_themes() -> Result<Vec<String>, String> {
             if let Ok(ft) = entry.file_type() {
                 if ft.is_file() {
                     let name = entry.file_name().to_string_lossy().to_string();
+                    // Булт-ин темы: settings-light.json, settings-dark.json
+                    if name.starts_with("settings-") && name.ends_with(".json") && !name.starts_with("settings-theme-") {
+                        let theme = name
+                            .trim_start_matches("settings-")
+                            .trim_end_matches(".json")
+                            .to_string();
+                        // Пропускаем settings.json (текущие настройки)
+                        if theme != "settings" {
+                            themes.push(theme);
+                        }
+                    }
+                    // Пользовательские темы: settings-theme-{name}.json
                     if name.starts_with("settings-theme-") && name.ends_with(".json") {
                         let theme = name
                             .trim_start_matches("settings-theme-")
                             .trim_end_matches(".json")
                             .to_string();
-                        if theme != "light" && theme != "dark" {
-                            themes.push(theme);
-                        }
+                        themes.push(theme);
                     }
                 }
             }
@@ -128,24 +169,28 @@ pub async fn get_custom_themes() -> Result<Vec<String>, String> {
 /// Load a theme by name from `data/settings-<theme>.json`.
 #[tauri::command]
 pub async fn load_theme(theme: String) -> Result<Value, String> {
-    let path = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join(format!("settings-theme-{}.json", theme)); // Fixed file name format here too to match main.rs
-    if path.exists() {
-        let content = fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        Ok(serde_json::from_str(&content).unwrap_or(Value::Null))
-    } else {
-        Ok(Value::Null)
+    let data_dir = get_data_dir();
+    // Сначала ищем булт-ин тему (напр.: settings-light.json)
+    let builtin_path = data_dir.join(format!("settings-{}.json", theme));
+    if builtin_path.exists() {
+        let content = fs::read_to_string(&builtin_path).map_err(|e| e.to_string())?;
+        return Ok(serde_json::from_str(&content).unwrap_or(Value::Null));
     }
+    // Затем ищем пользовательскую тему (settings-theme-{name}.json)
+    let custom_path = data_dir.join(format!("settings-theme-{}.json", theme));
+    if custom_path.exists() {
+        let content = fs::read_to_string(&custom_path).map_err(|e| e.to_string())?;
+        return Ok(serde_json::from_str(&content).unwrap_or(Value::Null));
+    }
+    Ok(Value::Null)
 }
 
 /// Save a custom theme to `data/settings-<name>.json`.
 #[tauri::command]
 pub async fn save_custom_theme(name: String, settings: Value) -> Result<(), String> {
-    let path = env::current_dir().unwrap_or_default().join("data");
+    let path = get_data_dir();
     fs::create_dir_all(&path).ok();
-    let file_path = path.join(format!("settings-{}.json", name));
+    let file_path = path.join(format!("settings-theme-{}.json", name));
     fs::write(&file_path, serde_json::to_string_pretty(&settings).unwrap())
         .map_err(|e| e.to_string())?;
     Ok(())

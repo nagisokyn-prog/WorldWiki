@@ -370,41 +370,30 @@ const pickBackgroundFile = async () => {
     });
     
     if (selected && typeof selected === 'string') {
-      try {
-        const readFile = (window as any).__TAURI__?.fs?.readFile;
-        const invoke = (window as any).__TAURI__?.core?.invoke;
-        
-        if (readFile && invoke) {
-          const bytes = await readFile(selected);
-          const filename = selected.replace(/\\/g, '/').split('/').pop() || 'background';
-          const savedPath = await invoke('upload_photo', { 
-            bytes: Array.from(bytes), 
-            filename 
-          });
-          
-          if (isVideo) {
-            settings.value.background!.videoPath = savedPath as string;
-          } else {
-            settings.value.background!.imagePath = savedPath as string;
-          }
-        } else {
-          // Fallback if window.__TAURI__.fs is not injected
-          if (isVideo) {
-            settings.value.background!.videoPath = selected;
-          } else {
-            settings.value.background!.imagePath = selected;
-          }
-        }
-        save();
-      } catch (err) {
-        console.error('Failed to copy file to data folder:', err);
-        // Fallback
+      const invoke = (window as any).__TAURI__?.core?.invoke;
+
+      const applyPath = (rawPath: string) => {
+        // Храним сырой путь — settings.service.ts сам вызовет convertFileSrc при рендере
         if (isVideo) {
-          settings.value.background!.videoPath = selected;
+          settings.value.background!.videoPath = rawPath;
         } else {
-          settings.value.background!.imagePath = selected;
+          settings.value.background!.imagePath = rawPath;
         }
         save();
+      };
+
+      if (invoke) {
+        try {
+          // Копируем файл в папку приложения через Rust — получаем путь внутри data/
+          const savedPath = await invoke('copy_background_file', { sourcePath: selected });
+          applyPath(savedPath as string);
+        } catch (err) {
+          console.warn('[background] copy_background_file failed, using original path:', err);
+          // Фолбек: исходный путь на диске — всё равно сработает через convertFileSrc
+          applyPath(selected);
+        }
+      } else {
+        applyPath(selected);
       }
     }
   } catch(e) {

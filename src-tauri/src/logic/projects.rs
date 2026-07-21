@@ -41,7 +41,7 @@ pub async fn get_project_config(
     println!("[DEBUG] -> get_project_config: Requesting config for project '{}'", name);
     let mut query_res = state
         .db
-        .query("SELECT *, type::string(id) as id FROM type::record('projects', $name)")
+        .query("SELECT *, type::string(id) as id FROM type::record(string::concat('projects:', $name))")
         .bind(("name", name))
         .await
         .map_err(|e| e.to_string())?;
@@ -79,7 +79,7 @@ pub async fn delete_project(name: String, state: tauri::State<'_, crate::AppStat
         .db
         .query("
             BEGIN TRANSACTION;
-            LET $pid = type::record('projects', $name);
+            LET $pid = type::record(string::concat('projects:', $name));
             LET $pid_str = string::concat('projects:', $name);
             
             -- Удаляем все зависимые сущности (каскадное удаление на уровне проекта)

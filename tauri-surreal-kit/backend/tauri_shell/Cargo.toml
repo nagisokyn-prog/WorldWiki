@@ -22,3 +22,7 @@ open       = "5.3"
 
 # Point to the local surreal_domain crate (adjust the path when using as a dependency)
 surreal_domain = { path = "../surreal_domain/surreal_domain_facade" }
+
+[dev-dependencies]
+tempfile = "3.5"
+tokio = { version = "1", features = ["full"] }

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 
@@ -23,5 +23,17 @@ export default defineConfig({
       }
     },
     outDir: 'dist'
+  },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    include: ['test/**/*.test.ts'],
+    setupFiles: ['./test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/ts/services/settings.service.ts', 'src/components/Vue/Settings.vue'],
+      exclude: ['node_modules/', 'dist/', 'test/']
+    }
   }
 });

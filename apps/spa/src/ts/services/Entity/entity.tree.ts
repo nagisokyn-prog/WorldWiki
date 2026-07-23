@@ -3,7 +3,7 @@
  * @description Composable for managing entity tree state
  */
 
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { entityApi } from './entity.api';
 import { useTreeSelection } from '@worldwiki/components';
 
@@ -16,6 +16,18 @@ export function useEntityTree(project: string, emit: any) {
   const entityKey = (type: string, id: any) => `entity:${type}:${id}`;
   const entityCtx = ref(null as any);
 
+  // DEBUG: watch reactive state changes
+  watch(entitySections, (v) => console.log('[TREE DEBUG] entitySections changed:', JSON.stringify(v)), { deep: true });
+  watch(entities, (v) => {
+    const counts = Object.fromEntries(Object.entries(v).map(([k, a]) => [k, a.length]));
+    console.log('[TREE DEBUG] entities changed, counts:', counts);
+    for (const [type, list] of Object.entries(v)) {
+      if (list.length > 0) {
+        console.log(`[TREE DEBUG]   ${type}[0] =`, JSON.stringify(list[0]));
+      }
+    }
+  }, { deep: true });
+
   const entityCtxStyle = computed(() => {
     if (!entityCtx.value) return {};
     const x = entityCtx.value.x + 220 > window.innerWidth ? entityCtx.value.x - 220 : entityCtx.value.x;
@@ -25,12 +37,16 @@ export function useEntityTree(project: string, emit: any) {
 
   const flatEntityItems = computed(() => {
     const result: any[] = [];
+    console.log('[TREE DEBUG] flatEntityItems recomputing. expandedSections:', [...expandedSections.value], 'sections:', entitySections.value.map(s => s.type));
     for (const sect of entitySections.value) {
+      const list = entities.value[sect.type] || [];
+      console.log(`[TREE DEBUG]   sect=${sect.type} expanded=${expandedSections.value.has(sect.type)} count=${list.length}`);
       if (!expandedSections.value.has(sect.type)) continue;
-      for (const entity of entities.value[sect.type] || []) {
+      for (const entity of list) {
         result.push({ id: entityKey(sect.type, entity.id), _entity: entity, _type: sect.type });
       }
     }
+    console.log('[TREE DEBUG] flatEntityItems result count:', result.length);
     return result;
   });
 
@@ -44,7 +60,6 @@ export function useEntityTree(project: string, emit: any) {
         emit('delete-entity', item.id, item._type, true);
       }
 
-      // Remove from local state immediately
       for (const item of itemsToDelete) {
         if (entities.value[item._type]) {
           entities.value[item._type] = entities.value[item._type].filter(e => String(e.id) !== String(item._entity.id));
@@ -60,15 +75,25 @@ export function useEntityTree(project: string, emit: any) {
     return false;
   };
 
+  let loadingEntities = false;
   const loadEntities = async () => {
+    console.log(`[TREE DEBUG] loadEntities called for project='${project}', loadingEntities=${loadingEntities}`);
+    if (loadingEntities) {
+      console.warn('[TREE DEBUG] loadEntities SKIPPED — already loading!');
+      return;
+    }
+    loadingEntities = true;
     try {
+      console.log('[TREE DEBUG] → calling getSchemas...');
       const schemas = await entityApi.getSchemas(project);
+      console.log('[TREE DEBUG] ← getSchemas returned:', Object.keys(schemas));
 
       entitySections.value = Object.keys(schemas).map(key => ({
         type: key,
         title: schemas[key].name || key,
         emoji: schemas[key].icon || schemas[key].iconEmoji || '📄'
       }));
+      console.log('[TREE DEBUG] entitySections set to:', entitySections.value.map(s => s.type));
 
       titleFields.value = {};
       for (const [key, schema] of Object.entries(schemas)) {
@@ -77,15 +102,24 @@ export function useEntityTree(project: string, emit: any) {
         }
       }
 
+      const newEntities: Record<string, any[]> = {};
       for (const sect of entitySections.value) {
-        entities.value[sect.type] = await entityApi.getEntityList(project, sect.type);
+        console.log(`[TREE DEBUG] → getEntityList for type='${sect.type}'...`);
+        const list = await entityApi.getEntityList(project, sect.type);
+        console.log(`[TREE DEBUG] ← getEntityList for '${sect.type}' returned ${list.length} items:`, JSON.stringify(list));
+        newEntities[sect.type] = list;
       }
+      console.log('[TREE DEBUG] Setting entities.value, counts:', Object.fromEntries(Object.entries(newEntities).map(([k, a]) => [k, a.length])));
+      entities.value = newEntities;
+      console.log('[TREE DEBUG] entities.value set done, keys:', Object.keys(entities.value));
     } catch (e) {
-      console.error('Ошибка загрузки сущностей', e);
+      console.error('[TREE DEBUG] ERROR in loadEntities:', e);
+    } finally {
+      loadingEntities = false;
+      console.log('[TREE DEBUG] loadEntities DONE');
     }
   };
 
-  // Хелпер для получения значения по пути "key1.key2"
   const getValueByPath = (obj: any, path: string): any => {
     if (!path) return undefined;
     return path.split('.').reduce((cur: any, k: string) => (cur != null ? cur[k] : undefined), obj);
@@ -117,6 +151,7 @@ export function useEntityTree(project: string, emit: any) {
   };
 
   const toggleSection = (section: string) => {
+    console.log(`[TREE DEBUG] toggleSection '${section}', was expanded:`, expandedSections.value.has(section));
     if (expandedSections.value.has(section)) {
       expandedSections.value.delete(section);
       const keys = [...entitySelection.selected.value].filter((k: any) => String(k).startsWith(`entity:${section}:`));
@@ -126,6 +161,7 @@ export function useEntityTree(project: string, emit: any) {
     } else {
       expandedSections.value.add(section);
     }
+    console.log(`[TREE DEBUG] toggleSection '${section}' done, expandedSections:`, [...expandedSections.value]);
   };
 
   const deleteEntityCtxNode = async () => {
@@ -133,7 +169,7 @@ export function useEntityTree(project: string, emit: any) {
     const { entityType, entity } = entityCtx.value;
     entityCtx.value = null;
     const key = entityKey(entityType, entity.id);
-    
+
     if (entitySelection.hasSelection.value && entitySelection.isSelected(key) && entitySelection.selectedCount.value > 1) {
       await entitySelection.deleteSelected();
     } else {

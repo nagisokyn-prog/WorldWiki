@@ -38,6 +38,26 @@ fn deserialize_list<T: serde::de::DeserializeOwned>(values: Vec<Value>) -> Vec<T
         .collect()
 }
 
+fn safe_pid(p: &str) -> String {
+    let p = p.trim().replace("projects:", "");
+    if p.is_empty() || p == "undefined" {
+        "projects:default".to_string()
+    } else {
+        format!("projects:{}", p)
+    }
+}
+
+fn safe_id(tb: &str, id: &str) -> String {
+    let id = id.trim();
+    if id.is_empty() || id == "undefined" {
+        format!("{}:default", tb)
+    } else if id.starts_with(&format!("{}:", tb)) {
+        id.to_string()
+    } else {
+        format!("{}:{}", tb, id)
+    }
+}
+
 // =====================================================
 // ENTITY CRUD
 // =====================================================
@@ -49,25 +69,36 @@ pub async fn get_entities(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Entity>, String> {
     let db = &state.db;
+    let pid_val = safe_pid(&project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
     let query = match &entity_type {
         Some(_et) => format!(
-            "SELECT * FROM entities WHERE (project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))) AND entity_type = $et"
+            "SELECT * FROM entities WHERE (project_id = '{}' OR project_id = {}) AND entity_type = $et", pid_val, pid_literal
         ),
         None => format!(
-            "SELECT * FROM entities WHERE project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))"
+            "SELECT * FROM entities WHERE project_id = '{}' OR project_id = {}", pid_val, pid_literal
         ),
     };
 
-    let mut q = db.query(&query)
-        .bind(("pid", format!("projects:{}", project)))
-        .bind(("pid_raw", project.clone()));
+    let mut q = db.query(&query);
 
     if let Some(et) = entity_type {
         q = q.bind(("et", et));
     }
 
+    let debug_q = db.query("SELECT id, project_id FROM entities");
+    if let Ok(mut debug_res) = debug_q.await {
+        if let Ok(debug_vals) = debug_res.take::<Vec<Value>>(0) {
+            println!("[DEBUG] All entities in DB: {}", serde_json::to_string_pretty(&debug_vals).unwrap_or_default());
+        }
+    }
+
+    println!("[DEBUG get_entities] project='{}' pid_val='{}' pid_literal='{}' query={}", project, pid_val, pid_literal, query);
+
     let mut res = q.await.map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
+    println!("[DEBUG get_entities] returned {} items", values.len());
     Ok(deserialize_list(values))
 }
 
@@ -104,42 +135,87 @@ pub async fn save_entity(
     let result: Option<Value> = if let Some(id_str) = &entity.id {
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
         let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
-        let mut query = "
-            UPSERT type::record(string::concat('entities:', $id)) SET
-                project_id = type::record(string::concat('projects:', $raw_pid)),
-                entity_type = $data.entity_type,
-                name = $data.name
-        ".to_string();
+        let pid_val = safe_pid(&project);
+        let pid_raw = pid_val.replace("projects:", "");
+        let pid_literal = format!("projects:`{}`", pid_raw);
+        let id_val = safe_id("entities", actual_id);
+        let mut query = format!("
+            UPSERT type::record($id) SET
+                project_id = {},
+                entity_type = $entity_type,
+                name = $name
+        ", pid_literal);
         
-        if val.get("description").is_some() { query.push_str(", description = $data.description"); }
-        if val.get("attributes").is_some() { query.push_str(", attributes = $data.attributes"); }
-        if val.get("tags").is_some() { query.push_str(", tags = $data.tags"); }
-        if val.get("embeddings").is_some() { query.push_str(", embeddings = $data.embeddings"); }
+        if entity.description.is_some() { query.push_str(", description = $desc"); }
+        if !entity.attributes.is_null() { query.push_str(", attributes = $attrs"); }
+        if !entity.tags.is_empty() { query.push_str(", tags = $tags"); }
+        if entity.embeddings.is_some() { query.push_str(", embeddings = $embeds"); }
 
-        let mut res = db.query(query)
-            .bind(("id", actual_id))
-            .bind(("data", val.clone()))
-            .bind(("raw_pid", project.as_str()))
-            .await.map_err(|e| e.to_string())?;
-        res.take(0).map_err(|e| e.to_string())?
+        println!("[DEBUG save_entity] UPSERT query: {}", query);
+
+        let mut q = db.query(query)
+            .bind(("id", id_val))
+            .bind(("entity_type", entity.entity_type.clone()))
+            .bind(("name", entity.name.clone()));
+            
+        if let Some(d) = &entity.description { q = q.bind(("desc", d.clone())); }
+        if !entity.attributes.is_null() { q = q.bind(("attrs", entity.attributes.clone())); }
+        if !entity.tags.is_empty() { q = q.bind(("tags", entity.tags.clone())); }
+        if let Some(e) = &entity.embeddings { q = q.bind(("embeds", e.clone())); }
+
+        let mut res = q.await.map_err(|e| e.to_string())?;
+        let saved: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
+        println!("[DEBUG save_entity] saved result: {:?}", saved);
+
+        // DEBUG: check all entities in DB after save
+        let debug_q = db.query("SELECT * FROM entities");
+        if let Ok(mut debug_res) = debug_q.await {
+            if let Ok(debug_vals) = debug_res.take::<Vec<Value>>(0) {
+                println!("[DEBUG save_entity] All entities in DB after save: {}", serde_json::to_string_pretty(&debug_vals).unwrap_or_default());
+            }
+        }
+        
+        saved
     } else {
-        let mut query = "
+        let pid_val = safe_pid(&project);
+        let pid_raw = pid_val.replace("projects:", "");
+        let pid_literal = format!("projects:`{}`", pid_raw);
+        let mut query = format!("
             CREATE entities SET
-                project_id = type::record(string::concat('projects:', $raw_pid)),
-                entity_type = $data.entity_type,
-                name = $data.name
-        ".to_string();
+                project_id = {},
+                entity_type = $entity_type,
+                name = $name
+        ", pid_literal);
 
-        if val.get("description").is_some() { query.push_str(", description = $data.description"); }
-        if val.get("attributes").is_some() { query.push_str(", attributes = $data.attributes"); }
-        if val.get("tags").is_some() { query.push_str(", tags = $data.tags"); }
-        if val.get("embeddings").is_some() { query.push_str(", embeddings = $data.embeddings"); }
+        if entity.description.is_some() { query.push_str(", description = $desc"); }
+        if !entity.attributes.is_null() { query.push_str(", attributes = $attrs"); }
+        if !entity.tags.is_empty() { query.push_str(", tags = $tags"); }
+        if entity.embeddings.is_some() { query.push_str(", embeddings = $embeds"); }
 
-        let mut res = db.query(query)
-            .bind(("data", val))
-            .bind(("raw_pid", project.as_str()))
-            .await.map_err(|e| e.to_string())?;
-        res.take(0).map_err(|e| e.to_string())?
+        println!("[DEBUG save_entity] CREATE query: {}", query);
+
+        let mut q = db.query(query)
+            .bind(("entity_type", entity.entity_type.clone()))
+            .bind(("name", entity.name.clone()));
+            
+        if let Some(d) = &entity.description { q = q.bind(("desc", d.clone())); }
+        if !entity.attributes.is_null() { q = q.bind(("attrs", entity.attributes.clone())); }
+        if !entity.tags.is_empty() { q = q.bind(("tags", entity.tags.clone())); }
+        if let Some(e) = &entity.embeddings { q = q.bind(("embeds", e.clone())); }
+
+        let mut res = q.await.map_err(|e| e.to_string())?;
+        let saved: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
+        println!("[DEBUG save_entity] saved result: {:?}", saved);
+
+        // DEBUG: check all entities in DB after save
+        let debug_q = db.query("SELECT * FROM entities");
+        if let Ok(mut debug_res) = debug_q.await {
+            if let Ok(debug_vals) = debug_res.take::<Vec<Value>>(0) {
+                println!("[DEBUG save_entity] All entities in DB after create: {}", serde_json::to_string_pretty(&debug_vals).unwrap_or_default());
+            }
+        }
+        
+        saved
     };
 
     match result {
@@ -184,15 +260,16 @@ pub async fn search_entities(
         " AND entity_type = $et"
     } else { "" };
 
+    let pid_val = safe_pid(&project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
     let sql = format!(
-        "SELECT * FROM entities WHERE (project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))) \
+        "SELECT * FROM entities WHERE (project_id = '{}' OR project_id = {}) \
          AND (name @@ $q OR description @@ $q){} LIMIT 50",
-        type_filter
+        pid_val, pid_literal, type_filter
     );
 
     let mut q = db.query(sql)
-        .bind(("pid", format!("projects:{}", project)))
-        .bind(("pid_raw", project.clone()))
         .bind(("q", query));
 
     if let Some(et) = entity_type {
@@ -225,11 +302,13 @@ pub async fn get_entity_schemas(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<EntitySchema>, String> {
     let db = &state.db;
-    let mut res = db.query("SELECT * FROM entity_schemas WHERE project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))")
-        .bind(("pid", format!("projects:{}", project)))
-        .bind(("pid_raw", project))
+    let pid_val = safe_pid(&project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
+    let mut res = db.query(format!("SELECT * FROM entity_schemas WHERE project_id = '{}' OR project_id = {}", pid_val, pid_literal))
         .await.map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
+    println!("[DEBUG get_entity_schemas] project='{}' pid_val='{}' pid_literal='{}' found {} schemas", project, pid_val, pid_literal, values.len());
     Ok(deserialize_list(values))
 }
 
@@ -304,7 +383,7 @@ pub async fn save_entity_schema(
                 
                 CREATE schema_history CONTENT $snap;
                 
-                LET $target = type::record(string::concat('entity_schemas:', $actual_id));
+                LET $target = type::record($id);
                 LET $unpinned = (SELECT id FROM schema_history WHERE schema_id = $target AND is_pinned = false ORDER BY saved_at DESC);
                 IF (array::len($unpinned) > $max_limit) {
                     LET $to_delete = array::slice($unpinned, $max_limit, array::len($unpinned));
@@ -316,7 +395,7 @@ pub async fn save_entity_schema(
 
             let mut tx_res = db.query(query_str)
                 .bind(("snap", Value::Object(snap)))
-                .bind(("actual_id", actual_id))
+                .bind(("id", actual_id))
                 .bind(("max_limit", max_limit))
                 .await.map_err(|e| e.to_string())?;
                 
@@ -327,36 +406,40 @@ pub async fn save_entity_schema(
         }
         // -------------------------
 
-        let query = "
-            UPDATE type::record(string::concat('entity_schemas:', $id)) SET 
-                project_id = type::record(string::concat('projects:', $raw_pid)),
+        let pid_val = safe_pid(&project);
+        let pid_raw = pid_val.replace("projects:", "");
+        let pid_literal = format!("projects:`{}`", pid_raw);
+        let query = format!("
+            UPSERT type::record($id) SET 
+                project_id = {},
                 type_key = $data.type_key,
                 type_name = $data.type_name,
                 icon = $data.icon,
                 color = $data.color,
                 fields_schema = $data.fields_schema,
                 full_schema = $data.full_schema
-        ";
+        ", pid_literal);
         let mut res = db.query(query)
             .bind(("id", actual_id))
-            .bind(("data", val))
-            .bind(("raw_pid", project.as_str()))
+            .bind(("data", val.clone()))
             .await.map_err(|e| e.to_string())?;
         res.take(0).map_err(|e| e.to_string())?
     } else {
-        let query = "
+        let pid_val = safe_pid(&project);
+        let pid_raw = pid_val.replace("projects:", "");
+        let pid_literal = format!("projects:`{}`", pid_raw);
+        let query = format!("
             CREATE entity_schemas SET 
-                project_id = type::record(string::concat('projects:', $raw_pid)),
+                project_id = {},
                 type_key = $data.type_key,
                 type_name = $data.type_name,
                 icon = $data.icon,
                 color = $data.color,
                 fields_schema = $data.fields_schema,
                 full_schema = $data.full_schema
-        ";
+        ", pid_literal);
         let mut res = db.query(query)
-            .bind(("data", val))
-            .bind(("raw_pid", project.as_str()))
+            .bind(("data", val.clone()))
             .await.map_err(|e| e.to_string())?;
         res.take(0).map_err(|e| e.to_string())?
     };
@@ -417,8 +500,9 @@ pub async fn toggle_schema_history_pin(
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 { parts[1] } else { history_id.as_str() };
     
-    db.query("UPDATE type::record(string::concat('schema_history:', $id)) SET is_pinned = $is_pinned")
-        .bind(("id", actual_id))
+    let id_val = safe_id("schema_history", actual_id);
+    db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
+        .bind(("id", id_val))
         .bind(("is_pinned", is_pinned))
         .await.map_err(|e| e.to_string())?;
     Ok(())
@@ -435,17 +519,22 @@ pub async fn get_entity_relations(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<EntityRel>, String> {
     let db = &state.db;
+    let pid_val = safe_pid(&project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
+    let id_val = match &entity_id {
+        Some(e) => safe_id("entities", e),
+        None => "".to_string(),
+    };
     let sql = match &entity_id {
-        Some(_) => "SELECT * FROM entity_rel WHERE project_id = $pid AND (in = type::record(string::concat('entities:', $eid_raw)) OR out = type::record(string::concat('entities:', $eid_raw)))",
-        None => "SELECT * FROM entity_rel WHERE project_id = $pid",
+        Some(_) => format!("SELECT * FROM entity_rel WHERE project_id = '{}' AND (in = type::record($eid) OR out = type::record($eid))", pid_literal),
+        None => format!("SELECT * FROM entity_rel WHERE project_id = '{}'", pid_literal),
     };
 
-    let mut q = db.query(sql)
-        .bind(("pid", format!("projects:{}", project)));
+    let mut q = db.query(sql);
 
-    if let Some(eid) = entity_id {
-        let actual_id = eid.split(':').last().unwrap_or(&eid);
-        q = q.bind(("eid_raw", actual_id.to_string()));
+    if entity_id.is_some() {
+        q = q.bind(("eid", id_val));
     }
 
     let mut res = q.await.map_err(|e| e.to_string())?;
@@ -509,9 +598,10 @@ pub async fn get_relation_schemas(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<RelationSchema>, String> {
     let db = &state.db;
-    let mut res = db.query("SELECT * FROM relation_schemas WHERE project_id = $pid OR project_id = type::record(string::concat('projects:', $pid_raw))")
-        .bind(("pid", format!("projects:{}", project)))
-        .bind(("pid_raw", project))
+    let pid_val = safe_pid(&project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
+    let mut res = db.query(format!("SELECT * FROM relation_schemas WHERE project_id = '{}' OR project_id = {}", pid_val, pid_literal))
         .await.map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
     Ok(deserialize_list(values))

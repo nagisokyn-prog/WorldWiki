@@ -25,6 +25,7 @@ declare module 'vue' {
     DateWheels: typeof import('./ts/components/Vue/DateWheels.vue')['default']
     ExportModal: typeof import('./ts/components/Vue/Chapters/ExportModal.vue')['default']
     FloatingEntityEditor: typeof import('./ts/components/Vue/FloatingEntityEditor.vue')['default']
+    GlobalTimeViewer: typeof import('./ts/components/Vue/Calendars/GlobalTimeViewer.vue')['default']
     ParticipantsPanel: typeof import('./ts/components/Vue/Chapters/ParticipantsPanel.vue')['default']
     PlanningPanel: typeof import('./ts/components/Vue/Chapters/PlanningPanel.vue')['default']
     RelationshipBlock: typeof import('./ts/components/Vue/SchemaEditor/RelationshipBlock.vue')['default']

@@ -1,5 +1,5 @@
 <template>
-  <div class="calendar-section interactive-el">
+  <div class="calendar-section">
     <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">⚙️ Физика времени и планеты</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>

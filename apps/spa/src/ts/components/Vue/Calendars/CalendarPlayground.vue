@@ -1,5 +1,5 @@
 <template>
-  <div class="calendar-section interactive-el playground-section" style="width: 100%;">
+  <div class="calendar-section playground-section" style="width: 100%;">
     <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="color: var(--accent); margin: 0;"><i class="fas fa-calendar-alt"></i> Точка отсчёта в произведении</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>

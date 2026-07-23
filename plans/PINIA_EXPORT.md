@@ -88,7 +88,7 @@ app.ts
 
 **Действие:** Оставить как есть или мигрировать по мере необходимости в других features.
 
-### 2. useAppShell.ts — УДАЛЁН
+### 2. useAppShell.ts — УДАЛЁН (ВЫПОЛНЕНО ✅)
 - Был composition root (700+ строк)
 - Теперь `EditorView.vue.ts` импортирует stores напрямую
 

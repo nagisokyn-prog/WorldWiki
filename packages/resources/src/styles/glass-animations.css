@@ -26,6 +26,16 @@
     transform: scale(var(--scale-push));
 }
 
+/* Отключаем скалирование для инпутов, чтобы они не прыгали при наведении и фокусе */
+input.interactive-el:hover, 
+textarea.interactive-el:hover, 
+select.interactive-el:hover,
+input[type="range"].interactive-el:hover,
+input[type="range"].interactive-el:active {
+    transform: none;
+    z-index: 10;
+}
+
 .breathe {
     animation: breathe var(--anim-breathe) ease-in-out infinite;
 }
@@ -43,32 +53,7 @@
     50% { transform: scale(1.02); opacity: 0.95; }
 }
 
-.entrance-fade {
-    animation: entranceFade var(--anim-entrance) var(--anim-ease forwards);
-}
 
-.entrance-slide-up {
-    animation: entranceSlideUp var(--anim-entrance) var(--anim-ease forwards);
-}
-
-.entrance-scale {
-    animation: entranceScale var(--anim-entrance) var(--anim-ease forwards);
-}
-
-@keyframes entranceFade {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes entranceSlideUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes entranceScale {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-}
 
 .ripple-container {
     position: relative;

@@ -85,6 +85,8 @@ export interface WeatherPattern {
 export interface CalendarData {
   _id?: string;
   название: string;
+  calendar_type?: 'master' | 'local';
+  is_master?: boolean;
   дней_в_неделе: number;
   названия_дней_недели: string[];
   первый_месяц_года: number;
@@ -98,11 +100,13 @@ export interface CalendarData {
   праздники?: CalendarHoliday[];
   
   sync_anchor?: {
-    this_absolute_minute: number;
+    master_calendar_id?: string;
+    local_absolute_minute: number;
+    master_absolute_minute: number;
     linked_to_master: boolean;
   };
   timezone_regions?: Array<{
-    key: string;
+    id: string;
     name: string;
     offset_minutes: number;
   }>;

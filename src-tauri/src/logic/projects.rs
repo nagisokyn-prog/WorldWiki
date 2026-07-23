@@ -39,10 +39,12 @@ pub async fn get_project_config(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Value, String> {
     println!("[DEBUG] -> get_project_config: Requesting config for project '{}'", name);
+    let pid_val = if name.is_empty() || name == "undefined" { "projects:default".to_string() } else if name.starts_with("projects:") { name.clone() } else { format!("projects:{}", name) };
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
     let mut query_res = state
         .db
-        .query("SELECT *, type::string(id) as id FROM type::record(string::concat('projects:', $name))")
-        .bind(("name", name))
+        .query(format!("SELECT *, type::string(id) as id FROM {}", pid_literal))
         .await
         .map_err(|e| e.to_string())?;
     let res: Option<Value> = query_res.take(0).map_err(|e: surrealdb::Error| {
@@ -75,12 +77,15 @@ pub async fn save_project_config(
 
 #[tauri::command]
 pub async fn delete_project(name: String, state: tauri::State<'_, crate::AppState>) -> Result<String, String> {
+    let pid_val = if name.is_empty() || name == "undefined" { "projects:default".to_string() } else if name.starts_with("projects:") { name.clone() } else { format!("projects:{}", name) };
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
     state
         .db
-        .query("
+        .query(format!("
             BEGIN TRANSACTION;
-            LET $pid = type::record(string::concat('projects:', $name));
-            LET $pid_str = string::concat('projects:', $name);
+            LET $pid = {};
+            LET $pid_str = '{}';
             
             -- Удаляем все зависимые сущности (каскадное удаление на уровне проекта)
             DELETE FROM volumes WHERE project_id = $pid OR project_id = $pid_str;
@@ -104,8 +109,7 @@ pub async fn delete_project(name: String, state: tauri::State<'_, crate::AppStat
             DELETE $pid;
             
             COMMIT TRANSACTION;
-        ")
-        .bind(("name", name.clone()))
+        ", pid_literal, pid_val))
         .await
         .map_err(|e| e.to_string())?;
     Ok(name)

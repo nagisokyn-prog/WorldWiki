@@ -2,7 +2,7 @@
   <div class="tool-section timeline-section">
     <h4><i class="fas fa-calendar-alt"></i> Календари проекта</h4>
     
-    <div class="timeline-events-list">
+    <div class="timeline-events-list" v-auto-animate>
       <div
         v-if="!project"
         style="color: #e74c3c; font-size: 12px; padding: 10px; text-align: center; border: 1px dashed var(--border-color); border-radius: 8px;"
@@ -270,5 +270,83 @@ defineExpose({ saveAll });
   .calendar-middle-row-grid {
     grid-template-columns: 1fr;
   }
+}
+</style>
+
+<style>
+/* Unscoped styles for child Calendar components */
+.calendar-section {
+  background: var(--glass-bg, rgba(20, 20, 20, 0.4));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.calendar-section h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--text-color, #e0e0e0);
+  font-size: 14px;
+}
+.calendar-section .item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.calendar-section .item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.calendar-section .item-name,
+.calendar-section .item-duration,
+.calendar-section input[type="text"],
+.calendar-section input[type="number"] {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  color: var(--text-color, #e0e0e0);
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+.calendar-section .item-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.calendar-section .btn-add {
+  margin-top: 10px;
+  background: transparent;
+  border: 1px dashed var(--border-color, rgba(255, 255, 255, 0.2));
+  color: var(--text-muted, #aaa);
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+.calendar-section .btn-add:hover {
+  border-color: var(--accent, #3498db);
+  color: var(--text-color, #fff);
+  background: rgba(255, 255, 255, 0.05);
+}
+.calendar-section .btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #aaa);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.calendar-section .btn-icon:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color, #fff);
+}
+.calendar-section .btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 </style>

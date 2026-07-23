@@ -1,5 +1,6 @@
 pub mod entities; 
 pub mod schema;
+pub mod calendar_math;
 pub mod chapters;
 pub mod connections;
 pub mod export;

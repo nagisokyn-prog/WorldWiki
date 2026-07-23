@@ -1,6 +1,7 @@
 <template>
+  <Transition name="fade">
   <div v-if="isOpen" class="cloud-sync-overlay" @click="close">
-    <div class="cloud-sync-modal" @click.stop>
+    <div class="cloud-sync-modal" v-motion-pop @click.stop>
       <div class="cloud-sync-header">
         <h3>☁️ Облачная Синхронизация</h3>
         <button class="close-btn interactive-el" @click="close">×</button>
@@ -71,6 +72,7 @@
       </div>
     </div>
   </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">

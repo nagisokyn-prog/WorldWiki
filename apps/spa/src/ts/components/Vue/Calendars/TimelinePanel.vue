@@ -17,7 +17,7 @@
       </div>
     </div>
     
-    <div class="timeline-events-list">
+    <div class="timeline-events-list" v-auto-animate>
       <div v-if="events.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
         Нет событий в таймлайне.
       </div>

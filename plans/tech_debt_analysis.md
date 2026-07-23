@@ -15,7 +15,6 @@
 - **ChapterTree**: использует `ExplorerTree` из `@worldwiki/components`
 
 ### ❌ Осталось:
-- **Pinia stores**: миграция 9 composables (shell, editor, entities, chapters, save, schema, console, floating, zoom)
 - **UnoCSS**: плагин отключён (Vite 8 applyHtmlTransforms bug)
 - **@tanstack/vue-query**: не внедрён
 
@@ -83,6 +82,11 @@
 *   **Где искать:** `api.service.ts` -> `invoke('delete_entity')` и Rust backend.
 *   **В чём проблема:** Вероятно, ошибка внешних ключей (Foreign Key / Graph Relations). Если сущность связана графовыми связями (Edge), попытка удалить только Вершину (Node) может приводить к ошибке, либо остаются "висячие" связи-призраки.
 *   **Решение:** В Rust при удалении сущности нужно делать каскадное удаление: `DELETE FROM connections WHERE in = $id OR out = $id; DELETE $id;`.
+
+**12. [✅ ВЫПОЛНЕНО] Сущности пропадают из дерева при сохранении**
+*   **Где искать:** `stores/shell.ts` и `src/logic/entities.rs`.
+*   **В чём проблема:** Во всех функциях `apiService.saveEntity`, `deleteEntity` и др. в `shell.ts` в качестве аргумента `project` был захардкожен пустой сток `''`. Из-за этого при сохранении бэкенд подставлял дефолтный `project_id = 'projects:default'`, перенося сущность в другой проект, и она исчезала из активного.
+*   **Решение:** Заменены все вхождения `''` на `projectName.value` в `shell.ts`. Добавлена подробная отладка для `entity.tree.ts`.
 
 ## Надежность и Бэкапы
 **15. Настройка таймера автосохранения**

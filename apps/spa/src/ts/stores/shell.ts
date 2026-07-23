@@ -175,10 +175,10 @@ export const useShellStore = defineStore('shell', () => {
         try {
           if (tab.tabType === 'entity') {
             await schema.loadSchema(tab.entityType);
-            const detail = await apiService.getEntity('', tab.entityType, tab.rawId);
+            const detail = await apiService.getEntity(projectName.value, tab.entityType, tab.rawId);
             loadedTabs.set(tab.id, { ...tab, data: detail, unsaved: false });
           } else if (tab.tabType === 'chapter') {
-            const chapter = await apiService.getChapter('', tab.rawId);
+            const chapter = await apiService.getChapter(projectName.value, tab.rawId);
             if (chapter) loadedTabs.set(tab.id, { ...tab, data: chapter, unsaved: false });
           } else if (tab.tabType === 'schema-editor') {
             loadedTabs.set(tab.id, { ...tab, data: {}, unsaved: false });
@@ -211,7 +211,7 @@ export const useShellStore = defineStore('shell', () => {
   const loadEntityList = async (entityType: string) => {
     try {
       await schema.loadSchema(entityType);
-      const list = await apiService.getEntityList('', entityType);
+      const list = await apiService.getEntityList(projectName.value, entityType);
       entityLists.value = { ...entityLists.value, [entityType]: list as Array<Record<string, unknown>> };
       addLog(`Data -> Loaded ${list.length} ${entityType}(s)`, 'info');
     } catch (e) {
@@ -261,7 +261,7 @@ export const useShellStore = defineStore('shell', () => {
     if (!eg.findTabGlobal(tabId)) {
       try {
         await schema.loadSchema(entityType);
-        const detail = await apiService.getEntity('', entityType, rawId);
+        const detail = await apiService.getEntity(projectName.value, entityType, rawId);
         const tabTitle = (entity as any).Name || (entity as any).name || (entity as any).title || schema.getEntityDisplayName(detail as Record<string, unknown>, entityType);
         eg.openTab({
           id: tabId, rawId, title: tabTitle, entityType,
@@ -491,7 +491,7 @@ export const useShellStore = defineStore('shell', () => {
     for (const tab of sidebarItems.value) {
       if (tab.type === 'entity' && tab.entityType) {
         try {
-          const list = await apiService.getEntityList('', tab.entityType);
+          const list = await apiService.getEntityList(projectName.value, tab.entityType);
           for (const e of list as Array<any>) {
             items.push({ id: `entity_${tab.entityType}_${e.id}`, rawId: String(e.id), title: schema.getEntityDisplayName(e, tab.entityType), typeLabel: tab.title, entityType: tab.entityType, emoji: tab.icon || '📄', data: { ...e, entityType: tab.entityType } });
           }
@@ -525,12 +525,12 @@ export const useShellStore = defineStore('shell', () => {
         const foreignUpdatesToProcess = (editor as any)._foreignUpdates;
         (editor as any)._foreignUpdates = null;
         delete dataToSave.__foreignUpdates;
-        await apiService.saveEntity('', editor.entityType, dataToSave, editor.rawId, editor.title);
+        await apiService.saveEntity(projectName.value, editor.entityType, dataToSave, editor.rawId, editor.title);
         if (connectionsManager) {
           try {
             connectionsManager.setCurrentEntity(editor.entityType, editor.rawId);
             connectionsManager.setFormData(dataToSave);
-            connectionsManager.setCurrentProject('');
+            connectionsManager.setCurrentProject(projectName.value);
             const configRes = await fetch(`/struct/editor/${editor.entityType}.json`);
             if (configRes.ok) {
               const config = await configRes.json();
@@ -546,7 +546,7 @@ export const useShellStore = defineStore('shell', () => {
           const configRes = await fetch(`/struct/editor/${editor.entityType}.json`);
           if (configRes.ok) {
             const schemaConfig = await configRes.json();
-            const oldStateReq = await apiService.getEntity('', editor.entityType, editor.rawId);
+            const oldStateReq = await apiService.getEntity(projectName.value, editor.entityType, editor.rawId);
             const oldState = (oldStateReq as any)?.data || oldStateReq;
             if (oldState) {
               for (const section of schemaConfig.sections || []) {
@@ -590,7 +590,7 @@ export const useShellStore = defineStore('shell', () => {
           console.error('[saveAll] Error scanning deleted relationships:', e);
         }
         if (foreignUpdatesFinal && Object.keys(foreignUpdatesFinal).length > 0) {
-          await saveForeignRelationships('', editor.rawId, foreignUpdatesFinal);
+          await saveForeignRelationships(projectName.value, editor.rawId, foreignUpdatesFinal);
         }
         const newTitle = schema.getEntityDisplayName(editor.data as Record<string, unknown>, editor.entityType);
         if (newTitle && newTitle !== editor.title) {
@@ -619,7 +619,7 @@ export const useShellStore = defineStore('shell', () => {
     const colonIdx = tabId.indexOf(':');
     const rawId = colonIdx > -1 ? tabId.slice(colonIdx + 1) : tabId;
     try {
-      await apiService.deleteEntity('', entityType, rawId);
+      await apiService.deleteEntity(projectName.value, entityType, rawId);
       closeEditor(tabId, true);
       if (activeTreeNode.value && activeTreeNode.value.type === entityType && activeTreeNode.value.node.id === rawId) {
         activeTreeNode.value = null;
@@ -635,7 +635,7 @@ export const useShellStore = defineStore('shell', () => {
   const renameEntity = async (entityType: string, idToUpdate: string, newName: string) => {
     console.log('[renameEntity] called with:', { entityType, idToUpdate, newName });
     try {
-      const detail = await apiService.getEntity('', entityType, idToUpdate);
+      const detail = await apiService.getEntity(projectName.value, entityType, idToUpdate);
       console.log('[renameEntity] detail from server:', detail);
       
       // Use schema's titleField if available, fallback to detection
@@ -646,7 +646,7 @@ export const useShellStore = defineStore('shell', () => {
       
       if (titleField) {
         detail[titleField] = newName;
-        await apiService.saveEntity('', entityType, detail, idToUpdate);
+        await apiService.saveEntity(projectName.value, entityType, detail, idToUpdate);
         
         // The rawId in the tab may include a prefix like "entities:" — try both formats
         const rawId = String(detail.id || idToUpdate);
@@ -699,7 +699,7 @@ export const useShellStore = defineStore('shell', () => {
           createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           wordCount: 0, footnotes: {}, timelineEvents: [], participants: [],
         };
-        await apiService.saveChapter('', newChapter);
+        await apiService.saveChapter(projectName.value, newChapter);
         addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
         addToast(`Глава "${newChapter.title}" создана`, 'success');
         chapters.value.push(newChapter);
@@ -721,7 +721,7 @@ export const useShellStore = defineStore('shell', () => {
         current[parts[parts.length - 1]] = nameToSet;
       }
 
-      const saveResult = await apiService.saveEntity('', entityType, initialData, undefined, nameToSet || undefined);
+      const saveResult = await apiService.saveEntity(projectName.value, entityType, initialData, undefined, nameToSet || undefined);
       const newEntityId = saveResult?.id;
       if (!newEntityId || newEntityId === 'undefined') {
         addLog(`Entity -> Error: сервер не вернул валидный ID для ${entityType}`, 'error');
@@ -729,13 +729,13 @@ export const useShellStore = defineStore('shell', () => {
         return;
       }
 
-      const newEntity = await apiService.getEntity('', entityType, newEntityId);
+      const newEntity = await apiService.getEntity(projectName.value, entityType, newEntityId);
       if (!newEntity) { addLog(`Entity -> Error: не удалось загрузить только что созданную сущность`, 'error'); return; }
 
       if (preDefinedName) {
         (newEntity as any).Name = preDefinedName;
         setValueByPath(newEntity, titleFieldPath, preDefinedName);
-        await apiService.saveEntity('', entityType, newEntity as any, newEntityId);
+        await apiService.saveEntity(projectName.value, entityType, newEntity as any, newEntityId);
       }
 
       addLog(`Entity -> Created ${entityType} "${preDefinedName || newEntityId}"`, 'success');
@@ -799,9 +799,9 @@ export const useShellStore = defineStore('shell', () => {
         arcId,
         volumeId,
       };
-      const saveRes = await apiService.saveChapter('', newCh);
+      const saveRes = await apiService.saveChapter(projectName.value, newCh);
       if (saveRes && (saveRes as any).id) newCh.id = (saveRes as any).id;
-      if (arcId || volumeId) await apiService.assignChapter('', newCh.id, arcId, volumeId);
+      if (arcId || volumeId) await apiService.assignChapter(projectName.value, newCh.id, arcId, volumeId);
       addLog('Manuscript -> Created new chapter', 'success');
       if (chapterTreeRef.value?.load) chapterTreeRef.value.load(newCh.id);
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
@@ -818,7 +818,7 @@ export const useShellStore = defineStore('shell', () => {
 
   const deleteChapter = async (chapter: any, silent = false) => {
     try {
-      await apiService.deleteChapter('', chapter.id);
+      await apiService.deleteChapter(projectName.value, chapter.id);
       addLog(`Manuscript -> Deleted chapter ${chapter.title}`, 'success');
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
       closeEditor(chapter.id);
@@ -830,9 +830,9 @@ export const useShellStore = defineStore('shell', () => {
   const renameChapter = async (chapter: any, newTitle: string) => {
     try {
       chapters.value = chapters.value.map((c: any) => c.id === chapter.id ? { ...c, title: newTitle } : c);
-      const fullData = await apiService.getChapter('', chapter.id);
+      const fullData = await apiService.getChapter(projectName.value, chapter.id);
       fullData.title = newTitle;
-      await apiService.saveChapter('', fullData);
+      await apiService.saveChapter(projectName.value, fullData);
       addLog(`Chapter renamed: ${newTitle}`, 'success');
       if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
@@ -868,19 +868,19 @@ export const useShellStore = defineStore('shell', () => {
         )
       );
       for (const ch of chaptersInVol) {
-        try { await apiService.deleteChapter('', ch.id); } catch (err) { console.error('Ошибка удаления главы (vol):', err); }
+        try { await apiService.deleteChapter(projectName.value, ch.id); } catch (err) { console.error('Ошибка удаления главы (vol):', err); }
         closeEditor(String(ch.id), true);
         if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ch.id) {
           activeTreeNode.value = null;
         }
       }
       for (const arcId of arcsInVol) {
-        await apiService.deleteArc('', arcId);
+        await apiService.deleteArc(projectName.value, arcId);
         if (activeTreeNode.value && activeTreeNode.value.type === 'arc' && activeTreeNode.value.node.id === arcId) {
           activeTreeNode.value = null;
         }
       }
-      await apiService.deleteVolume('', volume.id);
+      await apiService.deleteVolume(projectName.value, volume.id);
       addLog(`Deleted volume [${volume.id}]`, 'warn');
       if (activeTreeNode.value && activeTreeNode.value.type === 'volume' && activeTreeNode.value.node.id === volume.id) {
         activeTreeNode.value = null;
@@ -903,13 +903,13 @@ export const useShellStore = defineStore('shell', () => {
         )
       );
       for (const ch of chaptersInArc) {
-        try { await apiService.deleteChapter('', ch.id); } catch (err) { console.error('Ошибка удаления главы (arc):', err); }
+        try { await apiService.deleteChapter(projectName.value, ch.id); } catch (err) { console.error('Ошибка удаления главы (arc):', err); }
         closeEditor(String(ch.id), true);
         if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ch.id) {
           activeTreeNode.value = null;
         }
       }
-      await apiService.deleteArc('', arc.id);
+      await apiService.deleteArc(projectName.value, arc.id);
       addLog(`Deleted arc [${arc.id}]`, 'warn');
       if (activeTreeNode.value && activeTreeNode.value.type === 'arc' && activeTreeNode.value.node.id === arc.id) {
         activeTreeNode.value = null;

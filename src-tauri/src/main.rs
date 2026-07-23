@@ -10,6 +10,7 @@ use tauri::Manager;
 
 mod logic;
 use crate::logic::models::*;
+use crate::logic::calendar_math::convert_absolute_to_local;
 
 pub struct AppState {
     pub db: Surreal<Db>,
@@ -129,6 +130,7 @@ fn main() {
             restore_from_backup,
             get_chapter_revisions,
             get_entity_revisions,
+            convert_absolute_to_local,
 
             // --- Текстовые блоки ---
             save_text_blocks,

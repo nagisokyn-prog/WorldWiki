@@ -1,7 +1,8 @@
 <template>
     <div class="app-container">
+        <GlobalTimeViewer />
         <!-- Хедер -->
-        <header class="launcher-header glass-panel">
+        <header class="launcher-header glass-panel" v-motion-slide-top>
             <div class="logo">
                 <h1>📚 World Wiki</h1>
                 <p>Выберите или создайте проект</p>
@@ -29,12 +30,12 @@ href="settings.html" class="glass-btn outline interactive-el" title="Настр�
         </header>
 
         <!-- Основной контент -->
-        <main class="launcher-main">
+        <main class="launcher-main" v-motion-slide-bottom>
             <div class="projects-section">
                 <h2 class="glass-title">Ваши проекты</h2>
 
                 <!-- Сетка проектов -->
-                <div class="projects-grid glass-grid-auto">
+                <div class="projects-grid glass-grid-auto" v-auto-animate>
                     <div
 v-for="project in sortedProjects" :key="project.name"
                         class="glass-card push-pull-container interactive-el project-card"
@@ -170,6 +171,7 @@ import { settingsService } from '@worldwiki/components';
 import { XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
 import CalendarsPanel from '../../components/Vue/CalendarsPanel.vue';
 import CloudSyncModal from '../../components/Vue/CloudSyncModal.vue';
+import GlobalTimeViewer from '../../components/Vue/Calendars/GlobalTimeViewer.vue';
 
 const router = useRouter();
 

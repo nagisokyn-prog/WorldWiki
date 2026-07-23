@@ -33,7 +33,8 @@ export default defineComponent({
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   setup(): Record<string, any> {
     const route = useRoute();
-    const routeProject = typeof route.query.project === 'string' ? route.query.project : 'default';
+    const rawProject = typeof route.query.project === 'string' ? route.query.project : 'default';
+    const routeProject = rawProject.trim() === '' ? 'default' : rawProject;
 
     const shell = useShellStore();
     const console = useConsoleStore();

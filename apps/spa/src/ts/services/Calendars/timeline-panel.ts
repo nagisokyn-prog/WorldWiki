@@ -35,11 +35,16 @@ export default defineComponent({
     const calendar = ref<any>(null);
     const eras = ref<any[]>([]);
     const months = ref<any[]>([]);
-    const showTimeSettings = ref(false);
+    const showTimeSettings = ref(false); // Can be evaluated per event later if needed
     const expandedIndices = ref<Set<number>>(new Set());
     const availableCalendars = ref<any[]>([]);
-    const selectedCalendarId = ref<string | null>(null);
+    const selectedCalendarIds = ref<string[]>([]);
     const relativeInput = ref<Record<number, string>>({});
+
+    const getCalendar = (calId?: string) => {
+      const id = calId || availableCalendars.value[0]?.id;
+      return availableCalendars.value.find(c => c.id === id)?.data;
+    };
 
     const isExpanded = (idx: number) => expandedIndices.value.has(idx);
 
@@ -56,33 +61,41 @@ export default defineComponent({
       label: cal.data.название || 'Календарь'
     })));
 
-    const eraOptions = computed(() => eras.value.map((era, idx) => ({
-      value: idx,
-      label: era.название || era.name || `Эра ${idx + 1}`
-    })));
+    const getEraOptions = (calId?: string) => {
+      const cal = getCalendar(calId);
+      if (!cal || !cal.эпохи) return [];
+      return cal.эпохи.map((era: any, idx: number) => ({
+        value: idx,
+        label: era.название || era.name || `Эра ${idx + 1}`
+      }));
+    };
 
-    const monthOptions = computed(() => months.value.map((month, idx) => ({
-      value: idx,
-      label: month.название || month.name || `Месяц ${idx + 1}`
-    })));
+    const getMonthOptions = (calId?: string) => {
+      const cal = getCalendar(calId);
+      if (!cal || !cal.месяцы) return [];
+      return cal.месяцы.map((month: any, idx: number) => ({
+        value: idx,
+        label: month.название || month.name || `Месяц ${idx + 1}`
+      }));
+    };
 
-    const hourOptions = computed(() => {
-      const cal = calendar.value;
+    const getHourOptions = (calId?: string) => {
+      const cal = getCalendar(calId);
       const hoursInDay = cal?.настройки_времени?.часов_в_сутках || 24;
       return Array.from({ length: hoursInDay }, (_, i) => ({
         value: i,
         label: `${String(i).padStart(2, '0')}`
       }));
-    });
+    };
 
-    const minuteOptions = computed(() => {
-      const cal = calendar.value;
+    const getMinuteOptions = (calId?: string) => {
+      const cal = getCalendar(calId);
       const minsInHour = cal?.настройки_времени?.минут_в_часе || 60;
       return Array.from({ length: minsInHour }, (_, i) => ({
         value: i,
         label: `${String(i).padStart(2, '0')}`
       }));
-    });
+    };
 
     const loadCalendarData = (calObj: any) => {
       const cal = calObj.data;
@@ -114,7 +127,7 @@ export default defineComponent({
         const defaultCal = availableCalendars.value.find(c => c.is_default) || availableCalendars.value[0];
         console.log('[Timeline] Selected default calendar:', defaultCal);
         if (defaultCal) {
-          selectedCalendarId.value = defaultCal.id;
+          selectedCalendarIds.value = [defaultCal.id];
           loadCalendarData(defaultCal);
 
           const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
@@ -158,7 +171,7 @@ export default defineComponent({
           data: CalendarMath.getDefaultCalendar()
         };
         availableCalendars.value = [defaultCal];
-        selectedCalendarId.value = 'default';
+        selectedCalendarIds.value = ['default'];
         loadCalendarData(defaultCal);
 
         const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
@@ -200,17 +213,11 @@ export default defineComponent({
       emit('change');
     };
 
-    const onCalendarChange = () => {
-      const selected = availableCalendars.value.find(c => c.id === selectedCalendarId.value);
-      if (selected) {
-        loadCalendarData(selected);
-
-        const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
-        newEvents.forEach(event => {
-          event.calendar_id = selectedCalendarId.value || undefined;
-        });
-        emit('update:events', newEvents);
-        onChange();
+    const toggleCalendarSelection = (calId: string) => {
+      if (selectedCalendarIds.value.includes(calId)) {
+        selectedCalendarIds.value = selectedCalendarIds.value.filter(id => id !== calId);
+      } else {
+        selectedCalendarIds.value.push(calId);
       }
     };
 

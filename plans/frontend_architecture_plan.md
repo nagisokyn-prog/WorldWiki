@@ -232,16 +232,12 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
   - [x] `stores/settings.ts` — store (обёртка над settingsService)
   - [x] `stores/index.ts` — barrel export
   - [x] `plans/PINIA_EXPORT.md` — полный план миграции состояний
-- [ ] **9. Миграция состояний в Pinia stores**:
-  - [ ] `stores/shell.ts` — миграция useAppShell (~700 строк)
-  - [ ] `stores/editor.ts` — миграция useEditorTabs
-  - [ ] `stores/entities.ts` — миграция useEntityOps + useEntityLists
-  - [ ] `stores/chapters.ts` — миграция useChapterOps
-  - [ ] `stores/save.ts` — миграция useSaveManager
-  - [ ] `stores/schema.ts` — миграция useSchemaCache
-  - [ ] `stores/console.ts` — миграция useConsole
-  - [ ] `stores/floating.ts` — миграция useFloatingWindows
-  - [ ] `stores/zoom.ts` — миграция useZoom
+- [x] **9. Миграция состояний в Pinia stores**:
+  - [x] `stores/shell.ts` — миграция useAppShell, useEntityOps, useChapterOps, useSaveManager, useEntityLists
+  - [x] `stores/schema.ts` — миграция useSchemaCache
+  - [x] `stores/console.ts` — миграция useConsole
+  - [x] `stores/floating.ts` — миграция useFloatingWindows
+  - [x] `stores/zoom.ts` — миграция useZoom
 - [ ] **10. UnoCSS**: подключить плагин (Vite 8 bug должен быть починен)
 - [ ] **11. @tanstack/vue-query**: внедрить для серверного кеша (API)
 
@@ -249,18 +245,14 @@ SPA (apps/spa)  ──импортирует──▶  @worldwiki/components  (g
 
 ## 7. План миграции на Pinia (подробно в `plans/PINIA_EXPORT.md`)
 
-### Этапы
-1. **Shell store** (самый большой, ~700 строк) — useAppShell
-2. **Editor store** — useEditorTabs
-3. **Entities store** — useEntityOps + useEntityLists
-4. **Chapters store** — useChapterOps
-5. **Save store** — useSaveManager
-6. **Schema store** — useSchemaCache
-7. **Console store** — useConsole
-8. **Floating store** — useFloatingWindows
-9. **Zoom store** — useZoom
+### Этапы (ВЫПОЛНЕНЫ ✅)
+1. **Shell store** — useAppShell, useEntityOps, useChapterOps, useSaveManager, useEntityLists
+2. **Schema store** — useSchemaCache
+3. **Console store** — useConsole
+4. **Floating store** — useFloatingWindows
+5. **Zoom store** — useZoom
 
-После миграции `useAppShell` сократится с 716 до ~200 строк (только композиция stores).
+После миграции вся бизнес-логика и списки лежат в `shell.ts`, а EditorTabs управляется через `useEditorGroups`.
 
 ---
 

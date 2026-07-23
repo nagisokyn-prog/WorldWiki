@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="modal-fade">
       <div v-if="isOpen" class="modal-overlay" @click.self="close">
-        <div class="tags-manager-modal glass-panel">
+        <div class="tags-manager-modal glass-panel" v-motion-pop>
           <div class="modal-header">
             <h3><i class="fas fa-tags"></i> Управление тегами проекта</h3>
             <button class="close-btn" @click="close">&times;</button>
@@ -27,7 +27,7 @@
             <div class="tags-list-container">
               <div v-if="loading" class="loading-state">Загрузка тегов...</div>
               <div v-else-if="tags.length === 0" class="empty-state">Тегов пока нет</div>
-              <div v-else class="tags-grid-manage">
+              <div v-else class="tags-grid-manage" v-auto-animate>
                 <div v-for="tag in tags" :key="tag.id" class="tag-manage-card interactive-el">
                   <div class="tag-color-preview" :style="{ background: tag.color }"></div>
                   <input 

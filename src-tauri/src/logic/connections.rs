@@ -8,7 +8,9 @@ pub async fn get_connections(
 ) -> Result<Value, String> {
     let db = &state.db;
     let proj_id = format!("projects:{}", project);
-    let mut sql = "SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id FROM entity_rel WHERE project_id = $proj OR project_id = type::record($proj)".to_string();
+    let proj_raw = project.trim().replace("projects:", "");
+    let proj_literal = format!("projects:`{}`", proj_raw);
+    let mut sql = format!("SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id FROM entity_rel WHERE project_id = '{}' OR project_id = {}", proj_id, proj_literal);
     
     if chapter.is_some() {
         sql.push_str(" AND (start_chapter = $ch OR end_chapter = $ch)");
@@ -74,7 +76,9 @@ pub async fn save_connections(
 
     // Удаляем все связи, где текущая сущность является источником ИЛИ целью
     // Таким образом мы гарантируем, что при удалении связи в UI, обратная связь (B->A) также будет удалена из БД.
-    db.query("DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND (project_id = $proj OR project_id = type::record($proj))")
+    let proj_raw = project.trim().replace("projects:", "");
+    let proj_literal = format!("projects:`{}`", proj_raw);
+    db.query(format!("DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND (project_id = '{}' OR project_id = {})", proj_id, proj_literal))
         .bind(json!({ "proj": proj_id.clone(), "src": src_rid }))
         .await.map_err(|e| e.to_string())?;
 

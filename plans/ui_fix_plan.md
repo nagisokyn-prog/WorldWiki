@@ -18,28 +18,22 @@
 
 ## Предлагаемые изменения
 
-### Проблема 0: Критический баг — два разных экземпляра `settingsService`
+### ✅ Проблема 0: Критический баг — два разных экземпляра `settingsService` (ВЫПОЛНЕНО)
 
-#### [MODIFY] `apps/spa/src/ts/stores/settings.ts`
-Убрать локальный враппер над локальным сервисом. Использовать **один** `settingsService` из `@worldwiki/components` как единственный источник правды.
-
-#### [MODIFY] `apps/spa/src/ts/app/settings.ts`
-Убедиться что и страница настроек, и главный редактор используют один и тот же экземпляр (через `@worldwiki/components`).
+#### `apps/spa/src/ts/stores/settings.ts`
+Убран локальный враппер над локальным сервисом. Используется **один** `settingsService` из `@worldwiki/components` как единственный источник правды.
 
 ---
 
-### Часть 1: Консолидация CSS (удаление дублей)
+### ✅ Часть 1: Консолидация CSS (удаление дублей) (ВЫПОЛНЕНО)
 
-**Проблема**: `:root {}` объявлен в `glass-theme.css`, `new-ui-theme.css` и `app.css`. `settings.service.ts` устанавливает CSS-переменные в `document.documentElement`, что правильно — но исходные значения в `:root` могут перекрывать их если CSS загружен позже.
+**Проблема**: `:root {}` был объявлен в `glass-theme.css`, `new-ui-theme.css` и `app.css`, что вызывало перекрытие CSS-переменных, устанавливаемых через JS.
 
-#### [MODIFY] `packages/resources/src/styles/glass-theme.css`
-Оставить как **единственный** источник CSS переменных `:root {}`. Убрать дубли отсюда.
+#### `packages/resources/src/styles/glass-theme.css`
+Оставлен как **единственный** источник CSS переменных `:root {}`.
 
-#### [MODIFY] `packages/resources/src/styles/new-ui-theme.css`
-**Удалить** блок `:root {}` целиком (300+ строк дублей). Оставить только компонентные стили (`.editor-groups-container`, `.sidebar-universal` и т.д.).
-
-#### [MODIFY] `packages/resources/src/styles/app.css`
-Проверить и удалить дублирующий `:root {}` если есть.
+#### `packages/resources/src/styles/new-ui-theme.css`
+Блок `:root {}` удалён целиком (300+ строк дублей). Оставлены только компонентные стили.
 
 ---
 
@@ -167,8 +161,8 @@ maxSnapshots: number;        // максимум снапшотов на гла�
 
 ## Порядок выполнения
 
-1. Разобраться с дублированием `settingsService` (критический баг)
-2. Консолидировать `:root {}` CSS в один файл
+1. ✅ Разобраться с дублированием `settingsService` (критический баг)
+2. ✅ Консолидировать `:root {}` CSS в один файл
 3. Подключить CSS переменные к реальным стилям (grid columns, flex-direction)
 4. Внедрить `@formkit/auto-animate` и `@vueuse/motion` для плавных перестроений UI
 5. Добавить поддержку пользовательского фона (фото/видео с настройками FPS)

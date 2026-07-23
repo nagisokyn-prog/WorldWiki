@@ -1,13 +1,13 @@
 <template>
-  <div class="calendar-section interactive-el">
+  <div class="calendar-section">
     <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
       <h4 style="margin: 0;">🏛️ Эпохи</h4>
       <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
-      <div class="item-list">
-        <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" style="margin-bottom: 10px">
+      <div class="item-list" v-auto-animate>
+        <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" style="margin-bottom: 10px" class="item-row">
           <div class="item-row">
             <input
               v-model="era.название"

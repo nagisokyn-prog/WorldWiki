@@ -151,6 +151,7 @@ surreal_entity! {
         #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
         #[flexible] pub data: serde_json::Value,
         pub is_default: bool,
+        #[serde(default)] pub is_master: bool,
     }
 }
 

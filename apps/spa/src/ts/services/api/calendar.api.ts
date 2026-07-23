@@ -12,12 +12,13 @@ export const calendarApi = {
 
   saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
     const plainData = JSON.parse(JSON.stringify(calendarData));
-    const { id, is_default, _id, ...calendarPayload } = plainData;
+    const { id, is_default, is_master, _id, ...calendarPayload } = plainData;
     const rustCalendar = {
       id: id || null,
       project_id: projectRecordId(project),
       name: plainData.название || 'Новый календарь',
       is_default: is_default || false,
+      is_master: is_master || false,
       data: calendarPayload
     };
     return invoke<{ success: boolean }>('save_calendar', { data: rustCalendar });

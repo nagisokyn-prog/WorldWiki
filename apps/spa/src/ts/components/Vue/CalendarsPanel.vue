@@ -21,12 +21,13 @@
           <div class="header-left">
             <span class="expand-icon">{{ isExpanded(idx) ? '▼' : '▶' }}</span>
             <span class="event-title">{{ cal.data?.название || 'Новый календарь' }}</span>
-            <span v-if="cal.is_default" class="badge-default" style="margin-left: 8px; font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px;">По умолчанию</span>
+            <span v-if="cal.is_master" class="badge-default" style="margin-left: 8px; font-size: 10px; background: #e67e22; color: white; padding: 2px 6px; border-radius: 4px;">🌍 Календарь Мира</span>
+            <span v-else-if="cal.is_default" class="badge-default" style="margin-left: 8px; font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px;">По умолчанию</span>
           </div>
           <div style="display: flex; gap: 8px;">
             <button type="button" class="btn-icon interactive-el" title="Сделать основным" :style="{ opacity: cal.is_default ? 1 : 0.5 }" @click.stop="setDefault(idx)">🌟</button>
             <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(idx)">💾</button>
-            <button type="button" class="delete-btn" @click.stop="removeCalendar(idx)">🗑️</button>
+            <button v-if="!cal.is_master" type="button" class="delete-btn" @click.stop="removeCalendar(idx)">🗑️</button>
           </div>
         </div>
         
@@ -46,14 +47,14 @@
           </div>
 
           <div class="calendar-top-row-grid">
-            <CalendarSettings v-model="cal.data" />
+            <CalendarSettings v-if="cal.is_master" v-model="cal.data" />
             <CalendarWeekdays v-model="cal.data" />
             <CalendarMonths v-model="cal.data" />
             <CalendarLeapYear v-model="cal.data" />
             <CalendarEras v-model="cal.data" />
           </div>
 
-          <div class="calendar-middle-row-grid">
+          <div class="calendar-middle-row-grid" v-if="cal.is_master">
             <CalendarSeasons v-model="cal.data" />
             <CalendarMoons v-model="cal.data" />
           </div>

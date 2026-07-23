@@ -3,15 +3,19 @@
     <h4><i class="fas fa-calendar-alt"></i> Таймлайн главы</h4>
     
     <!-- Селектор типа календаря -->
-    <div class="calendar-selector">
-      <label for="calendar-select">Выбрать календарь:</label>
-      <XboxWheel 
-        v-if="calendarOptions.length > 0"
-        :horizontal="wheelHorizontal"
-        :model-value="selectedCalendarId" 
-        :options="calendarOptions"
-        @update:model-value="(val: any) => { selectedCalendarId = val; onCalendarChange(); }"
-      />
+    <div class="calendar-selector multi-calendar-selector">
+      <label>Отображаемые календари:</label>
+      <div class="calendar-pills" v-if="availableCalendars.length > 0">
+        <button 
+          v-for="cal in availableCalendars" 
+          :key="cal.id"
+          class="calendar-pill interactive-el"
+          :class="{ active: selectedCalendarIds.includes(cal.id) }"
+          @click="toggleCalendarSelection(cal.id)"
+        >
+          {{ cal.data.название || 'Календарь' }}
+        </button>
+      </div>
       <div v-else style="font-size: 12px; color: var(--text-muted);">
         Нет доступных календарей
       </div>
@@ -33,12 +37,26 @@
         
         <div v-show="isExpanded(idx)" class="event-content">
           <!-- Визуальное отображение даты и сезона -->
-        <div class="date-display">
-          <div class="season-badge" :style="{ background: getSeasonColor(ev) }">
-            {{ getSeasonName(ev) }}
-          </div>
-          <div class="date-text">
-            {{ formatEventDate(ev) }}
+        <div class="date-display-column">
+          <div 
+            v-for="calId in selectedCalendarIds" 
+            :key="calId" 
+            class="date-display multi-date-display"
+          >
+            <template v-if="getConvertedDateInfo(ev, calId)">
+              <div class="cal-badge-name" :class="{ 'native-cal': getConvertedDateInfo(ev, calId)?.isNative }" :title="getConvertedDateInfo(ev, calId)?.isNative ? 'Родной календарь события' : ''">
+                {{ getConvertedDateInfo(ev, calId)?.calName }}
+              </div>
+              <div class="season-badge" :style="{ background: getConvertedDateInfo(ev, calId)?.seasonColor }">
+                {{ getConvertedDateInfo(ev, calId)?.seasonName }}
+              </div>
+              <div class="date-text">
+                {{ getConvertedDateInfo(ev, calId)?.dateStr }}
+              </div>
+              <div class="time-of-day-badge" :style="{ background: getConvertedDateInfo(ev, calId)?.timeOfDayColor }">
+                {{ getConvertedDateInfo(ev, calId)?.timeOfDayName }}
+              </div>
+            </template>
           </div>
         </div>
         
@@ -50,7 +68,7 @@
             <XboxWheel
 :horizontal="wheelHorizontal"
               :model-value="ev.date.era"
-              :options="eraOptions"
+              :options="getEraOptions(ev.calendar_id)"
               @update:model-value="(val: any) => updateEventDate(idx, 'era', val)"
             />
           </div>
@@ -72,7 +90,7 @@
             <XboxWheel
 :horizontal="wheelHorizontal"
               :model-value="ev.date.month"
-              :options="monthOptions"
+              :options="getMonthOptions(ev.calendar_id)"
               @update:model-value="(val: any) => updateEventDate(idx, 'month', val)"
             />
           </div>
@@ -84,7 +102,7 @@
               type="number" 
               :value="ev.date.day" 
               class="day-input"
-              :max="getDaysInMonth(ev.date.month)"
+              :max="getDaysInMonth(ev.calendar_id, ev.date.month)"
               @input="onDayInput(idx, $event)"
             >
           </div>
@@ -97,19 +115,16 @@
             <XboxWheel
 :horizontal="wheelHorizontal"
               :model-value="ev.time?.hour || 0"
-              :options="hourOptions"
+              :options="getHourOptions(ev.calendar_id)"
               @update:model-value="(val: any) => updateEventTime(idx, 'hour', val)"
             />
             <span class="time-separator">:</span>
             <XboxWheel
 :horizontal="wheelHorizontal"
               :model-value="ev.time?.minute || 0"
-              :options="minuteOptions"
+              :options="getMinuteOptions(ev.calendar_id)"
               @update:model-value="(val: any) => updateEventTime(idx, 'minute', val)"
             />
-          </div>
-          <div class="time-of-day-badge" :style="{ background: getTimeOfDayColor(ev) }">
-            {{ getTimeOfDayName(ev) }}
           </div>
         </div>
         

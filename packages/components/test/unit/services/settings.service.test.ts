@@ -496,7 +496,7 @@ describe('SettingsService', () => {
 
     it('should create image element for image background', () => {
       const el = document.createElement('div');
-      el.appendChild = function(child) { this.innerHTML += child.outerHTML; return child; };
+      el.appendChild = function(child: any) { this.innerHTML += (child as HTMLElement).outerHTML; return child; };
       vi.mocked(document.getElementById).mockReturnValue(el);
       
       settingsService.getSettings().background = { type: 'image', imagePath: '/test.jpg', opacity: 1, blur: 0, fit: 'cover' };
@@ -536,7 +536,7 @@ describe('SettingsService', () => {
 
     it('should use Tauri convertFileSrc when available', () => {
       const el = document.createElement('div');
-      el.appendChild = function(child) { this.innerHTML += child.outerHTML; return child; };
+      el.appendChild = function(child: any) { this.innerHTML += (child as HTMLElement).outerHTML; return child; };
       vi.mocked(document.getElementById).mockReturnValue(el);
       
       globalThis.__TAURI__ = {
@@ -560,7 +560,7 @@ describe('SettingsService', () => {
 
     it('should fallback to raw path when convertFileSrc not available', () => {
       const el = document.createElement('div');
-      el.appendChild = function(child) { this.innerHTML += child.outerHTML; return child; };
+      el.appendChild = function(child: any) { this.innerHTML += (child as HTMLElement).outerHTML; return child; };
       vi.mocked(document.getElementById).mockReturnValue(el);
       
       globalThis.__TAURI__ = { core: {} } as any;

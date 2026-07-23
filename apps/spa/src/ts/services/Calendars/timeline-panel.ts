@@ -221,54 +221,65 @@ export default defineComponent({
       }
     };
 
-    const getSeasonColor = (event: TimelineEvent): string => {
-      if (!calendar.value) return 'rgba(139, 92, 246, 0.2)';
-      const season = CalendarMath.getSeasonForDate(calendar.value, event.date.year, event.date.month);
+    const getConvertedDateInfo = (event: TimelineEvent, targetCalId: string) => {
+      const sourceCal = getCalendar(event.calendar_id);
+      const targetCal = getCalendar(targetCalId);
+      
+      if (!sourceCal || !targetCal) return null;
+
+      const inputObj = {
+        era_index: event.date.era,
+        year: event.date.year,
+        month: event.date.month,
+        day: event.date.day,
+        hour: event.time?.hour || 0,
+        minute: event.time?.minute || 0
+      };
+      
+      const absMin = CalendarMath.getAbsoluteMinute(inputObj, sourceCal);
+      const localDate = CalendarMath.getDateFromAbsolute(absMin, targetCal);
+      
+      const season = CalendarMath.getSeasonForDate(targetCal, localDate.year, localDate.month);
       const seasonColors: Record<string, string> = {
         'Весна': 'rgba(34, 197, 94, 0.3)',
         'Лето': 'rgba(245, 158, 11, 0.3)',
         'Осень': 'rgba(239, 68, 68, 0.3)',
         'Зима': 'rgba(59, 130, 246, 0.3)',
       };
-      return seasonColors[season] || 'rgba(139, 92, 246, 0.2)';
-    };
-
-    const getSeasonName = (event: TimelineEvent): string => {
-      if (!calendar.value) return 'Без сезона';
-      return CalendarMath.getSeasonForDate(calendar.value, event.date.year, event.date.month);
-    };
-
-    const getTimeOfDayName = (event: TimelineEvent): string => {
-      const hour = event.time?.hour || 12;
-      if (hour >= 5 && hour < 12) return '🌅 Утро';
-      if (hour >= 12 && hour < 17) return '☀️ День';
-      if (hour >= 17 && hour < 21) return '🌆 Вечер';
-      return '🌙 Ночь';
-    };
-
-    const getTimeOfDayColor = (event: TimelineEvent): string => {
-      const hour = event.time?.hour || 12;
-      if (hour >= 5 && hour < 12) return 'rgba(249, 115, 22, 0.3)';
-      if (hour >= 12 && hour < 17) return 'rgba(251, 191, 36, 0.3)';
-      if (hour >= 17 && hour < 21) return 'rgba(249, 115, 22, 0.3)';
-      return 'rgba(59, 130, 246, 0.3)';
-    };
-
-    const formatEventDate = (event: TimelineEvent): string => {
-      if (!calendar.value) return '';
-      const era = eras.value[event.date.era];
-      const month = months.value[event.date.month];
-      let dateStr = `${event.date.year} год, ${month?.название || month?.name || 'Месяц'} ${event.date.day}`;
+      const seasonColor = seasonColors[season] || 'rgba(139, 92, 246, 0.2)';
+      
+      const era = targetCal.эпохи?.[localDate.era_index];
+      const month = targetCal.месяцы?.[localDate.month];
+      let dateStr = `${localDate.year} год, ${month?.название || month?.name || 'Месяц'} ${localDate.day}`;
       if (era) dateStr += ` (${era.название || era.name})`;
+      
       if (event.time?.hour !== undefined) {
-        dateStr += `, ${String(event.time.hour).padStart(2, '0')}:${String(event.time.minute || 0).padStart(2, '0')}`;
+        dateStr += `, ${String(localDate.hour || 0).padStart(2, '0')}:${String(localDate.minute || 0).padStart(2, '0')}`;
       }
-      return dateStr;
+      
+      const hour = localDate.hour || 0;
+      let timeOfDayName = '🌙 Ночь';
+      let timeOfDayColor = 'rgba(59, 130, 246, 0.3)';
+      
+      if (hour >= 5 && hour < 12) { timeOfDayName = '🌅 Утро'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
+      else if (hour >= 12 && hour < 17) { timeOfDayName = '☀️ День'; timeOfDayColor = 'rgba(251, 191, 36, 0.3)'; }
+      else if (hour >= 17 && hour < 21) { timeOfDayName = '🌆 Вечер'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
+
+      return {
+        seasonName: season || 'Без сезона',
+        seasonColor,
+        timeOfDayName,
+        timeOfDayColor,
+        dateStr,
+        calName: targetCal.название || 'Календарь',
+        isNative: event.calendar_id === targetCalId
+      };
     };
 
-    const getDaysInMonth = (monthIdx: number): number => {
-      if (!calendar.value) return 30;
-      return calendar.value.месяцы[monthIdx]?.дней || 30;
+    const getDaysInMonth = (calId: string | undefined, monthIdx: number): number => {
+      const cal = getCalendar(calId);
+      if (!cal) return 30;
+      return cal.месяцы?.[monthIdx]?.дней || 30;
     };
 
     const updateEventDate = (idx: number, field: string, value: number) => {
@@ -277,7 +288,7 @@ export default defineComponent({
       if (field === 'year') newEvents[idx].date.year = value;
       if (field === 'month') newEvents[idx].date.month = value;
       if (field === 'day') {
-        const maxDay = getDaysInMonth(newEvents[idx].date.month);
+        const maxDay = getDaysInMonth(newEvents[idx].calendar_id, newEvents[idx].date.month);
         newEvents[idx].date.day = Math.min(value, maxDay);
       }
       emit('update:events', newEvents);
@@ -306,26 +317,27 @@ export default defineComponent({
     const addEvent = () => {
       console.log('[Timeline] addEvent clicked');
       const newEvents = [...(props.events as TimelineEvent[])];
-      const cal = calendar.value;
-      console.log('[Timeline] Current selected calendar value:', cal);
+      const nativeCalId = selectedCalendarIds.value[0] || availableCalendars.value[0]?.id;
+      const cal = getCalendar(nativeCalId);
       
       const origin = cal?.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
-      console.log('[Timeline] Fallback origin for new event:', origin);
       
       let defaultDate = { era: origin.эпоха ?? 0, year: origin.год ?? 1, month: origin.месяц ?? 0, day: origin.день ?? 1 };
       let defaultTime = { hour: 12, minute: 0 };
+      let calendar_id = nativeCalId;
       
       if (newEvents.length > 0) {
         const last = newEvents[newEvents.length - 1];
         defaultDate = { ...last.date };
         if (last.time) defaultTime = { hour: last.time.hour ?? 12, minute: last.time.minute ?? 0 };
+        calendar_id = last.calendar_id || nativeCalId;
       }
       
       newEvents.push({
         date: defaultDate,
         time: defaultTime,
         description: '',
-        calendar_id: selectedCalendarId.value || undefined
+        calendar_id
       });
       expandedIndices.value.add(newEvents.length - 1);
       emit('update:events', newEvents);
@@ -342,7 +354,8 @@ export default defineComponent({
     const createNextEvent = (idx: number) => {
       const currentEvent = props.events[idx];
       const input = relativeInput.value[idx];
-      if (!input || !calendar.value) return;
+      const cal = getCalendar(currentEvent.calendar_id);
+      if (!input || !cal) return;
 
       const inputObj = {
         era_index: currentEvent.date.era,
@@ -353,9 +366,9 @@ export default defineComponent({
         minute: currentEvent.time?.minute || 0
       };
 
-      const absMins = CalendarMath.getAbsoluteMinute(inputObj, calendar.value);
-      const delta = CalendarMath.parseDurationString(input, calendar.value);
-      const nextDateObj = CalendarMath.getDateFromAbsolute(absMins + delta, calendar.value, currentEvent.date.era);
+      const absMins = CalendarMath.getAbsoluteMinute(inputObj, cal);
+      const delta = CalendarMath.parseDurationString(input, cal);
+      const nextDateObj = CalendarMath.getDateFromAbsolute(absMins + delta, cal, currentEvent.date.era);
 
       const newEvents = [...(props.events as TimelineEvent[])];
       newEvents.splice(idx + 1, 0, {
@@ -370,7 +383,7 @@ export default defineComponent({
           minute: nextDateObj.minute
         },
         description: '',
-        calendar_id: selectedCalendarId.value || undefined
+        calendar_id: currentEvent.calendar_id
       });
 
       expandedIndices.value.add(idx + 1);
@@ -382,25 +395,22 @@ export default defineComponent({
     return {
       wheelHorizontal,
       calendarOptions,
-      selectedCalendarId,
-      onCalendarChange,
+      availableCalendars,
+      selectedCalendarIds,
+      toggleCalendarSelection,
       isExpanded,
       toggleExpand,
       removeEvent,
-      getSeasonColor,
-      getSeasonName,
-      formatEventDate,
-      eraOptions,
+      getConvertedDateInfo,
+      getEraOptions,
+      getMonthOptions,
+      getHourOptions,
+      getMinuteOptions,
       updateEventDate,
       onYearInput,
       onDayInput,
-      monthOptions,
       getDaysInMonth,
-      hourOptions,
       updateEventTime,
-      minuteOptions,
-      getTimeOfDayColor,
-      getTimeOfDayName,
       onChange,
       relativeInput,
       createNextEvent,

@@ -99,8 +99,9 @@
                             </label>
                           </div>
 
-                          <DateWheels
- v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base'"
+                          <UniversalDatePicker
+                                     v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base' || field.type === 'calendar_datetime'"
+                                     :show-time="field.type === 'calendar_datetime'"
                                      :model-value="getProp(field.path || field.id)"
                                      :project="project"
                                      @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
@@ -234,8 +235,9 @@
                                 <span style="min-width:36px; text-align:right; font-size:12px; color:var(--accent); font-weight:600;">{{ getProp(item, tField.id || tField.class) ?? 0 }}</span>
                               </div>
 
-                              <DateWheels
- v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base'"
+                              <UniversalDatePicker
+                                         v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base' || tField.type === 'calendar_datetime'"
+                                         :show-time="tField.type === 'calendar_datetime'"
                                          :model-value="getProp(item, tField.id || tField.class)"
                                          :project="project"
                                          @update:model-value="(val: any) => { setProp(item, tField.id || tField.class, val); markModified(); }" />
@@ -308,7 +310,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { XboxWheel, TagsField, settingsService } from '@worldwiki/components';
-import DateWheels from '../../../components/Vue/DateWheels.vue';
+import UniversalDatePicker from '../../../components/Vue/UniversalDatePicker.vue';
 import RelationshipBlock from '../../../components/Vue/SchemaEditor/RelationshipBlock.vue';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';

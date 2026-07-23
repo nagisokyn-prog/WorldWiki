@@ -4,7 +4,7 @@
       "name": "disbandDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_роспуска (calendar_date)"
+        "дата_роспуска (calendar_datetime)"
       ]
     },
     {
@@ -24,7 +24,7 @@
       "fields": [
         "персонаж (select)",
         "роль (text)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "особенности_правления (textarea)"
       ]
     },
@@ -36,7 +36,7 @@
         "руководитель (select)",
         "функции (textarea)",
         "члены_отдела (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -47,7 +47,7 @@
         "уровень (select) [options: empty,младший,средний,старший,ведущий,директор]",
         "требования (textarea)",
         "преимущества_льготы (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -67,7 +67,7 @@
       "fields": [
         "персонаж (select)",
         "роль (text)",
-        "дата_вступления (calendar_date)",
+        "дата_вступления (calendar_datetime)",
         "обязанности_достижения (textarea)"
       ]
     },
@@ -158,7 +158,7 @@
         "название_операции (text)",
         "статус (select) [options: empty,запланирована,активна,завершена,провалена,отменена]",
         "цели_задачи (textarea)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "результаты (textarea)",
         "эффективность (range)",
         "затраченные_ресурсы (textarea)"
@@ -194,7 +194,7 @@
         "местоположение (text)",
         "функции_деятельность (textarea)",
         "персонал (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -206,7 +206,7 @@
         "местоположение (text)",
         "уровень_безопасности (select) [options: empty,низкий,средний,высокий,максимальный]",
         "особенности_оборудование (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -228,7 +228,7 @@
         "описание (textarea)",
         "участники_условия (textarea)",
         "значение_символика (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -247,7 +247,7 @@
       "fields": [
         "государство (select)",
         "легальность (select) [options: empty,легальная,ограниченная,запрещенная,террористическая,под_наблюдением]",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "причины_основания (textarea)"
       ]
     },
@@ -258,7 +258,7 @@
         "номер_дела (text)",
         "статус (select) [options: empty,на_рассмотрении,выиграно,проиграно,урегулировано,отклонено]",
         "суть_дела (textarea)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "результат_последствия (textarea)"
       ]
     },
@@ -291,7 +291,7 @@
         "название_реформы (text)",
         "статус (select) [options: empty,запланирована,в_процессе,завершена,отменена]",
         "цели_задачи (textarea)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "результаты_эффект (textarea)"
       ]
     },
@@ -302,7 +302,7 @@
         "название_плана (text)",
         "приоритет (select) [options: empty,низкий,средний,высокий,критический]",
         "цели_направления (textarea)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "риски_возможности (textarea)"
       ]
     },
@@ -325,7 +325,7 @@
         "причины_конфликта (textarea)",
         "проявления (textarea)",
         "пути_разрешения (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -336,7 +336,7 @@
         "приоритет (select) [options: empty,низкий,средний,высокий,основной]",
         "описание (textarea)",
         "проявления_в_работе (textarea)",
-        "дата_начала (calendar_date)"
+        "дата_начала (calendar_datetime)"
       ]
     },
     {
@@ -357,7 +357,7 @@
         "название_события (text)",
         "тип (select) [options: empty,основание,реорганизация,кризис,достижение,конфликт]",
         "описание (textarea)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "важность (select) [options: empty,низкая,средняя,высокая,критическая]",
         "последствия (textarea)"
       ]
@@ -376,21 +376,21 @@
       "name": "dynamicEndDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_окончания (calendar_date)"
+        "дата_окончания (calendar_datetime)"
       ]
     },
     {
       "name": "dynamicDisbandDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_роспуска (calendar_date)"
+        "дата_роспуска (calendar_datetime)"
       ]
     },
     {
       "name": "dynamicAbolitionDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_упразднения (calendar_date)"
+        "дата_упразднения (calendar_datetime)"
       ]
     }
   ],
@@ -457,7 +457,7 @@
       "fields": [
         "персонаж (select)",
         "должность (text)",
-        "дата_начала_полномочий (calendar_date)",
+        "дата_начала_полномочий (calendar_datetime)",
         "партия (text)",
         "полномочия (textarea)"
       ]
@@ -468,7 +468,7 @@
       "fields": [
         "название (text)",
         "идеология (select) [options: empty,консерватизм,либерализм,социализм,национализм,центризм]",
-        "дата_основания (calendar_date)",
+        "дата_основания (calendar_datetime)",
         "лидер (select)",
         "программа (textarea)"
       ]
@@ -623,7 +623,7 @@
         "название (text)",
         "население (text)",
         "площадь (text)",
-        "дата_основания (calendar_date)",
+        "дата_основания (calendar_datetime)",
         "экономическая_специализация (text)"
       ]
     },
@@ -710,7 +710,7 @@
       "fields": [
         "название (text)",
         "тип (select) [options: empty,праздник,ритуал,обычай,фестиваль,церемония]",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "регион (text)",
         "описание (textarea)"
       ]
@@ -732,7 +732,7 @@
       "type": "dynamic",
       "fields": [
         "название (text)",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "тип (select) [options: empty,государственный,религиозный,национальный,культурный,профессиональный]",
         "статус (select) [options: empty,официальный_выходной,рабочий_день,памятный_день]",
         "традиции (textarea)"
@@ -744,7 +744,7 @@
       "fields": [
         "название (select)",
         "вид_искусства (select) [options: empty,живопись,литература,музыка,театр,кино,архитектура]",
-        "дата_начала (calendar_date)",
+        "дата_начала (calendar_datetime)",
         "представители (text)",
         "описание (textarea)"
       ]
@@ -778,7 +778,7 @@
         "государство (select)",
         "уровень_отношений (select) [options: empty,стратегическое_партнёрство,союзник,дружественные,нейтральные,напряжённые,враждебные,война]",
         "дипломатический_статус (text)",
-        "дата_установления (calendar_date)",
+        "дата_установления (calendar_datetime)",
         "договоры_и_соглашения (textarea)"
       ]
     },
@@ -797,7 +797,7 @@
       "type": "dynamic",
       "fields": [
         "название (text)",
-        "дата_подписания (calendar_date)",
+        "дата_подписания (calendar_datetime)",
         "стороны (multiselect)",
         "статус (select) [options: empty,действующий,приостановлен,расторгнут,истёк]",
         "основные_положения (textarea)"
@@ -809,7 +809,7 @@
       "fields": [
         "название (select)",
         "участие (select) [options: empty,полноправный_член,наблюдатель,ассоциированный,приостановлено,не_участвует]",
-        "дата_вступления (calendar_date)",
+        "дата_вступления (calendar_datetime)",
         "роль_и_участие (textarea)"
       ]
     },
@@ -843,7 +843,7 @@
         "уровень (select) [options: empty,конституционный,верховный,федеральный,региональный,местный]",
         "инстанция (select) [options: empty,первая,апелляционная,кассационная,надзорная]",
         "местоположение (text)",
-        "дата_основания (calendar_date)",
+        "дата_основания (calendar_datetime)",
         "компетенция (textarea)"
       ]
     },
@@ -853,7 +853,7 @@
       "fields": [
         "название (text)",
         "тип (select) [options: empty,кодекс,федеральный_закон,указ_правителя,постановление_правительства,конституция]",
-        "дата_принятия (calendar_date)",
+        "дата_принятия (calendar_datetime)",
         "статус (select) [options: empty,действующий,изменён,отменён,проект]",
         "основные_положения (textarea)"
       ]
@@ -865,7 +865,7 @@
         "название (select)",
         "тип (select) [options: empty,полиция,следственный,служба_безопасности,прокуратура,таможня]",
         "сотрудники (text)",
-        "дата_основания (calendar_date)",
+        "дата_основания (calendar_datetime)",
         "функции (textarea)"
       ]
     },
@@ -886,7 +886,7 @@
       "type": "dynamic",
       "fields": [
         "название (text)",
-        "дата_начала_эпохи (calendar_date)",
+        "дата_начала_эпохи (calendar_datetime)",
         "правители (multiselect)",
         "столица (text)",
         "основные_события (textarea)"
@@ -897,9 +897,9 @@
       "type": "dynamic",
       "fields": [
         "имя (select)",
-        "дата_рождения (calendar_date)",
+        "дата_рождения (calendar_datetime)",
         "титул_должность (text)",
-        "дата_начала_правления (calendar_date)",
+        "дата_начала_правления (calendar_datetime)",
         "вклад_и_достижения (textarea)"
       ]
     },
@@ -934,7 +934,7 @@
         "название (text)",
         "тип (select) [options: empty,республика,автономный_округ,автономная_область,особый_статус]",
         "столица (text)",
-        "дата_образования (calendar_date)",
+        "дата_образования (calendar_datetime)",
         "население (text)",
         "официальные_языки (text)",
         "особые_права (textarea)"
@@ -947,7 +947,7 @@
         "город (text)",
         "регион (text)",
         "население (text)",
-        "дата_основания (calendar_date)",
+        "дата_основания (calendar_datetime)",
         "функции (textarea)"
       ]
     },
@@ -981,7 +981,7 @@
         "название (text)",
         "сфера (select) [options: empty,демографический,экономический,политический,социальный,экологический]",
         "уровень_серьезности (select) [options: empty,низкий,средний,высокий,критический]",
-        "дата_начала_проблемы (calendar_date)",
+        "дата_начала_проблемы (calendar_datetime)",
         "описание (textarea)"
       ]
     },
@@ -1044,28 +1044,28 @@
       "name": "dynamicEndDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_окончания (calendar_date)"
+        "дата_окончания (calendar_datetime)"
       ]
     },
     {
       "name": "dynamicDisbandDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_роспуска (calendar_date)"
+        "дата_роспуска (calendar_datetime)"
       ]
     },
     {
       "name": "dynamicAbolitionDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_упразднения (calendar_date)"
+        "дата_упразднения (calendar_datetime)"
       ]
     },
     {
       "name": "stateCollapseDateTemplate",
       "type": "dynamic",
       "fields": [
-        "дата_распада (calendar_date)"
+        "дата_распада (calendar_datetime)"
       ]
     }
   ],
@@ -1134,7 +1134,7 @@
       "name": "Одиночный параметр",
       "type": "dynamic",
       "fields": [
-        "дата (calendar_date)"
+        "дата (calendar_datetime)"
       ]
     },
     {

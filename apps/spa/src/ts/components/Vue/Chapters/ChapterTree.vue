@@ -1,5 +1,6 @@
 <template>
   <div class="chapter-tree-wrapper" style="height: 100%; display: flex; flex-direction: column;">
+    <GlobalCalendarWidget v-if="project" :project="project" />
     <ExplorerTree
       ref="explorerTreeRef"
       title="Структура"
@@ -81,6 +82,7 @@ import { apiService } from '../../../services/api.service';
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 import { ExplorerTree } from '@worldwiki/components';
 import type { TreeSectionData, TreeNodeData } from '@worldwiki/components';
+import GlobalCalendarWidget from '../Calendars/GlobalCalendarWidget.vue';
 
 const router = useRouter();
 

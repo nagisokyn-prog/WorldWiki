@@ -253,6 +253,7 @@ const atomicBricks = [
   { val: 'select', icon: '🔽', label: 'Список' },
   { val: 'multiselect', icon: '☑️', label: 'Мульти' },
   { val: 'calendar_date', icon: '📅', label: 'Дата' },
+  { val: 'calendar_datetime', icon: '🕒', label: 'Дата и время' },
   { val: 'range', icon: '🎚️', label: 'Шкала' },
   { val: 'number', icon: '🔢', label: 'Число' },
   { val: 'tags', icon: '🏷️', label: 'Теги' },

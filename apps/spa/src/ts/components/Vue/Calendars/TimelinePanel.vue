@@ -60,73 +60,13 @@
           </div>
         </div>
         
-        <!-- Xbox Wheel селекторы для даты -->
-        <div class="date-selector-grid">
-          <!-- Эра -->
-          <div class="wheel-wrapper-container">
-            <label>Эра</label>
-            <XboxWheel
-:horizontal="wheelHorizontal"
-              :model-value="ev.date.era"
-              :options="getEraOptions(ev.calendar_id)"
-              @update:model-value="(val: any) => updateEventDate(idx, 'era', val)"
-            />
-          </div>
-          
-          <!-- Год -->
-          <div class="wheel-wrapper-container compact">
-            <label>Год</label>
-            <input 
-              type="number" 
-              :value="ev.date.year" 
-              class="year-input"
-              @input="onYearInput(idx, $event)"
-            >
-          </div>
-          
-          <!-- Месяц -->
-          <div class="wheel-wrapper-container">
-            <label>Месяц</label>
-            <XboxWheel
-:horizontal="wheelHorizontal"
-              :model-value="ev.date.month"
-              :options="getMonthOptions(ev.calendar_id)"
-              @update:model-value="(val: any) => updateEventDate(idx, 'month', val)"
-            />
-          </div>
-          
-          <!-- День -->
-          <div class="wheel-wrapper-container compact">
-            <label>День</label>
-            <input 
-              type="number" 
-              :value="ev.date.day" 
-              class="day-input"
-              :max="getDaysInMonth(ev.calendar_id, ev.date.month)"
-              @input="onDayInput(idx, $event)"
-            >
-          </div>
-        </div>
-        
-        <!-- Время -->
-        <div class="time-selector">
-          <label>🕒 Время суток</label>
-          <div class="time-wheels-container">
-            <XboxWheel
-:horizontal="wheelHorizontal"
-              :model-value="ev.time?.hour || 0"
-              :options="getHourOptions(ev.calendar_id)"
-              @update:model-value="(val: any) => updateEventTime(idx, 'hour', val)"
-            />
-            <span class="time-separator">:</span>
-            <XboxWheel
-:horizontal="wheelHorizontal"
-              :model-value="ev.time?.minute || 0"
-              :options="getMinuteOptions(ev.calendar_id)"
-              @update:model-value="(val: any) => updateEventTime(idx, 'minute', val)"
-            />
-          </div>
-        </div>
+        <!-- Универсальный селектор даты и времени -->
+        <UniversalDatePicker
+          :model-value="getUniversalDateObject(ev)"
+          :project="project"
+          :show-time="true"
+          @update:model-value="(val: any) => updateEventFullDate(idx, val)"
+        />
         
         <!-- Описание события -->
           <textarea 

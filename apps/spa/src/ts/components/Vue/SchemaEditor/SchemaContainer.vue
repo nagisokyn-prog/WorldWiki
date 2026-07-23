@@ -271,6 +271,7 @@ const atomicBricks = [
   { value: 'select', label: 'Список' },
   { value: 'multiselect', label: 'Мульти' },
   { value: 'calendar_date', label: 'Дата' },
+  { value: 'calendar_datetime', label: 'Дата и время' },
   { value: 'range', label: 'Шкала' },
   { value: 'number', label: 'Число' },
   { value: 'tags', label: 'Теги' },

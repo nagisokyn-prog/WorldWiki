@@ -32,3 +32,4 @@ export { editorService } from './ts/services/editor.service.js';
 export { EntityService } from './ts/services/entity.service.js';
 export { footnoteService } from './ts/services/footnote.service.js';
 export { settingsService } from './ts/services/settings.service.js';
+export { FormService, type FieldConfig, type FormConfig, type TemplateDef } from './ts/services/form.service.js';

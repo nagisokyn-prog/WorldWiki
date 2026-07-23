@@ -182,5 +182,5 @@ export class FormService extends BaseFormService {
 
 
 if (typeof window !== 'undefined') {
-  window.FormService = FormService;
+  (window as any).FormService = FormService;
 }

@@ -46,8 +46,9 @@ export class DynamicService {
    * Добавить элемент в контейнер
    */
   addItem(containerId: string, templateId: string, itemData: Record<string, unknown> | null, containerEl: HTMLElement, skipFill: boolean = false): HTMLElement | null {
-    if (this.formService && typeof this.formService.addDynamicItem === 'function') {
-      return this.formService.addDynamicItem(containerId, templateId, itemData, skipFill, containerEl.closest('.form-section') as HTMLElement);
+    const fs = this.formService as any;
+    if (fs && typeof fs.addDynamicItem === 'function') {
+      return fs.addDynamicItem(containerId, templateId, itemData, skipFill, containerEl.closest('.form-section') as HTMLElement);
     }
     return null;
   }

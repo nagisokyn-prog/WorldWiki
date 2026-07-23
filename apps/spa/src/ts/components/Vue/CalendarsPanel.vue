@@ -47,16 +47,17 @@
           </div>
 
           <div class="calendar-top-row-grid">
-            <CalendarSettings v-if="cal.is_master" v-model="cal.data" />
+            <CalendarSettings :is-master="cal.is_master" v-model="cal.data" />
             <CalendarWeekdays v-model="cal.data" />
             <CalendarMonths v-model="cal.data" />
             <CalendarLeapYear v-model="cal.data" />
             <CalendarEras v-model="cal.data" />
           </div>
 
-          <div class="calendar-middle-row-grid" v-if="cal.is_master">
+          <div class="calendar-middle-row-grid">
             <CalendarSeasons v-model="cal.data" />
-            <CalendarMoons v-model="cal.data" />
+            <CalendarMoons v-if="cal.is_master" v-model="cal.data" />
+            <CalendarTimezones v-if="cal.is_master" v-model="cal.data" />
           </div>
 
           <div class="calendar-full-row-grid">
@@ -85,6 +86,7 @@ import CalendarLeapYear from "./Calendars/CalendarLeapYear.vue";
 import CalendarEras from "./Calendars/CalendarEras.vue";
 import CalendarSeasons from "./Calendars/CalendarSeasons.vue";
 import CalendarMoons from "./Calendars/CalendarMoons.vue";
+import CalendarTimezones from "./Calendars/CalendarTimezones.vue";
 import CalendarHolidays from "./Calendars/CalendarHolidays.vue";
 import CalendarPlayground from "./Calendars/CalendarPlayground.vue";
 
@@ -121,12 +123,14 @@ const loadCalendars = async () => {
       calendars.value = newList.map(c => ({
         id: c.id,
         is_default: c.is_default,
+        is_master: c.is_master || (c.data && c.data.is_master),
         data: c.data || c
       }));
     } else {
       calendars.value = list.map(c => ({
         id: c.id,
         is_default: c.is_default,
+        is_master: c.is_master || (c.data && c.data.is_master),
         data: c.data || c
       }));
     }
@@ -143,17 +147,22 @@ watch(() => project.value, () => {
   loadCalendars();
 }, { immediate: true });
 
-const addCalendar = () => {
+const addCalendar = async () => {
   const newCal = CalendarMath.getDefaultCalendar();
   newCal.название = `Новый календарь ${calendars.value.length + 1}`;
   
-  calendars.value.push({
-    id: `temp_${Date.now()}`,
+  const tempPayload = {
+    ...newCal,
     is_default: calendars.value.length === 0,
-    data: newCal
-  });
+    is_master: calendars.value.length === 0,
+    id: undefined
+  };
   
-  expandedCalendars.value.add(calendars.value.length - 1);
+  if (project.value) {
+    await calendarService.saveCalendar(project.value, tempPayload);
+    await loadCalendars();
+    expandedCalendars.value.add(calendars.value.length - 1);
+  }
 };
 
 const saveCalendar = async (idx: number) => {
@@ -182,8 +191,12 @@ const removeCalendar = async (idx: number) => {
   if (!project.value) return;
   
   const cal = calendars.value[idx];
-  if (!cal.id?.startsWith('temp_')) {
-    // Ideally we would delete it via API, assuming deleteCalendar exists, else just ignore for this mock
+  if (!cal.id?.startsWith('temp_') && cal.id) {
+    const success = await calendarService.deleteCalendar(cal.id);
+    if (!success) {
+      alert('Ошибка при удалении календаря.');
+      return;
+    }
   }
   calendars.value.splice(idx, 1);
   expandedCalendars.value.delete(idx);

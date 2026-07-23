@@ -17,6 +17,7 @@ declare module 'vue' {
     CalendarSeasons: typeof import('./ts/components/Vue/Calendars/CalendarSeasons.vue')['default']
     CalendarSettings: typeof import('./ts/components/Vue/Calendars/CalendarSettings.vue')['default']
     CalendarsPanel: typeof import('./ts/components/Vue/CalendarsPanel.vue')['default']
+    CalendarTimezones: typeof import('./ts/components/Vue/Calendars/CalendarTimezones.vue')['default']
     CalendarWeekdays: typeof import('./ts/components/Vue/Calendars/CalendarWeekdays.vue')['default']
     ChaptersMain: typeof import('./ts/components/Vue/Chapters/ChaptersMain.vue')['default']
     ChaptersView: typeof import('./ts/components/Vue/ChaptersView.vue')['default']
@@ -25,6 +26,7 @@ declare module 'vue' {
     DateWheels: typeof import('./ts/components/Vue/DateWheels.vue')['default']
     ExportModal: typeof import('./ts/components/Vue/Chapters/ExportModal.vue')['default']
     FloatingEntityEditor: typeof import('./ts/components/Vue/FloatingEntityEditor.vue')['default']
+    GlobalCalendarWidget: typeof import('./ts/components/Vue/Calendars/GlobalCalendarWidget.vue')['default']
     GlobalTimeViewer: typeof import('./ts/components/Vue/Calendars/GlobalTimeViewer.vue')['default']
     ParticipantsPanel: typeof import('./ts/components/Vue/Chapters/ParticipantsPanel.vue')['default']
     PlanningPanel: typeof import('./ts/components/Vue/Chapters/PlanningPanel.vue')['default']
@@ -38,6 +40,7 @@ declare module 'vue' {
     SemanticParagraphNode: typeof import('./ts/components/Vue/Chapters/SemanticParagraphNode.vue')['default']
     TagsManagerModal: typeof import('./ts/components/Vue/TagsManagerModal.vue')['default']
     TimelinePanel: typeof import('./ts/components/Vue/Calendars/TimelinePanel.vue')['default']
+    UniversalDatePicker: typeof import('./ts/components/Vue/UniversalDatePicker.vue')['default']
     WowilonDrawer: typeof import('./ts/components/Vue/Chapters/WowilonDrawer.vue')['default']
   }
 }

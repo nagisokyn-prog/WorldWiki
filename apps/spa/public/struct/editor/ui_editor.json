@@ -55,7 +55,7 @@
         },
         {
           "id": "дата_создания",
-          "type": "calendar_date",
+          "type": "calendar_datetime",
           "label": "Дата создания / основания",
           "placeholder": "Выберите дату по календарю проекта",
           "hint": "Используется календарь вымышленного мира",
@@ -375,7 +375,7 @@
           "placeholder": "..."
         },
         {
-          "type": "calendar_date",
+          "type": "calendar_datetime",
           "class": "дата",
           "label": "Дата",
           "placeholder": "Выберите дату..."
@@ -475,7 +475,7 @@
       "headerTitle": "Параметр",
       "fields": [
         {
-          "type": "calendar_date",
+          "type": "calendar_datetime",
           "class": "значение_дата",
           "label": "Дата",
           "placeholder": "Выберите дату..."

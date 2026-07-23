@@ -106,7 +106,7 @@
         },
         {
           "id": "orgFoundedDate",
-          "type": "calendar_date",
+          "type": "calendar_datetime",
           "label": "Дата основания",
           "placeholder": "Выберите дату по календарю проекта",
           "hint": "Выберите дату из календаря мира",
@@ -148,7 +148,7 @@
             "дата": {
               "label": "Дата роспуска",
               "placeholder": "Выберите дату по календарю",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "значение_дата": {
               "hidden": true
@@ -252,7 +252,7 @@
             "дата": {
               "label": "Дата начала полномочий",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_1": {
               "label": "Стиль, достижения...",
@@ -285,7 +285,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -341,7 +341,7 @@
             "дата": {
               "label": "Дата основания отдела",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "статус_категория": {
               "hidden": true
@@ -366,7 +366,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -446,7 +446,7 @@
             "дата": {
               "label": "Дата введения",
               "placeholder": "Выберите дату начала действия",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_3": {
               "hidden": true
@@ -468,7 +468,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -1053,7 +1053,7 @@
             "дата": {
               "label": "Дата начала",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_2": {
               "label": "Результаты...",
@@ -1083,7 +1083,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -1262,7 +1262,7 @@
             "дата": {
               "label": "Дата открытия",
               "placeholder": "Выберите дату начала деятельности",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_3": {
               "hidden": true
@@ -1284,7 +1284,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -1390,7 +1390,7 @@
             "дата": {
               "label": "Дата основания",
               "placeholder": "Выберите дату начала использования",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_2": {
               "hidden": true
@@ -1415,7 +1415,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -1562,7 +1562,7 @@
             "дата": {
               "label": "Дата появления",
               "placeholder": "Выберите дату возникновения",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "числовой_показатель": {
               "hidden": true
@@ -1581,7 +1581,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -1745,7 +1745,7 @@
             "дата": {
               "label": "Дата начала действия статуса",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_1": {
               "label": "Причины установления статуса",
@@ -1775,7 +1775,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -1850,7 +1850,7 @@
             "дата": {
               "label": "Дата начала",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_2": {
               "label": "Результат и последствия",
@@ -1877,7 +1877,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -2068,7 +2068,7 @@
             "дата": {
               "label": "Дата начала",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_2": {
               "label": "К чему привела реформа",
@@ -2095,7 +2095,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -2166,7 +2166,7 @@
             "дата": {
               "label": "Дата начала",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_2": {
               "label": "Риски и возможности",
@@ -2193,7 +2193,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -2363,7 +2363,7 @@
             "дата": {
               "label": "Дата начала",
               "placeholder": "Выберите дату начала конфликта",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "числовой_показатель": {
               "hidden": true
@@ -2382,7 +2382,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -2458,7 +2458,7 @@
             "дата": {
               "label": "Дата введения",
               "placeholder": "Выберите дату начала действия",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "описание_3": {
               "hidden": true
@@ -2480,7 +2480,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true
@@ -2648,7 +2648,7 @@
             "дата": {
               "label": "Дата начала",
               "placeholder": "Выберите дату начала",
-              "type": "calendar_date"
+              "type": "calendar_datetime"
             },
             "тип_отношения": {
               "label": "важность",
@@ -2701,7 +2701,7 @@
                 "дата": {
                   "label": "Дата окончания",
                   "placeholder": "Выберите дату по календарю",
-                  "type": "calendar_date"
+                  "type": "calendar_datetime"
                 },
                 "название": {
                   "hidden": true

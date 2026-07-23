@@ -94,8 +94,9 @@ DEFINE TABLE OVERWRITE calendars SCHEMAFULL;
 DEFINE FIELD OVERWRITE name        ON calendars TYPE string;
 DEFINE FIELD OVERWRITE description ON calendars TYPE option<string>;
 DEFINE FIELD OVERWRITE data        ON calendars TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE is_default  ON calendars TYPE bool DEFAULT false;
-DEFINE FIELD OVERWRITE project_id  ON calendars TYPE record<projects>;
+DEFINE FIELD OVERWRITE is_default  ON calendars TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE is_master   ON calendars TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE project_id  ON calendars TYPE record<projects>;
 
 -- ===============================================
 -- МЕТА: Типы сущностей (Схемы)

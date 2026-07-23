@@ -36,7 +36,7 @@ style="color: #f55; background: none; border: none; font-size: 10px; cursor: poi
        <XboxWheel v-else-if="item.type === 'select'" :model-value="''" :options="item.options || []" :placeholder="item.placeholder || 'Выберите...'" />
 
        <!-- 3D WHEEL DATE -->
-       <div v-else-if="item.type === 'calendar_date' || item.type === 'date'" style="display: flex; gap: 12px; align-items: flex-end;">
+       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" style="display: flex; gap: 12px; align-items: flex-end;">
           <div style="flex: 1;"><label class="form-label-micro">ГОД</label><input type="number" class="input-base" style="text-align: center; font-size: 13px;" placeholder="2026" /></div>
           <div style="flex: 2;"><label class="form-label-micro">МЕСЯЦ</label><XboxWheel :options="monthsList" /></div>
           <div style="flex: 1;"><label class="form-label-micro">ДЕНЬ</label><input type="number" class="input-base" style="text-align: center; font-size: 13px;" placeholder="1" /></div>
@@ -105,6 +105,7 @@ const typeOptions = [
   { val: 'select', icon: '🔽', label: 'Список' },
   { val: 'multiselect', icon: '☑️', label: 'Мульти' },
   { val: 'calendar_date', icon: '📅', label: 'Дата' },
+  { val: 'calendar_datetime', icon: '🕒', label: 'Дата и время' },
   { val: 'range', icon: '🎚️', label: 'Шкала' },
   { val: 'number', icon: '🔢', label: 'Число' },
   { val: 'tags', icon: '🏷️', label: 'Теги' },

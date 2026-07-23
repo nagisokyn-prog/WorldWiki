@@ -4,6 +4,7 @@ import { calendarService } from '../calendar.service';
 import { CalendarMath } from './calendar.math';
 
 import { XboxWheel, settingsService } from '@worldwiki/components';
+import UniversalDatePicker from '../../components/Vue/UniversalDatePicker.vue';
 
 export interface TimelineEvent {
   date: {
@@ -23,7 +24,8 @@ export interface TimelineEvent {
 export default defineComponent({
   name: 'TimelinePanel',
   components: {
-    XboxWheel
+    XboxWheel,
+    UniversalDatePicker
   },
   props: {
     project: { type: String, required: true },
@@ -276,42 +278,58 @@ export default defineComponent({
       };
     };
 
+    const getUniversalDateObject = (ev: TimelineEvent) => {
+      return {
+        calendar_id: ev.calendar_id,
+        original_input: {
+          era_index: ev.date.era,
+          year: ev.date.year,
+          month: ev.date.month,
+          day: ev.date.day,
+          hour: ev.time?.hour ?? 0,
+          minute: ev.time?.minute ?? 0
+        }
+      };
+    };
+
+    const updateEventFullDate = (idx: number, val: any) => {
+      const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
+      newEvents[idx].calendar_id = val.calendar_id;
+      newEvents[idx].date = {
+        era: val.original_input.era_index,
+        year: val.original_input.year,
+        month: val.original_input.month,
+        day: val.original_input.day
+      };
+      if (val.original_input.hour !== undefined) {
+        newEvents[idx].time = {
+          hour: val.original_input.hour,
+          minute: val.original_input.minute
+        };
+      }
+      emit('update:events', newEvents);
+      onChange();
+    };
+
     const getDaysInMonth = (calId: string | undefined, monthIdx: number): number => {
       const cal = getCalendar(calId);
       if (!cal) return 30;
       return cal.месяцы?.[monthIdx]?.дней || 30;
     };
 
-    const updateEventDate = (idx: number, field: string, value: number) => {
-      const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
-      if (field === 'era') newEvents[idx].date.era = value;
-      if (field === 'year') newEvents[idx].date.year = value;
-      if (field === 'month') newEvents[idx].date.month = value;
-      if (field === 'day') {
-        const maxDay = getDaysInMonth(newEvents[idx].calendar_id, newEvents[idx].date.month);
-        newEvents[idx].date.day = Math.min(value, maxDay);
-      }
-      emit('update:events', newEvents);
-      onChange();
-    };
-
     const onYearInput = (idx: number, e: Event) => {
       const el = e.target as HTMLInputElement;
-      updateEventDate(idx, 'year', parseInt(el.value) || 1);
+      const val = getUniversalDateObject(props.events[idx]);
+      val.original_input.year = parseInt(el.value) || 1;
+      updateEventFullDate(idx, val);
     };
 
     const onDayInput = (idx: number, e: Event) => {
       const el = e.target as HTMLInputElement;
-      updateEventDate(idx, 'day', parseInt(el.value) || 1);
-    };
-
-    const updateEventTime = (idx: number, field: string, value: number) => {
-      const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
-      if (!newEvents[idx].time) newEvents[idx].time = { hour: 0, minute: 0 };
-      if (field === 'hour') newEvents[idx].time!.hour = value;
-      if (field === 'minute') newEvents[idx].time!.minute = value;
-      emit('update:events', newEvents);
-      onChange();
+      const val = getUniversalDateObject(props.events[idx]);
+      const maxDay = getDaysInMonth(val.calendar_id, val.original_input.month);
+      val.original_input.day = Math.min(parseInt(el.value) || 1, maxDay);
+      updateEventFullDate(idx, val);
     };
 
     const addEvent = () => {
@@ -406,11 +424,9 @@ export default defineComponent({
       getMonthOptions,
       getHourOptions,
       getMinuteOptions,
-      updateEventDate,
-      onYearInput,
-      onDayInput,
+      getUniversalDateObject,
+      updateEventFullDate,
       getDaysInMonth,
-      updateEventTime,
       onChange,
       relativeInput,
       createNextEvent,

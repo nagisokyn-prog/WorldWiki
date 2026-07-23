@@ -94,7 +94,7 @@
         },
         {
           "id": "characterBirthdate",
-          "type": "calendar_date",
+          "type": "calendar_datetime",
           "label": "Дата рождения",
           "placeholder": "Выберите дату по календарю",
           "hint": "Выберите дату из календаря мира",
@@ -1189,7 +1189,7 @@
         },
         {
           "id": "ptsdOnsetDate",
-          "type": "calendar_date",
+          "type": "calendar_datetime",
           "label": "Дата начала",
           "placeholder": "Выберите дату по календарю",
           "hint": "По календарю проекта",

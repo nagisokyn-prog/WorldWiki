@@ -28,6 +28,15 @@ export function useChaptersMain(props: any, emit: any) {
   
   let saveTimeout: any = null;
 
+  const handleGlobalChapterRename = (e: any) => {
+    const { id, title } = e.detail;
+    if (currentChapter.value && String(currentChapter.value.id) === String(id)) {
+      if (currentChapter.value.title !== title) {
+        currentChapter.value.title = title;
+      }
+    }
+  };
+
   onMounted(async () => {
     console.log('🚀 ChaptersMain onMounted');
     await loadChapters(props.project);
@@ -39,14 +48,16 @@ export function useChaptersMain(props: any, emit: any) {
     
     document.addEventListener('ww:trigger-chapter-save', triggerSave as any);
     document.addEventListener('ww:hierarchy-changed', reloadHierarchy as any);
+    document.addEventListener('ww:chapter-renamed', handleGlobalChapterRename as any);
   });
 
   onUnmounted(() => {
     document.removeEventListener('ww:trigger-chapter-save', triggerSave as any);
     document.removeEventListener('ww:hierarchy-changed', reloadHierarchy as any);
+    document.removeEventListener('ww:chapter-renamed', handleGlobalChapterRename as any);
     if (saveTimeout) clearTimeout(saveTimeout);
   });
-  
+
   const reloadHierarchy = () => {
     loadChapters(props.project);
   }
@@ -130,6 +141,7 @@ export function useChaptersMain(props: any, emit: any) {
     onRenameChapter: handleRenameChapter, onDeleteChapter: handleDeleteChapter, deleteChapter: (id: string) => deleteChapter(props.project, id),
     handleExport, handleScrollChange, saveChapter: () => saveChapter(props.project, emit),
     loadChapters: () => loadChapters(props.project), loadHierarchy: reloadHierarchy,
-    openChapter: (id: string) => openChapter(props.project, id)
+    openChapter: (id: string) => openChapter(props.project, id),
+    handleGlobalChapterRename
   };
 }

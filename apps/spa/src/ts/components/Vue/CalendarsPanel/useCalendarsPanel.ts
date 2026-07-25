@@ -1,0 +1,141 @@
+import { ref, watch, onMounted, computed } from 'vue';
+import { calendarService } from '../../../services/calendar.service';
+import { CalendarMath } from '../../../services/Calendars/calendar.math';
+
+export function useCalendarsPanel(props: any) {
+    const project = computed(() => props.project || '');
+    const calendars = ref<any[]>([]);
+    const expandedCalendars = ref<Set<number>>(new Set());
+
+    const isExpanded = (idx: number) => expandedCalendars.value.has(idx);
+
+    const toggleExpand = (idx: number) => {
+        if (expandedCalendars.value.has(idx)) {
+            expandedCalendars.value.delete(idx);
+        } else {
+            expandedCalendars.value.add(idx);
+        }
+    };
+
+    const loadCalendars = async () => {
+        if (!project.value) {
+            calendars.value = [];
+            return;
+        }
+
+        try {
+            const list = await calendarService.getCalendars(project.value);
+
+            // Auto-create default calendar if none exist
+            if (list.length === 0) {
+                const defaultData = CalendarMath.getDefaultCalendar();
+                await calendarService.saveCalendar(project.value, { ...defaultData, is_default: true, tempId: `temp_${Date.now()}` });
+                const newList = await calendarService.getCalendars(project.value);
+                calendars.value = newList.map((c: any) => ({
+                    id: c.id,
+                    is_default: c.is_default,
+                    is_master: c.is_master || (c.data && c.data.is_master),
+                    data: c.data || c
+                }));
+            } else {
+                calendars.value = list.map((c: any) => ({
+                    id: c.id,
+                    is_default: c.is_default,
+                    is_master: c.is_master || (c.data && c.data.is_master),
+                    data: c.data || c
+                }));
+            }
+
+            if (calendars.value.length > 0 && expandedCalendars.value.size === 0) {
+                expandedCalendars.value.add(0);
+            }
+        } catch (error) {
+            console.error('Ошибка при загрузке календарей:', error);
+        }
+    };
+
+    watch(() => project.value, () => {
+        loadCalendars();
+    }, { immediate: true });
+
+    const addCalendar = async () => {
+        const newCal = CalendarMath.getDefaultCalendar();
+        newCal.название = `Новый календарь ${calendars.value.length + 1}`;
+
+        const tempPayload = {
+            ...newCal,
+            is_default: calendars.value.length === 0,
+            is_master: calendars.value.length === 0,
+            id: undefined
+        };
+
+        if (project.value) {
+            await calendarService.saveCalendar(project.value, tempPayload);
+            await loadCalendars();
+            expandedCalendars.value.add(calendars.value.length - 1);
+        }
+    };
+
+    const saveCalendar = async (idx: number) => {
+        if (!project.value) return;
+
+        const cal = calendars.value[idx];
+        const payload = {
+            ...cal.data,
+            is_default: cal.is_default,
+            id: cal.id?.startsWith('temp_') ? undefined : cal.id
+        };
+
+        try {
+            const success = await calendarService.saveCalendar(project.value, payload);
+            if (success) {
+                // Reload to get real IDs
+                await loadCalendars();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const removeCalendar = async (idx: number) => {
+        if (!confirm('Вы уверены, что хотите удалить этот календарь?')) return;
+        if (!project.value) return;
+
+        const cal = calendars.value[idx];
+        if (!cal.id?.startsWith('temp_') && cal.id) {
+            const success = await calendarService.deleteCalendar(cal.id);
+            if (!success) {
+                alert('Ошибка при удалении календаря.');
+                return;
+            }
+        }
+        calendars.value.splice(idx, 1);
+        expandedCalendars.value.delete(idx);
+    };
+
+    const setDefault = async (idx: number) => {
+        calendars.value.forEach((c, i) => {
+            c.is_default = (i === idx);
+        });
+        await saveAll();
+    };
+
+    const saveAll = async () => {
+        for (let i = 0; i < calendars.value.length; i++) {
+            await saveCalendar(i);
+        }
+    };
+
+    return {
+        project,
+        calendars,
+        expandedCalendars,
+        isExpanded,
+        toggleExpand,
+        addCalendar,
+        saveCalendar,
+        removeCalendar,
+        setDefault,
+        saveAll
+    };
+}

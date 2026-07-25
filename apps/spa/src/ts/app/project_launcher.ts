@@ -18,8 +18,8 @@ import { createApp, ref, computed, onMounted, nextTick, shallowRef } from 'vue';
 import { projectService } from '../services/project.service';
 
 import { settingsService, XboxWheel } from '@worldwiki/components';
-import CalendarsPanel from '../components/Vue/CalendarsPanel.vue';
-import CloudSyncModalVue from '../components/Vue/CloudSyncModal.vue';
+import CalendarsPanel from '../components/Vue/CalendarsPanel/CalendarsPanel.vue';
+import CloudSyncModalVue from '../components/Vue/Modals/CloudSyncModal.vue';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
 

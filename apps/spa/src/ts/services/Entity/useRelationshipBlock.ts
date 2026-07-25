@@ -10,7 +10,8 @@ export function useRelationshipBlock(props: any, emit: any) {
   const foreignError = ref('');
   const foreignModified = ref(false);
 
-  const getResolvedFields = (subConf: any) => {
+  const getResolvedFields = (subConf?: any) => {
+    subConf = subConf || props.templateConf;
     let tpl: any = null;
     if (subConf.fields && !subConf.template) {
       tpl = subConf;
@@ -48,19 +49,16 @@ export function useRelationshipBlock(props: any, emit: any) {
   });
 
   // Helper для синхронизации item с родителем
-  const notifyItemUpdate = (): void => {
+  const notifyItemUpdate = (e?: Event): void => {
     emit('modified');
   };
 
   // Helper для синхронизации вложенного контейнера
-  const notifyNestedItemUpdate = (containerKey: string): void => {
-    if (props.item[containerKey] && Array.isArray(props.item[containerKey])) {
+  const notifyNestedItemUpdate = (containerKeyOrEvent?: string | Event): void => {
+    const containerKey = typeof containerKeyOrEvent === 'string' ? containerKeyOrEvent : (props.templateConf.dataPath || props.templateConf.id || 'foreign_ids');
+    if (typeof containerKey === 'string' && props.item[containerKey] && Array.isArray(props.item[containerKey])) {
       const containerBefore = props.item[containerKey] as any[];
-      const newArray = [];
-      for (let i = 0; i < containerBefore.length; i++) {
-        newArray.push(containerBefore[i]);
-      }
-      props.item[containerKey] = newArray;
+      props.item[containerKey] = [...containerBefore];
     }
     emit('modified');
   };
@@ -71,9 +69,14 @@ export function useRelationshipBlock(props: any, emit: any) {
     notifyItemUpdate();
   };
 
-  const makeSelectHandler = (fieldClass: string) => {
-    return (val: any) => {
-      onSelectChange(fieldClass, val);
+  const makeSelectHandler = (nIdx: number) => {
+    return (e: Event) => {
+      const val = (e.target as HTMLSelectElement).value;
+      const arr = getNestedList();
+      if (arr[nIdx]) {
+        arr[nIdx].foreign_id = val;
+        notifyItemUpdate();
+      }
     };
   };
 
@@ -96,8 +99,9 @@ export function useRelationshipBlock(props: any, emit: any) {
     await loadForeignItem(targetId);
   };
 
-  const onLinkChange = async (fieldClass: string, val: any): Promise<void> => {
-    props.item[fieldClass] = val;
+  const onLinkChange = (fieldClass: string) => async (e: Event): Promise<void> => {
+    if (!props.item.link_data) props.item.link_data = {};
+    props.item.link_data[fieldClass] = (e.target as any).value;
     emit('modified');
     await fetchForeignItem();
   };
@@ -196,20 +200,25 @@ export function useRelationshipBlock(props: any, emit: any) {
     }
   }, { deep: true, flush: 'sync' });
 
-  const getOptions = (field: any): any[] => {
-    if (field.options?.length) return field.options;
-    if (field.entityType && props.referenceData[field.entityType]) return props.referenceData[field.entityType];
+  const getOptions = (field?: any): any[] => {
+    if (field?.options?.length) return field.options;
+    const type = field?.entityType || props.templateConf.foreign_type;
+    if (type && props.referenceData[type]) return props.referenceData[type];
     return [];
   };
 
-  const getNestedList = (sourceItem: any, subConf: any): any[] => {
-    const key = subConf.dataPath || subConf.id;
+  const getNestedList = (sourceItem?: any, subConf?: any): any[] => {
+    sourceItem = sourceItem || props.item;
+    subConf = subConf || props.templateConf;
+    const key = subConf.dataPath || subConf.id || 'foreign_ids';
     const val = getDeepProp(sourceItem, key);
     return Array.isArray(val) ? val : [];
   };
 
-  const addNestedItem = (sourceItem: any, subConf: any): void => {
-    const key = subConf.dataPath || subConf.id;
+  const addNestedItem = (sourceItemOrEvent?: any, subConf?: any): void => {
+    const sourceItem = (sourceItemOrEvent instanceof Event) ? props.item : (sourceItemOrEvent || props.item);
+    subConf = subConf || props.templateConf;
+    const key = subConf.dataPath || subConf.id || 'foreign_ids';
     
     if (!sourceItem[key]) {
       sourceItem[key] = [];
@@ -228,8 +237,10 @@ export function useRelationshipBlock(props: any, emit: any) {
     notifyItemUpdate();
   };
 
-  const removeNestedItem = (sourceItem: any, subConf: any, nIdx: number): void => {
-    const key = subConf.dataPath || subConf.id;
+  const removeNestedItem = (nIdx: number, sourceItem?: any, subConf?: any): void => {
+    sourceItem = sourceItem || props.item;
+    subConf = subConf || props.templateConf;
+    const key = subConf.dataPath || subConf.id || 'foreign_ids';
     if (Array.isArray(sourceItem[key])) {
       sourceItem[key].splice(nIdx, 1);
       notifyItemUpdate();

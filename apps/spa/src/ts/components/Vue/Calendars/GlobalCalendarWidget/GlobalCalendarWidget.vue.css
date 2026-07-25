@@ -1,0 +1,23 @@
+.global-calendar-widget {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-panel);
+}
+.gc-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.gc-title {
+  font-weight: bold;
+  font-size: 13px;
+  color: var(--text-main);
+}
+.gc-icon {
+  font-size: 16px;
+}
+.gc-controls input, .gc-controls select {
+  font-size: 12px;
+  padding: 4px;
+}

@@ -169,9 +169,9 @@ import { useRouter } from 'vue-router';
 import { projectService } from '../../services/project.service';
 import { settingsService } from '@worldwiki/components';
 import { XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
-import CalendarsPanel from '../../components/Vue/CalendarsPanel.vue';
-import CloudSyncModal from '../../components/Vue/CloudSyncModal.vue';
-import GlobalTimeViewer from '../../components/Vue/Calendars/GlobalTimeViewer.vue';
+import CalendarsPanel from '../../components/Vue/CalendarsPanel/CalendarsPanel.vue';
+import CloudSyncModal from '../../components/Vue/Modals/CloudSyncModal.vue';
+import GlobalTimeViewer from '../../components/Vue/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue';
 
 const router = useRouter();
 

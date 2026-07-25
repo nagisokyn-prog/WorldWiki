@@ -1,0 +1,30 @@
+<template>
+  <node-view-wrapper class="semantic-block">
+    <div 
+      class="semantic-tag-badge interactive-el" 
+      contenteditable="false" 
+      :class="currentTag"
+      :title="tagTitle"
+      @click="cycleTag"
+    >
+      {{ tagDisplay }}
+    </div>
+    <node-view-content class="semantic-content" />
+  </node-view-wrapper>
+</template>
+
+<script setup lang="ts">
+import { nodeViewProps, NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3';
+import { useSemanticParagraph } from './useSemanticParagraph';
+
+const props = defineProps(nodeViewProps);
+
+const {
+  currentTag,
+  tagDisplay,
+  tagTitle,
+  cycleTag
+} = useSemanticParagraph(props);
+</script>
+
+<style scoped src="./SemanticParagraph.vue.css"></style>

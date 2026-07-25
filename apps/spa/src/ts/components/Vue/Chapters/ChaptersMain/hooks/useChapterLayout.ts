@@ -148,7 +148,7 @@ export function useChapterLayout() {
     isVolumePlanOpen, isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
     chaptersSidebarWidth, startChaptersSidebarResize,
     isWowilonOpen, isExportModalOpen, showQuickLinkHint,
-    isZenMode, toggleZenMode,
-    rightPanelWidth, isRightPanelVisible, startResize, toggleRightPanel, handleToggleRightPanel
+    isZenMode, toggleZenMode, onFullscreenChange,
+    rightPanelWidth, isRightPanelVisible, startResize, toggleRightPanel, handleToggleRightPanel, handleToggleStructure
   };
 }

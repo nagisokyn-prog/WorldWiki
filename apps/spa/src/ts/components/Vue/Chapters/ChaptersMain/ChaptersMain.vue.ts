@@ -5,12 +5,12 @@ import { apiService } from '../../../../services/api.service';
 import { calendarService } from '../../../../services/calendar.service';
 
 import EditorCore from '../../../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanel from '../../Calendars/TimelinePanel.vue';
-import ParticipantsPanel from '../ParticipantsPanel.vue';
+import TimelinePanel from '../../Calendars/TimelinePanel/TimelinePanel.vue';
+import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
 import WowilonDrawer from '../WowilonDrawer.vue';
-import ExportModal from '../ExportModal.vue';
-import ChapterTree from '../ChapterTree.vue';
-import PlanningPanel from '../PlanningPanel.vue';
+import ExportModal from '../Export/ExportModal.vue';
+import ChapterTree from '../ChapterTree/ChapterTree.vue';
+import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
 import FloatingEntityEditor from '../../FloatingEntityEditor.vue';
 
 const props = defineProps({

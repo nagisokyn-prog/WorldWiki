@@ -1,0 +1,66 @@
+.global-time-viewer {
+  position: fixed;
+  top: 50px;
+  right: 50px;
+  width: 350px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  border-radius: 8px 8px 0 0;
+}
+.header h3 { margin: 0; font-size: 14px; }
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+.content {
+  padding: 15px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+.clock-input-group {
+  display: flex;
+  margin-top: 5px;
+}
+.clock-input-group button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.clock-input-group input {
+  flex: 1;
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.local-calendars {
+  margin-top: 20px;
+}
+.calendar-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.cal-name { font-weight: bold; font-size: 13px; color: var(--accent); }
+.cal-date { font-size: 12px; margin-top: 5px; }
+.cal-time { font-size: 11px; color: var(--text-muted); }

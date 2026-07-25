@@ -91,51 +91,21 @@ style="color: #f55; background: none; border: none; font-size: 10px; cursor: poi
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
+import { useSchemaFieldEditor } from './useSchemaFiledEditor';
 
 const props = defineProps<{
   item: any;
   isFirst: boolean;
 }>();
 
-const emit = defineEmits(['remove']);
+const emit = defineEmits<{
+  remove: [];
+}>();
 
-const typeOptions = [
-  { val: 'text', icon: '📝', label: 'Текст' },
-  { val: 'textarea', icon: '📄', label: 'Абзац' },
-  { val: 'select', icon: '🔽', label: 'Список' },
-  { val: 'multiselect', icon: '☑️', label: 'Мульти' },
-  { val: 'calendar_date', icon: '📅', label: 'Дата' },
-  { val: 'calendar_datetime', icon: '🕒', label: 'Дата и время' },
-  { val: 'range', icon: '🎚️', label: 'Шкала' },
-  { val: 'number', icon: '🔢', label: 'Число' },
-  { val: 'tags', icon: '🏷️', label: 'Теги' },
-  { val: 'photo', icon: '🖼️', label: 'Фото' }
-];
-
-const monthsList = [
-  { value: '1', label: 'Январь' },
-  { value: '2', label: 'Февраль' },
-  { value: '3', label: 'Март' },
-  { value: '4', label: 'Апрель' },
-  { value: '5', label: 'Май' },
-  { value: '6', label: 'Июнь' },
-  { value: '7', label: 'Июль' },
-  { value: '8', label: 'Август' },
-  { value: '9', label: 'Сентябрь' },
-  { value: '10', label: 'Октябрь' },
-  { value: '11', label: 'Ноябрь' },
-  { value: '12', label: 'Декабрь' }
-];
-
-const addOption = () => {
-  if (!props.item.options) props.item.options = [];
-  const val = `opt_${Date.now()}`;
-  props.item.options.push({ value: val, label: 'Новый вариант' });
-};
-
-const removeOption = (idx: number) => {
-  if (props.item.options) {
-    props.item.options.splice(idx, 1);
-  }
-};
+const {
+  typeOptions,
+  monthsList,
+  addOption,
+  removeOption
+} = useSchemaFieldEditor(props);
 </script>

@@ -216,15 +216,16 @@ v-for="(rev, idx) in revisions" :key="rev.id"
 
   </div>
 </template>
+
 <script setup lang="ts">
 import { type PropType } from 'vue';
 import EditorCore from '../../../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanel from '../../Calendars/TimelinePanel.vue';
-import ParticipantsPanel from '../ParticipantsPanel.vue';
+import TimelinePanel from '../../Calendars/TimelinePanel/TimelinePanel.vue';
+import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
 import WowilonDrawer from '../WowilonDrawer.vue';
-import ExportModal from '../ExportModal.vue';
-import ChapterTree from '../ChapterTree.vue';
-import PlanningPanel from '../PlanningPanel.vue';
+import ExportModal from '../Export/ExportModal.vue';
+import ChapterTree from '../ChapterTree/ChapterTree.vue';
+import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
 import FloatingEntityEditor from '../../FloatingEntityEditor.vue';
 import { useChaptersMain } from './useChaptersMain';
 
@@ -259,4 +260,5 @@ const {
   handleScrollChange, startResize, handleToggleRightPanel, handleToggleStructure
 } = useChaptersMain(props, emit);
 </script>
+
 <style src="./ChaptersMain.vue.css" scoped></style>

@@ -1,0 +1,257 @@
+.tool-section {
+    margin-bottom: 24px;
+}
+
+.tool-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timeline-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.timeline-event-item {
+    background: var(--bg-input);
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.timeline-event-item:hover {
+    border-color: var(--border-active);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+}
+
+.event-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.expand-icon {
+    font-size: 10px;
+    color: var(--text-muted);
+    width: 12px;
+    text-align: center;
+    display: inline-block;
+}
+
+.calendar-settings-section {
+    margin-bottom: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.calendar-field {
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-field label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.calendar-field input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.btn-icon:hover {
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.delete-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.delete-btn:hover {
+    opacity: 1;
+}
+
+.btn-add-event {
+    font-weight: 600;
+}
+
+.calendar-top-row-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    align-items: start;
+    margin-top: 16px;
+}
+
+.calendar-middle-row-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: start;
+    margin-top: 16px;
+}
+
+.calendar-full-row-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: start;
+    margin-top: 16px;
+}
+
+@media (max-width: 1500px) {
+    .calendar-top-row-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1000px) {
+    .calendar-top-row-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .calendar-top-row-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .calendar-middle-row-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Unscoped styles for child Calendar components */
+.calendar-section {
+    background: var(--glass-bg, rgba(20, 20, 20, 0.4));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.calendar-section h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--text-color, #e0e0e0);
+    font-size: 14px;
+}
+
+.calendar-section .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendar-section .item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.calendar-section .item-name,
+.calendar-section .item-duration,
+.calendar-section input[type="text"],
+.calendar-section input[type="number"] {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    color: var(--text-color, #e0e0e0);
+    padding: 6px 10px;
+    border-radius: 4px;
+}
+
+.calendar-section .item-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.calendar-section .btn-add {
+    margin-top: 10px;
+    background: transparent;
+    border: 1px dashed var(--border-color, rgba(255, 255, 255, 0.2));
+    color: var(--text-muted, #aaa);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.calendar-section .btn-add:hover {
+    border-color: var(--accent, #3498db);
+    color: var(--text-color, #fff);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-section .btn-icon {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #aaa);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 4px;
+}
+
+.calendar-section .btn-icon:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color, #fff);
+}
+
+.calendar-section .btn-icon:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}

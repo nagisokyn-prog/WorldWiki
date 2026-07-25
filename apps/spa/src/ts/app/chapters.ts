@@ -6,12 +6,12 @@
 
 import { createApp } from 'vue';
 import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain/ChaptersMain.vue';
-import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
+import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree/ChapterTree.vue';
 import EditorCoreVue from '../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanelVue from '../components/Vue/Calendars/TimelinePanel.vue';
-import ParticipantsPanelVue from '../components/Vue/Chapters/ParticipantsPanel.vue';
-import PlanningPanelVue from '../components/Vue/Chapters/PlanningPanel.vue';
-import ExportModalVue from '../components/Vue/Chapters/ExportModal.vue';
+import TimelinePanelVue from '../components/Vue/Calendars/TimelinePanel/TimelinePanel.vue';
+import ParticipantsPanelVue from '../components/Vue/Chapters/ParticipantsPanel/ParticipantsPanel.vue';
+import PlanningPanelVue from '../components/Vue/Chapters/PlanningPanel/PlanningPanel.vue';
+import ExportModalVue from '../components/Vue/Chapters/Export/ExportModal.vue';
 import WowilonDrawerVue from '../components/Vue/Chapters/WowilonDrawer.vue';
 
 document.addEventListener('DOMContentLoaded', () => {

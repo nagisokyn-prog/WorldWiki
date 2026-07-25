@@ -27,9 +27,7 @@ export { i18n, setLocale } from './ts/i18n.js';
 
 // Services
 export * from './ts/services/api.service.js';
-export { dynamicService, DynamicService } from './ts/services/dynamic.service.js';
 export { editorService } from './ts/services/editor.service.js';
 export { EntityService } from './ts/services/entity.service.js';
 export { footnoteService } from './ts/services/footnote.service.js';
 export { settingsService } from './ts/services/settings.service.js';
-export { FormService, type FieldConfig, type FormConfig, type TemplateDef } from './ts/services/form.service.js';

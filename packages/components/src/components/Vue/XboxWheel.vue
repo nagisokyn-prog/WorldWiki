@@ -7,6 +7,7 @@
       @click.stop="toggle"
       @mouseenter="$emit('hover-start')"
       @mouseleave="$emit('hover-end')"
+      @wheel.prevent="onWheelClosed"
     >
       <span style="font-weight: 500;">{{ selectedLabel }}</span>
       <span class="arrow-icon" :class="{ rotated: isOpen }">▼</span>
@@ -175,6 +176,16 @@ watch(isOpen, (val) => {
 
 const onWheel = (e) => {
   if (!isOpen.value) return;
+  wheelAcc.value += e.deltaY;
+  if (Math.abs(wheelAcc.value) > 30) {
+    if (wheelAcc.value > 0) next();
+    else prev();
+    wheelAcc.value = 0;
+  }
+};
+
+const onWheelClosed = (e) => {
+  if (isOpen.value) return;
   wheelAcc.value += e.deltaY;
   if (Math.abs(wheelAcc.value) > 30) {
     if (wheelAcc.value > 0) next();

@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import ChaptersMain from './Chapters/ChaptersMain.vue';
+import ChaptersMain from './Chapters/ChaptersMain/ChaptersMain.vue';
 
 const props = defineProps({
   project: { type: String, required: true },

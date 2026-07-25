@@ -397,11 +397,12 @@ const deleteFootnote = (id: string) => {
   }
 };
 
-const switchEditorMode = () => {
+const switchEditorMode = (newMode: 'wysiwyg' | 'markdown' | 'split') => {
   if (editorMode.value === 'markdown' || editorMode.value === 'split') {
     syncMarkdownFromEditor();
   }
-  localStorage.setItem('default-editor-mode', editorMode.value);
+  editorMode.value = newMode;
+  localStorage.setItem('default-editor-mode', newMode);
   savePositionState();
 };
 

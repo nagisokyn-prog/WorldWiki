@@ -13,6 +13,8 @@
 - **Foundation**: vitest, vite (UnoCSS, AutoImport), library build, ARCHITECTURE.md
 - **Pinia**: `createPinia()` + `app.use(pinia)`, `stores/settings.ts`, `plans/PINIA_EXPORT.md`
 - **ChapterTree**: использует `ExplorerTree` из `@worldwiki/components`
+- **UI & Editor**: Устранены конфликты скролла (Xbox Wheel vs Editor), типизация `EditorMode`, фикс инициализации `TimelinePanel.ts`.
+- **Рефакторинг Компонентов**: `ChaptersMain.vue` распилен на три файла (`.vue`, composable хук `useChaptersMain.ts`, `.css`), исправлены пути во всем проекте.
 
 ### ❌ Осталось:
 - **UnoCSS**: плагин отключён (Vite 8 applyHtmlTransforms bug)
@@ -146,6 +148,26 @@
 *   **Решение:** В SurrealDB 3.x можно задавать переменные на всю сессию: `db.set("project", type::record('projects', id))`. После этого во всех последующих запросах можно обращаться к переменной напрямую: `SELECT * FROM entities WHERE project_id = $project`. 
 
 *(Важное уточнение: нейросеть советовала использовать `DEFINE SCOPE project_scope SESSION...`, но в SurrealDB 3.2.0 концепция `SCOPE` была выпилена и заменена на `DEFINE ACCESS`. Однако установка параметров сессии через метод SDK `.set()` работает идеально и решает эту задачу).*
+
+## Архитектура: Фронтенд vs Бэкенд (Tauri / Rust)
+
+### Анализ директории `src/ts/services` (Что 100% должно уйти на бэкенд)
+
+| Файл | Описание проблемы | Куда должно переехать |
+| --- | --- | --- |
+| `relationship-save.service.ts` | Парсит JSON-схемы, синхронизирует массивы связей, делает цепочку REST-запросов для поддержки графа B→A. Нарушает транзакционность (если фронт упадет, граф порвется). | **100% Rust (Бэкенд)**. Сохранение двунаправленных связей должно быть атомарным внутри SurrealDB (`RELATE A TO B`). |
+| `connections.service.ts` | 13Кб комбайн, лазает по `formData` через `getPropFromPath`, парсит динамические контейнеры и собирает граф связей в памяти браузера. | **100% Rust (Бэкенд)**. Сбор графа — задача БД. Фронтенд должен делать один запрос `SELECT ->connected->*` и получать готовое дерево. |
+| `export.service.ts` | Загружает ВСЕ главы с текстом в оперативную память браузера, чтобы передать их пачкой в Tauri через IPC-канал. | **Частично Rust**. Фронт должен передавать только массив ID (`[id1, id2]`), а Rust сам достает данные из базы и генерирует файлы (PDF, DOCX). |
+| `form.service.ts` | Содержит хардкорный ванильный JS (`document.createElement('div')`) для рендера календарей вместо использования возможностей фреймворка. | **Vue Компоненты**. Весь код нужно выпилить и переписать как нативные компоненты `<CalendarDatePicker v-model="date" />`. |
+| `tags.service.ts`, `timeline.service.ts` | Ручная сортировка, агрегация таймлайна, парсинг. (Частично дублирует `calendar_math.rs`). | **Rust (Бэкенд)**. Сортировка, фильтрация и математика дат должны лежать в БД или Rust. |
+
+### Рефакторинг "God Objects" (на примере `ChaptersMain.vue`)
+
+Текущий гигантский хук `useChaptersMain.ts` (~600 строк) выполняет слишком много разрозненных задач. Его необходимо декомпозировать:
+1. **Глобальный Store (`useChapterStore.ts` в Pinia)**: Хранение `currentChapter`, `hierarchy`, логика `saveChapter`, `openChapter`, `deleteChapter`. (Позволит вкладкам, дереву и редактору реактивно видеть общие данные без костылей с `dispatchEvent`).
+2. **Локальный хук `useChapterHistory.ts`**: Работа с историей ревизий, сравнением и откатами (`revisions`, `previewHistory`, загрузка Snapshots).
+3. **Локальный хук `useChapterLayout.ts`**: Вся возня с UI (изменение размеров панелей, Zen Mode, Wowilon Drawer, горячие клавиши).
+4. **Локальный хук `useFloatingEntities.ts`**: Логика открытия плавающих окон редакторов.
 
 ## Архитектура ИИ-Чата и Агентов (Требования к 1.0.0)
 

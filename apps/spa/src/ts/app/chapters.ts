@@ -5,7 +5,7 @@
  */
 
 import { createApp } from 'vue';
-import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
+import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain/ChaptersMain.vue';
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
 import EditorCoreVue from '../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanelVue from '../components/Vue/Calendars/TimelinePanel.vue';
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const projectId = project || 'default';
-  
+
   // Создаем Vue приложение с ChaptersMain
   const app = createApp(ChaptersMainVue, { project: projectId });
 

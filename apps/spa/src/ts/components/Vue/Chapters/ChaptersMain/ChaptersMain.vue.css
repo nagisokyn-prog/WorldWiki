@@ -1,0 +1,133 @@
+.chapter-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.chapter-item.active {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+}
+
+.btn-icon:hover {
+  color: var(--accent) !important;
+}
+
+/* ── Ресайзеры ──────────────────────────────────────── */
+.chapters-sidebar-resize,
+.panel-resize-handle {
+  flex-shrink: 0;
+  background: transparent;
+  position: relative;
+  transition: background 0.15s;
+  z-index: 10;
+}
+
+/* Левый сайдбар — горизонтальный ресайзер */
+.chapters-sidebar-resize {
+  width: 4px;
+  cursor: ew-resize;
+}
+
+.chapters-sidebar-resize::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 48px;
+  border-radius: 2px;
+  background: rgba(139, 92, 246, 0);
+  transition: background 0.15s, height 0.15s;
+}
+
+.chapters-sidebar-resize:hover {
+  background: rgba(139, 92, 246, 0.08);
+}
+
+.chapters-sidebar-resize:hover::after {
+  background: rgba(139, 92, 246, 0.7);
+  height: 64px;
+}
+
+.chapters-sidebar-resize:active {
+  background: rgba(139, 92, 246, 0.18);
+}
+
+/* Правая панель — вертикальный ресайзер */
+.panel-resize-handle {
+  width: 4px;
+  cursor: col-resize;
+}
+
+.panel-resize-handle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 48px;
+  border-radius: 2px;
+  background: rgba(139, 92, 246, 0);
+  transition: background 0.15s, height 0.15s;
+}
+
+.panel-resize-handle:hover {
+  background: rgba(139, 92, 246, 0.08);
+}
+
+.panel-resize-handle:hover::after {
+  background: rgba(139, 92, 246, 0.7);
+  height: 64px;
+}
+
+.panel-resize-handle:active {
+  background: rgba(139, 92, 246, 0.18);
+}
+
+/* ZEN MODE STYLES */
+.zen-mode-active {
+  background: #000000 !important;
+}
+
+.zen-mode-active .chapters-sidebar-resize,
+.zen-mode-active .panel-resize-handle,
+.zen-mode-active .chapter-right-panel,
+.zen-mode-active .wowilon-toggle-btn,
+.zen-mode-active .quick-link-hint-circle,
+.zen-mode-active .quick-link-info-panel {
+  display: none !important;
+}
+
+.zen-mode-active .chapters-sidebar {
+  width: 60px !important;
+  opacity: 0.3;
+  transition: all 0.5s ease;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.zen-mode-active .chapters-sidebar:hover {
+  width: 280px !important;
+  opacity: 1;
+}
+
+.zen-mode-active .chapters-sidebar .sidebar-header h2,
+.zen-mode-active .chapters-sidebar .sidebar-header .btn-icon:not([title*="Zen"]) {
+  display: none;
+}
+
+.zen-mode-active .chapters-sidebar:hover .sidebar-header h2,
+.zen-mode-active .chapters-sidebar:hover .sidebar-header .btn-icon {
+  display: flex;
+}
+
+.zen-mode-active :deep(.editor-container) {
+  max-width: 900px;
+  margin: 0 auto;
+  border: none !important;
+  background: transparent !important;
+}
+
+.zen-mode-active :deep(.toastui-editor-defaultUI) {
+  border: none !important;
+}

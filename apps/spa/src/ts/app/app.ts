@@ -23,7 +23,7 @@ import { router } from './router';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу
 import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree.vue';
-import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain.vue';
+import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain/ChaptersMain.vue';
 import {
   QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue,
   EditorTabBar as EditorTabBarVue, EditorGroupPane as EditorGroupPaneVue,
@@ -60,7 +60,7 @@ async function init() {
   setLocale(settingsService.getSettings().locale || 'ru');
 
   const app = createApp(AppSwitcher);
-  
+
   const pinia = createPinia();
   app.use(pinia);
   app.use(router);

@@ -11,7 +11,7 @@ export type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/s
 // Component imports for template
 import ChapterTreeVue from '@/components/Vue/Chapters/ChapterTree.vue';
 import { EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
-import ChaptersMainVue from '@/components/Vue/Chapters/ChaptersMain.vue';
+import ChaptersMainVue from '@/components/Vue/Chapters/ChaptersMain/ChaptersMain.vue';
 import EntityEditorVue from '@/features/entities/EntityEditor/EntityEditor.vue';
 import SchemaEditorMainVue from '@/components/Vue/SchemaEditor/SchemaEditorMain.vue';
 import { QuickOpen as QuickOpenVue } from '@worldwiki/components';

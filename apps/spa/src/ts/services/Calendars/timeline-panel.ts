@@ -118,7 +118,7 @@ export default defineComponent({
         console.log('[Timeline] Loading calendars for project:', props.project);
         const calendarsList = await calendarService.getCalendars(props.project);
         console.log('[Timeline] Raw calendars from DB:', calendarsList);
-        
+
         availableCalendars.value = calendarsList.map(c => ({
           id: c.id,
           is_default: c.is_default,
@@ -226,7 +226,7 @@ export default defineComponent({
     const getConvertedDateInfo = (event: TimelineEvent, targetCalId: string) => {
       const sourceCal = getCalendar(event.calendar_id);
       const targetCal = getCalendar(targetCalId);
-      
+
       if (!sourceCal || !targetCal) return null;
 
       const inputObj = {
@@ -237,10 +237,10 @@ export default defineComponent({
         hour: event.time?.hour || 0,
         minute: event.time?.minute || 0
       };
-      
+
       const absMin = CalendarMath.getAbsoluteMinute(inputObj, sourceCal);
       const localDate = CalendarMath.getDateFromAbsolute(absMin, targetCal);
-      
+
       const season = CalendarMath.getSeasonForDate(targetCal, localDate.year, localDate.month);
       const seasonColors: Record<string, string> = {
         'Весна': 'rgba(34, 197, 94, 0.3)',
@@ -249,20 +249,20 @@ export default defineComponent({
         'Зима': 'rgba(59, 130, 246, 0.3)',
       };
       const seasonColor = seasonColors[season] || 'rgba(139, 92, 246, 0.2)';
-      
+
       const era = targetCal.эпохи?.[localDate.era_index];
       const month = targetCal.месяцы?.[localDate.month];
       let dateStr = `${localDate.year} год, ${month?.название || month?.name || 'Месяц'} ${localDate.day}`;
       if (era) dateStr += ` (${era.название || era.name})`;
-      
+
       if (event.time?.hour !== undefined) {
         dateStr += `, ${String(localDate.hour || 0).padStart(2, '0')}:${String(localDate.minute || 0).padStart(2, '0')}`;
       }
-      
+
       const hour = localDate.hour || 0;
       let timeOfDayName = '🌙 Ночь';
       let timeOfDayColor = 'rgba(59, 130, 246, 0.3)';
-      
+
       if (hour >= 5 && hour < 12) { timeOfDayName = '🌅 Утро'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
       else if (hour >= 12 && hour < 17) { timeOfDayName = '☀️ День'; timeOfDayColor = 'rgba(251, 191, 36, 0.3)'; }
       else if (hour >= 17 && hour < 21) { timeOfDayName = '🌆 Вечер'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
@@ -278,58 +278,42 @@ export default defineComponent({
       };
     };
 
-    const getUniversalDateObject = (ev: TimelineEvent) => {
-      return {
-        calendar_id: ev.calendar_id,
-        original_input: {
-          era_index: ev.date.era,
-          year: ev.date.year,
-          month: ev.date.month,
-          day: ev.date.day,
-          hour: ev.time?.hour ?? 0,
-          minute: ev.time?.minute ?? 0
-        }
-      };
-    };
-
-    const updateEventFullDate = (idx: number, val: any) => {
-      const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
-      newEvents[idx].calendar_id = val.calendar_id;
-      newEvents[idx].date = {
-        era: val.original_input.era_index,
-        year: val.original_input.year,
-        month: val.original_input.month,
-        day: val.original_input.day
-      };
-      if (val.original_input.hour !== undefined) {
-        newEvents[idx].time = {
-          hour: val.original_input.hour,
-          minute: val.original_input.minute
-        };
-      }
-      emit('update:events', newEvents);
-      onChange();
-    };
-
     const getDaysInMonth = (calId: string | undefined, monthIdx: number): number => {
       const cal = getCalendar(calId);
       if (!cal) return 30;
       return cal.месяцы?.[monthIdx]?.дней || 30;
     };
 
+    const updateEventDate = (idx: number, field: string, value: number) => {
+      const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
+      if (field === 'era') newEvents[idx].date.era = value;
+      if (field === 'year') newEvents[idx].date.year = value;
+      if (field === 'month') newEvents[idx].date.month = value;
+      if (field === 'day') {
+        const maxDay = getDaysInMonth(newEvents[idx].calendar_id, newEvents[idx].date.month);
+        newEvents[idx].date.day = Math.min(value, maxDay);
+      }
+      emit('update:events', newEvents);
+      onChange();
+    };
+
     const onYearInput = (idx: number, e: Event) => {
       const el = e.target as HTMLInputElement;
-      const val = getUniversalDateObject(props.events[idx]);
-      val.original_input.year = parseInt(el.value) || 1;
-      updateEventFullDate(idx, val);
+      updateEventDate(idx, 'year', parseInt(el.value) || 1);
     };
 
     const onDayInput = (idx: number, e: Event) => {
       const el = e.target as HTMLInputElement;
-      const val = getUniversalDateObject(props.events[idx]);
-      const maxDay = getDaysInMonth(val.calendar_id, val.original_input.month);
-      val.original_input.day = Math.min(parseInt(el.value) || 1, maxDay);
-      updateEventFullDate(idx, val);
+      updateEventDate(idx, 'day', parseInt(el.value) || 1);
+    };
+
+    const updateEventTime = (idx: number, field: string, value: number) => {
+      const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
+      if (!newEvents[idx].time) newEvents[idx].time = { hour: 0, minute: 0 };
+      if (field === 'hour') newEvents[idx].time!.hour = value;
+      if (field === 'minute') newEvents[idx].time!.minute = value;
+      emit('update:events', newEvents);
+      onChange();
     };
 
     const addEvent = () => {
@@ -337,20 +321,20 @@ export default defineComponent({
       const newEvents = [...(props.events as TimelineEvent[])];
       const nativeCalId = selectedCalendarIds.value[0] || availableCalendars.value[0]?.id;
       const cal = getCalendar(nativeCalId);
-      
+
       const origin = cal?.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
-      
+
       let defaultDate = { era: origin.эпоха ?? 0, year: origin.год ?? 1, month: origin.месяц ?? 0, day: origin.день ?? 1 };
       let defaultTime = { hour: 12, minute: 0 };
       let calendar_id = nativeCalId;
-      
+
       if (newEvents.length > 0) {
         const last = newEvents[newEvents.length - 1];
         defaultDate = { ...last.date };
         if (last.time) defaultTime = { hour: last.time.hour ?? 12, minute: last.time.minute ?? 0 };
         calendar_id = last.calendar_id || nativeCalId;
       }
-      
+
       newEvents.push({
         date: defaultDate,
         time: defaultTime,
@@ -410,6 +394,44 @@ export default defineComponent({
       onChange();
     };
 
+    const getUniversalDateObject = (ev: TimelineEvent) => {
+      return {
+        calendar_id: ev.calendar_id,
+        original_input: {
+          era_index: ev.date.era,
+          year: ev.date.year,
+          month: ev.date.month,
+          day: ev.date.day,
+          hour: ev.time?.hour ?? 12,
+          minute: ev.time?.minute ?? 0
+        }
+      };
+    };
+
+    const updateEventFullDate = (idx: number, val: any) => {
+      if (!val || !val.original_input) return;
+      
+      const newEvents = [...(props.events as TimelineEvent[])];
+      const ev = { ...newEvents[idx] };
+      
+      ev.calendar_id = val.calendar_id;
+      ev.date = {
+        era: val.original_input.era_index,
+        year: val.original_input.year,
+        month: val.original_input.month,
+        day: val.original_input.day
+      };
+      
+      ev.time = {
+        hour: val.original_input.hour ?? 12,
+        minute: val.original_input.minute ?? 0
+      };
+      
+      newEvents[idx] = ev;
+      emit('update:events', newEvents);
+      onChange();
+    };
+
     return {
       wheelHorizontal,
       calendarOptions,
@@ -424,13 +446,17 @@ export default defineComponent({
       getMonthOptions,
       getHourOptions,
       getMinuteOptions,
-      getUniversalDateObject,
-      updateEventFullDate,
+      updateEventDate,
+      onYearInput,
+      onDayInput,
       getDaysInMonth,
+      updateEventTime,
       onChange,
       relativeInput,
       createNextEvent,
-      addEvent
+      addEvent,
+      getUniversalDateObject,
+      updateEventFullDate
     };
   }
 });

@@ -2,7 +2,7 @@
   <div v-if="allCalendars.length > 0" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); flex-wrap: wrap;">
     
     <!-- Календарь -->
-    <div class="date-wheel-group" style="flex: 1.5; min-width: 140px;" v-if="allCalendars.length > 1">
+    <div class="date-wheel-group" style="flex: 1.5; min-width: 140px;">
       <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Календарь</div>
       <XboxWheel
         v-model="currentCalendarId"
@@ -14,7 +14,7 @@
     </div>
 
     <!-- Эпоха -->
-    <div v-if="eras.length > 1" class="date-wheel-group" style="flex: 1; min-width: 120px;">
+    <div class="date-wheel-group" style="flex: 1; min-width: 120px;">
       <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Эпоха</div>
       <XboxWheel
         v-model="currentEraIdx" 

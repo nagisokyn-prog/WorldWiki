@@ -9,14 +9,15 @@ import { useHotkeysStore } from '@/stores/hotkeys';
 export type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/shell';
 
 // Component imports for template
-import ChapterTreeVue from '@/components/Vue/Chapters/ChapterTree/ChapterTree.vue';
+import ChapterTreeVue from '@/features/chapters/ChapterTree/ChapterTree.vue';
+
 import { EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
-import ChaptersMainVue from '@/components/Vue/Chapters/ChaptersMain/ChaptersMain.vue';
+import ChaptersMainVue from '@/features/chapters/ChaptersMain/ChaptersMain.vue';
 import EntityEditorVue from '@/features/entities/EntityEditor/EntityEditor.vue';
-import SchemaEditorMainVue from '@/components/Vue/SchemaEditor/SchemaEditorMain.vue';
+import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMain.vue';
 import { QuickOpen as QuickOpenVue } from '@worldwiki/components';
 import { CommandPalette as CommandPaletteVue } from '@worldwiki/components';
-import TagsManagerModalVue from '@/components/Vue/Modals/TagsManagerModal.vue';
+import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
 
 export default defineComponent({
   name: 'EditorView',

@@ -1,10 +1,10 @@
 import { watch, onMounted, onUnmounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useChapterStore } from '../../../../stores/chapter.store';
+import { useChapterStore } from '../../../stores/chapter.store';
 import { useChapterHistory } from './hooks/useChapterHistory';
 import { useChapterLayout } from './hooks/useChapterLayout';
 import { useFloatingEntities } from './hooks/useFloatingEntities';
-import { timelineService } from '../../../../services/timeline.service';
+import { timelineService } from '../../../services/timeline.service';
 
 export function useChaptersMain(props: any, emit: any) {
   const store = useChapterStore();

@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import { apiService } from '../../../services/api.service';
+import { apiService } from '../../services/api.service';
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
 

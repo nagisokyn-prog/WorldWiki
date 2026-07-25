@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ExplorerTree } from '@worldwiki/components';
-import GlobalCalendarWidget from '../../Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
+import GlobalCalendarWidget from '../../timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 
 const props = defineProps({

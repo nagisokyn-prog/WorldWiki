@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { apiService } from '../../../services/api.service';
+import { apiService } from '../../services/api.service';
 
 export function useTagsManagerModal(props: any) {
     const isOpen = ref(false);

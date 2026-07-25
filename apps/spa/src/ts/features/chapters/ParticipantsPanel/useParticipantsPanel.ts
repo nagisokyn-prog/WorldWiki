@@ -1,5 +1,5 @@
 import { ref, onMounted } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import { apiService } from '../../../services/api.service';
 
 export function useParticipantsPanel(props: any, emit: any) {
     const newType = ref('character');

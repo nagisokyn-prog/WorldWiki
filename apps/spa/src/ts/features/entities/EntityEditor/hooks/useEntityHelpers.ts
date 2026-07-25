@@ -94,6 +94,7 @@ export function useEntityHelpers(formData: any, config: any) {
     getProp,
     setProp,
     getResolvedTemplate,
-    isAtomicField
+    isAtomicField,
+    photoUrlCache
   };
 }

@@ -310,8 +310,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { XboxWheel, TagsField, settingsService } from '@worldwiki/components';
-import UniversalDatePicker from '../../../components/Vue/UniversalDatePicker/UniversalDatePicker.vue';
-import RelationshipBlock from '../../../components/Vue/SchemaEditor/RelationshipBlock.vue';
+import UniversalDatePicker from '../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
+import RelationshipBlock from '../../../features/schemas/SchemaEditor/RelationshipBlock.vue';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
 

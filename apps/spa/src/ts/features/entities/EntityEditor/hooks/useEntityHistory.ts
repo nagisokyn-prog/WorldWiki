@@ -72,6 +72,17 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
     currentSavedData.value = null;
   };
 
+  const restoreHistory = async () => {
+    if (!previewingRevId.value) return;
+    const rev = revisions.value.find((r: any) => r.id === previewingRevId.value);
+    if (rev && rev.content) {
+      formData.value = JSON.parse(JSON.stringify(rev.content.data || rev.content));
+      emit('modified');
+      emit('update:modelValue', formData.value);
+      exitHistoryPreview();
+    }
+  };
+
   const getDiffSummary = (current: any, previous: any) => {
     if (!previous) return '';
     const currData = current.content?.attributes || current.content?.data || current.content || {};
@@ -101,10 +112,10 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
     return changes.join(', ');
   };
 
-  const isFieldChanged = (path: string, getProp: Function) => {
+  const isFieldChanged = (path: string) => {
     if (!isPreviewingHistory.value || !currentSavedData.value) return false;
     const currentVal = path.split('.').reduce((obj: any, key: string) => (obj && obj[key] !== 'undefined') ? obj[key] : undefined, currentSavedData.value);
-    const historyVal = getProp(path);
+    const historyVal = path.split('.').reduce((obj: any, key: string) => (obj && obj[key] !== 'undefined') ? obj[key] : undefined, formData.value);
     return JSON.stringify(currentVal) !== JSON.stringify(historyVal);
   };
 
@@ -121,6 +132,7 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
     toggleHistory,
     previewHistory,
     exitHistoryPreview,
+    restoreHistory,
     getDiffSummary,
     isFieldChanged
   };

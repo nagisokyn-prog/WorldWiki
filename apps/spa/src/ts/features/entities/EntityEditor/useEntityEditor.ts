@@ -190,13 +190,13 @@ export function useEntityEditor(props: any, emit: any) {
     }
   };
 
-  const handlePhotoClick = (fieldClass: string) => {
+  const triggerPhotoUpload = (fieldClass: string) => {
     if (photoInputs.value[fieldClass]) {
       photoInputs.value[fieldClass].click();
     }
   };
 
-  const onPhotoSelected = async (event: any, fieldClass: string) => {
+  const handlePhotoFile = async (event: any, fieldClass: string) => {
     const file = event.target.files[0];
     if (file) {
       try {
@@ -208,18 +208,65 @@ export function useEntityEditor(props: any, emit: any) {
     }
   };
 
+  const handlePhotoDrop = async (event: any, fieldClass: string) => {
+    const file = event.dataTransfer?.files[0];
+    if (file && file.type.startsWith('image/')) {
+      try {
+        const path = await uploadPhoto(file);
+        helpers.setProp(fieldClass, path);
+      } catch (e) {
+        alert('Ошибка загрузки фото');
+      }
+    }
+  };
+
+  const removePhoto = (fieldClass: string) => {
+    helpers.setProp(fieldClass, '');
+  };
+
   const onDynamicUpdate = (e: any) => {
     if (e.localPath) {
       helpers.setProp(e.localPath, e.value);
     } else if (e.foreignPath) {
-      const parts = e.foreignPath.split('.');
-      let current = foreignUpdates.value;
-      for (let i = 0; i < parts.length - 1; i++) {
-        if (!current[parts[i]]) current[parts[i]] = {};
-        current = current[parts[i]];
-      }
-      current[parts[parts.length - 1]] = e.value;
+      handleForeignUpdate(e);
     }
+  };
+
+  const handleForeignUpdate = (e: any) => {
+    if (!e.foreignPath) return;
+    const parts = e.foreignPath.split('.');
+    let current = foreignUpdates.value;
+    for (let i = 0; i < parts.length - 1; i++) {
+      if (!current[parts[i]]) current[parts[i]] = {};
+      current = current[parts[i]];
+    }
+    current[parts[parts.length - 1]] = e.value;
+  };
+
+  const addDynamicItem = (path: string, templateName: string) => {
+    const arr = helpers.getProp(formData.value, path) || [];
+    const tpl = config.value?.templates?.[templateName];
+    if (!tpl) return;
+    const newItem: any = {};
+    if (tpl.fields) {
+      tpl.fields.forEach((f: any) => {
+        newItem[f.class] = f.default !== undefined ? f.default : '';
+      });
+    }
+    helpers.setProp(formData.value, path, [...arr, newItem]);
+  };
+
+  const removeDynamicItem = (path: string, idx: number) => {
+    const arr = helpers.getProp(formData.value, path) || [];
+    arr.splice(idx, 1);
+    helpers.setProp(formData.value, path, arr);
+  };
+
+  const getOptionsFor = (field: any) => {
+    if (field.entityType && referenceData.value[`${field.entityType}_list`]) {
+      return referenceData.value[`${field.entityType}_list`];
+    }
+    return field.options || [];
   };
 
   return {
@@ -233,9 +280,20 @@ export function useEntityEditor(props: any, emit: any) {
     hoverState,
     scrollContainer,
     wheelHorizontal,
-    handlePhotoClick,
-    onPhotoSelected,
+    triggerPhotoUpload,
+    handlePhotoFile,
+    handlePhotoDrop,
+    removePhoto,
     onDynamicUpdate,
+    lastEmittedData,
+    foreignUpdates,
+    loadConfigAndData,
+    loadReferenceData,
+    getOptionsFor,
+    markModified,
+    handleForeignUpdate,
+    addDynamicItem,
+    removeDynamicItem,
     ...historyHook,
     ...helpers
   };

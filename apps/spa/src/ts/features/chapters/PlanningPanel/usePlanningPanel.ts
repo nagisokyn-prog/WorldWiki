@@ -1,5 +1,5 @@
 import { ref, computed, watch, nextTick } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import { apiService } from '../../../services/api.service';
 
 export function usePlanningPanel(props: any) {
     const items = ref<any[]>([]);

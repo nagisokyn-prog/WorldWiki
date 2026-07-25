@@ -1,5 +1,5 @@
 import { ref, shallowRef, computed, type Ref } from 'vue';
-import { apiService } from '../../../../../services/api.service';
+import { apiService } from '../../../../services/api.service';
 
 export function useChapterHistory(project: string, currentChapterId: Ref<string | undefined>, currentChapter: Ref<any>) {
   const showHistory = ref(false);

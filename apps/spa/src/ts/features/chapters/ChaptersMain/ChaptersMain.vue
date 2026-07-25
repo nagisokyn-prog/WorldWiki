@@ -219,14 +219,14 @@ v-for="(rev, idx) in revisions" :key="rev.id"
 
 <script setup lang="ts">
 import { type PropType } from 'vue';
-import EditorCore from '../../../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanel from '../../Calendars/TimelinePanel/TimelinePanel.vue';
+import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
+import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
 import WowilonDrawer from '../WowilonDrawer.vue';
 import ExportModal from '../Export/ExportModal.vue';
 import ChapterTree from '../ChapterTree/ChapterTree.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
-import FloatingEntityEditor from '../../FloatingEntityEditor.vue';
+import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
 import { useChaptersMain } from './useChaptersMain';
 
 const props = defineProps({

@@ -1,17 +1,17 @@
 import { ref, onMounted, onUnmounted, watch, computed, type PropType, shallowRef } from 'vue';
-import { chapterService } from '../../../../services/chapter.service';
-import { timelineService } from '../../../../services/timeline.service';
-import { apiService } from '../../../../services/api.service';
-import { calendarService } from '../../../../services/calendar.service';
+import { chapterService } from '../../../services/chapter.service';
+import { timelineService } from '../../../services/timeline.service';
+import { apiService } from '../../../services/api.service';
+import { calendarService } from '../../../services/calendar.service';
 
-import EditorCore from '../../../../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
-import TimelinePanel from '../../Calendars/TimelinePanel/TimelinePanel.vue';
+import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
+import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
 import WowilonDrawer from '../WowilonDrawer.vue';
 import ExportModal from '../Export/ExportModal.vue';
 import ChapterTree from '../ChapterTree/ChapterTree.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
-import FloatingEntityEditor from '../../FloatingEntityEditor.vue';
+import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
 
 const props = defineProps({
   project: { type: String, required: true },

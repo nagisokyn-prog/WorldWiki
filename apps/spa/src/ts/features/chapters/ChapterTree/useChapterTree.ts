@@ -1,9 +1,9 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, triggerRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { apiService } from '../../../../services/api.service';
-import { useEntityTree } from '../../../../services/Entity/entity.tree';
-import { useChapterStore } from '../../../../stores/chapter.store';
+import { apiService } from '../../../services/api.service';
+import { useEntityTree } from '../../../services/Entity/entity.tree';
+import { useChapterStore } from '../../../stores/chapter.store';
 
 export function useChapterTree(props: any, emit: any) {
     const router = useRouter();

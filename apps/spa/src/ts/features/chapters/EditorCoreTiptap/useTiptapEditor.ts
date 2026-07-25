@@ -9,7 +9,7 @@ import { TableCell } from '@tiptap/extension-table-cell';
 import { Extension } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import Paragraph from '@tiptap/extension-paragraph';
-import SemanticParagraphNode from '../../../components/Vue/Chapters/Semantic/SemanticParagraphNode.vue';
+import SemanticParagraphNode from '../Semantic/SemanticParagraphNode.vue';
 import { apiService } from '../../../services/api.service';
 import { settingsService } from '@worldwiki/components';
 import { useTiptapState } from './hooks/useTiptapState';

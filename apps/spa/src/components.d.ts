@@ -41,7 +41,7 @@ declare module 'vue' {
     SemanticParagraphNode: typeof import('./ts/components/Vue/Chapters/Semantic/SemanticParagraphNode.vue')['default']
     TagsManagerModal: typeof import('./ts/components/Vue/Modals/TagsManagerModal.vue')['default']
     TimelinePanel: typeof import('./ts/components/Vue/Calendars/TimelinePanel/TimelinePanel.vue')['default']
-    UniversalDatePicker: typeof import('./ts/components/Vue/UniversalDatePicker/UniversalDatePicker.vue')['default']
+    UniversalDatePicker: typeof import('./ts/components/Vue/UniversalDatePicker.vue')['default']
     WowilonDrawer: typeof import('./ts/components/Vue/Chapters/WowilonDrawer.vue')['default']
   }
 }

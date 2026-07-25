@@ -4,7 +4,7 @@
  */
 
 import { invoke } from '@worldwiki/components';
-import type { EntityData } from './entity.api';
+import type { EntityData } from '../Entity/entity.types';
 
 export const searchApi = {
   searchEntities: async (projectName: string, query: string): Promise<EntityData[]> => {

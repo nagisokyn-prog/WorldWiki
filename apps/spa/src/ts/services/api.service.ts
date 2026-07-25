@@ -8,7 +8,8 @@
  */
 
 import { projectApi, type ProjectConfig, projectRecordId } from './api/project.api';
-import { entityApi, type EntityData, type SchemaInfo, type EntityType } from './api/entity.api';
+import { entityApi } from './Entity/entity.api';
+import type { EntityData, SchemaInfo, EntityType } from './Entity/entity.types';
 import {
   chapterApi,
   type ChapterData

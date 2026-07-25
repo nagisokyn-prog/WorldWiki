@@ -22,8 +22,8 @@ import AppSwitcher from '../features/shell/AppSwitcher.vue';
 import { router } from './router';
 
 // ✅ ОПТИМИЗАЦИЯ: Критические компоненты загружаются сразу
-import ChapterTreeVue from '../components/Vue/Chapters/ChapterTree/ChapterTree.vue';
-import ChaptersMainVue from '../components/Vue/Chapters/ChaptersMain/ChaptersMain.vue';
+import ChapterTreeVue from '../features/chapters/ChapterTree/ChapterTree.vue';
+import ChaptersMainVue from '../features/chapters/ChaptersMain/ChaptersMain.vue';
 import {
   QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue,
   EditorTabBar as EditorTabBarVue, EditorGroupPane as EditorGroupPaneVue,
@@ -31,17 +31,17 @@ import {
 
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт
 const EntityEditorVue = defineAsyncComponent(() => import('../features/entities/EntityEditor/EntityEditor.vue'));
-const ChaptersViewVue = defineAsyncComponent(() => import('../components/Vue/Chapters/ChaptersView.vue'));
+const ChaptersViewVue = defineAsyncComponent(() => import('../features/chapters/ChaptersView.vue'));
 const EditorCoreVue = defineAsyncComponent(() => import('../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue'));
-const TimelinePanelVue = defineAsyncComponent(() => import('../components/Vue/Calendars/TimelinePanel/TimelinePanel.vue'));
-const ParticipantsPanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/ParticipantsPanel/ParticipantsPanel.vue'));
-const PlanningPanelVue = defineAsyncComponent(() => import('../components/Vue/Chapters/PlanningPanel/PlanningPanel.vue'));
-const ExportModalVue = defineAsyncComponent(() => import('../components/Vue/Chapters/Export/ExportModal.vue'));
-const WowilonDrawerVue = defineAsyncComponent(() => import('../components/Vue/Chapters/WowilonDrawer.vue'));
-const TagsManagerModalVue = defineAsyncComponent(() => import('../components/Vue/Modals/TagsManagerModal.vue'));
+const TimelinePanelVue = defineAsyncComponent(() => import('../features/timeline/Calendars/TimelinePanel/TimelinePanel.vue'));
+const ParticipantsPanelVue = defineAsyncComponent(() => import('../features/chapters/ParticipantsPanel/ParticipantsPanel.vue'));
+const PlanningPanelVue = defineAsyncComponent(() => import('../features/chapters/PlanningPanel/PlanningPanel.vue'));
+const ExportModalVue = defineAsyncComponent(() => import('../features/chapters/Export/ExportModal.vue'));
+const WowilonDrawerVue = defineAsyncComponent(() => import('../features/chapters/WowilonDrawer.vue'));
+const TagsManagerModalVue = defineAsyncComponent(() => import('../features/entities/TagsManagerModal.vue'));
 const TagsField = defineAsyncComponent(() => import('@worldwiki/components').then(m => m.TagsField));
-const SchemaEditorMainVue = defineAsyncComponent(() => import('../components/Vue/SchemaEditor/SchemaEditorMain.vue'));
-const CloudSyncModalVue = defineAsyncComponent(() => import('../components/Vue/Modals/CloudSyncModal.vue'));
+const SchemaEditorMainVue = defineAsyncComponent(() => import('../features/schemas/SchemaEditor/SchemaEditorMain.vue'));
+const CloudSyncModalVue = defineAsyncComponent(() => import('../features/sync/CloudSyncModal.vue'));
 
 async function init() {
   const params = new URLSearchParams(window.location.search);

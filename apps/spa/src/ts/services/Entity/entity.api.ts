@@ -3,7 +3,7 @@
  * @description API methods for Entity Domain
  */
 
-import { invoke } from '@worldwiki/components';
+import { invoke, processIds } from '@worldwiki/components';
 import { projectRecordId } from '../api.service';
 import type { EntityData, SchemaInfo, ConnectionData } from './entity.types';
 
@@ -17,18 +17,34 @@ export const entityApi = {
     }
   },
 
-  getEntityList: (project: string, type: string, filters?: Record<string, unknown>): Promise<any[]> =>
-    invoke<any[]>('get_entities', { project, entityType: type, filters: filters || null }),
+  getEntityList: async (project: string, type: string, filters?: Record<string, unknown>): Promise<any[]> => {
+    const list = await invoke<any[]>('get_entities', { project, entityType: type, filters: filters || null });
+    return list.map(processIds).map((item: any) => {
+      if (item && item.data && typeof item.data === 'object') {
+        return { ...item.data, id: item.id };
+      }
+      return item;
+    });
+  },
 
-  getEntity: (project: string, type: string, id: string): Promise<Record<string, unknown>> =>
-    invoke<Record<string, unknown>>('get_entity', { id }),
+  getEntity: async (project: string, type: string, id: string): Promise<Record<string, unknown>> => {
+    const detail: any = await invoke<any>('get_entity', { id });
+    const processed: any = processIds(detail);
+    if (processed && processed.attributes && typeof processed.attributes === 'object') {
+      return { ...processed.attributes, id: processed.id };
+    }
+    if (processed && processed.data && typeof processed.data === 'object') {
+      return { ...processed.data, id: processed.id };
+    }
+    return processed;
+  },
 
   saveEntity: (project: string, type: string, data: Record<string, unknown>, id?: string, name?: string): Promise<{ success: boolean; id?: string }> => {
     const actualData = JSON.parse(JSON.stringify(data));
     let extractedName = name || 'Новая сущность';
 
-    if (!name) {
-      const keys = Object.keys(actualData);
+    if (extractedName === 'Новая сущность' || !name) {
+      const keys = Object.keys(actualData).filter(k => k !== 'id' && k !== 'project_id' && k !== 'entity_type' && k !== 'attributes');
       if (keys.length > 0) {
         const firstVal = actualData[keys[0]];
         if (typeof firstVal === 'string' && firstVal.trim() !== '') {
@@ -58,6 +74,9 @@ export const entityApi = {
   deleteEntity: (project: string, type: string, id: string): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('delete_entity', { id }),
     
+  toggleEntityHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
+    invoke<void>('toggle_entity_history_pin', { historyId, isPinned }),
+
   getSchemas: async (project: string): Promise<Record<string, SchemaInfo>> => {
     const list = await invoke<any[]>('get_entity_schemas', { project });
     const dict: Record<string, SchemaInfo> = {};
@@ -108,14 +127,20 @@ export const entityApi = {
     return dict;
   },
 
-  saveSchema: (project: string, name: string, schema: any): Promise<{ success: boolean }> =>
+  getSchemaHistory: (project: string, typeKey: string): Promise<any[]> =>
+    invoke<any[]>('get_schema_history', { project, typeKey }),
+
+  toggleSchemaHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
+    invoke<void>('toggle_schema_history_pin', { historyId, isPinned }),
+
+  saveSchema: (project: string, schema: any, maxSaves?: number): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('save_entity_schema', { 
       project, 
       schema: {
         project_id: projectRecordId(project),
-        name,
         ...schema
-      } 
+      },
+      maxSaves: maxSaves || 10
     }),
 
   getConnections: (entityId: string): Promise<ConnectionData[]> =>

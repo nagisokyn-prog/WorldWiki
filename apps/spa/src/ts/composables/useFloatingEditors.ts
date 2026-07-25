@@ -1,1 +1,0 @@
-// DEPRECATED: This file is no longer used. Functionality has been migrated to Pinia stores. Safe to delete.

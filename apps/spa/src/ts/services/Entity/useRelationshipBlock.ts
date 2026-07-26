@@ -203,7 +203,10 @@ export function useRelationshipBlock(props: any, emit: any) {
   const getOptions = (field?: any): any[] => {
     if (field?.options?.length) return field.options;
     const type = field?.entityType || props.templateConf.foreign_type;
-    if (type && props.referenceData[type]) return props.referenceData[type];
+    if (type) {
+      if (props.referenceData[`${type}_list`]) return props.referenceData[`${type}_list`];
+      if (props.referenceData[type]) return props.referenceData[type];
+    }
     return [];
   };
 
@@ -213,6 +216,14 @@ export function useRelationshipBlock(props: any, emit: any) {
     const key = subConf.dataPath || subConf.id || 'foreign_ids';
     const val = getDeepProp(sourceItem, key);
     return Array.isArray(val) ? val : [];
+  };
+
+  const getDynamicContainerFields = (subConf: any): any[] => {
+    if (subConf.fields && subConf.fields.length > 0) return subConf.fields;
+    if (subConf.template && props.allTemplates[subConf.template]) {
+      return props.allTemplates[subConf.template].fields || [];
+    }
+    return [];
   };
 
   const addNestedItem = (sourceItemOrEvent?: any, subConf?: any): void => {
@@ -269,6 +280,7 @@ export function useRelationshipBlock(props: any, emit: any) {
     onLinkChange,
     getOptions,
     getNestedList,
+    getDynamicContainerFields,
     addNestedItem,
     removeNestedItem,
     getDeepProp

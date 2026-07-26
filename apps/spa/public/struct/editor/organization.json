@@ -2,6 +2,8 @@
   "name": "Организация",
   "icon": "fa-building",
   "iconEmoji": "🏢",
+  "photoField": "фото",
+  "tagsField": "теги",
   "titleField": "название",
   "sections": [
     {

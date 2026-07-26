@@ -166,8 +166,6 @@ const emit = defineEmits(['update:title', 'update:content', 'update:footnotesDat
 
 const {
     modeOptions,
-    getStateKey,
-    loadInitialMode,
     editorMode,
     settings,
     editorUpdateKey,

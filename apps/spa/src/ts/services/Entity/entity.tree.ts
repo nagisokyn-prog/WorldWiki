@@ -5,6 +5,8 @@
 
 import { ref, computed, watch } from 'vue';
 import { entityApi } from './entity.api';
+import { apiService } from '../api.service';
+import { getCached, setCache } from '../../utils/requestCache';
 import { useTreeSelection } from '@worldwiki/components';
 
 export function useEntityTree(project: string, emit: any) {
@@ -85,7 +87,12 @@ export function useEntityTree(project: string, emit: any) {
     loadingEntities = true;
     try {
       console.log('[TREE DEBUG] → calling getSchemas...');
-      const schemas = await entityApi.getSchemas(project);
+      const schemaCacheKey = `schemas:${project}`;
+      let schemas = getCached<any>(schemaCacheKey);
+      if (!schemas) {
+        schemas = await entityApi.getSchemas(project);
+        setCache(schemaCacheKey, schemas);
+      }
       console.log('[TREE DEBUG] ← getSchemas returned:', Object.keys(schemas));
 
       entitySections.value = Object.keys(schemas).map(key => ({
@@ -102,13 +109,14 @@ export function useEntityTree(project: string, emit: any) {
         }
       }
 
-      const newEntities: Record<string, any[]> = {};
-      for (const sect of entitySections.value) {
-        console.log(`[TREE DEBUG] → getEntityList for type='${sect.type}'...`);
-        const list = await entityApi.getEntityList(project, sect.type);
-        console.log(`[TREE DEBUG] ← getEntityList for '${sect.type}' returned ${list.length} items:`, JSON.stringify(list));
-        newEntities[sect.type] = list;
-      }
+      const typesToFetch = entitySections.value.map(sect => sect.type);
+      console.log(`[TREE DEBUG] → getEntitiesBatch for types:`, typesToFetch);
+      
+      const batchResult = await apiService.getEntitiesBatch(project, typesToFetch);
+      console.log(`[TREE DEBUG] ← getEntitiesBatch returned keys:`, Object.keys(batchResult));
+      
+      const newEntities: Record<string, any[]> = batchResult;
+      
       console.log('[TREE DEBUG] Setting entities.value, counts:', Object.fromEntries(Object.entries(newEntities).map(([k, a]) => [k, a.length])));
       entities.value = newEntities;
       console.log('[TREE DEBUG] entities.value set done, keys:', Object.keys(entities.value));

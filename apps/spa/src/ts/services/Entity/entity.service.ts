@@ -46,13 +46,3 @@ class EntityService {
 }
 
 export const entityService = new EntityService();
-
-declare global {
-  interface Window {
-    entityService: EntityService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.entityService = entityService;
-}

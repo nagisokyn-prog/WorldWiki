@@ -316,7 +316,7 @@ import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
 
 const props = defineProps<EntityEditorProps>();
-const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change']);
+const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change', 'update:modelValue']);
 
 const photoInputs = ref<Record<string, any>>({});
 

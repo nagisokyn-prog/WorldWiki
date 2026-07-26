@@ -2,6 +2,8 @@
   "name": "Государство",
   "icon": "fa-flag",
   "iconEmoji": "🗺️",
+  "photoField": "фото",
+  "tagsField": "теги",
   "titleField": "название",
   "sections": [
     {

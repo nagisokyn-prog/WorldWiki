@@ -48,6 +48,30 @@ export function useEntityEditor(props: any, emit: any) {
       }
     });
 
+    if (config.value.templates) {
+      Object.keys(config.value.templates).forEach(tplKey => {
+        const tpl = config.value.templates[tplKey];
+        if (tpl.fields) {
+          tpl.fields.forEach((f: any) => {
+            if ((f.type === 'select' || f.type === 'multiselect') && f.entityType) {
+              fieldsToLoad.push({ field: f, sectionId: 'template_' + tplKey });
+            }
+          });
+        }
+        if (tpl.dynamicContainers) {
+          tpl.dynamicContainers.forEach((dc: any) => {
+            if (dc.fields) {
+              dc.fields.forEach((f: any) => {
+                if ((f.type === 'select' || f.type === 'multiselect') && f.entityType) {
+                  fieldsToLoad.push({ field: f, sectionId: 'template_dc_' + dc.id });
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+
     for (const item of fieldsToLoad) {
       try {
         const entities = await apiService.getEntityList(props.project, item.field.entityType);
@@ -243,9 +267,9 @@ export function useEntityEditor(props: any, emit: any) {
     current[parts[parts.length - 1]] = e.value;
   };
 
-  const addDynamicItem = (path: string, templateName: string) => {
+  const addDynamicItem = (path: string, templateNameOrObj: any) => {
     const arr = helpers.getProp(formData.value, path) || [];
-    const tpl = config.value?.templates?.[templateName];
+    const tpl = typeof templateNameOrObj === 'string' ? config.value?.templates?.[templateNameOrObj] : templateNameOrObj;
     if (!tpl) return;
     const newItem: any = {};
     if (tpl.fields) {

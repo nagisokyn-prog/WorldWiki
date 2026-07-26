@@ -519,13 +519,13 @@ export const useShellStore = defineStore('shell', () => {
       }
       try {
         const { apiService } = await import('@/services/api.service');
-        const { prepareEntityForSave, saveForeignRelationships } = await import('@/services/relationship-save.service');
+        const { prepareEntityForSave, processForeignRelationships } = await import('@/services/relationship-save.service');
+        const { entityApi } = await import('@/services/Entity/entity.api');
         const dataToSave = editor.data as any;
         await prepareEntityForSave(editor.entityType, dataToSave);
         const foreignUpdatesToProcess = (editor as any)._foreignUpdates;
         (editor as any)._foreignUpdates = null;
         delete dataToSave.__foreignUpdates;
-        await apiService.saveEntity(projectName.value, editor.entityType, dataToSave, editor.rawId, editor.title);
         if (connectionsManager) {
           try {
             connectionsManager.setCurrentEntity(editor.entityType, editor.rawId);
@@ -589,9 +589,17 @@ export const useShellStore = defineStore('shell', () => {
         } catch (e) {
           console.error('[saveAll] Error scanning deleted relationships:', e);
         }
-        if (foreignUpdatesFinal && Object.keys(foreignUpdatesFinal).length > 0) {
-          await saveForeignRelationships(projectName.value, editor.rawId, foreignUpdatesFinal);
+        const modifiedForeignEntities = foreignUpdatesFinal && Object.keys(foreignUpdatesFinal).length > 0 
+          ? await processForeignRelationships(projectName.value, editor.rawId, foreignUpdatesFinal)
+          : [];
+
+        const mainPayload = entityApi.formatEntityPayload(projectName.value, editor.entityType, dataToSave, editor.rawId, editor.title);
+        
+        const savedEntity = await apiService.saveEntityWithRelations(projectName.value, mainPayload, modifiedForeignEntities);
+        if (savedEntity && savedEntity.id) {
+          editor.rawId = savedEntity.id.replace('entities:', '');
         }
+
         const newTitle = schema.getEntityDisplayName(editor.data as Record<string, unknown>, editor.entityType);
         if (newTitle && newTitle !== editor.title) {
           editor.title = newTitle;

@@ -6,16 +6,9 @@
 import { invoke } from '@worldwiki/components';
 import type { EntityData } from '../Entity/entity.types';
 
-export const searchApi = {
-  searchEntities: async (projectName: string, query: string): Promise<EntityData[]> => {
-    try {
-      return await invoke('search_entities', { project: projectName, query });
-    } catch (error) {
-      console.error('API Error (search_entities):', error);
-      return [];
-    }
-  },
+const activeBlobUrls = new Set<string>();
 
+export const searchApi = {
   uploadPhoto: async (file: File): Promise<string> => {
     const buffer = await file.arrayBuffer();
     const bytes = Array.from(new Uint8Array(buffer));
@@ -36,10 +29,17 @@ export const searchApi = {
       else if (lowerPath.endsWith('.gif')) mimeType = 'image/gif';
 
       const blob = new Blob([new Uint8Array(bytes)], { type: mimeType });
-      return URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
+      activeBlobUrls.add(url);
+      return url;
     } catch (e) {
       console.error('[searchApi] getLocalPhotoUrl error:', e);
       return path;
     }
+  },
+
+  revokeLocalPhotoUrls: () => {
+    activeBlobUrls.forEach(url => URL.revokeObjectURL(url));
+    activeBlobUrls.clear();
   },
 };

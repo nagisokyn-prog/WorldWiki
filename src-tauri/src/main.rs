@@ -62,6 +62,7 @@ async fn init_database() -> Surreal<Db> {
 }
 
 fn main() {
+    use logic::batch::*;
     use logic::chapters::*;
     use logic::connections::*;
     use logic::entities::*;
@@ -79,8 +80,10 @@ fn main() {
             delete_project,
             // --- Универсальные Сущности ---
             get_entities,
+            get_entities_batch,
             get_entity,
             save_entity,
+            save_entity_with_relations,
             delete_entity,
             search_entities,
             get_entity_schemas,
@@ -119,6 +122,7 @@ fn main() {
             // --- Связи / Таймлайн ---
             get_connections,
             save_connections,
+            upsert_connections_batch,
             remove_connections_by_source,
             get_global_timeline,
             // --- Экспорт и История ---

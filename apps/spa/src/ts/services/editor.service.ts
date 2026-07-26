@@ -124,14 +124,3 @@ class EditorService {
 }
 
 export const editorService = new EditorService();
-
-declare global {
-  interface Window {
-    editorService: EditorService;
-    editorInstance: unknown;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.editorService = editorService;
-}

@@ -18,6 +18,7 @@ import { calendarApi } from './api/calendar.api';
 import { tagApi, type TagData } from './api/tag.api';
 import { connectionApi, type ConnectionData } from './api/connection.api';
 import { cloudApi } from './api/cloud.api';
+import { batchApi } from './api/batch.api';
 import { searchApi } from './api/search.api';
 
 export type {
@@ -41,15 +42,5 @@ export const apiService = {
   ...connectionApi,
   ...cloudApi,
   ...searchApi,
+  ...batchApi,
 };
-
-// Глобальный доступ для совместимости (legacy скрипты)
-declare global {
-  interface Window {
-    apiService: typeof apiService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.apiService = apiService;
-}

@@ -60,13 +60,3 @@ class ChapterService {
 }
 
 export const chapterService = new ChapterService();
-
-declare global {
-  interface Window {
-    chapterService: ChapterService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.chapterService = chapterService;
-}

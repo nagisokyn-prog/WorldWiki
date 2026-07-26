@@ -39,13 +39,3 @@ class ExportService {
 }
 
 export const exportService = new ExportService();
-
-declare global {
-  interface Window {
-    exportService: ExportService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.exportService = exportService;
-}

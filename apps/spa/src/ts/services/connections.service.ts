@@ -276,7 +276,7 @@ class ConnectionsService {
       }
 
       console.log(`📤 [Connections] Отправляю ${connectionsList.length} связей в БД...`);
-      return await apiService.saveConnections(this.currentProject!, sourceId, connectionsList);
+      return await apiService.upsertConnectionsBatch(this.currentProject!, sourceType, sourceId, connectionsList);
     } catch (error) {
       console.error('❌ [Connections] Ошибка сохранения связей:', error);
       return { success: false };
@@ -285,13 +285,3 @@ class ConnectionsService {
 }
 
 export const connectionsManager = new ConnectionsService();
-
-declare global {
-  interface Window {
-    connectionsManager: ConnectionsService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.connectionsManager = connectionsManager;
-}

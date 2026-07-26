@@ -58,13 +58,3 @@ class FootnoteService {
 }
 
 export const footnoteService = new FootnoteService();
-
-declare global {
-  interface Window {
-    footnoteService: FootnoteService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.footnoteService = footnoteService;
-}

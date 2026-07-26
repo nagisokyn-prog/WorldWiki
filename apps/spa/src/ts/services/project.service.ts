@@ -5,6 +5,7 @@
  */
 
 import { apiService } from "./api.service";
+import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
 interface ProjectStats {
   characters: number;
@@ -50,23 +51,35 @@ export const projectService = {
    * Получить список всех проектов (массив объектов)
    */
   async getProjects(): Promise<ProjectData[]> {
+    const cacheKey = 'projects:all';
+    const cached = getCached<ProjectData[]>(cacheKey);
+    if (cached) return cached;
+
     const raw = await apiService.getProjects();
     console.log('[projectService] getProjects raw response:', raw);
     const list = Array.isArray(raw) ? raw : ((raw as any)?.projects || []);
-    return list.map((p: any) => ({
+    const projects = list.map((p: any) => ({
       ...p,
       icon: p.icon || '📁',
       stats: p.data?.stats || p.stats || { characters: 0, organizations: 0, states: 0, chapters: 0 }
     }));
+    setCache(cacheKey, projects);
+    return projects;
   },
 
   /**
    * Получить конфигурацию проекта (включая календарь)
    */
   async getProjectConfig(projectName: string): Promise<ProjectConfig> {
+    const cacheKey = `project:config:${projectName}`;
+    const cached = getCached<ProjectConfig>(cacheKey);
+    if (cached) return cached;
+
     const res: any = await apiService.getProjectConfig(projectName);
     console.log('[projectService] getProjectConfig raw response:', res);
-    return res as ProjectConfig;
+    const config = res as ProjectConfig;
+    setCache(cacheKey, config);
+    return config;
   },
 
   /**
@@ -86,6 +99,7 @@ export const projectService = {
     console.log('[projectService] createProject sending payload:', payload);
     const result = await apiService.createProject(payload);
     console.log('[projectService] createProject result:', result);
+    invalidateCache('projects:all');
     return result;
   },
 
@@ -93,14 +107,19 @@ export const projectService = {
    * Удалить проект
    */
   async deleteProject(projectName: string): Promise<{ success: boolean }> {
-    return await apiService.deleteProject(projectName);
+    const result = await apiService.deleteProject(projectName);
+    invalidateCache('projects:all');
+    invalidateCache(`project:config:${projectName}`);
+    return result;
   },
 
   /**
    * Сохранить конфигурацию проекта (включая календарь, жанры и т.д.)
    */
   async saveProjectConfig(projectName: string, config: ProjectConfig): Promise<{ success: boolean }> {
-    return await apiService.saveProjectConfig(projectName, config as any);
+    const result = await apiService.saveProjectConfig(projectName, config as any);
+    invalidateCache(`project:config:${projectName}`);
+    return result;
   },
 
   /**
@@ -121,14 +140,3 @@ export const projectService = {
     };
   }
 };
-
-// Глобальный доступ для совместимости
-declare global {
-  interface Window {
-    projectService: typeof projectService;
-  }
-}
-
-if (typeof window !== 'undefined') {
-  window.projectService = projectService;
-}

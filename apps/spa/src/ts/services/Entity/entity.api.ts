@@ -39,7 +39,7 @@ export const entityApi = {
     return processed;
   },
 
-  saveEntity: (project: string, type: string, data: Record<string, unknown>, id?: string, name?: string): Promise<{ success: boolean; id?: string }> => {
+  formatEntityPayload: (project: string, type: string, data: Record<string, unknown>, id?: string, name?: string): Record<string, unknown> => {
     const actualData = JSON.parse(JSON.stringify(data));
     let extractedName = name || 'Новая сущность';
 
@@ -59,17 +59,23 @@ export const entityApi = {
       if (!SYSTEM_FIELDS.has(k)) cleanAttributes[k] = actualData[k];
     }
 
-    const entity = {
+    return {
       id: id ?? null,
-      project_id: projectRecordId(project),
+      project_id: project,
       entity_type: type,
       name: extractedName,
       description: actualData.description || null,
       attributes: cleanAttributes,
       tags: actualData.tags || [],
     };
+  },
+
+  saveEntity: (project: string, type: string, data: Record<string, unknown>, id?: string, name?: string): Promise<{ success: boolean; id?: string }> => {
+    const entity = entityApi.formatEntityPayload(project, type, data, id, name);
     return invoke<{ success: boolean; id?: string }>('save_entity', { project, entity });
   },
+
+
 
   deleteEntity: (project: string, type: string, id: string): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('delete_entity', { id }),

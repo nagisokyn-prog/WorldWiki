@@ -5,6 +5,7 @@
  */
 
 import { apiService } from './api.service';
+import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
 interface TagData {
   id?: string;
@@ -33,7 +34,14 @@ class TagsManager {
     this.project = project;
 
     try {
-      this.globalTags = (await apiService.getTags(this.project)) || [];
+      const cacheKey = `tags:${this.project}`;
+      const cached = getCached<TagData[]>(cacheKey);
+      if (cached) {
+        this.globalTags = cached;
+      } else {
+        this.globalTags = (await apiService.getTags(this.project)) || [];
+        setCache(cacheKey, this.globalTags);
+      }
     } catch (e) {
       console.error("Ошибка загрузки тегов:", e);
       this.globalTags = [];
@@ -133,15 +141,23 @@ class TagsManager {
     });
   }
 
+  private isCreatingTag = false;
+
   async createNewTag(name: string): Promise<void> {
+    if (this.isCreatingTag) return;
+    
     const existing = this.globalTags.find(t => t.name.toLowerCase() === name.toLowerCase());
     if (existing) return;
 
+    this.isCreatingTag = true;
     try {
       await apiService.saveTag(this.project!, { name, color: '#3498db' });
+      invalidateCache(`tags:${this.project}`);
       this.globalTags.push({ name, color: '#3498db' });
     } catch (error) {
       console.error('Ошибка создания тега:', error);
+    } finally {
+      this.isCreatingTag = false;
     }
   }
 
@@ -227,11 +243,6 @@ export const tagsManager = new TagsManager();
 
 declare global {
   interface Window {
-    tagsManager: TagsManager;
     TagsManagerAPI: { getTagsForSave: () => string[] };
   }
-}
-
-if (typeof window !== 'undefined') {
-  window.tagsManager = tagsManager;
 }

@@ -4,7 +4,7 @@
   "iconEmoji": "👤",
   "photoField": "фото",
   "tagsField": "теги",
-  "titleField": "полное_имя",
+  "titleField": "название",
   "sections": [
     {
       "id": "basic",
@@ -17,7 +17,7 @@
           "label": "Полное имя",
           "required": true,
           "placeholder": "Имя Фамилия",
-          "path": "полное_имя"
+          "path": "название"
         },
         {
           "id": "characterPhoto",

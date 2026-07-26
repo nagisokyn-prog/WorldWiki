@@ -70,12 +70,13 @@ export async function prepareEntityForSave(entityType: string, dataToSave: any):
 /**
  * Сохраняет встречные отношения B→A для всех записей foreignUpdates.
  */
-export async function saveForeignRelationships(
+export async function processForeignRelationships(
   projectName: string,
   sourceEntityRawId: string,
   foreignUpdates: Record<string, any>
-): Promise<void> {
-  if (!foreignUpdates || Object.keys(foreignUpdates).length === 0) return;
+): Promise<any[]> {
+  const modifiedEntities: any[] = [];
+  if (!foreignUpdates || Object.keys(foreignUpdates).length === 0) return modifiedEntities;
 
   for (const key in foreignUpdates) {
     const update = foreignUpdates[key];
@@ -165,15 +166,19 @@ export async function saveForeignRelationships(
 
       // Также прогоняем всю сущность через prepareEntityForSave на всякий случай
       await prepareEntityForSave(update.entityType, targetEntity);
-
-      // 8. Сохраняем в БД
+      
+      const { entityApi } = await import('./Entity/entity.api');
       const titleField = schema.titleField || 'название';
       const nameField = targetEntity[titleField] || targetEntity.название || targetEntity.name || '';
-      
-      await apiService.saveEntity(projectName, update.entityType, targetEntity, update.entityId, nameField);
+      const formattedEntity = entityApi.formatEntityPayload(projectName, update.entityType, targetEntity, update.entityId, nameField);
+
+      // 8. Добавляем в список измененных сущностей
+      modifiedEntities.push(formattedEntity);
 
     } catch (err) {
-      console.error(`[RelSave] ❌ Ошибка сохранения встречного отношения для ${update.entityId}:`, err);
+      console.error(`[RelSave] ❌ Ошибка подготовки встречного отношения для ${update.entityId}:`, err);
     }
   }
+
+  return modifiedEntities;
 }

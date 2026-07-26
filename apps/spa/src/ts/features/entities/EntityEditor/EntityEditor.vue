@@ -170,6 +170,7 @@
                             if (structuredArr && Array.isArray(structuredArr) && (itemIdx as any) < structuredArr.length) {
                               structuredArr[itemIdx] = updatedItem;
                               console.log('[EntityEditor.vue] 🔄 item-updated: обновил структурированный путь', itemIdx, 'в', container.dataPath || container.id);
+                              markModified();
                             }
                           }"
                         />

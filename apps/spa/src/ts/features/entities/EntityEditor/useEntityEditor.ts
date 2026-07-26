@@ -30,6 +30,7 @@ export function useEntityEditor(props: any, emit: any) {
     if (currentSerialized !== lastEmittedData.value) {
       emit('modified');
       emit('update:modelValue', combinedData);
+      emit('update-data', combinedData);
       lastEmittedData.value = currentSerialized;
     }
   };
@@ -257,14 +258,21 @@ export function useEntityEditor(props: any, emit: any) {
   };
 
   const handleForeignUpdate = (e: any) => {
-    if (!e.foreignPath) return;
-    const parts = e.foreignPath.split('.');
-    let current = foreignUpdates.value;
-    for (let i = 0; i < parts.length - 1; i++) {
-      if (!current[parts[i]]) current[parts[i]] = {};
-      current = current[parts[i]];
+    if (e.foreignPath) {
+      const parts = e.foreignPath.split('.');
+      let current = foreignUpdates.value;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) current[parts[i]] = {};
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = e.value;
+    } else if (e.entityType && e.entityId) {
+      const updateKey = `${e.entityType}:${e.entityId}`;
+      foreignUpdates.value = {
+        ...foreignUpdates.value,
+        [updateKey]: e
+      };
     }
-    current[parts[parts.length - 1]] = e.value;
   };
 
   const addDynamicItem = (path: string, templateNameOrObj: any) => {
@@ -278,12 +286,14 @@ export function useEntityEditor(props: any, emit: any) {
       });
     }
     helpers.setProp(formData.value, path, [...arr, newItem]);
+    markModified();
   };
 
   const removeDynamicItem = (path: string, idx: number) => {
     const arr = helpers.getProp(formData.value, path) || [];
     arr.splice(idx, 1);
     helpers.setProp(formData.value, path, arr);
+    markModified();
   };
 
   const getOptionsFor = (field: any) => {

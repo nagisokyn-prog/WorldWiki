@@ -129,19 +129,47 @@ pub async fn upsert_connections_batch(
         let source_for_this_rel = rel.r#in.clone().unwrap_or_else(|| source_id.clone());
         let from_for_this_rel = if source_for_this_rel.contains(':') { source_for_this_rel } else { format!("entities:{}", source_for_this_rel) };
         
-        let mut rel_val = serde_json::to_value(&rel).unwrap_or(Value::Null);
-        if let Some(obj) = rel_val.as_object_mut() {
-            obj.remove("id"); obj.remove("in"); obj.remove("out");
-            obj.remove("created_at");
-            obj.insert("project_id".into(), Value::String(proj_id.clone()));
+        let mut set_clauses = vec![
+            "project_id = type::record($pid)".to_string(),
+        ];
+        
+        bind_data.insert(format!("rt_{}", i), Value::String(rel.rel_type.clone()));
+        set_clauses.push(format!("rel_type = $rt_{}", i));
+        
+        if let Some(desc) = &rel.description {
+            bind_data.insert(format!("desc_{}", i), Value::String(desc.clone()));
+            set_clauses.push(format!("description = $desc_{}", i));
         }
         
-        let var_name = format!("data_{}", i);
-        bind_data.insert(var_name.clone(), rel_val);
+        if let Some(strength) = rel.strength {
+            bind_data.insert(format!("str_{}", i), serde_json::json!(strength));
+            set_clauses.push(format!("strength = $str_{}", i));
+        }
+        
+        if rel.attributes.is_null() {
+            set_clauses.push("attributes = {}".to_string());
+        } else {
+            bind_data.insert(format!("attr_{}", i), rel.attributes.clone());
+            set_clauses.push(format!("attributes = $attr_{}", i));
+        }
+        
+        if let Some(sc) = &rel.start_chapter {
+            if !sc.is_empty() {
+                bind_data.insert(format!("sc_{}", i), Value::String(sc.clone()));
+                set_clauses.push(format!("start_chapter = type::record($sc_{})", i));
+            }
+        }
+        
+        if let Some(ec) = &rel.end_chapter {
+            if !ec.is_empty() {
+                bind_data.insert(format!("ec_{}", i), Value::String(ec.clone()));
+                set_clauses.push(format!("end_chapter = type::record($ec_{})", i));
+            }
+        }
         
         query.push_str(&format!(
-            "RELATE type::record('{}') -> entity_rel -> type::record('{}') CONTENT ${};\n",
-            from_for_this_rel, to_full, var_name
+            "RELATE {} -> entity_rel -> {} SET {};\n",
+            from_for_this_rel, to_full, set_clauses.join(", ")
         ));
     }
     
@@ -276,10 +304,13 @@ pub async fn save_entity_with_relations(
     
     query.push_str("COMMIT TRANSACTION;\nRETURN $saved;\n");
     
-    let mut q = db.query(query);
-    for (k, v) in bind_data {
+    let mut q = db.query(query.clone());
+    for (k, v) in bind_data.clone() {
         q = q.bind((k.as_str(), v));
     }
+    
+    println!("[BATCH DEBUG] Executing query: {}", query);
+    println!("[BATCH DEBUG] Bind data keys: {:?}", bind_data.keys());
     
     let mut res = q.await.map_err(|e| e.to_string())?;
     let errors = res.take_errors();
@@ -292,7 +323,12 @@ pub async fn save_entity_with_relations(
     // Транзакция в surrealdb возвращает массив результатов для каждого стейтмента.
     // Нам нужно найти последний результат
     let num_statements = num_foreign_updates + 4; // BEGIN, LET, UPSERTs..., COMMIT, RETURN
-    let saved_val: Option<Value> = res.take(num_statements - 1).map_err(|e| e.to_string())?; // RETURN statement
+    let saved_val: Option<Value> = res.take(num_statements - 1).map_err(|e| {
+        println!("[BATCH DEBUG] Error taking result at index {}: {}", num_statements - 1, e);
+        e.to_string()
+    })?; // RETURN statement
+    
+    println!("[BATCH DEBUG] Raw saved_val from DB: {:?}", saved_val);
     
     if let Some(val) = saved_val {
         let mut v = if let Value::Array(arr) = val {
@@ -305,6 +341,7 @@ pub async fn save_entity_with_relations(
             val
         };
         flatten_thing(&mut v);
+        println!("[BATCH DEBUG] Returning entity: {:?}", v);
         return serde_json::from_value(v).map_err(|e| e.to_string());
     }
 

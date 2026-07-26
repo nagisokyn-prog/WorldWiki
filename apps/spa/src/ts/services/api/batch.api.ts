@@ -23,8 +23,8 @@ export const batchApi = {
     try {
       // Подготавливаем формат связей для Rust
       const formattedConnections = connections.map(conn => ({
-        in: conn.source ? `${conn.source.entityType}:${conn.source.entityId}` : '',
-        out: conn.target ? `${conn.target.entityType}:${conn.target.entityId}` : '',
+        in: conn.source ? conn.source.entityId : '',
+        out: conn.target ? conn.target.entityId : '',
         rel_type: conn.role || '',
         description: conn.description || '',
         start_chapter: conn.period?.start_chapter || '',

@@ -12,5 +12,10 @@ cd ..
 rem Install pnpm dependencies silently
 call pnpm install
 
+echo Generating TS bindings...
+cd src-tauri
+cargo test export_bindings
+cd ..
+
 echo Starting dev build...
 cmd /k pnpm tauri dev

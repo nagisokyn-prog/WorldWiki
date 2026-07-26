@@ -705,7 +705,7 @@ export const useShellStore = defineStore('shell', () => {
           id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           title: newChapterTitle || 'Новая глава', content: '# Начните писать\n\n',
           createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-          wordCount: 0, footnotes: {}, timelineEvents: [], participants: [],
+          word_count: 0, footnotes: {}, timeline_events: [], participants: [],
         };
         await apiService.saveChapter(projectName.value, newChapter);
         addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
@@ -775,8 +775,8 @@ export const useShellStore = defineStore('shell', () => {
       let relevantCount = 0;
       if (Array.isArray(allChapters)) {
         const relevantChapters = allChapters.filter((c: any) => {
-          const cArcId = c.arcId ? String(c.arcId) : null;
-          const cVolId = c.volumeId ? String(c.volumeId) : null;
+          const cArcId = c.arc_id ? String(c.arc_id) : null;
+          const cVolId = c.volume_id ? String(c.volume_id) : null;
           const targetArcId = arcId ? String(arcId) : null;
           const targetVolId = volumeId ? String(volumeId) : null;
           if (targetArcId) return cArcId === targetArcId;
@@ -800,12 +800,12 @@ export const useShellStore = defineStore('shell', () => {
         content: '# Новая глава\n\n',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        wordCount: 0,
+        word_count: 0,
         footnotes: {},
-        timelineEvents: [],
+        timeline_events: [],
         participants: [],
-        arcId,
-        volumeId,
+        arc_id: arcId,
+        volume_id: volumeId,
       };
       const saveRes = await apiService.saveChapter(projectName.value, newCh);
       if (saveRes && (saveRes as any).id) newCh.id = (saveRes as any).id;
@@ -870,8 +870,8 @@ export const useShellStore = defineStore('shell', () => {
     try {
       closeEditorsFor(e =>
         e.tabType === 'chapter' && (
-          compareIds(e.data.volumeId, volume.id) ||
-          arcsInVol.some(arcId => compareIds(e.data.arcId, arcId)) ||
+          compareIds(e.data.volume_id, volume.id) ||
+          arcsInVol.some(arcId => compareIds(e.data.arc_id, arcId)) ||
           chaptersInVol.some(c => String(c.id) === e.id)
         )
       );

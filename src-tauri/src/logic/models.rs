@@ -207,7 +207,7 @@ surreal_entity! {
         pub title: String,
         pub parent_ref: Option<String>,
         pub parent_type: String,
-        pub sort_order: i64,
+        #[ts(type = "number")] pub sort_order: i64,
         pub completed: bool,
     }
 }
@@ -216,21 +216,23 @@ surreal_entity! {
 // ПОЛЬЗОВАТЕЛЬСКИЕ СУЩНОСТИ (универсальная таблица)
 // =====================================================
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
 pub struct Entity {
     #[serde(skip_serializing_if = "Option::is_none")] pub id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")] pub project_id: Option<String>,
     pub entity_type: String,
     pub name: String,
     #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
-    #[serde(default)] pub attributes: serde_json::Value,
+    #[serde(default)] #[ts(type = "Record<string, any>")] pub attributes: serde_json::Value,
     #[serde(default)] pub tags: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")] #[ts(type = "any")] pub embeddings: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")] pub created_at: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")] pub updated_at: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
 pub struct EntitySchema {
     pub id: Option<String>,
     pub project_id: Option<String>,
@@ -239,11 +241,12 @@ pub struct EntitySchema {
     pub icon: String,
     pub color: String,
     pub fields_schema: Vec<FieldDef>,
-    pub full_schema: Option<serde_json::Value>,
+    #[ts(type = "any")] pub full_schema: Option<serde_json::Value>,
     pub created_at: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
 pub struct FieldDef {
     pub key: String,
     pub label: String,
@@ -251,10 +254,11 @@ pub struct FieldDef {
     pub required: bool,
     pub options: Option<Vec<String>>,
     pub ref_entity_type: Option<String>,
-    pub default_value: Option<serde_json::Value>,
+    #[ts(type = "any")] pub default_value: Option<serde_json::Value>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
 pub struct EntityRel {
     pub id: Option<String>,
     pub r#in: Option<String>,
@@ -262,14 +266,15 @@ pub struct EntityRel {
     pub project_id: Option<String>,
     pub rel_type: String,
     pub description: Option<String>,
-    pub strength: Option<i64>,
-    #[serde(default)] pub attributes: serde_json::Value,
+    #[ts(type = "number")] pub strength: Option<i64>,
+    #[serde(default)] #[ts(type = "Record<string, any>")] pub attributes: serde_json::Value,
     pub start_chapter: Option<String>,
     pub end_chapter: Option<String>,
     pub created_at: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
 pub struct RelationSchema {
     pub id: Option<String>,
     pub project_id: Option<String>,
@@ -302,7 +307,7 @@ surreal_relation! {
     #[to = arcs]
     #[tauri_commands]
     pub struct VolumeContainsArc {
-        pub sort_order: i64,
+        #[ts(type = "number")] pub sort_order: i64,
     }
 }
 
@@ -312,7 +317,7 @@ surreal_relation! {
     #[to = chapters]
     #[tauri_commands]
     pub struct ArcContainsChapter {
-        pub sort_order: i64,
+        #[ts(type = "number")] pub sort_order: i64,
     }
 }
 
@@ -322,7 +327,7 @@ surreal_relation! {
     #[to = volumes]
     #[tauri_commands]
     pub struct ProjectContainsVolume {
-        pub sort_order: i64,
+        #[ts(type = "number")] pub sort_order: i64,
     }
 }
 
@@ -335,4 +340,31 @@ surreal_schema! {
     relations: [
         Cites, VolumeContainsArc, ArcContainsChapter, ProjectContainsVolume
     ]
+}
+
+#[cfg(test)]
+mod ts_export_tests {
+    use super::*;
+    use ts_rs::TS;
+
+    #[test]
+    fn export_bindings() {
+        let export_err_msg = "Failed to export TS bindings";
+        Entity::export().expect(export_err_msg);
+        EntitySchema::export().expect(export_err_msg);
+        FieldDef::export().expect(export_err_msg);
+        EntityRel::export().expect(export_err_msg);
+        RelationSchema::export().expect(export_err_msg);
+        AutoApprovalSettings::export().expect(export_err_msg);
+        AiProfile::export().expect(export_err_msg);
+        Artifact::export().expect(export_err_msg);
+        AiSkill::export().expect(export_err_msg);
+        Plan::export().expect(export_err_msg);
+        Volume::export().expect(export_err_msg);
+        Arc::export().expect(export_err_msg);
+        Chapter::export().expect(export_err_msg);
+        Tag::export().expect(export_err_msg);
+        Calendar::export().expect(export_err_msg);
+        Cites::export().expect(export_err_msg);
+    }
 }

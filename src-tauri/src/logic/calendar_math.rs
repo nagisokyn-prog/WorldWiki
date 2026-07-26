@@ -112,6 +112,7 @@ impl CalendarMath {
         days
     }
 
+    #[allow(dead_code)]
     pub fn get_absolute_minute(
         calendar: &CalendarData,
         era_index: usize,

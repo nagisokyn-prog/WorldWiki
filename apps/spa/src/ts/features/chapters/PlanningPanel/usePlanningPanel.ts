@@ -47,7 +47,7 @@ export function usePlanningPanel(props: any) {
                 text: item.text,
                 done: item.done,
                 indent: item.indent,
-                sortOrder: item.sortOrder ?? items.value.indexOf(item),
+                sort_order: item.sort_order ?? items.value.indexOf(item),
             });
             if (!item.id) item.id = id;
         } catch (e) {
@@ -77,7 +77,7 @@ export function usePlanningPanel(props: any) {
             text: '',
             done: false,
             indent: 0,
-            sortOrder: items.value.length,
+            sort_order: items.value.length,
         };
         items.value.push(newItem);
         await nextTick();
@@ -91,12 +91,12 @@ export function usePlanningPanel(props: any) {
             text: '',
             done: false,
             indent: indent,
-            sortOrder: idx + 1,
+            sort_order: idx + 1,
         };
         if (items.value[idx]) await saveItem(items.value[idx]);
 
         items.value.splice(idx + 1, 0, newItem);
-        items.value.forEach((it, i) => { it.sortOrder = i; });
+        items.value.forEach((it, i) => { it.sort_order = i; });
 
         await nextTick();
         const inputs = listEl.value?.querySelectorAll('.plan-text');
@@ -115,7 +115,7 @@ export function usePlanningPanel(props: any) {
         if (item.id) {
             try { await apiService.deletePlanItem(props.project, item.id); } catch { }
         }
-        items.value.forEach((it, i) => { it.sortOrder = i; });
+        items.value.forEach((it, i) => { it.sort_order = i; });
     };
 
     const onDeleteKey = async (e: any, item: any, idx: number) => {

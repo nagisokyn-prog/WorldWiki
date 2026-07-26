@@ -10,10 +10,7 @@
 import { projectApi, type ProjectConfig, projectRecordId } from './api/project.api';
 import { entityApi } from './Entity/entity.api';
 import type { EntityData, SchemaInfo, EntityType } from './Entity/entity.types';
-import {
-  chapterApi,
-  type ChapterData
-} from './api/chapter.api';
+import { chapterApi } from './api/chapter.api';
 import { calendarApi } from './api/calendar.api';
 import { tagApi, type TagData } from './api/tag.api';
 import { connectionApi, type ConnectionData } from './api/connection.api';
@@ -26,7 +23,6 @@ export type {
   EntityData,
   SchemaInfo,
   EntityType,
-  ChapterData,
   TagData,
   ConnectionData
 };

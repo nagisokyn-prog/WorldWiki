@@ -27,10 +27,10 @@ export function useChapterTree(props: any, emit: any) {
         return clean1.replace(/"/g, '') === clean2.replace(/"/g, '');
     };
 
-    const getArcsForVolume = (volumeId: any) => hierarchy.value.arcs.filter(a => compareIds(a.volumeId, volumeId));
-    const getRootArcs = () => hierarchy.value.arcs.filter(a => !a.volumeId);
-    const getChaptersForArc = (arcId: any) => hierarchy.value.chapters.filter(c => compareIds(c.arcId, arcId));
-    const getRootChapters = () => hierarchy.value.chapters.filter(c => !c.arcId && !c.volumeId);
+    const getArcsForVolume = (volumeId: any) => hierarchy.value.arcs.filter(a => compareIds(a.volume_id, volumeId));
+    const getRootArcs = () => hierarchy.value.arcs.filter(a => !a.volume_id);
+    const getChaptersForArc = (arcId: any) => hierarchy.value.chapters.filter(c => compareIds(c.arc_id, arcId));
+    const getRootChapters = () => hierarchy.value.chapters.filter(c => !c.arc_id && !c.volume_id);
 
     const activeId = computed(() => {
         // if entity is open, use activeEditorId

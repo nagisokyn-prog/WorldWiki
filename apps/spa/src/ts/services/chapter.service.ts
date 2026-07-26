@@ -6,29 +6,18 @@
 
 import { apiService } from './api.service';
 
-interface ChapterData {
-  id: string;
-  title: string;
-  content: string;
-  createdAt?: string;
-  updatedAt?: string;
-  wordCount?: number;
-  footnotes?: Record<string, unknown>;
-  timelineEvents?: unknown[];
-  participants?: string[];
-  [key: string]: unknown;
-}
+import type { Chapter } from '../types/generated/Chapter';
 
 class ChapterService {
-  async list(project: string): Promise<ChapterData[]> {
-    return await apiService.getChaptersList(project) as ChapterData[];
+  async list(project: string): Promise<Chapter[]> {
+    return await apiService.getChaptersList(project) as Chapter[];
   }
 
-  async get(project: string, id: string): Promise<ChapterData> {
-    return await apiService.getChapter(project, id) as ChapterData;
+  async get(project: string, id: string): Promise<Chapter> {
+    return await apiService.getChapter(project, id) as Chapter;
   }
 
-  async save(project: string, data: ChapterData): Promise<string> {
+  async save(project: string, data: any): Promise<string> {
     if (!data.id) {
       data.id = `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
@@ -40,16 +29,16 @@ class ChapterService {
     return await apiService.deleteChapter(project, id);
   }
 
-  createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): ChapterData {
+  createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): any {
     return {
       id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       title: title || 'Новая глава',
       content,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      wordCount: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      word_count: 0,
       footnotes: {},
-      timelineEvents: [],
+      timeline_events: [],
       participants: []
     };
   }

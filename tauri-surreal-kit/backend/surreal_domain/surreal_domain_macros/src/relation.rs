@@ -69,6 +69,11 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
                     true
                 });
                 
+                if is_flexible {
+                    let ts_attr: syn::Attribute = syn::parse_quote!(#[ts(type = "any")]);
+                    clean_field.attrs.push(ts_attr);
+                }
+                
                 struct_fields.push(quote! { #clean_field });
             }
         }
@@ -194,12 +199,14 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
     };
 
     let expanded = quote! {
-        #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+        #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, ts_rs::TS)]
+        #[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
         pub struct #name {
             pub id: Option<String>,
             pub r#in: Option<String>, // IN is keyword in rust
             pub out: Option<String>,
             #[serde(skip_serializing_if = "Option::is_none")]
+            #[ts(type = "string | null")]
             pub project_id: Option<String>,
             #(#struct_fields,)*
         }

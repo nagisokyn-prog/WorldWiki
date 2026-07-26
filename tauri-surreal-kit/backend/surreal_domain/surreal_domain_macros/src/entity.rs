@@ -56,6 +56,12 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                 
                 let f_ident = field.ident.as_ref().unwrap();
                 field_idents.push(quote! { stringify!(#f_ident) });
+                
+                if is_flexible {
+                    let ts_attr: syn::Attribute = syn::parse_quote!(#[ts(type = "any")]);
+                    clean_field.attrs.push(ts_attr);
+                }
+                
                 struct_fields.push(quote! { #clean_field });
             }
         }
@@ -288,11 +294,13 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
     };
 
     let expanded = quote! {
-        #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+        #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, ts_rs::TS)]
+        #[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
         pub struct #name {
             #[serde(skip_serializing_if = "Option::is_none")]
             pub id: Option<String>,
             #[serde(skip_serializing_if = "Option::is_none")]
+            #[ts(type = "string | null")]
             pub project_id: Option<serde_json::Value>,
             #(#struct_fields,)*
         }

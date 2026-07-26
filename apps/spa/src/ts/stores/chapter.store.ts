@@ -26,15 +26,15 @@ export const useChapterStore = defineStore('chapter', () => {
 
   const currentArc = computed(() => {
     const ch = currentChapterNode.value;
-    if (!ch || !ch.arcId || !hierarchy.value.arcs) return null;
-    return hierarchy.value.arcs.find(a => a.id === ch.arcId) || null;
+    if (!ch || !ch.arc_id || !hierarchy.value.arcs) return null;
+    return hierarchy.value.arcs.find(a => a.id === ch.arc_id) || null;
   });
 
   const currentVolume = computed(() => {
     const ch = currentChapterNode.value;
-    let volId = ch?.volumeId;
+    let volId = ch?.volume_id;
     if (!volId && currentArc.value) {
-      volId = currentArc.value.volumeId;
+      volId = currentArc.value.volume_id;
     }
     if (!volId || !hierarchy.value.volumes) return null;
     return hierarchy.value.volumes.find(v => v.id === volId) || null;
@@ -107,7 +107,7 @@ export const useChapterStore = defineStore('chapter', () => {
         console.warn('⚠️ Глава не найдена или удалена:', id);
         return false;
       }
-      if (!full.timelineEvents) full.timelineEvents = [];
+      if (!full.timeline_events) full.timeline_events = [];
       if (!full.participants) full.participants = [];
       if (!full.footnotes) full.footnotes = {};
 
@@ -136,7 +136,7 @@ export const useChapterStore = defineStore('chapter', () => {
       try {
         const cal = await calendarService.loadCalendar(project);
         if (cal && cal.точка_отсчета) {
-          newCh.timelineEvents = [{
+          newCh.timeline_events = [{
             date: {
               era: cal.точка_отсчета.эпоха ?? 0,
               year: cal.точка_отсчета.год ?? 1,

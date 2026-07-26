@@ -15,7 +15,8 @@
     "format": "oxfmt --write src/ts",
     "test": "turbo test",
     "test:run": "vp test run",
-    "test:coverage": "vp test run --coverage"
+    "test:coverage": "vp test run --coverage",
+    "generate:api": "node scripts/codegen.js"
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.2.7",

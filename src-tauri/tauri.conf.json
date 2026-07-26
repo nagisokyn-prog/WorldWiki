@@ -7,7 +7,10 @@
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:3000",
-    "frontendDist": "../dist"
+    "frontendDist": "../dist",
+    "additionalWatchFolders": [
+      "../tauri-surreal-kit"
+    ]
   },
   "app": {
     "withGlobalTauri": true,

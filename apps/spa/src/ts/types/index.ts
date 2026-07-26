@@ -3,8 +3,9 @@
  * @description Экспорт всех типов
  */
 
-export type { BaseEntity, Connection } from './entities';
-export type { Chapter, ExportResult } from './chapters';
+export type { Entity as BaseEntity } from './generated/Entity';
+export type { EntityRel as Connection } from './generated/EntityRel';
+export type { Chapter } from './generated/Chapter';
 export type {
   AppSettings,
   ColorSettings,

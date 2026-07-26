@@ -30,18 +30,20 @@ import {
 } from '@worldwiki/components';
 
 // ✅ ОПТИМИЗАЦИЯ: Тяжелые компоненты — динамический импорт
-const EntityEditorVue = defineAsyncComponent(() => import('../features/entities/EntityEditor/EntityEditor.vue'));
-const ChaptersViewVue = defineAsyncComponent(() => import('../features/chapters/ChaptersView.vue'));
-const EditorCoreVue = defineAsyncComponent(() => import('../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue'));
-const TimelinePanelVue = defineAsyncComponent(() => import('../features/timeline/Calendars/TimelinePanel/TimelinePanel.vue'));
-const ParticipantsPanelVue = defineAsyncComponent(() => import('../features/chapters/ParticipantsPanel/ParticipantsPanel.vue'));
-const PlanningPanelVue = defineAsyncComponent(() => import('../features/chapters/PlanningPanel/PlanningPanel.vue'));
-const ExportModalVue = defineAsyncComponent(() => import('../features/chapters/Export/ExportModal.vue'));
-const WowilonDrawerVue = defineAsyncComponent(() => import('../features/chapters/WowilonDrawer.vue'));
-const TagsManagerModalVue = defineAsyncComponent(() => import('../features/entities/TagsManagerModal.vue'));
+import EntityEditorVue from '../features/entities/EntityEditor/EntityEditor.vue';
+import ChaptersViewVue from '../features/chapters/ChaptersView.vue';
+import EditorCoreVue from '../features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue';
+import TimelinePanelVue from '../features/timeline/Calendars/TimelinePanel/TimelinePanel.vue';
+import ParticipantsPanelVue from '../features/chapters/ParticipantsPanel/ParticipantsPanel.vue';
+import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.vue';
+import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
+import WowilonDrawerVue from '../features/chapters/WowilonDrawer.vue';
+import TagsManagerModalVue from '../features/entities/TagsManagerModal.vue';
+import SchemaEditorMainVue from '../features/schemas/SchemaEditor/SchemaEditorMain.vue';
+import CloudSyncModalVue from '../features/sync/CloudSyncModal.vue';
+
+// TagsField can stay async if it's not statically imported elsewhere
 const TagsField = defineAsyncComponent(() => import('@worldwiki/components').then(m => m.TagsField));
-const SchemaEditorMainVue = defineAsyncComponent(() => import('../features/schemas/SchemaEditor/SchemaEditorMain.vue'));
-const CloudSyncModalVue = defineAsyncComponent(() => import('../features/sync/CloudSyncModal.vue'));
 
 async function init() {
   const params = new URLSearchParams(window.location.search);

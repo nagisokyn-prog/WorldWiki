@@ -3,21 +3,21 @@
  * @description API-методы для работы с главами, иерархией и планами
  */
 
-import { invoke, processIds, stringifyId } from '@worldwiki/components';
+import { processIds, invoke, stringifyId } from '@worldwiki/components';
 import { projectRecordId } from './project.api';
 import type { Chapter } from '../../types/generated/Chapter';
+import * as api from '../api.client';
 
 export const chapterApi = {
   getChaptersList: async (project: string): Promise<Chapter[]> => {
-    const list = await invoke<any[]>('get_chapters', { project });
+    // Используем сгенерированный клиент:
+    const list = await api.getChapters(project);
     return list.map(processIds).filter((c: any) => c);
   },
 
   getChapter: async (project: string, chapterId: string): Promise<Chapter> => {
-    let c: any = await invoke<any>('get_chapter', { id: chapterId });
-    if (!c) return null as any;
-    c = processIds(c);
-    return c;
+    let c = await api.getChapter(chapterId);
+    return processIds(c);
   },
 
   saveChapter: async (project: string, chapterData: any): Promise<{ success: boolean; id?: string }> => {
@@ -26,42 +26,26 @@ export const chapterApi = {
       project_id: projectRecordId(project),
     };
     
-    const res = await invoke<any>('save_chapter', { data });
+    const res = await api.saveChapter(data as Chapter);
 
     if (data.arc_id || data.volume_id) {
       try {
         const rawChapterId = (data.id as string).replace(/^chapters:/, '');
-        await invoke('assign_chapter', {
+        await api.assignChapter(
           project,
-          chapterId: rawChapterId,
-          arcId: data.arc_id ?? null,
-          volumeId: data.volume_id ?? null
-        });
+          rawChapterId,
+          data.arc_id ?? null,
+          data.volume_id ?? null
+        );
       } catch (e) {
         console.warn('assign_chapter skipped:', e);
       }
     }
 
-    if (data.content && typeof DOMParser !== 'undefined') {
+    if (data.content) {
       try {
-        const doc = new DOMParser().parseFromString(data.content, 'text/html');
-        const paragraphs = doc.querySelectorAll('p');
-        const blocks: any[] = [];
-        paragraphs.forEach((p) => {
-          let tag = p.getAttribute('data-semantic-tag') || 'desc';
-          if (tag === 'desc') tag = 'description';
-          else if (tag === 'dialog') tag = 'dialogue';
-
-          if (p.textContent && p.textContent.trim().length > 0) {
-            blocks.push({
-              block_type: tag,
-              content: p.textContent.trim()
-            });
-          }
-        });
-
         if (data.id) {
-          await invoke<void>('save_text_blocks', { project, chapterId: data.id, blocks });
+          await invoke<void>('save_text_blocks', { project, chapterId: data.id, html: data.content });
         }
       } catch (err) {
         console.error('Failed to parse text blocks:', err);

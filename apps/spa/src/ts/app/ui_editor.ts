@@ -11,7 +11,7 @@ import '@worldwiki/resources/styles/glass-theme.css';
 import '@worldwiki/resources/styles/new-ui-theme.css';
 
 import { settingsService } from '@worldwiki/components';
-import { apiService } from '../services/api.service';
+import * as api from '../services/api.client';;
 import EntityEditorVue from '../features/entities/EntityEditor/EntityEditor.vue';
 
 // Глобальный доступ к Vue для legacy скриптов (если нужно)
@@ -52,7 +52,7 @@ async function init() {
       const loadData = async () => {
         try {
           if (project && entityType && entityId) {
-            const detail = await apiService.getEntity(project, entityType, entityId);
+            const detail = await api.getEntity(entityId);
             if (detail) initialData.value = detail;
           }
         } catch(e) {

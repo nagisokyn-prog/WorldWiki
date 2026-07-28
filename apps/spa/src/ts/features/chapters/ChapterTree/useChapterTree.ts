@@ -1,7 +1,7 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, triggerRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { apiService } from '../../../services/api.service';
+import * as api from '../../../services/api.client';;
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 import { useChapterStore } from '../../../stores/chapter.store';
 
@@ -279,20 +279,20 @@ export function useChapterTree(props: any, emit: any) {
         if (!newName.trim()) return;
         try {
             if (String(node.id).startsWith('__new_volume__')) {
-                await apiService.createVolume(props.project, newName);
+                await api.createVolume(props.project, newName);
                 await load();
             } else if (String(node.id).startsWith('__new_arc__')) {
-                await apiService.createArc(props.project, newName, node.data.original.volumeId);
+                await api.createArc(props.project, newName, node.data.original.volumeId);
                 await load();
             } else if (node.data?.type === 'volume') {
                 const vol = hierarchy.value.volumes.find((v: any) => String(v.id) === String(node.data.original.id));
                 if (vol) vol.title = newName;
-                await apiService.updateVolume(props.project, node.data.original.id, newName);
+                await api.updateVolume(props.project, node.data.original.id, newName);
                 await load();
             } else if (node.data?.type === 'arc') {
                 const arc = hierarchy.value.arcs.find((a: any) => String(a.id) === String(node.data.original.id));
                 if (arc) arc.title = newName;
-                await apiService.updateArc(props.project, node.data.original.id, newName);
+                await api.updateArc(props.project, node.data.original.id, newName, null);
                 await load();
             } else if (node.data?.type === 'chapter') {
                 const ch = hierarchy.value.chapters.find((c: any) => String(c.id) === String(node.data.original.id));

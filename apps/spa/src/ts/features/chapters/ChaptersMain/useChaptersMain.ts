@@ -4,7 +4,7 @@ import { useChapterStore } from '../../../stores/chapter.store';
 import { useChapterHistory } from './hooks/useChapterHistory';
 import { useChapterLayout } from './hooks/useChapterLayout';
 import { useFloatingEntities } from './hooks/useFloatingEntities';
-import { timelineService } from '../../../services/timeline.service';
+import { useTimelineStore } from '../../../stores/timeline.store';
 
 export function useChaptersMain(props: any, emit: any) {
   const store = useChapterStore();
@@ -40,7 +40,7 @@ export function useChaptersMain(props: any, emit: any) {
   onMounted(async () => {
     console.log('🚀 ChaptersMain onMounted');
     await loadChapters(props.project);
-    await timelineService.init(props.project);
+    await useTimelineStore().init(props.project);
 
     if (props.controlledChapterId) {
       await openChapter(props.project, props.controlledChapterId);

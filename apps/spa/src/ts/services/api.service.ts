@@ -1,6 +1,6 @@
 /**
  * @file api.service.ts
- * @description Barrel-файл, агрегирующий доменные API-модули в единый apiService.
+ * @description Barrel-файл, агрегирующий доменные API-модули в единый api.
  *   Реальная реализация разбита по файлам в ./api/*.api.ts
  *   (project.api, entity.api, chapter.api, calendar.api, tag.api, connection.api, cloud.api, search.api).
  *   Интерфейс apiService сохранён для обратной совместимости со всеми существующими импортами.

@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import * as api from '../../../../services/api.client';;
 
 export function useSchemaData(props: any, emit: any, localEntityType: any, scrollContainer: any) {
     const schema = ref<any>({ sections: [] });
@@ -32,7 +32,7 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
 
     const loadSchema = async (forceRefetch = false) => {
         try {
-            const schemas = await apiService.getSchemas(props.project);
+            const schemas = await api.getEntitySchemas(props.project);
             if (schemas[props.entityType] && schemas[props.entityType].full_schema) {
                 schema.value = JSON.parse(JSON.stringify(schemas[props.entityType].full_schema));
             } else {

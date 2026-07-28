@@ -5,6 +5,7 @@
  */
 import { createApp, defineAsyncComponent, type Plugin } from 'vue';
 import { createPinia } from 'pinia';
+import { VueQueryPlugin } from '@tanstack/vue-query';
 
 import '@worldwiki/resources/styles/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
@@ -13,7 +14,7 @@ import '@worldwiki/resources/styles/modules/settings.css';
 import '@worldwiki/resources/styles/new-ui-theme.css';
 import '@worldwiki/resources/styles/chapter-tree.css';
 
-import { apiService } from '../services/api.service';
+import * as api from '../services/api.client';;
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
 import { setupGlass } from '../utils/v-glass';
@@ -51,7 +52,7 @@ async function init() {
 
   // Загружаем схемы сущностей
   try {
-    await apiService.getSchemas(projectName);
+    await api.getEntitySchemas(projectName);
   } catch (e) {
     console.warn('Failed to load schemas:', e);
   }
@@ -66,6 +67,7 @@ async function init() {
   const pinia = createPinia();
   app.use(pinia);
   app.use(router);
+  app.use(VueQueryPlugin);
 
   // Регистрация компонентов
   app.component('EntityEditorVue', EntityEditorVue);

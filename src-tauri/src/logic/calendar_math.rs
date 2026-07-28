@@ -239,7 +239,7 @@ pub fn convert_absolute_to_local(
 ) -> serde_json::Value {
     let (year, month, day, hour, minute) =
         CalendarMath::get_date_from_absolute(absolute_minute, &calendar, era_index);
-    
+
     serde_json::json!({
         "year": year,
         "month": month,

@@ -19,9 +19,11 @@ pub async fn get_global_timeline(
 pub async fn save_text_blocks(
     project: String,
     chapter_id: String,
-    blocks: Vec<Value>,
+    html: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
+    use scraper::{Html, Selector};
+
     let db = &state.db;
     let proj_id = format!("projects:⟨{}⟩", project);
     
@@ -36,7 +38,27 @@ pub async fn save_text_blocks(
         }
     };
 
-    println!("[DEBUG] -> save_text_blocks: chapter_id='{}', blocks count={}", chapter_id_safe, blocks.len());
+    let blocks = {
+        let document = Html::parse_document(&html);
+        let selector = Selector::parse("p").unwrap();
+        let mut blocks: Vec<(String, String)> = Vec::new();
+
+        for p in document.select(&selector) {
+            let tag = p.value().attr("data-semantic-tag").unwrap_or("desc");
+            let btype = match tag {
+                "desc" => "description",
+                "dialog" => "dialogue",
+                _ => tag,
+            };
+            let content = p.text().collect::<Vec<_>>().join("").trim().to_string();
+            if !content.is_empty() {
+                blocks.push((btype.to_string(), content));
+            }
+        }
+        blocks
+    };
+
+    println!("[DEBUG] -> save_text_blocks: chapter_id='{}', parsed blocks={}", chapter_id_safe, blocks.len());
     
     let mut sql = String::new();
     sql.push_str("BEGIN TRANSACTION;\n");
@@ -45,10 +67,7 @@ pub async fn save_text_blocks(
     let mut bindings: Vec<(String, String)> = Vec::new();
     let blocks_count = blocks.len();
     
-    for (i, block) in blocks.into_iter().enumerate() {
-        let btype = block.get("block_type").and_then(|v| v.as_str()).unwrap_or("description").to_string();
-        let content = block.get("content").and_then(|v| v.as_str()).unwrap_or("").to_string();
-        
+    for (i, (btype, content)) in blocks.into_iter().enumerate() {
         sql.push_str(&format!(
             "CREATE text_blocks SET project_id = type::record($project_id), chapter_id = type::record($chapter_id), block_type = $btype_{}, order_index = {}, content = $content_{};\n",
             i, i, i

@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import { apiService } from '../../services/api.service';
+import * as api from '../../services/api.client';;
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
 
@@ -91,7 +91,7 @@ export function useCloudSyncModal(emit: any) {
         try {
             emit('toast', { text: 'Создаем локальный бекап...', type: 'info' });
 
-            const backupFilePath = await apiService.createCloudBackup();
+            const backupFilePath = await api.createCloudBackup();
             emit('toast', { text: 'Бекап создан, отправляем в облако...', type: 'info' });
 
             await (window as any).__TAURI__.core.invoke('upload_to_yandex_disk', {

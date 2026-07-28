@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
-import { apiService } from '../../../services/api.service';
+import * as api from '../../../services/api.client';;
 import { settingsService } from '@worldwiki/components';
 import { useEntityHistory } from './hooks/useEntityHistory';
 import { useEntityHelpers } from './hooks/useEntityHelpers';
@@ -75,7 +75,7 @@ export function useEntityEditor(props: any, emit: any) {
 
     for (const item of fieldsToLoad) {
       try {
-        const entities = await apiService.getEntityList(props.project, item.field.entityType);
+        const entities = await api.getEntities(props.project, item.field.entityType);
         referenceData.value[`${item.field.entityType}_list`] = entities.map((e: any) => ({
           value: e.id,
           label: e.name || 'Без названия'
@@ -94,7 +94,7 @@ export function useEntityEditor(props: any, emit: any) {
       if (props.entityId === 'preview' && sandboxConfig) {
         config.value = JSON.parse(sandboxConfig);
       } else {
-        const schemas = await apiService.getSchemas(props.project);
+        const schemas = await api.getEntitySchemas(props.project);
         if (schemas[props.entityType] && schemas[props.entityType].full_schema) {
           config.value = schemas[props.entityType].full_schema;
         } else {
@@ -207,7 +207,7 @@ export function useEntityEditor(props: any, emit: any) {
 
   const uploadPhoto = async (file: File) => {
     try {
-      const path = await apiService.uploadPhoto(file);
+      const path = await api.uploadPhoto(Array.from(new Uint8Array(await file.arrayBuffer())), file.name);
       return path;
     } catch (e) {
       console.error('Photo upload failed:', e);

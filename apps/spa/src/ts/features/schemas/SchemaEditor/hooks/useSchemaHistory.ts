@@ -1,5 +1,5 @@
 import { ref, shallowRef } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import * as api from '../../../../services/api.client';;
 
 export function useSchemaHistory(props: any, schema: any, loadSchema: Function) {
     const showHistory = ref(false);
@@ -10,7 +10,7 @@ export function useSchemaHistory(props: any, schema: any, loadSchema: Function) 
 
     const loadHistory = async () => {
         try {
-            const history = await apiService.getSchemaHistory(props.project, props.entityType) || [];
+            const history = await api.getSchemaHistory(props.project, props.entityType) || [];
             schemaHistory.value = history.map((h: any) => ({
                 ...h,
                 formattedDate: new Date(h.saved_at).toLocaleString()
@@ -29,7 +29,7 @@ export function useSchemaHistory(props: any, schema: any, loadSchema: Function) 
 
     const togglePin = async (history: any) => {
         try {
-            await apiService.toggleSchemaHistoryPin(history.id, !history.is_pinned);
+            await api.toggleSchemaHistoryPin(history.id, !history.is_pinned);
             history.is_pinned = !history.is_pinned;
         } catch (e) {
             console.error(e);

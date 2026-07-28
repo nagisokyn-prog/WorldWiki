@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, computed } from 'vue';
-import { calendarService } from '../../../services/calendar.service';
+import { useCalendarStore } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 
 export function useCalendarsPanel(props: any) {
@@ -24,13 +24,13 @@ export function useCalendarsPanel(props: any) {
         }
 
         try {
-            const list = await calendarService.getCalendars(project.value);
+            const list = await useCalendarStore().getCalendars(project.value);
 
             // Auto-create default calendar if none exist
             if (list.length === 0) {
                 const defaultData = CalendarMath.getDefaultCalendar();
-                await calendarService.saveCalendar(project.value, { ...defaultData, is_default: true, tempId: `temp_${Date.now()}` });
-                const newList = await calendarService.getCalendars(project.value);
+                await useCalendarStore().saveCalendar(project.value, { ...defaultData, is_default: true, tempId: `temp_${Date.now()}` });
+                const newList = await useCalendarStore().getCalendars(project.value);
                 calendars.value = newList.map((c: any) => ({
                     id: c.id,
                     is_default: c.is_default,
@@ -70,7 +70,7 @@ export function useCalendarsPanel(props: any) {
         };
 
         if (project.value) {
-            await calendarService.saveCalendar(project.value, tempPayload);
+            await useCalendarStore().saveCalendar(project.value, tempPayload);
             await loadCalendars();
             expandedCalendars.value.add(calendars.value.length - 1);
         }
@@ -87,7 +87,7 @@ export function useCalendarsPanel(props: any) {
         };
 
         try {
-            const success = await calendarService.saveCalendar(project.value, payload);
+            const success = await useCalendarStore().saveCalendar(project.value, payload);
             if (success) {
                 // Reload to get real IDs
                 await loadCalendars();
@@ -103,7 +103,7 @@ export function useCalendarsPanel(props: any) {
 
         const cal = calendars.value[idx];
         if (!cal.id?.startsWith('temp_') && cal.id) {
-            const success = await calendarService.deleteCalendar(cal.id);
+            const success = await useCalendarStore().deleteCalendar(cal.id);
             if (!success) {
                 alert('Ошибка при удалении календаря.');
                 return;

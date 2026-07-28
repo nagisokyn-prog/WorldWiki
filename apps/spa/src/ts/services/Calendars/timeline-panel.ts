@@ -1,6 +1,6 @@
 import { defineComponent, ref, onMounted, computed } from 'vue';
 import type { PropType } from 'vue';
-import { calendarService } from '../calendar.service';
+import { useCalendarStore } from '../../stores/calendar.store';
 import { CalendarMath } from './calendar.math';
 
 import { XboxWheel, settingsService } from '@worldwiki/components';
@@ -101,7 +101,7 @@ export default defineComponent({
 
     const loadCalendarData = (calObj: any) => {
       const cal = calObj.data;
-      if (cal && calendarService.isValidCalendar(cal)) {
+      if (cal && useCalendarStore().isValidCalendar(cal)) {
         calendar.value = cal;
         calendar.value._id = calObj.id;
         if (cal.эпохи && cal.эпохи.length > 0) eras.value = cal.эпохи;
@@ -116,7 +116,7 @@ export default defineComponent({
     onMounted(async () => {
       try {
         console.log('[Timeline] Loading calendars for project:', props.project);
-        const calendarsList = await calendarService.getCalendars(props.project);
+        const calendarsList = await useCalendarStore().getCalendars(props.project);
         console.log('[Timeline] Raw calendars from DB:', calendarsList);
 
         availableCalendars.value = calendarsList.map(c => ({

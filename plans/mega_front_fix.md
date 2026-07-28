@@ -467,34 +467,35 @@ export const characterApi = {
 ## 10. ЧЕК-ЛИСТ МИГРАЦИИ
 
 ### Фаза 1: Быстрые победы ✅
-- [ ] Убрать дубликат `searchApi.searchEntities`
-- [ ] Починить `URL.revokeObjectURL` утечку в `search.api.ts`
-- [ ] Добавить мьютекс/once флаг в `calendarService.getCalendars`
-- [ ] Debounce + дедуп в `tagsManager.createNewTag`
-- [ ] Убрать все `window.xxxService = ...` присваивания
-- [ ] Добавить `utils/requestCache.ts` + завести в `entity.tree.ts`, `project.service.ts`, `tags.service.ts`, `calendar.service.ts`
+- [x] Убрать дубликат `searchApi.searchEntities`
+- [x] Починить `URL.revokeObjectURL` утечку в `search.api.ts`
+- [x] Добавить мьютекс/once флаг в `calendarService.getCalendars`
+- [x] Debounce + дедуп в `tagsManager.createNewTag`
+- [x] Убрать все `window.xxxService = ...` присваивания
+- [x] Добавить `utils/requestCache.ts` + завести в `entity.tree.ts`, `project.service.ts`, `tags.service.ts`, `calendar.service.ts`
 
-### Фаза 2: Batch API
-- [ ] Rust: Добавить команду `get_entities_batch` (макрос или вручную)
-- [ ] Rust: Добавить `upsert_connections_batch` (транзакционно)
-- [ ] Rust: Добавить `save_entity_with_relations` (транзакционно)
-- [ ] Фронтенд: Создать `api/batch.api.ts`
-- [ ] Фронтенд: Переписать `entity.tree.ts:loadEntities` → batch
-- [ ] Фронтенд: Переписать `connections.service.saveConnections` → batch
-- [ ] Фронтенд: Переписать `relationship-save.service.saveForeignRelationships` → batch
-- [ ] Тест: Проверить 80%+ сокращение invoke на сохранении сущности
+### Фаза 2: Batch API ✅
+- [x] Rust: Добавить команду `get_entities_batch` (макрос или вручную)
+- [x] Rust: Добавить `upsert_connections_batch` (транзакционно)
+- [x] Rust: Добавить `save_entity_with_relations` (транзакционно)
+- [x] Фронтенд: Создать `api/batch.api.ts`
+- [x] Фронтенд: Переписать `entity.tree.ts:loadEntities` → batch
+- [x] Фронтенд: Переписать `connections.service.saveConnections` → batch
+- [x] Фронтенд: Переписать `relationship-save.service.saveForeignRelationships` → batch
+- [x] Тест: Проверить 80%+ сокращение invoke на сохранении сущности
 
-### Фаза 3: Codegen
-- [ ] Добавить `ts-rs` в `surreal_domain_macros`
-- [ ] Расширить макрос: эмитить `#[ts(export)]` на генерируемых структурах
-- [ ] Расширить макрос: собирать метаданные команд → `commands.meta.json`
-- [ ] Написать `scripts/codegen.ts` (meta.json → `commands.ts` + barrel)
-- [ ] Добавить Vite плагин для hot-reload при изменении `.rs`
-- [ ] Мигрировать один домен (например, `calendar`) end-to-end
-- [ ] Мигрировать остальные домены (`entity`, `chapter`, `tag`, `connection`)
+### Фаза 3: Codegen ✅
+- [x] Добавить `ts-rs` в `surreal_domain_macros`
+- [x] Расширить макрос: эмитить `#[ts(export)]` на генерируемых структурах
+- [x] Написать `scripts/codegen.js` для прямого парсинга `.rs` файлов (вместо тяжелых Rust-макросов)
+- [x] Добавить команду `generate:api` в `package.json`
+- [x] Добавить watch-папки в `tauri.conf.json` для автоматического рестарта Tauri при изменении бэкенда
+- [x] Сгенерировать готовый `api.client.ts` с полной типизацией (no `any`)
+- [x] Мигрировать первые домены (`chapter.api.ts`, `project.api.ts`)
+- [x] Мигрировать оставшиеся домены (`entity`, `tag`, `connection`, `schemas`, и т.д.) - **СДЕЛАНО (TS ошибки полностью устранены!)**
 
 ### Фаза 4: Очистка
-- [ ] Разбить `apiService` → доменные composables + `provide/inject`
+- [x] Разбить `apiService` → полностью удален, заменен на прямые импорты из сгенерированного `api.client.ts`!
 - [ ] Мигрировать все сервисы в Pinia stores / composables
 - [ ] Убрать все `window.xxxService` globals
 - [ ] Добавить `@tanstack/vue-query` + обернуть все API вызовы

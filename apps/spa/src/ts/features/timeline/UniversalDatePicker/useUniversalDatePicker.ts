@@ -1,5 +1,5 @@
 import { ref, computed, watch, onMounted } from 'vue';
-import { calendarService } from '../../../services/calendar.service';
+import { useCalendarStore } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 import { settingsService } from '@worldwiki/components';
 
@@ -205,7 +205,7 @@ export function useUniversalDatePicker(props: any, emit: any) {
 
   onMounted(async () => {
     try {
-      const list = await calendarService.getCalendars(props.project);
+      const list = await useCalendarStore().getCalendars(props.project);
       allCalendars.value = list && list.length > 0 ? list : [{ id: 'temp', is_default: true, data: CalendarMath.getDefaultCalendar() }];
     } catch (e) {
       allCalendars.value = [{ id: 'temp', is_default: true, data: CalendarMath.getDefaultCalendar() }];

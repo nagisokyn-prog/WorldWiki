@@ -1,5 +1,5 @@
 import { ref, computed, onMounted } from 'vue';
-import { calendarService } from '../../../../services/calendar.service';
+import { useCalendarStore } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 
 export function useGlobalCalendarWidget(props: { project: string }) {
@@ -18,7 +18,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   });
 
   const loadCalendars = async () => {
-    const list = await calendarService.getCalendars(props.project);
+    const list = await useCalendarStore().getCalendars(props.project);
     masterCalendar.value = list.find(c => c.is_master);
     localCalendars.value = list.filter(c => !c.is_master);
   };

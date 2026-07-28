@@ -1,5 +1,5 @@
 import { ref, onMounted } from 'vue';
-import { apiService } from '../../../services/api.service';
+import * as api from '../../../services/api.client';;
 
 export function useParticipantsPanel(props: any, emit: any) {
     const newType = ref('character');
@@ -11,7 +11,7 @@ export function useParticipantsPanel(props: any, emit: any) {
         newId.value = '';
         if (!entityCache.value[newType.value]) {
             try {
-                const list = await apiService.getEntityList(props.project, newType.value);
+                const list = await api.getEntities(props.project, newType.value);
                 entityCache.value[newType.value] = list;
             } catch (e) {
                 console.warn(`Failed to load ${newType.value}`, e);

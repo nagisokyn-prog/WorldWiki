@@ -21,9 +21,9 @@ function rustTypeToTs(rustType) {
     t = t.replace(/^&mut\s*/, '').replace(/^&\s*/, '');
     
     if (t === 'String' || t === '&str' || t === 'char') return 'string';
-    if (t === 'i32' || t === 'u32' || t === 'i64' || t === 'u64' || t === 'f32' || t === 'f64' || t === 'usize') return 'number';
+    if (t === 'i32' || t === 'u32' || t === 'i64' || t === 'u64' || t === 'f32' || t === 'f64' || t === 'usize' || t === 'u8') return 'number';
     if (t === 'bool') return 'boolean';
-    if (t === 'serde_json::Value') return 'any';
+    if (t === 'serde_json::Value' || t === 'Value') return 'any';
     if (t === '()') return 'void';
     
     // Vec<T>
@@ -39,17 +39,25 @@ function rustTypeToTs(rustType) {
     if (searchMatch) return `SearchResult<${rustTypeToTs(searchMatch[1])}>`;
 
     // Map/Dict (простая эвристика)
-    if (t.startsWith('HashMap') || t.startsWith('BTreeMap')) return 'Record<string, any>';
+    if (t.startsWith('HashMap') || t.startsWith('BTreeMap') || t.startsWith('Map<')) return 'Record<string, any>';
     
     // Остальное (предполагаем, что это доменные структуры, сгенерированные ts-rs)
     // Убираем возможные пути модулей
     t = t.split('::').pop();
+    
+    // Проверяем, существует ли этот тип в generated/
+    // Если нет, то возвращаем any, чтобы не ломать TS
+    const typeFilePath = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/types/generated', `${t}.ts`);
+    if (!fs.existsSync(typeFilePath)) {
+        return 'any';
+    }
+    
     return t;
 }
 
 function parseReturnType(rustRet) {
     if (!rustRet) return 'void';
-    let t = rustRet.trim();
+    let t = rustRet.trim().replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
     
     // Обычно возвращается Result<T, E>
     const resMatch = t.match(/^Result<(.*),\s*.*>$/);
@@ -81,12 +89,30 @@ function scanLogicFiles() {
             let match;
             while ((match = regex.exec(content)) !== null) {
                 const name = match[1];
-                const argsStr = match[2];
+                let argsStr = match[2];
                 const retStr = match[3];
                 
+                // Удаляем комментарии из аргументов
+                argsStr = argsStr.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+                
                 const args = [];
-                // Очень простой парсинг аргументов
-                const argParts = argsStr.split(',').map(a => a.trim()).filter(a => a);
+                // Более умный сплит по запятым с учетом вложенности <>
+                const argParts = [];
+                let current = '';
+                let angleDepth = 0;
+                for (let i = 0; i < argsStr.length; i++) {
+                    const c = argsStr[i];
+                    if (c === '<') angleDepth++;
+                    if (c === '>') angleDepth--;
+                    if (c === ',' && angleDepth === 0) {
+                        if (current.trim()) argParts.push(current.trim());
+                        current = '';
+                    } else {
+                        current += c;
+                    }
+                }
+                if (current.trim()) argParts.push(current.trim());
+                
                 for (let part of argParts) {
                     if (part.startsWith('mut ')) part = part.substring(4);
                     const colonIdx = part.indexOf(':');
@@ -99,6 +125,9 @@ function scanLogicFiles() {
                     if (argType.includes('tauri::State') || argType.includes('tauri::AppHandle') || argType.includes('tauri::Window')) {
                         continue;
                     }
+                    
+                    // Защита от пустых имен аргументов (может вызывать "(Missing)" в TS)
+                    if (!argName) continue;
                     
                     args.push({
                         name: camelCase(argName),
@@ -185,16 +214,20 @@ function generate() {
         ` * НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ! Запустите \`node scripts/codegen.js\` для обновления.`,
         ` */`,
         `import { invoke } from '@tauri-apps/api/core';`,
-        `import type { SearchResult } from './Entity/entity.types';`,
+        `export interface SearchResult<T> { entity: T; score: number; kind: string; }`,
         `// TODO: импорты типов из \`../types/generated/... \` будут добавлены ниже.`,
         ``
     ];
     
     function addFunction(rustName, args, retType) {
         const tsName = camelCase(rustName);
-        const argStr = args.map(a => `${a.name}: ${a.type}`).join(', ');
-        const invokeArgs = args.length > 0 
-            ? `, { ${args.map(a => a.name === a.originalName ? a.name : `'${a.originalName}': ${a.name}`).join(', ')} }`
+        
+        // Защита от пустых аргументов и плохих типов
+        const validArgs = args.filter(a => a.name && a.name.length > 0 && a.name !== 'undefined');
+        const argStr = validArgs.map(a => `${a.name}: ${a.type}`).join(', ');
+        
+        const invokeArgs = validArgs.length > 0 
+            ? `, { ${validArgs.map(a => a.name === a.originalName ? a.name : `'${a.originalName}': ${a.name}`).join(', ')} }`
             : '';
             
         outputLines.push(`export async function ${tsName}(${argStr}): Promise<${retType}> {`);
@@ -203,10 +236,15 @@ function generate() {
         outputLines.push(``);
         
         // Собираем типы для импортов
-        const types = [retType, ...args.map(a => a.type)].flatMap(t => t.replace(/\[\]/g, '').split('|')).map(t => t.trim());
+        const types = [retType, ...validArgs.map(a => a.type)].flatMap(t => t.replace(/\[\]/g, '').split('|')).map(t => t.trim());
         for (const t of types) {
             if (/^[A-Z]/.test(t) && t !== 'String' && t !== 'Record<string, any>' && !t.startsWith('SearchResult')) {
-                usedTypes.add(t.split('<')[0]); // Убираем генерики для импорта
+                const baseType = t.split('<')[0];
+                // Проверяем, существует ли такой тип в generated/
+                const typeFilePath = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/types/generated', `${baseType}.ts`);
+                if (fs.existsSync(typeFilePath)) {
+                    usedTypes.add(baseType);
+                }
             }
         }
     }

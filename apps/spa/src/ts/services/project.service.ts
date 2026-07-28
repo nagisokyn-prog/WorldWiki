@@ -4,7 +4,7 @@
  * @rust-ready ✅ CRUD операции с проектами
  */
 
-import { apiService } from "./api.service";
+import * as api from './api.client';;
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
 interface ProjectStats {
@@ -55,7 +55,7 @@ export const projectService = {
     const cached = getCached<ProjectData[]>(cacheKey);
     if (cached) return cached;
 
-    const raw = await apiService.getProjects();
+    const raw = await api.getProjects();
     console.log('[projectService] getProjects raw response:', raw);
     const list = Array.isArray(raw) ? raw : ((raw as any)?.projects || []);
     const projects = list.map((p: any) => ({
@@ -75,7 +75,7 @@ export const projectService = {
     const cached = getCached<ProjectConfig>(cacheKey);
     if (cached) return cached;
 
-    const res: any = await apiService.getProjectConfig(projectName);
+    const res: any = await api.getProjectConfig(projectName);
     console.log('[projectService] getProjectConfig raw response:', res);
     const config = res as ProjectConfig;
     setCache(cacheKey, config);
@@ -97,27 +97,27 @@ export const projectService = {
     };
     
     console.log('[projectService] createProject sending payload:', payload);
-    const result = await apiService.createProject(payload);
+    const result = await api.createProject(payload);
     console.log('[projectService] createProject result:', result);
     invalidateCache('projects:all');
-    return result;
+    return { success: !!result };
   },
 
   /**
    * Удалить проект
    */
   async deleteProject(projectName: string): Promise<{ success: boolean }> {
-    const result = await apiService.deleteProject(projectName);
+    const result = await api.deleteProject(projectName);
     invalidateCache('projects:all');
     invalidateCache(`project:config:${projectName}`);
-    return result;
+    return { success: !!result };
   },
 
   /**
    * Сохранить конфигурацию проекта (включая календарь, жанры и т.д.)
    */
   async saveProjectConfig(projectName: string, config: ProjectConfig): Promise<{ success: boolean }> {
-    const result = await apiService.saveProjectConfig(projectName, config as any);
+    const result = await api.saveProjectConfig(projectName, config as any);
     invalidateCache(`project:config:${projectName}`);
     return result;
   },

@@ -4,29 +4,30 @@
  * @rust-ready ✅ CRUD глав
  */
 
-import { apiService } from './api.service';
+import * as api from './api.client';;
 
 import type { Chapter } from '../types/generated/Chapter';
 
 class ChapterService {
   async list(project: string): Promise<Chapter[]> {
-    return await apiService.getChaptersList(project) as Chapter[];
+    return await api.getChapters(project) as Chapter[];
   }
 
   async get(project: string, id: string): Promise<Chapter> {
-    return await apiService.getChapter(project, id) as Chapter;
+    return await api.getChapter(id) as Chapter;
   }
 
   async save(project: string, data: any): Promise<string> {
     if (!data.id) {
       data.id = `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
-    await apiService.saveChapter(project, data);
+    await api.saveChapter(data as any);
     return data.id;
   }
 
   async delete(project: string, id: string): Promise<{ success: boolean }> {
-    return await apiService.deleteChapter(project, id);
+    await api.deleteChapter(id);
+    return { success: true };
   }
 
   createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): any {

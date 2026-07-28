@@ -76,6 +76,7 @@ declare global {
   const useEntityLists: typeof import('./ts/composables/useEntityLists')['useEntityLists']
   const useEntityLoader: typeof import('./ts/composables/useEntityLoader')['useEntityLoader']
   const useEntityOps: typeof import('./ts/composables/useEntityOps')['useEntityOps']
+  const useExport: typeof import('./ts/composables/useExport')['useExport']
   const useFloatingEditors: typeof import('./ts/composables/useFloatingEditors')['useFloatingEditors']
   const useFloatingWindows: typeof import('./ts/composables/useFloatingWindows')['useFloatingWindows']
   const useHotkeys: typeof import('./ts/composables/useHotkeys')['useHotkeys']

@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { chapterService } from '../services/chapter.service';
-import { timelineService } from '../services/timeline.service';
-import { apiService } from '../services/api.service';
-import { calendarService } from '../services/calendar.service';
+import { useTimelineStore } from './timeline.store';
+import * as api from '../services/api.client';;
+import { useCalendarStore } from './calendar.store';
 
 export const useChapterStore = defineStore('chapter', () => {
   const loading = ref(false);
@@ -44,7 +44,7 @@ export const useChapterStore = defineStore('chapter', () => {
     try {
       console.log('📚 chapterStore.loadChapters: загружаю иерархию для проекта', project);
       loading.value = true;
-      hierarchy.value = await apiService.getHierarchy(project);
+      hierarchy.value = await api.getChapterHierarchy(project);
       console.log('✅ chapterStore.loadChapters: иерархия загружена', hierarchy.value);
       debugError.value = null;
       loading.value = false;
@@ -62,7 +62,8 @@ export const useChapterStore = defineStore('chapter', () => {
     if (!currentChapter.value || isSaving.value) return false;
     isSaving.value = true;
 
-    const autoParts = timelineService.parseParticipants(currentChapter.value.content);
+    const timelineStore = useTimelineStore();
+    const autoParts = timelineStore.parseParticipants(currentChapter.value.content);
     autoParts.forEach(p => {
       if (!currentChapter.value.participants.some((ep: any) => ep.id === p.id && ep.type === p.type)) {
         currentChapter.value.participants.push({ ...p, autoParsed: true });
@@ -134,7 +135,7 @@ export const useChapterStore = defineStore('chapter', () => {
 
     if (num === 1) {
       try {
-        const cal = await calendarService.loadCalendar(project);
+        const cal = await useCalendarStore().loadCalendar(project);
         if (cal && cal.точка_отсчета) {
           newCh.timeline_events = [{
             date: {
@@ -153,7 +154,7 @@ export const useChapterStore = defineStore('chapter', () => {
     }
 
     await chapterService.save(project, newCh);
-    hierarchy.value = await apiService.getHierarchy(project).catch(() => hierarchy.value);
+    hierarchy.value = await api.getChapterHierarchy(project).catch(() => hierarchy.value);
     await openChapter(project, newCh.id);
     return newCh;
   };

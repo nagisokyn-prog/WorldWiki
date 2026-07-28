@@ -1,34 +1,26 @@
-/**
- * @file calendar.service.ts
- * @description Сервис для работы с календарём
- * @rust-ready ✅ Расчёт дат, конвертация календарей
- */
-
-import { apiService } from "./api.service";
-import { projectService } from './project.service';
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import * as api from '../services/api.client';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
+import type { CalendarData } from '../services/Calendars/calendar.types';
+import { CalendarMath } from '../services/Calendars/calendar.math';
 
-import type { CalendarData, CalendarDate } from './Calendars/calendar.types';
-import { CalendarMath } from './Calendars/calendar.math';
+export const useCalendarStore = defineStore('calendar', () => {
+  const isCreatingMaster = ref(false);
 
-let isCreatingMaster = false;
-
-class CalendarService {
-  async getCalendars(projectName: string): Promise<any[]> {
+  async function getCalendars(projectName: string): Promise<any[]> {
     const cacheKey = `calendars:${projectName}`;
     const cached = getCached<any[]>(cacheKey);
     if (cached) return cached;
 
     try {
-      const list = await apiService.getCalendars(projectName);
+      const list = await api.getCalendars(projectName);
       if (list && list.length > 0) {
-        // Ensure at least one calendar is master
         const hasMaster = list.some((c: any) => c.is_master);
         if (!hasMaster) {
-          if (isCreatingMaster) return list;
-          isCreatingMaster = true;
+          if (isCreatingMaster.value) return list;
+          isCreatingMaster.value = true;
           try {
-            // Upgrade the default or first one
             const defaultCal = list.find((c: any) => c.is_default) || list[0];
             defaultCal.is_master = true;
             if (defaultCal.data) {
@@ -39,27 +31,25 @@ class CalendarService {
                  defaultCal.name = 'Календарь Мира';
               }
             }
-            await this.saveCalendar(projectName, { ...defaultCal.data, id: defaultCal.id, is_default: defaultCal.is_default, is_master: true });
+            await saveCalendar(projectName, { ...defaultCal.data, id: defaultCal.id, is_default: defaultCal.is_default, is_master: true });
           } finally {
-            isCreatingMaster = false;
+            isCreatingMaster.value = false;
           }
         }
       } else {
-        if (isCreatingMaster) return [];
-        isCreatingMaster = true;
+        if (isCreatingMaster.value) return [];
+        isCreatingMaster.value = true;
         try {
-          // Auto-create World Calendar if none exist
           const defaultCalData = CalendarMath.getDefaultCalendar();
           defaultCalData.is_master = true;
           defaultCalData.calendar_type = 'master';
           defaultCalData.название = 'Календарь Мира';
-          await this.saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as any);
-          // Fetch again to get the assigned ID
-          const newList = await apiService.getCalendars(projectName);
+          await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as any);
+          const newList = await api.getCalendars(projectName);
           setCache(cacheKey, newList || []);
           return newList || [];
         } finally {
-          isCreatingMaster = false;
+          isCreatingMaster.value = false;
         }
       }
       setCache(cacheKey, list);
@@ -70,11 +60,10 @@ class CalendarService {
     }
   }
 
-  async loadCalendar(projectName: string): Promise<CalendarData | null> {
+  async function loadCalendar(projectName: string): Promise<CalendarData | null> {
     try {
-      const list = await this.getCalendars(projectName);
+      const list = await getCalendars(projectName);
       if (list && list.length > 0) {
-        // Return the first calendar's data (default)
         const defaultCal = list.find((c: any) => c.is_default) || list[0];
         const data = defaultCal.data || defaultCal;
         data._id = defaultCal.id;
@@ -87,9 +76,9 @@ class CalendarService {
     }
   }
 
-  async saveCalendar(projectName: string, calendar: CalendarData): Promise<boolean> {
+  async function saveCalendar(projectName: string, calendar: CalendarData): Promise<boolean> {
     try {
-      await apiService.saveCalendar(projectName, calendar);
+      await api.saveCalendar(calendar as any);
       invalidateCache(`calendars:${projectName}`);
       console.log("✅ Календарь успешно сохранён в БД");
       return true;
@@ -99,9 +88,9 @@ class CalendarService {
     }
   }
 
-  async deleteCalendar(id: string): Promise<boolean> {
+  async function deleteCalendar(id: string): Promise<boolean> {
     try {
-      await apiService.deleteCalendar(id);
+      await api.deleteCalendar(id);
       invalidateCache('calendars:');
       return true;
     } catch (error) {
@@ -110,10 +99,7 @@ class CalendarService {
     }
   }
 
-  /**
-   * Проверка валидности календаря
-   */
-  isValidCalendar(calendar: CalendarData): boolean {
+  function isValidCalendar(calendar: CalendarData): boolean {
     return calendar &&
       Array.isArray(calendar.месяцы) &&
       calendar.месяцы.length > 0 &&
@@ -121,7 +107,11 @@ class CalendarService {
       calendar.эпохи.length > 0;
   }
 
-
-}
-
-export const calendarService = new CalendarService();
+  return {
+    getCalendars,
+    loadCalendar,
+    saveCalendar,
+    deleteCalendar,
+    isValidCalendar
+  };
+});

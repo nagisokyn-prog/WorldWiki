@@ -1,5 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import { apiService } from '../../../services/api.service';
+import * as api from '../../../services/api.client';;
 import { useSchemaData } from './hooks/useSchemaData';
 import { useSchemaHistory } from './hooks/useSchemaHistory';
 import { useSchemaDnD } from './hooks/useSchemaDnD';
@@ -70,7 +70,7 @@ export function useSchemaEditorMain(props: any, emit: any) {
                 is_custom: true
             };
             
-            await apiService.saveSchema(props.project, dataToSave, historyHook.maxSaves.value);
+            await api.saveEntitySchema(props.project, dataToSave as any, historyHook.maxSaves.value);
             document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
 
             if (historyHook.isHistoryPreviewMode.value) {

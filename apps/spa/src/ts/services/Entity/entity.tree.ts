@@ -5,7 +5,7 @@
 
 import { ref, computed, watch } from 'vue';
 import { entityApi } from './entity.api';
-import { apiService } from '../api.service';
+import * as api from '../api.client';;
 import { getCached, setCache } from '../../utils/requestCache';
 import { useTreeSelection } from '@worldwiki/components';
 
@@ -112,7 +112,7 @@ export function useEntityTree(project: string, emit: any) {
       const typesToFetch = entitySections.value.map(sect => sect.type);
       console.log(`[TREE DEBUG] → getEntitiesBatch for types:`, typesToFetch);
       
-      const batchResult = await apiService.getEntitiesBatch(project, typesToFetch);
+      const batchResult = await api.getEntitiesBatch(project, typesToFetch);
       console.log(`[TREE DEBUG] ← getEntitiesBatch returned keys:`, Object.keys(batchResult));
       
       const newEntities: Record<string, any[]> = batchResult;

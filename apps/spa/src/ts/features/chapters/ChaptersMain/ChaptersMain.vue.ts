@@ -1,8 +1,7 @@
 import { ref, onMounted, onUnmounted, watch, computed, type PropType, shallowRef } from 'vue';
 import { chapterService } from '../../../services/chapter.service';
-import { timelineService } from '../../../services/timeline.service';
-import { apiService } from '../../../services/api.service';
-import { calendarService } from '../../../services/calendar.service';
+import * as api from '../../../services/api.client';;
+import { useCalendarStore } from '../../../stores/calendar.store';
 
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
@@ -142,7 +141,7 @@ const loadHistory = async () => {
   if (!currentChapterId.value) return;
   try {
     isLoadingHistory.value = true;
-    const history = await apiService.getChapterRevisions(props.project, currentChapterId.value) || [];
+    const history = await api.getChapterRevisions(props.project, currentChapterId.value) || [];
     revisions.value = history.map((rev: any) => ({
       ...rev,
       formattedDate: new Date(rev.created_at).toLocaleString()
@@ -187,7 +186,7 @@ const previewHistory = (rev: any) => {
 const togglePin = async (rev: any) => {
   try {
     rev.is_pinned = !rev.is_pinned;
-    await apiService.toggleChapterHistoryPin(rev.id, rev.is_pinned);
+    await api.toggleChapterHistoryPin(rev.id, rev.is_pinned);
   } catch (err) {
     console.error('Failed to toggle pin:', err);
     rev.is_pinned = !rev.is_pinned; // revert
@@ -305,7 +304,7 @@ onMounted(async () => {
   console.log('🔧 ChaptersMain: chapterTreeRef =', chapterTreeRef.value);
   console.log('🔧 ChaptersMain: openChapterFromTree =', typeof openChapterFromTree);
   await loadChapters();
-  await timelineService.init(props.project);
+  await useTimelineStore().init(props.project);
 
   // Если нам передали controlledChapterId — сразу открываем главу
   if (props.controlledChapterId) {
@@ -372,7 +371,7 @@ const loadChapters = async () => {
   try {
     console.log('📚 loadChapters: загружаю иерархию для проекта', props.project);
     loading.value = true;
-    hierarchy.value = await apiService.getHierarchy(props.project);
+    hierarchy.value = await api.getChapterHierarchy(props.project);
     console.log('✅ loadChapters: иерархия загружена', hierarchy.value);
     debugError.value = null;
     loading.value = false;
@@ -389,7 +388,7 @@ const saveChapter = async () => {
   isSaving.value = true;
 
   // Parse participants from text automatically
-  const autoParts = timelineService.parseParticipants(currentChapter.value.content);
+  const autoParts = useTimelineStore().parseParticipants(currentChapter.value.content);
   autoParts.forEach(p => {
     if (!currentChapter.value.participants.some((ep: any) => ep.id === p.id && ep.type === p.type)) {
       currentChapter.value.participants.push({ ...p, autoParsed: true });
@@ -489,7 +488,7 @@ const createNewChapter = async (arcId?: string, volumeId?: string) => {
 
   if (num === 1) {
     try {
-      const cal = await calendarService.loadCalendar(props.project);
+      const cal = await useCalendarStore().loadCalendar(props.project);
       if (cal && cal.точка_отсчета) {
         newCh.timelineEvents = [{
           date: {
@@ -510,7 +509,7 @@ const createNewChapter = async (arcId?: string, volumeId?: string) => {
   await chapterService.save(props.project, newCh);
   await chapterTreeRef.value?.load();
   // Обновляем локальную иерархию
-  hierarchy.value = await apiService.getHierarchy(props.project).catch(() => hierarchy.value);
+  hierarchy.value = await api.getChapterHierarchy(props.project).catch(() => hierarchy.value);
   await openChapter(newCh.id);
 };
 
@@ -601,7 +600,7 @@ const closeFloatingEditor = (editorId: string) => {
 const loadHierarchy = async () => {
   console.log('🌳 ChaptersMain.loadHierarchy: загружаю иерархию для проекта', props.project);
   try {
-    const data = await apiService.getHierarchy(props.project);
+    const data = await api.getChapterHierarchy(props.project);
     hierarchy.value = data;
     console.log('🌳 ChaptersMain.loadHierarchy: загружено', data.chapters.length, 'глав');
   } catch (e) {

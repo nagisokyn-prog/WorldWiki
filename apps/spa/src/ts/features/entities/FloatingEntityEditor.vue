@@ -39,7 +39,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { FloatingWindow } from '@worldwiki/components';
 import EntityEditorVue from './EntityEditor/EntityEditor.vue';
-import { apiService } from '../../services/api.service';
+import * as api from '../../services/api.client';;
 
 const props = defineProps<{
   project: string;
@@ -95,11 +95,11 @@ const loadData = async () => {
   loading.value = true;
   try {
     // Fetch template
-    const schemas = await apiService.getSchemas(props.project);
-    config.value = schemas ? schemas[props.entityType] : null;
+    const schemas = await api.getEntitySchemas(props.project);
+    config.value = schemas ? schemas.find((s: any) => s.type_key === props.entityType) : null;
     
     // Fetch entity data
-    entityData.value = await apiService.getEntity(props.project, props.entityType, props.entityId);
+    entityData.value = await api.getEntity(props.entityId);
   } catch (e) {
     console.error('[FloatingEntityEditor] Load error:', e);
   } finally {

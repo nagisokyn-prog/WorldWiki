@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { apiService } from '../../services/api.service';
+import * as api from '../../services/api.client';;
 
 export function useTagsManagerModal(props: any) {
     const isOpen = ref(false);
@@ -11,7 +11,7 @@ export function useTagsManagerModal(props: any) {
     const loadTags = async () => {
         loading.value = true;
         try {
-            tags.value = await apiService.getTags(props.project);
+            tags.value = await api.getTags(props.project);
         } catch (e) {
             console.error('[TagsManager] Load error:', e);
         } finally {
@@ -22,7 +22,7 @@ export function useTagsManagerModal(props: any) {
     const addTag = async () => {
         if (!newTagName.value.trim()) return;
         try {
-            await apiService.saveTag(props.project, {
+            await api.saveEntity(props.project, {
                 name: newTagName.value.trim(),
                 color: newTagColor.value
             } as any);
@@ -35,7 +35,7 @@ export function useTagsManagerModal(props: any) {
 
     const updateTag = async (tag: any) => {
         try {
-            await apiService.saveTag(props.project, tag);
+            await api.saveEntity(props.project, tag as any);
         } catch (e) {
             console.error('[TagsManager] Update error:', e);
         }
@@ -44,7 +44,7 @@ export function useTagsManagerModal(props: any) {
     const deleteTag = async (id: string) => {
         if (!confirm('Удалить этот тег? Он исчезнет из всех сущностей.')) return;
         try {
-            await apiService.deleteTag(props.project, id);
+            await api.deleteEntity(id);
             await loadTags();
         } catch (e) {
             console.error('[TagsManager] Delete error:', e);

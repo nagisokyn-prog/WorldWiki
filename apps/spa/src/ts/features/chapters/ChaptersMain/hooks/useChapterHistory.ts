@@ -1,5 +1,5 @@
 import { ref, shallowRef, computed, type Ref } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import * as api from '../../../../services/api.client';;
 
 export function useChapterHistory(project: string, currentChapterId: Ref<string | undefined>, currentChapter: Ref<any>) {
   const showHistory = ref(false);
@@ -21,7 +21,7 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
     if (!currentChapterId.value) return;
     try {
       isLoadingHistory.value = true;
-      const history = await apiService.getChapterRevisions(project, currentChapterId.value) || [];
+      const history = await api.getChapterRevisions(project, currentChapterId.value) || [];
       revisions.value = history.map((rev: any) => ({
         ...rev,
         formattedDate: new Date(rev.created_at).toLocaleString()
@@ -64,7 +64,7 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
   const togglePin = async (rev: any) => {
     try {
       rev.is_pinned = !rev.is_pinned;
-      await apiService.toggleChapterHistoryPin(rev.id, rev.is_pinned);
+      await api.toggleChapterHistoryPin(rev.id, rev.is_pinned);
     } catch (err) {
       console.error('Failed to toggle pin:', err);
       rev.is_pinned = !rev.is_pinned;

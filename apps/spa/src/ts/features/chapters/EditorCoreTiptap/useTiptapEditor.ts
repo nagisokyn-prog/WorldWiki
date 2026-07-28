@@ -10,7 +10,7 @@ import { Extension } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import Paragraph from '@tiptap/extension-paragraph';
 import SemanticParagraphNode from '../Semantic/SemanticParagraphNode.vue';
-import { apiService } from '../../../services/api.service';
+import * as api from '../../../services/api.client';;
 import { settingsService } from '@worldwiki/components';
 import { useTiptapState } from './hooks/useTiptapState';
 import { useTiptapMarkdown } from './hooks/useTiptapMarkdown';
@@ -193,10 +193,10 @@ export function useTiptapEditor(props: any, emit: any) {
       if (!name || !editor.value) return;
       
       try {
-        const response = await apiService.searchEntities(props.project, name);
+        const response = await api.searchEntities(props.project, name, null);
         if (response && response.length > 0) {
           const entity = response[0];
-          const url = `?type=${entity._type}&id=${entity.id}`;
+          const url = `?type=${entity.entity_type}&id=${entity.id}`;
           
           editor.value.chain()
             .focus()

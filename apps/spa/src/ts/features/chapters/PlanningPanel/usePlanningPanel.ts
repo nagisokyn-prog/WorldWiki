@@ -1,5 +1,5 @@
 import { ref, computed, watch, nextTick } from 'vue';
-import { apiService } from '../../../services/api.service';
+import * as api from '../../../services/api.client';;
 
 export function usePlanningPanel(props: any) {
     const items = ref<any[]>([]);
@@ -27,7 +27,7 @@ export function usePlanningPanel(props: any) {
             return;
         }
         try {
-            items.value = await apiService.getPlanItems(props.project, props.parentType, props.parentId);
+            items.value = await api.getPlans(props.project).then(plans => plans.filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId));
         } catch (e) {
             console.error('Ошибка загрузки плана:', e);
             items.value = [];
@@ -40,16 +40,17 @@ export function usePlanningPanel(props: any) {
     const saveItem = async (item: any) => {
         if (!item.text.trim() && !item.id) return; // пропускаем совсем пустые несохранённые
         try {
-            const id = await apiService.savePlanItem(props.project, {
-                id: item.id,
-                parentType: props.parentType,
-                parentId: props.parentId,
-                text: item.text,
-                done: item.done,
-                indent: item.indent,
-                sort_order: item.sort_order ?? items.value.indexOf(item),
-            });
-            if (!item.id) item.id = id;
+            const planToSave: any = {
+                id: item.id || null,
+                project_id: props.project,
+                parent_type: props.parentType,
+                parent_ref: props.parentId,
+                title: item.text,
+                completed: item.done,
+                sort_order: item.sort_order ?? items.value.indexOf(item)
+            };
+            const savedPlan = await api.savePlan(planToSave);
+            if (!item.id && savedPlan.id) item.id = savedPlan.id;
         } catch (e) {
             console.error('Ошибка сохранения пункта:', e);
         }
@@ -60,7 +61,7 @@ export function usePlanningPanel(props: any) {
         item.done = !item.done;
         try {
             if (item.id) {
-                await apiService.togglePlanItem(props.project, item.id);
+                await api.getPlans(props.project).then(async plans => { const p = plans.find(x => x.id === item.id); if (p) { p.completed = !p.completed; await api.savePlan(p); } });
             } else {
                 await saveItem(item);
             }
@@ -113,7 +114,7 @@ export function usePlanningPanel(props: any) {
     const deleteItem = async (item: any, idx: number) => {
         items.value.splice(idx, 1);
         if (item.id) {
-            try { await apiService.deletePlanItem(props.project, item.id); } catch { }
+            try { await api.deletePlan(item.id); } catch { }
         }
         items.value.forEach((it, i) => { it.sort_order = i; });
     };

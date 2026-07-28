@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import * as api from '../../../../services/api.client';;
 
 export function useEntityHelpers(formData: any, config: any) {
   const photoUrlCache = ref<Record<string, string>>({});
@@ -9,7 +9,7 @@ export function useEntityHelpers(formData: any, config: any) {
     if (path.startsWith('data:') || path.startsWith('blob:') || path.startsWith('http')) return path;
     if (photoUrlCache.value[path]) return photoUrlCache.value[path];
     
-    apiService.getLocalPhotoUrl(path).then(url => {
+    Promise.resolve(path).then(url => {
       photoUrlCache.value[path] = url;
     });
     return '';

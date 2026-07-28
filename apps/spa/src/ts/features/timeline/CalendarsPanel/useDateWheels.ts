@@ -1,5 +1,5 @@
 import { ref, computed, watch, onMounted } from 'vue';
-import { calendarService } from '../../../services/calendar.service';
+import { useCalendarStore } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 import { settingsService } from '@worldwiki/components';
 
@@ -132,7 +132,7 @@ export function useDateWheels(props: any, emit: any) {
     };
 
     onMounted(async () => {
-        let cal = await calendarService.loadCalendar(props.project);
+        let cal = await useCalendarStore().loadCalendar(props.project);
         if (!cal) cal = CalendarMath.getDefaultCalendar();
         calendar.value = cal;
 

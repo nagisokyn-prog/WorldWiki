@@ -1,5 +1,5 @@
 import { ref, shallowRef } from 'vue';
-import { apiService } from '../../../../services/api.service';
+import * as api from '../../../../services/api.client';;
 
 export function useEntityHistory(props: any, emit: any, formData: any) {
   const showHistory = ref(false);
@@ -13,7 +13,7 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
   const togglePin = async (rev: any) => {
     const newStatus = !rev.is_pinned;
     try {
-      await apiService.toggleEntityHistoryPin(rev.id, newStatus);
+      await api.toggleEntityHistoryPin(rev.id, newStatus);
       rev.is_pinned = newStatus;
     } catch (e) {
       console.error('Ошибка при пине ревизии:', e);

@@ -1,4 +1,4 @@
-import { apiService } from './api.service'
+import * as api from './api.client';
 
 export interface TemplateConfig {
   id: string

@@ -1,6 +1,6 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { invoke } from '@worldwiki/components';
-import { calendarService } from '../../../../services/calendar.service';
+import { useCalendarStore } from '../../../../stores/calendar.store';
 import { useShellStore } from '../../../../stores/shell';
 
 export function useGlobalTimeViewer() {
@@ -24,7 +24,7 @@ export function useGlobalTimeViewer() {
 
   const loadCalendars = async () => {
     loading.value = true;
-    calendars.value = await calendarService.getCalendars(shellStore.projectName!);
+    calendars.value = await useCalendarStore().getCalendars(shellStore.projectName!);
     loading.value = false;
     await updateLocalDates();
   };

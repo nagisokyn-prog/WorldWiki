@@ -1,6 +1,6 @@
 import { ref, onMounted, computed } from 'vue';
 import type { PropType } from 'vue';
-import { calendarService } from '../../../../services/calendar.service';
+import { useCalendarStore } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 
 import { settingsService } from '@worldwiki/components';
@@ -89,7 +89,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
 
   const loadCalendarData = (calObj: any) => {
     const cal = calObj.data;
-    if (cal && calendarService.isValidCalendar(cal)) {
+    if (cal && useCalendarStore().isValidCalendar(cal)) {
       calendar.value = cal;
       calendar.value._id = calObj.id;
       if (cal.эпохи && cal.эпохи.length > 0) eras.value = cal.эпохи;
@@ -104,7 +104,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
   onMounted(async () => {
     try {
       console.log('[Timeline] Loading calendars for project:', props.project);
-      const calendarsList = await calendarService.getCalendars(props.project);
+      const calendarsList = await useCalendarStore().getCalendars(props.project);
       console.log('[Timeline] Raw calendars from DB:', calendarsList);
 
       availableCalendars.value = calendarsList.map(c => ({

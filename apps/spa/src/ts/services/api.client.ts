@@ -27,7 +27,7 @@ export async function getProjects(): Promise<any[]> {
 }
 
 export async function createProject(projectData: any): Promise<string> {
-    return await invoke('create_project', { 'project_data': projectData });
+    return await invoke('create_project', { projectData });
 }
 
 export async function getProjectConfig(name: string): Promise<any> {
@@ -47,7 +47,7 @@ export async function getEntities(project: string, entityType: string | null): P
 }
 
 export async function getEntitiesBatch(project: string, entityTypes: string[]): Promise<Record<string, any>> {
-    return await invoke('get_entities_batch', { project, 'entity_types': entityTypes });
+    return await invoke('get_entities_batch', { project, entityTypes });
 }
 
 export async function getEntity(id: string): Promise<Entity | null> {
@@ -59,7 +59,7 @@ export async function saveEntity(project: string, entity: Entity): Promise<Entit
 }
 
 export async function saveEntityWithRelations(project: string, entity: Entity, foreignUpdates: Entity[]): Promise<Entity> {
-    return await invoke('save_entity_with_relations', { project, entity, 'foreign_updates': foreignUpdates });
+    return await invoke('save_entity_with_relations', { project, entity, foreignUpdates });
 }
 
 export async function deleteEntity(id: string): Promise<void> {
@@ -335,8 +335,8 @@ export async function deleteTag(id: string): Promise<void> {
     return await invoke('delete_tag', { id });
 }
 
-export async function getCalendars(projectId: string): Promise<Calendar[]> {
-    return await invoke('get_calendars', { 'project_id': projectId });
+export async function getCalendars(project: string): Promise<Calendar[]> {
+    return await invoke('get_calendars', { project });
 }
 
 export async function getCalendar(id: string): Promise<Calendar | null> {

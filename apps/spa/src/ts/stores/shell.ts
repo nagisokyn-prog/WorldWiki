@@ -11,7 +11,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed, watch, onMounted, shallowRef, nextTick, triggerRef } from 'vue';
 import { useEditorGroups, settingsService, setLocale, i18n } from '@worldwiki/components';
-import * as api from '../services/api.client';;
+import * as api from '../services/api.client';
 import { useSchemaStore } from './schema';
 import { useConsoleStore } from './console';
 import { useZoomStore } from './zoom';
@@ -518,7 +518,7 @@ export const useShellStore = defineStore('shell', () => {
         continue;
       }
       try {
-        const { apiService } = await import('@/services/api.service');
+
         const { prepareEntityForSave, processForeignRelationships } = await Promise.resolve({ prepareEntityForSave: (t: any, d: any) => d, processForeignRelationships: (a: any, b: any) => [] });
         const { entityApi } = await import('@/services/Entity/entity.api');
         const dataToSave = editor.data as any;

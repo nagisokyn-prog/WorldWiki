@@ -53,7 +53,7 @@ export const batchApi = {
       return await invoke('save_entity_with_relations', { 
         project, 
         entity, 
-        foreignUpdates 
+        foreignUpdates
       });
     } catch (e) {
       console.error('[batchApi] saveEntityWithRelations error:', e);

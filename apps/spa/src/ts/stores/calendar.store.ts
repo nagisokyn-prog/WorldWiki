@@ -78,7 +78,18 @@ export const useCalendarStore = defineStore('calendar', () => {
 
   async function saveCalendar(projectName: string, calendar: CalendarData): Promise<boolean> {
     try {
-      await api.saveCalendar(calendar as any);
+      const calName = (calendar as any).название || (calendar as any).name || 'Календарь';
+      const calId = (calendar as any)._id || (calendar as any).id || null;
+      const { _id, id, is_default, is_master, ...dataPayload } = calendar as any;
+      const payload: any = {
+        name: calName,
+        data: dataPayload,
+        is_default: is_default ?? true,
+        is_master: is_master ?? false,
+        project_id: `projects:${projectName}`,
+      };
+      if (calId) payload.id = calId;
+      await api.saveCalendar(payload);
       invalidateCache(`calendars:${projectName}`);
       console.log("✅ Календарь успешно сохранён в БД");
       return true;

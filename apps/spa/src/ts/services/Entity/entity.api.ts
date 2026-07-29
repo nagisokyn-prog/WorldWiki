@@ -4,7 +4,7 @@
  */
 
 import { invoke, processIds } from '@worldwiki/components';
-import { projectRecordId } from '../api.service';
+import { projectRecordId } from '../api/project.api';
 import type { EntityData, SchemaInfo, ConnectionData } from './entity.types';
 
 export const entityApi = {

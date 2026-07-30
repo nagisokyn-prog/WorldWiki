@@ -94,10 +94,12 @@
 import UniversalDatePicker from '../../UniversalDatePicker/UniversalDatePicker.vue';
 import { useTimelinePanel, type TimelineEvent } from './useTimelinePanel';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   project: string;
-  events: TimelineEvent[];
-}>();
+  events?: TimelineEvent[];
+}>(), {
+  events: () => []
+});
 
 const emit = defineEmits(['update:events', 'change']);
 

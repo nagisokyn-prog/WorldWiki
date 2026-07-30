@@ -20,23 +20,36 @@ export const entityApi = {
   getEntityList: async (project: string, type: string, filters?: Record<string, unknown>): Promise<any[]> => {
     const list = await invoke<any[]>('get_entities', { project, entityType: type, filters: filters || null });
     return list.map(processIds).map((item: any) => {
-      if (item && item.data && typeof item.data === 'object') {
-        return { ...item.data, id: item.id };
+      if (!item) return item;
+      const result = { ...item };
+      if (item.attributes && typeof item.attributes === 'object') {
+        Object.assign(result, item.attributes);
       }
-      return item;
+      if (item.data && typeof item.data === 'object') {
+        Object.assign(result, item.data);
+      }
+      delete result.attributes;
+      delete result.data;
+      return result;
     });
   },
 
   getEntity: async (project: string, type: string, id: string): Promise<Record<string, unknown>> => {
     const detail: any = await invoke<any>('get_entity', { id });
     const processed: any = processIds(detail);
-    if (processed && processed.attributes && typeof processed.attributes === 'object') {
-      return { ...processed.attributes, id: processed.id };
+    if (!processed) return processed;
+    
+    const result = { ...processed };
+    if (processed.attributes && typeof processed.attributes === 'object') {
+      Object.assign(result, processed.attributes);
     }
-    if (processed && processed.data && typeof processed.data === 'object') {
-      return { ...processed.data, id: processed.id };
+    if (processed.data && typeof processed.data === 'object') {
+      Object.assign(result, processed.data);
     }
-    return processed;
+    delete result.attributes;
+    delete result.data;
+    
+    return result;
   },
 
   formatEntityPayload: (project: string, type: string, data: Record<string, unknown>, id?: string, name?: string): Record<string, unknown> => {

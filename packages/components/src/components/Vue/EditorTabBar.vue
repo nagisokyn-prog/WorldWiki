@@ -1,7 +1,7 @@
 <template>
   <div
     class="editor-tab-bar"
-    :class="{ 'is-active-group': isActiveGroup }"
+    :class="{ 'is-active-group': isActiveGroup && tabs.length > 0 }"
     @dragover.prevent="onBarDragOver"
     @drop.prevent="onBarDrop"
   >

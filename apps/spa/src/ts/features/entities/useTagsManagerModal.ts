@@ -22,10 +22,12 @@ export function useTagsManagerModal(props: any) {
     const addTag = async () => {
         if (!newTagName.value.trim()) return;
         try {
-            await api.saveEntity(props.project, {
+            await api.saveTag({
+                project_id: props.project,
                 name: newTagName.value.trim(),
-                color: newTagColor.value
-            } as any);
+                color: newTagColor.value,
+                id: null
+            });
             newTagName.value = '';
             await loadTags();
         } catch (e) {
@@ -35,7 +37,8 @@ export function useTagsManagerModal(props: any) {
 
     const updateTag = async (tag: any) => {
         try {
-            await api.saveEntity(props.project, tag as any);
+            if (!tag.project_id) tag.project_id = props.project;
+            await api.saveTag(tag);
         } catch (e) {
             console.error('[TagsManager] Update error:', e);
         }

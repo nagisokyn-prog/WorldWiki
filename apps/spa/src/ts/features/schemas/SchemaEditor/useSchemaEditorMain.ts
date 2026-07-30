@@ -1,4 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import * as api from '../../../services/api.client';;
 import { useSchemaData } from './hooks/useSchemaData';
 import { useSchemaHistory } from './hooks/useSchemaHistory';
@@ -6,7 +6,7 @@ import { useSchemaDnD } from './hooks/useSchemaDnD';
 import { useSchemaTemplates } from './hooks/useSchemaTemplates';
 
 export function useSchemaEditorMain(props: any, emit: any) {
-    const localEntityType = ref(props.entityType);
+    const localEntityType = ref(props.schemaType || props.entityType);
     const catalogWidth = ref(250);
     const scrollContainer = ref<HTMLElement | null>(null);
     const showCatalog = ref(true);
@@ -15,6 +15,10 @@ export function useSchemaEditorMain(props: any, emit: any) {
     const historyHook = useSchemaHistory(props, dataHook.schema, dataHook.loadSchema);
     const dndHook = useSchemaDnD(dataHook.activeSection, dataHook.activeSectionIdx);
     const templatesHook = useSchemaTemplates();
+
+    watch([dataHook.schema, localEntityType], () => {
+        emit('modified');
+    }, { deep: true });
 
     const startResize = (e: MouseEvent) => {
         const startX = e.clientX;
@@ -88,13 +92,22 @@ export function useSchemaEditorMain(props: any, emit: any) {
         }
     };
 
+    const handleGlobalSchemaSave = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (customEvent.detail?.entityType === props.schemaType || customEvent.detail?.entityType === props.entityType) {
+            saveSchema();
+        }
+    };
+
     onMounted(() => {
         dataHook.loadSchema();
         document.addEventListener('keydown', handleGlobalKeydown);
+        document.addEventListener('ww:trigger-schema-save', handleGlobalSchemaSave);
     });
 
     onUnmounted(() => {
         document.removeEventListener('keydown', handleGlobalKeydown);
+        document.removeEventListener('ww:trigger-schema-save', handleGlobalSchemaSave);
     });
 
     return {

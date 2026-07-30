@@ -36,10 +36,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
 import { FloatingWindow } from '@worldwiki/components';
 import EntityEditorVue from './EntityEditor/EntityEditor.vue';
-import * as api from '../../services/api.client';;
+import * as api from '../../services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
 
 const props = defineProps<{
   project: string;
@@ -96,10 +98,11 @@ const loadData = async () => {
   try {
     // Fetch template
     const schemas = await api.getEntitySchemas(props.project);
-    config.value = schemas ? schemas.find((s: any) => s.type_key === props.entityType) : null;
+    const foundSchema = schemas ? schemas.find((s: any) => s.type_key === props.entityType) : null;
+    config.value = foundSchema ? foundSchema.full_schema : null;
     
     // Fetch entity data
-    entityData.value = await api.getEntity(props.entityId);
+    entityData.value = await entityApi.getEntity(props.project, props.entityType, props.entityId);
   } catch (e) {
     console.error('[FloatingEntityEditor] Load error:', e);
   } finally {

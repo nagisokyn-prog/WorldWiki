@@ -95,14 +95,27 @@ export function useEntityEditor(props: any, emit: any) {
         config.value = JSON.parse(sandboxConfig);
       } else {
         const schemas = await api.getEntitySchemas(props.project);
-        if (schemas[props.entityType] && schemas[props.entityType].full_schema) {
-          config.value = schemas[props.entityType].full_schema;
+        const foundSchema = schemas.find((s: any) => s.type_key === props.entityType);
+        if (foundSchema && foundSchema.full_schema) {
+          config.value = JSON.parse(JSON.stringify(foundSchema.full_schema));
         } else {
-          const res = await fetch(`/struct/editor/${props.entityType}.json`);
-          if (res.ok) {
-            config.value = await res.json();
+          try {
+            // Only fetch for known static schemas to prevent 404s for custom types
+            const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
+            if (staticTypes.includes(props.entityType)) {
+              const res = await fetch(`/struct/editor/${props.entityType}.json`);
+              if (res.ok) {
+                config.value = await res.json();
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to load static schema', e);
           }
         }
+      }
+      
+      if (!config.value) {
+        config.value = { templates: {}, sections: [] };
       }
 
       try {
@@ -112,7 +125,7 @@ export function useEntityEditor(props: any, emit: any) {
           if (!config.value.templates) {
             config.value.templates = {};
           }
-          if (uiData.templates) {
+          if (uiData && uiData.templates) {
             Object.assign(config.value.templates, uiData.templates);
           }
         }

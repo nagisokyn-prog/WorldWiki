@@ -5,14 +5,14 @@
       <div style="display: flex; align-items: center; gap: 30px;">
         <div style="font-weight: 900; color: var(--accent); font-size: 14px; display: flex; align-items: center; gap: 8px;">
           ⚙️ СХЕМА:
-          <input v-model="localEntityType" class="input-base" style="background: transparent; border: none; font-weight: 900; color: var(--accent); font-size: 14px; text-transform: uppercase; padding: 0;" placeholder="ИМЯ СХЕМЫ" />
+          <input :value="hook.localEntityType.value" @input="setLocalEntityType(($event.target as HTMLInputElement).value)" class="input-base" style="background: transparent; border: none; font-weight: 900; color: var(--accent); font-size: 14px; text-transform: uppercase; padding: 0;" placeholder="ИМЯ СХЕМЫ" />
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
         <button v-if="isHistoryPreviewMode" class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px; color: #f5a623; border-color: rgba(245,166,35,0.3);" @click="exitPreviewMode">Вернуться к текущей</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px; color: #f55; border-color: rgba(255,85,85,0.3);" @click="loadSchema(true)">Сбросить изменения</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="openPreview">ПРЕДПРОСМОТР</button>
-        <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="showJsonPreview = true">Схема</button>
+        <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="setShowJsonPreview(true)">Схема</button>
         <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 4px 12px;" @click="exportSchema">Экспорт</button>
         <button class="btn-new" style="font-size: 10px; padding: 4px 12px; background: var(--accent);" @click="saveSchema">Сохранить</button>
         <button class="btn-new btn-outline-new" style="font-size: 14px; padding: 4px 8px; border-color: var(--border-color); color: var(--text-muted);" title="История изменений" @click="toggleHistoryPanel">
@@ -23,13 +23,13 @@
 
     <div style="flex: 1; display: flex; overflow: hidden; background: var(--bg-base);">
       <!-- ПРЕДПРОСМОТР -->
-      <div v-if="isPreviewMode" style="flex: 1; display: flex; flex-direction: column;">
+      <div v-if="hook.isPreviewMode.value" style="flex: 1; display: flex; flex-direction: column;">
         <div style="padding: 12px; background: rgba(245,166,35,0.1); border-bottom: 1px solid rgba(245,166,35,0.3); display: flex; justify-content: space-between; align-items: center;">
            <span style="color: #f5a623; font-weight: bold; font-size: 11px;">👁️ РЕЖИМ ПРЕДПРОСМОТРА</span>
-           <button class="btn-new" style="background: #f5a623; color: #000; padding: 4px 12px; font-size: 10px;" @click="isPreviewMode = false">ВЕРНУТЬСЯ В РЕДАКТОР</button>
+           <button class="btn-new" style="background: #f5a623; color: #000; padding: 4px 12px; font-size: 10px;" @click="setIsPreviewMode(false)">ВЕРНУТЬСЯ В РЕДАКТОР</button>
         </div>
         <div style="flex: 1; position: relative;">
-          <EntityEditorVue :key="previewKey" entity-id="preview" entity-type="sandbox_preview" project="sandbox" :initial-data="{}" />
+          <EntityEditorVue :key="previewKey" entity-id="preview" entity-type="sandbox_preview" project="sandbox" :initial-data="{}" :config="schema" />
         </div>
       </div>
 
@@ -149,11 +149,11 @@ v-for="h in schemaHistory" :key="h.id"
       </aside>
     </div>
     <!-- JSON ПРЕВЬЮ -->
-    <div v-if="showJsonPreview" class="glass-modal-overlay visible" @click="showJsonPreview = false">
+    <div v-if="hook.showJsonPreview.value" class="glass-modal-overlay visible" @click="setShowJsonPreview(false)">
       <div class="glass-modal glass-panel" style="width: 1100px; height: 85vh; display: flex; flex-direction: column;" @click.stop>
          <div class="glass-title" style="display: flex; justify-content: space-between; align-items: center; padding-right: 20px;">
             <span>SCHEMA (JSON)</span>
-            <button class="btn-new" style="font-size: 10px; padding: 4px 12px;" @click="showJsonPreview = false">ЗАКРЫТЬ</button>
+            <button class="btn-new" style="font-size: 10px; padding: 4px 12px;" @click="setShowJsonPreview(false)">ЗАКРЫТЬ</button>
          </div>
          <div style="flex: 1; padding: 24px; overflow: hidden;">
             <textarea :value="jsonPreviewContent" readonly class="input-base" style="width: 100%; height: 100%; background: #000; color: #0f0; font-family: monospace; font-size: 12px; padding: 20px; border: 1px solid var(--border-color); resize: none;"></textarea>
@@ -179,10 +179,11 @@ const props = withDefaults(defineProps<{
   initialSection: ''
 });
 
-const emit = defineEmits(['scroll-change', 'section-change']);
+const emit = defineEmits(['scroll-change', 'section-change', 'modified']);
+
+const hook = useSchemaEditorMain(props, emit);
 
 const {
-  localEntityType,
   catalogWidth,
   schema,
   scrollContainer,
@@ -195,7 +196,6 @@ const {
   activeSection,
   draggedOverIdx,
   isPreviewMode,
-  showJsonPreview,
   previewKey,
   jsonPreviewContent,
   atomicBricks,
@@ -222,7 +222,19 @@ const {
   handleDropNew,
   handleItemDrop,
   handleDropIntoModule
-} = useSchemaEditorMain(props, emit);
+} = hook;
+
+const setLocalEntityType = (val: string) => {
+  hook.localEntityType.value = val;
+};
+
+const setShowJsonPreview = (val: boolean) => {
+  hook.showJsonPreview.value = val;
+};
+
+const setIsPreviewMode = (val: boolean) => {
+  hook.isPreviewMode.value = val;
+};
 
 const isAtomicField = (item: any) => {
   return atomicBricks.some(b => b.val === item.type) || item.type === 'tags' || item.type === 'range';

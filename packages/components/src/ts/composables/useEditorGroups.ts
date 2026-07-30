@@ -281,18 +281,27 @@ export function useEditorGroups() {
 
   const restoreState = (serialized: ReturnType<typeof serializeState>, loadedTabs: Map<string, EditorTab>) => {
     if (!serialized?.length) return;
-    const restored = serialized.map(s => ({
-      id: s.id,
-      flexBasis: s.flexBasis,
-      activeTabId: s.activeTabId,
-      tabs: s.tabs.map(t => {
+    const restored = serialized.map(s => {
+      const validTabs = s.tabs.map(t => {
         const loaded = loadedTabs.get(t.id);
         if (loaded) {
           return { ...loaded, scrollPos: t.scrollPos, activeSection: t.activeSection };
         }
         return null;
-      }).filter(Boolean) as EditorTab[]
-    }));
+      }).filter(Boolean) as EditorTab[];
+      
+      let validActiveTabId = s.activeTabId;
+      if (validActiveTabId && !validTabs.some(t => t.id === validActiveTabId)) {
+        validActiveTabId = validTabs.length > 0 ? validTabs[0].id : null;
+      }
+
+      return {
+        id: s.id,
+        flexBasis: s.flexBasis,
+        activeTabId: validActiveTabId,
+        tabs: validTabs
+      };
+    });
     state.groups.splice(0, state.groups.length, ...restored);
     activeGroupId.value = state.groups[0]?.id ?? '';
   };

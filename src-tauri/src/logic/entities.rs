@@ -112,7 +112,18 @@ pub async fn get_entity(
     let actual_id = if parts.len() == 2 { parts[1] } else { &id };
     let res: Option<Value> = db.select(("entities", actual_id))
         .await.map_err(|e| e.to_string())?;
-    Ok(res.and_then(|v| serde_json::from_value(v).ok()))
+        
+    if let Some(mut val) = res {
+        flatten_thing(&mut val);
+        match serde_json::from_value(val.clone()) {
+            Ok(e) => return Ok(Some(e)),
+            Err(e) => {
+                println!("[DEBUG get_entity] error: {}", e);
+                return Ok(None);
+            }
+        }
+    }
+    Ok(None)
 }
 
 #[tauri::command]
@@ -219,7 +230,10 @@ pub async fn save_entity(
     };
 
     match result {
-        Some(v) => serde_json::from_value(v).map_err(|e| e.to_string()),
+        Some(mut v) => {
+            flatten_thing(&mut v);
+            serde_json::from_value(v).map_err(|e| e.to_string())
+        },
         None => Err("Entity not saved".to_string()),
     }
 }
@@ -365,12 +379,13 @@ pub async fn save_entity_schema(
 
     let result: Option<Value> = if !actual_id_str.is_empty() {
         let actual_id = actual_id_str.as_str();
+        let safe_actual_id = format!("entity_schemas:`{}`", actual_id);
         
         // --- BACKUP OLD SCHEMA ---
         let old_res: Option<Value> = db.select(("entity_schemas", actual_id)).await.map_err(|e| e.to_string())?;
         if let Some(old_schema_val) = old_res {
             let mut snap = serde_json::Map::new();
-            snap.insert("schema_id".into(), Value::String(format!("entity_schemas:{}", actual_id)));
+            snap.insert("schema_id".into(), Value::String(safe_actual_id.clone()));
             snap.insert("type_key".into(), Value::String(schema.type_key.clone()));
             snap.insert("project_id".into(), Value::String(proj_id.clone()));
             snap.insert("snapshot".into(), old_schema_val);
@@ -384,7 +399,7 @@ pub async fn save_entity_schema(
                 CREATE schema_history CONTENT $snap;
                 
                 LET $target = type::record($id);
-                LET $unpinned = (SELECT id FROM schema_history WHERE schema_id = $target AND is_pinned = false ORDER BY saved_at DESC);
+                LET $unpinned = (SELECT id, saved_at FROM schema_history WHERE schema_id = $target AND is_pinned = false ORDER BY saved_at DESC);
                 IF (array::len($unpinned) > $max_limit) {
                     LET $to_delete = array::slice($unpinned, $max_limit, array::len($unpinned));
                     DELETE $to_delete;
@@ -395,7 +410,7 @@ pub async fn save_entity_schema(
 
             let mut tx_res = db.query(query_str)
                 .bind(("snap", Value::Object(snap)))
-                .bind(("id", actual_id))
+                .bind(("id", safe_actual_id.clone()))
                 .bind(("max_limit", max_limit))
                 .await.map_err(|e| e.to_string())?;
                 
@@ -408,44 +423,58 @@ pub async fn save_entity_schema(
 
         let pid_val = safe_pid(&project);
         let pid_raw = pid_val.replace("projects:", "");
-        let pid_literal = format!("projects:`{}`", pid_raw);
+        let safe_pid = format!("projects:`{}`", pid_raw);
         let query = format!("
             UPSERT type::record($id) SET 
-                project_id = {},
+                project_id = type::record($pid),
                 type_key = $data.type_key,
                 type_name = $data.type_name,
                 icon = $data.icon,
                 color = $data.color,
                 fields_schema = $data.fields_schema,
                 full_schema = $data.full_schema
-        ", pid_literal);
+        ");
         let mut res = db.query(query)
-            .bind(("id", actual_id))
+            .bind(("id", safe_actual_id.clone()))
+            .bind(("pid", safe_pid.clone()))
             .bind(("data", val.clone()))
-            .await.map_err(|e| e.to_string())?;
+            .await.map_err(|e| format!("UPSERT schema error: {}", e))?;
         res.take(0).map_err(|e| e.to_string())?
     } else {
         let pid_val = safe_pid(&project);
         let pid_raw = pid_val.replace("projects:", "");
-        let pid_literal = format!("projects:`{}`", pid_raw);
+        let safe_pid = format!("projects:`{}`", pid_raw);
+        // Explicitly generate an ID instead of letting SurrealDB auto-generate it.
+        // This avoids any weird bugs with CREATE.
+        let new_id = format!("entity_schemas:`{}_{}`", pid_raw, schema.type_key);
         let query = format!("
-            CREATE entity_schemas SET 
-                project_id = {},
+            CREATE type::record($id) SET 
+                project_id = type::record($pid),
                 type_key = $data.type_key,
                 type_name = $data.type_name,
                 icon = $data.icon,
                 color = $data.color,
                 fields_schema = $data.fields_schema,
                 full_schema = $data.full_schema
-        ", pid_literal);
+        ");
         let mut res = db.query(query)
+            .bind(("id", new_id))
+            .bind(("pid", safe_pid))
             .bind(("data", val.clone()))
-            .await.map_err(|e| e.to_string())?;
+            .await.map_err(|e| format!("CREATE schema error: {}", e))?;
         res.take(0).map_err(|e| e.to_string())?
     };
 
     match result {
-        Some(v) => serde_json::from_value(v).map_err(|e| e.to_string()),
+        Some(val) => {
+            let mut v = if let Value::Array(arr) = val {
+                arr.into_iter().next().unwrap_or(Value::Null)
+            } else {
+                val
+            };
+            flatten_thing(&mut v);
+            serde_json::from_value(v).map_err(|e| e.to_string())
+        },
         None => Err("EntitySchema not saved".to_string()),
     }
 }

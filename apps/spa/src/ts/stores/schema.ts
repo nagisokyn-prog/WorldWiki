@@ -20,9 +20,24 @@ export const useSchemaStore = defineStore('schema', () => {
   const loadSchema = async (entityType: string): Promise<any> => {
     if (schemaCache.value[entityType]) return schemaCache.value[entityType];
     try {
-      const res = await fetch(`/struct/editor/${entityType}.json`);
-      if (res.ok) schemaCache.value[entityType] = await res.json();
-    } catch {}
+      const { useShellStore } = await import('@/stores/shell');
+      const project = useShellStore().projectName;
+      const api = await import('@/services/api.client');
+      const schemas = await api.getEntitySchemas(project);
+      const foundSchema = schemas.find((s: any) => s.type_key === entityType);
+      
+      if (foundSchema && foundSchema.full_schema) {
+        schemaCache.value[entityType] = foundSchema.full_schema;
+      } else {
+        const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
+        if (staticTypes.includes(entityType)) {
+          const res = await fetch(`/struct/editor/${entityType}.json`);
+          if (res.ok) schemaCache.value[entityType] = await res.json();
+        }
+      }
+    } catch (e) {
+      console.warn('[schema store] failed to load schema for', entityType, e);
+    }
     return schemaCache.value[entityType] || null;
   };
 

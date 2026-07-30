@@ -24,7 +24,7 @@ import { useParticipantsPanel } from './useParticipantsPanel';
 
 const props = defineProps({
   project: { type: String, required: true },
-  participants: { type: Array, required: true }
+  participants: { type: Array, default: () => [] }
 });
 
 const emit = defineEmits(['update:participants', 'change']);

@@ -24,7 +24,7 @@ export const useTagsStore = defineStore('tags', () => {
       if (cached) {
         globalTags.value = cached;
       } else {
-        globalTags.value = (await api.getEntities(project.value, 'tag') as any) || [];
+        globalTags.value = (await api.getTags(project.value) as any) || [];
         setCache(cacheKey, globalTags.value);
       }
     } catch (e) {
@@ -45,7 +45,7 @@ export const useTagsStore = defineStore('tags', () => {
 
     isCreatingTag.value = true;
     try {
-      await api.saveEntity(project.value, { name, color: '#3498db' } as any);
+      await api.saveTag({ project_id: project.value, name, color: '#3498db', id: null });
       globalTags.value.push({ name, color: '#3498db' });
       invalidateCache(`tags:${project.value}`);
     } finally {
@@ -55,22 +55,28 @@ export const useTagsStore = defineStore('tags', () => {
 
   async function deleteTag(name: string) {
     if (!project.value) return;
-    await api.deleteEntity(name);
+    const tag = globalTags.value.find(t => t.name === name);
+    if (tag && tag.id) {
+        await api.deleteTag(tag.id);
+    }
     globalTags.value = globalTags.value.filter(t => t.name !== name);
     invalidateCache(`tags:${project.value}`);
   }
 
   async function saveTag(oldName: string, newName: string, color: string) {
     if (!project.value) return;
-    if (oldName !== newName) {
-      await api.deleteEntity(oldName);
-    }
-    await api.saveEntity(project.value, { name: newName, color } as any);
+    const existingTag = globalTags.value.find(t => t.name === oldName);
     
-    const tag = globalTags.value.find(t => t.name === oldName);
-    if (tag) {
-      tag.name = newName;
-      tag.color = color;
+    await api.saveTag({
+        id: existingTag?.id || null,
+        project_id: project.value,
+        name: newName,
+        color
+    });
+    
+    if (existingTag) {
+      existingTag.name = newName;
+      existingTag.color = color;
     } else {
       globalTags.value.push({ name: newName, color });
     }

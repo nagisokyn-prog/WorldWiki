@@ -233,6 +233,7 @@
                     :initial-section="tab.activeSection"
                     @scroll-change="handleScrollChange(groupId, tab.id, $event)"
                     @section-change="handleSectionChange(groupId, tab.id, $event)"
+                    @modified="markUnsaved(tab.id)"
                     @close="closeEditor(tab.id)"
                   ></schema-editor-main-vue>
                 </div>

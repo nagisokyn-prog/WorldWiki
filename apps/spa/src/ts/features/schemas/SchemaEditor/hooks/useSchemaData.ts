@@ -11,7 +11,11 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
     const previewKey = ref(0);
     
     const jsonPreviewContent = computed(() => {
-        return JSON.stringify(schema.value, null, 2);
+        const previewSchema = JSON.parse(JSON.stringify(schema.value));
+        previewSchema.type_key = localEntityType.value;
+        previewSchema.entityType = localEntityType.value;
+        previewSchema.name = previewSchema.name || localEntityType.value;
+        return JSON.stringify(previewSchema, null, 2);
     });
 
     const openPreview = () => {
@@ -24,7 +28,7 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(jsonPreviewContent.value);
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `${props.entityType || 'schema'}.json`);
+        downloadAnchorNode.setAttribute("download", `${localEntityType.value || 'schema'}.json`);
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
@@ -33,8 +37,9 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
     const loadSchema = async (forceRefetch = false) => {
         try {
             const schemas = await api.getEntitySchemas(props.project);
-            if (schemas[props.entityType] && schemas[props.entityType].full_schema) {
-                schema.value = JSON.parse(JSON.stringify(schemas[props.entityType].full_schema));
+            const foundSchema = schemas.find((s: any) => s.type_key === props.entityType);
+            if (foundSchema && foundSchema.full_schema) {
+                schema.value = JSON.parse(JSON.stringify(foundSchema.full_schema));
             } else {
                 try {
                     const res = await fetch(`/struct/editor/${props.entityType}.json`);

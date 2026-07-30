@@ -1,5 +1,6 @@
 import { ref, computed, watch } from 'vue';
-import * as api from '../api.client';; // Adjust path if needed
+import * as api from '../api.client';
+import { entityApi } from './entity.api';
 import { settingsService } from '@worldwiki/components';
 
 export function useRelationshipBlock(props: any, emit: any) {
@@ -117,7 +118,7 @@ export function useRelationshipBlock(props: any, emit: any) {
     foreignModified.value = false;
 
     try {
-      const targetData = await api.getEntity(String(targetId));
+      const targetData = await entityApi.getEntity(props.project, targetEntityType, String(targetId));
       if (!targetData) {
         throw new Error(`Entity ${targetId} not found or returned null`);
       }

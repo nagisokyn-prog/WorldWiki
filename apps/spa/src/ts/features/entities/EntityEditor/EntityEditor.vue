@@ -49,23 +49,23 @@
                           <label class="form-label" :for="field.id">
                             {{ field.label }} 
                             <span v-if="field.required" style="color:var(--accent)">*</span>
-                            <span v-if="isFieldChanged(field.path || field.id)" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
+                            <span v-if="isFieldChanged(field.path || field.id || field.class)" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
                           </label>
                           
                           <textarea
  v-if="field.type === 'textarea'" 
-                                    :value="getProp(field.path || field.id)"
+                                    :value="getProp(field.path || field.id || field.class)"
                                     class="input-base interactive-el"
                                     :rows="field.rows || 3" 
                                     :placeholder="field.placeholder" 
-                                    @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }"></textarea>
+                                    @input="e => { setProp(field.path || field.id || field.class, (e.target as any).value); markModified(); }"></textarea>
 
                           <!-- Photo upload field -->
-                          <div v-else-if="field.type === 'photo'" class="photo-upload-zone" @click="triggerPhotoUpload(field.path || field.id)" @dragover.prevent @drop.prevent="e => handlePhotoDrop(e, field.path || field.id)">
-                            <input :ref="el => photoInputs[field.path || field.id] = el" type="file" accept="image/*" style="display:none" @change="e => handlePhotoFile(e, field.path || field.id)" />
-                            <div v-if="getProp(field.path || field.id)" class="photo-preview">
-                              <img :src="getPhotoUrl(getProp(field.path || field.id))" alt="Фото" />
-                              <button class="photo-remove-btn" title="Удалить фото" @click.stop="removePhoto(field.path || field.id)">✕</button>
+                          <div v-else-if="field.type === 'photo'" class="photo-upload-zone" @click="triggerPhotoUpload(field.path || field.id || field.class)" @dragover.prevent @drop.prevent="e => handlePhotoDrop(e, field.path || field.id || field.class)">
+                            <input :ref="el => photoInputs[field.path || field.id || field.class] = el" type="file" accept="image/*" style="display:none" @change="e => handlePhotoFile(e, field.path || field.id || field.class)" />
+                            <div v-if="getProp(field.path || field.id || field.class)" class="photo-preview">
+                              <img :src="getPhotoUrl(getProp(field.path || field.id || field.class))" alt="Фото" />
+                              <button class="photo-remove-btn" title="Удалить фото" @click.stop="removePhoto(field.path || field.id || field.class)">✕</button>
                             </div>
                             <div v-else class="photo-placeholder">
                               <div class="photo-icon">🖼️</div>
@@ -76,23 +76,23 @@
                           <XboxWheel
  v-else-if="field.type === 'select'"
                                     :horizontal="wheelHorizontal"
-                                    :model-value="getProp(field.path || field.id)"
+                                    :model-value="getProp(field.path || field.id || field.class)"
                                     :options="getOptionsFor(field)"
-                                    @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
+                                    @update:model-value="(val: any) => { setProp(field.path || field.id || field.class, val); markModified(); }" />
 
                           <div v-else-if="field.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
                             <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
                               <input
  type="checkbox" 
                                     :value="opt.value" 
-                                    :checked="(getProp(field.path || field.id) || []).includes(opt.value)"
+                                    :checked="(getProp(field.path || field.id || field.class) || []).includes(opt.value)"
                                     style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
                                     @change="e => { 
-                                      let arr = getProp(field.path || field.id) || []; 
+                                      let arr = getProp(field.path || field.id || field.class) || []; 
                                       if (!Array.isArray(arr)) arr = [];
                                       if ((e.target as any).checked && !arr.includes(opt.value)) arr.push(opt.value);
                                       else if (!(e.target as any).checked) arr = arr.filter((v: any) => v !== opt.value);
-                                      setProp(field.path || field.id, arr);
+                                      setProp(field.path || field.id || field.class, arr);
                                       markModified();
                                     }"> 
                               <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
@@ -102,25 +102,25 @@
                           <UniversalDatePicker
                                      v-else-if="field.type === 'calendar_date' || field.type === 'calendar_date_base' || field.type === 'calendar_datetime'"
                                      :show-time="field.type === 'calendar_datetime'"
-                                     :model-value="getProp(field.path || field.id)"
+                                     :model-value="getProp(field.path || field.id || field.class)"
                                      :project="project"
-                                     @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }" />
+                                     @update:model-value="(val: any) => { setProp(field.path || field.id || field.class, val); markModified(); }" />
                           
                           <TagsField
  v-else-if="field.type === 'tags'"
-                                    :model-value="getProp(field.path || field.id)"
+                                    :model-value="getProp(field.path || field.id || field.class)"
                                     :project="project"
                                     :placeholder="field.placeholder"
-                                    @update:model-value="(val: any) => { setProp(field.path || field.id, val); markModified(); }"
+                                    @update:model-value="(val: any) => { setProp(field.path || field.id || field.class, val); markModified(); }"
                                     @modified="markModified" />
 
                           <input
  v-else 
                                 :type="field.type || 'text'" 
-                                :value="getProp(field.path || field.id)"
+                                :value="getProp(field.path || field.id || field.class)"
                                 class="input-base interactive-el"
                                 :placeholder="field.placeholder"
-                                @input="e => { setProp(field.path || field.id, (e.target as any).value); markModified(); }">
+                                @input="e => { setProp(field.path || field.id || field.class, (e.target as any).value); markModified(); }">
                                 
                           <div v-if="field.hint" class="form-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;">{{ field.hint }}</div>
                         </div>

@@ -27,7 +27,18 @@ export const useSchemaStore = defineStore('schema', () => {
       const foundSchema = schemas.find((s: any) => s.type_key === entityType);
       
       if (foundSchema && foundSchema.full_schema) {
-        schemaCache.value[entityType] = foundSchema.full_schema;
+        const parsed = foundSchema.full_schema;
+        if (parsed?.sections) {
+          parsed.sections.forEach((sec: any) => {
+            if (sec.dynamicContainers) {
+              sec.dynamicContainers.forEach((dc: any, idx: number) => {
+                if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
+                if (!dc.dataPath) dc.dataPath = dc.id;
+              });
+            }
+          });
+        }
+        schemaCache.value[entityType] = parsed;
       } else {
         const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
         if (staticTypes.includes(entityType)) {

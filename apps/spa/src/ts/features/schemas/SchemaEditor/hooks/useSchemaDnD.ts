@@ -39,7 +39,10 @@ export function useSchemaDnD(activeSection: any, activeSectionIdx: any) {
                 placeholder: '...'
             });
         } else if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'module') {
+            const modId = `module_${Date.now()}`;
             activeSection.value.items.push({
+                id: modId,
+                dataPath: modId,
                 type: draggedItemInfo.template?.includes('timeline') ? 'timeline' : 'dynamic',
                 template: draggedItemInfo.val,
                 title: 'НОВЫЙ МОДУЛЬ',
@@ -70,7 +73,10 @@ export function useSchemaDnD(activeSection: any, activeSectionIdx: any) {
                     placeholder: '...'
                 });
             } else if (draggedItemInfo.kind === 'module') {
+                const modId = `module_${Date.now()}`;
                 activeSection.value.items.splice(targetIdx, 0, {
+                    id: modId,
+                    dataPath: modId,
                     type: draggedItemInfo.template?.includes('timeline') ? 'timeline' : 'dynamic',
                     template: draggedItemInfo.val,
                     title: 'НОВЫЙ МОДУЛЬ',

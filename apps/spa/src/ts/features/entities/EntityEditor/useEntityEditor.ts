@@ -90,14 +90,28 @@ export function useEntityEditor(props: any, emit: any) {
     loading.value = true;
     isInitializing.value = true;
     try {
+      const patchConfig = (cfg: any) => {
+        if (cfg?.sections) {
+          cfg.sections.forEach((sec: any) => {
+            if (sec.dynamicContainers) {
+              sec.dynamicContainers.forEach((dc: any, idx: number) => {
+                if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
+                if (!dc.dataPath) dc.dataPath = dc.id;
+              });
+            }
+          });
+        }
+        return cfg;
+      };
+
       const sandboxConfig = sessionStorage.getItem('sandbox_preview_config');
       if (props.entityId === 'preview' && sandboxConfig) {
-        config.value = JSON.parse(sandboxConfig);
+        config.value = patchConfig(JSON.parse(sandboxConfig));
       } else {
         const schemas = await api.getEntitySchemas(props.project);
         const foundSchema = schemas.find((s: any) => s.type_key === props.entityType);
         if (foundSchema && foundSchema.full_schema) {
-          config.value = JSON.parse(JSON.stringify(foundSchema.full_schema));
+          config.value = patchConfig(JSON.parse(JSON.stringify(foundSchema.full_schema)));
         } else {
           try {
             // Only fetch for known static schemas to prevent 404s for custom types
@@ -105,7 +119,7 @@ export function useEntityEditor(props: any, emit: any) {
             if (staticTypes.includes(props.entityType)) {
               const res = await fetch(`/struct/editor/${props.entityType}.json`);
               if (res.ok) {
-                config.value = await res.json();
+                config.value = patchConfig(await res.json());
               }
             }
           } catch (e) {
@@ -289,6 +303,10 @@ export function useEntityEditor(props: any, emit: any) {
   };
 
   const addDynamicItem = (path: string, templateNameOrObj: any) => {
+    if (!path) {
+        console.warn('addDynamicItem: path is undefined, container lacks dataPath and id in schema');
+        return;
+    }
     const arr = helpers.getProp(formData.value, path) || [];
     const tpl = typeof templateNameOrObj === 'string' ? config.value?.templates?.[templateNameOrObj] : templateNameOrObj;
     if (!tpl) return;

@@ -48,6 +48,8 @@ export function useSchemaEditorMain(props: any, emit: any) {
     const saveSchema = async () => {
         try {
             const schemaCopy = JSON.parse(JSON.stringify(dataHook.schema.value));
+            schemaCopy.name = localEntityType.value;
+            schemaCopy.entityType = localEntityType.value;
             schemaCopy.sections.forEach((sec: any) => {
                 sec.fields = [];
                 sec.dynamicContainers = [];

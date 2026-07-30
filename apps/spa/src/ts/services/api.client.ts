@@ -304,7 +304,7 @@ export async function deleteArc(id: string): Promise<void> {
 }
 
 export async function getPlans(projectId: string): Promise<Plan[]> {
-    return await invoke('get_plans', { 'project_id': projectId });
+    return await invoke('get_plans', { 'project': projectId });
 }
 
 export async function getPlan(id: string): Promise<Plan | null> {

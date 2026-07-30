@@ -14,7 +14,7 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
         const previewSchema = JSON.parse(JSON.stringify(schema.value));
         previewSchema.type_key = localEntityType.value;
         previewSchema.entityType = localEntityType.value;
-        previewSchema.name = previewSchema.name || localEntityType.value;
+        previewSchema.name = localEntityType.value;
         return JSON.stringify(previewSchema, null, 2);
     });
 
@@ -67,19 +67,16 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
                 }
             }
 
-            if (schema.value.sections) {
+            // Заполняем items и восстанавливаем id/dataPath для dynamicContainers
+            if (schema.value && schema.value.sections) {
                 schema.value.sections.forEach((sec: any) => {
-                    if (!sec.items) {
-                        sec.items = [];
-                        if (sec.fields) {
-                            sec.items.push(...sec.fields);
-                            delete sec.fields;
-                        }
-                        if (sec.dynamicContainers) {
-                            sec.items.push(...sec.dynamicContainers);
-                            delete sec.dynamicContainers;
-                        }
+                    if (sec.dynamicContainers) {
+                        sec.dynamicContainers.forEach((dc: any, idx: number) => {
+                            if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
+                            if (!dc.dataPath) dc.dataPath = dc.id;
+                        });
                     }
+                    sec.items = [...(sec.fields || []), ...(sec.dynamicContainers || [])];
                 });
             }
 

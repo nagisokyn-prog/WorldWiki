@@ -237,7 +237,7 @@ const setIsPreviewMode = (val: boolean) => {
 };
 
 const isAtomicField = (item: any) => {
-  return atomicBricks.some(b => b.val === item.type) || item.type === 'tags' || item.type === 'range';
+  return atomicBricks.some((b: any) => b.val === item.type) || item.type === 'tags' || item.type === 'range';
 };
 </script>
 

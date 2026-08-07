@@ -10,7 +10,8 @@ import '@worldwiki/resources/styles/font-awesome.min.css';
 import '@worldwiki/resources/styles/glass-theme.css';
 import '@worldwiki/resources/styles/new-ui-theme.css';
 
-import { settingsService } from '@worldwiki/components';
+import { settingsService, i18n } from '@worldwiki/components';
+import type { Plugin } from 'vue';
 import * as api from '../services/api.client';
 import { entityApi } from '../services/Entity/entity.api';
 import EntityEditorVue from '../features/entities/EntityEditor/EntityEditor.vue';
@@ -115,19 +116,69 @@ async function init() {
       };
 
       const save = async () => {
-        if (editorRef.value && editorRef.value.save) {
-          await editorRef.value.save();
-          isUnsaved.value = false;
-          // Обновляем историю после сохранения
-          if (showHistory.value) loadHistory();
+        if (editorRef.value && editorRef.value.getFormData) {
+          const formData = editorRef.value.getFormData();
+          const foreignUpdates = editorRef.value.getForeignUpdates ? editorRef.value.getForeignUpdates() : {};
           
           try {
+            const mainPayload = entityApi.formatEntityPayload(
+                project, 
+                entityType, 
+                formData, 
+                entityId.startsWith('entities:') ? entityId : `entities:${entityId}`, 
+                formData.name || 'Сущность'
+            );
+            await api.saveEntityWithRelations(project, mainPayload as any, Object.values(foreignUpdates));
+            isUnsaved.value = false;
+            // Обновляем историю после сохранения
+            if (showHistory.value) loadHistory();
+            
             const { emit } = await import('@tauri-apps/api/event');
             await emit('ww-entity-saved', { type: entityType, id: entityId });
           } catch(e) {
-            console.warn('Tauri emit failed', e);
+            console.error('Ошибка сохранения:', e);
+            alert('Ошибка сохранения');
           }
         }
+      };
+
+      let isLiveSyncing = false;
+      let liveSyncTimer: any = null;
+
+      const merge = (target: any, source: any) => {
+        for (const key in source) {
+          if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+            if (!target[key] || typeof target[key] !== 'object') target[key] = {};
+            merge(target[key], source[key]);
+          } else if (Array.isArray(source[key])) {
+            if (!Array.isArray(target[key])) target[key] = [];
+            for (let i = 0; i < source[key].length; i++) {
+              if (i < target[key].length) {
+                if (typeof source[key][i] === 'object' && source[key][i] !== null) merge(target[key][i], source[key][i]);
+                else target[key][i] = source[key][i];
+              } else {
+                target[key].push(source[key][i]);
+              }
+            }
+            target[key].length = source[key].length;
+          } else {
+            target[key] = source[key];
+          }
+        }
+      };
+
+      const handleUpdateData = (data: any) => {
+        if (isLiveSyncing) return;
+        if (liveSyncTimer) clearTimeout(liveSyncTimer);
+        liveSyncTimer = setTimeout(async () => {
+          try {
+            console.log('[LiveSync] Emitting ww-entity-live-sync from ui_editor', { entityType, entityId });
+            const { emit } = await import('@tauri-apps/api/event');
+            await emit('ww-entity-live-sync', { type: entityType, id: entityId, data });
+          } catch(e) {
+            console.error('[LiveSync] Error emitting', e);
+          }
+        }, 150);
       };
 
       onMounted(() => {
@@ -136,6 +187,31 @@ async function init() {
         if (window.parent && window.parent !== window) {
           window.parent.postMessage({ type: 'EDITOR_LOADED', id: entityId }, '*');
         }
+        
+        // Слушаем событие сохранения из главного окна
+        import('@tauri-apps/api/event').then(({ listen }) => {
+          listen('ww-entity-saved', (event: any) => {
+            const { type, id } = event.payload;
+            const rawId = id.replace('entities:', '');
+            if (type === entityType && (rawId === entityId || id === entityId)) {
+              // Если сохранили не мы (или даже мы), перезагружаем данные для синхронизации
+              loadData();
+            }
+          });
+          
+          listen('ww-entity-live-sync', (event: any) => {
+            const { type, id, data } = event.payload;
+            const rawId = id.replace('entities:', '');
+            if (type === entityType && (rawId === entityId || id === entityId)) {
+              if (initialData.value) {
+                console.log('[LiveSync] Received in ui_editor', data);
+                isLiveSyncing = true;
+                merge(initialData.value, data);
+                setTimeout(() => { isLiveSyncing = false; }, 50);
+              }
+            }
+          });
+        }).catch(e => console.warn('Tauri listen not available in ui_editor', e));
       });
 
       return {
@@ -147,6 +223,7 @@ async function init() {
         isUnsaved,
         editorRef,
         save,
+        handleUpdateData,
         // История
         showHistory,
         isLoadingHistory,
@@ -163,6 +240,7 @@ async function init() {
     }
   });
 
+  app.use(i18n as unknown as Plugin);
   app.mount('#app');
 }
 

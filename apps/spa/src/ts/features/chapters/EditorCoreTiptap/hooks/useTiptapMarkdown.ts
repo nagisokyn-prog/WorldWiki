@@ -12,7 +12,16 @@ export function useTiptapMarkdown(editor: any, emit: any, updateStats: Function)
       return '\n' + content + '\n';
     }
   });
-  const mdIt = new MarkdownIt();
+  turndownService.addRule('entityLinks', {
+    filter: function (node) {
+      return node.nodeName === 'A' && !!node.getAttribute('href')?.includes('ui_editor.html');
+    },
+    replacement: function (content: string, node: HTMLElement) {
+      const href = node.getAttribute('href')?.replace(/^\//, '') || '';
+      return `((${content}))[${href}]`;
+    }
+  });
+  const mdIt = new MarkdownIt({ html: true });
 
   const preprocessMarkdown = (text: string) => {
     const lines = text.split('\n');
@@ -43,7 +52,9 @@ export function useTiptapMarkdown(editor: any, emit: any, updateStats: Function)
     if (!editor.value) return;
     const html = editor.value.getHTML();
     try {
-      markdownContent.value = turndownService.turndown(html);
+      let md = turndownService.turndown(html);
+      md = md.replace(/\\\(\\\((.*?)\\\)\\\)\\\[(ui_editor\.html.*?)\\\]/g, '(($1))[$2]');
+      markdownContent.value = md;
     } catch (err) {
       console.log('Turndown error (non-critical):', err);
     }
@@ -52,7 +63,9 @@ export function useTiptapMarkdown(editor: any, emit: any, updateStats: Function)
   const onMarkdownInput = () => {
     try {
       const processed = preprocessMarkdown(markdownContent.value);
-      const html = mdIt.render(processed);
+      let html = mdIt.render(processed);
+      // Transform custom syntax to standard HTML links for Tiptap
+      html = html.replace(/\(\((.*?)\)\)\[(ui_editor\.html[^\]]+)\]/g, '<a href="/$2">$1</a>');
       if (editor.value) {
         editor.value.commands.setContent(html);
       }
@@ -64,12 +77,40 @@ export function useTiptapMarkdown(editor: any, emit: any, updateStats: Function)
     }
   };
 
+  const onMarkdownKeydown = (e: KeyboardEvent) => {
+    if (e.key === '(') {
+      const target = e.target as HTMLTextAreaElement;
+      if (target && target.selectionStart !== target.selectionEnd) {
+        e.preventDefault();
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        const text = target.value;
+        const selected = text.substring(start, end);
+        
+        document.execCommand('insertText', false, '(' + selected + ')');
+        
+        // Restore selection around the text
+        target.setSelectionRange(start + 1, start + 1 + selected.length);
+      }
+    } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'q' || e.code === 'KeyQ' || e.key === 'й' || e.key === 'Й')) {
+      const target = e.target as HTMLTextAreaElement;
+      if (target) {
+        const textBefore = target.value.substring(0, target.selectionStart);
+        if (/\(\([^)]+\)\)$/.test(textBefore)) {
+          e.preventDefault();
+          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'markdown' } }));
+        }
+      }
+    }
+  };
+
   return {
     markdownContent,
     turndownService,
     mdIt,
     preprocessMarkdown,
     syncMarkdownFromEditor,
-    onMarkdownInput
+    onMarkdownInput,
+    onMarkdownKeydown
   };
 }

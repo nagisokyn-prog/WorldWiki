@@ -28,7 +28,7 @@ WorldWiki/
 │  │  ├─ package.json   # library build ESM
 │  │  ├─ vite.config.ts # vite-plugin-dts
 │  │  └─ src/
-│  │     ├─ components/Vue/  # ExplorerTree, FloatingWindow, EditorGroupPane...
+│  │     ├─ components/Vue/  # ExplorerTree, , EditorGroupPane...
 │  │     ├─ composables/     # useEditorGroups, useShellApp, useTreeSelection
 │  │     └─ services/        # generic API services
 │  │

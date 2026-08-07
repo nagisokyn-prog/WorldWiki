@@ -358,8 +358,11 @@ export const useShellStore = defineStore('shell', () => {
     eg.updateTabData(id, { title });
   };
 
-  const handleUpdateData = (tabId: string, newData: any) => {
-    const tabsToUpdate = eg.allTabs.value.filter((t: any) => t.id === tabId);
+  let isLiveSyncing = false;
+  let liveSyncTimer: any = null;
+
+  const handleUpdateData = (tabId: string, newData: any, fromLiveSync = false) => {
+    const tabsToUpdate = eg.allTabs.value.filter((t: any) => t.id === tabId || t.rawId === tabId.replace('entities:', ''));
     if (tabsToUpdate.length === 0) return;
     const merge = (target: any, source: any) => {
       for (const key in source) {
@@ -382,6 +385,10 @@ export const useShellStore = defineStore('shell', () => {
         }
       }
     };
+    
+    let updatedEntityType = null;
+    let updatedRawId = null;
+
     for (const tab of tabsToUpdate) {
       const { __foreignUpdates, ...dataToMerge } = newData as any;
       const oldTitle = tab.title;
@@ -392,6 +399,22 @@ export const useShellStore = defineStore('shell', () => {
       if (newTitle && newTitle !== oldTitle) {
         tab.title = newTitle;
       }
+      
+      updatedEntityType = tab.entityType;
+      updatedRawId = tab.rawId;
+    }
+    
+    if (!fromLiveSync && !isLiveSyncing && updatedEntityType && updatedRawId) {
+      if (liveSyncTimer) clearTimeout(liveSyncTimer);
+      liveSyncTimer = setTimeout(async () => {
+        try {
+          console.log('[LiveSync] Emitting ww-entity-live-sync from shell', { type: updatedEntityType, id: updatedRawId });
+          const { emit } = await import('@tauri-apps/api/event');
+          await emit('ww-entity-live-sync', { type: updatedEntityType, id: updatedRawId, data: newData });
+        } catch(e) {
+          console.error('[LiveSync] Error emitting from shell', e);
+        }
+      }, 150);
     }
   };
 
@@ -618,6 +641,12 @@ export const useShellStore = defineStore('shell', () => {
         editor.unsaved = false;
         markSaved(editor.id);
         triggerRef(openEditors);
+        try {
+          const { emit } = await import('@tauri-apps/api/event');
+          await emit('ww-entity-saved', { type: editor.entityType, id: `entities:${editor.rawId}` });
+        } catch (e) {
+          console.warn('Tauri emit ww-entity-saved failed', e);
+        }
         savedCount++;
       } catch (e) {
         addLog(`Save -> Error: ${e}`, 'error');
@@ -958,6 +987,54 @@ export const useShellStore = defineStore('shell', () => {
       addLog(`Error deleting arc: ${e}`, 'error');
     }
   };
+
+  if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+    import('@tauri-apps/api/event').then(({ listen }) => {
+      listen('ww-entity-saved', (event: any) => {
+        const { type, id } = event.payload;
+        const rawId = id.replace('entities:', '');
+        
+        eg.groups.value.forEach((group: any) => {
+          group.tabs.forEach((tab: any) => {
+            if (tab.entityType === type && (tab.rawId === rawId || tab.id === rawId)) {
+              if (type === 'chapter') {
+                api.getChapter(tab.rawId).then((data: any) => {
+                  if (data) {
+                    tab.data = data;
+                  }
+                });
+              } else if (type !== 'schema-editor') {
+                entityApi.getEntity(projectName.value, type, tab.rawId).then((data: any) => {
+                  if (data) {
+                    tab.data = data;
+                  }
+                });
+              }
+            }
+          });
+        });
+        
+        if (currentSidebarTab.value === type) loadEntityList(type);
+        if (type === 'chapter' && chapterTreeRef.value?.load) chapterTreeRef.value.load();
+      });
+      
+      listen('ww-entity-live-sync', (event: any) => {
+        const { type, id, data } = event.payload;
+        const rawId = id.replace('entities:', '');
+        
+        eg.groups.value.forEach((group: any) => {
+          group.tabs.forEach((tab: any) => {
+            if (tab.entityType === type && (tab.rawId === rawId || tab.id === rawId)) {
+              console.log('[LiveSync] Received in shell', data);
+              isLiveSyncing = true;
+              handleUpdateData(tab.id, data, true);
+              setTimeout(() => { isLiveSyncing = false; }, 50);
+            }
+          });
+        });
+      });
+    });
+  }
 
   return {
     // State

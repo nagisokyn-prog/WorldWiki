@@ -85,11 +85,24 @@ export const useTimelineStore = defineStore('timeline', () => {
   function parseParticipants(text: string): Participant[] {
     if (!text) return [];
 
-    const linkRegex = /\[([^\]]+)\]\([^)]+type=([^&]+)&id=([^&)]+)[^)]*\)/g;
-    let match;
     const participants: Participant[] = [];
+    
+    // Legacy format: [name](...type=type&id=id...)
+    const legacyRegex = /\[([^\]]+)\]\([^)]+type=([^&]+)&id=([^&)]+)[^)]*\)/g;
+    let match;
+    while ((match = legacyRegex.exec(text)) !== null) {
+      const name = match[1];
+      const type = match[2];
+      const id = match[3];
 
-    while ((match = linkRegex.exec(text)) !== null) {
+      if (!participants.some(p => p.type === type && p.id === id)) {
+        participants.push({ type, id, name });
+      }
+    }
+
+    // New format: ((name))[type:id]
+    const newRegex = /\(\((.*?)\)\)\[([^:\]]+):([^\]]+)\]/g;
+    while ((match = newRegex.exec(text)) !== null) {
       const name = match[1];
       const type = match[2];
       const id = match[3];

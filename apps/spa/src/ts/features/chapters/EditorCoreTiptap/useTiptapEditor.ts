@@ -2,6 +2,7 @@ import { onMounted, onUnmounted, watch, ref } from 'vue';
 import { useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -31,13 +32,18 @@ const EnterHandler = Extension.create({
         const { state } = editor;
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        const match = textBefore.match(/\[([^\]]+)\]$/);
-        
-        if (match) {
-          const name = match[1].trim();
-          const startPos = $from.pos - match[0].length;
-          const endPos = $from.pos;
-          document.dispatchEvent(new CustomEvent('ww:quick-link', { detail: { name, startPos, endPos } }));
+        if (/\(\([^)]+\)\)$/.test(textBefore)) {
+          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
+          return true;
+        }
+        return false;
+      },
+      'Mod-й': ({ editor }) => {
+        const { state } = editor;
+        const { $from } = state.selection;
+        const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
+        if (/\(\([^)]+\)\)$/.test(textBefore)) {
+          document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
           return true;
         }
         return false;
@@ -74,10 +80,11 @@ export function useTiptapEditor(props: any, emit: any) {
       StarterKit.configure({
         paragraph: false,
         codeBlock: false,
-        link: {
-          openOnClick: false,
-          autolink: true,
-        },
+      }),
+      (Link as any).configure({
+        openOnClick: false,
+        autolink: true,
+        protocols: ['entity', 'http', 'https', 'ftp', 'mailto']
       }),
       SemanticParagraph,
       Image.configure({
@@ -218,9 +225,8 @@ export function useTiptapEditor(props: any, emit: any) {
   
       const url = link.getAttribute('href') || link.getAttribute('data-href') || '';
       if (!url) return;
-      
-      if (url && (url.includes('type=') || url.includes('id='))) {
-        const isLocked = stateHook.settings.value?.editor?.requireCtrlForLinks ?? false;
+      if (url && (url.includes('type=') || url.includes('id=') || url.startsWith('entity://'))) {
+        const isLocked = true; // Always require Ctrl for links
         const isCtrlPressed = e.ctrlKey || e.metaKey || stateHook.ctrlPressed.value;
   
         if (isLocked && !isCtrlPressed) {
@@ -233,16 +239,46 @@ export function useTiptapEditor(props: any, emit: any) {
         e.stopPropagation();
         
         try {
-          const queryStart = url.indexOf('?');
-          if (queryStart === -1) return;
-          
-          const queryString = url.substring(queryStart + 1);
-          const params = new URLSearchParams(queryString);
-          const type = params.get('type');
-          const id = params.get('id');
+          let type: string | null = null;
+          let id: string | null = null;
+          let project = 'default';
+
+          if (url.includes('ui_editor.html')) {
+            const urlObj = new URL(url, window.location.origin);
+            project = urlObj.searchParams.get('project') || 'default';
+            type = urlObj.searchParams.get('type');
+            id = urlObj.searchParams.get('id');
+            const name = link.textContent || 'Сущность';
+
+            if (project && type && id) {
+              import('../../../utils/windowManager').then(({ openEntityEditorWindow }) => {
+                openEntityEditorWindow(project, type as string, id as string, name);
+              });
+            }
+            return;
+          } else if (url.startsWith('entity://')) {
+            const parts = url.replace('entity://', '').split('/');
+            type = parts[0];
+            id = parts.slice(1).join('/');
+          } else {
+            const queryStart = url.indexOf('?');
+            if (queryStart !== -1) {
+              const queryString = url.substring(queryStart + 1);
+              const params = new URLSearchParams(queryString);
+              type = params.get('type');
+              id = params.get('id');
+            }
+          }
   
           if (type && id) {
-            emit('openEntity', { type, id });
+            if (isCtrlPressed) {
+              // Note: openEntityEditorWindow needs to be imported or emitted. 
+              // Since we are in a hook, we can emit a new event 'openEntityWindow' and let the component handle it, 
+              // or dispatch a custom event.
+              document.dispatchEvent(new CustomEvent('ww:open-entity-window', { detail: { type, id } }));
+            } else {
+              emit('openEntity', { type, id });
+            }
           }
         } catch(err) {
           console.error('[EditorCore] Link parse error:', err);
@@ -272,6 +308,9 @@ export function useTiptapEditor(props: any, emit: any) {
     ...splitHook,
     ...stateHook,
     ...mdHook,
-    ...formatHook
+    ...formatHook,
+    switchEditorMode: (newMode: 'wysiwyg' | 'markdown' | 'split') => {
+      stateHook.switchEditorMode(newMode, mdHook.syncMarkdownFromEditor);
+    }
   };
 }

@@ -17,18 +17,6 @@
     </div>
     
     <div class="toolbar-group" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-      <button 
-        class="link-lock-btn interactive-el" 
-        :class="{ 'locked': settings?.editor?.requireCtrlForLinks }" 
-        style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 10px; border: 2px solid var(--border-color); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 11px; font-weight: 800; background: var(--bg-secondary); color: var(--text-main); box-shadow: 0 4px 15px rgba(0,0,0,0.2);"
-        :title="settings?.editor?.requireCtrlForLinks ? 'Ссылки открываются только с Ctrl' : 'Ссылки открываются обычным кликом'"
-        @click="commands.toggleLinkLock"
-      >
-        <i :class="settings?.editor?.requireCtrlForLinks ? 'fas fa-lock' : 'fas fa-lock-open'" :style="{ color: settings?.editor?.requireCtrlForLinks ? 'var(--accent)' : '#ffaa00' }"></i>
-        <span :style="{ color: settings?.editor?.requireCtrlForLinks ? 'var(--accent)' : 'var(--text-main)' }">
-          {{ settings?.editor?.requireCtrlForLinks ? 'LINKS: CTRL' : 'LINKS: OPEN' }}
-        </span>
-      </button>
 
       <button class="toolbar-btn interactive-el" title="Анализ текста" @click="commands.analyzeText"><i class="fas fa-chart-bar"></i></button>
       <XboxWheel 

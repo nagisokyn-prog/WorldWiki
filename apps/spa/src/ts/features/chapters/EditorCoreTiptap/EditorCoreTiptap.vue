@@ -42,10 +42,12 @@
       <!-- Markdown Mode -->
       <div v-else-if="editorMode === 'markdown'" style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
         <textarea 
+          ref="markdownTextareaRef"
           v-model="markdownContent" 
           placeholder="# Напишите markdown..."
           style="flex: 1; background: #ffffff; color: #000000; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; outline: none;"
           @input="onMarkdownInput"
+          @keydown="onMarkdownKeydown"
         ></textarea>
       </div>
 
@@ -56,10 +58,14 @@
         <div :style="{ flex: `0 0 ${leftPanelWidth}%`, display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid var(--border-color)' }">
           <div style="background: var(--bg-input); border-bottom: 1px solid var(--border-color); padding: 8px 12px; font-size: 11px; font-weight: 600; color: var(--text-muted);">✏️ Markdown</div>
           <textarea 
+            ref="markdownTextareaRef"
             v-model="markdownContent" 
             placeholder="# Напишите markdown..."
-            style="flex: 1; background: #ffffff; color: #000000; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; resize: none; outline: none; border: none; padding: 12px;"
+            style="flex: 1; background: #ffffff; color: #000000; padding: 16px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; border: none; outline: none;"
             @input="onMarkdownInput"
+            @keydown="onMarkdownKeydown"
+            @keydown.ctrl.q.prevent="$emit('open-entity-selector')"
+            @keydown.ctrl.1049.prevent="$emit('open-entity-selector')"
           ></textarea>
         </div>
 
@@ -120,12 +126,9 @@
         </span>
       </div>
       <div>
-        <span v-if="settings?.editor?.requireCtrlForLinks" style="color: var(--accent); font-weight: 600;">
+        <span style="color: var(--accent); font-weight: 600;">
           <i class="fas fa-lock" style="margin-right: 4px;"></i>
-          Зажмите Ctrl для перехода
-        </span>
-        <span v-else>
-          Обычный клик открывает ссылки
+          Зажмите Ctrl для перехода по ссылкам
         </span>
       </div>
     </div>
@@ -142,6 +145,13 @@
       </div>
     </div>
 
+    <!-- Quick Entity Selector -->
+    <EntityLinkSelector
+      :project="project"
+      :is-open="isEntitySelectorOpen"
+      @close="isEntitySelectorOpen = false"
+      @insert="handleEntityInsert"
+    />
   </div>
 </template>
 
@@ -151,6 +161,45 @@ import { EditorContent } from '@tiptap/vue-3';
 import { settingsService } from '@worldwiki/components';
 import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
+import EntityLinkSelector from './EntityLinkSelector.vue';
+
+const isEntitySelectorOpen = ref(false);
+const activeEditorTarget = ref<'wysiwyg'|'markdown'>('markdown');
+
+const handleOpenEntitySelector = (e: any) => {
+  activeEditorTarget.value = e.detail?.target || 'markdown';
+  isEntitySelectorOpen.value = true;
+};
+
+const markdownTextareaRef = ref<HTMLTextAreaElement | null>(null);
+
+const handleEntityInsert = (payload: { type: string; id: string }) => {
+  const url = `ui_editor.html?project=${encodeURIComponent(props.project)}&type=${encodeURIComponent(payload.type)}&id=${encodeURIComponent(payload.id)}`;
+  const linkText = `[${url}]`;
+
+  if (activeEditorTarget.value === 'wysiwyg' && (editorMode.value === 'wysiwyg' || editorMode.value === 'split')) {
+    if (editor.value) {
+      const { state } = editor.value;
+      const { $from } = state.selection;
+      const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
+      const match = /\(\(([^)]+)\)\)$/.exec(textBefore);
+      if (match) {
+        const start = $from.pos - match[0].length;
+        const end = $from.pos;
+        editor.value.chain().focus()
+          .deleteRange({ from: start, to: end })
+          .insertContent(`<a href="/${url}">${match[1]}</a>`)
+          .run();
+      }
+    }
+  } else if (activeEditorTarget.value === 'markdown' && (editorMode.value === 'markdown' || editorMode.value === 'split')) {
+    const target = markdownTextareaRef.value;
+    if (target) {
+      target.focus();
+      document.execCommand('insertText', false, linkText);
+    }
+  }
+};
 
 const props = defineProps({
   project: { type: String, required: true },
@@ -162,7 +211,7 @@ const props = defineProps({
   changedFields: { type: Array as () => string[], default: () => [] }
 });
 
-const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history']);
+const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history', 'open-entity-selector']);
 
 const {
     modeOptions,
@@ -190,6 +239,7 @@ const {
     updateStats,
     preprocessMarkdown,
     onMarkdownInput,
+    onMarkdownKeydown,
     syncMarkdownFromEditor,
     toggleBold,
     toggleItalic,
@@ -214,6 +264,23 @@ const {
     startResizeRight
 } = useTiptapEditor(props, emit);
 
+import { openEntityEditorWindow } from '../../../utils/windowManager';
+
+const handleOpenEntityWindow = (e: any) => {
+  const { type, id } = e.detail;
+  // We need to resolve name, but we can pass a generic one and the window will load it
+  openEntityEditorWindow(props.project, type, id, id.split(':').pop() || 'Сущность');
+};
+
+onMounted(() => {
+  document.addEventListener('ww:open-entity-selector', handleOpenEntitySelector);
+  document.addEventListener('ww:open-entity-window', handleOpenEntityWindow);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('ww:open-entity-selector', handleOpenEntitySelector);
+  document.removeEventListener('ww:open-entity-window', handleOpenEntityWindow);
+});
 </script>
 
 <style src="./EditorCoreTiptap.style.css"></style>

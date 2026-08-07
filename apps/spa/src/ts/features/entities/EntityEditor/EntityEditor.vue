@@ -367,7 +367,9 @@ const {
   } = useEntityEditor(props, emit);
 
 defineExpose({
-  toggleHistory
+  toggleHistory,
+  getFormData: () => formData.value,
+  getForeignUpdates: () => foreignUpdates.value
 });
 </script>
 

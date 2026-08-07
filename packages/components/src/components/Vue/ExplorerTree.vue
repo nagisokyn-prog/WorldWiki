@@ -21,8 +21,10 @@
         <div class="tree-section-header" @click="toggleSection(sect.id)">
           <i :class="expandedSections.has(sect.id) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>{{ sect.title.toUpperCase() }}</span>
-          <div v-if="sect.canAdd" class="section-actions">
-            <i class="fas fa-plus" title="Добавить" @click.stop="$emit('create', { sectionId: sect.id })"></i>
+          <div class="section-actions">
+            <i v-if="sect.canEdit" class="fas fa-trash" style="margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;" title="Удалить схему" @click.stop="$emit('delete-section', sect.id)"></i>
+            <i v-if="sect.canEdit" class="fas fa-pen" style="margin-right: 8px; opacity: 0.7; font-size: 10px;" title="Настроить сущности" @click.stop="$emit('edit-section', sect.id)"></i>
+            <i v-if="sect.canAdd" class="fas fa-plus" title="Добавить" @click.stop="$emit('create', { sectionId: sect.id })"></i>
           </div>
         </div>
 
@@ -113,6 +115,7 @@ export interface TreeSectionData {
   title: string;
   icon?: string;
   canAdd?: boolean;
+  canEdit?: boolean;
   canAddInline?: boolean;
   itemLabel?: string;
   nodes: TreeNodeData[];
@@ -136,6 +139,8 @@ const emit = defineEmits<{
   (e: 'rename', node: TreeNodeData, newName: string): void;
   (e: 'cancel-rename', node: TreeNodeData): void;
   (e: 'delete', ids: string[]): void;
+  (e: 'edit-section', sectionId: string): void;
+  (e: 'delete-section', sectionId: string): void;
 }>();
 
 // Custom directive to focus input on mount

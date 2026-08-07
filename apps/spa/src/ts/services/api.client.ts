@@ -79,7 +79,7 @@ export async function saveEntitySchema(project: string, schema: EntitySchema, ma
 }
 
 export async function deleteEntitySchema(project: string, typeKey: string): Promise<void> {
-    return await invoke('delete_entity_schema', { project, 'type_key': typeKey });
+    return await invoke('delete_entity_schema', { project, typeKey });
 }
 
 export async function getSchemaHistory(project: string, typeKey: string): Promise<any[]> {

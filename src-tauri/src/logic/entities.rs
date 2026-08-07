@@ -244,21 +244,31 @@ pub async fn delete_entity(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     let db = &state.db;
+    println!("[DEBUG] delete_entity called with id: '{}'", id);
     let parts: Vec<&str> = id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 { parts[1] } else { &id };
-    let full_id = format!("entities:{}", actual_id);
+    let full_id = crate::logic::entities::safe_id("entities", actual_id);
+    println!("[DEBUG] delete_entity full_id resolved to: '{}'", full_id);
 
-    db.query("
+    let mut tx_res = db.query("
         BEGIN TRANSACTION;
-        DELETE entity_rel WHERE in = type::record($id) OR out = type::record($id);
-        DELETE appears_in WHERE in = type::record($id);
-        DELETE entity_revisions WHERE target_id = type::record($id);
-        DELETE type::record($id);
+        LET $target = type::record($id);
+        DELETE entity_rel WHERE in = $target OR out = $target;
+        DELETE appears_in WHERE in = $target;
+        DELETE entity_revisions WHERE target_id = $target;
+        DELETE $target;
         COMMIT TRANSACTION;
     ")
     .bind(("id", full_id))
     .await.map_err(|e| e.to_string())?;
 
+    let errors = tx_res.take_errors();
+    if !errors.is_empty() {
+        eprintln!("[DEBUG] delete_entity transaction errors: {:?}", errors);
+        return Err(format!("Transaction errors: {:?}", errors));
+    }
+
+    println!("[DEBUG] delete_entity completed successfully for actual_id: '{}'", actual_id);
     Ok(())
 }
 
@@ -486,19 +496,26 @@ pub async fn delete_entity_schema(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     let db = &state.db;
-    let proj_id = format!("projects:{}", project);
+    let pid_val = crate::logic::entities::safe_pid(&project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let safe_pid = format!("projects:`{}`", pid_raw);
 
-    db.query("
+    let mut tx_res = db.query("
         BEGIN TRANSACTION;
-        DELETE entity_rel WHERE project_id = $pid AND rel_type IN
-            (SELECT rel_key FROM relation_schemas WHERE project_id = $pid AND (from_types CONTAINS $type_key OR to_types CONTAINS $type_key));
-        DELETE entities WHERE project_id = $pid AND entity_type = $type_key;
-        DELETE entity_schemas WHERE project_id = $pid AND type_key = $type_key;
+        DELETE entity_rel WHERE project_id = type::record($pid) AND rel_type IN
+            (SELECT rel_key FROM relation_schemas WHERE project_id = type::record($pid) AND (from_types CONTAINS $type_key OR to_types CONTAINS $type_key));
+        DELETE entities WHERE project_id = type::record($pid) AND entity_type = $type_key;
+        DELETE entity_schemas WHERE project_id = type::record($pid) AND type_key = $type_key;
         COMMIT TRANSACTION;
     ")
-    .bind(("pid", proj_id))
+    .bind(("pid", safe_pid))
     .bind(("type_key", type_key))
     .await.map_err(|e| e.to_string())?;
+    
+    let errors = tx_res.take_errors();
+    if !errors.is_empty() {
+        return Err(format!("Transaction errors: {:?}", errors));
+    }
 
     Ok(())
 }

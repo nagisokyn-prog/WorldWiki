@@ -17,6 +17,8 @@
       @rename="handleRename"
       @cancel-rename="handleCancelRename"
       @delete="handleDelete"
+      @edit-section="(sectionId) => $emit('edit-schema', sectionId)"
+      @delete-section="handleDeleteSection"
     >
       <template #header-actions>
         <button class="tree-action-btn" title="Редактор сущностей (Sandbox)" style="background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5" @click="$emit('open-sandbox')">
@@ -57,8 +59,12 @@
         </template>
         
         <template v-else-if="node.data?.isEntity">
+          <div class="ctx-item" @click="startRename(node, close)">
+            <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
+            <kbd class="ctx-kbd">F2</kbd>
+          </div>
           <div class="ctx-item" @click="handleOpen(node); close()">
-            <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Открыть / редактировать</span>
+            <span class="ctx-label"><i class="fas fa-edit ctx-icon"></i> Открыть / редактировать</span>
           </div>
         </template>
 
@@ -106,6 +112,7 @@ const {
   handleRename,
   handleCancelRename,
   handleDelete,
+  handleDeleteSection,
   load
 } = useChapterTree(props, emit);
 

@@ -632,11 +632,39 @@ export const useShellStore = defineStore('shell', () => {
 
   // ─── EntityOps (from useEntityOps) ─────────────────────────
   const deleteEntity = async (tabId: string, entityType: string, silent = false) => {
-    if (!silent && !confirm(`Удалить эту запись безвозвратно?`)) return;
+    if (!silent) {
+        const confirmed = await new Promise<boolean>(resolve => {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);animation:fadeIn 0.2s;';
+            const modal = document.createElement('div');
+            modal.style.cssText = 'background:var(--bg-panel, #1e1e1e);border:1px solid var(--border-color, #333);border-radius:12px;padding:32px;max-width:400px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.5);color:var(--text-main, #eee);';
+            modal.innerHTML = `
+                <div style="font-size:32px;margin-bottom:16px;">🗑️</div>
+                <h3 style="margin:0 0 12px 0;font-weight:900;">Удаление записи</h3>
+                <p style="opacity:0.7;font-size:14px;margin-bottom:24px;line-height:1.5;">Вы уверены, что хотите безвозвратно удалить эту запись?</p>
+                <div style="display:flex;gap:12px;justify-content:center;">
+                    <button id="cancel-btn" style="padding:10px 20px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:var(--text-main, #eee);cursor:pointer;font-weight:bold;transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">Отмена</button>
+                    <button id="confirm-btn" style="padding:10px 20px;border-radius:8px;border:none;background:#ff5555;color:#fff;cursor:pointer;font-weight:bold;transition:0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Удалить</button>
+                </div>
+            `;
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+            
+            modal.querySelector('#cancel-btn')!.addEventListener('click', () => { document.body.removeChild(overlay); resolve(false); });
+            modal.querySelector('#confirm-btn')!.addEventListener('click', () => { document.body.removeChild(overlay); resolve(true); });
+        });
+        if (!confirmed) return;
+    }
     const colonIdx = tabId.indexOf(':');
     const rawId = colonIdx > -1 ? tabId.slice(colonIdx + 1) : tabId;
+    
+    console.log(`[shell.ts deleteEntity] tabId: "${tabId}", rawId: "${rawId}", entityType: "${entityType}"`);
+    
     try {
+      console.log(`[shell.ts deleteEntity] Calling api.deleteEntity("${rawId}")`);
       await api.deleteEntity(rawId);
+      console.log(`[shell.ts deleteEntity] Successfully called api.deleteEntity`);
+      
       closeEditor(tabId, true);
       if (activeTreeNode.value && activeTreeNode.value.type === entityType && activeTreeNode.value.node.id === rawId) {
         activeTreeNode.value = null;
@@ -645,7 +673,9 @@ export const useShellStore = defineStore('shell', () => {
       if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
       addToast(`Запись удалена`, 'warn');
     } catch (e) {
+      console.error(`[shell.ts deleteEntity] ERROR:`, e);
       addLog(`Entity -> Delete error: ${e}`, 'error');
+      alert(`Ошибка при удалении сущности: ${e}`);
     }
   };
 

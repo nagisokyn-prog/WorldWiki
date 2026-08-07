@@ -5,37 +5,95 @@ pub async fn get_chapter_hierarchy(
     project: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<serde_json::Value, String> {
+    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy CALLED! project='{}'", project);
     let db = &state.db;
-    let proj_rec = RecordId::new("projects", project.as_str());
+    let pid_raw = project.trim().replace("projects:", "");
+    let proj_rec = RecordId::new("projects", pid_raw.as_str());
+    let pid_val = format!("projects:{}", pid_raw);
+    let pid_literal = format!("projects:`{}`", pid_raw);
 
-    // Получаем тома и их порядок через ребро contains от проекта
-    let mut volumes_res = db.query(r#"
-        SELECT id, title, project_id,
-        (SELECT VALUE sort_order FROM <-contains WHERE in = $proj)[0] AS sort_order
-        FROM volumes WHERE project_id = $proj
-    "#).bind(("proj", proj_rec.clone())).await.map_err(|e| e.to_string())?;
+    let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
+
+    // Загружаем тома
+    let mut volumes_res = db.query(format!("SELECT * FROM volumes WHERE {}", query_cond))
+        .bind(("proj", proj_rec.clone()))
+        .bind(("pid_val", pid_val.clone()))
+        .bind(("pid_literal", pid_literal.clone()))
+        .await.map_err(|e| e.to_string())?;
     let mut volumes: Vec<serde_json::Value> = volumes_res.take(0).unwrap_or_default();
-    volumes.sort_by_key(|v| v["sort_order"].as_i64().unwrap_or(0));
+    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} volumes", volumes.len());
 
-    // Получаем арки, их родительский том и порядок
-    let mut arcs_res = db.query(r#"
-        SELECT id, title, project_id,
-        (SELECT VALUE in FROM <-contains WHERE record::tb(in) = 'volumes')[0] AS volume_id,
-        (SELECT VALUE sort_order FROM <-contains WHERE record::tb(in) = 'volumes')[0] AS sort_order
-        FROM arcs WHERE project_id = $proj
-    "#).bind(("proj", proj_rec.clone())).await.map_err(|e| e.to_string())?;
+    // Загружаем арки
+    let mut arcs_res = db.query(format!("SELECT * FROM arcs WHERE {}", query_cond))
+        .bind(("proj", proj_rec.clone()))
+        .bind(("pid_val", pid_val.clone()))
+        .bind(("pid_literal", pid_literal.clone()))
+        .await.map_err(|e| e.to_string())?;
     let mut arcs: Vec<serde_json::Value> = arcs_res.take(0).unwrap_or_default();
-    arcs.sort_by_key(|a| a["sort_order"].as_i64().unwrap_or(0));
+    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} arcs", arcs.len());
 
-    // Получаем главы, их родителей и порядок
-    let mut chapters_res = db.query(r#"
-        SELECT *,
-        (SELECT VALUE in FROM <-contains WHERE record::tb(in) = 'arcs')[0] AS arc_id,
-        (SELECT VALUE in FROM <-contains WHERE record::tb(in) = 'volumes')[0] AS volume_id,
-        (SELECT VALUE sort_order FROM <-contains)[0] AS sort_order
-        FROM chapters WHERE project_id = $proj
-    "#).bind(("proj", proj_rec.clone())).await.map_err(|e| e.to_string())?;
+    // Загружаем главы
+    let mut chapters_res = db.query(format!("SELECT * FROM chapters WHERE {}", query_cond))
+        .bind(("proj", proj_rec.clone()))
+        .bind(("pid_val", pid_val.clone()))
+        .bind(("pid_literal", pid_literal.clone()))
+        .await.map_err(|e| e.to_string())?;
     let mut chapters: Vec<serde_json::Value> = chapters_res.take(0).unwrap_or_default();
+    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} chapters", chapters.len());
+
+    // Загружаем все ребра contains, которые указывают на наши тома, арки или главы
+    let mut edges_res = db.query(format!(r#"
+        SELECT in, out, sort_order FROM contains 
+        WHERE out IN (SELECT VALUE id FROM volumes WHERE {cond})
+           OR out IN (SELECT VALUE id FROM arcs WHERE {cond})
+           OR out IN (SELECT VALUE id FROM chapters WHERE {cond})
+    "#, cond = query_cond))
+        .bind(("proj", proj_rec.clone()))
+        .bind(("pid_val", pid_val.clone()))
+        .bind(("pid_literal", pid_literal.clone()))
+        .await.map_err(|e| e.to_string())?;
+    let edges: Vec<serde_json::Value> = edges_res.take(0).unwrap_or_default();
+    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} edges", edges.len());
+
+    // Маппинг связей в Rust
+    for vol in &mut volumes {
+        if let Some(id) = vol.get("id").and_then(|i| i.as_str()) {
+            if let Some(edge) = edges.iter().find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id)) {
+                vol["sort_order"] = edge["sort_order"].clone();
+            }
+        }
+    }
+
+    for arc in &mut arcs {
+        if let Some(id) = arc.get("id").and_then(|i| i.as_str()) {
+            if let Some(edge) = edges.iter().find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id)) {
+                if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
+                    if parent.starts_with("volumes:") {
+                        arc["volume_id"] = edge["in"].clone();
+                    }
+                }
+                arc["sort_order"] = edge["sort_order"].clone();
+            }
+        }
+    }
+
+    for chap in &mut chapters {
+        if let Some(id) = chap.get("id").and_then(|i| i.as_str()) {
+            if let Some(edge) = edges.iter().find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id)) {
+                if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
+                    if parent.starts_with("arcs:") {
+                        chap["arc_id"] = edge["in"].clone();
+                    } else if parent.starts_with("volumes:") {
+                        chap["volume_id"] = edge["in"].clone();
+                    }
+                }
+                chap["sort_order"] = edge["sort_order"].clone();
+            }
+        }
+    }
+
+    volumes.sort_by_key(|v| v["sort_order"].as_i64().unwrap_or(0));
+    arcs.sort_by_key(|a| a["sort_order"].as_i64().unwrap_or(0));
     chapters.sort_by_key(|a| a["sort_order"].as_i64().unwrap_or(0));
 
     Ok(serde_json::json!({
@@ -153,6 +211,7 @@ pub async fn assign_chapter(
     volume_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
+    println!("\n\n🔥🔥🔥 [BACKEND] assign_chapter CALLED! project='{}', chapter_id='{}', arc_id={:?}, volume_id={:?}", project, chapter_id, arc_id, volume_id);
     let db = &state.db;
     let clean_chap = if chapter_id.contains(':') { chapter_id } else { format!("chapters:{}", chapter_id) };
     
@@ -169,16 +228,25 @@ pub async fn assign_chapter(
         RecordId::new("projects", project.as_str())
     };
 
+    println!("🔥🔥🔥 [BACKEND] assign_chapter: new_parent = {:?}", new_parent);
+
     // Удаляем старые связи и создаем новую
     let chap_raw = clean_chap.split(':').nth(1).unwrap_or(&clean_chap).to_string();
     let chap_rec = RecordId::new("chapters", chap_raw.as_str());
-    db.query(r#"
-        DELETE <-contains WHERE out = $chap;
+    let mut res = db.query(r#"
+        DELETE contains WHERE out = $chap;
         RELATE $parent -> contains -> $chap SET sort_order = 0;
     "#)
     .bind(("chap", chap_rec))
     .bind(("parent", new_parent))
     .await.map_err(|e| e.to_string())?;
+
+    let errs = res.take_errors();
+    if !errs.is_empty() {
+        let e = errs.values().next().unwrap();
+        eprintln!("[ERROR] assign_chapter error: {}", e);
+        return Err(e.to_string());
+    }
 
     Ok(())
 }

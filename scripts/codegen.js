@@ -227,7 +227,7 @@ function generate() {
         const argStr = validArgs.map(a => `${a.name}: ${a.type}`).join(', ');
         
         const invokeArgs = validArgs.length > 0 
-            ? `, { ${validArgs.map(a => a.name === a.originalName ? a.name : `'${a.originalName}': ${a.name}`).join(', ')} }`
+            ? `, { ${validArgs.map(a => a.name).join(', ')} }`
             : '';
             
         outputLines.push(`export async function ${tsName}(${argStr}): Promise<${retType}> {`);
@@ -264,14 +264,14 @@ function generate() {
         const structName = ent;
         const nameLower = ent.toLowerCase();
         
-        addFunction(`get_${nameLower}s`, [{ name: 'projectId', originalName: 'project_id', type: 'string' }], `${structName}[]`);
+        addFunction(`get_${nameLower}s`, [{ name: 'project', originalName: 'project', type: 'string' }], `${structName}[]`);
         addFunction(`get_${nameLower}`, [{ name: 'id', originalName: 'id', type: 'string' }], `${structName} | null`);
-        addFunction(`save_${nameLower}`, [{ name: 'data', originalName: 'data', type: structName }], `${structName}`);
+        addFunction(`save_${nameLower}`, [{ name: 'project', originalName: 'project', type: 'string' }, { name: 'data', originalName: 'data', type: structName }], `${structName}`);
         addFunction(`delete_${nameLower}`, [{ name: 'id', originalName: 'id', type: 'string' }], `void`);
         
         if (searchable.includes(ent)) {
             addFunction(`search_${nameLower}s`, [
-                { name: 'projectId', originalName: 'project_id', type: 'string' },
+                { name: 'project', originalName: 'project', type: 'string' },
                 { name: 'query', originalName: 'query', type: 'string' }
             ], `SearchResult<${structName}>[]`);
         }
@@ -285,10 +285,14 @@ function generate() {
         const plural = singular + 's';
         
         addFunction(`get_${plural}`, [
-            { name: 'projectId', originalName: 'project_id', type: 'string' },
-            { name: 'sourceId', originalName: 'source_id', type: 'string' }
+            { name: 'fromId', originalName: 'from_id', type: 'string' },
+            { name: 'toId', originalName: 'to_id', type: 'string' }
         ], `${structName}[]`);
-        addFunction(`create_${singular}`, [{ name: 'data', originalName: 'data', type: structName }], `${structName}`);
+        addFunction(`create_${singular}`, [
+            { name: 'fromId', originalName: 'from_id', type: 'string' },
+            { name: 'toId', originalName: 'to_id', type: 'string' },
+            { name: 'data', originalName: 'data', type: structName }
+        ], `${structName}`);
         addFunction(`delete_${singular}`, [{ name: 'id', originalName: 'id', type: 'string' }], `void`);
     }
     

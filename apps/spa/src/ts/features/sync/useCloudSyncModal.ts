@@ -1,7 +1,13 @@
 import { ref, onMounted, onUnmounted } from 'vue';
-import * as api from '../../services/api.client';;
+import * as api from '../../services/api.client';
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
+
+export interface YandexBackupFile {
+    name: string;
+    created: string;
+    size: number;
+}
 
 export function useCloudSyncModal(emit: any) {
     const isOpen = ref(false);
@@ -12,15 +18,41 @@ export function useCloudSyncModal(emit: any) {
     const authError = ref('');
     const isLoading = ref(false);
     const isSyncing = ref(false);
+    
+    const availableBackups = ref<YandexBackupFile[]>([]);
+    const isLoadingBackups = ref(false);
 
     const loadToken = () => {
         yandexToken.value = localStorage.getItem('yandex_disk_token');
+    };
+    
+    const fetchBackupsList = async () => {
+        if (!yandexToken.value) return;
+        isLoadingBackups.value = true;
+        try {
+            const backups = await (window as any).__TAURI__.core.invoke('list_yandex_disk_backups', {
+                token: yandexToken.value
+            });
+            availableBackups.value = backups;
+        } catch (err: any) {
+            console.error('Failed to list backups:', err);
+            const errMsg = typeof err === 'string' ? err : err.message;
+            if (errMsg && errMsg.includes('401')) {
+                disconnectYandex();
+            }
+            emit('toast', { text: `Ошибка загрузки списка: ${errMsg}`, type: 'error' });
+        } finally {
+            isLoadingBackups.value = false;
+        }
     };
 
     const openModal = (mode: 'import' | 'export' = 'export') => {
         syncMode.value = mode;
         isOpen.value = true;
         loadToken();
+        if (mode === 'import' && yandexToken.value) {
+            fetchBackupsList();
+        }
     };
 
     const close = () => {
@@ -61,6 +93,7 @@ export function useCloudSyncModal(emit: any) {
     const disconnectYandex = () => {
         localStorage.removeItem('yandex_disk_token');
         yandexToken.value = null;
+        availableBackups.value = [];
         emit('toast', { text: 'Яндекс.Диск отключен', type: 'info' });
     };
 
@@ -76,6 +109,10 @@ export function useCloudSyncModal(emit: any) {
             showAuthCodeInput.value = false;
             authCode.value = '';
             emit('toast', { text: 'Яндекс.Диск успешно подключен!', type: 'success' });
+            
+            if (syncMode.value === 'import') {
+                fetchBackupsList();
+            }
         } catch (err: any) {
             console.error(err);
             authError.value = typeof err === 'string' ? err : 'Ошибка сети при проверке кода';
@@ -104,22 +141,40 @@ export function useCloudSyncModal(emit: any) {
         } catch (err: any) {
             console.error(err);
             const errMsg = typeof err === 'string' ? err : err.message;
-            if (errMsg && errMsg.includes('Token expired')) disconnectYandex();
+            if (errMsg && (errMsg.includes('Token expired') || errMsg.includes('401'))) disconnectYandex();
             emit('toast', { text: `Ошибка: ${errMsg}`, type: 'error' });
         } finally {
             isSyncing.value = false;
         }
     };
 
-    const restoreBackup = async () => {
+    const restoreBackup = async (fileName: string) => {
         if (!yandexToken.value) return;
+        const { appConfirm } = await import('@worldwiki/components');
+        if (!await appConfirm('ВНИМАНИЕ! Текущий проект будет полностью перезаписан из бекапа. Несохраненные изменения будут утеряны. Вы уверены?')) {
+            return;
+        }
+
         isSyncing.value = true;
 
         try {
-            emit('toast', { text: 'Функция восстановления еще в разработке...', type: 'info' });
+            emit('toast', { text: 'Скачивание и восстановление бекапа...', type: 'info' });
+            
+            await (window as any).__TAURI__.core.invoke('download_and_restore_yandex', {
+                token: yandexToken.value,
+                fileName: fileName
+            });
+            
+            emit('toast', { text: 'Проект успешно восстановлен! Требуется перезагрузка.', type: 'success' });
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            
         } catch (err: any) {
             console.error(err);
-            emit('toast', { text: `Ошибка: ${err.message}`, type: 'error' });
+            const errMsg = typeof err === 'string' ? err : err.message;
+            if (errMsg && errMsg.includes('401')) disconnectYandex();
+            emit('toast', { text: `Ошибка восстановления: ${errMsg}`, type: 'error' });
         } finally {
             isSyncing.value = false;
         }
@@ -134,12 +189,15 @@ export function useCloudSyncModal(emit: any) {
         authError,
         isLoading,
         isSyncing,
+        availableBackups,
+        isLoadingBackups,
         openModal,
         close,
         connectYandex,
         disconnectYandex,
         exchangeCode,
         uploadBackup,
-        restoreBackup
+        restoreBackup,
+        fetchBackupsList
     };
 }

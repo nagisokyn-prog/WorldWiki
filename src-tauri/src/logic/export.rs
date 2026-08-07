@@ -206,6 +206,110 @@ pub async fn upload_to_yandex_disk(token: String, file_path: String) -> Result<(
     }
 }
 
+#[derive(serde::Serialize)]
+pub struct YandexBackupFile {
+    pub name: String,
+    pub created: String,
+    pub size: u64,
+}
+
+#[tauri::command]
+pub async fn list_yandex_disk_backups(token: String) -> Result<Vec<YandexBackupFile>, String> {
+    let client = reqwest::Client::new();
+    let url_res = client
+        .get("https://cloud-api.yandex.net/v1/disk/resources?path=app:/&limit=100")
+        .header("Authorization", format!("OAuth {}", token))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to get directory listing: {}", e))?;
+
+    if url_res.status() == 404 {
+        return Ok(vec![]);
+    }
+    if !url_res.status().is_success() {
+        return Err(format!("Yandex API error: {}", url_res.status()));
+    }
+
+    let json: serde_json::Value = url_res.json().await.map_err(|e| format!("JSON error: {}", e))?;
+    
+    let items = json.get("_embedded").and_then(|e| e.get("items")).and_then(|i| i.as_array());
+    
+    let mut backups = Vec::new();
+    if let Some(items) = items {
+        for item in items {
+            if let (Some(name), Some(created), Some(size)) = (
+                item.get("name").and_then(|n| n.as_str()),
+                item.get("created").and_then(|c| c.as_str()),
+                item.get("size").and_then(|s| s.as_u64())
+            ) {
+                if name.ends_with(".wwiki") || name.ends_with(".zip") {
+                    backups.push(YandexBackupFile {
+                        name: name.to_string(),
+                        created: created.to_string(),
+                        size,
+                    });
+                }
+            }
+        }
+    }
+    
+    // Sort descending (newest first)
+    backups.sort_by(|a, b| b.created.cmp(&a.created));
+    
+    Ok(backups)
+}
+
+#[tauri::command]
+pub async fn download_and_restore_yandex(
+    token: String,
+    file_name: String,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, crate::AppState>
+) -> Result<(), String> {
+    let client = reqwest::Client::new();
+    
+    // 1. Get download URL
+    let url_res = client
+        .get(&format!("https://cloud-api.yandex.net/v1/disk/resources/download?path=app:/{}", file_name))
+        .header("Authorization", format!("OAuth {}", token))
+        .send()
+        .await
+        .map_err(|e| format!("Failed to get download URL: {}", e))?;
+
+    if !url_res.status().is_success() {
+        return Err(format!("Download URL request failed: {}", url_res.status()));
+    }
+
+    let url_json: serde_json::Value = url_res.json().await.map_err(|e| format!("JSON error: {}", e))?;
+    let download_url = url_json.get("href").and_then(|v| v.as_str()).ok_or_else(|| {
+        "Failed to get download link".to_string()
+    })?;
+
+    // 2. Download file contents
+    let file_res = client.get(download_url).send().await.map_err(|e| format!("Failed to download file: {}", e))?;
+    if !file_res.status().is_success() {
+        return Err(format!("Download failed: {}", file_res.status()));
+    }
+    
+    let file_bytes = file_res.bytes().await.map_err(|e| format!("Failed to read downloaded bytes: {}", e))?;
+    
+    // 3. Save to temp file
+    let temp_dir = env::temp_dir().join(format!("wwiki_download_{}", chrono::Local::now().timestamp()));
+    fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+    
+    let temp_file_path = temp_dir.join(&file_name);
+    fs::write(&temp_file_path, file_bytes).map_err(|e| format!("Failed to save temp file: {}", e))?;
+    
+    // 4. Call existing restore_from_backup logic
+    restore_from_backup(temp_file_path.to_string_lossy().to_string(), state).await?;
+    
+    // 5. Cleanup
+    let _ = fs::remove_dir_all(temp_dir);
+    
+    Ok(())
+}
+
+
 #[tauri::command]
 pub async fn restore_from_backup(
     backup_path: String,

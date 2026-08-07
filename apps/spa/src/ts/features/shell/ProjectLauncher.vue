@@ -413,7 +413,8 @@ async function editProject(name: string) {
 }
 
 async function confirmDelete(name: string) {
-    if (confirm(`Удалить проект "${name}"?`)) {
+    const { appConfirm } = await import('@worldwiki/components');
+    if (await appConfirm(`Удалить проект "${name}"?`)) {
         try {
             await projectService.deleteProject(name);
             await loadProjects();

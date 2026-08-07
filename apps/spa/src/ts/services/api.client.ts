@@ -43,7 +43,7 @@ export async function deleteProject(name: string): Promise<string> {
 }
 
 export async function getEntities(project: string, entityType: string | null): Promise<Entity[]> {
-    return await invoke('get_entities', { project, 'entity_type': entityType });
+    return await invoke('get_entities', { project, entityType });
 }
 
 export async function getEntitiesBatch(project: string, entityTypes: string[]): Promise<Record<string, any>> {
@@ -67,7 +67,7 @@ export async function deleteEntity(id: string): Promise<void> {
 }
 
 export async function searchEntities(project: string, query: string, entityType: string | null): Promise<Entity[]> {
-    return await invoke('search_entities', { project, query, 'entity_type': entityType });
+    return await invoke('search_entities', { project, query, entityType });
 }
 
 export async function getEntitySchemas(project: string): Promise<EntitySchema[]> {
@@ -75,7 +75,7 @@ export async function getEntitySchemas(project: string): Promise<EntitySchema[]>
 }
 
 export async function saveEntitySchema(project: string, schema: EntitySchema, maxSaves: number | null): Promise<EntitySchema> {
-    return await invoke('save_entity_schema', { project, schema, 'max_saves': maxSaves });
+    return await invoke('save_entity_schema', { project, schema, maxSaves });
 }
 
 export async function deleteEntitySchema(project: string, typeKey: string): Promise<void> {
@@ -83,27 +83,27 @@ export async function deleteEntitySchema(project: string, typeKey: string): Prom
 }
 
 export async function getSchemaHistory(project: string, typeKey: string): Promise<any[]> {
-    return await invoke('get_schema_history', { project, 'type_key': typeKey });
+    return await invoke('get_schema_history', { project, typeKey });
 }
 
 export async function toggleSchemaHistoryPin(historyId: string, isPinned: boolean): Promise<void> {
-    return await invoke('toggle_schema_history_pin', { 'history_id': historyId, 'is_pinned': isPinned });
+    return await invoke('toggle_schema_history_pin', { historyId, isPinned });
 }
 
 export async function toggleEntityHistoryPin(historyId: string, isPinned: boolean): Promise<void> {
-    return await invoke('toggle_entity_history_pin', { 'history_id': historyId, 'is_pinned': isPinned });
+    return await invoke('toggle_entity_history_pin', { historyId, isPinned });
 }
 
 export async function toggleChapterHistoryPin(historyId: string, isPinned: boolean): Promise<void> {
-    return await invoke('toggle_chapter_history_pin', { 'history_id': historyId, 'is_pinned': isPinned });
+    return await invoke('toggle_chapter_history_pin', { historyId, isPinned });
 }
 
 export async function getEntityRelations(project: string, entityId: string | null): Promise<EntityRel[]> {
-    return await invoke('get_entity_relations', { project, 'entity_id': entityId });
+    return await invoke('get_entity_relations', { project, entityId });
 }
 
 export async function createEntityRelation(project: string, fromId: string, toId: string, rel: EntityRel): Promise<EntityRel> {
-    return await invoke('create_entity_relation', { project, 'from_id': fromId, 'to_id': toId, rel });
+    return await invoke('create_entity_relation', { project, fromId, toId, rel });
 }
 
 export async function deleteEntityRelation(id: string): Promise<void> {
@@ -119,7 +119,7 @@ export async function saveRelationSchema(project: string, schema: RelationSchema
 }
 
 export async function deleteRelationSchema(project: string, relKey: string): Promise<void> {
-    return await invoke('delete_relation_schema', { project, 'rel_key': relKey });
+    return await invoke('delete_relation_schema', { project, relKey });
 }
 
 export async function uploadPhoto(bytes: number[], filename: string): Promise<string> {
@@ -127,7 +127,7 @@ export async function uploadPhoto(bytes: number[], filename: string): Promise<st
 }
 
 export async function copyBackgroundFile(sourcePath: string): Promise<string> {
-    return await invoke('copy_background_file', { 'source_path': sourcePath });
+    return await invoke('copy_background_file', { sourcePath });
 }
 
 export async function getLocalFile(path: string): Promise<number[]> {
@@ -175,23 +175,23 @@ export async function createVolume(project: string, title: string): Promise<any>
 }
 
 export async function updateVolume(Project: string, id: string, title: string): Promise<void> {
-    return await invoke('update_volume', { '_project': Project, id, title });
+    return await invoke('update_volume', { Project, id, title });
 }
 
 export async function createArc(project: string, title: string, volumeId: string | null): Promise<any> {
-    return await invoke('create_arc', { project, title, 'volume_id': volumeId });
+    return await invoke('create_arc', { project, title, volumeId });
 }
 
 export async function updateArc(Project: string, id: string, title: string, VolumeId: string | null): Promise<void> {
-    return await invoke('update_arc', { '_project': Project, id, title, '_volume_id': VolumeId });
+    return await invoke('update_arc', { Project, id, title, VolumeId });
 }
 
 export async function assignChapter(project: string, chapterId: string, arcId: string | null, volumeId: string | null): Promise<void> {
-    return await invoke('assign_chapter', { project, 'chapter_id': chapterId, 'arc_id': arcId, 'volume_id': volumeId });
+    return await invoke('assign_chapter', { project, chapterId, arcId, volumeId });
 }
 
 export async function reorderNode(project: string, nodeType: string, id: string, sortOrder: number): Promise<void> {
-    return await invoke('reorder_node', { project, 'node_type': nodeType, id, 'sort_order': sortOrder });
+    return await invoke('reorder_node', { project, nodeType, id, sortOrder });
 }
 
 export async function getConnections(project: string, chapter: string | null): Promise<any> {
@@ -199,15 +199,15 @@ export async function getConnections(project: string, chapter: string | null): P
 }
 
 export async function saveConnections(project: string, sourceId: string, data: any): Promise<void> {
-    return await invoke('save_connections', { project, 'source_id': sourceId, data });
+    return await invoke('save_connections', { project, sourceId, data });
 }
 
 export async function upsertConnectionsBatch(project: string, SourceType: string, sourceId: string, connections: EntityRel[]): Promise<void> {
-    return await invoke('upsert_connections_batch', { project, '_source_type': SourceType, 'source_id': sourceId, connections });
+    return await invoke('upsert_connections_batch', { project, SourceType, sourceId, connections });
 }
 
 export async function removeConnectionsBySource(Project: string, EType: string, eId: string): Promise<number> {
-    return await invoke('remove_connections_by_source', { '_project': Project, '_e_type': EType, 'e_id': eId });
+    return await invoke('remove_connections_by_source', { Project, EType, eId });
 }
 
 export async function getGlobalTimeline(project: string): Promise<any> {
@@ -227,7 +227,15 @@ export async function exchangeYandexToken(code: string): Promise<string> {
 }
 
 export async function uploadToYandexDisk(token: string, filePath: string): Promise<void> {
-    return await invoke('upload_to_yandex_disk', { token, 'file_path': filePath });
+    return await invoke('upload_to_yandex_disk', { token, filePath });
+}
+
+export async function listYandexDiskBackups(token: string): Promise<any[]> {
+    return await invoke('list_yandex_disk_backups', { token });
+}
+
+export async function downloadAndRestoreYandex(token: string, fileName: string): Promise<void> {
+    return await invoke('download_and_restore_yandex', { token, fileName });
 }
 
 export async function getLaunchArgs(): Promise<string | null> {
@@ -235,28 +243,28 @@ export async function getLaunchArgs(): Promise<string | null> {
 }
 
 export async function restoreFromBackup(backupPath: string): Promise<void> {
-    return await invoke('restore_from_backup', { 'backup_path': backupPath });
+    return await invoke('restore_from_backup', { backupPath });
 }
 
 export async function getChapterRevisions(project: string, chapterId: string): Promise<any[]> {
-    return await invoke('get_chapter_revisions', { project, 'chapter_id': chapterId });
+    return await invoke('get_chapter_revisions', { project, chapterId });
 }
 
 export async function getEntityRevisions(project: string, entityId: string): Promise<any[]> {
-    return await invoke('get_entity_revisions', { project, 'entity_id': entityId });
+    return await invoke('get_entity_revisions', { project, entityId });
 }
 
 export async function convertAbsoluteToLocal(absoluteMinute: number, calendar: any, eraIndex: number): Promise<any> {
-    return await invoke('convert_absolute_to_local', { 'absolute_minute': absoluteMinute, calendar, 'era_index': eraIndex });
+    return await invoke('convert_absolute_to_local', { absoluteMinute, calendar, eraIndex });
 }
 
-export async function saveTextBlocks(project: string, chapterId: string, blocks: any[]): Promise<void> {
-    return await invoke('save_text_blocks', { project, 'chapter_id': chapterId, blocks });
+export async function saveTextBlocks(project: string, chapterId: string, html: string): Promise<void> {
+    return await invoke('save_text_blocks', { project, chapterId, html });
 }
 
 // --- Entities CRUD ---
-export async function getChapters(projectId: string): Promise<Chapter[]> {
-    return await invoke('get_chapters', { 'project_id': projectId });
+export async function getChapters(project: string): Promise<Chapter[]> {
+    return await invoke('get_chapters', { project });
 }
 
 export async function getChapter(id: string): Promise<Chapter | null> {
@@ -271,8 +279,8 @@ export async function deleteChapter(id: string): Promise<void> {
     return await invoke('delete_chapter', { id });
 }
 
-export async function getVolumes(projectId: string): Promise<Volume[]> {
-    return await invoke('get_volumes', { 'project_id': projectId });
+export async function getVolumes(project: string): Promise<Volume[]> {
+    return await invoke('get_volumes', { project });
 }
 
 export async function getVolume(id: string): Promise<Volume | null> {
@@ -287,8 +295,8 @@ export async function deleteVolume(id: string): Promise<void> {
     return await invoke('delete_volume', { id });
 }
 
-export async function getArcs(projectId: string): Promise<Arc[]> {
-    return await invoke('get_arcs', { 'project_id': projectId });
+export async function getArcs(project: string): Promise<Arc[]> {
+    return await invoke('get_arcs', { project });
 }
 
 export async function getArc(id: string): Promise<Arc | null> {
@@ -303,8 +311,8 @@ export async function deleteArc(id: string): Promise<void> {
     return await invoke('delete_arc', { id });
 }
 
-export async function getPlans(projectId: string): Promise<Plan[]> {
-    return await invoke('get_plans', { 'project': projectId });
+export async function getPlans(project: string): Promise<Plan[]> {
+    return await invoke('get_plans', { project });
 }
 
 export async function getPlan(id: string): Promise<Plan | null> {
@@ -319,8 +327,8 @@ export async function deletePlan(id: string): Promise<void> {
     return await invoke('delete_plan', { id });
 }
 
-export async function getTags(projectId: string): Promise<Tag[]> {
-    return await invoke('get_tags', { 'project_id': projectId });
+export async function getTags(project: string): Promise<Tag[]> {
+    return await invoke('get_tags', { project });
 }
 
 export async function getTag(id: string): Promise<Tag | null> {
@@ -351,8 +359,8 @@ export async function deleteCalendar(id: string): Promise<void> {
     return await invoke('delete_calendar', { id });
 }
 
-export async function getTextblocks(projectId: string): Promise<TextBlock[]> {
-    return await invoke('get_textblocks', { 'project_id': projectId });
+export async function getTextblocks(project: string): Promise<TextBlock[]> {
+    return await invoke('get_textblocks', { project });
 }
 
 export async function getTextblock(id: string): Promise<TextBlock | null> {
@@ -367,12 +375,12 @@ export async function deleteTextblock(id: string): Promise<void> {
     return await invoke('delete_textblock', { id });
 }
 
-export async function searchTextblocks(projectId: string, query: string): Promise<SearchResult<TextBlock>[]> {
-    return await invoke('search_textblocks', { 'project_id': projectId, query });
+export async function searchTextblocks(project: string, query: string): Promise<SearchResult<TextBlock>[]> {
+    return await invoke('search_textblocks', { project, query });
 }
 
-export async function getChatmessages(projectId: string): Promise<ChatMessage[]> {
-    return await invoke('get_chatmessages', { 'project_id': projectId });
+export async function getChatmessages(project: string): Promise<ChatMessage[]> {
+    return await invoke('get_chatmessages', { project });
 }
 
 export async function getChatmessage(id: string): Promise<ChatMessage | null> {
@@ -387,12 +395,12 @@ export async function deleteChatmessage(id: string): Promise<void> {
     return await invoke('delete_chatmessage', { id });
 }
 
-export async function searchChatmessages(projectId: string, query: string): Promise<SearchResult<ChatMessage>[]> {
-    return await invoke('search_chatmessages', { 'project_id': projectId, query });
+export async function searchChatmessages(project: string, query: string): Promise<SearchResult<ChatMessage>[]> {
+    return await invoke('search_chatmessages', { project, query });
 }
 
-export async function getAgentmemorys(projectId: string): Promise<AgentMemory[]> {
-    return await invoke('get_agentmemorys', { 'project_id': projectId });
+export async function getAgentmemorys(project: string): Promise<AgentMemory[]> {
+    return await invoke('get_agentmemorys', { project });
 }
 
 export async function getAgentmemory(id: string): Promise<AgentMemory | null> {
@@ -407,12 +415,12 @@ export async function deleteAgentmemory(id: string): Promise<void> {
     return await invoke('delete_agentmemory', { id });
 }
 
-export async function searchAgentmemorys(projectId: string, query: string): Promise<SearchResult<AgentMemory>[]> {
-    return await invoke('search_agentmemorys', { 'project_id': projectId, query });
+export async function searchAgentmemorys(project: string, query: string): Promise<SearchResult<AgentMemory>[]> {
+    return await invoke('search_agentmemorys', { project, query });
 }
 
-export async function getWebcaches(projectId: string): Promise<WebCache[]> {
-    return await invoke('get_webcaches', { 'project_id': projectId });
+export async function getWebcaches(project: string): Promise<WebCache[]> {
+    return await invoke('get_webcaches', { project });
 }
 
 export async function getWebcache(id: string): Promise<WebCache | null> {
@@ -427,17 +435,17 @@ export async function deleteWebcache(id: string): Promise<void> {
     return await invoke('delete_webcache', { id });
 }
 
-export async function searchWebcaches(projectId: string, query: string): Promise<SearchResult<WebCache>[]> {
-    return await invoke('search_webcaches', { 'project_id': projectId, query });
+export async function searchWebcaches(project: string, query: string): Promise<SearchResult<WebCache>[]> {
+    return await invoke('search_webcaches', { project, query });
 }
 
 // --- Relations CRUD ---
-export async function getCites(projectId: string, sourceId: string): Promise<Cites[]> {
-    return await invoke('get_cites', { 'project_id': projectId, 'source_id': sourceId });
+export async function getCites(fromId: string, toId: string): Promise<Cites[]> {
+    return await invoke('get_cites', { fromId, toId });
 }
 
-export async function createCite(data: Cites): Promise<Cites> {
-    return await invoke('create_cite', { data });
+export async function createCite(fromId: string, toId: string, data: Cites): Promise<Cites> {
+    return await invoke('create_cite', { fromId, toId, data });
 }
 
 export async function deleteCite(id: string): Promise<void> {

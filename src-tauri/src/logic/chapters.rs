@@ -106,13 +106,16 @@ pub async fn get_chapter_revisions(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Value>, String> {
     let db = &state.db;
-    let proj_id = format!("projects:{}", project);
+    let _proj_id = format!("projects:{}", project);
     
+    let parts: Vec<&str> = chapter_id.splitn(2, ':').collect();
+    let actual_id = if parts.len() == 2 { parts[1] } else { chapter_id.as_str() };
+    let full_id = format!("chapters:⟨{}⟩", actual_id);
+
     let mut result = db.query(
-        "SELECT * FROM chapter_revisions WHERE target_id = type::record($target_id) AND project_id = $project_id ORDER BY created_at DESC"
+        "SELECT * FROM chapter_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC"
     )
-    .bind(("target_id", chapter_id))
-    .bind(("project_id", proj_id))
+    .bind(("target_id", full_id))
     .await
     .map_err(|e| e.to_string())?;
 
@@ -128,7 +131,7 @@ pub async fn toggle_chapter_history_pin(
 ) -> Result<(), String> {
     let db = &state.db;
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { &history_id };
+    let actual_id = if parts.len() == 2 { parts[1] } else { history_id.as_str() };
     
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("chapter_revisions:{}", actual_id)))

@@ -223,13 +223,21 @@ export function useEntityEditor(props: any, emit: any) {
     if (newSec) emit('section-change', newSec);
   });
 
+  const handleToggleHistory = (e: CustomEvent) => {
+    if (e.detail.id === props.entityId || e.detail.id === `${props.entityType}:${props.entityId}`) {
+      historyHook.toggleHistory();
+    }
+  };
+
   onMounted(() => {
     loadConfigAndData();
     window.addEventListener('ww:global-save-triggered', historyHook.loadHistory);
+    document.addEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
   });
   
   onUnmounted(() => {
     window.removeEventListener('ww:global-save-triggered', historyHook.loadHistory);
+    document.removeEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
   });
 
   const uploadPhoto = async (file: File) => {

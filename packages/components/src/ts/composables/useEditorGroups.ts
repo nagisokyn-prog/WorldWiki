@@ -125,7 +125,7 @@ export function useEditorGroups() {
 
 
   /** Закрыть вкладку (в любой группе) */
-  const closeTab = (tabId: string, force = false): boolean => {
+  const closeTab = async (tabId: string, force = false): Promise<boolean> => {
     const g = findGroupByTab(tabId);
     if (!g) return true;
 
@@ -133,7 +133,8 @@ export function useEditorGroups() {
     if (idx < 0) return true;
 
     if (!force && g.tabs[idx].unsaved) {
-      if (!confirm(i18n.global.t('editor.confirmCloseUnsaved'))) return false;
+      const { confirm } = await import('@tauri-apps/plugin-dialog');
+      if (!await confirm(i18n.global.t('editor.confirmCloseUnsaved'))) return false;
     }
 
     g.tabs.splice(idx, 1);

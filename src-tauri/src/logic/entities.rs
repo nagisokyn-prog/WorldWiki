@@ -246,7 +246,7 @@ pub async fn delete_entity(
     let db = &state.db;
     println!("[DEBUG] delete_entity called with id: '{}'", id);
     let parts: Vec<&str> = id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { &id };
+    let actual_id = if parts.len() == 2 { parts[1] } else { id.as_str() };
     let full_id = crate::logic::entities::safe_id("entities", actual_id);
     println!("[DEBUG] delete_entity full_id resolved to: '{}'", full_id);
 
@@ -527,9 +527,9 @@ pub async fn get_schema_history(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<SchemaHistoryEntry>, String> {
     let db = &state.db;
-    let proj_id = format!("projects:{}", project);
-    let mut res = db.query("SELECT * FROM schema_history WHERE project_id = $pid AND type_key = $tk ORDER BY saved_at DESC")
-        .bind(("pid", proj_id))
+    let pid = format!("projects:{}", project);
+    let mut res = db.query("SELECT * FROM schema_history WHERE project_id = type::record($pid) AND type_key = $tk ORDER BY saved_at DESC")
+        .bind(("pid", pid))
         .bind(("tk", type_key))
         .await.map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
@@ -712,13 +712,16 @@ pub async fn get_entity_revisions(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Value>, String> {
     let db = &state.db;
-    let proj_id = format!("projects:{}", project);
+    let _proj_id = format!("projects:{}", project);
     
+    let parts: Vec<&str> = entity_id.splitn(2, ':').collect();
+    let actual_id = if parts.len() == 2 { parts[1] } else { entity_id.as_str() };
+    let full_id = format!("entities:⟨{}⟩", actual_id);
+
     let mut result = db.query(
-        "SELECT * FROM entity_revisions WHERE target_id = type::record($target_id) AND project_id = $project_id ORDER BY created_at DESC"
+        "SELECT * FROM entity_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC"
     )
-    .bind(("target_id", entity_id))
-    .bind(("project_id", proj_id))
+    .bind(("target_id", full_id))
     .await
     .map_err(|e| e.to_string())?;
 
@@ -734,7 +737,7 @@ pub async fn toggle_entity_history_pin(
 ) -> Result<(), String> {
     let db = &state.db;
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { &history_id };
+    let actual_id = if parts.len() == 2 { parts[1] } else { history_id.as_str() };
     
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("entity_revisions:{}", actual_id)))

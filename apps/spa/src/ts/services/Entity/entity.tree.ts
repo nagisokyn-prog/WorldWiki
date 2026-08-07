@@ -55,7 +55,8 @@ export function useEntityTree(project: string, emit: any) {
   const entitySelection = useTreeSelection({
     onDelete: async (keys: string[]) => {
       if (!keys.length) return;
-      if (!confirm(`Удалить выбранные сущности (${keys.length})?`)) return;
+      const { appConfirm } = await import('@worldwiki/components');
+      if (!await appConfirm(`Удалить выбранные сущности (${keys.length})?`)) return;
 
       const itemsToDelete = flatEntityItems.value.filter(i => keys.includes(i.id));
       for (const item of itemsToDelete) {
@@ -113,7 +114,7 @@ export function useEntityTree(project: string, emit: any) {
       console.log(`[TREE DEBUG] → getEntitiesBatch for types:`, typesToFetch);
       
       const batchResult = await api.getEntitiesBatch(project, typesToFetch);
-      console.log(`[TREE DEBUG] ← getEntitiesBatch returned keys:`, Object.keys(batchResult));
+      console.log('[TREE DEBUG] ← getEntitiesBatch returned keys:', Object.keys(batchResult));
       
       const newEntities: Record<string, any[]> = batchResult;
       
@@ -181,7 +182,8 @@ export function useEntityTree(project: string, emit: any) {
     if (entitySelection.hasSelection.value && entitySelection.isSelected(key) && entitySelection.selectedCount.value > 1) {
       await entitySelection.deleteSelected();
     } else {
-      if (confirm(`Удалить сущность "${getEntityName(entity, entityType)}"?`)) {
+      const { appConfirm } = await import('@worldwiki/components');
+      if (await appConfirm(`Удалить сущность "${getEntityName(entity, entityType)}"?`)) {
         emit('delete-entity', key, entityType, true);
         if (entities.value[entityType]) {
           entities.value[entityType] = entities.value[entityType].filter(e => String(e.id) !== String(entity.id));

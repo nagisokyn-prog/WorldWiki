@@ -9,8 +9,37 @@ DEFINE FIELD OVERWRITE name        ON projects TYPE string;
 DEFINE FIELD OVERWRITE created_at  ON projects TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE data        ON projects TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE type        ON projects TYPE option<string>;
-DEFINE FIELD OVERWRITE genres      ON projects TYPE option<array<string>>;
-DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string>;
+DEFINE FIELD OVERWRITE genres      ON projects TYPE option<array<string>>;
+DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string>;
+
+DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
+    LET $pid = $before.id;
+    
+    DELETE FROM volumes WHERE project_id = $pid;
+    DELETE FROM arcs WHERE project_id = $pid;
+    DELETE FROM chapters WHERE project_id = $pid;
+    DELETE FROM text_blocks WHERE project_id = $pid;
+    DELETE FROM entity_schemas WHERE project_id = $pid;
+    DELETE FROM relation_schemas WHERE project_id = $pid;
+    DELETE FROM schema_history WHERE project_id = $pid;
+    DELETE FROM tags WHERE project_id = $pid;
+    DELETE FROM calendars WHERE project_id = $pid;
+    DELETE FROM entities WHERE project_id = $pid;
+    DELETE FROM chat_messages WHERE project_id = $pid;
+    DELETE FROM user_dictionary WHERE project_id = $pid;
+    DELETE FROM agent_memory WHERE project_id = $pid;
+    DELETE FROM web_cache WHERE project_id = $pid;
+    DELETE FROM plans WHERE project_id = $pid;
+    DELETE FROM entity_revisions WHERE project_id = $pid;
+    DELETE FROM chapter_revisions WHERE project_id = $pid;
+    DELETE FROM chats WHERE project_id = $pid;
+    DELETE FROM entity_rel WHERE project_id = $pid;
+    DELETE FROM appears_in WHERE project_id = $pid;
+    DELETE FROM auto_approval_settings WHERE project_id = $pid;
+    DELETE FROM ai_profiles WHERE project_id = $pid;
+    DELETE FROM artifacts WHERE project_id = $pid;
+    DELETE FROM ai_skills WHERE project_id = $pid;
+};
 
 -- ===============================================
 -- ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
@@ -313,18 +342,19 @@ DEFINE INDEX OVERWRITE idx_entity_rev_project ON entity_revisions FIELDS project
 DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters>;
 DEFINE FIELD OVERWRITE project_id  ON chapter_revisions TYPE record<projects>;
-DEFINE FIELD OVERWRITE content     ON chapter_revisions TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string>;
-DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE content     ON chapter_revisions TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 DEFINE INDEX OVERWRITE idx_chapter_rev_target ON chapter_revisions FIELDS target_id;
 DEFINE INDEX OVERWRITE idx_chapter_rev_project ON chapter_revisions FIELDS project_id;
 
 DEFINE EVENT OVERWRITE log_entity_revision ON TABLE entities WHEN $event = "UPDATE" THEN {
-    CREATE entity_revisions SET target_id = $before.id, project_id = $before.project_id, content = $before, created_at = time::now();
+    CREATE entity_revisions SET target_id = $before.id, project_id = $before.project_id, content = $before, created_at = time::now(), commit_msg = NONE;
 };
 
 DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters WHEN $event = "UPDATE" THEN {
-    CREATE chapter_revisions SET target_id = $before.id, project_id = $before.project_id, content = $before, created_at = time::now();
+    CREATE chapter_revisions SET target_id = $before.id, project_id = $before.project_id, content = $before, created_at = time::now(), commit_msg = NONE;
 };
 
 -- ===============================================

@@ -127,8 +127,25 @@ export const useChapterStore = defineStore('chapter', () => {
   };
 
   const createNewChapter = async (project: string, arcId?: string, volumeId?: string) => {
+    console.error('🔥🔥🔥 chapter.store: createNewChapter called with', { arcId, volumeId });
     const allChapters = hierarchy.value?.chapters ?? [];
-    const num = allChapters.length + 1;
+    let relevantChapters = allChapters;
+    if (arcId || volumeId) {
+      relevantChapters = allChapters.filter(c => {
+        if (arcId) return c.arc_id === arcId;
+        if (volumeId) return c.volume_id === volumeId && !c.arc_id;
+        return false;
+      });
+    }
+    let maxNum = 0;
+    relevantChapters.forEach(c => {
+      const m = (c.title || '').match(/Глава\s*(\d+)/i);
+      if (m) {
+        const n = parseInt(m[1]);
+        if (n > maxNum) maxNum = n;
+      }
+    });
+    const num = maxNum + 1;
     const newCh = chapterService.createNew(`Глава ${num}`);
     if (arcId) newCh.arc_id = arcId;
     if (volumeId) newCh.volume_id = volumeId;
@@ -153,8 +170,17 @@ export const useChapterStore = defineStore('chapter', () => {
       }
     }
 
+    console.error('🔥🔥🔥 chapter.store: saving new chapter', newCh);
     await chapterService.save(project, newCh);
+    console.error('🔥🔥🔥 chapter.store: chapter saved, checking relations...');
+    if (arcId || volumeId) {
+      console.error('🔥🔥🔥 chapter.store: calling api.assignChapter...', { project, id: newCh.id, arcId, volumeId });
+      await api.assignChapter(project, newCh.id, arcId ?? null, volumeId ?? null);
+      console.error('🔥🔥🔥 chapter.store: api.assignChapter DONE!');
+    }
+    console.error('🔥🔥🔥 chapter.store: fetching hierarchy...');
     hierarchy.value = await api.getChapterHierarchy(project).catch(() => hierarchy.value);
+    console.error('🔥🔥🔥 chapter.store: hierarchy loaded!', hierarchy.value);
     await openChapter(project, newCh.id);
     return newCh;
   };

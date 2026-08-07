@@ -46,6 +46,7 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
       return;
     }
 
+    console.log('[useChapterHistory] previewHistory - rev:', rev);
     if (!originalData.value) {
       originalData.value = {
         content: currentChapter.value.content,
@@ -55,6 +56,7 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
     }
 
     const snap = rev.content;
+    console.log('[useChapterHistory] previewHistory - snap:', snap);
     currentChapter.value.content = snap.content || snap.attributes?.content || '';
     currentChapter.value.title = snap.title || snap.attributes?.title || '';
     currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};

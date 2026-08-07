@@ -98,7 +98,8 @@ export function useCalendarsPanel(props: any) {
     };
 
     const removeCalendar = async (idx: number) => {
-        if (!confirm('Вы уверены, что хотите удалить этот календарь?')) return;
+        const { confirm } = await import('@tauri-apps/plugin-dialog');
+        if (!await confirm('Вы уверены, что хотите удалить этот календарь?')) return;
         if (!project.value) return;
 
         const cal = calendars.value[idx];

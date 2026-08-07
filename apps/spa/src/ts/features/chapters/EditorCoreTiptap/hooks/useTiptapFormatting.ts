@@ -46,8 +46,9 @@ export function useTiptapFormatting(editor: any, emit: any, editorUpdateKey: any
     emit('change');
   };
 
-  const deleteFootnote = (id: string) => {
-    if (confirm('Удалить сноску?')) {
+  const deleteFootnote = async (id: string) => {
+    const { confirm } = await import('@tauri-apps/plugin-dialog');
+    if (await confirm('Удалить сноску?')) {
       delete footnotes.value[id];
       emit('update:footnotesData', footnotes.value);
       emit('change');

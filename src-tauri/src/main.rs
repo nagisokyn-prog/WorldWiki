@@ -130,6 +130,8 @@ fn main() {
             create_cloud_backup,
             exchange_yandex_token,
             upload_to_yandex_disk,
+            list_yandex_disk_backups,
+            download_and_restore_yandex,
             get_launch_args,
             restore_from_backup,
             get_chapter_revisions,

@@ -22,7 +22,7 @@ export function useTagsManagerModal(props: any) {
     const addTag = async () => {
         if (!newTagName.value.trim()) return;
         try {
-            await api.saveTag({
+            await api.saveTag(props.project, {
                 project_id: props.project,
                 name: newTagName.value.trim(),
                 color: newTagColor.value,
@@ -38,14 +38,15 @@ export function useTagsManagerModal(props: any) {
     const updateTag = async (tag: any) => {
         try {
             if (!tag.project_id) tag.project_id = props.project;
-            await api.saveTag(tag);
+            await api.saveTag(props.project, tag);
         } catch (e) {
             console.error('[TagsManager] Update error:', e);
         }
     };
 
     const deleteTag = async (id: string) => {
-        if (!confirm('Удалить этот тег? Он исчезнет из всех сущностей.')) return;
+        const { confirm } = await import('@tauri-apps/plugin-dialog');
+        if (!await confirm('Удалить этот тег? Он исчезнет из всех сущностей.')) return;
         try {
             await api.deleteEntity(id);
             await loadTags();

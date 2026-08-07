@@ -21,7 +21,11 @@ class ChapterService {
     if (!data.id) {
       data.id = `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
-    await api.saveChapter(data as any);
+    if (!data.id.startsWith('chapters:')) {
+      data.id = `chapters:${data.id}`;
+    }
+    data.project_id = project.startsWith('projects:') ? project : `projects:${project}`;
+    await api.saveChapter(project, data as any);
     return data.id;
   }
 

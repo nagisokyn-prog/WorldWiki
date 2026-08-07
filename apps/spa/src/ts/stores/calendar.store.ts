@@ -89,7 +89,7 @@ export const useCalendarStore = defineStore('calendar', () => {
         project_id: `projects:${projectName}`,
       };
       if (calId) payload.id = calId;
-      await api.saveCalendar(payload);
+      await api.saveCalendar(projectName, payload);
       invalidateCache(`calendars:${projectName}`);
       console.log("✅ Календарь успешно сохранён в БД");
       return true;

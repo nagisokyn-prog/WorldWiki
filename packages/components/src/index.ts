@@ -22,6 +22,9 @@ export { useEditorGroups } from './ts/composables/useEditorGroups.js';
 export { useShellApp } from './ts/composables/useShellApp.js';
 export { useTreeSelection } from './ts/composables/useTreeSelection.js';
 
+// Utils
+export { appConfirm } from './ts/utils/dialogs.js';
+
 // I18n
 export { i18n, setLocale } from './ts/i18n.js';
 

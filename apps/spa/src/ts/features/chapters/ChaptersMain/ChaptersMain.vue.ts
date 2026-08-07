@@ -2,6 +2,7 @@ import { ref, onMounted, onUnmounted, watch, computed, type PropType, shallowRef
 import { chapterService } from '../../../services/chapter.service';
 import * as api from '../../../services/api.client';;
 import { useCalendarStore } from '../../../stores/calendar.store';
+import { useTimelineStore } from '../../../stores/timeline.store';
 
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
@@ -177,9 +178,12 @@ const previewHistory = (rev: any) => {
   }
 
   const snap = rev.content;
+  console.log('[ChaptersMain] previewHistory - rev:', rev);
+  console.log('[ChaptersMain] previewHistory - snap:', snap);
   currentChapter.value.content = snap.content || snap.attributes?.content || '';
   currentChapter.value.title = snap.title || snap.attributes?.title || '';
   currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};
+  console.log('[ChaptersMain] previewHistory - set content to:', currentChapter.value.content);
   previewingRevId.value = rev.id;
 };
 
@@ -389,7 +393,7 @@ const saveChapter = async () => {
 
   // Parse participants from text automatically
   const autoParts = useTimelineStore().parseParticipants(currentChapter.value.content);
-  autoParts.forEach(p => {
+  autoParts.forEach((p: any) => {
     if (!currentChapter.value.participants.some((ep: any) => ep.id === p.id && ep.type === p.type)) {
       currentChapter.value.participants.push({ ...p, autoParsed: true });
     }
@@ -437,7 +441,10 @@ const openChapter = async (id: string) => {
       console.warn('⚠️ Глава не найдена или удалена:', id);
       return;
     }
-    if (!full.timelineEvents) full.timelineEvents = [];
+    if (!full.timeline_events) {
+      full.timeline_events = (full as any).timelineEvents || [];
+    }
+    delete (full as any).timelineEvents;
     if (!full.participants) full.participants = [];
     if (!full.footnotes) full.footnotes = {};
 

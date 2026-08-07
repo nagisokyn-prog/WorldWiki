@@ -49,7 +49,7 @@ export function usePlanningPanel(props: any) {
                 completed: item.done,
                 sort_order: item.sort_order ?? items.value.indexOf(item)
             };
-            const savedPlan = await api.savePlan(planToSave);
+            const savedPlan = await api.savePlan(props.project, planToSave);
             if (!item.id && savedPlan.id) item.id = savedPlan.id;
         } catch (e) {
             console.error('Ошибка сохранения пункта:', e);
@@ -61,7 +61,7 @@ export function usePlanningPanel(props: any) {
         item.done = !item.done;
         try {
             if (item.id) {
-                await api.getPlans(props.project).then(async plans => { const p = plans.find(x => x.id === item.id); if (p) { p.completed = !p.completed; await api.savePlan(p); } });
+                await api.getPlans(props.project).then(async plans => { const p = plans.find(x => x.id === item.id); if (p) { p.completed = !p.completed; await api.savePlan(props.project, p); } });
             } else {
                 await saveItem(item);
             }

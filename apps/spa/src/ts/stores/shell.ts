@@ -328,12 +328,12 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const closeEditor = (id: string, force = false) => {
-    eg.closeTab(id, force);
+  const closeEditor = async (id: string, force = false) => {
+    await eg.closeTab(id, force);
     addLog(`Editor -> Closed [${id}]`, 'warn');
   };
 
-  const closeAllTabs = () => eg.closeAll();
+  const closeAllTabs = async () => await eg.closeAll();
 
   const markUnsaved = (tabId?: string) => {
     const id = tabId ?? activeEditor.value?.id;
@@ -738,7 +738,7 @@ export const useShellStore = defineStore('shell', () => {
           createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           word_count: 0, footnotes: {}, timeline_events: [], participants: [],
         };
-        await api.saveChapter(newChapter as any);
+        await api.saveChapter(projectName.value, newChapter as any);
         addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
         addToast(`Глава "${newChapter.title}" создана`, 'success');
         chapters.value.push(newChapter);
@@ -793,7 +793,7 @@ export const useShellStore = defineStore('shell', () => {
     if (isCreatingChapter) return;
     isCreatingChapter = true;
     try {
-      const hierarchy = await api.getChapterHierarchy('');
+      const hierarchy = await api.getChapterHierarchy(projectName.value);
       const allChapters = hierarchy.chapters || [];
       let maxNum = 0;
       let relevantCount = 0;
@@ -820,6 +820,7 @@ export const useShellStore = defineStore('shell', () => {
       addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
       const newCh: any = {
         id: `chapters:chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        project_id: `projects:${projectName.value}`,
         title: `Глава ${num}`,
         content: '# Новая глава\n\n',
         createdAt: new Date().toISOString(),
@@ -831,7 +832,7 @@ export const useShellStore = defineStore('shell', () => {
         arc_id: arcId,
         volume_id: volumeId,
       };
-      const saveRes = await api.saveChapter(newCh as any);
+      const saveRes = await api.saveChapter(projectName.value, newCh as any);
       if (saveRes && (saveRes as any).id) newCh.id = (saveRes as any).id;
       if (arcId || volumeId) await api.assignChapter(projectName.value, newCh.id, arcId ?? null, volumeId ?? null);
       addLog('Manuscript -> Created new chapter', 'success');
@@ -865,7 +866,7 @@ export const useShellStore = defineStore('shell', () => {
       const fullData = await api.getChapter(chapter.id);
       if (fullData) {
         fullData.title = newTitle;
-        await api.saveChapter(fullData as any);
+        await api.saveChapter(projectName.value, fullData as any);
       }
       addLog(`Chapter renamed: ${newTitle}`, 'success');
       if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
@@ -892,7 +893,8 @@ export const useShellStore = defineStore('shell', () => {
   };
 
   const deleteVolume = async (volume: any, chaptersInVol: any[] = [], arcsInVol: any[] = [], silent: boolean = false) => {
-    if (!silent && !confirm(`Удалить том "${volume.title}" и все его содержимое?`)) return;
+    const { appConfirm } = await import('@worldwiki/components');
+    if (!silent && !await appConfirm(`Удалить том "${volume.title}" и все его содержимое?`)) return;
     try {
       closeEditorsFor(e =>
         e.tabType === 'chapter' && (
@@ -928,7 +930,8 @@ export const useShellStore = defineStore('shell', () => {
   };
 
   const deleteArc = async (arc: any, chaptersInArc: any[] = [], silent: boolean = false) => {
-    if (!silent && !confirm(`Удалить арку "${arc.title}" и все ее главы?`)) return;
+    const { appConfirm } = await import('@worldwiki/components');
+    if (!silent && !await appConfirm(`Удалить арку "${arc.title}" и все ее главы?`)) return;
     try {
       closeEditorsFor(e =>
         e.tabType === 'chapter' && (

@@ -26,7 +26,7 @@ export const chapterApi = {
       project_id: projectRecordId(project),
     };
     
-    const res = await api.saveChapter(data as Chapter);
+    const res = await api.saveChapter(project, data as Chapter);
 
     if (data.arc_id || data.volume_id) {
       try {

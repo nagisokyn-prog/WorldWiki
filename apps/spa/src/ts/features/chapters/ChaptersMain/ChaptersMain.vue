@@ -39,7 +39,7 @@
         <!-- Глава открыта: таймлайн → участники → план -->
         <div v-else-if="currentChapter" style="padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0;">
           <TimelinePanel
-            v-model:events="currentChapter.timelineEvents"
+            v-model:events="currentChapter.timeline_events"
             :project="project"
             @change="markUnsaved"
           />

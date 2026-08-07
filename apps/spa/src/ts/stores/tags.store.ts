@@ -45,7 +45,7 @@ export const useTagsStore = defineStore('tags', () => {
 
     isCreatingTag.value = true;
     try {
-      await api.saveTag(project.value, { project_id: project.value, name, color: '#3498db', id: null } as any);
+      await api.saveTag(project.value, { project_id: `projects:${project.value}`, name, color: '#3498db', id: null } as any);
       globalTags.value.push({ name, color: '#3498db' });
       invalidateCache(`tags:${project.value}`);
     } finally {
@@ -68,7 +68,7 @@ export const useTagsStore = defineStore('tags', () => {
     const existingTag = globalTags.value.find(t => t.name === oldName);
     
     await api.saveTag(project.value, {
-      project_id: project.value,
+      project_id: `projects:${project.value}`,
       id: existingTag?.id || null,
       name: newName,
       color: color

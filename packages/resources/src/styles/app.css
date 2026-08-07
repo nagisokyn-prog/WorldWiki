@@ -22,8 +22,7 @@ body {
 .bg-glow {
   position: fixed;
   border-radius: 50%;
-  background: var(--accent);
-  filter: blur(150px);
+  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
   opacity: 0.15;
   z-index: 0;
   pointer-events: none;
@@ -892,3 +891,7 @@ select.form-control { cursor: pointer; }
   transform: scale(var(--scale-push));
 }
 
+/* GPU Optimization: only create layers on hover to save VRAM but keep animations smooth */
+.activity-icon:hover, .btn:hover, .btn-primary:hover, .btn-secondary:hover, .btn-danger:hover, .sidebar-item:hover, .panel-tab:hover, .interactive-el:hover {
+    will-change: transform, opacity, background-color;
+}

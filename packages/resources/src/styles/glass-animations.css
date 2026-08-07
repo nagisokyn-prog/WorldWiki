@@ -10,11 +10,10 @@
 }
 
 .interactive-el {
-    transition: all var(--anim-speed) var(--anim-ease);
+    transition: transform var(--anim-speed) var(--anim-ease), opacity var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), box-shadow var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
     transform-origin: center center;
     position: relative;
     z-index: 10;
-    will-change: transform;
 }
 
 .interactive-el:hover {

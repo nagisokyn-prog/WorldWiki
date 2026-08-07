@@ -23,7 +23,7 @@ export function useTagsManagerModal(props: any) {
         if (!newTagName.value.trim()) return;
         try {
             await api.saveTag(props.project, {
-                project_id: props.project,
+                project_id: `projects:${props.project}`,
                 name: newTagName.value.trim(),
                 color: newTagColor.value,
                 id: null

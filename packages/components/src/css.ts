@@ -1,1 +1,1 @@
-import './css/explorer-tree.css';
+import '../../resources/src/styles/explorer-tree.css';

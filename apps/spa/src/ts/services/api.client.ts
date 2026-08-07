@@ -271,8 +271,8 @@ export async function getChapter(id: string): Promise<Chapter | null> {
     return await invoke('get_chapter', { id });
 }
 
-export async function saveChapter(data: Chapter): Promise<Chapter> {
-    return await invoke('save_chapter', { data });
+export async function saveChapter(project: string, data: Chapter): Promise<Chapter> {
+    return await invoke('save_chapter', { project, data });
 }
 
 export async function deleteChapter(id: string): Promise<void> {
@@ -287,8 +287,8 @@ export async function getVolume(id: string): Promise<Volume | null> {
     return await invoke('get_volume', { id });
 }
 
-export async function saveVolume(data: Volume): Promise<Volume> {
-    return await invoke('save_volume', { data });
+export async function saveVolume(project: string, data: Volume): Promise<Volume> {
+    return await invoke('save_volume', { project, data });
 }
 
 export async function deleteVolume(id: string): Promise<void> {
@@ -303,8 +303,8 @@ export async function getArc(id: string): Promise<Arc | null> {
     return await invoke('get_arc', { id });
 }
 
-export async function saveArc(data: Arc): Promise<Arc> {
-    return await invoke('save_arc', { data });
+export async function saveArc(project: string, data: Arc): Promise<Arc> {
+    return await invoke('save_arc', { project, data });
 }
 
 export async function deleteArc(id: string): Promise<void> {
@@ -319,8 +319,8 @@ export async function getPlan(id: string): Promise<Plan | null> {
     return await invoke('get_plan', { id });
 }
 
-export async function savePlan(data: Plan): Promise<Plan> {
-    return await invoke('save_plan', { data });
+export async function savePlan(project: string, data: Plan): Promise<Plan> {
+    return await invoke('save_plan', { project, data });
 }
 
 export async function deletePlan(id: string): Promise<void> {
@@ -335,8 +335,8 @@ export async function getTag(id: string): Promise<Tag | null> {
     return await invoke('get_tag', { id });
 }
 
-export async function saveTag(data: Tag): Promise<Tag> {
-    return await invoke('save_tag', { data });
+export async function saveTag(project: string, data: Tag): Promise<Tag> {
+    return await invoke('save_tag', { project, data });
 }
 
 export async function deleteTag(id: string): Promise<void> {
@@ -351,8 +351,8 @@ export async function getCalendar(id: string): Promise<Calendar | null> {
     return await invoke('get_calendar', { id });
 }
 
-export async function saveCalendar(data: Calendar): Promise<Calendar> {
-    return await invoke('save_calendar', { data });
+export async function saveCalendar(project: string, data: Calendar): Promise<Calendar> {
+    return await invoke('save_calendar', { project, data });
 }
 
 export async function deleteCalendar(id: string): Promise<void> {
@@ -367,8 +367,8 @@ export async function getTextblock(id: string): Promise<TextBlock | null> {
     return await invoke('get_textblock', { id });
 }
 
-export async function saveTextblock(data: TextBlock): Promise<TextBlock> {
-    return await invoke('save_textblock', { data });
+export async function saveTextblock(project: string, data: TextBlock): Promise<TextBlock> {
+    return await invoke('save_textblock', { project, data });
 }
 
 export async function deleteTextblock(id: string): Promise<void> {
@@ -387,8 +387,8 @@ export async function getChatmessage(id: string): Promise<ChatMessage | null> {
     return await invoke('get_chatmessage', { id });
 }
 
-export async function saveChatmessage(data: ChatMessage): Promise<ChatMessage> {
-    return await invoke('save_chatmessage', { data });
+export async function saveChatmessage(project: string, data: ChatMessage): Promise<ChatMessage> {
+    return await invoke('save_chatmessage', { project, data });
 }
 
 export async function deleteChatmessage(id: string): Promise<void> {
@@ -407,8 +407,8 @@ export async function getAgentmemory(id: string): Promise<AgentMemory | null> {
     return await invoke('get_agentmemory', { id });
 }
 
-export async function saveAgentmemory(data: AgentMemory): Promise<AgentMemory> {
-    return await invoke('save_agentmemory', { data });
+export async function saveAgentmemory(project: string, data: AgentMemory): Promise<AgentMemory> {
+    return await invoke('save_agentmemory', { project, data });
 }
 
 export async function deleteAgentmemory(id: string): Promise<void> {
@@ -427,8 +427,8 @@ export async function getWebcache(id: string): Promise<WebCache | null> {
     return await invoke('get_webcache', { id });
 }
 
-export async function saveWebcache(data: WebCache): Promise<WebCache> {
-    return await invoke('save_webcache', { data });
+export async function saveWebcache(project: string, data: WebCache): Promise<WebCache> {
+    return await invoke('save_webcache', { project, data });
 }
 
 export async function deleteWebcache(id: string): Promise<void> {

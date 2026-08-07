@@ -27,7 +27,17 @@ export function usePlanningPanel(props: any) {
             return;
         }
         try {
-            items.value = await api.getPlans(props.project).then(plans => plans.filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId));
+            items.value = await api.getPlans(props.project).then(plans => 
+                plans.filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId)
+                     .map(p => ({
+                         id: p.id,
+                         text: p.title,
+                         done: p.completed,
+                         sort_order: p.sort_order,
+                         indent: (p as any).indent || 0
+                     }))
+                     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+            );
         } catch (e) {
             console.error('Ошибка загрузки плана:', e);
             items.value = [];
@@ -42,7 +52,7 @@ export function usePlanningPanel(props: any) {
         try {
             const planToSave: any = {
                 id: item.id || null,
-                project_id: props.project,
+                project_id: `projects:${props.project}`,
                 parent_type: props.parentType,
                 parent_ref: props.parentId,
                 title: item.text,

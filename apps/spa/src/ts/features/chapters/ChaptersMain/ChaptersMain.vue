@@ -133,7 +133,7 @@
               <div
 v-for="(rev, idx) in revisions" :key="rev.id" 
                    :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
-                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;"
+                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.2s, background-color 0.2s, opacity 0.2s;"
                    @click="previewHistory(rev)">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                       <span style="font-size: 11px; font-weight: bold;">{{ rev.formattedDate }}</span>
@@ -176,7 +176,7 @@ v-for="(rev, idx) in revisions" :key="rev.id"
     </div>
 
     <!-- Кнопка-кружок для показа подсказки -->
-    <button v-if="!showQuickLinkHint" class="quick-link-hint-circle" title="Показать подсказку Ctrl+Q" style="position: fixed; bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 998; transition: all 0.2s;" @click="showQuickLinkHint = true">
+    <button v-if="!showQuickLinkHint" class="quick-link-hint-circle" title="Показать подсказку Ctrl+Q" style="position: fixed; bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 998; transition: transform 0.2s, background-color 0.2s, opacity 0.2s;" @click="showQuickLinkHint = true">
       ?
     </button>
 

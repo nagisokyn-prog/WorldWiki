@@ -213,4 +213,4 @@ const {
 } = useRelationshipBlock(props, emit);
 </script>
 
-<style scoped src="@worldwiki/components/css/modules/relationship-block.css"></style>
+<style scoped src="@worldwiki/resources/styles/modules/relationship-block.css"></style>

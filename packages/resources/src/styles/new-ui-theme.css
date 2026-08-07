@@ -32,8 +32,7 @@ body {
 .bg-glow {
     position: fixed;
     border-radius: 50%;
-    background: var(--accent);
-    filter: blur(150px);
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
     opacity: 0.15;
     z-index: 0;
     pointer-events: none;
@@ -482,7 +481,7 @@ body {
 /* Interactive Elements (Push/Pull) */
 
 .interactive-el {
-    transition: all var(--anim-speed) var(--anim-ease);
+    transition: transform var(--anim-speed) var(--anim-ease), opacity var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), box-shadow var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
     transform-origin: center center;
     position: relative;
     z-index: 10;
@@ -513,7 +512,7 @@ body {
     box-shadow: var(--shadow-island-y) rgba(0,0,0,0.2);
     z-index: -1;
     pointer-events: none;
-    transition: all var(--anim-speed) var(--anim-ease);
+    transition: transform var(--anim-speed) var(--anim-ease), box-shadow var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease);
     transform-origin: center center;
 }
 
@@ -1434,3 +1433,8 @@ body.resizing .chapter-right-panel {
 .text-muted { color: var(--text-muted); }
 .text-accent { color: var(--accent); }
 .font-bold { font-weight: var(--font-weight-bold); }
+
+/* GPU Optimization: only create layers on hover to save VRAM but keep animations smooth */
+.activity-icon:hover, .btn:hover, .btn-new:hover, .interactive-el:hover, .sidebar-item:hover, .panel-tab:hover, .panel-tab-new:hover, .glass-card-container:hover .glass-card-bg {
+    will-change: transform, opacity, background-color;
+}

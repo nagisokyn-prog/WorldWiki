@@ -123,7 +123,7 @@ const clearResponse = () => {
 
 .wowilon-panel {
   position: absolute;
-  right: -400px;
+  right: 0;
   top: 0;
   width: 400px;
   height: 100vh;
@@ -131,13 +131,14 @@ const clearResponse = () => {
   backdrop-filter: blur(var(--glass-blur));
   border-left: 1px solid var(--border-color);
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-  transition: right 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   display: flex;
   flex-direction: column;
 }
 
 .wowilon-wrapper.active .wowilon-panel {
-  right: 0;
+  transform: translateX(0);
 }
 
 .wowilon-header {

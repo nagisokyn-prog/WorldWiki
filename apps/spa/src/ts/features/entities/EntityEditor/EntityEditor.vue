@@ -81,7 +81,7 @@
                                     @update:model-value="(val: any) => { setProp(field.path || field.id || field.class, val); markModified(); }" />
 
                           <div v-else-if="field.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
-                            <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
+                            <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;">
                               <input
  type="checkbox" 
                                     :value="opt.value" 
@@ -206,7 +206,7 @@
                                       @update:model-value="(val: any) => { setProp(item, tField.id || tField.class, val); markModified(); }" />
                                       
                               <div v-else-if="tField.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
-                                <label v-for="opt in getOptionsFor(tField)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: all 0.2s ease;">
+                                <label v-for="opt in getOptionsFor(tField)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;">
                                   <input
  type="checkbox" 
                                         :value="opt.value" 
@@ -286,7 +286,7 @@
               <div
  v-for="(rev, idx) in revisions" :key="rev.id" 
                    :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
-                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s;"
+                   style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.2s, background-color 0.2s, opacity 0.2s;"
                    @click="previewHistory(rev)">
                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                        <span style="font-size: 11px; font-weight: bold;">{{ rev.formattedDate }}</span>
@@ -371,5 +371,5 @@ defineExpose({
 });
 </script>
 
-<style scoped src="@worldwiki/components/css/modules/entity-editor.css"></style>
+<style scoped src="@worldwiki/resources/styles/modules/entity-editor.css"></style>
 <style scoped src="./EntityEditor.style.css"></style>

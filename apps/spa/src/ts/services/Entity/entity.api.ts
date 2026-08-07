@@ -74,7 +74,7 @@ export const entityApi = {
 
     return {
       id: id ?? null,
-      project_id: project,
+      project_id: projectRecordId(project),
       entity_type: type,
       name: extractedName,
       description: actualData.description || null,

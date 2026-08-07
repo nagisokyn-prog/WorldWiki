@@ -102,7 +102,7 @@
 .zen-mode-active .chapters-sidebar {
   width: 60px !important;
   opacity: 0.3;
-  transition: all 0.5s ease;
+  transition: width 0.5s ease, opacity 0.5s ease;
   border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 

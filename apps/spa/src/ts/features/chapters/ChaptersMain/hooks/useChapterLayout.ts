@@ -49,7 +49,6 @@ export function useChapterLayout() {
     document.addEventListener('mouseup', onUp);
   };
 
-  const isWowilonOpen = ref(false);
   const isExportModalOpen = ref(false);
   const showQuickLinkHint = ref(true);
   
@@ -147,7 +146,7 @@ export function useChapterLayout() {
   return {
     isVolumePlanOpen, isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
     chaptersSidebarWidth, startChaptersSidebarResize,
-    isWowilonOpen, isExportModalOpen, showQuickLinkHint,
+    isExportModalOpen, showQuickLinkHint,
     isZenMode, toggleZenMode, onFullscreenChange,
     rightPanelWidth, isRightPanelVisible, startResize, toggleRightPanel, handleToggleRightPanel, handleToggleStructure
   };

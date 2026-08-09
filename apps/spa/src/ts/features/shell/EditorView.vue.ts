@@ -18,6 +18,7 @@ import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMai
 import { QuickOpen as QuickOpenVue } from '@worldwiki/components';
 import { CommandPalette as CommandPaletteVue } from '@worldwiki/components';
 import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
+import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 
 export default defineComponent({
   name: 'EditorView',
@@ -30,6 +31,7 @@ export default defineComponent({
     QuickOpenVue,
     CommandPaletteVue,
     TagsManagerModalVue,
+    WowilonPanelVue,
   },
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   setup(): Record<string, any> {
@@ -44,6 +46,10 @@ export default defineComponent({
     const floating = useFloatingStore();
     const hotkeys = useHotkeysStore();
 
+    const toggleWowilonHandler = () => {
+      shell.isWowilonOpen = !shell.isWowilonOpen;
+    };
+
     onMounted(() => {
       shell.quickOpenRef = quickOpenRef.value;
       shell.commandPaletteRef = commandPaletteRef.value;
@@ -53,10 +59,13 @@ export default defineComponent({
 
       // Восстанавливаем состояние (открытые вкладки, скролл, боковую панель)
       shell.restoreState();
+      
+      document.addEventListener('ww:toggle-wowilon', toggleWowilonHandler);
     });
 
     onUnmounted(() => {
       hotkeys.unregister();
+      document.removeEventListener('ww:toggle-wowilon', toggleWowilonHandler);
     });
 
     // Initialize shell with project name
@@ -94,6 +103,8 @@ export default defineComponent({
     const activeTreeNode = computed(() => shell.activeTreeNode);
     const editorGroups = computed(() => shell.editorGroups as any);
     const activeGroupId = computed(() => shell.activeGroupId);
+    
+    const isWowilonOpen = computed(() => shell.isWowilonOpen);
 
     // Methods - direct references from store
     const selectSidebarTab = shell.selectSidebarTab;
@@ -183,6 +194,9 @@ export default defineComponent({
       activeTreeNode,
       editorGroups,
       activeGroupId,
+      isWowilonOpen,
+      
+      toggleWowilon: () => { shell.isWowilonOpen = !shell.isWowilonOpen; },
 
       // Methods
       selectSidebarTab,

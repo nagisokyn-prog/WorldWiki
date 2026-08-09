@@ -159,9 +159,6 @@ v-for="(rev, idx) in revisions" :key="rev.id"
     </div>
 
     <!-- Floating UI Elements -->
-    <button v-show="!isWowilonOpen" class="wowilon-toggle-btn" style="position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999;" @click="isWowilonOpen = true">
-      <i class="fas fa-robot"></i>
-    </button>
 
     <div v-if="showQuickLinkHint" class="quick-link-info-panel" style="position: fixed; bottom: 80px; right: 20px; width: 320px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; z-index: 999; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
       <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -181,7 +178,6 @@ v-for="(rev, idx) in revisions" :key="rev.id"
     </button>
 
     <!-- Modals & Drawers -->
-    <WowilonDrawer :is-open="isWowilonOpen" @close="isWowilonOpen = false" />
     
     <ExportModal 
       :is-open="isExportModalOpen" 
@@ -222,7 +218,6 @@ import { type PropType } from 'vue';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
-import WowilonDrawer from '../WowilonDrawer.vue';
 import ExportModal from '../Export/ExportModal.vue';
 import ChapterTree from '../ChapterTree/ChapterTree.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';

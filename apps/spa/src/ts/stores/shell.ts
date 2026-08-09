@@ -86,6 +86,7 @@ export const useShellStore = defineStore('shell', () => {
   const chapterTreeRef = ref<any>(null);
   const sidebarItems = ref<SidebarItem[]>([]);
   const projectName = ref<string>('default');
+  const isWowilonOpen = ref(false);
 
   // ─── Log ─────────────────────────
   let logCounter = 0;
@@ -1141,5 +1142,7 @@ export const useShellStore = defineStore('shell', () => {
     saveAll,
     // EntityOps
     addNewEntity,
+    
+    isWowilonOpen,
   };
 });

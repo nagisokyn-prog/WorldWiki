@@ -5,6 +5,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, Emitter};
 use tokio::sync::oneshot;
 use tokio::time::{sleep, Duration};
+use crate::logic::ai_permissions::{check_permissions, ToolPermissionRequest};
 
 /// Глобальный стейт для хранения активных ИИ-сессий и каналов связи для одобрения инструментов.
 pub struct ActiveSessionsState {
@@ -81,7 +82,36 @@ pub async fn run_agent_loop(
         tool_call_id: tool_call_id.clone(),
     };
     
-    println!("[AGENT] Emitting tool_call_requested...");
+    // Check permissions
+    let perm_req = ToolPermissionRequest {
+        tool_name: tool_req.tool_name.clone(),
+        entity_type: None,
+        relation_type: None,
+        path: None,
+    };
+    
+    // In production, fetch this from SurrealDB for the active profile
+    let mock_settings = serde_json::json!({
+        "enabled": true,
+        "categories": { "read": false }, // Require approval for demo purposes
+    });
+    
+    let is_approved = check_permissions(&mock_settings, &perm_req);
+    
+    if is_approved {
+        println!("[AGENT] Tool auto-approved! Executing immediately...");
+        // Emitting result directly...
+        sleep(Duration::from_millis(500)).await;
+        let _ = app.emit("chat_stream_chunk", StreamChunk {
+            chat_id: chat_id.clone(),
+            message_id: assistant_msg_id.clone(),
+            text: "\n\nЯ нашёл несколько сущностей (авто-одобрено).".to_string(),
+            is_done: true,
+        });
+        return;
+    }
+    
+    println!("[AGENT] Emitting tool_call_requested (requires approval)...");
     let _ = app.emit("tool_call_requested", tool_req);
     
     // Ждём разрешения от пользователя

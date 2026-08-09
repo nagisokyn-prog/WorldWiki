@@ -249,6 +249,12 @@
           </template>
         </div>
       </div>
+
+      <!-- WoWiLon AI Panel (Right Sidebar) -->
+      <wowilon-panel-vue
+        :is-open="isWowilonOpen"
+        @close="toggleWowilon"
+      ></wowilon-panel-vue>
     </div>
 
     <div
@@ -336,6 +342,19 @@
         </div>
       </transition-group>
     </div>
+
+    <!-- Global Floating Button for AI -->
+    <button 
+      v-show="!isWowilonOpen" 
+      class="wowilon-toggle-btn" 
+      style="position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.1)'"
+      onmouseout="this.style.transform='scale(1)'"
+      title="Открыть WoWiLon AI (Ctrl+Shift+A)"
+      @click="toggleWowilon"
+    >
+      <i class="fas fa-robot"></i>
+    </button>
   </div>
 </template>
 

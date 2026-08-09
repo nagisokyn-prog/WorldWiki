@@ -43,7 +43,8 @@ export default defineConfig({
       input: {
         app: resolve(__dirname, 'app.html'),
         settings: resolve(__dirname, 'settings.html'),
-        ui_editor: resolve(__dirname, 'ui_editor.html')
+        ui_editor: resolve(__dirname, 'ui_editor.html'),
+        ai: resolve(__dirname, 'ai.html')
       },
     }
   },

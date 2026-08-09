@@ -14,6 +14,7 @@ surreal_entity! {
         #[flexible] pub categories: serde_json::Value,
         #[flexible] pub allowlist: serde_json::Value,
         #[flexible] pub denylist: serde_json::Value,
+        #[serde(default)] pub is_global: bool,
     }
 }
 
@@ -28,6 +29,7 @@ surreal_entity! {
         pub api_key: Option<String>,
         #[flexible] pub settings: serde_json::Value,
         pub is_active: bool,
+        #[serde(default)] pub is_global: bool,
     }
 }
 
@@ -219,16 +221,26 @@ surreal_entity! {
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
 pub struct Entity {
-    #[serde(skip_serializing_if = "Option::is_none")] pub id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub project_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project_id: Option<String>,
     pub entity_type: String,
     pub name: String,
-    #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
-    #[serde(default)] #[ts(type = "Record<string, any>")] pub attributes: serde_json::Value,
-    #[serde(default)] pub tags: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] #[ts(type = "any")] pub embeddings: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub created_at: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub updated_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default)]
+    #[ts(type = "Record<string, any>")]
+    pub attributes: serde_json::Value,
+    #[serde(default)]
+    pub tags: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "any")]
+    pub embeddings: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
@@ -241,7 +253,8 @@ pub struct EntitySchema {
     pub icon: String,
     pub color: String,
     pub fields_schema: Vec<FieldDef>,
-    #[ts(type = "any")] pub full_schema: Option<serde_json::Value>,
+    #[ts(type = "any")]
+    pub full_schema: Option<serde_json::Value>,
     pub created_at: Option<String>,
 }
 
@@ -254,7 +267,8 @@ pub struct FieldDef {
     pub required: bool,
     pub options: Option<Vec<String>>,
     pub ref_entity_type: Option<String>,
-    #[ts(type = "any")] pub default_value: Option<serde_json::Value>,
+    #[ts(type = "any")]
+    pub default_value: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
@@ -266,203 +280,11 @@ pub struct EntityRel {
     pub project_id: Option<String>,
     pub rel_type: String,
     pub description: Option<String>,
-    #[ts(type = "number")] pub strength: Option<i64>,
-    #[serde(default)] #[ts(type = "Record<string, any>")] pub attributes: serde_json::Value,
-    pub start_chapter: Option<String>,
-    pub end_chapter: Option<String>,
-    pub created_at: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
-#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
-pub struct RelationSchema {
-    pub id: Option<String>,
-    pub project_id: Option<String>,
-    pub rel_key: String,
-    pub rel_name: String,
-    pub icon: String,
-    pub color: String,
-    pub directed: bool,
-    pub from_types: Vec<String>,
-    pub to_types: Vec<String>,
-}
-
-// =====================================================
-// ГРАФ СВЯЗЕЙ (системные ребра)
-// =====================================================
-
-surreal_relation! {
-    #[edge = "cites"]
-    #[from = chat_messages]
-    #[to = text_blocks]
-    #[tauri_commands]
-    pub struct Cites {
-        pub relevance_score: f64,
-    }
-}
-
-surreal_relation! {
-    #[edge = "contains"]
-    #[from = volumes]
-    #[to = arcs]
-    #[tauri_commands]
-    pub struct VolumeContainsArc {
-        #[ts(type = "number")] pub sort_order: i64,
-    }
-}
-
-surreal_relation! {
-    #[edge = "contains"]
-    #[from = arcs]
-    #[to = chapters]
-    #[tauri_commands]
-    pub struct ArcContainsChapter {
-        #[ts(type = "number")] pub sort_order: i64,
-    }
-}
-
-surreal_relation! {
-    #[edge = "contains"]
-    #[from = projects]
-    #[to = volumes]
-    #[tauri_commands]
-    pub struct ProjectContainsVolume {
-        #[ts(type = "number")] pub sort_order: i64,
-    }
-}
-
-surreal_schema! {
-    entities: [
-        TextBlock, ChatMessage, Chat, DictionaryWord, WebCache, AgentMemory,
-        AutoApprovalSettings, AiProfile, Artifact, AiSkill,
-        Calendar, Volume, Arc, Chapter, Tag, Plan
-    ],
-    relations: [
-        Cites, VolumeContainsArc, ArcContainsChapter, ProjectContainsVolume
-    ]
-}
-
-        pub name: String,
-        #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
-        #[flexible] pub data: serde_json::Value,
-        pub is_default: bool,
-        #[serde(default)] pub is_master: bool,
-    }
-}
-
-surreal_entity! {
-    #[table = "volumes"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Volume {
-        pub title: String,
-    }
-}
-
-surreal_entity! {
-    #[table = "arcs"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Arc {
-        pub title: String,
-    }
-}
-
-surreal_entity! {
-    #[table = "chapters"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Chapter {
-        pub title: String,
-        pub content: String,
-        pub summary: Option<String>,
-        #[serde(default, alias = "wordCount")] pub word_count: i64,
-        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub embeddings: Option<serde_json::Value>,
-        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub footnotes: Option<serde_json::Value>,
-        #[serde(alias = "timelineEvents", skip_serializing_if = "Option::is_none")] #[flexible] pub timeline_events: Option<serde_json::Value>,
-        #[serde(skip_serializing_if = "Option::is_none")] pub participants: Option<Vec<String>>,
-    }
-}
-
-surreal_entity! {
-    #[table = "tags"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Tag {
-        pub name: String,
-        pub color: String,
-    }
-}
-
-surreal_entity! {
-    #[table = "plans"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Plan {
-        pub title: String,
-        pub parent_ref: Option<String>,
-        pub parent_type: String,
-        #[ts(type = "number")] pub sort_order: i64,
-        pub completed: bool,
-    }
-}
-
-// =====================================================
-// ПОЛЬЗОВАТЕЛЬСКИЕ СУЩНОСТИ (универсальная таблица)
-// =====================================================
-
-#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
-#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
-pub struct Entity {
-    #[serde(skip_serializing_if = "Option::is_none")] pub id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub project_id: Option<String>,
-    pub entity_type: String,
-    pub name: String,
-    #[serde(skip_serializing_if = "Option::is_none")] pub description: Option<String>,
-    #[serde(default)] #[ts(type = "Record<string, any>")] pub attributes: serde_json::Value,
-    #[serde(default)] pub tags: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] #[ts(type = "any")] pub embeddings: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub created_at: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")] pub updated_at: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
-#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
-pub struct EntitySchema {
-    pub id: Option<String>,
-    pub project_id: Option<String>,
-    pub type_key: String,
-    pub type_name: String,
-    pub icon: String,
-    pub color: String,
-    pub fields_schema: Vec<FieldDef>,
-    #[ts(type = "any")] pub full_schema: Option<serde_json::Value>,
-    pub created_at: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
-#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
-pub struct FieldDef {
-    pub key: String,
-    pub label: String,
-    pub field_type: String,
-    pub required: bool,
-    pub options: Option<Vec<String>>,
-    pub ref_entity_type: Option<String>,
-    #[ts(type = "any")] pub default_value: Option<serde_json::Value>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
-#[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
-pub struct EntityRel {
-    pub id: Option<String>,
-    pub r#in: Option<String>,
-    pub out: Option<String>,
-    pub project_id: Option<String>,
-    pub rel_type: String,
-    pub description: Option<String>,
-    #[ts(type = "number")] pub strength: Option<i64>,
-    #[serde(default)] #[ts(type = "Record<string, any>")] pub attributes: serde_json::Value,
+    #[ts(type = "number")]
+    pub strength: Option<i64>,
+    #[serde(default)]
+    #[ts(type = "Record<string, any>")]
+    pub attributes: serde_json::Value,
     pub start_chapter: Option<String>,
     pub end_chapter: Option<String>,
     pub created_at: Option<String>,

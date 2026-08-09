@@ -7,7 +7,7 @@ import { useTimelineStore } from '../../../stores/timeline.store';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
-import WowilonDrawer from '../WowilonDrawer.vue';
+
 import ExportModal from '../Export/ExportModal.vue';
 import ChapterTree from '../ChapterTree/ChapterTree.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';

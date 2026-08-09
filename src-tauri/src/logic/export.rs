@@ -286,7 +286,7 @@ pub async fn list_yandex_disk_backups(token: String) -> Result<Vec<YandexBackupF
 pub async fn download_and_restore_yandex(
     token: String,
     file_name: String,
-    app: tauri::AppHandle,
+    _app: tauri::AppHandle,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     let client = reqwest::Client::new();

@@ -131,6 +131,10 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
         case 'KeyB':
           document.dispatchEvent(new CustomEvent('ww:toggle-chapter-right-panel'));
           return;
+        case 'KeyA':
+          // Russian 'Ф' uses the same KeyA code
+          document.dispatchEvent(new CustomEvent('ww:toggle-wowilon'));
+          return;
       }
     }
 

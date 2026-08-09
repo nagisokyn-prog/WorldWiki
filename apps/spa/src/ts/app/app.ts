@@ -38,7 +38,7 @@ import TimelinePanelVue from '../features/timeline/Calendars/TimelinePanel/Timel
 import ParticipantsPanelVue from '../features/chapters/ParticipantsPanel/ParticipantsPanel.vue';
 import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.vue';
 import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
-import WowilonDrawerVue from '../features/chapters/WowilonDrawer.vue';
+
 import TagsManagerModalVue from '../features/entities/TagsManagerModal.vue';
 import SchemaEditorMainVue from '../features/schemas/SchemaEditor/SchemaEditorMain.vue';
 import CloudSyncModalVue from '../features/sync/CloudSyncModal.vue';
@@ -79,7 +79,7 @@ async function init() {
   app.component('ParticipantsPanelVue', ParticipantsPanelVue);
   app.component('PlanningPanelVue', PlanningPanelVue);
   app.component('ExportModalVue', ExportModalVue);
-  app.component('WowilonDrawerVue', WowilonDrawerVue);
+
   app.component('QuickOpenVue', QuickOpenVue);
   app.component('CommandPaletteVue', CommandPaletteVue);
   app.component('TagsManagerModalVue', TagsManagerModalVue);

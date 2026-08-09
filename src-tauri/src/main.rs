@@ -11,6 +11,7 @@ use tauri::Manager;
 mod logic;
 use crate::logic::models::*;
 use crate::logic::calendar_math::convert_absolute_to_local;
+use crate::logic::ai_models_fetch::fetch_ai_models;
 
 pub struct AppState {
     pub db: Surreal<Db>,
@@ -148,6 +149,7 @@ fn main() {
             fork_chat,
             send_chat_message,
             approve_tool_call,
+            fetch_ai_models,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, Artifact, AiSkill],

@@ -12,7 +12,7 @@ import TimelinePanelVue from '../features/timeline/Calendars/TimelinePanel/Timel
 import ParticipantsPanelVue from '../features/chapters/ParticipantsPanel/ParticipantsPanel.vue';
 import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.vue';
 import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
-import WowilonDrawerVue from '../features/chapters/WowilonDrawer.vue';
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   app.component('ParticipantsPanel', ParticipantsPanelVue);
   app.component('PlanningPanel', PlanningPanelVue);
   app.component('ExportModal', ExportModalVue);
-  app.component('WowilonDrawer', WowilonDrawerVue);
+
 
   const appContainer = document.getElementById('app');
   if (appContainer) {

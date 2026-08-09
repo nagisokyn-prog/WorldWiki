@@ -37,15 +37,62 @@ export function useAiChats(currentProject: string) {
   };
 
   const createNewChat = async () => {
-    const newChat = {
-      id: `chat_${Date.now()}`,
-      title: `Новый чат`,
-      project_id: currentProject
-    };
-    // Implement standard save logic if there is one
-    // We assume backend handles save on first message, but for now we push to list
-    chats.value.unshift(newChat as AiChat);
-    activeChatId.value = newChat.id;
+    try {
+      const payload = {
+        title: 'Новый чат',
+        project_id: currentProject,
+        session_context: []
+      };
+      const res = await invoke<any>('save_chat', {
+        data: payload
+      });
+      await loadChats();
+      if (res && res.id) {
+        activeChatId.value = res.id;
+      }
+    } catch (err) {
+      console.error('Failed to create chat:', err);
+    }
+  };
+
+  const renameChat = async (chatId: string, newTitle: string) => {
+    try {
+      const chat = chats.value.find(c => c.id === chatId);
+      if (!chat) return;
+      
+      const payload = {
+        id: chat.id,
+        title: newTitle,
+        project_id: currentProject,
+        parent_chat_id: chat.parent_chat_id || undefined,
+        tag: chat.tag || undefined,
+        session_context: []
+      };
+      
+      await invoke('save_chat', {
+        data: payload
+      });
+      await loadChats();
+    } catch (err) {
+      console.error('Failed to rename chat:', err);
+    }
+  };
+
+  const deleteChats = async (chatIds: string[]) => {
+    try {
+      for (const id of chatIds) {
+        await invoke('delete_chat', {
+          project: currentProject,
+          id: id
+        });
+      }
+      if (chatIds.includes(activeChatId.value)) {
+        activeChatId.value = '';
+      }
+      await loadChats();
+    } catch (err) {
+      console.error('Failed to delete chats:', err);
+    }
   };
 
   const branchChat = async (messageId: string, newTitle: string = 'Новая ветка') => {
@@ -119,6 +166,8 @@ export function useAiChats(currentProject: string) {
     loadChats,
     createNewChat,
     branchChat,
-    updateChatParent
+    updateChatParent,
+    renameChat,
+    deleteChats
   };
 }

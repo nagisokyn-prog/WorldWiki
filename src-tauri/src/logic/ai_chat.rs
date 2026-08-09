@@ -12,9 +12,15 @@ pub async fn get_chat_tree(
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<Value>, String> {
     let db = state.surreal_db();
+    let id_part = if project_id.starts_with("projects:") {
+        &project_id["projects:".len()..]
+    } else {
+        project_id.as_str()
+    };
+
     let mut response = db
         .query("SELECT * FROM chats WHERE project_id = $proj ORDER BY created_at DESC")
-        .bind(("proj", RecordId::new("projects", project_id.as_str())))
+        .bind(("proj", RecordId::new("projects", id_part)))
         .await
         .map_err(|e| e.to_string())?;
 
@@ -104,10 +110,16 @@ pub async fn fork_chat(
 
     // 2. Создаем новый чат
     let new_chat_id = uuid::Uuid::new_v4().to_string();
+    let id_part = if project_id.starts_with("projects:") {
+        &project_id["projects:".len()..]
+    } else {
+        project_id.as_str()
+    };
+
     let mut response = db
         .query("CREATE type::thing('chats', $id) SET project_id = $project_id, title = $title, parent_chat_id = $parent_chat_id, created_at = time::now()")
         .bind(("id", new_chat_id.clone()))
-        .bind(("project_id", RecordId::new("projects", project_id.as_str())))
+        .bind(("project_id", RecordId::new("projects", id_part)))
         .bind(("title", new_title))
         .bind(("parent_chat_id", original_chat_id.clone()))
         .await
@@ -132,10 +144,16 @@ pub async fn fork_chat(
             "CREATE type::thing('chat_messages', $id) SET project_id = $project_id, chat_id = $chat_id, role = $role, content = $content, version = 1, created_at = time::now()"
         };
 
+        let id_part = if project_id.starts_with("projects:") {
+            &project_id["projects:".len()..]
+        } else {
+            project_id.as_str()
+        };
+
         let mut req = db
             .query(query)
             .bind(("id", msg_new_id.clone()))
-            .bind(("project_id", RecordId::new("projects", project_id.as_str())))
+            .bind(("project_id", RecordId::new("projects", id_part)))
             .bind(("chat_id", new_chat_id.clone()))
             .bind(("role", role))
             .bind(("content", content));

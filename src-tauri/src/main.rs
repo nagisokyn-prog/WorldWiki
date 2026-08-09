@@ -9,7 +9,9 @@ use surrealdb::Surreal;
 use tauri::Manager;
 
 mod logic;
-
+use crate::logic::ai_models_fetch::fetch_ai_models;
+use crate::logic::calendar_math::convert_absolute_to_local;
+use crate::logic::models::*;
 
 pub struct AppState {
     pub db: Surreal<Db>,
@@ -61,7 +63,15 @@ async fn init_database() -> Surreal<Db> {
 }
 
 fn main() {
-
+    use logic::ai_chat::*;
+    use logic::batch::*;
+    use logic::chapters::*;
+    use logic::connections::*;
+    use logic::entities::*;
+    use logic::export::*;
+    use logic::projects::*;
+    use logic::volumes::*;
+    use tauri_shell::logic::system::*;
     tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
             // --- Проекты ---

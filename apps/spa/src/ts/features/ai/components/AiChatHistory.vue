@@ -16,15 +16,32 @@
         <i class="fas fa-spinner fa-spin"></i> Загрузка...
       </div>
       <ExplorerTree
+        ref="explorerTreeRef"
         v-else
         :sections="treeSections"
         :active-id="activeChatId"
         @click-node="handleNodeClick"
         @move-node="handleMoveNode"
+        @rename="handleRename"
+        @delete="handleDeleteMultiple"
       >
         <template #empty-hint>
           <div style="font-size: 11px; text-align: center; margin-top: 10px;">
             Создайте первый чат, чтобы начать
+          </div>
+        </template>
+        
+        <template #context-menu="{ node, close }">
+          <div class="ctx-item" @click="startRename(node, close)">
+            <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
+            <kbd class="ctx-kbd">F2</kbd>
+          </div>
+          <div class="ctx-sep"></div>
+          <div class="ctx-danger ctx-item" @click="handleDelete(node.id, close)">
+            <span class="ctx-label">
+              <i class="fas fa-trash ctx-icon"></i> Удалить
+            </span>
+            <kbd class="ctx-kbd ctx-kbd-danger">Del</kbd>
           </div>
         </template>
       </ExplorerTree>
@@ -56,8 +73,12 @@ const {
   isLoading,
   loadChats,
   createNewChat,
-  updateChatParent
+  updateChatParent,
+  renameChat,
+  deleteChats
 } = useAiChats(props.currentProject);
+
+const explorerTreeRef = ref<any>(null);
 
 onMounted(() => {
   loadChats();
@@ -105,6 +126,28 @@ const handleNodeClick = (node: any) => {
 const handleMoveNode = (payload: { nodeId: string, newParentId: string }) => {
   if (searchQuery.value) return; // Disallow move while searching
   updateChatParent(payload.nodeId, payload.newParentId);
+};
+
+const startRename = (node: any, closeCtx: Function) => {
+  closeCtx();
+  explorerTreeRef.value?.startRename(node);
+};
+
+const handleRename = (node: any, newName: string) => {
+  renameChat(node.id, newName);
+};
+
+const handleDelete = async (id: string, closeCtx: Function) => {
+  closeCtx();
+  if (confirm('Вы уверены, что хотите удалить этот чат? Это действие необратимо.')) {
+    await deleteChats([id]);
+  }
+};
+
+const handleDeleteMultiple = async (ids: string[]) => {
+  if (confirm(`Вы уверены, что хотите удалить выбранные чаты (${ids.length} шт.)? Это действие необратимо.`)) {
+    await deleteChats(ids);
+  }
 };
 </script>
 
@@ -169,5 +212,42 @@ const handleMoveNode = (payload: { nodeId: string, newParentId: string }) => {
   text-align: center;
   color: var(--text-muted);
   font-size: 12px;
+}
+
+/* Context Menu styles (same as ChapterTree) */
+.ctx-item {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-main);
+}
+.ctx-item:hover {
+  background: var(--bg-hover);
+}
+.ctx-icon {
+  width: 16px;
+  margin-right: 6px;
+  opacity: 0.7;
+}
+.ctx-kbd {
+  font-size: 10px;
+  opacity: 0.5;
+  background: rgba(255,255,255,0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.ctx-sep {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+.ctx-danger {
+  color: #ff5555;
+}
+.ctx-danger .ctx-icon {
+  color: #ff5555;
 }
 </style>

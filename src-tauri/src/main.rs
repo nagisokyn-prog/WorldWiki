@@ -146,6 +146,8 @@ fn main() {
             get_chat_tree,
             get_message_branch,
             fork_chat,
+            send_chat_message,
+            approve_tool_call,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, Artifact, AiSkill],
@@ -158,6 +160,7 @@ fn main() {
         .setup(|app| {
             let db = tauri::async_runtime::block_on(init_database());
             app.manage(AppState { db });
+            app.manage(logic::agent_runtime::ActiveSessionsState::default());
             Ok(())
         })
         .on_window_event(|window, event| match event {

@@ -2,6 +2,8 @@ use crate::AppState;
 use serde_json::Value;
 use surreal_domain::SurrealDb;
 use surrealdb::types::RecordId;
+use crate::logic::agent_runtime::{run_agent_loop, ActiveSessionsState};
+use tauri::Manager;
 
 /// Получает дерево чатов, сгруппированное для UI
 #[tauri::command]
@@ -40,3 +42,50 @@ pub async fn fork_chat(
     // Временно
     Err("Not implemented yet".to_string())
 }
+
+/// Отправляет сообщение в чат и запускает генерацию ИИ
+#[tauri::command]
+pub async fn send_chat_message(
+    chat_id: String,
+    text: String,
+    app: tauri::AppHandle,
+) -> Result<String, String> {
+    println!("[API] send_chat_message called: chat_id={}, text={}", chat_id, text);
+    
+    // 1. Создать пользовательское сообщение в БД
+    // (пока пропускаем для заглушки)
+    
+    // 2. Сгенерировать ID для будущего сообщения ассистента
+    let assistant_msg_id = uuid::Uuid::new_v4().to_string();
+    
+    // 3. Запустить фоновый цикл агента
+    let chat_id_clone = chat_id.clone();
+    let assistant_msg_id_clone = assistant_msg_id.clone();
+    
+    tokio::spawn(async move {
+        run_agent_loop(app, chat_id_clone, assistant_msg_id_clone, text).await;
+    });
+    
+    // 4. Вернуть ID пустого сообщения, чтобы Vue сразу отрисовал его
+    Ok(assistant_msg_id)
+}
+
+/// Одобряет или отклоняет вызов инструмента ИИ
+#[tauri::command]
+pub async fn approve_tool_call(
+    chat_id: String,
+    tool_call_id: String,
+    approved: bool,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    println!("[API] approve_tool_call called: chat_id={}, tool={}, approved={}", chat_id, tool_call_id, approved);
+    let state = app.state::<ActiveSessionsState>();
+    
+    if let Some((_, sender)) = state.tool_approvals.remove(&chat_id) {
+        let _ = sender.send(approved);
+        Ok(())
+    } else {
+        Err("No active tool call waiting for approval for this chat".to_string())
+    }
+}
+

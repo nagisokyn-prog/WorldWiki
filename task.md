@@ -1,13 +1,15 @@
-# Задачи по внедрению ИИ (Фаза 1 и 2)
+# Задачи по внедрению ИИ (Фаза 3 - Agent Loop)
 
-- `[x]` Шаг 1: Конфигурация Сборки (Cargo Features)
-  - `[x]` Добавить фичи `ai-cloud` и `ai-local` в `src-tauri/Cargo.toml`
-  - `[x]` Добавить опциональные зависимости `claw-code` (runtime, api)
-- `[x]` Шаг 2: Создание крейта `llama-sys`
-  - `[x]` Создать `src-tauri/llama-sys/Cargo.toml`
-  - `[x]` Написать `src-tauri/llama-sys/build.rs` с использованием `-DCMAKE_CUDA_ARCHITECTURES="all"` (или `75-virtual`)
-  - `[x]` Создать `src-tauri/llama-sys/src/lib.rs`
-- `[x]` Шаг 3: Схема Данных и Макросы
-  - `[x]` Создать `src-tauri/src/logic/ai_chat.rs` с логикой ветвления чатов
-  - `[x]` Обновить `src-tauri/src/logic/mod.rs`
-  - `[x]` Зарегистрировать команды в `src-tauri/src/main.rs` под `cfg(feature = "ai-cloud")`
+- `[x]` Шаг 1: Добавление зависимостей
+  - `[x]` Добавить `dashmap` в `src-tauri/Cargo.toml`
+- `[x]` Шаг 2: Реализация `agent_runtime.rs`
+  - `[x]` Создать файл `src-tauri/src/logic/agent_runtime.rs`
+  - `[x]` Реализовать структуру для хранения сессий
+  - `[x]` Реализовать асинхронный цикл `run_agent_loop`
+  - `[x]` Настроить Tauri события (`chat_stream_chunk`, `tool_call_requested`)
+- `[x]` Шаг 3: Обновление Tauri-команд
+  - `[x]` Написать реализацию `send_chat_message` в `ai_chat.rs`
+  - `[x]` Написать реализацию `approve_tool_call` в `ai_chat.rs`
+- `[x]` Шаг 4: Интеграция в `main.rs`
+  - `[x]` Зарегистрировать `ActiveSessionsState` в `setup`
+  - `[x]` Зарегистрировать новые команды

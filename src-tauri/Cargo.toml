@@ -26,6 +26,7 @@ ts-rs = { version = "8", features = ["serde-compat", "uuid-impl", "no-serde-warn
 surrealdb = { version = "3.2.1", features = ["kv-surrealkv"] }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
+dashmap = "5"
 scraper = "0.21"
 surreal_domain = { path = "../tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade" }
 tauri-shell = { path = "../tauri-surreal-kit/backend/tauri_shell" }

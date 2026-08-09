@@ -145,6 +145,7 @@ fn main() {
 
             // --- AI Чат ---
             get_chat_tree,
+            get_chat_messages,
             get_message_branch,
             fork_chat,
             update_chat_parent,

@@ -118,8 +118,13 @@ const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 const {
   messages,
   isGenerating,
-  sendMessage: triggerSend
-} = useWowilonPanel();
+  sendMessage: triggerSend,
+  loadMessages
+} = useWowilonPanel(activeChatId, currentProject);
+
+watch(activeChatId, (newId) => {
+  if (newId) loadMessages(newId);
+}, { immediate: true });
 
 const messagesContainer = ref<HTMLElement | null>(null);
 

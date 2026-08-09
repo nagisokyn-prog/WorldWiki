@@ -28,6 +28,30 @@ pub async fn get_chat_tree(
     Ok(chats)
 }
 
+/// Получает все сообщения для конкретного чата
+#[tauri::command]
+pub async fn get_chat_messages(
+    chat_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<Vec<Value>, String> {
+    let db = state.surreal_db();
+    
+    let id_part = if chat_id.starts_with("chats:") {
+        &chat_id["chats:".len()..]
+    } else {
+        chat_id.as_str()
+    };
+
+    let mut response = db
+        .query("SELECT * FROM chat_messages WHERE chat_id = $chat_id ORDER BY created_at ASC")
+        .bind(("chat_id", RecordId::new("chats", id_part)))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let messages: Vec<Value> = response.take(0).map_err(|e| e.to_string())?;
+    Ok(messages)
+}
+
 /// Получает плоский массив истории конкретной ветки, поднимаясь вверх по parent_msg_id
 #[tauri::command]
 pub async fn get_message_branch(
@@ -200,26 +224,77 @@ pub async fn send_chat_message(
     text: String,
     app: tauri::AppHandle,
 ) -> Result<String, String> {
-    println!(
-        "[API] send_chat_message called: chat_id={}, text={}",
-        chat_id, text
-    );
+    println!("[API] send_chat_message called: chat_id={}, text={}", chat_id, text);
+    let state = app.state::<AppState>();
+    let db = state.surreal_db();
 
-    // 1. Создать пользовательское сообщение в БД
-    // (пока пропускаем для заглушки)
+    // Парсим chat_id
+    let chat_id_part = if chat_id.starts_with("chats:") {
+        &chat_id["chats:".len()..]
+    } else {
+        chat_id.as_str()
+    };
+    let chat_record_id = RecordId::new("chats", chat_id_part);
 
-    // 2. Сгенерировать ID для будущего сообщения ассистента
+    // Узнаем project_id чата
+    let mut chat_resp = db.query("SELECT project_id FROM chats WHERE id = $id")
+        .bind(("id", chat_record_id.clone()))
+        .await.map_err(|e| e.to_string())?;
+    
+    let chat_info: Option<Value> = chat_resp.take(0).map_err(|e| e.to_string())?;
+    let chat_info = chat_info.ok_or("Chat not found")?;
+    let project_id_val = chat_info["project_id"].clone();
+
+    // Находим последнее сообщение, чтобы сделать его родителем
+    let mut last_msg_resp = db.query("SELECT id FROM chat_messages WHERE chat_id = $chat_id ORDER BY created_at DESC LIMIT 1")
+        .bind(("chat_id", chat_record_id.clone()))
+        .await.map_err(|e| e.to_string())?;
+    
+    let last_msg: Option<Value> = last_msg_resp.take(0).map_err(|e| e.to_string())?;
+    let mut parent_msg_id_bind = None;
+    if let Some(msg) = last_msg {
+        if let Some(id_str) = msg["id"].as_str() {
+            parent_msg_id_bind = Some(id_str.to_string());
+        }
+    }
+
+    // 1. Создать пользовательское сообщение
+    let user_msg_id = uuid::Uuid::new_v4().to_string();
+    let query_user = if parent_msg_id_bind.is_some() {
+        "CREATE type::thing('chat_messages', $id) SET project_id = $project_id, chat_id = $chat_id, role = 'user', content = $content, parent_msg_id = $parent_msg_id, version = 1, created_at = time::now()"
+    } else {
+        "CREATE type::thing('chat_messages', $id) SET project_id = $project_id, chat_id = $chat_id, role = 'user', content = $content, version = 1, created_at = time::now()"
+    };
+
+    let mut req_user = db.query(query_user)
+        .bind(("id", user_msg_id.clone()))
+        .bind(("project_id", project_id_val.clone()))
+        .bind(("chat_id", chat_record_id.clone()))
+        .bind(("content", text.clone()));
+    if let Some(p) = &parent_msg_id_bind {
+        req_user = req_user.bind(("parent_msg_id", p.clone()));
+    }
+    req_user.await.map_err(|e| e.to_string())?;
+
+    // 2. Создать сообщение ассистента (пока пустое)
     let assistant_msg_id = uuid::Uuid::new_v4().to_string();
+    let query_assistant = "CREATE type::thing('chat_messages', $id) SET project_id = $project_id, chat_id = $chat_id, role = 'assistant', content = '', parent_msg_id = $parent_msg_id, version = 1, created_at = time::now()";
+    
+    db.query(query_assistant)
+        .bind(("id", assistant_msg_id.clone()))
+        .bind(("project_id", project_id_val.clone()))
+        .bind(("chat_id", chat_record_id.clone()))
+        .bind(("parent_msg_id", format!("chat_messages:{}", user_msg_id)))
+        .await.map_err(|e| e.to_string())?;
 
     // 3. Запустить фоновый цикл агента
     let chat_id_clone = chat_id.clone();
     let assistant_msg_id_clone = assistant_msg_id.clone();
-
+    let project_id_str = chat_info["project_id"].as_str().unwrap_or("").to_string();
     tokio::spawn(async move {
-        run_agent_loop(app, chat_id_clone, assistant_msg_id_clone, text).await;
+        run_agent_loop(app, project_id_str, chat_id_clone, assistant_msg_id_clone, text).await;
     });
 
-    // 4. Вернуть ID пустого сообщения, чтобы Vue сразу отрисовал его
     Ok(assistant_msg_id)
 }
 

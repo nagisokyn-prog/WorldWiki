@@ -46,6 +46,9 @@
             @update:renaming-value="val => { if (renaming) renaming.value = val; }"
             @commit-rename="commitRename"
             @cancel-rename="cancelRename"
+            @drag-start="handleDragStart"
+            @drag-over="handleDragOver"
+            @drop-node="handleDrop"
           />
 
           <!-- Inline creation field -->
@@ -141,6 +144,7 @@ const emit = defineEmits<{
   (e: 'delete', ids: string[]): void;
   (e: 'edit-section', sectionId: string): void;
   (e: 'delete-section', sectionId: string): void;
+  (e: 'move-node', payload: { nodeId: string; newParentId: string }): void;
 }>();
 
 // Custom directive to focus input on mount
@@ -149,7 +153,38 @@ const vFocus = {
 };
 
 // ─── State ──────────────────────────────────────────────────────────────────
-const expandedSections = ref<Set<string>>(new Set());
+const expandedSections = ref<Set<string>>(new Set(props.sections.map(s => s.id)));
+
+// Drag and drop state
+const draggedNode = ref<TreeNodeData | null>(null);
+
+const handleDragStart = (e: DragEvent, node: TreeNodeData) => {
+  draggedNode.value = node;
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', node.id);
+  }
+};
+
+const handleDragOver = (e: DragEvent, node: TreeNodeData) => {
+  if (draggedNode.value && draggedNode.value.id !== node.id) {
+    e.preventDefault(); // Allow drop
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+  }
+};
+
+const handleDrop = (e: DragEvent, targetNode: TreeNodeData) => {
+  if (draggedNode.value && draggedNode.value.id !== targetNode.id) {
+    emit('move-node', { 
+      nodeId: draggedNode.value.id, 
+      newParentId: targetNode.id 
+    });
+  }
+  draggedNode.value = null;
+};
+
 const expanded = ref<Set<string>>(new Set());
 
 // Expand all sections by default

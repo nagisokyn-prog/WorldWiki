@@ -243,7 +243,7 @@ const {
   currentChapterNode, currentArc, currentVolume, isVolumePlanOpen,
   isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
   hasUnsavedChanges, localActiveTreeNode, chaptersSidebarWidth, debugError,
-  startChaptersSidebarResize, chapterTreeRef, isWowilonOpen, isExportModalOpen,
+  startChaptersSidebarResize, chapterTreeRef, isExportModalOpen,
   showQuickLinkHint, isZenMode, floatingEditors, showHistory, isLoadingHistory,
   revisions, previewingRevId, maxSaves, originalData, toggleHistory, loadHistory,
   previewHistory, togglePin, getDiffSummary, changedFields, toggleZenMode,

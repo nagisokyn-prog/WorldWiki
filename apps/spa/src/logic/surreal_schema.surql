@@ -283,8 +283,9 @@ DEFINE FIELD OVERWRITE name        ON ai_profiles TYPE string;
 DEFINE FIELD OVERWRITE provider    ON ai_profiles TYPE string; -- 'openai', 'anthropic', 'ollama', 'turboquant'
 DEFINE FIELD OVERWRITE base_url    ON ai_profiles TYPE option<string>;
 DEFINE FIELD OVERWRITE api_key     ON ai_profiles TYPE option<string>; -- Хранится локально
-DEFINE FIELD OVERWRITE settings    ON ai_profiles TYPE object FLEXIBLE DEFAULT {}; -- temperature, context_window, etc.
-DEFINE FIELD OVERWRITE is_active   ON ai_profiles TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE settings    ON ai_profiles TYPE object FLEXIBLE DEFAULT {}; -- temperature, context_window, etc.
+DEFINE FIELD OVERWRITE is_active   ON ai_profiles TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE is_global   ON ai_profiles TYPE bool DEFAULT false;
 
 -- Артефакты (Генерации ИИ, не засоряющие чат)
 DEFINE TABLE OVERWRITE artifacts SCHEMAFULL;

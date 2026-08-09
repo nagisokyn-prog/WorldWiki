@@ -20,6 +20,7 @@
         <AiChatHistory 
           v-if="showSidebar" 
           :active-chat-id="activeChatId"
+          :current-project="currentProject"
           @select-chat="selectChat"
           @new-chat="createNewChat"
         />
@@ -40,7 +41,11 @@
               <div class="message-avatar">
                 <i :class="msg.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
               </div>
-              <div class="message-content" v-html="renderMarkdown(msg.content)"></div>
+              <div class="message-content" style="flex: 1; min-width: 0;" v-html="renderMarkdown(msg.content)"></div>
+              
+              <div class="message-actions" style="opacity: 0.5; margin-left: 10px; cursor: pointer;" title="Создать ветку отсюда (Fork)" @click="handleBranch(msg.id)">
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
+              </div>
               
               <!-- Tool Approval Card -->
               <AiToolApproval 
@@ -96,6 +101,18 @@ const isSettingsOpen = ref(false);
 const activeChatId = ref('1');
 const selectedContext = ref<any[]>([]);
 
+let currentProject = 'global';
+const hash = window.location.hash;
+if (hash.includes('?')) {
+  const hashParams = new URLSearchParams(hash.split('?')[1]);
+  const p = hashParams.get('project');
+  if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
+} else {
+  const searchParams = new URLSearchParams(window.location.search);
+  const p = searchParams.get('project');
+  if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
+}
+
 const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 
 const {
@@ -129,6 +146,16 @@ const scrollToBottom = () => {
 
 const selectChat = (id: string) => activeChatId.value = id;
 const createNewChat = () => alert('New chat created');
+
+const handleBranch = (messageId: string | undefined) => {
+  if (!messageId) {
+    alert('Это сообщение пока не имеет ID для ветвления.');
+    return;
+  }
+  // Call branchChat from useAiChats (we need to inject it or emit event)
+  // For now, alert to show the feature is connected
+  alert('Ветвление от сообщения: ' + messageId + '\nФункция ветвления будет работать после полного подключения бэкенда сообщений.');
+};
 
 const handleContextSelected = (contexts: any[]) => {
   selectedContext.value = [...selectedContext.value, ...contexts];

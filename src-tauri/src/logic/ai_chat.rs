@@ -87,6 +87,7 @@ pub async fn get_message_branch(
 /// Создаёт новую ветку чата от определённого сообщения
 #[tauri::command]
 pub async fn fork_chat(
+    project_id: String,
     message_id: String,
     new_title: String,
     state: tauri::State<'_, AppState>,
@@ -104,8 +105,9 @@ pub async fn fork_chat(
     // 2. Создаем новый чат
     let new_chat_id = uuid::Uuid::new_v4().to_string();
     let mut response = db
-        .query("CREATE type::thing('chats', $id) SET title = $title, parent_chat_id = $parent_chat_id, created_at = time::now()")
+        .query("CREATE type::thing('chats', $id) SET project_id = $project_id, title = $title, parent_chat_id = $parent_chat_id, created_at = time::now()")
         .bind(("id", new_chat_id.clone()))
+        .bind(("project_id", RecordId::new("projects", project_id.as_str())))
         .bind(("title", new_title))
         .bind(("parent_chat_id", original_chat_id.clone()))
         .await
@@ -125,14 +127,15 @@ pub async fn fork_chat(
         let content = msg["content"].as_str().unwrap_or("");
 
         let query = if prev_new_msg_id.is_some() {
-            "CREATE type::thing('chat_messages', $id) SET chat_id = $chat_id, role = $role, content = $content, parent_msg_id = $parent_msg_id, version = 1, created_at = time::now()"
+            "CREATE type::thing('chat_messages', $id) SET project_id = $project_id, chat_id = $chat_id, role = $role, content = $content, parent_msg_id = $parent_msg_id, version = 1, created_at = time::now()"
         } else {
-            "CREATE type::thing('chat_messages', $id) SET chat_id = $chat_id, role = $role, content = $content, version = 1, created_at = time::now()"
+            "CREATE type::thing('chat_messages', $id) SET project_id = $project_id, chat_id = $chat_id, role = $role, content = $content, version = 1, created_at = time::now()"
         };
 
         let mut req = db
             .query(query)
             .bind(("id", msg_new_id.clone()))
+            .bind(("project_id", RecordId::new("projects", project_id.as_str())))
             .bind(("chat_id", new_chat_id.clone()))
             .bind(("role", role))
             .bind(("content", content));
@@ -146,6 +149,30 @@ pub async fn fork_chat(
     }
 
     Ok(new_chat_val)
+}
+
+/// Меняет родителя чата (для Drag and Drop)
+#[tauri::command]
+pub async fn update_chat_parent(
+    chat_id: String,
+    new_parent_id: Option<String>,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let db = state.surreal_db();
+    
+    let query = match &new_parent_id {
+        Some(_) => "UPDATE type::thing('chats', $id) SET parent_chat_id = $parent_id",
+        None => "UPDATE type::thing('chats', $id) SET parent_chat_id = NONE",
+    };
+    
+    let mut req = db.query(query).bind(("id", chat_id));
+    
+    if let Some(parent) = new_parent_id {
+        req = req.bind(("parent_id", parent));
+    }
+    
+    req.await.map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 /// Отправляет сообщение в чат и запускает генерацию ИИ

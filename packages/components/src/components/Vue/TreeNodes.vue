@@ -11,9 +11,15 @@
       >
         <div 
           class="tree-item-row" 
+          :draggable="true"
           @click="$emit('click-node', $event, node)" 
           @dblclick="$emit('dblclick-node', node)"
           @contextmenu.prevent="$emit('ctx-node', $event, node)"
+          @dragstart.stop="$emit('drag-start', $event, node)"
+          @dragenter.prevent.stop="$emit('drag-enter', $event, node)"
+          @dragover.prevent.stop="$emit('drag-over', $event, node)"
+          @dragleave.prevent.stop="$emit('drag-leave', $event, node)"
+          @drop.prevent.stop="$emit('drop-node', $event, node)"
         >
           <span v-if="node.children?.length || node.isGroup" class="tree-expand-btn" @click.stop="$emit('toggle-expand', node.id)">
             <i :class="expanded.has(node.id) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
@@ -59,6 +65,11 @@
             @update:renaming-value="$emit('update:renaming-value', $event)"
             @commit-rename="$emit('commit-rename')"
             @cancel-rename="$emit('cancel-rename')"
+            @drag-start="(e, n) => $emit('drag-start', e, n)"
+            @drag-enter="(e, n) => $emit('drag-enter', e, n)"
+            @drag-over="(e, n) => $emit('drag-over', e, n)"
+            @drag-leave="(e, n) => $emit('drag-leave', e, n)"
+            @drop-node="(e, n) => $emit('drop-node', e, n)"
           />
         </div>
 
@@ -85,7 +96,8 @@ defineProps<{
 
 const emit = defineEmits([
   'toggle-expand', 'click-node', 'dblclick-node', 'ctx-node', 
-  'create-in', 'update:renaming-value', 'commit-rename', 'cancel-rename'
+  'create-in', 'update:renaming-value', 'commit-rename', 'cancel-rename',
+  'drag-start', 'drag-enter', 'drag-over', 'drag-leave', 'drop-node'
 ]);
 
 const vFocus = {

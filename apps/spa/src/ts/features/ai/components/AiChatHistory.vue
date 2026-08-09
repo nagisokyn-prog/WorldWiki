@@ -2,7 +2,7 @@
   <div class="chat-history-sidebar">
     <div class="history-header">
       <h3>История чатов</h3>
-      <button class="new-chat-btn" @click="$emit('new-chat')" title="Новый чат">
+      <button class="new-chat-btn" @click="createNewChat" title="Новый чат">
         <i class="fas fa-edit"></i>
       </button>
     </div>
@@ -12,58 +12,100 @@
     </div>
 
     <div class="history-list">
-      <div 
-        v-for="chat in filteredChats" 
-        :key="chat.id"
-        class="chat-item"
-        :class="{ active: activeChatId === chat.id }"
-        @click="$emit('select-chat', chat.id)"
+      <div v-if="isLoading" class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i> Загрузка...
+      </div>
+      <ExplorerTree
+        v-else
+        :sections="treeSections"
+        :active-id="activeChatId"
+        @click-node="handleNodeClick"
+        @move-node="handleMoveNode"
       >
-        <div class="chat-icon">
-          <i class="fas fa-comment-alt"></i>
-        </div>
-        <div class="chat-details">
-          <div class="chat-title">{{ chat.title }}</div>
-          <div class="chat-meta">
-            <span v-if="chat.tag" class="chat-tag">{{ chat.tag }}</span>
-            <span class="chat-date">{{ chat.date }}</span>
+        <template #empty-hint>
+          <div style="font-size: 11px; text-align: center; margin-top: 10px;">
+            Создайте первый чат, чтобы начать
           </div>
-        </div>
-      </div>
-      
-      <div v-if="filteredChats.length === 0" class="empty-state">
-        Нет чатов
-      </div>
+        </template>
+      </ExplorerTree>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { ExplorerTree } from '@worldwiki/components';
+import { useAiChats } from '../composables/useAiChats';
+import type { AiChatTreeNode } from '../composables/useAiChats';
 
 const props = defineProps({
-  activeChatId: String
+  activeChatId: String,
+  currentProject: {
+    type: String,
+    required: true
+  }
 });
 
-defineEmits(['select-chat', 'new-chat']);
+const emit = defineEmits(['select-chat', 'new-chat']);
 
 const searchQuery = ref('');
 
-// MOCK DATA for now
-const mockChats = [
-  { id: '1', title: 'Создание персонажа: Гарри', tag: 'персонаж', date: 'Сегодня, 14:20' },
-  { id: '2', title: 'Обсуждение концовки Тома 1', tag: 'сюжет', date: 'Вчера, 18:45' },
-  { id: '3', title: 'Логика магии воды', tag: 'миростроение', date: '3 авг, 10:15' }
-];
+const {
+  chats,
+  chatTree,
+  isLoading,
+  loadChats,
+  createNewChat,
+  updateChatParent
+} = useAiChats(props.currentProject);
 
-const filteredChats = computed(() => {
-  if (!searchQuery.value) return mockChats;
-  const q = searchQuery.value.toLowerCase();
-  return mockChats.filter(c => 
-    c.title.toLowerCase().includes(q) || 
-    (c.tag && c.tag.toLowerCase().includes(q))
-  );
+onMounted(() => {
+  loadChats();
 });
+
+// Convert our AiChatTree to the format ExplorerTree expects
+const buildTreeNodes = (nodes: AiChatTreeNode[]): any[] => {
+  return nodes.map(node => ({
+    id: node.id,
+    label: node.title || 'Новый чат',
+    icon: 'fas fa-comment-alt',
+    type: 'chat',
+    children: node.children && node.children.length > 0 ? buildTreeNodes(node.children) : []
+  }));
+};
+
+const treeSections = computed(() => {
+  let filteredNodes = chatTree.value;
+
+  // Simple flat filter if search query exists
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase();
+    const flatChats = chats.value.filter(c => 
+      c.title.toLowerCase().includes(q) || 
+      (c.tag && c.tag.toLowerCase().includes(q))
+    );
+    filteredNodes = flatChats.map(c => ({ ...c, children: [] }));
+  }
+
+  return [
+    {
+      id: 'chats',
+      title: 'Чаты',
+      icon: 'fas fa-comments',
+      nodes: buildTreeNodes(filteredNodes),
+      canAdd: false
+    }
+  ];
+});
+
+const handleNodeClick = (node: any) => {
+  emit('select-chat', node.id);
+};
+
+const handleMoveNode = (payload: { nodeId: string, newParentId: string }) => {
+  if (searchQuery.value) return; // Disallow move while searching
+  updateChatParent(payload.nodeId, payload.newParentId);
+};
 </script>
 
 <style scoped>
@@ -98,10 +140,11 @@ const filteredChats = computed(() => {
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
+  transition: opacity 0.2s;
 }
 
 .new-chat-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
+  opacity: 0.8;
 }
 
 .history-search {
@@ -109,98 +152,21 @@ const filteredChats = computed(() => {
   border-bottom: 1px solid var(--border-color);
 }
 
-.input-base {
+.history-search input {
   width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
   padding: 6px 10px;
-  border-radius: 6px;
   font-size: 12px;
-}
-
-.input-base:focus {
-  border-color: var(--accent);
-  outline: none;
 }
 
 .history-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  position: relative;
 }
 
-.chat-item {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  border: 1px solid transparent;
-}
-
-.chat-item:hover {
-  background: var(--bg-surface);
-}
-
-.chat-item.active {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.2);
-}
-
-.chat-icon {
-  color: var(--text-muted);
-  font-size: 12px;
-  padding-top: 2px;
-}
-
-.chat-item.active .chat-icon {
-  color: var(--accent);
-}
-
-.chat-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
-}
-
-.chat-title {
-  font-size: 13px;
-  color: var(--text-main);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-
-.chat-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-}
-
-.chat-tag {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-}
-
-.chat-date {
-  color: var(--text-muted);
-}
-
-.empty-state {
-  text-align: center;
+.loading-state {
   padding: 20px;
+  text-align: center;
   color: var(--text-muted);
   font-size: 12px;
 }

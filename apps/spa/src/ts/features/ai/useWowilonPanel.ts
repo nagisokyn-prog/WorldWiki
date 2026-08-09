@@ -1,8 +1,10 @@
 import { ref } from 'vue';
 
 export interface ChatMessage {
+  id?: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  toolCallWaiting?: any;
 }
 
 export function useWowilonPanel() {

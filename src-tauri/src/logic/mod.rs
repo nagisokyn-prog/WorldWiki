@@ -8,3 +8,4 @@ pub mod volumes;
 pub mod models;
 pub mod projects;
 pub mod batch;
+pub mod ai_chat;

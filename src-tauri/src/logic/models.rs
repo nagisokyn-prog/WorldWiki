@@ -9,7 +9,7 @@ surreal_entity! {
     #[table = "auto_approval_settings"]
     #[project_scoped]
     #[tauri_commands]
-    pub struct AutoApprovalSettings {
+    pub struct AutoApprovalSetting {
         pub enabled: bool,
         #[flexible] pub categories: serde_json::Value,
         #[flexible] pub allowlist: serde_json::Value,

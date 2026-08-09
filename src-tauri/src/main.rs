@@ -69,6 +69,7 @@ fn main() {
     use logic::export::*;
     use logic::projects::*;
     use logic::volumes::*;
+    use logic::ai_chat::*;
     use tauri_shell::logic::system::*;
     tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
@@ -141,9 +142,14 @@ fn main() {
             // --- Текстовые блоки ---
             save_text_blocks,
 
+            // --- AI Чат ---
+            get_chat_tree,
+            get_message_branch,
+            fork_chat,
+
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar],
-            @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache],
+            @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, Artifact, AiSkill],
+            @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites]
         ])
         .plugin(tauri_plugin_dialog::init())

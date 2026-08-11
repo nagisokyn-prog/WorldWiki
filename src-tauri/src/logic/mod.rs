@@ -9,6 +9,5 @@ pub mod models;
 pub mod projects;
 pub mod batch;
 pub mod ai_chat;
-pub mod agent_runtime;
-pub mod ai_permissions;
+pub mod ai_agent;
 pub mod ai_models_fetch;

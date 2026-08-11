@@ -13,7 +13,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [features]
-default = []
+default = ["ai-cloud"]
 ai-cloud = ["dep:claw_runtime", "dep:claw_api"]
 ai-local = ["ai-cloud", "dep:llama-sys"]
 
@@ -33,7 +33,7 @@ tauri-shell = { path = "../tauri-surreal-kit/backend/tauri_shell" }
 tauri-plugin-window-state = "2.4.1"
 zip = "8.6.0"
 reqwest = { version = "0.12", features = ["json"] }
-tokio = { version = "1", features = ["fs", "io-util"] }
+tokio = { version = "1", features = ["fs", "io-util", "rt-multi-thread", "macros", "net", "time", "process", "io-std"] }
 tauri-plugin-dialog = "2"
 
 # AI Dependencies

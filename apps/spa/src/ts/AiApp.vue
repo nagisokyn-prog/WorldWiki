@@ -56,7 +56,10 @@ const isSettingsOpen = ref(false);
 const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 const messagesContainer = ref<HTMLElement | null>(null);
 
-const { messages, isGenerating, sendMessage } = useWowilonPanel();
+const activeChatId = ref('');
+const currentProject = ref('');
+
+const { messages, isGenerating, sendMessage } = useWowilonPanel(activeChatId, currentProject.value);
 
 const renderMarkdown = (text: string) => md.render(text);
 

@@ -150,7 +150,6 @@ fn main() {
             fork_chat,
             update_chat_parent,
             send_chat_message,
-            approve_tool_call,
             fetch_ai_models,
 
             // --- Генерируемые команды для системных сущностей ---
@@ -164,7 +163,6 @@ fn main() {
         .setup(|app| {
             let db = tauri::async_runtime::block_on(init_database());
             app.manage(AppState { db });
-            app.manage(logic::agent_runtime::ActiveSessionsState::default());
             Ok(())
         })
         .on_window_event(|window, event| match event {

@@ -9,7 +9,10 @@ export interface ChatMessage {
   toolCallWaiting?: any;
 }
 
-export function useWowilonPanel(activeChatId: Ref<string>, currentProject: string) {
+export function useWowilonPanel(
+  activeChatId: Ref<string> = ref(''),
+  currentProject: string = ''
+) {
   const messages = ref<ChatMessage[]>([]);
   const isGenerating = ref(false);
   let unlistenChunk: UnlistenFn | null = null;
@@ -60,21 +63,28 @@ export function useWowilonPanel(activeChatId: Ref<string>, currentProject: strin
   };
 
   const sendMessage = async (text: string) => {
-    if (!text.trim() || !activeChatId.value) return;
+    if (!text.trim()) return;
 
-    // Сначала оптимистично подгрузим последние сообщения из базы (там уже будет наше новое сообщение, если бэкенд успеет)
-    // Либо просто запушим пользовательское сообщение в локальный массив
+    // Оптимистично пушим пользовательское сообщение
     messages.value.push({ role: 'user', content: text });
     isGenerating.value = true;
 
     try {
-      const assistantMsgId = await invoke<string>('send_chat_message', {
+      const res = await invoke<{ chat_id: string; assistant_msg_id: string }>('send_chat_message', {
         chatId: activeChatId.value,
-        text: text
+        text: text,
+        project: currentProject
       });
+
+      // Бэкенд мог создать новый чат — переключаемся на него и перечитываем историю
+      if (res.chat_id && res.chat_id !== activeChatId.value) {
+        activeChatId.value = res.chat_id;
+        await loadMessages(res.chat_id);
+      }
+
       // Создаем пустую заглушку для ассистента в UI
       messages.value.push({
-        id: assistantMsgId,
+        id: res.assistant_msg_id,
         role: 'assistant',
         content: ''
       });

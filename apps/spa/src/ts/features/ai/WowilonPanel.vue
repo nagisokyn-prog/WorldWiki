@@ -27,14 +27,19 @@
 
         <div class="wowilon-chat-area">
           <div class="messages-container" ref="messagesContainer">
+            <!-- Empty state: no chat selected OR chat selected but no messages -->
             <div v-if="messages.length === 0" class="empty-chat-state">
               <i class="fas fa-comment-dots"></i>
-              <p>Чем могу помочь сегодня?</p>
+              <p v-if="activeChatId">
+                <span class="chat-title-label">Чат: </span>{{ getChatTitle(activeChatId) }}
+              </p>
+              <p v-else>Выберите чат слева или создайте новый</p>
             </div>
             
             <div 
+              v-else
               v-for="(msg, idx) in messages" 
-              :key="idx" 
+              :key="msg.id || idx" 
               class="message-wrapper" 
               :class="'message-' + msg.role"
             >
@@ -68,7 +73,7 @@
                 </span>
               </div>
             </div>
-            <AiChatInput @submit="sendMessage" :loading="isGenerating" />
+            <AiChatInput @submit="sendMessage" :loading="isGenerating || isSending" />
           </div>
         </div>
       </div>
@@ -122,6 +127,8 @@ const {
   loadMessages
 } = useWowilonPanel(activeChatId, currentProject);
 
+const isSending = ref(false);
+
 watch(activeChatId, (newId) => {
   if (newId) loadMessages(newId);
 }, { immediate: true });
@@ -132,13 +139,26 @@ const renderMarkdown = (text: string) => {
   return md.render(text);
 };
 
+const getChatTitle = (chatId: string): string => {
+  // Try to find chat in sidebar tree
+  // For now return the ID if we can't find title
+  return chatId.replace('chats:', '');
+};
+
 const closePanel = () => {
   emit('close');
 };
 
 const sendMessage = async (text: string) => {
-  await triggerSend(text);
-  scrollToBottom();
+  if (isSending.value || isGenerating.value || !text.trim()) return;
+  
+  isSending.value = true;
+  try {
+    await triggerSend(text);
+    scrollToBottom();
+  } finally {
+    isSending.value = false;
+  }
 };
 
 const scrollToBottom = () => {

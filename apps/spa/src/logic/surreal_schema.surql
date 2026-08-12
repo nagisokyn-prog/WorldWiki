@@ -254,6 +254,8 @@ DEFINE FIELD OVERWRITE project_id       ON chat_messages TYPE record<projects>;
 DEFINE FIELD OVERWRITE chat_id          ON chat_messages TYPE record<chats>;
 DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
+DEFINE FIELD OVERWRITE reasoning        ON chat_messages TYPE option<string>;
+DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE option<array<string>>;
 DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object> FLEXIBLE;
 DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string>;

@@ -17,14 +17,14 @@ use claw_api::{
 };
 use serde::Serialize;
 use serde_json::{json, Value};
+use surreal_domain::SurrealDb as _;
 use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
 use surrealdb::Surreal;
-use surreal_domain::SurrealDb as _;
 use tauri::{AppHandle, Emitter, Manager};
 
-use crate::AppState;
 use crate::logic::ai_chat::get_chat_messages_impl;
+use crate::AppState;
 
 /// Стоп-критерии и лимиты (контекстное окно).
 pub const MAX_AGENT_ITERATIONS: usize = 8;
@@ -40,6 +40,7 @@ pub struct StreamChunk {
     pub message_id: String,
     pub text: String,
     pub is_done: bool,
+    pub chunk_type: String,
 }
 
 /// Событие о вызове инструмента (для возможного отображения в UI).
@@ -57,9 +58,41 @@ fn build_provider_client(
     api_key: &str,
     base_url: Option<String>,
 ) -> Result<ProviderClient, String> {
+    let api_key = api_key.trim().to_string();
+
+    let base_url = base_url.and_then(|s| {
+        let trimmed = s.trim();
+        if trimmed.is_empty() {
+            None
+        } else if !trimmed.starts_with("http://") && !trimmed.starts_with("https://") {
+            Some(format!("https://{}", trimmed))
+        } else {
+            Some(trimmed.to_string())
+        }
+    });
+
+    let mut headers = reqwest::header::HeaderMap::new();
+    if provider == "openrouter" {
+        headers.insert(
+            "HTTP-Referer",
+            reqwest::header::HeaderValue::from_static("https://worldwiki.app"),
+        );
+        headers.insert(
+            "X-Title",
+            reqwest::header::HeaderValue::from_static("WorldWiki"),
+        );
+    }
+
+    let http_client = reqwest::Client::builder()
+        .default_headers(headers)
+        .build()
+        .map_err(|e| format!("Failed to build HTTP client: {e}"))?;
+
     match provider {
         "anthropic" => {
-            let client = AnthropicClient::from_auth(AuthSource::ApiKey(api_key.to_string()))
+            // Anthropic client doesn't expose with_http_client directly in this wrapper,
+            // but its builder error is less common without custom headers.
+            let client = AnthropicClient::from_auth(AuthSource::ApiKey(api_key))
                 .with_base_url(base_url.unwrap_or_else(|| "https://api.anthropic.com".to_string()));
             Ok(ProviderClient::Anthropic(client))
         }
@@ -74,8 +107,9 @@ fn build_provider_client(
                 _ => "http://localhost:8080/v1",
             };
             let resolved = base_url.unwrap_or_else(|| default_url.to_string());
-            let client = OpenAiCompatClient::new(api_key.to_string(), OpenAiCompatConfig::openai())
-                .with_base_url(resolved);
+            let client = OpenAiCompatClient::new(api_key, OpenAiCompatConfig::openai())
+                .with_base_url(resolved)
+                .with_http_client(http_client);
             Ok(ProviderClient::OpenAi(client))
         }
         other => Err(format!("unsupported provider: {other}")),
@@ -226,7 +260,9 @@ impl WorldWikiTools {
                 .map_err(|e| e.to_string())?;
             let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
             for row in rows {
-                let haystack = serde_json::to_string(&row).unwrap_or_default().to_lowercase();
+                let haystack = serde_json::to_string(&row)
+                    .unwrap_or_default()
+                    .to_lowercase();
                 if haystack.contains(&query) {
                     results.push(row);
                 }
@@ -234,8 +270,10 @@ impl WorldWikiTools {
         }
 
         results.truncate(top_k);
-        Ok(json!({ "table": "rag", "matches": serde_json::to_value(results).unwrap_or_default() })
-            .to_string())
+        Ok(
+            json!({ "table": "rag", "matches": serde_json::to_value(results).unwrap_or_default() })
+                .to_string(),
+        )
     }
 
     async fn search_entities(&self, args: &Value) -> Result<String, String> {
@@ -255,7 +293,9 @@ impl WorldWikiTools {
                     continue;
                 }
             }
-            let hay = serde_json::to_string(&row).unwrap_or_default().to_lowercase();
+            let hay = serde_json::to_string(&row)
+                .unwrap_or_default()
+                .to_lowercase();
             if hay.contains(&query) {
                 out.push(row);
             }
@@ -375,7 +415,9 @@ fn history_to_input_messages(history: &[Value]) -> Vec<InputMessage> {
         if role == "assistant" {
             out.push(InputMessage {
                 role: "assistant".to_string(),
-                content: vec![InputContentBlock::Text { text: content.to_string() }],
+                content: vec![InputContentBlock::Text {
+                    text: content.to_string(),
+                }],
             });
         } else {
             out.push(InputMessage::user_text(content.to_string()));
@@ -404,8 +446,31 @@ pub async fn run_agent_loop(
 ) {
     println!("[AGENT] started: chat={chat_id} project={project_id}");
 
+    let state = app.state::<AppState>();
+    let db: Surreal<Db> = state.surreal_db().clone();
+
+    // Read timeout_mins from active profile
+    let mut timeout_secs = 1800; // 30 mins default
+    let proj_part = project_id
+        .strip_prefix("projects:")
+        .unwrap_or(&project_id)
+        .trim_matches('`')
+        .to_string();
+
+    let mut q =
+        db.query("SELECT * FROM ai_profiles WHERE is_active = true AND project_id = $proj LIMIT 1");
+    q = q.bind(("proj", RecordId::new("projects", proj_part.as_str())));
+    if let Ok(mut resp) = q.await {
+        if let Ok(Some(profile)) = resp.take::<Option<Value>>(0) {
+            let settings = profile.get("settings").cloned().unwrap_or(json!({}));
+            if let Some(tm) = settings.get("timeout_mins").and_then(|v| v.as_u64()) {
+                timeout_secs = tm * 60;
+            }
+        }
+    }
+
     let outcome = tokio::time::timeout(
-        std::time::Duration::from_secs(180),
+        std::time::Duration::from_secs(timeout_secs),
         run_agent_inner(
             app.clone(),
             project_id.clone(),
@@ -423,9 +488,12 @@ pub async fn run_agent_loop(
             StreamChunk {
                 chat_id: chat_id.clone(),
                 message_id: assistant_msg_id.clone(),
-                text: "Превышено время ожидания ответа ИИ (180 с). Попробуйте ещё раз."
-                    .to_string(),
+                text: format!(
+                    "Превышено время ожидания ответа ИИ ({} с). Попробуйте ещё раз.",
+                    timeout_secs
+                ),
                 is_done: true,
+                chunk_type: "text".to_string(),
             },
         );
     }
@@ -443,7 +511,7 @@ async fn run_agent_inner(
     let state = app.state::<AppState>();
     let db: Surreal<Db> = state.surreal_db().clone();
 
-    let emit_chunk = |text: String, is_done: bool| {
+    let emit_chunk = |text: String, is_done: bool, chunk_type: &str| {
         let _ = app.emit(
             "chat_stream_chunk",
             StreamChunk {
@@ -451,10 +519,10 @@ async fn run_agent_inner(
                 message_id: assistant_msg_id.clone(),
                 text,
                 is_done,
+                chunk_type: chunk_type.to_string(),
             },
         );
     };
-    let emit_err = |text: String| emit_chunk(text, true);
     let emit_tool = |tool_name: String, tool_args: Value| {
         let _ = app.emit(
             "agent_tool",
@@ -467,6 +535,27 @@ async fn run_agent_inner(
         );
     };
 
+    macro_rules! emit_err {
+        ($err_msg:expr) => {{
+            let text = $err_msg.to_string();
+            let clean_id = assistant_msg_id.trim_matches('`');
+            let parts: Vec<&str> = clean_id.split(':').collect();
+            let rec_id = if parts.len() == 2 {
+                surrealdb::types::RecordId::new(parts[0], parts[1])
+            } else {
+                surrealdb::types::RecordId::new("chat_messages", clean_id)
+            };
+            if let Err(e) = db
+                .query("UPDATE $id SET content = $content, updated_at = time::now()")
+                .bind(("id", rec_id))
+                .bind(("content", text.clone()))
+                .await
+            {
+                eprintln!("[AGENT ERROR] Failed to save error message to DB: {}", e);
+            }
+            emit_chunk(text, true, "text");
+        }};
+    }
     // --- 1. Активный AI-профиль ---
     let proj_part = project_id
         .strip_prefix("projects:")
@@ -492,28 +581,46 @@ async fn run_agent_inner(
     let mut profile_resp = match q.await {
         Ok(r) => r,
         Err(e) => {
-            emit_err(format!("Ошибка базы данных при чтении профиля: {e}"));
+            emit_err!(format!("Ошибка базы данных при чтении профиля: {e}"));
             return;
         }
     };
     let active_profile: Option<Value> = match profile_resp.take(0) {
         Ok(v) => v,
         Err(e) => {
-            emit_err(format!("Ошибка чтения профиля: {e}"));
+            emit_err!(format!("Ошибка чтения профиля: {e}"));
             return;
         }
     };
     let Some(profile) = active_profile else {
-        emit_err("Нет активного AI-профиля. Пожалуйста, настройте провайдера в настройках ИИ.".to_string());
+        emit_err!("Нет активного AI-профиля. Пожалуйста, настройте провайдера в настройках ИИ.");
         return;
     };
 
-    let provider = profile.get("provider").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let api_key = profile.get("api_key").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let base_url = profile.get("base_url").and_then(|v| v.as_str()).map(|s| s.to_string());
+    let provider = profile
+        .get("provider")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let api_key = profile
+        .get("api_key")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let base_url = profile
+        .get("base_url")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
     let settings = profile.get("settings").cloned().unwrap_or(json!({}));
-    let model = settings.get("model").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let temperature = settings.get("temperature").and_then(|v| v.as_f64()).unwrap_or(0.7);
+    let model = settings
+        .get("model")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string();
+    let temperature = settings
+        .get("temperature")
+        .and_then(|v| v.as_f64())
+        .unwrap_or(0.7);
     let max_tokens = settings
         .get("max_tokens")
         .and_then(|v| v.as_u64())
@@ -525,13 +632,13 @@ async fn run_agent_inner(
         .to_string();
 
     if model.is_empty() {
-        emit_err("В активном AI-профиле не выбрана модель.".to_string());
+        emit_err!("В активном AI-профиле не выбрана модель.");
         return;
     }
     let provider_client = match build_provider_client(&provider, &api_key, base_url) {
         Ok(c) => c,
         Err(e) => {
-            emit_err(format!("Не удалось настроить провайдера: {e}"));
+            emit_err!(format!("Не удалось настроить провайдера: {e}"));
             return;
         }
     };
@@ -540,13 +647,13 @@ async fn run_agent_inner(
     let history = match get_chat_messages_impl(&db, &chat_id).await {
         Ok(v) => v,
         Err(e) => {
-            emit_err(format!("Ошибка загрузки истории: {e}"));
+            emit_err!(format!("Ошибка загрузки истории: {e}"));
             return;
         }
     };
     let mut messages = history_to_input_messages(&history);
     if messages.is_empty() {
-        emit_err("История чата пуста.".to_string());
+        emit_err!("История чата пуста.");
         return;
     }
 
@@ -557,26 +664,37 @@ async fn run_agent_inner(
         project_id: project_id.clone(),
     };
 
+    let mut req = MessageRequest {
+        model: model.clone(),
+        max_tokens,
+        messages: messages.clone(),
+        system: Some(system.clone()),
+        tools: Some(tools_def.clone()),
+        temperature: Some(temperature),
+        stream: true,
+        ..Default::default()
+    };
+
+    if let Some(effort) = settings.get("reasoning_effort").and_then(|v| v.as_str()) {
+        if effort != "none" && !effort.is_empty() {
+            req.extra_body
+                .insert("reasoning".to_string(), json!({ "effort": effort }));
+        }
+    }
+
     // --- 3. Основной цикл ---
     let mut final_answer: Option<String> = None;
     let mut last_text = String::new();
+    let mut accumulated_reasoning = String::new();
+    let mut all_tool_logs: Vec<String> = Vec::new();
 
     for _iteration in 0..MAX_AGENT_ITERATIONS {
-        let req = MessageRequest {
-            model: model.clone(),
-            max_tokens,
-            messages: messages.clone(),
-            system: Some(system.clone()),
-            tools: Some(tools_def.clone()),
-            temperature: Some(temperature),
-            stream: true,
-            ..Default::default()
-        };
+        req.messages = messages.clone();
 
         let mut stream = match provider_client.stream_message(&req).await {
             Ok(s) => s,
             Err(e) => {
-                emit_err(format!("Ошибка запроса к ИИ: {e}"));
+                emit_err!(format!("Ошибка запроса к ИИ: {e}"));
                 return;
             }
         };
@@ -589,7 +707,7 @@ async fn run_agent_inner(
             let next = match stream.next_event().await {
                 Ok(n) => n,
                 Err(e) => {
-                    emit_err(format!("Ошибка стрима ИИ: {e}"));
+                    emit_err!(format!("Ошибка стрима ИИ: {e}"));
                     return;
                 }
             };
@@ -600,30 +718,46 @@ async fn run_agent_inner(
                     ..
                 }) => {
                     let initial = match &input {
-                    Value::Object(map) if map.is_empty() => String::new(),
-                    Value::Null => String::new(),
-                    other => other.to_string(),
-                };
+                        Value::Object(map) if map.is_empty() => String::new(),
+                        Value::Null => String::new(),
+                        other => other.to_string(),
+                    };
+                    let log_msg = format!("Используется инструмент: {}", name);
+                    all_tool_logs.push(log_msg.clone());
+                    emit_chunk(log_msg, false, "tool_log");
+
                     assembler = Some(ToolAssembler {
                         id,
                         name,
                         input_buf: initial,
                     });
                 }
-                StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent { delta, .. }) => {
-                    match delta {
-                        ContentBlockDelta::TextDelta { text } => {
-                            assistant_text.push_str(&text);
-                            emit_chunk(assistant_text.clone(), false);
-                        }
-                        ContentBlockDelta::InputJsonDelta { partial_json } => {
-                            if let Some(a) = assembler.as_mut() {
-                                a.input_buf.push_str(&partial_json);
-                            }
-                        }
-                        _ => {}
+                StreamEvent::ContentBlockStart(ContentBlockStartEvent {
+                    content_block: OutputContentBlock::Thinking { thinking, .. },
+                    ..
+                }) => {
+                    accumulated_reasoning.push_str(&thinking);
+                    if !thinking.is_empty() {
+                        emit_chunk(thinking.clone(), false, "reasoning");
                     }
                 }
+                StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent { delta, .. }) => match delta
+                {
+                    ContentBlockDelta::TextDelta { text } => {
+                        assistant_text.push_str(&text);
+                        emit_chunk(assistant_text.clone(), false, "text");
+                    }
+                    ContentBlockDelta::ThinkingDelta { thinking } => {
+                        accumulated_reasoning.push_str(&thinking);
+                        emit_chunk(thinking.clone(), false, "reasoning");
+                    }
+                    ContentBlockDelta::InputJsonDelta { partial_json } => {
+                        if let Some(a) = assembler.as_mut() {
+                            a.input_buf.push_str(&partial_json);
+                        }
+                    }
+                    _ => {}
+                },
                 StreamEvent::ContentBlockStop(_) => {
                     if let Some(a) = assembler.take() {
                         let input = serde_json::from_str(&a.input_buf)
@@ -638,8 +772,8 @@ async fn run_agent_inner(
 
         // Финальный блок, если стрим завершился без MessageStop.
         if let Some(a) = assembler.take() {
-            let input =
-                serde_json::from_str(&a.input_buf).unwrap_or_else(|_| json!({ "raw": a.input_buf }));
+            let input = serde_json::from_str(&a.input_buf)
+                .unwrap_or_else(|_| json!({ "raw": a.input_buf }));
             tool_uses.push((a.id, a.name, input));
         }
 
@@ -689,13 +823,25 @@ async fn run_agent_inner(
 
     let answer = final_answer.unwrap_or(last_text);
 
-    // --- 4. Сохраняем ответ ассистента в БД и финальный чанк ---
-    let _ = db
-        .query("UPDATE type::record($id) SET content = $content, updated_at = time::now()")
-        .bind(("id", format!("chat_messages:{assistant_msg_id}")))
+    //--- 4. Сохраняем ответ ассистента в БД и финальный чанк ---
+    let clean_id = assistant_msg_id.trim_matches('`');
+    let parts: Vec<&str> = clean_id.split(':').collect();
+    let rec_id = if parts.len() == 2 {
+        surrealdb::types::RecordId::new(parts[0], parts[1])
+    } else {
+        surrealdb::types::RecordId::new("chat_messages", clean_id)
+    };
+    if let Err(e) = db
+        .query("UPDATE $id SET content = $content, reasoning = $reasoning, tool_logs = $tool_logs, updated_at = time::now()")
+        .bind(("id", rec_id))
         .bind(("content", answer.clone()))
-        .await;
+        .bind(("reasoning", if accumulated_reasoning.is_empty() { None } else { Some(accumulated_reasoning) }))
+        .bind(("tool_logs", if all_tool_logs.is_empty() { None } else { Some(all_tool_logs) }))
+        .await
+    {
+        eprintln!("[AGENT ERROR] Failed to save final message to DB: {}", e);
+    }
 
-    emit_chunk(answer, true);
+    emit_chunk(answer, true, "text");
     println!("[AGENT] finished: chat={chat_id}");
 }

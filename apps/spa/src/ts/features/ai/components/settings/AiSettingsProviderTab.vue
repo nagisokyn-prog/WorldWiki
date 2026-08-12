@@ -68,7 +68,25 @@
               <input type="checkbox" v-model="activeProfile.settings.enable_task_list">
               <span>Включить инструмент списка задач</span>
             </label>
-            <span class="hint">При включении ИИ может создавать и управлять списками задач для отслеживания прогресса. Это помогает организовать сложные задачи в управляемые шаги.</span>
+            <span class="hint">При включении ИИ может создавать и управлять списками задач для отслеживания прогресса.</span>
+          </div>
+          
+          <div class="form-group">
+            <label>Уровень размышлений (Reasoning Effort)</label>
+            <select v-model="activeProfile.settings.reasoning_effort" class="input-base">
+              <option value="none">Без ограничений (Отключено)</option>
+              <option value="low">Низкий (Low)</option>
+              <option value="medium">Средний (Medium)</option>
+              <option value="high">Высокий (High)</option>
+              <option value="xhigh">Экстремальный (XHigh)</option>
+            </select>
+            <span class="hint">Управляет "бюджетом" токенов на внутренние рассуждения модели (только для поддерживаемых моделей, например o1/o3-mini).</span>
+          </div>
+
+          <div class="form-group">
+            <label>Таймаут ИИ (в минутах)</label>
+            <input type="number" v-model.number="activeProfile.settings.timeout_mins" min="1" max="1440" class="input-base" placeholder="Например: 30">
+            <span class="hint">Максимальное время, которое агент может работать в фоне, пока не будет прерван принудительно (по умолчанию 30 мин).</span>
           </div>
 
           <div class="form-group checkbox-group">

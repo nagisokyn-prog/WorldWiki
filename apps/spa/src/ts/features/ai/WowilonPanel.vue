@@ -11,6 +11,7 @@
     <!-- MAIN CHAT VIEW -->
     <div v-else class="wowilon-inner">
       <AiHeader 
+        :active-profile="activeProfile"
         @close="closePanel" 
         @detach="detachWindow" 
         @open-settings="isSettingsOpen = true" 
@@ -50,7 +51,20 @@
               <div class="message-avatar">
                 <i :class="msg.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
               </div>
-              <div class="message-content" style="flex: 1; min-width: 0;" v-html="renderMarkdown(msg.content)"></div>
+              <div class="message-content-wrapper" style="flex: 1; min-width: 0;">
+                <details v-if="msg.reasoning" class="thinking-accordion">
+                  <summary>Мысли (Thinking...)</summary>
+                  <div class="thinking-content" v-html="renderMarkdown(msg.reasoning)"></div>
+                </details>
+                
+                <div v-if="msg.toolLogs && msg.toolLogs.length > 0" class="tool-logs-container">
+                  <div v-for="(log, lIdx) in msg.toolLogs" :key="lIdx" class="tool-log-item">
+                    <i class="fas fa-wrench"></i> {{ log }}
+                  </div>
+                </div>
+
+                <div class="message-content" v-html="renderMarkdown(msg.content)"></div>
+              </div>
               
               <div class="message-actions" style="opacity: 0.5; margin-left: 10px; cursor: pointer;" title="Создать ветку отсюда (Fork)" @click="handleBranch(msg.id)">
                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
@@ -96,6 +110,7 @@ import AiToolApproval from './components/AiToolApproval.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
 import { useWowilonPanel } from './useWowilonPanel';
 import { useAiChats } from './composables/useAiChats';
+import { useAiProfiles } from './composables/useAiProfiles';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
@@ -136,8 +151,11 @@ const {
   deleteChats
 } = useAiChats(currentProject);
 
+const { activeProfile, loadProfiles } = useAiProfiles(currentProject);
+
 onMounted(() => {
   loadChats();
+  loadProfiles();
 });
 
 const {

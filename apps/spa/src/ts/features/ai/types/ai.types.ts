@@ -9,6 +9,8 @@ export interface AiProfileSettings {
   rate_limit_ms?: number;
   error_retry_limit?: number;
   enable_task_list?: boolean;
+  reasoning_effort?: string;
+  timeout_mins?: number;
 }
 
 export interface AiProfile {

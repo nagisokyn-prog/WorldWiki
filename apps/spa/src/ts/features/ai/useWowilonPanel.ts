@@ -6,6 +6,8 @@ export interface ChatMessage {
   id?: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  reasoning?: string;
+  toolLogs?: string[];
   toolCallWaiting?: any;
 }
 
@@ -21,16 +23,27 @@ export function useWowilonPanel(
     unlistenChunk = await listen<any>('chat_stream_chunk', (event) => {
       const chunk = event.payload;
       if (chunk.chat_id === activeChatId.value) {
-        const msg = messages.value.find(m => m.id === chunk.message_id);
-        if (msg) {
-          msg.content = chunk.text;
-        } else {
-          messages.value.push({
+        let msg = messages.value.find(m => m.id === chunk.message_id);
+        if (!msg) {
+          msg = {
             id: chunk.message_id,
             role: 'assistant',
-            content: chunk.text
-          });
+            content: '',
+            reasoning: '',
+            toolLogs: []
+          };
+          messages.value.push(msg);
         }
+        
+        if (chunk.chunk_type === 'reasoning') {
+          msg.reasoning = (msg.reasoning || '') + chunk.text;
+        } else if (chunk.chunk_type === 'tool_log') {
+          if (!msg.toolLogs) msg.toolLogs = [];
+          msg.toolLogs.push(chunk.text);
+        } else {
+          msg.content = chunk.text;
+        }
+
         if (chunk.is_done) {
           isGenerating.value = false;
         }
@@ -57,6 +70,8 @@ export function useWowilonPanel(
         id: m.id,
         role: m.role || 'user',
         content: m.content || '',
+        reasoning: m.reasoning || '',
+        toolLogs: m.tool_logs || []
       }));
     } catch(e) {
       console.error('Failed to load messages', e);

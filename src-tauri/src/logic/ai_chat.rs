@@ -435,7 +435,7 @@ pub async fn edit_chat_message(
     });
 
     if !is_none {
-        if let Some(clean_p) = clean_surreal_id(&parent_id_val.unwrap()) {
+        if let Some(clean_p) = clean_surreal_id(parent_id_val.as_ref().unwrap()) {
             let p_rec = parse_record_id(&clean_p, "chat_messages");
             query_inactive = query_inactive.bind(("parent", p_rec));
         }
@@ -466,7 +466,7 @@ pub async fn edit_chat_message(
 
     if !is_none {
         // We know we can clean it because we did it above
-        if let Some(clean_p) = clean_surreal_id(&parent_id_val.unwrap()) {
+        if let Some(clean_p) = clean_surreal_id(parent_id_val.as_ref().unwrap()) {
             let p_rec = parse_record_id(&clean_p, "chat_messages");
             query_create = query_create.bind(("parent", p_rec));
         }
@@ -628,7 +628,7 @@ pub async fn switch_message_variant(
         query = query.bind(("chat", chat_id.clone()));
 
         if !is_none {
-            if let Some(clean_parent_id) = clean_surreal_id(&parent_id_val.unwrap()) {
+            if let Some(clean_parent_id) = clean_surreal_id(parent_id_val.as_ref().unwrap()) {
                 let p_rec = parse_record_id(&clean_parent_id, "chat_messages");
                 query = query.bind(("parent", p_rec));
             }

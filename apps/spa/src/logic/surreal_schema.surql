@@ -244,9 +244,14 @@ DEFINE FIELD OVERWRITE tag        ON chats TYPE option<string>;
 DEFINE FIELD OVERWRITE session_context ON chats TYPE array<record> DEFAULT []; -- Массив жестко закрепленных в контекст томов/арок/глав
 DEFINE FIELD OVERWRITE created_at ON chats TYPE datetime DEFAULT time::now();
 
+DEFINE EVENT OVERWRITE cascade_chat_delete ON TABLE chats WHEN $event = "DELETE" THEN {
+    DELETE chat_messages WHERE chat_id = $before.id;
+};
+
 -- Сообщения чата
 DEFINE TABLE OVERWRITE chat_messages SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id       ON chat_messages TYPE record<projects>;
+DEFINE FIELD OVERWRITE chat_id          ON chat_messages TYPE record<chats>;
 DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
@@ -255,10 +260,13 @@ DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string>;
 DEFINE FIELD OVERWRITE feedback_comment ON chat_messages TYPE option<string>;
 DEFINE FIELD OVERWRITE rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 1;
+DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at       ON chat_messages TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_chat_msg_emb_openai ON chat_messages COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
 DEFINE INDEX OVERWRITE idx_chat_msg_created_at ON chat_messages FIELDS created_at;
+DEFINE INDEX OVERWRITE idx_chat_msg_chat_id ON chat_messages FIELDS chat_id, created_at;
 
 -- Память агента
 DEFINE TABLE OVERWRITE agent_memory SCHEMAFULL;

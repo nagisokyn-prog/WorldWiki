@@ -24,7 +24,7 @@ use surreal_domain::SurrealDb as _;
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::AppState;
-use crate::logic::ai_chat::get_message_branch_impl;
+use crate::logic::ai_chat::get_chat_messages_impl;
 
 /// Стоп-критерии и лимиты (контекстное окно).
 pub const MAX_AGENT_ITERATIONS: usize = 8;
@@ -536,8 +536,8 @@ async fn run_agent_inner(
         }
     };
 
-    // --- 2. История чата (по графу) ---
-    let history = match get_message_branch_impl(&db, &assistant_msg_id).await {
+    // --- 2. История чата ---
+    let history = match get_chat_messages_impl(&db, &chat_id).await {
         Ok(v) => v,
         Err(e) => {
             emit_err(format!("Ошибка загрузки истории: {e}"));

@@ -20,7 +20,7 @@
         v-else
         :sections="treeSections"
         :active-id="activeChatId"
-        @click-node="handleNodeClick"
+        @select="handleNodeClick"
         @move-node="handleMoveNode"
         @rename="handleRename"
         @delete="handleDeleteMultiple"
@@ -56,33 +56,21 @@ import { useAiChats } from '../composables/useAiChats';
 import type { AiChatTreeNode } from '../composables/useAiChats';
 
 const props = defineProps({
-  activeChatId: String,
-  currentProject: {
-    type: String,
+  chatTree: {
+    type: Array as () => any[],
     required: true
-  }
+  },
+  activeChatId: String,
+  isLoading: Boolean
 });
 
-const emit = defineEmits(['select-chat', 'new-chat']);
+const emit = defineEmits(['select-chat', 'new-chat', 'move-chat', 'rename-chat', 'delete-chats']);
 
 const searchQuery = ref('');
 
-const {
-  chats,
-  chatTree,
-  isLoading,
-  loadChats,
-  createNewChat,
-  updateChatParent,
-  renameChat,
-  deleteChats
-} = useAiChats(props.currentProject);
-
 const explorerTreeRef = ref<any>(null);
 
-onMounted(() => {
-  loadChats();
-});
+// Removed onMounted loadChats, WowilonPanel will handle it
 
 // Convert our AiChatTree to the format ExplorerTree expects
 const buildTreeNodes = (nodes: AiChatTreeNode[]): any[] => {
@@ -96,16 +84,26 @@ const buildTreeNodes = (nodes: AiChatTreeNode[]): any[] => {
 };
 
 const treeSections = computed(() => {
-  let filteredNodes = chatTree.value;
+  let filteredNodes = props.chatTree;
 
   // Simple flat filter if search query exists
   if (searchQuery.value) {
     const q = searchQuery.value.toLowerCase();
-    const flatChats = chats.value.filter(c => 
-      c.title.toLowerCase().includes(q) || 
-      (c.tag && c.tag.toLowerCase().includes(q))
-    );
-    filteredNodes = flatChats.map(c => ({ ...c, children: [] }));
+    
+    // Helper to deeply search and flatten matches from the tree
+    const flatMatches: any[] = [];
+    const searchDeep = (nodes: any[]) => {
+      for (const node of nodes) {
+        if (node.title?.toLowerCase().includes(q) || (node.tag && node.tag.toLowerCase().includes(q))) {
+          flatMatches.push({ ...node, children: [] });
+        }
+        if (node.children) {
+          searchDeep(node.children);
+        }
+      }
+    };
+    searchDeep(props.chatTree);
+    filteredNodes = flatMatches;
   }
 
   return [
@@ -119,13 +117,19 @@ const treeSections = computed(() => {
   ];
 });
 
-const handleNodeClick = (node: any) => {
-  emit('select-chat', node.id);
+const handleNodeClick = (nodes: any[]) => {
+  if (nodes && nodes.length > 0) {
+    emit('select-chat', nodes[0].id);
+  }
+};
+
+const createNewChat = () => {
+  emit('new-chat');
 };
 
 const handleMoveNode = (payload: { nodeId: string, newParentId: string }) => {
   if (searchQuery.value) return; // Disallow move while searching
-  updateChatParent(payload.nodeId, payload.newParentId);
+  emit('move-chat', payload.nodeId, payload.newParentId);
 };
 
 const startRename = (node: any, closeCtx: Function) => {
@@ -134,21 +138,21 @@ const startRename = (node: any, closeCtx: Function) => {
 };
 
 const handleRename = (node: any, newName: string) => {
-  renameChat(node.id, newName);
+  emit('rename-chat', node.id, newName);
 };
 
 const handleDelete = async (id: string, closeCtx: Function) => {
   closeCtx();
   const { confirm } = await import('@tauri-apps/plugin-dialog');
   if (await confirm('Вы уверены, что хотите удалить этот чат? Это действие необратимо.')) {
-    await deleteChats([id]);
+    emit('delete-chats', [id]);
   }
 };
 
 const handleDeleteMultiple = async (ids: string[]) => {
   const { confirm } = await import('@tauri-apps/plugin-dialog');
   if (await confirm(`Вы уверены, что хотите удалить выбранные чаты (${ids.length} шт.)? Это действие необратимо.`)) {
-    await deleteChats(ids);
+    emit('delete-chats', ids);
   }
 };
 </script>

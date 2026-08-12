@@ -44,6 +44,8 @@ export function useWowilonPanel(
     }
   });
 
+
+
   const loadMessages = async (chatId: string) => {
     try {
       if (!chatId) {
@@ -76,18 +78,21 @@ export function useWowilonPanel(
         project: currentProject
       });
 
-      // Бэкенд мог создать новый чат — переключаемся на него и перечитываем историю
+      // Бэкенд мог создать новый чат — переключаемся на него
       if (res.chat_id && res.chat_id !== activeChatId.value) {
         activeChatId.value = res.chat_id;
-        await loadMessages(res.chat_id);
+        // We do NOT await loadMessages here because we already have the optimistic state
       }
 
-      // Создаем пустую заглушку для ассистента в UI
-      messages.value.push({
-        id: res.assistant_msg_id,
-        role: 'assistant',
-        content: ''
-      });
+      // Создаем пустую заглушку для ассистента в UI только если её ещё нет
+      const exists = messages.value.find(m => m.id === res.assistant_msg_id);
+      if (!exists) {
+        messages.value.push({
+          id: res.assistant_msg_id,
+          role: 'assistant',
+          content: ''
+        });
+      }
     } catch(e) {
       console.error('Failed to send message', e);
       isGenerating.value = false;

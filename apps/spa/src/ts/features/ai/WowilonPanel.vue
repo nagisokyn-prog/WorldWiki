@@ -19,10 +19,14 @@
       <div class="wowilon-body">
         <AiChatHistory 
           v-if="showSidebar" 
+          :chat-tree="chatTree"
           :active-chat-id="activeChatId"
-          :current-project="currentProject"
+          :is-loading="isChatsLoading"
           @select-chat="selectChat"
           @new-chat="createNewChat"
+          @move-chat="updateChatParent"
+          @rename-chat="renameChat"
+          @delete-chats="deleteChats"
         />
 
         <div class="wowilon-chat-area">
@@ -73,7 +77,7 @@
                 </span>
               </div>
             </div>
-            <AiChatInput @submit="sendMessage" :loading="isGenerating || isSending" />
+            <AiChatInput ref="chatInputRef" @submit="sendMessage" :loading="isGenerating || isSending" />
           </div>
         </div>
       </div>
@@ -91,6 +95,7 @@ import AiContextSelector from './components/AiContextSelector.vue';
 import AiToolApproval from './components/AiToolApproval.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
 import { useWowilonPanel } from './useWowilonPanel';
+import { useAiChats } from './composables/useAiChats';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 
@@ -103,7 +108,6 @@ const emit = defineEmits(['close']);
 const panelWidth = ref(400);
 const showSidebar = ref(true); // Toggle chat history
 const isSettingsOpen = ref(false);
-const activeChatId = ref('1');
 const selectedContext = ref<any[]>([]);
 
 let currentProject = 'global';
@@ -121,6 +125,22 @@ if (hash.includes('?')) {
 const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 
 const {
+  chats,
+  chatTree,
+  activeChatId,
+  isLoading: isChatsLoading,
+  loadChats,
+  createNewChat,
+  updateChatParent,
+  renameChat,
+  deleteChats
+} = useAiChats(currentProject);
+
+onMounted(() => {
+  loadChats();
+});
+
+const {
   messages,
   isGenerating,
   sendMessage: triggerSend,
@@ -130,10 +150,18 @@ const {
 const isSending = ref(false);
 
 watch(activeChatId, (newId) => {
-  if (newId) loadMessages(newId);
+  if (newId) {
+    if (isGenerating.value && messages.value.length > 0) {
+      return; 
+    }
+    loadMessages(newId);
+  } else {
+    messages.value = [];
+  }
 }, { immediate: true });
 
 const messagesContainer = ref<HTMLElement | null>(null);
+const chatInputRef = ref<any>(null);
 
 const renderMarkdown = (text: string) => {
   return md.render(text);
@@ -158,6 +186,8 @@ const sendMessage = async (text: string) => {
     scrollToBottom();
   } finally {
     isSending.value = false;
+    // Unlock the input so it can accept new messages
+    chatInputRef.value?.unlock();
   }
 };
 
@@ -170,7 +200,6 @@ const scrollToBottom = () => {
 };
 
 const selectChat = (id: string) => activeChatId.value = id;
-const createNewChat = () => alert('New chat created');
 
 const handleBranch = async (messageId: string | undefined) => {
   if (!messageId) {

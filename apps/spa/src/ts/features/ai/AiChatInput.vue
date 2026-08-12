@@ -76,16 +76,37 @@ watch(() => props.loading, (isLoading) => {
   }
 });
 
+// Promise-based lock — не позволяет отправить второй запрос пока первый не завершился
+let sendLock: Promise<void> | null = null;
+
 const submitMessage = () => {
   if (props.loading || !editor.value) return;
+  if (sendLock) return; // уже идёт отправка
   
   const text = editor.value.getText().trim();
   if (!text) return;
   
+  // Захватываем блокировку сразу, синхронно, до любого await
+  let resolveLock!: () => void;
+  sendLock = new Promise(res => { resolveLock = res; });
+  
   emit('submit', text);
   editor.value.commands.clearContent();
   isEmpty.value = true;
+  
+  // Снимаем блокировку через 1 секунду на случай если emit не вернёт управление
+  setTimeout(() => {
+    sendLock = null;
+    resolveLock();
+  }, 1000);
 };
+
+// Позволяет родительскому компоненту снять блокировку после обработки
+const unlock = () => {
+  sendLock = null;
+};
+
+defineExpose({ unlock });
 
 onBeforeUnmount(() => {
   if (editor.value) {

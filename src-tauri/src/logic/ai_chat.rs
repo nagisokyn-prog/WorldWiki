@@ -77,16 +77,37 @@ pub async fn get_chat_tree(
 /// Получает ВСЕ сообщения для конкретного чата (для UI, чтобы строить дерево вариантов).
 
 fn clean_surreal_id(val: &Value) -> Option<String> {
-    let s = if let Some(s) = val.as_str() {
-        s.to_string()
-    } else {
-        val.to_string().replace('"', "")
-    };
-    let cleaned = s.replace('⟨', "").replace('⟩', "").replace('`', "");
-    if cleaned == "NONE" || cleaned == "null" || cleaned.is_empty() {
-        return None;
+    if let Some(s) = val.as_str() {
+        let cleaned = s.replace('⟨', "").replace('⟩', "").replace('`', "");
+        if cleaned == "NONE" || cleaned == "null" || cleaned.is_empty() {
+            return None;
+        }
+        return Some(cleaned);
     }
-    Some(cleaned)
+
+    if let Some(obj) = val.as_object() {
+        if let Some(tb) = obj.get("tb").and_then(|v| v.as_str()) {
+            let id_str = if let Some(id_obj) = obj.get("id").and_then(|v| v.as_object()) {
+                if let Some(s) = id_obj.get("String").and_then(|v| v.as_str()) {
+                    Some(s.to_string())
+                } else if let Some(n) = id_obj.get("Number").and_then(|v| v.as_u64()) {
+                    Some(n.to_string())
+                } else {
+                    None
+                }
+            } else if let Some(s) = obj.get("id").and_then(|v| v.as_str()) {
+                Some(s.to_string())
+            } else {
+                None
+            };
+            
+            if let Some(id) = id_str {
+                let cleaned_id = id.replace('⟨', "").replace('⟩', "").replace('`', "");
+                return Some(format!("{}:{}", tb, cleaned_id));
+            }
+        }
+    }
+    None
 }
 
 fn sanitize_message_ids(mut messages: Vec<Value>) -> Vec<Value> {
@@ -403,14 +424,21 @@ pub async fn edit_chat_message(
     let parent_id_val = orig.as_ref().and_then(|v| v.get("parent_id").cloned());
 
     // We don't mark anything as inactive globally, we just mark siblings as inactive
-    let mut query_inactive = db.query(if parent_id_val.is_some() {
-        "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent"
-    } else {
+    let is_none = parent_id_val.is_none() 
+        || parent_id_val.as_ref().unwrap().is_null() 
+        || parent_id_val.as_ref().unwrap().as_str() == Some("NONE");
+
+    let mut query_inactive = db.query(if is_none {
         "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE"
+    } else {
+        "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent"
     });
 
-    if let Some(ref p) = parent_id_val {
-        query_inactive = query_inactive.bind(("parent", p.clone()));
+    if !is_none {
+        if let Some(clean_p) = clean_surreal_id(&parent_id_val.unwrap()) {
+            let p_rec = parse_record_id(&clean_p, "chat_messages");
+            query_inactive = query_inactive.bind(("parent", p_rec));
+        }
     }
 
     query_inactive
@@ -424,20 +452,24 @@ pub async fn edit_chat_message(
     let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
     let new_assistant_rec = parse_record_id(&new_assistant_uuid, "chat_messages");
 
-    let mut query_create = db.query(if parent_id_val.is_some() {
-        r#"
-        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
-        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
-        "#
-    } else {
+    let mut query_create = db.query(if is_none {
         r#"
         CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
         CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
         "#
+    } else {
+        r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+        "#
     });
 
-    if let Some(p) = parent_id_val {
-        query_create = query_create.bind(("parent", p));
+    if !is_none {
+        // We know we can clean it because we did it above
+        if let Some(clean_p) = clean_surreal_id(&parent_id_val.unwrap()) {
+            let p_rec = parse_record_id(&clean_p, "chat_messages");
+            query_create = query_create.bind(("parent", p_rec));
+        }
     }
 
     query_create

@@ -72,6 +72,7 @@
                     <button class="btn-save" @click="saveEdit(group.activeMessage.id)">Отправить</button>
                   </div>
                 </div>
+
                 <div v-else class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
                 
                 <div v-if="group.variants.length > 1" class="variant-switcher">

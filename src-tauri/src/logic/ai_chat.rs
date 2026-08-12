@@ -596,7 +596,10 @@ pub async fn switch_message_variant(
         query = query.bind(("chat", chat_id.clone()));
 
         if !is_none {
-            query = query.bind(("parent", parent_id_val.unwrap()));
+            if let Some(clean_parent_id) = clean_surreal_id(&parent_id_val.unwrap()) {
+                let p_rec = parse_record_id(&clean_parent_id, "chat_messages");
+                query = query.bind(("parent", p_rec));
+            }
         }
 
         query.await.map_err(|e| e.to_string())?;

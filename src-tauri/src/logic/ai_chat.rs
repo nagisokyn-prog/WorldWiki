@@ -320,7 +320,12 @@ pub async fn send_chat_message(
 
     if let Some(p) = parent_id_val {
         println!("[SEND] user_msg={} parent={:?} assistant={}", user_msg_uuid, p, assistant_msg_uuid);
-        query = query.bind(("parent", p));
+        if let Some(clean_p) = clean_surreal_id(&p) {
+            let p_rec = parse_record_id(&clean_p, "chat_messages");
+            query = query.bind(("parent", p_rec));
+        } else {
+            query = query.bind(("parent", p)); // fallback
+        }
     } else {
         println!("[SEND] user_msg={} parent=NONE (first msg) assistant={}", user_msg_uuid, assistant_msg_uuid);
         query = db.query(r#"
@@ -625,7 +630,10 @@ pub async fn switch_message_variant(
         } else {
             "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent"
         });
-        query = query.bind(("chat", chat_id.clone()));
+        
+        let clean_chat_id = clean_surreal_id(&chat_id).unwrap_or_default();
+        let chat_rec = parse_record_id(&clean_chat_id, "chats");
+        query = query.bind(("chat", chat_rec));
 
         if !is_none {
             if let Some(clean_parent_id) = clean_surreal_id(parent_id_val.as_ref().unwrap()) {

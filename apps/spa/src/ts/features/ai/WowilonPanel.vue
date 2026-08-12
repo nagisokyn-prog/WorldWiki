@@ -82,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from 'vue';
+import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue';
 import MarkdownIt from 'markdown-it';
 import AiChatInput from './AiChatInput.vue';
 import AiHeader from './components/AiHeader.vue';
@@ -172,14 +172,33 @@ const scrollToBottom = () => {
 const selectChat = (id: string) => activeChatId.value = id;
 const createNewChat = () => alert('New chat created');
 
-const handleBranch = (messageId: string | undefined) => {
+const handleBranch = async (messageId: string | undefined) => {
   if (!messageId) {
     alert('Это сообщение пока не имеет ID для ветвления.');
     return;
   }
-  // Call branchChat from useAiChats (we need to inject it or emit event)
-  // For now, alert to show the feature is connected
-  alert('Ветвление от сообщения: ' + messageId + '\nФункция ветвления будет работать после полного подключения бэкенда сообщений.');
+  try {
+    const newChat = await invoke<any>('fork_chat', {
+      projectId: currentProject,
+      messageId,
+      newTitle: 'Новая ветка'
+    });
+    
+    // Переключаемся на новый чат
+    if (newChat && newChat.id) {
+      activeChatId.value = newChat.id;
+    }
+    
+    // Грязный хак: заставляем sidebar обновиться, если он открыт
+    // В идеале нужен глобальный стор, но пока сойдет так:
+    showSidebar.value = false;
+    nextTick(() => {
+      showSidebar.value = true;
+    });
+  } catch (err) {
+    console.error('Failed to branch chat:', err);
+    alert('Ошибка при ветвлении чата: ' + err);
+  }
 };
 
 const handleContextSelected = (contexts: any[]) => {
@@ -224,8 +243,14 @@ const startResize = (e: MouseEvent) => {
 const detachWindow = async () => {
   emit('close');
   try {
+    // Build URL with current chat and project
+    const params = new URLSearchParams();
+    if (activeChatId.value) params.set('chatId', activeChatId.value);
+    if (currentProject) params.set('project', currentProject);
+    const url = `ai.html?${params.toString()}`;
+    
     const webview = new WebviewWindow('wowilon-ai', {
-      url: 'ai.html',
+      url,
       title: 'WoWiLon AI',
       width: 800,
       height: 600,
@@ -242,6 +267,57 @@ const detachWindow = async () => {
     console.error('Failed to create AI window:', e);
   }
 };
+
+// ===== GLOBAL CLICK LOGGING FOR MAIN CHAT PANEL =====
+const logPanelClick = (event: Event) => {
+  const mouseEvent = event as MouseEvent;
+  const target = event.target as HTMLElement;
+  const tagName = target.tagName.toLowerCase();
+  const className = target.className || '(no class)';
+  const id = target.id || '(no id)';
+  const textContent = target.textContent?.trim().slice(0, 100) || '(empty)';
+  const x = mouseEvent.clientX;
+  const y = mouseEvent.clientY;
+  const chatId = activeChatId.value;
+  const project = currentProject;
+  
+  console.log(`[PANEL-CLICK] chatId=${chatId} project=${project} | (${x}, ${y}) | <${tagName}>.#${id}.${className} | "${textContent}"`, {
+    target,
+    tagName,
+    className,
+    id,
+    textContent,
+    x,
+    y,
+    chatId,
+    project,
+    timestamp: Date.now(),
+    path: event.composedPath().map((el: any) => el.tagName?.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className : '')).filter(Boolean).join(' > ')
+  });
+};
+
+onMounted(() => {
+  const container = document.querySelector('.wowilon-panel');
+  const listener = logPanelClick as EventListener;
+  if (container) {
+    container.addEventListener('click', listener, true);
+    console.log('[PANEL-CLICK] Global click listener attached to .wowilon-panel');
+  } else {
+    console.warn('[PANEL-CLICK] .wowilon-panel not found, attaching to document');
+    document.addEventListener('click', listener, true);
+  }
+  (window as any).__panelClickListener = { container, listener };
+});
+
+onUnmounted(() => {
+  const stored = (window as any).__panelClickListener;
+  if (stored?.container) {
+    stored.container.removeEventListener('click', stored.listener, true);
+  } else if (stored?.listener) {
+    document.removeEventListener('click', stored.listener, true);
+  }
+  console.log('[PANEL-CLICK] Global click listener removed');
+});
 </script>
 
 <style scoped src="./WowilonPanel.vue.css"></style>

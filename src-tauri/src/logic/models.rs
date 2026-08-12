@@ -66,7 +66,6 @@ surreal_entity! {
     pub struct Chat {
         pub title: String,
         pub tag: Option<String>,
-        pub parent_chat_id: Option<String>,
         #[flexible] pub session_context: Vec<serde_json::Value>,
     }
 }
@@ -76,10 +75,8 @@ surreal_entity! {
     #[project_scoped]
     #[tauri_commands]
     pub struct ChatMessage {
-        pub chat_id: String,
         pub role: String, // "user", "assistant"
         #[fulltext] pub content: String,
-        pub parent_msg_id: Option<String>,
         pub version: i64,
         #[flexible] pub quoted_context: Option<serde_json::Value>,
         #[fulltext] pub edited_content: Option<String>,
@@ -348,6 +345,46 @@ surreal_relation! {
     }
 }
 
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = chats]
+    #[to = chat_messages]
+    #[tauri_commands]
+    pub struct ChatContainsMessage {
+        #[ts(type = "number")] pub sort_order: i64,
+    }
+}
+
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = chat_messages]
+    #[to = chat_messages]
+    #[tauri_commands]
+    pub struct MessageContainsMessage {
+        #[ts(type = "number")] pub sort_order: i64,
+    }
+}
+
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = projects]
+    #[to = chats]
+    #[tauri_commands]
+    pub struct ProjectContainsChat {
+        #[ts(type = "number")] pub sort_order: i64,
+    }
+}
+
+surreal_relation! {
+    #[edge = "contains"]
+    #[from = chats]
+    #[to = chats]
+    #[tauri_commands]
+    pub struct ChatContainsChat {
+        #[ts(type = "number")] pub sort_order: i64,
+    }
+}
+
 surreal_schema! {
     entities: [
         TextBlock, ChatMessage, Chat, DictionaryWord, WebCache, AgentMemory,
@@ -355,7 +392,8 @@ surreal_schema! {
         Calendar, Volume, Arc, Chapter, Tag, Plan
     ],
     relations: [
-        Cites, VolumeContainsArc, ArcContainsChapter, ProjectContainsVolume
+        Cites, VolumeContainsArc, ArcContainsChapter, ProjectContainsVolume,
+        ChatContainsMessage, MessageContainsMessage, ProjectContainsChat, ChatContainsChat
     ]
 }
 
@@ -383,5 +421,11 @@ mod ts_export_tests {
         Tag::export().expect(export_err_msg);
         Calendar::export().expect(export_err_msg);
         Cites::export().expect(export_err_msg);
+        Chat::export().expect(export_err_msg);
+        ChatMessage::export().expect(export_err_msg);
+        ChatContainsMessage::export().expect(export_err_msg);
+        MessageContainsMessage::export().expect(export_err_msg);
+        ProjectContainsChat::export().expect(export_err_msg);
+        ChatContainsChat::export().expect(export_err_msg);
     }
 }

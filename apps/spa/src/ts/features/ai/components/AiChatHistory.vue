@@ -139,13 +139,15 @@ const handleRename = (node: any, newName: string) => {
 
 const handleDelete = async (id: string, closeCtx: Function) => {
   closeCtx();
-  if (confirm('Вы уверены, что хотите удалить этот чат? Это действие необратимо.')) {
+  const { confirm } = await import('@tauri-apps/plugin-dialog');
+  if (await confirm('Вы уверены, что хотите удалить этот чат? Это действие необратимо.')) {
     await deleteChats([id]);
   }
 };
 
 const handleDeleteMultiple = async (ids: string[]) => {
-  if (confirm(`Вы уверены, что хотите удалить выбранные чаты (${ids.length} шт.)? Это действие необратимо.`)) {
+  const { confirm } = await import('@tauri-apps/plugin-dialog');
+  if (await confirm(`Вы уверены, что хотите удалить выбранные чаты (${ids.length} шт.)? Это действие необратимо.`)) {
     await deleteChats(ids);
   }
 };

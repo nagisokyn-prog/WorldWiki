@@ -45,7 +45,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 -- ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
 -- ===============================================
 
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs OUT volumes | arcs | chapters SCHEMAFULL;
+DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs | chats | chat_messages OUT volumes | arcs | chapters | chats | chat_messages SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
@@ -240,18 +240,15 @@ DEFINE FIELD OVERWRITE denylist   ON auto_approval_settings TYPE object FLEXIB
 DEFINE TABLE OVERWRITE chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON chats TYPE record<projects>;
 DEFINE FIELD OVERWRITE title      ON chats TYPE string;
-DEFINE FIELD OVERWRITE tag        ON chats TYPE option<string>;
-DEFINE FIELD OVERWRITE parent_chat_id ON chats TYPE option<record<chats>>;
+DEFINE FIELD OVERWRITE tag        ON chats TYPE option<string>;
 DEFINE FIELD OVERWRITE session_context ON chats TYPE array<record> DEFAULT []; -- Массив жестко закрепленных в контекст томов/арок/глав
 DEFINE FIELD OVERWRITE created_at ON chats TYPE datetime DEFAULT time::now();
 
 -- Сообщения чата
 DEFINE TABLE OVERWRITE chat_messages SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id       ON chat_messages TYPE record<projects>;
-DEFINE FIELD OVERWRITE chat_id          ON chat_messages TYPE record<chats>;
-DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
-DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
-DEFINE FIELD OVERWRITE parent_msg_id    ON chat_messages TYPE option<record<chat_messages>>;
+DEFINE FIELD OVERWRITE project_id       ON chat_messages TYPE record<projects>;
+DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
+DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object> FLEXIBLE;
 DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string>;
@@ -261,6 +258,7 @@ DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBL
 DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_chat_msg_emb_openai ON chat_messages COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_chat_msg_created_at ON chat_messages FIELDS created_at;
 
 -- Память агента
 DEFINE TABLE OVERWRITE agent_memory SCHEMAFULL;

@@ -44,22 +44,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import MarkdownIt from 'markdown-it';
 import AiChatInput from './features/ai/AiChatInput.vue';
 import AiHeader from './features/ai/components/AiHeader.vue';
 import AiSettingsView from './features/ai/settings/AiSettingsView.vue';
 import { useWowilonPanel } from './features/ai/useWowilonPanel';
 
+// Read URL parameters for chatId and project
+const searchParams = new URLSearchParams(window.location.search);
+const urlChatId = searchParams.get('chatId') || '';
+const urlProject = searchParams.get('project') || '';
+
 const isSettingsOpen = ref(false);
 
 const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 const messagesContainer = ref<HTMLElement | null>(null);
 
-const activeChatId = ref('');
-const currentProject = ref('');
+// Initialize from URL params
+const activeChatId = ref(urlChatId);
+const currentProject = ref(urlProject);
 
-const { messages, isGenerating, sendMessage } = useWowilonPanel(activeChatId, currentProject.value);
+const { messages, isGenerating, sendMessage, loadMessages } = useWowilonPanel(activeChatId, currentProject.value);
 
 const renderMarkdown = (text: string) => md.render(text);
 
@@ -76,7 +82,66 @@ const scrollToBottom = () => {
   });
 };
 
+// Load messages when chatId changes
+watch(activeChatId, (newId) => {
+  if (newId) loadMessages(newId);
+}, { immediate: true });
+
 watch(() => messages.value.length, scrollToBottom);
+
+// ===== GLOBAL CLICK LOGGING FOR CHAT WINDOW =====
+const logClick = (event: Event) => {
+  const mouseEvent = event as MouseEvent;
+  const target = event.target as HTMLElement;
+  const tagName = target.tagName.toLowerCase();
+  const className = target.className || '(no class)';
+  const id = target.id || '(no id)';
+  const textContent = target.textContent?.trim().slice(0, 100) || '(empty)';
+  const x = mouseEvent.clientX;
+  const y = mouseEvent.clientY;
+  const chatId = activeChatId.value;
+  const project = currentProject.value;
+  
+  console.log(`[CHAT-CLICK] chatId=${chatId} project=${project} | (${x}, ${y}) | <${tagName}>.#${id}.${className} | "${textContent}"`, {
+    target,
+    tagName,
+    className,
+    id,
+    textContent,
+    x,
+    y,
+    chatId,
+    project,
+    timestamp: Date.now(),
+    path: event.composedPath().map((el: any) => el.tagName?.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className : '')).filter(Boolean).join(' > ')
+  });
+};
+
+onMounted(() => {
+  // Attach to the root container
+  const container = document.querySelector('.wowilon-app-container');
+  const listener = logClick as EventListener;
+  if (container) {
+    container.addEventListener('click', listener, true); // capture phase
+    console.log('[CHAT-CLICK] Global click listener attached to .wowilon-app-container');
+  } else {
+    console.warn('[CHAT-CLICK] .wowilon-app-container not found, attaching to document');
+    document.addEventListener('click', listener, true);
+  }
+  
+  // Store for cleanup
+  (window as any).__chatClickListener = { container, listener };
+});
+
+onUnmounted(() => {
+  const stored = (window as any).__chatClickListener;
+  if (stored?.container) {
+    stored.container.removeEventListener('click', stored.listener, true);
+  } else if (stored?.listener) {
+    document.removeEventListener('click', stored.listener, true);
+  }
+  console.log('[CHAT-CLICK] Global click listener removed');
+});
 </script>
 
 <style scoped>

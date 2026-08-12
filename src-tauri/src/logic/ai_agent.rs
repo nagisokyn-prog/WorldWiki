@@ -24,6 +24,7 @@ use surreal_domain::SurrealDb as _;
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::AppState;
+use crate::logic::ai_chat::get_message_branch_impl;
 
 /// Стоп-критерии и лимиты (контекстное окно).
 pub const MAX_AGENT_ITERATIONS: usize = 8;
@@ -535,29 +536,11 @@ async fn run_agent_inner(
         }
     };
 
-    // --- 2. История чата (линейная по created_at, без пустой заглушки) ---
-    let chat_part = chat_id.strip_prefix("chats:").unwrap_or(&chat_id).to_string();
-    let mut hist_resp = match db
-        .query(
-            "SELECT role, content, parent_msg_id FROM chat_messages \
-             WHERE (chat_id = $cid_str OR chat_id = $cid_rec) AND id != $assistant \
-             ORDER BY created_at ASC",
-        )
-        .bind(("cid_str", format!("chats:{chat_part}")))
-        .bind(("cid_rec", RecordId::new("chats", chat_part.as_str())))
-        .bind(("assistant", RecordId::new("chat_messages", assistant_msg_id.as_str())))
-        .await
-    {
-        Ok(r) => r,
-        Err(e) => {
-            emit_err(format!("Ошибка загрузки истории: {e}"));
-            return;
-        }
-    };
-    let history: Vec<Value> = match hist_resp.take(0) {
+    // --- 2. История чата (по графу) ---
+    let history = match get_message_branch_impl(&db, &assistant_msg_id).await {
         Ok(v) => v,
         Err(e) => {
-            emit_err(format!("Ошибка разбора истории: {e}"));
+            emit_err(format!("Ошибка загрузки истории: {e}"));
             return;
         }
     };

@@ -16,21 +16,21 @@
       <div class="wowilon-body">
       <div class="wowilon-chat-area">
         <div class="messages-container" ref="messagesContainer">
-          <div v-if="messages.length === 0" class="empty-chat-state">
+          <div v-if="renderedMessages.length === 0" class="empty-chat-state">
             <i class="fas fa-comment-dots"></i>
             <p>Чем могу помочь сегодня?</p>
           </div>
           
           <div 
-            v-for="(msg, idx) in messages" 
-            :key="idx" 
+            v-for="(group, idx) in renderedMessages" 
+            :key="group.activeMessage.id || idx" 
             class="message-wrapper" 
-            :class="'message-' + msg.role"
+            :class="'message-' + group.activeMessage.role"
           >
             <div class="message-avatar">
-              <i :class="msg.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
+              <i :class="group.activeMessage.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
             </div>
-            <div class="message-content" v-html="renderMarkdown(msg.content)"></div>
+            <div class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
           </div>
         </div>
 
@@ -65,7 +65,7 @@ const messagesContainer = ref<HTMLElement | null>(null);
 const activeChatId = ref(urlChatId);
 const currentProject = ref(urlProject);
 
-const { messages, isGenerating, sendMessage, loadMessages } = useWowilonPanel(activeChatId, currentProject.value);
+const { renderedMessages, isGenerating, sendMessage, loadMessages } = useWowilonPanel(activeChatId, currentProject.value);
 
 const renderMarkdown = (text: string) => md.render(text);
 
@@ -87,7 +87,7 @@ watch(activeChatId, (newId) => {
   if (newId) loadMessages(newId);
 }, { immediate: true });
 
-watch(() => messages.value.length, scrollToBottom);
+watch(() => renderedMessages.value.length, scrollToBottom);
 
 // ===== GLOBAL CLICK LOGGING FOR CHAT WINDOW =====
 const logClick = (event: Event) => {

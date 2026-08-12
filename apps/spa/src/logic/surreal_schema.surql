@@ -262,7 +262,8 @@ DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string>;
 DEFINE FIELD OVERWRITE feedback_comment ON chat_messages TYPE option<string>;
 DEFINE FIELD OVERWRITE rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 1;
+DEFINE FIELD OVERWRITE parent_id        ON chat_messages TYPE option<record<chat_messages>>;
+DEFINE FIELD OVERWRITE is_active        ON chat_messages TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at       ON chat_messages TYPE datetime DEFAULT time::now();
 

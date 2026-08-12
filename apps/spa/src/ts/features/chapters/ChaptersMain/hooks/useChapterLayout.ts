@@ -50,11 +50,19 @@ export function useChapterLayout() {
   };
 
   const isExportModalOpen = ref(false);
-  const showQuickLinkHint = ref(true);
+  const isQuickLinkPanelHidden = localStorage.getItem('quickLinkPanelHidden') === 'true';
+  const showQuickLinkHint = ref(!isQuickLinkPanelHidden);
+  const hideQuickLinkHintForever = ref(localStorage.getItem('hideQuickLinkHintForever') === 'true');
   
   watch(showQuickLinkHint, (val) => {
     localStorage.setItem('quickLinkPanelHidden', (!val).toString());
   });
+
+  const dismissQuickLinkHintForever = () => {
+    showQuickLinkHint.value = false;
+    hideQuickLinkHintForever.value = true;
+    localStorage.setItem('hideQuickLinkHintForever', 'true');
+  };
 
   const isZenMode = ref(false);
   
@@ -147,7 +155,16 @@ export function useChapterLayout() {
     isVolumePlanOpen, isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
     chaptersSidebarWidth, startChaptersSidebarResize,
     isExportModalOpen, showQuickLinkHint,
-    isZenMode, toggleZenMode, onFullscreenChange,
-    rightPanelWidth, isRightPanelVisible, startResize, toggleRightPanel, handleToggleRightPanel, handleToggleStructure
+    isZenMode,
+    toggleZenMode,
+    onFullscreenChange,
+    rightPanelWidth,
+    isRightPanelVisible,
+    toggleRightPanel,
+    startResize,
+    handleToggleRightPanel,
+    handleToggleStructure,
+    hideQuickLinkHintForever,
+    dismissQuickLinkHintForever
   };
 }

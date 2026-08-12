@@ -3,12 +3,7 @@
     <div class="header-left">
       <div class="wowilon-title">
         <i class="fas fa-robot"></i>
-        <div class="title-text-group">
-          <span class="title-text">WoWiLon AI</span>
-          <span v-if="activeProfile" class="model-info" :title="activeProfile.settings?.model">
-            {{ activeProfile.settings?.model || 'Модель не выбрана' }}
-          </span>
-        </div>
+        <span class="title-text">WoWiLon AI</span>
       </div>
       
       <div class="mode-switcher">
@@ -60,10 +55,6 @@ const props = defineProps({
   isDetached: {
     type: Boolean,
     default: false
-  },
-  activeProfile: {
-    type: Object as PropType<AiProfile | null>,
-    default: null
   }
 });
 
@@ -101,23 +92,8 @@ const setMode = (mode: string) => {
   color: var(--accent);
 }
 
-.title-text-group {
-  display: flex;
-  flex-direction: column;
-}
-
 .title-text {
   font-size: 14px;
-  line-height: 1.2;
-}
-
-.model-info {
-  font-size: 10px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 150px;
 }
 
 .mode-switcher {

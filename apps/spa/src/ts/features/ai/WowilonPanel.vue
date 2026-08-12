@@ -31,6 +31,8 @@
         />
 
         <div class="wowilon-chat-area">
+          <AiChatTopBar :active-profile="activeProfile" :token-usage="tokenUsage" />
+          
           <div class="messages-container" ref="messagesContainer">
             <!-- Empty state: no chat selected OR chat selected but no messages -->
             <div v-if="messages.length === 0" class="empty-chat-state">
@@ -43,37 +45,61 @@
             
             <div 
               v-else
-              v-for="(msg, idx) in messages" 
-              :key="msg.id || idx" 
+              v-for="(group, idx) in renderedMessages" 
+              :key="group.activeMessage.id || idx" 
               class="message-wrapper" 
-              :class="'message-' + msg.role"
+              :class="'message-' + group.activeMessage.role"
             >
               <div class="message-avatar">
-                <i :class="msg.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
+                <i :class="group.activeMessage.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
               </div>
               <div class="message-content-wrapper" style="flex: 1; min-width: 0;">
-                <details v-if="msg.reasoning" class="thinking-accordion">
+                <details v-if="group.activeMessage.reasoning" class="thinking-accordion">
                   <summary>Мысли (Thinking...)</summary>
-                  <div class="thinking-content" v-html="renderMarkdown(msg.reasoning)"></div>
+                  <div class="thinking-content" v-html="renderMarkdown(group.activeMessage.reasoning)"></div>
                 </details>
                 
-                <div v-if="msg.toolLogs && msg.toolLogs.length > 0" class="tool-logs-container">
-                  <div v-for="(log, lIdx) in msg.toolLogs" :key="lIdx" class="tool-log-item">
+                <div v-if="group.activeMessage.toolLogs && group.activeMessage.toolLogs.length > 0" class="tool-logs-container">
+                  <div v-for="(log, lIdx) in group.activeMessage.toolLogs" :key="lIdx" class="tool-log-item">
                     <i class="fas fa-wrench"></i> {{ log }}
                   </div>
                 </div>
 
-                <div class="message-content" v-html="renderMarkdown(msg.content)"></div>
+                <div v-if="editingMessageId === group.activeMessage.id" class="inline-editor">
+                  <textarea v-model="editDraft" class="inline-editor-textarea"></textarea>
+                  <div class="inline-editor-actions">
+                    <button class="btn-cancel" @click="cancelEdit">Отмена</button>
+                    <button class="btn-save" @click="saveEdit(group.activeMessage.id)">Отправить</button>
+                  </div>
+                </div>
+                <div v-else class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
+                
+                <div v-if="group.variants.length > 1" class="variant-switcher">
+                  <button :disabled="group.activeIndex === 0" @click="switchVariant(group.variants[group.activeIndex - 1].id as string)"><i class="fas fa-chevron-left"></i></button>
+                  <span>{{ group.activeIndex + 1 }} / {{ group.variants.length }}</span>
+                  <button :disabled="group.activeIndex === group.variants.length - 1" @click="switchVariant(group.variants[group.activeIndex + 1].id as string)"><i class="fas fa-chevron-right"></i></button>
+                </div>
               </div>
               
-              <div class="message-actions" style="opacity: 0.5; margin-left: 10px; cursor: pointer;" title="Создать ветку отсюда (Fork)" @click="handleBranch(msg.id)">
-                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
+              <div class="message-actions-hover">
+                <button v-if="group.activeMessage.role === 'user'" class="icon-btn" title="Редактировать" @click="startEdit(group.activeMessage)">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button v-if="group.activeMessage.role === 'assistant'" class="icon-btn" title="Перегенерировать ответ" @click="regenerateMessage(group.activeMessage.parent_id as string)">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="icon-btn" title="Создать ветку отсюда (Fork)" @click="handleBranch(group.activeMessage.id)">
+                  <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="14" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
+                </button>
+                <button class="icon-btn danger" title="Удалить" @click="deleteMessage(group.activeMessage.id as string)">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
               </div>
               
               <!-- Tool Approval Card -->
               <AiToolApproval 
-                v-if="msg.toolCallWaiting" 
-                :tool-call="msg.toolCallWaiting"
+                v-if="group.activeMessage.toolCallWaiting" 
+                :tool-call="group.activeMessage.toolCallWaiting"
                 @approve="handleToolApproval"
                 @reject="handleToolRejection"
               />
@@ -81,6 +107,14 @@
           </div>
 
           <div class="chat-input-container">
+            <AiActionButtons 
+              :is-generating="isGenerating"
+              :has-error="false"
+              :can-resume="false"
+              @cancel="cancelGeneration"
+              @retry="() => {}"
+              @resume="() => {}"
+            />
             <div class="context-bar">
               <AiContextSelector @context-selected="handleContextSelected" />
               <!-- Show selected context pills here -->
@@ -91,7 +125,7 @@
                 </span>
               </div>
             </div>
-            <AiChatInput ref="chatInputRef" @submit="sendMessage" :loading="isGenerating || isSending" />
+            <AiChatInput ref="chatInputRef" @submit="sendMessage" @cancel="cancelGeneration" :loading="isGenerating || isSending" />
           </div>
         </div>
       </div>
@@ -105,6 +139,8 @@ import MarkdownIt from 'markdown-it';
 import AiChatInput from './AiChatInput.vue';
 import AiHeader from './components/AiHeader.vue';
 import AiChatHistory from './components/AiChatHistory.vue';
+import AiChatTopBar from './components/AiChatTopBar.vue';
+import AiActionButtons from './components/AiActionButtons.vue';
 import AiContextSelector from './components/AiContextSelector.vue';
 import AiToolApproval from './components/AiToolApproval.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
@@ -159,11 +195,38 @@ onMounted(() => {
 });
 
 const {
-  messages,
+  allMessages: messages,
+  renderedMessages,
   isGenerating,
+  tokenUsage,
   sendMessage: triggerSend,
-  loadMessages
+  loadMessages,
+  cancelGeneration,
+  deleteMessage,
+  editMessage,
+  regenerateMessage,
+  switchVariant
 } = useWowilonPanel(activeChatId, currentProject);
+
+const editingMessageId = ref<string | null>(null);
+const editDraft = ref('');
+
+const startEdit = (msg: any) => {
+  editingMessageId.value = msg.id;
+  editDraft.value = msg.content;
+};
+
+const cancelEdit = () => {
+  editingMessageId.value = null;
+  editDraft.value = '';
+};
+
+const saveEdit = (id: string) => {
+  if (editDraft.value.trim() && id) {
+    editMessage(id, editDraft.value);
+  }
+  cancelEdit();
+};
 
 const isSending = ref(false);
 

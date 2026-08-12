@@ -17,6 +17,9 @@ pub struct AppState {
     pub db: Surreal<Db>,
 }
 
+#[derive(Default)]
+pub struct AgentTasks(pub std::sync::Arc<tokio::sync::Mutex<std::collections::HashMap<String, tokio::task::JoinHandle<()>>>>);
+
 // Implements the SurrealDb trait from surreal_domain_core,
 // enabling all macro-generated generic Tauri commands to work.
 impl surreal_domain::SurrealDb for AppState {
@@ -150,6 +153,11 @@ fn main() {
             fork_chat,
             update_chat_parent,
             send_chat_message,
+            cancel_generation,
+            delete_chat_message,
+            edit_chat_message,
+            regenerate_chat_message,
+            switch_message_variant,
             fetch_ai_models,
 
             // --- Генерируемые команды для системных сущностей ---
@@ -163,6 +171,7 @@ fn main() {
         .setup(|app| {
             let db = tauri::async_runtime::block_on(init_database());
             app.manage(AppState { db });
+            app.manage(AgentTasks::default());
             Ok(())
         })
         .on_window_event(|window, event| match event {

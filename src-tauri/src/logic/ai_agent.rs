@@ -408,8 +408,17 @@ fn history_to_input_messages(history: &[Value]) -> Vec<InputMessage> {
     for msg in history {
         let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("user");
         let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-        if total >= HISTORY_CHAR_BUDGET || content.is_empty() {
+        // Skip inactive variants (DB query should filter these, but double-check)
+        let is_active = msg.get("is_active").and_then(|v| v.as_bool()).unwrap_or(true);
+        if !is_active {
             continue;
+        }
+        // Skip the empty assistant placeholder — model will fill it in this turn
+        if role == "assistant" && content.is_empty() {
+            continue;
+        }
+        if total >= HISTORY_CHAR_BUDGET {
+            break;
         }
         total += content.len();
         if role == "assistant" {
@@ -763,6 +772,26 @@ async fn run_agent_inner(
                         let input = serde_json::from_str(&a.input_buf)
                             .unwrap_or_else(|_| json!({ "raw": a.input_buf }));
                         tool_uses.push((a.id, a.name, input));
+                    }
+                }
+                StreamEvent::MessageStart(start) => {
+                    let u = start.message.usage;
+                    let u_json = serde_json::json!({
+                        "input_tokens": u.input_tokens,
+                        "output_tokens": u.output_tokens,
+                        "total_tokens": u.total_tokens()
+                    });
+                    emit_chunk(u_json.to_string(), false, "usage");
+                }
+                StreamEvent::MessageDelta(delta) => {
+                    let u = delta.usage;
+                    if u.total_tokens() > 0 {
+                        let u_json = serde_json::json!({
+                            "input_tokens": u.input_tokens,
+                            "output_tokens": u.output_tokens,
+                            "total_tokens": u.total_tokens()
+                        });
+                        emit_chunk(u_json.to_string(), false, "usage");
                     }
                 }
                 StreamEvent::MessageStop(_) => break,

@@ -8,14 +8,20 @@
         <span class="hint">Shift+Enter ⏎ Новая строка</span>
       </div>
       
-      <button 
+      <button v-if="loading"
+        class="btn-send btn-cancel" 
+        @click="$emit('cancel')"
+        title="Отменить генерацию"
+      >
+        <i class="fas fa-stop-circle"></i>
+      </button>
+      <button v-else
         class="btn-send" 
-        :disabled="loading || isEmpty" 
+        :disabled="isEmpty" 
         @click="submitMessage"
         title="Отправить запрос"
       >
-        <i v-if="loading" class="fas fa-spinner fa-spin"></i>
-        <i v-else class="fas fa-paper-plane"></i>
+        <i class="fas fa-paper-plane"></i>
       </button>
     </div>
   </div>
@@ -30,7 +36,7 @@ const props = defineProps<{
   loading?: boolean;
 }>();
 
-const emit = defineEmits(['submit']);
+const emit = defineEmits(['submit', 'cancel']);
 
 const isFocused = ref(false);
 const isEmpty = ref(true);
@@ -70,11 +76,7 @@ const editor = useEditor({
   }
 });
 
-watch(() => props.loading, (isLoading) => {
-  if (editor.value) {
-    editor.value.setEditable(!isLoading);
-  }
-});
+// Убрали блокировку редактора при загрузке, чтобы юзер мог писать заранее
 
 // Promise-based lock — не позволяет отправить второй запрос пока первый не завершился
 let sendLock: Promise<void> | null = null;
@@ -200,5 +202,13 @@ onBeforeUnmount(() => {
   background: var(--border-color);
   color: var(--text-muted);
   cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: var(--danger-color, #ff4d4f);
+}
+
+.btn-cancel:hover {
+  background: rgba(255, 77, 79, 0.8);
 }
 </style>

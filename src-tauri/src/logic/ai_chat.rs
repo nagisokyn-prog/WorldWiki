@@ -1,16 +1,22 @@
 use crate::logic::ai_agent::run_agent_loop;
+use crate::AgentTasks;
 use crate::AppState;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::Value;
 use surreal_domain::SurrealDb;
 use surrealdb::types::RecordId;
-use tauri::Manager;
+use tauri::{Manager, State};
 
 fn parse_record_id(id: &str, default_table: &str) -> RecordId {
-    let clean = id.trim_matches('`');
-    let parts: Vec<&str> = clean.split(':').collect();
-    if parts.len() == 2 {
-        RecordId::new(parts[0], parts[1])
+    let clean = id.trim().trim_matches(|c| c == '`' || c == '⟨' || c == '⟩');
+    if let Some(colon) = clean.find(':') {
+        let table = clean[..colon]
+            .trim()
+            .trim_matches(|c| c == '`' || c == '⟨' || c == '⟩');
+        let key = clean[colon + 1..]
+            .trim()
+            .trim_matches(|c| c == '`' || c == '⟨' || c == '⟩');
+        RecordId::new(table, key)
     } else {
         RecordId::new(default_table, clean)
     }
@@ -68,7 +74,39 @@ pub async fn get_chat_tree(
     Ok(chats)
 }
 
-/// Получает все сообщения для конкретного чата.
+/// Получает ВСЕ сообщения для конкретного чата (для UI, чтобы строить дерево вариантов).
+
+fn clean_surreal_id(val: &Value) -> Option<String> {
+    let s = if let Some(s) = val.as_str() {
+        s.to_string()
+    } else {
+        val.to_string().replace('"', "")
+    };
+    let cleaned = s.replace('⟨', "").replace('⟩', "").replace('`', "");
+    if cleaned == "NONE" || cleaned == "null" || cleaned.is_empty() {
+        return None;
+    }
+    Some(cleaned)
+}
+
+fn sanitize_message_ids(mut messages: Vec<Value>) -> Vec<Value> {
+    for msg in &mut messages {
+        if let Value::Object(obj) = msg {
+            if let Some(id_val) = obj.get("id") {
+                if let Some(clean_id) = clean_surreal_id(id_val) {
+                    obj.insert("id".to_string(), Value::from(clean_id));
+                }
+            }
+            if let Some(pid_val) = obj.get("parent_id") {
+                if let Some(clean_pid) = clean_surreal_id(pid_val) {
+                    obj.insert("parent_id".to_string(), Value::from(clean_pid));
+                }
+            }
+        }
+    }
+    messages
+}
+
 #[tauri::command]
 pub async fn get_chat_messages(
     chat_id: String,
@@ -84,11 +122,8 @@ pub async fn get_chat_messages(
         .map_err(|e| e.to_string())?;
 
     let messages: Vec<Value> = response.take(0).unwrap_or_default();
-    println!("[DEBUG get_chat_messages] returning {} messages", messages.len());
-    Ok(messages)
+    Ok(sanitize_message_ids(messages))
 }
-
-
 
 pub async fn get_chat_messages_impl(
     db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
@@ -97,13 +132,17 @@ pub async fn get_chat_messages_impl(
     let chat_rec = parse_record_id(chat_id, "chats");
 
     let mut response = db
-        .query("SELECT * FROM chat_messages WHERE chat_id = $chat ORDER BY created_at ASC")
+        .query("SELECT * FROM chat_messages WHERE chat_id = $chat AND (is_active = true OR is_active = NONE) ORDER BY created_at ASC")
         .bind(("chat", chat_rec))
         .await
         .map_err(|e| e.to_string())?;
 
     let messages: Vec<Value> = response.take(0).unwrap_or_default();
-    Ok(messages)
+    println!(
+        "[DEBUG get_chat_messages] returning {} messages",
+        messages.len()
+    );
+    Ok(sanitize_message_ids(messages))
 }
 
 #[tauri::command]
@@ -195,6 +234,7 @@ pub async fn update_chat_parent(
 pub struct SendChatResult {
     pub chat_id: String,
     pub assistant_msg_id: String,
+    pub user_msg_id: String,
 }
 
 #[tauri::command]
@@ -243,17 +283,39 @@ pub async fn send_chat_message(
     let assistant_msg_uuid = uuid::Uuid::new_v4().to_string();
     let assistant_msg_rec = parse_record_id(&assistant_msg_uuid, "chat_messages");
 
-    // 1. Создаем сообщения привязанные к чату
-    db.query(r#"
-        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, created_at = time::now();
-        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, created_at = time::now();
-    "#)
-    .bind(("uid", user_msg_rec.clone()))
-    .bind(("aid", assistant_msg_rec.clone()))
-    .bind(("chat", actual_chat_rec.clone()))
-    .bind(("proj", proj_rec.clone()))
-    .bind(("content", text.clone()))
-    .await.map_err(|e| e.to_string())?;
+    // Fetch the last message in the chat to use as parent_id for the new user message
+    let mut check_last = db.query("SELECT id, created_at FROM chat_messages WHERE chat_id = $chat ORDER BY created_at DESC LIMIT 1")
+        .bind(("chat", actual_chat_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let last_msg: Option<Value> = check_last.take(0).unwrap_or_default();
+    let parent_id_val = last_msg.and_then(|m| m.get("id").cloned());
+
+    let mut query = db.query(r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+    "#);
+
+    if let Some(p) = parent_id_val {
+        println!("[SEND] user_msg={} parent={:?} assistant={}", user_msg_uuid, p, assistant_msg_uuid);
+        query = query.bind(("parent", p));
+    } else {
+        println!("[SEND] user_msg={} parent=NONE (first msg) assistant={}", user_msg_uuid, assistant_msg_uuid);
+        query = db.query(r#"
+            CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
+            CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+        "#);
+    }
+
+    query
+        .bind(("uid", user_msg_rec.clone()))
+        .bind(("aid", assistant_msg_rec.clone()))
+        .bind(("chat", actual_chat_rec.clone()))
+        .bind(("proj", proj_rec.clone()))
+        .bind(("content", text.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
 
     let chat_id_str = actual_chat_id_str.clone();
 
@@ -261,12 +323,290 @@ pub async fn send_chat_message(
     let project_id_str = project.clone();
     let assistant_msg_id_str = format!("chat_messages:{}", assistant_msg_uuid);
 
-    tokio::spawn(async move {
-        run_agent_loop(app, project_id_str, chat_id_str, assistant_msg_id_str, text).await;
+    let tasks_state = app.state::<AgentTasks>();
+    let app2 = app.clone();
+    let chat_id_str2 = chat_id_str.clone();
+    let handle = tokio::spawn(async move {
+        run_agent_loop(
+            app2.clone(),
+            project_id_str,
+            chat_id_str,
+            assistant_msg_id_str,
+            text,
+        )
+        .await;
+        let tasks_state = app2.state::<AgentTasks>();
+        let mut tasks = tasks_state.0.lock().await;
+        tasks.remove(&chat_id_str2);
     });
+
+    // Store handle
+    let mut tasks = tasks_state.0.lock().await;
+    tasks.insert(actual_chat_id_str.clone(), handle);
 
     Ok(SendChatResult {
         chat_id: actual_chat_id_str,
         assistant_msg_id: format!("chat_messages:{}", assistant_msg_uuid),
+        user_msg_id: format!("chat_messages:{}", user_msg_uuid),
     })
+}
+
+#[tauri::command]
+pub async fn cancel_generation(
+    chat_id: String,
+    state: State<'_, AgentTasks>,
+) -> Result<(), String> {
+    let mut tasks = state.0.lock().await;
+    if let Some(handle) = tasks.remove(&chat_id) {
+        handle.abort();
+        println!("[DEBUG] Aborted generation for chat {}", chat_id);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn delete_chat_message(
+    msg_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let db = state.surreal_db();
+    let msg_rec = parse_record_id(&msg_id, "chat_messages");
+    db.query("DELETE $msg")
+        .bind(("msg", msg_rec))
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn edit_chat_message(
+    msg_id: String,
+    new_text: String,
+    chat_id: String,
+    project: String,
+    app: tauri::AppHandle,
+) -> Result<SendChatResult, String> {
+    let state = app.state::<AppState>();
+    let db = state.surreal_db();
+    let msg_rec = parse_record_id(&msg_id, "chat_messages");
+    let proj_rec = parse_record_id(&project, "projects");
+    let chat_rec = parse_record_id(&chat_id, "chats");
+
+    // Fetch the parent_id of the original message
+    let mut check = db
+        .query("SELECT parent_id FROM $msg")
+        .bind(("msg", msg_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+    let orig: Option<Value> = check.take(0).unwrap_or_default();
+
+    let parent_id_val = orig.as_ref().and_then(|v| v.get("parent_id").cloned());
+
+    // We don't mark anything as inactive globally, we just mark siblings as inactive
+    let mut query_inactive = db.query(if parent_id_val.is_some() {
+        "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent"
+    } else {
+        "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE"
+    });
+
+    if let Some(ref p) = parent_id_val {
+        query_inactive = query_inactive.bind(("parent", p.clone()));
+    }
+
+    query_inactive
+        .bind(("chat", chat_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Create a new user message
+    let new_user_uuid = uuid::Uuid::new_v4().to_string();
+    let new_user_rec = parse_record_id(&new_user_uuid, "chat_messages");
+    let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
+    let new_assistant_rec = parse_record_id(&new_assistant_uuid, "chat_messages");
+
+    let mut query_create = db.query(if parent_id_val.is_some() {
+        r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+        "#
+    } else {
+        r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
+        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+        "#
+    });
+
+    if let Some(p) = parent_id_val {
+        query_create = query_create.bind(("parent", p));
+    }
+
+    query_create
+        .bind(("uid", new_user_rec.clone()))
+        .bind(("aid", new_assistant_rec.clone()))
+        .bind(("chat", chat_rec.clone()))
+        .bind(("proj", proj_rec.clone()))
+        .bind(("content", new_text.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // Start background agent
+    let project_id_str = project.clone();
+    let assistant_msg_id_str = format!("chat_messages:{}", new_assistant_uuid);
+    let chat_id_str2 = chat_id.clone();
+    let app2 = app.clone();
+
+    let tasks_state = app.state::<AgentTasks>();
+    let handle = tokio::spawn(async move {
+        run_agent_loop(
+            app2.clone(),
+            project_id_str,
+            chat_id.clone(),
+            assistant_msg_id_str,
+            new_text,
+        )
+        .await;
+        let tasks = app2.state::<AgentTasks>();
+        let mut tasks_lock = tasks.0.lock().await;
+        tasks_lock.remove(&chat_id);
+    });
+    let mut tasks = tasks_state.0.lock().await;
+    tasks.insert(chat_id_str2.clone(), handle);
+
+    Ok(SendChatResult {
+        chat_id: chat_id_str2,
+        assistant_msg_id: format!("chat_messages:{}", new_assistant_uuid),
+        user_msg_id: format!("chat_messages:{}", new_user_uuid),
+    })
+}
+
+#[tauri::command]
+pub async fn regenerate_chat_message(
+    parent_msg_id: String,
+    chat_id: String,
+    project: String,
+    app: tauri::AppHandle,
+) -> Result<SendChatResult, String> {
+    let state = app.state::<AppState>();
+    let db = state.surreal_db();
+    let chat_rec = parse_record_id(&chat_id, "chats");
+    let proj_rec = parse_record_id(&project, "projects");
+    let user_msg_rec = parse_record_id(&parent_msg_id, "chat_messages");
+
+    // Достать текст запроса из родительского сообщения пользователя
+    let mut check_user = db
+        .query("SELECT content FROM $parent")
+        .bind(("parent", user_msg_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let user_msg: Option<Value> = check_user.take(0).unwrap_or_default();
+    let user_text = user_msg
+        .and_then(|v| {
+            v.get("content")
+                .and_then(|c| c.as_str())
+                .map(|s| s.to_string())
+        })
+        .unwrap_or_default();
+
+    if user_text.is_empty() {
+        return Err(format!(
+            "User message '{}' not found or empty",
+            parent_msg_id
+        ));
+    }
+
+    // Mark previous assistant variants (children of this user message) as inactive
+    db.query("UPDATE chat_messages SET is_active = false WHERE parent_id = $parent AND role = 'assistant'")
+        .bind(("parent", user_msg_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
+    let new_assistant_rec = parse_record_id(&new_assistant_uuid, "chat_messages");
+
+    db.query(r#"
+        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+    "#)
+    .bind(("aid", new_assistant_rec.clone()))
+    .bind(("chat", chat_rec.clone()))
+    .bind(("proj", proj_rec.clone()))
+    .bind(("parent", user_msg_rec))
+    .await.map_err(|e| e.to_string())?;
+
+    // Start background agent
+    let project_id_str = project.clone();
+    let assistant_msg_id_str = format!("chat_messages:{}", new_assistant_uuid);
+    let chat_id_str2 = chat_id.clone();
+    let app2 = app.clone();
+
+    let tasks_state = app.state::<AgentTasks>();
+    let handle = tokio::spawn(async move {
+        run_agent_loop(
+            app2.clone(),
+            project_id_str,
+            chat_id.clone(),
+            assistant_msg_id_str,
+            user_text,
+        )
+        .await;
+        let tasks = app2.state::<AgentTasks>();
+        let mut tasks_lock = tasks.0.lock().await;
+        tasks_lock.remove(&chat_id);
+    });
+    let mut tasks = tasks_state.0.lock().await;
+    tasks.insert(chat_id_str2.clone(), handle);
+
+    Ok(SendChatResult {
+        chat_id: chat_id_str2,
+        assistant_msg_id: format!("chat_messages:{}", new_assistant_uuid),
+        user_msg_id: "".to_string(),
+    })
+}
+
+#[tauri::command]
+pub async fn switch_message_variant(
+    msg_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<(), String> {
+    let db = state.surreal_db();
+    let msg_rec = parse_record_id(&msg_id, "chat_messages");
+
+    // Fetch the target parent_id
+    let mut check = db
+        .query("SELECT parent_id, chat_id FROM $msg")
+        .bind(("msg", msg_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let orig: Option<Value> = check.take(0).unwrap_or_default();
+    if let Some(orig) = orig {
+        let chat_id = orig.get("chat_id").cloned().unwrap_or_default();
+
+        let parent_id_val = orig.get("parent_id").cloned();
+
+        let is_none = parent_id_val.is_none() 
+            || parent_id_val.as_ref().unwrap().is_null() 
+            || parent_id_val.as_ref().unwrap().as_str() == Some("NONE");
+
+        let mut query = db.query(if is_none {
+            "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE"
+        } else {
+            "UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent"
+        });
+        query = query.bind(("chat", chat_id.clone()));
+
+        if !is_none {
+            query = query.bind(("parent", parent_id_val.unwrap()));
+        }
+
+        query.await.map_err(|e| e.to_string())?;
+
+        // Mark target as active
+        db.query("UPDATE $msg SET is_active = true")
+            .bind(("msg", msg_rec))
+            .await
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
 }

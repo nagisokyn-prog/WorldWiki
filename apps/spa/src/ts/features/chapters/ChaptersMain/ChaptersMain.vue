@@ -163,7 +163,10 @@ v-for="(rev, idx) in revisions" :key="rev.id"
     <div v-if="showQuickLinkHint" class="quick-link-info-panel" style="position: fixed; bottom: 80px; right: 20px; width: 320px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; z-index: 999; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
       <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
         <strong style="color: var(--accent);"><i class="fas fa-bolt"></i> Быстрые ссылки Ctrl+Q</strong>
-        <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;" @click="showQuickLinkHint = false">✕</button>
+        <div>
+          <button style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size: 11px; margin-right: 8px;" @click="dismissQuickLinkHintForever">Больше не показывать</button>
+          <button style="background:none; border:none; color:var(--text-muted); cursor:pointer;" @click="showQuickLinkHint = false">✕</button>
+        </div>
       </div>
       <ol style="margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-main);">
         <li>Напишите текст в квадратных скобках: <code>[Имя]</code></li>
@@ -173,7 +176,7 @@ v-for="(rev, idx) in revisions" :key="rev.id"
     </div>
 
     <!-- Кнопка-кружок для показа подсказки -->
-    <button v-if="!showQuickLinkHint" class="quick-link-hint-circle" title="Показать подсказку Ctrl+Q" style="position: fixed; bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 998; transition: transform 0.2s, background-color 0.2s, opacity 0.2s;" @click="showQuickLinkHint = true">
+    <button v-if="!showQuickLinkHint && !hideQuickLinkHintForever" class="quick-link-hint-circle" title="Показать подсказку Ctrl+Q" style="position: fixed; bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 998; transition: transform 0.2s, background-color 0.2s, opacity 0.2s;" @click="showQuickLinkHint = true">
       ?
     </button>
 
@@ -249,6 +252,7 @@ const {
   previewHistory, togglePin, getDiffSummary, changedFields, toggleZenMode,
   onFullscreenChange, rightPanelWidth, isRightPanelVisible, isSaving, triggerSave,
   toggleRightPanel, handleGlobalChapterRename, loadChapters, saveChapter,
+  hideQuickLinkHintForever, dismissQuickLinkHintForever,
   openChapter, onTreeNodeSelect, openChapterFromTree, createChapterIn,
   createNewChapter, onRenameChapter, onDeleteChapter, deleteChapter, markUnsaved,
   handleOpenEntity, closeFloatingEditor, loadHierarchy, handleExport,

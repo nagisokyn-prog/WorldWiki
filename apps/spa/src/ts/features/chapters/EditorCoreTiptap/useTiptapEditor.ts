@@ -11,7 +11,8 @@ import { Extension } from '@tiptap/core';
 import { VueNodeViewRenderer } from '@tiptap/vue-3';
 import Paragraph from '@tiptap/extension-paragraph';
 import SemanticParagraphNode from '../Semantic/SemanticParagraphNode.vue';
-import * as api from '../../../services/api.client';;
+import * as api from '../../../services/api.client';
+import { AiGhostTextExtension } from './AiGhostTextExtension';
 import { settingsService } from '@worldwiki/components';
 import { useTiptapState } from './hooks/useTiptapState';
 import { useTiptapMarkdown } from './hooks/useTiptapMarkdown';
@@ -97,6 +98,9 @@ export function useTiptapEditor(props: any, emit: any) {
       TableHeader,
       TableCell,
       EnterHandler,
+      AiGhostTextExtension.configure({
+        projectId: 'global' // We can pass actual projectId if we plumb it through props
+      }),
     ],
     content: props.content || '',
     onUpdate: ({ editor }) => {

@@ -34,6 +34,21 @@ surreal_entity! {
 }
 
 surreal_entity! {
+    #[table = "ai_modes"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct AiMode {
+        pub slug: String,
+        pub name: String,
+        pub role_definition: String,
+        pub custom_instructions: String,
+        pub api_profile_id: Option<String>,
+        pub allowed_tools: Vec<String>,
+        #[serde(default)] pub is_global: bool,
+    }
+}
+
+surreal_entity! {
     #[table = "artifacts"]
     #[project_scoped]
     #[tauri_commands]

@@ -236,6 +236,19 @@ DEFINE FIELD OVERWRITE categories ON auto_approval_settings TYPE object FLEXIBLE
 DEFINE FIELD OVERWRITE allowlist  ON auto_approval_settings TYPE object FLEXIBLE DEFAULT { entity_types: [], rel_types: [], paths: [] };
 DEFINE FIELD OVERWRITE denylist   ON auto_approval_settings TYPE object FLEXIBLE DEFAULT { entity_types: [], rel_types: [], paths: [] };
 
+-- Режимы ИИ (Roles & Modes)
+DEFINE TABLE OVERWRITE ai_modes SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id          ON ai_modes TYPE record<projects>;
+DEFINE FIELD OVERWRITE slug                ON ai_modes TYPE string;
+DEFINE FIELD OVERWRITE name                ON ai_modes TYPE string;
+DEFINE FIELD OVERWRITE role_definition     ON ai_modes TYPE string;
+DEFINE FIELD OVERWRITE custom_instructions ON ai_modes TYPE string;
+DEFINE FIELD OVERWRITE api_profile_id      ON ai_modes TYPE option<string>;
+DEFINE FIELD OVERWRITE allowed_tools       ON ai_modes TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE is_global           ON ai_modes TYPE bool DEFAULT false;
+DEFINE INDEX OVERWRITE idx_aimode_project ON ai_modes FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_aimode_slug ON ai_modes FIELDS slug;
+
 -- Дерево чатов (Ветвление)
 DEFINE TABLE OVERWRITE chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON chats TYPE record<projects>;

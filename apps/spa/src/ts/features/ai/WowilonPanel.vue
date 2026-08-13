@@ -31,7 +31,13 @@
         />
 
         <div class="wowilon-chat-area">
-          <AiChatTopBar :active-profile="activeProfile" :token-usage="tokenUsage" />
+          <AiChatTopBar 
+            :active-profile="activeProfile" 
+            :token-usage="tokenUsage"
+            :modes="modes"
+            :active-mode-slug="activeModeSlug"
+            @change-mode="m => activeModeSlug = m"
+          />
           
           <div class="messages-container" ref="messagesContainer">
             <!-- Empty state: no chat selected OR chat selected but no messages -->
@@ -60,8 +66,8 @@
                 </details>
                 
                 <div v-if="group.activeMessage.toolLogs && group.activeMessage.toolLogs.length > 0" class="tool-logs-container">
-                  <div v-for="(log, lIdx) in group.activeMessage.toolLogs" :key="lIdx" class="tool-log-item">
-                    <i class="fas fa-wrench"></i> {{ log }}
+                  <div v-for="(log, lIdx) in group.activeMessage.toolLogs" :key="lIdx" class="tool-log-item" :class="{ 'subagent-log': log.includes('spawn_subagent') }">
+                    <i :class="log.includes('spawn_subagent') ? 'fas fa-robot subagent-icon' : 'fas fa-wrench'"></i> {{ log }}
                   </div>
                 </div>
 
@@ -190,9 +196,25 @@ const {
 
 const { activeProfile, loadProfiles } = useAiProfiles(currentProject);
 
-onMounted(() => {
+const activeModeSlug = ref('chat');
+const modes = ref<any[]>([]);
+
+onMounted(async () => {
   loadChats();
   loadProfiles();
+  
+  try {
+    const res: any[] = await invoke('get_ai_modes', { projectId: currentProject });
+    if (res && res.length > 0) {
+      modes.value = res;
+      // Если есть режим по умолчанию, можно установить его, либо оставить 'chat'
+    } else {
+      modes.value = [{ slug: 'chat', name: 'Собеседник' }, { slug: 'edit', name: 'Редактор' }, { slug: 'analyze', name: 'Аналитик' }];
+    }
+  } catch(e) {
+    console.error("Failed to load modes", e);
+    modes.value = [{ slug: 'chat', name: 'Собеседник' }, { slug: 'edit', name: 'Редактор' }, { slug: 'analyze', name: 'Аналитик' }];
+  }
 });
 
 const {
@@ -207,7 +229,7 @@ const {
   editMessage,
   regenerateMessage,
   switchVariant
-} = useWowilonPanel(activeChatId, currentProject);
+} = useWowilonPanel(activeChatId, currentProject, activeModeSlug);
 
 const editingMessageId = ref<string | null>(null);
 const editDraft = ref('');

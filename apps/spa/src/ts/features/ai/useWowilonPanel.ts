@@ -21,7 +21,8 @@ export interface MessageVariantGroup {
 
 export function useWowilonPanel(
   activeChatId: Ref<string> = ref(''),
-  currentProject: string = ''
+  currentProject: string = '',
+  activeModeSlug: Ref<string> = ref('chat')
 ) {
   const allMessages = ref<ChatMessage[]>([]);
   const isGenerating = ref(false);
@@ -118,7 +119,8 @@ export function useWowilonPanel(
       const res = await invoke<{ chat_id: string; assistant_msg_id: string, user_msg_id: string }>('send_chat_message', {
         chatId: activeChatId.value,
         text: text,
-        project: currentProject
+        project: currentProject,
+        modeSlug: activeModeSlug.value
       });
 
       if (res.chat_id && res.chat_id !== activeChatId.value) {
@@ -174,7 +176,8 @@ export function useWowilonPanel(
         msgId,
         newText,
         chatId: activeChatId.value,
-        project: currentProject
+        project: currentProject,
+        modeSlug: activeModeSlug.value
       });
       
       // Pre-create the placeholder so that if the stream starts immediately, it doesn't get dropped
@@ -205,7 +208,8 @@ export function useWowilonPanel(
       const res = await invoke<{ chat_id: string; assistant_msg_id: string }>('regenerate_chat_message', {
         parentMsgId,
         chatId: activeChatId.value,
-        project: currentProject
+        project: currentProject,
+        modeSlug: activeModeSlug.value
       });
       // Mark all existing assistant children of this parent as inactive in local state
       allMessages.value.forEach(m => {

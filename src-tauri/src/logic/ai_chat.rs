@@ -263,6 +263,7 @@ pub async fn send_chat_message(
     chat_id: String,
     text: String,
     project: String,
+    mode_slug: Option<String>,
     app: tauri::AppHandle,
 ) -> Result<SendChatResult, String> {
     let state = app.state::<AppState>();
@@ -359,6 +360,7 @@ pub async fn send_chat_message(
             chat_id_str,
             assistant_msg_id_str,
             text,
+            mode_slug,
         )
         .await;
         let tasks_state = app2.state::<AgentTasks>();
@@ -410,6 +412,7 @@ pub async fn edit_chat_message(
     new_text: String,
     chat_id: String,
     project: String,
+    mode_slug: Option<String>,
     app: tauri::AppHandle,
 ) -> Result<SendChatResult, String> {
     let state = app.state::<AppState>();
@@ -500,6 +503,7 @@ pub async fn edit_chat_message(
             chat_id.clone(),
             assistant_msg_id_str,
             new_text,
+            mode_slug,
         )
         .await;
         let tasks = app2.state::<AgentTasks>();
@@ -521,6 +525,7 @@ pub async fn regenerate_chat_message(
     parent_msg_id: String,
     chat_id: String,
     project: String,
+    mode_slug: Option<String>,
     app: tauri::AppHandle,
 ) -> Result<SendChatResult, String> {
     let state = app.state::<AppState>();
@@ -584,6 +589,7 @@ pub async fn regenerate_chat_message(
             chat_id.clone(),
             assistant_msg_id_str,
             user_text,
+            mode_slug,
         )
         .await;
         let tasks = app2.state::<AgentTasks>();

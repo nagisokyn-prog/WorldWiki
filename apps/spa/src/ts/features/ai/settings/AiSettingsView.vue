@@ -15,6 +15,13 @@
         </button>
         <button 
           class="nav-item" 
+          :class="{ active: activeTab === 'modes' }"
+          @click="activeTab = 'modes'"
+        >
+          <i class="fas fa-theater-masks"></i> Режимы
+        </button>
+        <button 
+          class="nav-item" 
           :class="{ active: activeTab === 'auto_approval' }"
           @click="activeTab = 'auto_approval'"
         >
@@ -34,6 +41,7 @@
       <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h2>{{ 
           activeTab === 'providers' ? 'Провайдеры и модели' : 
+          activeTab === 'modes' ? 'Режимы Агента' :
           activeTab === 'auto_approval' ? 'Правила песочницы' : 'Специфичные правила' 
         }}</h2>
         <button class="btn-secondary-outline" @click="$emit('close')" title="Закрыть настройки" style="padding: 6px 12px;">
@@ -80,6 +88,11 @@
           </div>
         </div>
 
+        <AiSettingsModesTab 
+          v-if="activeTab === 'modes'" 
+          :currentProject="currentProject"
+        />
+
         <AiSettingsSandboxTab 
           v-if="activeTab === 'auto_approval'" 
           @save-sandbox="saveSandbox" 
@@ -98,6 +111,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import AiSettingsProviderTab from '../components/settings/AiSettingsProviderTab.vue';
+import AiSettingsModesTab from '../components/settings/AiSettingsModesTab.vue';
 import AiSettingsSandboxTab from '../components/settings/AiSettingsSandboxTab.vue';
 import AiSettingsRulesTab from '../components/settings/AiSettingsRulesTab.vue';
 import { useAiProfiles } from '../composables/useAiProfiles';

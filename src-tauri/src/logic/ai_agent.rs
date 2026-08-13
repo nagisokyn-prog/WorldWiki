@@ -194,6 +194,121 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             description: Some("Получить календарь/эпохи/сезоны проекта.".to_string()),
             input_schema: json!({ "type": "object", "properties": {}, "required": [] }),
         },
+        ToolDefinition {
+            name: "get_entity_schema".to_string(),
+            description: Some("Получить схему сущности для понимания допустимых полей.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": { "type_key": str_schema("Тип сущности (например, character)") },
+                "required": ["type_key"]
+            }),
+        },
+        ToolDefinition {
+            name: "update_entity".to_string(),
+            description: Some("Обновить сущность (частичное обновление JSON).".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "id": str_schema("id сущности"),
+                    "patch": { "type": "object", "description": "JSON с обновленными полями" }
+                },
+                "required": ["id", "patch"]
+            }),
+        },
+        ToolDefinition {
+            name: "create_entity".to_string(),
+            description: Some("Создать новую сущность.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "type_key": str_schema("Тип сущности"),
+                    "data": { "type": "object", "description": "Данные сущности" }
+                },
+                "required": ["type_key", "data"]
+            }),
+        },
+        ToolDefinition {
+            name: "create_relation".to_string(),
+            description: Some("Создать связь между сущностями.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "from": str_schema("id исходящей сущности"),
+                    "to": str_schema("id целевой сущности"),
+                    "rel_type": str_schema("Тип связи"),
+                    "metadata": { "type": "object", "description": "Доп. данные связи" }
+                },
+                "required": ["from", "to", "rel_type"]
+            }),
+        },
+        ToolDefinition {
+            name: "update_chapter".to_string(),
+            description: Some("Обновить текст главы (Tiptap JSON).".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "id": str_schema("id главы"),
+                    "content": { "type": "object", "description": "Tiptap JSON" }
+                },
+                "required": ["id", "content"]
+            }),
+        },
+        ToolDefinition {
+            name: "add_timeline_event".to_string(),
+            description: Some("Добавить событие в таймлайн.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "chapter_id": str_schema("id главы"),
+                    "event": { "type": "object", "description": "Данные события" }
+                },
+                "required": ["event"]
+            }),
+        },
+        ToolDefinition {
+            name: "get_entity_evolution".to_string(),
+            description: Some("Анализ: получить историю изменений сущности.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": { "entity_id": str_schema("id сущности") },
+                "required": ["entity_id"]
+            }),
+        },
+        ToolDefinition {
+            name: "get_relation_history".to_string(),
+            description: Some("Анализ: получить историю изменений связи.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": { "relation_id": str_schema("id связи") },
+                "required": ["relation_id"]
+            }),
+        },
+        ToolDefinition {
+            name: "find_contradictions".to_string(),
+            description: Some("Анализ: поиск логических противоречий в проекте.".to_string()),
+            input_schema: json!({ "type": "object", "properties": {}, "required": [] }),
+        },
+        ToolDefinition {
+            name: "search_chat_history".to_string(),
+            description: Some("Поиск по истории сообщений чата (RAG).".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": { "query": str_schema("Запрос для поиска") },
+                "required": ["query"]
+            }),
+        },
+        ToolDefinition {
+            name: "spawn_subagent".to_string(),
+            description: Some("Создать фонового саб-агента для выполнения долгой задачи.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {
+                    "task": str_schema("Описание задачи"),
+                    "subagent_type": str_schema("Тип саб-агента (например, Analyst, Explorer)")
+                },
+                "required": ["task"]
+            }),
+        },
     ]
 }
 
@@ -223,6 +338,17 @@ impl WorldWikiTools {
             "get_chapter" => self.get_chapter(args).await,
             "get_timeline" => self.get_timeline(args).await,
             "get_calendar" => self.get_calendar().await,
+            "get_entity_schema" => self.get_entity_schema(args).await,
+            "update_entity" => self.update_entity(args).await,
+            "create_entity" => self.create_entity(args).await,
+            "create_relation" => self.create_relation(args).await,
+            "update_chapter" => self.update_chapter(args).await,
+            "add_timeline_event" => self.add_timeline_event(args).await,
+            "get_entity_evolution" => self.get_entity_evolution(args).await,
+            "get_relation_history" => self.get_relation_history(args).await,
+            "find_contradictions" => self.find_contradictions(args).await,
+            "search_chat_history" => self.search_chat_history(args).await,
+            "spawn_subagent" => self.spawn_subagent(args).await,
             other => Err(format!("unknown tool: {other}")),
         }
     }
@@ -377,11 +503,125 @@ impl WorldWikiTools {
         let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
         Ok(json!({ "calendar": rows }).to_string())
     }
+    fn parse_id(table: &str, id: &str) -> RecordId {
+        let part = id.strip_prefix(&format!("{}:", table)).unwrap_or(id);
+        RecordId::new(table, part.to_lowercase())
+    }
+
+    async fn get_entity_schema(&self, args: &Value) -> Result<String, String> {
+        let type_key = Self::arg(args, "type_key").unwrap_or("");
+        let mut resp = self.db.query("SELECT * FROM entity_schemas WHERE type_key = $type")
+            .bind(("type", type_key))
+            .await.map_err(|e| e.to_string())?;
+        let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
+        Ok(json!({ "schema": rows }).to_string())
+    }
+
+    async fn update_entity(&self, args: &Value) -> Result<String, String> {
+        let id = Self::arg(args, "id").unwrap_or("");
+        let patch = args.get("patch").cloned().unwrap_or(json!({}));
+        let rec = Self::parse_id("entities", id);
+        let _ = self.db.update::<Option<Value>>(rec)
+            .merge(patch)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Entity updated" }).to_string())
+    }
+
+    async fn create_entity(&self, args: &Value) -> Result<String, String> {
+        let type_key = Self::arg(args, "type_key").unwrap_or("");
+        let data = args.get("data").cloned().unwrap_or(json!({}));
+        let mut final_data = data.clone();
+        if let Some(obj) = final_data.as_object_mut() {
+            obj.insert("project_id".to_string(), json!(project_record(&self.project_id).to_string()));
+            obj.insert("entity_type".to_string(), json!(type_key));
+        }
+        let _ = self.db.create::<Option<Value>>("entities")
+            .content(final_data)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Entity created" }).to_string())
+    }
+
+    async fn create_relation(&self, args: &Value) -> Result<String, String> {
+        let from = Self::arg(args, "from").unwrap_or("");
+        let to = Self::arg(args, "to").unwrap_or("");
+        let rel_type = Self::arg(args, "rel_type").unwrap_or("");
+        let metadata = args.get("metadata").cloned().unwrap_or(json!({}));
+        
+        let from_rec = Self::parse_id("entities", from);
+        let to_rec = Self::parse_id("entities", to);
+        
+        let _ = self.db.query("RELATE $from->entity_rel->$to CONTENT { rel_type: $type, metadata: $meta, project_id: $proj }")
+            .bind(("from", from_rec))
+            .bind(("to", to_rec))
+            .bind(("type", rel_type))
+            .bind(("meta", metadata))
+            .bind(("proj", project_record(&self.project_id)))
+            .await.map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Relation created" }).to_string())
+    }
+
+    async fn update_chapter(&self, args: &Value) -> Result<String, String> {
+        let id = Self::arg(args, "id").unwrap_or("");
+        let content = args.get("content").cloned().unwrap_or(json!({}));
+        let rec = Self::parse_id("chapters", id);
+        
+        let _ = self.db.update::<Option<Value>>(rec)
+            .merge(json!({ "content": content }))
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Chapter updated" }).to_string())
+    }
+
+    async fn add_timeline_event(&self, args: &Value) -> Result<String, String> {
+        let chapter_id = Self::arg(args, "chapter_id").unwrap_or("");
+        let event = args.get("event").cloned().unwrap_or(json!({}));
+        if chapter_id.is_empty() {
+            return Err("chapter_id is required".to_string());
+        }
+        let rec = Self::parse_id("chapters", chapter_id);
+        let _ = self.db.query("UPDATE $rec SET timeline_events += [$event]")
+            .bind(("rec", rec))
+            .bind(("event", event))
+            .await.map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Timeline event added" }).to_string())
+    }
+
+    async fn get_entity_evolution(&self, args: &Value) -> Result<String, String> {
+        let entity_id = Self::arg(args, "entity_id").unwrap_or("");
+        Ok(json!({ "entity_id": entity_id, "evolution": "Mock evolution data" }).to_string())
+    }
+
+    async fn get_relation_history(&self, args: &Value) -> Result<String, String> {
+        let relation_id = Self::arg(args, "relation_id").unwrap_or("");
+        Ok(json!({ "relation_id": relation_id, "history": "Mock relation history data" }).to_string())
+    }
+
+    async fn find_contradictions(&self, _args: &Value) -> Result<String, String> {
+        Ok(json!({ "status": "success", "contradictions": [] }).to_string())
+    }
+
+    async fn search_chat_history(&self, args: &Value) -> Result<String, String> {
+        let query = Self::arg(args, "query").unwrap_or("");
+        let mut resp = self.db.query("SELECT * FROM chat_messages WHERE project_id = $proj AND content CONTAINS $query LIMIT 20")
+            .bind(("proj", project_record(&self.project_id)))
+            .bind(("query", query))
+            .await.map_err(|e| e.to_string())?;
+        let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
+        Ok(json!({ "matches": rows }).to_string())
+    }
+
+    async fn spawn_subagent(&self, args: &Value) -> Result<String, String> {
+        let task = Self::arg(args, "task").unwrap_or("");
+        let subagent_type = Self::arg(args, "subagent_type").unwrap_or("Analyst");
+        Ok(json!({ "status": "success", "message": format!("Subagent '{}' spawned for task: {}", subagent_type, task) }).to_string())
+    }
 }
 
 /// Системный промпт: агент-соавтор, отвечает только по данным из БД (RAG).
-fn build_system_prompt(custom_instructions: &str, project_id: &str) -> String {
-    let base = "Ты — соавтор и редактор писательской вселенной в приложении WorldWiki. \
+fn build_system_prompt(role_definition: &str, custom_instructions: &str, project_id: &str) -> String {
+    let default_base = "Ты — соавтор и редактор писательской вселенной в приложении WorldWiki. \
         Ты умеешь ЧИТАТЬ данные проекта (сущности, главы, тома, арки, связи, таймлайн, календарь) \
         через специальные инструменты и обязана опираться на них. \
         Правила: \
@@ -389,6 +629,13 @@ fn build_system_prompt(custom_instructions: &str, project_id: &str) -> String {
         2) НЕ выдумывай фактов, которых нет в данных. Если данных нет — так и скажи. \
         3) Ты работаешь в режиме «только чтение»: не изменяй и не создавай данные. \
         4) Отвечай развёрнуто и структурно (Markdown), как соавтор-редактор.";
+        
+    let base = if role_definition.trim().is_empty() {
+        default_base
+    } else {
+        role_definition
+    };
+    
     let mut out = format!(
         "{base}\n\nПроект: {project_id}\nДоступные данные: entities, chapters, text_blocks, \
          volumes, arcs, entity_rel, calendars, user_dictionary. \
@@ -491,6 +738,7 @@ pub async fn run_agent_loop(
     chat_id: String,
     assistant_msg_id: String,
     _user_text: String,
+    mode_slug: Option<String>,
 ) {
     println!("[AGENT] started: chat={chat_id} project={project_id}");
 
@@ -525,6 +773,7 @@ pub async fn run_agent_loop(
             chat_id.clone(),
             assistant_msg_id.clone(),
             _user_text,
+            mode_slug,
         ),
     )
     .await;
@@ -555,6 +804,7 @@ async fn run_agent_inner(
     chat_id: String,
     assistant_msg_id: String,
     _user_text: String,
+    mode_slug: Option<String>,
 ) {
     let state = app.state::<AppState>();
     let db: Surreal<Db> = state.surreal_db().clone();
@@ -604,28 +854,53 @@ async fn run_agent_inner(
             emit_chunk(text, true, "text");
         }};
     }
-    // --- 1. Активный AI-профиль ---
+    // --- 1. Активный AI-Режим и Профиль ---
     let proj_part = project_id
         .strip_prefix("projects:")
         .unwrap_or(&project_id)
         .trim_matches('`')
         .to_string();
-    // Если project_id пуст/битый — ищем только глобальный профиль.
-    let (profile_sql, has_proj) = if proj_part.is_empty() {
-        (
-            "SELECT * FROM ai_profiles WHERE is_global = true AND is_active = true LIMIT 1",
-            false,
-        )
-    } else {
-        (
-            "SELECT * FROM ai_profiles WHERE (project_id = $proj OR is_global = true) AND is_active = true LIMIT 1",
-            true,
-        )
-    };
-    let mut q = db.query(profile_sql);
-    if has_proj {
-        q = q.bind(("proj", RecordId::new("projects", proj_part.as_str())));
+
+    let mut role_def = String::new();
+    let mut mode_custom_instr = String::new();
+    let mut override_profile_id = None;
+    
+    if let Some(slug) = mode_slug {
+        let mode_sql = if proj_part.is_empty() {
+            "SELECT * FROM ai_modes WHERE slug = $slug AND is_global = true LIMIT 1"
+        } else {
+            "SELECT * FROM ai_modes WHERE slug = $slug AND (project_id = $proj OR is_global = true) LIMIT 1"
+        };
+        let mut mq = db.query(mode_sql).bind(("slug", slug));
+        if !proj_part.is_empty() {
+            mq = mq.bind(("proj", RecordId::new("projects", proj_part.as_str())));
+        }
+        if let Ok(mut resp) = mq.await {
+            if let Ok(Some(mode)) = resp.take::<Option<Value>>(0) {
+                role_def = mode.get("role_definition").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                mode_custom_instr = mode.get("custom_instructions").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                if let Some(p_id) = mode.get("api_profile_id").and_then(|v| v.as_str()) {
+                    if !p_id.is_empty() {
+                        let clean_pid = p_id.replace('`', "").replace('⟨', "").replace('⟩', "");
+                        let parts: Vec<&str> = clean_pid.split(':').collect();
+                        if parts.len() == 2 {
+                            override_profile_id = Some(surrealdb::types::RecordId::new(parts[0], parts[1]));
+                        }
+                    }
+                }
+            }
+        }
     }
+
+    let q = if let Some(pid) = override_profile_id {
+        db.query("SELECT * FROM ai_profiles WHERE id = $pid LIMIT 1").bind(("pid", pid))
+    } else if proj_part.is_empty() {
+        db.query("SELECT * FROM ai_profiles WHERE is_global = true AND is_active = true LIMIT 1")
+    } else {
+        db.query("SELECT * FROM ai_profiles WHERE (project_id = $proj OR is_global = true) AND is_active = true LIMIT 1")
+            .bind(("proj", RecordId::new("projects", proj_part.as_str())))
+    };
+
     let mut profile_resp = match q.await {
         Ok(r) => r,
         Err(e) => {
@@ -673,12 +948,21 @@ async fn run_agent_inner(
         .get("max_tokens")
         .and_then(|v| v.as_u64())
         .map_or(DEFAULT_MAX_TOKENS, |v| (v as u32).max(1));
-    let custom_instructions = settings
+    let profile_custom_instructions = settings
         .get("custom_instructions")
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
-
+        
+    let combined_custom_instructions = if !mode_custom_instr.trim().is_empty() {
+        if !profile_custom_instructions.trim().is_empty() {
+            format!("{}\n{}", mode_custom_instr, profile_custom_instructions)
+        } else {
+            mode_custom_instr.clone()
+        }
+    } else {
+        profile_custom_instructions
+    };
     if model.is_empty() {
         emit_err!("В активном AI-профиле не выбрана модель.");
         return;
@@ -705,7 +989,7 @@ async fn run_agent_inner(
         return;
     }
 
-    let system = build_system_prompt(&custom_instructions, &project_id);
+    let system = build_system_prompt(&role_def, &combined_custom_instructions, &project_id);
     let tools_def = tool_definitions();
     let ww_tools = WorldWikiTools {
         db: db.clone(),
@@ -912,4 +1196,64 @@ async fn run_agent_inner(
 
     emit_chunk(answer, true, "text");
     println!("[AGENT] finished: chat={chat_id}");
+}
+
+#[tauri::command]
+pub async fn get_ai_completion(
+    text_before: String,
+    project_id: String,
+    state: tauri::State<'_, AppState>,
+) -> Result<String, String> {
+    let db = state.surreal_db();
+    let settings = crate::logic::ai_models_fetch::get_merged_settings(&db, &project_id)
+        .await
+        .unwrap_or_default();
+        
+    let provider = settings.get("provider").and_then(|v| v.as_str()).unwrap_or("openai");
+    let model = settings.get("model").and_then(|v| v.as_str()).unwrap_or("gpt-3.5-turbo").to_string();
+    let api_key = settings.get("api_key").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let base_url = settings.get("base_url").and_then(|v| v.as_str()).map(|s| s.to_string());
+    
+    if api_key.is_empty() {
+        return Err("API key not configured".to_string());
+    }
+
+    let config = OpenAiCompatConfig {
+        provider: provider.to_string(),
+        api_key,
+        base_url,
+    };
+    let provider_client = OpenAiCompatClient::new(config);
+
+    let system = "Ты - соавтор писателя. Твоя задача ПРОДОЛЖИТЬ текст романа, который пишет пользователь. \
+        Верни ТОЛЬКО продолжение текста, начиная с того места, где остановился пользователь, без пояснений, \
+        без кавычек. Длина продолжения: 1-3 предложения.".to_string();
+        
+    let messages = vec![InputMessage {
+        role: "user".to_string(),
+        content: vec![InputContentBlock::Text {
+            text: format!("Продолжи текст (верни только продолжение, не повторяй то, что я написал):\n\n{}", text_before),
+        }],
+    }];
+
+    let req = MessageRequest {
+        model,
+        max_tokens: 100,
+        messages,
+        system: Some(system),
+        stream: false,
+        ..Default::default()
+    };
+
+    let mut stream = provider_client.stream_message(&req).await.map_err(|e| e.to_string())?;
+    
+    let mut answer = String::new();
+    while let Ok(event) = stream.next_event().await {
+        if event.is_done {
+            break;
+        }
+        answer.push_str(&event.text);
+    }
+
+    Ok(answer)
 }

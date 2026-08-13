@@ -1,6 +1,17 @@
 <template>
   <div class="ai-chat-top-bar" v-if="activeProfile">
     <div class="top-bar-content">
+      <div class="mode-switcher" style="margin-right: 12px; display: flex; align-items: center; gap: 4px;">
+        <i class="fas fa-theater-masks"></i>
+        <select 
+          class="mode-select" 
+          :value="activeModeSlug" 
+          @change="$emit('change-mode', ($event.target as HTMLSelectElement).value)"
+        >
+          <option v-for="m in modes" :key="m.slug" :value="m.slug">{{ m.name }}</option>
+        </select>
+      </div>
+
       <div class="model-name">
         <i class="fas fa-microchip"></i>
         <span>{{ activeProfile.settings?.model || 'Модель не выбрана' }}</span>
@@ -31,8 +42,18 @@ const props = defineProps({
   tokenUsage: {
     type: Object,
     default: () => ({ input_tokens: 0, output_tokens: 0, total_tokens: 0 })
+  },
+  modes: {
+    type: Array as PropType<any[]>,
+    default: () => []
+  },
+  activeModeSlug: {
+    type: String,
+    default: 'chat'
   }
 });
+
+defineEmits(['change-mode']);
 
 const { availableModels, fetchModels } = useAiModels();
 
@@ -131,5 +152,19 @@ const formatTokens = (val: number) => {
   font-family: monospace;
   font-size: 10px;
   color: var(--text-color);
+}
+
+.mode-select {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.mode-select option {
+  background: var(--bg-surface);
+  color: var(--text-main);
 }
 </style>

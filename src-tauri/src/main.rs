@@ -74,6 +74,7 @@ fn main() {
     use logic::export::*;
     use logic::projects::*;
     use logic::volumes::*;
+    use logic::ai_agent::*;
     use tauri_shell::logic::system::*;
     tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
@@ -159,9 +160,10 @@ fn main() {
             regenerate_chat_message,
             switch_message_variant,
             fetch_ai_models,
+            get_ai_completion,
 
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, Artifact, AiSkill],
+            @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites]
         ])

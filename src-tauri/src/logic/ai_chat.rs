@@ -60,7 +60,7 @@ pub async fn get_chat_tree(
             chat["id"] = Value::from(id.clone()); // Update the ID to the clean version
             if let Some(edge) = edges
                 .iter()
-                .find(|e| e.get("out").and_then(clean_surreal_id) == Some(id))
+                .find(|e| e.get("out").and_then(clean_surreal_id) == Some(id.clone()))
             {
                 if let Some(parent) = edge.get("in").and_then(clean_surreal_id) {
                     if parent.starts_with("chats:") {

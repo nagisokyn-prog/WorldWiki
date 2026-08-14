@@ -265,7 +265,8 @@ export function useChapterTree(props: any, emit: any) {
                 }, 500);
             } catch (e) {
                 console.error('Failed to delete schema:', e);
-                alert('Ошибка при удалении схемы. Проверьте консоль.');
+                const { appAlert } = await import('@worldwiki/components');
+                appAlert('Ошибка при удалении схемы. Проверьте консоль.');
             }
         }
     };

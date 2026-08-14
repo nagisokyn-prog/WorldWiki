@@ -37,6 +37,7 @@
             :modes="modes"
             :active-mode-slug="activeModeSlug"
             @change-mode="m => activeModeSlug = m"
+            @toggle-sidebar="showSidebar = !showSidebar"
           />
           
           <div class="messages-container" ref="messagesContainer">
@@ -164,7 +165,7 @@ const props = defineProps<{
 const emit = defineEmits(['close']);
 
 const panelWidth = ref(400);
-const showSidebar = ref(true); // Toggle chat history
+const showSidebar = ref(false); // Toggle chat history
 const isSettingsOpen = ref(false);
 const selectedContext = ref<any[]>([]);
 
@@ -264,6 +265,13 @@ watch(activeChatId, (newId) => {
   }
 }, { immediate: true });
 
+watch(() => props.isOpen, (newVal) => {
+  if (newVal) {
+    // При каждом открытии панели мы переходим в режим "Новый чат"
+    createNewChat();
+  }
+});
+
 const messagesContainer = ref<HTMLElement | null>(null);
 const chatInputRef = ref<any>(null);
 
@@ -287,6 +295,7 @@ const sendMessage = async (text: string) => {
   isSending.value = true;
   try {
     await triggerSend(text);
+    await loadChats();
     scrollToBottom();
   } finally {
     isSending.value = false;
@@ -306,8 +315,9 @@ const scrollToBottom = () => {
 const selectChat = (id: string) => activeChatId.value = id;
 
 const handleBranch = async (messageId: string | undefined) => {
+  const { appAlert } = await import('@worldwiki/components');
   if (!messageId) {
-    alert('Это сообщение пока не имеет ID для ветвления.');
+    appAlert('Это сообщение пока не имеет ID для ветвления.');
     return;
   }
   try {
@@ -322,15 +332,20 @@ const handleBranch = async (messageId: string | undefined) => {
       activeChatId.value = newChat.id;
     }
     
+    await loadChats();
+    
     // Грязный хак: заставляем sidebar обновиться, если он открыт
     // В идеале нужен глобальный стор, но пока сойдет так:
-    showSidebar.value = false;
-    nextTick(() => {
-      showSidebar.value = true;
-    });
+    const wasOpen = showSidebar.value;
+    if (wasOpen) {
+      showSidebar.value = false;
+      nextTick(() => {
+        showSidebar.value = true;
+      });
+    }
   } catch (err) {
     console.error('Failed to branch chat:', err);
-    alert('Ошибка при ветвлении чата: ' + err);
+    appAlert('Ошибка при ветвлении чата: ' + err);
   }
 };
 

@@ -17,7 +17,7 @@ export function useExportModal(props: any, emit: any) {
         selectedChapters.value = [];
     };
 
-    const exportData = () => {
+    const exportData = async () => {
         let targets: string[] = [];
         if (selectionMode.value === 'current' && props.currentChapterId) {
             targets = [props.currentChapterId];
@@ -27,8 +27,9 @@ export function useExportModal(props: any, emit: any) {
             targets = [...selectedChapters.value];
         }
 
+        const { appAlert } = await import('@worldwiki/components');
         if (targets.length === 0) {
-            alert('Не выбраны главы для экспорта');
+            appAlert('Не выбраны главы для экспорта');
             return;
         }
 

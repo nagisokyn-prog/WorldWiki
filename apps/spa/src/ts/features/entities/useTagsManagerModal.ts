@@ -46,7 +46,8 @@ export function useTagsManagerModal(props: any) {
 
     const deleteTag = async (id: string) => {
         const { confirm } = await import('@tauri-apps/plugin-dialog');
-        if (!await confirm('Удалить этот тег? Он исчезнет из всех сущностей.')) return;
+        const { appConfirm } = await import('@worldwiki/components');
+        if (!await appConfirm('Удалить этот тег? Он исчезнет из всех сущностей.')) return;
         try {
             await api.deleteEntity(id);
             await loadTags();

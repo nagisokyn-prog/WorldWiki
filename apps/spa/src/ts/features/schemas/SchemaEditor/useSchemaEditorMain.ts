@@ -87,10 +87,12 @@ export function useSchemaEditorMain(props: any, emit: any) {
                 await historyHook.loadHistory();
             }
 
-            alert('Схема сохранена!');
+            const { appAlert } = await import('@worldwiki/components');
+            appAlert('Схема сохранена!');
         } catch (e) {
             console.error('Schema saving error:', e);
-            alert('Ошибка сохранения');
+            const { appAlert } = await import('@worldwiki/components');
+            appAlert('Ошибка сохранения');
         }
     };
 

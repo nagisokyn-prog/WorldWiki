@@ -1,5 +1,6 @@
 <template>
   <div v-cloak class="app-container-new">
+    <AppDialog />
     <div class="app-main-new">
       <!-- Universal Sidebar (VS Code Explorer Style) -->
       <div

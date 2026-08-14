@@ -263,7 +263,8 @@ export function useEntityEditor(props: any, emit: any) {
         const path = await uploadPhoto(file);
         helpers.setProp(fieldClass, path);
       } catch (e) {
-        alert('Ошибка загрузки фото');
+        const { appAlert } = await import('@worldwiki/components');
+        appAlert('Ошибка загрузки фото');
       }
     }
   };
@@ -275,7 +276,8 @@ export function useEntityEditor(props: any, emit: any) {
         const path = await uploadPhoto(file);
         helpers.setProp(fieldClass, path);
       } catch (e) {
-        alert('Ошибка загрузки фото');
+        const { appAlert } = await import('@worldwiki/components');
+        appAlert('Ошибка загрузки фото');
       }
     }
   };

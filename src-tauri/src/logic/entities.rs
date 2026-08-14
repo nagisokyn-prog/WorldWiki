@@ -434,7 +434,7 @@ pub async fn save_entity_schema(
         let pid_val = safe_pid(&project);
         let pid_raw = pid_val.replace("projects:", "");
         let safe_pid = format!("projects:`{}`", pid_raw);
-        let query = format!("
+        let query = "
             UPSERT type::record($id) SET 
                 project_id = type::record($pid),
                 type_key = $data.type_key,
@@ -443,7 +443,7 @@ pub async fn save_entity_schema(
                 color = $data.color,
                 fields_schema = $data.fields_schema,
                 full_schema = $data.full_schema
-        ");
+        ".to_string();
         let mut res = db.query(query)
             .bind(("id", safe_actual_id.clone()))
             .bind(("pid", safe_pid.clone()))
@@ -457,7 +457,7 @@ pub async fn save_entity_schema(
         // Explicitly generate an ID instead of letting SurrealDB auto-generate it.
         // This avoids any weird bugs with CREATE.
         let new_id = format!("entity_schemas:`{}_{}`", pid_raw, schema.type_key);
-        let query = format!("
+        let query = "
             CREATE type::record($id) SET 
                 project_id = type::record($pid),
                 type_key = $data.type_key,
@@ -466,7 +466,7 @@ pub async fn save_entity_schema(
                 color = $data.color,
                 fields_schema = $data.fields_schema,
                 full_schema = $data.full_schema
-        ");
+        ".to_string();
         let mut res = db.query(query)
             .bind(("id", new_id))
             .bind(("pid", safe_pid))

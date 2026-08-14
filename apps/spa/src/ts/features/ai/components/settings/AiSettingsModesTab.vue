@@ -184,7 +184,8 @@ const saveMode = async () => {
     setTimeout(() => saveMessage.value = '', 3000);
   } catch (e) {
     console.error(e);
-    alert('Ошибка при сохранении: ' + e);
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert('Ошибка при сохранении: ' + e);
   }
 };
 </script>

@@ -1,5 +1,6 @@
 <template>
   <div class="wowilon-app-container">
+    <AppDialog />
     <!-- SETTINGS VIEW -->
     <AiSettingsView 
       v-if="isSettingsOpen" 
@@ -46,6 +47,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import MarkdownIt from 'markdown-it';
+import { AppDialog } from '@worldwiki/components';
 import AiChatInput from './features/ai/AiChatInput.vue';
 import AiHeader from './features/ai/components/AiHeader.vue';
 import AiSettingsView from './features/ai/settings/AiSettingsView.vue';

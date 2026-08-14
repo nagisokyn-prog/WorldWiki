@@ -37,22 +37,9 @@ export function useAiChats(currentProject: string) {
   };
 
   const createNewChat = async () => {
-    try {
-      const payload = {
-        title: 'Новый чат',
-        project_id: currentProject,
-        session_context: []
-      };
-      const res = await invoke<any>('save_chat', {
-        data: payload
-      });
-      await loadChats();
-      if (res && res.id) {
-        activeChatId.value = res.id;
-      }
-    } catch (err) {
-      console.error('Failed to create chat:', err);
-    }
+    // Временный (Transient) чат - не сохраняем в БД сразу
+    activeChatId.value = '';
+    // Мы можем опционально сбросить какие-то стейты, если нужно
   };
 
   const renameChat = async (chatId: string, newTitle: string) => {
@@ -106,7 +93,8 @@ export function useAiChats(currentProject: string) {
       activeChatId.value = newChat.id;
     } catch (err) {
       console.error('Failed to branch chat:', err);
-      alert('Ошибка при ветвлении чата: ' + err);
+      const { appAlert } = await import('@worldwiki/components');
+      appAlert('Ошибка при ветвлении чата: ' + err);
     }
   };
 

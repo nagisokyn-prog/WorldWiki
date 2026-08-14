@@ -2,11 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - '**'
+    branches: [ '**' ]
   pull_request:
-    branches:
-      - '**'
+    branches: [ '**' ]
 
 jobs:
   test:
@@ -15,6 +13,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Cache APT packages
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf cmake
+          version: 1.0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v3
@@ -34,11 +38,6 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-
-      - name: Install Tauri dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf cmake
 
       - name: Install Node dependencies
         run: pnpm install

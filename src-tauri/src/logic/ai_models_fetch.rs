@@ -83,7 +83,7 @@ pub async fn fetch_ai_models(
                     .map(|m| AiModelInfo {
                         value: m.id.clone(),
                         label: m.name,
-                        description: m.description.unwrap_or_else(|| m.id),
+                        description: m.description.unwrap_or(m.id),
                         context_length: None,
                         max_completion_tokens: None,
                     })

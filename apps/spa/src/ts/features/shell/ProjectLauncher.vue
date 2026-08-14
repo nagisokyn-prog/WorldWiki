@@ -1,5 +1,6 @@
 <template>
     <div class="app-container">
+        <AppDialog />
         <GlobalTimeViewer />
         <!-- Хедер -->
         <header class="launcher-header glass-panel" v-motion-slide-top>
@@ -167,7 +168,7 @@ v-model="formData.type"
 import { ref, computed, onMounted, shallowRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { projectService } from '../../services/project.service';
-import { settingsService } from '@worldwiki/components';
+import { settingsService, AppDialog } from '@worldwiki/components';
 import { XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
 import CalendarsPanel from '../../features/timeline/CalendarsPanel/CalendarsPanel.vue';
 import CloudSyncModal from '../../features/sync/CloudSyncModal.vue';

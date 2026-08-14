@@ -9,8 +9,6 @@ use surrealdb::Surreal;
 use tauri::Manager;
 
 mod logic;
-use crate::logic::ai_models_fetch::fetch_ai_models;
-use crate::logic::calendar_math::convert_absolute_to_local;
 use crate::logic::models::*;
 
 pub struct AppState {
@@ -75,7 +73,10 @@ fn main() {
     use logic::projects::*;
     use logic::volumes::*;
     use logic::ai_agent::*;
+    use logic::ai_models_fetch::*;
+    use logic::calendar_math::*;
     use tauri_shell::logic::system::*;
+    
     tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
             // --- Проекты ---
@@ -161,6 +162,7 @@ fn main() {
             switch_message_variant,
             fetch_ai_models,
             get_ai_completion,
+            generate_chat_title,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
@@ -176,21 +178,18 @@ fn main() {
             app.manage(AgentTasks::default());
             Ok(())
         })
-        .on_window_event(|window, event| match event {
-            tauri::WindowEvent::CloseRequested { .. } => {
-                println!("[DEBUG] Emergency backup before close...");
-                let state = window.state::<AppState>();
-                let db = state.db.clone();
-                let backup_path = std::env::current_dir().unwrap_or_default().join("data").join("backup_latest.surql");
-                tauri::async_runtime::block_on(async move {
-                    if let Err(e) = db.export(backup_path).await {
-                        eprintln!("[ERROR] Failed to export backup: {}", e);
-                    } else {
-                        println!("[DEBUG] Backup completed successfully.");
-                    }
-                });
-            }
-            _ => {}
+        .on_window_event(|window, event| if let tauri::WindowEvent::CloseRequested { .. } = event {
+            println!("[DEBUG] Emergency backup before close...");
+            let state = window.state::<AppState>();
+            let db = state.db.clone();
+            let backup_path = std::env::current_dir().unwrap_or_default().join("data").join("backup_latest.surql");
+            tauri::async_runtime::block_on(async move {
+                if let Err(e) = db.export(backup_path).await {
+                    eprintln!("[ERROR] Failed to export backup: {}", e);
+                } else {
+                    println!("[DEBUG] Backup completed successfully.");
+                }
+            });
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

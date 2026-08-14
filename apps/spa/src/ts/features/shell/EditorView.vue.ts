@@ -15,8 +15,7 @@ import { EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
 import ChaptersMainVue from '@/features/chapters/ChaptersMain/ChaptersMain.vue';
 import EntityEditorVue from '@/features/entities/EntityEditor/EntityEditor.vue';
 import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMain.vue';
-import { QuickOpen as QuickOpenVue } from '@worldwiki/components';
-import { CommandPalette as CommandPaletteVue } from '@worldwiki/components';
+import { WorkspaceLayout, ExplorerTree, EditorTabBar, AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue } from '@worldwiki/components';
 import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 
@@ -32,6 +31,7 @@ export default defineComponent({
     CommandPaletteVue,
     TagsManagerModalVue,
     WowilonPanelVue,
+    AppDialog,
   },
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   setup(): Record<string, any> {

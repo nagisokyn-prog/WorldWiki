@@ -705,7 +705,8 @@ export const useShellStore = defineStore('shell', () => {
     } catch (e) {
       console.error(`[shell.ts deleteEntity] ERROR:`, e);
       addLog(`Entity -> Delete error: ${e}`, 'error');
-      alert(`Ошибка при удалении сущности: ${e}`);
+      const { appAlert } = await import('@worldwiki/components');
+      appAlert(`Ошибка при удалении сущности: ${e}`);
     }
   };
 

@@ -128,7 +128,7 @@ impl CalendarMath {
         let mut total_days: i64 = 0;
 
         let era = calendar.eras.get(era_index);
-        let is_reverse = era.map_or(false, |e| e.обратный_отсчет);
+        let is_reverse = era.is_some_and(|e| e.обратный_отсчет);
 
         let actual_year = if is_reverse { -year } else { year };
 
@@ -222,7 +222,7 @@ impl CalendarMath {
         let day = total_days as i32 + 1;
 
         let era = calendar.eras.get(era_index);
-        let is_reverse = era.map_or(false, |e| e.обратный_отсчет);
+        let is_reverse = era.is_some_and(|e| e.обратный_отсчет);
         if is_reverse {
             year = -year;
         }

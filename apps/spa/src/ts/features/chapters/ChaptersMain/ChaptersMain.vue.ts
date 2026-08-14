@@ -625,9 +625,10 @@ onUnmounted(() => {
   document.removeEventListener('ww:hierarchy-changed', loadHierarchy);
 });
 
-const handleExport = (exportData: any) => {
+const handleExport = async (exportData: any) => {
   console.log('Экспорт', exportData);
-  alert(`Начат экспорт ${exportData.chapterIds.length} глав в формат ${exportData.format}...`);
+  const { appAlert } = await import('@worldwiki/components');
+  appAlert(`Начат экспорт ${exportData.chapterIds.length} глав в формат ${exportData.format}...`);
 };
 
 const handleScrollChange = (scroll: number) => {

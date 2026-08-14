@@ -13,6 +13,7 @@ export { default as ThemeSwitcher } from './components/Vue/ThemeSwitcher.vue';
 export { default as TreeNodes } from './components/Vue/TreeNodes.vue';
 export { default as WorkspaceLayout } from './components/Vue/WorkspaceLayout.vue';
 export { default as XboxWheel } from './components/Vue/XboxWheel.vue';
+export { default as AppDialog } from './components/Vue/AppDialog.vue';
 
 // Types
 export type { TreeNodeData, TreeSectionData } from './types';
@@ -21,9 +22,9 @@ export type { TreeNodeData, TreeSectionData } from './types';
 export { useEditorGroups } from './ts/composables/useEditorGroups.js';
 export { useShellApp } from './ts/composables/useShellApp.js';
 export { useTreeSelection } from './ts/composables/useTreeSelection.js';
+export { useAppDialog, appAlert, appConfirm } from './ts/composables/useAppDialog.js';
 
 // Utils
-export { appConfirm } from './ts/utils/dialogs.js';
 
 // I18n
 export { i18n, setLocale } from './ts/i18n.js';

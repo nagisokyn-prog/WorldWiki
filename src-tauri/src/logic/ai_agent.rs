@@ -377,9 +377,7 @@ impl WorldWikiTools {
         ] {
             let mut resp = self
                 .db
-                .query(format!(
-                    "SELECT * FROM type::table($tab) WHERE project_id = $proj LIMIT 500"
-                ))
+                .query("SELECT * FROM type::table($tab) WHERE project_id = $proj LIMIT 500".to_string())
                 .bind(("tab", table))
                 .bind(("proj", project_record(&self.project_id)))
                 .await
@@ -684,14 +682,17 @@ fn history_to_input_messages(history: &[Value], assistant_msg_id: &str) -> Vec<I
         if let Some(msg) = map.get(&id) {
             chain.push(*msg); // Newest first
 
-            let parent_val = msg.get("parent_id");
-            if parent_val.is_none() || parent_val.unwrap().is_null() {
-                current_id = None;
-            } else if let Some(parent_id) = parent_val.unwrap().as_str() {
-                if parent_id == "NONE" || parent_id.is_empty() {
+            if let Some(parent) = msg.get("parent_id") {
+                if parent.is_null() {
                     current_id = None;
+                } else if let Some(parent_id) = parent.as_str() {
+                    if parent_id == "NONE" || parent_id.is_empty() {
+                        current_id = None;
+                    } else {
+                        current_id = Some(parent_id.to_string());
+                    }
                 } else {
-                    current_id = Some(parent_id.to_string());
+                    current_id = None;
                 }
             } else {
                 current_id = None;
@@ -911,7 +912,7 @@ async fn run_agent_inner(
                     .to_string();
                 if let Some(p_id) = mode.get("api_profile_id").and_then(|v| v.as_str()) {
                     if !p_id.is_empty() {
-                        let clean_pid = p_id.replace('`', "").replace('⟨', "").replace('⟩', "");
+                        let clean_pid = p_id.replace(['`', '⟨', '⟩'], "");
                         let parts: Vec<&str> = clean_pid.split(':').collect();
                         if parts.len() == 2 {
                             override_profile_id =
@@ -1320,10 +1321,11 @@ pub async fn get_ai_completion(
     while let Ok(next) = stream.next_event().await {
         if let Some(event) = next {
             match event {
-                StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent { delta, .. }) => {
-                    if let ContentBlockDelta::TextDelta { text } = delta {
-                        answer.push_str(&text);
-                    }
+                StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent {
+                    delta: ContentBlockDelta::TextDelta { text },
+                    ..
+                }) => {
+                    answer.push_str(&text);
                 }
                 StreamEvent::MessageStop(_) => {
                     break;
@@ -1336,6 +1338,100 @@ pub async fn get_ai_completion(
     }
 
     Ok(answer)
+}
+
+#[tauri::command]
+pub async fn generate_chat_title(
+    chat_id: String,
+    prompt_text: String,
+    project_id: String,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    let state = app.state::<AppState>();
+    let db: Surreal<Db> = state.surreal_db().clone();
+    
+    let proj_part = project_id
+        .strip_prefix("projects:")
+        .unwrap_or(&project_id)
+        .trim_matches('`')
+        .to_string();
+
+    let mut q = db.query("SELECT * FROM ai_profiles WHERE is_active = true AND (project_id = $proj OR is_global = true) LIMIT 1");
+    q = q.bind(("proj", RecordId::new("projects", proj_part.as_str())));
+    let mut resp = q.await.map_err(|e| e.to_string())?;
+    let profile: Option<Value> = resp.take(0).map_err(|e| e.to_string())?;
+    
+    // Если профиля нет, оставляем "Новый чат"
+    if profile.is_none() {
+        return Ok(());
+    }
+    let profile = profile.unwrap();
+
+    let provider = profile.get("provider").and_then(|v| v.as_str()).unwrap_or("openai");
+    let model = profile
+        .get("settings")
+        .and_then(|s| s.get("model"))
+        .and_then(|m| m.as_str())
+        .unwrap_or("gpt-3.5-turbo");
+    let api_key = profile.get("api_key").and_then(|v| v.as_str()).unwrap_or("");
+    let base_url = profile
+        .get("settings")
+        .and_then(|s| s.get("base_url"))
+        .and_then(|b| b.as_str())
+        .map(|s| s.to_string());
+
+    let provider_client = build_provider_client(provider, api_key, base_url)?;
+    
+    let messages = vec![InputMessage {
+        role: "user".to_string(),
+        content: vec![InputContentBlock::Text {
+            text: format!("Придумай короткое название (от 2 до 5 слов) для чата, который начинается со следующего сообщения пользователя. Верни ТОЛЬКО само название, без кавычек, без точек в конце и без лишнего текста:\n\n{}", prompt_text),
+        }],
+    }];
+
+    let req = MessageRequest {
+        model: model.to_string(),
+        max_tokens: 50,
+        messages,
+        system: None,
+        stream: false,
+        ..Default::default()
+    };
+
+    let mut stream = provider_client.stream_message(&req).await.map_err(|e| e.to_string())?;
+    let mut answer = String::new();
+    while let Ok(next) = stream.next_event().await {
+        if let Some(event) = next {
+            match event {
+                StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent {
+                    delta: ContentBlockDelta::TextDelta { text },
+                    ..
+                }) => { answer.push_str(&text); }
+                StreamEvent::MessageStop(_) => { break; }
+                _ => {}
+            }
+        } else { break; }
+    }
+
+    let title = answer.trim().trim_matches('"').trim_matches('\'').trim_matches('«').trim_matches('»').to_string();
+    if title.is_empty() { return Ok(()); }
+
+    let clean_chat_id = chat_id.trim_matches('`');
+    let parts: Vec<&str> = clean_chat_id.split(':').collect();
+    let rec_id = if parts.len() == 2 {
+        RecordId::new(parts[0], parts[1])
+    } else {
+        RecordId::new("chats", clean_chat_id)
+    };
+
+    db.query("UPDATE $id SET title = $title")
+        .bind(("id", rec_id))
+        .bind(("title", title))
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let _ = app.emit("chat_tree_updated", ());
+    Ok(())
 }
 
 #[cfg(test)]

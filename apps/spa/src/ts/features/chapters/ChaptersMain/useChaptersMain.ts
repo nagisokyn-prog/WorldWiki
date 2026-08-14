@@ -118,8 +118,9 @@ export function useChaptersMain(props: any, emit: any) {
     });
   };
 
-  const handleExport = (exportData: any) => {
-    alert(`Начат экспорт ${exportData.chapterIds.length} глав в формат ${exportData.format}...`);
+  const handleExport = async (exportData: any) => {
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert(`Начат экспорт ${exportData.chapterIds.length} глав в формат ${exportData.format}...`);
   };
 
   const handleScrollChange = (scroll: number) => {

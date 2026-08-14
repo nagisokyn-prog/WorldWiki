@@ -171,9 +171,10 @@ const handleFetchModels = async (forceNetwork = false) => {
   }
 };
 
-const saveSandbox = () => {
+const saveSandbox = async () => {
   // Mocked for now, integrate with original sandbox save logic later
-  alert('Сохранено (заглушка)');
+  const { appAlert } = await import('@worldwiki/components');
+  appAlert('Сохранено (заглушка)');
 };
 </script>
 

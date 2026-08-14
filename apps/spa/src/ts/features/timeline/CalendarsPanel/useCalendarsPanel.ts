@@ -99,14 +99,16 @@ export function useCalendarsPanel(props: any) {
 
     const removeCalendar = async (idx: number) => {
         const { confirm } = await import('@tauri-apps/plugin-dialog');
-        if (!await confirm('Вы уверены, что хотите удалить этот календарь?')) return;
+        const { appConfirm } = await import('@worldwiki/components');
+        if (!await appConfirm('Вы уверены, что хотите удалить этот календарь?')) return;
         if (!project.value) return;
 
         const cal = calendars.value[idx];
         if (!cal.id?.startsWith('temp_') && cal.id) {
             const success = await useCalendarStore().deleteCalendar(cal.id);
             if (!success) {
-                alert('Ошибка при удалении календаря.');
+                const { appAlert } = await import('@worldwiki/components');
+                appAlert('Ошибка при удалении календаря.');
                 return;
             }
         }

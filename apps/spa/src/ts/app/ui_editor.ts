@@ -137,7 +137,8 @@ async function init() {
             await emit('ww-entity-saved', { type: entityType, id: entityId });
           } catch(e) {
             console.error('Ошибка сохранения:', e);
-            alert('Ошибка сохранения');
+            const { appAlert } = await import('@worldwiki/components');
+            appAlert('Ошибка сохранения');
           }
         }
       };

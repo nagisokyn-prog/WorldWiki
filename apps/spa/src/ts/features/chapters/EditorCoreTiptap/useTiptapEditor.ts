@@ -215,10 +215,12 @@ export function useTiptapEditor(props: any, emit: any) {
             .insertContent(`<a href="${url}">${name}</a>`)
             .run();
         } else {
-          alert(`Сущность "${name}" не найдена.`);
+          const { appAlert } = await import('@worldwiki/components');
+          appAlert(`Сущность "${name}" не найдена.`);
         }
       } catch (err) {
-        alert(`Ошибка при поиске сущности "${name}"`);
+        const { appAlert } = await import('@worldwiki/components');
+        appAlert(`Ошибка при поиске сущности "${name}"`);
       }
     };
     document.addEventListener('ww:quick-link', handleQuickLink);

@@ -56,14 +56,15 @@ pub async fn get_chat_tree(
 
     // Маппим
     for chat in &mut chats {
-        if let Some(id) = chat.get("id").and_then(|i| i.as_str()) {
+        if let Some(id) = chat.get("id").and_then(clean_surreal_id) {
+            chat["id"] = Value::from(id.clone()); // Update the ID to the clean version
             if let Some(edge) = edges
                 .iter()
-                .find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id))
+                .find(|e| e.get("out").and_then(clean_surreal_id) == Some(id))
             {
-                if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
+                if let Some(parent) = edge.get("in").and_then(clean_surreal_id) {
                     if parent.starts_with("chats:") {
-                        chat["parent_chat_id"] = edge["in"].clone();
+                        chat["parent_chat_id"] = Value::from(parent);
                         chat["sort_order"] = edge["sort_order"].clone();
                     }
                 }
@@ -75,10 +76,9 @@ pub async fn get_chat_tree(
 }
 
 /// Получает ВСЕ сообщения для конкретного чата (для UI, чтобы строить дерево вариантов).
-
 fn clean_surreal_id(val: &Value) -> Option<String> {
     if let Some(s) = val.as_str() {
-        let cleaned = s.replace('⟨', "").replace('⟩', "").replace('`', "");
+        let cleaned = s.replace(['⟨', '⟩', '`'], "");
         if cleaned == "NONE" || cleaned == "null" || cleaned.is_empty() {
             return None;
         }
@@ -90,19 +90,11 @@ fn clean_surreal_id(val: &Value) -> Option<String> {
             let id_str = if let Some(id_obj) = obj.get("id").and_then(|v| v.as_object()) {
                 if let Some(s) = id_obj.get("String").and_then(|v| v.as_str()) {
                     Some(s.to_string())
-                } else if let Some(n) = id_obj.get("Number").and_then(|v| v.as_u64()) {
-                    Some(n.to_string())
-                } else {
-                    None
-                }
-            } else if let Some(s) = obj.get("id").and_then(|v| v.as_str()) {
-                Some(s.to_string())
-            } else {
-                None
-            };
+                } else { id_obj.get("Number").and_then(|v| v.as_u64()).map(|n| n.to_string()) }
+            } else { obj.get("id").and_then(|v| v.as_str()).map(|s| s.to_string()) };
             
             if let Some(id) = id_str {
-                let cleaned_id = id.replace('⟨', "").replace('⟩', "").replace('`', "");
+                let cleaned_id = id.replace(['⟨', '⟩', '`'], "");
                 return Some(format!("{}:{}", tb, cleaned_id));
             }
         }
@@ -171,7 +163,7 @@ pub async fn get_message_branch(
     chat_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<Value>, String> {
-    get_chat_messages_impl(&state.surreal_db(), &chat_id).await
+    get_chat_messages_impl(state.surreal_db(), &chat_id).await
 }
 
 /// Создаёт новую ветку чата от определённого сообщения
@@ -186,42 +178,82 @@ pub async fn fork_chat(
     let proj_rec = parse_record_id(&project_id, "projects");
     let msg_rec = parse_record_id(&message_id, "chat_messages");
 
+    let mut target_msg_res = db
+        .query("SELECT * FROM type::thing($msg)")
+        .bind(("msg", msg_rec.clone()))
+        .await
+        .map_err(|e| e.to_string())?;
+    let target_msg: Option<Value> = target_msg_res.take(0).unwrap_or_default();
+    let target_msg = target_msg.ok_or("Message not found".to_string())?;
+    
+    let old_chat = target_msg.get("chat_id").ok_or("No chat_id in msg".to_string())?.clone();
+    let created_at = target_msg.get("created_at").ok_or("No created_at in msg".to_string())?.clone();
+
     let new_chat_id = uuid::Uuid::new_v4().to_string();
     let new_chat_rec = parse_record_id(&new_chat_id, "chats");
 
-    let mut response = db
-        .query(r#"
-            LET $target_msg = (SELECT * FROM $msg)[0];
-            LET $old_chat = $target_msg.chat_id;
-            
-            LET $chat = (CREATE $new_chat SET project_id = $proj, title = $title, created_at = time::now())[0];
-            
-            LET $orig_msgs = (SELECT * FROM chat_messages WHERE chat_id = $old_chat AND created_at <= $target_msg.created_at ORDER BY created_at ASC);
-            
-            FOR $m IN $orig_msgs {
-                CREATE chat_messages CONTENT {
-                    chat_id: $chat.id,
-                    project_id: $m.project_id,
-                    role: $m.role,
-                    content: $m.content,
-                    version: $m.version,
-                    quoted_context: $m.quoted_context,
-                    created_at: $m.created_at,
-                    updated_at: $m.updated_at
-                };
-            };
-            
-            RETURN $chat;
-        "#)
-        .bind(("new_chat", new_chat_rec))
-        .bind(("proj", proj_rec))
+    let mut chat_res = db.query("CREATE type::thing($new_chat) SET project_id = $proj, title = $title, created_at = time::now()")
+        .bind(("new_chat", new_chat_rec.clone()))
+        .bind(("proj", proj_rec.clone()))
         .bind(("title", new_title))
-        .bind(("msg", msg_rec))
-        .await
-        .map_err(|e| e.to_string())?;
+        .await.map_err(|e| e.to_string())?;
+    let new_chat: Option<Value> = chat_res.take(0).unwrap_or_default();
+    let mut new_chat = new_chat.ok_or("Failed to create chat".to_string())?;
 
-    let new_chat: Option<Value> = response.take(0).map_err(|e| e.to_string())?;
-    new_chat.ok_or("Failed to create chat".to_string())
+    let mut msgs_res = db.query("SELECT * FROM chat_messages WHERE chat_id = $old_chat AND created_at <= $target_created ORDER BY created_at ASC")
+        .bind(("old_chat", old_chat))
+        .bind(("target_created", created_at))
+        .await.map_err(|e| e.to_string())?;
+    let orig_msgs: Vec<Value> = msgs_res.take(0).unwrap_or_default();
+
+    use std::collections::HashMap;
+    let mut id_map: HashMap<String, String> = HashMap::new();
+
+    for m in orig_msgs {
+        let old_id = if let Some(id) = clean_surreal_id(m.get("id").unwrap_or(&Value::Null)) { id } else { continue; };
+        let new_msg_id = uuid::Uuid::new_v4().to_string();
+        let new_msg_rec = parse_record_id(&new_msg_id, "chat_messages");
+        
+        id_map.insert(old_id, format!("chat_messages:{}", new_msg_id));
+        
+        let parent_id = m.get("parent_id").and_then(clean_surreal_id);
+        let mapped_parent = parent_id.and_then(|p| id_map.get(&p).cloned());
+        
+        let mut create_q = String::from("CREATE type::thing($new_id) SET chat_id = $new_chat, project_id = $proj, role = $role, content = $content, version = $version, is_active = true, created_at = $created_at");
+        if m.get("quoted_context").is_some() {
+            create_q.push_str(", quoted_context = $ctx");
+        }
+        if mapped_parent.is_some() {
+            create_q.push_str(", parent_id = type::thing($parent)");
+        } else {
+            create_q.push_str(", parent_id = NONE");
+        }
+        
+        let mut create_query = db.query(create_q)
+            .bind(("new_id", new_msg_rec))
+            .bind(("new_chat", new_chat_rec.clone()))
+            .bind(("proj", m.get("project_id").cloned().unwrap_or(Value::Null)))
+            .bind(("role", m.get("role").cloned().unwrap_or(Value::Null)))
+            .bind(("content", m.get("content").cloned().unwrap_or(Value::Null)))
+            .bind(("version", m.get("version").cloned().unwrap_or(Value::from(1))))
+            .bind(("created_at", m.get("created_at").cloned().unwrap_or(Value::Null)));
+            
+        if let Some(ctx) = m.get("quoted_context") {
+            create_query = create_query.bind(("ctx", ctx.clone()));
+        }
+        if let Some(mp) = mapped_parent {
+            let mp_rec = parse_record_id(&mp.replace("chat_messages:", ""), "chat_messages");
+            create_query = create_query.bind(("parent", mp_rec));
+        }
+        
+        create_query.await.map_err(|e| e.to_string())?;
+    }
+
+    if let Some(id) = new_chat.get("id").and_then(clean_surreal_id) {
+        new_chat["id"] = Value::from(id);
+    }
+
+    Ok(new_chat)
 }
 
 #[tauri::command]

@@ -124,7 +124,8 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
     const deleteSection = async (idx: number) => {
         if (idx === 0) return; // Нельзя удалять первую страницу
         const { confirm } = await import('@tauri-apps/plugin-dialog');
-        if (await confirm('Удалить страницу?')) {
+        const { appConfirm } = await import('@worldwiki/components');
+        if (await appConfirm('Удалить страницу?')) {
             schema.value.sections.splice(idx, 1);
             if (activeSectionIdx.value >= schema.value.sections.length) {
                 activeSectionIdx.value = Math.max(0, schema.value.sections.length - 1);

@@ -124,6 +124,13 @@ export function useWowilonPanel(
       });
 
       if (res.chat_id && res.chat_id !== activeChatId.value) {
+        if (activeChatId.value === '') {
+          invoke('generate_chat_title', { 
+            chatId: res.chat_id, 
+            promptText: text,
+            projectId: currentProject
+          }).catch(console.error);
+        }
         activeChatId.value = res.chat_id;
       }
 

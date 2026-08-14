@@ -174,12 +174,14 @@ watch(categories, () => {
   preset.value = 'custom';
 }, { deep: true });
 
-const saveProvider = () => {
-  alert('Настройки провайдера сохранены.');
+const saveProvider = async () => {
+  const { appAlert } = await import('@worldwiki/components');
+  appAlert('Настройки провайдера сохранены.');
 };
 
-const saveSandbox = () => {
-  alert('Настройки песочницы сохранены.');
+const saveSandbox = async () => {
+  const { appAlert } = await import('@worldwiki/components');
+  appAlert('Настройки песочницы сохранены.');
 };
 </script>
 

@@ -174,7 +174,7 @@ pub async fn upload_to_yandex_disk(token: String, file_path: String) -> Result<(
 
     // 1. Get upload URL
     let url_res = client
-        .get(&format!(
+        .get(format!(
             "https://cloud-api.yandex.net/v1/disk/resources/upload?path=app:/{}&overwrite=true",
             file_name
         ))
@@ -293,7 +293,7 @@ pub async fn download_and_restore_yandex(
 
     // 1. Get download URL
     let url_res = client
-        .get(&format!(
+        .get(format!(
             "https://cloud-api.yandex.net/v1/disk/resources/download?path=app:/{}",
             file_name
         ))
@@ -361,7 +361,7 @@ pub async fn restore_from_backup(
         return Err("Backup file does not exist".to_string());
     }
 
-    let file = fs::File::open(&path).map_err(|e| format!("Failed to open backup: {}", e))?;
+    let file = fs::File::open(path).map_err(|e| format!("Failed to open backup: {}", e))?;
     let mut zip = zip::ZipArchive::new(file).map_err(|e| format!("Failed to read zip: {}", e))?;
 
     let temp_dir = env::temp_dir().join(format!(

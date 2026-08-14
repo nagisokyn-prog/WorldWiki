@@ -65,7 +65,7 @@ jobs:
 
       - name: Run Llama-Turboquant-Cpp Tests
         run: |
-          mkdir build && cd build
+          mkdir -p build && cd build
           cmake ..
           make -j2
           ctest --output-on-failure

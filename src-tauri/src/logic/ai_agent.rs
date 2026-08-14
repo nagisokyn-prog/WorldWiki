@@ -179,6 +179,14 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             }),
         },
         ToolDefinition {
+            name: "get_chapters_list".to_string(),
+            description: Some("Получить оглавление (список всех глав с их ID и названиями). Используй этот инструмент ПЕРЕД вызовом get_chapter, если не знаешь точный ID главы.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": {},
+            }),
+        },
+        ToolDefinition {
             name: "get_timeline".to_string(),
             description: Some("Получить события таймлайна проекта или главы.".to_string()),
             input_schema: json!({
@@ -336,6 +344,7 @@ impl WorldWikiTools {
             "get_entity" => self.get_entity(args).await,
             "get_relations" => self.get_relations(args).await,
             "get_chapter" => self.get_chapter(args).await,
+            "get_chapters_list" => self.get_chapters_list().await,
             "get_timeline" => self.get_timeline(args).await,
             "get_calendar" => self.get_calendar().await,
             "get_entity_schema" => self.get_entity_schema(args).await,
@@ -471,6 +480,28 @@ impl WorldWikiTools {
             .map_err(|e| e.to_string())?;
         let row: Option<Value> = resp.take(0).map_err(|e| e.to_string())?;
         Ok(json!({ "chapter": row }).to_string())
+    }
+
+    async fn get_chapters_list(&self) -> Result<String, String> {
+        let mut resp = self
+            .db
+            .query("SELECT id, title FROM chapters WHERE project_id = $proj ORDER BY id")
+            .bind(("proj", project_record(&self.project_id)))
+            .await
+            .map_err(|e| e.to_string())?;
+        
+        let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
+        if rows.is_empty() {
+            return Ok("В проекте нет ни одной главы.".to_string());
+        }
+        
+        let mut out = String::from("Оглавление (Список глав):\n");
+        for row in rows {
+            let id = row.get("id").and_then(|v| v.as_str()).unwrap_or("?");
+            let title = row.get("title").and_then(|v| v.as_str()).unwrap_or("Без названия");
+            out.push_str(&format!("ID: {}, Название: {}\n", id, title));
+        }
+        Ok(out)
     }
 
     async fn get_timeline(&self, args: &Value) -> Result<String, String> {
@@ -638,28 +669,44 @@ fn build_system_prompt(
     custom_instructions: &str,
     project_id: &str,
 ) -> String {
-    let default_base = "Ты — соавтор и редактор писательской вселенной в приложении WorldWiki. \
-        Ты умеешь ЧИТАТЬ данные проекта (сущности, главы, тома, арки, связи, таймлайн, календарь) \
-        через специальные инструменты и обязана опираться на них. \
-        Правила: \
-        1) Прежде чем отвечать о фактах мира, вызови rag_search или точечный read-инструмент. \
-        2) НЕ выдумывай фактов, которых нет в данных. Если данных нет — так и скажи. \
-        3) Ты работаешь в режиме «только чтение»: не изменяй и не создавай данные. \
-        4) Отвечай развёрнуто и структурно (Markdown), как соавтор-редактор.";
+    let global_core = "====\nГЛОБАЛЬНЫЕ ПРАВИЛА СОАВТОРА WORLDWIKI\n\nТы — литературный соавтор, а не просто ИИ или программист. Твоя цель — помогать писателю создавать живой мир и текст.\n\n\
+        1. ПРАВИЛА ОБЩЕНИЯ И ФОРМАТИРОВАНИЯ:\n   \
+        - Общайся на языке пользователя (по умолчанию русский).\n   \
+        - НИКОГДА не упоминай технические названия инструментов (например, rag_search, get_entity), базы данных, ID сущностей или JSON. Пользователю плевать на техническую изнанку. Говори литературно: \"Я просмотрел твои записи о магии...\", \"В архивах указано...\".\n   \
+        - Если поиск ничего не дал — скажи об этом честно, не выдумывай лор.\n\n\
+        2. ЛИТЕРАТУРНАЯ ТЕОРИЯ (ОБЪЕКТИВНЫЙ КОРРЕЛЯТ):\n   \
+        Следуй принципу Т.С. Элиота: эмоции выражаются через объекты и ситуации, а не прямое называние.\n   \
+        - ЗАПРЕЩЕНО: Описывать эмоции \"в лоб\" (например, \"он разозлился\", \"ей было грустно\").\n   \
+        - РЕКОМЕНДУЕТСЯ: Создавать сцены через внешние детали (предметы, звуки, свет, запахи, ритм движений). Если автор просит \"усилить сцену\", предложи изменить окружение и действия, а не просто добавляй эмоциональные прилагательные.\n\n\
+        3. КОНТЕКСТ ПРОИЗВЕДЕНИЯ:\n   \
+        - Ты работаешь с текстом в процессе написания.\n   \
+        - Учитывай хронологию: не критикуй героев или мир за \"недораскрытость\" в первой главе. Тайна в начале истории — это норма.\n   \
+        - Анализируй только то, что просят.\n\n\
+        ====\nРАБОТА С ИНСТРУМЕНТАМИ\n\n\
+        АНАЛИЗ НАМЕРЕНИЯ (ОБЯЗАТЕЛЬНЫЙ ШАГ):\n\
+        Перед любым действием ты ДОЛЖЕН выполнить этот мысленный алгоритм:\n\
+        1. ОПРЕДЕЛИ НАМЕРЕНИЕ: Пользователь просто общается (приветствует, шутит, размышляет) или делает запрос фактов/анализа лора?\n   \
+        - Если разговор: НЕ ИСПОЛЬЗУЙ ИНСТРУМЕНТЫ. Отвечай как собеседник.\n   \
+        - Если нужен лор: ПЕРЕЙДИ К ШАГУ 2.\n\n\
+        ПОРЯДОК ИСПОЛЬЗОВАНИЯ ИНСТРУМЕНТОВ:\n\
+        1. НИКОГДА не угадывай ID сущности.\n\
+        2. Всегда сначала используй rag_search или search_entities для поиска по тексту.\n\
+        3. Только получив реальный ID из результатов поиска, используй точечные методы (get_entity, get_chapter и т.д.).\n\
+        4. Если режим запрещает изменения (update_entity, create_entity), не пытайся их использовать.";
 
     let base = if role_definition.trim().is_empty() {
-        default_base
+        "Ты — соавтор и редактор писательской вселенной в приложении WorldWiki."
     } else {
         role_definition
     };
 
     let mut out = format!(
-        "{base}\n\nПроект: {project_id}\nДоступные данные: entities, chapters, text_blocks, \
-         volumes, arcs, entity_rel, calendars, user_dictionary. \
-         Таймлайн хранится в chapters.timeline_events."
+        "{}\n\n{}\n\nПроект: {}\nДоступные данные: entities, chapters, text_blocks, volumes, arcs, entity_rel, calendars, user_dictionary.\nТаймлайн хранится в chapters.timeline_events.",
+        base, global_core, project_id
     );
+
     if !custom_instructions.trim().is_empty() {
-        out.push_str("\n\nДополнительные указания пользователя:\n");
+        out.push_str("\n\n====\nДополнительные указания пользователя:\n");
         out.push_str(custom_instructions.trim());
     }
     out

@@ -205,7 +205,7 @@ onMounted(async () => {
   loadProfiles();
   
   try {
-    const res: any[] = await invoke('get_ai_modes', { projectId: currentProject });
+    const res: any[] = await invoke('get_aimodes', { project: currentProject });
     if (res && res.length > 0) {
       modes.value = res;
       // Если есть режим по умолчанию, можно установить его, либо оставить 'chat'

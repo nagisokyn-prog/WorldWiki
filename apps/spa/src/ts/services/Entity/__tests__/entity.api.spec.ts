@@ -122,8 +122,9 @@ describe('Entity API - Data extraction and saving', () => {
             expect(components.invoke).toHaveBeenCalledWith('save_entity', {
                 project: 'proj_1',
                 entity: expect.objectContaining({
-                    project_id: 'proj_1',
+                    project_id: 'projects:proj_1',
                     entity_type: 'character',
+                    id: null,
                     name: 'New Character',
                     description: 'Description here',
                     tags: ['hero'],

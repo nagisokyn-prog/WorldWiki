@@ -151,7 +151,7 @@ pub async fn fetch_ai_models(
                         .map(|m| AiModelInfo {
                             value: m.name.replace("models/", ""), // Gemini returns "models/gemini-1.5-pro"
                             label: m.name.clone(),
-                            description: m.display_name.unwrap_or_else(|| m.name.clone()),
+                            description: m.description.unwrap_or_else(|| m.display_name.unwrap_or_else(|| m.name.clone())),
                             context_length: None,
                             max_completion_tokens: None,
                         })

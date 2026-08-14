@@ -40,3 +40,6 @@ tauri-plugin-dialog = "2"
 claw_runtime = { package = "runtime", path = "../vendor/claw-code/rust/crates/runtime", optional = true }
 claw_api = { package = "api", path = "../vendor/claw-code/rust/crates/api", optional = true }
 llama-sys = { path = "llama-sys", optional = true }
+
+[dev-dependencies]
+mock-anthropic-service = { path = "../vendor/claw-code/rust/crates/mock-anthropic-service" }

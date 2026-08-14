@@ -510,9 +510,12 @@ impl WorldWikiTools {
 
     async fn get_entity_schema(&self, args: &Value) -> Result<String, String> {
         let type_key = Self::arg(args, "type_key").unwrap_or("");
-        let mut resp = self.db.query("SELECT * FROM entity_schemas WHERE type_key = $type")
+        let mut resp = self
+            .db
+            .query("SELECT * FROM entity_schemas WHERE type_key = $type")
             .bind(("type", type_key))
-            .await.map_err(|e| e.to_string())?;
+            .await
+            .map_err(|e| e.to_string())?;
         let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
         Ok(json!({ "schema": rows }).to_string())
     }
@@ -521,7 +524,9 @@ impl WorldWikiTools {
         let id = Self::arg(args, "id").unwrap_or("");
         let patch = args.get("patch").cloned().unwrap_or(json!({}));
         let rec = Self::parse_id("entities", id);
-        let _ = self.db.update::<Option<Value>>(rec)
+        let _ = self
+            .db
+            .update::<Option<Value>>(rec)
             .merge(patch)
             .await
             .map_err(|e| e.to_string())?;
@@ -533,10 +538,12 @@ impl WorldWikiTools {
         let data = args.get("data").cloned().unwrap_or(json!({}));
         let mut final_data = data.clone();
         if let Some(obj) = final_data.as_object_mut() {
-            obj.insert("project_id".to_string(), json!(project_record(&self.project_id).to_string()));
+            obj.insert("project_id".to_string(), json!(self.project_id.clone()));
             obj.insert("entity_type".to_string(), json!(type_key));
         }
-        let _ = self.db.create::<Option<Value>>("entities")
+        let _ = self
+            .db
+            .create::<Option<Value>>("entities")
             .content(final_data)
             .await
             .map_err(|e| e.to_string())?;
@@ -548,10 +555,10 @@ impl WorldWikiTools {
         let to = Self::arg(args, "to").unwrap_or("");
         let rel_type = Self::arg(args, "rel_type").unwrap_or("");
         let metadata = args.get("metadata").cloned().unwrap_or(json!({}));
-        
+
         let from_rec = Self::parse_id("entities", from);
         let to_rec = Self::parse_id("entities", to);
-        
+
         let _ = self.db.query("RELATE $from->entity_rel->$to CONTENT { rel_type: $type, metadata: $meta, project_id: $proj }")
             .bind(("from", from_rec))
             .bind(("to", to_rec))
@@ -566,8 +573,10 @@ impl WorldWikiTools {
         let id = Self::arg(args, "id").unwrap_or("");
         let content = args.get("content").cloned().unwrap_or(json!({}));
         let rec = Self::parse_id("chapters", id);
-        
-        let _ = self.db.update::<Option<Value>>(rec)
+
+        let _ = self
+            .db
+            .update::<Option<Value>>(rec)
             .merge(json!({ "content": content }))
             .await
             .map_err(|e| e.to_string())?;
@@ -581,10 +590,13 @@ impl WorldWikiTools {
             return Err("chapter_id is required".to_string());
         }
         let rec = Self::parse_id("chapters", chapter_id);
-        let _ = self.db.query("UPDATE $rec SET timeline_events += [$event]")
+        let _ = self
+            .db
+            .query("UPDATE $rec SET timeline_events += [$event]")
             .bind(("rec", rec))
             .bind(("event", event))
-            .await.map_err(|e| e.to_string())?;
+            .await
+            .map_err(|e| e.to_string())?;
         Ok(json!({ "status": "success", "message": "Timeline event added" }).to_string())
     }
 
@@ -595,7 +607,10 @@ impl WorldWikiTools {
 
     async fn get_relation_history(&self, args: &Value) -> Result<String, String> {
         let relation_id = Self::arg(args, "relation_id").unwrap_or("");
-        Ok(json!({ "relation_id": relation_id, "history": "Mock relation history data" }).to_string())
+        Ok(
+            json!({ "relation_id": relation_id, "history": "Mock relation history data" })
+                .to_string(),
+        )
     }
 
     async fn find_contradictions(&self, _args: &Value) -> Result<String, String> {
@@ -620,7 +635,11 @@ impl WorldWikiTools {
 }
 
 /// Системный промпт: агент-соавтор, отвечает только по данным из БД (RAG).
-fn build_system_prompt(role_definition: &str, custom_instructions: &str, project_id: &str) -> String {
+fn build_system_prompt(
+    role_definition: &str,
+    custom_instructions: &str,
+    project_id: &str,
+) -> String {
     let default_base = "Ты — соавтор и редактор писательской вселенной в приложении WorldWiki. \
         Ты умеешь ЧИТАТЬ данные проекта (сущности, главы, тома, арки, связи, таймлайн, календарь) \
         через специальные инструменты и обязана опираться на них. \
@@ -629,13 +648,13 @@ fn build_system_prompt(role_definition: &str, custom_instructions: &str, project
         2) НЕ выдумывай фактов, которых нет в данных. Если данных нет — так и скажи. \
         3) Ты работаешь в режиме «только чтение»: не изменяй и не создавай данные. \
         4) Отвечай развёрнуто и структурно (Markdown), как соавтор-редактор.";
-        
+
     let base = if role_definition.trim().is_empty() {
         default_base
     } else {
         role_definition
     };
-    
+
     let mut out = format!(
         "{base}\n\nПроект: {project_id}\nДоступные данные: entities, chapters, text_blocks, \
          volumes, arcs, entity_rel, calendars, user_dictionary. \
@@ -660,11 +679,11 @@ fn history_to_input_messages(history: &[Value], assistant_msg_id: &str) -> Vec<I
 
     let mut chain = Vec::new();
     let mut current_id = Some(assistant_msg_id.to_string());
-    
+
     while let Some(id) = current_id {
         if let Some(msg) = map.get(&id) {
             chain.push(*msg); // Newest first
-            
+
             let parent_val = msg.get("parent_id");
             if parent_val.is_none() || parent_val.unwrap().is_null() {
                 current_id = None;
@@ -684,25 +703,28 @@ fn history_to_input_messages(history: &[Value], assistant_msg_id: &str) -> Vec<I
 
     let mut total = 0usize;
     let mut out = Vec::new();
-    
+
     // Process from newest to oldest to keep latest messages within budget
     for msg in chain {
         let role = msg.get("role").and_then(|v| v.as_str()).unwrap_or("user");
         let content = msg.get("content").and_then(|v| v.as_str()).unwrap_or("");
-        
-        let is_active = msg.get("is_active").and_then(|v| v.as_bool()).unwrap_or(true);
+
+        let is_active = msg
+            .get("is_active")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(true);
         if !is_active {
             continue;
         }
-        
+
         if role == "assistant" && content.is_empty() {
             continue;
         }
-        
+
         if total + content.len() > HISTORY_CHAR_BUDGET {
             break;
         }
-        
+
         total += content.len();
         if role == "assistant" {
             out.push(InputMessage {
@@ -715,7 +737,7 @@ fn history_to_input_messages(history: &[Value], assistant_msg_id: &str) -> Vec<I
             out.push(InputMessage::user_text(content.to_string()));
         }
     }
-    
+
     // Restore chronological order
     out.reverse();
     out
@@ -864,7 +886,7 @@ async fn run_agent_inner(
     let mut role_def = String::new();
     let mut mode_custom_instr = String::new();
     let mut override_profile_id = None;
-    
+
     if let Some(slug) = mode_slug {
         let mode_sql = if proj_part.is_empty() {
             "SELECT * FROM ai_modes WHERE slug = $slug AND is_global = true LIMIT 1"
@@ -877,14 +899,23 @@ async fn run_agent_inner(
         }
         if let Ok(mut resp) = mq.await {
             if let Ok(Some(mode)) = resp.take::<Option<Value>>(0) {
-                role_def = mode.get("role_definition").and_then(|v| v.as_str()).unwrap_or("").to_string();
-                mode_custom_instr = mode.get("custom_instructions").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                role_def = mode
+                    .get("role_definition")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                mode_custom_instr = mode
+                    .get("custom_instructions")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
                 if let Some(p_id) = mode.get("api_profile_id").and_then(|v| v.as_str()) {
                     if !p_id.is_empty() {
                         let clean_pid = p_id.replace('`', "").replace('⟨', "").replace('⟩', "");
                         let parts: Vec<&str> = clean_pid.split(':').collect();
                         if parts.len() == 2 {
-                            override_profile_id = Some(surrealdb::types::RecordId::new(parts[0], parts[1]));
+                            override_profile_id =
+                                Some(surrealdb::types::RecordId::new(parts[0], parts[1]));
                         }
                     }
                 }
@@ -893,7 +924,8 @@ async fn run_agent_inner(
     }
 
     let q = if let Some(pid) = override_profile_id {
-        db.query("SELECT * FROM ai_profiles WHERE id = $pid LIMIT 1").bind(("pid", pid))
+        db.query("SELECT * FROM ai_profiles WHERE id = $pid LIMIT 1")
+            .bind(("pid", pid))
     } else if proj_part.is_empty() {
         db.query("SELECT * FROM ai_profiles WHERE is_global = true AND is_active = true LIMIT 1")
     } else {
@@ -953,7 +985,7 @@ async fn run_agent_inner(
         .and_then(|v| v.as_str())
         .unwrap_or("")
         .to_string();
-        
+
     let combined_custom_instructions = if !mode_custom_instr.trim().is_empty() {
         if !profile_custom_instructions.trim().is_empty() {
             format!("{}\n{}", mode_custom_instr, profile_custom_instructions)
@@ -1205,34 +1237,68 @@ pub async fn get_ai_completion(
     state: tauri::State<'_, AppState>,
 ) -> Result<String, String> {
     let db = state.surreal_db();
-    let settings = crate::logic::ai_models_fetch::get_merged_settings(&db, &project_id)
-        .await
-        .unwrap_or_default();
-        
-    let provider = settings.get("provider").and_then(|v| v.as_str()).unwrap_or("openai");
-    let model = settings.get("model").and_then(|v| v.as_str()).unwrap_or("gpt-3.5-turbo").to_string();
-    let api_key = settings.get("api_key").and_then(|v| v.as_str()).unwrap_or("").to_string();
-    let base_url = settings.get("base_url").and_then(|v| v.as_str()).map(|s| s.to_string());
-    
+
+    // Получаем профиль как в run_agent_loop
+    let proj_part = project_id
+        .strip_prefix("projects:")
+        .unwrap_or(&project_id)
+        .trim_matches('`')
+        .to_string();
+
+    let q = if proj_part.is_empty() {
+        db.query("SELECT * FROM ai_profiles WHERE is_global = true AND is_active = true LIMIT 1")
+    } else {
+        db.query("SELECT * FROM ai_profiles WHERE (project_id = $proj OR is_global = true) AND is_active = true LIMIT 1")
+            .bind(("proj", surrealdb::types::RecordId::new("projects", proj_part.as_str())))
+    };
+
+    let mut profile_resp = q.await.map_err(|e| e.to_string())?;
+    let profile: Option<Value> = profile_resp.take(0).unwrap_or_default();
+
+    let mut provider = "openai".to_string();
+    let mut api_key = String::new();
+    let mut base_url = None;
+    let mut model = "gpt-3.5-turbo".to_string();
+
+    if let Some(prof) = profile {
+        provider = prof
+            .get("provider")
+            .and_then(|v| v.as_str())
+            .unwrap_or("openai")
+            .to_string();
+        api_key = prof
+            .get("api_key")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string();
+        base_url = prof
+            .get("base_url")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+        if let Some(sets) = prof.get("settings").and_then(|v| v.as_object()) {
+            if let Some(m) = sets.get("model").and_then(|v| v.as_str()) {
+                model = m.to_string();
+            }
+        }
+    }
+
     if api_key.is_empty() {
         return Err("API key not configured".to_string());
     }
 
-    let config = OpenAiCompatConfig {
-        provider: provider.to_string(),
-        api_key,
-        base_url,
-    };
-    let provider_client = OpenAiCompatClient::new(config);
+    let provider_client = build_provider_client(&provider, &api_key, base_url)?;
 
     let system = "Ты - соавтор писателя. Твоя задача ПРОДОЛЖИТЬ текст романа, который пишет пользователь. \
         Верни ТОЛЬКО продолжение текста, начиная с того места, где остановился пользователь, без пояснений, \
         без кавычек. Длина продолжения: 1-3 предложения.".to_string();
-        
+
     let messages = vec![InputMessage {
         role: "user".to_string(),
         content: vec![InputContentBlock::Text {
-            text: format!("Продолжи текст (верни только продолжение, не повторяй то, что я написал):\n\n{}", text_before),
+            text: format!(
+                "Продолжи текст (верни только продолжение, не повторяй то, что я написал):\n\n{}",
+                text_before
+            ),
         }],
     }];
 
@@ -1245,15 +1311,65 @@ pub async fn get_ai_completion(
         ..Default::default()
     };
 
-    let mut stream = provider_client.stream_message(&req).await.map_err(|e| e.to_string())?;
-    
+    let mut stream = provider_client
+        .stream_message(&req)
+        .await
+        .map_err(|e| e.to_string())?;
+
     let mut answer = String::new();
-    while let Ok(event) = stream.next_event().await {
-        if event.is_done {
+    while let Ok(next) = stream.next_event().await {
+        if let Some(event) = next {
+            match event {
+                StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent { delta, .. }) => {
+                    if let ContentBlockDelta::TextDelta { text } = delta {
+                        answer.push_str(&text);
+                    }
+                }
+                StreamEvent::MessageStop(_) => {
+                    break;
+                }
+                _ => {}
+            }
+        } else {
             break;
         }
-        answer.push_str(&event.text);
     }
 
     Ok(answer)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mock_anthropic_service::MockAnthropicService;
+
+    #[tokio::test]
+    async fn test_provider_client_with_mock_service() {
+        let server = MockAnthropicService::spawn()
+            .await
+            .expect("Failed to spawn mock server");
+        let client =
+            build_provider_client("anthropic", "dummy_api_key", Some(server.base_url())).unwrap();
+
+        let req = MessageRequest {
+            model: "gpt-3.5-turbo".to_string(),
+            messages: vec![InputMessage {
+                role: "user".to_string(),
+                content: vec![InputContentBlock::Text {
+                    text: "PARITY_SCENARIO:write_file_allowed".to_string(),
+                }],
+            }],
+            stream: false,
+            ..Default::default()
+        };
+
+        let mut stream = client.stream_message(&req).await.unwrap();
+        while let Ok(Some(_)) = stream.next_event().await {}
+
+        let requests = server.captured_requests().await;
+        assert_eq!(requests.len(), 1);
+        assert!(requests[0]
+            .raw_body
+            .contains("PARITY_SCENARIO:write_file_allowed"));
+    }
 }

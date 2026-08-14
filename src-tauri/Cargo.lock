@@ -3780,6 +3780,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mock-anthropic-service"
+version = "0.1.3"
+dependencies = [
+ "api",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "muda"
 version = "0.19.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8735,6 +8744,7 @@ dependencies = [
  "chrono",
  "dashmap 5.5.3",
  "llama-sys",
+ "mock-anthropic-service",
  "reqwest 0.12.28",
  "runtime",
  "scraper",

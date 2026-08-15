@@ -1,12 +1,11 @@
+use claw_api::{InputContentBlock, InputMessage};
 use serde_json::Value;
-use claw_api::{InputMessage, InputContentBlock};
 
 /// Стоп-критерии и лимиты (контекстное окно).
 pub const MAX_AGENT_ITERATIONS: usize = 8;
 pub const DEFAULT_MAX_TOKENS: u32 = 4096;
 /// Бюджет на историю, отдаваемую модели (приблизительно, в символах).
 pub const HISTORY_CHAR_BUDGET: usize = 120_000;
-
 
 /// Системный промпт: агент-соавтор, отвечает только по данным из БД (RAG).
 pub fn build_system_prompt(

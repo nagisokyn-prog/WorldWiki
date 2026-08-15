@@ -21,6 +21,6 @@ if(LLAMA_BUILD_TESTS)
         -P ${CMAKE_SOURCE_DIR}/cmake/download-models.cmake
     )
     set_tests_properties(${TEST_TARGET}-download-model PROPERTIES FIXTURES_SETUP ${TEST_TARGET}-download-model)
-    add_test(NAME ${TEST_TARGET} COMMAND llama-eval-callback -m "${MODEL_DEST}" --prompt hello --seed 42 -ngl 0)
+    add_test(NAME ${TEST_TARGET} COMMAND $<TARGET_FILE:llama-eval-callback> -m "${MODEL_DEST}" --prompt hello --seed 42 -ngl 0)
     set_tests_properties(${TEST_TARGET} PROPERTIES FIXTURES_REQUIRED ${TEST_TARGET}-download-model)
 endif()

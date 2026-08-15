@@ -68,7 +68,7 @@ function(llama_test_cmd target)
     add_test(
         NAME ${TEST_NAME}
         WORKING_DIRECTORY ${LLAMA_TEST_WORKING_DIRECTORY}
-        COMMAND ${target}
+        COMMAND $<TARGET_FILE:${target}>
         ${LLAMA_TEST_ARGS})
 
     set_property(TEST ${TEST_NAME} PROPERTY LABELS ${LLAMA_TEST_LABEL})

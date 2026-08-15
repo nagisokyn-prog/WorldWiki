@@ -1430,6 +1430,7 @@ mod tests {
     use std::collections::BTreeMap;
     use std::fs;
     use std::io::ErrorKind;
+    #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
     use std::path::{Path, PathBuf};
     use std::sync::atomic::{AtomicU64, Ordering};
@@ -1472,9 +1473,12 @@ mod tests {
             "#!/bin/sh\nprintf 'READY:%s\\n' \"$MCP_TEST_TOKEN\"\nIFS= read -r line\nprintf 'ECHO:%s\\n' \"$line\"\n",
         )
         .expect("write script");
-        let mut permissions = fs::metadata(&script_path).expect("metadata").permissions();
-        permissions.set_mode(0o755);
-        fs::set_permissions(&script_path, permissions).expect("chmod");
+        #[cfg(unix)]
+        {
+            let mut permissions = fs::metadata(&script_path).expect("metadata").permissions();
+            permissions.set_mode(0o755);
+            fs::set_permissions(&script_path, permissions).expect("chmod");
+        }
         script_path
     }
 

@@ -735,6 +735,9 @@ static inline bool ggml_can_fuse_subgraph(const struct ggml_cgraph * cgraph,
     return ggml_can_fuse_subgraph_ext(cgraph, idxs, count, ops, outputs, num_outputs);
 }
 
+GGML_API void ggml_set_turbo3_cpu_wht_group_size(int size);
+GGML_API int  ggml_get_turbo3_cpu_wht_group_size(void);
+
 #ifdef __cplusplus
 }
 #endif

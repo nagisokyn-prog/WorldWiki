@@ -21,12 +21,19 @@
 #define INNERQ_MAX_CHANNELS 128
 #endif
 
+#ifdef GGML_USE_CUDA
 extern "C" {
-GGML_API bool  g_innerq_finalized;
-GGML_API float g_innerq_scale_inv_host[INNERQ_MAX_CHANNELS];
-GGML_API int   turbo_innerq_needs_tensor_update(void);
-GGML_API void  turbo_innerq_mark_tensor_updated(void);
+GGML_BACKEND_API bool  g_innerq_finalized;
+GGML_BACKEND_API float g_innerq_scale_inv_host[INNERQ_MAX_CHANNELS];
+GGML_BACKEND_API bool turbo_innerq_needs_tensor_update(void);
+GGML_BACKEND_API void turbo_innerq_mark_tensor_updated(void);
 }
+#else
+static bool  g_innerq_finalized = false;
+static float g_innerq_scale_inv_host[INNERQ_MAX_CHANNELS] = {0};
+static inline bool turbo_innerq_needs_tensor_update(void) { return false; }
+static inline void turbo_innerq_mark_tensor_updated(void) {}
+#endif
 
 //
 // llama_kv_cache

@@ -19,6 +19,53 @@
 #include "ggml-backend.h"
 #include "ggml-cuda.h"   // GPU scoring: triattention_gpu_init, _score_head, etc.
 
+#ifndef GGML_USE_CUDA
+struct triattention_gpu_state {};
+
+extern "C" {
+triattention_gpu_state * triattention_gpu_init(
+    const struct triattention_gpu_config *,
+    const struct triattention_gpu_head_calib *,
+    const float *,
+    const float *,
+    const float *,
+    void *) { return nullptr; }
+
+void triattention_gpu_score_head(
+    triattention_gpu_state *,
+    const void *,
+    uint64_t,
+    size_t,
+    uint32_t,
+    uint32_t,
+    const uint32_t *,
+    const int32_t *,
+    uint32_t,
+    int64_t,
+    int,
+    float *,
+    void *) {}
+
+void triattention_gpu_scores_to_host(
+    float *,
+    const float *,
+    uint32_t,
+    void *) {}
+
+void triattention_gpu_upload_cells(
+    uint32_t **,
+    int32_t **,
+    const uint32_t *,
+    const int32_t *,
+    uint32_t,
+    void *) {}
+
+float * triattention_gpu_alloc_scores(uint32_t, void *) { return nullptr; }
+void triattention_gpu_free_dev(void *) {}
+void triattention_gpu_free(triattention_gpu_state *) {}
+}
+#endif
+
 // Block types and dequant declarations are in ggml-common.h (ggml/src/)
 // which is not on the include path for src/. We declare the dequant
 // functions with void* parameters and cast at call sites.

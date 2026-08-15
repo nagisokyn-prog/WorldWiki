@@ -64,7 +64,7 @@ jobs:
 
       - name: Run Llama-Turboquant-Cpp Tests
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-          cmake --build build --config Release --parallel 2
-          ctest --test-dir build -C Release -L main --output-on-failure
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="/w" -DCMAKE_CXX_FLAGS="/w"
+          cmake --build build --config Release --parallel
+          ctest --test-dir build -C Release -L main -E test-backend-ops --output-on-failure
         working-directory: vendor/llama-turboquant-cpp

@@ -2,6 +2,7 @@
 
 Я полностью осознал свою ошибку: я перенёс только красивую обёртку (HTML) из прототипа `new_ui/index.html`, но выкинул сложнейшую доменную логику World-Wiki, которая годами писалась в Vanilla TS компонентах (`TimelineManager`, `ChapterEditorUI`, `WowilonPanel` и др.).
 
+
 ## Что было упущено и будет восстановлено во Vue:
 
 ### 1. Ядро редактора (ChapterEditorUI & UnifiedAutocomplete)

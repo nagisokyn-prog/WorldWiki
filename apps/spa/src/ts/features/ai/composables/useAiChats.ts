@@ -68,7 +68,7 @@ export function useAiChats(currentProject: string) {
   const deleteChats = async (chatIds: string[]) => {
     try {
       for (const id of chatIds) {
-        await invoke('delete_chat', {
+        await invoke('delete_ai_chat', {
           project: currentProject,
           id: id
         });

@@ -64,7 +64,6 @@ async fn init_database() -> Surreal<Db> {
 }
 
 fn main() {
-    use logic::ai_chat::*;
     use logic::batch::*;
     use logic::chapters::*;
     use logic::connections::*;
@@ -72,8 +71,7 @@ fn main() {
     use logic::export::*;
     use logic::projects::*;
     use logic::volumes::*;
-    use logic::ai_agent::*;
-    use logic::ai_models_fetch::*;
+    use logic::ai::*;
     use logic::calendar_math::*;
     use tauri_shell::logic::system::*;
     
@@ -163,6 +161,7 @@ fn main() {
             fetch_ai_models,
             get_ai_completion,
             generate_chat_title,
+            delete_ai_chat,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],

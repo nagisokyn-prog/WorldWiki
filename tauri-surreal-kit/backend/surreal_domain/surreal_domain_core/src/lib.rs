@@ -135,7 +135,7 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
 
     #[allow(async_fn_in_trait)]
     async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surrealdb::Error> {
-        let pid_raw = project_id.split(':').last().unwrap_or(project_id);
+        let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
         let pid_str = format!("projects:{}", pid_raw);
         let mut res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
             .bind(("pid", project_id.to_string()))
@@ -156,10 +156,8 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                                         let id_field = val.get("id").unwrap();
                                         let id_str = if let Some(s) = id_field.get("String").and_then(|s| s.as_str()) {
                                             s
-                                        } else if let Some(s) = id_field.as_str() {
-                                            s
                                         } else {
-                                            ""
+                                            id_field.as_str().unwrap_or_default()
                                         };
                                         if !tb.is_empty() && !id_str.is_empty() {
                                             *val = serde_json::Value::String(format!("{}:{}", tb, id_str));

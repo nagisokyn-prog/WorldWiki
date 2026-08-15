@@ -23,6 +23,7 @@ const CONTEXT_WINDOW_ERROR_MARKERS: &[&str] = &[
     "no parseable body",
 ];
 
+#[allow(clippy::result_large_err)]
 #[derive(Debug)]
 pub enum ApiError {
     MissingCredentials {

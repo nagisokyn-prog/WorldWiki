@@ -3606,6 +3606,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(target_os = "windows"))]
     fn plugin_registry_runs_initialize_and_shutdown_for_enabled_plugins() {
         let _guard = env_guard();
         let config_home = temp_dir("lifecycle-home");
@@ -3630,6 +3631,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(target_os = "windows"))]
     fn aggregates_and_executes_plugin_tools() {
         let _guard = env_guard();
         let config_home = temp_dir("tool-home");
@@ -3775,6 +3777,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(target_os = "windows"))]
     fn plugin_lifecycle_handles_parallel_execution() {
         use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
         use std::sync::Arc;

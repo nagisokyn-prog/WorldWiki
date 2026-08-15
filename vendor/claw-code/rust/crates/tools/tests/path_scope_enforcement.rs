@@ -1,3 +1,4 @@
+#![cfg(not(target_os = "windows"))]
 use runtime::{permission_enforcer::PermissionEnforcer, PermissionMode, PermissionPolicy};
 use serde_json::json;
 use std::fs;

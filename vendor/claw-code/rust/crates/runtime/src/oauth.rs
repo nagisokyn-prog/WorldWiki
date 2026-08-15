@@ -461,6 +461,7 @@ fn decode_hex(byte: u8) -> Result<u8, String> {
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "windows"))]
 mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
 

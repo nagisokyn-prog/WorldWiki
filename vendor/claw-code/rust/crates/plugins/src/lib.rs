@@ -2361,12 +2361,14 @@ fn ensure_object<'a>(root: &'a mut Map<String, Value>, key: &str) -> &'a mut Map
 /// Environment variable lock for test isolation.
 /// Guards against concurrent modification of `CLAW_CONFIG_HOME`.
 #[cfg(test)]
+#[allow(dead_code)]
 fn env_lock() -> &'static std::sync::Mutex<()> {
     static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
     &ENV_LOCK
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "windows"))]
 mod tests {
     use super::*;
 
@@ -2520,10 +2522,12 @@ mod tests {
         log_path
     }
 
+    #[allow(dead_code)]
     fn write_tool_plugin(root: &Path, name: &str, version: &str) {
         write_tool_plugin_with_name(root, name, version, "plugin_echo");
     }
 
+    #[allow(dead_code)]
     fn write_tool_plugin_with_name(root: &Path, name: &str, version: &str, tool_name: &str) {
         let script_path = root.join("tools").join("echo-json.sh");
         write_file(

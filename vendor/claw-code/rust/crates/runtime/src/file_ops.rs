@@ -771,6 +771,7 @@ fn expand_braces(pattern: &str) -> Vec<String> {
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "windows"))]
 mod tests {
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};

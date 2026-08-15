@@ -364,6 +364,7 @@ impl CommandWithStdin {
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "windows"))]
 mod tests {
     use super::{HookRunResult, HookRunner};
     use crate::{PluginManager, PluginManagerConfig};

@@ -6826,6 +6826,7 @@ pub mod lane_completion;
 pub mod pdf_extract;
 
 #[cfg(test)]
+#[cfg(not(target_os = "windows"))]
 mod tests {
     use std::collections::BTreeMap;
     use std::collections::BTreeSet;

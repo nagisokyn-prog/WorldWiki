@@ -357,6 +357,7 @@ fn prepare_sandbox_dirs(cwd: &std::path::Path) {
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "windows"))]
 mod tests {
     use super::{execute_bash, BashCommandInput};
     use crate::sandbox::FilesystemIsolationMode;

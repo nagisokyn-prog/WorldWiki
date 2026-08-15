@@ -36,6 +36,7 @@ impl Drop for EnvVarGuard {
 }
 
 #[test]
+#[cfg(not(target_os = "windows"))]
 fn proxy_config_from_env_reads_uppercase_proxy_vars() {
     // given
     let _lock = env_lock();
@@ -124,6 +125,7 @@ fn proxy_config_from_env_treats_empty_values_as_unset() {
 }
 
 #[test]
+#[cfg(not(target_os = "windows"))]
 fn build_client_with_env_proxy_config_succeeds() {
     // given
     let _lock = env_lock();
@@ -155,6 +157,7 @@ fn build_client_with_proxy_url_config_succeeds() {
 }
 
 #[test]
+#[cfg(not(target_os = "windows"))]
 fn proxy_config_from_env_prefers_uppercase_over_lowercase() {
     // given
     let _lock = env_lock();

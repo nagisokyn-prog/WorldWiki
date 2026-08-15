@@ -26,7 +26,13 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            src-tauri
+            tauri-surreal-kit
+            vendor/claw-code/rust
 
       - name: Install Node dependencies
         run: pnpm install

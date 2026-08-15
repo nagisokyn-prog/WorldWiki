@@ -36,3 +36,5 @@ surreal_domain/target
 # Temp/scratch
 temp_ddl_test
 *.md.bak
+
+rust-analyzer/

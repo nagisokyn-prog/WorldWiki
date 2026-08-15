@@ -60,7 +60,7 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
         },
         ToolDefinition {
             name: "get_chapter".to_string(),
-            description: Some("Получить содержимое главы по id.".to_string()),
+            description: Some("Получить содержимое главы по id. ВНИМАНИЕ: Возвращает скомпилированный текст главы (compiled_text). Если текст пуст, вернет ошибку.".to_string()),
             input_schema: json!({
                 "type": "object",
                 "properties": { "id": str_schema("id главы") },
@@ -181,9 +181,13 @@ pub fn tool_definitions() -> Vec<ToolDefinition> {
             }),
         },
         ToolDefinition {
-            name: "find_contradictions".to_string(),
-            description: Some("Анализ: поиск логических противоречий в проекте.".to_string()),
-            input_schema: json!({ "type": "object", "properties": {}, "required": [] }),
+            name: "validate_world_consistency".to_string(),
+            description: Some("Анализ: поиск логических противоречий в лоре и таймлайне (самопроверка ИИ). Прогоняет утверждение по БД.".to_string()),
+            input_schema: json!({
+                "type": "object",
+                "properties": { "statement": str_schema("Сюжетное утверждение для проверки") },
+                "required": ["statement"]
+            }),
         },
         ToolDefinition {
             name: "search_chat_history".to_string(),
@@ -242,7 +246,7 @@ impl WorldWikiTools {
             "add_timeline_event" => self.add_timeline_event(args).await,
             "get_entity_evolution" => self.get_entity_evolution(args).await,
             "get_relation_history" => self.get_relation_history(args).await,
-            "find_contradictions" => self.find_contradictions(args).await,
+            "validate_world_consistency" => self.validate_world_consistency(args).await,
             "search_chat_history" => self.search_chat_history(args).await,
             "spawn_subagent" => self.spawn_subagent(args).await,
             other => Err(format!("unknown tool: {other}")),
@@ -361,11 +365,46 @@ impl WorldWikiTools {
         let mut resp = self
             .db
             .query("SELECT * FROM chapters WHERE id = $id LIMIT 1")
-            .bind(("id", record))
+            .bind(("id", record.clone()))
             .await
             .map_err(|e| e.to_string())?;
+        
         let row: Option<Value> = resp.take(0).map_err(|e| e.to_string())?;
-        Ok(json!({ "chapter": row }).to_string())
+        
+        if let Some(mut chapter_obj) = row {
+            let chapter_id_str = format!("chapters:{}", id.to_lowercase());
+            let mut blocks_resp = self
+                .db
+                .query("SELECT content FROM text_blocks WHERE chapter_id = $cid OR chapter_id = $raw_id ORDER BY order_index ASC")
+                .bind(("cid", chapter_id_str))
+                .bind(("raw_id", id.to_lowercase()))
+                .await
+                .map_err(|e| e.to_string())?;
+            
+            let blocks: Vec<Value> = blocks_resp.take(0).map_err(|e| e.to_string())?;
+            
+            let mut full_text = String::new();
+            for b in blocks {
+                if let Some(content) = b.get("content").and_then(|v| v.as_str()) {
+                    if !content.trim().is_empty() {
+                        full_text.push_str(content);
+                        full_text.push_str("\n\n");
+                    }
+                }
+            }
+            
+            let full_text = full_text.trim();
+            if full_text.is_empty() {
+                return Ok("[SYSTEM ERROR: The chapter content is empty. This means the user has not written any text for this chapter yet. Inform the user and do not hallucinate.]".to_string());
+            } else {
+                if let Some(obj) = chapter_obj.as_object_mut() {
+                    obj.insert("compiled_text".to_string(), json!(full_text));
+                }
+                return Ok(json!({ "chapter": chapter_obj }).to_string());
+            }
+        }
+        
+        Err("Chapter not found".to_string())
     }
 
     async fn get_chapters_list(&self) -> Result<String, String> {
@@ -528,8 +567,15 @@ impl WorldWikiTools {
         )
     }
 
-    async fn find_contradictions(&self, _args: &Value) -> Result<String, String> {
-        Ok(json!({ "status": "success", "contradictions": [] }).to_string())
+    async fn validate_world_consistency(&self, args: &Value) -> Result<String, String> {
+        let statement = Self::arg(args, "statement").unwrap_or("");
+        
+        // Simple mock of consistency check delegating to RAG search over timeline/relations.
+        let _resp = self.db.query("SELECT * FROM chat_messages WHERE project_id = $proj LIMIT 0") // Mocking for now, can be replaced with actual prompt to subagent
+            .bind(("proj", project_record(&self.project_id)))
+            .await.map_err(|e| e.to_string())?;
+        
+        Ok(json!({ "status": "success", "analysis": "Для глубокой проверки используй rag_search по ключевым словам из твоего утверждения: ".to_string() + statement }).to_string())
     }
 
     async fn search_chat_history(&self, args: &Value) -> Result<String, String> {

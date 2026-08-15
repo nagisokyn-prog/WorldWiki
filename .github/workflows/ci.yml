@@ -63,5 +63,5 @@ jobs:
         run: |
           cmake -B build
           cmake --build build --parallel 2
-          cd build && ctest --output-on-failure
+          cd build; ctest --output-on-failure
         working-directory: vendor/llama-turboquant-cpp

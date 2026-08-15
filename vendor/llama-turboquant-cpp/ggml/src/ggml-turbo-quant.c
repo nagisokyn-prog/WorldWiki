@@ -6,11 +6,16 @@
  * GGML_TYPE_TURBO4_0 (4-bit) for use as --cache-type-k turboN in llama-server.
  */
 
+#define _USE_MATH_DEFINES // For M_PI on MSVC
+
 #include "ggml-quants.h"
 #include "ggml-common.h"
 #include "ggml-impl.h"
 
 #include <math.h>
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>

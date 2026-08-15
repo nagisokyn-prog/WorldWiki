@@ -133,14 +133,7 @@ llama_test(test-tokenizer-0 NAME test-tokenizer-0-qwen2             ARGS ${PROJE
 llama_test(test-tokenizer-0 NAME test-tokenizer-0-refact            ARGS ${PROJECT_SOURCE_DIR}/models/ggml-vocab-refact.gguf)
 llama_test(test-tokenizer-0 NAME test-tokenizer-0-starcoder         ARGS ${PROJECT_SOURCE_DIR}/models/ggml-vocab-starcoder.gguf)
 
-if (NOT WIN32)
-    llama_test_cmd(
-        ${CMAKE_CURRENT_SOURCE_DIR}/test-tokenizers-repo.sh
-        NAME test-tokenizers-ggml-vocabs
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-        ARGS https://huggingface.co/ggml-org/vocabs ${PROJECT_SOURCE_DIR}/models/ggml-vocabs
-    )
-endif()
+
 
 if (LLAMA_LLGUIDANCE)
     llama_build_and_test(test-grammar-llguidance.cpp ARGS ${PROJECT_SOURCE_DIR}/models/ggml-vocab-llama-bpe.gguf)

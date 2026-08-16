@@ -23,7 +23,7 @@ const EnterHandler = Extension.create({
   name: 'enterHandler',
   addKeyboardShortcuts() {
     return {
-      Enter: ({ editor }) => {
+      Enter: () => {
         return false;
       },
       'Shift-Enter': ({ editor }) => {
@@ -218,7 +218,7 @@ export function useTiptapEditor(props: any, emit: any) {
           const { appAlert } = await import('@worldwiki/components');
           appAlert(`Сущность "${name}" не найдена.`);
         }
-      } catch (err) {
+      } catch {
         const { appAlert } = await import('@worldwiki/components');
         appAlert(`Ошибка при поиске сущности "${name}"`);
       }

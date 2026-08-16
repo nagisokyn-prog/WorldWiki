@@ -70,7 +70,6 @@ const {
   tags,
   newTagName,
   newTagColor,
-  loadTags,
   addTag,
   updateTag,
   deleteTag,

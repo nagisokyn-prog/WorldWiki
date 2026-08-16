@@ -124,7 +124,7 @@ export function usePlanningPanel(props: any) {
     const deleteItem = async (item: any, idx: number) => {
         items.value.splice(idx, 1);
         if (item.id) {
-            try { await api.deletePlan(item.id); } catch { }
+            try { await api.deletePlan(item.id); } catch { /* ignore */ }
         }
         items.value.forEach((it, i) => { it.sort_order = i; });
     };

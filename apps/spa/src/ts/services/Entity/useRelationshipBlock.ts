@@ -263,6 +263,11 @@ export function useRelationshipBlock(props: any, emit: any) {
     return path.split('.').reduce((cur: any, k: string) => (cur && cur[k] !== undefined ? cur[k] : undefined), obj);
   };
 
+  const updateItemField = (fieldClass: string, val: any) => {
+    props.item[fieldClass] = val;
+    notifyItemUpdate();
+  };
+
   return {
     wheelHorizontal,
     foreignItem,
@@ -283,6 +288,7 @@ export function useRelationshipBlock(props: any, emit: any) {
     getDynamicContainerFields,
     addNestedItem,
     removeNestedItem,
-    getDeepProp
+    getDeepProp,
+    updateItemField
   };
 }

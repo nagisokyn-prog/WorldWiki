@@ -35,7 +35,7 @@
               :model-value="item[cf.class] || ''"
               :options="getOptions(cf).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
               placeholder="-- Выберите сущность --"
-              @update:model-value="(val: any) => { item[cf.class] = val; notifyItemUpdate(); }"
+              @update:model-value="(val: any) => updateItemField(cf.class, val)"
             />
           </template>
           <template v-else>
@@ -44,11 +44,11 @@
               :model-value="item[cf.class] || ''"
               :options="(cf.options || []).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
               placeholder="-- Не указано --"
-              @update:model-value="(val: any) => { item[cf.class] = val; notifyItemUpdate(); }"
+              @update:model-value="(val: any) => updateItemField(cf.class, val)"
             />
-            <textarea v-else-if="cf.type === 'textarea'" v-model="item[cf.class]" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="notifyItemUpdate"></textarea>
-            <input v-else-if="cf.type === 'number' || cf.type === 'range'" v-model.number="item[cf.class]" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="notifyItemUpdate">
-            <input v-else v-model="item[cf.class]" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="notifyItemUpdate">
+            <textarea v-else-if="cf.type === 'textarea'" :value="item[cf.class]" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="updateItemField(cf.class, ($event.target as HTMLTextAreaElement).value)"></textarea>
+            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="item[cf.class]" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="updateItemField(cf.class, Number(($event.target as HTMLInputElement).value))">
+            <input v-else :value="item[cf.class]" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="updateItemField(cf.class, ($event.target as HTMLInputElement).value)">
           </template>
         </div>
 
@@ -190,26 +190,19 @@ const formatLabel = (str: string) => {
 };
 
 const {
-  wheelHorizontal,
   foreignItem,
   foreignLoading,
-  foreignError,
-  foreignModified,
   linkClass,
   myLabel,
   foreignLabel,
-  getResolvedFields,
   notifyItemUpdate,
   notifyNestedItemUpdate,
-  onSelectChange,
-  makeSelectHandler,
-  onLinkChange,
   getOptions,
   getNestedList,
   getDynamicContainerFields,
   addNestedItem,
   removeNestedItem,
-  getDeepProp
+  updateItemField
 } = useRelationshipBlock(props, emit);
 </script>
 

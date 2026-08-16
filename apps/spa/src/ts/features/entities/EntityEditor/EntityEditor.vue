@@ -295,6 +295,7 @@
                        </button>
                    </div>
                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                       <!-- eslint-disable-next-line vue/no-v-html -->
                        <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
                        <span v-else>Базовая версия</span>
                    </div>
@@ -310,7 +311,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { XboxWheel, TagsField, settingsService } from '@worldwiki/components';
+import { XboxWheel, TagsField } from '@worldwiki/components';
 import UniversalDatePicker from '../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
 import RelationshipBlock from '../../../features/schemas/SchemaEditor/RelationshipBlock.vue';
 import { useEntityEditor } from './useEntityEditor';
@@ -323,38 +324,30 @@ const photoInputs = ref<Record<string, any>>({});
 
 const {
     loading,
-    isInitializing,
     wheelHorizontal,
     config,
     formData,
-    lastEmittedData,
     foreignUpdates,
     activeSection,
     referenceData,
-    hoverState,
     scrollContainer,
     showHistory,
     isLoadingHistory,
     revisions,
     isPreviewingHistory,
     previewingRevId,
-    currentSavedData,
     maxSaves,
     togglePin,
-    loadHistory,
     toggleHistory,
     previewHistory,
     exitHistoryPreview,
     restoreHistory,
     getDiffSummary,
     isFieldChanged,
-    photoUrlCache,
     getPhotoUrl,
     getProp,
     setProp,
     getResolvedTemplate,
-    loadConfigAndData,
-    loadReferenceData,
     getOptionsFor,
     markModified,
     handleForeignUpdate,

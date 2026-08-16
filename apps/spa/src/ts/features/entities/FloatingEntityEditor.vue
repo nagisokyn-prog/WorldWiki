@@ -36,8 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import type { ComponentPublicInstance } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { FloatingWindow } from '@worldwiki/components';
 import EntityEditorVue from './EntityEditor/EntityEditor.vue';
 import * as api from '../../services/api.client';
@@ -81,7 +80,7 @@ watch(
     oldVals: readonly [string, string, boolean]
   ) => {
     const [newId, newType, newOpen] = newVals;
-    const [oldId, oldType, oldOpen] = oldVals;
+    const [oldId, oldType] = oldVals;
     // If the editor is opened and any relevant prop changed, reload
     if (newOpen && (newId !== oldId || newType !== oldType)) {
       await loadData();

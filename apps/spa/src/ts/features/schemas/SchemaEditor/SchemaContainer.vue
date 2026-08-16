@@ -5,10 +5,10 @@
         <span style="opacity: 0.2;">⠿</span>
         <span style="font-size: 24px;">{{ isTimeline ? '⏱️' : '📋' }}</span>
         <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
-          <input v-model="item.title" class="input-base" style="background: transparent; border: none; font-weight: 900; font-size: 18px; color: var(--text-main); padding: 0;" placeholder="НАЗВАНИЕ МОДУЛЯ">
+          <input :value="item.title" class="input-base" style="background: transparent; border: none; font-weight: 900; font-size: 18px; color: var(--text-main); padding: 0;" placeholder="НАЗВАНИЕ МОДУЛЯ" @input="updateTitle(($event.target as HTMLInputElement).value)">
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 10px; color: var(--text-muted); opacity: 0.5;">Текст при пустоте:</span>
-            <input v-model="item.emptyMessage" class="input-base" style="background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.2); font-size: 10px; color: var(--text-muted); padding: 0; width: 300px;" placeholder="Пусто...">
+            <input :value="item.emptyMessage" class="input-base" style="background: transparent; border: none; border-bottom: 1px dashed rgba(255,255,255,0.2); font-size: 10px; color: var(--text-muted); padding: 0; width: 300px;" placeholder="Пусто..." @input="updateEmptyMessage(($event.target as HTMLInputElement).value)">
           </div>
         </div>
       </div>
@@ -16,7 +16,7 @@
         <button
 style="background: none; border: none; cursor: pointer; font-size: 16px;" 
                 :title="item.hidden ? 'Показать модуль' : 'Скрыть модуль'"
-                @click="item.hidden = !item.hidden">
+                @click="toggleHidden">
           {{ item.hidden ? '👁️‍🗨️' : '👁️' }}
         </button>
         <button style="color: #f55; background: none; border: none; font-size: 16px; cursor: pointer;" @click="$emit('remove')">✕</button>
@@ -162,7 +162,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
     <div v-for="(cField, cIdx) in (item.customFields || [])" :key="'cf_'+cIdx">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <label class="form-label-micro" style="color: var(--accent); opacity: 0.8;">{{ cField.label || 'Новое поле' }} (Кастомное)</label>
-        <button style="background: none; border: none; cursor: pointer; color: #f55; font-size: 10px; opacity: 0.8;" @click="item.customFields.splice(Number(cIdx), 1)">
+        <button style="background: none; border: none; cursor: pointer; color: #f55; font-size: 10px; opacity: 0.8;" @click="removeCustomField(Number(cIdx))">
             Удалить ✕
         </button>
       </div>
@@ -178,12 +178,6 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
               <input v-model="cField.label" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="Название поля">
             </div>
             <div>
-              <label class="form-label-micro">Подсказка</label>
-              <input v-model="cField.placeholder" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="...">
-            </div>
-        </div>
-        
-        <div style="margin-top: 8px;">
             <label class="form-label-micro">Тип</label>
             <XboxWheel :model-value="cField.type || ''" :options="atomicBricks" @update:model-value="(val: any) => cField.type = val" />
         </div>
@@ -243,7 +237,7 @@ const props = defineProps<{
   item: any;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   remove: [];
   'drop-custom': [];
 }>();
@@ -258,7 +252,11 @@ const {
   getFieldOverride,
   toggleFieldOverride,
   addFieldOption,
-  isTimeline
+  isTimeline,
+  updateTitle,
+  updateEmptyMessage,
+  toggleHidden,
+  removeCustomField
 } = useSchemaContainer(props);
 </script>
 

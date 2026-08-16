@@ -1,5 +1,4 @@
 import { ref } from 'vue';
-import * as api from '../../../../services/api.client';;
 
 export function useEntityHelpers(formData: any, config: any) {
   const photoUrlCache = ref<Record<string, string>>({});

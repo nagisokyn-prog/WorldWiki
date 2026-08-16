@@ -81,12 +81,10 @@ const props = defineProps({
 const {
   items,
   listEl,
-  saving,
   nodeIcon,
   nodeName,
   doneCount,
   progressPct,
-  load,
   saveItem,
   toggleItem,
   addItem,

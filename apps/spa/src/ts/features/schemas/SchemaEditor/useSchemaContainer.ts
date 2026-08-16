@@ -62,6 +62,24 @@ export function useSchemaContainer(props: any) {
         return props.item.template && (props.item.template.includes('timeline') || props.item.template.includes('events'));
     });
 
+    const updateTitle = (val: string) => {
+        props.item.title = val;
+    };
+
+    const updateEmptyMessage = (val: string) => {
+        props.item.emptyMessage = val;
+    };
+
+    const toggleHidden = () => {
+        props.item.hidden = !props.item.hidden;
+    };
+
+    const removeCustomField = (idx: number) => {
+        if (props.item.customFields) {
+            props.item.customFields.splice(idx, 1);
+        }
+    };
+
     return {
         isDraggedOver,
         fullConfig,
@@ -72,6 +90,10 @@ export function useSchemaContainer(props: any) {
         getFieldOverride,
         toggleFieldOverride,
         addFieldOption,
-        isTimeline
+        isTimeline,
+        updateTitle,
+        updateEmptyMessage,
+        toggleHidden,
+        removeCustomField
     };
 }

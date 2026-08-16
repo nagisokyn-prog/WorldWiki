@@ -89,7 +89,7 @@ export const useTimelineStore = defineStore('timeline', () => {
     const participants: Participant[] = [];
     
     // Legacy format: [name](...type=type&id=id...)
-    const legacyRegex = /\[([^\]]+)\]\([^)]+type=([^&]+)&id=([^&)]+)[^)]*\)/g;
+    const legacyRegex = /\[([^\]]+)\]\([^)]+type=([^&]+)&id=([^&]+?)\.\.\./g;
     let match;
     while ((match = legacyRegex.exec(text)) !== null) {
       const name = match[1];

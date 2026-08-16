@@ -156,9 +156,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { EditorContent } from '@tiptap/vue-3';
-import { settingsService } from '@worldwiki/components';
 import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
 import EntityLinkSelector from './EntityLinkSelector.vue';
@@ -217,30 +216,19 @@ const {
     modeOptions,
     editorMode,
     settings,
-    editorUpdateKey,
     wordCount,
     charCount,
     footnotes,
-    ctrlPressed,
     markdownContent,
     selectedBlockIdx,
     showStructure,
     leftPanelWidth,
     rightPanelWidth,
-    resizing,
-    turndownService,
-    mdIt,
-    savePositionState,
-    restorePositionState,
-    handleBeforeUnload,
     documentStructure,
     editor,
     updateTitle,
-    updateStats,
-    preprocessMarkdown,
     onMarkdownInput,
     onMarkdownKeydown,
-    syncMarkdownFromEditor,
     toggleBold,
     toggleItalic,
     toggleStrike,

@@ -18,7 +18,9 @@ export function useTiptapState(props: any, emit: any, editor: any, editorUpdateK
         if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split') {
           return mode;
         }
-      } catch (e) {}
+      } catch {
+        // ignore
+      }
     }
     return (localStorage.getItem('default-editor-mode') as 'wysiwyg' | 'markdown' | 'split') || 'wysiwyg';
   };
@@ -134,7 +136,7 @@ export function useTiptapState(props: any, emit: any, editor: any, editorUpdateK
     });
   };
 
-  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  const handleBeforeUnload = (_e: BeforeUnloadEvent) => {
     savePositionState();
     if (props.hasUnsavedChanges) {
       emit('save');

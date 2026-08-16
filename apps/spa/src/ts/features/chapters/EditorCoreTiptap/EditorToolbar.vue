@@ -40,7 +40,7 @@
 import { XboxWheel } from '@worldwiki/components';
 import type { Editor } from '@tiptap/vue-3';
 
-const props = defineProps<{
+defineProps<{
   editor: Editor | null | undefined;
   editorMode: string;
   modeOptions: any[];
@@ -49,7 +49,7 @@ const props = defineProps<{
   commands: Record<string, (...args: any[]) => void>;
 }>();
 
-const emit = defineEmits(['update:editorMode', 'save', 'toggle-history']);
+defineEmits(['update:editorMode', 'save', 'toggle-history']);
 </script>
 
 <style scoped>

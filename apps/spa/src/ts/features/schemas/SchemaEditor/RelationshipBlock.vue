@@ -195,7 +195,6 @@ const {
   linkClass,
   myLabel,
   foreignLabel,
-  notifyItemUpdate,
   notifyNestedItemUpdate,
   getOptions,
   getNestedList,

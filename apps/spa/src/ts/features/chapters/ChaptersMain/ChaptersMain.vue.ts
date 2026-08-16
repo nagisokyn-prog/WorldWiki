@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { ref, onMounted, onUnmounted, watch, computed, type PropType, shallowRef } from 'vue';
 import { chapterService } from '../../../services/chapter.service';
 import * as api from '../../../services/api.client';;

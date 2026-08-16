@@ -117,7 +117,7 @@ import AiSettingsRulesTab from '../components/settings/AiSettingsRulesTab.vue';
 import { useAiProfiles } from '../composables/useAiProfiles';
 import { useAiModels } from '../composables/useAiModels';
 
-const emit = defineEmits(['close']);
+defineEmits(['close']);
 
 const activeTab = ref('providers');
 

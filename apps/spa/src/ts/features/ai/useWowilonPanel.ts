@@ -50,7 +50,9 @@ export function useWowilonPanel(
           try {
             const u = JSON.parse(chunk.text);
             tokenUsage.value = u;
-          } catch(e) {}
+          } catch {
+            // ignore
+          }
         } else {
           msg.content = chunk.text;
         }

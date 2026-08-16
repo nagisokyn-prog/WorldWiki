@@ -73,7 +73,7 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
             return false;
           }
         },
-        view: (view) => {
+        view: (_view) => {
           return {
             update: (view, prevState) => {
               const state = view.state;

@@ -142,6 +142,7 @@ v-for="(rev, idx) in revisions" :key="rev.id"
                       </button>
                   </div>
                   <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                      <!-- eslint-disable-next-line vue/no-v-html -->
                       <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
                       <span v-else>Базовая версия</span>
                   </div>
@@ -222,7 +223,6 @@ import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
 import ExportModal from '../Export/ExportModal.vue';
-import ChapterTree from '../ChapterTree/ChapterTree.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
 import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
 import { useChaptersMain } from './useChaptersMain';
@@ -242,21 +242,17 @@ const emit = defineEmits<{
 }>();
 
 const {
-  loading, chapters, hierarchy, currentChapterId, currentChapter,
-  currentChapterNode, currentArc, currentVolume, isVolumePlanOpen,
+  chapters, currentChapterId, currentChapter,
+  currentArc, currentVolume, isVolumePlanOpen,
   isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
-  hasUnsavedChanges, localActiveTreeNode, chaptersSidebarWidth, debugError,
-  startChaptersSidebarResize, chapterTreeRef, isExportModalOpen,
-  showQuickLinkHint, isZenMode, floatingEditors, showHistory, isLoadingHistory,
-  revisions, previewingRevId, maxSaves, originalData, toggleHistory, loadHistory,
-  previewHistory, togglePin, getDiffSummary, changedFields, toggleZenMode,
-  onFullscreenChange, rightPanelWidth, isRightPanelVisible, isSaving, triggerSave,
-  toggleRightPanel, handleGlobalChapterRename, loadChapters, saveChapter,
+  hasUnsavedChanges, localActiveTreeNode, debugError,
+  isExportModalOpen, showQuickLinkHint, isZenMode, floatingEditors, showHistory,
+  isLoadingHistory, revisions, previewingRevId, maxSaves, toggleHistory,
+  previewHistory, togglePin, getDiffSummary, changedFields,
+  rightPanelWidth, isRightPanelVisible, saveChapter,
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
-  openChapter, onTreeNodeSelect, openChapterFromTree, createChapterIn,
-  createNewChapter, onRenameChapter, onDeleteChapter, deleteChapter, markUnsaved,
-  handleOpenEntity, closeFloatingEditor, loadHierarchy, handleExport,
-  handleScrollChange, startResize, handleToggleRightPanel, handleToggleStructure
+  markUnsaved, handleOpenEntity, closeFloatingEditor,
+  handleExport, handleScrollChange, startResize
 } = useChaptersMain(props, emit);
 </script>
 

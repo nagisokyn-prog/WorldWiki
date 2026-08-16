@@ -68,7 +68,7 @@ export function useTiptapSplitView(editor: any, editorUpdateKey: any) {
   };
 
   const documentStructure = computed(() => {
-    editorUpdateKey.value;
+    void editorUpdateKey.value;
     if (!editor.value) return [];
     const doc = editor.value.getJSON();
     const blocks: Array<{ type: string; text: string; level?: number; semanticTag?: string; pIndex?: number }> = [];

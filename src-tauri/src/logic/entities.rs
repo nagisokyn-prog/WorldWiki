@@ -76,8 +76,15 @@ pub async fn get_entities(
     entity_type: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Entity>, String> {
-    let db = &state.db;
-    let pid_val = safe_pid(&project);
+    get_entities_inner(&state.db, &project, entity_type).await
+}
+
+pub async fn get_entities_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    entity_type: Option<String>,
+) -> Result<Vec<Entity>, String> {
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
     let query = match &entity_type {
@@ -95,24 +102,8 @@ pub async fn get_entities(
         q = q.bind(("et", et));
     }
 
-    let debug_q = db.query("SELECT id, project_id FROM entities");
-    if let Ok(mut debug_res) = debug_q.await {
-        if let Ok(debug_vals) = debug_res.take::<Vec<Value>>(0) {
-            println!(
-                "[DEBUG] All entities in DB: {}",
-                serde_json::to_string_pretty(&debug_vals).unwrap_or_default()
-            );
-        }
-    }
-
-    println!(
-        "[DEBUG get_entities] project='{}' pid_val='{}' pid_literal='{}' query={}",
-        project, pid_val, pid_literal, query
-    );
-
     let mut res = q.await.map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
-    println!("[DEBUG get_entities] returned {} items", values.len());
     Ok(deserialize_list(values))
 }
 
@@ -121,9 +112,15 @@ pub async fn get_entity(
     id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Option<Entity>, String> {
-    let db = &state.db;
+    get_entity_inner(&state.db, &id).await
+}
+
+pub async fn get_entity_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    id: &str,
+) -> Result<Option<Entity>, String> {
     let parts: Vec<&str> = id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { &id };
+    let actual_id = if parts.len() == 2 { parts[1] } else { id };
     let res: Option<Value> = db
         .select(("entities", actual_id))
         .await
@@ -148,9 +145,14 @@ pub async fn save_entity(
     entity: Entity,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Entity, String> {
-    let db = &state.db;
-    let _proj_id = format!("projects:{}", project);
+    save_entity_inner(&state.db, &project, entity).await
+}
 
+pub async fn save_entity_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    entity: Entity,
+) -> Result<Entity, String> {
     let mut val = serde_json::to_value(&entity).map_err(|e| e.to_string())?;
     if let Some(obj) = val.as_object_mut() {
         obj.remove("id");
@@ -166,7 +168,7 @@ pub async fn save_entity(
         } else {
             id_str.as_str()
         };
-        let pid_val = safe_pid(&project);
+        let pid_val = safe_pid(project);
         let pid_raw = pid_val.replace("projects:", "");
         let pid_literal = format!("projects:`{}`", pid_raw);
         let id_val = safe_id("entities", actual_id);
@@ -193,8 +195,6 @@ pub async fn save_entity(
             query.push_str(", embeddings = $embeds");
         }
 
-        println!("[DEBUG save_entity] UPSERT query: {}", query);
-
         let mut q = db
             .query(query)
             .bind(("id", id_val))
@@ -216,22 +216,9 @@ pub async fn save_entity(
 
         let mut res = q.await.map_err(|e| e.to_string())?;
         let saved: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
-        println!("[DEBUG save_entity] saved result: {:?}", saved);
-
-        // DEBUG: check all entities in DB after save
-        let debug_q = db.query("SELECT * FROM entities");
-        if let Ok(mut debug_res) = debug_q.await {
-            if let Ok(debug_vals) = debug_res.take::<Vec<Value>>(0) {
-                println!(
-                    "[DEBUG save_entity] All entities in DB after save: {}",
-                    serde_json::to_string_pretty(&debug_vals).unwrap_or_default()
-                );
-            }
-        }
-
         saved
     } else {
-        let pid_val = safe_pid(&project);
+        let pid_val = safe_pid(project);
         let pid_raw = pid_val.replace("projects:", "");
         let pid_literal = format!("projects:`{}`", pid_raw);
         let mut query = format!(
@@ -257,8 +244,6 @@ pub async fn save_entity(
             query.push_str(", embeddings = $embeds");
         }
 
-        println!("[DEBUG save_entity] CREATE query: {}", query);
-
         let mut q = db
             .query(query)
             .bind(("entity_type", entity.entity_type.clone()))
@@ -279,19 +264,6 @@ pub async fn save_entity(
 
         let mut res = q.await.map_err(|e| e.to_string())?;
         let saved: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
-        println!("[DEBUG save_entity] saved result: {:?}", saved);
-
-        // DEBUG: check all entities in DB after save
-        let debug_q = db.query("SELECT * FROM entities");
-        if let Ok(mut debug_res) = debug_q.await {
-            if let Ok(debug_vals) = debug_res.take::<Vec<Value>>(0) {
-                println!(
-                    "[DEBUG save_entity] All entities in DB after create: {}",
-                    serde_json::to_string_pretty(&debug_vals).unwrap_or_default()
-                );
-            }
-        }
-
         saved
     };
 
@@ -309,16 +281,20 @@ pub async fn delete_entity(
     id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
-    println!("[DEBUG] delete_entity called with id: '{}'", id);
+    delete_entity_inner(&state.db, &id).await
+}
+
+pub async fn delete_entity_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    id: &str,
+) -> Result<(), String> {
     let parts: Vec<&str> = id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 {
         parts[1]
     } else {
-        id.as_str()
+        id
     };
-    let full_id = crate::logic::entities::safe_id("entities", actual_id);
-    println!("[DEBUG] delete_entity full_id resolved to: '{}'", full_id);
+    let full_id = safe_id("entities", actual_id);
 
     let mut tx_res = db
         .query(
@@ -338,14 +314,9 @@ pub async fn delete_entity(
 
     let errors = tx_res.take_errors();
     if !errors.is_empty() {
-        eprintln!("[DEBUG] delete_entity transaction errors: {:?}", errors);
         return Err(format!("Transaction errors: {:?}", errors));
     }
 
-    println!(
-        "[DEBUG] delete_entity completed successfully for actual_id: '{}'",
-        actual_id
-    );
     Ok(())
 }
 
@@ -356,14 +327,22 @@ pub async fn search_entities(
     entity_type: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Entity>, String> {
-    let db = &state.db;
+    search_entities_inner(&state.db, &project, &query, entity_type).await
+}
+
+pub async fn search_entities_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    query: &str,
+    entity_type: Option<String>,
+) -> Result<Vec<Entity>, String> {
     let type_filter = if entity_type.is_some() {
         " AND entity_type = $et"
     } else {
         ""
     };
 
-    let pid_val = safe_pid(&project);
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
     let sql = format!(
@@ -372,7 +351,7 @@ pub async fn search_entities(
         pid_val, pid_literal, type_filter
     );
 
-    let mut q = db.query(sql).bind(("q", query));
+    let mut q = db.query(sql).bind(("q", query.to_string()));
 
     if let Some(et) = entity_type {
         q = q.bind(("et", et));
@@ -403,8 +382,14 @@ pub async fn get_entity_schemas(
     project: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<EntitySchema>, String> {
-    let db = &state.db;
-    let pid_val = safe_pid(&project);
+    get_entity_schemas_inner(&state.db, &project).await
+}
+
+pub async fn get_entity_schemas_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+) -> Result<Vec<EntitySchema>, String> {
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
     let mut res = db
@@ -415,13 +400,6 @@ pub async fn get_entity_schemas(
         .await
         .map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
-    println!(
-        "[DEBUG get_entity_schemas] project='{}' pid_val='{}' pid_literal='{}' found {} schemas",
-        project,
-        pid_val,
-        pid_literal,
-        values.len()
-    );
     Ok(deserialize_list(values))
 }
 
@@ -432,7 +410,15 @@ pub async fn save_entity_schema(
     max_saves: Option<usize>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<EntitySchema, String> {
-    let db = &state.db;
+    save_entity_schema_inner(&state.db, &project, schema, max_saves).await
+}
+
+pub async fn save_entity_schema_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    schema: EntitySchema,
+    max_saves: Option<usize>,
+) -> Result<EntitySchema, String> {
     let proj_id = format!("projects:{}", project);
 
     let mut val = serde_json::to_value(&schema).map_err(|e| e.to_string())?;
@@ -454,21 +440,13 @@ pub async fn save_entity_schema(
 
     let mut existing_records: Vec<Value> = res.take(0).unwrap_or_default();
 
-    // Flatten the Thing ID objects so we get plain "table:id" strings
     for rec in existing_records.iter_mut() {
         flatten_thing(rec);
     }
 
-    eprintln!(
-        "[DEBUG] schema lookup result for '{}': {:?}",
-        schema.type_key, existing_records
-    );
-
     let actual_id_str = if let Some(first) = existing_records.first() {
-        // After flatten_thing, id field should be "entity_schemas:xxxx"
         if let Some(id_val) = first.get("id") {
             let id_string = id_val.as_str().unwrap_or("");
-            eprintln!("[DEBUG] found schema id_string: '{}'", id_string);
             let parts: Vec<&str> = id_string.splitn(2, ':').collect();
             if parts.len() == 2 {
                 parts[1].to_string()
@@ -489,8 +467,6 @@ pub async fn save_entity_schema(
         "".to_string()
     };
 
-    eprintln!("[DEBUG] actual_id_str: '{}'", actual_id_str);
-
     let result: Option<Value> = if !actual_id_str.is_empty() {
         let actual_id = actual_id_str.as_str();
         let safe_actual_id = format!("entity_schemas:`{}`", actual_id);
@@ -501,22 +477,18 @@ pub async fn save_entity_schema(
             .await
             .map_err(|e| e.to_string())?;
         if let Some(old_schema_val) = old_res {
-            let mut snap = serde_json::Map::new();
-            snap.insert("schema_id".into(), Value::String(safe_actual_id.clone()));
-            snap.insert("type_key".into(), Value::String(schema.type_key.clone()));
-            snap.insert("project_id".into(), Value::String(proj_id.clone()));
-            snap.insert("snapshot".into(), old_schema_val);
-            snap.insert(
-                "saved_at".into(),
-                Value::String(chrono::Utc::now().to_rfc3339()),
-            );
-            snap.insert("is_pinned".into(), Value::Bool(false));
             let max_limit = max_saves.unwrap_or(30);
 
             let query_str = "
                 BEGIN TRANSACTION;
                 
-                CREATE schema_history CONTENT $snap;
+                CREATE schema_history SET
+                    schema_id = type::record($schema_id),
+                    type_key = $type_key,
+                    project_id = type::record($pid),
+                    snapshot = $snapshot,
+                    saved_at = $saved_at,
+                    is_pinned = false;
                 
                 LET $target = type::record($id);
                 LET $unpinned = (SELECT id, saved_at FROM schema_history WHERE schema_id = $target AND is_pinned = false ORDER BY saved_at DESC);
@@ -530,7 +502,11 @@ pub async fn save_entity_schema(
 
             let mut tx_res = db
                 .query(query_str)
-                .bind(("snap", Value::Object(snap)))
+                .bind(("schema_id", safe_actual_id.clone()))
+                .bind(("type_key", schema.type_key.clone()))
+                .bind(("pid", proj_id.clone()))
+                .bind(("snapshot", old_schema_val))
+                .bind(("saved_at", chrono::Utc::now().to_rfc3339()))
                 .bind(("id", safe_actual_id.clone()))
                 .bind(("max_limit", max_limit))
                 .await
@@ -543,53 +519,73 @@ pub async fn save_entity_schema(
         }
         // -------------------------
 
-        let pid_val = safe_pid(&project);
+        let pid_val = safe_pid(project);
         let pid_raw = pid_val.replace("projects:", "");
         let safe_pid = format!("projects:`{}`", pid_raw);
-        let query = "
+        let mut query = "
             UPSERT type::record($id) SET 
                 project_id = type::record($pid),
-                type_key = $data.type_key,
-                type_name = $data.type_name,
-                icon = $data.icon,
-                color = $data.color,
-                fields_schema = $data.fields_schema,
-                full_schema = $data.full_schema
+                type_key = $t_key,
+                type_name = $t_name,
+                icon = $icon,
+                color = $color,
+                fields_schema = $fields_schema
         "
         .to_string();
-        let mut res = db
+        if schema.full_schema.is_some() {
+            query.push_str(", full_schema = $full_schema");
+        }
+
+        let fields_val = serde_json::to_value(&schema.fields_schema).unwrap_or(Value::Array(vec![]));
+        let mut q = db
             .query(query)
             .bind(("id", safe_actual_id.clone()))
             .bind(("pid", safe_pid.clone()))
-            .bind(("data", val.clone()))
-            .await
-            .map_err(|e| format!("UPSERT schema error: {}", e))?;
+            .bind(("t_key", schema.type_key.clone()))
+            .bind(("t_name", schema.type_name.clone()))
+            .bind(("icon", schema.icon.clone()))
+            .bind(("color", schema.color.clone()))
+            .bind(("fields_schema", fields_val.clone()));
+        if let Some(ref fs) = schema.full_schema {
+            q = q.bind(("full_schema", fs.clone()));
+        }
+
+        let mut res = q.await.map_err(|e| format!("UPSERT schema error: {}", e))?;
         res.take(0).map_err(|e| e.to_string())?
     } else {
-        let pid_val = safe_pid(&project);
+        let pid_val = safe_pid(project);
         let pid_raw = pid_val.replace("projects:", "");
         let safe_pid = format!("projects:`{}`", pid_raw);
-        // Explicitly generate an ID instead of letting SurrealDB auto-generate it.
-        // This avoids any weird bugs with CREATE.
         let new_id = format!("entity_schemas:`{}_{}`", pid_raw, schema.type_key);
-        let query = "
+        let mut query = "
             CREATE type::record($id) SET 
                 project_id = type::record($pid),
-                type_key = $data.type_key,
-                type_name = $data.type_name,
-                icon = $data.icon,
-                color = $data.color,
-                fields_schema = $data.fields_schema,
-                full_schema = $data.full_schema
+                type_key = $t_key,
+                type_name = $t_name,
+                icon = $icon,
+                color = $color,
+                fields_schema = $fields_schema
         "
         .to_string();
-        let mut res = db
+        if schema.full_schema.is_some() {
+            query.push_str(", full_schema = $full_schema");
+        }
+
+        let fields_val = serde_json::to_value(&schema.fields_schema).unwrap_or(Value::Array(vec![]));
+        let mut q = db
             .query(query)
             .bind(("id", new_id))
             .bind(("pid", safe_pid))
-            .bind(("data", val.clone()))
-            .await
-            .map_err(|e| format!("CREATE schema error: {}", e))?;
+            .bind(("t_key", schema.type_key.clone()))
+            .bind(("t_name", schema.type_name.clone()))
+            .bind(("icon", schema.icon.clone()))
+            .bind(("color", schema.color.clone()))
+            .bind(("fields_schema", fields_val));
+        if let Some(ref fs) = schema.full_schema {
+            q = q.bind(("full_schema", fs.clone()));
+        }
+
+        let mut res = q.await.map_err(|e| format!("CREATE schema error: {}", e))?;
         res.take(0).map_err(|e| e.to_string())?
     };
 
@@ -613,8 +609,15 @@ pub async fn delete_entity_schema(
     type_key: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
-    let pid_val = crate::logic::entities::safe_pid(&project);
+    delete_entity_schema_inner(&state.db, &project, &type_key).await
+}
+
+pub async fn delete_entity_schema_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    type_key: &str,
+) -> Result<(), String> {
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let safe_pid = format!("projects:`{}`", pid_raw);
 
@@ -627,7 +630,7 @@ pub async fn delete_entity_schema(
         COMMIT TRANSACTION;
     ")
     .bind(("pid", safe_pid))
-    .bind(("type_key", type_key))
+    .bind(("type_key", type_key.to_string()))
     .await.map_err(|e| e.to_string())?;
 
     let errors = tx_res.take_errors();
@@ -644,11 +647,18 @@ pub async fn get_schema_history(
     type_key: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<SchemaHistoryEntry>, String> {
-    let db = &state.db;
+    get_schema_history_inner(&state.db, &project, &type_key).await
+}
+
+pub async fn get_schema_history_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    type_key: &str,
+) -> Result<Vec<SchemaHistoryEntry>, String> {
     let pid = format!("projects:{}", project);
     let mut res = db.query("SELECT * FROM schema_history WHERE project_id = type::record($pid) AND type_key = $tk ORDER BY saved_at DESC")
         .bind(("pid", pid))
-        .bind(("tk", type_key))
+        .bind(("tk", type_key.to_string()))
         .await.map_err(|e| e.to_string())?;
     let values: Vec<Value> = res.take(0).map_err(|e| e.to_string())?;
     Ok(deserialize_list(values))
@@ -660,12 +670,19 @@ pub async fn toggle_schema_history_pin(
     is_pinned: bool,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
+    toggle_schema_history_pin_inner(&state.db, &history_id, is_pinned).await
+}
+
+pub async fn toggle_schema_history_pin_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    history_id: &str,
+    is_pinned: bool,
+) -> Result<(), String> {
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 {
         parts[1]
     } else {
-        history_id.as_str()
+        history_id
     };
 
     let id_val = safe_id("schema_history", actual_id);
@@ -687,20 +704,25 @@ pub async fn get_entity_relations(
     entity_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<EntityRel>, String> {
-    let db = &state.db;
-    let pid_val = safe_pid(&project);
-    let pid_raw = pid_val.replace("projects:", "");
-    let pid_literal = format!("projects:`{}`", pid_raw);
+    get_entity_relations_inner(&state.db, &project, entity_id).await
+}
+
+pub async fn get_entity_relations_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    entity_id: Option<String>,
+) -> Result<Vec<EntityRel>, String> {
+    let pid_val = safe_pid(project);
     let id_val = match &entity_id {
         Some(e) => safe_id("entities", e),
         None => "".to_string(),
     };
     let sql = match &entity_id {
-        Some(_) => format!("SELECT * FROM entity_rel WHERE project_id = '{}' AND (in = type::record($eid) OR out = type::record($eid))", pid_literal),
-        None => format!("SELECT * FROM entity_rel WHERE project_id = '{}'", pid_literal),
+        Some(_) => "SELECT * FROM entity_rel WHERE (project_id = type::record($pid) OR project_id = $pid) AND (in = type::record($eid) OR out = type::record($eid))",
+        None => "SELECT * FROM entity_rel WHERE project_id = type::record($pid) OR project_id = $pid",
     };
 
-    let mut q = db.query(sql);
+    let mut q = db.query(sql).bind(("pid", pid_val));
 
     if entity_id.is_some() {
         q = q.bind(("eid", id_val));
@@ -719,39 +741,82 @@ pub async fn create_entity_relation(
     rel: EntityRel,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<EntityRel, String> {
-    let db = &state.db;
+    create_entity_relation_inner(&state.db, &project, &from_id, &to_id, rel).await
+}
+
+pub async fn create_entity_relation_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    from_id: &str,
+    to_id: &str,
+    rel: EntityRel,
+) -> Result<EntityRel, String> {
     let proj_id = format!("projects:{}", project);
 
-    let from = if from_id.contains(':') {
-        from_id
-    } else {
-        format!("entities:{}", from_id)
-    };
-    let to = if to_id.contains(':') {
-        to_id
-    } else {
-        format!("entities:{}", to_id)
-    };
-
-    let mut data = serde_json::to_value(&rel).map_err(|e| e.to_string())?;
-    if let Some(obj) = data.as_object_mut() {
-        obj.remove("id");
-        obj.remove("in");
-        obj.remove("out");
-        obj.remove("created_at");
-        obj.insert("project_id".into(), Value::String(proj_id));
+    fn make_record(table: &str, full_id: &str) -> surrealdb::types::RecordId {
+        let raw = full_id.split(':').nth(1).unwrap_or(full_id);
+        surrealdb::types::RecordId::new(table, raw)
     }
 
-    let sql = format!(
-        "RELATE {} -> entity_rel -> {} CONTENT $data RETURN AFTER",
-        from, to
-    );
-    let mut res = db
-        .query(sql)
-        .bind(("data", data))
-        .await
-        .map_err(|e| e.to_string())?;
+    let from_rec = make_record("entities", from_id);
+    let to_rec = make_record("entities", to_id);
 
+    let mut query = "
+        RELATE $from -> entity_rel -> $to SET
+            project_id = type::record($pid),
+            rel_type = $rel_type
+    "
+    .to_string();
+
+    if rel.description.is_some() {
+        query.push_str(", description = $desc");
+    }
+    if rel.strength.is_some() {
+        query.push_str(", strength = $strength");
+    }
+    if !rel.attributes.is_null() {
+        query.push_str(", attributes = $attrs");
+    }
+    if let Some(ref sc) = rel.start_chapter {
+        if !sc.is_empty() {
+            query.push_str(", start_chapter = type::record($start_chapter)");
+        }
+    }
+    if let Some(ref ec) = rel.end_chapter {
+        if !ec.is_empty() {
+            query.push_str(", end_chapter = type::record($end_chapter)");
+        }
+    }
+    query.push_str(" RETURN AFTER");
+
+    let mut q = db
+        .query(query)
+        .bind(("from", from_rec))
+        .bind(("to", to_rec))
+        .bind(("pid", proj_id))
+        .bind(("rel_type", rel.rel_type.clone()));
+
+    if let Some(ref d) = rel.description {
+        q = q.bind(("desc", d.clone()));
+    }
+    if let Some(s) = rel.strength {
+        q = q.bind(("strength", s));
+    }
+    if !rel.attributes.is_null() {
+        q = q.bind(("attrs", rel.attributes.clone()));
+    }
+    if let Some(ref sc) = rel.start_chapter {
+        if !sc.is_empty() {
+            q = q.bind(("start_chapter", sc.clone()));
+        }
+    }
+    if let Some(ref ec) = rel.end_chapter {
+        if !ec.is_empty() {
+            q = q.bind(("end_chapter", ec.clone()));
+        }
+    }
+
+    let mut res = q.await.map_err(|e| e.to_string())?;
     let created: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
     match created {
         Some(v) => serde_json::from_value(v).map_err(|e| e.to_string()),
@@ -764,9 +829,15 @@ pub async fn delete_entity_relation(
     id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
+    delete_entity_relation_inner(&state.db, &id).await
+}
+
+pub async fn delete_entity_relation_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    id: &str,
+) -> Result<(), String> {
     let parts: Vec<&str> = id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { &id };
+    let actual_id = if parts.len() == 2 { parts[1] } else { id };
     let _: Option<Value> = db
         .delete(("entity_rel", actual_id))
         .await
@@ -783,8 +854,14 @@ pub async fn get_relation_schemas(
     project: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<RelationSchema>, String> {
-    let db = &state.db;
-    let pid_val = safe_pid(&project);
+    get_relation_schemas_inner(&state.db, &project).await
+}
+
+pub async fn get_relation_schemas_inner(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+) -> Result<Vec<RelationSchema>, String> {
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
     let mut res = db

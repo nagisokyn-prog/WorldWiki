@@ -1,2 +1,13 @@
 pub mod common;
+pub mod smoke_schema;
 pub mod timeline_integration;
+pub mod hierarchy_integration;
+pub mod entity_integration;
+pub mod text_blocks_integration;
+pub mod project_integration;
+pub mod ai_integration;
+pub mod embeddings_integration;
+pub mod stress_integration;
+pub mod negative_integration;
+pub mod batch_and_connections_integration;
+pub mod chat_integration;

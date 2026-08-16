@@ -328,8 +328,8 @@ impl WorldWikiTools {
     }
 
     async fn get_entity(&self, args: &Value) -> Result<String, String> {
-        let id = Self::arg(args, "id").ok_or("missing id")?.to_lowercase();
-        let record = RecordId::new("entities", id.as_str());
+        let id = Self::arg(args, "id").ok_or("missing id")?;
+        let record = Self::parse_id("entities", id);
         let mut resp = self
             .db
             .query("SELECT * FROM entities WHERE id = $id LIMIT 1")
@@ -349,10 +349,11 @@ impl WorldWikiTools {
             .db
             .query(
                 "SELECT * FROM entity_rel \
-                 WHERE (in = $entity OR out = $entity) AND project_id = $proj",
+                 WHERE (in = $entity OR out = $entity) AND (project_id = $proj OR project_id = type::record($proj_str))",
             )
             .bind(("entity", entity))
             .bind(("proj", proj))
+            .bind(("proj_str", self.project_id.clone()))
             .await
             .map_err(|e| e.to_string())?;
         let rows: Vec<Value> = resp.take(0).map_err(|e| e.to_string())?;
@@ -361,7 +362,7 @@ impl WorldWikiTools {
 
     async fn get_chapter(&self, args: &Value) -> Result<String, String> {
         let id = Self::arg(args, "id").ok_or("missing id")?;
-        let record = RecordId::new("chapters", id.to_lowercase());
+        let record = Self::parse_id("chapters", id);
         let mut resp = self
             .db
             .query("SELECT * FROM chapters WHERE id = $id LIMIT 1")
@@ -372,12 +373,12 @@ impl WorldWikiTools {
         let row: Option<Value> = resp.take(0).map_err(|e| e.to_string())?;
         
         if let Some(mut chapter_obj) = row {
-            let chapter_id_str = format!("chapters:{}", id.to_lowercase());
+            let chapter_id_str = format!("chapters:{}", id.strip_prefix("chapters:").unwrap_or(id));
             let mut blocks_resp = self
                 .db
-                .query("SELECT content FROM text_blocks WHERE chapter_id = $cid OR chapter_id = $raw_id ORDER BY order_index ASC")
+                .query("SELECT content, order_index FROM text_blocks WHERE chapter_id = $rec OR chapter_id = $cid OR chapter_id = type::record($cid) ORDER BY order_index ASC")
+                .bind(("rec", record))
                 .bind(("cid", chapter_id_str))
-                .bind(("raw_id", id.to_lowercase()))
                 .await
                 .map_err(|e| e.to_string())?;
             
@@ -410,8 +411,9 @@ impl WorldWikiTools {
     async fn get_chapters_list(&self) -> Result<String, String> {
         let mut resp = self
             .db
-            .query("SELECT id, title FROM chapters WHERE project_id = $proj ORDER BY id")
+            .query("SELECT id, title FROM chapters WHERE project_id = $proj OR project_id = type::record($proj_str) ORDER BY id")
             .bind(("proj", project_record(&self.project_id)))
+            .bind(("proj_str", self.project_id.clone()))
             .await
             .map_err(|e| e.to_string())?;
         
@@ -490,37 +492,49 @@ impl WorldWikiTools {
     async fn create_entity(&self, args: &Value) -> Result<String, String> {
         let type_key = Self::arg(args, "type_key").unwrap_or("");
         let data = args.get("data").cloned().unwrap_or(json!({}));
-        let mut final_data = data.clone();
-        if let Some(obj) = final_data.as_object_mut() {
-            obj.insert("project_id".to_string(), json!(self.project_id.clone()));
-            obj.insert("entity_type".to_string(), json!(type_key));
+        let name = data.get("name").and_then(|v| v.as_str()).unwrap_or("Unnamed");
+        let desc = data.get("description").and_then(|v| v.as_str());
+        let pid_rec = project_record(&self.project_id);
+
+        let mut q_str = "CREATE entities SET project_id = $proj, entity_type = $et, name = $name".to_string();
+        if desc.is_some() {
+            q_str.push_str(", description = $desc");
         }
-        let _ = self
+        let mut q = self
             .db
-            .create::<Option<Value>>("entities")
-            .content(final_data)
-            .await
-            .map_err(|e| e.to_string())?;
-        Ok(json!({ "status": "success", "message": "Entity created" }).to_string())
+            .query(q_str)
+            .bind(("proj", pid_rec))
+            .bind(("et", type_key))
+            .bind(("name", name));
+        if let Some(d) = desc {
+            q = q.bind(("desc", d));
+        }
+
+        let mut res = q.await.map_err(|e| e.to_string())?;
+        let created: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Entity created", "entity": created }).to_string())
     }
 
     async fn create_relation(&self, args: &Value) -> Result<String, String> {
         let from = Self::arg(args, "from").unwrap_or("");
         let to = Self::arg(args, "to").unwrap_or("");
         let rel_type = Self::arg(args, "rel_type").unwrap_or("");
-        let metadata = args.get("metadata").cloned().unwrap_or(json!({}));
 
         let from_rec = Self::parse_id("entities", from);
         let to_rec = Self::parse_id("entities", to);
+        let proj = project_record(&self.project_id);
 
-        let _ = self.db.query("RELATE $from->entity_rel->$to CONTENT { rel_type: $type, metadata: $meta, project_id: $proj }")
+        let mut res = self
+            .db
+            .query("RELATE $from->entity_rel->$to SET rel_type = $type, project_id = $proj RETURN AFTER")
             .bind(("from", from_rec))
             .bind(("to", to_rec))
             .bind(("type", rel_type))
-            .bind(("meta", metadata))
-            .bind(("proj", project_record(&self.project_id)))
-            .await.map_err(|e| e.to_string())?;
-        Ok(json!({ "status": "success", "message": "Relation created" }).to_string())
+            .bind(("proj", proj))
+            .await
+            .map_err(|e| e.to_string())?;
+        let created: Option<Value> = res.take(0).map_err(|e| e.to_string())?;
+        Ok(json!({ "status": "success", "message": "Relation created", "relation": created }).to_string())
     }
 
     async fn update_chapter(&self, args: &Value) -> Result<String, String> {

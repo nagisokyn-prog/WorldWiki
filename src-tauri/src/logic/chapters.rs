@@ -127,24 +127,30 @@ pub async fn save_text_blocks(
     html: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
+    save_text_blocks_inner(&state.db, &project, &chapter_id, &html).await
+}
+
+pub async fn save_text_blocks_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    chapter_id: &str,
+    html: &str,
+) -> Result<(), String> {
     use scraper::{Html, Selector};
 
-    let db = &state.db;
-    let proj_id = format!("projects:⟨{}⟩", project);
-    
-    let chapter_id_safe = if chapter_id.contains('⟨') {
-        chapter_id.clone()
+    let pid_safe = if project.contains(':') {
+        project.to_string()
     } else {
-        let parts: Vec<&str> = chapter_id.split(':').collect();
-        if parts.len() == 2 {
-            format!("{}:⟨{}⟩", parts[0], parts[1])
-        } else {
-            chapter_id.clone()
-        }
+        format!("projects:{}", project)
+    };
+    let cid_safe = if chapter_id.contains(':') {
+        chapter_id.to_string()
+    } else {
+        format!("chapters:{}", chapter_id)
     };
 
     let blocks = {
-        let document = Html::parse_document(&html);
+        let document = Html::parse_document(html);
         let selector = Selector::parse("p").unwrap();
         let mut blocks: Vec<(String, String)> = Vec::new();
 
@@ -163,35 +169,33 @@ pub async fn save_text_blocks(
         blocks
     };
 
-    println!("[DEBUG] -> save_text_blocks: chapter_id='{}', parsed blocks={}", chapter_id_safe, blocks.len());
-    
     let mut sql = String::new();
     sql.push_str("BEGIN TRANSACTION;\n");
     sql.push_str("DELETE text_blocks WHERE chapter_id = type::record($chapter_id) AND project_id = type::record($project_id);\n");
-    
+
     let mut bindings: Vec<(String, String)> = Vec::new();
-    let blocks_count = blocks.len();
-    
+
     for (i, (btype, content)) in blocks.into_iter().enumerate() {
         sql.push_str(&format!(
             "CREATE text_blocks SET project_id = type::record($project_id), chapter_id = type::record($chapter_id), block_type = $btype_{}, order_index = {}, content = $content_{};\n",
             i, i, i
         ));
-        
+
         bindings.push((format!("btype_{}", i), btype));
         bindings.push((format!("content_{}", i), content));
     }
-    
+
     sql.push_str("COMMIT TRANSACTION;\n");
-    
-    let mut q = db.query(sql)
-        .bind(("project_id", proj_id.clone()))
-        .bind(("chapter_id", chapter_id_safe.clone()));
-        
+
+    let mut q = db
+        .query(sql)
+        .bind(("project_id", pid_safe))
+        .bind(("chapter_id", cid_safe));
+
     for (k, v) in bindings {
         q = q.bind((k, v));
     }
-    
+
     let mut res = q.await.map_err(|e| e.to_string())?;
     let errs = res.take_errors();
     if !errs.is_empty() {
@@ -200,7 +204,6 @@ pub async fn save_text_blocks(
         return Err(e.to_string());
     }
 
-    println!("[DEBUG] <- save_text_blocks: successfully saved {} blocks with ACID", blocks_count);
     Ok(())
 }
 
@@ -210,19 +213,23 @@ pub async fn get_chapter_revisions(
     chapter_id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Value>, String> {
-    let db = &state.db;
-    let _proj_id = format!("projects:{}", project);
-    
-    let parts: Vec<&str> = chapter_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { chapter_id.as_str() };
-    let full_id = format!("chapters:⟨{}⟩", actual_id);
+    get_chapter_revisions_inner(&state.db, &project, &chapter_id).await
+}
 
-    let mut result = db.query(
-        "SELECT * FROM chapter_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC"
-    )
-    .bind(("target_id", full_id))
-    .await
-    .map_err(|e| e.to_string())?;
+pub async fn get_chapter_revisions_inner(
+    db: &Surreal<Db>,
+    _project: &str,
+    chapter_id: &str,
+) -> Result<Vec<Value>, String> {
+    let parts: Vec<&str> = chapter_id.splitn(2, ':').collect();
+    let actual_id = if parts.len() == 2 { parts[1] } else { chapter_id };
+    let full_id = format!("chapters:{}", actual_id);
+
+    let mut result = db
+        .query("SELECT * FROM chapter_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC")
+        .bind(("target_id", full_id))
+        .await
+        .map_err(|e| e.to_string())?;
 
     let revisions: Vec<Value> = result.take(0).map_err(|e| e.to_string())?;
     Ok(revisions)
@@ -234,15 +241,22 @@ pub async fn toggle_chapter_history_pin(
     is_pinned: bool,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
+    toggle_chapter_history_pin_inner(&state.db, &history_id, is_pinned).await
+}
+
+pub async fn toggle_chapter_history_pin_inner(
+    db: &Surreal<Db>,
+    history_id: &str,
+    is_pinned: bool,
+) -> Result<(), String> {
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { history_id.as_str() };
-    
+    let actual_id = if parts.len() == 2 { parts[1] } else { history_id };
+
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("chapter_revisions:{}", actual_id)))
         .bind(("is_pinned", is_pinned))
         .await
         .map_err(|e| e.to_string())?;
-        
+
     Ok(())
 }

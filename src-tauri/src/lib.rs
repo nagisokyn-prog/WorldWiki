@@ -198,7 +198,4 @@ pub fn run() {
 }
 
 #[cfg(test)]
-mod tests {
-    pub mod common;
-    pub mod timeline_integration;
-}
+mod tests;

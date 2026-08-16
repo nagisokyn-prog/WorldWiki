@@ -1,4 +1,6 @@
 use serde_json::{json, Value};
+use surrealdb::engine::local::Db;
+use surrealdb::Surreal;
 
 #[tauri::command]
 pub async fn get_connections(
@@ -6,14 +8,21 @@ pub async fn get_connections(
     chapter: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Value, String> {
-    let db = &state.db;
-    let proj_id = format!("projects:{}", project);
+    get_connections_inner(&state.db, &project, chapter).await
+}
+
+pub async fn get_connections_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    chapter: Option<String>,
+) -> Result<Value, String> {
+    let proj_id = format!("projects:{}", project.trim().replace("projects:", ""));
     let proj_raw = project.trim().replace("projects:", "");
     let proj_literal = format!("projects:`{}`", proj_raw);
     let mut sql = format!("SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id FROM entity_rel WHERE project_id = '{}' OR project_id = {}", proj_id, proj_literal);
     
     if chapter.is_some() {
-        sql.push_str(" AND (start_chapter = $ch OR end_chapter = $ch)");
+        sql.push_str(" AND (start_chapter = type::record($ch) OR end_chapter = type::record($ch))");
     }
 
     let mut q = db.query(sql).bind(json!({ "proj": proj_id }));
@@ -45,16 +54,24 @@ pub async fn get_connections(
 
 #[tauri::command]
 pub async fn remove_connections_by_source(
-    _project: String,
-    _e_type: String,
+    project: String,
+    e_type: String,
     e_id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<usize, String> {
-    let db = &state.db;
-    let rid = format!("entities:{}", e_id);
+    remove_connections_by_source_inner(&state.db, &project, &e_type, &e_id).await
+}
+
+pub async fn remove_connections_by_source_inner(
+    db: &Surreal<Db>,
+    _project: &str,
+    _e_type: &str,
+    e_id: &str,
+) -> Result<usize, String> {
+    let rid = format!("entities:{}", e_id.strip_prefix("entities:").unwrap_or(e_id));
     // When manually requested by source, only delete outgoing relationships!
     // If the entity is being fully deleted, we'd delete both, but this is used for saving.
-    let mut res = db.query("DELETE entity_rel WHERE in = type::record($rid)")
+    let mut res = db.query("DELETE entity_rel WHERE in = type::record($rid) RETURN BEFORE")
         .bind(json!({ "rid": rid }))
         .await.map_err(|e| e.to_string())?;
     
@@ -69,13 +86,20 @@ pub async fn save_connections(
     data: Value,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
+    save_connections_inner(&state.db, &project, &source_id, data).await
+}
+
+pub async fn save_connections_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    source_id: &str,
+    data: Value,
+) -> Result<(), String> {
     let connections_arr = data.as_array().ok_or("Connections array expected")?;
-    let proj_id = format!("projects:{}", project);
-    let src_rid = format!("entities:{}", source_id);
+    let proj_id = format!("projects:{}", project.trim().replace("projects:", ""));
+    let src_rid = format!("entities:{}", source_id.strip_prefix("entities:").unwrap_or(source_id));
 
     // Удаляем все связи, где текущая сущность является источником ИЛИ целью
-    // Таким образом мы гарантируем, что при удалении связи в UI, обратная связь (B->A) также будет удалена из БД.
     let proj_raw = project.trim().replace("projects:", "");
     let proj_literal = format!("projects:`{}`", proj_raw);
     db.query(format!("DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND (project_id = '{}' OR project_id = {})", proj_id, proj_literal))
@@ -92,7 +116,7 @@ pub async fn save_connections(
         if s_id.is_empty() || t_id.is_empty() { continue; }
 
         let sql = "RELATE $from -> entity_rel -> $to SET 
-            project_id = $proj,
+            project_id = type::record($proj),
             rel_type = $role,
             description = $desc,
             start_chapter = $start,

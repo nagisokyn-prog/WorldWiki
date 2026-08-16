@@ -9,8 +9,14 @@ pub async fn get_chat_tree(
     project_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<Vec<Value>, String> {
-    let db = state.surreal_db();
-    let proj_rec = parse_record_id(&project_id, "projects");
+    get_chat_tree_impl(state.surreal_db(), &project_id).await
+}
+
+pub async fn get_chat_tree_impl(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project_id: &str,
+) -> Result<Vec<Value>, String> {
+    let proj_rec = parse_record_id(project_id, "projects");
 
     // Выбираем чаты
     let mut response = db

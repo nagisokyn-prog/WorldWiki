@@ -141,7 +141,7 @@ async fn save_global_timeline_roundtrip() {
     let timeline: serde_json::Value = json!([{
         "chapter_id": "chapters:ch1",
         "chapter_title": "Intro",
-                "events": [{"id": "e1", "date": "2024-01-01"}],
+        "events": [{"id": "e1", "date": {"year": 2024, "month": 1, "day": 1}}],
         "participants": ["character:c1", "character:c2"]
     }]);
 
@@ -164,11 +164,10 @@ async fn save_global_timeline_roundtrip() {
         .as_array()
         .expect("timeline_events is array");
     assert_eq!(ev.len(), 1);
-    assert_eq!(ev[0]["date"], json!("2024-01-01"));
+    assert_eq!(ev[0]["date"], json!({"year": 2024, "month": 1, "day": 1}));
 
-        assert_eq!(
+    assert_eq!(
         chapters[0].participants.as_deref(),
         Some(&["character:c1".to_string(), "character:c2".to_string()][..])
     );
 }
-

@@ -1,12 +1,20 @@
+use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
+use surrealdb::Surreal;
 
 #[tauri::command]
 pub async fn get_chapter_hierarchy(
     project: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<serde_json::Value, String> {
+    get_chapter_hierarchy_inner(&state.db, &project).await
+}
+
+pub async fn get_chapter_hierarchy_inner(
+    db: &Surreal<Db>,
+    project: &str,
+) -> Result<serde_json::Value, String> {
     println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy CALLED! project='{}'", project);
-    let db = &state.db;
     let pid_raw = project.trim().replace("projects:", "");
     let proj_rec = RecordId::new("projects", pid_raw.as_str());
     let pid_val = format!("projects:{}", pid_raw);
@@ -103,15 +111,22 @@ pub async fn get_chapter_hierarchy(
     }))
 }
 
-
 #[tauri::command]
 pub async fn create_volume(
     project: String,
     title: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<serde_json::Value, String> {
-    let db = &state.db;
-    let proj_rec = RecordId::new("projects", project.as_str());
+    create_volume_inner(&state.db, &project, &title).await
+}
+
+pub async fn create_volume_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    title: &str,
+) -> Result<serde_json::Value, String> {
+    let pid_raw = project.trim().replace("projects:", "");
+    let proj_rec = RecordId::new("projects", pid_raw.as_str());
     
     // Получаем следующий sort_order
     let mut max_order_res = db.query(r#"
@@ -127,7 +142,7 @@ pub async fn create_volume(
         LET $vol = (CREATE volumes SET project_id = $proj, title = $title RETURN VALUE id)[0];
         RELATE $proj -> contains -> $vol SET sort_order = $order;
         SELECT id, title, project_id, $order AS sort_order FROM $vol;
-    "#).bind(("proj", proj_rec.clone())).bind(("title", title)).bind(("order", next_order)).await.map_err(|e| e.to_string())?;
+    "#).bind(("proj", proj_rec.clone())).bind(("title", title.to_string())).bind(("order", next_order)).await.map_err(|e| e.to_string())?;
     
     let vols: Vec<serde_json::Value> = create_res.take(2).unwrap_or_default();
     Ok(serde_json::json!(vols.first()))
@@ -140,11 +155,18 @@ pub async fn update_volume(
     title: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
-    let clean_id = if id.contains(':') { id } else { format!("volumes:{}", id) };
+    update_volume_inner(&state.db, &id, &title).await
+}
+
+pub async fn update_volume_inner(
+    db: &Surreal<Db>,
+    id: &str,
+    title: &str,
+) -> Result<(), String> {
+    let clean_id = if id.contains(':') { id.to_string() } else { format!("volumes:{}", id) };
     db.query("UPDATE type::record($id) SET title = $title")
         .bind(("id", clean_id))
-        .bind(("title", title))
+        .bind(("title", title.to_string()))
         .await.map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -156,9 +178,18 @@ pub async fn create_arc(
     volume_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<serde_json::Value, String> {
-    let db = &state.db;
-    let proj_rec = RecordId::new("projects", project.as_str());
-    let parent_str = volume_id.unwrap_or_else(|| format!("projects:{}", project));
+    create_arc_inner(&state.db, &project, &title, volume_id).await
+}
+
+pub async fn create_arc_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    title: &str,
+    volume_id: Option<String>,
+) -> Result<serde_json::Value, String> {
+    let pid_raw = project.trim().replace("projects:", "");
+    let proj_rec = RecordId::new("projects", pid_raw.as_str());
+    let parent_str = volume_id.unwrap_or_else(|| format!("projects:{}", pid_raw));
     let clean_vol_id = if parent_str.contains(':') { parent_str } else { format!("volumes:{}", parent_str) };
     
     let mut max_order_res = db.query(r#"
@@ -178,11 +209,11 @@ pub async fn create_arc(
     "#)
     .bind(("proj", proj_rec.clone()))
     .bind(("parent", clean_vol_id.clone()))
-    .bind(("title", title))
+    .bind(("title", title.to_string()))
     .bind(("order", next_order))
     .await.map_err(|e| e.to_string())?;
     
-    let arcs: Vec<serde_json::Value> = create_res.take(2).unwrap_or_default();
+    let arcs: Vec<serde_json::Value> = create_res.take(3).unwrap_or_default();
     Ok(serde_json::json!(arcs.first()))
 }
 
@@ -191,14 +222,21 @@ pub async fn update_arc(
     _project: String,
     id: String,
     title: String,
-    _volume_id: Option<String>, // Для смены тома потребуется отдельная логика перемещения ребра
+    _volume_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
-    let clean_id = if id.contains(':') { id } else { format!("arcs:{}", id) };
+    update_arc_inner(&state.db, &id, &title).await
+}
+
+pub async fn update_arc_inner(
+    db: &Surreal<Db>,
+    id: &str,
+    title: &str,
+) -> Result<(), String> {
+    let clean_id = if id.contains(':') { id.to_string() } else { format!("arcs:{}", id) };
     db.query("UPDATE type::record($id) SET title = $title")
         .bind(("id", clean_id))
-        .bind(("title", title))
+        .bind(("title", title.to_string()))
         .await.map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -211,9 +249,19 @@ pub async fn assign_chapter(
     volume_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
+    assign_chapter_inner(&state.db, &project, &chapter_id, arc_id, volume_id).await
+}
+
+pub async fn assign_chapter_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    chapter_id: &str,
+    arc_id: Option<String>,
+    volume_id: Option<String>,
+) -> Result<(), String> {
     println!("\n\n🔥🔥🔥 [BACKEND] assign_chapter CALLED! project='{}', chapter_id='{}', arc_id={:?}, volume_id={:?}", project, chapter_id, arc_id, volume_id);
-    let db = &state.db;
-    let clean_chap = if chapter_id.contains(':') { chapter_id } else { format!("chapters:{}", chapter_id) };
+    let clean_chap = if chapter_id.contains(':') { chapter_id.to_string() } else { format!("chapters:{}", chapter_id) };
+    let pid_raw = project.trim().replace("projects:", "");
     
     // Определяем нового родителя: arc_id > volume_id > project_id — нативный RecordId
     fn make_record(table: &str, full_id: &str) -> RecordId {
@@ -225,7 +273,7 @@ pub async fn assign_chapter(
     } else if let Some(ref v) = volume_id {
         make_record("volumes", v)
     } else {
-        RecordId::new("projects", project.as_str())
+        RecordId::new("projects", pid_raw.as_str())
     };
 
     println!("🔥🔥🔥 [BACKEND] assign_chapter: new_parent = {:?}", new_parent);
@@ -254,17 +302,25 @@ pub async fn assign_chapter(
 #[tauri::command]
 pub async fn reorder_node(
     project: String,
-    node_type: String, // "volume", "arc", "chapter"
+    node_type: String,
     id: String,
     sort_order: i64,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
-    let _ = project;
-    let clean_id = if id.contains(':') { id.clone() } else { format!("{}s:{}", node_type, id) };
+    reorder_node_inner(&state.db, &project, &node_type, &id, sort_order).await
+}
+
+pub async fn reorder_node_inner(
+    db: &Surreal<Db>,
+    _project: &str,
+    node_type: &str,
+    id: &str,
+    sort_order: i64,
+) -> Result<(), String> {
+    let clean_id = if id.contains(':') { id.to_string() } else { format!("{}s:{}", node_type, id) };
     
     // Обновляем sort_order на входящем ребре contains
-    db.query("UPDATE <-contains WHERE out = type::record($id) SET sort_order = $order")
+    db.query("UPDATE contains SET sort_order = $order WHERE out = type::record($id)")
         .bind(("id", clean_id))
         .bind(("order", sort_order))
         .await.map_err(|e| e.to_string())?;

@@ -1,7 +1,9 @@
 use serde_json::{Value, Map};
+use surrealdb::engine::local::Db;
+use surrealdb::Surreal;
 use crate::logic::models::{Entity, EntityRel};
 
-fn safe_pid(p: &str) -> String {
+pub fn safe_pid(p: &str) -> String {
     let p = p.trim().replace("projects:", "");
     if p.is_empty() || p == "undefined" {
         "projects:default".to_string()
@@ -10,7 +12,7 @@ fn safe_pid(p: &str) -> String {
     }
 }
 
-fn safe_id(tb: &str, id: &str) -> String {
+pub fn safe_id(tb: &str, id: &str) -> String {
     let id = id.trim();
     if id.is_empty() || id == "undefined" {
         format!("{}:default", tb)
@@ -21,7 +23,7 @@ fn safe_id(tb: &str, id: &str) -> String {
     }
 }
 
-fn flatten_thing(val: &mut Value) {
+pub fn flatten_thing(val: &mut Value) {
     if let Some(obj) = val.as_object_mut() {
         for v in obj.values_mut() {
             if v.is_object() {
@@ -56,8 +58,15 @@ pub async fn get_entities_batch(
     entity_types: Vec<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Map<String, Value>, String> {
-    let db = &state.db;
-    let pid_val = safe_pid(&project);
+    get_entities_batch_inner(&state.db, &project, entity_types).await
+}
+
+pub async fn get_entities_batch_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    entity_types: Vec<String>,
+) -> Result<Map<String, Value>, String> {
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
     
@@ -99,34 +108,41 @@ pub async fn get_entities_batch(
 #[tauri::command]
 pub async fn upsert_connections_batch(
     project: String,
-    _source_type: String,
+    source_type: String,
     source_id: String,
     connections: Vec<EntityRel>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    let db = &state.db;
-    let proj_id = format!("projects:{}", project);
+    upsert_connections_batch_inner(&state.db, &project, &source_type, &source_id, connections).await
+}
+
+pub async fn upsert_connections_batch_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    _source_type: &str,
+    source_id: &str,
+    connections: Vec<EntityRel>,
+) -> Result<(), String> {
+    let proj_id = format!("projects:{}", project.trim().replace("projects:", ""));
     
-    let from_full = if source_id.contains(':') { source_id.clone() } else { format!("entities:{}", source_id) };
+    let from_full = if source_id.contains(':') { source_id.to_string() } else { format!("entities:{}", source_id) };
 
     let mut query = String::from("BEGIN TRANSACTION;\n");
     
-    // Сначала удаляем все связи, связанные с этим источником (входящие и исходящие)
     query.push_str(&format!(
-        "DELETE entity_rel WHERE project_id = $pid AND (in = type::record('{0}') OR out = type::record('{0}'));\n",
+        "DELETE entity_rel WHERE project_id = type::record($pid) AND (in = type::record('{0}') OR out = type::record('{0}'));\n",
         from_full
     ));
 
     let mut bind_data = Map::new();
     bind_data.insert("pid".to_string(), Value::String(proj_id.clone()));
 
-    // Добавляем новые связи
     for (i, rel) in connections.into_iter().enumerate() {
         let target_id = rel.out.clone().unwrap_or_default();
         if target_id.is_empty() { continue; }
         
         let to_full = if target_id.contains(':') { target_id } else { format!("entities:{}", target_id) };
-        let source_for_this_rel = rel.r#in.clone().unwrap_or_else(|| source_id.clone());
+        let source_for_this_rel = rel.r#in.clone().unwrap_or_else(|| source_id.to_string());
         let from_for_this_rel = if source_for_this_rel.contains(':') { source_for_this_rel } else { format!("entities:{}", source_for_this_rel) };
         
         let mut set_clauses = vec![
@@ -197,16 +213,21 @@ pub async fn save_entity_with_relations(
     foreign_updates: Vec<Entity>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Entity, String> {
-    let db = &state.db;
-    
+    save_entity_with_relations_inner(&state.db, &project, entity, foreign_updates).await
+}
+
+pub async fn save_entity_with_relations_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    entity: Entity,
+    foreign_updates: Vec<Entity>,
+) -> Result<Entity, String> {
     let mut val = serde_json::to_value(&entity).map_err(|e| e.to_string())?;
     if let Some(obj) = val.as_object_mut() {
         obj.remove("id"); obj.remove("created_at"); obj.remove("updated_at"); obj.remove("project_id");
     }
 
-    let _is_create = entity.id.is_none();
-    
-    let pid_val = safe_pid(&project);
+    let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
     
@@ -218,8 +239,7 @@ pub async fn save_entity_with_relations(
         let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
         safe_id("entities", actual_id)
     } else {
-        // Если это создание новой сущности, генерируем временный ID на основе timestamp
-        let new_id = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis().to_string();
+        let new_id = uuid::Uuid::new_v4().to_string();
         format!("entities:{}", new_id)
     };
     
@@ -250,14 +270,10 @@ pub async fn save_entity_with_relations(
         .replace("{tags}", tags_str)
         .replace("{embeds}", embeds_str);
     
-    // В зависимости от того, есть ли ID, делаем CREATE или UPSERT.
-    // Поскольку мы сгенерировали ID выше для CREATE, мы можем использовать UPSERT в обоих случаях (или UPDATE).
-    // Поведение Surreal: UPSERT создаст если нет.
     query.push_str(&format!("LET $saved = (UPSERT type::record($main_id) SET {});\n", set_clause));
     
     let num_foreign_updates = foreign_updates.len();
     
-    // Добавляем foreign updates
     for (i, foreign) in foreign_updates.into_iter().enumerate() {
         if let Some(ref fid) = foreign.id {
             let fparts: Vec<&str> = fid.splitn(2, ':').collect();
@@ -309,26 +325,14 @@ pub async fn save_entity_with_relations(
         q = q.bind((k.as_str(), v));
     }
     
-    println!("[BATCH DEBUG] Executing query: {}", query);
-    println!("[BATCH DEBUG] Bind data keys: {:?}", bind_data.keys());
-    
     let mut res = q.await.map_err(|e| e.to_string())?;
     let errors = res.take_errors();
     if !errors.is_empty() {
         return Err(format!("Transaction errors: {:?}", errors));
     }
     
-    // Возвращаем сохраненную основную сущность (из RETURN $saved)
-    // res.take(0) вернет результат LET $saved, мы возвращаем последний стейтмент RETURN
-    // Транзакция в surrealdb возвращает массив результатов для каждого стейтмента.
-    // Нам нужно найти последний результат
-    let num_statements = num_foreign_updates + 4; // BEGIN, LET, UPSERTs..., COMMIT, RETURN
-    let saved_val: Option<Value> = res.take(num_statements - 1).map_err(|e| {
-        println!("[BATCH DEBUG] Error taking result at index {}: {}", num_statements - 1, e);
-        e.to_string()
-    })?; // RETURN statement
-    
-    println!("[BATCH DEBUG] Raw saved_val from DB: {:?}", saved_val);
+    let num_statements = num_foreign_updates + 4;
+    let saved_val: Option<Value> = res.take(num_statements - 1).map_err(|e| e.to_string())?;
     
     if let Some(val) = saved_val {
         let mut v = if let Value::Array(arr) = val {
@@ -341,12 +345,12 @@ pub async fn save_entity_with_relations(
             val
         };
         flatten_thing(&mut v);
-        println!("[BATCH DEBUG] Returning entity: {:?}", v);
         return serde_json::from_value(v).map_err(|e| e.to_string());
     }
 
     Err("Failed to retrieve saved entity from transaction".to_string())
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -377,13 +381,11 @@ mod tests {
     fn safe_id_falls_back_to_default() {
         assert_eq!(safe_id("entities", ""), "entities:default");
         assert_eq!(safe_id("entities", "undefined"), "entities:default");
-        // "entities:" starts with the prefix, so it's returned as-is (not default).
         assert_eq!(safe_id("entities", "entities:"), "entities:");
     }
 
     #[test]
     fn flatten_thing_converts_record_to_string() {
-        // SurrealDB отдаёт RecordId как { tb, id } или { tb, id: { String } }.
         let mut val = json!({
             "key": { "tb": "entities", "id": { "String": "e1" } }
         });
@@ -395,7 +397,6 @@ mod tests {
     fn flatten_thing_leaves_plain_value_alone() {
         let mut val = json!({ "key": { "tb": "entities", "id": { "Object": "x" } } });
         flatten_thing(&mut val);
-        // id не строка и не String-обёртка → остаётся как есть.
         assert!(val["key"]["tb"] == "entities");
     }
 

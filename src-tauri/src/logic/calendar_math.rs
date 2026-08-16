@@ -248,3 +248,165 @@ pub fn convert_absolute_to_local(
         "minute": minute
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Строит простой григорианский календарь с 12 месяцами.
+    fn gregorian_calendar() -> CalendarData {
+        CalendarData {
+            название: "test".to_string(),
+            calendar_type: None,
+            is_master: None,
+            months: vec![
+                CalendarMonth { название: "Янв".into(), дней: 31 },
+                CalendarMonth { название: "Фев".into(), дней: 28 },
+                CalendarMonth { название: "Мар".into(), дней: 31 },
+                CalendarMonth { название: "Апр".into(), дней: 30 },
+                CalendarMonth { название: "Май".into(), дней: 31 },
+                CalendarMonth { название: "Июн".into(), дней: 30 },
+                CalendarMonth { название: "Июл".into(), дней: 31 },
+                CalendarMonth { название: "Авг".into(), дней: 31 },
+                CalendarMonth { название: "Сен".into(), дней: 30 },
+                CalendarMonth { название: "Окт".into(), дней: 31 },
+                CalendarMonth { название: "Ноя".into(), дней: 30 },
+                CalendarMonth { название: "Дек".into(), дней: 31 },
+            ],
+            eras: vec![CalendarEra {
+                название: "CE".into(),
+                год_начала: 1,
+                год_конца: 9999,
+                обратный_отсчет: false,
+            }],
+            leap_year_rule: "григорианское".into(),
+            custom_leap_rule: None,
+            time_settings: None,
+            moons: None,
+            sync_anchor: None,
+        }
+    }
+#[test]
+    fn gregorian_leap_years() {
+        let cal = gregorian_calendar();
+        assert!(CalendarMath::is_leap_year(&cal, 2000)); // %400 → високосный
+        assert!(CalendarMath::is_leap_year(&cal, 2024));
+        assert!(!CalendarMath::is_leap_year(&cal, 1900)); // %100 и не %400
+        assert!(!CalendarMath::is_leap_year(&cal, 2023));
+        assert!(!CalendarMath::is_leap_year(&cal, 2100));
+    }
+
+    #[test]
+    fn every_4_rule() {
+        let mut cal = gregorian_calendar();
+        cal.leap_year_rule = "каждый 4 год".into();
+        assert!(CalendarMath::is_leap_year(&cal, 1900));
+        assert!(CalendarMath::is_leap_year(&cal, 2000));
+        assert!(CalendarMath::is_leap_year(&cal, 2024));
+        assert!(!CalendarMath::is_leap_year(&cal, 2023));
+    }
+
+    #[test]
+    fn unknown_rule_is_not_leap() {
+        let mut cal = gregorian_calendar();
+        cal.leap_year_rule = "whatever".into();
+        assert!(!CalendarMath::is_leap_year(&cal, 2024));
+    }
+
+    #[test]
+    fn days_in_year_no_custom_rule() {
+        let cal = gregorian_calendar();
+        // Без custom_leap_rule даже високосный год даёт 365 дней
+        // (get_days_in_year добавляет день только через custom_leap_rule).
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2023), 365);
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2024), 365);
+    }
+
+    #[test]
+    fn days_in_year_with_custom_leap_rule() {
+        let mut cal = gregorian_calendar();
+        cal.custom_leap_rule = Some(CustomLeapRule { месяц: 1, день_смещения: 1 });
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2024), 366);
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2023), 365);
+    }
+#[test]
+    fn absolute_minute_epoch() {
+        // 1 января, 1 год, 00:00 → минута 0.
+        let cal = gregorian_calendar();
+        let m = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 1, 0, 0);
+        assert_eq!(m, 0);
+    }
+
+    #[test]
+    fn absolute_minute_advances_by_one_day() {
+        let cal = gregorian_calendar();
+        let day1 = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 1, 0, 0);
+        let day2 = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 2, 0, 0);
+        assert_eq!(day2 - day1, 24 * 60);
+    }
+
+    #[test]
+    fn absolute_minute_advances_by_one_minute() {
+        let cal = gregorian_calendar();
+        let base = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 1, 0, 0);
+        let plus_minute = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 1, 0, 1);
+        assert_eq!(plus_minute - base, 1);
+    }
+
+    #[test]
+    fn absolute_minute_ticks_into_next_year() {
+        let cal = gregorian_calendar();
+        // 31.12.1 23:59 → +1 минута = начало 2-го года.
+        let last = CalendarMath::get_absolute_minute(&cal, 0, 1, 11, 31, 23, 59);
+        let next = last + 1;
+        let (year, month, day, hour, minute) =
+            CalendarMath::get_date_from_absolute(next, &cal, 0);
+        assert_eq!(year, 2);
+        assert_eq!(month, 0);
+        assert_eq!(day, 1);
+        assert_eq!(hour, 0);
+        assert_eq!(minute, 0);
+    }
+
+    #[test]
+    fn date_from_absolute_roundtrip() {
+        let cal = gregorian_calendar();
+        let cases = [
+            (2000, 2, 29, 12, 30),  // leap day
+            (1999, 11, 31, 23, 59), // last day non-leap year
+            (1, 0, 1, 0, 0),        // epoch
+            (2024, 11, 25, 8, 15),  // normal leap year day
+        ];
+        for (y, m, d, h, mi) in cases {
+            let abs = CalendarMath::get_absolute_minute(&cal, 0, y, m, d, h, mi);
+            let (ry, rm, rd, rh, rmi) = CalendarMath::get_date_from_absolute(abs, &cal, 0);
+            assert_eq!((ry, rm, rd, rh, rmi), (y, m, d, h, mi), "roundtrip failed for {y}-{m}-{d}");
+        }
+    }
+
+    #[test]
+    fn convert_absolute_to_local_returns_json() {
+        let cal = gregorian_calendar();
+        let val = convert_absolute_to_local(0, cal, 0);
+        assert_eq!(val["year"], 1);
+        assert_eq!(val["month"], 0);
+        assert_eq!(val["day"], 1);
+        assert_eq!(val["hour"], 0);
+        assert_eq!(val["minute"], 0);
+    }
+
+    #[test]
+    fn reverse_era_negates_year() {
+        let mut cal = gregorian_calendar();
+        cal.eras = vec![CalendarEra {
+            название: "BC".into(),
+            год_начала: 0,
+            год_конца: 0,
+            обратный_отсчет: true,
+        }];
+        // absolute=0 → год 1. В обратной эре год негатится → -1.
+        let (year, _, _, _, _) = CalendarMath::get_date_from_absolute(0, &cal, 0);
+        assert_eq!(year, -1);
+    }
+}
+

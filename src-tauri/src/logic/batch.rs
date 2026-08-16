@@ -347,3 +347,62 @@ pub async fn save_entity_with_relations(
 
     Err("Failed to retrieve saved entity from transaction".to_string())
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn safe_pid_normalizes() {
+        assert_eq!(safe_pid("proj1"), "projects:proj1");
+        assert_eq!(safe_pid("projects:proj1"), "projects:proj1");
+        assert_eq!(safe_pid("  proj1  "), "projects:proj1");
+    }
+
+    #[test]
+    fn safe_pid_falls_back_to_default() {
+        assert_eq!(safe_pid(""), "projects:default");
+        assert_eq!(safe_pid("undefined"), "projects:default");
+        assert_eq!(safe_pid("projects:"), "projects:default");
+    }
+
+    #[test]
+    fn safe_id_adds_table_prefix() {
+        assert_eq!(safe_id("entities", "abc"), "entities:abc");
+        assert_eq!(safe_id("entities", "entities:abc"), "entities:abc");
+        assert_eq!(safe_id("entities", "  abc  "), "entities:abc");
+    }
+
+    #[test]
+    fn safe_id_falls_back_to_default() {
+        assert_eq!(safe_id("entities", ""), "entities:default");
+        assert_eq!(safe_id("entities", "undefined"), "entities:default");
+        // "entities:" starts with the prefix, so it's returned as-is (not default).
+        assert_eq!(safe_id("entities", "entities:"), "entities:");
+    }
+
+    #[test]
+    fn flatten_thing_converts_record_to_string() {
+        // SurrealDB отдаёт RecordId как { tb, id } или { tb, id: { String } }.
+        let mut val = json!({
+            "key": { "tb": "entities", "id": { "String": "e1" } }
+        });
+        flatten_thing(&mut val);
+        assert_eq!(val["key"], json!("entities:e1"));
+    }
+
+    #[test]
+    fn flatten_thing_leaves_plain_value_alone() {
+        let mut val = json!({ "key": { "tb": "entities", "id": { "Object": "x" } } });
+        flatten_thing(&mut val);
+        // id не строка и не String-обёртка → остаётся как есть.
+        assert!(val["key"]["tb"] == "entities");
+    }
+
+    #[test]
+    fn flatten_thing_does_not_touch_non_thing_objects() {
+        let mut val = json!({ "key": { "hello": "world" } });
+        flatten_thing(&mut val);
+        assert_eq!(val["key"]["hello"], "world");
+    }
+}

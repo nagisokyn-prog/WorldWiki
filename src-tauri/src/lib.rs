@@ -131,7 +131,8 @@ pub fn run() {
             save_connections,
             upsert_connections_batch,
             remove_connections_by_source,
-            get_global_timeline,
+                        get_global_timeline,
+            save_global_timeline,
             // --- Экспорт и История ---
             export_chapters,
             create_cloud_backup,

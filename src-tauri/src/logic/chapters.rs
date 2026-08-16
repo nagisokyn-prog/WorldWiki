@@ -1,6 +1,7 @@
 use crate::logic::models::Chapter;
 use serde_json::{json, Value};
 use surreal_domain::SurrealRepository;
+use surrealdb::{engine::local::Db, Surreal};
 
 #[tauri::command]
 pub async fn get_global_timeline(
@@ -13,6 +14,101 @@ pub async fn get_global_timeline(
         .await
         .map_err(|e| e.to_string())?;
     Ok(json!(chapters))
+}
+
+/// Сохраняет глобальный таймлайн для проекта, распределяя `timeline_events`
+/// и `participants` по главам.
+///
+/// Фронтенд передаёт массив объектов вида
+/// `[{ chapter_id, chapter_title, events, participants }]`.
+/// Каждая глава обновляется через `UPSERT type::record($cid)` с сохранением
+/// `title`/`content` (для новой записи content defaults к пустой строке,
+/// т.к. `chapters.content` — `TYPE string`, а не option).
+///
+/// Возвращает `{ success: true, updated: <n> }` — контракт фронтенда
+/// (`SaveGlobalTimelineResult = { success: boolean }`).
+#[tauri::command]
+pub async fn save_global_timeline(
+    project: String,
+    data: Value,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<Value, String> {
+    Chapter::save_global_timeline_inner(&state.db, &project, data).await
+}
+
+impl Chapter {
+    /// Тестируемое ядро `save_global_timeline` (без `tauri::State`).
+        pub async fn save_global_timeline_inner(
+        db: &Surreal<Db>,
+        project: &str,
+        data: Value,
+    ) -> Result<Value, String> {
+        let proj_id = format!("projects:{}", project);
+        let arr = data
+            .as_array()
+                    .ok_or_else(|| "save_global_timeline: expected a JSON array of chapter timelines".to_string())?;
+
+        if arr.is_empty() {
+            return Ok(json!({ "success": true, "updated": 0 }));
+        }
+
+        let mut sql = String::from("BEGIN TRANSACTION;\n");
+        let mut bindings: Vec<(String, Value)> = Vec::new();
+
+        for (i, item) in arr.iter().enumerate() {
+            let cid = item
+                .get("chapter_id")
+                .and_then(|v| v.as_str())
+                .ok_or_else(|| "save_global_timeline: each item must have chapter_id".to_string())?;
+            let title = item
+                .get("chapter_title")
+                .and_then(|v| v.as_str())
+                .map(|t| t.to_string())
+                .unwrap_or_else(|| format!("chapter-{i}"));
+            let cid_safe = if cid.contains(':') {
+                cid.to_string()
+            } else {
+                format!("chapters:{}", cid)
+            };
+
+            // Схема: `timeline_events TYPE array`, `participants TYPE array<string>` —
+            // null не допустим, поэтому fallback on пустой массив.
+            let events = item.get("events").cloned().unwrap_or(Value::Array(vec![]));
+            let participants = item
+                .get("participants")
+                .cloned()
+                .unwrap_or(Value::Array(vec![]));
+
+            sql.push_str(&format!(
+                "UPSERT type::record($cid_{i}) \
+                 SET project_id = type::record($pid_{i}), \
+                     title = $title_{i}, \
+                     content = COALESCE(content, ''), \
+                     timeline_events = $events_{i}, \
+                     participants = $participants_{i};\n",
+                i = i
+            ));
+            bindings.push((format!("cid_{i}"), json!(cid_safe)));
+            bindings.push((format!("pid_{i}"), json!(proj_id.clone())));
+            bindings.push((format!("title_{i}"), json!(title)));
+            bindings.push((format!("events_{i}"), events));
+            bindings.push((format!("participants_{i}"), participants));
+        }
+        sql.push_str("COMMIT TRANSACTION;\n");
+
+        let mut q = db.query(sql);
+        for (k, v) in &bindings {
+            q = q.bind((k.as_str(), v.clone()));
+        }
+        let mut res = q.await.map_err(|e| e.to_string())?;
+        let errs = res.take_errors();
+        if let Some((_, e)) = errs.into_iter().next() {
+            eprintln!("[ERROR] save_global_timeline transaction: {e}");
+            return Err(e.to_string());
+        }
+
+        Ok(json!({ "success": true, "updated": arr.len() }))
+    }
 }
 
 #[tauri::command]

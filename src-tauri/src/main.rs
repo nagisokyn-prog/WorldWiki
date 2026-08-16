@@ -8,24 +8,8 @@ use surrealdb::engine::local::SurrealKv;
 use surrealdb::Surreal;
 use tauri::Manager;
 
-mod logic;
-use crate::logic::models::*;
-
-pub struct AppState {
-    pub db: Surreal<Db>,
-}
-
-#[derive(Default)]
-pub struct AgentTasks(pub std::sync::Arc<tokio::sync::Mutex<std::collections::HashMap<String, tokio::task::JoinHandle<()>>>>);
-
-// Implements the SurrealDb trait from surreal_domain_core,
-// enabling all macro-generated generic Tauri commands to work.
-impl surreal_domain::SurrealDb for AppState {
-    type Connection = Db;
-    fn surreal_db(&self) -> &Surreal<Db> {
-        &self.db
-    }
-}
+use world_wiki_lib::{AgentTasks, AppState};
+use world_wiki_lib::logic::models::*;
 
 // // wrappers moved to logic::projects and logic::system
 
@@ -64,15 +48,15 @@ async fn init_database() -> Surreal<Db> {
 }
 
 fn main() {
-    use logic::batch::*;
-    use logic::chapters::*;
-    use logic::connections::*;
-    use logic::entities::*;
-    use logic::export::*;
-    use logic::projects::*;
-    use logic::volumes::*;
-    use logic::ai::*;
-    use logic::calendar_math::*;
+    use world_wiki_lib::logic::batch::*;
+    use world_wiki_lib::logic::chapters::*;
+    use world_wiki_lib::logic::connections::*;
+    use world_wiki_lib::logic::entities::*;
+    use world_wiki_lib::logic::export::*;
+    use world_wiki_lib::logic::projects::*;
+    use world_wiki_lib::logic::volumes::*;
+    use world_wiki_lib::logic::ai::*;
+    use world_wiki_lib::logic::calendar_math::*;
     use tauri_shell::logic::system::*;
     
     tauri::Builder::default()

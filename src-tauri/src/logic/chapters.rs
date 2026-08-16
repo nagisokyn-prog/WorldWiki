@@ -42,11 +42,10 @@ impl Chapter {
         db: &Surreal<Db>,
         project: &str,
         data: Value,
-    ) -> Result<Value, String> {
-        let proj_id = format!("projects:{}", project);
+        ) -> Result<Value, String> {
         let arr = data
             .as_array()
-                    .ok_or_else(|| "save_global_timeline: expected a JSON array of chapter timelines".to_string())?;
+            .ok_or_else(|| "save_global_timeline: expected a JSON array of chapter timelines".to_string())?;
 
         if arr.is_empty() {
             return Ok(json!({ "success": true, "updated": 0 }));
@@ -70,6 +69,11 @@ impl Chapter {
             } else {
                 format!("chapters:{}", cid)
             };
+            let pid_safe = if project.contains(':') {
+                project.to_string()
+            } else {
+                format!("projects:{}", project)
+            };
 
             // Схема: `timeline_events TYPE array`, `participants TYPE array<string>` —
             // null не допустим, поэтому fallback on пустой массив.
@@ -80,31 +84,36 @@ impl Chapter {
                 .unwrap_or(Value::Array(vec![]));
 
             sql.push_str(&format!(
-                "UPSERT type::record($cid_{i}) \
-                 SET project_id = type::record($pid_{i}), \
+                "UPDATE type::record($cid_{i}) SET project_id = type::record($pid_{i}), \
                      title = $title_{i}, \
-                     content = COALESCE(content, ''), \
                      timeline_events = $events_{i}, \
                      participants = $participants_{i};\n",
                 i = i
             ));
             bindings.push((format!("cid_{i}"), json!(cid_safe)));
-            bindings.push((format!("pid_{i}"), json!(proj_id.clone())));
+            bindings.push((format!("pid_{i}"), json!(pid_safe)));
             bindings.push((format!("title_{i}"), json!(title)));
             bindings.push((format!("events_{i}"), events));
             bindings.push((format!("participants_{i}"), participants));
         }
         sql.push_str("COMMIT TRANSACTION;\n");
 
-        let mut q = db.query(sql);
+                let mut q = db.query(sql);
         for (k, v) in &bindings {
             q = q.bind((k.as_str(), v.clone()));
         }
         let mut res = q.await.map_err(|e| e.to_string())?;
         let errs = res.take_errors();
-        if let Some((_, e)) = errs.into_iter().next() {
-            eprintln!("[ERROR] save_global_timeline transaction: {e}");
-            return Err(e.to_string());
+        if !errs.is_empty() {
+            for (k, e) in &errs {
+                eprintln!("[ERROR] save_global_timeline[{k}]: {e}");
+            }
+            return Err(
+                errs.into_values()
+                    .next()
+                    .map(|e| e.to_string())
+                    .unwrap_or_else(|| "save_global_timeline: unknown error".to_string()),
+            );
         }
 
         Ok(json!({ "success": true, "updated": arr.len() }))

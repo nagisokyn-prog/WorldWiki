@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import type { AiModelInfo } from '../types/ai.types';
 import { aiModelsApi } from '../api/aiModels.api';
 
@@ -35,7 +35,9 @@ export function useAiModels() {
     if (cached) {
       try {
         availableModels.value = JSON.parse(cached);
-      } catch(e) {}
+      } catch {
+        // ignore
+      }
     } else if (hardcodedModels[provider]) {
       availableModels.value = hardcodedModels[provider];
     } else {

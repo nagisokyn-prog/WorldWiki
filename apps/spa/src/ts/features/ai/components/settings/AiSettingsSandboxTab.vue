@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-const emit = defineEmits(['save-sandbox']);
+defineEmits(['save-sandbox']);
 
 const sandboxEnabled = ref(false);
 const defaultAction = ref('ask');

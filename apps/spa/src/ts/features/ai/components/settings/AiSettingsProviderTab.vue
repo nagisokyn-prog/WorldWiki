@@ -7,27 +7,27 @@
     <div v-else class="provider-tab-content">
       <div class="form-group">
         <label>Имя профиля</label>
-        <input v-model="activeProfile.name" type="text" class="input-base" placeholder="Например: Дефолтный GPT-4">
+        <input :value="activeProfile.name" type="text" class="input-base" placeholder="Например: Дефолтный GPT-4" @input="updateField('name', ($event.target as HTMLInputElement).value)">
       </div>
       
       <div class="form-group">
         <label>Провайдер</label>
         <AiSelect 
-          v-model="activeProfile.provider" 
+          :model-value="activeProfile.provider" 
           :options="providerOptions" 
           placeholder="Выберите провайдера"
-          @update:model-value="onProviderChange"
+          @update:model-value="(val: any) => { updateField('provider', val); onProviderChange(); }"
         />
       </div>
       
       <div v-if="activeProfile.provider === 'local' || activeProfile.provider === 'openai'" class="form-group">
         <label>Base URL <span class="text-muted">(опционально)</span></label>
-        <input v-model="activeProfile.base_url" type="text" class="input-base" placeholder="Например: http://localhost:11434/v1">
+        <input :value="activeProfile.base_url" type="text" class="input-base" placeholder="Например: http://localhost:11434/v1" @input="updateField('base_url', ($event.target as HTMLInputElement).value)">
       </div>
 
       <div v-if="activeProfile.provider !== 'local'" class="form-group">
         <label>API Key</label>
-        <input v-model="activeProfile.api_key" type="password" class="input-base" placeholder="Введите ключ API">
+        <input :value="activeProfile.api_key" type="password" class="input-base" placeholder="Введите ключ API" @input="updateField('api_key', ($event.target as HTMLInputElement).value)">
       </div>
 
       <div class="form-group">
@@ -39,10 +39,11 @@
         </div>
         
         <AiSelect 
-          v-model="activeProfile.settings.model" 
+          :model-value="activeProfile.settings.model" 
           :options="availableModels" 
           placeholder="Выберите модель или введите вручную"
           :allow-custom="true"
+          @update:model-value="(val: any) => updateSetting('model', val)"
         />
         
         <div v-if="fetchError" class="hint" style="color: var(--error);">
@@ -65,7 +66,7 @@
           
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input v-model="activeProfile.settings.enable_task_list" type="checkbox">
+              <input :checked="activeProfile.settings.enable_task_list" type="checkbox" @change="updateSetting('enable_task_list', ($event.target as HTMLInputElement).checked)">
               <span>Включить инструмент списка задач</span>
             </label>
             <span class="hint">При включении ИИ может создавать и управлять списками задач для отслеживания прогресса.</span>
@@ -73,7 +74,7 @@
           
           <div class="form-group">
             <label>Уровень размышлений (Reasoning Effort)</label>
-            <select v-model="activeProfile.settings.reasoning_effort" class="input-base">
+            <select :value="activeProfile.settings.reasoning_effort" class="input-base" @change="updateSetting('reasoning_effort', ($event.target as HTMLSelectElement).value)">
               <option value="none">Без ограничений (Отключено)</option>
               <option value="low">Низкий (Low)</option>
               <option value="medium">Средний (Medium)</option>
@@ -85,13 +86,13 @@
 
           <div class="form-group">
             <label>Таймаут ИИ (в минутах)</label>
-            <input v-model.number="activeProfile.settings.timeout_mins" type="number" min="1" max="1440" class="input-base" placeholder="Например: 30">
+            <input :value="activeProfile.settings.timeout_mins" type="number" min="1" max="1440" class="input-base" placeholder="Например: 30" @input="updateSetting('timeout_mins', Number(($event.target as HTMLInputElement).value))">
             <span class="hint">Максимальное время, которое агент может работать в фоне, пока не будет прерван принудительно (по умолчанию 30 мин).</span>
           </div>
 
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input v-model="activeProfile.settings.use_custom_temperature" type="checkbox">
+              <input :checked="activeProfile.settings.use_custom_temperature" type="checkbox" @change="updateSetting('use_custom_temperature', ($event.target as HTMLInputElement).checked)">
               <span>Использовать пользовательскую температуру</span>
             </label>
             <span class="hint">Управляет случайностью ответов модели.</span>
@@ -102,7 +103,7 @@
               <label>Температура</label>
               <span>{{ activeProfile.settings.temperature ?? 1.0 }}</span>
             </div>
-            <input v-model.number="activeProfile.settings.temperature" type="range" min="0" max="2" step="0.1" class="range-slider">
+            <input :value="activeProfile.settings.temperature" type="range" min="0" max="2" step="0.1" class="range-slider" @input="updateSetting('temperature', Number(($event.target as HTMLInputElement).value))">
           </div>
 
           <div class="form-group">
@@ -110,7 +111,7 @@
               <label>Лимит скорости</label>
               <span>{{ activeProfile.settings.rate_limit_ms ?? 0 }}ms</span>
             </div>
-            <input v-model.number="activeProfile.settings.rate_limit_ms" type="range" min="0" max="5000" step="100" class="range-slider">
+            <input :value="activeProfile.settings.rate_limit_ms" type="range" min="0" max="5000" step="100" class="range-slider" @input="updateSetting('rate_limit_ms', Number(($event.target as HTMLInputElement).value))">
             <span class="hint">Минимальное время между запросами к API.</span>
           </div>
 
@@ -119,13 +120,13 @@
               <label>Лимит ошибок и повторений</label>
               <span>{{ activeProfile.settings.error_retry_limit ?? 3 }}</span>
             </div>
-            <input v-model.number="activeProfile.settings.error_retry_limit" type="range" min="0" max="10" step="1" class="range-slider">
+            <input :value="activeProfile.settings.error_retry_limit" type="range" min="0" max="10" step="1" class="range-slider" @input="updateSetting('error_retry_limit', Number(($event.target as HTMLInputElement).value))">
             <span class="hint">Количество последовательных ошибок или повторных действий перед показом диалогового окна. Установите 0, чтобы отключить этот механизм.</span>
           </div>
 
           <div class="form-group">
             <label>Custom Instructions (Системный промпт)</label>
-            <textarea v-model="activeProfile.settings.custom_instructions" class="input-base" rows="3" placeholder="Дополнительные инструкции для этого профиля..."></textarea>
+            <textarea :value="activeProfile.settings.custom_instructions" class="input-base" rows="3" placeholder="Дополнительные инструкции для этого профиля..." @input="updateSetting('custom_instructions', ($event.target as HTMLTextAreaElement).value)"></textarea>
           </div>
         </div>
       </div>
@@ -152,6 +153,18 @@ const emit = defineEmits(['fetch-models', 'save-profile', 'provider-changed']);
 
 const isAdvancedOpen = ref(false);
 
+const updateField = (field: keyof AiProfile, value: any) => {
+  if (props.activeProfile) {
+    (props.activeProfile as any)[field] = value;
+  }
+};
+
+const updateSetting = (field: keyof AiProfile['settings'], value: any) => {
+  if (props.activeProfile && props.activeProfile.settings) {
+    (props.activeProfile.settings as any)[field] = value;
+  }
+};
+
 const providerOptions = [
   { value: 'anthropic', label: 'Anthropic (Claude)', description: 'Официальный API Anthropic' },
   { value: 'openai', label: 'OpenAI (GPT)', description: 'Официальный API OpenAI' },
@@ -171,9 +184,7 @@ const onProviderChange = () => {
 };
 
 const recommendModel = (modelId: string) => {
-  if (props.activeProfile) {
-    props.activeProfile.settings.model = modelId;
-  }
+  updateSetting('model', modelId);
 };
 </script>
 

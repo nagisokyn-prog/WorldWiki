@@ -130,11 +130,11 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-const props = defineProps({
+defineProps({
   isOpen: Boolean
 });
 
-const emit = defineEmits(['close']);
+defineEmits(['close']);
 
 const activeTab = ref('providers');
 

@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const emit = defineEmits(['save-rules']);
+defineEmits(['save-rules']);
 
 const isGlobal = ref(false);
 const denylistText = ref('');

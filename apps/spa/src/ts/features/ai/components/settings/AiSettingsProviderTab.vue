@@ -7,7 +7,7 @@
     <div v-else class="provider-tab-content">
       <div class="form-group">
         <label>Имя профиля</label>
-        <input type="text" v-model="activeProfile.name" class="input-base" placeholder="Например: Дефолтный GPT-4">
+        <input v-model="activeProfile.name" type="text" class="input-base" placeholder="Например: Дефолтный GPT-4">
       </div>
       
       <div class="form-group">
@@ -16,24 +16,24 @@
           v-model="activeProfile.provider" 
           :options="providerOptions" 
           placeholder="Выберите провайдера"
-          @update:modelValue="onProviderChange"
+          @update:model-value="onProviderChange"
         />
       </div>
       
-      <div class="form-group" v-if="activeProfile.provider === 'local' || activeProfile.provider === 'openai'">
+      <div v-if="activeProfile.provider === 'local' || activeProfile.provider === 'openai'" class="form-group">
         <label>Base URL <span class="text-muted">(опционально)</span></label>
-        <input type="text" v-model="activeProfile.base_url" class="input-base" placeholder="Например: http://localhost:11434/v1">
+        <input v-model="activeProfile.base_url" type="text" class="input-base" placeholder="Например: http://localhost:11434/v1">
       </div>
 
-      <div class="form-group" v-if="activeProfile.provider !== 'local'">
+      <div v-if="activeProfile.provider !== 'local'" class="form-group">
         <label>API Key</label>
-        <input type="password" v-model="activeProfile.api_key" class="input-base" placeholder="Введите ключ API">
+        <input v-model="activeProfile.api_key" type="password" class="input-base" placeholder="Введите ключ API">
       </div>
 
       <div class="form-group">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <label>Модель <span v-if="isFetchingModels" class="text-muted">(Загрузка...)</span></label>
-          <button class="back-btn" @click="$emit('fetch-models', true)" style="font-size: 11px;">
+          <button class="back-btn" style="font-size: 11px;" @click="$emit('fetch-models', true)">
             <i class="fas fa-sync-alt" :class="{'fa-spin': isFetchingModels}"></i> Обновить
           </button>
         </div>
@@ -65,7 +65,7 @@
           
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="activeProfile.settings.enable_task_list">
+              <input v-model="activeProfile.settings.enable_task_list" type="checkbox">
               <span>Включить инструмент списка задач</span>
             </label>
             <span class="hint">При включении ИИ может создавать и управлять списками задач для отслеживания прогресса.</span>
@@ -85,24 +85,24 @@
 
           <div class="form-group">
             <label>Таймаут ИИ (в минутах)</label>
-            <input type="number" v-model.number="activeProfile.settings.timeout_mins" min="1" max="1440" class="input-base" placeholder="Например: 30">
+            <input v-model.number="activeProfile.settings.timeout_mins" type="number" min="1" max="1440" class="input-base" placeholder="Например: 30">
             <span class="hint">Максимальное время, которое агент может работать в фоне, пока не будет прерван принудительно (по умолчанию 30 мин).</span>
           </div>
 
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="activeProfile.settings.use_custom_temperature">
+              <input v-model="activeProfile.settings.use_custom_temperature" type="checkbox">
               <span>Использовать пользовательскую температуру</span>
             </label>
             <span class="hint">Управляет случайностью ответов модели.</span>
           </div>
 
-          <div class="form-group" v-if="activeProfile.settings.use_custom_temperature" style="margin-left: 24px;">
+          <div v-if="activeProfile.settings.use_custom_temperature" class="form-group" style="margin-left: 24px;">
             <div style="display: flex; justify-content: space-between;">
               <label>Температура</label>
               <span>{{ activeProfile.settings.temperature ?? 1.0 }}</span>
             </div>
-            <input type="range" v-model.number="activeProfile.settings.temperature" min="0" max="2" step="0.1" class="range-slider">
+            <input v-model.number="activeProfile.settings.temperature" type="range" min="0" max="2" step="0.1" class="range-slider">
           </div>
 
           <div class="form-group">
@@ -110,7 +110,7 @@
               <label>Лимит скорости</label>
               <span>{{ activeProfile.settings.rate_limit_ms ?? 0 }}ms</span>
             </div>
-            <input type="range" v-model.number="activeProfile.settings.rate_limit_ms" min="0" max="5000" step="100" class="range-slider">
+            <input v-model.number="activeProfile.settings.rate_limit_ms" type="range" min="0" max="5000" step="100" class="range-slider">
             <span class="hint">Минимальное время между запросами к API.</span>
           </div>
 
@@ -119,7 +119,7 @@
               <label>Лимит ошибок и повторений</label>
               <span>{{ activeProfile.settings.error_retry_limit ?? 3 }}</span>
             </div>
-            <input type="range" v-model.number="activeProfile.settings.error_retry_limit" min="0" max="10" step="1" class="range-slider">
+            <input v-model.number="activeProfile.settings.error_retry_limit" type="range" min="0" max="10" step="1" class="range-slider">
             <span class="hint">Количество последовательных ошибок или повторных действий перед показом диалогового окна. Установите 0, чтобы отключить этот механизм.</span>
           </div>
 

@@ -91,7 +91,6 @@ const {
   currentMonthIdx,
   currentDay,
   eras,
-  months,
   yearInputMode,
   eraOptions,
   yearOptions,

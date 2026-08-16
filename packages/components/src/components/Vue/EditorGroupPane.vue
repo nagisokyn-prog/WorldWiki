@@ -92,7 +92,7 @@ const props = defineProps<{
   isSandbox?: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   focus: [];
   'activate-tab': [groupId: string, tabId: string];
   'close-tab': [groupId: string, tabId: string];

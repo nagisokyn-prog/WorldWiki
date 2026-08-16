@@ -28,7 +28,7 @@ export function useSchemaDnD(activeSection: any, activeSectionIdx: any) {
         if (e.dataTransfer) e.dataTransfer.dropEffect = draggedItemInfo?.source === 'palette' ? 'copy' : 'move';
     };
 
-    const handleDropNew = (e: DragEvent) => {
+    const handleDropNew = (_e: DragEvent) => {
         draggedOverIdx.value = -1;
         if (!draggedItemInfo) return;
         if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'atomic') {

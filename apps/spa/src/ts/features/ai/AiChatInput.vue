@@ -8,18 +8,20 @@
         <span class="hint">Shift+Enter ⏎ Новая строка</span>
       </div>
       
-      <button v-if="loading"
+      <button
+v-if="loading"
         class="btn-send btn-cancel" 
-        @click="$emit('cancel')"
         title="Отменить генерацию"
+        @click="$emit('cancel')"
       >
         <i class="fas fa-stop-circle"></i>
       </button>
-      <button v-else
+      <button
+v-else
         class="btn-send" 
         :disabled="isEmpty" 
-        @click="submitMessage"
         title="Отправить запрос"
+        @click="submitMessage"
       >
         <i class="fas fa-paper-plane"></i>
       </button>
@@ -28,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount, watch } from 'vue';
+import { ref, onBeforeUnmount } from 'vue';
 import { useEditor, EditorContent } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 

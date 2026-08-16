@@ -33,7 +33,7 @@ export function useWowilonPanel(
     unlistenChunk = await listen<any>('chat_stream_chunk', (event) => {
       const chunk = event.payload;
       if (chunk.chat_id === activeChatId.value) {
-        let msg = allMessages.value.find(m => m.id === chunk.message_id);
+        const msg = allMessages.value.find(m => m.id === chunk.message_id);
         if (!msg) {
           console.warn('[STREAM] Unknown message_id from stream:', chunk.message_id, '— known ids:', allMessages.value.map(m => m.id));
           // Don't create an orphan — it would corrupt the tree

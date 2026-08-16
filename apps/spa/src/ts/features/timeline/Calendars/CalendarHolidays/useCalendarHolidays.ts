@@ -3,7 +3,7 @@ import { settingsService } from '@worldwiki/components';
 import { CalendarMath } from "../../../../services/Calendars/calendar.math";
 import type { CalendarData } from "../../../../services/Calendars/calendar.types";
 
-export function useCalendarHolidays(props: { modelValue: CalendarData }, emit?: any) {
+export function useCalendarHolidays(props: { modelValue: CalendarData }, _emit?: any) {
   const isCollapsed = ref(false);
 
   const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
@@ -36,11 +36,18 @@ export function useCalendarHolidays(props: { modelValue: CalendarData }, emit?: 
     });
   };
 
+  const removeHoliday = (idx: number) => {
+    if (props.modelValue.праздники) {
+      props.modelValue.праздники.splice(idx, 1);
+    }
+  };
+
   return {
     isCollapsed,
     wheelHorizontal,
     getDaysInMonth,
     moveItem,
-    addHoliday
+    addHoliday,
+    removeHoliday
   };
 }

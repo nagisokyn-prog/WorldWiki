@@ -1,4 +1,3 @@
-import * as api from './api.client';
 
 export interface TemplateConfig {
   id: string

@@ -1,9 +1,9 @@
 <template>
   <Transition name="fade">
-  <div v-if="isVisible" class="global-time-viewer" v-motion-slide-top>
+  <div v-if="isVisible" v-motion-slide-top class="global-time-viewer">
     <div class="header">
       <h3><i class="fas fa-globe"></i> Мировое Время</h3>
-      <button @click="close" class="close-btn">×</button>
+      <button class="close-btn" @click="close">×</button>
     </div>
     
     <div class="content">
@@ -11,12 +11,12 @@
         <label>Абсолютная минута (Master Clock)</label>
         <div class="clock-input-group">
           <button @click="minute -= 1000">-</button>
-          <input type="number" v-model.number="minute" />
+          <input v-model.number="minute" type="number" />
           <button @click="minute += 1000">+</button>
         </div>
       </div>
 
-      <div class="local-calendars" v-auto-animate>
+      <div v-auto-animate class="local-calendars">
         <h4>Конвертация в локальные календари:</h4>
         <div v-if="loading" class="loading">Загрузка календарей...</div>
         <div v-for="cal in localDates" :key="cal.id" class="calendar-card">
@@ -42,7 +42,6 @@ const {
   minute,
   localDates,
   loading,
-  open,
   close
 } = useGlobalTimeViewer();
 </script>

@@ -1,7 +1,7 @@
 <template>
-  <div class="ai-chat-top-bar" v-if="activeProfile">
+  <div v-if="activeProfile" class="ai-chat-top-bar">
     <div class="top-bar-content">
-      <div class="sidebar-toggle" style="margin-right: 12px; display: flex; align-items: center; cursor: pointer;" @click="$emit('toggle-sidebar')" title="Переключить боковую панель">
+      <div class="sidebar-toggle" style="margin-right: 12px; display: flex; align-items: center; cursor: pointer;" title="Переключить боковую панель" @click="$emit('toggle-sidebar')">
         <div role="button" class="ds-button ds-button--iconLabelPrimary ds-button--icon ds-button--capsule ds-button--m ds-button--icon-relative-m" style="--dsl-button-height: 34px;" tabindex="0">
           <div class="ds-button__background"></div>
           <div class="ds-button__icon ds-button__icon--last-child">
@@ -28,7 +28,7 @@
       </div>
       <div class="token-usage">
         <span class="token-count">{{ formatTokens(tokenUsage.total_tokens) }} <span v-if="maxTokens > 0">/ {{ formatTokens(maxTokens) }}</span></span>
-        <div class="token-progress-wrapper" v-if="maxTokens > 0">
+        <div v-if="maxTokens > 0" class="token-progress-wrapper">
           <div class="token-progress" :style="{ width: progressPercent + '%' }"></div>
         </div>
       </div>

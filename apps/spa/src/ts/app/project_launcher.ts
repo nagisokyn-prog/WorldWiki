@@ -14,7 +14,7 @@ import '@worldwiki/resources/styles/glass-animations.css';
 import '@worldwiki/resources/styles/project_launcher.css';
 import '@worldwiki/resources/styles/modules/settings.css';
 
-import { createApp, ref, computed, onMounted, nextTick, shallowRef } from 'vue';
+import { createApp, ref, computed, onMounted, shallowRef } from 'vue';
 import { projectService } from '../services/project.service';
 
 import { settingsService, XboxWheel } from '@worldwiki/components';

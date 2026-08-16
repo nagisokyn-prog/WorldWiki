@@ -5,7 +5,7 @@
     <!-- Селектор типа календаря -->
     <div class="calendar-selector multi-calendar-selector">
       <label>Отображаемые календари:</label>
-      <div class="calendar-pills" v-if="availableCalendars.length > 0">
+      <div v-if="availableCalendars.length > 0" class="calendar-pills">
         <button 
           v-for="cal in availableCalendars" 
           :key="cal.id"
@@ -21,7 +21,7 @@
       </div>
     </div>
     
-    <div class="timeline-events-list" v-auto-animate>
+    <div v-auto-animate class="timeline-events-list">
       <div v-if="events.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
         Нет событий в таймлайне.
       </div>

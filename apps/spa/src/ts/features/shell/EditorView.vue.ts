@@ -2,9 +2,7 @@ import { defineComponent, computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useShellStore } from '@/stores/shell';
 import { useConsoleStore } from '@/stores/console';
-import { useZoomStore } from '@/stores/zoom';
 import { useSchemaStore } from '@/stores/schema';
-import { useFloatingStore } from '@/stores/floating';
 import { useHotkeysStore } from '@/stores/hotkeys';
 export type { ConsoleLog, SidebarItem, EditorGroup, EditorTab } from '@/stores/shell';
 
@@ -15,7 +13,7 @@ import { EditorGroupPane as EditorGroupPaneVue } from '@worldwiki/components';
 import ChaptersMainVue from '@/features/chapters/ChaptersMain/ChaptersMain.vue';
 import EntityEditorVue from '@/features/entities/EntityEditor/EntityEditor.vue';
 import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMain.vue';
-import { WorkspaceLayout, ExplorerTree, EditorTabBar, AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue } from '@worldwiki/components';
+import { AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue } from '@worldwiki/components';
 import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
 
@@ -33,7 +31,7 @@ export default defineComponent({
     WowilonPanelVue,
     AppDialog,
   },
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+   
   setup(): Record<string, any> {
     const route = useRoute();
     const rawProject = typeof route.query.project === 'string' ? route.query.project : 'default';
@@ -41,9 +39,7 @@ export default defineComponent({
 
     const shell = useShellStore();
     const console = useConsoleStore();
-    const zoom = useZoomStore();
     const schema = useSchemaStore();
-    const floating = useFloatingStore();
     const hotkeys = useHotkeysStore();
 
     const toggleWowilonHandler = () => {

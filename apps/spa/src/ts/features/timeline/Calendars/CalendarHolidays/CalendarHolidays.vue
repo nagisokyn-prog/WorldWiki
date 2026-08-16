@@ -6,7 +6,7 @@
     </div>
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
-      <div class="item-list" v-auto-animate>
+      <div v-auto-animate class="item-list">
         <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row" style="display: flex; gap: 12px; align-items: center; width: 100%;">
           <input
             v-model="holiday.название"
@@ -89,7 +89,7 @@
             </button>
             <button
               class="btn-icon interactive-el"
-              @click.prevent="modelValue.праздники?.splice(Number(hIdx), 1)"
+              @click.prevent="removeHoliday(Number(hIdx))"
             >
               🗑️
             </button>
@@ -110,5 +110,5 @@ const props = defineProps<{
   modelValue: CalendarData;
 }>();
 
-const { isCollapsed, wheelHorizontal, getDaysInMonth, moveItem, addHoliday } = useCalendarHolidays(props);
+const { isCollapsed, wheelHorizontal, getDaysInMonth, moveItem, addHoliday, removeHoliday } = useCalendarHolidays(props);
 </script>

@@ -6,13 +6,14 @@
     </div>
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
-      <div class="item-list" v-auto-animate>
+      <div v-auto-animate class="item-list">
         <div v-for="(day, dIdx) in modelValue.названия_дней_недели" :key="dIdx" class="item-row">
           <input
-            v-model="modelValue.названия_дней_недели[dIdx]"
+            :value="day"
             type="text"
             class="item-name interactive-el"
             style="max-width: 140px;"
+            @input="updateDay(Number(dIdx), ($event.target as HTMLInputElement).value)"
           />
           <div class="item-actions">
             <button
@@ -31,7 +32,7 @@
             </button>
             <button
               class="btn-icon interactive-el"
-              @click.prevent="modelValue.названия_дней_недели.splice(Number(dIdx), 1)"
+              @click.prevent="removeDay(Number(dIdx))"
             >
               🗑️
             </button>
@@ -50,5 +51,5 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
 });
 
-const { isCollapsed, moveItem, addDay } = useCalendarWeekdays(props);
+const { isCollapsed, moveItem, addDay, updateDay, removeDay } = useCalendarWeekdays(props);
 </script>

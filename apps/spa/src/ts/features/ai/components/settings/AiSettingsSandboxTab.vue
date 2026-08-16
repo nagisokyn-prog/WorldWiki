@@ -3,7 +3,7 @@
     <div class="sandbox-header">
       <h3>Разрешения и автоодобрение</h3>
       <div class="toggle-switch">
-        <input type="checkbox" id="global-sandbox" v-model="sandboxEnabled">
+        <input id="global-sandbox" v-model="sandboxEnabled" type="checkbox">
         <label for="global-sandbox">Включить автоодобрение</label>
       </div>
     </div>
@@ -24,28 +24,28 @@
 
     <div class="categories-grid" :class="{ disabled: !sandboxEnabled }">
       <label class="checkbox-label">
-        <input type="checkbox" v-model="categories.read">
+        <input v-model="categories.read" type="checkbox">
         <span>Чтение данных (поиск, граф, главы)</span>
       </label>
       <label class="checkbox-label">
-        <input type="checkbox" v-model="categories.analyze">
+        <input v-model="categories.analyze" type="checkbox">
         <span>Аналитика (противоречия, отчёты)</span>
       </label>
       <label class="checkbox-label">
-        <input type="checkbox" v-model="categories.edit_entities">
+        <input v-model="categories.edit_entities" type="checkbox">
         <span>Изменение сущностей</span>
       </label>
       <label class="checkbox-label">
-        <input type="checkbox" v-model="categories.edit_relations">
+        <input v-model="categories.edit_relations" type="checkbox">
         <span>Изменение связей</span>
       </label>
       <label class="checkbox-label">
-        <input type="checkbox" v-model="categories.edit_content">
+        <input v-model="categories.edit_content" type="checkbox">
         <span>Изменение контента (текст глав)</span>
       </label>
     </div>
     
-    <button class="btn-primary" @click="$emit('save-sandbox')" style="margin-top: 20px;">Сохранить разрешения</button>
+    <button class="btn-primary" style="margin-top: 20px;" @click="$emit('save-sandbox')">Сохранить разрешения</button>
   </div>
 </template>
 

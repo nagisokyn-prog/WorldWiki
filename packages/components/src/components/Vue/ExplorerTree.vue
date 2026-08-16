@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useTreeSelection } from '../../ts/composables/useTreeSelection';
 import TreeNodes from './TreeNodes.vue'; // Recursive component
 
@@ -202,7 +202,9 @@ onMounted(() => {
       const sec = localStorage.getItem(`${props.storageKey}:sections`);
       if (exp) expanded.value = new Set(JSON.parse(exp));
       if (sec) expandedSections.value = new Set(JSON.parse(sec));
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }
 });
 const saveState = () => {
@@ -247,8 +249,8 @@ const flatItems = computed(() => {
 
 // ─── Selection ──────────────────────────────────────────────────────────────
 const {
-  selected, selectedCount, hasSelection,
-  isSelected, handleClick, clearSelection, deleteSelected, handleKeydown
+  selected,
+  handleClick, clearSelection, deleteSelected, handleKeydown
 } = useTreeSelection({
   onDelete: async (ids: string[]) => {
     emit('delete', ids);
@@ -272,7 +274,7 @@ const onTreeKeydown = (e: KeyboardEvent) => {
 };
 
 // ─── Actions ────────────────────────────────────────────────────────────────
-const handleNodeClick = (e: MouseEvent, node: TreeNodeData, sectionId: string) => {
+const handleNodeClick = (e: MouseEvent, node: TreeNodeData, _sectionId: string) => {
   handleClick(e, node, flatItems.value);
   const selectedNodes = flatItems.value.filter((n: TreeNodeData) => selected.value.has(n.id));
   emit('select', selectedNodes, e);

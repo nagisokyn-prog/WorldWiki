@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { entityApi } from '../../services/Entity/entity.api';
 import * as api from '../../services/api.client';
-import type { EntityData, SchemaInfo, EntityType } from '../../services/Entity/entity.types';
 
 export function useEntityList(project: string, type: string, filters?: Record<string, unknown>) {
   return useQuery({

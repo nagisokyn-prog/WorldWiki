@@ -73,7 +73,7 @@ const props = defineProps({
 let t;
 try {
   t = useI18n().t;
-} catch (e) {
+} catch {
   t = (key) => {
     if (key === 'common.selectPlaceholder') return 'Выберите...';
     if (key === 'common.noData') return 'Нет данных';

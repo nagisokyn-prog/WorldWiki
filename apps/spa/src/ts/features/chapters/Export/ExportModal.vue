@@ -1,7 +1,7 @@
 <template>
   <Transition name="fade">
   <div v-if="isOpen" class="modal" style="display: flex;">
-    <div class="modal-content" v-motion-pop>
+    <div v-motion-pop class="modal-content">
       <div class="modal-header">
         <h2>Экспорт глав</h2>
         <button class="close-btn" @click="$emit('close')">&times;</button>

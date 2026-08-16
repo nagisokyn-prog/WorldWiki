@@ -1,5 +1,4 @@
 import { ref, onMounted, computed } from 'vue';
-import type { PropType } from 'vue';
 import { useCalendarStore } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 

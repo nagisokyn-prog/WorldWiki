@@ -1,4 +1,4 @@
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 
@@ -98,7 +98,6 @@ export function useCalendarsPanel(props: any) {
     };
 
     const removeCalendar = async (idx: number) => {
-        const { confirm } = await import('@tauri-apps/plugin-dialog');
         const { appConfirm } = await import('@worldwiki/components');
         if (!await appConfirm('Вы уверены, что хотите удалить этот календарь?')) return;
         if (!project.value) return;

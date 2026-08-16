@@ -31,7 +31,7 @@ export function useSaveCalendar() {
 export function useDeleteCalendar() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ project, id }: { project: string; id: string }) => 
+    mutationFn: ({ id }: { project: string; id: string }) => 
       calendarApi.deleteCalendar(id),
     onSuccess: (_, { project }) => {
       queryClient.invalidateQueries({ queryKey: ['calendars', project] });

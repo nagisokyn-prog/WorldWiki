@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, VueWrapper } from '@vue/test-utils';
 import Settings from '../../src/components/Vue/Settings.vue';
-import ThemeSwitcher from '../../src/components/Vue/ThemeSwitcher.vue';
 import { settingsService } from '../../src/ts/services/settings.service';
 import { setLocale } from '../../src/ts/i18n.js';
 import { createI18n } from 'vue-i18n';

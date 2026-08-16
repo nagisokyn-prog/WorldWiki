@@ -4,7 +4,6 @@
  */
 
 import { invoke } from '@worldwiki/components';
-import type { EntityData } from '../Entity/entity.types';
 
 const activeBlobUrls = new Set<string>();
 

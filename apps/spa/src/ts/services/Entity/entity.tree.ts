@@ -143,7 +143,7 @@ export function useEntityTree(project: string, emit: any) {
     return entity.name || 'Без названия';
   };
 
-  const handleEntityClick = (event: MouseEvent, type: string, entity: any, sect: any) => {
+  const handleEntityClick = (event: MouseEvent, type: string, entity: any, _sect: any) => {
     const key = entityKey(type, entity.id);
     entitySelection.handleClick(event, { id: key }, flatEntityItems.value);
     if (!event.ctrlKey && !event.shiftKey && !event.metaKey) {

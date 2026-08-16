@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, inject } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 interface EditorTab {
@@ -109,7 +109,7 @@ const draggingTabId = ref<string | null>(null);
 const dragOverIdx = ref<number | null>(null);
 const dropSide = ref<'left' | 'right'>('right');
 
-const onDragStart = (e: DragEvent, tabId: string, idx: number) => {
+const onDragStart = (e: DragEvent, tabId: string, _idx: number) => {
   draggingTabId.value = tabId;
   e.dataTransfer!.effectAllowed = 'move';
   e.dataTransfer!.setData(DRAG_TAB_KEY, tabId);

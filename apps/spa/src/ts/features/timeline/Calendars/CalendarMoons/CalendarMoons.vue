@@ -6,7 +6,7 @@
     </div>
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
-      <div class="item-list" v-auto-animate>
+      <div v-auto-animate class="item-list">
         <div v-for="(moon, mIdx) in calendar.moons" :key="mIdx" class="item-row moon-row" style="flex-direction: column; align-items: stretch; gap: 8px;">
           <div style="display: flex; gap: 8px; align-items: center;">
             <input v-model="moon.name" type="text" class="item-name interactive-el" placeholder="Название луны">

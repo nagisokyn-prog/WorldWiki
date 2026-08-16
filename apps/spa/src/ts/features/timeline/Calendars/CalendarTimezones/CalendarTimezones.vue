@@ -5,7 +5,7 @@
       Добавьте часовые пояса, чтобы события в разных регионах мира автоматически пересчитывались в мировое время (смещение в минутах).
     </p>
 
-    <div class="moons-list" v-auto-animate>
+    <div v-auto-animate class="moons-list">
       <div v-for="(tz, idx) in timezoneRegions" :key="tz.id" class="moon-item glass-panel" style="margin-bottom: 8px; padding: 8px;">
         <div class="grid-2">
           <div class="calendar-field">

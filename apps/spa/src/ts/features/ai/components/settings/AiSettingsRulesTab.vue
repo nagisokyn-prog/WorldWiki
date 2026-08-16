@@ -3,7 +3,7 @@
     <div class="sandbox-header">
       <h3>Точечный контроль (Granular)</h3>
       <div class="toggle-switch">
-        <input type="checkbox" id="is-global-setting" v-model="isGlobal">
+        <input id="is-global-setting" v-model="isGlobal" type="checkbox">
         <label for="is-global-setting">Применить для всех проектов</label>
       </div>
     </div>
@@ -14,17 +14,17 @@
     
     <div class="form-group">
       <label>Denylist (Чёрный список)</label>
-      <input type="text" v-model="denylistText" class="input-base" placeholder="Например: organization, state">
+      <input v-model="denylistText" type="text" class="input-base" placeholder="Например: organization, state">
       <span class="hint">Изменение этих типов ВСЕГДА будет требовать одобрения.</span>
     </div>
 
     <div class="form-group">
       <label>Allowlist (Белый список)</label>
-      <input type="text" v-model="allowlistText" class="input-base" placeholder="Например: character, location">
+      <input v-model="allowlistText" type="text" class="input-base" placeholder="Например: character, location">
       <span class="hint">Разрешает изменение этих типов даже при выключенной категории (если не в Denylist).</span>
     </div>
     
-    <button class="btn-primary" @click="$emit('save-rules')" style="margin-top: 20px;">Сохранить правила</button>
+    <button class="btn-primary" style="margin-top: 20px;" @click="$emit('save-rules')">Сохранить правила</button>
   </div>
 </template>
 

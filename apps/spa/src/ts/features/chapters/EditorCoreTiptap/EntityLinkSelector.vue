@@ -1,5 +1,5 @@
 <template>
-  <div class="entity-link-selector-overlay" v-if="isOpen" @click.self="close">
+  <div v-if="isOpen" class="entity-link-selector-overlay" @click.self="close">
     <div class="entity-link-selector-modal">
       <div class="selector-header">
         <h3>Вставка ссылки на сущность</h3>
@@ -19,7 +19,7 @@
           @keydown.esc.prevent="close"
         />
 
-        <div class="selector-list" ref="listEl">
+        <div ref="listEl" class="selector-list">
           <template v-if="step === 'type'">
             <div 
               v-for="(type, idx) in filteredTypes" 

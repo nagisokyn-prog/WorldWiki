@@ -6,7 +6,7 @@
     </div>
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
-      <div class="item-list" v-auto-animate>
+      <div v-auto-animate class="item-list">
         <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" style="margin-bottom: 10px" class="item-row">
           <div class="item-row">
             <input
@@ -44,7 +44,7 @@
               </button>
               <button
                 class="btn-icon interactive-el"
-                @click.prevent="modelValue.эпохи.splice(Number(eIdx), 1)"
+                @click.prevent="removeEra(Number(eIdx))"
               >
                 🗑️
               </button>
@@ -79,5 +79,5 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
 });
 
-const { isCollapsed, moveItem, addEra } = useCalendarEras(props);
+const { isCollapsed, moveItem, addEra, removeEra } = useCalendarEras(props);
 </script>

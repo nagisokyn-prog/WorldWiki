@@ -1,16 +1,16 @@
 <template>
-  <div class="ai-select-container" ref="containerRef">
+  <div ref="containerRef" class="ai-select-container">
     <div 
       class="ai-select-trigger input-base" 
       :class="{ 'is-open': isOpen }" 
     >
       <input 
-        type="text" 
         v-model="searchQuery" 
+        type="text" 
         :placeholder="placeholder"
+        class="combobox-input"
         @focus="openDropdown"
         @keydown.enter.prevent="handleEnter"
-        class="combobox-input"
       />
       <i class="fas fa-chevron-down toggle-icon" @click="toggleOpen"></i>
     </div>

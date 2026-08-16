@@ -44,7 +44,7 @@
           activeTab === 'modes' ? 'Режимы Агента' :
           activeTab === 'auto_approval' ? 'Правила песочницы' : 'Специфичные правила' 
         }}</h2>
-        <button class="btn-secondary-outline" @click="$emit('close')" title="Закрыть настройки" style="padding: 6px 12px;">
+        <button class="btn-secondary-outline" title="Закрыть настройки" style="padding: 6px 12px;" @click="$emit('close')">
           <i class="fas fa-times"></i> Закрыть
         </button>
       </div>
@@ -62,14 +62,14 @@
                 <select v-model="activeProfileId" class="input-base" style="flex: 1;" @change="handleProfileChange">
                   <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
                 </select>
-                <button class="btn-secondary-outline" @click="createNewProfile" title="Создать новый профиль">
+                <button class="btn-secondary-outline" title="Создать новый профиль" @click="createNewProfile">
                   <i class="fas fa-plus"></i>
                 </button>
                 <button 
                   v-if="profiles.length > 1" 
                   class="btn-danger-outline" 
-                  @click="deleteActiveProfile" 
-                  title="Удалить профиль"
+                  title="Удалить профиль" 
+                  @click="deleteActiveProfile"
                 >
                   <i class="fas fa-trash"></i>
                 </button>
@@ -77,10 +77,10 @@
             </div>
 
             <AiSettingsProviderTab 
-              :activeProfile="activeProfile"
-              :availableModels="availableModels"
-              :isFetchingModels="isFetchingModels"
-              :fetchError="fetchError"
+              :active-profile="activeProfile"
+              :available-models="availableModels"
+              :is-fetching-models="isFetchingModels"
+              :fetch-error="fetchError"
               @fetch-models="handleFetchModels"
               @save-profile="saveActiveProfile"
               @provider-changed="handleProviderChange"
@@ -90,7 +90,7 @@
 
         <AiSettingsModesTab 
           v-if="activeTab === 'modes'" 
-          :currentProject="currentProject"
+          :current-project="currentProject"
         />
 
         <AiSettingsSandboxTab 

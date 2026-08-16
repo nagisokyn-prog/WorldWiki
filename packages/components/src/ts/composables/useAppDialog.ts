@@ -1,4 +1,4 @@
-import { ref, shallowRef } from 'vue';
+import { ref } from 'vue';
 
 export interface AppDialogOptions {
   title?: string;

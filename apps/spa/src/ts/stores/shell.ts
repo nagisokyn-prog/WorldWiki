@@ -9,15 +9,14 @@
  * - Infrastructure: startResize, startSidebarResize, startSplitResize, startGroupResize, quickOpenDataSource, handleQuickOpenSelect, openQuickOpen, getEntityDisplayName
  */
 import { defineStore } from 'pinia';
-import { ref, computed, watch, onMounted, shallowRef, nextTick, triggerRef } from 'vue';
-import { useEditorGroups, settingsService, setLocale, i18n } from '@worldwiki/components';
+import { ref, computed, watch, shallowRef, triggerRef } from 'vue';
+import { useEditorGroups, settingsService } from '@worldwiki/components';
 import * as api from '../services/api.client';
 import { useSchemaStore } from './schema';
 import { useConsoleStore } from './console';
 import { useZoomStore } from './zoom';
 import { useFloatingStore } from './floating';
 import { entityApi } from '../services/Entity/entity.api';
-import { getValueByPath, setValueByPath } from '@/utils/path';
 
 
 export interface SidebarItem {
@@ -530,7 +529,7 @@ export const useShellStore = defineStore('shell', () => {
       for (const c of list as Array<any>) {
         items.push({ id: `chapter_${c.id}`, rawId: String(c.id), title: c.title || `Глава ${c.id}`, typeLabel: 'Глава', entityType: 'chapter', emoji: '📝', data: c });
       }
-    } catch (e) { /* skip */ }
+    } catch { /* skip */ }
     for (const tab of sidebarItems.value) {
       if (tab.type === 'entity' && tab.entityType) {
         try {
@@ -538,7 +537,7 @@ export const useShellStore = defineStore('shell', () => {
           for (const e of list as Array<any>) {
             items.push({ id: `entity_${tab.entityType}_${e.id}`, rawId: String(e.id), title: schema.getEntityDisplayName(e, tab.entityType), typeLabel: tab.title, entityType: tab.entityType, emoji: tab.icon || '📄', data: { ...e, entityType: tab.entityType } });
           }
-        } catch (e) { /* skip */ }
+        } catch { /* skip */ }
       }
     }
     return items;
@@ -880,7 +879,7 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const deleteChapter = async (chapter: any, silent = false) => {
+  const deleteChapter = async (chapter: any, _silent = false) => {
     try {
       await api.deleteChapter(chapter.id);
       addLog(`Manuscript -> Deleted chapter ${chapter.title}`, 'success');

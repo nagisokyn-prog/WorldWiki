@@ -1,6 +1,6 @@
 <template>
   <div class="modes-tab">
-    <div class="loading-state" v-if="isLoading">
+    <div v-if="isLoading" class="loading-state">
       Загрузка режимов...
     </div>
     
@@ -8,31 +8,34 @@
       <div class="mode-selector">
         <label>Режим агента:</label>
         <div style="display: flex; gap: 10px; margin-top: 5px;">
-          <select class="input-base" v-model="activeModeSlug" @change="onModeChange" style="flex: 1;">
+          <select v-model="activeModeSlug" class="input-base" style="flex: 1;" @change="onModeChange">
             <option v-for="mode in modes" :key="mode.slug" :value="mode.slug">
               {{ mode.name }} ({{ mode.slug }})
             </option>
           </select>
-          <button class="btn-secondary-outline" @click="createNewMode" title="Создать новый режим">
+          <button class="btn-secondary-outline" title="Создать новый режим" @click="createNewMode">
             <i class="fas fa-plus"></i>
+          </button>
+          <button v-if="activeMode && !activeMode.is_global && !isNewMode" class="btn-secondary-outline" title="Удалить режим" @click="deleteMode">
+            <i class="fas fa-trash"></i>
           </button>
         </div>
       </div>
 
-      <div class="mode-editor" v-if="activeMode">
+      <div v-if="activeMode" class="mode-editor">
         <div class="form-group">
           <label>ID Режима</label>
-          <input type="text" class="input-base" v-model="activeMode.slug" :disabled="!isNewMode" />
+          <input v-model="activeMode.slug" type="text" class="input-base" :disabled="!isNewMode" />
         </div>
         
         <div class="form-group">
           <label>Отображаемое имя</label>
-          <input type="text" class="input-base" v-model="activeMode.name" />
+          <input v-model="activeMode.name" type="text" class="input-base" />
         </div>
         
         <div class="form-group">
           <label>Профиль LLM (опционально, переопределяет глобальный)</label>
-          <select class="input-base" v-model="activeMode.api_profile_id">
+          <select v-model="activeMode.api_profile_id" class="input-base">
             <option :value="null">-- Использовать профиль по умолчанию --</option>
             <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
@@ -40,19 +43,19 @@
 
         <div class="form-group">
           <label>Роль агента</label>
-          <textarea class="input-base" v-model="activeMode.role_definition" rows="4" placeholder="Ты - аналитик..."></textarea>
+          <textarea v-model="activeMode.role_definition" class="input-base" rows="4" placeholder="Ты - аналитик..."></textarea>
         </div>
 
         <div class="form-group">
           <label>Дополнительные инструкции</label>
-          <textarea class="input-base" v-model="activeMode.custom_instructions" rows="4" placeholder="Дополнительные правила для этого режима..."></textarea>
+          <textarea v-model="activeMode.custom_instructions" class="input-base" rows="4" placeholder="Дополнительные правила для этого режима..."></textarea>
         </div>
 
         <div class="form-group">
           <label>Разрешенные инструменты</label>
           <div class="tools-list">
-            <label class="tool-checkbox" v-for="tool in availableTools" :key="tool" :title="toolDescriptions[tool]?.desc || ''">
-              <input type="checkbox" :value="tool" v-model="activeMode.allowed_tools" />
+            <label v-for="tool in availableTools" :key="tool" class="tool-checkbox" :title="toolDescriptions[tool]?.desc || ''">
+              <input v-model="activeMode.allowed_tools" type="checkbox" :value="tool" />
               <span>{{ toolDescriptions[tool]?.name || tool }}</span>
             </label>
           </div>
@@ -70,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useAiProfiles } from '../../composables/useAiProfiles';
 

@@ -14,12 +14,13 @@ interface ProjectStats {
   chapters: number;
 }
 
-interface ProjectCalendar {
-  название?: string;
-  месяцы?: Array<{ название: string; дней: number }>;
-  эпохи?: Array<{ название: string; год_начала: number; год_конца: number }>;
-  [key: string]: unknown;
-}
+// ProjectCalendar is defined for future use when calendar integration is added
+// interface ProjectCalendar {
+//   название?: string;
+//   месяцы?: Array<{ название: string; дней: number }>;
+//   эпохи?: Array<{ название: string; год_начала: number; год_конца: number }>;
+//   [key: string]: unknown;
+// }
 
 interface ProjectConfig {
   type: string;

@@ -32,6 +32,7 @@
               >
                 <span class="cp-item-icon">{{ cmd.icon }}</span>
                 <div class="cp-item-body">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="cp-item-title" v-html="highlight(cmd.title)"></span>
                   <span class="cp-item-desc">{{ cmd.desc }}</span>
                 </div>

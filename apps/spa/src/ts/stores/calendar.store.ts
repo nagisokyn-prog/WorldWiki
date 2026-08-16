@@ -80,7 +80,12 @@ export const useCalendarStore = defineStore('calendar', () => {
     try {
       const calName = (calendar as any).название || (calendar as any).name || 'Календарь';
       const calId = (calendar as any)._id || (calendar as any).id || null;
-      const { _id, id, is_default, is_master, ...dataPayload } = calendar as any;
+      const { is_default, is_master } = calendar as any;
+      const dataPayload = { ...(calendar as any) };
+      delete dataPayload._id;
+      delete dataPayload.id;
+      delete dataPayload.is_default;
+      delete dataPayload.is_master;
       const payload: any = {
         name: calName,
         data: dataPayload,

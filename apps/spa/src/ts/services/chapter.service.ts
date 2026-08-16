@@ -48,7 +48,7 @@ class ChapterService {
     };
   }
 
-  async updateIndex(project: string): Promise<boolean> {
+  async updateIndex(_project: string): Promise<boolean> {
     return true;
   }
 }

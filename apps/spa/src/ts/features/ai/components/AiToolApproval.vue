@@ -13,11 +13,11 @@
         <pre class="args-content">{{ formatArgs(toolCall.tool_args) }}</pre>
       </div>
 
-      <div class="approval-actions" v-if="!hasResponded">
+      <div v-if="!hasResponded" class="approval-actions">
         <div class="feedback-input">
           <input 
-            type="text" 
             v-model="feedbackText" 
+            type="text" 
             class="input-base" 
             placeholder="Опционально: почему вы отклоняете это действие?"
             @keyup.enter="rejectWithFeedback"
@@ -61,7 +61,7 @@ const isApproved = ref(false);
 const formatArgs = (args: any) => {
   try {
     return JSON.stringify(args, null, 2);
-  } catch (e) {
+  } catch {
     return String(args);
   }
 };

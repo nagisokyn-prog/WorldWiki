@@ -9,22 +9,22 @@
       <div class="mode-switcher">
         <button 
           :class="{ active: currentMode === 'chat' }" 
-          @click="setMode('chat')"
           title="Собеседник (Только чтение)"
+          @click="setMode('chat')"
         >
           <i class="fas fa-comments"></i>
         </button>
         <button 
           :class="{ active: currentMode === 'edit' }" 
-          @click="setMode('edit')"
           title="Редактор (Чтение + Запись)"
+          @click="setMode('edit')"
         >
           <i class="fas fa-edit"></i>
         </button>
         <button 
           :class="{ active: currentMode === 'analyze' }" 
-          @click="setMode('analyze')"
           title="Аналитик (Сложные отчёты)"
+          @click="setMode('analyze')"
         >
           <i class="fas fa-chart-line"></i>
         </button>
@@ -48,10 +48,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, type PropType } from 'vue';
-import type { AiProfile } from '../types/ai.types';
+import { ref } from 'vue';
 
-const props = defineProps({
+defineProps({
   isDetached: {
     type: Boolean,
     default: false

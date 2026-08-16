@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export function useCalendarMonths(props: any, emit?: any) {
+export function useCalendarMonths(props: any, _emit?: any) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {
@@ -19,9 +19,16 @@ export function useCalendarMonths(props: any, emit?: any) {
     });
   };
 
+  const removeMonth = (idx: number) => {
+    if (props.modelValue.месяцы) {
+      props.modelValue.месяцы.splice(idx, 1);
+    }
+  };
+
   return {
     isCollapsed,
     moveItem,
-    addMonth
+    addMonth,
+    removeMonth
   };
 }

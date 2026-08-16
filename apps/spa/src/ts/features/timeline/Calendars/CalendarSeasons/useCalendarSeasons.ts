@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export function useCalendarSeasons(props: any, emit?: any) {
+export function useCalendarSeasons(props: any, _emit?: any) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {
@@ -23,6 +23,12 @@ export function useCalendarSeasons(props: any, emit?: any) {
       название: `Сезон ${props.modelValue.сезоны.length + 1}`,
       месяцы: available.slice(0, 3),
     });
+  };
+
+  const removeSeason = (idx: number) => {
+    if (props.modelValue.сезоны) {
+      props.modelValue.сезоны.splice(idx, 1);
+    }
   };
 
   const isMonthInSeason = (sIdx: number, mIdx: number) => {
@@ -53,6 +59,7 @@ export function useCalendarSeasons(props: any, emit?: any) {
     isCollapsed,
     moveItem,
     addSeason,
+    removeSeason,
     isMonthInSeason,
     toggleMonthInSeason
   };

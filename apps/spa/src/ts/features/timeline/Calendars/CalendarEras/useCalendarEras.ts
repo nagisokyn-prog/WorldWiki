@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export function useCalendarEras(props: any, emit?: any) {
+export function useCalendarEras(props: any, _emit?: any) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {
@@ -22,9 +22,16 @@ export function useCalendarEras(props: any, emit?: any) {
     });
   };
 
+  const removeEra = (idx: number) => {
+    if (props.modelValue.эпохи) {
+      props.modelValue.эпохи.splice(idx, 1);
+    }
+  };
+
   return {
     isCollapsed,
     moveItem,
-    addEra
+    addEra,
+    removeEra
   };
 }

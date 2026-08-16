@@ -10,11 +10,11 @@
       <div class="gc-controls">
         <label style="font-size: 10px; color: var(--text-muted);">Мировое время (Год, Месяц, День)</label>
         <div style="display: flex; gap: 4px; margin-bottom: 8px;">
-           <input type="number" v-model.number="currentMasterInput.year" class="interactive-el" style="width: 60px" title="Год">
+           <input v-model.number="currentMasterInput.year" type="number" class="interactive-el" style="width: 60px" title="Год">
            <select v-model.number="currentMasterInput.month" class="interactive-el" style="flex: 1;" title="Месяц">
              <option v-for="(m, i) in masterCalendar.data.месяцы" :key="i" :value="i">{{ m.название }}</option>
            </select>
-           <input type="number" v-model.number="currentMasterInput.day" class="interactive-el" style="width: 50px" title="День">
+           <input v-model.number="currentMasterInput.day" type="number" class="interactive-el" style="width: 50px" title="День">
         </div>
         <div style="font-size: 12px; font-weight: bold; color: var(--accent); margin-bottom: 12px;">
           {{ formattedMasterDate }}

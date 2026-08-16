@@ -2,13 +2,13 @@
   <div class="chat-history-sidebar">
     <div class="history-header">
       <h3>История чатов</h3>
-      <button class="new-chat-btn" @click="createNewChat" title="Новый чат">
+      <button class="new-chat-btn" title="Новый чат" @click="createNewChat">
         <i class="fas fa-edit"></i>
       </button>
     </div>
 
     <div class="history-search">
-      <input type="text" v-model="searchQuery" class="input-base" placeholder="Поиск чатов...">
+      <input v-model="searchQuery" type="text" class="input-base" placeholder="Поиск чатов...">
     </div>
 
     <div class="history-list">
@@ -16,8 +16,8 @@
         <i class="fas fa-spinner fa-spin"></i> Загрузка...
       </div>
       <ExplorerTree
-        ref="explorerTreeRef"
         v-else
+        ref="explorerTreeRef"
         :sections="treeSections"
         :active-id="activeChatId"
         @select="handleNodeClick"
@@ -50,9 +50,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { ExplorerTree } from '@worldwiki/components';
-import { useAiChats } from '../composables/useAiChats';
 import type { AiChatTreeNode } from '../composables/useAiChats';
 
 const props = defineProps({
@@ -60,7 +59,10 @@ const props = defineProps({
     type: Array as () => any[],
     required: true
   },
-  activeChatId: String,
+  activeChatId: {
+    type: String,
+    default: undefined
+  },
   isLoading: Boolean
 });
 

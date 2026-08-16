@@ -6,7 +6,7 @@ export function useSaveEntityWithRelations() {
   return useMutation({
     mutationFn: ({ project, entity, relations }: { project: string; entity: Record<string, unknown>; relations: any[] }) => 
       batchApi.saveEntityWithRelations(project, entity, relations),
-    onSuccess: (_, { project, entity }) => {
+    onSuccess: (_, { project }) => {
       // Invalidate everything related to entities and connections
       queryClient.invalidateQueries({ queryKey: ['entities', project] });
       queryClient.invalidateQueries({ queryKey: ['connections', project] });

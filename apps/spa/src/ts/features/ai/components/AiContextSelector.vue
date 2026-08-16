@@ -1,6 +1,6 @@
 <template>
   <div class="context-selector-container">
-    <button class="add-context-btn" @click="toggleMenu" :title="'Добавить контекст'">
+    <button class="add-context-btn" :title="'Добавить контекст'" @click="toggleMenu">
       <i class="fas fa-plus"></i>
     </button>
     
@@ -15,8 +15,8 @@
         </button>
       </div>
 
-      <div class="menu-search" v-if="level > 0">
-        <input type="text" v-model="searchQuery" class="input-base" placeholder="Поиск...">
+      <div v-if="level > 0" class="menu-search">
+        <input v-model="searchQuery" type="text" class="input-base" placeholder="Поиск...">
       </div>
       
       <div class="menu-list">
@@ -45,9 +45,9 @@
           <template v-if="currentCategory === 'entity'">
             <!-- List entity types -->
             <div 
-              class="menu-item" 
               v-for="type in filteredEntityTypes" 
-              :key="type.key"
+              :key="type.key" 
+              class="menu-item"
               @click="selectEntityType(type.key)"
             >
               {{ type.label }}
@@ -58,11 +58,11 @@
           <template v-else>
             <!-- List Volumes, Arcs, or Chapters -->
             <div 
-              class="menu-item selectable" 
               v-for="item in filteredItems" 
-              :key="item.id"
-              @click="toggleItem(item)"
+              :key="item.id" 
+              class="menu-item selectable"
               :class="{ selected: isSelected(item) }"
+              @click="toggleItem(item)"
             >
               <div class="checkbox">
                 <i v-if="isSelected(item)" class="fas fa-check"></i>
@@ -75,11 +75,11 @@
         <!-- Level 2: Entity Items -->
         <template v-else-if="level === 2">
           <div 
-            class="menu-item selectable" 
             v-for="item in filteredItems" 
-            :key="item.id"
-            @click="toggleItem(item)"
+            :key="item.id" 
+            class="menu-item selectable"
             :class="{ selected: isSelected(item) }"
+            @click="toggleItem(item)"
           >
             <div class="checkbox">
               <i v-if="isSelected(item)" class="fas fa-check"></i>
@@ -93,7 +93,7 @@
         </div>
       </div>
       
-      <div class="menu-footer" v-if="selectedContexts.length > 0">
+      <div v-if="selectedContexts.length > 0" class="menu-footer">
         <button class="btn-primary full-width" @click="applySelection">
           Прикрепить ({{ selectedContexts.length }})
         </button>

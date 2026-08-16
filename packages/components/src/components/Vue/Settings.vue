@@ -20,7 +20,7 @@
 
             <p style="color:var(--text-muted);margin-bottom:24px;font-size:13px;">{{ t('settings.description', { category: getCategoryTitle(activeCategory) }) }}</p>
 
-            <div class="settings-grid" v-auto-animate>
+            <div v-auto-animate class="settings-grid">
               <!-- 1. ТЕМА ОФОРМЛЕНИЯ -->
               <div v-show="activeCategory === 'theme' || activeCategory === 'all'" class="settings-group">
                 <h3 class="form-label" style="color:var(--accent);margin-bottom:16px;">{{ t('settings.groupTitles.theme') }}</h3>
@@ -416,6 +416,11 @@ onMounted(async () => {
   settingsService.onChange((newSettings) => {
     settings.value = newSettings;
   });
+});
+
+defineExpose({
+  changeLocale,
+  resetSettings
 });
 </script>
 

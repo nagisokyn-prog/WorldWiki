@@ -1,7 +1,7 @@
 <template>
   <Transition name="modal-fade">
     <div v-if="isOpen" class="cloud-sync-overlay" @click.self="close">
-      <div class="cloud-sync-modal" v-motion-pop>
+      <div v-motion-pop class="cloud-sync-modal">
         <div class="cloud-sync-header">
           <h3>
             <i class="fas fa-cloud"></i>
@@ -34,7 +34,7 @@
           </div>
 
           <!-- Поле ввода кода авторизации -->
-          <div v-if="showAuthCodeInput" class="auth-code-section" v-motion-slide-top>
+          <div v-if="showAuthCodeInput" v-motion-slide-top class="auth-code-section">
             <p class="help-text">
               Скопируйте код из открывшегося окна браузера и вставьте его сюда:
             </p>
@@ -78,7 +78,7 @@
               <div v-else>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                   <h4 style="margin: 0; font-size: 14px;">Доступные бекапы</h4>
-                  <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" @click="fetchBackupsList" :disabled="isLoadingBackups" title="Обновить список">
+                  <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" :disabled="isLoadingBackups" title="Обновить список" @click="fetchBackupsList">
                     <i class="fas fa-sync-alt" :class="{'fa-spin': isLoadingBackups}"></i> Обновить
                   </button>
                 </div>

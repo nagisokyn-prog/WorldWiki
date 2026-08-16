@@ -207,7 +207,7 @@ export function useUniversalDatePicker(props: any, emit: any) {
     try {
       const list = await useCalendarStore().getCalendars(props.project);
       allCalendars.value = list && list.length > 0 ? list : [{ id: 'temp', is_default: true, data: CalendarMath.getDefaultCalendar() }];
-    } catch (e) {
+    } catch {
       allCalendars.value = [{ id: 'temp', is_default: true, data: CalendarMath.getDefaultCalendar() }];
     }
     

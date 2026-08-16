@@ -40,7 +40,7 @@
             @toggle-sidebar="showSidebar = !showSidebar"
           />
           
-          <div class="messages-container" ref="messagesContainer">
+          <div ref="messagesContainer" class="messages-container">
             <!-- Empty state: no chat selected OR chat selected but no messages -->
             <div v-if="messages.length === 0" class="empty-chat-state">
               <i class="fas fa-comment-dots"></i>
@@ -51,8 +51,8 @@
             </div>
             
             <div 
-              v-else
-              v-for="(group, idx) in renderedMessages" 
+              v-for="(group, idx) in renderedMessages"
+              v-else 
               :key="group.activeMessage.id || idx" 
               class="message-wrapper" 
               :class="'message-' + group.activeMessage.role"
@@ -63,6 +63,7 @@
               <div class="message-content-wrapper" style="flex: 1; min-width: 0;">
                 <details v-if="group.activeMessage.reasoning" class="thinking-accordion">
                   <summary>Мысли (Thinking...)</summary>
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <div class="thinking-content" v-html="renderMarkdown(group.activeMessage.reasoning)"></div>
                 </details>
                 
@@ -80,6 +81,7 @@
                   </div>
                 </div>
 
+                <!-- eslint-disable-next-line vue/no-v-html -->
                 <div v-else class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
                 
                 <div v-if="group.variants.length > 1" class="variant-switcher">
@@ -126,14 +128,14 @@
             <div class="context-bar">
               <AiContextSelector @context-selected="handleContextSelected" />
               <!-- Show selected context pills here -->
-              <div class="context-pills" v-if="selectedContext.length > 0">
-                <span class="context-pill" v-for="ctx in selectedContext" :key="ctx.id">
+              <div v-if="selectedContext.length > 0" class="context-pills">
+                <span v-for="ctx in selectedContext" :key="ctx.id" class="context-pill">
                   {{ ctx.title }}
                   <button @click="removeContext(ctx)"><i class="fas fa-times"></i></button>
                 </span>
               </div>
             </div>
-            <AiChatInput ref="chatInputRef" @submit="sendMessage" @cancel="cancelGeneration" :loading="isGenerating || isSending" />
+            <AiChatInput ref="chatInputRef" :loading="isGenerating || isSending" @submit="sendMessage" @cancel="cancelGeneration" />
           </div>
         </div>
       </div>
@@ -184,6 +186,7 @@ if (hash.includes('?')) {
 const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 
 const {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   chats,
   chatTree,
   activeChatId,
@@ -446,7 +449,8 @@ const logPanelClick = (event: Event) => {
 
 onMounted(() => {
   const container = document.querySelector('.wowilon-panel');
-  const listener = logPanelClick as EventListener;
+   
+  const listener = logPanelClick;
   if (container) {
     container.addEventListener('click', listener, true);
     console.log('[PANEL-CLICK] Global click listener attached to .wowilon-panel');

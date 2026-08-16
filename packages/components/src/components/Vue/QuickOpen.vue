@@ -41,6 +41,7 @@
               >
                 <span class="qo-item-emoji">{{ item.emoji }}</span>
                 <div class="qo-item-body">
+                  <!-- eslint-disable-next-line vue/no-v-html -->
                   <span class="qo-item-title" v-html="highlight(item.title)"></span>
                   <span class="qo-item-type">{{ item.typeLabel }}</span>
                 </div>
@@ -62,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, computed, onMounted, onUnmounted } from 'vue';
+import { ref, watch, nextTick, computed } from 'vue';
 
 /**
  * QuickOpen — tauri-surreal-kit

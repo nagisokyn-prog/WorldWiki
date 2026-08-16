@@ -63,9 +63,9 @@
             placeholder="# Напишите markdown..."
             style="flex: 1; background: #ffffff; color: #000000; padding: 16px; font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.6; resize: none; border: none; outline: none;"
             @input="onMarkdownInput"
-            @keydown="onMarkdownKeydown"
-            @keydown.ctrl.q.prevent="$emit('open-entity-selector')"
-            @keydown.ctrl.1049.prevent="$emit('open-entity-selector')"
+            @keydown.exact="onMarkdownKeydown"
+            @keydown.exact.ctrl.meta.shift.q.prevent="$emit('open-entity-selector')"
+            @keydown.exact.ctrl.meta.prevent.enter="$emit('open-entity-selector')"
           ></textarea>
         </div>
 
@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { EditorContent } from '@tiptap/vue-3';
 import { settingsService } from '@worldwiki/components';
 import { useTiptapEditor } from './useTiptapEditor';

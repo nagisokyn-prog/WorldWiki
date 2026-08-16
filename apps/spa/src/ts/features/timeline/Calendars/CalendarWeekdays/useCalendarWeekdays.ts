@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 
-export function useCalendarWeekdays(props: any, emit?: any) {
+export function useCalendarWeekdays(props: any, _emit?: any) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {
@@ -18,9 +18,23 @@ export function useCalendarWeekdays(props: any, emit?: any) {
     );
   };
 
+  const updateDay = (idx: number, val: string) => {
+    if (props.modelValue.названия_дней_недели) {
+      props.modelValue.названия_дней_недели[idx] = val;
+    }
+  };
+
+  const removeDay = (idx: number) => {
+    if (props.modelValue.названия_дней_недели) {
+      props.modelValue.названия_дней_недели.splice(idx, 1);
+    }
+  };
+
   return {
     isCollapsed,
     moveItem,
-    addDay
+    addDay,
+    updateDay,
+    removeDay
   };
 }

@@ -14,7 +14,7 @@ export interface ExportOptions {
 }
 
 export function useExport() {
-  async function exportChapters(projectName: string, chapters: ChapterExportData[], format: string, options: ExportOptions = {}): Promise<string> {
+  async function exportChapters(projectName: string, chapters: ChapterExportData[], format: string, _options: ExportOptions = {}): Promise<string> {
     if (!chapters || chapters.length === 0) {
       throw new Error('Нет глав для экспорта');
     }

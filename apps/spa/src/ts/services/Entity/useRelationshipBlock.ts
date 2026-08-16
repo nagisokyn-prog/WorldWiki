@@ -1,5 +1,4 @@
 import { ref, computed, watch } from 'vue';
-import * as api from '../api.client';
 import { entityApi } from './entity.api';
 import { settingsService } from '@worldwiki/components';
 
@@ -50,7 +49,7 @@ export function useRelationshipBlock(props: any, emit: any) {
   });
 
   // Helper для синхронизации item с родителем
-  const notifyItemUpdate = (e?: Event): void => {
+  const notifyItemUpdate = (_e?: Event): void => {
     emit('modified');
   };
 

@@ -6,7 +6,7 @@
     </div>
     
     <div v-show="!isCollapsed" style="margin-top: 12px;">
-      <div class="item-list" v-auto-animate>
+      <div v-auto-animate class="item-list">
         <div v-for="(month, mIdx) in modelValue.месяцы" :key="mIdx" class="item-row">
           <input v-model="month.название" type="text" class="item-name interactive-el" style="max-width: 120px;" />
           <input
@@ -34,7 +34,7 @@
             </button>
             <button
               class="btn-icon interactive-el"
-              @click.prevent="modelValue.месяцы.splice(Number(mIdx), 1)"
+              @click.prevent="removeMonth(Number(mIdx))"
             >
               🗑️
             </button>
@@ -53,5 +53,5 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
 });
 
-const { isCollapsed, moveItem, addMonth } = useCalendarMonths(props);
+const { isCollapsed, moveItem, addMonth, removeMonth } = useCalendarMonths(props);
 </script>

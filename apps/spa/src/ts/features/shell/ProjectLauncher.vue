@@ -3,7 +3,7 @@
         <AppDialog />
         <GlobalTimeViewer />
         <!-- Хедер -->
-        <header class="launcher-header glass-panel" v-motion-slide-top>
+        <header v-motion-slide-top class="launcher-header glass-panel">
             <div class="logo">
                 <h1>📚 World Wiki</h1>
                 <p>Выберите или создайте проект</p>
@@ -31,12 +31,12 @@ href="settings.html" class="glass-btn outline interactive-el" title="Настр�
         </header>
 
         <!-- Основной контент -->
-        <main class="launcher-main" v-motion-slide-bottom>
+        <main v-motion-slide-bottom class="launcher-main">
             <div class="projects-section">
                 <h2 class="glass-title">Ваши проекты</h2>
 
                 <!-- Сетка проектов -->
-                <div class="projects-grid glass-grid-auto" v-auto-animate>
+                <div v-auto-animate class="projects-grid glass-grid-auto">
                     <div
 v-for="project in sortedProjects" :key="project.name"
                         class="glass-card push-pull-container interactive-el project-card"
@@ -478,7 +478,6 @@ onMounted(async () => {
     loadProjects();
 });
 
-const cloudSyncModalRef = ref<any>(null);
 const cloudSyncMode = ref<'import' | 'export'>('export');
 
 function openCloudSync(mode: 'import' | 'export') {

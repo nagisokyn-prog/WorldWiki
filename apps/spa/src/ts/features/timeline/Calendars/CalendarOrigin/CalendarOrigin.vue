@@ -9,12 +9,17 @@
       <div v-if="modelValue.точка_отсчета" class="grid-3">
         <div class="calendar-field">
           <label>Год</label>
-          <input v-model.number="modelValue.точка_отсчета.год" type="number" class="interactive-el" />
+          <input
+            :value="modelValue.точка_отсчета.год"
+            type="number"
+            class="interactive-el"
+            @input="updateOriginField('год', Number(($event.target as HTMLInputElement).value))"
+          />
         </div>
         <div class="calendar-field">
           <label>Месяц</label>
           <XboxWheel
-            v-model.number="modelValue.точка_отсчета.месяц"
+            :model-value="modelValue.точка_отсчета.месяц"
             :horizontal="wheelHorizontal"
             :options="
               (modelValue.месяцы || []).map((m: any, idx: number) => ({
@@ -22,26 +27,28 @@
                 label: m.название,
               }))
             "
+            @update:model-value="val => updateOriginField('месяц', Number(val))"
           >
           </XboxWheel>
         </div>
         <div class="calendar-field">
           <label>День</label>
           <input
-            v-model.number="modelValue.точка_отсчета.день"
+            :value="modelValue.точка_отсчета.день"
             type="number"
             min="1"
             :max="
               getDaysInMonth(modelValue, modelValue.точка_отсчета.год, modelValue.точка_отсчета.месяц)
             "
             class="interactive-el"
+            @input="updateOriginField('день', Number(($event.target as HTMLInputElement).value))"
           />
         </div>
       </div>
       <div v-if="modelValue.точка_отсчета" class="calendar-field">
         <label>День недели</label>
         <XboxWheel
-          v-model.number="modelValue.точка_отсчета.день_недели"
+          :model-value="modelValue.точка_отсчета.день_недели"
           :horizontal="wheelHorizontal"
           :options="
             (modelValue.названия_дней_недели || []).map((day: string, idx: number) => ({
@@ -49,6 +56,7 @@
               label: day,
             }))
           "
+          @update:model-value="val => updateOriginField('день_недели', Number(val))"
         >
         </XboxWheel>
       </div>
@@ -65,5 +73,5 @@ const props = defineProps<{
   modelValue: CalendarData;
 }>();
 
-const { isCollapsed, wheelHorizontal, getDaysInMonth } = useCalendarOrigin(props);
+const { isCollapsed, wheelHorizontal, getDaysInMonth, updateOriginField } = useCalendarOrigin(props);
 </script>

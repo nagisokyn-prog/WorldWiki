@@ -10,13 +10,14 @@
         <div class="calendar-field">
           <label>Правило</label>
           <XboxWheel
-            v-model="modelValue.правило_високосного_года"
+            :model-value="modelValue.правило_високосного_года"
             :horizontal="wheelHorizontal"
             :options="[
               { value: 'григорианское', label: 'Григорианское' },
               { value: 'пользовательское', label: 'Пользовательское' },
               { value: 'отсутствует', label: 'Отсутствует' },
             ]"
+            @update:model-value="updateRule"
           >
           </XboxWheel>
         </div>
@@ -56,5 +57,5 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
 });
 
-const { isCollapsed, wheelHorizontal, customRuleMonth, customRuleDays } = useCalendarLeapYear(props);
+const { isCollapsed, wheelHorizontal, updateRule, customRuleMonth, customRuleDays } = useCalendarLeapYear(props);
 </script>

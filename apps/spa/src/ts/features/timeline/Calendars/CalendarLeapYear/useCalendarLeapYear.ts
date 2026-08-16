@@ -1,7 +1,7 @@
 import { ref, onMounted, computed } from "vue";
 import { settingsService } from '@worldwiki/components';
 
-export function useCalendarLeapYear(props: any, emit?: any) {
+export function useCalendarLeapYear(props: any, _emit?: any) {
   const isCollapsed = ref(false);
 
   const wheelHorizontal = ref(
@@ -16,6 +16,10 @@ export function useCalendarLeapYear(props: any, emit?: any) {
       props.modelValue.пользовательское_високосное_правило = { месяц: 0, день_смещения: 1 };
     }
   });
+
+  const updateRule = (val: string) => {
+    props.modelValue.правило_високосного_года = val;
+  };
 
   const customRuleMonth = computed({
     get: () => props.modelValue.пользовательское_високосное_правило?.месяц || 0,
@@ -42,6 +46,7 @@ export function useCalendarLeapYear(props: any, emit?: any) {
   return {
     isCollapsed,
     wheelHorizontal,
+    updateRule,
     customRuleMonth,
     customRuleDays
   };

@@ -34,7 +34,7 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
         downloadAnchorNode.remove();
     };
 
-    const loadSchema = async (forceRefetch = false) => {
+    const loadSchema = async (_forceRefetch = false) => {
         try {
             const schemas = await api.getEntitySchemas(props.project);
             const foundSchema = schemas.find((s: any) => s.type_key === props.entityType);
@@ -48,7 +48,7 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
                     } else {
                         throw new Error('Not found');
                     }
-                } catch (err) {
+                } catch {
                     schema.value = {
                         name: props.entityType,
                         entityType: props.entityType,
@@ -123,7 +123,6 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
 
     const deleteSection = async (idx: number) => {
         if (idx === 0) return; // Нельзя удалять первую страницу
-        const { confirm } = await import('@tauri-apps/plugin-dialog');
         const { appConfirm } = await import('@worldwiki/components');
         if (await appConfirm('Удалить страницу?')) {
             schema.value.sections.splice(idx, 1);

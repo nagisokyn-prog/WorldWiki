@@ -5,7 +5,7 @@
       <div style="display: flex; align-items: center; gap: 30px;">
         <div style="font-weight: 900; color: var(--accent); font-size: 14px; display: flex; align-items: center; gap: 8px;">
           ⚙️ СХЕМА:
-          <input :value="hook.localEntityType.value" @input="setLocalEntityType(($event.target as HTMLInputElement).value)" class="input-base" style="background: transparent; border: none; font-weight: 900; color: var(--accent); font-size: 14px; text-transform: uppercase; padding: 0;" placeholder="ИМЯ СХЕМЫ" />
+          <input :value="hook.localEntityType.value" class="input-base" style="background: transparent; border: none; font-weight: 900; color: var(--accent); font-size: 14px; text-transform: uppercase; padding: 0;" placeholder="ИМЯ СХЕМЫ" @input="setLocalEntityType(($event.target as HTMLInputElement).value)" />
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">

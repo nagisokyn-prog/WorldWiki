@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { calendarApi } from '../services/api/calendar.api';
 
 export interface TimelineEvent {
@@ -23,8 +23,9 @@ export const useTimelineStore = defineStore('timeline', () => {
   const currentProject = ref<string | null>(null);
   const timelines = ref<ChapterTimeline[]>([]);
 
-  async function init(project: string) {
-    if (currentProject.value === project) return;
+  async function init(project: string | null) {
+    // Allow re-initialization with null to clear timelines
+    if (project !== null && currentProject.value === project) return;
     currentProject.value = project;
     await loadTimelines();
   }
@@ -50,15 +51,15 @@ export const useTimelineStore = defineStore('timeline', () => {
 
   function getEventsForChapter(chapterId: string): TimelineEvent[] {
     const timeline = getTimelineForChapter(chapterId);
-    return timeline?.events ? structuredClone(timeline.events) : [];
+    return timeline?.events ? structuredClone(toRaw(timeline.events)) : [];
   }
 
   function getParticipantsForChapter(chapterId: string): Participant[] {
     const timeline = getTimelineForChapter(chapterId);
-    return timeline?.participants ? structuredClone(timeline.participants) : [];
+    return timeline?.participants ? structuredClone(toRaw(timeline.participants)) : [];
   }
 
-  async function clearChapterTimeline(chapterId: string): Promise<boolean> {
+  function clearChapterTimeline(chapterId: string): boolean {
     const index = timelines.value.findIndex(t => t.chapter_id === chapterId);
     if (index !== -1) {
       timelines.value.splice(index, 1);
@@ -72,7 +73,7 @@ export const useTimelineStore = defineStore('timeline', () => {
       if (timeline.events) {
         timeline.events.forEach(event => {
           allEvents.push({
-            ...structuredClone(event),
+            ...structuredClone(toRaw(event)),
             chapter_id: timeline.chapter_id,
             chapter_title: timeline.chapter_title
           });

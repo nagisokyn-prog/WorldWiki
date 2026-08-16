@@ -16,7 +16,7 @@ export const chapterApi = {
   },
 
   getChapter: async (project: string, chapterId: string): Promise<Chapter> => {
-    let c = await api.getChapter(chapterId);
+    const c = await api.getChapter(chapterId);
     return processIds(c);
   },
 

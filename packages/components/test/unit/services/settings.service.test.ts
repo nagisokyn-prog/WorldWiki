@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Import the service after mocks are set up
 import { settingsService } from '../../../src/ts/services/settings.service';
-import type { AppSettings } from '../../../src/ts/types/settings';
 
 // Type augmentation for global mocks
 declare global {

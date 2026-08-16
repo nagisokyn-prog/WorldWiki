@@ -3,7 +3,7 @@ import { settingsService } from '@worldwiki/components';
 import { CalendarMath } from "../../../../services/Calendars/calendar.math";
 import type { CalendarData } from "../../../../services/Calendars/calendar.types";
 
-export function useCalendarOrigin(props: { modelValue: CalendarData }, emit?: any) {
+export function useCalendarOrigin(props: { modelValue: CalendarData }, _emit?: any) {
   const isCollapsed = ref(false);
 
   const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
@@ -11,6 +11,12 @@ export function useCalendarOrigin(props: { modelValue: CalendarData }, emit?: an
   const wheelHorizontal = ref(
     settingsService.getSettings()?.dropdowns?.wheelOrientation === "horizontal",
   );
+
+  const updateOriginField = (field: string, val: number) => {
+    if (props.modelValue.точка_отсчета) {
+      (props.modelValue.точка_отсчета as any)[field] = val;
+    }
+  };
 
   onMounted(() => {
     settingsService.onChange(
@@ -24,6 +30,7 @@ export function useCalendarOrigin(props: { modelValue: CalendarData }, emit?: an
   return {
     isCollapsed,
     wheelHorizontal,
-    getDaysInMonth
+    getDaysInMonth,
+    updateOriginField
   };
 }

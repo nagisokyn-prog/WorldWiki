@@ -16,7 +16,7 @@
 
       <div class="wowilon-body">
       <div class="wowilon-chat-area">
-        <div class="messages-container" ref="messagesContainer">
+        <div ref="messagesContainer" class="messages-container">
           <div v-if="renderedMessages.length === 0" class="empty-chat-state">
             <i class="fas fa-comment-dots"></i>
             <p>Чем могу помочь сегодня?</p>
@@ -31,12 +31,13 @@
             <div class="message-avatar">
               <i :class="group.activeMessage.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
             </div>
-            <div class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
+            <!-- eslint-disable-next-line vue/no-v-html -->
+<div class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
           </div>
         </div>
 
         <div class="chat-input-container">
-          <AiChatInput @submit="handleSend" :loading="isGenerating" />
+          <AiChatInput :loading="isGenerating" @submit="handleSend" />
         </div>
         </div>
       </div>
@@ -122,7 +123,8 @@ const logClick = (event: Event) => {
 onMounted(() => {
   // Attach to the root container
   const container = document.querySelector('.wowilon-app-container');
-  const listener = logClick as EventListener;
+   
+  const listener = logClick;
   if (container) {
     container.addEventListener('click', listener, true); // capture phase
     console.log('[CHAT-CLICK] Global click listener attached to .wowilon-app-container');

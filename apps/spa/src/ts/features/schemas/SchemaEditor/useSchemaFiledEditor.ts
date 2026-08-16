@@ -19,6 +19,26 @@ export function useSchemaFieldEditor(props: any) {
         { value: 10, label: 'Октябрь' }, { value: 11, label: 'Ноябрь' }, { value: 12, label: 'Декабрь' }
     ];
 
+    const updateLabel = (val: string) => {
+        props.item.label = val;
+    };
+
+    const toggleHidden = () => {
+        props.item.hidden = !props.item.hidden;
+    };
+
+    const updateVal = (val: any) => {
+        props.item._val = val;
+    };
+
+    const setType = (type: string) => {
+        props.item.type = type;
+    };
+
+    const updatePlaceholder = (val: string) => {
+        props.item.placeholder = val;
+    };
+
     const addOption = () => {
         if (!props.item.options) props.item.options = [];
         props.item.options.push({ value: 'new_val', label: 'Новая опция' });
@@ -31,6 +51,11 @@ export function useSchemaFieldEditor(props: any) {
     return {
         typeOptions,
         monthsList,
+        updateLabel,
+        toggleHidden,
+        updateVal,
+        setType,
+        updatePlaceholder,
         addOption,
         removeOption
     };

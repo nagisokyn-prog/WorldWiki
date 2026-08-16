@@ -94,7 +94,7 @@ defineProps<{
   renamingValue?: string;
 }>();
 
-const emit = defineEmits([
+defineEmits([
   'toggle-expand', 'click-node', 'dblclick-node', 'ctx-node', 
   'create-in', 'update:renaming-value', 'commit-rename', 'cancel-rename',
   'drag-start', 'drag-enter', 'drag-over', 'drag-leave', 'drop-node'

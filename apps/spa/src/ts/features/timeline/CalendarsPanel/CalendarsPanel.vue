@@ -2,7 +2,7 @@
   <div class="tool-section timeline-section">
     <h4><i class="fas fa-calendar-alt"></i> Календари проекта</h4>
     
-    <div class="timeline-events-list" v-auto-animate>
+    <div v-auto-animate class="timeline-events-list">
       <div
         v-if="!project"
         style="color: #e74c3c; font-size: 12px; padding: 10px; text-align: center; border: 1px dashed var(--border-color); border-radius: 8px;"
@@ -47,7 +47,7 @@
           </div>
 
           <div class="calendar-top-row-grid">
-            <CalendarSettings :is-master="cal.is_master" v-model="cal.data" />
+            <CalendarSettings v-model="cal.data" :is-master="cal.is_master" />
             <CalendarWeekdays v-model="cal.data" />
             <CalendarMonths v-model="cal.data" />
             <CalendarLeapYear v-model="cal.data" />
@@ -93,7 +93,6 @@ const props = defineProps<{ project?: string }>();
 const {
   project,
   calendars,
-  expandedCalendars,
   isExpanded,
   toggleExpand,
   addCalendar,

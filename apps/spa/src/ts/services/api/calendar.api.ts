@@ -12,7 +12,12 @@ export const calendarApi = {
 
   saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
     const plainData = JSON.parse(JSON.stringify(calendarData));
-    const { id, is_default, is_master, _id, ...calendarPayload } = plainData;
+    const { id, is_default, is_master } = plainData;
+    const calendarPayload = { ...plainData };
+    delete calendarPayload.id;
+    delete calendarPayload._id;
+    delete calendarPayload.is_default;
+    delete calendarPayload.is_master;
     const rustCalendar = {
       id: id || null,
       project_id: projectRecordId(project),

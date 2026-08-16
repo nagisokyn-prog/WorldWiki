@@ -25,7 +25,7 @@
  */
 
 import {
-  ref, shallowRef, computed, watch, onMounted,
+  ref, shallowRef, watch, onMounted,
   triggerRef, type Ref
 } from 'vue';
 import { useEditorGroups } from './useEditorGroups';

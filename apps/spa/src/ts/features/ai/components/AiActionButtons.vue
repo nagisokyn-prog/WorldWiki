@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-action-buttons" v-if="isVisible">
+  <div v-if="isVisible" class="ai-action-buttons">
     <button v-if="isGenerating" class="action-btn cancel" @click="$emit('cancel')">
       <i class="fas fa-stop-circle"></i> Отменить
     </button>

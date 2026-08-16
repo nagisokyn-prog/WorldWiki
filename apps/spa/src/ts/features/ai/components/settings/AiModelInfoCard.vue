@@ -43,10 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { AiModelInfo } from '../../types/ai.types';
 
-const props = defineProps<{
+defineProps<{
   model: AiModelInfo | null;
 }>();
 

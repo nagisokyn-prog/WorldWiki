@@ -36,14 +36,14 @@
               </select>
             </div>
             
-            <div class="form-group" v-if="selectedProvider !== 'local'">
+            <div v-if="selectedProvider !== 'local'" class="form-group">
               <label>API Key</label>
-              <input type="password" v-model="apiKey" class="input-base" placeholder="Введите ключ API">
+              <input v-model="apiKey" type="password" class="input-base" placeholder="Введите ключ API">
             </div>
 
             <div class="form-group">
               <label>Модель</label>
-              <input type="text" v-model="modelName" class="input-base" placeholder="Например: claude-3-7-sonnet-20250219">
+              <input v-model="modelName" type="text" class="input-base" placeholder="Например: claude-3-7-sonnet-20250219">
             </div>
             
             <button class="btn-primary" @click="saveProvider">Сохранить провайдера</button>
@@ -54,7 +54,7 @@
             <div class="sandbox-header">
               <h3>Разрешения и автоодобрение</h3>
               <div class="toggle-switch">
-                <input type="checkbox" id="global-sandbox" v-model="sandboxEnabled">
+                <input id="global-sandbox" v-model="sandboxEnabled" type="checkbox">
                 <label for="global-sandbox">Включить автоодобрение</label>
               </div>
             </div>
@@ -65,7 +65,7 @@
 
             <div class="form-group">
               <label>Пресеты разрешений</label>
-              <select v-model="preset" class="input-base" @change="applyPreset" :disabled="!sandboxEnabled">
+              <select v-model="preset" class="input-base" :disabled="!sandboxEnabled" @change="applyPreset">
                 <option value="safe">Безопасный (Только чтение и аналитика)</option>
                 <option value="balanced">Сбалансированный (Чтение + создание, без удаления)</option>
                 <option value="expert">Экспертный (Все действия, кроме удаления)</option>
@@ -75,23 +75,23 @@
 
             <div class="categories-grid" :class="{ disabled: !sandboxEnabled }">
               <label class="checkbox-label">
-                <input type="checkbox" v-model="categories.read">
+                <input v-model="categories.read" type="checkbox">
                 <span>Чтение данных (поиск, граф, главы)</span>
               </label>
               <label class="checkbox-label">
-                <input type="checkbox" v-model="categories.analyze">
+                <input v-model="categories.analyze" type="checkbox">
                 <span>Аналитика (противоречия, отчёты)</span>
               </label>
               <label class="checkbox-label">
-                <input type="checkbox" v-model="categories.edit_entities">
+                <input v-model="categories.edit_entities" type="checkbox">
                 <span>Изменение сущностей</span>
               </label>
               <label class="checkbox-label">
-                <input type="checkbox" v-model="categories.edit_relations">
+                <input v-model="categories.edit_relations" type="checkbox">
                 <span>Изменение связей</span>
               </label>
               <label class="checkbox-label">
-                <input type="checkbox" v-model="categories.edit_content">
+                <input v-model="categories.edit_content" type="checkbox">
                 <span>Изменение контента (текст глав)</span>
               </label>
             </div>
@@ -102,24 +102,24 @@
             
             <div class="form-group">
               <label>Denylist (Типы сущностей)</label>
-              <input type="text" v-model="denylistText" class="input-base" placeholder="Например: organization, state" :disabled="!sandboxEnabled">
+              <input v-model="denylistText" type="text" class="input-base" placeholder="Например: organization, state" :disabled="!sandboxEnabled">
               <span class="hint">Изменение этих типов ВСЕГДА будет требовать одобрения.</span>
             </div>
 
             <div class="form-group">
               <label>Allowlist (Типы сущностей)</label>
-              <input type="text" v-model="allowlistText" class="input-base" placeholder="Например: character, location" :disabled="!sandboxEnabled">
+              <input v-model="allowlistText" type="text" class="input-base" placeholder="Например: character, location" :disabled="!sandboxEnabled">
               <span class="hint">Разрешает изменение этих типов даже при выключенной категории (если не в Denylist).</span>
             </div>
             
             <div class="sandbox-header" style="margin-top: 15px;">
               <div class="toggle-switch">
-                <input type="checkbox" id="is-global-setting" v-model="isGlobal">
+                <input id="is-global-setting" v-model="isGlobal" type="checkbox">
                 <label for="is-global-setting">Применить для всех проектов</label>
               </div>
             </div>
 
-            <button class="btn-primary" @click="saveSandbox" style="margin-top: 20px;">Сохранить песочницу</button>
+            <button class="btn-primary" style="margin-top: 20px;" @click="saveSandbox">Сохранить песочницу</button>
           </div>
         </div>
       </div>

@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { invoke, stringifyId, processIds } from '../../ts/services/api.service';
+import { invoke, processIds } from '../../ts/services/api.service';
 
 const { t } = useI18n();
 

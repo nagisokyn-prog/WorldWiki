@@ -5,14 +5,14 @@
         <span v-if="!isFirst" style="opacity: 0.2; font-size: 14px;">⠿</span>
         <span v-else style="opacity: 0.5; font-size: 14px; color: var(--accent);">🔒</span>
         
-        <input v-model="item.label" class="form-label" style="margin: 0; background: transparent; border: none; font-size: 11px; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; width: 100%;" placeholder="НАЗВАНИЕ ПОЛЯ" :disabled="isFirst" />
+        <input :value="item.label" class="form-label" style="margin: 0; background: transparent; border: none; font-size: 11px; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 1px; width: 100%;" placeholder="НАЗВАНИЕ ПОЛЯ" :disabled="isFirst" @input="updateLabel(($event.target as HTMLInputElement).value)" />
       </div>
       
       <div v-if="!isFirst" style="display: flex; gap: 8px; align-items: center;">
         <button
 style="background: none; border: none; cursor: pointer; font-size: 12px;" 
                 :title="item.hidden ? 'Показать поле' : 'Скрыть поле'"
-                @click="item.hidden = !item.hidden">
+                @click="toggleHidden">
           {{ item.hidden ? '👁️‍🗨️' : '👁️' }}
         </button>
         <button
@@ -44,7 +44,7 @@ style="color: #f55; background: none; border: none; font-size: 10px; cursor: poi
 
        <!-- RANGE -->
        <div v-else-if="item.type === 'range'" style="display: flex; align-items: center; gap: 20px;">
-          <input v-model.number="item._val" type="range" :min="item.min || 0" :max="item.max || 100" style="flex: 1; accent-color: var(--accent);" />
+          <input :value="item._val || 0" type="range" :min="item.min || 0" :max="item.max || 100" style="flex: 1; accent-color: var(--accent);" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
           <div style="background: var(--accent); color: var(--text-main); padding: 4px 12px; border-radius: 8px; font-family: monospace; font-weight: 900; font-size: 16px; min-width: 60px; text-align: center; box-shadow: 0 0 15px var(--accent-glow);">{{ item._val || (item.value || 0) }}</div>
        </div>
 
@@ -55,7 +55,7 @@ style="color: #f55; background: none; border: none; font-size: 10px; cursor: poi
        </div>
 
        <textarea v-else-if="item.type === 'textarea'" class="input-base" style="min-height: 80px; font-size: 13px;" :placeholder="item.placeholder || 'Введите текст...'"></textarea>
-       <input v-else v-model="item._val" class="input-base" style="font-size: 13px; padding: 10px;" :placeholder="item.placeholder || 'Введите значение...'" :type="item.type === 'number' ? 'number' : 'text'" />
+       <input v-else :value="item._val || ''" class="input-base" style="font-size: 13px; padding: 10px;" :placeholder="item.placeholder || 'Введите значение...'" :type="item.type === 'number' ? 'number' : 'text'" @input="updateVal(($event.target as HTMLInputElement).value)" />
     </div>
 
     <!-- SETTINGS AREA -->
@@ -64,12 +64,12 @@ style="color: #f55; background: none; border: none; font-size: 10px; cursor: poi
           <div style="flex: 1;">
              <label class="form-label-micro">ТИП КИРПИЧА</label>
              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini" :disabled="isFirst" :style="{ padding: '4px 8px', fontSize: '10px', opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer', background: item.type === t.val ? 'var(--accent)' : 'var(--bg-panel)', border: '1px solid ' + (item.type === t.val ? 'var(--accent)' : 'var(--border-color)'), color: 'var(--text-main)', borderRadius: '4px' }" @click="!isFirst && (item.type = t.val)">{{ t.icon }} {{ t.label }}</button>
+                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini" :disabled="isFirst" :style="{ padding: '4px 8px', fontSize: '10px', opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer', background: item.type === t.val ? 'var(--accent)' : 'var(--bg-panel)', border: '1px solid ' + (item.type === t.val ? 'var(--accent)' : 'var(--border-color)'), color: 'var(--text-main)', borderRadius: '4px' }" @click="!isFirst && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
              </div>
           </div>
           <div style="flex: 1;">
              <label class="form-label-micro">ПОДСКАЗКА (PLACEHOLDER)</label>
-             <input v-model="item.placeholder" class="input-base" style="font-size: 11px; padding: 8px;" placeholder="Подсказка..." :disabled="isFirst" />
+             <input :value="item.placeholder" class="input-base" style="font-size: 11px; padding: 8px;" placeholder="Подсказка..." :disabled="isFirst" @input="updatePlaceholder(($event.target as HTMLInputElement).value)" />
           </div>
        </div>
 
@@ -98,13 +98,18 @@ const props = defineProps<{
   isFirst: boolean;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
   remove: [];
 }>();
 
 const {
   typeOptions,
   monthsList,
+  updateLabel,
+  toggleHidden,
+  updateVal,
+  setType,
+  updatePlaceholder,
   addOption,
   removeOption
 } = useSchemaFieldEditor(props);

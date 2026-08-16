@@ -25,6 +25,23 @@ pub struct PerformanceInfo {
     pub cores: usize,
 }
 
+/// Классифицирует уровень производительности по сырым метрикам.
+/// Чистая функция — легко тестировать граничные пороги без запуска бенчмарка.
+/// 
+/// Пороги:
+/// - HIGH:   CPU < 150ms, Mem < 300ms, 8+ cores
+/// - MEDIUM: CPU < 400ms, Mem < 600ms, 4+ cores
+/// - LOW:    всё остальное
+pub fn classify_performance(cpu_ms: u64, mem_ms: u64, cores: usize) -> PerformanceLevel {
+    if cpu_ms < 150 && mem_ms < 300 && cores >= 8 {
+        PerformanceLevel::High
+    } else if cpu_ms < 400 && mem_ms < 600 && cores >= 4 {
+        PerformanceLevel::Medium
+    } else {
+        PerformanceLevel::Low
+    }
+}
+
 /// Run a performance benchmark.
 /// Tests are tuned for web-app workloads (CSS animations, DOM-like ops, backdrop-filter).
 pub fn run_benchmark() -> PerformanceInfo {
@@ -60,20 +77,8 @@ pub fn run_benchmark() -> PerformanceInfo {
         .unwrap_or(2);
     println!("🔧 [BENCH] Cores: {}", cores);
 
-    // 4. Determine level
-    // HIGH:   CPU < 150ms, Mem < 300ms, 8+ cores
-    // MEDIUM: CPU < 400ms, Mem < 600ms, 4+ cores
-    // LOW:    everything else
-    let level = if cpu_score < 150 && memory_mb < 300 && cores >= 8 {
-        println!("🚀 [BENCH] Level: HIGH");
-        PerformanceLevel::High
-    } else if cpu_score < 400 && memory_mb < 600 && cores >= 4 {
-        println!("⚡ [BENCH] Level: MEDIUM");
-        PerformanceLevel::Medium
-    } else {
-        println!("🐢 [BENCH] Level: LOW");
-        PerformanceLevel::Low
-    };
+    // 4. Determine level via pure function
+    let level = classify_performance(cpu_score, memory_mb, cores);
 
     PerformanceInfo {
         level: level.as_str().to_string(),

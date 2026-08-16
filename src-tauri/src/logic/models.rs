@@ -420,27 +420,29 @@ mod ts_export_tests {
     #[test]
     fn export_bindings() {
         let export_err_msg = "Failed to export TS bindings";
-        Entity::export().expect(export_err_msg);
-        EntitySchema::export().expect(export_err_msg);
-        FieldDef::export().expect(export_err_msg);
-        EntityRel::export().expect(export_err_msg);
-        RelationSchema::export().expect(export_err_msg);
-        AutoApprovalSetting::export().expect(export_err_msg);
-        AiProfile::export().expect(export_err_msg);
-        Artifact::export().expect(export_err_msg);
-        AiSkill::export().expect(export_err_msg);
-        Plan::export().expect(export_err_msg);
-        Volume::export().expect(export_err_msg);
-        Arc::export().expect(export_err_msg);
-        Chapter::export().expect(export_err_msg);
-        Tag::export().expect(export_err_msg);
-        Calendar::export().expect(export_err_msg);
-        Cites::export().expect(export_err_msg);
-        Chat::export().expect(export_err_msg);
-        ChatMessage::export().expect(export_err_msg);
-        ChatContainsMessage::export().expect(export_err_msg);
-        MessageContainsMessage::export().expect(export_err_msg);
-        ProjectContainsChat::export().expect(export_err_msg);
-        ChatContainsChat::export().expect(export_err_msg);
+        let cfg = ts_rs::Config::default();
+
+        Entity::export(&cfg).expect(export_err_msg);
+        EntitySchema::export(&cfg).expect(export_err_msg);
+        FieldDef::export(&cfg).expect(export_err_msg);
+        EntityRel::export(&cfg).expect(export_err_msg);
+        RelationSchema::export(&cfg).expect(export_err_msg);
+        AutoApprovalSetting::export(&cfg).expect(export_err_msg);
+        AiProfile::export(&cfg).expect(export_err_msg);
+        Artifact::export(&cfg).expect(export_err_msg);
+        AiSkill::export(&cfg).expect(export_err_msg);
+        Plan::export(&cfg).expect(export_err_msg);
+        Volume::export(&cfg).expect(export_err_msg);
+        Arc::export(&cfg).expect(export_err_msg);
+        Chapter::export(&cfg).expect(export_err_msg);
+        Tag::export(&cfg).expect(export_err_msg);
+        Calendar::export(&cfg).expect(export_err_msg);
+        Cites::export(&cfg).expect(export_err_msg);
+        Chat::export(&cfg).expect(export_err_msg);
+        ChatMessage::export(&cfg).expect(export_err_msg);
+        ChatContainsMessage::export(&cfg).expect(export_err_msg);
+        MessageContainsMessage::export(&cfg).expect(export_err_msg);
+        ProjectContainsChat::export(&cfg).expect(export_err_msg);
+        ChatContainsChat::export(&cfg).expect(export_err_msg);
     }
 }

@@ -1,24 +1,56 @@
 use serde_json::Value;
 use std::env;
 use std::fs;
+use std::path::PathBuf;
+use std::sync::OnceLock;
 
-// ─── File system ──────────────────────────────────────────────────────────────
+// ─── DataDirProvider: инъекция пути к data/ для тестов ────────────────────────
 
-fn get_data_dir() -> std::path::PathBuf {
-    if let Ok(exe) = env::current_exe() {
-        // Dev: target/debug/app.exe -> target/debug -> target -> tauri_shell
-        if let Some(debug_dir) = exe.parent() {
-            if let Some(target_dir) = debug_dir.parent() {
-                if target_dir.ends_with("target") {
-                    if let Some(root) = target_dir.parent() {
-                        return root.join("data");
+/// Трейт для получения каталога данных. Позволяет подменять в тестах.
+pub trait DataDirProvider: Send + Sync {
+    fn get_data_dir(&self) -> PathBuf;
+}
+
+/// Дефолтный провайдер: ищет `target/.../data` (dev) или `cwd/data` (prod).
+struct DefaultDataDirProvider;
+
+impl DataDirProvider for DefaultDataDirProvider {
+    fn get_data_dir(&self) -> PathBuf {
+        if let Ok(exe) = env::current_exe() {
+            // Dev: target/debug/app.exe -> target/debug -> target -> tauri_shell
+            if let Some(debug_dir) = exe.parent() {
+                if let Some(target_dir) = debug_dir.parent() {
+                    if target_dir.ends_with("target") {
+                        if let Some(root) = target_dir.parent() {
+                            return root.join("data");
+                        }
                     }
                 }
             }
         }
+        // Prod or fallback
+        env::current_dir().unwrap_or_default().join("data")
     }
-    // Prod or fallback
-    env::current_dir().unwrap_or_default().join("data")
+}
+
+/// Глобальный провайдер (по умолчанию — DefaultDataDirProvider).
+/// В тестах можно заменить через `set_data_dir_provider()`.
+static DATA_DIR_PROVIDER: OnceLock<Box<dyn DataDirProvider>> = OnceLock::new();
+
+/// Получить текущий провайдер (ленивая инициализация дефолта).
+fn data_dir_provider() -> &'static Box<dyn DataDirProvider> {
+    DATA_DIR_PROVIDER.get_or_init(|| Box::new(DefaultDataDirProvider))
+}
+
+/// Установить кастомный провайдер (только для тестов!).
+/// Panics, если уже был установлен.
+pub fn set_data_dir_provider(provider: Box<dyn DataDirProvider>) {
+    DATA_DIR_PROVIDER.set(provider).expect("DataDirProvider already set");
+}
+
+/// Получить каталог данных через активный провайдер.
+fn get_data_dir() -> PathBuf {
+    data_dir_provider().get_data_dir()
 }
 
 /// Upload a photo/image bytes → saves to `data/user_images/` with a timestamp prefix.

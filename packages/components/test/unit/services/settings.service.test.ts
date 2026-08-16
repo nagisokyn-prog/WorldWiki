@@ -16,6 +16,71 @@ declare global {
   } | undefined;
 }
 
+/**
+ * Пересоздаёт моки DOM/localStorage.
+ * Нужно вызывать в beforeEach ПОСЛЕ vi.restoreAllMocks(), т.к. тот
+ * сбрасывает setProperty/toggle/getItem обратно к реальным happy-dom функциям.
+ */
+function setupDomMocks(): void {
+  // localStorage
+  const localStorageMock = {
+    getItem: vi.fn(() => null),
+    setItem: vi.fn(),
+    removeItem: vi.fn(),
+    clear: vi.fn(),
+  };
+  Object.defineProperty(window, 'localStorage', {
+    writable: true,
+    configurable: true,
+    value: localStorageMock,
+  });
+
+  // document.documentElement.style
+  Object.defineProperty(document, 'documentElement', {
+    writable: true,
+    configurable: true,
+    value: {
+      style: {
+        setProperty: vi.fn(),
+        getPropertyValue: vi.fn(),
+      },
+    },
+  });
+
+  // document.body + classList
+  Object.defineProperty(document, 'body', {
+    writable: true,
+    configurable: true,
+    value: {
+      classList: {
+        add: vi.fn(),
+        remove: vi.fn(),
+        toggle: vi.fn(),
+        contains: vi.fn(),
+      },
+      setAttribute: vi.fn(),
+      appendChild: vi.fn(),
+    },
+  });
+
+  // document.getElementById — по умолчанию отдаёт контейнер для ww-background
+  Object.defineProperty(document, 'getElementById', {
+    writable: true,
+    configurable: true,
+    value: vi.fn((id: string) => {
+      if (id === 'ww-background') {
+        const element = document.createElement('div');
+        element.id = 'ww-background';
+        element.style.cssText = '';
+        element.innerHTML = '';
+        element.appendChild = vi.fn();
+        return element;
+      }
+      return null;
+    }),
+  });
+}
+
 describe('SettingsService', () => {
   let originalWindow: typeof window;
   let originalDocument: typeof document;
@@ -26,19 +91,20 @@ describe('SettingsService', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
-    
+    setupDomMocks();
+
     // Reset the service to default settings
     settingsService.resetSettings();
-    
+
     // Store originals
-    originalWindow = global.window;
-    originalDocument = global.document;
-    originalLocalStorage = global.localStorage;
-    originalConsole = global.console;
+    originalWindow = globalThis.window;
+    originalDocument = globalThis.document;
+    originalLocalStorage = globalThis.localStorage;
+    originalConsole = globalThis.console;
     originalTauri = globalThis.__TAURI__;
-    
+
     // Mock console to reduce noise
-    global.console = {
+    globalThis.console = {
       ...console,
       log: vi.fn(),
       warn: vi.fn(),
@@ -47,10 +113,10 @@ describe('SettingsService', () => {
   });
 
   afterEach(() => {
-    global.window = originalWindow;
-    global.document = originalDocument;
-    global.localStorage = originalLocalStorage;
-    global.console = originalConsole;
+    globalThis.window = originalWindow;
+    globalThis.document = originalDocument;
+    globalThis.localStorage = originalLocalStorage;
+    globalThis.console = originalConsole;
     globalThis.__TAURI__ = originalTauri;
   });
 
@@ -493,6 +559,7 @@ describe('SettingsService', () => {
       expect(container!.style.backgroundColor).toBe('var(--bg-base)');
     });
 
+    
     it('should create image element for image background', () => {
       const el = document.createElement('div');
       el.appendChild = function(child: any) { this.innerHTML += (child as HTMLElement).outerHTML; return child; };

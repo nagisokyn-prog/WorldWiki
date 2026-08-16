@@ -85,7 +85,7 @@ Object.defineProperty(document, 'getElementById', {
 });
 
 // Mock console methods to reduce noise in tests
-global.console = {
+globalThis.console = {
   ...console,
   log: vi.fn(),
   warn: vi.fn(),

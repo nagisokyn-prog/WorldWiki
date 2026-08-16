@@ -46,3 +46,4 @@ backend/tauri_shell/target/
 backend/tauri_shell/data/surreal_db/
 backend/tauri_shell/Cargo.lock
 backend/tauri_shell/.taurignore
+target/

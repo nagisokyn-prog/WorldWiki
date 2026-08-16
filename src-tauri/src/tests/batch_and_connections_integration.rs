@@ -1,0 +1,205 @@
+//! Интеграционные тесты пакетных операций (`batch.rs`) и графа связей (`connections.rs`).
+//!
+//! Тестируют:
+//! - Выборку нескольких категорий сущностей за 1 запрос (`get_entities_batch`).
+//! - Атомарное сохранение сущности с каскадным обновлением связанных записей (`save_entity_with_relations`).
+//! - Пакетное обновление графовых ребер `entity_rel` (`upsert_connections_batch`).
+//! - Форматирование графа для UI канваса с фильтрацией по главам (`get_connections`).
+//! - Точечное удаление исходящих связей источника (`remove_connections_by_source`).
+
+use serde_json::json;
+use crate::logic::batch::{get_entities_batch_inner, save_entity_with_relations_inner, upsert_connections_batch_inner};
+use crate::logic::connections::{get_connections_inner, remove_connections_by_source_inner};
+use crate::logic::entities::save_entity_inner;
+use crate::logic::models::{Entity, EntityRel};
+use super::common::{create_test_db, seed_project};
+
+#[tokio::test]
+async fn test_get_entities_batch_by_types() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_batch", "Batch Project").await;
+
+    // Создаём 2 персонажа и 1 локацию
+    save_entity_inner(&db, "p_batch", Entity {
+        id: None,
+        project_id: Some("projects:p_batch".into()),
+        entity_type: "character".into(),
+        name: "Герой 1".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+
+    save_entity_inner(&db, "p_batch", Entity {
+        id: None,
+        project_id: Some("projects:p_batch".into()),
+        entity_type: "character".into(),
+        name: "Герой 2".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+
+    save_entity_inner(&db, "p_batch", Entity {
+        id: None,
+        project_id: Some("projects:p_batch".into()),
+        entity_type: "location".into(),
+        name: "Замок Ветров".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+
+    let res = get_entities_batch_inner(&db, "p_batch", vec!["character".into(), "location".into(), "item".into()])
+        .await
+        .expect("get_entities_batch should succeed");
+
+    let characters = res.get("character").unwrap().as_array().unwrap();
+    let locations = res.get("location").unwrap().as_array().unwrap();
+    let items = res.get("item").unwrap().as_array().unwrap();
+
+    assert_eq!(characters.len(), 2);
+    assert_eq!(locations.len(), 1);
+    assert_eq!(items.len(), 0, "несуществующий тип возвращает пустой массив");
+}
+
+#[tokio::test]
+async fn test_save_entity_with_relations_transactional() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_batch2", "Batch Project 2").await;
+
+    // Создаём зависимую сущность
+    let foreign = save_entity_inner(&db, "p_batch2", Entity {
+        id: None,
+        project_id: Some("projects:p_batch2".into()),
+        entity_type: "item".into(),
+        name: "Старый Меч".into(),
+        description: None,
+        attributes: json!({ "durability": 10 }),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+
+    let mut foreign_updated = foreign.clone();
+    foreign_updated.name = "Зачарованный Меч".into();
+    foreign_updated.attributes = json!({ "durability": 100 });
+
+    let main_entity = Entity {
+        id: None,
+        project_id: Some("projects:p_batch2".into()),
+        entity_type: "character".into(),
+        name: "Кузнец Артур".into(),
+        description: Some("Мастер зачарований".into()),
+        attributes: json!({}),
+        tags: vec!["blacksmith".into()],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    };
+
+    let saved_main = save_entity_with_relations_inner(
+        &db,
+        "p_batch2",
+        main_entity,
+        vec![foreign_updated],
+    ).await.expect("save_entity_with_relations should succeed");
+
+    assert_eq!(saved_main.name, "Кузнец Артур");
+
+    // Проверяем, что зависимая сущность обновилась атомарно
+    let mut check_f = db.query("SELECT * FROM type::record($id)")
+        .bind(("id", foreign.id.unwrap()))
+        .await
+        .unwrap();
+    let f_rows: Vec<serde_json::Value> = check_f.take(0).unwrap();
+    assert_eq!(f_rows[0]["name"], "Зачарованный Меч");
+    assert_eq!(f_rows[0]["attributes"]["durability"], 100);
+}
+
+#[tokio::test]
+async fn test_upsert_connections_batch_and_get_connections() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_conn", "Connections Project").await;
+
+    let e1 = save_entity_inner(&db, "p_conn", Entity {
+        id: None,
+        project_id: Some("projects:p_conn".into()),
+        entity_type: "character".into(),
+        name: "Алиса".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+    let e1_id = e1.id.unwrap();
+
+    let e2 = save_entity_inner(&db, "p_conn", Entity {
+        id: None,
+        project_id: Some("projects:p_conn".into()),
+        entity_type: "character".into(),
+        name: "Боб".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+    let e2_id = e2.id.unwrap();
+
+    // 1. Создаём связь через upsert_connections_batch
+    upsert_connections_batch_inner(
+        &db,
+        "p_conn",
+        "character",
+        &e1_id,
+        vec![EntityRel {
+            id: None,
+            r#in: Some(e1_id.clone()),
+            out: Some(e2_id.clone()),
+            project_id: None,
+            rel_type: "friends".into(),
+            description: Some("Друзья с детства".into()),
+            strength: Some(8),
+            attributes: json!({}),
+            start_chapter: Some("chapters:ch1".into()),
+            end_chapter: Some("chapters:ch5".into()),
+            created_at: None,
+        }],
+    ).await.expect("upsert_connections_batch should succeed");
+
+    // 2. Читаем через get_connections (проверяем UI форматирование source и target)
+    let connections_val = get_connections_inner(&db, "p_conn", None).await.unwrap();
+    let connections_arr = connections_val.as_array().unwrap();
+    assert_eq!(connections_arr.len(), 1);
+    assert_eq!(connections_arr[0]["rel_type"], "friends");
+    assert_eq!(connections_arr[0]["source"]["entityType"], "entities");
+    assert_eq!(connections_arr[0]["target"]["entityType"], "entities");
+
+    // 3. Фильтрация по главе
+    let in_ch1 = get_connections_inner(&db, "p_conn", Some("chapters:ch1".into())).await.unwrap();
+    assert_eq!(in_ch1.as_array().unwrap().len(), 1);
+
+    let in_ch99 = get_connections_inner(&db, "p_conn", Some("chapters:ch99".into())).await.unwrap();
+    assert_eq!(in_ch99.as_array().unwrap().len(), 0);
+
+    // 4. Удаление связей источника
+    let deleted_count = remove_connections_by_source_inner(&db, "p_conn", "character", &e1_id).await.unwrap();
+    assert_eq!(deleted_count, 1);
+
+    let after_delete = get_connections_inner(&db, "p_conn", None).await.unwrap();
+    assert_eq!(after_delete.as_array().unwrap().len(), 0);
+}

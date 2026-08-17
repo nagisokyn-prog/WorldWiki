@@ -91,14 +91,35 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
             let actual_from = if from_parts.len() == 2 { from_parts[1] } else { from_id };
             let actual_to = if to_parts.len() == 2 { to_parts[1] } else { to_id };
             
-            // Build raw query for RELATE
-            let query = format!("RELATE {}:{}->{}->{}:{} CONTENT $data RETURN id", 
-                #from_table, actual_from, Self::TABLE, #to_table, actual_to);
-                
-            let mut res = db.query(query).bind(("data", serde_json::to_value(&data).unwrap())).await?;
-            let created: Option<serde_json::Value> = res.take(0)?;
-            if let Some(val) = created {
-                Ok(val.get("id").unwrap_or(&serde_json::Value::Null).to_string())
+            let mut val = serde_json::to_value(&data).unwrap();
+            let map = if let Some(map) = val.as_object_mut() {
+                map.remove("id");
+                map.remove("in");
+                map.remove("out");
+                map.retain(|_, v| !v.is_null());
+                map.clone()
+            } else {
+                serde_json::Map::new()
+            };
+
+            let from_rec = surrealdb::types::RecordId::new(#from_table, actual_from);
+            let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
+
+            let query = format!("RELATE $from_rec->{}->$to_rec CONTENT $data", Self::TABLE);
+            let mut res = db.query(query)
+                .bind(("from_rec", from_rec))
+                .bind(("to_rec", to_rec))
+                .bind(("data", map))
+                .await?;
+            let created: Vec<serde_json::Value> = res.take(0)?;
+            if let Some(val) = created.into_iter().next() {
+                if let Some(id_str) = val.get("id").and_then(|v| v.as_str()) {
+                    Ok(id_str.to_string())
+                } else if let Some(id_val) = val.get("id") {
+                    Ok(id_val.to_string().trim_matches('"').to_string())
+                } else {
+                    Ok(String::new())
+                }
             } else {
                 Err(surrealdb::Error::thrown("Failed to create relation".to_string()))
             }
@@ -114,9 +135,14 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
             let actual_from = if from_parts.len() == 2 { from_parts[1] } else { from_id };
             let actual_to = if to_parts.len() == 2 { to_parts[1] } else { to_id };
             
-            let query = format!("SELECT * FROM {} WHERE in = {}:{} AND out = {}:{}", 
-                Self::TABLE, #from_table, actual_from, #to_table, actual_to);
-            let mut res = db.query(query).await?;
+            let from_rec = surrealdb::types::RecordId::new(#from_table, actual_from);
+            let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
+
+            let query = format!("SELECT * FROM {} WHERE in = $from_rec AND out = $to_rec", Self::TABLE);
+            let mut res = db.query(query)
+                .bind(("from_rec", from_rec))
+                .bind(("to_rec", to_rec))
+                .await?;
             let list: Vec<serde_json::Value> = res.take(0)?;
             let mapped = list.into_iter()
                 .filter_map(|v| serde_json::from_value(v).ok())

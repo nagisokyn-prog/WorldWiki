@@ -5,14 +5,19 @@ description = "tauri-surreal-kit shell template — domain-agnostic Tauri + Surr
 authors = []
 edition = "2021"
 
-# [lib] intentionally removed — Tauri shell must compile as a binary only.
-# If you need to share logic, extract it to a separate crate in backend/
+[lib]
+name = "tauri_shell"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tauri-shell"
+path = "src/main.rs"
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri      = { version = "2", features = ["protocol-asset"] }
+tauri      = { version = "2", features = ["protocol-asset", "test"] }
 serde      = { version = "1", features = ["derive"] }
 serde_json = "1"
 surrealdb  = { version = "3.2.4", features = ["kv-surrealkv"] }

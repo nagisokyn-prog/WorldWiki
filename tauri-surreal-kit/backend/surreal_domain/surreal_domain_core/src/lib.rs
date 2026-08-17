@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+pub use ts_rs;
 
 /// Trait that the user's AppState must implement to use generated Tauri commands.
 /// This keeps the macro crate independent from any specific application structure.
@@ -128,20 +129,45 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
     #[allow(async_fn_in_trait)]
     async fn find_by_id<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, id: &str) -> Result<Option<Self>, surrealdb::Error> {
         let parts: Vec<&str> = id.split(':').collect();
+        if parts.len() == 2 && parts[0] != Self::TABLE {
+            return Ok(None);
+        }
         let actual_id = if parts.len() == 2 { parts[1] } else { id };
-        let res: Option<serde_json::Value> = db.select((Self::TABLE, actual_id)).await?;
-        Ok(res.and_then(|v| serde_json::from_value(v).ok()))
+        let res: Result<Option<serde_json::Value>, _> = db.select((Self::TABLE, actual_id)).await;
+        match res {
+            Ok(opt) => Ok(opt.and_then(|v| serde_json::from_value(v).ok())),
+            Err(e) => {
+                let err_msg = e.to_string();
+                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
+                    Ok(None)
+                } else {
+                    Err(e)
+                }
+            }
+        }
     }
 
     #[allow(async_fn_in_trait)]
     async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surrealdb::Error> {
         let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
         let pid_str = format!("projects:{}", pid_raw);
-        let mut res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
+        let query_res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
             .bind(("pid", project_id.to_string()))
             .bind(("pid_raw", pid_raw.to_string()))
             .bind(("pid_str", pid_str))
-            .await?;
+            .await;
+
+        let mut res = match query_res {
+            Ok(r) => r,
+            Err(e) => {
+                let err_msg = e.to_string();
+                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
+                    return Ok(Vec::new());
+                }
+                return Err(e);
+            }
+        };
+
         let entities_opt_res: Result<Vec<serde_json::Value>, _> = res.take(0);
         match entities_opt_res {
             Ok(entities) => {
@@ -155,7 +181,7 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                                         let tb = val.get("tb").unwrap().as_str().unwrap_or("");
                                         let id_field = val.get("id").unwrap();
                                         let id_str = if let Some(s) = id_field.get("String").and_then(|s| s.as_str()) {
-                                            s
+                                             s
                                         } else {
                                             id_field.as_str().unwrap_or_default()
                                         };
@@ -178,8 +204,13 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                 Ok(mapped)
             }
             Err(e) => {
-                eprintln!("Error in find_all for table {}: {:?}", Self::TABLE, e);
-                Err(e)
+                let err_msg = e.to_string();
+                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
+                    Ok(Vec::new())
+                } else {
+                    eprintln!("Error in find_all for table {}: {:?}", Self::TABLE, e);
+                    Err(e)
+                }
             }
         }
     }
@@ -241,8 +272,21 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
     #[allow(async_fn_in_trait)]
     async fn delete<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, id: &str) -> Result<(), surrealdb::Error> {
         let parts: Vec<&str> = id.split(':').collect();
+        if parts.len() == 2 && parts[0] != Self::TABLE {
+            return Ok(());
+        }
         let actual_id = if parts.len() == 2 { parts[1] } else { id };
-        let _: Option<serde_json::Value> = db.delete((Self::TABLE, actual_id)).await?;
-        Ok(())
+        let res: Result<Option<serde_json::Value>, _> = db.delete((Self::TABLE, actual_id)).await;
+        match res {
+            Ok(_) => Ok(()),
+            Err(e) => {
+                let err_msg = e.to_string();
+                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
+                    Ok(())
+                } else {
+                    Err(e)
+                }
+            }
+        }
     }
 }

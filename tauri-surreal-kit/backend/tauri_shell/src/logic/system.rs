@@ -2,16 +2,17 @@ use serde_json::Value;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::OnceLock;
+use std::sync::RwLock;
 
 // ─── DataDirProvider: инъекция пути к data/ для тестов ────────────────────────
 
 /// Трейт для получения каталога данных. Позволяет подменять в тестах.
-pub trait DataDirProvider: Send + Sync {
+pub trait DataDirProvider: std::fmt::Debug + Send + Sync {
     fn get_data_dir(&self) -> PathBuf;
 }
 
 /// Дефолтный провайдер: ищет `target/.../data` (dev) или `cwd/data` (prod).
+#[derive(Debug)]
 struct DefaultDataDirProvider;
 
 impl DataDirProvider for DefaultDataDirProvider {
@@ -35,22 +36,24 @@ impl DataDirProvider for DefaultDataDirProvider {
 
 /// Глобальный провайдер (по умолчанию — DefaultDataDirProvider).
 /// В тестах можно заменить через `set_data_dir_provider()`.
-static DATA_DIR_PROVIDER: OnceLock<Box<dyn DataDirProvider>> = OnceLock::new();
+static DATA_DIR_PROVIDER: RwLock<Option<Box<dyn DataDirProvider>>> = RwLock::new(None);
 
-/// Получить текущий провайдер (ленивая инициализация дефолта).
-fn data_dir_provider() -> &'static Box<dyn DataDirProvider> {
-    DATA_DIR_PROVIDER.get_or_init(|| Box::new(DefaultDataDirProvider))
-}
-
-/// Установить кастомный провайдер (только для тестов!).
-/// Panics, если уже был установлен.
+/// Установить кастомный провайдер (для тестов).
+#[allow(dead_code)]
 pub fn set_data_dir_provider(provider: Box<dyn DataDirProvider>) {
-    DATA_DIR_PROVIDER.set(provider).expect("DataDirProvider already set");
+    if let Ok(mut lock) = DATA_DIR_PROVIDER.write() {
+        *lock = Some(provider);
+    }
 }
 
 /// Получить каталог данных через активный провайдер.
 fn get_data_dir() -> PathBuf {
-    data_dir_provider().get_data_dir()
+    if let Ok(lock) = DATA_DIR_PROVIDER.read() {
+        if let Some(ref provider) = *lock {
+            return provider.get_data_dir();
+        }
+    }
+    DefaultDataDirProvider.get_data_dir()
 }
 
 /// Upload a photo/image bytes → saves to `data/user_images/` with a timestamp prefix.
@@ -78,10 +81,10 @@ pub async fn upload_photo(bytes: Vec<u8>, filename: String) -> Result<String, St
 pub async fn copy_background_file(source_path: String) -> Result<String, String> {
     let mut path = get_data_dir().join("user_images");
     fs::create_dir_all(&path).ok();
-    
+
     let source = std::path::Path::new(&source_path);
     let filename = source.file_name().unwrap_or_default().to_string_lossy();
-    
+
     let new_name = format!(
         "{}_{}",
         std::time::SystemTime::now()
@@ -173,7 +176,10 @@ pub async fn get_custom_themes() -> Result<Vec<String>, String> {
                 if ft.is_file() {
                     let name = entry.file_name().to_string_lossy().to_string();
                     // Булт-ин темы: settings-light.json, settings-dark.json
-                    if name.starts_with("settings-") && name.ends_with(".json") && !name.starts_with("settings-theme-") {
+                    if name.starts_with("settings-")
+                        && name.ends_with(".json")
+                        && !name.starts_with("settings-theme-")
+                    {
                         let theme = name
                             .trim_start_matches("settings-")
                             .trim_end_matches(".json")

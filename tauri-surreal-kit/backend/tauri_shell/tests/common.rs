@@ -3,15 +3,19 @@
 //! Предоставляет:
 //! - Изолированные временные каталоги data/ для каждого теста
 //! - Helper функции для работы с файлами, темами, настройками
-//! - Tauri mock app с зарегистрированными системными командами
 //! - Гарантированную очистку после теста через RAII (TempDir)
+//!
+//! NOTE: Tauri v2 не предоставляет app.invoke() — команды тестируются
+//! напрямую как обычные async-функции через DataDirProvider.
+
+#![allow(dead_code)]
 
 use std::path::PathBuf;
-use std::sync::Arc;
 use tempfile::TempDir;
 use tauri_shell::logic::system::DataDirProvider;
 
-/// Тестовый провайдер data_dir, использующий TestEnv
+/// Тестовый провайдер data_dir
+#[derive(Debug)]
 pub struct TestDataDirProvider {
     data_dir: PathBuf,
 }
@@ -39,7 +43,11 @@ pub struct TestEnv {
 }
 
 impl TestEnv {
-    /// Создает новое изолированное окружение И регистрирует его как data_dir провайдер
+    /// Создает новое изолированное окружение.
+    ///
+    /// ВАЖНО: DataDirProvider глобальный (OnceLock). Для тестов,
+    /// которым нужен провайдер, используй `new_with_provider()`.
+    /// Остальные тесты работают с data_dir напрямую через пути.
     pub fn new() -> std::io::Result<Self> {
         let temp_dir = TempDir::new()?;
         let data_dir = temp_dir.path().join("data");
@@ -47,10 +55,6 @@ impl TestEnv {
 
         std::fs::create_dir_all(&data_dir)?;
         std::fs::create_dir_all(&user_images_dir)?;
-
-        // Регистрируем провайдер ДО создания TestApp
-        let provider = Box::new(TestDataDirProvider::new(data_dir.clone()));
-        tauri_shell::logic::system::set_data_dir_provider(provider);
 
         Ok(TestEnv {
             temp_dir,
@@ -64,13 +68,15 @@ impl TestEnv {
         self.data_dir.join("settings.json")
     }
 
-    /// Получить путь к теме (встроенная или пользовательская)
-    pub fn theme_path(&self, name: &str) -> PathBuf {
-        if name.starts_with("theme-") {
-            self.data_dir.join(format!("settings-{}.json", name))
-        } else {
-            self.data_dir.join(format!("settings-theme-{}.json", name))
-        }
+    /// Получить путь к файлу темы по имени.
+    /// Встроенные: settings-{name}.json
+    /// Пользовательские: settings-theme-{name}.json
+    pub fn builtin_theme_path(&self, name: &str) -> PathBuf {
+        self.data_dir.join(format!("settings-{}.json", name))
+    }
+
+    pub fn custom_theme_path(&self, name: &str) -> PathBuf {
+        self.data_dir.join(format!("settings-theme-{}.json", name))
     }
 
     /// Записать тестовый файл в user_images/
@@ -112,36 +118,11 @@ impl TestEnv {
     }
 }
 
-/// Tauri mock application с зарегистрированными системными командами
-pub struct TestApp {
-    pub app: tauri::App<tauri::test::MockRuntime>,
-    pub env: Arc<TestEnv>,
-}
-
-impl TestApp {
-    /// Создаёт mock app через builder с полной регистрацией команд
-    pub fn with_commands() -> (tauri::App<tauri::test::MockRuntime>, Arc<TestEnv>) {
-        let env = Arc::new(TestEnv::new().expect("Failed to create TestEnv"));
-
-        let app = tauri::test::mock_builder()
-            .invoke_handler(tauri::generate_handler![
-                tauri_shell::logic::system::upload_photo,
-                tauri_shell::logic::system::copy_background_file,
-                tauri_shell::logic::system::get_local_file,
-                tauri_shell::logic::system::run_performance_benchmark,
-                tauri_shell::logic::system::get_performance_styles,
-                tauri_shell::logic::system::save_settings,
-                tauri_shell::logic::system::load_settings,
-                tauri_shell::logic::system::toggle_fullscreen,
-                tauri_shell::logic::system::get_custom_themes,
-                tauri_shell::logic::system::load_theme,
-                tauri_shell::logic::system::save_custom_theme,
-            ])
-            .build()
-            .expect("Failed to build mock app");
-
-        (app, env)
-    }
+/// Установить провайдер для текущего теста.
+pub fn init_provider(data_dir: PathBuf) {
+    tauri_shell::logic::system::set_data_dir_provider(
+        Box::new(TestDataDirProvider::new(data_dir))
+    );
 }
 
 #[cfg(test)]
@@ -186,12 +167,12 @@ mod tests {
     #[test]
     fn test_env_theme_paths() {
         let env = TestEnv::new().expect("Should create TestEnv");
-        
-        let builtin_path = env.theme_path("theme-light");
-        assert!(builtin_path.to_string_lossy().contains("settings-theme-light.json"));
 
-        let custom_path = env.theme_path("custom");
-        assert!(custom_path.to_string_lossy().contains("settings-theme-custom.json"));
+        let builtin = env.builtin_theme_path("light");
+        assert!(builtin.to_string_lossy().contains("settings-light.json"));
+
+        let custom = env.custom_theme_path("my-theme");
+        assert!(custom.to_string_lossy().contains("settings-theme-my-theme.json"));
     }
 
     #[test]

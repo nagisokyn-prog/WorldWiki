@@ -104,10 +104,15 @@ pub fn impl_entity_commands(input: TokenStream) -> TokenStream {
         generated_calls.push(quote! { #mod_name::#delete });
     }
 
+    let mut all_handlers = Vec::new();
+    for cmd in normal_commands {
+        all_handlers.push(quote! { #cmd });
+    }
+    all_handlers.extend(generated_calls);
+
     let expanded = quote! {
         tauri::generate_handler![
-            #(#normal_commands),*,
-            #(#generated_calls),*
+            #(#all_handlers),*
         ]
     };
 

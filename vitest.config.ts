@@ -18,7 +18,7 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html', 'lcov'],
+      reporter: ['text', 'json', 'html', 'lcov', 'vc-api-coverage'],
       thresholds: {
         lines: 85,
         functions: 85,

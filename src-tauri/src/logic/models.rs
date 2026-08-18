@@ -415,6 +415,7 @@ surreal_schema! {
 #[cfg(test)]
 mod ts_export_tests {
     use super::*;
+    use serde_json::{json, Value};
     use ts_rs::TS;
 
     #[test]
@@ -444,5 +445,56 @@ mod ts_export_tests {
         MessageContainsMessage::export(&cfg).expect(export_err_msg);
         ProjectContainsChat::export(&cfg).expect(export_err_msg);
         ChatContainsChat::export(&cfg).expect(export_err_msg);
+    }
+
+    #[test]
+    fn entity_serde_roundtrip() {
+        let e = Entity {
+            id: Some("entities:e1".into()),
+            project_id: Some("projects:p1".into()),
+            entity_type: "character".into(),
+            name: "Алиса".into(),
+            description: Some("Главная героиня".into()),
+            attributes: json!({ "age": 20, "role": "протагонист" }),
+            tags: vec!["маг".into(), "человек".into()],
+            embeddings: None,
+            created_at: None,
+            updated_at: None,
+        };
+
+        let v: Value = serde_json::to_value(&e).expect("serialize entity");
+        let back: Entity = serde_json::from_value(v).expect("deserialize entity");
+
+        assert_eq!(back.name, "Алиса");
+        assert_eq!(back.entity_type, "character");
+        assert_eq!(back.tags, vec!["маг".to_string(), "человек".to_string()]);
+        assert_eq!(back.attributes["age"], 20);
+        assert_eq!(back.id.as_deref(), Some("entities:e1"));
+    }
+
+    #[test]
+    fn entity_rel_serde_roundtrip() {
+        let rel = EntityRel {
+            id: None,
+            r#in: Some("entities:a".into()),
+            out: Some("entities:b".into()),
+            project_id: Some("projects:p1".into()),
+            rel_type: "friends".into(),
+            description: Some("Друзья".into()),
+            strength: Some(8),
+            attributes: json!({ "kind": "strong" }),
+            start_chapter: Some("chapters:ch1".into()),
+            end_chapter: None,
+            created_at: None,
+        };
+
+        let v: Value = serde_json::to_value(&rel).expect("serialize entity_rel");
+        let back: EntityRel = serde_json::from_value(v).expect("deserialize entity_rel");
+
+        assert_eq!(back.rel_type, "friends");
+        assert_eq!(back.r#in.as_deref(), Some("entities:a"));
+        assert_eq!(back.out.as_deref(), Some("entities:b"));
+        assert_eq!(back.strength, Some(8));
+        assert_eq!(back.attributes["kind"], "strong");
     }
 }

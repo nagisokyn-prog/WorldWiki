@@ -408,5 +408,25 @@ mod tests {
         let (year, _, _, _, _) = CalendarMath::get_date_from_absolute(0, &cal, 0);
         assert_eq!(year, -1);
     }
+
+    #[test]
+    fn absolute_minute_honors_custom_time_settings() {
+        let mut cal = gregorian_calendar();
+        cal.time_settings = Some(CalendarSettings {
+            часов_в_сутках: 10,
+            минут_в_часе: 60,
+            секунд_в_минуте: 60,
+            широта: 0.0,
+            учитывать_сезонную_длительность_дня: false,
+        });
+
+        let day1 = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 1, 0, 0);
+        let day2 = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 2, 0, 0);
+        assert_eq!(
+            day2 - day1,
+            10 * 60,
+            "при 10 часах в сутках разница между днями = 600 минут"
+        );
+    }
 }
 

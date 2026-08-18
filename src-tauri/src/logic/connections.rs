@@ -115,26 +115,51 @@ pub async fn save_connections_inner(
         
         if s_id.is_empty() || t_id.is_empty() { continue; }
 
-        let sql = "RELATE $from -> entity_rel -> $to SET 
-            project_id = type::record($proj),
-            rel_type = $role,
-            description = $desc,
-            start_chapter = $start,
-            end_chapter = $end,
-            created_at = time::now()";
+        // RELATE требует record-литералы в граф-вершинах (type::record() тут не парсится),
+        // поэтому подставляем record id инлайн — как в работающем upsert_connections_batch.
+        // start/end_chapter ставим через type::record() и только если не пустые (иначе SCHEMAFULL
+        // отклоняет пустую строку/record из NULL).
+        let mut set_clauses = vec![
+            "project_id = type::record($proj)".to_string(),
+            "rel_type = $role".to_string(),
+            "description = $desc".to_string(),
+            "created_at = time::now()".to_string(),
+        ];
+
+        let start = c["period"]["start_chapter"].as_str().unwrap_or("");
+        let end = c["period"]["end_chapter"].as_str().unwrap_or("");
+        if !start.is_empty() {
+            set_clauses.push("start_chapter = type::record($start)".to_string());
+        }
+        if !end.is_empty() {
+            set_clauses.push("end_chapter = type::record($end)".to_string());
+        }
+
+        let sql = format!(
+            "RELATE entities:{} -> entity_rel -> entities:{} SET {}",
+            s_id,
+            t_id,
+            set_clauses.join(", ")
+        );
 
         // Mapping frontend "role" to "rel_type"
-        db.query(sql)
-            .bind(json!({
-                "from": format!("entities:{}", s_id),
-                "to": format!("entities:{}", t_id),
-                "proj": proj_id.clone(),
-                "role": c["role"].as_str().unwrap_or(""),
-                "desc": c["description"].as_str().unwrap_or(""),
-                "start": c["period"]["start_chapter"].as_str().unwrap_or(""),
-                "end": c["period"]["end_chapter"].as_str().unwrap_or("")
-            }))
-            .await.map_err(|e| e.to_string())?;
+        let mut bind = json!({
+            "proj": proj_id.clone(),
+            "role": c["role"].as_str().unwrap_or(""),
+            "desc": c["description"].as_str().unwrap_or("")
+        });
+        if !start.is_empty() {
+            bind["start"] = Value::String(start.to_string());
+        }
+        if !end.is_empty() {
+            bind["end"] = Value::String(end.to_string());
+        }
+
+        let mut res = db.query(sql).bind(bind).await.map_err(|e| e.to_string())?;
+        let errs = res.take_errors();
+        if !errs.is_empty() {
+            return Err(format!("entity_rel RELATE errors: {:?}", errs));
+        }
     }
 
     Ok(())

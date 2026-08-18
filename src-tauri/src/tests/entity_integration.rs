@@ -360,3 +360,27 @@ async fn save_entity_schema_and_history_snapshot() {
     let history_after = get_schema_history_inner(&db, "p1", "hero").await.unwrap();
     assert!(history_after[0].is_pinned);
 }
+
+#[tokio::test]
+async fn toggle_entity_history_pin_marks_revision_pinned() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    // Создаём ревизию сущности с явным ID и закрепляем её
+    db.query(
+        "CREATE entity_revisions:my_erev SET target_id = type::record('entities:e1'), project_id = type::record('projects','p1'), content = {}, is_pinned = false",
+    )
+    .await
+    .expect("create entity revision");
+
+    toggle_entity_history_pin_inner(&db, "entity_revisions:my_erev", true)
+        .await
+        .expect("pin should succeed");
+
+    let mut res = db
+        .query("SELECT VALUE is_pinned FROM entity_revisions:my_erev")
+        .await
+        .expect("query pin");
+    let pinned: Option<bool> = res.take(0).expect("take is_pinned");
+    assert_eq!(pinned, Some(true), "после toggle ревизия сущности должна быть закреплена");
+}

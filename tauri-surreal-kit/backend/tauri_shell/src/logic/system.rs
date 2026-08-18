@@ -46,6 +46,14 @@ pub fn set_data_dir_provider(provider: Box<dyn DataDirProvider>) {
     }
 }
 
+/// Сбросить провайдер к дефолтному (для изоляции тестов).
+#[allow(dead_code)]
+pub fn clear_data_dir_provider() {
+    if let Ok(mut lock) = DATA_DIR_PROVIDER.write() {
+        *lock = None;
+    }
+}
+
 /// Получить каталог данных через активный провайдер.
 fn get_data_dir() -> PathBuf {
     if let Ok(lock) = DATA_DIR_PROVIDER.read() {

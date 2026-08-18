@@ -3,6 +3,12 @@ name = "surreal_domain"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+# Enable RocksDB backend for HNSW vector search tests
+# Requires pre-built RocksDB (rocksdb.lib + rocksdb.dll) on Windows
+# Set ROCKSDB_LIB_DIR and ROCKSDB_INCLUDE_DIR env vars
+full-db = ["surrealdb/kv-rocksdb"]
+
 [dependencies]
 surreal_domain_core = { path = "../surreal_domain_core" }
 surreal_domain_macros = { path = "../surreal_domain_macros" }
@@ -17,5 +23,7 @@ chrono     = { version = "0.4", features = ["serde"] }
 tempfile   = "3"
 tauri      = { version = "2.11.5", default-features = false, features = ["test"] }
 ts-rs      = { version = "12.0.1", features = ["serde-compat", "serde-json-impl", "uuid-impl", "chrono-impl", "no-serde-warnings"] }
+trybuild   = "1.0"
+serial_test = "2.0"
 
 

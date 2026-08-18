@@ -9,7 +9,7 @@
 
 use serde_json::json;
 use crate::logic::batch::{get_entities_batch_inner, save_entity_with_relations_inner, upsert_connections_batch_inner};
-use crate::logic::connections::{get_connections_inner, remove_connections_by_source_inner};
+use crate::logic::connections::{get_connections_inner, remove_connections_by_source_inner, save_connections_inner};
 use crate::logic::entities::save_entity_inner;
 use crate::logic::models::{Entity, EntityRel};
 use super::common::{create_test_db, seed_project};
@@ -202,4 +202,88 @@ async fn test_upsert_connections_batch_and_get_connections() {
 
     let after_delete = get_connections_inner(&db, "p_conn", None).await.unwrap();
     assert_eq!(after_delete.as_array().unwrap().len(), 0);
+}
+
+#[tokio::test]
+async fn test_save_connections_creates_and_replaces_edges() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_saveconn", "SaveConn Project").await;
+
+    let e1 = save_entity_inner(&db, "p_saveconn", Entity {
+        id: None,
+        project_id: Some("projects:p_saveconn".into()),
+        entity_type: "character".into(),
+        name: "Алиса".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+    let e1_id = e1.id.unwrap();
+
+    let e2 = save_entity_inner(&db, "p_saveconn", Entity {
+        id: None,
+        project_id: Some("projects:p_saveconn".into()),
+        entity_type: "character".into(),
+        name: "Боб".into(),
+        description: None,
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.unwrap();
+    let e2_id = e2.id.unwrap();
+
+    // Фронтовый контракт save_connections: source/target с entityId
+    let data = json!([{
+        "source": { "entityId": e1_id },
+        "target": { "entityId": e2_id },
+        "role": "friends",
+        "description": "Друзья с детства",
+        "period": { "start_chapter": "chapters:ch1", "end_chapter": "chapters:ch2" }
+    }]);
+
+    save_connections_inner(&db, "p_saveconn", &e1_id, data)
+        .await
+        .expect("save_connections should succeed");
+
+    let conns = get_connections_inner(&db, "p_saveconn", None).await.unwrap();
+    let arr = conns.as_array().unwrap();
+    assert_eq!(arr.len(), 1, "должна появиться 1 связь");
+    assert_eq!(arr[0]["rel_type"], "friends");
+    assert_eq!(arr[0]["description"], "Друзья с детства");
+
+    // Повторное сохранение с пустым массивом удаляет все связи источника И цели
+    save_connections_inner(&db, "p_saveconn", &e1_id, json!([]))
+        .await
+        .expect("clearing connections should succeed");
+
+    let after = get_connections_inner(&db, "p_saveconn", None).await.unwrap();
+    assert_eq!(after.as_array().unwrap().len(), 0, "все связи должны удалиться");
+}
+
+#[tokio::test]
+async fn test_save_connections_rejects_non_array() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_saveconn2", "SaveConn Project 2").await;
+
+    // data не массив — функция должна вернуть Err
+    let res = save_connections_inner(&db, "p_saveconn2", "entities:e1", json!({ "nope": true })).await;
+    assert!(res.is_err(), "не-массив должен вернуть Err");
+    assert!(res.unwrap_err().contains("Connections array expected"));
+}
+
+#[tokio::test]
+async fn test_get_entities_batch_empty_types_returns_empty_map() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_batch_empty", "Batch Empty").await;
+
+    // Пустой список типов — ранний возврат пустой map, без запроса к БД
+    let res = get_entities_batch_inner(&db, "p_batch_empty", vec![])
+        .await
+        .expect("empty types should return Ok");
+    assert!(res.is_empty(), "пустой список типов → пустая map");
 }

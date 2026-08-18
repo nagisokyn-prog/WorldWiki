@@ -4,6 +4,7 @@
 //! поверх реальной in-memory SurrealDB + продовой схемы `surreal_schema.surql`.
 //! Каждый тест создаёт изолированную БД и авто-очищается после завершения.
 
+use crate::logic::chapters::{get_chapter_revisions_inner, toggle_chapter_history_pin_inner};
 use crate::logic::models::Chapter;
 use serde_json::json;
 use surreal_domain::SurrealRepository;
@@ -170,4 +171,86 @@ async fn save_global_timeline_roundtrip() {
         chapters[0].participants.as_deref(),
         Some(&["character:c1".to_string(), "character:c2".to_string()][..])
     );
+}
+
+#[tokio::test]
+async fn save_global_timeline_rejects_non_array() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    let res = Chapter::save_global_timeline_inner(&db, "p1", json!({ "not": "an array" })).await;
+    assert!(res.is_err(), "не-массив должен вернуть Err");
+}
+
+#[tokio::test]
+async fn save_global_timeline_requires_chapter_id() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    // Элемент без chapter_id — должен быть Err
+    let data = json!([{ "chapter_title": "Без id", "events": [] }]);
+    let res = Chapter::save_global_timeline_inner(&db, "p1", data).await;
+    assert!(res.is_err(), "отсутствие chapter_id должно давать Err");
+    assert!(res.unwrap_err().contains("chapter_id"));
+}
+
+#[tokio::test]
+async fn save_global_timeline_empty_array_returns_zero_updated() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    let res = Chapter::save_global_timeline_inner(&db, "p1", json!([]))
+        .await
+        .expect("пустой массив должен успешно завершиться");
+    assert_eq!(res["success"], true);
+    assert_eq!(res["updated"], 0);
+}
+
+#[tokio::test]
+async fn get_chapter_revisions_returns_snapshot_after_update() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    db.query("CREATE chapters:ch_rev SET project_id = type::record('projects','p1'), title = 'Начало', content = 'v1'")
+        .await
+        .expect("create chapter");
+
+    // UPDATE триггерит DDL-событие log_chapter_revision → создаётся снапшот
+    db.query("UPDATE chapters:ch_rev SET title = 'Продолжение', content = 'v2'")
+        .await
+        .expect("update chapter");
+
+    let revisions = get_chapter_revisions_inner(&db, "p1", "chapters:ch_rev")
+        .await
+        .expect("get revisions");
+
+    assert_eq!(revisions.len(), 1, "после одного UPDATE должен быть 1 снапшот");
+    assert_eq!(
+        revisions[0]["content"]["title"], "Начало",
+        "снапшот хранит состояние ДО изменения"
+    );
+}
+
+#[tokio::test]
+async fn toggle_chapter_history_pin_marks_revision_pinned() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    // Создаём ревизию с явным ID, чтобы детерминированно проверить toggle pin
+    db.query(
+        "CREATE chapter_revisions:my_rev SET target_id = type::record('chapters:ch1'), project_id = type::record('projects','p1'), content = {}, is_pinned = false",
+    )
+    .await
+    .expect("create revision");
+
+    toggle_chapter_history_pin_inner(&db, "chapter_revisions:my_rev", true)
+        .await
+        .expect("pin should succeed");
+
+    let mut res = db
+        .query("SELECT VALUE is_pinned FROM chapter_revisions:my_rev")
+        .await
+        .expect("query pin");
+    let pinned: Option<bool> = res.take(0).expect("take is_pinned");
+    assert_eq!(pinned, Some(true), "после toggle ревизия должна быть закреплена");
 }

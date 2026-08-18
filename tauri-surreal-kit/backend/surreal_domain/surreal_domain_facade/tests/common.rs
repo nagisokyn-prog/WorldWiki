@@ -12,6 +12,9 @@ use surrealdb::Surreal;
 use surreal_domain::SurrealDb;
 use tempfile::TempDir;
 
+#[cfg(feature = "full-db")]
+use surrealdb::engine::local::SurrealRocksDb;
+
 /// Test database wrapper keeping TempDir alive for the lifetime of the test.
 pub struct TestDb {
     pub db: Surreal<Db>,
@@ -72,8 +75,38 @@ pub async fn create_test_app_state() -> MockAppState {
     }
 }
 
-/// Helper: Seed test database with a project record.
-pub async fn seed_project(db: &Surreal<Db>, project_id: &str, project_name: &str) {
+/// Test database wrapper for RocksDB (supports HNSW, vectors, fulltext).
+#[cfg(feature = "full-db")]
+pub struct TestDbRocks {
+    pub db: Surreal<SurrealRocksDb>,
+    _dir: TempDir,
+}
+
+#[cfg(feature = "full-db")]
+impl std::ops::Deref for TestDbRocks {
+    type Target = Surreal<SurrealRocksDb>;
+    fn deref(&self) -> &Self::Target { &self.db }
+}
+
+/// Creates an isolated temporary directory test database using SurrealRocksDb.
+/// Supports HNSW vector indexes and fulltext search.
+#[cfg(feature = "full-db")]
+pub async fn create_test_db_rocksdb() -> TestDbRocks {
+    let dir = TempDir::new().expect("Failed to create temporary directory for RocksDB test db");
+    let db = Surreal::new::<SurrealRocksDb>(dir.path())
+        .await
+        .expect("Failed to create RocksDB test database");
+
+    db.use_ns("test")
+        .use_db("test")
+        .await
+        .expect("Failed to set namespace/database");
+
+    TestDbRocks { db, _dir: dir }
+}
+
+/// Helper: Seed test database with a project record (works with both Db and SurrealRocksDb).
+pub async fn seed_project<C: surrealdb::Connection>(db: &Surreal<C>, project_id: &str, project_name: &str) {
     db.upsert::<Option<serde_json::Value>>(("projects", project_id))
         .content(serde_json::json!({
             "name": project_name,

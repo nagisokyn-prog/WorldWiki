@@ -11,3 +11,4 @@ pub mod stress_integration;
 pub mod negative_integration;
 pub mod batch_and_connections_integration;
 pub mod chat_integration;
+pub mod export_integration;

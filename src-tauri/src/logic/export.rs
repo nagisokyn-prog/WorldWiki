@@ -2,7 +2,9 @@ use serde_json::Value;
 use std::env;
 use std::fs;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use surrealdb::engine::local::Db;
+use surrealdb::Surreal;
 use tauri::Manager; // Важно для работы с путями в Tauri 2.0
 
 #[tauri::command]
@@ -18,12 +20,23 @@ pub async fn export_chapters(
         Err(_) => PathBuf::from(".").join(format!("{}_export", project)),
     };
 
-    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+    export_chapters_inner(&target_dir, &chapters, &format)
+}
+
+/// Тестируемое ядро `export_chapters` (без `tauri::AppHandle`).
+///
+/// Пишет объединённые главы в `exported_chapters.<format>` внутри `target_dir`.
+pub fn export_chapters_inner(
+    target_dir: &Path,
+    chapters: &[Value],
+    format: &str,
+) -> Result<String, String> {
+    fs::create_dir_all(target_dir).map_err(|e| e.to_string())?;
 
     let file_path = target_dir.join(format!("exported_chapters.{}", format));
     let mut combined_content = String::new();
 
-    for chapter in &chapters {
+    for chapter in chapters {
         let title = chapter
             .get("title")
             .and_then(|v| v.as_str())
@@ -48,14 +61,24 @@ pub async fn create_cloud_backup(
     app: tauri::AppHandle,
 ) -> Result<String, String> {
     let db = &state.db;
-
-    // Find backup directory
     let target_dir = app
         .path()
         .app_data_dir()
         .unwrap_or(PathBuf::from("."))
         .join("backups");
-    fs::create_dir_all(&target_dir).map_err(|e| e.to_string())?;
+
+    create_cloud_backup_inner(db, &target_dir).await
+}
+
+/// Тестируемое ядро `create_cloud_backup` (без `tauri::State`/`AppHandle`).
+///
+/// Экспортирует дамп БД в `.surql`, упаковывает его в `.wwiki` (zip)
+/// вместе с картинками и настройками, возвращает путь к созданному файлу.
+pub async fn create_cloud_backup_inner(
+    db: &Surreal<Db>,
+    target_dir: &Path,
+) -> Result<String, String> {
+    fs::create_dir_all(target_dir).map_err(|e| e.to_string())?;
 
     let timestamp = chrono::Local::now().format("%Y%m%d_%H%M%S").to_string();
     let temp_surql_path = target_dir.join(format!("backup_{}.surql", timestamp));
@@ -77,7 +100,6 @@ pub async fn create_cloud_backup(
     if let Ok(dump_content) = fs::read(&temp_surql_path) {
         zip.start_file("database.surql", options)
             .map_err(|e| e.to_string())?;
-        use std::io::Write;
         zip.write_all(&dump_content).map_err(|e| e.to_string())?;
     }
 
@@ -356,7 +378,17 @@ pub async fn restore_from_backup(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     let db = &state.db;
-    let path = std::path::Path::new(&backup_path);
+    restore_from_backup_inner(db, &backup_path).await
+}
+
+/// Тестируемое ядро `restore_from_backup` (без `tauri::State`).
+///
+/// Открывает `.wwiki` (zip), извлекает `database.surql` и импортирует его в БД.
+pub async fn restore_from_backup_inner(
+    db: &Surreal<Db>,
+    backup_path: &str,
+) -> Result<(), String> {
+    let path = std::path::Path::new(backup_path);
     if !path.exists() {
         return Err("Backup file does not exist".to_string());
     }

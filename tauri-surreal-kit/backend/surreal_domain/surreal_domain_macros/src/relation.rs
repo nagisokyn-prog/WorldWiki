@@ -103,13 +103,13 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
             };
 
             let from_rec = surrealdb::types::RecordId::new(#from_table, actual_from);
-            let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
+                        let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
 
             let query = format!("RELATE $from_rec->{}->$to_rec CONTENT $data", Self::TABLE);
             let mut res = db.query(query)
                 .bind(("from_rec", from_rec))
                 .bind(("to_rec", to_rec))
-                .bind(("data", map))
+                .bind(("data", serde_json::Value::Object(map)))
                 .await?;
             let created: Vec<serde_json::Value> = res.take(0)?;
             if let Some(val) = created.into_iter().next() {

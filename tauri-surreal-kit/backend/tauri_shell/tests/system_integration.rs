@@ -14,6 +14,7 @@ mod common;
 use common::TestEnv;
 use serde_json::json;
 use std::fs;
+use serial_test::serial;
 use tauri_shell::logic::system::{
     copy_background_file, get_custom_themes, get_local_file, load_settings, load_theme,
     save_custom_theme, save_settings, upload_photo,
@@ -30,7 +31,9 @@ fn make_env() -> TestEnv {
 // ─── upload_photo ──────────────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial]
 async fn test_upload_photo_saves_file_with_timestamp_prefix() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     let photo_bytes = b"fake PNG image data \x89PNG\r\n\x1a\n".to_vec();
     let filename = "vacation.png".to_string();
@@ -52,7 +55,9 @@ async fn test_upload_photo_saves_file_with_timestamp_prefix() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_upload_photo_creates_user_images_dir() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     // Удалим user_images чтобы проверить auto-create
     fs::remove_dir_all(&env.user_images_dir).ok();
@@ -69,7 +74,9 @@ async fn test_upload_photo_creates_user_images_dir() {
 // ─── copy_background_file ──────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial]
 async fn test_copy_background_file_preserves_binary_content() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     let source_content = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR";
     let source_path = env
@@ -94,7 +101,9 @@ async fn test_copy_background_file_preserves_binary_content() {
 // ─── get_local_file ────────────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial]
 async fn test_get_local_file_reads_exact_binary_contents() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     let binary_data = vec![0u8; 1024];
     let path = env
@@ -118,7 +127,11 @@ async fn test_get_local_file_missing_path_returns_error() {
 // ─── save_settings / load_settings ────────────────────────────────────────────
 
 #[tokio::test]
+#[serial]
 async fn test_settings_save_and_load_roundtrip() {
+    // Сбрасываем глобальный провайдер для изоляции
+    tauri_shell::logic::system::clear_data_dir_provider();
+    
     let env = make_env();
     let original_settings = json!({
         "theme": "light",
@@ -146,7 +159,9 @@ async fn test_settings_save_and_load_roundtrip() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_load_settings_returns_null_if_missing() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
@@ -162,7 +177,11 @@ async fn test_load_settings_returns_null_if_missing() {
 // ─── Themes ───────────────────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial]
 async fn test_custom_themes_scan_and_load() {
+    // Сбрасываем глобальный провайдер для изоляции
+    tauri_shell::logic::system::clear_data_dir_provider();
+    
     let env = make_env();
 
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -201,7 +220,9 @@ async fn test_custom_themes_scan_and_load() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_load_theme_builtin_light_dark() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
 
     let light_theme = json!({ "name": "Light", "colors": { "bg": "#fff" } });
@@ -234,7 +255,9 @@ async fn test_load_theme_builtin_light_dark() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_load_theme_invalid_name_returns_null() {
+    tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
@@ -248,7 +271,11 @@ async fn test_load_theme_invalid_name_returns_null() {
 }
 
 #[tokio::test]
+#[serial]
 async fn test_save_custom_theme_persists_file() {
+    // Сбрасываем глобальный провайдер для изоляции
+    tauri_shell::logic::system::clear_data_dir_provider();
+    
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))

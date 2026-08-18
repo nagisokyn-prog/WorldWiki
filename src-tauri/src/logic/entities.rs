@@ -1,6 +1,8 @@
 use crate::logic::models::{Entity, EntityRel, EntitySchema, RelationSchema};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use surrealdb::engine::local::Db;
+use surrealdb::Surreal;
 
 // =====================================================
 // HELPERS
@@ -971,11 +973,20 @@ pub async fn toggle_entity_history_pin(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     let db = &state.db;
+    toggle_entity_history_pin_inner(db, &history_id, is_pinned).await
+}
+
+/// Тестируемое ядро `toggle_entity_history_pin` (без `tauri::State`).
+pub async fn toggle_entity_history_pin_inner(
+    db: &Surreal<Db>,
+    history_id: &str,
+    is_pinned: bool,
+) -> Result<(), String> {
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 {
         parts[1]
     } else {
-        history_id.as_str()
+        history_id
     };
 
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")

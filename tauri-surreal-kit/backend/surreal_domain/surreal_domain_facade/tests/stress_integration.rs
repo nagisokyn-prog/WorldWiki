@@ -5,6 +5,8 @@ mod common;
 use common::{create_test_db, seed_project};
 use serde_json::json;
 use std::sync::Arc;
+use std::time::Duration;
+use surrealdb::Error as SurrealError;
 use surreal_domain::{surreal_entity, SurrealRepository};
 
 surreal_entity! {
@@ -46,6 +48,27 @@ async fn stress_concurrent_read_write_state() {
     let db = Arc::new(create_test_db().await);
     seed_project(&db, "p1", "Project 1").await;
 
+    // Helper to create with retry on transaction conflict
+    async fn create_with_retry(db: &surrealdb::Surreal<surrealdb::engine::local::Db>, item: StressItem) -> Result<StressItem, SurrealError> {
+        let mut retries = 5;
+        let mut delay = Duration::from_millis(10);
+        loop {
+            match StressItem::create(db, item.clone()).await {
+                Ok(created) => return Ok(created),
+                Err(e) => {
+                    let is_conflict = e.to_string().contains("TransactionConflict") || e.to_string().contains("Transaction write conflict");
+                    if is_conflict && retries > 0 {
+                        retries -= 1;
+                        tokio::time::sleep(delay).await;
+                        delay = Duration::from_millis(delay.as_millis() as u64 * 2);
+                        continue;
+                    }
+                    return Err(e);
+                }
+            }
+        }
+    }
+
     let mut handles = Vec::new();
 
     for i in 0..20 {
@@ -57,9 +80,9 @@ async fn stress_concurrent_read_write_state() {
                 title: format!("Concurrent Task Item {}", i),
                 counter: i,
             };
-            let created = StressItem::create(&*db_clone, item)
+            let created = create_with_retry(&*db_clone, item)
                 .await
-                .expect("Concurrent create failed");
+                .expect("Concurrent create failed after retries");
             let id = created.id.unwrap();
 
             let found = StressItem::find_by_id(&*db_clone, &id)
@@ -91,6 +114,27 @@ async fn stress_concurrent_save_race_condition_resilience() {
         .expect("Initial record create failed");
     let record_id = created.id.expect("Record ID must exist");
 
+    // Helper to save with retry on transaction conflict
+    async fn save_with_retry(db: &surrealdb::Surreal<surrealdb::engine::local::Db>, item: &StressItem) -> Result<(), SurrealError> {
+        let mut retries = 5;
+        let mut delay = Duration::from_millis(10);
+        loop {
+            match StressItem::save(db, item).await {
+                Ok(_) => return Ok(()),
+                Err(e) => {
+                    let is_conflict = e.to_string().contains("TransactionConflict") || e.to_string().contains("Transaction write conflict");
+                    if is_conflict && retries > 0 {
+                        retries -= 1;
+                        tokio::time::sleep(delay).await;
+                        delay = Duration::from_millis(delay.as_millis() as u64 * 2);
+                        continue;
+                    }
+                    return Err(e);
+                }
+            }
+        }
+    }
+
     let mut handles = Vec::new();
     for i in 0..10 {
         let db_clone = Arc::clone(&db);
@@ -102,7 +146,7 @@ async fn stress_concurrent_save_race_condition_resilience() {
                 title: format!("Worker #{} Update", i),
                 counter: i,
             };
-            let _ = StressItem::save(&*db_clone, &item).await;
+            let _ = save_with_retry(&*db_clone, &item).await;
         });
         handles.push(handle);
     }

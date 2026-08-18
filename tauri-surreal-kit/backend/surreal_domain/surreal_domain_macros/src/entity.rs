@@ -1,5 +1,5 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{DeriveInput, Data, Fields, Meta};
 
 pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
@@ -7,7 +7,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
     
     // Parse #[table = "name"]
     let mut table_name = name.to_string().to_lowercase();
-    let mut _is_project_scoped = false;
+    let mut is_project_scoped = false;
     let mut generate_commands = false;
 
     for attr in &ast.attrs {
@@ -21,7 +21,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
             }
         }
         if attr.path().is_ident("project_scoped") {
-            _is_project_scoped = true;
+            is_project_scoped = true;
         }
         if attr.path().is_ident("tauri_commands") {
             generate_commands = true;
@@ -60,6 +60,32 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                 if is_flexible {
                     let ts_attr: syn::Attribute = syn::parse_quote!(#[ts(type = "any")]);
                     clean_field.attrs.push(ts_attr);
+
+                    // Добавляем serde skip для null/None значений flexible полей,
+                    // но только если пользователь не указал свой skip_serializing_if
+                    // И только когда мы знаем правильный предикат
+                    let has_skip = clean_field.attrs.iter().any(|attr| {
+                        attr.path().is_ident("serde") && 
+                        attr.to_token_stream().to_string().contains("skip_serializing_if")
+                    });
+                    
+                    if !has_skip {
+                        if let syn::Type::Path(type_path) = &field.ty {
+                            let type_str = quote::quote!(#type_path).to_string();
+                            // Точная проверка: только для "голого" serde_json::Value (не Option, не Vec)
+                            if type_str == "Value" || type_str == "serde_json::Value" {
+                                let skip_attr: syn::Attribute = syn::parse_quote!(#[serde(skip_serializing_if = "serde_json::Value::is_null")]);
+                                clean_field.attrs.push(skip_attr);
+                            }
+                            // Для Option<T> добавляем Option::is_none
+                            else if type_str.starts_with("Option <") || type_str.starts_with("Option<") {
+                                let skip_attr: syn::Attribute = syn::parse_quote!(#[serde(skip_serializing_if = "Option::is_none")]);
+                                clean_field.attrs.push(skip_attr);
+                            }
+                            // Для остальных типов (Vec<Value>, HashMap и т.д.) не добавляем skip
+                            // так как не знаем правильный предикат
+                        }
+                    }
                 }
                 
                 struct_fields.push(quote! { #clean_field });
@@ -84,7 +110,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
 
     let search_methods = if !fulltext_fields.is_empty() || !vector_fields.is_empty() {
         let ft_query = if !fulltext_fields.is_empty() {
-            let matches: Vec<String> = fulltext_fields.iter().map(|f| format!("{} @@@ $q", f)).collect();
+                                    let matches: Vec<String> = fulltext_fields.iter().enumerate().map(|(i, f)| format!("{} @{}@ $q", f, i + 1)).collect();
             let match_clause = matches.join(" OR ");
             let q = format!("SELECT *, search::score(1) AS _score FROM {} WHERE (project_id = $proj OR project_id = type::record($proj)) AND ({})", table_name, match_clause);
             
@@ -106,13 +132,15 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
 
         let vec_query = if !vector_fields.is_empty() {
             let v_field = &vector_fields[0]; // Take first embedding field
-            let q = format!("SELECT *, vector::similarity::cosine({}, $emb) AS _sim FROM {} WHERE {} != NONE AND {} <|$k, COSINE|> $emb ORDER BY _sim ASC LIMIT $k", v_field, table_name, v_field, v_field);
+                                    // KNN operator requires literal K, so we format query at runtime
+            
             
             quote! {
                 pub async fn search_similar<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, embedding: Vec<f32>, k: i64) -> Result<Vec<surreal_domain::SimilarResult<Self>>, surrealdb::Error> {
-                    let mut res = db.query(#q)
+                    // KNN operator requires literal K, so we format query at runtime
+                    let q = format!("SELECT *, vector::distance::knn() AS _sim FROM {} WHERE {} <|{}, COSINE|> $emb ORDER BY _sim", #table_name, #v_field, k);
+                    let mut res = db.query(q)
                         .bind(("emb", embedding))
-                        .bind(("k", k))
                         .await?;
                     let items: Vec<serde_json::Value> = res.take(0)?;
                     let mapped = items.into_iter()
@@ -293,15 +321,20 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
         quote! {}
     };
 
+    // Условное поле project_id — только если #[project_scoped]
+    let project_id_field = is_project_scoped.then(|| quote! {
+        #[serde(skip_serializing_if = "Option::is_none")]
+        #[ts(type = "string | null")]
+        pub project_id: Option<serde_json::Value>,
+    });
+
     let expanded = quote! {
         #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, ts_rs::TS)]
         #[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
         pub struct #name {
             #[serde(skip_serializing_if = "Option::is_none")]
             pub id: Option<String>,
-            #[serde(skip_serializing_if = "Option::is_none")]
-            #[ts(type = "string | null")]
-            pub project_id: Option<serde_json::Value>,
+            #project_id_field
             #(#struct_fields,)*
         }
 

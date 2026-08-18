@@ -113,3 +113,46 @@ async fn delete_project_cascades_ddl_events() {
     let t_blocks: Vec<serde_json::Value> = tb_res.take(0).unwrap();
     assert!(t_blocks.is_empty(), "все текстовые блоки проекта должны удалиться");
 }
+
+#[tokio::test]
+async fn create_project_inserts_default_data_when_missing() {
+    let db = create_test_db().await;
+
+    // create_project без поля data должен добавить пустой объект data: {}
+    create_project_inner(&db, json!({ "name": "no_default_proj" }))
+        .await
+        .expect("create project without data");
+
+    let cfg = get_project_config_inner(&db, "no_default_proj").await.expect("get config");
+    assert_eq!(cfg["data"], json!({}), "без поля data должен подставиться пустой объект");
+}
+
+#[tokio::test]
+async fn get_project_config_accepts_prefixed_and_default_name() {
+    let db = create_test_db().await;
+    seed_project(&db, "cfg_pref", "Pref Project").await;
+
+    // Имя с префиксом projects:
+    let pref = get_project_config_inner(&db, "projects:cfg_pref").await.expect("prefixed");
+    assert_eq!(pref["name"], "Pref Project");
+
+    // Пустое имя -> проект projects:default (его нет в свежей БД, вернётся {})
+    let default_cfg = get_project_config_inner(&db, "").await.expect("empty name");
+    assert!(default_cfg.get("name").is_none() || default_cfg.get("id").is_none());
+}
+
+#[tokio::test]
+async fn delete_project_handles_prefixed_name() {
+    let db = create_test_db().await;
+    seed_project(&db, "del_pref", "Del Pref").await;
+
+    delete_project_inner(&db, "projects:del_pref").await.expect("delete prefixed");
+
+    let mut res = db
+        .query("SELECT count() FROM projects WHERE id = type::record('projects:del_pref') GROUP ALL")
+        .await
+        .expect("count query");
+    let count_val: Option<serde_json::Value> = res.take(0).expect("take count");
+    let count = count_val.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0);
+    assert_eq!(count, 0, "проект должен быть удалён даже с префиксом projects:");
+}

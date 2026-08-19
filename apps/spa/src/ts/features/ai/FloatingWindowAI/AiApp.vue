@@ -49,10 +49,10 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import MarkdownIt from 'markdown-it';
 import { AppDialog } from '@worldwiki/components';
-import AiChatInput from './features/ai/AiChatInput.vue';
-import AiHeader from './features/ai/components/AiHeader.vue';
-import AiSettingsView from './features/ai/settings/AiSettingsView.vue';
-import { useWowilonPanel } from './features/ai/useWowilonPanel';
+import AiChatInput from '../AiChatInput.vue';
+import AiHeader from '../components/AiHeader.vue';
+import AiSettingsView from '../settings/AiSettingsView.vue';
+import { useWowilonPanel } from '../useWowilonPanel';
 
 // Read URL parameters for chatId and project
 const searchParams = new URLSearchParams(window.location.search);

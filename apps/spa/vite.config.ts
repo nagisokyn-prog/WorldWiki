@@ -58,5 +58,9 @@ export default defineConfig({
   },
   optimizeDeps: {
     force: true
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom'
   }
 });

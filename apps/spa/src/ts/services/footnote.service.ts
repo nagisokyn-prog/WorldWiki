@@ -47,8 +47,8 @@ class FootnoteService {
   }
 
   removeFromMarkdown(content: string, id: number): string {
-    let result = content.replace(new RegExp(`\\[\\^${id}\\]`, 'g'), '');
-    result = result.replace(new RegExp(`\\[\\^${id}\\]:.*\n?`, 'g'), '');
+    let result = content.replace(new RegExp(`\\[\\^${id}\\]:.*\\n?`, 'g'), '');
+    result = result.replace(new RegExp(`\\[\\^${id}\\]`, 'g'), '');
     return result;
   }
 

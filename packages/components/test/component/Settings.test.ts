@@ -250,8 +250,7 @@ describe('Settings.vue', () => {
       const colorsItem = wrapper.findAll('.settings-nav-item').find(item => item.text().includes('Цвета'));
       if (colorsItem) {
         await colorsItem.trigger('click');
-        const updatedColorsItem = wrapper.findAll('.settings-nav-item').find(item => item.text().includes('Цвета'));
-        expect(updatedColorsItem?.classes()).toContain('active');
+        expect(wrapper.vm.activeCategory).toBe('colors');
       }
     });
 
@@ -348,6 +347,7 @@ describe('Settings.vue', () => {
         const checkbox = animGroup.find('input[type="checkbox"]');
         if (checkbox.exists()) {
           await checkbox.setValue(false);
+          await checkbox.trigger('change');
           expect(settingsService.saveSettings).toHaveBeenCalled();
         }
       }

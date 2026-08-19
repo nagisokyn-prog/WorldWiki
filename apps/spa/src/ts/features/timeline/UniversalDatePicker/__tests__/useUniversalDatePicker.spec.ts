@@ -1,29 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useUniversalDatePicker } from '../useUniversalDatePicker';
-import { useCalendarStore } from '../../../../stores/calendar.store';
 
 vi.mock('@worldwiki/components', () => ({
   settingsService: {
     getSettings: () => ({ dropdowns: { wheelOrientation: 'horizontal' } }),
     onChange: vi.fn(),
   },
-}));
-
-vi.mock('../../../../stores/calendar.store', () => ({
-  useCalendarStore: () => ({
-    getCalendars: vi.fn().mockResolvedValue([
-      {
-        id: 'cal_1',
-        is_default: true,
-        data: {
-          название: 'Main Cal',
-          эпохи: [{ название: 'Era 1', год_начала: 1, год_конца: 200 }],
-          месяцы: [{ название: 'Month 1', дней: 30 }],
-          настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 },
-        },
-      },
-    ]),
-  }),
 }));
 
 describe('useUniversalDatePicker', () => {
@@ -54,6 +36,19 @@ describe('useUniversalDatePicker', () => {
     const picker = useUniversalDatePicker(props, emit);
 
     expect(picker.wheelHorizontal.value).toBe(true);
+
+    // Provide calendar & currentCalendarId
+    picker.allCalendars.value = [
+      {
+        id: 'cal_1',
+        data: {
+          эпохи: [{ название: 'Era 1', год_начала: 1, год_конца: 200 }],
+          месяцы: [{ название: 'Month 1', дней: 30 }],
+          настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 },
+        },
+      },
+    ];
+    picker.currentCalendarId.value = 'cal_1';
 
     picker.onYearChange();
     expect(emit).toHaveBeenCalledWith('update:modelValue', expect.any(Object));

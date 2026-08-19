@@ -16,29 +16,59 @@ describe('useSchemaContainer', () => {
     };
   });
 
-  it('computes timeline flag and checks atomic bricks', () => {
+  it('computes availableEntityTypes, timeline flag variants and checks atomic bricks', () => {
     const container = useSchemaContainer(props);
 
     expect(container.isTimeline.value).toBe(true);
     expect(container.atomicBricks.length).toBeGreaterThan(0);
+    expect(Array.isArray(container.availableEntityTypes.value)).toBe(true);
+
+    // Non-timeline template
+    const nonTimeline = useSchemaContainer({ item: { template: 'simpleList' } });
+    expect(nonTimeline.isTimeline.value).toBe(false);
+
+    // Undefined template
+    const noTemplate = useSchemaContainer({ item: {} });
+    expect(noTemplate.isTimeline.value).toBeUndefined();
   });
 
-  it('manages field overrides and options', () => {
+  it('fetches raw template fields for existing and non-existing templates', () => {
+    const container = useSchemaContainer(props);
+    container.fullConfig.value = {
+      templates: {
+        customTpl: { fields: [{ class: 'f1' }] },
+      },
+    };
+
+    expect(container.getRawTemplateFields('customTpl')).toEqual([{ class: 'f1' }]);
+    expect(container.getRawTemplateFields('unknownTpl')).toEqual([]);
+  });
+
+  it('manages field overrides and options when fieldOverrides is missing', () => {
+    const bareItem: any = {};
     const container = useSchemaContainer(props);
 
-    const override = container.ensureFieldOverride(props.item, 'status');
-    expect(override).toEqual({});
+    // getFieldOverride on bare item
+    expect(container.getFieldOverride(bareItem, 'field1')).toEqual({});
 
-    container.toggleFieldOverride(props.item, 'status');
-    expect(props.item.fieldOverrides.status.hidden).toBe(true);
+    // toggleFieldOverride initializes fieldOverrides
+    container.toggleFieldOverride(bareItem, 'field1');
+    expect(bareItem.fieldOverrides.field1.hidden).toBe(true);
 
-    container.addFieldOption(props.item, 'status');
-    expect(props.item.fieldOverrides.status.options.length).toBe(1);
+    // toggle back
+    container.toggleFieldOverride(bareItem, 'field1');
+    expect(bareItem.fieldOverrides.field1.hidden).toBe(false);
 
-    expect(container.getFieldOverride(props.item, 'status').hidden).toBe(true);
+    // addFieldOption
+    container.addFieldOption(bareItem, 'field1');
+    expect(bareItem.fieldOverrides.field1.options.length).toBe(1);
+
+    // add another option when options already exists
+    container.addFieldOption(bareItem, 'field1');
+    expect(bareItem.fieldOverrides.field1.options.length).toBe(2);
   });
 
-  it('updates title, emptyMessage, hidden and removes custom fields', () => {
+  it('updates title, emptyMessage, hidden and removes custom fields with and without customFields array', () => {
     const container = useSchemaContainer(props);
 
     container.updateTitle('New Title');
@@ -52,5 +82,9 @@ describe('useSchemaContainer', () => {
 
     container.removeCustomField(0);
     expect(props.item.customFields.length).toBe(0);
+
+    // When customFields is undefined
+    const bareContainer = useSchemaContainer({ item: {} });
+    bareContainer.removeCustomField(0);
   });
 });

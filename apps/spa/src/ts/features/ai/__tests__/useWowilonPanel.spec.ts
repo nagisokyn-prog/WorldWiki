@@ -271,16 +271,31 @@ describe('useWowilonPanel', () => {
   });
 
   describe('Stream chunk event listening', () => {
-    it('appends streaming reasoning, tool logs, usage, text and finishes on is_done', () => {
-      // Mock stream listener registration
-      panel.allMessages.value = [
+    it('appends streaming reasoning, tool logs, usage, text and finishes on is_done in mounted lifecycle', async () => {
+      const { defineComponent } = await import('vue');
+      const { mount, flushPromises } = await import('@vue/test-utils');
+
+      let capturedPanel: any;
+      const TestComp = defineComponent({
+        setup() {
+          capturedPanel = useWowilonPanel(activeChatId, 'proj_1', activeModeSlug);
+          return { ...capturedPanel };
+        },
+        template: '<div></div>',
+      });
+
+      const wrapper = mount(TestComp);
+      await flushPromises();
+
+      capturedPanel.allMessages.value = [
         { id: 'asst_1', role: 'assistant', content: '', reasoning: '', is_active: true }
       ];
-      panel.isGenerating.value = true;
+      capturedPanel.isGenerating.value = true;
 
       // Find the listener callback registered in listen
       const calls = vi.mocked(listen).mock.calls;
       const streamHandler = calls.find((c: any) => c[0] === 'chat_stream_chunk')?.[1] as any;
+      expect(streamHandler).toBeDefined();
 
       if (streamHandler) {
         // Reasoning chunk
@@ -292,7 +307,7 @@ describe('useWowilonPanel', () => {
             text: 'Thinking...',
           }
         });
-        expect(panel.allMessages.value[0].reasoning).toBe('Thinking...');
+        expect(capturedPanel.allMessages.value[0].reasoning).toBe('Thinking...');
 
         // Tool log chunk
         streamHandler({
@@ -303,7 +318,7 @@ describe('useWowilonPanel', () => {
             text: 'Called search tool',
           }
         });
-        expect(panel.allMessages.value[0].toolLogs).toEqual(['Called search tool']);
+        expect(capturedPanel.allMessages.value[0].toolLogs).toEqual(['Called search tool']);
 
         // Usage chunk
         streamHandler({
@@ -314,7 +329,7 @@ describe('useWowilonPanel', () => {
             text: JSON.stringify({ input_tokens: 10, output_tokens: 20, total_tokens: 30 }),
           }
         });
-        expect(panel.tokenUsage.value).toEqual({ input_tokens: 10, output_tokens: 20, total_tokens: 30 });
+        expect(capturedPanel.tokenUsage.value).toEqual({ input_tokens: 10, output_tokens: 20, total_tokens: 30 });
 
         // Content chunk
         streamHandler({
@@ -326,8 +341,8 @@ describe('useWowilonPanel', () => {
             is_done: true,
           }
         });
-        expect(panel.allMessages.value[0].content).toBe('Final Answer');
-        expect(panel.isGenerating.value).toBe(false);
+        expect(capturedPanel.allMessages.value[0].content).toBe('Final Answer');
+        expect(capturedPanel.isGenerating.value).toBe(false);
 
         // Unknown message_id test
         streamHandler({
@@ -348,13 +363,19 @@ describe('useWowilonPanel', () => {
             text: 'invalid json',
           }
         });
-      }
-    });
 
-    it('triggers unlisten on cleanup if registered', () => {
-      mockUnlisten.mockClear();
-      // If unlistenChunk exists, it can be called
-      mockUnlisten();
+        // Chunk for another chat
+        streamHandler({
+          payload: {
+            chat_id: 'other_chat',
+            message_id: 'asst_1',
+            chunk_type: 'content',
+            text: 'Ignore',
+          }
+        });
+      }
+
+      wrapper.unmount();
       expect(mockUnlisten).toHaveBeenCalled();
     });
   });

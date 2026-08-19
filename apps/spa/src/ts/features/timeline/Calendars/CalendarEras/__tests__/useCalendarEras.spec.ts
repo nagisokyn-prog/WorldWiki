@@ -15,17 +15,36 @@ describe('useCalendarEras', () => {
     };
   });
 
-  it('adds, moves and removes eras', () => {
-    const hook = useCalendarEras(props);
-
-    hook.addEra();
-    expect(props.modelValue.эпохи.length).toBe(3);
-    expect(props.modelValue.эпохи[2].год_начала).toBe(1001);
-
-    hook.moveItem(0, 1);
-    expect(props.modelValue.эпохи[0].название).toBe('Эра 2');
+  it('handles addEra and removeEra when modelValue has no eras array', () => {
+    const emptyProps: any = { modelValue: {} };
+    const hook = useCalendarEras(emptyProps);
 
     hook.removeEra(0);
-    expect(props.modelValue.эпохи.length).toBe(2);
+    expect(emptyProps.modelValue.эпохи).toBeUndefined();
+
+    hook.addEra();
+    expect(emptyProps.modelValue.эпохи.length).toBe(1);
+    expect(emptyProps.modelValue.эпохи[0].год_начала).toBe(1);
+    expect(emptyProps.modelValue.эпохи[0].год_конца).toBe(1000);
+  });
+
+  it('moves items within bounds and ignores out of bounds moves', () => {
+    const hook = useCalendarEras(props);
+
+    // Out of bounds up
+    hook.moveItem(0, -1);
+    expect(props.modelValue.эпохи[0].название).toBe('Эра 1');
+
+    // Valid move down
+    hook.moveItem(0, 1);
+    expect(props.modelValue.эпохи[0].название).toBe('Эра 2');
+    expect(props.modelValue.эпохи[1].название).toBe('Эра 1');
+
+    // Out of bounds down
+    hook.moveItem(1, 1);
+    expect(props.modelValue.эпохи[1].название).toBe('Эра 1');
+
+    hook.removeEra(0);
+    expect(props.modelValue.эпохи.length).toBe(1);
   });
 });

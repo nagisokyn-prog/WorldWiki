@@ -602,17 +602,36 @@ describe('shell store', () => {
       expect(api.deleteEntity).toHaveBeenCalledWith('character:c1');
     });
 
-    it('deleteVolume and deleteArc clear activeTreeNode and handle tree reloads', async () => {
+    it('deleteVolume and deleteArc clear activeTreeNode and handle tree reloads and errors', async () => {
       shell.activeTreeNode = { type: 'volume', node: { id: 'v1' } };
       shell.chapterTreeRef = { load: vi.fn() } as any;
 
+      // Successful volume deletion
       await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], ['a1'], true);
       expect(shell.activeTreeNode).toBeNull();
       expect(shell.chapterTreeRef.load).toHaveBeenCalled();
 
+      // Cancelled volume deletion
+      const { appConfirm } = await import('@worldwiki/components');
+      vi.mocked(appConfirm).mockResolvedValueOnce(false);
+      await shell.deleteVolume({ id: 'v2', title: 'Vol 2' }, [], [], false);
+
+      // Volume deletion error catch
+      vi.mocked(api.deleteVolume).mockRejectedValueOnce(new Error('Volume deletion error'));
+      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [], [], true);
+
+      // Successful arc deletion
       shell.activeTreeNode = { type: 'arc', node: { id: 'a1' } };
       await shell.deleteArc({ id: 'a1', title: 'Arc 1' }, [{ id: 'c1' }], true);
       expect(shell.activeTreeNode).toBeNull();
+
+      // Cancelled arc deletion
+      vi.mocked(appConfirm).mockResolvedValueOnce(false);
+      await shell.deleteArc({ id: 'a2', title: 'Arc 2' }, [], false);
+
+      // Arc deletion error catch
+      vi.mocked(api.deleteArc).mockRejectedValueOnce(new Error('Arc deletion error'));
+      await shell.deleteArc({ id: 'a1', title: 'Arc 1' }, [], true);
     });
 
     it('openFloatingEditor delegates to floatingStore', () => {

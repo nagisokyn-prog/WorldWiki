@@ -16,7 +16,15 @@ describe('useCalendarTimezones', () => {
     };
   });
 
-  it('adds and removes timezones', () => {
+  it('handles addTz, removeTz, updateParent, and uninitialized timezone_regions', () => {
+    const emptyProps: any = { modelValue: {} };
+    const emptyHook = useCalendarTimezones(emptyProps, emit);
+
+    expect(emptyHook.timezoneRegions.value).toEqual([]);
+
+    emptyHook.updateParent();
+    expect(emit).toHaveBeenCalledWith('update:modelValue', { timezone_regions: [] });
+
     const hook = useCalendarTimezones(props, emit);
 
     hook.addTz();

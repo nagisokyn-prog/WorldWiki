@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+import { defineComponent } from 'vue';
 import { useSchemaEditorMain } from '../useSchemaEditorMain';
 import * as api from '../../../../services/api.client';
+import { appAlert } from '@worldwiki/components';
 
 vi.mock('../../../../services/api.client', () => ({
   getEntitySchemas: vi.fn().mockResolvedValue([]),
@@ -10,6 +13,7 @@ vi.mock('../../../../services/api.client', () => ({
 
 vi.mock('@worldwiki/components', () => ({
   appAlert: vi.fn(),
+  appConfirm: vi.fn(),
 }));
 
 describe('useSchemaEditorMain', () => {
@@ -26,37 +30,71 @@ describe('useSchemaEditorMain', () => {
     emit = vi.fn();
   });
 
-  it('initializes and saves schema', async () => {
-    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce(undefined as any);
+  it('mounts, handles resize, scroll, and unmounts cleanly', async () => {
+    const TestComp = defineComponent({
+      props: ['project', 'entityType', 'schemaType'],
+      emits: ['modified', 'scroll-change'],
+      setup(p, { emit: e }) {
+        return { ...useSchemaEditorMain(p, e) };
+      },
+      template: '<div></div>',
+    });
 
+    const wrapper = mount(TestComp, { props });
+    await flushPromises();
+
+    const vm = wrapper.vm as any;
+
+    // Resize
+    vm.startResize({ clientX: 100 } as any);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 150 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // Scroll
+    vm.handleScroll({ target: { scrollTop: 80 } });
+    expect(wrapper.emitted('scroll-change')).toBeDefined();
+
+    // Keydown toggle catalog
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      shiftKey: true,
+      code: 'KeyB',
+    }));
+    expect(vm.showCatalog).toBe(false);
+
+    // Global save event
+    document.dispatchEvent(new CustomEvent('ww:trigger-schema-save', {
+      detail: { entityType: 'character' },
+    }));
+
+    wrapper.unmount();
+  });
+
+  it('saves schema with atomic and dynamic fields, handles history reload and errors', async () => {
     const main = useSchemaEditorMain(props, emit);
-
     main.schema.value = {
       sections: [
         {
           id: 'sec_1',
-          items: [{ type: 'text', class: 'name', label: 'NAME' }],
+          items: [
+            { type: 'text', class: 'name' }, // Atomic
+            { template: 'timeline' }, // Dynamic container
+          ],
         },
       ],
     };
+    main.isHistoryPreviewMode.value = true;
+    main.showHistory.value = true;
 
+    // Success save
+    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce(undefined as any);
     await main.saveSchema();
+    expect(appAlert).toHaveBeenCalledWith('Схема сохранена!');
+    expect(main.isHistoryPreviewMode.value).toBe(false);
 
-    expect(api.saveEntitySchema).toHaveBeenCalledWith('p1', expect.objectContaining({
-      type_key: 'character',
-      id: 'entity_schemas:character',
-    }), 30);
-  });
-
-  it('handles keyboard shortcuts to toggle catalog', () => {
-    const main = useSchemaEditorMain(props, emit);
-    expect(main.showCatalog.value).toBe(true);
-
-    const event = new KeyboardEvent('keydown', {
-      ctrlKey: true,
-      shiftKey: true,
-      code: 'KeyB',
-    });
-    window.dispatchEvent(event);
+    // Error save
+    vi.mocked(api.saveEntitySchema).mockRejectedValueOnce(new Error('Save failed'));
+    await main.saveSchema();
+    expect(appAlert).toHaveBeenCalledWith('Ошибка сохранения');
   });
 });

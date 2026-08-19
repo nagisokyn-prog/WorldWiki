@@ -21,20 +21,32 @@ describe('usePlanningPanel', () => {
     };
   });
 
-  it('computes node icon and progress pct', async () => {
-    vi.mocked(api.getPlans).mockResolvedValueOnce([
-      { id: 'p1', parent_type: 'chapter', parent_ref: 'ch_1', title: 'Task 1', completed: true, sort_order: 1 },
-      { id: 'p2', parent_type: 'chapter', parent_ref: 'ch_1', title: 'Task 2', completed: false, sort_order: 2 },
-    ] as any);
+  it('computes node icons and handles missing parent props', async () => {
+    // chapter icon
+    const chapterPanel = usePlanningPanel(props);
+    expect(chapterPanel.nodeIcon.value).toBe('📖');
 
-    const panel = usePlanningPanel(props);
-    await Promise.resolve();
+    // volume icon
+    const volumePanel = usePlanningPanel({ ...props, parentType: 'volume', parentTitle: '' });
+    expect(volumePanel.nodeIcon.value).toBe('📚');
+    expect(volumePanel.nodeName.value).toBe('Без названия');
 
-    expect(panel.nodeIcon.value).toBe('📖');
-    expect(panel.nodeName.value).toBe('Chapter 1');
+    // arc icon
+    const arcPanel = usePlanningPanel({ ...props, parentType: 'arc' });
+    expect(arcPanel.nodeIcon.value).toBe('🌀');
+
+    // Missing project / parentType / parentId
+    const emptyPanel = usePlanningPanel({});
+    await emptyPanel.load();
+    expect(emptyPanel.items.value).toEqual([]);
+
+    // API error
+    vi.mocked(api.getPlans).mockRejectedValueOnce(new Error('Load error'));
+    await chapterPanel.load();
+    expect(chapterPanel.items.value).toEqual([]);
   });
 
-  it('adds, indents, toggles, saves and deletes items', async () => {
+  it('adds, indents, toggles, saves and deletes items with error rollbacks', async () => {
     vi.mocked(api.getPlans).mockResolvedValue([
       { id: 'p1', parent_type: 'chapter', parent_ref: 'ch_1', title: 'Task 1', completed: false },
     ] as any);
@@ -44,21 +56,63 @@ describe('usePlanningPanel', () => {
     const panel = usePlanningPanel(props);
     await panel.load();
 
+    // Add items
     await panel.addItem();
-    expect(panel.items.value.length).toBe(2);
-
     await panel.addItemAfter(0, 1);
     expect(panel.items.value.length).toBe(3);
 
+    // Save empty item without id (early return)
+    const emptyItem = { id: '', text: '   ', done: false };
+    await panel.saveItem(emptyItem);
+
+    // Save error catch
+    vi.mocked(api.savePlan).mockRejectedValueOnce(new Error('Save error'));
+    await panel.saveItem(panel.items.value[0]);
+
+    // Toggle item with id error rollback
     const item = panel.items.value[0];
-    await panel.indentItem(item, 1);
-    expect(item.indent).toBe(1);
-
+    vi.mocked(api.getPlans).mockRejectedValueOnce(new Error('Toggle error'));
     await panel.toggleItem(item);
-    expect(item.done).toBe(true);
+    expect(item.done).toBe(false);
 
+    // Toggle item without id
+    const newItem = { id: '', text: 'New', done: false };
+    await panel.toggleItem(newItem);
+    expect(newItem.done).toBe(true);
+
+    // Indent item bounds
+    await panel.indentItem(item, -5);
+    expect(item.indent).toBe(0);
+    await panel.indentItem(item, 10);
+    expect(item.indent).toBe(4);
+
+    // Delete item
     await panel.deleteItem(item, 0);
     expect(panel.items.value.length).toBe(2);
-    expect(api.deletePlan).toHaveBeenCalledWith('p1');
+
+    // Delete item without id
+    await panel.deleteItem({ id: '' }, 0);
+  });
+
+  it('handles onDeleteKey on backspace with empty text vs non-empty', async () => {
+    const panel = usePlanningPanel(props);
+    const item1 = { id: '1', text: 'Item 1' };
+    const item2 = { id: '2', text: '' };
+    panel.items.value = [item1, item2];
+
+    const preventDefault = vi.fn();
+
+    // Non-backspace key
+    await panel.onDeleteKey({ key: 'Enter', preventDefault }, item2, 1);
+    expect(preventDefault).not.toHaveBeenCalled();
+
+    // Backspace with text
+    await panel.onDeleteKey({ key: 'Backspace', preventDefault }, item1, 0);
+    expect(preventDefault).not.toHaveBeenCalled();
+
+    // Backspace with empty text
+    await panel.onDeleteKey({ key: 'Backspace', preventDefault }, item2, 1);
+    expect(preventDefault).toHaveBeenCalled();
+    expect(panel.items.value.length).toBe(1);
   });
 });

@@ -89,6 +89,15 @@ describe('useCloudSyncModal', () => {
       expect(modal.showAuthCodeInput.value).toBe(true);
       expect(modal.authError.value).toBe('');
     });
+
+    it('handles openUrl failure and sets authError', async () => {
+      const { openUrl } = await import('@tauri-apps/plugin-opener');
+      vi.mocked(openUrl).mockRejectedValueOnce(new Error('Browser open failed'));
+
+      await modal.connectYandex();
+      expect(modal.showAuthCodeInput.value).toBe(true);
+      expect(modal.authError.value).toContain('Не удалось открыть браузер');
+    });
   });
 
   describe('disconnectYandex', () => {

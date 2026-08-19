@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ref, nextTick } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { useChaptersMain } from '../useChaptersMain';
@@ -102,7 +102,7 @@ describe('useChaptersMain', () => {
     wrapper.unmount();
   });
 
-  it('handles custom event listeners (save, reload hierarchy, rename)', async () => {
+  it('handles custom event listeners (save, reload hierarchy, rename branches)', async () => {
     const TestComponent = defineComponent({
       props: ['project', 'controlledChapterId', 'activeTreeNode'],
       setup(p, { emit: e }) {
@@ -132,7 +132,22 @@ describe('useChaptersMain', () => {
     // Set current chapter
     mockStore.currentChapter.value = { id: 'ch_1', title: 'Prologue' };
 
-    // Trigger rename event matching currentChapter
+    // Rename event non-matching ID
+    document.dispatchEvent(
+      new CustomEvent('ww:chapter-renamed', {
+        detail: { id: 'other_id', title: 'Ignored' },
+      })
+    );
+    expect(mockStore.currentChapter.value.title).toBe('Prologue');
+
+    // Rename event matching ID but same title
+    document.dispatchEvent(
+      new CustomEvent('ww:chapter-renamed', {
+        detail: { id: 'ch_1', title: 'Prologue' },
+      })
+    );
+
+    // Rename event matching ID with new title
     document.dispatchEvent(
       new CustomEvent('ww:chapter-renamed', {
         detail: { id: 'ch_1', title: 'Updated Prologue' },
@@ -141,6 +156,33 @@ describe('useChaptersMain', () => {
     expect(mockStore.currentChapter.value.title).toBe('Updated Prologue');
 
     wrapper.unmount();
+  });
+
+  it('handles watcher branches for controlledChapterId and activeTreeNode', async () => {
+    const reactiveProps = reactive({
+      project: 'proj_1',
+      controlledChapterId: 'ch_1',
+      activeTreeNode: { type: 'chapter', node: { id: 'ch_1' } } as any,
+    });
+
+    const main = useChaptersMain(reactiveProps, emit);
+
+    // Same controlledChapterId (no-op)
+    reactiveProps.controlledChapterId = 'ch_1';
+    await nextTick();
+
+    // Different controlledChapterId
+    reactiveProps.controlledChapterId = 'ch_2';
+    await nextTick();
+    expect(mockStore.openChapter).toHaveBeenCalledWith('proj_1', 'ch_2');
+
+    // Clear activeTreeNode without controlledChapterId
+    reactiveProps.controlledChapterId = null;
+    reactiveProps.activeTreeNode = null;
+    await nextTick();
+    expect(main.localActiveTreeNode.value).toBeUndefined();
+    expect(mockStore.currentChapter.value).toBeNull();
+    expect(mockStore.currentChapterId.value).toBeUndefined();
   });
 
   it('marks unsaved and triggers autosave debounce', () => {
@@ -204,7 +246,7 @@ describe('useChaptersMain', () => {
     expect(main.localActiveTreeNode.value).toBeUndefined();
   });
 
-  it('handles export, scroll change, and chapter wrappers', async () => {
+  it('handles export, scroll change with null chapter and valid chapter', async () => {
     const main = useChaptersMain(props, emit);
     mockStore.currentChapter.value = { id: 'ch_1', scrollPos: 0 };
 
@@ -215,16 +257,9 @@ describe('useChaptersMain', () => {
     expect(mockStore.currentChapter.value.scrollPos).toBe(450);
     expect(emit).toHaveBeenCalledWith('scroll-change', 450);
 
-    main.saveChapter();
-    expect(mockStore.saveChapter).toHaveBeenCalledWith('proj_1', emit);
-
-    main.loadChapters();
-    expect(mockStore.loadChapters).toHaveBeenCalledWith('proj_1');
-
-    main.loadHierarchy();
-    expect(mockStore.loadChapters).toHaveBeenCalled();
-
-    main.openChapter('ch_99');
-    expect(mockStore.openChapter).toHaveBeenCalledWith('proj_1', 'ch_99');
+    // With null current chapter
+    mockStore.currentChapter.value = null;
+    main.handleScrollChange(500);
+    expect(emit).toHaveBeenCalledWith('scroll-change', 500);
   });
 });

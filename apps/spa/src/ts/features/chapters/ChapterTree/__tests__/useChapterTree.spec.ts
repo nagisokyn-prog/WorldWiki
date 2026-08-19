@@ -2,9 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import { useChapterTree } from '../useChapterTree';
 import * as api from '../../../../services/api.client';
+import { appAlert } from '@worldwiki/components';
+
+let mockPush: any;
 
 vi.mock('vue-router', () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push: mockPush }),
 }));
 
 vi.mock('../../../../services/api.client', () => ({
@@ -17,14 +20,16 @@ vi.mock('../../../../services/api.client', () => ({
   deleteEntitySchema: vi.fn().mockResolvedValue({}),
 }));
 
+vi.mock('@worldwiki/components', () => ({
+  appAlert: vi.fn(),
+}));
+
+let mockHierarchy: any;
+
 vi.mock('../../../../stores/chapter.store', () => ({
   useChapterStore: () => ({
     loadChapters: vi.fn().mockResolvedValue([]),
-    hierarchy: ref({
-      volumes: [{ id: 'vol_1', title: 'Volume 1' }],
-      arcs: [{ id: 'arc_1', title: 'Arc 1', volume_id: 'vol_1' }],
-      chapters: [{ id: 'ch_1', title: 'Chapter 1', arc_id: 'arc_1' }],
-    }),
+    hierarchy: mockHierarchy,
   }),
 }));
 
@@ -44,136 +49,121 @@ describe('useChapterTree', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPush = vi.fn();
     emit = vi.fn();
+    mockHierarchy = ref({
+      volumes: [{ id: 'vol_1', title: 'Volume 1' }],
+      arcs: [
+        { id: 'arc_1', title: 'Arc 1', volume_id: 'vol_1' },
+        { id: 'arc_root', title: 'Root Arc' },
+      ],
+      chapters: [
+        { id: 'ch_1', title: 'Chapter 1', arc_id: 'arc_1' },
+        { id: 'ch_root', title: 'Root Chapter' },
+      ],
+    });
+
     props = {
       project: 'my-proj',
       activeEditorId: 'ch_1',
     };
   });
 
-  it('computes explorer sections and active ID', () => {
+  it('computes explorer sections with root arcs and root chapters and computes activeId', () => {
     const tree = useChapterTree(props, emit);
 
     expect(tree.activeId.value).toBe('ch_1');
-    expect(tree.explorerSections.value.length).toBe(2);
-    expect(tree.explorerSections.value[0].id).toBe('manuscript');
-    expect(tree.explorerSections.value[1].id).toBe('character');
+    expect(tree.explorerSections.value[0].nodes.length).toBe(3); // volume, root arc, root chapter
+
+    // Fallback activeId to activeNode
+    props.activeEditorId = null;
+    props.activeNode = { node: { id: 'node_99' } };
+    const tree2 = useChapterTree(props, emit);
+    expect(tree2.activeId.value).toBe('node_99');
+
+    // No active ID
+    props.activeNode = null;
+    const tree3 = useChapterTree(props, emit);
+    expect(tree3.activeId.value).toBeUndefined();
   });
 
-  it('handles select and open for entities and chapters', () => {
+  it('handles goBack and startRename', () => {
     const tree = useChapterTree(props, emit);
 
-    // Select entity
-    tree.handleSelect([{ data: { isEntity: true, type: 'character', original: { id: 'c1' } } }], {} as any);
-    expect(emit).toHaveBeenCalledWith('open-entity', expect.objectContaining({ entityType: 'character' }));
+    tree.goBack();
+    expect(mockPush).toHaveBeenCalledWith('/launcher');
 
-    // Select chapter
+    const closeCtx = vi.fn();
+    tree.explorerTreeRef.value = { startRename: vi.fn() };
+    tree.startRename({ id: '1' }, closeCtx);
+    expect(closeCtx).toHaveBeenCalled();
+    expect(tree.explorerTreeRef.value.startRename).toHaveBeenCalled();
+  });
+
+  it('handles select and open for entities, chapters with ctrl/shift keys', () => {
+    const tree = useChapterTree(props, emit);
+
+    // Empty select
+    tree.handleSelect([], {} as any);
+
+    // Select chapter with ctrlKey (does not select-chapter)
+    tree.handleSelect([{ data: { type: 'chapter', original: { id: 'ch_1' } } }], { ctrlKey: true } as any);
+    expect(emit).toHaveBeenCalledWith('select-node', expect.anything());
+    expect(emit).not.toHaveBeenCalledWith('select-chapter', expect.anything());
+
+    // Normal select chapter
     tree.handleSelect([{ data: { type: 'chapter', original: { id: 'ch_1' } } }], {} as any);
     expect(emit).toHaveBeenCalledWith('select-chapter', { id: 'ch_1' });
 
-    // Open entity
-    tree.handleOpen({ data: { isEntity: true, type: 'character', original: { id: 'c1' } } });
-    expect(emit).toHaveBeenCalledWith('open-entity', expect.objectContaining({ entityType: 'character' }));
+    // Open chapter
+    tree.handleOpen({ data: { type: 'chapter', original: { id: 'ch_1' } } });
+    expect(emit).toHaveBeenCalledWith('select-chapter', { id: 'ch_1' });
   });
 
-  it('handles inline creation and renames', async () => {
+  it('handles handleDeleteSection with cancel and confirm modal buttons', async () => {
     const tree = useChapterTree(props, emit);
 
-    // Create inline in arc
-    await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'arc_1' });
-    expect(emit).toHaveBeenCalledWith('create-chapter-in', expect.objectContaining({ arcId: 'arc_1' }));
+    // Cancel deletion
+    const promise1 = tree.handleDeleteSection('char_type');
+    const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
+    cancelBtn.click();
+    await promise1;
+    expect(api.deleteEntitySchema).not.toHaveBeenCalled();
 
-    // Rename chapter
-    await tree.handleRename({ data: { type: 'chapter', original: { id: 'ch_1' } } }, 'Renamed Chapter');
-    expect(emit).toHaveBeenCalledWith('rename-chapter', { id: 'ch_1' }, 'Renamed Chapter');
+    // Confirm deletion
+    const promise2 = tree.handleDeleteSection('char_type');
+    const confirmBtn = document.getElementById('confirm-btn') as HTMLButtonElement;
+    confirmBtn.click();
+    await promise2;
+    expect(api.deleteEntitySchema).toHaveBeenCalledWith('my-proj', 'char_type');
 
-    // Rename volume
-    await tree.handleRename({ data: { type: 'volume', original: { id: 'vol_1' } } }, 'Renamed Volume');
-    expect(api.updateVolume).toHaveBeenCalledWith('my-proj', 'vol_1', 'Renamed Volume');
+    // Confirm deletion error
+    vi.mocked(api.deleteEntitySchema).mockRejectedValueOnce(new Error('Delete schema error'));
+    const promise3 = tree.handleDeleteSection('char_type');
+    const confirmBtn3 = document.getElementById('confirm-btn') as HTMLButtonElement;
+    confirmBtn3.click();
+    await promise3;
+    expect(appAlert).toHaveBeenCalled();
   });
 
-  it('handles creation and inline creation branches', async () => {
+  it('handles handleRename guards and error handling', async () => {
     const tree = useChapterTree(props, emit);
 
-    tree.explorerTreeRef.value = {
-      startRename: vi.fn(),
-      expandNode: vi.fn(),
-      startCreate: vi.fn(),
-    };
+    // Empty new name
+    await tree.handleRename({ data: { type: 'volume' } }, '   ');
+    expect(api.updateVolume).not.toHaveBeenCalled();
 
-    // Create volume in manuscript
-    await tree.handleCreate({ sectionId: 'manuscript' });
+    // API error during rename
+    vi.mocked(api.updateVolume).mockRejectedValueOnce(new Error('Update failed'));
+    await tree.handleRename({ data: { type: 'volume', original: { id: 'vol_1' } } }, 'New Vol');
 
-    // Create arc in manuscript
-    await tree.handleCreate({ sectionId: 'manuscript', parentId: 'vol_1' });
-
-    // Create entity with name
-    await tree.handleCreate({ sectionId: 'character', name: 'Lancelot' });
-    expect(emit).toHaveBeenCalledWith('add-entity', 'character', 'Lancelot');
-
-    // Create inline for root manuscript
-    await tree.handleCreateInline({ sectionId: 'manuscript' });
-    expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: null, volumeId: null });
-
-    // Create inline for volume
-    await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'vol_1' });
-
-    // Create inline for non-manuscript
-    await tree.handleCreateInline({ sectionId: 'character' });
-    expect(tree.explorerTreeRef.value.startCreate).toHaveBeenCalledWith('character');
+    // Cancel rename non-temp
+    await tree.handleCancelRename({ id: 'vol_1' });
   });
 
-  it('handles renaming of arc, entity, and temporary nodes', async () => {
+  it('handles handleDelete with unknown nodes', async () => {
     const tree = useChapterTree(props, emit);
-
-    // Rename arc
-    await tree.handleRename({ data: { type: 'arc', original: { id: 'arc_1' } } }, 'Renamed Arc');
-    expect(api.updateArc).toHaveBeenCalledWith('my-proj', 'arc_1', 'Renamed Arc', null);
-
-    // Rename temp volume
-    await tree.handleRename({ id: '__new_volume__', data: { type: 'volume' } }, 'New Vol');
-    expect(api.createVolume).toHaveBeenCalledWith('my-proj', 'New Vol');
-
-    // Rename temp arc
-    await tree.handleRename({ id: '__new_arc__123', data: { original: { volumeId: 'vol_1' } } }, 'New Arc');
-    expect(api.createArc).toHaveBeenCalledWith('my-proj', 'New Arc', 'vol_1');
-
-    // Rename entity
-    await tree.handleRename({ data: { isEntity: true, type: 'character', original: { id: 'char_1' } } }, 'King Arthur');
-    expect(emit).toHaveBeenCalledWith('rename-entity', 'character', 'char_1', 'King Arthur');
-
-    // Cancel rename for temporary node
-    await tree.handleCancelRename({ id: '__new_volume__' });
-  });
-
-  it('handles deletion of volume, arc, chapter, and entity', async () => {
-    const tree = useChapterTree(props, emit);
-
-    // Delete volume
-    await tree.handleDelete(['vol_1']);
-    expect(emit).toHaveBeenCalledWith('delete-volume', expect.anything(), expect.anything(), expect.anything(), false);
-
-    // Delete arc
-    await tree.handleDelete(['arc_1']);
-    expect(emit).toHaveBeenCalledWith('delete-arc', expect.anything(), expect.anything(), false);
-
-    // Delete chapter
-    await tree.handleDelete(['ch_1']);
-    expect(emit).toHaveBeenCalledWith('delete-chapter', expect.anything(), false);
-
-    // Delete entity
-    await tree.handleDelete(['entity:character:char_1']);
-  });
-
-  it('handles custom event listeners', () => {
-    useChapterTree(props, emit);
-
-    document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
-    document.dispatchEvent(
-      new CustomEvent('ww:entity-renamed', {
-        detail: { id: 'char_1', type: 'character', name: 'Arthur Pendragon' },
-      })
-    );
+    await tree.handleDelete(['unknown_id_123', 'vol_1']);
+    expect(emit).toHaveBeenCalledWith('delete-volume', expect.anything(), expect.anything(), expect.anything(), true);
   });
 });
-

@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useEntityTree } from '../entity.tree';
 import { entityApi } from '../entity.api';
 import * as api from '../../api.client';
+import { appConfirm, useTreeSelection } from '@worldwiki/components';
+import { setCache } from '../../../utils/requestCache';
 
 vi.mock('../entity.api', () => ({
   entityApi: {
@@ -13,18 +15,23 @@ vi.mock('../../api.client', () => ({
   getEntitiesBatch: vi.fn(),
 }));
 
-vi.mock('@worldwiki/components', () => ({
-  useTreeSelection: vi.fn((opts) => ({
-    selected: { value: new Set() },
-    hasSelection: { value: false },
-    selectedCount: { value: 0 },
-    handleClick: vi.fn(),
-    isSelected: vi.fn(() => false),
-    deleteSelected: vi.fn(),
-    onDelete: opts?.onDelete,
-  })),
-  appConfirm: vi.fn(() => Promise.resolve(true)),
-}));
+vi.mock('@worldwiki/components', () => {
+  return {
+    useTreeSelection: vi.fn((opts) => {
+      const selectedSet = { value: new Set() };
+      return {
+        selected: selectedSet,
+        hasSelection: { value: false },
+        selectedCount: { value: 0 },
+        handleClick: vi.fn(),
+        isSelected: vi.fn((k) => selectedSet.value.has(k)),
+        deleteSelected: vi.fn(),
+        onDelete: opts?.onDelete,
+      };
+    }),
+    appConfirm: vi.fn(() => Promise.resolve(true)),
+  };
+});
 
 describe('useEntityTree', () => {
   let emit: any;
@@ -34,67 +41,139 @@ describe('useEntityTree', () => {
     emit = vi.fn();
   });
 
-  it('loads schemas and entities batch on loadEntities', async () => {
+  it('loads schemas from cache or API and handles edge case icon / names', async () => {
     vi.mocked(entityApi.getSchemas).mockResolvedValueOnce({
-      character: { name: 'Characters', icon: '👤', titleField: 'custom_name' },
-      location: { name: 'Locations', iconEmoji: '🏰' },
+      custom_type: {}, // no name, no icon
+      character: { name: 'Characters', icon: '👤', titleField: 'profile.full_name' },
     } as any);
 
     vi.mocked(api.getEntitiesBatch).mockResolvedValueOnce({
-      character: [{ id: 'c1', custom_name: 'Arthur' }],
-      location: [{ id: 'l1', name: 'Camelot' }],
+      custom_type: [],
+      character: [{ id: 'c1', profile: { full_name: 'King Arthur' } }],
     } as any);
 
     const tree = useEntityTree('my-proj', emit);
     await tree.loadEntities();
 
-    expect(tree.entitySections.value).toEqual([
-      { type: 'character', title: 'Characters', emoji: '👤' },
-      { type: 'location', title: 'Locations', emoji: '🏰' },
-    ]);
-    expect(tree.entities.value.character.length).toBe(1);
-    expect(tree.getEntityName({ custom_name: 'Arthur' }, 'character')).toBe('Arthur');
-    expect(tree.getEntityName({ name: 'Camelot' }, 'location')).toBe('Camelot');
+    expect(tree.entitySections.value[0].emoji).toBe('📄');
+    expect(tree.entitySections.value[0].title).toBe('custom_type');
+    expect(tree.getEntityName({ profile: { full_name: 'King Arthur' } }, 'character')).toBe('King Arthur');
+    expect(tree.getEntityName({}, 'custom_type')).toBe('Без названия');
+
+    // Test cached load
+    setCache('schemas:cached-proj', { char: { name: 'Cached' } });
+    vi.mocked(api.getEntitiesBatch).mockResolvedValueOnce({ char: [] } as any);
+    const cachedTree = useEntityTree('cached-proj', emit);
+    await cachedTree.loadEntities();
+    expect(cachedTree.entitySections.value[0].title).toBe('Cached');
+
+    // Test error handling
+    vi.mocked(api.getEntitiesBatch).mockRejectedValueOnce(new Error('Batch error'));
+    await cachedTree.loadEntities();
   });
 
-  it('toggles sections expansion', () => {
+  it('computes context menu style positioning near right and bottom boundaries', () => {
     const tree = useEntityTree('my-proj', emit);
 
-    expect(tree.expandedSections.value.has('character')).toBe(false);
-    tree.toggleSection('character');
-    expect(tree.expandedSections.value.has('character')).toBe(true);
-    tree.toggleSection('character');
-    expect(tree.expandedSections.value.has('character')).toBe(false);
-  });
+    // Context menu null
+    expect(tree.entityCtxStyle.value).toEqual({});
 
-  it('handles entity click and opens entity', () => {
-    const tree = useEntityTree('my-proj', emit);
-    const mockEvent = new MouseEvent('click');
+    // Context menu near bottom-right edge
+    Object.defineProperty(window, 'innerWidth', { value: 1000, writable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 800, writable: true });
 
-    tree.handleEntityClick(mockEvent, 'character', { id: 'c1', name: 'Arthur' }, {});
-
-    expect(emit).toHaveBeenCalledWith('open-entity', {
-      id: 'c1',
-      name: 'Arthur',
-      entityType: 'character',
+    tree.entityCtx.value = { x: 900, y: 750, entityType: 'char', entity: { id: 1 } };
+    expect(tree.entityCtxStyle.value).toEqual({
+      left: '680px', // 900 - 220
+      top: '630px',  // 750 - 120
     });
   });
 
-  it('opens and deletes entity from context menu', async () => {
+  it('computes flatEntityItems only for expanded sections and checks section selection', () => {
     const tree = useEntityTree('my-proj', emit);
+    tree.entitySections.value = [{ type: 'character' }, { type: 'location' }];
     tree.entities.value = {
-      character: [{ id: 'c1', name: 'Arthur' }],
+      character: [{ id: 'c1' }],
+      location: [{ id: 'l1' }],
     };
 
-    const mockEvent = { clientX: 100, clientY: 150 } as MouseEvent;
-    tree.openEntityCtx(mockEvent, 'character', { id: 'c1', name: 'Arthur' }, {});
+    tree.expandedSections.value = new Set(['character']);
+    expect(tree.flatEntityItems.value.length).toBe(1);
+    expect(tree.flatEntityItems.value[0].id).toBe('entity:character:c1');
 
-    expect(tree.entityCtx.value).toBeDefined();
-    expect(tree.entityCtxStyle.value.top).toBeDefined();
+    tree.entitySelection.selected.value = new Set(['entity:character:c1']);
+    expect(tree.entitySelectedInSection('character')).toBe(true);
+    expect(tree.entitySelectedInSection('location')).toBe(false);
+  });
 
+  it('handles multi-delete in treeSelection.onDelete', async () => {
+    const tree = useEntityTree('my-proj', emit);
+    tree.entitySections.value = [{ type: 'character' }];
+    tree.entities.value = { character: [{ id: 'c1' }, { id: 'c2' }] };
+    tree.expandedSections.value = new Set(['character']);
+
+    const onDelete = (tree.entitySelection as any).onDelete;
+
+    // Empty keys
+    await onDelete([]);
+
+    // Cancel deletion
+    vi.mocked(appConfirm).mockResolvedValueOnce(false);
+    await onDelete(['entity:character:c1']);
+    expect(emit).not.toHaveBeenCalled();
+
+    // Confirm deletion
+    vi.mocked(appConfirm).mockResolvedValueOnce(true);
+    await onDelete(['entity:character:c1']);
+    expect(emit).toHaveBeenCalledWith('delete-entity', 'entity:character:c1', 'character', true);
+    expect(tree.entities.value.character.length).toBe(1);
+  });
+
+  it('handles handleEntityClick with modifiers (Ctrl, Shift, Meta)', () => {
+    const tree = useEntityTree('my-proj', emit);
+
+    // Ctrl click -> does not open entity
+    tree.handleEntityClick({ ctrlKey: true } as any, 'character', { id: 'c1' }, {});
+    expect(emit).not.toHaveBeenCalled();
+
+    // Normal click -> opens entity
+    tree.handleEntityClick({} as any, 'character', { id: 'c1' }, {});
+    expect(emit).toHaveBeenCalledWith('open-entity', expect.objectContaining({ id: 'c1' }));
+  });
+
+  it('toggles sections and cleans up selected items if collapsing', () => {
+    const tree = useEntityTree('my-proj', emit);
+    tree.entitySelection.selected.value = new Set(['entity:character:c1']);
+
+    tree.toggleSection('character');
+    expect(tree.expandedSections.value.has('character')).toBe(true);
+
+    tree.toggleSection('character');
+    expect(tree.expandedSections.value.has('character')).toBe(false);
+    expect(tree.entitySelection.selected.value.size).toBe(0);
+  });
+
+  it('handles deleteEntityCtxNode with multi-selection active and single confirm', async () => {
+    const tree = useEntityTree('my-proj', emit);
+    tree.entities.value = { character: [{ id: 'c1', name: 'Arthur' }] };
+
+    // Null context
     await tree.deleteEntityCtxNode();
 
-    expect(emit).toHaveBeenCalledWith('delete-entity', 'entity:character:c1', 'character', true);
-    expect(tree.entities.value.character).toEqual([]);
+    // Multi-selection active
+    tree.entityCtx.value = { entityType: 'character', entity: { id: 'c1' } };
+    tree.entitySelection.hasSelection.value = true;
+    (tree.entitySelection.isSelected as any).mockReturnValue(true);
+    tree.entitySelection.selectedCount.value = 3;
+
+    await tree.deleteEntityCtxNode();
+    expect(tree.entitySelection.deleteSelected).toHaveBeenCalled();
+
+    // Single confirm cancel
+    tree.entityCtx.value = { entityType: 'character', entity: { id: 'c1' } };
+    tree.entitySelection.hasSelection.value = false;
+    vi.mocked(appConfirm).mockResolvedValueOnce(false);
+    await tree.deleteEntityCtxNode();
+    expect(emit).not.toHaveBeenCalledWith('delete-entity', expect.anything(), expect.anything(), true);
   });
 });

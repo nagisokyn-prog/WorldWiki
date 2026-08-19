@@ -1,0 +1,75 @@
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/macros/entity_duplicate_fields.rs:12:2
+   |
+12 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/macros/entity_duplicate_fields.rs`
+
+error[E0124]: field `name` is already declared
+  --> tests/macros/entity_duplicate_fields.rs:10:9
+   |
+ 9 |         pub name: String,
+   |         ---------------- `name` first declared here
+10 |         pub name: i32, // Duplicate field name - should fail
+   |         ^^^^^^^^^^^^^ field already declared
+
+error[E0308]: mismatched types
+ --> tests/macros/entity_duplicate_fields.rs:9:9
+  |
+9 |         pub name: String,
+  |         ^^^^^^^^^^^^^^^^
+  |         |
+  |         expected `&i32`, found `&String`
+  |         arguments to this function are incorrect
+  |
+  = note: expected reference `&i32`
+             found reference `&std::string::String`
+note: method defined here
+ --> $RUST/core/src/clone.rs
+  |
+  |     fn clone(&self) -> Self;
+  |        ^^^^^
+  = note: this error originates in the derive macro `Clone` which comes from the expansion of the macro `surreal_entity` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0062]: field `name` specified more than once
+  --> tests/macros/entity_duplicate_fields.rs:10:9
+   |
+ 9 |         pub name: String,
+   |         ---------------- first use of `name`
+10 |         pub name: i32, // Duplicate field name - should fail
+   |         ^^^^^^^^^^^^^ used more than once
+
+error[E0308]: mismatched types
+  --> tests/macros/entity_duplicate_fields.rs:6:1
+   |
+ 6 | / surreal_entity! {
+ 7 | |     #[table = "dup_test"]
+ 8 | |     pub struct DupEntity {
+ 9 | |         pub name: String,
+...  |
+12 | | }
+   | |_^ expected `i32`, found `String`
+   |
+   = note: this error originates in the derive macro `serde::Deserialize` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0062]: field `name` specified more than once
+  --> tests/macros/entity_duplicate_fields.rs:10:13
+   |
+ 6 | / surreal_entity! {
+ 7 | |     #[table = "dup_test"]
+ 8 | |     pub struct DupEntity {
+ 9 | |         pub name: String,
+10 | |         pub name: i32, // Duplicate field name - should fail
+   | |             ^^^^ used more than once
+11 | |     }
+12 | | }
+   | |_- first use of `name`
+
+warning: unreachable pattern
+  --> tests/macros/entity_duplicate_fields.rs:10:13
+   |
+ 9 |         pub name: String,
+   |             ---- matches all the relevant values
+10 |         pub name: i32, // Duplicate field name - should fail
+   |             ^^^^ no value can reach this
+   |
+   = note: `#[warn(unreachable_patterns)]` (part of `#[warn(unused)]`) on by default

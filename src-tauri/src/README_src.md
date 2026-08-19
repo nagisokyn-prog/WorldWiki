@@ -11,7 +11,22 @@ src-tauri/src/
 ├── main.rs              # Точка входа, инициализация БД, регистрация команд
 ├── lib.rs               # Базовый Tauri boilerplate
 ├── logic/
-│   ├── mod.rs           # Реэкспорт всех модулей logic
+│   ├── mod.rs           # Реэкспорт всех модулей logic (включая ai)
+│   ├── ai/
+│   │   ├── mod.rs       # Re-экспорт всех публичных AI-функций
+│   │   ├── agent/       # Агент: промпты и цикл выполнения
+│   │   │   ├── mod.rs   # Объявление подмодулей (prompt, runner)
+│   │   │   ├── prompt.rs # Промпт соавтора, лимиты, история → сообщения LLM
+│   │   │   └── runner.rs # Цикл агента: провайдеры LLM, стрим, tool calls (ключ.)
+│   │   ├── chat/        # Дерево чатов и операции
+│   │   │   ├── mod.rs   # Хелперы parse_record_id / clean_surreal_id
+│   │   │   ├── tree.rs  # Дерево чатов и сообщений (get_chat_tree и др.)
+│   │   │   └── operations.rs # send/fork/edit/delete/cancel/regenerate
+│   │   ├── providers/   # Списки моделей провайдеров
+│   │   │   ├── mod.rs   # Объявление модуля
+│   │   │   └── fetch.rs # fetch_ai_models — каталоги моделей провайдеров
+│   │   └── tools/       # Инструменты агента (RAG + запись)
+│   │       └── mod.rs   # WorldWikiTools — 19 инструментов (ключ.)
 │   ├── models.rs        # Определение всех сущностей (surreal_entity! макросы)
 │   ├── projects.rs      # CRUD проектов
 │   ├── entities.rs      # CRUD сущностей, схем, связей, истории ревизий
@@ -50,19 +65,20 @@ src-tauri/src/
 ---
 
 ### `logic/mod.rs`
-**Назначение**: Реэкспорт всех подмодулей `logic` для удобства импорта.
+**Назначение**: Реэкспорт всех подмодулей `logic` (включая ИИ-подсистему `ai`) для удобства импорта.
 
 ```rust
-pub mod entities;
-pub mod schema;
+pub mod ai;
+pub mod batch;
 pub mod calendar_math;
 pub mod chapters;
 pub mod connections;
+pub mod entities;
 pub mod export;
-pub mod volumes;
 pub mod models;
 pub mod projects;
-pub mod batch;
+pub mod schema;
+pub mod volumes;
 ```
 
 ---
@@ -219,10 +235,152 @@ pub mod batch;
 
 ---
 
+### `logic/ai/` — ИИ-подсистема (агент, чат, провайдеры, инструменты)
+
+**Назначение**: Полный ИИ-стек WorldWiki: агент-соавтор с циклом tool-вызовов, древовидный чат с ветвлением, RAG-поиск по базе проекта и подключение к внешним LLM через `claw_api`. Все команды регистрируются в `main.rs`/`lib.rs` через `use logic::ai::*`.
+
+Подмодули: `chat` (дерево и операции), `agent` (промпты и цикл исполнения), `providers` (каталоги моделей), `tools` (инструменты агента).
+
+---
+
+#### `logic/ai/mod.rs`
+**Назначение**: Re-exports публичных функций подсистемы для `logic::*`-импорта.
+
+**Re-exports**:
+- `chat::tree` → `get_chat_tree`, `get_chat_messages`, `get_message_branch`
+- `chat::operations` → `fork_chat`, `update_chat_parent`, `send_chat_message`, `cancel_generation`, `delete_chat_message`, `edit_chat_message`, `regenerate_chat_message`, `switch_message_variant`, `delete_ai_chat`
+- `agent::runner` → `get_ai_completion`, `generate_chat_title`
+- `providers::fetch` → `fetch_ai_models`
+
+**Зависимости**: `chat::*`, `agent::*`, `providers::*`, `tools::*`
+
+---
+
+#### `logic/ai/agent/mod.rs`
+**Назначение**: Подмодуль агента. Объявляет:
+- `pub mod prompt;` — построение системного промпта и истории сообщений
+- `pub mod runner;` — цикл агента (`run_agent_loop`), стриминг
+
+---
+
+#### `logic/ai/agent/prompt.rs`
+**Назначение**: Построение системного промпта и подготовка истории чата для LLM.
+
+**Константы**:
+- `MAX_AGENT_ITERATIONS = 8` — максимум итераций «вызов инструмента → ответ LLM» в одном ходе
+- `DEFAULT_MAX_TOKENS = 4096` — лимит `max_tokens` по умолчанию
+- `HISTORY_CHAR_BUDGET = 120_000` — бюджет истории в символах (Context Windowing)
+
+**Функции**:
+- `build_system_prompt(role_definition, custom_instructions, project_id)` — собирает полный системный промпт: Golden Rules (соавтор, не «ИИ»), безопасность (LORE LOCK, запрет выдумывать факты), правила общения, литературная теория, регламент работы с инструментами (RAG-first)
+- `history_to_input_messages(history, assistant_msg_id)` — из дерева истории (по `parent_id`) строит линейную цепочку в `Vec<InputMessage>`, отбрасывает `is_active=false`, обрезает до бюджета
+
+---
+
+#### `logic/ai/agent/runner.rs` — **Ключевой файл**
+**Назначение**: Главный цикл агента и потоковая передача ответа. Содержит логику вызова LLM, обработки tool-calls, сохранение ответа в `chat_messages`.
+
+**Структуры**:
+- `StreamChunk` — потоковый чанк для фронта `{chat_id, message_id, text, is_done, chunk_type}`
+- `AgentToolEvent` — событие вызова инструмента `{chat_id, message_id, tool_name, tool_args}`
+- `ToolAssembler` — буфер сборки JSON-аргументов tool_use из стрим-дельт
+
+**Функции**:
+- `get_ai_completion(...)` — Tauri-команда; спавнит агента в `tokio::spawn` (регистрируется в `AgentTasks` для отмены)
+- `run_agent_loop(app, project_id, chat_id, assistant_msg_id, user_text, mode_slug)` — читает активный `AiProfile`, строит промпт, историю и отправляет запрос со стримингом; до `MAX_AGENT_ITERATIONS` обрабатывает tool-calls через `WorldWikiTools::run`
+- `build_provider_client(provider, api_key, base_url)` — создаёт `ProviderClient`: `anthropic` | `openai` | `openrouter` | `gemini` | `local`/`ollama` | `deepseek`
+- `generate_chat_title(...)` — генерирует заголовок чата (2–5 слов), обновляет `chats.title`
+
+**События (emit)**:
+- `chat_stream_chunk` (payload `StreamChunk`) — текст ответа/дум-процесс/usage для UI
+- `agent_tool` (payload `AgentToolEvent`) — вызов инструмента
+
+**Зависимости**: `claw_api`, `reqwest`, `tokio`, `surrealdb`, `surreal_domain::SurrealDb`
+
+#### `logic/ai/chat/mod.rs`
+**Назначение**: Общий контекст чат-подсистемы + хелперы работы с RecordId.
+
+**Хелперы**:
+- `parse_record_id(id, default_table)` — парсит `table:id`, `⟨id⟩`, `` `id` `` → `RecordId` с подстановкой таблицы по умолчанию
+- `clean_surreal_id(val)` — нормализует RecordId в строку `table:id` (или `None`)
+
+---
+
+#### `logic/ai/chat/tree.rs`
+**Назначение**: Получение дерева чатов и сообщений для UI.
+
+**Команды**:
+- `get_chat_tree(project_id, state)` — чаты проекта + `parent_chat_id`/`sort_order` на основе рёбер `contains`
+- `get_chat_messages(chat_id, state)` — все сообщения чата (санитизированные ID)
+- `get_message_branch(chat_id, state)` — активная ветка (фильтрует `is_active`); используется агентом и regenerate
+
+**Внутренние**:
+- `get_chat_messages_impl(db, chat_id)` — возврат только активных сообщений (для агента и ветвления)
+- `sanitize_message_ids(...)` — очистка SurrealDB-объектов RecordId в выдаче
+
+---
+
+#### `logic/ai/chat/operations.rs`
+**Назначение**: Операции CRUD + ветвление + генерация ответов.
+
+**Команды**:
+- `send_chat_message(project_id, chat_id, text, ...)` — создаёт (при необходимости) чат, сообщение пользователя и placeholder-сообщение ассистента, затем асинхронно запускает агента через `AgentTasks`
+- `cancel_generation(chat_id)` — отменяет активную генерацию (abort зарегистрированной `JoinHandle`)
+- `fork_chat(project_id, message_id, new_title, ...)` — ответвление ветки: новый чат + копия истории по `parent_id` (через `id_map`)
+- `update_chat_parent(...)` — перенос чата между родителями (`parent_chat_id`)
+- `edit_chat_message(...)` / `delete_chat_message(...)` — редактирование/удаление сообщения (с ветвлением)
+- `regenerate_chat_message(...)` — перегенерирует ответ, создавая новый вариант сообщения
+- `switch_message_variant(msg_id)` — смена варианта ответа (активирует нужный `is_active`)
+- `delete_ai_chat(id, ...)` — каскадное удаление чата: `chat_messages` → рёбра `contains` → `chats`
+
+**Потоки**: `tokio::spawn` + `AgentTasks` (Arc<Mutex<HashMap<String, JoinHandle>>>).
+
+**Зависимости**: `serde_json`, `surrealdb`, `tauri::Manager`, `surreal_domain::SurrealDb`
+
+---
+
+#### `logic/ai/providers/mod.rs`
+**Назначение**: Подмодуль провайдеров (`pub mod fetch;`).
+
+---
+
+#### `logic/ai/providers/fetch.rs`
+**Назначение**: Получение списков моделей от провайдеров для настроек UI.
+
+**Команда**: `fetch_ai_models(provider, api_key)` — запрашивает каталоги моделей (OpenRouter, OpenAI, Gemini, Anthropic, local) и возвращает `Vec<AiModelInfo>` (сортировка по label).
+
+**Структуры**: `AiModelInfo { value, label, description, context_length?, max_completion_tokens? }` — генерирует TypeScript-тип через `ts-rs`.
+
+---
+
+#### `logic/ai/tools/mod.rs` — **Ключевой файл**
+**Назначение**: Встроенный набор инструментов агента `WorldWikiTools` — RAG-поиск и операции с БД, которые LLM вызывает через tool-use.
+
+**Структуры и функции**:
+- `WorldWikiTools { db: Surreal<Db>, project_id: String }` — состояние инструментов
+- `tool_definitions()` → `Vec<ToolDefinition>` — JSON-schemа всех инструментов для `claw_api`
+- `WorldWikiTools::run(name, args)` — диспетчер: вызов функции по имени, работа через `self.db`
+- `param(description)` / `arg(args, key)` — хелперы схем и извлечения аргументов
+
+**Инструменты (19)**:
+- `rag_search(query, top_k)` — RAG по структурным таблицам
+- `search_entities(query, type_key)` — поиск сущностей по имени/описанию
+- `get_entity(id)`, `get_relations(entity_id)`
+- `get_chapter(id)`, `get_chapters_list()`, `get_timeline(...)`, `get_calendar(...)`
+- `get_entity_schema(...)`, `get_entity_evolution(...)`, `get_relation_history(...)`
+- `update_entity(...)`, `create_entity(...)`, `create_relation(...)`, `update_chapter(...)`, `add_timeline_event(...)`
+- `validate_world_consistency(statement)` — проверка согласованности мира
+- `search_chat_history(query)` — поиск по истории чатов
+- `spawn_subagent(task, subagent_type)` — вызов субагента (mock)
+
+**Зависимости**: `claw_api` (ToolDefinition), `surrealdb`, `serde_json`
+
+---
+
 ## 🔗 Mermaid: Module Dependency Graph
 
 ```mermaid
-graph TD
+flowchart TD
     main[main.rs] --> lib[lib.rs]
     main --> logic_mod[logic/mod.rs]
     main --> tauri_shell[tauri_shell::logic::system]
@@ -238,6 +396,15 @@ graph TD
     logic_mod --> models[models.rs]
     logic_mod --> schema[schema.rs]
     logic_mod --> calendar[calendar_math.rs]
+    logic_mod --> ai[ai/mod.rs]
+    
+    ai --> ai_agent[agent/runner.rs]
+    ai --> ai_chat[chat/operations.rs]
+    ai --> ai_tools[tools/mod.rs]
+    ai_agent --> ai_tools
+    ai_agent --> models
+    ai_chat --> models
+    ai_tools --> models
     
     projects --> models
     entities --> models
@@ -284,10 +451,11 @@ flowchart TD
         Connections[connections.rs]
         Export[export.rs]
         Batch[batch.rs]
+        AI[ai/: chat, agent, providers, tools]
     end
     
-    subgraph Models[Models & Macros]
-        Models[models.rs]
+            subgraph Models[Models & Macros]
+        model_core[models.rs]
         Macros[surreal_domain macros]
     end
     
@@ -309,6 +477,7 @@ flowchart TD
     Commands --> Connections
     Commands --> Export
     Commands --> Batch
+    Commands --> AI
     
     Projects --> Models
     Entities --> Models
@@ -317,6 +486,7 @@ flowchart TD
     Connections --> Models
     Export --> Models
     Batch --> Models
+    AI --> Models
     
     Models --> Macros
     Macros --> KV
@@ -328,6 +498,7 @@ flowchart TD
     Connections --> KV
     Export --> KV
     Batch --> KV
+    AI --> KV
     
     KV --> Tables
     KV --> Edges
@@ -514,10 +685,10 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Frontend
-    Command as save_entity
-    Helpers as Helpers
-    DB as SurrealDB
+            participant Frontend
+    participant Command as save_entity
+    participant Helpers as Helpers
+    participant DB as SurrealDB
     
     Frontend->>Command: invoke("save_entity", {project, entity})
     Command->>Helpers: serde_json::to_value(entity)
@@ -540,9 +711,9 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Frontend
-    Command as get_chapter_hierarchy
-    DB as SurrealDB
+            participant Frontend
+    participant Command as get_chapter_hierarchy
+    participant DB as SurrealDB
     
     Frontend->>Command: invoke("get_chapter_hierarchy", {project})
     Command->>DB: SELECT id, title, (SELECT sort_order FROM <-contains WHERE in=$proj)[0] FROM volumes
@@ -589,12 +760,12 @@ classDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Frontend
-    Command as create_cloud_backup
-    DB as SurrealDB
-    FS as FileSystem
-    Zip as ZipWriter
-    Yandex as Yandex Disk API
+            participant Frontend
+    participant Command as create_cloud_backup
+    participant DB as SurrealDB
+    participant FS as FileSystem
+    participant Zip as ZipWriter
+        participant Yandex as Yandex Disk API
     
     Frontend->>Command: invoke("create_cloud_backup")
     Command->>DB: export(temp.surql)
@@ -615,11 +786,11 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Frontend
-    Command as restore_from_backup
-    FS as FileSystem
-    Zip as ZipArchive
-    DB as SurrealDB
+        participant Frontend
+    participant Command as restore_from_backup
+    participant FS as FileSystem
+    participant Zip as ZipArchive
+    participant DB as SurrealDB
     
     Frontend->>Command: invoke("restore_from_backup", {backup_path})
     Command->>FS: open backup.wwiki
@@ -638,9 +809,9 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Frontend
-    Command as save_entity_with_relations
-    DB as SurrealDB
+        participant Frontend
+    participant Command as save_entity_with_relations
+    participant DB as SurrealDB
     
     Frontend->>Command: invoke("save_entity_with_relations", {project, entity, foreign_updates[]})
     Command->>Command: BEGIN TRANSACTION
@@ -807,6 +978,52 @@ sequenceDiagram
 
 ---
 
+### ИИ-чат: отправка сообщения и агентский цикл
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Frontend
+    participant Tauri
+    participant Send as send_chat_message
+    participant Tasks as AgentTasks
+    participant Runner as run_agent_loop
+    participant Provider as LLM Provider
+    participant Tools as WorldWikiTools
+    participant DB as SurrealDB
+    participant Profile as ai_profiles
+
+    User->>Frontend: Пишет сообщение
+    Frontend->>Tauri: invoke("send_chat_message", {project_id, chat_id, text})
+    Tauri->>Send: send_chat_message(..., state, app)
+    Send->>DB: CREATE chats / chat_messages (user + assistant stub)
+    Send->>Tasks: tokio::spawn(run_agent_loop(keyed by chat_id))
+    Note over Runner,DB: Фоновая генерация (не блокирует UI)
+
+    Runner->>Profile: SELECT активный AiProfile
+    Profile-->>Runner: provider, model, api_key, settings
+    Runner->>DB: get_chat_messages_impl(chat_id) + history_to_input_messages
+    Runner->>Runner: build_system_prompt(role, instructions, project_id)
+
+    loop До MAX_AGENT_ITERATIONS (8)
+        Runner->>Provider: stream_message(messages + tools)
+        Provider-->>Runner: ContentBlockDelta / tool_use
+        Runner->>Frontend: emit("chat_stream_chunk", StreamChunk)
+        alt tool_use
+            Runner->>Frontend: emit("agent_tool", AgentToolEvent)
+            Runner->>Tools: WorldWikiTools::run(name, args)
+            Tools->>DB: RAG / CRUD инструмент
+            Tools-->>Runner: result (JSON)
+        end
+    end
+
+    Runner->>DB: UPDATE chat_messages SET content = answer
+    Runner-->>Frontend: emit("chat_stream_chunk", {is_done: true})
+    Frontend->>User: Ответ отрисован
+```
+
+---
+
 ## 📝 Примечания
 
 1. **Все Tauri-команды** регистрируются в `main.rs` через макрос `entity_commands!` из `surreal_domain_macros`
@@ -816,3 +1033,6 @@ sequenceDiagram
 5. **Типизация RecordId**: везде используется формат `table:id`, хелперы `safe_id`/`flatten_thing` нормализуют
 6. **Транзакции**: критичные операции (удаление, батч) обёрнуты в `BEGIN`/`COMMIT`
 7. **Производительность**: `get_entities_batch`, `upsert_connections_batch` минимизируют round-trip'ы
+8. **AI-стек**: агент использует `claw_api` (Anthropic/OpenAI/OpenRouter/Gemini/DeepSeek/локальные), инструменты `WorldWikiTools` (RAG по БД), а история чатов хранится в `chat_messages` с ветвлением через `parent_id`/`is_active`
+9. **Стриминг ответа**: UI получает чанки через события `chat_stream_chunk` (payload `StreamChunk`) и `agent_tool` (payload `AgentToolEvent`); генерация запускается в `tokio::spawn` и регистрируется в `AgentTasks` для отмены через `cancel_generation`
+10. **Лимиты контекста**: `prompt.rs` задаёт `MAX_AGENT_ITERATIONS = 8`, `DEFAULT_MAX_TOKENS = 4096`, `HISTORY_CHAR_BUDGET = 120_000`

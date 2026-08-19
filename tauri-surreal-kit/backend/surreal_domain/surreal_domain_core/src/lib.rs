@@ -70,7 +70,8 @@ pub struct ChapterRange {
 
 pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + Send + Sync + 'static {
     const TABLE: &'static str;
-
+    fn get_fields() -> &'static [&'static str];
+    fn get_option_fields() -> &'static [&'static str];
     fn get_id(&self) -> Option<String>;
     fn set_id(&mut self, id: String);
 
@@ -224,20 +225,44 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
             let mut val = serde_json::to_value(entity).unwrap();
             let map = val.as_object_mut().unwrap();
             map.remove("id");
-            map.retain(|_, v| !v.is_null()); // Strip nulls to avoid 'expected NONE found NULL' errors
-
-            let mut query = String::from("UPSERT $__record_id SET ");
-            let mut assign_clauses = Vec::new();
-            for key in map.keys() {
-                assign_clauses.push(format!("{} = ${}", key, key));
-            }
-            query.push_str(&assign_clauses.join(", "));
+            // Don't strip nulls - they represent explicit None/null values that should be saved
+            // The old code stripped nulls to avoid 'expected NONE found NULL' errors,
+            // but this broke the ability to explicitly set fields to null/None
 
             let tb = Self::TABLE;
+            let mut query = String::from("UPSERT $__record_id SET ");
+            let mut assign_clauses = Vec::new();
+            let mut bind_values = Vec::new();
+            
+            // Получить список Option полей для правильного выбора NONE/null
+            let option_fields: std::collections::HashSet<&str> = Self::get_option_fields().iter().copied().collect();
+            
+            for (key, v) in map.iter() {
+                if v.is_null() {
+                    // Для Option<T> полей используем NONE, для остальных - null
+                    let literal = if option_fields.contains(key.as_str()) { "NONE" } else { "null" };
+                    assign_clauses.push(format!("{} = {}", key, literal));
+                } else {
+                    assign_clauses.push(format!("{} = ${}", key, key));
+                    bind_values.push((key.clone(), v.clone()));
+                }
+            }
+            
+            // 2. Поля, которых нет в JSON (Serde их скипнул через skip_serializing_if для flexible полей)
+            // Их нужно явно установить в NONE/null в базе
+            for &field_name in Self::get_fields() {
+                if field_name != "id" && !map.contains_key(field_name) {
+                    let literal = if option_fields.contains(field_name) { "NONE" } else { "null" };
+                    assign_clauses.push(format!("{} = {}", field_name, literal));
+                }
+            }
+
+            query.push_str(&assign_clauses.join(", "));
+
             let mut db_query = db.query(query).bind(("__record_id", surrealdb::types::RecordId::new(tb, actual_id)));
             
-            // Bind all parameters
-            for (k, v) in map.iter() {
+            // Bind только не-null значения
+            for (k, v) in bind_values {
                 if let Some(s) = v.as_str() {
                     let parts: Vec<&str> = s.split(':').collect();
                     if parts.len() == 2 && !s.contains(' ') && !s.contains('{') {

@@ -48,19 +48,20 @@ tauri-surreal-kit/backend/
 
 **Экспорты**:
 
-| Элемент | Тип | Описание |
-|---------|-----|----------|
-| `SurrealDb` | Trait | Трейт, который должен реализовать `AppState` пользователя для доступа к `Surreal<Db>` |
-| `SurrealRepository` | Trait | CRUD трейт, реализуется макросом `surreal_entity!` для каждой сущности |
-| `SearchKind` | Enum | `Fulltext \| Vector \| Hybrid` — вид поиска |
-| `SearchResult<T>` | Struct | Результат поиска: `entity`, `score`, `kind` |
-| `SimilarResult<T>` | Struct | Результат векторного поиска: `entity`, `similarity` |
-| `EdgeDirection` | Enum | `Outgoing \| Incoming \| Both` — направление ребра |
-| `GraphEdge<E, T>` | Struct | Ребро графа: `edge_id`, `edge_data`, `node`, `direction` |
-| `GraphNeighborhood` | Struct | Окрестность графа: `center_id`, `nodes[]`, `edges[]`, `depth` |
-| `ChapterRange` | Struct | Диапазон глав: `start_chapter`, `end_chapter` |
+| Элемент             | Тип    | Описание                                                                              |
+| ------------------- | ------ | ------------------------------------------------------------------------------------- |
+| `SurrealDb`         | Trait  | Трейт, который должен реализовать `AppState` пользователя для доступа к `Surreal<Db>` |
+| `SurrealRepository` | Trait  | CRUD трейт, реализуется макросом `surreal_entity!` для каждой сущности                |
+| `SearchKind`        | Enum   | `Fulltext \| Vector \| Hybrid` — вид поиска                                           |
+| `SearchResult<T>`   | Struct | Результат поиска: `entity`, `score`, `kind`                                           |
+| `SimilarResult<T>`  | Struct | Результат векторного поиска: `entity`, `similarity`                                   |
+| `EdgeDirection`     | Enum   | `Outgoing \| Incoming \| Both` — направление ребра                                    |
+| `GraphEdge<E, T>`   | Struct | Ребро графа: `edge_id`, `edge_data`, `node`, `direction`                              |
+| `GraphNeighborhood` | Struct | Окрестность графа: `center_id`, `nodes[]`, `edges[]`, `depth`                         |
+| `ChapterRange`      | Struct | Диапазон глав: `start_chapter`, `end_chapter`                                         |
 
 **SurrealDb trait**:
+
 ```rust
 pub trait SurrealDb: Send + Sync + 'static {
     type Connection: surrealdb::Connection;
@@ -69,6 +70,7 @@ pub trait SurrealDb: Send + Sync + 'static {
 ```
 
 **SurrealRepository trait** — предоставляет дефолтную реализацию:
+
 - `create()` — INSERT с биндингами параметров, поддержка RecordId
 - `find_by_id()` — SELECT по ID
 - `find_all()` — SELECT с фильтром по `project_id` (3 варианта формата)
@@ -80,13 +82,16 @@ pub trait SurrealDb: Send + Sync + 'static {
 ### surreal_domain_macros (`surreal_domain/surreal_domain_macros/src/`)
 
 #### `lib.rs` — Точка входа макросов
+
 Экспортирует 4 proc-макроса:
+
 - `surreal_entity!` → `entity::impl_surreal_entity`
 - `surreal_relation!` → `relation::impl_surreal_relation`
 - `surreal_schema!` → `schema::impl_surreal_schema`
 - `entity_commands!` → `entity_commands::impl_entity_commands`
 
 #### `entity.rs` — `surreal_entity!` макрос
+
 **Назначение**: Генерация структуры сущности + CRUD + Tauri-команд + TS типов.
 
 **Атрибуты структуры**:
@@ -104,6 +109,7 @@ pub trait SurrealDb: Send + Sync + 'static {
 | `#[flexible]` | Тип в TS = `any`, поле пропускается при сериализации null |
 
 **Генерирует**:
+
 1. **Struct** с полями + `id`, `project_id`, `serde`/`ts_rs` деривами
 2. **Impl блок** с `TABLE` константой + `search_fulltext` / `search_similar` методы (если есть атрибуты)
 3. **SurrealRepository impl** — дефолтный CRUD через trait
@@ -114,9 +120,10 @@ pub trait SurrealDb: Send + Sync + 'static {
    - `delete_{name}(id, state)` → `delete`
    - `search_{name}s(project, query, state)` → `search_fulltext` (если `#[fulltext]`)
 
-**Нормализация RecordId в save_**: Преобразует `{"tb": "...", "id": "..."}` объекты в строки `"table:id"`, массивы рекурсивно.
+**Нормализация RecordId в save\_**: Преобразует `{"tb": "...", "id": "..."}` объекты в строки `"table:id"`, массивы рекурсивно.
 
 #### `relation.rs` — `surreal_relation!` макрос
+
 **Назначение**: Генерация структуры ребра (edge) + графовые методы + Tauri-команд.
 
 **Атрибуты структуры**:
@@ -129,6 +136,7 @@ pub trait SurrealDb: Send + Sync + 'static {
 | `#[tauri_commands]` | Включает генерацию команд |
 
 **Генерирует**:
+
 1. **Struct** с полями + `id`, `in`, `out`, `project_id`
 2. **Impl блок** с константами `TABLE`, `FROM`, `TO` + методами:
    - `relate(db, from_id, to_id, data)` — `RELATE from->TABLE->to CONTENT data`
@@ -141,38 +149,44 @@ pub trait SurrealDb: Send + Sync + 'static {
    - `delete_{name}(id, state)` → `delete`
 
 #### `schema.rs` — `surreal_schema!` макрос
+
 **Назначение**: Регистрация списка сущностей и релей для кодогенерации (используется в `models.rs` для экспорта TS типов).
 
 **Синтаксис**:
+
 ```rust
 surreal_schema! {
     entities: [Type1, Type2, ...],
     relations: [Rel1, Rel2, ...]
 }
 ```
+
 Расширяется в пустой `TokenStream` (нет кодогенерации в рантайме), используется только для `ts_rs` экспорта в тестах.
 
 #### `entity_commands.rs` — `entity_commands!` макрос
+
 **Назначение**: Сборка `tauri::generate_handler!` из списка команд и генерируемых модулей.
 
 **Синтаксис**:
+
 ```rust
 entity_commands![
     // Обычные команды (функции)
     cmd1, cmd2, cmd3,
-    
+
     // Автогенерация для сущностей (CRUD)
     @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar],
-    
+
     // Автогенерация для поисковых сущностей (CRUD + search)
     @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache],
-    
+
     // Автогенерация для релей (get, create, delete)
     @relations: [Cites]
 ]
 ```
 
 **Парсинг**:
+
 - Идентификаторы без `@` → `normal_commands`
 - `@entities: [...]` → генерирует 4 команды на тип (get_all, get_one, save, delete)
 - `@searchable: [...]` → 5 команд (4 CRUD + search)
@@ -185,10 +199,12 @@ entity_commands![
 ### surreal_domain_facade (`surreal_domain/surreal_domain_facade/src/lib.rs`)
 
 **Назначение**: Единая точка реэкспорта для пользователей kit'а.
+
 ```rust
 pub use surreal_domain_core::*;
 pub use surreal_domain_macros::*;
 ```
+
 Позволяет писать `use surreal_domain::*;` вместо импорта из двух crate'ов.
 
 ---
@@ -196,9 +212,11 @@ pub use surreal_domain_macros::*;
 ### tauri_shell (`tauri_shell/src/`)
 
 #### `main.rs` — Bootstrap шаблона
+
 **Назначение**: Демонстрационный/шаблонный `main.rs` для новых проектов на базе kit'а.
 
 **Ключевые элементы**:
+
 - `AppState { db: Surreal<Db> }` + `impl SurrealDb for AppState`
 - `init_database(ns, db)` — параметризованная инициализация (namespace, database name)
 - `main()` — регистрация **системных команд** через `entity_commands!`:
@@ -210,17 +228,20 @@ pub use surreal_domain_macros::*;
 - Комментарии с инструкцией: заменить `"my_app"` на свой namespace, добавить доменные команды
 
 #### `lib.rs` — Реэкспорт logic
+
 ```rust
 pub mod logic;
 ```
 
 #### `logic/mod.rs` — Реэкспорт подмодулей
+
 ```rust
 pub mod performance;
 pub mod system;
 ```
 
 #### `logic/system.rs` — Системные Tauri-команды
+
 **Назначение**: Доменно-независимые утилиты для любого Tauri+SurrealDB приложения.
 
 **Команды — Файловая система**:
@@ -257,9 +278,11 @@ pub mod system;
 **Хелпер**: `get_data_dir()` — определяет папку `data/` (dev: от `target/`, prod: `cwd/data/`)
 
 #### `logic/performance.rs` — Бенчмарк и адаптивный CSS
+
 **Назначение**: Измерение производительности устройства и генерация CSS для деградации UI.
 
 **Структуры**:
+
 ```rust
 enum PerformanceLevel { Low, Medium, High }
 
@@ -279,6 +302,7 @@ struct PerformanceInfo {
 | Low | — | — | — |
 
 **CSS overrides**:
+
 - **Low**: отключает `backdrop-filter`, `transition`, `hover transform`, glow-эффекты
 - **Medium**: `backdrop-filter: blur(10px)`, `opacity: 0.3` для glow
 - **High**: пустая строка (полные эффекты)
@@ -294,33 +318,33 @@ graph TD
         Macros[surreal_domain_macros]
         Facade[surreal_domain_facade]
     end
-    
+
     subgraph TauriShell[tauri_shell]
         ShellMain[main.rs]
         ShellLogic[logic/system.rs, performance.rs]
     end
-    
+
     subgraph UserApp[User Application<br/>(например, src-tauri)]
         UserMain[main.rs]
         UserModels[models.rs]
         UserLogic[logic/*.rs]
     end
-    
+
     Core --> Macros : trait SurrealRepository<br/>DTO types
     Macros --> Core : uses SurrealDb, SurrealRepository
     Facade --> Core : re-export
     Facade --> Macros : re-export
-    
+
     ShellMain --> Facade : use surreal_domain::*
     ShellLogic --> Facade : use surreal_domain::SurrealDb
-    
+
     UserMain --> Facade : use surreal_domain::*
     UserModels --> Facade : surreal_entity!, surreal_relation!
     UserLogic --> Facade : uses SurrealDb trait
-    
+
     Macros -.-> UserModels : proc-macro expansion<br/>at compile time
     Macros -.-> UserMain : entity_commands!<br/>at compile time
-    
+
     style Core fill:#d0d0d0,stroke:#333,stroke-width:2px
     style Macros fill:#c0c0c0,stroke:#333,stroke-width:2px
     style Facade fill:#b0b0b0,stroke:#333,stroke-width:2px
@@ -341,7 +365,7 @@ flowchart TD
         SchemaMacro[surreal_schema!]
         CommandsMacro[entity_commands!]
     end
-    
+
     subgraph Generated[Generated Code]
         Structs[Struct Definitions<br/>+ serde/TS derives]
         RepoImpl[SurrealRepository Impl<br/>CRUD methods]
@@ -349,38 +373,38 @@ flowchart TD
         CommandMods[Command Modules<br/>get_*, save_*, delete_*]
         Handler[tauri::generate_handler!]
     end
-    
+
     subgraph Runtime[Runtime]
         TauriApp[Tauri App]
         SurrealDB[(SurrealDB)]
         Frontend[Frontend TS]
     end
-    
+
     UserCode --> EntityMacro
     UserCode --> RelationMacro
     UserCode --> SchemaMacro
     UserCode --> CommandsMacro
-    
+
     EntityMacro --> Structs
     EntityMacro --> RepoImpl
     EntityMacro --> SearchMethods
     EntityMacro --> CommandMods
-    
+
     RelationMacro --> Structs
     RelationMacro --> RepoImpl
     RelationMacro --> CommandMods
-    
+
     SchemaMacro --> Structs : registers for TS export
-    
+
     CommandsMacro --> CommandMods : collects
     CommandsMacro --> Handler : generates
-    
+
     Handler --> TauriApp : registered in main()
     TauriApp --> SurrealDB : queries
     TauriApp --> Frontend : invoke/response
-    
+
     Frontend -.-> Structs : TS types via ts_rs<br/>(generated at build)
-    
+
     style CompileTime fill:#f0f0f0,stroke:#333
     style Generated fill:#e0e0e0,stroke:#333
     style Runtime fill:#d0d0d0,stroke:#333
@@ -398,14 +422,14 @@ classDiagram
         <<proc-macro>>
         +impl_surreal_entity(ast) TokenStream
     }
-    
+
     class InputAST {
         +ident: Ident
         +attrs: Vec~Attribute~
         +data: Data
         +generics: Generics
     }
-    
+
     class ParsedAttrs {
         +table_name: String
         +is_project_scoped: bool
@@ -414,7 +438,7 @@ classDiagram
         +fulltext_fields: Vec<String>
         +vector_fields: Vec<String>
     }
-    
+
     class GeneratedOutput {
         +struct_def: TokenStream
         +impl_block: TokenStream
@@ -422,12 +446,12 @@ classDiagram
         +commands_mod: TokenStream
         +search_methods: TokenStream
     }
-    
+
     SurrealEntityMacro --> InputAST : parse
     InputAST --> ParsedAttrs : extract attrs
     ParsedAttrs --> GeneratedOutput : build quote!
     GeneratedOutput --> TokenStream : expanded.into()
-    
+
     note for SurrealEntityMacro "2 passes over fields:\n1. collect idents, strip attrs\n2. collect fulltext/hnsw"
     note for ParsedAttrs "fulltext_fields → search_fulltext()\nvector_fields → search_similar()"
     note for GeneratedOutput "Commands mod only if\ngenerate_commands=true"
@@ -443,35 +467,35 @@ classDiagram
         <<proc-macro>>
         +impl_entity_commands(input) TokenStream
     }
-    
+
     class CommandList {
         +normal_commands: Vec~Ident~
         +entities: Vec~Ident~
         +searchable: Vec~Ident~
         +relations: Vec~Ident~
     }
-    
+
     class Parser {
         +parse(input) CommandList
     }
-    
+
     class GeneratedCalls {
         +normal: Vec~TokenStream~
         +from_entities: Vec~TokenStream~
         +from_searchable: Vec~TokenStream~
         +from_relations: Vec~TokenStream~
     }
-    
+
     class HandlerOutput {
         +tauri::generate_handler![...]
     }
-    
+
     EntityCommandsMacro --> Parser : parse_macro_input!
     Parser --> CommandList : struct CommandList
     CommandList --> GeneratedCalls : iterate & build idents
     GeneratedCalls --> HandlerOutput : quote! generate_handler!
     HandlerOutput --> TokenStream : expanded.into()
-    
+
     note for CommandList "@entities → 4 cmds each\n@searchable → 5 cmds each\n@relations → 3 cmds each"
     note for GeneratedCalls "Mod name: {Type}_commands\nFn names: get_{plural}, get_{singular},\nsave_{singular}, delete_{singular},\nsearch_{plural} (for searchable)"
 ```
@@ -495,11 +519,11 @@ classDiagram
         +load_theme(name) Value
         +save_custom_theme(name, Value) ()
     }
-    
+
     class DataDirHelper {
         +get_data_dir() PathBuf
     }
-    
+
     class FileSystem {
         +create_dir_all()
         +write()
@@ -507,17 +531,17 @@ classDiagram
         +copy()
         +read_dir()
     }
-    
+
     class TauriWindow {
         +is_fullscreen() bool
         +set_fullscreen(bool)
     }
-    
+
     SystemCommands --> DataDirHelper : uses
     SystemCommands --> FileSystem : uses
     SystemCommands --> TauriWindow : uses
     DataDirHelper --> std::env : current_exe/current_dir
-    
+
     note for DataDirHelper "Dev: target/debug → target → root/data\nProd: cwd/data"
     note for SystemCommands "All #[tauri::command]\nasync except toggle_fullscreen"
 ```
@@ -535,23 +559,23 @@ classDiagram
         High
         +as_str() &str
     }
-    
+
     class PerformanceInfo {
         +level: String
         +cpu_score: u64
         +memory_mb: u64
         +cores: usize
     }
-    
+
     class BenchmarkRunner {
         +run_benchmark() PerformanceInfo
         +get_performance_css(level) String
     }
-    
+
     BenchmarkRunner --> PerformanceInfo : creates
     BenchmarkRunner --> PerformanceLevel : classifies
     PerformanceInfo --> PerformanceLevel : level field
-    
+
     note for BenchmarkRunner "CPU test: 100k sin/cos + String alloc\nMem test: 20MB alloc + touch\nCores: available_parallelism()"
     note for get_performance_css "Low: no backdrop-filter, no transitions\nMedium: blur(10px), glow opacity 0.3\nHigh: empty string"
 ```
@@ -569,7 +593,7 @@ sequenceDiagram
     participant Facade as surreal_domain_facade
     participant Core as surreal_domain_core
     participant DB as SurrealDB
-    
+
     Dev->>Shell: cargo run (или копирует template)
     Shell->>Facade: use surreal_domain::*
     Shell->>Core: impl SurrealDb for AppState
@@ -596,7 +620,7 @@ sequenceDiagram
     participant Macro as surreal_entity!
     participant Core as surreal_domain_core
     participant TS as ts_rs export
-    
+
     Dev->>Models: struct MyEntity { ... }
     Dev->>Models: surreal_entity! { #[table="x"] #[tauri_commands] pub struct MyEntity {...} }
     Models->>Macro: proc-macro invocation
@@ -607,7 +631,7 @@ sequenceDiagram
     Macro-->>Models: expanded TokenStream
     Models->>TS: #[ts(export)] on struct
     TS-->>Models: TS types in ../../apps/spa/src/ts/types/generated/
-    
+
     Note over Dev,TS: At compile time
     Note over Models,Core: SurrealRepository provides\ncreate/find_all/find_by_id/save/delete
 ```
@@ -623,7 +647,7 @@ sequenceDiagram
     participant Macro as entity_commands!
     participant Generated as Generated Modules
     participant Tauri as Tauri Builder
-    
+
     Dev->>Main: entity_commands![cmd1, @entities:[A,B], @searchable:[C], @relations:[R]]
     Main->>Macro: macro invocation
     Macro->>Macro: parse normal_commands
@@ -639,7 +663,7 @@ sequenceDiagram
 
 ---
 
-### Runtime: Вызов сгенерированной команды save_*
+### Runtime: Вызов сгенерированной команды save\_\*
 
 ```mermaid
 sequenceDiagram
@@ -648,7 +672,7 @@ sequenceDiagram
     participant CmdMod as {Entity}_commands::save_entity
     participant Repo as SurrealRepository::save
     participant DB as SurrealDB
-    
+
     Frontend->>Tauri: invoke("save_entity", {data})
     Tauri->>CmdMod: save_entity(data, state)
     CmdMod->>CmdMod: normalize RecordId in data

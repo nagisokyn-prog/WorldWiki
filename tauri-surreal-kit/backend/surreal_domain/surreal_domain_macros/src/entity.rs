@@ -7,7 +7,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
     
     // Parse #[table = "name"]
     let mut table_name = name.to_string().to_lowercase();
-    let mut is_project_scoped = false;
+    let mut _is_project_scoped = false;
     let mut generate_commands = false;
 
     for attr in &ast.attrs {
@@ -21,7 +21,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
             }
         }
         if attr.path().is_ident("project_scoped") {
-            is_project_scoped = true;
+            _is_project_scoped = true;
         }
         if attr.path().is_ident("tauri_commands") {
             generate_commands = true;
@@ -31,6 +31,8 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     
     let mut field_idents: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut flexible_field_idents: Vec<proc_macro2::TokenStream> = Vec::new();
+    let mut option_field_idents: Vec<proc_macro2::TokenStream> = Vec::new();
     let mut struct_fields = Vec::new();
 
     if let Data::Struct(data_struct) = &ast.data {
@@ -58,12 +60,12 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                 field_idents.push(quote! { stringify!(#f_ident) });
                 
                 if is_flexible {
+                    flexible_field_idents.push(quote! { stringify!(#f_ident) });
                     let ts_attr: syn::Attribute = syn::parse_quote!(#[ts(type = "any")]);
                     clean_field.attrs.push(ts_attr);
 
                     // Добавляем serde skip для null/None значений flexible полей,
                     // но только если пользователь не указал свой skip_serializing_if
-                    // И только когда мы знаем правильный предикат
                     let has_skip = clean_field.attrs.iter().any(|attr| {
                         attr.path().is_ident("serde") && 
                         attr.to_token_stream().to_string().contains("skip_serializing_if")
@@ -71,19 +73,23 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                     
                     if !has_skip {
                         if let syn::Type::Path(type_path) = &field.ty {
-                            let type_str = quote::quote!(#type_path).to_string();
-                            // Точная проверка: только для "голого" serde_json::Value (не Option, не Vec)
-                            if type_str == "Value" || type_str == "serde_json::Value" {
-                                let skip_attr: syn::Attribute = syn::parse_quote!(#[serde(skip_serializing_if = "serde_json::Value::is_null")]);
-                                clean_field.attrs.push(skip_attr);
+                            // Правильная инспекция пути типа через syn, а не через строку
+                            if let Some(last_seg) = type_path.path.segments.last() {
+                                // Option<T> -> skip_serializing_if = "Option::is_none"
+                                if last_seg.ident == "Option" {
+                                    option_field_idents.push(quote! { stringify!(#f_ident) });
+                                    let skip_attr: syn::Attribute = syn::parse_quote!(#[serde(skip_serializing_if = "Option::is_none")]);
+                                    clean_field.attrs.push(skip_attr);
+                                }
+                                // serde_json::Value (проверяем что это serde_json::Value, а не просто Value)
+                                else if last_seg.ident == "Value" && type_path.path.segments.len() >= 2 {
+                                    let prev_seg = &type_path.path.segments[type_path.path.segments.len() - 2];
+                                    if prev_seg.ident == "serde_json" {
+                                        let skip_attr: syn::Attribute = syn::parse_quote!(#[serde(skip_serializing_if = "serde_json::Value::is_null")]);
+                                        clean_field.attrs.push(skip_attr);
+                                    }
+                                }
                             }
-                            // Для Option<T> добавляем Option::is_none
-                            else if type_str.starts_with("Option <") || type_str.starts_with("Option<") {
-                                let skip_attr: syn::Attribute = syn::parse_quote!(#[serde(skip_serializing_if = "Option::is_none")]);
-                                clean_field.attrs.push(skip_attr);
-                            }
-                            // Для остальных типов (Vec<Value>, HashMap и т.д.) не добавляем skip
-                            // так как не знаем правильный предикат
                         }
                     }
                 }
@@ -166,6 +172,12 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
     let crud_methods = quote! {
         impl surreal_domain::SurrealRepository for #name {
             const TABLE: &'static str = #table_name;
+            fn get_fields() -> &'static [&'static str] {
+                &[#(#field_idents,)*]
+            }
+            fn get_option_fields() -> &'static [&'static str] {
+                &[#(#option_field_idents,)*]
+            }
             fn get_id(&self) -> Option<String> { self.id.clone() }
             fn set_id(&mut self, id: String) { self.id = Some(id); }
         }
@@ -285,6 +297,16 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                                 obj.insert(key.to_string(), converted);
                             }
                         }
+
+                        // Для flexible полей, отсутствующих в JSON (skip_serializing_if),
+                        // явно добавляем null, чтобы при десериализации они стали None
+                        // и затем корректно сохранялись в БД как explicit null
+                        let _flex_keys: &[&str] = &[#(#flexible_field_idents,)*];
+                        for flex_key in _flex_keys.iter() {
+                            if !obj.contains_key(*flex_key) {
+                                obj.insert(flex_key.to_string(), serde_json::Value::Null);
+                            }
+                        }
                     }
                     let entity: #name = serde_json::from_value(data.clone()).map_err(|e| {
                         println!("[ERROR] {}: failed to parse data: {:?}", stringify!(#save_fn), e);
@@ -321,20 +343,15 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
         quote! {}
     };
 
-    // Условное поле project_id — только если #[project_scoped]
-    let project_id_field = is_project_scoped.then(|| quote! {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        #[ts(type = "string | null")]
-        pub project_id: Option<serde_json::Value>,
-    });
-
     let expanded = quote! {
         #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, ts_rs::TS)]
         #[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
         pub struct #name {
             #[serde(skip_serializing_if = "Option::is_none")]
             pub id: Option<String>,
-            #project_id_field
+            #[serde(skip_serializing_if = "Option::is_none")]
+            #[ts(type = "string | null")]
+            pub project_id: Option<serde_json::Value>,
             #(#struct_fields,)*
         }
 

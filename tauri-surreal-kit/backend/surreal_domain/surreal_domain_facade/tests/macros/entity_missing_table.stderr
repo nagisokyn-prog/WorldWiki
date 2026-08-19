@@ -1,0 +1,5 @@
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/macros/entity_missing_table.rs:11:2
+   |
+11 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/macros/entity_missing_table.rs`

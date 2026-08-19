@@ -1,0 +1,11 @@
+error: cannot find attribute `invalid_attr` in this scope
+  --> tests/macros/entity_invalid_field_attribute.rs:10:11
+   |
+10 |         #[invalid_attr] // Not a valid attribute (valid: fulltext, hnsw, flexible)
+   |           ^^^^^^^^^^^^
+
+error[E0601]: `main` function not found in crate `$CRATE`
+  --> tests/macros/entity_invalid_field_attribute.rs:13:2
+   |
+13 | }
+   |  ^ consider adding a `main` function to `$DIR/tests/macros/entity_invalid_field_attribute.rs`

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useGlobalTimeViewer } from '../useGlobalTimeViewer';
-import { useCalendarStore } from '../../../../stores/calendar.store';
-import { useShellStore } from '../../../../stores/shell';
+import { useCalendarStore } from '../../../../../stores/calendar.store';
+import { useShellStore } from '../../../../../stores/shell';
 import { invoke } from '@worldwiki/components';
 
-vi.mock('../../../../stores/calendar.store', () => ({
+vi.mock('../../../../../stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: vi.fn().mockResolvedValue([
       { id: 'cal1', name: 'Cal 1', data: { name: 'Cal 1' } },
@@ -12,7 +12,7 @@ vi.mock('../../../../stores/calendar.store', () => ({
   }),
 }));
 
-vi.mock('../../../../stores/shell', () => ({
+vi.mock('../../../../../stores/shell', () => ({
   useShellStore: () => ({
     projectName: 'proj1',
   }),

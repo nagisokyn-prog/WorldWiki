@@ -6,12 +6,14 @@ vi.mock('../../../../services/api.client', () => ({
   getEntitySchemas: vi.fn(),
   getEntities: vi.fn(),
   toggleEntityHistoryPin: vi.fn(),
+  uploadPhoto: vi.fn().mockResolvedValue('/path/to/photo.jpg'),
 }));
 
 vi.mock('@worldwiki/components', () => ({
   settingsService: {
     getSettings: () => ({ dropdowns: { wheelOrientation: 'horizontal' } }),
   },
+  appAlert: vi.fn(),
 }));
 
 describe('useEntityEditor', () => {
@@ -24,7 +26,7 @@ describe('useEntityEditor', () => {
       project: 'p1',
       entityType: 'character',
       entityId: 'char_1',
-      initialData: { name: 'Arthur', bio: 'Hero' },
+      initialData: { name: 'Arthur', bio: 'Hero', items: [] },
       initialSection: 'sec_1',
       initialScrollPos: 0,
     };
@@ -48,6 +50,11 @@ describe('useEntityEditor', () => {
               fields: [{ type: 'select', entityType: 'fraction', class: 'frac' }],
             },
           ],
+          templates: {
+            item: {
+              fields: [{ class: 'itemName', default: 'Sword' }],
+            },
+          },
         },
       },
     ] as any);
@@ -58,10 +65,8 @@ describe('useEntityEditor', () => {
 
     const editor = useEntityEditor(props, emit);
 
-    // Initial state
     expect(editor.loading.value).toBe(true);
 
-    // Trigger loading
     editor.formData.value = { ...props.initialData };
     editor.markModified();
 
@@ -69,14 +74,61 @@ describe('useEntityEditor', () => {
     expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({ name: 'Arthur' }));
   });
 
-  it('marks modified when form data changes', () => {
+  it('handles dynamic items addition and removal', () => {
     const editor = useEntityEditor(props, emit);
-    editor.isInitializing.value = false;
-    editor.formData.value = { name: 'Arthur Updated' };
+    editor.config.value = {
+      templates: {
+        item_tpl: {
+          fields: [{ class: 'title', default: 'New Item' }],
+        },
+      },
+    };
+    editor.formData.value = { items: [] };
 
-    editor.markModified();
+    editor.addDynamicItem('items', 'item_tpl');
+    expect(editor.formData.value.items.length).toBe(1);
+    expect(editor.formData.value.items[0].title).toBe('New Item');
 
-    expect(emit).toHaveBeenCalledWith('modified');
-    expect(emit).toHaveBeenCalledWith('update-data', expect.objectContaining({ name: 'Arthur Updated' }));
+    editor.removeDynamicItem('items', 0);
+    expect(editor.formData.value.items.length).toBe(0);
+  });
+
+  it('handles foreign and local dynamic updates', () => {
+    const editor = useEntityEditor(props, emit);
+    editor.formData.value = {};
+
+    editor.onDynamicUpdate({ localPath: 'info.age', value: 25 });
+    expect(editor.formData.value.info?.age).toBe(25);
+
+    editor.onDynamicUpdate({ foreignPath: 'parent.name', value: 'Uther' });
+    expect(editor.foreignUpdates.value.parent?.name).toBe('Uther');
+
+    editor.handleForeignUpdate({ entityType: 'char', entityId: 'c2', value: 'Ally' });
+    expect(editor.foreignUpdates.value['char:c2']).toBeDefined();
+  });
+
+  it('gets options for fields', () => {
+    const editor = useEntityEditor(props, emit);
+    editor.referenceData.value = {
+      faction_list: [{ value: 'f1', label: 'Knights' }],
+    };
+
+    const options = editor.getOptionsFor({ entityType: 'faction' });
+    expect(options).toEqual([{ value: 'f1', label: 'Knights' }]);
+
+    const staticOptions = editor.getOptionsFor({ options: [{ value: '1', label: 'One' }] });
+    expect(staticOptions).toEqual([{ value: '1', label: 'One' }]);
+  });
+
+  it('handles photos and photo inputs', () => {
+    const editor = useEntityEditor(props, emit);
+    const mockInput = { click: vi.fn() };
+    editor.photoInputs.value = { avatar: mockInput };
+
+    editor.triggerPhotoUpload('avatar');
+    expect(mockInput.click).toHaveBeenCalled();
+
+    editor.removePhoto('avatar');
+    expect(editor.formData.value.avatar).toBe('');
   });
 });

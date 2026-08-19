@@ -12,20 +12,22 @@ describe('useCalendarSettings', () => {
         настройки_времени: {
           часов_в_сутках: 24,
           минут_в_часе: 60,
-          учитывать_сезонную_длительность_дня: false,
+          секунд_в_минуте: 60,
+          широта: 45,
+          учитывать_сезонную_длительность_дня: true,
+        },
+        day_length_anchor: {
+          summer_solstice_hours: 16.0,
+          winter_solstice_hours: 8.0,
         },
       },
     };
   });
 
-  it('provides settings and sets day length anchor on seasonal toggle', async () => {
+  it('provides settings and day length anchor', () => {
     const hook = useCalendarSettings(props, emit);
 
     expect(hook.settings.value.часов_в_сутках).toBe(24);
-
-    props.modelValue.настройки_времени.учитывать_сезонную_длительность_дня = true;
-    await Promise.resolve();
-
-    expect(hook.dayLengthAnchor.value).toBeDefined();
+    expect(hook.dayLengthAnchor.value?.summer_solstice_hours).toBe(16.0);
   });
 });

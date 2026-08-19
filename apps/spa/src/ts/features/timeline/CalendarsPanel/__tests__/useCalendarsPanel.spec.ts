@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useCalendarsPanel } from '../useCalendarsPanel';
-import { useCalendarStore } from '../../../stores/calendar.store';
+import { useCalendarStore } from '../../../../stores/calendar.store';
 
-vi.mock('../../../stores/calendar.store', () => ({
+vi.mock('../../../../stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: vi.fn().mockResolvedValue([
       { id: 'c1', is_default: true, data: { название: 'Default' } },

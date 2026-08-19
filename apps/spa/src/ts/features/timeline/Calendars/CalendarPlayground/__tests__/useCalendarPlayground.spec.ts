@@ -47,11 +47,16 @@ describe('useCalendarPlayground', () => {
     expect(hook.origin.value.месяц).toBe(0);
   });
 
-  it('gets holiday for date', () => {
+  it('generates day tooltip and detects significant phases', () => {
     const hook = useCalendarPlayground(props);
-    const holiday = hook.getHolidayForDate(props.calendar, 1, 0, 1);
+    const day = { day: 1, holidayText: 'День Мира', seasonName: 'Весна', isOrigin: true };
 
-    expect(holiday).toBeDefined();
-    expect(holiday?.название).toBe('День Мира');
+    const tooltip = hook.getDayTooltip(day);
+    expect(tooltip).toContain('День 1');
+    expect(tooltip).toContain('День Мира');
+    expect(tooltip).toContain('Весна');
+
+    expect(hook.isSignificantPhase(0.01)).toBe(true);
+    expect(hook.isSignificantPhase(0.2)).toBe(false);
   });
 });

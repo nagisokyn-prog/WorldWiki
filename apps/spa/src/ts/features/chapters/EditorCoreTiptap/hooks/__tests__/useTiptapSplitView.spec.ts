@@ -81,4 +81,85 @@ describe('useTiptapSplitView', () => {
 
     document.body.removeChild(parent);
   });
+
+  describe('Branch edge cases for useTiptapSplitView', () => {
+    it('initializes widths and structure visibility from localStorage', () => {
+      localStorage.setItem('split-view-show-structure', 'false');
+      localStorage.setItem('split-view-left-width', '55');
+      localStorage.setItem('split-view-right-width', '25');
+
+      const split = useTiptapSplitView(editor, editorUpdateKey);
+      expect(split.showStructure.value).toBe(false);
+      expect(split.leftPanelWidth.value).toBe(55);
+      expect(split.rightPanelWidth.value).toBe(25);
+    });
+
+    it('handles null editor and empty document gracefully in documentStructure', () => {
+      const nullEditor = ref(null);
+      const splitNull = useTiptapSplitView(nullEditor, editorUpdateKey);
+      expect(splitNull.documentStructure.value).toEqual([]);
+
+      const emptyDocEditor = ref({
+        getJSON: () => ({ type: 'doc' }), // no content
+      });
+      const splitEmpty = useTiptapSplitView(emptyDocEditor, editorUpdateKey);
+      expect(splitEmpty.documentStructure.value).toEqual([]);
+    });
+
+    it('handles headings without level and long text in traverse', () => {
+      const longText = 'A'.repeat(80);
+      const complexDocEditor = ref({
+        getJSON: () => ({
+          type: 'doc',
+          content: [
+            { type: 'heading', content: [{ type: 'text', text: longText }] }, // heading without level + long text
+            { type: 'paragraph', content: [{ type: 'text', text: 'Normal text' }] }, // paragraph without semanticTag
+          ],
+        }),
+      });
+
+      const split = useTiptapSplitView(complexDocEditor, editorUpdateKey);
+      const blocks = split.documentStructure.value;
+      expect(blocks.length).toBe(2);
+      expect(blocks[0].type).toBe('H1');
+      expect(blocks[0].text.endsWith('...')).toBe(true);
+      expect(blocks[1].semanticTag).toBe('desc');
+    });
+
+    it('clamps left and right panel widths to min (20%) and max (60%)', () => {
+      const split = useTiptapSplitView(editor, editorUpdateKey);
+
+      const parent = document.createElement('div');
+      Object.defineProperty(parent, 'offsetWidth', { value: 1000 });
+      const handle = document.createElement('div');
+      parent.appendChild(handle);
+      document.body.appendChild(parent);
+
+      const event = {
+        preventDefault: () => {},
+        currentTarget: handle,
+        clientX: 200,
+      } as any;
+
+      // 1. Min clamp (move far left)
+      split.startResizeLeft(event);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: -9999 }));
+      expect(split.leftPanelWidth.value).toBe(20);
+      document.dispatchEvent(new MouseEvent('mouseup'));
+
+      // 2. Max clamp (move far right)
+      split.startResizeLeft(event);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 9999 }));
+      expect(split.leftPanelWidth.value).toBe(60);
+      document.dispatchEvent(new MouseEvent('mouseup'));
+
+      // 3. Null container early return
+      const orphanHandle = document.createElement('div');
+      split.startResizeLeft({ preventDefault: () => {}, currentTarget: orphanHandle } as any);
+      split.startResizeRight({ preventDefault: () => {}, currentTarget: orphanHandle } as any);
+
+      document.body.removeChild(parent);
+    });
+  });
 });
+

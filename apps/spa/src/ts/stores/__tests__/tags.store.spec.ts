@@ -94,5 +94,59 @@ describe('tags.store', () => {
       );
       expect(store.globalTags[0]).toEqual({ id: 't1', name: 'NewName', color: '#999' });
     });
+
+    it('creates new tag when oldName does not match any existing tag', async () => {
+      store.project = 'proj_1';
+      store.globalTags = [{ id: 't1', name: 'Other', color: '#111' }];
+
+      await store.saveTag('NonExistent', 'BrandNew', '#abc');
+      expect(store.globalTags).toHaveLength(2);
+      expect(store.globalTags[1]).toEqual({ name: 'BrandNew', color: '#abc' });
+    });
+  });
+
+  describe('Additional branch edge cases for tags.store', () => {
+    it('handles init with cache and catch error path', async () => {
+      // 1. Cached path
+      const { setCache } = await import('../../utils/requestCache');
+      setCache('tags:cached_proj', [{ id: 't_c', name: 'Cached', color: '#000' }]);
+
+      await store.init('cached_proj');
+      expect(store.globalTags).toEqual([{ id: 't_c', name: 'Cached', color: '#000' }]);
+      expect(api.getTags).not.toHaveBeenCalled();
+
+      // 2. Catch error path
+      vi.mocked(api.getTags).mockRejectedValueOnce(new Error('Tag fetch error'));
+      store.isInitialized = false;
+      await store.init('err_proj');
+      expect(store.globalTags).toEqual([]);
+    });
+
+    it('handles null project and isCreatingTag guard across createNewTag, deleteTag and saveTag', async () => {
+      // 1. null project
+      store.project = null;
+      await store.createNewTag('New Tag');
+      await store.deleteTag('Tag 1');
+      await store.saveTag('Old', 'New', '#000');
+      expect(api.saveTag).not.toHaveBeenCalled();
+      expect(api.deleteTag).not.toHaveBeenCalled();
+
+      // 2. isCreatingTag guard via concurrent invocation
+      store.project = 'proj_1';
+      let resolveSave: any;
+      vi.mocked(api.saveTag).mockReturnValueOnce(new Promise(r => { resolveSave = r; }));
+      const p1 = store.createNewTag('Tag In Flight');
+      const p2 = store.createNewTag('Tag Skipped');
+      resolveSave({});
+      await Promise.all([p1, p2]);
+      expect(api.saveTag).toHaveBeenCalledTimes(1);
+
+      // 3. deleteTag without tag.id
+      store.globalTags = [{ name: 'NoIdTag', color: '#111' }];
+      await store.deleteTag('NoIdTag');
+      expect(api.deleteTag).not.toHaveBeenCalled();
+      expect(store.globalTags).toEqual([]);
+    });
   });
 });
+

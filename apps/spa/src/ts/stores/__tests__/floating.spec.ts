@@ -60,6 +60,14 @@ describe('floating store', () => {
 
       expect(mockGetByLabel).toHaveBeenCalledWith('editor_char_1');
       expect(mockSetFocus).toHaveBeenCalled();
+
+      // existingWin is null
+      mockGetByLabel.mockResolvedValueOnce(null);
+      await win.triggerError(new Error('Window exists'));
+
+      // getByLabel throws error
+      mockGetByLabel.mockRejectedValueOnce(new Error('Get window failed'));
+      await win.triggerError(new Error('Window exists'));
     });
 
     it('handles exception when creating window', async () => {

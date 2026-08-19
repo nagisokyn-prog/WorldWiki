@@ -232,4 +232,77 @@ describe('useUniversalDatePicker', () => {
     expect(picker.currentDay.value).toBe(20);
     expect(picker.currentHour.value).toBe(15);
   });
+
+  describe('Additional branch edge cases for useUniversalDatePicker', () => {
+    it('validates and clamps era, year, month, day, hour and minute bounds', () => {
+      const picker = useUniversalDatePicker(props, emit);
+      picker.allCalendars.value = [mockCalendar];
+      picker.currentCalendarId.value = 'cal_1';
+
+      // 1. Invalid era
+      picker.currentEraIdx.value = 999;
+      picker.onEraChange();
+      expect(picker.currentEraIdx.value).toBe(0);
+
+      // 2. Year below min and above max
+      picker.currentYear.value = -10;
+      picker.onYearChange();
+      expect(picker.currentYear.value).toBe(1);
+
+      picker.currentYear.value = 5000;
+      picker.onYearChange();
+      expect(picker.currentYear.value).toBe(200);
+
+      // 3. Month out of bounds
+      picker.currentMonthIdx.value = -1;
+      picker.onMonthChange();
+      expect(picker.currentMonthIdx.value).toBe(0);
+
+      // 4. Day below 1
+      picker.currentDay.value = -5;
+      picker.onDayChange();
+      expect(picker.currentDay.value).toBe(1);
+
+      // 5. Hour and minute out of bounds
+      picker.currentHour.value = -2;
+      picker.currentMinute.value = 100;
+      picker.onTimeChange();
+      expect(picker.currentHour.value).toBe(0);
+      expect(picker.currentMinute.value).toBe(0);
+    });
+
+    it('handles modelValue with null hour/minute and null modelValue fallback', async () => {
+      const reactiveProps = reactive({
+        project: 'p1',
+        showTime: true,
+        modelValue: {
+          calendar_id: 'cal_1',
+          original_input: {
+            era_index: 0,
+            year: 50,
+            month: 0,
+            day: 10,
+            // no hour / minute
+          } as any,
+        },
+      });
+
+      const picker = useUniversalDatePicker(reactiveProps, emit);
+      picker.allCalendars.value = [mockCalendar];
+      await nextTick();
+
+      expect(picker.currentHour.value).toBe(12);
+      expect(picker.currentMinute.value).toBe(0);
+
+      // Null modelValue fallback
+      const nullProps = { project: 'p1', showTime: true, modelValue: null };
+      const pickerNull = useUniversalDatePicker(nullProps as any, emit);
+      pickerNull.allCalendars.value = [
+        { id: 'cal_no_def', data: mockCalendar.data },
+      ];
+      pickerNull.onCalendarChange();
+      expect(emit).toHaveBeenCalledWith('update:modelValue', expect.any(Object));
+    });
+  });
 });
+

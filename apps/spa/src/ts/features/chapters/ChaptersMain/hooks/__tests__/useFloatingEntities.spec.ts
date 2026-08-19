@@ -14,5 +14,17 @@ describe('useFloatingEntities', () => {
     const id = floating.floatingEditors.value[0].id;
     floating.closeFloatingEditor(id);
     expect(floating.floatingEditors.value.length).toBe(0);
+
+    // Closing non-existent editor (idx === -1)
+    floating.closeFloatingEditor('non_existent_id');
+    expect(floating.floatingEditors.value.length).toBe(0);
+
+    // Exception handling in handleOpenEntity
+    const badData = {
+      get type(): string { throw new Error('Data access error'); },
+      id: '1',
+    };
+    floating.handleOpenEntity(badData as any);
   });
 });
+

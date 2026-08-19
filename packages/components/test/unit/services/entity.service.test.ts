@@ -76,6 +76,19 @@ describe('EntityService', () => {
     expect(res[0].score).toBe(0.95);
   });
 
+  it('handles custom plural and null response fallbacks across all methods', async () => {
+    // Custom entityPlural in constructor
+    const service = new EntityService('story', 'stories');
+    mockInvoke.mockResolvedValue(null);
+
+    expect(await service.getAll('p1')).toEqual([]);
+    expect(mockInvoke).toHaveBeenCalledWith('get_stories', { project: 'p1' });
+
+    expect(await service.getOne('s1')).toBeNull();
+    expect(await service.save({} as any)).toBeNull();
+    expect(await service.search('p1', 'query')).toEqual([]);
+  });
+
   it('handles error in getOne, save and search gracefully', async () => {
     const service = new EntityService('spell');
     mockInvoke.mockRejectedValue(new Error('Backend error'));
@@ -85,3 +98,4 @@ describe('EntityService', () => {
     expect(await service.search('p1', 'fire')).toEqual([]);
   });
 });
+

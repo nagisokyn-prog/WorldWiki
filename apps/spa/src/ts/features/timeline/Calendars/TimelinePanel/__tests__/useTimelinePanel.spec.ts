@@ -195,4 +195,61 @@ describe('useTimelinePanel', () => {
     expect(panel.getEraOptions('unknown')).toEqual([]);
     expect(panel.getMonthOptions('unknown')).toEqual([]);
   });
+
+  describe('Comprehensive helpers and event manipulation in useTimelinePanel', () => {
+    it('handles toggleCalendarSelection, toggleExpand, removeEvent, and updateEventField', () => {
+      const panel = useTimelinePanel(props, emit);
+
+      // toggleCalendarSelection
+      panel.toggleCalendarSelection('cal_new');
+      expect(panel.selectedCalendarIds.value.includes('cal_new')).toBe(true);
+      panel.toggleCalendarSelection('cal_new');
+      expect(panel.selectedCalendarIds.value.includes('cal_new')).toBe(false);
+
+      // toggleExpand & isExpanded
+      expect(panel.isExpanded(0)).toBe(false);
+      panel.toggleExpand(0);
+      expect(panel.isExpanded(0)).toBe(true);
+      panel.toggleExpand(0);
+      expect(panel.isExpanded(0)).toBe(false);
+
+      // updateEventField
+      panel.updateEventField(0, 'description', 'Updated description');
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+
+      // removeEvent
+      panel.removeEvent(0);
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+    });
+
+    it('handles getUniversalDateObject and full updateEventFullDate branches', () => {
+      const panel = useTimelinePanel(props, emit);
+
+      const ev = props.events[0];
+      const uDate = panel.getUniversalDateObject(ev);
+      expect(uDate.calendar_id).toBe('cal1');
+      expect(uDate.original_input.era_index).toBe(0);
+
+      // Event without time (defaults to 12:00)
+      const evNoTime = { date: { era: 0, year: 1, month: 0, day: 1 }, description: '' };
+      const uDateNoTime = panel.getUniversalDateObject(evNoTime as any);
+      expect(uDateNoTime.original_input.hour).toBe(12);
+      expect(uDateNoTime.original_input.minute).toBe(0);
+
+      // updateEventFullDate with valid value
+      panel.updateEventFullDate(0, {
+        calendar_id: 'cal1',
+        original_input: {
+          era_index: 0,
+          year: 200,
+          month: 1,
+          day: 10,
+          hour: 16,
+          minute: 45,
+        },
+      });
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+    });
+  });
 });
+

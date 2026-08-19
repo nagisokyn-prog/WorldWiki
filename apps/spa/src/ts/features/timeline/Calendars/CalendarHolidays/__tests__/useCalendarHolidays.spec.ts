@@ -39,4 +39,24 @@ describe('useCalendarHolidays', () => {
     const hook = useCalendarHolidays(props);
     expect(hook.getDaysInMonth(props.modelValue, 2024, 0)).toBe(31);
   });
+
+  it('handles undefined holidays array and out-of-bounds moveItem', () => {
+    const emptyProps: any = { modelValue: {} };
+    const hook = useCalendarHolidays(emptyProps);
+
+    // moveItem with undefined
+    hook.moveItem(0, 1);
+
+    // removeHoliday with undefined
+    hook.removeHoliday(0);
+
+    // addHoliday with undefined -> initializes empty array
+    hook.addHoliday();
+    expect(emptyProps.modelValue.праздники.length).toBe(1);
+
+    // moveItem out of bounds
+    hook.moveItem(0, -1);
+    hook.moveItem(0, 10);
+  });
 });
+

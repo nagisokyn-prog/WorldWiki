@@ -6,7 +6,7 @@ import { useZoomStore } from '../zoom';
 import * as api from '../../services/api.client';
 import { entityApi } from '../../services/Entity/entity.api';
 import { useSchemaStore } from '../schema';
-import { settingsService } from '@worldwiki/components';
+import { settingsService, useEditorGroups } from '@worldwiki/components';
 
 vi.mock('../../services/api.client', () => ({
   getChapters: vi.fn(),
@@ -660,6 +660,164 @@ describe('shell store', () => {
           payload: { type: 'character', id: 'entities:c1', data: { name: 'Live Name' } },
         });
       }
+    });
+
+    it('handles restoreState edge cases: empty localStorage, legacy openTabs format, chapter and schema-editor tabs and errors', async () => {
+      // 1. Empty localStorage returns false
+      localStorage.clear();
+      expect(await shell.restoreState()).toBe(false);
+
+      // 2. Legacy openTabs format
+      const legacyState = {
+        activeView: 'entity',
+        currentSidebarTab: 'character',
+        activePanelTab: 'console',
+        activeTreeNode: { type: 'character', node: { id: 'c1' } },
+        activeEditorId: 'entity:character:c1',
+        openTabs: [
+          { id: 'entity:character:c1', rawId: 'c1', tabType: 'entity', entityType: 'character' },
+          { id: 'ch_1', rawId: 'ch_1', tabType: 'chapter', entityType: 'chapter' },
+          { id: 'schema-editor:character', rawId: 'character', tabType: 'schema-editor', entityType: 'character' },
+          { id: 'err_tab', rawId: 'err_tab', tabType: 'entity', entityType: 'character' },
+        ],
+      };
+      localStorage.setItem('worldwiki-state-default', JSON.stringify(legacyState));
+
+      vi.mocked(entityApi.getEntity)
+        .mockResolvedValueOnce({ id: 'c1', name: 'Hero' })
+        .mockRejectedValueOnce(new Error('Load tab error'));
+      vi.mocked(api.getChapter).mockResolvedValueOnce({ id: 'ch_1', title: 'Chapter 1' } as any);
+
+      const restored = await shell.restoreState();
+      expect(restored).toBe(true);
+      expect(shell.activeView).toBe('entity');
+      expect(shell.currentSidebarTab).toBe('character');
+      expect(shell.activePanelTab).toBe('console');
+
+      // 3. Corrupt JSON in localStorage
+      localStorage.setItem('worldwiki-state-default', 'invalid-json{{{');
+      expect(await shell.restoreState()).toBe(false);
+    });
+
+    it('handles loadEntityList and loadChapters catch error paths', async () => {
+      vi.mocked(entityApi.getEntityList).mockRejectedValueOnce(new Error('Network error loading entities'));
+      await shell.loadEntityList('location');
+      expect(shell.entityLists['location']).toEqual([]);
+
+      vi.mocked(api.getChapters).mockRejectedValueOnce(new Error('Network error loading chapters'));
+      await shell.loadChapters();
+      expect(shell.chapters).toEqual([]);
+    });
+
+    it('handles selectSidebarTab static URL navigation with existing params and openEntity guards', async () => {
+      // selectSidebarTab with static type
+      const origLocation = window.location;
+      delete (window as any).location;
+      (window as any).location = { href: '' };
+
+      shell.selectSidebarTab({ type: 'static', url: 'https://example.com/page?foo=bar', icon: '', emoji: '', title: 'Static' });
+      expect(window.location.href).toContain('project=');
+
+      (window as any).location = origLocation;
+
+      // openEntity guards
+      await shell.openEntity({ id: '1' }); // no entityType
+      await shell.openEntity({ entityType: 'character', id: 'undefined' }); // id === 'undefined'
+
+      // openEntity fetch error catch
+      vi.mocked(entityApi.getEntity).mockRejectedValueOnce(new Error('Fetch entity error'));
+      await shell.openEntity({ entityType: 'character', id: 'c_fail', name: 'Fail' });
+    });
+
+    it('handles duplicate openChapterTab and openSchemaEditor calls (activating existing)', async () => {
+      shell.openChapterTab({ id: 'ch_dup', title: 'Duplicate Chapter' });
+      expect(shell.openEditors.some((t: any) => t.id === 'ch_dup')).toBe(true);
+      // Call again
+      shell.openChapterTab({ id: 'ch_dup', title: 'Duplicate Chapter' });
+
+      await shell.openSchemaEditor('character');
+      expect(shell.openEditors.some((t: any) => t.id === 'schema-editor:character')).toBe(true);
+      // Call again
+      await shell.openSchemaEditor('character');
+    });
+
+    it('handles handleUpdateData branches: non-matching tab, nested objects, and arrays merge', async () => {
+      shell.openChapterTab({ id: 'ch_1', title: 'Chapter 1' });
+      // Non matching tab
+      shell.handleUpdateData('unknown_tab_id', { title: 'Unknown' });
+
+      // Open entity tab with nested objects and arrays
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+        id: 'sword_1',
+        name: 'Old Sword',
+        stats: { attack: 10, durability: 100 },
+        tags: ['weapon', 'melee', 'sharp'],
+      });
+      vi.spyOn(schema, 'loadSchema').mockResolvedValueOnce({} as any);
+
+      await shell.openEntity({ id: 'sword_1', entityType: 'item', name: 'Old Sword' });
+      const tab = shell.openEditors.find((t: any) => t.id === 'entity:item:sword_1');
+
+      // Merge with shorter array and nested object
+      shell.handleUpdateData('entity:item:sword_1', {
+        name: 'Excalibur',
+        stats: { attack: 99 },
+        tags: ['legendary'],
+      }, true); // fromLiveSync = true
+
+      expect(tab?.data.name).toBe('Excalibur');
+      expect((tab?.data.stats as any).attack).toBe(99);
+      expect((tab?.data.stats as any).durability).toBe(100);
+      expect(tab?.data.tags).toEqual(['legendary']);
+    });
+
+    it('handles deleteEntity silent mode and error catch', async () => {
+      // Silent mode
+      vi.mocked(api.deleteEntity).mockResolvedValueOnce(undefined as any);
+      await shell.deleteEntity('entity:character:c_silent', 'character', true);
+      expect(api.deleteEntity).toHaveBeenCalledWith('character:c_silent');
+
+      // Error catch
+      vi.mocked(api.deleteEntity).mockRejectedValueOnce(new Error('Delete error in API'));
+      await shell.deleteEntity('entity:character:c_err', 'character', true);
+    });
+
+    it('handles UI resizers: startResize, startSidebarResize, startSplitResize, startGroupResize', () => {
+      // startResize
+      shell.panelHeight = 150;
+      shell.startResize({ clientY: 500 } as any);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientY: 450 }));
+      expect(shell.panelHeight).toBe(200);
+      document.dispatchEvent(new MouseEvent('mouseup'));
+
+      // startSidebarResize (normal and row-reverse)
+      shell.sidebarWidth = 280;
+      shell.startSidebarResize({ clientX: 200 } as any);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 250 }));
+      expect(shell.sidebarWidth).toBe(330);
+      document.dispatchEvent(new MouseEvent('mouseup'));
+
+      shell.settings = { layout: { sidebarPos: 'row-reverse' } };
+      shell.startSidebarResize({ clientX: 200 } as any);
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 250 }));
+      expect(shell.sidebarWidth).toBe(280);
+      document.dispatchEvent(new MouseEvent('mouseup'));
+
+      // startSplitResize without target wrapper (early return)
+      const fakeEl = document.createElement('div');
+      shell.startSplitResize({ target: fakeEl, clientX: 100 } as any);
+
+      // startGroupResize without container / invalid index (early return)
+      shell.startGroupResize({ currentTarget: fakeEl, clientX: 100 } as any, 99);
+    });
+
+    it('handles saveAll with no unsaved tabs and renaming entity error catch', async () => {
+      // saveAll with all tabs saved
+      await shell.saveAll();
+
+      // renameEntity catch
+      vi.mocked(entityApi.getEntity).mockRejectedValueOnce(new Error('Rename error'));
+      await shell.renameEntity('character', 'c1', 'New Name');
     });
   });
 });

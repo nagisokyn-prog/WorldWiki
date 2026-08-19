@@ -82,4 +82,65 @@ describe('useTiptapFormatting', () => {
     expect(editor.value.view.dispatch).toHaveBeenCalled();
     expect(emit).toHaveBeenCalledWith('change');
   });
+
+  describe('Null-guard and branch edge cases for useTiptapFormatting', () => {
+    it('handles null editor and prompt cancellations across all actions', async () => {
+      const nullEditor = ref(null);
+      const formattingNull = useTiptapFormatting(nullEditor, emit, editorUpdateKey);
+
+      // Prompt cancellations with null editor
+      globalThis.prompt = vi.fn().mockReturnValue(null);
+      formattingNull.insertImage();
+      formattingNull.insertLink();
+      formattingNull.insertTable();
+      formattingNull.clearFormatting();
+      formattingNull.insertFootnote();
+      formattingNull.cycleGlobalTag(0);
+
+      // Prompt cancellations with valid editor
+      const formatting = useTiptapFormatting(editor, emit, editorUpdateKey);
+      formatting.insertImage();
+      formatting.insertLink();
+      formatting.insertFootnote();
+
+      // First prompt ok, second prompt null for link
+      globalThis.prompt = vi.fn()
+        .mockReturnValueOnce('Link text')
+        .mockReturnValueOnce(null);
+      formatting.insertLink();
+
+      // Delete footnote cancelled by user
+      const { appConfirm } = await import('@worldwiki/components');
+      vi.mocked(appConfirm).mockResolvedValueOnce(false);
+      await formatting.deleteFootnote('fn_cancel');
+    });
+
+    it('cycles global semantic tags correctly for dialog and thought', () => {
+      // Setup descendants with dialog and thought
+      let currentTag = 'dialog';
+      editor.value.state.doc.descendants = (cb: any) => {
+        cb({ type: { name: 'paragraph' }, attrs: { semanticTag: currentTag } }, 0);
+      };
+
+      const formatting = useTiptapFormatting(editor, emit, editorUpdateKey);
+
+      // dialog -> thought
+      formatting.cycleGlobalTag(0);
+      expect(editor.value.view.dispatch).toHaveBeenCalled();
+
+      // thought -> desc
+      currentTag = 'thought';
+      formatting.cycleGlobalTag(0);
+      expect(editor.value.view.dispatch).toHaveBeenCalled();
+
+      // paragraph not found (pos === -1)
+      editor.value.state.doc.descendants = (cb: any) => {
+        cb({ type: { name: 'heading' }, attrs: {} }, 0);
+      };
+      editor.value.view.dispatch.mockClear();
+      formatting.cycleGlobalTag(99);
+      expect(editor.value.view.dispatch).not.toHaveBeenCalled();
+    });
+  });
 });
+

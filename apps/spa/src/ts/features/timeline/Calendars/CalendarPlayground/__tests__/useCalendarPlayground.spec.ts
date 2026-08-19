@@ -146,4 +146,36 @@ describe('useCalendarPlayground', () => {
     expect(hook.isSignificantPhase(0.48)).toBe(true); // Near full moon
     expect(hook.isSignificantPhase(0.25)).toBe(false); // Quarter moon
   });
+
+  it('handles multi-month holiday spanning and unknown season colors', () => {
+    const spanningCalendar: any = {
+      ...props.calendar,
+      праздники: [
+        {
+          название: 'One-Day Holiday',
+          дата_начала: { месяц: 1, день: 15 },
+          // no дата_конца
+        },
+        {
+          название: '3-Month Festival',
+          дата_начала: { месяц: 0, день: 1 },
+          дата_конца: { месяц: 2, день: 10 },
+        },
+      ],
+      времена_года: [
+        { название: 'Custom Season', месяц_начала: 0, день_начала: 1 },
+      ],
+    };
+
+    const hook = useCalendarPlayground({ calendar: spanningCalendar });
+    // Switch to month 1 (middle of 3-month festival)
+    hook.origin.value.месяц = 1;
+    const days = hook.gridDays.value;
+
+    expect(days[0].holidayText).toBe('3-Month Festival');
+    expect(days[14].holidayText).toBe('One-Day Holiday');
+    expect(days[0].seasonColor).toBe('rgba(255,255,255,0.03)'); // fallback color
+  });
 });
+
+

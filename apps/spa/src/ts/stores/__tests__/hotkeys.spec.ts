@@ -184,4 +184,76 @@ describe('hotkeys store', () => {
     expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledWith('toggle_fullscreen');
     delete (window as any).__TAURI__;
   });
+
+  describe('Additional branch edge cases for hotkeys', () => {
+    it('handles non-overridden Ctrl keys without preventDefault', () => {
+      const evt = triggerKey('KeyQ', { ctrlKey: true });
+      expect(evt.defaultPrevented).toBe(false);
+    });
+
+    it('handles null refs and missing DOM elements gracefully', () => {
+      // Ctrl+F with no input in DOM
+      document.body.innerHTML = '';
+      triggerKey('KeyF', { ctrlKey: true });
+
+      // Ctrl+W with no activeEditorId
+      shell.openEditors.splice(0);
+      const closeSpy = vi.spyOn(shell, 'closeEditor');
+      triggerKey('KeyW', { ctrlKey: true });
+      expect(closeSpy).not.toHaveBeenCalled();
+
+      // Ctrl+P / Ctrl+Shift+P / Ctrl+Shift+T with empty refs
+      shell.quickOpenRef = null;
+      shell.commandPaletteRef = {};
+      shell.tagsManagerRef = {};
+      triggerKey('KeyP', { ctrlKey: true });
+      triggerKey('KeyP', { ctrlKey: true, shiftKey: true });
+      triggerKey('KeyT', { ctrlKey: true, shiftKey: true });
+
+      // Ctrl+N with null currentSidebarTab
+      shell.currentSidebarTab = null;
+      const addSpy = vi.spyOn(shell, 'addNewEntity');
+      triggerKey('KeyN', { ctrlKey: true });
+      expect(addSpy).not.toHaveBeenCalled();
+
+      // Escape when showSettings is already false
+      shell.showSettings = false;
+      triggerKey('Escape');
+      expect(shell.showSettings).toBe(false);
+
+      // Alt+Digit0 (doesn't match 1-9)
+      const sectionSpy = vi.fn();
+      document.addEventListener('ww:switch-section', sectionSpy);
+      triggerKey('Digit0', { altKey: true });
+      expect(sectionSpy).not.toHaveBeenCalled();
+    });
+
+    it('handles browser fullscreen toggle in non-Tauri environment and Tauri error catch', () => {
+      delete (window as any).__TAURI__;
+
+      // 1. Not fullscreen -> requestFullscreen
+      const reqSpy = vi.fn().mockResolvedValue(undefined);
+      document.documentElement.requestFullscreen = reqSpy;
+      Object.defineProperty(document, 'fullscreenElement', { value: null, configurable: true });
+      triggerKey('F11');
+      expect(reqSpy).toHaveBeenCalled();
+
+      // 2. Fullscreen -> exitFullscreen
+      const exitSpy = vi.fn();
+      document.exitFullscreen = exitSpy;
+      Object.defineProperty(document, 'fullscreenElement', { value: document.documentElement, configurable: true });
+      triggerKey('F11');
+      expect(exitSpy).toHaveBeenCalled();
+
+      // 3. Tauri invoke throws error
+      (window as any).__TAURI__ = {
+        core: {
+          invoke: vi.fn().mockRejectedValueOnce(new Error('Tauri fullscreen error')),
+        },
+      };
+      triggerKey('F11');
+      delete (window as any).__TAURI__;
+    });
+  });
 });
+

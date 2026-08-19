@@ -219,6 +219,14 @@ describe('chapter.store', () => {
       expect(store.currentChapter.title).toBe('New Title');
     });
 
+    it('renames chapter and does not update active state if not matching', async () => {
+      store.currentChapterId = 'ch_other';
+      store.currentChapter = { id: 'ch_other', title: 'Other' };
+
+      await store.onRenameChapter('project_1', { id: 'ch_1', title: 'Old' }, 'New Title');
+      expect(store.currentChapter.title).toBe('Other');
+    });
+
     it('deletes chapter and resets currentChapter if active', async () => {
       store.currentChapterId = 'ch_1';
       store.currentChapter = { id: 'ch_1' };
@@ -229,5 +237,98 @@ describe('chapter.store', () => {
       expect(store.currentChapterId).toBeUndefined();
       expect(store.currentChapter).toBeNull();
     });
+
+    it('deletes chapter and does not reset currentChapter if not active', async () => {
+      store.currentChapterId = 'ch_active';
+      store.currentChapter = { id: 'ch_active' };
+
+      await store.deleteChapter('project_1', 'ch_different');
+
+      expect(chapterService.delete).toHaveBeenCalledWith('project_1', 'ch_different');
+      expect(store.currentChapterId).toBe('ch_active');
+    });
+  });
+
+  describe('Additional branch edge cases', () => {
+    it('handles currentVolume directly via chapter.volume_id and volume not found', () => {
+      store.hierarchy = {
+        volumes: [{ id: 'vol_direct', title: 'Direct Volume' }],
+        arcs: [],
+        chapters: [{ id: 'ch_direct', title: 'Direct Chapter', volume_id: 'vol_direct' }],
+      };
+      store.currentChapterId = 'ch_direct';
+      expect(store.currentVolume?.id).toBe('vol_direct');
+
+      // Volume ID not in hierarchy
+      store.hierarchy.chapters[0].volume_id = 'non_existent_vol';
+      expect(store.currentVolume).toBeNull();
+    });
+
+    it('handles saveChapter guards and existing participant deduplication', async () => {
+      // 1. null currentChapter
+      store.currentChapter = null;
+      expect(await store.saveChapter('project_1')).toBe(false);
+
+      // 2. isSaving already true
+      store.currentChapter = { id: 'ch_1', content: '', participants: [] };
+      store.isSaving = true;
+      expect(await store.saveChapter('project_1')).toBe(false);
+      store.isSaving = false;
+
+      // 3. Existing participant deduplication + no emitFn + listIdx === -1
+      const timeline = useTimelineStore();
+      vi.spyOn(timeline, 'parseParticipants').mockReturnValue([
+        { id: 'char_1', type: 'character' } as any,
+      ]);
+      store.currentChapter = {
+        id: 'ch_1',
+        content: 'Mentions char_1',
+        participants: [{ id: 'char_1', type: 'character' }],
+      };
+      store.chapters = []; // listIdx === -1
+      vi.mocked(chapterService.save).mockResolvedValue({} as any);
+
+      const res = await store.saveChapter('project_1'); // no emitFn
+      expect(res).toBe(true);
+      expect(store.currentChapter.participants.length).toBe(1);
+    });
+
+    it('handles createNewChapter with arcId and volumeId, volumeId only, and calendar failure edge cases', async () => {
+      const calStore = useCalendarStore();
+
+      // 1. Both arcId and volumeId passed
+      store.hierarchy = {
+        volumes: [{ id: 'vol_1' }],
+        arcs: [{ id: 'arc_1', volume_id: 'vol_1' }],
+        chapters: [{ id: 'ch_1', arc_id: 'arc_1', volume_id: 'vol_1', title: 'Глава 1' }],
+      };
+      vi.mocked(chapterService.save).mockResolvedValue('chapters:new_ch_2' as any);
+      vi.mocked(chapterService.get).mockResolvedValue({ id: 'new_ch_2', title: 'Глава 2' } as any);
+      vi.mocked(api.getChapterHierarchy).mockResolvedValue({ volumes: [], arcs: [], chapters: [] });
+
+      await store.createNewChapter('project_1', 'arc_1', 'vol_1');
+      expect(api.assignChapter).toHaveBeenCalledWith('project_1', 'new_ch_id', 'arc_1', 'vol_1');
+
+      // 2. Only volumeId passed
+      store.hierarchy = {
+        volumes: [{ id: 'vol_2' }],
+        arcs: [],
+        chapters: [{ id: 'ch_v', volume_id: 'vol_2', title: 'Глава 1' }],
+      };
+      await store.createNewChapter('project_1', undefined, 'vol_2');
+      expect(api.assignChapter).toHaveBeenCalledWith('project_1', 'new_ch_id', null, 'vol_2');
+
+      // 3. Chapter 1 with loadCalendar returning null
+      store.hierarchy = { volumes: [], arcs: [], chapters: [] };
+      vi.spyOn(calStore, 'loadCalendar').mockResolvedValueOnce(null);
+      const ch1 = await store.createNewChapter('project_1');
+      expect(ch1.timeline_events).toEqual([]);
+
+      // 4. Chapter 1 with loadCalendar throwing error
+      vi.spyOn(calStore, 'loadCalendar').mockRejectedValueOnce(new Error('Calendar load failed'));
+      const ch2 = await store.createNewChapter('project_1');
+      expect(ch2.timeline_events).toEqual([]);
+    });
   });
 });
+

@@ -50,5 +50,12 @@ describe('useSchemaFieldEditor', () => {
 
     editor.removeOption(0);
     expect(props.item.options.length).toBe(1);
+
+    // addOption when options array is undefined
+    const propsNoOptions: any = { item: {} };
+    const editorNoOpts = useSchemaFieldEditor(propsNoOptions);
+    editorNoOpts.addOption();
+    expect(propsNoOptions.item.options.length).toBe(1);
   });
 });
+

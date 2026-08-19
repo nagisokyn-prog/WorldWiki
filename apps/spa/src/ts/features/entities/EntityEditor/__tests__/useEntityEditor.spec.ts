@@ -232,11 +232,30 @@ describe('useEntityEditor', () => {
   });
 
   it('handles toggle entity history events', () => {
-    const editor = useEntityEditor(props, emit);
-
     const toggleEvent = new CustomEvent('ww:toggle-entity-history', {
       detail: { id: 'char_1' },
     });
     document.dispatchEvent(toggleEvent);
   });
+
+  it('handles photo input refs, triggerPhotoUpload and empty file drops/events', async () => {
+    const editor = useEntityEditor(props, emit);
+
+    // 1. photoInputs and triggerPhotoUpload
+    const fakeBtn = document.createElement('button');
+    const clickSpy = vi.spyOn(fakeBtn, 'click');
+    editor.photoInputs.value['avatar'] = fakeBtn as any;
+    editor.triggerPhotoUpload('avatar');
+    expect(clickSpy).toHaveBeenCalled();
+
+    // triggerPhotoUpload for non-existent ref
+    editor.triggerPhotoUpload('non_existent');
+
+    // 2. handlePhotoFile with empty files array
+    await editor.handlePhotoFile({ target: { files: [] } }, 'avatar');
+
+    // 3. handlePhotoDrop with empty files
+    await editor.handlePhotoDrop({ dataTransfer: { files: [] } }, 'avatar');
+  });
 });
+

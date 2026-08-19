@@ -156,4 +156,30 @@ describe('useDateWheels', () => {
     expect(wheels.currentYear.value).toBe(25);
     expect(wheels.currentDay.value).toBe(12);
   });
+
+  it('validates and clamps year below min, year above max, month below 0 and day below 1', () => {
+    const wheels = useDateWheels(props, emit);
+    wheels.calendar.value = mockCal;
+
+    // Year below min
+    wheels.currentYear.value = -100;
+    wheels.onYearChange();
+    expect(wheels.currentYear.value).toBe(1);
+
+    // Year above max
+    wheels.currentYear.value = 9999;
+    wheels.onYearChange();
+    expect(wheels.currentYear.value).toBe(100);
+
+    // Month below 0
+    wheels.currentMonthIdx.value = -5;
+    wheels.onMonthChange();
+    expect(wheels.currentMonthIdx.value).toBe(0);
+
+    // Day below 1
+    wheels.currentDay.value = -10;
+    wheels.onDayChange();
+    expect(wheels.currentDay.value).toBe(1);
+  });
 });
+

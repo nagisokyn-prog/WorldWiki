@@ -252,5 +252,46 @@ describe('chapterApi', () => {
 
       expect(res).toBe(false);
     });
+
+    it('handles default arguments for arcs, chapter assignment, and savePlanItem', async () => {
+      // 1. createArc & updateArc without volumeId
+      vi.mocked(invoke).mockResolvedValueOnce({ id: 'arc_no_vol' });
+      await chapterApi.createArc('p1', 'Arc Title');
+      expect(invoke).toHaveBeenCalledWith('create_arc', { project: 'p1', title: 'Arc Title', volumeId: null });
+
+      vi.mocked(invoke).mockResolvedValueOnce(undefined);
+      await chapterApi.updateArc('p1', 'arc_1', 'Arc Title');
+      expect(invoke).toHaveBeenCalledWith('update_arc', { project: 'p1', id: 'arc_1', title: 'Arc Title', volumeId: null });
+
+      // 2. assignChapter with default nulls
+      vi.mocked(invoke).mockResolvedValueOnce(undefined);
+      await chapterApi.assignChapter('p1', 'ch1');
+      expect(invoke).toHaveBeenCalledWith('assign_chapter', { project: 'p1', chapterId: 'ch1', arcId: null, volumeId: null });
+
+      // 3. getPlanItems when get_plans returns null
+      vi.mocked(invoke).mockResolvedValueOnce(null);
+      const emptyPlans = await chapterApi.getPlanItems('p1', 'chapter', 'ch1');
+      expect(emptyPlans).toEqual([]);
+
+      // 4. savePlanItem without optional fields
+      vi.mocked(invoke).mockResolvedValueOnce({ id: 'plan_def' });
+      await chapterApi.savePlanItem('p1', {
+        parentType: 'chapter',
+        parentId: 'ch1',
+        text: 'Minimal Plan',
+      });
+      expect(invoke).toHaveBeenCalledWith('save_plan', {
+        data: {
+          id: null,
+          project_id: 'projects:p1',
+          title: 'Minimal Plan',
+          parent_ref: 'ch1',
+          parent_type: 'chapter',
+          sort_order: 0,
+          completed: false,
+        },
+      });
+    });
   });
 });
+

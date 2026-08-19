@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useEditorGroups } from '../../../src/ts/composables/useEditorGroups';
+
+vi.mock('@tauri-apps/plugin-dialog', () => ({
+  confirm: vi.fn().mockResolvedValue(true),
+}));
 
 describe('useEditorGroups', () => {
   beforeEach(() => {
@@ -138,4 +142,91 @@ describe('useEditorGroups', () => {
     switchTabInGroup(gid, -1);
     expect(groups.value[0].activeTabId).toBe('t1');
   });
+
+  describe('Additional branch edge cases for useEditorGroups', () => {
+    it('handles closeTab and closeAll unsaved cancellation and single group empty state', async () => {
+      const eg = useEditorGroups();
+
+      // 1. closeTab unsaved with confirm = false
+      const { confirm } = await import('@tauri-apps/plugin-dialog');
+      (confirm as any).mockResolvedValueOnce(false);
+      eg.openTab({ id: 'unsaved_1', title: 'Unsaved', unsaved: true } as any);
+      const closed = await eg.closeTab('unsaved_1', false);
+      expect(closed).toBe(false);
+
+      // 2. closeTab on empty group 1 of 1 (stays 1 group with 0 tabs)
+      await eg.closeTab('unsaved_1', true);
+      expect(eg.groups.value.length).toBe(1);
+      expect(eg.groups.value[0].tabs.length).toBe(0);
+
+      // 3. closeAll with unsaved
+      eg.openTab({ id: 'u1', title: 'U1', unsaved: true } as any);
+      globalThis.confirm = () => false;
+      eg.closeAll(false);
+      expect(eg.allTabs.value.length).toBe(1);
+
+      eg.closeAll(true);
+      expect(eg.allTabs.value.length).toBe(0);
+    });
+
+    it('handles moveTab to non-existent group and moving active tab', () => {
+      const eg = useEditorGroups();
+      eg.openTab({ id: 't1', title: 'T1' } as any);
+      eg.openTab({ id: 't2', title: 'T2' } as any);
+      eg.splitRight();
+
+      // moveTab to non existent group
+      eg.moveTab('t1', 'non_existent_group_id');
+      expect(eg.groups.value[0].tabs.some(t => t.id === 't1')).toBe(true);
+
+      // move active tab
+      const targetGid = eg.groups.value[1].id;
+      eg.moveTab('t2', targetGid);
+      expect(eg.groups.value[1].activeTabId).toBe('t2');
+    });
+
+    it('handles restoreState edge cases: empty serialized, missing tabs, invalid active tab', () => {
+      const eg = useEditorGroups();
+
+      // 1. Empty serialized
+      eg.restoreState([], new Map());
+
+      // 2. Tab not found in loadedTabs + invalid activeTabId
+      const serialized = [
+        {
+          id: 'g1',
+          flexBasis: 100,
+          activeTabId: 'missing_tab_id',
+          tabs: [
+            { id: 'missing_tab_id', rawId: 'm1', title: 'M1', entityType: 'char', tabType: 'entity' as const },
+            { id: 'existing_tab_id', rawId: 'e1', title: 'E1', entityType: 'char', tabType: 'entity' as const },
+          ],
+        },
+      ];
+      const loadedMap = new Map([
+        ['existing_tab_id', { id: 'existing_tab_id', title: 'Loaded E1' } as any],
+      ]);
+
+      eg.restoreState(serialized as any, loadedMap);
+      expect(eg.groups.value[0].tabs.length).toBe(1);
+      expect(eg.groups.value[0].activeTabId).toBe('existing_tab_id');
+    });
+
+    it('handles splitRight with invalid sourceGroupId, reorderTab identical index, switchTab with < 2 tabs', () => {
+      const eg = useEditorGroups();
+
+      // 1. splitRight with invalid groupId
+      eg.splitRight('invalid_source_gid');
+      expect(eg.groups.value.length).toBe(2);
+
+      // 2. reorderTab fromIdx === toIdx
+      eg.openTab({ id: 'single_tab', title: 'Single' } as any);
+      const gid = eg.groups.value[0].id;
+      eg.reorderTab(gid, 0, 0);
+
+      // 3. switchTabInGroup with < 2 tabs
+      eg.switchTabInGroup(gid, 1);
+    });
+  });
 });
+

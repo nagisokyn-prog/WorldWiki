@@ -135,4 +135,80 @@ describe('calendar.store', () => {
       expect(store.isValidCalendar(null as any)).toBeFalsy();
     });
   });
+
+  describe('Additional branch edge cases for calendar.store', () => {
+    it('uses cache on consecutive getCalendars calls', async () => {
+      const mockList = [{ id: 'cal_cached', is_master: true }];
+      vi.mocked(api.getCalendars).mockResolvedValueOnce(mockList as any);
+
+      const first = await store.getCalendars('cached_project');
+      expect(api.getCalendars).toHaveBeenCalledTimes(1);
+
+      const second = await store.getCalendars('cached_project');
+      expect(second).toEqual(first);
+      expect(api.getCalendars).toHaveBeenCalledTimes(1); // from cache
+    });
+
+    it('handles parallel isCreatingMaster guard for both non-empty and empty lists', async () => {
+      // 1. Non-empty list with isCreatingMaster = true
+      (store as any).isCreatingMaster = true;
+      const list = [{ id: 'cal_1', is_master: false }];
+      vi.mocked(api.getCalendars).mockResolvedValueOnce(list as any);
+      const res1 = await store.getCalendars('proj_guard1');
+      expect(res1).toEqual(list);
+
+      // 2. Empty list with isCreatingMaster = true
+      vi.mocked(api.getCalendars).mockResolvedValueOnce([] as any);
+      const res2 = await store.getCalendars('proj_guard2');
+      expect(res2).toEqual([]);
+      (store as any).isCreatingMaster = false;
+    });
+
+    it('renames single calendar without master to Календарь Мира', async () => {
+      const singleList = [
+        { id: 'single_cal', is_master: false, data: { name: 'Old Single' } },
+      ];
+      vi.mocked(api.getCalendars).mockResolvedValueOnce(singleList as any);
+      vi.mocked(api.saveCalendar).mockResolvedValue({} as any);
+
+      const res = await store.getCalendars('single_proj');
+      expect(res[0].name).toBe('Календарь Мира');
+      expect(res[0].data.название).toBe('Календарь Мира');
+    });
+
+    it('handles loadCalendar catch path and list fallback without is_default', async () => {
+      // 1. Fallback to list[0] when no is_default
+      const listWithoutDefault = [
+        { id: 'first_cal', is_master: true, data: { название: 'First' } },
+      ];
+      vi.mocked(api.getCalendars).mockResolvedValueOnce(listWithoutDefault as any);
+      const cal = await store.loadCalendar('proj_no_default');
+      expect(cal?._id).toBe('first_cal');
+
+      // 2. Catch path in loadCalendar
+      vi.mocked(api.getCalendars).mockRejectedValueOnce(new Error('Load error'));
+      const calErr = await store.loadCalendar('proj_err');
+      expect(calErr).toBeNull();
+    });
+
+    it('handles saveCalendar without _id/id and save/delete catch error paths', async () => {
+      // 1. saveCalendar without id
+      vi.mocked(api.saveCalendar).mockResolvedValueOnce({} as any);
+      const calNoId: any = {
+        name: 'No Id Cal',
+        месяцы: [],
+      };
+      const saveRes = await store.saveCalendar('proj_no_id', calNoId);
+      expect(saveRes).toBe(true);
+
+      // 2. saveCalendar catch error path
+      vi.mocked(api.saveCalendar).mockRejectedValueOnce(new Error('Save failed'));
+      expect(await store.saveCalendar('proj_err', calNoId)).toBe(false);
+
+      // 3. deleteCalendar catch error path
+      vi.mocked(api.deleteCalendar).mockRejectedValueOnce(new Error('Delete failed'));
+      expect(await store.deleteCalendar('cal_err')).toBe(false);
+    });
+  });
 });
+

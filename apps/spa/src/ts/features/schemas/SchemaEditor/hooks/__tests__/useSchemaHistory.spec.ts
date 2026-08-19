@@ -72,4 +72,25 @@ describe('useSchemaHistory', () => {
     expect(history.isHistoryPreviewMode.value).toBe(false);
     expect(loadSchema).toHaveBeenCalledWith(false);
   });
+
+  it('handles error catch blocks and preview without full_schema or sections', async () => {
+    // 1. catch in loadHistory
+    vi.mocked(api.getSchemaHistory).mockRejectedValueOnce(new Error('History fetch error'));
+    const history = useSchemaHistory(props, schema, loadSchema);
+    await history.loadHistory();
+
+    // 2. toggleHistoryPanel when closing (showHistory -> false)
+    history.showHistory.value = true;
+    await history.toggleHistoryPanel();
+    expect(history.showHistory.value).toBe(false);
+
+    // 3. catch in togglePin
+    vi.mocked(api.toggleSchemaHistoryPin).mockRejectedValueOnce(new Error('Pin toggle error'));
+    await history.togglePin({ id: 'h_err', is_pinned: false });
+
+    // 4. previewHistory without full_schema or sections
+    history.previewHistory({ id: 'h_empty', snapshot: {} });
+    history.previewHistory({ id: 'h_no_sec', snapshot: { full_schema: {} } });
+  });
 });
+

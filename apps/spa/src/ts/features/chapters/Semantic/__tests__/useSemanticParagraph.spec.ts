@@ -18,4 +18,24 @@ describe('useSemanticParagraph', () => {
     sem.cycleTag();
     expect(updateAttributes).toHaveBeenCalledWith({ semanticTag: 'dialog' });
   });
+
+  it('handles undefined and unknown semanticTag fallbacks', () => {
+    // 1. undefined semanticTag
+    const propsUndefined = {
+      node: { attrs: {} },
+      updateAttributes: vi.fn(),
+    };
+    const sem1 = useSemanticParagraph(propsUndefined);
+    expect(sem1.currentTag.value).toBe('desc');
+
+    // 2. unknown semanticTag fallback
+    const propsUnknown = {
+      node: { attrs: { semanticTag: 'custom_unknown' } },
+      updateAttributes: vi.fn(),
+    };
+    const sem2 = useSemanticParagraph(propsUnknown);
+    expect(sem2.tagDisplay.value).toBe('!о');
+    expect(sem2.tagTitle.value).toBe('Описание');
+  });
 });
+

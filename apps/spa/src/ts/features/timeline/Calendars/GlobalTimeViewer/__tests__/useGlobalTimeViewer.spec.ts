@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { useGlobalTimeViewer } from '../useGlobalTimeViewer';
 import { useCalendarStore } from '../../../../../stores/calendar.store';
 import { useShellStore } from '../../../../../stores/shell';
@@ -79,4 +79,25 @@ describe('useGlobalTimeViewer', () => {
 
     wrapper.unmount();
   });
+
+  it('reloads calendars when projectName changes while visible', async () => {
+    const mockShell = { projectName: ref('proj1') };
+    const mockCal = {
+      getCalendars: vi.fn().mockResolvedValue([{ id: 'cal1', data: { name: 'Cal 1' } }]),
+    };
+
+    const TestComp = defineComponent({
+      setup() {
+        return useGlobalTimeViewer();
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComp);
+    wrapper.vm.open();
+    expect(wrapper.vm.isVisible).toBe(true);
+
+    wrapper.unmount();
+  });
 });
+

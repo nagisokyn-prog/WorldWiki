@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import TimelinePanelComponent from '../timeline-panel';
-import { useCalendarStore } from '../../../stores/calendar.store';
-import { settingsService } from '@worldwiki/components';
 
 let mockGetCalendars: any;
 let mockSettingsOnChange: any;
@@ -28,7 +26,6 @@ vi.mock('../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue', (
 
 describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
   let props: any;
-  let emit: any;
 
   const sampleCalendar = {
     id: 'cal_1',
@@ -56,7 +53,6 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetCalendars = vi.fn().mockResolvedValue([sampleCalendar]);
-    emit = vi.fn();
     props = {
       project: 'proj_1',
       events: [

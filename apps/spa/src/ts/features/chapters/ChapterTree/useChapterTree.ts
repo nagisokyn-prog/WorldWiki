@@ -228,7 +228,7 @@ export function useChapterTree(props: any, emit: any) {
 
     const explorerTreeRef = ref<any>(null);
 
-    const startRename = (node: any, closeCtx: Function) => {
+    const startRename = (node: any, closeCtx: () => void) => {
         closeCtx();
         explorerTreeRef.value?.startRename(node);
     };

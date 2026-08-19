@@ -9,9 +9,9 @@ import { vi } from 'vitest';
 export const mockInvoke = vi.fn();
 
 // Mock listen/unlisten for events
-const mockListeners = new Map<string, Set<Function>>();
+const mockListeners = new Map<string, Set<(...args: any[]) => any>>();
 
-export const mockListen = vi.fn(async (eventName: string, callback: Function) => {
+export const mockListen = vi.fn(async (eventName: string, callback: (...args: any[]) => any) => {
   if (!mockListeners.has(eventName)) {
     mockListeners.set(eventName, new Set());
   }

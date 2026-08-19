@@ -22,12 +22,17 @@
 <script setup lang="ts">
 import { useParticipantsPanel } from './useParticipantsPanel';
 
-const props = defineProps({
-  project: { type: String, required: true },
-  participants: { type: Array, default: () => [] }
+const props = withDefaults(defineProps<{
+  project: string;
+  participants?: any[];
+}>(), {
+  participants: () => []
 });
 
-const emit = defineEmits(['update:participants', 'change']);
+const emit = defineEmits<{
+  (e: 'update:participants', val: any[]): void;
+  (e: 'change'): void;
+}>();
 
 const {
   getIcon,

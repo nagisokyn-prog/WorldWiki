@@ -7,8 +7,10 @@
 <script setup lang="ts">
 import ChaptersMain from './ChaptersMain/ChaptersMain.vue';
 
-defineProps({
-  project: { type: String, required: true },
-  controlledChapterId: { type: String, default: null }
+withDefaults(defineProps<{
+  project: string;
+  controlledChapterId?: string | null;
+}>(), {
+  controlledChapterId: null
 });
 </script>

@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, reactive, nextTick } from 'vue';
 import { useDateWheels } from '../useDateWheels';
-import { useCalendarStore } from '../../../../stores/calendar.store';
-import { settingsService } from '@worldwiki/components';
 
 let mockLoadCalendar: any;
 let mockSettingsOnChange: any;

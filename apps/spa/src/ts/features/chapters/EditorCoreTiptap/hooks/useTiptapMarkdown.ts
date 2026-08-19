@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import TurndownService from 'turndown';
 import MarkdownIt from 'markdown-it';
 
-export function useTiptapMarkdown(editor: any, emit: any, updateStats: Function) {
+export function useTiptapMarkdown(editor: any, emit: any, updateStats: (...args: any[]) => void) {
   const markdownContent = ref('');
   
   const turndownService = new TurndownService();

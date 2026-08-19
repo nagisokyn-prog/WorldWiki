@@ -13,6 +13,9 @@ export default ts.config(
     ignores: [
       '**/dist/**',
       '**/node_modules/**',
+      '**/vendor/**',
+      '**/target/**',
+      '**/coverage/**',
       'src/ts/libs/**',
       'src/ts/toastui/**',
       '**/*.cjs',
@@ -37,26 +40,33 @@ export default ts.config(
     rules: {
       // Снижаем строгость типизации и стиля, чтобы не мешало жить
       '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-unused-vars': ['warn', { "argsIgnorePattern": "^_" }],
+      '@typescript-eslint/no-unused-vars': ['error', { "argsIgnorePattern": "^_" }],
       '@typescript-eslint/no-empty-object-type': 'off',
-      '@typescript-eslint/no-unsafe-function-type': 'off',
-      'prefer-const': 'warn',
-      'no-empty': 'warn',
-      'no-useless-escape': 'warn',
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      'prefer-const': 'error',
+      'no-empty': 'error',
+      'no-useless-escape': 'error',
       
       'no-console': 'off',
-      'vue/multi-word-component-names': 'off',
+      'vue/multi-word-component-names': ['error', { ignores: ['Splash', 'Settings'] }],
 
       // Vue 3 - Строгие правила (ОСТАВЛЯЕМ КАК ERROR, это ловит реальные баги)
-      'vue/no-mutating-props': 'warn',
-      '@typescript-eslint/no-unused-expressions': 'warn',
+      'vue/no-mutating-props': 'error',
+      '@typescript-eslint/no-unused-expressions': 'error',
       'vue/no-ref-as-operand': 'error',
       'vue/return-in-computed-property': 'error',
       'vue/no-side-effects-in-computed-properties': 'error',
       'vue/valid-v-for': 'error',
       'vue/require-v-for-key': 'error',
       'vue/no-use-v-if-with-v-for': 'error',
-      'vue/define-props-declaration': 'off'
+      'vue/define-props-declaration': 'error'
+    }
+  },
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      'vue/one-component-per-file': 'off',
+      'vue/require-prop-types': 'off'
     }
   }
 );

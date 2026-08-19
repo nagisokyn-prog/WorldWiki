@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, reactive, nextTick } from 'vue';
 import { useUniversalDatePicker } from '../useUniversalDatePicker';
-import { useCalendarStore } from '../../../../stores/calendar.store';
-import { settingsService } from '@worldwiki/components';
 
 let mockGetCalendars: any;
 let mockSettingsOnChange: any;
@@ -20,6 +18,19 @@ vi.mock('@worldwiki/components', () => ({
     onChange: vi.fn((cb) => { mockSettingsOnChange = cb; }),
   },
 }));
+
+const TestComponent = defineComponent({
+  props: {
+    project: { type: String, default: 'p1' },
+    showTime: { type: Boolean, default: true },
+    modelValue: { type: null as any, default: () => ({}) },
+  },
+  emits: ['update:modelValue'],
+  setup(p, { emit: e }) {
+    return { ...useUniversalDatePicker(p, e) };
+  },
+  template: '<div></div>',
+});
 
 describe('useUniversalDatePicker', () => {
   let props: any;
@@ -62,15 +73,6 @@ describe('useUniversalDatePicker', () => {
   });
 
   it('mounts, fetches calendars, and synchronizes from modelValue', async () => {
-    const TestComponent = defineComponent({
-      props: ['project', 'showTime', 'modelValue'],
-      emits: ['update:modelValue'],
-      setup(p, { emit: e }) {
-        return { ...useUniversalDatePicker(p, e) };
-      },
-      template: '<div></div>',
-    });
-
     const wrapper = mount(TestComponent, { props });
     await flushPromises();
 
@@ -97,15 +99,6 @@ describe('useUniversalDatePicker', () => {
   it('handles calendar fetch failure with fallback calendar', async () => {
     mockGetCalendars.mockRejectedValueOnce(new Error('Network error'));
 
-    const TestComponent = defineComponent({
-      props: ['project', 'showTime', 'modelValue'],
-      emits: ['update:modelValue'],
-      setup(p, { emit: e }) {
-        return { ...useUniversalDatePicker(p, e) };
-      },
-      template: '<div></div>',
-    });
-
     const wrapper = mount(TestComponent, {
       props: { project: 'p1', showTime: false, modelValue: null },
     });
@@ -119,15 +112,6 @@ describe('useUniversalDatePicker', () => {
   });
 
   it('synchronizes legacy modelValue with epoch key', async () => {
-    const TestComponent = defineComponent({
-      props: ['project', 'showTime', 'modelValue'],
-      emits: ['update:modelValue'],
-      setup(p, { emit: e }) {
-        return { ...useUniversalDatePicker(p, e) };
-      },
-      template: '<div></div>',
-    });
-
     const wrapper = mount(TestComponent, {
       props: {
         project: 'p1',
@@ -396,15 +380,6 @@ describe('useUniversalDatePicker', () => {
 
     it('handles empty list returned from getCalendars and fallback calendar generation', async () => {
       mockGetCalendars.mockResolvedValueOnce([]);
-
-      const TestComponent = defineComponent({
-        props: ['project', 'showTime', 'modelValue'],
-        emits: ['update:modelValue'],
-        setup(p, { emit: e }) {
-          return { ...useUniversalDatePicker(p, e) };
-        },
-        template: '<div></div>',
-      });
 
       const wrapper = mount(TestComponent, {
         props: { project: 'p1', showTime: false, modelValue: null },

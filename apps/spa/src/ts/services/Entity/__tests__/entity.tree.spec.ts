@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useEntityTree } from '../entity.tree';
 import { entityApi } from '../entity.api';
 import * as api from '../../api.client';
-import { appConfirm, useTreeSelection } from '@worldwiki/components';
+import { appConfirm } from '@worldwiki/components';
 import { setCache } from '../../../utils/requestCache';
 
 vi.mock('../entity.api', () => ({

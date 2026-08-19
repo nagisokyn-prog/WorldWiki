@@ -6,7 +6,7 @@ import { useZoomStore } from '../zoom';
 import * as api from '../../services/api.client';
 import { entityApi } from '../../services/Entity/entity.api';
 import { useSchemaStore } from '../schema';
-import { settingsService, useEditorGroups } from '@worldwiki/components';
+import { settingsService } from '@worldwiki/components';
 
 vi.mock('../../services/api.client', () => ({
   getChapters: vi.fn(),
@@ -46,10 +46,10 @@ vi.mock('@worldwiki/components', async (importOriginal) => {
   };
 });
 
-const tauriListeners: Record<string, Function> = {};
+const tauriListeners: Record<string, (...args: any[]) => any> = {};
 vi.mock('@tauri-apps/api/event', () => ({
   emit: vi.fn().mockResolvedValue(undefined),
-  listen: vi.fn((event: string, cb: Function) => {
+  listen: vi.fn((event: string, cb: (...args: any[]) => any) => {
     tauriListeners[event] = cb;
     return Promise.resolve(() => {});
   }),

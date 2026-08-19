@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useCalendarsPanel } from '../useCalendarsPanel';
-import { useCalendarStore } from '../../../../stores/calendar.store';
 
 let mockCalendarsState: any[] = [];
 
@@ -67,7 +66,7 @@ describe('useCalendarsPanel', () => {
       { id: 'c_new', is_default: true, data: { название: 'Auto' } },
     ]);
 
-    const panel = useCalendarsPanel({ project: 'p1' });
+    useCalendarsPanel({ project: 'p1' });
     await Promise.resolve();
     await Promise.resolve();
 

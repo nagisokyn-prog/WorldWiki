@@ -46,7 +46,7 @@ describe('AiGhostTextExtension', () => {
 
     it('handles state.apply with meta', () => {
       const tr = {
-        getMeta: vi.fn((key) => ({ ghostText: 'suggested', pos: 10 })),
+        getMeta: vi.fn((_key) => ({ ghostText: 'suggested', pos: 10 })),
         docChanged: false,
       };
       const newState = plugin.spec.state.apply(tr, { ghostText: '', pos: null });

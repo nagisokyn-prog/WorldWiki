@@ -116,7 +116,7 @@ describe('useTreeSelection', () => {
     div.scrollIntoView = scrollMock;
     document.body.appendChild(div);
 
-    const { handleKeydown, isSelected, selectedIds } = useTreeSelection();
+    const { handleKeydown, selectedIds } = useTreeSelection();
 
     await handleKeydown(makeKeyEvt('ArrowDown'), items);
     expect(selectedIds.value).toEqual(['1']);

@@ -66,12 +66,17 @@
 import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '../../../services/api.client';
 
-const props = defineProps({
-  project: { type: String, required: true },
-  isOpen: { type: Boolean, default: false }
+const props = withDefaults(defineProps<{
+  project: string;
+  isOpen?: boolean;
+}>(), {
+  isOpen: false
 });
 
-const emit = defineEmits(['close', 'insert']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'insert', payload: any): void;
+}>();
 
 const step = ref<'type' | 'entity'>('type');
 const searchQuery = ref('');

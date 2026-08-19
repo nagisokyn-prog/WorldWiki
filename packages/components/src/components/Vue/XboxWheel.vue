@@ -248,11 +248,11 @@ const getItemStyle = (i) => {
   if (diff > half) diff -= LEN.value;
   if (diff < -half) diff += LEN.value;
   
-  let scale = 1, opacity = 1;
+  let scale = 1;
+  let opacity = 0;
   if (diff === 0) { scale = 1.15; opacity = 1; }
   else if (Math.abs(diff) === 1) { scale = 0.9; opacity = 0.5; }
   else if (Math.abs(diff) === 2) { scale = 0.75; opacity = 0.2; }
-  else { opacity = 0; }
   
   if (props.horizontal) {
     return {

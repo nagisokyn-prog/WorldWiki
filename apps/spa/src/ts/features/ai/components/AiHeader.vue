@@ -50,14 +50,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-defineProps({
-  isDetached: {
-    type: Boolean,
-    default: false
-  }
+withDefaults(defineProps<{
+  isDetached?: boolean;
+}>(), {
+  isDetached: false
 });
 
-defineEmits(['close', 'detach', 'open-settings']);
+defineEmits<{
+  (e: 'close'): void;
+  (e: 'detach'): void;
+  (e: 'open-settings'): void;
+}>();
 
 const currentMode = ref('chat');
 

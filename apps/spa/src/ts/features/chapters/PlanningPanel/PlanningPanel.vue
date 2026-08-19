@@ -71,11 +71,15 @@
 <script setup lang="ts">
 import { usePlanningPanel } from './usePlanningPanel';
 
-const props = defineProps({
-  project: { type: String, required: true },
-  parentType: { type: String, default: null }, // 'chapter' | 'arc' | 'volume'
-  parentId:   { type: String, default: null },
-  parentTitle:{ type: String, default: '' },
+const props = withDefaults(defineProps<{
+  project: string;
+  parentType?: string | null;
+  parentId?: string | null;
+  parentTitle?: string;
+}>(), {
+  parentType: null,
+  parentId: null,
+  parentTitle: ''
 });
 
 const {

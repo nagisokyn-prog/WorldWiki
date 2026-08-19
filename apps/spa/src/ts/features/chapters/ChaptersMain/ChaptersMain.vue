@@ -227,10 +227,13 @@ import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
 import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
 import { useChaptersMain } from './useChaptersMain';
 
-const props = defineProps({
-  project: { type: String, required: true },
-  controlledChapterId: { type: String, default: null },
-  activeTreeNode: { type: Object as PropType<{ type: string; node: any } | null>, default: null }
+const props = withDefaults(defineProps<{
+  project: string;
+  controlledChapterId?: string | null;
+  activeTreeNode?: { type: string; node: any } | null;
+}>(), {
+  controlledChapterId: null,
+  activeTreeNode: null
 });
 
 const emit = defineEmits<{

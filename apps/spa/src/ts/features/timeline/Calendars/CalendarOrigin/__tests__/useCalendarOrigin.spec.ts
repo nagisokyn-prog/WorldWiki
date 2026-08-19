@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { useCalendarOrigin } from '../useCalendarOrigin';
-import { settingsService } from '@worldwiki/components';
 
 let mockSettingsCb: any;
 
@@ -53,7 +52,7 @@ describe('useCalendarOrigin', () => {
     }
 
     // Mount with existing точка_отсчета
-    const existingWrapper = mount(TestComp, { props });
+    mount(TestComp, { props });
     await flushPromises();
     expect(props.modelValue.точка_отсчета.год).toBe(1);
   });

@@ -54,19 +54,22 @@ import { ref, computed } from 'vue';
 import { ExplorerTree } from '@worldwiki/components';
 import type { AiChatTreeNode } from '../composables/useAiChats';
 
-const props = defineProps({
-  chatTree: {
-    type: Array as () => any[],
-    required: true
-  },
-  activeChatId: {
-    type: String,
-    default: undefined
-  },
-  isLoading: Boolean
+const props = withDefaults(defineProps<{
+  chatTree: any[];
+  activeChatId?: string;
+  isLoading?: boolean;
+}>(), {
+  activeChatId: undefined,
+  isLoading: false
 });
 
-const emit = defineEmits(['select-chat', 'new-chat', 'move-chat', 'rename-chat', 'delete-chats']);
+const emit = defineEmits<{
+  (e: 'select-chat', chat: any): void;
+  (e: 'new-chat'): void;
+  (e: 'move-chat', nodeId: string, newParentId: string): void;
+  (e: 'rename-chat', id: string, newName: string): void;
+  (e: 'delete-chats', ids: string[]): void;
+}>();
 
 const searchQuery = ref('');
 
@@ -134,7 +137,7 @@ const handleMoveNode = (payload: { nodeId: string, newParentId: string }) => {
   emit('move-chat', payload.nodeId, payload.newParentId);
 };
 
-const startRename = (node: any, closeCtx: Function) => {
+const startRename = (node: any, closeCtx: () => void) => {
   closeCtx();
   explorerTreeRef.value?.startRename(node);
 };
@@ -143,7 +146,7 @@ const handleRename = (node: any, newName: string) => {
   emit('rename-chat', node.id, newName);
 };
 
-const handleDelete = async (id: string, closeCtx: Function) => {
+const handleDelete = async (id: string, closeCtx: () => void) => {
   closeCtx();
   const { appConfirm } = await import('@worldwiki/components');
   if (await appConfirm('Вы уверены, что хотите удалить этот чат? Это действие необратимо.')) {

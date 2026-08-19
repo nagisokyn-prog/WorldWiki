@@ -14,10 +14,10 @@
 </template>
 
 <script setup lang="ts">
-import { nodeViewProps, NodeViewWrapper, NodeViewContent } from '@tiptap/vue-3';
+import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from '@tiptap/vue-3';
 import { useSemanticParagraph } from './useSemanticParagraph';
 
-const props = defineProps(nodeViewProps);
+const props = defineProps<NodeViewProps>();
 
 const {
   currentTag,

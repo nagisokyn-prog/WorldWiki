@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { chapterApi } from '../chapter.api';
 import * as api from '../../api.client';
-import { invoke, processIds, stringifyId } from '@worldwiki/components';
+import { invoke, processIds } from '@worldwiki/components';
 
 vi.mock('@worldwiki/components', () => ({
   invoke: vi.fn(),

@@ -170,16 +170,18 @@
 import { useRelationshipBlock } from '../../../services/Entity/useRelationshipBlock';
 import { XboxWheel } from '@worldwiki/components';
 
-const props = defineProps({
-    item: { type: Object, required: true },
-    idx: { type: Number, required: true },
-    templateConf: { type: Object, required: true },
-    allTemplates: { type: Object, required: true },
-    referenceData: { type: Object, required: true },
-    entityId: { type: String, required: true },
-    entityType: { type: String, required: true },
-    project: { type: String, required: true },
-    sandboxMode: { type: Boolean, default: false }
+const props = withDefaults(defineProps<{
+    item: Record<string, any>;
+    idx: number;
+    templateConf: Record<string, any>;
+    allTemplates: Record<string, any>;
+    referenceData: Record<string, any>;
+    entityId: string;
+    entityType: string;
+    project: string;
+    sandboxMode?: boolean;
+}>(), {
+    sandboxMode: false
 });
 
 const emit = defineEmits(['remove', 'modified', 'foreign-update', 'item-updated', 'update:modelValue']);

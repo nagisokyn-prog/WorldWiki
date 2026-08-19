@@ -200,14 +200,21 @@ const handleEntityInsert = (payload: { type: string; id: string }) => {
   }
 };
 
-const props = defineProps({
-  project: { type: String, required: true },
-  title: { type: String, default: '' },
-  content: { type: String, default: '' },
-  hasUnsavedChanges: { type: Boolean, default: false },
-  footnotesData: { type: Object, default: () => ({}) },
-  initialScrollPos: { type: Number, default: 0 },
-  changedFields: { type: Array as () => string[], default: () => [] }
+const props = withDefaults(defineProps<{
+  project: string;
+  title?: string;
+  content?: string;
+  hasUnsavedChanges?: boolean;
+  footnotesData?: Record<string, any>;
+  initialScrollPos?: number;
+  changedFields?: string[];
+}>(), {
+  title: '',
+  content: '',
+  hasUnsavedChanges: false,
+  footnotesData: () => ({}),
+  initialScrollPos: 0,
+  changedFields: () => []
 });
 
 const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history', 'open-entity-selector']);

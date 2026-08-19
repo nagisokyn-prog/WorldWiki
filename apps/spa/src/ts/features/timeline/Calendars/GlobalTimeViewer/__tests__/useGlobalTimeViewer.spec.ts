@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { defineComponent, ref } from 'vue';
 import { useGlobalTimeViewer } from '../useGlobalTimeViewer';
-import { useCalendarStore } from '../../../../../stores/calendar.store';
-import { useShellStore } from '../../../../../stores/shell';
-import { invoke } from '@worldwiki/components';
 
 vi.mock('../../../../../stores/calendar.store', () => ({
   useCalendarStore: () => ({

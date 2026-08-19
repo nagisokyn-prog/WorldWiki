@@ -3,8 +3,6 @@ import { ref, reactive, nextTick } from 'vue';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { useChaptersMain } from '../useChaptersMain';
-import { useChapterStore } from '../../../../stores/chapter.store';
-import { useTimelineStore } from '../../../../stores/timeline.store';
 import { appAlert } from '@worldwiki/components';
 
 let mockStore: any;

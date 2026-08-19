@@ -70,18 +70,16 @@
 import { XboxWheel } from '@worldwiki/components';
 import { useDateWheels } from './useDateWheels';
 
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => null
-  },
-  project: {
-    type: String,
-    required: true
-  }
+const props = withDefaults(defineProps<{
+  project: string;
+  modelValue?: Record<string, any> | null;
+}>(), {
+  modelValue: null
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', val: any): void;
+}>();
 
 const {
   wheelHorizontal,

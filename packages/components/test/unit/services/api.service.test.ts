@@ -70,7 +70,7 @@ describe('packages/components api.service', () => {
     beforeEach(() => {
       (window as any).__TAURI__ = {
         core: {
-          invoke: vi.fn().mockImplementation((cmd, args) => {
+          invoke: vi.fn().mockImplementation((cmd, _args) => {
             if (cmd === 'upload_photo') return Promise.resolve('/path/to/photo.jpg');
             if (cmd === 'get_local_file') return Promise.resolve([1, 2, 3]);
             return Promise.resolve(null);

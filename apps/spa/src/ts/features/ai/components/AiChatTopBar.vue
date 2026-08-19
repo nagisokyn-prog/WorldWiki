@@ -44,23 +44,16 @@ import { computed, watch, type PropType } from 'vue';
 import type { AiProfile } from '../types/ai.types';
 import { useAiModels } from '../composables/useAiModels';
 
-const props = defineProps({
-  activeProfile: {
-    type: Object as PropType<AiProfile | null>,
-    default: null
-  },
-  tokenUsage: {
-    type: Object,
-    default: () => ({ input_tokens: 0, output_tokens: 0, total_tokens: 0 })
-  },
-  modes: {
-    type: Array as PropType<any[]>,
-    default: () => []
-  },
-  activeModeSlug: {
-    type: String,
-    default: 'chat'
-  }
+const props = withDefaults(defineProps<{
+  activeProfile?: AiProfile | null;
+  tokenUsage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
+  modes?: any[];
+  activeModeSlug?: string;
+}>(), {
+  activeProfile: null,
+  tokenUsage: () => ({ input_tokens: 0, output_tokens: 0, total_tokens: 0 }),
+  modes: () => [],
+  activeModeSlug: 'chat'
 });
 
 defineEmits(['change-mode', 'toggle-sidebar']);

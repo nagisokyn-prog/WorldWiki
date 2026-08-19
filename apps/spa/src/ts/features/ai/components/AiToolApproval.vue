@@ -45,14 +45,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const props = defineProps({
-  toolCall: {
-    type: Object,
-    required: true
-  }
-});
+const props = defineProps<{
+  toolCall: any;
+}>();
 
-const emit = defineEmits(['approve', 'reject']);
+const emit = defineEmits<{
+  (e: 'approve', toolCall: any): void;
+  (e: 'reject', payload: { toolCall: any; feedback: string }): void;
+}>();
 
 const feedbackText = ref('');
 const hasResponded = ref(false);

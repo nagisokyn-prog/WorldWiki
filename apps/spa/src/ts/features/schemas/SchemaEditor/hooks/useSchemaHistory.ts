@@ -1,7 +1,7 @@
 import { ref, shallowRef } from 'vue';
 import * as api from '../../../../services/api.client';;
 
-export function useSchemaHistory(props: any, schema: any, loadSchema: Function) {
+export function useSchemaHistory(props: any, schema: any, loadSchema: (...args: any[]) => any) {
     const showHistory = ref(false);
     const schemaHistory = shallowRef<any[]>([]);
     const maxSaves = ref(30);

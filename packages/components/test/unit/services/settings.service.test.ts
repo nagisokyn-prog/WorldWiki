@@ -253,22 +253,14 @@ describe('SettingsService', () => {
       const applySpy = vi.spyOn(settingsService, 'applySettings');
       const applyLocaleSpy = vi.spyOn(settingsService as any, 'applyLocale');
       const notifySpy = vi.spyOn(settingsService as any, 'notifyListeners');
-      
-      try {
-        const s = settingsService.getSettings();
-        s.locale = 'en';
-        await settingsService.saveSettings(s, true);
-        
-        if (applySpy.mock.calls.length === 0) {
-          throw new Error('applySpy had 0 calls! Timeout? ' + !!settingsService.saveSettings);
-        }
-        
-        expect(applySpy).toHaveBeenCalled();
-        expect(applyLocaleSpy).toHaveBeenCalled();
-        expect(notifySpy).toHaveBeenCalled();
-      } catch (e) {
-        throw new Error('TEST FAILED WITH: ' + e);
-      }
+
+      const s = settingsService.getSettings();
+      s.locale = 'en';
+      await settingsService.saveSettings(s, true);
+
+      expect(applySpy).toHaveBeenCalled();
+      expect(applyLocaleSpy).toHaveBeenCalled();
+      expect(notifySpy).toHaveBeenCalled();
     });
 
     it('should save to Tauri immediately when immediate=true', async () => {

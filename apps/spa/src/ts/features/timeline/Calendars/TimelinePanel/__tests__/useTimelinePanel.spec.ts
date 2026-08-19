@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { useTimelinePanel } from '../useTimelinePanel';
-import { useCalendarStore } from '../../../../../stores/calendar.store';
-import { settingsService } from '@worldwiki/components';
 
 let mockGetCalendars: any;
 let mockSettingsCb: any;

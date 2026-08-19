@@ -111,22 +111,18 @@
 import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
 
-const props = defineProps({
-  modelValue: {
-    type: Object,
-    default: () => null
-  },
-  project: {
-    type: String,
-    required: true
-  },
-  showTime: {
-    type: Boolean,
-    default: false
-  }
+const props = withDefaults(defineProps<{
+  project: string;
+  modelValue?: Record<string, any> | null;
+  showTime?: boolean;
+}>(), {
+  modelValue: null,
+  showTime: false
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits<{
+  (e: 'update:modelValue', val: any): void;
+}>();
 
 const {
   allCalendars,

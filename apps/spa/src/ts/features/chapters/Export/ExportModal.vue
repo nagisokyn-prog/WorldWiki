@@ -108,13 +108,19 @@
 <script setup lang="ts">
 import { useExportModal } from './useExportModal';
 
-const props = defineProps({
-  isOpen: { type: Boolean, required: true },
-  allChapters: { type: Array as () => any[], default: () => [] },
-  currentChapterId: { type: String, default: null }
+const props = withDefaults(defineProps<{
+  isOpen: boolean;
+  allChapters?: any[];
+  currentChapterId?: string | null;
+}>(), {
+  allChapters: () => [],
+  currentChapterId: null
 });
 
-const emit = defineEmits(['close', 'export']);
+const emit = defineEmits<{
+  (e: 'close'): void;
+  (e: 'export', payload: any): void;
+}>();
 
 const {
   format,

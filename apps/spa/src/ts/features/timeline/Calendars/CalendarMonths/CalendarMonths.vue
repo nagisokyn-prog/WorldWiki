@@ -49,9 +49,9 @@
 <script setup lang="ts">
 import { useCalendarMonths } from './useCalendarMonths';
 
-const props = defineProps({
-  modelValue: { type: Object, required: true },
-});
+const props = defineProps<{
+  modelValue: Record<string, any>;
+}>();
 
 const { isCollapsed, moveItem, addMonth, removeMonth } = useCalendarMonths(props);
 </script>

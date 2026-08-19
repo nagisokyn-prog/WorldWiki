@@ -15,22 +15,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps({
-  isGenerating: {
-    type: Boolean,
-    default: false
-  },
-  hasError: {
-    type: Boolean,
-    default: false
-  },
-  canResume: {
-    type: Boolean,
-    default: false
-  }
+const props = withDefaults(defineProps<{
+  isGenerating?: boolean;
+  hasError?: boolean;
+  canResume?: boolean;
+}>(), {
+  isGenerating: false,
+  hasError: false,
+  canResume: false
 });
 
-defineEmits(['cancel', 'retry', 'resume']);
+defineEmits<{
+  (e: 'cancel'): void;
+  (e: 'retry'): void;
+  (e: 'resume'): void;
+}>();
 
 const isVisible = computed(() => {
   return props.isGenerating || props.hasError || props.canResume;

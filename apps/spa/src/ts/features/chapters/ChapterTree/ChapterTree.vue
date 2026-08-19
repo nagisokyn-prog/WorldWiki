@@ -87,10 +87,13 @@ import { ExplorerTree } from '@worldwiki/components';
 import GlobalCalendarWidget from '../../timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 
-const props = defineProps({
-  project: { type: String, required: true },
-  activeNode: { type: Object, default: null },
-  activeEditorId: { type: String, default: null }
+const props = withDefaults(defineProps<{
+  project: string;
+  activeNode?: any;
+  activeEditorId?: string | null;
+}>(), {
+  activeNode: null,
+  activeEditorId: null
 });
 
 const emit = defineEmits([

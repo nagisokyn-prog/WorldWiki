@@ -3,7 +3,7 @@
  * @description Types для деревьев и компонентов
  */
 
-export interface TreeNodeData {
+export interface TreeNodeData<T = unknown> {
   id: string;
   label: string;
   icon?: string;
@@ -11,8 +11,8 @@ export interface TreeNodeData {
   isGroup?: boolean;
   canAdd?: boolean;
   addLabel?: string;
-  children?: TreeNodeData[];
-  data?: any;
+  children?: TreeNodeData<T>[];
+  data?: T;
 }
 
 export interface TreeSectionData {

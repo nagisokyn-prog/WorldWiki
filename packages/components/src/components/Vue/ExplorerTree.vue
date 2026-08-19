@@ -110,7 +110,7 @@ export interface TreeNodeData {
   canAdd?: boolean;
   addLabel?: string;
   children?: TreeNodeData[];
-  data?: any;
+  data?: unknown;
 }
 
 export interface TreeSectionData {

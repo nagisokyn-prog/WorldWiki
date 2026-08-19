@@ -22,8 +22,8 @@ export interface ConnectionData {
 
 export const connectionApi = {
   getConnections: async (project: string, chapter: string): Promise<ConnectionData[]> => {
-    const list = await invoke<any[]>('get_connections', { project, chapter });
-    return list.map(processIds) as ConnectionData[];
+    const list = await invoke<ConnectionData[]>('get_connections', { project, chapter });
+    return list.map(processIds);
   },
 
   getConnectionsByEntity: (project: string, entityType: string, entityId: string): Promise<ConnectionData[]> =>

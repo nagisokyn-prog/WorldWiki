@@ -1,6 +1,11 @@
 import { ref } from 'vue';
+import type { CalendarData, CalendarMonth } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarMonths(props: any, _emit?: any) {
+export interface CalendarMonthsProps {
+  modelValue: Partial<CalendarData> & { месяцы?: CalendarMonth[]; [key: string]: unknown };
+}
+
+export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {

@@ -1,7 +1,17 @@
 import { ref, onMounted, computed } from "vue";
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarLeapYear(props: any, _emit?: any) {
+export interface CalendarLeapYearProps {
+  modelValue: Partial<CalendarData> & {
+    правило_високосного_года?: string;
+    пользовательское_високосное_правило?: { месяц: number; день_смещения: number };
+    [key: string]: unknown;
+  };
+}
+
+export function useCalendarLeapYear(props: CalendarLeapYearProps, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
 
   const wheelHorizontal = ref(
@@ -10,7 +20,7 @@ export function useCalendarLeapYear(props: any, _emit?: any) {
 
   onMounted(() => {
     settingsService.onChange(
-      (s: any) => (wheelHorizontal.value = s.dropdowns?.wheelOrientation === "horizontal"),
+      (s: AppSettings) => (wheelHorizontal.value = s.dropdowns?.wheelOrientation === "horizontal"),
     );
     if (!props.modelValue.пользовательское_високосное_правило) {
       props.modelValue.пользовательское_високосное_правило = { месяц: 0, день_смещения: 1 };

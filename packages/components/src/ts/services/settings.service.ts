@@ -47,7 +47,7 @@ class SettingsService {
     if (typeof window !== 'undefined') {
       // Синхронизация между вкладками браузера
       window.addEventListener('storage', (e) => {
-        if (e.key === ((window as any).__APP_CONFIG__?.storageKey ?? 'app:settings') && e.newValue) {
+        if (e.key === (window.__APP_CONFIG__?.storageKey ?? 'app:settings') && e.newValue) {
           try {
             const newSettings = JSON.parse(e.newValue);
             this.settings = this.deepMerge(this.settings, newSettings);
@@ -60,15 +60,15 @@ class SettingsService {
       });
 
       // Синхронизация между окнами Tauri
-      if ((window as any).__TAURI__?.event) {
-        (window as any).__TAURI__.event.listen('settings-updated', (event: { payload: AppSettings }) => {
+      if (window.__TAURI__?.event) {
+        window.__TAURI__.event.listen('settings-updated', (event: { payload: AppSettings }) => {
           if (event.payload) {
             this.settings = this.deepMerge(DEFAULT_SETTINGS, event.payload);
             this.applySettings();
             this.applyLocale();
             this.notifyListeners();
           }
-        }).catch((e: any) => console.warn('Failed to listen to settings-updated', e));
+        }).catch((e: unknown) => console.warn('Failed to listen to settings-updated', e));
       }
     }
   }
@@ -97,7 +97,7 @@ class SettingsService {
 
     // Fallback на localStorage
     try {
-      const saved = localStorage.getItem((window as any).__APP_CONFIG__?.storageKey ?? 'app:settings');
+      const saved = localStorage.getItem(window.__APP_CONFIG__?.storageKey ?? 'app:settings');
       if (saved) {
         console.log('[settingsService] loaded from localStorage');
         this.settings = this.deepMerge(DEFAULT_SETTINGS, JSON.parse(saved));
@@ -149,7 +149,7 @@ class SettingsService {
 
       // Fallback на localStorage
       try {
-        localStorage.setItem((window as any).__APP_CONFIG__?.storageKey ?? 'app:settings', JSON.stringify(this.settings));
+        localStorage.setItem(window.__APP_CONFIG__?.storageKey ?? 'app:settings', JSON.stringify(this.settings));
       } catch (e) {
         console.warn('localStorage save failed:', e);
       }
@@ -242,8 +242,8 @@ class SettingsService {
       const applySrc = (el: HTMLImageElement | HTMLVideoElement, path: string) => {
         // Не конвертируем, если путь уже является URL (asset.localhost, blob:, data:, http:)
         const isAlreadyUrl = path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:');
-        if (!isAlreadyUrl && (window as any).__TAURI__?.core?.convertFileSrc) {
-          el.src = (window as any).__TAURI__.core.convertFileSrc(path);
+        if (!isAlreadyUrl && window.__TAURI__?.core?.convertFileSrc) {
+          el.src = window.__TAURI__.core.convertFileSrc(path);
         } else {
           el.src = path;
         }
@@ -401,7 +401,7 @@ class SettingsService {
 
     // Fallback: локальное хранилище
     try {
-      const themeKey = `${(window as any).__APP_CONFIG__?.id ?? "app"}:theme:${themeName}`;
+      const themeKey = `${window.__APP_CONFIG__?.id ?? "app"}:theme:${themeName}`;
       const saved = localStorage.getItem(themeKey);
       if (saved) {
         const themeSettings = JSON.parse(saved) as Partial<AppSettings>;
@@ -418,7 +418,7 @@ class SettingsService {
    * Возвращает текущую выбранную тему
    */
   getCurrentTheme(): 'dark' | 'light' {
-    return (this.settings as any).theme || 'dark';
+    return (this.settings as unknown as { theme?: 'dark' | 'light' }).theme || 'dark';
   }
 
   /**

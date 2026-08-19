@@ -4,7 +4,7 @@
  * @rust-ready ✅ CRUD операции с проектами
  */
 
-import * as api from './api.client';;
+import * as api from './api.client';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
 interface ProjectStats {
@@ -14,18 +14,9 @@ interface ProjectStats {
   chapters: number;
 }
 
-// ProjectCalendar is defined for future use when calendar integration is added
-// interface ProjectCalendar {
-//   название?: string;
-//   месяцы?: Array<{ название: string; дней: number }>;
-//   эпохи?: Array<{ название: string; год_начала: number; год_конца: number }>;
-//   [key: string]: unknown;
-// }
-
 interface ProjectConfig {
   type: string;
   genres: string[];
-
   created?: string;
   updated?: string;
   [key: string]: unknown;
@@ -38,7 +29,6 @@ interface ProjectMetadata {
   created: string;
   updated: string;
   stats: ProjectStats;
-
 }
 
 interface ProjectData {
@@ -58,12 +48,13 @@ export const projectService = {
 
     const raw = await api.getProjects();
     console.log('[projectService] getProjects raw response:', raw);
-    const list = Array.isArray(raw) ? raw : ((raw as any)?.projects || []);
-    const projects = list.map((p: any) => ({
+    const list = Array.isArray(raw) ? raw : ((raw as { projects?: Array<Record<string, unknown>> })?.projects || []);
+    const projects = list.map((p: Record<string, unknown>) => ({
+      name: String(p.name || ''),
       ...p,
-      icon: p.icon || '📁',
-      stats: p.data?.stats || p.stats || { characters: 0, organizations: 0, states: 0, chapters: 0 }
-    }));
+      icon: (p.icon as string) || '📁',
+      stats: ((p.data as Record<string, unknown>)?.stats as ProjectStats) || (p.stats as ProjectStats) || { characters: 0, organizations: 0, states: 0, chapters: 0 }
+    })) as ProjectData[];
     setCache(cacheKey, projects);
     return projects;
   },
@@ -76,7 +67,7 @@ export const projectService = {
     const cached = getCached<ProjectConfig>(cacheKey);
     if (cached) return cached;
 
-    const res: any = await api.getProjectConfig(projectName);
+    const res = await api.getProjectConfig(projectName);
     console.log('[projectService] getProjectConfig raw response:', res);
     const config = res as ProjectConfig;
     setCache(cacheKey, config);
@@ -118,7 +109,7 @@ export const projectService = {
    * Сохранить конфигурацию проекта (включая календарь, жанры и т.д.)
    */
   async saveProjectConfig(projectName: string, config: ProjectConfig): Promise<{ success: boolean }> {
-    const result = await api.saveProjectConfig(projectName, config as any);
+    const result = await api.saveProjectConfig(projectName, config);
     invalidateCache(`project:config:${projectName}`);
     return result;
   },
@@ -129,7 +120,7 @@ export const projectService = {
   async getProjectMetadata(projectName: string): Promise<ProjectMetadata> {
     const config = await this.getProjectConfig(projectName);
     const allProjects = await this.getProjects();
-    const projectData = allProjects.find(p => p.name === projectName) || {} as ProjectData;
+    const projectData = allProjects.find(p => p.name === projectName) || ({} as ProjectData);
 
     return {
       name: projectName,

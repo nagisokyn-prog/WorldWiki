@@ -1,12 +1,13 @@
 import { ref, onMounted } from "vue";
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
 import { CalendarMath } from "../../../../services/Calendars/calendar.math";
 import type { CalendarData } from "../../../../services/Calendars/calendar.types";
 
-export function useCalendarHolidays(props: { modelValue: CalendarData }, _emit?: any) {
+export function useCalendarHolidays(props: { modelValue: CalendarData }, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
 
-  const getDaysInMonth = (cal: any, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
+  const getDaysInMonth = (cal: CalendarData, year: number, monthIdx: number) => CalendarMath.getDaysInMonth(cal, year, monthIdx);
 
   const wheelHorizontal = ref(
     settingsService.getSettings()?.dropdowns?.wheelOrientation === "horizontal",
@@ -14,7 +15,7 @@ export function useCalendarHolidays(props: { modelValue: CalendarData }, _emit?:
 
   onMounted(() => {
     settingsService.onChange(
-      (s: any) => (wheelHorizontal.value = s.dropdowns?.wheelOrientation === "horizontal"),
+      (s: AppSettings) => (wheelHorizontal.value = s.dropdowns?.wheelOrientation === "horizontal"),
     );
   });
 

@@ -1,8 +1,11 @@
 import { ref, onMounted, computed } from 'vue';
 import { useCalendarStore } from '../../../../stores/calendar.store';
+import type { CalendarRecord } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
+import type { CalendarData, CalendarEra, CalendarMonth } from '../../../../services/Calendars/calendar.types';
 
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
 
 export interface TimelineEvent {
   date: {
@@ -19,18 +22,18 @@ export interface TimelineEvent {
   calendar_id?: string;
 }
 
-export function useTimelinePanel(props: { project: string, events: TimelineEvent[] }, emit: any) {
+export function useTimelinePanel(props: { project: string, events: TimelineEvent[] }, emit: (event: string, ...args: unknown[]) => void) {
   const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
-  const calendar = ref<any>(null);
-  const eras = ref<any[]>([]);
-  const months = ref<any[]>([]);
+  const calendar = ref<CalendarData | null>(null);
+  const eras = ref<CalendarEra[]>([]);
+  const months = ref<CalendarMonth[]>([]);
   const showTimeSettings = ref(false); // Can be evaluated per event later if needed
   const expandedIndices = ref<Set<number>>(new Set());
-  const availableCalendars = ref<any[]>([]);
+  const availableCalendars = ref<CalendarRecord[]>([]);
   const selectedCalendarIds = ref<string[]>([]);
   const relativeInput = ref<Record<number, string>>({});
 
-  const getCalendar = (calId?: string) => {
+  const getCalendar = (calId?: string): CalendarData | undefined => {
     const id = calId || availableCalendars.value[0]?.id;
     return availableCalendars.value.find(c => c.id === id)?.data;
   };
@@ -47,24 +50,24 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
 
   const calendarOptions = computed(() => availableCalendars.value.map(cal => ({
     value: cal.id,
-    label: cal.data.название || 'Календарь'
+    label: cal.data?.название || 'Календарь'
   })));
 
   const getEraOptions = (calId?: string) => {
     const cal = getCalendar(calId);
     if (!cal || !cal.эпохи) return [];
-    return cal.эпохи.map((era: any, idx: number) => ({
+    return cal.эпохи.map((era: CalendarEra, idx: number) => ({
       value: idx,
-      label: era.название || era.name || `Эра ${idx + 1}`
+      label: era.название || (era as unknown as { name?: string }).name || `Эра ${idx + 1}`
     }));
   };
 
   const getMonthOptions = (calId?: string) => {
     const cal = getCalendar(calId);
     if (!cal || !cal.месяцы) return [];
-    return cal.месяцы.map((month: any, idx: number) => ({
+    return cal.месяцы.map((month: CalendarMonth, idx: number) => ({
       value: idx,
-      label: month.название || month.name || `Месяц ${idx + 1}`
+      label: month.название || (month as unknown as { name?: string }).name || `Месяц ${idx + 1}`
     }));
   };
 
@@ -86,7 +89,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
     }));
   };
 
-  const loadCalendarData = (calObj: any) => {
+  const loadCalendarData = (calObj: CalendarRecord) => {
     const cal = calObj.data;
     if (cal && useCalendarStore().isValidCalendar(cal)) {
       calendar.value = cal;
@@ -195,7 +198,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
       }
     }
 
-    settingsService.onChange((s: any) => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
+    settingsService.onChange((s: AppSettings) => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
   });
 
   const onChange = () => {
@@ -395,7 +398,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
     };
   };
 
-  const updateEventFullDate = (idx: number, val: any) => {
+  const updateEventFullDate = (idx: number, val: { calendar_id?: string; original_input?: { era_index: number; year: number; month: number; day: number; hour?: number; minute?: number } } | null) => {
     if (!val || !val.original_input) return;
     
     const newEvents = [...(props.events as TimelineEvent[])];

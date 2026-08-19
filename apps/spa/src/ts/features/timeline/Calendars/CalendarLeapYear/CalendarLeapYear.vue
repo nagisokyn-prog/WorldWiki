@@ -52,10 +52,9 @@
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import { useCalendarLeapYear } from './useCalendarLeapYear';
+import type { CalendarLeapYearProps } from './useCalendarLeapYear';
 
-const props = defineProps<{
-  modelValue: Record<string, any>;
-}>();
+const props = defineProps<CalendarLeapYearProps>();
 
 const { isCollapsed, wheelHorizontal, updateRule, customRuleMonth, customRuleDays } = useCalendarLeapYear(props);
 </script>

@@ -17,26 +17,26 @@
 // ─── Tauri detection ──────────────────────────────────────────────────────────
 
 export const isTauri: boolean =
-  typeof window !== 'undefined' && !!(window as any).__TAURI__?.core;
+  typeof window !== 'undefined' && !!(window as unknown as { __TAURI__?: { core?: unknown } }).__TAURI__?.core;
 
 // ─── invoke() with browser-mock fallback ─────────────────────────────────────
 
 type InvokeFn = <T = unknown>(cmd: string, args?: Record<string, unknown>) => Promise<T>;
 
 export const invoke: InvokeFn = isTauri
-  ? (cmd, args) => (window as any).__TAURI__.core.invoke(cmd, args)
+  ? (cmd, args) => (window as unknown as { __TAURI__: { core: { invoke: InvokeFn } } }).__TAURI__.core.invoke(cmd, args)
   : async <T>(cmd: string, args?: Record<string, unknown>): Promise<T> => {
       console.warn(`[API Mock] ${cmd}`, args);
       // Extend in your app's own mock layer as needed:
       switch (cmd) {
-        case 'load_settings': return null as any as T;
-        case 'save_settings': return null as any as T;
+        case 'load_settings': return null as unknown as T;
+        case 'save_settings': return null as unknown as T;
         case 'run_performance_benchmark':
-          return { level: 'high', cpu_score: 50, memory_mb: 100, cores: 8 } as any as T;
-        case 'get_performance_styles': return '' as any as T;
-        case 'get_custom_themes': return [] as any as T;
-        case 'load_theme': return null as any as T;
-        default: return null as any as T;
+          return { level: 'high', cpu_score: 50, memory_mb: 100, cores: 8 } as unknown as T;
+        case 'get_performance_styles': return '' as unknown as T;
+        case 'get_custom_themes': return [] as unknown as T;
+        case 'load_theme': return null as unknown as T;
+        default: return null as unknown as T;
       }
     };
 
@@ -85,11 +85,11 @@ export const stringifyId = (val: unknown): string => {
  * their normalised string form using stringifyId().
  * Now also handles arrays of RecordId objects (e.g., participants field).
  */
-export const processIds = (data: unknown): any => {
+export const processIds = <T = unknown>(data: T): T => {
   if (data === null || data === undefined) return data;
 
   if (Array.isArray(data)) {
-    return data.map(item => processIds(item));
+    return data.map(item => processIds(item)) as unknown as T;
   }
 
   if (typeof data === 'object') {
@@ -119,7 +119,7 @@ export const processIds = (data: unknown): any => {
         result[key] = processIds(val);
       }
     }
-    return result;
+    return result as unknown as T;
   }
 
   return data;

@@ -22,9 +22,9 @@ export async function loadSchema(project: string, entityType: string): Promise<S
   return null;
 }
 
-export function getValueByPath(obj: any, path: string): any {
-  if (!path) return undefined;
-  return path.split('.').reduce((cur: any, k: string) => (cur != null ? cur[k] : undefined), obj);
+export function getValueByPath(obj: Record<string, unknown> | null | undefined, path: string): unknown {
+  if (!path || !obj) return undefined;
+  return path.split('.').reduce((cur: unknown, k: string) => (cur != null && typeof cur === 'object' ? (cur as Record<string, unknown>)[k] : undefined), obj as unknown);
 }
 
 export function getEntityDisplayName(entity: Record<string, unknown>, schema?: SchemaInfo | null): string {

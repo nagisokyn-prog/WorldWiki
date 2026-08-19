@@ -118,7 +118,7 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
       const inputDate = { era_index: origin.value.эпоха ?? 0, year: origin.value.год, month: origin.value.месяц, day: i, hour: 12, minute: 0 };
       const absMinute = CalendarMath.getAbsoluteMinute(inputDate, cal);
       
-      let moons: any[] = [];
+      let moons: Array<{ emoji?: string; name?: string; moon?: { name?: string }; [key: string]: unknown }> = [];
       if (filters.value.moons) {
         moons = CalendarMath.calculateMoonPhases(absMinute, cal.moons || [], cal);
       }
@@ -150,13 +150,13 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
     return days;
   });
 
-  const getDayTooltip = (day: any) => {
+  const getDayTooltip = (day: { day: number; seasonName?: string; holidayText?: string; moons?: Array<{ emoji?: string; name?: string; moon?: { name?: string } }>; isOrigin?: boolean }) => {
     const lines = [`День ${day.day}`];
     if (day.seasonName && filters.value.seasons) lines.push(`❄️ ${day.seasonName}`);
     if (day.holidayText && filters.value.holidays) lines.push(`🎉 Праздник: ${day.holidayText}`);
     if (day.moons && day.moons.length && filters.value.moons) {
-      day.moons.forEach((m: any) => {
-        lines.push(`${m.emoji} ${m.moon.name}: ${m.name}`);
+      day.moons.forEach((m) => {
+        lines.push(`${m.emoji || ''} ${m.moon?.name || ''}: ${m.name || ''}`);
       });
     }
     if (day.isOrigin) lines.push(`🌟 Точка отсчета (День 0)`);

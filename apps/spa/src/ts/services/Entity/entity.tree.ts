@@ -5,18 +5,39 @@
 
 import { ref, computed, watch } from 'vue';
 import { entityApi } from './entity.api';
-import * as api from '../api.client';;
+import * as api from '../api.client';
 import { getCached, setCache } from '../../utils/requestCache';
 import { useTreeSelection } from '@worldwiki/components';
+import type { SchemaInfo } from './entity.types';
 
-export function useEntityTree(project: string, emit: any) {
-  const entities = ref<Record<string, any[]>>({});
-  const entitySections = ref<any[]>([]);
+export interface EntityTreeItem {
+  id: string;
+  _entity: Record<string, unknown>;
+  _type: string;
+}
+
+export interface EntityTreeSection {
+  type: string;
+  title: string;
+  emoji: string;
+}
+
+export interface EntityCtxState {
+  x: number;
+  y: number;
+  entityType: string;
+  entity: Record<string, unknown>;
+  sect: EntityTreeSection;
+}
+
+export function useEntityTree(project: string, emit: (event: string, ...args: unknown[]) => void) {
+  const entities = ref<Record<string, Record<string, unknown>[]>>({});
+  const entitySections = ref<EntityTreeSection[]>([]);
   const expandedSections = ref<Set<string>>(new Set(['manuscript']));
   const titleFields = ref<Record<string, string>>({});
 
-  const entityKey = (type: string, id: any) => `entity:${type}:${id}`;
-  const entityCtx = ref(null as any);
+  const entityKey = (type: string, id: unknown) => `entity:${type}:${String(id)}`;
+  const entityCtx = ref<EntityCtxState | null>(null);
 
   // DEBUG: watch reactive state changes
   watch(entitySections, (v) => console.log('[TREE DEBUG] entitySections changed:', JSON.stringify(v)), { deep: true });
@@ -37,8 +58,8 @@ export function useEntityTree(project: string, emit: any) {
     return { top: y + 'px', left: x + 'px' };
   });
 
-  const flatEntityItems = computed(() => {
-    const result: any[] = [];
+  const flatEntityItems = computed<EntityTreeItem[]>(() => {
+    const result: EntityTreeItem[] = [];
     console.log('[TREE DEBUG] flatEntityItems recomputing. expandedSections:', [...expandedSections.value], 'sections:', entitySections.value.map(s => s.type));
     for (const sect of entitySections.value) {
       const list = entities.value[sect.type] || [];
@@ -89,7 +110,7 @@ export function useEntityTree(project: string, emit: any) {
     try {
       console.log('[TREE DEBUG] → calling getSchemas...');
       const schemaCacheKey = `schemas:${project}`;
-      let schemas = getCached<any>(schemaCacheKey);
+      let schemas = getCached<Record<string, SchemaInfo>>(schemaCacheKey);
       if (!schemas) {
         schemas = await entityApi.getSchemas(project);
         setCache(schemaCacheKey, schemas);
@@ -98,15 +119,15 @@ export function useEntityTree(project: string, emit: any) {
 
       entitySections.value = Object.keys(schemas).map(key => ({
         type: key,
-        title: schemas[key].name || key,
-        emoji: schemas[key].icon || schemas[key].iconEmoji || '📄'
+        title: (schemas?.[key]?.name as string) || key,
+        emoji: (schemas?.[key]?.icon as string) || (schemas?.[key]?.iconEmoji as string) || '📄'
       }));
       console.log('[TREE DEBUG] entitySections set to:', entitySections.value.map(s => s.type));
 
       titleFields.value = {};
       for (const [key, schema] of Object.entries(schemas)) {
-        if ((schema as any).titleField) {
-          titleFields.value[key] = (schema as any).titleField;
+        if (schema.titleField) {
+          titleFields.value[key] = String(schema.titleField);
         }
       }
 
@@ -116,7 +137,7 @@ export function useEntityTree(project: string, emit: any) {
       const batchResult = await api.getEntitiesBatch(project, typesToFetch);
       console.log('[TREE DEBUG] ← getEntitiesBatch returned keys:', Object.keys(batchResult));
       
-      const newEntities: Record<string, any[]> = batchResult;
+      const newEntities: Record<string, Record<string, unknown>[]> = batchResult;
       
       console.log('[TREE DEBUG] Setting entities.value, counts:', Object.fromEntries(Object.entries(newEntities).map(([k, a]) => [k, a.length])));
       entities.value = newEntities;
@@ -129,21 +150,21 @@ export function useEntityTree(project: string, emit: any) {
     }
   };
 
-  const getValueByPath = (obj: any, path: string): any => {
-    if (!path) return undefined;
-    return path.split('.').reduce((cur: any, k: string) => (cur != null ? cur[k] : undefined), obj);
+  const getValueByPath = (obj: Record<string, unknown> | null | undefined, path: string): unknown => {
+    if (!path || !obj) return undefined;
+    return path.split('.').reduce((cur: unknown, k: string) => (cur != null && typeof cur === 'object' ? (cur as Record<string, unknown>)[k] : undefined), obj as unknown);
   };
 
-  const getEntityName = (entity: any, type: string) => {
+  const getEntityName = (entity: Record<string, unknown>, type: string): string => {
     const path = titleFields.value[type];
     if (path) {
       const val = getValueByPath(entity, path);
-      if (val) return val;
+      if (val) return String(val);
     }
-    return entity.name || 'Без названия';
+    return (entity.name as string) || 'Без названия';
   };
 
-  const handleEntityClick = (event: MouseEvent, type: string, entity: any, _sect: any) => {
+  const handleEntityClick = (event: MouseEvent, type: string, entity: Record<string, unknown>, _sect: EntityTreeSection) => {
     const key = entityKey(type, entity.id);
     entitySelection.handleClick(event, { id: key }, flatEntityItems.value);
     if (!event.ctrlKey && !event.shiftKey && !event.metaKey) {
@@ -151,7 +172,7 @@ export function useEntityTree(project: string, emit: any) {
     }
   };
 
-  const openEntityCtx = (e: MouseEvent, type: string, entity: any, sect: any) => {
+  const openEntityCtx = (e: MouseEvent, type: string, entity: Record<string, unknown>, sect: EntityTreeSection) => {
     const key = entityKey(type, entity.id);
     if (!entitySelection.isSelected(key)) {
       entitySelection.handleClick(new MouseEvent('click'), { id: key }, flatEntityItems.value);
@@ -163,9 +184,9 @@ export function useEntityTree(project: string, emit: any) {
     console.log(`[TREE DEBUG] toggleSection '${section}', was expanded:`, expandedSections.value.has(section));
     if (expandedSections.value.has(section)) {
       expandedSections.value.delete(section);
-      const keys = [...entitySelection.selected.value].filter((k: any) => String(k).startsWith(`entity:${section}:`));
+      const keys = [...entitySelection.selected.value].filter((k) => String(k).startsWith(`entity:${section}:`));
       if (keys.length > 0) {
-        entitySelection.selected.value = new Set([...entitySelection.selected.value].filter((k: any) => !String(k).startsWith(`entity:${section}:`)));
+        entitySelection.selected.value = new Set([...entitySelection.selected.value].filter((k) => !String(k).startsWith(`entity:${section}:`)));
       }
     } else {
       expandedSections.value.add(section);

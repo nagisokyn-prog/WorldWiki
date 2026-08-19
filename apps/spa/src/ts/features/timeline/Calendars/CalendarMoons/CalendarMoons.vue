@@ -38,13 +38,13 @@
 
 <script setup lang="ts">
 import { useCalendarMoons } from './useCalendarMoons';
+import type { CalendarMoonsProps } from './useCalendarMoons';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-const props = defineProps<{
-  modelValue: Record<string, any>;
-}>();
+const props = defineProps<CalendarMoonsProps>();
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: any): void;
+  (e: 'update:modelValue', val: CalendarData): void;
 }>();
 
 const { isCollapsed, calendar, addMoon, moveItem } = useCalendarMoons(props, emit);

@@ -12,31 +12,33 @@ export const chapterApi = {
   getChaptersList: async (project: string): Promise<Chapter[]> => {
     // Используем сгенерированный клиент:
     const list = await api.getChapters(project);
-    return list.map(processIds).filter((c: any) => c);
+    return list.map(processIds).filter((c): c is Chapter => Boolean(c));
   },
 
-  getChapter: async (project: string, chapterId: string): Promise<Chapter> => {
+  getChapter: async (_project: string, chapterId: string): Promise<Chapter | null> => {
     const c = await api.getChapter(chapterId);
-    return processIds(c);
+    return c ? processIds(c) : null;
   },
 
-  saveChapter: async (project: string, chapterData: any): Promise<{ success: boolean; id?: string }> => {
+  saveChapter: async (project: string, chapterData: Partial<Chapter> & { arc_id?: string | null; volume_id?: string | null; [key: string]: unknown }): Promise<{ success: boolean; id?: string }> => {
     const data = {
       ...chapterData,
       project_id: projectRecordId(project),
     };
     
-    const res = await api.saveChapter(project, data as Chapter);
+    const res = await api.saveChapter(project, data as unknown as Chapter);
 
     if (data.arc_id || data.volume_id) {
       try {
-        const rawChapterId = (data.id as string).replace(/^chapters:/, '');
-        await api.assignChapter(
-          project,
-          rawChapterId,
-          data.arc_id ?? null,
-          data.volume_id ?? null
-        );
+        const rawChapterId = (data.id ? String(data.id) : '').replace(/^chapters:/, '');
+        if (rawChapterId) {
+          await api.assignChapter(
+            project,
+            rawChapterId,
+            data.arc_id ?? null,
+            data.volume_id ?? null
+          );
+        }
       } catch (e) {
         console.warn('assign_chapter skipped:', e);
       }
@@ -52,14 +54,14 @@ export const chapterApi = {
       }
     }
 
-    return { success: true, id: res.id ? stringifyId(res.id) : data.id };
+    return { success: true, id: res.id ? stringifyId(res.id) : (data.id ? String(data.id) : undefined) };
   },
 
-  deleteChapter: (project: string, id: string): Promise<{ success: boolean }> =>
+  deleteChapter: (_project: string, id: string): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('delete_chapter', { id }),
 
-  getChapterRevisions: (projectId: string, chapterId: string): Promise<any[]> =>
-    invoke<any[]>('get_chapter_revisions', { project: projectId, chapterId }),
+  getChapterRevisions: (projectId: string, chapterId: string): Promise<Record<string, unknown>[]> =>
+    invoke<Record<string, unknown>[]>('get_chapter_revisions', { project: projectId, chapterId }),
 
   toggleChapterHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
     invoke<void>('toggle_chapter_history_pin', { historyId, isPinned }),
@@ -68,16 +70,16 @@ export const chapterApi = {
   //  HIERARCHY: ТОМ-АРКА-ГЛАВА
   // ═══════════════════════════════════════════════════════
 
-  async getHierarchy(project: string): Promise<{ volumes: any[]; arcs: any[]; chapters: Chapter[] }> {
-    const data: any = await invoke('get_chapter_hierarchy', { project });
-    if (data.volumes) data.volumes = data.volumes.map(processIds);
-    if (data.arcs) data.arcs = data.arcs.map(processIds);
-    if (data.chapters) data.chapters = data.chapters.map(processIds).filter((c: any) => c);
-    return data;
+  async getHierarchy(project: string): Promise<{ volumes: Record<string, unknown>[]; arcs: Record<string, unknown>[]; chapters: Chapter[] }> {
+    const data = await invoke<{ volumes?: Record<string, unknown>[]; arcs?: Record<string, unknown>[]; chapters?: Chapter[] }>('get_chapter_hierarchy', { project });
+    const volumes = (data.volumes || []).map(processIds);
+    const arcs = (data.arcs || []).map(processIds);
+    const chapters = (data.chapters || []).map(processIds).filter((c): c is Chapter => Boolean(c));
+    return { volumes, arcs, chapters };
   },
 
   async createVolume(project: string, title: string): Promise<string> {
-    const res: any = await invoke('create_volume', { project, title });
+    const res = await invoke<{ id: unknown }>('create_volume', { project, title });
     return stringifyId(res.id);
   },
 
@@ -85,12 +87,12 @@ export const chapterApi = {
     await invoke('update_volume', { project, id, title });
   },
 
-  async deleteVolume(project: string, id: string): Promise<void> {
-    await invoke('delete_volume', { project, id });
+  async deleteVolume(_project: string, id: string): Promise<void> {
+    await invoke('delete_volume', { id });
   },
 
   async createArc(project: string, title: string, volumeId?: string | null): Promise<string> {
-    const res: any = await invoke('create_arc', { project, title, volumeId: volumeId ?? null });
+    const res = await invoke<{ id: unknown }>('create_arc', { project, title, volumeId: volumeId ?? null });
     return stringifyId(res.id);
   },
 
@@ -98,8 +100,8 @@ export const chapterApi = {
     await invoke('update_arc', { project, id, title, volumeId: volumeId ?? null });
   },
 
-  async deleteArc(project: string, id: string): Promise<void> {
-    await invoke('delete_arc', { project, id });
+  async deleteArc(_project: string, id: string): Promise<void> {
+    await invoke('delete_arc', { id });
   },
 
   async assignChapter(project: string, chapterId: string, arcId?: string | null, volumeId?: string | null): Promise<void> {
@@ -114,18 +116,33 @@ export const chapterApi = {
   //  PLAN ITEMS
   // ═══════════════════════════════════════════════════════
 
-  async getPlanItems(project: string, parentType: string, parentId: string): Promise<any[]> {
-    const allPlans = ((await invoke('get_plans', { project })) as any[]) || [];
+  async getPlanItems(project: string, parentType: string, parentId: string): Promise<Array<{
+    id?: string;
+    parentType: string;
+    parentId: string;
+    text: string;
+    done: boolean;
+    sort_order: number;
+  }>> {
+    interface RawPlan {
+      id?: string;
+      parent_type?: string;
+      parent_ref?: string;
+      title?: string;
+      completed?: boolean;
+      sort_order?: number;
+    }
+    const allPlans = (await invoke<RawPlan[]>('get_plans', { project })) || [];
     const cleanPlans = allPlans.map(processIds);
-    const list = cleanPlans.filter((p: any) => p.parent_type === parentType && p.parent_ref === parentId);
-    return list.map((p: any) => ({
+    const list = cleanPlans.filter((p) => p.parent_type === parentType && p.parent_ref === parentId);
+    return list.map((p) => ({
       id: p.id,
-      parentType: p.parent_type,
-      parentId: p.parent_ref,
-      text: p.title,
-      done: p.completed,
-      sort_order: p.sort_order
-    })).sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+      parentType: p.parent_type || '',
+      parentId: p.parent_ref || '',
+      text: p.title || '',
+      done: p.completed || false,
+      sort_order: p.sort_order || 0
+    })).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   },
 
   async savePlanItem(project: string, item: {
@@ -141,20 +158,20 @@ export const chapterApi = {
       sort_order: item.sort_order || 0,
       completed: item.done || false
     };
-    const res: any = await invoke('save_plan', { data });
+    const res = await invoke<{ id: string }>('save_plan', { data });
     return res.id;
   },
 
-  async deletePlanItem(project: string, id: string): Promise<void> {
+  async deletePlanItem(_project: string, id: string): Promise<void> {
     await invoke('delete_plan', { id });
   },
 
-  async togglePlanItem(project: string, id: string): Promise<boolean> {
-    const plan: any = await invoke('get_plan', { id });
+  async togglePlanItem(_project: string, id: string): Promise<boolean> {
+    const plan = await invoke<{ completed?: boolean; [key: string]: unknown } | null>('get_plan', { id });
     if (plan) {
       plan.completed = !plan.completed;
       await invoke('save_plan', { data: plan });
-      return plan.completed;
+      return Boolean(plan.completed);
     }
     return false;
   },

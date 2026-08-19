@@ -46,10 +46,9 @@
 
 <script setup lang="ts">
 import { useCalendarWeekdays } from './useCalendarWeekdays';
+import type { CalendarWeekdaysProps } from './useCalendarWeekdays';
 
-const props = defineProps<{
-  modelValue: Record<string, any>;
-}>();
+const props = defineProps<CalendarWeekdaysProps>();
 
 const { isCollapsed, moveItem, addDay, updateDay, removeDay } = useCalendarWeekdays(props);
 </script>

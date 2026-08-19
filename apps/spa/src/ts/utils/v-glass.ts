@@ -1,7 +1,10 @@
-import type { DirectiveBinding, ObjectDirective } from 'vue';
+import type { App, DirectiveBinding, ObjectDirective } from 'vue';
 
 // GSAP may be available globally, but we should check
-declare const gsap: any;
+interface GsapLike {
+  to?: (target: unknown, vars: Record<string, unknown>) => void;
+}
+declare const gsap: GsapLike | undefined;
 
 const interactiveEffects = {
   mouseenter(el: HTMLElement) {
@@ -85,6 +88,6 @@ export const vGlass: ObjectDirective = {
   }
 };
 
-export function setupGlass(app: any) {
+export function setupGlass(app: App) {
   app.directive('glass', vGlass);
 }

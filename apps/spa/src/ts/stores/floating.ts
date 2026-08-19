@@ -33,7 +33,7 @@ export const useFloatingStore = defineStore('floating', () => {
         console.log(`[FloatingStore] Окно ${label} создано`);
       });
 
-      win.once('tauri://error', async (e: any) => {
+      win.once('tauri://error', async (e: unknown) => {
         console.warn(`[FloatingStore] Окно ${label} уже существует или произошла ошибка:`, e);
         try {
           const existingWin = await WebviewWindow.getByLabel(label);

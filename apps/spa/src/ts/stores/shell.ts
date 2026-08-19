@@ -10,8 +10,10 @@
  */
 import { defineStore } from 'pinia';
 import { ref, computed, watch, shallowRef, triggerRef } from 'vue';
-import { useEditorGroups, settingsService } from '@worldwiki/components';
+import { useEditorGroups, settingsService, type AppSettings } from '@worldwiki/components';
 import * as api from '../services/api.client';
+import type { Chapter } from '../types/generated/Chapter';
+import type { Entity } from '../types/generated/Entity';
 import { useSchemaStore } from './schema';
 import { useConsoleStore } from './console';
 import { useZoomStore } from './zoom';
@@ -45,6 +47,7 @@ export interface EditorTab {
   unsaved: boolean;
   scrollPos?: number;
   activeSection?: string;
+  _foreignUpdates?: Record<string, unknown>;
 }
 
 export interface EditorGroup {
@@ -54,9 +57,19 @@ export interface EditorGroup {
   flexBasis: number;
 }
 
+export interface QuickOpenItem {
+  id: string;
+  rawId: string;
+  title: string;
+  typeLabel: string;
+  entityType: string;
+  emoji: string;
+  data: Record<string, unknown>;
+}
+
 export const useShellStore = defineStore('shell', () => {
   // ─── Editor Groups ─────────────────────────
-  const eg = useEditorGroups() as any;
+  const eg = useEditorGroups();
 
   // ─── Stores dependencies ─────────────────────────
   const schema = useSchemaStore();
@@ -75,14 +88,14 @@ export const useShellStore = defineStore('shell', () => {
   const panelHeight = ref(parseInt(localStorage.getItem('app-panel-height') || '150'));
   const sidebarWidth = ref(parseInt(localStorage.getItem('app-sidebar-width') || '280'));
   const splitLeftWidth = ref(parseFloat(localStorage.getItem('app-split-width') || '50'));
-  const activeTreeNode = ref<{ type: string; node: any } | null>(null);
+  const activeTreeNode = ref<{ type: string; node: { id?: string; [key: string]: unknown } } | null>(null);
   const sidebarVisible = ref(true);
-  const quickOpenRef = ref<any>(null);
-  const commandPaletteRef = ref<any>(null);
-  const tagsManagerRef = ref<any>(null);
-  const settings = ref<any>(settingsService.getSettings());
+  const quickOpenRef = ref<{ open: () => void; close?: () => void } | null>(null);
+  const commandPaletteRef = ref<{ open: () => void; close?: () => void } | null>(null);
+  const tagsManagerRef = ref<{ open: () => void; close?: () => void } | null>(null);
+  const settings = ref<AppSettings>(settingsService.getSettings());
   const isCreatingEntity = ref(false);
-  const chapterTreeRef = ref<any>(null);
+  const chapterTreeRef = ref<{ load?: (id?: string) => void; refresh?: () => void; [key: string]: unknown } | null>(null);
   const sidebarItems = ref<SidebarItem[]>([]);
   const projectName = ref<string>('default');
   const isWowilonOpen = ref(false);
@@ -123,20 +136,20 @@ export const useShellStore = defineStore('shell', () => {
     ) || null
   );
 
-  const unsavedCount = computed(() => openEditors.value.filter((e: any) => e.unsaved).length);
+  const unsavedCount = computed(() => openEditors.value.filter((e) => e.unsaved).length);
 
   // Entity lists moved from useEntityLists
   const entityLists = shallowRef<Record<string, Array<Record<string, unknown>>>>({});
-  const chapters = shallowRef<Array<any>>([]);
+  const chapters = shallowRef<Array<Chapter>>([]);
 
   const filteredEntityList = computed(() => {
     const q = sidebarSearch.value.toLowerCase();
     if (currentSidebarTab.value === 'chapters') {
       const list = chapters.value || [];
-      return q ? list.filter((c: any) => String(c.title || '').toLowerCase().includes(q)) : list;
+      return q ? list.filter((c) => String(c.title || '').toLowerCase().includes(q)) : list;
     }
     const list = entityLists.value[currentSidebarTab.value || ''] || [];
-    return q ? list.filter((e: any) => schema.getEntityDisplayName(e as Record<string, unknown>, currentSidebarTab.value || undefined).toLowerCase().includes(q)) : list;
+    return q ? list.filter((e) => schema.getEntityDisplayName(e as Record<string, unknown>, currentSidebarTab.value || undefined).toLowerCase().includes(q)) : list;
   });
 
   // ─── Persistence ─────────────────────────
@@ -162,11 +175,11 @@ export const useShellStore = defineStore('shell', () => {
       activePanelTab.value,
       activeTreeNode.value,
       eg.activeGroupId.value,
-      eg.groups.value.map((g: any) => ({
+      eg.groups.value.map((g) => ({
         id: g.id,
         activeTabId: g.activeTabId,
         tabsCount: g.tabs.length,
-        tabs: g.tabs.map((t: any) => t.id)
+        tabs: g.tabs.map((t) => t.id)
       }))
     ],
     () => saveState(),
@@ -184,21 +197,21 @@ export const useShellStore = defineStore('shell', () => {
       activePanelTab.value = state.activePanelTab !== undefined ? state.activePanelTab : '';
       activeTreeNode.value = state.activeTreeNode || null;
 
-      const rawGroups = state.editorGroups;
-      const rawTabs = state.openTabs;
-      const tabSources: Array<any> = rawGroups ? rawGroups.flatMap((g: any) => g.tabs) : (rawTabs || []);
+      const rawGroups = state.editorGroups as EditorGroup[] | undefined;
+      const rawTabs = state.openTabs as EditorTab[] | undefined;
+      const tabSources: EditorTab[] = rawGroups ? rawGroups.flatMap((g) => g.tabs) : (rawTabs || []);
 
-      const loadedTabs = new Map<string, any>();
+      const loadedTabs = new Map<string, EditorTab>();
       for (const tab of tabSources) {
         if (loadedTabs.has(tab.id)) continue;
         try {
           if (tab.tabType === 'entity') {
             await schema.loadSchema(tab.entityType);
             const detail = await entityApi.getEntity(projectName.value, tab.entityType, tab.rawId);
-            loadedTabs.set(tab.id, { ...tab, data: detail, unsaved: false });
+            loadedTabs.set(tab.id, { ...tab, data: (detail || {}) as Record<string, unknown>, unsaved: false });
           } else if (tab.tabType === 'chapter') {
             const chapter = await api.getChapter(tab.rawId);
-            if (chapter) loadedTabs.set(tab.id, { ...tab, data: chapter, unsaved: false });
+            if (chapter) loadedTabs.set(tab.id, { ...tab, data: chapter as unknown as Record<string, unknown>, unsaved: false });
           } else if (tab.tabType === 'schema-editor') {
             loadedTabs.set(tab.id, { ...tab, data: {}, unsaved: false });
           }
@@ -206,10 +219,10 @@ export const useShellStore = defineStore('shell', () => {
       }
 
       if (rawGroups) {
-        eg.restoreState(rawGroups, loadedTabs);
+        eg.restoreState(rawGroups as unknown as Parameters<typeof eg.restoreState>[0], loadedTabs as unknown as Parameters<typeof eg.restoreState>[1]);
       } else {
         const group = eg.groups.value[0];
-        for (const [, tab] of loadedTabs) group.tabs.push(tab as any);
+        for (const [, tab] of loadedTabs) group.tabs.push(tab as unknown as typeof group.tabs[0]);
         if (state.activeEditorId && loadedTabs.has(state.activeEditorId)) {
           group.activeTabId = state.activeEditorId;
         } else if (group.tabs.length > 0) {
@@ -242,7 +255,7 @@ export const useShellStore = defineStore('shell', () => {
   const loadChapters = async () => {
     try {
       const list = await api.getChapters('');
-      chapters.value = list as Array<any>;
+      chapters.value = list;
       addLog(`Data -> Loaded ${chapters.value.length} chapter(s)`, 'info');
     } catch (e) {
       addLog(`Data -> Error loading chapters: ${e}`, 'error');
@@ -268,7 +281,7 @@ export const useShellStore = defineStore('shell', () => {
     if (item.entityType) loadEntityList(item.entityType);
   };
 
-  const openEntity = async (entity: any) => {
+  const openEntity = async (entity: { id?: string | number; entityType?: string; entity_type?: string; Name?: string; name?: string; title?: string; [key: string]: unknown }) => {
     const entityType = entity.entityType || entity.entity_type;
     if (!entityType) return;
     if (!entity.id || entity.id === 'undefined') {
@@ -281,7 +294,7 @@ export const useShellStore = defineStore('shell', () => {
       try {
         await schema.loadSchema(entityType);
         const detail = await entityApi.getEntity(projectName.value, entityType, rawId);
-        const tabTitle = (entity as any).Name || (entity as any).name || (entity as any).title || schema.getEntityDisplayName(detail as Record<string, unknown>, entityType);
+        const tabTitle = entity.Name || entity.name || entity.title || schema.getEntityDisplayName(detail as Record<string, unknown>, entityType);
         eg.openTab({
           id: tabId, rawId, title: tabTitle, entityType,
           tabType: 'entity', data: detail as Record<string, unknown>, unsaved: false,
@@ -299,12 +312,12 @@ export const useShellStore = defineStore('shell', () => {
     activeView.value = 'entity';
   };
 
-  const openChapterTab = (chapter: any) => {
+  const openChapterTab = (chapter: Chapter | { id?: string | number; title?: string; [key: string]: unknown }) => {
     const id = String(chapter.id);
     if (!eg.findTabGlobal(id)) {
       eg.openTab({
         id, rawId: id, title: chapter.title || `Глава ${id}`,
-        entityType: 'chapter', tabType: 'chapter', data: chapter, unsaved: false,
+        entityType: 'chapter', tabType: 'chapter', data: chapter as Record<string, unknown>, unsaved: false,
       });
     } else {
       const g = eg.findGroupByTab(id);
@@ -324,7 +337,8 @@ export const useShellStore = defineStore('shell', () => {
       });
       addLog(`Editor -> Opened Schema Editor for ${entityType}`, 'info');
     } else {
-      eg.openTab({ id: tabId } as any);
+      const g = eg.findGroupByTab(tabId);
+      if (g) { g.activeTabId = tabId; eg.activeGroupId.value = g.id; }
     }
   };
 
@@ -359,41 +373,43 @@ export const useShellStore = defineStore('shell', () => {
   };
 
   let isLiveSyncing = false;
-  let liveSyncTimer: any = null;
+  let liveSyncTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const handleUpdateData = (tabId: string, newData: any, fromLiveSync = false) => {
-    const tabsToUpdate = eg.allTabs.value.filter((t: any) => t.id === tabId || t.rawId === tabId.replace('entities:', ''));
+  const handleUpdateData = (tabId: string, newData: Record<string, unknown>, fromLiveSync = false) => {
+    const tabsToUpdate = eg.allTabs.value.filter((t) => t.id === tabId || t.rawId === tabId.replace('entities:', ''));
     if (tabsToUpdate.length === 0) return;
-    const merge = (target: any, source: any) => {
+    const merge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
       for (const key in source) {
         if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
           if (!target[key] || typeof target[key] !== 'object') target[key] = {};
-          merge(target[key], source[key]);
+          merge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
         } else if (Array.isArray(source[key])) {
           if (!Array.isArray(target[key])) target[key] = [];
-          for (let i = 0; i < source[key].length; i++) {
-            if (i < target[key].length) {
-              if (typeof source[key][i] === 'object' && source[key][i] !== null) merge(target[key][i], source[key][i]);
-              else target[key][i] = source[key][i];
+          const targetArr = target[key] as unknown[];
+          const sourceArr = source[key] as unknown[];
+          for (let i = 0; i < sourceArr.length; i++) {
+            if (i < targetArr.length) {
+              if (typeof sourceArr[i] === 'object' && sourceArr[i] !== null) merge(targetArr[i] as Record<string, unknown>, sourceArr[i] as Record<string, unknown>);
+              else targetArr[i] = sourceArr[i];
             } else {
-              target[key].push(source[key][i]);
+              targetArr.push(sourceArr[i]);
             }
           }
-          target[key].length = source[key].length;
+          targetArr.length = sourceArr.length;
         } else {
           target[key] = source[key];
         }
       }
     };
     
-    let updatedEntityType = null;
-    let updatedRawId = null;
+    let updatedEntityType: string | null = null;
+    let updatedRawId: string | null = null;
 
     for (const tab of tabsToUpdate) {
-      const { __foreignUpdates, ...dataToMerge } = newData as any;
+      const { __foreignUpdates, ...dataToMerge } = newData as Record<string, unknown> & { __foreignUpdates?: Record<string, unknown> };
       const oldTitle = tab.title;
       merge(tab.data, dataToMerge);
-      if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) (tab as any)._foreignUpdates = __foreignUpdates;
+      if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) (tab as EditorTab)._foreignUpdates = __foreignUpdates;
 
       const newTitle = schema.getEntityDisplayName(tab.data as Record<string, unknown>, tab.entityType);
       if (newTitle && newTitle !== oldTitle) {
@@ -448,8 +464,8 @@ export const useShellStore = defineStore('shell', () => {
     document.body.classList.add('resizing');
     const onMove = (ev: MouseEvent) => {
       const isReverse = settings.value.layout?.sidebarPos === 'row-reverse';
-      const diff = ev.clientX - startX;
-      sidebarWidth.value = Math.max(160, Math.min(520, startW + (isReverse ? -diff : diff)));
+      const delta = isReverse ? (startX - ev.clientX) : (ev.clientX - startX);
+      sidebarWidth.value = Math.max(180, Math.min(600, startW + delta));
       localStorage.setItem('app-sidebar-width', sidebarWidth.value.toString());
     };
     const onUp = () => {
@@ -463,39 +479,37 @@ export const useShellStore = defineStore('shell', () => {
     document.addEventListener('mouseup', onUp);
   };
 
-  const startSplitResize = (e: MouseEvent) => {
-    const wrapper = (e.target as HTMLElement).closest('.split-layout-wrapper') as HTMLElement;
-    if (!wrapper) return;
-    const totalW = wrapper.getBoundingClientRect().width;
-    const startX = e.clientX;
-    const startPct = splitLeftWidth.value;
+  const startSplitResize = (_e: MouseEvent) => {
+    const container = document.getElementById('shellMainSplit');
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ew-resize';
+    document.body.classList.add('resizing');
     const onMove = (ev: MouseEvent) => {
-      const pct = Math.max(20, Math.min(80, startPct + ((ev.clientX - startX) / totalW) * 100));
-      splitLeftWidth.value = pct;
-      wrapper.style.setProperty('--split-left-width', `${pct}%`);
-      localStorage.setItem('app-split-width', String(pct));
+      const pct = ((ev.clientX - rect.left) / rect.width) * 100;
+      splitLeftWidth.value = Math.max(20, Math.min(80, pct));
+      localStorage.setItem('app-split-width', splitLeftWidth.value.toString());
     };
     const onUp = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      document.body.classList.remove('resizing');
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   };
 
-  const startGroupResize = (e: MouseEvent, groupIdx: number) => {
-    const container = (e.currentTarget as HTMLElement).closest('.editor-groups-container') as HTMLElement;
-    if (!container) return;
-    const totalW = container.getBoundingClientRect().width;
-    const startX = e.clientX;
-    const groups = eg.groups.value;
-    const left = groups[groupIdx];
-    const right = groups[groupIdx + 1];
+  const startGroupResize = (e: MouseEvent, index: number) => {
+    const left = eg.groups.value[index];
+    const right = eg.groups.value[index + 1];
     if (!left || !right) return;
+
+    const startX = e.clientX;
+    const container = (e.currentTarget as HTMLElement).closest('.editor-groups-container');
+    const totalW = container ? container.getBoundingClientRect().width : window.innerWidth;
     const startLeftPct = left.flexBasis;
     const startRightPct = right.flexBasis;
 
@@ -522,20 +536,20 @@ export const useShellStore = defineStore('shell', () => {
   };
 
   // ─── QuickOpen (from useQuickOpen) ─────────────────────────
-  const quickOpenDataSource = async (): Promise<any[]> => {
-    const items: any[] = [];
+  const quickOpenDataSource = async (): Promise<QuickOpenItem[]> => {
+    const items: QuickOpenItem[] = [];
     try {
       const list = await api.getChapters('');
-      for (const c of list as Array<any>) {
-        items.push({ id: `chapter_${c.id}`, rawId: String(c.id), title: c.title || `Глава ${c.id}`, typeLabel: 'Глава', entityType: 'chapter', emoji: '📝', data: c });
+      for (const c of list) {
+        items.push({ id: `chapter_${c.id}`, rawId: String(c.id), title: c.title || `Глава ${c.id}`, typeLabel: 'Глава', entityType: 'chapter', emoji: '📝', data: c as unknown as Record<string, unknown> });
       }
     } catch { /* skip */ }
     for (const tab of sidebarItems.value) {
       if (tab.type === 'entity' && tab.entityType) {
         try {
           const list = await api.getEntities(projectName.value, tab.entityType);
-          for (const e of list as Array<any>) {
-            items.push({ id: `entity_${tab.entityType}_${e.id}`, rawId: String(e.id), title: schema.getEntityDisplayName(e, tab.entityType), typeLabel: tab.title, entityType: tab.entityType, emoji: tab.icon || '📄', data: { ...e, entityType: tab.entityType } });
+          for (const e of list) {
+            items.push({ id: `entity_${tab.entityType}_${e.id}`, rawId: String(e.id), title: schema.getEntityDisplayName(e as Record<string, unknown>, tab.entityType), typeLabel: tab.title, entityType: tab.entityType, emoji: tab.icon || '📄', data: { ...e, entityType: tab.entityType } as Record<string, unknown> });
           }
         } catch { /* skip */ }
       }
@@ -543,8 +557,8 @@ export const useShellStore = defineStore('shell', () => {
     return items;
   };
 
-  const handleQuickOpenSelect = (item: any) => {
-    if (item.entityType === 'chapter') openChapterTab(item.data);
+  const handleQuickOpenSelect = (item: QuickOpenItem) => {
+    if (item.entityType === 'chapter') openChapterTab(item.data as unknown as Chapter);
     else openEntity(item.data);
   };
 
@@ -568,11 +582,11 @@ export const useShellStore = defineStore('shell', () => {
       }
       try {
 
-        const prepareEntityForSave = async (t: any, d: any) => d;
-        const dataToSave = editor.data as any;
+        const prepareEntityForSave = async (_t: string, d: Record<string, unknown>) => d;
+        const dataToSave = editor.data as Record<string, unknown> & { __foreignUpdates?: Record<string, unknown> };
         await prepareEntityForSave(editor.entityType, dataToSave);
-        const foreignUpdatesToProcess = (editor as any)._foreignUpdates;
-        (editor as any)._foreignUpdates = null;
+        const foreignUpdatesToProcess = (editor as EditorTab)._foreignUpdates;
+        (editor as EditorTab)._foreignUpdates = undefined;
         delete dataToSave.__foreignUpdates;
 
         const foreignUpdatesFinal = foreignUpdatesToProcess || {};
@@ -581,26 +595,26 @@ export const useShellStore = defineStore('shell', () => {
           if (configRes.ok) {
             const schemaConfig = await configRes.json();
             const oldStateReq = await entityApi.getEntity(projectName.value, editor.entityType, editor.rawId);
-            const oldState = oldStateReq;
+            const oldState = oldStateReq as Record<string, unknown> | null;
             if (oldState) {
-              for (const section of schemaConfig.sections || []) {
+              for (const section of (schemaConfig.sections as Array<{ dynamicContainers?: Array<{ template: string; dataPath?: string; id: string }> }>) || []) {
                 for (const dc of section.dynamicContainers || []) {
-                  const tpl = schemaConfig.templates?.[dc.template];
+                  const tpl = (schemaConfig.templates as Record<string, { isBidirectional?: boolean; bidirectionalLinkClass?: string; fields?: Array<{ class?: string; entityType?: string }> }>)?.[dc.template];
                   if (tpl && tpl.isBidirectional) {
                     const dataPath = dc.dataPath || dc.id;
                     const linkClass = tpl.bidirectionalLinkClass;
                     let targetType = '';
                     if (tpl.fields) {
-                      const targetField = tpl.fields.find((f: any) => f.class === linkClass);
+                      const targetField = tpl.fields.find((f) => f.class === linkClass);
                       if (targetField && targetField.entityType) targetType = targetField.entityType;
                     }
                     if (linkClass && targetType) {
-                      const oldArr: any[] = Array.isArray(oldState[dataPath]) ? (oldState[dataPath] as any[]) : (Array.isArray(oldState[dc.id]) ? (oldState[dc.id] as any[]) : []);
-                      const newArr: any[] = Array.isArray(dataToSave[dataPath]) ? (dataToSave[dataPath] as any[]) : (Array.isArray(dataToSave[dc.id]) ? (dataToSave[dc.id] as any[]) : []);
+                      const oldArr: Array<Record<string, unknown>> = Array.isArray(oldState[dataPath]) ? (oldState[dataPath] as Array<Record<string, unknown>>) : (Array.isArray(oldState[dc.id]) ? (oldState[dc.id] as Array<Record<string, unknown>>) : []);
+                      const newArr: Array<Record<string, unknown>> = Array.isArray(dataToSave[dataPath]) ? (dataToSave[dataPath] as Array<Record<string, unknown>>) : (Array.isArray(dataToSave[dc.id]) ? (dataToSave[dc.id] as Array<Record<string, unknown>>) : []);
                       for (const oldItem of oldArr) {
                         const oldTarget = String(oldItem[linkClass] || '');
                         if (!oldTarget) continue;
-                        const stillExists = newArr.some((newItem: any) => String(newItem[linkClass]) === oldTarget);
+                        const stillExists = newArr.some((newItem) => String(newItem[linkClass]) === oldTarget);
                         if (!stillExists) {
                           const targetEntityId = oldTarget;
                           const updateKey = `${targetType}:${targetEntityId}_delete`;
@@ -623,11 +637,11 @@ export const useShellStore = defineStore('shell', () => {
         } catch (e) {
           console.error('[saveAll] Error scanning deleted relationships:', e);
         }
-        const modifiedForeignEntities: any[] = [];
+        const modifiedForeignEntities: Entity[] = [];
         const entityId = editor.rawId ? (editor.rawId.startsWith('entities:') ? editor.rawId : `entities:${editor.rawId}`) : `entities:${editor.entityType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const mainPayload = entityApi.formatEntityPayload(projectName.value, editor.entityType, dataToSave, entityId, editor.title || 'Новая сущность');
         
-        const savedEntity = await api.saveEntityWithRelations(projectName.value, mainPayload as any, modifiedForeignEntities);
+        const savedEntity = await api.saveEntityWithRelations(projectName.value, mainPayload as unknown as Entity, modifiedForeignEntities);
         if (savedEntity && savedEntity.id) {
           editor.rawId = savedEntity.id.replace('entities:', '');
         }
@@ -712,18 +726,18 @@ export const useShellStore = defineStore('shell', () => {
   const renameEntity = async (entityType: string, idToUpdate: string, newName: string) => {
     console.log('[renameEntity] called with:', { entityType, idToUpdate, newName });
     try {
-      const detail = await entityApi.getEntity(projectName.value, entityType, idToUpdate);
+      const detail = await entityApi.getEntity(projectName.value, entityType, idToUpdate) as Record<string, unknown> | null;
       console.log('[renameEntity] detail from server:', detail);
       
       // Use schema's titleField if available, fallback to detection
       const sch = await schema.loadSchema(entityType);
-      const schemaTitleField = sch?.titleField || sch?.sections?.[0]?.fields?.find((f: any) => f.isTitle)?.path;
+      const schemaTitleField = sch?.titleField || (sch?.sections?.[0]?.fields as Array<{ isTitle?: boolean; path?: string }> | undefined)?.find((f: { isTitle?: boolean; path?: string }) => f.isTitle)?.path;
       const titleField = schemaTitleField || (detail ? (Object.keys(detail).find(k => k.toLowerCase() === 'name') || Object.keys(detail)[0]) : 'name');
       console.log('[renameEntity] titleField:', titleField, 'from schema:', schemaTitleField);
       
       if (titleField && detail) {
-        (detail as any)[titleField] = newName;
-        await entityApi.saveEntity(projectName.value, entityType, detail as any, idToUpdate, newName);
+        detail[titleField] = newName;
+        await entityApi.saveEntity(projectName.value, entityType, detail, idToUpdate, newName);
         
         // Try both tab ID formats
         const actualTabId = eg.findTabGlobal(idToUpdate) ? idToUpdate : null;
@@ -737,10 +751,10 @@ export const useShellStore = defineStore('shell', () => {
           console.warn('[renameEntity] Could not find tab');
         }
         
-        console.log('[renameEntity] allTabs after update:', openEditors.value.map((t: any) => ({ id: t.id, title: t.title, data: t.data })));
+        console.log('[renameEntity] allTabs after update:', openEditors.value.map((t) => ({ id: t.id, title: t.title, data: t.data })));
         
         // Refresh tree and entity list
-        if (chapterTreeRef.value) chapterTreeRef.value.load();
+        if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
         if (currentSidebarTab.value === entityType) await loadEntityList(entityType);
         
         // Dispatch with the full rawId (with prefix) so EntityEditor can match by props.entityId
@@ -762,31 +776,38 @@ export const useShellStore = defineStore('shell', () => {
       if (entityType === 'chapters') {
         const newChapterTitle = preDefinedName || prompt('Введите название новой главы:', 'Новая глава');
         if (newChapterTitle === null) return;
-        const newChapter: any = {
+        const newChapter: Chapter = {
           id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          project_id: `projects:${projectName.value}`,
           title: newChapterTitle || 'Новая глава', content: '# Начните писать\n\n',
-          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-          word_count: 0, footnotes: {}, timeline_events: [], participants: [],
-        };
-        await api.saveChapter(projectName.value, newChapter as any);
+          summary: null,
+          word_count: 0 as unknown as bigint,
+          embeddings: null,
+          footnotes: {},
+          timeline_events: [],
+          participants: [],
+          arc_id: null,
+          volume_id: null,
+        } as unknown as Chapter;
+        await api.saveChapter(projectName.value, newChapter);
         addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
         addToast(`Глава "${newChapter.title}" создана`, 'success');
         chapters.value.push(newChapter);
         triggerRef(chapters);
-        if (chapterTreeRef.value) chapterTreeRef.value.load();
+        if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
         openChapterTab(newChapter);
         return;
       }
 
       const sch = await schema.loadSchema(entityType);
       const titleFieldPath: string = sch?.titleField || sch?.sections?.[0]?.fields?.[0]?.path || 'name';
-      const initialData: any = {};
+      const initialData: Record<string, unknown> = {};
       const nameToSet = preDefinedName || prompt(`Введите название для нового элемента:`, 'Без названия');
       if (nameToSet === null) return;
       if (nameToSet) {
         const parts = titleFieldPath.split('.');
         let current = initialData;
-        for (let i = 0; i < parts.length - 1; i++) { current[parts[i]] = {}; current = current[parts[i]]; }
+        for (let i = 0; i < parts.length - 1; i++) { current[parts[i]] = {}; current = current[parts[i]] as Record<string, unknown>; }
         current[parts[parts.length - 1]] = nameToSet;
       }
 
@@ -805,9 +826,9 @@ export const useShellStore = defineStore('shell', () => {
       
       addLog(`Entity -> Created`, 'success');
       await loadEntityList(entityType);
-      if (chapterTreeRef.value) chapterTreeRef.value.load();
+      if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
 
-      const entityToOpen: any = { ...newEntity, entityType };
+      const entityToOpen = { ...(newEntity as Record<string, unknown>), entityType };
       openEntity(entityToOpen);
     } catch (e) {
       addLog(`Entity -> Error: ${e}`, 'error');
@@ -828,7 +849,7 @@ export const useShellStore = defineStore('shell', () => {
       let maxNum = 0;
       let relevantCount = 0;
       if (Array.isArray(allChapters)) {
-        const relevantChapters = allChapters.filter((c: any) => {
+        const relevantChapters = allChapters.filter((c) => {
           const cArcId = c.arc_id ? String(c.arc_id) : null;
           const cVolId = c.volume_id ? String(c.volume_id) : null;
           const targetArcId = arcId ? String(arcId) : null;
@@ -838,7 +859,7 @@ export const useShellStore = defineStore('shell', () => {
           return !cArcId && !cVolId;
         });
         relevantCount = relevantChapters.length;
-        relevantChapters.forEach((c: any) => {
+        relevantChapters.forEach((c) => {
           const m = (c.title || '').match(/Глава\s*(\d+)/i);
           if (m) {
             const n = parseInt(m[1]);
@@ -848,25 +869,25 @@ export const useShellStore = defineStore('shell', () => {
       }
       const num = maxNum + 1;
       addLog(`Manuscript -> Next chapter number: ${num} (found ${relevantCount} in this section)`, 'info');
-      const newCh: any = {
+      const newCh: Chapter = {
         id: `chapters:chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         project_id: `projects:${projectName.value}`,
         title: `Глава ${num}`,
         content: '# Новая глава\n\n',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        word_count: 0,
+        summary: null,
+        word_count: 0 as unknown as bigint,
+        embeddings: null,
         footnotes: {},
         timeline_events: [],
         participants: [],
-        arc_id: arcId,
-        volume_id: volumeId,
-      };
-      const saveRes = await api.saveChapter(projectName.value, newCh as any);
-      if (saveRes && (saveRes as any).id) newCh.id = (saveRes as any).id;
-      if (arcId || volumeId) await api.assignChapter(projectName.value, newCh.id, arcId ?? null, volumeId ?? null);
+        arc_id: arcId || null,
+        volume_id: volumeId || null,
+      } as unknown as Chapter;
+      const saveRes = await api.saveChapter(projectName.value, newCh);
+      if (saveRes && saveRes.id) newCh.id = saveRes.id;
+      if ((arcId || volumeId) && newCh.id) await api.assignChapter(projectName.value, newCh.id, arcId || null, volumeId || null);
       addLog('Manuscript -> Created new chapter', 'success');
-      if (chapterTreeRef.value?.load) chapterTreeRef.value.load(newCh.id);
+      if (chapterTreeRef.value?.load) chapterTreeRef.value.load(newCh.id || undefined);
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
       if (chapters.value) {
         chapters.value = [...chapters.value, newCh];
@@ -879,10 +900,11 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const deleteChapter = async (chapter: any, _silent = false) => {
+  const deleteChapter = async (chapter: { id?: string | null; title?: string }, _silent = false) => {
+    if (!chapter.id) return;
     try {
       await api.deleteChapter(chapter.id);
-      addLog(`Manuscript -> Deleted chapter ${chapter.title}`, 'success');
+      addLog(`Manuscript -> Deleted chapter ${chapter.title || chapter.id}`, 'success');
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
       closeEditor(chapter.id);
     } catch (e) {
@@ -890,13 +912,15 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const renameChapter = async (chapter: any, newTitle: string) => {
+  const renameChapter = async (chapter: { id?: string | null }, newTitle: string) => {
+    if (!chapter.id) return;
     try {
-      chapters.value = chapters.value.map((c: any) => c.id === chapter.id ? { ...c, title: newTitle } : c);
-      const fullData = await api.getChapter(chapter.id);
+      const targetId = chapter.id;
+      chapters.value = chapters.value.map((c) => c.id === targetId ? { ...c, title: newTitle } : c);
+      const fullData = await api.getChapter(targetId);
       if (fullData) {
         fullData.title = newTitle;
-        await api.saveChapter(projectName.value, fullData as any);
+        await api.saveChapter(projectName.value, fullData);
       }
       addLog(`Chapter renamed: ${newTitle}`, 'success');
       if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
@@ -907,13 +931,15 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const compareIds = (id1: any, id2: any) => {
+  const compareIds = (id1: unknown, id2: unknown) => {
     if (!id1 && !id2) return true;
     if (!id1 || !id2) return false;
-    return String(id1.id || id1).split(':').pop() === String(id2.id || id2).split(':').pop();
+    const s1 = typeof id1 === 'object' && id1 !== null && 'id' in id1 ? String((id1 as { id: unknown }).id) : String(id1);
+    const s2 = typeof id2 === 'object' && id2 !== null && 'id' in id2 ? String((id2 as { id: unknown }).id) : String(id2);
+    return s1.split(':').pop() === s2.split(':').pop();
   };
 
-  const closeEditorsFor = (predicate: (e: any) => boolean) => {
+  const closeEditorsFor = (predicate: (e: EditorTab) => boolean) => {
     for (const ed of openEditors.value.filter(predicate)) {
       closeEditor(ed.id, true);
       if (activeTreeNode.value && activeTreeNode.value.type === 'chapter' && activeTreeNode.value.node.id === ed.id) {
@@ -922,7 +948,7 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const deleteVolume = async (volume: any, chaptersInVol: any[] = [], arcsInVol: any[] = [], silent: boolean = false) => {
+  const deleteVolume = async (volume: { id: string; title?: string; [key: string]: unknown }, chaptersInVol: Array<{ id: string }> = [], arcsInVol: string[] = [], silent: boolean = false) => {
     const { appConfirm } = await import('@worldwiki/components');
     if (!silent && !await appConfirm(`Удалить том "${volume.title}" и все его содержимое?`)) return;
     try {
@@ -959,7 +985,7 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  const deleteArc = async (arc: any, chaptersInArc: any[] = [], silent: boolean = false) => {
+  const deleteArc = async (arc: { id: string; title?: string; [key: string]: unknown }, chaptersInArc: Array<{ id: string }> = [], silent: boolean = false) => {
     const { appConfirm } = await import('@worldwiki/components');
     if (!silent && !await appConfirm(`Удалить арку "${arc.title}" и все ее главы?`)) return;
     try {
@@ -989,25 +1015,25 @@ export const useShellStore = defineStore('shell', () => {
     }
   };
 
-  if (typeof window !== 'undefined' && (window as any).__TAURI__) {
+  if (typeof window !== 'undefined' && window.__TAURI__) {
     import('@tauri-apps/api/event').then(({ listen }) => {
-      listen('ww-entity-saved', (event: any) => {
+      listen<{ type: string; id: string }>('ww-entity-saved', (event) => {
         const { type, id } = event.payload;
         const rawId = id.replace('entities:', '');
         
-        eg.groups.value.forEach((group: any) => {
-          group.tabs.forEach((tab: any) => {
+        eg.groups.value.forEach((group) => {
+          group.tabs.forEach((tab) => {
             if (tab.entityType === type && (tab.rawId === rawId || tab.id === rawId)) {
               if (type === 'chapter') {
-                api.getChapter(tab.rawId).then((data: any) => {
+                api.getChapter(tab.rawId).then((data) => {
                   if (data) {
-                    tab.data = data;
+                    tab.data = data as unknown as Record<string, unknown>;
                   }
                 });
               } else if (type !== 'schema-editor') {
-                entityApi.getEntity(projectName.value, type, tab.rawId).then((data: any) => {
+                entityApi.getEntity(projectName.value, type, tab.rawId).then((data) => {
                   if (data) {
-                    tab.data = data;
+                    tab.data = data as Record<string, unknown>;
                   }
                 });
               }
@@ -1019,12 +1045,12 @@ export const useShellStore = defineStore('shell', () => {
         if (type === 'chapter' && chapterTreeRef.value?.load) chapterTreeRef.value.load();
       })?.catch?.(() => {});
       
-      listen('ww-entity-live-sync', (event: any) => {
+      listen<{ type: string; id: string; data: Record<string, unknown> }>('ww-entity-live-sync', (event) => {
         const { type, id, data } = event.payload;
         const rawId = id.replace('entities:', '');
         
-        eg.groups.value.forEach((group: any) => {
-          group.tabs.forEach((tab: any) => {
+        eg.groups.value.forEach((group) => {
+          group.tabs.forEach((tab) => {
             if (tab.entityType === type && (tab.rawId === rawId || tab.id === rawId)) {
               console.log('[LiveSync] Received in shell', data);
               isLiveSyncing = true;
@@ -1103,17 +1129,17 @@ export const useShellStore = defineStore('shell', () => {
     deleteArc,
     toggleEntityHistory,
     onChapterRenamed,
-    selectTreeNode: (node: any) => { activeTreeNode.value = node; },
+    selectTreeNode: (node: { type: string; node: { id?: string; [key: string]: unknown } } | null) => { activeTreeNode.value = node; },
     handleScrollChange: (groupId: string, tabId: string, scroll: number) => {
-      const group = eg.groups.value.find((g: any) => g.id === groupId);
-      const tab = group?.tabs.find((t: any) => t.id === tabId);
-      if (tab) { tab.scrollPos = scroll; saveState(); }
+      const group = eg.groups.value.find((g) => g.id === groupId);
+      const tab = group?.tabs.find((t) => t.id === tabId);
+      if (tab) { (tab as EditorTab).scrollPos = scroll; saveState(); }
     },
     handleSectionChange: (groupId: string, tabId: string, sectionId: string) => {
-      const group = eg.groups.value.find((g: any) => g.id === groupId);
-      const tab = group?.tabs.find((t: any) => t.id === tabId);
+      const group = eg.groups.value.find((g) => g.id === groupId);
+      const tab = group?.tabs.find((t) => t.id === tabId);
       if (tab) {
-        tab.activeSection = sectionId;
+        (tab as EditorTab).activeSection = sectionId;
         saveState();
       }
     },
@@ -1123,10 +1149,10 @@ export const useShellStore = defineStore('shell', () => {
     openSandbox: () => { openSchemaEditor('universal'); },
     splitRight: () => eg.splitRight(),
     closeGroup: (gid: string) => eg.removeGroup(gid),
-    moveTab: (p: any) => eg.moveTab(p.tabId, p.toGroupId, p.toIndex),
-    reorderTab: (p: any) => eg.reorderTab(p.groupId, p.fromIdx, p.toIdx),
+    moveTab: (p: { tabId: string; toGroupId: string; toIndex: number }) => eg.moveTab(p.tabId, p.toGroupId, p.toIndex),
+    reorderTab: (p: { groupId: string; fromIdx: number; toIdx: number }) => eg.reorderTab(p.groupId, p.fromIdx, p.toIdx),
     activateTabInGroup: (gid: string, tid: string) => {
-      const g = eg.groups.value.find((gr: any) => gr.id === gid);
+      const g = eg.groups.value.find((gr) => gr.id === gid);
       if (g) { g.activeTabId = tid; eg.activeGroupId.value = gid; }
     },
     focusGroup: (gid: string) => { eg.activeGroupId.value = gid; },

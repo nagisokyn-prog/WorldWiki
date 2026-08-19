@@ -1,13 +1,21 @@
-export function getValueByPath(obj: any, path: string): any {
-  return path.split('.').reduce((cur: any, k: string) => (cur != null ? cur[k] : undefined), obj);
+export function getValueByPath(obj: Record<string, unknown> | null | undefined, path: string): unknown {
+  return path.split('.').reduce<unknown>((cur, k) => {
+    if (cur != null && typeof cur === 'object') {
+      return (cur as Record<string, unknown>)[k];
+    }
+    return undefined;
+  }, obj);
 }
 
-export function setValueByPath(obj: any, path: string, value: any): void {
+export function setValueByPath(obj: Record<string, unknown>, path: string, value: unknown): void {
   const parts = path.split('.');
-  let cur = obj;
+  let cur: Record<string, unknown> = obj;
   for (let i = 0; i < parts.length - 1; i++) {
-    if (!cur[parts[i]] || typeof cur[parts[i]] !== 'object') cur[parts[i]] = {};
-    cur = cur[parts[i]];
+    const part = parts[i];
+    if (!cur[part] || typeof cur[part] !== 'object') {
+      cur[part] = {};
+    }
+    cur = cur[part] as Record<string, unknown>;
   }
   cur[parts[parts.length - 1]] = value;
 }

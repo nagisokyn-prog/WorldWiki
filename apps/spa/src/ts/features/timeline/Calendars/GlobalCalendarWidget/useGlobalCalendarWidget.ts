@@ -2,9 +2,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useCalendarStore } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 
+import type { CalendarRecord } from '../../../../stores/calendar.store';
+
 export function useGlobalCalendarWidget(props: { project: string }) {
-  const masterCalendar = ref<any>(null);
-  const localCalendars = ref<any[]>([]);
+  const masterCalendar = ref<CalendarRecord | null>(null);
+  const localCalendars = ref<CalendarRecord[]>([]);
 
   const selectedLocalCal = ref<string | null>(null);
 

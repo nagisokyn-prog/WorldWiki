@@ -8,30 +8,35 @@ import { getValueByPath } from '@/utils/path';
 
 export interface EntitySchema {
   titleField?: string;
+  type_key?: string;
+  full_schema?: EntitySchema;
   sections?: Array<{
-    title: string;
-    fields: Array<{ path: string; isTitle?: boolean }>;
+    title?: string;
+    fields?: Array<{ path: string; isTitle?: boolean; [key: string]: unknown }>;
+    dynamicContainers?: Array<{ id?: string; template?: string; dataPath?: string; [key: string]: unknown }>;
+    [key: string]: unknown;
   }>;
+  [key: string]: unknown;
 }
 
 export const useSchemaStore = defineStore('schema', () => {
-  const schemaCache = ref<Record<string, any>>({});
+  const schemaCache = ref<Record<string, EntitySchema>>({});
 
-  const loadSchema = async (entityType: string): Promise<any> => {
+  const loadSchema = async (entityType: string): Promise<EntitySchema | null> => {
     if (schemaCache.value[entityType]) return schemaCache.value[entityType];
     try {
       const { useShellStore } = await import('@/stores/shell');
       const project = useShellStore().projectName;
       const api = await import('@/services/api.client');
       const schemas = await api.getEntitySchemas(project);
-      const foundSchema = schemas.find((s: any) => s.type_key === entityType);
+      const foundSchema = schemas.find((s) => s.type_key === entityType) as EntitySchema | undefined;
       
       if (foundSchema && foundSchema.full_schema) {
         const parsed = foundSchema.full_schema;
         if (parsed?.sections) {
-          parsed.sections.forEach((sec: any) => {
+          parsed.sections.forEach((sec) => {
             if (sec.dynamicContainers) {
-              sec.dynamicContainers.forEach((dc: any, idx: number) => {
+              sec.dynamicContainers.forEach((dc, idx) => {
                 if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
                 if (!dc.dataPath) dc.dataPath = dc.id;
               });
@@ -43,7 +48,7 @@ export const useSchemaStore = defineStore('schema', () => {
         const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
         if (staticTypes.includes(entityType)) {
           const res = await fetch(`/struct/editor/${entityType}.json`);
-          if (res.ok) schemaCache.value[entityType] = await res.json();
+          if (res.ok) schemaCache.value[entityType] = await res.json() as EntitySchema;
         }
       }
     } catch (e) {

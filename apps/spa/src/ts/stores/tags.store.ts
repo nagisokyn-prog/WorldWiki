@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import * as api from '../services/api.client';
+import type { Tag } from '../types/generated/Tag';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
 export interface TagData {
@@ -24,7 +25,8 @@ export const useTagsStore = defineStore('tags', () => {
       if (cached) {
         globalTags.value = cached;
       } else {
-        globalTags.value = (await api.getTags(project.value) as any) || [];
+        const result = await api.getTags(project.value);
+        globalTags.value = (result as unknown as TagData[]) || [];
         setCache(cacheKey, globalTags.value);
       }
     } catch (e) {
@@ -45,7 +47,8 @@ export const useTagsStore = defineStore('tags', () => {
 
     isCreatingTag.value = true;
     try {
-      await api.saveTag(project.value, { project_id: `projects:${project.value}`, name, color: '#3498db', id: null } as any);
+      const newTag: Tag = { project_id: `projects:${project.value}`, name, color: '#3498db', id: null };
+      await api.saveTag(project.value, newTag);
       globalTags.value.push({ name, color: '#3498db' });
       invalidateCache(`tags:${project.value}`);
     } finally {
@@ -67,12 +70,13 @@ export const useTagsStore = defineStore('tags', () => {
     if (!project.value) return;
     const existingTag = globalTags.value.find(t => t.name === oldName);
     
-    await api.saveTag(project.value, {
+    const tagToSave: Tag = {
       project_id: `projects:${project.value}`,
       id: existingTag?.id || null,
       name: newName,
       color: color
-    } as any);
+    };
+    await api.saveTag(project.value, tagToSave);
     
     if (existingTag) {
       existingTag.name = newName;

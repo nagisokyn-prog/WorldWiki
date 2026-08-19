@@ -50,8 +50,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'approve', toolCall: any): void;
-  (e: 'reject', payload: { toolCall: any; feedback: string }): void;
+  (e: 'approve', payload: { toolCallId: string; approved: boolean }): void;
+  (e: 'reject', payload: { toolCallId: string; approved: boolean; feedback: string }): void;
 }>();
 
 const feedbackText = ref('');

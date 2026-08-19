@@ -11,6 +11,7 @@ interface TauriCore {
    * @rust-ready ✅
    */
   invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T>;
+  convertFileSrc?(filePath: string): string;
 }
 
 // Tauri Event API
@@ -78,7 +79,8 @@ interface TauriAPI {
 
 // Window interface
 interface Window {
-  __TAURI__: TauriAPI;
+  __TAURI__?: TauriAPI;
+  __APP_CONFIG__?: { storageKey?: string; id?: string; backUrl?: string };
 }
 
 // Tauri Base Directory enum

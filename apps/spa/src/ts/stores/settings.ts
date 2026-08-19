@@ -4,13 +4,13 @@
  */
 import { defineStore } from 'pinia';
 import { computed } from 'vue';
-import { settingsService } from '@worldwiki/components';
+import { settingsService, type AppSettings } from '@worldwiki/components';
 
 export const useSettingsStore = defineStore('settings', () => {
   const settings = computed(() => settingsService.getSettings());
   
   const getSettings = () => settingsService.getSettings();
-  const setSettings = (newSettings: any) => settingsService.saveSettings(newSettings);
+  const setSettings = (newSettings: Partial<AppSettings>) => settingsService.saveSettings(newSettings);
   const loadSettings = async () => settingsService.loadSettings();
   const applySettings = () => settingsService.applySettings();
 

@@ -98,8 +98,8 @@ defineEmits<{
   'close-tab': [groupId: string, tabId: string];
   split: [groupId: string];
   'close-group': [groupId: string];
-  'move-tab': [payload: any];
-  'reorder-tab': [payload: any];
+  'move-tab': [payload: { tabId: string; toGroupId: string; toIndex: number }];
+  'reorder-tab': [payload: { groupId: string; fromIdx: number; toIdx: number }];
 }>();
 
 const { t } = useI18n();

@@ -24,8 +24,8 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
     // F11 (Полноэкранный режим)
     if (e.code === 'F11') {
       e.preventDefault();
-      const tauri = (window as any).__TAURI__;
-      if (tauri) {
+      const tauri = window.__TAURI__;
+      if (tauri?.core) {
         tauri.core.invoke('toggle_fullscreen').catch((err: unknown) => {
           console.error('Fullscreen toggle error:', err);
         });
@@ -64,8 +64,8 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           shell.sidebarVisible = !shell.sidebarVisible;
           return;
         case 'KeyP':
-          if (shell.quickOpenRef && typeof (shell.quickOpenRef as any).open === 'function') {
-            (shell.quickOpenRef as any).open();
+          if (shell.quickOpenRef && typeof shell.quickOpenRef.open === 'function') {
+            shell.quickOpenRef.open();
           }
           return;
         case 'KeyN': {
@@ -110,8 +110,8 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
       if (['KeyP', 'KeyN', 'KeyS', 'Tab'].includes(e.code)) e.preventDefault();
       switch (e.code) {
         case 'KeyP':
-          if (shell.commandPaletteRef && typeof (shell.commandPaletteRef as any).open === 'function') {
-            (shell.commandPaletteRef as any).open();
+          if (shell.commandPaletteRef && typeof shell.commandPaletteRef.open === 'function') {
+            shell.commandPaletteRef.open();
           }
           return;
         case 'KeyN':
@@ -124,8 +124,8 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
           // handled via template refs
           return;
         case 'KeyT':
-          if (shell.tagsManagerRef && typeof (shell.tagsManagerRef as any).open === 'function') {
-            (shell.tagsManagerRef as any).open();
+          if (shell.tagsManagerRef && typeof shell.tagsManagerRef.open === 'function') {
+            shell.tagsManagerRef.open();
           }
           return;
         case 'KeyB':

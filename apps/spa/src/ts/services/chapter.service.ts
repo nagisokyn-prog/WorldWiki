@@ -17,7 +17,7 @@ class ChapterService {
     return await api.getChapter(id) as Chapter;
   }
 
-  async save(project: string, data: any): Promise<string> {
+  async save(project: string, data: Partial<Chapter> & Record<string, unknown>): Promise<string> {
     if (!data.id) {
       data.id = `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
@@ -25,23 +25,24 @@ class ChapterService {
       data.id = `chapters:${data.id}`;
     }
     data.project_id = project.startsWith('projects:') ? project : `projects:${project}`;
-    await api.saveChapter(project, data as any);
+    await api.saveChapter(project, data as unknown as Chapter);
     return data.id;
   }
 
-  async delete(project: string, id: string): Promise<{ success: boolean }> {
+  async delete(_project: string, id: string): Promise<{ success: boolean }> {
     await api.deleteChapter(id);
     return { success: true };
   }
 
-  createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): any {
+  createNew(title: string, content: string = '# Новая глава\n\nНачните писать ваше произведение...'): Chapter {
     return {
       id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      project_id: null,
       title: title || 'Новая глава',
       content,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      word_count: 0,
+      summary: null,
+      word_count: 0 as unknown as bigint,
+      embeddings: null,
       footnotes: {},
       timeline_events: [],
       participants: []

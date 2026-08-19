@@ -4,24 +4,34 @@ import * as api from '../services/api.client';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 import type { CalendarData } from '../services/Calendars/calendar.types';
 import { CalendarMath } from '../services/Calendars/calendar.math';
+import type { Calendar } from '../types/generated/Calendar';
+
+export interface CalendarRecord {
+  id?: string;
+  name?: string;
+  is_default?: boolean;
+  is_master?: boolean;
+  data?: CalendarData & { [key: string]: unknown };
+  [key: string]: unknown;
+}
 
 export const useCalendarStore = defineStore('calendar', () => {
   const isCreatingMaster = ref(false);
 
-  async function getCalendars(projectName: string): Promise<any[]> {
+  async function getCalendars(projectName: string): Promise<CalendarRecord[]> {
     const cacheKey = `calendars:${projectName}`;
-    const cached = getCached<any[]>(cacheKey);
+    const cached = getCached<CalendarRecord[]>(cacheKey);
     if (cached) return cached;
 
     try {
-      const list = await api.getCalendars(projectName);
+      const list = (await api.getCalendars(projectName)) as CalendarRecord[];
       if (list && list.length > 0) {
-        const hasMaster = list.some((c: any) => c.is_master);
+        const hasMaster = list.some((c) => c.is_master);
         if (!hasMaster) {
           if (isCreatingMaster.value) return list;
           isCreatingMaster.value = true;
           try {
-            const defaultCal = list.find((c: any) => c.is_default) || list[0];
+            const defaultCal = list.find((c) => c.is_default) || list[0];
             defaultCal.is_master = true;
             if (defaultCal.data) {
               defaultCal.data.is_master = true;
@@ -31,7 +41,7 @@ export const useCalendarStore = defineStore('calendar', () => {
                  defaultCal.name = 'Календарь Мира';
               }
             }
-            await saveCalendar(projectName, { ...defaultCal.data, id: defaultCal.id, is_default: defaultCal.is_default, is_master: true });
+            await saveCalendar(projectName, { ...(defaultCal.data || {}), id: defaultCal.id, is_default: defaultCal.is_default, is_master: true } as unknown as CalendarData);
           } finally {
             isCreatingMaster.value = false;
           }
@@ -44,8 +54,8 @@ export const useCalendarStore = defineStore('calendar', () => {
           defaultCalData.is_master = true;
           defaultCalData.calendar_type = 'master';
           defaultCalData.название = 'Календарь Мира';
-          await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as any);
-          const newList = await api.getCalendars(projectName);
+          await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as unknown as CalendarData);
+          const newList = (await api.getCalendars(projectName)) as CalendarRecord[];
           setCache(cacheKey, newList || []);
           return newList || [];
         } finally {
@@ -64,8 +74,8 @@ export const useCalendarStore = defineStore('calendar', () => {
     try {
       const list = await getCalendars(projectName);
       if (list && list.length > 0) {
-        const defaultCal = list.find((c: any) => c.is_default) || list[0];
-        const data = defaultCal.data || defaultCal;
+        const defaultCal = list.find((c) => c.is_default) || list[0];
+        const data = defaultCal.data || (defaultCal as unknown as CalendarData);
         data._id = defaultCal.id;
         return data as CalendarData;
       }
@@ -76,17 +86,18 @@ export const useCalendarStore = defineStore('calendar', () => {
     }
   }
 
-  async function saveCalendar(projectName: string, calendar: CalendarData): Promise<boolean> {
+  async function saveCalendar(projectName: string, calendar: CalendarData & { [key: string]: unknown }): Promise<boolean> {
     try {
-      const calName = (calendar as any).название || (calendar as any).name || 'Календарь';
-      const calId = (calendar as any)._id || (calendar as any).id || null;
-      const { is_default, is_master } = calendar as any;
-      const dataPayload = { ...(calendar as any) };
+      const calName = (calendar.название as string) || (calendar.name as string) || 'Календарь';
+      const calId = (calendar._id as string) || (calendar.id as string) || null;
+      const is_default = calendar.is_default as boolean | undefined;
+      const is_master = calendar.is_master as boolean | undefined;
+      const dataPayload: Record<string, unknown> = { ...calendar };
       delete dataPayload._id;
       delete dataPayload.id;
       delete dataPayload.is_default;
       delete dataPayload.is_master;
-      const payload: any = {
+      const payload: Record<string, unknown> = {
         name: calName,
         data: dataPayload,
         is_default: is_default ?? true,
@@ -94,7 +105,7 @@ export const useCalendarStore = defineStore('calendar', () => {
         project_id: `projects:${projectName}`,
       };
       if (calId) payload.id = calId;
-      await api.saveCalendar(projectName, payload);
+      await api.saveCalendar(projectName, payload as unknown as Calendar);
       invalidateCache(`calendars:${projectName}`);
       console.log("✅ Календарь успешно сохранён в БД");
       return true;

@@ -15,8 +15,8 @@ export interface TagData {
 
 export const tagApi = {
   getTags: async (project: string): Promise<TagData[]> => {
-    const list = await invoke<any[]>('get_tags', { project });
-    return list.map(processIds) as TagData[];
+    const list = await invoke<TagData[]>('get_tags', { project });
+    return list.map(processIds);
   },
 
   saveTag: (project: string, tagData: TagData): Promise<{ success: boolean }> => {

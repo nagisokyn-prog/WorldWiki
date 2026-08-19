@@ -110,10 +110,11 @@
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import { useUniversalDatePicker } from './useUniversalDatePicker';
+import type { DatePickerModelValue } from './useUniversalDatePicker';
 
 const props = withDefaults(defineProps<{
   project: string;
-  modelValue?: Record<string, any> | null;
+  modelValue?: DatePickerModelValue | null;
   showTime?: boolean;
 }>(), {
   modelValue: null,
@@ -121,7 +122,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: any): void;
+  (e: 'update:modelValue', val: unknown): void;
 }>();
 
 const {

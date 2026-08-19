@@ -1,12 +1,40 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
+import type { CalendarRecord } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
+import type { CalendarData, CalendarEra, CalendarMonth, TimeInput } from '../../../services/Calendars/calendar.types';
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
 
-export function useUniversalDatePicker(props: any, emit: any) {
+export interface DatePickerModelValue {
+  calendar_id?: string;
+  absolute_minute?: number;
+  original_input?: {
+    era_index: number;
+    year: number;
+    month: number;
+    day: number;
+    hour?: number;
+    minute?: number;
+  };
+  эпоха_ключ?: number;
+  год?: number;
+  месяц?: number;
+  день?: number;
+  [key: string]: unknown;
+}
+
+export interface UniversalDatePickerProps {
+  project: string;
+  modelValue?: DatePickerModelValue | null;
+  showTime?: boolean;
+  [key: string]: unknown;
+}
+
+export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (event: 'update:modelValue', value: unknown) => void) {
   const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
 
-  const allCalendars = ref<any[]>([]);
+  const allCalendars = ref<CalendarRecord[]>([]);
 
   const currentCalendarId = ref('');
   const currentEraIdx = ref(0);
@@ -16,21 +44,21 @@ export function useUniversalDatePicker(props: any, emit: any) {
   const currentHour = ref(12);
   const currentMinute = ref(0);
 
-  const calendar = computed(() => {
+  const calendar = computed<CalendarData | null>(() => {
     if (!currentCalendarId.value) return null;
     const calObj = allCalendars.value.find(c => c.id === currentCalendarId.value);
-    return calObj ? (calObj.data || calObj) : null;
+    return calObj ? (calObj.data || (calObj as unknown as CalendarData)) : null;
   });
 
   const calendarOptions = computed(() => {
     return allCalendars.value.map(c => ({
       value: c.id,
-      label: (c.data || c).название || 'Календарь'
+      label: (c.data || (c as unknown as CalendarData)).название || 'Календарь'
     }));
   });
 
-  const eras = computed(() => calendar.value?.эпохи || []);
-  const months = computed(() => calendar.value?.месяцы || []);
+  const eras = computed<CalendarEra[]>(() => calendar.value?.эпохи || []);
+  const months = computed<CalendarMonth[]>(() => calendar.value?.месяцы || []);
 
   const currentEra = computed(() => eras.value[currentEraIdx.value] || eras.value[0] || { год_начала: 1, год_конца: 9999, название: '' });
 
@@ -40,7 +68,7 @@ export function useUniversalDatePicker(props: any, emit: any) {
   const timeSettings = computed(() => calendar.value?.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 });
 
   const eraOptions = computed(() => {
-    return eras.value.map((e: any, i: number) => ({ value: i, label: e.название || `Эпоха ${i+1}` }));
+    return eras.value.map((e: CalendarEra, i: number) => ({ value: i, label: e.название || `Эпоха ${i+1}` }));
   });
 
   const yearOptions = computed(() => {
@@ -53,7 +81,7 @@ export function useUniversalDatePicker(props: any, emit: any) {
   });
 
   const monthOptions = computed(() => {
-    return months.value.map((m: any, i: number) => ({ value: i, label: m.название || `Месяц ${i+1}` }));
+    return months.value.map((m: CalendarMonth, i: number) => ({ value: i, label: m.название || `Месяц ${i+1}` }));
   });
 
   const maxDaysInMonth = computed(() => {
@@ -149,7 +177,7 @@ export function useUniversalDatePicker(props: any, emit: any) {
   const emitUpdate = () => {
     if (!calendar.value) return;
 
-    const original_input: any = {
+    const original_input: TimeInput = {
       era_index: currentEraIdx.value,
       year: currentYear.value,
       month: currentMonthIdx.value,
@@ -213,7 +241,7 @@ export function useUniversalDatePicker(props: any, emit: any) {
     
     syncFromProps();
 
-    settingsService.onChange((s: any) => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
+    settingsService.onChange((s: AppSettings) => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
   });
 
   watch(() => props.modelValue, (newVal) => {

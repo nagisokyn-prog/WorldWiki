@@ -102,10 +102,9 @@
 
 <script setup lang="ts">
 import { useCalendarSeasons } from './useCalendarSeasons';
+import type { CalendarSeasonsProps } from './useCalendarSeasons';
 
-const props = defineProps<{
-  modelValue: Record<string, any>;
-}>();
+const props = defineProps<CalendarSeasonsProps>();
 
 const { isCollapsed, moveItem, addSeason, removeSeason } = useCalendarSeasons(props);
 </script>

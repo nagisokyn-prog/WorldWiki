@@ -1,6 +1,11 @@
 import { computed, ref } from 'vue';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarMoons(props: any, emit: any) {
+export interface CalendarMoonsProps {
+  modelValue: CalendarData;
+}
+
+export function useCalendarMoons(props: CalendarMoonsProps, emit: (event: 'update:modelValue', val: CalendarData) => void) {
   const isCollapsed = ref(false);
 
   const calendar = computed({
@@ -23,7 +28,7 @@ export function useCalendarMoons(props: any, emit: any) {
     });
   };
 
-  const moveItem = (arr: any[], idx: number, dir: number) => {
+  const moveItem = <T>(arr: T[] | undefined, idx: number, dir: number) => {
     if (!arr) return;
     if (idx + dir < 0 || idx + dir >= arr.length) return;
     const temp = arr[idx];

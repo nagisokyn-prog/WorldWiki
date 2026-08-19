@@ -79,7 +79,7 @@ export class EntityService<T> {
    */
   async search(project: string, query: string): Promise<{entity: T, score: number}[]> {
     try {
-      const res = await invoke<any[]>(`search_${this.entityPlural}`, { project, query });
+      const res = await invoke<{entity: T, score: number}[]>(`search_${this.entityPlural}`, { project, query });
       return res || [];
     } catch (e) {
       console.error(`[EntityService] search(${this.entityName}) error:`, e);

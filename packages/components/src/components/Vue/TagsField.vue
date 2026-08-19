@@ -54,17 +54,25 @@ import { invoke, processIds } from '../../ts/services/api.service';
 
 const { t } = useI18n();
 
+interface TagItem {
+  id?: string;
+  name: string;
+  color?: string;
+  project_id?: string;
+  [key: string]: unknown;
+}
+
 const apiService = {
-  getTags: async (project: string) => {
+  getTags: async (project: string): Promise<TagItem[]> => {
     try {
-      const res = await invoke('get_tags', { project }) as any;
-      return res ? processIds(res) as any[] : [];
+      const res = await invoke<TagItem[]>('get_tags', { project });
+      return res ? processIds(res) : [];
     } catch(e) { console.error(e); return []; }
   },
-  saveTag: async (project: string, tagData: any) => {
+  saveTag: async (project: string, tagData: Partial<TagItem>) => {
     try {
       const data = { ...tagData, project_id: `projects:${project}` };
-      const res = await invoke('save_tag', { data });
+      const res = await invoke<TagItem>('save_tag', { data });
       return processIds(res);
     } catch(e) { console.error(e); return null; }
   }
@@ -83,7 +91,7 @@ const inputContainerRef = ref<HTMLElement | null>(null);
 const inputRef = ref<HTMLInputElement | null>(null);
 const query = ref('');
 const isDropdownOpen = ref(false);
-const allTags = ref<any[]>([]);
+const allTags = ref<TagItem[]>([]);
 const dropdownStyle = ref({
   position: 'fixed' as const,
   top: '0px',
@@ -187,7 +195,7 @@ const addCurrentTag = async () => {
   if (!selectedTags.value.includes(val)) {
     if (!allTags.value.some(t => t.name.toLowerCase() === val.toLowerCase())) {
       try {
-        await apiService.saveTag(props.project, { name: val, color: '#7c3aed' } as any);
+        await apiService.saveTag(props.project, { name: val, color: '#7c3aed' });
         await loadAllTags();
       } catch (e) {
         console.error('[TagsField] Failed to create tag:', e);

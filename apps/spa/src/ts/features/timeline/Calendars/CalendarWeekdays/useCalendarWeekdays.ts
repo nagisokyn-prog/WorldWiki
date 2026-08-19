@@ -1,6 +1,11 @@
 import { ref } from 'vue';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarWeekdays(props: any, _emit?: any) {
+export interface CalendarWeekdaysProps {
+  modelValue: Partial<CalendarData> & { названия_дней_недели?: string[]; [key: string]: unknown };
+}
+
+export function useCalendarWeekdays(props: CalendarWeekdaysProps, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {

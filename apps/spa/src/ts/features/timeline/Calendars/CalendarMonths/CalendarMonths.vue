@@ -48,10 +48,9 @@
 
 <script setup lang="ts">
 import { useCalendarMonths } from './useCalendarMonths';
+import type { CalendarMonthsProps } from './useCalendarMonths';
 
-const props = defineProps<{
-  modelValue: Record<string, any>;
-}>();
+const props = defineProps<CalendarMonthsProps>();
 
 const { isCollapsed, moveItem, addMonth, removeMonth } = useCalendarMonths(props);
 </script>

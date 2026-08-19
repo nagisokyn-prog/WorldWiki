@@ -17,6 +17,7 @@ export { default as AppDialog } from './components/Vue/AppDialog.vue';
 
 // Types
 export type { TreeNodeData, TreeSectionData } from './types';
+export type { AppSettings } from './ts/types/settings.js';
 
 // Composables
 export { useEditorGroups } from './ts/composables/useEditorGroups.js';

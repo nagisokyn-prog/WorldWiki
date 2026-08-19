@@ -17,9 +17,9 @@ export const entityApi = {
     }
   },
 
-  getEntityList: async (project: string, type: string, filters?: Record<string, unknown>): Promise<any[]> => {
-    const list = await invoke<any[]>('get_entities', { project, entityType: type, filters: filters || null });
-    return list.map(processIds).map((item: any) => {
+  getEntityList: async (project: string, type: string, filters?: Record<string, unknown>): Promise<Record<string, unknown>[]> => {
+    const list = await invoke<Record<string, unknown>[]>('get_entities', { project, entityType: type, filters: filters || null });
+    return list.map(processIds).map((item: Record<string, unknown>) => {
       if (!item) return item;
       const result = { ...item };
       if (item.attributes && typeof item.attributes === 'object') {
@@ -35,8 +35,8 @@ export const entityApi = {
   },
 
   getEntity: async (project: string, type: string, id: string): Promise<Record<string, unknown>> => {
-    const detail: any = await invoke<any>('get_entity', { id });
-    const processed: any = processIds(detail);
+    const detail = await invoke<Record<string, unknown>>('get_entity', { id });
+    const processed = processIds(detail);
     if (!processed) return processed;
     
     const result = { ...processed };
@@ -97,7 +97,7 @@ export const entityApi = {
     invoke<void>('toggle_entity_history_pin', { historyId, isPinned }),
 
   getSchemas: async (project: string): Promise<Record<string, SchemaInfo>> => {
-    const list = await invoke<any[]>('get_entity_schemas', { project });
+    const list = await invoke<Array<{ type_key: string; type_name?: string; icon?: string; full_schema?: Record<string, unknown> }>>('get_entity_schemas', { project });
     const dict: Record<string, SchemaInfo> = {};
     for (const s of list) {
       dict[s.type_key] = {
@@ -146,13 +146,13 @@ export const entityApi = {
     return dict;
   },
 
-  getSchemaHistory: (project: string, typeKey: string): Promise<any[]> =>
-    invoke<any[]>('get_schema_history', { project, typeKey }),
+  getSchemaHistory: (project: string, typeKey: string): Promise<Record<string, unknown>[]> =>
+    invoke<Record<string, unknown>[]>('get_schema_history', { project, typeKey }),
 
   toggleSchemaHistoryPin: (historyId: string, isPinned: boolean): Promise<void> =>
     invoke<void>('toggle_schema_history_pin', { historyId, isPinned }),
 
-  saveSchema: (project: string, schema: any, maxSaves?: number): Promise<{ success: boolean }> =>
+  saveSchema: (project: string, schema: Record<string, unknown>, maxSaves?: number): Promise<{ success: boolean }> =>
     invoke<{ success: boolean }>('save_entity_schema', { 
       project, 
       schema: {

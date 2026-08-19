@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarTimezones(props: { modelValue: CalendarData }, emit: any) {
+export function useCalendarTimezones(props: { modelValue: CalendarData }, emit: (event: 'update:modelValue', value: CalendarData) => void) {
   const timezoneRegions = computed(() => props.modelValue.timezone_regions || []);
 
   const updateParent = () => {

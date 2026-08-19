@@ -51,7 +51,7 @@ export interface ConnectionData {
 export interface SchemaInfo {
   name: string;
   icon: string;
-  full_schema?: any;
+  full_schema?: Record<string, unknown>;
   [key: string]: unknown;
 }
 

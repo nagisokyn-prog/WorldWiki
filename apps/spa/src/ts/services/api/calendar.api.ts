@@ -7,11 +7,11 @@ import { invoke } from '@worldwiki/components';
 import { projectRecordId } from './project.api';
 
 export const calendarApi = {
-  getCalendars: (project: string): Promise<any[]> =>
-    invoke<any[]>('get_calendars', { project }),
+  getCalendars: (project: string): Promise<Record<string, unknown>[]> =>
+    invoke<Record<string, unknown>[]>('get_calendars', { project }),
 
-  saveCalendar: (project: string, calendarData: any): Promise<{ success: boolean }> => {
-    const plainData = JSON.parse(JSON.stringify(calendarData));
+  saveCalendar: (project: string, calendarData: Record<string, unknown>): Promise<{ success: boolean }> => {
+    const plainData = JSON.parse(JSON.stringify(calendarData)) as Record<string, unknown>;
     const { id, is_default, is_master } = plainData;
     const calendarPayload = { ...plainData };
     delete calendarPayload.id;

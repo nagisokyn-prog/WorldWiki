@@ -15,15 +15,19 @@
 
 import { ref, computed } from 'vue';
 
+export interface TreeItem {
+  id: string;
+}
+
 export interface TreeSelectionOptions {
-  onDelete?: (ids: any[]) => Promise<void> | void;
-  onSelectionChange?: (ids: any[]) => void;
+  onDelete?: (ids: string[]) => Promise<void> | void;
+  onSelectionChange?: (ids: string[]) => void;
 }
 
 export function useTreeSelection(options: TreeSelectionOptions = {}) {
   const { onDelete, onSelectionChange } = options;
-  const selected = ref(new Set<any>());
-  const lastSelectedId = ref<any>(null);
+  const selected = ref(new Set<string>());
+  const lastSelectedId = ref<string | null>(null);
 
   // ─── Computed ─────────────────────────────────────────
 
@@ -33,7 +37,7 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
 
   // ─── Helpers ──────────────────────────────────────────
 
-  const isSelected = (id: any) => selected.value.has(id);
+  const isSelected = (id: string) => selected.value.has(id);
 
   const notify = () => {
     onSelectionChange?.([...selected.value]);
@@ -47,7 +51,11 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
    * @param {Object} item - элемент с полем id
    * @param {Object[]} flatItems - все видимые элементы в порядке отображения (для Shift-range)
    */
-  const handleClick = (event: MouseEvent | { ctrlKey?: boolean; shiftKey?: boolean; metaKey?: boolean }, item: any, flatItems: any[]) => {
+  const handleClick = (
+    event: MouseEvent | { ctrlKey?: boolean; shiftKey?: boolean; metaKey?: boolean },
+    item: TreeItem,
+    flatItems: TreeItem[]
+  ) => {
     const id = item.id;
 
     if (event.ctrlKey || event.metaKey) {
@@ -60,14 +68,14 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
 
     } else if (event.shiftKey && lastSelectedId.value) {
       // Shift+Click: диапазон от последнего выбранного до текущего
-      const ids = flatItems.map((i: any) => i.id);
+      const ids = flatItems.map((i) => i.id);
       const fromIdx = ids.indexOf(lastSelectedId.value);
       const toIdx = ids.indexOf(id);
       if (fromIdx !== -1 && toIdx !== -1) {
         const lo = Math.min(fromIdx, toIdx);
         const hi = Math.max(fromIdx, toIdx);
         const next = new Set(selected.value);
-        ids.slice(lo, hi + 1).forEach((rid: any) => next.add(rid));
+        ids.slice(lo, hi + 1).forEach((rid) => next.add(rid));
         selected.value = next;
       }
       // lastSelectedId не меняем при Shift
@@ -84,17 +92,17 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
   // ─── Selection control ───────────────────────────────
 
   const clearSelection = () => {
-    selected.value = new Set();
+    selected.value = new Set<string>();
     lastSelectedId.value = null;
     notify();
   };
 
-  const selectAll = (flatItems: any[]) => {
-    selected.value = new Set(flatItems.map((i: any) => i.id));
+  const selectAll = (flatItems: TreeItem[]) => {
+    selected.value = new Set(flatItems.map((i) => i.id));
     notify();
   };
 
-  const addToSelection = (id: any) => {
+  const addToSelection = (id: string) => {
     const next = new Set(selected.value);
     next.add(id);
     selected.value = next;
@@ -110,7 +118,7 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
   const deleteSelected = async () => {
     if (!selected.value.size) return;
     const ids = [...selected.value];
-    selected.value = new Set();
+    selected.value = new Set<string>();
     lastSelectedId.value = null;
     notify();
     await onDelete?.(ids);
@@ -124,7 +132,7 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
    * Escape → снять выделение.
    * Ctrl+A → выбрать всё.
    */
-  const handleKeydown = async (event: KeyboardEvent, flatItems: any[]) => {
+  const handleKeydown = async (event: KeyboardEvent, flatItems: TreeItem[]) => {
     // Если фокус в текстовом поле — не перехватываем системные клавиши
     const target = event.target;
     const isInput = (target as HTMLElement).tagName === 'INPUT' || (target as HTMLElement).tagName === 'TEXTAREA' || (target as HTMLElement).isContentEditable;
@@ -146,8 +154,8 @@ export function useTreeSelection(options: TreeSelectionOptions = {}) {
       event.preventDefault();
       if (!flatItems || flatItems.length === 0) return;
 
-      const ids = flatItems.map((i: any) => i.id);
-      let idx = ids.indexOf(lastSelectedId.value);
+      const ids = flatItems.map((i) => i.id);
+      let idx = ids.indexOf(lastSelectedId.value ?? '');
 
       if (idx === -1) {
         idx = event.key === 'ArrowDown' ? 0 : ids.length - 1;

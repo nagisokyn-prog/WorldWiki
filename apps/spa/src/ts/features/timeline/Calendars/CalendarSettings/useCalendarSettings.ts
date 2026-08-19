@@ -1,6 +1,12 @@
 import { computed, watch, ref } from 'vue';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarSettings(props: any, emit: any) {
+export interface CalendarSettingsProps {
+  modelValue: CalendarData;
+  isMaster?: boolean;
+}
+
+export function useCalendarSettings(props: CalendarSettingsProps, emit: (event: 'update:modelValue', val: CalendarData) => void) {
   const isCollapsed = ref(false);
 
   const calendar = computed({

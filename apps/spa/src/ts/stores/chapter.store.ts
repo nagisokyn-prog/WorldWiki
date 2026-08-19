@@ -2,15 +2,39 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { chapterService } from '../services/chapter.service';
 import { useTimelineStore } from './timeline.store';
-import * as api from '../services/api.client';;
+import * as api from '../services/api.client';
 import { useCalendarStore } from './calendar.store';
+import type { Chapter } from '../types/generated/Chapter';
+
+export type ChapterWithHierarchy = Chapter & {
+  arc_id?: string | null;
+  volume_id?: string | null;
+  [key: string]: unknown;
+};
+
+export interface HierarchyVolume {
+  id: string;
+  title?: string;
+  [key: string]: unknown;
+}
+export interface HierarchyArc {
+  id: string;
+  volume_id?: string | null;
+  title?: string;
+  [key: string]: unknown;
+}
+export interface ChapterHierarchy {
+  volumes: HierarchyVolume[];
+  arcs: HierarchyArc[];
+  chapters: ChapterWithHierarchy[];
+}
 
 export const useChapterStore = defineStore('chapter', () => {
   const loading = ref(false);
-  const chapters = ref<any[]>([]);
-  const hierarchy = ref<{ volumes: any[]; arcs: any[]; chapters: any[] }>({ volumes: [], arcs: [], chapters: [] });
+  const chapters = ref<ChapterWithHierarchy[]>([]);
+  const hierarchy = ref<ChapterHierarchy>({ volumes: [], arcs: [], chapters: [] });
   const currentChapterId = ref<string | undefined>(undefined);
-  const currentChapter = ref<any>(null);
+  const currentChapter = ref<ChapterWithHierarchy | null>(null);
   const hasUnsavedChanges = ref(false);
   const debugError = ref<string | null>(null);
   const isSaving = ref(false);
@@ -44,12 +68,12 @@ export const useChapterStore = defineStore('chapter', () => {
     try {
       console.log('📚 chapterStore.loadChapters: загружаю иерархию для проекта', project);
       loading.value = true;
-      hierarchy.value = await api.getChapterHierarchy(project);
+      hierarchy.value = await api.getChapterHierarchy(project) as ChapterHierarchy;
       console.log('✅ chapterStore.loadChapters: иерархия загружена', hierarchy.value);
       debugError.value = null;
       loading.value = false;
-    } catch (e: any) {
-      const err = e?.message || String(e);
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e.message : String(e);
       console.error('❌ loadChapters ошибка:', err);
       debugError.value = `Ошибка загрузки иерархии: ${err}`;
       loading.value = false;
@@ -58,17 +82,19 @@ export const useChapterStore = defineStore('chapter', () => {
 
   const loadHierarchy = loadChapters;
 
-  const saveChapter = async (project: string, emitFn?: (event: string, ...args: any[]) => void) => {
+  const saveChapter = async (project: string, emitFn?: (event: string, ...args: unknown[]) => void) => {
     if (!currentChapter.value || isSaving.value) return false;
     isSaving.value = true;
 
     const timelineStore = useTimelineStore();
     const autoParts = timelineStore.parseParticipants(currentChapter.value.content);
+    const participantsList = (currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string; autoParsed?: boolean; [key: string]: unknown }>;
     autoParts.forEach(p => {
-      if (!currentChapter.value.participants.some((ep: any) => ep.id === p.id && ep.type === p.type)) {
-        currentChapter.value.participants.push({ ...p, autoParsed: true });
+      if (!participantsList.some((ep) => ep.id === p.id && ep.type === p.type)) {
+        participantsList.push({ ...p, autoParsed: true });
       }
     });
+    currentChapter.value.participants = participantsList as unknown as string[];
 
     try {
       console.log('💾 chapterStore.saveChapter: сохраняю главу', currentChapter.value.id);
@@ -85,8 +111,8 @@ export const useChapterStore = defineStore('chapter', () => {
       console.log('✅ chapterStore.saveChapter: глава сохранена');
       debugError.value = null;
       return true;
-    } catch (e: any) {
-      const err = e?.message || String(e);
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e.message : String(e);
       console.error('❌ saveChapter ошибка:', err);
       debugError.value = `Ошибка сохранения: ${err}`;
       return false;
@@ -118,8 +144,8 @@ export const useChapterStore = defineStore('chapter', () => {
       console.log('✅ openChapter: глава полностью загружена и готова');
       debugError.value = null;
       return true;
-    } catch (e: any) {
-      const err = e?.message || String(e);
+    } catch (e: unknown) {
+      const err = e instanceof Error ? e.message : String(e);
       console.error('❌ openChapter ошибка:', err, e);
       debugError.value = `Ошибка загрузки главы: ${err}`;
       return false;
@@ -146,7 +172,7 @@ export const useChapterStore = defineStore('chapter', () => {
       }
     });
     const num = maxNum + 1;
-    const newCh = chapterService.createNew(`Глава ${num}`);
+    const newCh: ChapterWithHierarchy = chapterService.createNew(`Глава ${num}`);
     if (arcId) newCh.arc_id = arcId;
     if (volumeId) newCh.volume_id = volumeId;
 
@@ -175,19 +201,23 @@ export const useChapterStore = defineStore('chapter', () => {
     console.error('🔥🔥🔥 chapter.store: chapter saved, checking relations...');
     if (arcId || volumeId) {
       console.error('🔥🔥🔥 chapter.store: calling api.assignChapter...', { project, id: newCh.id, arcId, volumeId });
-      await api.assignChapter(project, newCh.id, arcId ?? null, volumeId ?? null);
+      if (newCh.id) {
+        await api.assignChapter(project, newCh.id, arcId ?? null, volumeId ?? null);
+      }
       console.error('🔥🔥🔥 chapter.store: api.assignChapter DONE!');
     }
     console.error('🔥🔥🔥 chapter.store: fetching hierarchy...');
     hierarchy.value = await api.getChapterHierarchy(project).catch(() => hierarchy.value);
     console.error('🔥🔥🔥 chapter.store: hierarchy loaded!', hierarchy.value);
-    await openChapter(project, newCh.id);
+    if (newCh.id) {
+      await openChapter(project, newCh.id);
+    }
     return newCh;
   };
 
-  const onRenameChapter = async (project: string, chapter: any, newTitle: string) => {
+  const onRenameChapter = async (project: string, chapter: Chapter | { id?: string | null; title?: string }, newTitle: string) => {
     const updated = { ...chapter, title: newTitle };
-    await chapterService.save(project, updated);
+    await chapterService.save(project, updated as unknown as Chapter);
     if (currentChapterId.value === chapter.id && currentChapter.value) {
       currentChapter.value.title = newTitle;
     }

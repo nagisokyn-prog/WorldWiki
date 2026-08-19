@@ -1,10 +1,16 @@
 import { ref } from 'vue';
+import type { CalendarData, CalendarSeason } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarSeasons(props: any, _emit?: any) {
+export interface CalendarSeasonsProps {
+  modelValue: Partial<CalendarData> & { сезоны?: CalendarSeason[]; месяцы?: unknown[]; [key: string]: unknown };
+}
+
+export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {
     const arr = props.modelValue.сезоны;
+    if (!arr) return;
     const n = idx + delta;
     if (n >= 0 && n < arr.length) {
       [arr[idx], arr[n]] = [arr[n], arr[idx]];
@@ -14,9 +20,9 @@ export function useCalendarSeasons(props: any, _emit?: any) {
   const addSeason = () => {
     if (!props.modelValue.сезоны) props.modelValue.сезоны = [];
     const used = new Set<number>();
-    props.modelValue.сезоны.forEach((s: any) => s.месяцы?.forEach((m: number) => used.add(m)));
+    props.modelValue.сезоны.forEach((s: CalendarSeason) => s.месяцы?.forEach((m: number) => used.add(m)));
     const available = (props.modelValue.месяцы || [])
-      .map((_: any, i: number) => i)
+      .map((_, i: number) => i)
       .filter((i: number) => !used.has(i));
 
     props.modelValue.сезоны.push({
@@ -44,7 +50,7 @@ export function useCalendarSeasons(props: any, _emit?: any) {
     if (pos > -1) {
       season.месяцы.splice(pos, 1);
     } else {
-      props.modelValue.сезоны.forEach((s: any, i: number) => {
+      props.modelValue.сезоны?.forEach((s: CalendarSeason, i: number) => {
         if (i !== sIdx && s.месяцы) {
           const p = s.месяцы.indexOf(mIdx);
           if (p > -1) s.месяцы.splice(p, 1);

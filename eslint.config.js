@@ -16,6 +16,10 @@ export default ts.config(
       '**/vendor/**',
       '**/target/**',
       '**/coverage/**',
+      '**/tauri-surreal-kit/**',
+      '**/test/mocks/**',
+      '**/generated/**',
+      '**/*.d.ts',
       'src/ts/libs/**',
       'src/ts/toastui/**',
       '**/*.cjs',
@@ -39,7 +43,7 @@ export default ts.config(
     },
     rules: {
       // Снижаем строгость типизации и стиля, чтобы не мешало жить
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { "argsIgnorePattern": "^_" }],
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'error',
@@ -66,7 +70,8 @@ export default ts.config(
     files: ['**/*.spec.ts', '**/*.test.ts'],
     rules: {
       'vue/one-component-per-file': 'off',
-      'vue/require-prop-types': 'off'
+      'vue/require-prop-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'off'
     }
   }
 );

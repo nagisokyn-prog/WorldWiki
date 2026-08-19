@@ -197,12 +197,12 @@ describe('shell store additional coverage', () => {
 
   it('handles handleQuickOpenSelect for chapters and entities, and openQuickOpen', async () => {
     // 1. Chapter selection
-    store.handleQuickOpenSelect({ entityType: 'chapter', data: { id: 'ch_1', title: 'Chapter 1' } });
+    store.handleQuickOpenSelect({ id: 'ch_1', rawId: 'ch_1', title: 'Chapter 1', typeLabel: 'Глава', emoji: '📝', entityType: 'chapter', data: { id: 'ch_1', title: 'Chapter 1' } });
     expect(store.openEditors.some((e: any) => e.id === 'ch_1')).toBe(true);
 
     // 2. Entity selection
     vi.mocked(entityApi.getEntity).mockResolvedValue({ id: 'char_1', name: 'Galahad' });
-    store.handleQuickOpenSelect({ entityType: 'character', data: { id: 'char_1', entityType: 'character' } });
+    store.handleQuickOpenSelect({ id: 'char_1', rawId: 'char_1', title: 'Char', typeLabel: 'Персонаж', emoji: '👤', entityType: 'character', data: { id: 'char_1', entityType: 'character' } });
     await vi.waitFor(() => {
       expect(store.openEditors.some((e: any) => e.entityType === 'character')).toBe(true);
     });
@@ -211,7 +211,7 @@ describe('shell store additional coverage', () => {
     store.openQuickOpen();
     store.quickOpenRef = { open: vi.fn() } as any;
     store.openQuickOpen();
-    expect(store.quickOpenRef.open).toHaveBeenCalled();
+    expect(store.quickOpenRef?.open).toHaveBeenCalled();
   });
 
   it('handles liveSync error logging without throwing', async () => {
@@ -323,7 +323,7 @@ describe('shell store additional coverage', () => {
   });
 
   it('covers filteredEntityList for chapters and entities with search filter', () => {
-    store.chapters = [{ id: '1', title: 'First Chapter' }, { id: '2', title: 'Second' }];
+    store.chapters = [{ id: '1', title: 'First Chapter' }, { id: '2', title: 'Second' }] as any;
     store.entityLists = { hero: [{ name: 'Superman' }, { name: 'Batman' }] };
 
     // Chapters search
@@ -390,23 +390,14 @@ describe('shell store additional coverage', () => {
     await store.openEntity({ entityType: 'hero', id: 'e_error', name: 'Will Fail' });
   });
 
-  it('covers handleUpdateData with nested arrays, objects, and foreign updates', async () => {
-    store.openChapterTab({
-      id: 'update_c1',
-      title: 'Chapter 1',
-      data: {
-        list: [{ id: 1, text: 'old' }, { id: 2, text: 'old2' }],
-        settings: { theme: 'dark' },
-      },
-    });
-
+  it('handles foreign updates merging and deep object merging in handleUpdateData', () => {
+    store.openEntity({ id: 'hero_1', entityType: 'hero', name: 'Original Name' });
     const tabId = store.openEditors[0].id;
 
-    // Expanding array & nested object
     store.handleUpdateData(tabId, {
-      list: [{ id: 1, text: 'new' }, { id: 2, text: 'new2' }, { id: 3, text: 'new3' }],
-      settings: { fontSize: 16 },
-      __foreignUpdates: { 'hero:1': { data: {} } },
+      profile: { bio: 'New bio', age: 30 },
+      list: [{ id: 1, text: 'a' }, { id: 2, text: 'b' }],
+      __foreignUpdates: { 'affil:1': { data: {} } },
     });
 
     expect((store.openEditors[0] as any)._foreignUpdates).toBeDefined();
@@ -415,12 +406,12 @@ describe('shell store additional coverage', () => {
     store.handleUpdateData(tabId, {
       list: [{ id: 1, text: 'shrunk' }],
     });
-    expect(store.openEditors[0].data.list.length).toBe(1);
+    expect((store.openEditors[0].data.list as unknown[]).length).toBe(1);
   });
 
   it('covers startSidebarResize and startSplitResize with layout variants', () => {
     // 1. Sidebar resize in row-reverse mode
-    store.settings.layout = { sidebarPos: 'row-reverse' };
+    store.settings.layout = { ...store.settings.layout, sidebarPos: 'row-reverse' };
     const e = { clientX: 100, target: document.createElement('div') } as any;
     store.startSidebarResize(e);
     document.dispatchEvent(new MouseEvent('mousemove', { clientX: 150 }));

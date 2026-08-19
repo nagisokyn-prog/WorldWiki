@@ -22,19 +22,19 @@ import type { WebCache } from '../types/generated/WebCache';
 import type { Cites } from '../types/generated/Cites';
 
 // --- Normal Commands ---
-export async function getProjects(): Promise<any[]> {
+export async function getProjects(): Promise<Record<string, unknown>[]> {
     return await invoke('get_projects');
 }
 
-export async function createProject(projectData: any): Promise<string> {
+export async function createProject(projectData: Record<string, unknown>): Promise<string> {
     return await invoke('create_project', { projectData });
 }
 
-export async function getProjectConfig(name: string): Promise<any> {
+export async function getProjectConfig(name: string): Promise<Record<string, unknown>> {
     return await invoke('get_project_config', { name });
 }
 
-export async function saveProjectConfig(name: string, config: any): Promise<any> {
+export async function saveProjectConfig(name: string, config: Record<string, unknown>): Promise<{ success: boolean }> {
     return await invoke('save_project_config', { name, config });
 }
 
@@ -46,7 +46,7 @@ export async function getEntities(project: string, entityType: string | null): P
     return await invoke('get_entities', { project, entityType });
 }
 
-export async function getEntitiesBatch(project: string, entityTypes: string[]): Promise<Record<string, any>> {
+export async function getEntitiesBatch(project: string, entityTypes: string[]): Promise<Record<string, Record<string, unknown>[]>> {
     return await invoke('get_entities_batch', { project, entityTypes });
 }
 
@@ -82,7 +82,7 @@ export async function deleteEntitySchema(project: string, typeKey: string): Prom
     return await invoke('delete_entity_schema', { project, typeKey });
 }
 
-export async function getSchemaHistory(project: string, typeKey: string): Promise<any[]> {
+export async function getSchemaHistory(project: string, typeKey: string): Promise<Record<string, unknown>[]> {
     return await invoke('get_schema_history', { project, typeKey });
 }
 
@@ -134,7 +134,7 @@ export async function getLocalFile(path: string): Promise<number[]> {
     return await invoke('get_local_file', { path });
 }
 
-export async function runPerformanceBenchmark(): Promise<any> {
+export async function runPerformanceBenchmark(): Promise<Record<string, unknown>> {
     return await invoke('run_performance_benchmark');
 }
 
@@ -142,11 +142,11 @@ export async function getPerformanceStyles(level: string): Promise<string> {
     return await invoke('get_performance_styles', { level });
 }
 
-export async function saveSettings(settings: any): Promise<void> {
+export async function saveSettings(settings: Record<string, unknown>): Promise<void> {
     return await invoke('save_settings', { settings });
 }
 
-export async function loadSettings(): Promise<any> {
+export async function loadSettings(): Promise<Record<string, unknown>> {
     return await invoke('load_settings');
 }
 
@@ -158,19 +158,19 @@ export async function getCustomThemes(): Promise<string[]> {
     return await invoke('get_custom_themes');
 }
 
-export async function loadTheme(theme: string): Promise<any> {
+export async function loadTheme(theme: string): Promise<Record<string, unknown>> {
     return await invoke('load_theme', { theme });
 }
 
-export async function saveCustomTheme(name: string, settings: any): Promise<void> {
+export async function saveCustomTheme(name: string, settings: Record<string, unknown>): Promise<void> {
     return await invoke('save_custom_theme', { name, settings });
 }
 
-export async function getChapterHierarchy(project: string): Promise<any> {
+export async function getChapterHierarchy(project: string): Promise<Record<string, unknown>> {
     return await invoke('get_chapter_hierarchy', { project });
 }
 
-export async function createVolume(project: string, title: string): Promise<any> {
+export async function createVolume(project: string, title: string): Promise<Record<string, unknown>> {
     return await invoke('create_volume', { project, title });
 }
 
@@ -178,7 +178,7 @@ export async function updateVolume(Project: string, id: string, title: string): 
     return await invoke('update_volume', { Project, id, title });
 }
 
-export async function createArc(project: string, title: string, volumeId: string | null): Promise<any> {
+export async function createArc(project: string, title: string, volumeId: string | null): Promise<Record<string, unknown>> {
     return await invoke('create_arc', { project, title, volumeId });
 }
 
@@ -194,11 +194,11 @@ export async function reorderNode(project: string, nodeType: string, id: string,
     return await invoke('reorder_node', { project, nodeType, id, sortOrder });
 }
 
-export async function getConnections(project: string, chapter: string | null): Promise<any> {
+export async function getConnections(project: string, chapter: string | null): Promise<Record<string, unknown>[]> {
     return await invoke('get_connections', { project, chapter });
 }
 
-export async function saveConnections(project: string, sourceId: string, data: any): Promise<void> {
+export async function saveConnections(project: string, sourceId: string, data: unknown): Promise<void> {
     return await invoke('save_connections', { project, sourceId, data });
 }
 
@@ -210,11 +210,11 @@ export async function removeConnectionsBySource(Project: string, EType: string, 
     return await invoke('remove_connections_by_source', { Project, EType, eId });
 }
 
-export async function getGlobalTimeline(project: string): Promise<any> {
+export async function getGlobalTimeline(project: string): Promise<Record<string, unknown>> {
     return await invoke('get_global_timeline', { project });
 }
 
-export async function exportChapters(project: string, chapters: any[], format: string): Promise<string> {
+export async function exportChapters(project: string, chapters: Array<Record<string, unknown>>, format: string): Promise<string> {
     return await invoke('export_chapters', { project, chapters, format });
 }
 
@@ -230,7 +230,7 @@ export async function uploadToYandexDisk(token: string, filePath: string): Promi
     return await invoke('upload_to_yandex_disk', { token, filePath });
 }
 
-export async function listYandexDiskBackups(token: string): Promise<any[]> {
+export async function listYandexDiskBackups(token: string): Promise<Record<string, unknown>[]> {
     return await invoke('list_yandex_disk_backups', { token });
 }
 
@@ -246,15 +246,15 @@ export async function restoreFromBackup(backupPath: string): Promise<void> {
     return await invoke('restore_from_backup', { backupPath });
 }
 
-export async function getChapterRevisions(project: string, chapterId: string): Promise<any[]> {
+export async function getChapterRevisions(project: string, chapterId: string): Promise<Record<string, unknown>[]> {
     return await invoke('get_chapter_revisions', { project, chapterId });
 }
 
-export async function getEntityRevisions(project: string, entityId: string): Promise<any[]> {
+export async function getEntityRevisions(project: string, entityId: string): Promise<Record<string, unknown>[]> {
     return await invoke('get_entity_revisions', { project, entityId });
 }
 
-export async function convertAbsoluteToLocal(absoluteMinute: number, calendar: any, eraIndex: number): Promise<any> {
+export async function convertAbsoluteToLocal(absoluteMinute: number, calendar: Record<string, unknown>, eraIndex: number): Promise<Record<string, unknown>> {
     return await invoke('convert_absolute_to_local', { absoluteMinute, calendar, eraIndex });
 }
 

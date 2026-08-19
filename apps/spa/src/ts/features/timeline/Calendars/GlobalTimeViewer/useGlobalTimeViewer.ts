@@ -3,11 +3,19 @@ import { invoke } from '@worldwiki/components';
 import { useCalendarStore } from '../../../../stores/calendar.store';
 import { useShellStore } from '../../../../stores/shell';
 
+import type { CalendarRecord } from '../../../../stores/calendar.store';
+
+export interface LocalDateItem {
+  id?: string;
+  name?: string;
+  date: Record<string, unknown>;
+}
+
 export function useGlobalTimeViewer() {
   const isVisible = ref(false);
   const minute = ref(0);
-  const calendars = ref<any[]>([]);
-  const localDates = ref<any[]>([]);
+  const calendars = ref<CalendarRecord[]>([]);
+  const localDates = ref<LocalDateItem[]>([]);
   const loading = ref(false);
 
   const shellStore = useShellStore();
@@ -31,10 +39,10 @@ export function useGlobalTimeViewer() {
 
   const updateLocalDates = async () => {
     if (calendars.value.length === 0) return;
-    const results = [];
+    const results: LocalDateItem[] = [];
     for (const cal of calendars.value) {
       const data = cal.data || cal;
-      const date = await invoke<any>('convert_absolute_to_local', {
+      const date = await invoke<Record<string, unknown>>('convert_absolute_to_local', {
         absoluteMinute: minute.value,
         calendar: data,
         eraIndex: 0

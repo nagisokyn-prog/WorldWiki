@@ -322,7 +322,7 @@ const updateColorAlpha = (key: keyof AppSettings['colors'], newHex: string) => {
       return;
     }
   }
-  (settings.value.colors as any)[key] = newHex;
+  settings.value.colors[key as keyof typeof settings.value.colors] = newHex;
   save();
 };
 
@@ -342,7 +342,7 @@ const changeLocale = async (lang: 'ru' | 'en') => {
 };
 
 const save = async () => {
-  if (settings.value.locale !== (settingsService.getSettings() as any).locale) {
+  if (settings.value.locale !== settingsService.getSettings().locale) {
     setLocale(settings.value.locale as 'ru' | 'en');
   }
   try {
@@ -358,7 +358,7 @@ const applyQuality = () => {
 };
 
 const pickBackgroundFile = async () => {
-  if (!(window as any).__TAURI__) return;
+  if (!window.__TAURI__) return;
   const isVideo = settings.value.background?.type === 'video';
   try {
     const selected = await open({
@@ -370,7 +370,7 @@ const pickBackgroundFile = async () => {
     });
     
     if (selected && typeof selected === 'string') {
-      const invoke = (window as any).__TAURI__?.core?.invoke;
+      const invoke = window.__TAURI__?.core?.invoke;
 
       const applyPath = (rawPath: string) => {
         // Храним сырой путь — settings.service.ts сам вызовет convertFileSrc при рендере

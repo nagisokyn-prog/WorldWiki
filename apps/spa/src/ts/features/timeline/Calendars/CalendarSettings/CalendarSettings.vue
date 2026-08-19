@@ -57,16 +57,15 @@
 
 <script setup lang="ts">
 import { useCalendarSettings } from './useCalendarSettings';
+import type { CalendarSettingsProps } from './useCalendarSettings';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
-const props = withDefaults(defineProps<{
-  modelValue: Record<string, any>;
-  isMaster?: boolean;
-}>(), {
+const props = withDefaults(defineProps<CalendarSettingsProps>(), {
   isMaster: false
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: any): void;
+  (e: 'update:modelValue', val: CalendarData): void;
 }>();
 
 const { isCollapsed, settings, dayLengthAnchor } = useCalendarSettings(props, emit);

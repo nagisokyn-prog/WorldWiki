@@ -35,17 +35,17 @@ export interface UIEditorSchema {
     id: string
     title: string
     icon?: string
-    fields?: Array<any>
-    dynamicContainers?: Array<any>
+    fields?: Array<Record<string, unknown>>
+    dynamicContainers?: Array<Record<string, unknown>>
   }>
   templates: Record<string, TemplateConfig>
 }
 
 export interface UIEditorService {
   loadSchema(entityType: string): Promise<UIEditorSchema | null>
-  loadComponents(): Promise<Array<{ id: string; name: string; type: string; icon: string; template?: any }>>
-  getFieldBlueprints(): Promise<Record<string, any>>
-  validateField(field: any): { valid: boolean; errors: string[] }
+  loadComponents(): Promise<Array<{ id: string; name: string; type: string; icon: string; template?: Record<string, unknown> }>>
+  getFieldBlueprints(): Promise<Record<string, Record<string, unknown>>>
+  validateField(field: Record<string, unknown>): { valid: boolean; errors: string[] }
   validateSchema(schema: UIEditorSchema): { valid: boolean; errors: string[] }
 }
 
@@ -71,14 +71,14 @@ class UIEditorServiceImpl implements UIEditorService {
     }
   }
 
-  async loadComponents(): Promise<Array<{ id: string; name: string; type: string; icon: string; template?: any }>> {
+  async loadComponents(): Promise<Array<{ id: string; name: string; type: string; icon: string; template?: Record<string, unknown> }>> {
     try {
       const blueprints = await this.getFieldBlueprints()
-      return Object.entries(blueprints).map(([key, blueprint]: [string, any]) => ({
+      return Object.entries(blueprints).map(([key, blueprint]) => ({
         id: key,
         icon: '📝',
-        name: blueprint.label || key.replace('_base', '').replace(/_/g, ' '),
-        type: blueprint.type || 'text',
+        name: (blueprint.label as string) || key.replace('_base', '').replace(/_/g, ' '),
+        type: (blueprint.type as string) || 'text',
         template: blueprint
       }))
     } catch (e) {
@@ -87,11 +87,11 @@ class UIEditorServiceImpl implements UIEditorService {
     }
   }
 
-  async getFieldBlueprints(): Promise<Record<string, any>> {
+  async getFieldBlueprints(): Promise<Record<string, Record<string, unknown>>> {
     try {
       const res = await fetch('/struct/editor/ui_editor.json')
       if (!res.ok) throw new Error('Failed to load ui_editor.json')
-      const data = await res.json()
+      const data = await res.json() as { field_blueprints?: Record<string, Record<string, unknown>> }
       return data.field_blueprints || {}
     } catch (e) {
       console.error('[UIEditorService] Error loading field blueprints:', e)
@@ -99,7 +99,7 @@ class UIEditorServiceImpl implements UIEditorService {
     }
   }
 
-  validateField(field: any): { valid: boolean; errors: string[] } {
+  validateField(field: Record<string, unknown>): { valid: boolean; errors: string[] } {
     const errors: string[] = []
     if (!field.id || typeof field.id !== 'string') {
       errors.push('Field must have a valid id (string)')

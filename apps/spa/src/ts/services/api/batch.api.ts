@@ -5,9 +5,9 @@ export const batchApi = {
   getEntitiesBatch: async (
     project: string,
     entityTypes: string[]
-  ): Promise<Record<string, any[]>> => {
+  ): Promise<Record<string, Record<string, unknown>[]>> => {
     try {
-      return await invoke('get_entities_batch', { project, entityTypes });
+      return await invoke<Record<string, Record<string, unknown>[]>>('get_entities_batch', { project, entityTypes });
     } catch (e) {
       console.error('[batchApi] getEntitiesBatch error:', e);
       return {};
@@ -46,11 +46,11 @@ export const batchApi = {
 
   saveEntityWithRelations: async (
     project: string,
-    entity: any,
-    foreignUpdates: any[]
-  ): Promise<any> => {
+    entity: Record<string, unknown>,
+    foreignUpdates: Array<Record<string, unknown>>
+  ): Promise<Record<string, unknown>> => {
     try {
-      return await invoke('save_entity_with_relations', { 
+      return await invoke<Record<string, unknown>>('save_entity_with_relations', { 
         project, 
         entity, 
         foreignUpdates

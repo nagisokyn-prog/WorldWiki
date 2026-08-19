@@ -3,7 +3,7 @@ interface CacheEntry<T> {
   timestamp: number;
 }
 
-const cache = new Map<string, CacheEntry<any>>();
+const cache = new Map<string, CacheEntry<unknown>>();
 const DEFAULT_TTL = 15_000; // 15 секунд по умолчанию
 
 export function getCached<T>(key: string): T | null {

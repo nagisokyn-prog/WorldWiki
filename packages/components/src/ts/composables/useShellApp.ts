@@ -63,9 +63,9 @@ export interface ShellAppConfig {
   /** Restore domain-specific state from the serialized snapshot. */
   restoreExtra?: (saved: Record<string, unknown>) => Promise<void>;
   /** Ref to QuickOpen component (opened on Ctrl+P). */
-  quickOpenRef?: Ref<any>;
+  quickOpenRef?: Ref<{ open: () => void } | null>;
   /** Ref to CommandPalette component (opened on Ctrl+Shift+P). */
-  commandPaletteRef?: Ref<any>;
+  commandPaletteRef?: Ref<{ open: () => void } | null>;
   /** Override toast duration in ms (default: 3000). */
   toastDuration?: number;
   /** App-id for Tauri WebviewWindow labels (default: 'app'). */
@@ -278,7 +278,7 @@ export function useShellApp(config: ShellAppConfig) {
 
     // Try native Tauri WebviewWindow first
     try {
-      const tauri = (window as any).__TAURI__;
+      const tauri = window.__TAURI__ as unknown as { webviewWindow?: { WebviewWindow: new (label: string, opts: Record<string, unknown>) => void } };
       if (tauri?.webviewWindow?.WebviewWindow) {
         const label = `${appId}-editor-${entityType}-${entityId}`.replace(/[^a-z0-9]/gi, '-');
         new tauri.webviewWindow.WebviewWindow(label, {
@@ -313,7 +313,7 @@ export function useShellApp(config: ShellAppConfig) {
 
   // Expose globally for legacy HTML components
   if (typeof window !== 'undefined') {
-    (window as any).openFloatingEditor = openFloatingEditor;
+    (window as unknown as { openFloatingEditor: typeof openFloatingEditor }).openFloatingEditor = openFloatingEditor;
   }
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
@@ -334,7 +334,7 @@ export function useShellApp(config: ShellAppConfig) {
       // F11 — fullscreen
       if (e.code === 'F11') {
         e.preventDefault();
-        const tauri = (window as any).__TAURI__;
+        const tauri = window.__TAURI__;
         if (tauri?.core) {
           tauri.core.invoke('toggle_fullscreen').catch(console.error);
         } else {
@@ -393,7 +393,7 @@ export function useShellApp(config: ShellAppConfig) {
           case 'Tab': {
             const all = eg.allTabs.value;
             if (all.length > 1) {
-              const idx = all.findIndex((t: any) => t.id === eg.activeGroup.value?.activeTabId);
+              const idx = all.findIndex((t) => t.id === eg.activeGroup.value?.activeTabId);
               const next = all[(idx + 1) % all.length];
               const g = eg.findGroupByTab(next.id);
               if (g) { g.activeTabId = next.id; eg.activeGroupId.value = g.id; }
@@ -403,7 +403,7 @@ export function useShellApp(config: ShellAppConfig) {
           default: {
             const n = parseInt(e.code.replace('Digit', ''));
             if (n >= 1 && n <= 9) {
-              const tab = eg.allTabs.value[n - 1] as any;
+              const tab = eg.allTabs.value[n - 1];
               if (tab) {
                 const g = eg.findGroupByTab(tab.id);
                 if (g) { g.activeTabId = tab.id; eg.activeGroupId.value = g.id; }
@@ -426,9 +426,9 @@ export function useShellApp(config: ShellAppConfig) {
           case 'Tab': {
             const all = eg.allTabs.value;
             if (all.length > 1) {
-              const idx  = all.findIndex((t: any) => t.id === eg.activeGroup.value?.activeTabId);
+              const idx  = all.findIndex((t) => t.id === eg.activeGroup.value?.activeTabId);
               const prev = (idx - 1 + all.length) % all.length;
-              const tab  = all[prev] as any;
+              const tab  = all[prev];
               const g    = eg.findGroupByTab(tab.id);
               if (g) { g.activeTabId = tab.id; eg.activeGroupId.value = g.id; }
             }
@@ -470,8 +470,8 @@ export function useShellApp(config: ShellAppConfig) {
     activeGroup:        eg.activeGroup,
     splitRight:         () => eg.splitRight(),
     closeGroup:         (gid: string) => eg.removeGroup(gid),
-    moveTab:            (p: any) => eg.moveTab(p.tabId, p.toGroupId, p.toIndex),
-    reorderTab:         (p: any) => eg.reorderTab(p.groupId, p.fromIdx, p.toIdx),
+    moveTab:            (p: { tabId: string; toGroupId: string; toIndex: number }) => eg.moveTab(p.tabId, p.toGroupId, p.toIndex),
+    reorderTab:         (p: { groupId: string; fromIdx: number; toIdx: number }) => eg.reorderTab(p.groupId, p.fromIdx, p.toIdx),
     activateTabInGroup: (gid: string, tid: string) => {
       const g = eg.groups.value.find(g => g.id === gid);
       if (g) { g.activeTabId = tid; eg.activeGroupId.value = gid; }

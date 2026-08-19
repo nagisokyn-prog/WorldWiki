@@ -83,14 +83,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  restore: [snapshot: any];
+  restore: [snapshot: Record<string, unknown>];
 }>();
 
 interface HistoryEntry {
   id: string;
   saved_at: string;
   is_pinned: boolean;
-  snapshot: any;
+  snapshot: Record<string, unknown>;
   type_key: string;
   project_id: string;
 }

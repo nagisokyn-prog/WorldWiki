@@ -92,6 +92,18 @@ describe('packages/components editor.service', () => {
       expect(replaceSelection).toHaveBeenCalledWith('Replaced');
 
       expect(editorService.getSelectedText()).toBe('selected');
+
+      // editor is null or missing optional methods
+      editorService.editor = null;
+      editorService.insertText('noop');
+      editorService.replaceSelection('noop');
+      expect(editorService.getSelectedText()).toBe('');
+      editorService.setContent('');
+
+      editorService.editor = {};
+      editorService.insertText('noop');
+      editorService.replaceSelection('noop');
+      expect(editorService.getSelectedText()).toBe('');
     });
 
     it('mode switching and detection', () => {
@@ -121,20 +133,33 @@ describe('packages/components editor.service', () => {
 
       editorService.editor = {} as any;
       expect(editorService.getCurrentMode()).toBe('wysiwyg');
+
+      editorService.editor = null;
+      editorService.switchMode('wysiwyg');
+      expect(editorService.getCurrentMode()).toBe('wysiwyg');
     });
   });
 
   describe('Auto-save', () => {
-    it('schedules and cancels autoSave', () => {
-      const cb = vi.fn();
-      editorService.autoSave(cb, 1000);
-      vi.advanceTimersByTime(1000);
-      expect(cb).toHaveBeenCalledTimes(1);
+    it('schedules, reschedules, and cancels autoSave', () => {
+      const cb1 = vi.fn();
+      const cb2 = vi.fn();
 
-      editorService.autoSave(cb, 1000);
+      // 1. Double autoSave (rescheduling line 111)
+      editorService.autoSave(cb1, 1000);
+      editorService.autoSave(cb2, 1000);
+      vi.advanceTimersByTime(1000);
+      expect(cb1).not.toHaveBeenCalled();
+      expect(cb2).toHaveBeenCalledTimes(1);
+
+      // 2. cancelAutoSave when timer active
+      editorService.autoSave(cb1, 1000);
       editorService.cancelAutoSave();
       vi.advanceTimersByTime(2000);
-      expect(cb).toHaveBeenCalledTimes(1);
+      expect(cb1).not.toHaveBeenCalled();
+
+      // 3. cancelAutoSave when no timer active
+      editorService.cancelAutoSave();
     });
   });
 });

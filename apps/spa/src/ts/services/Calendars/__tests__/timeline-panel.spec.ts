@@ -416,6 +416,52 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
       emittedEvents = emitted[emitted.length - 1][0];
       expect(emittedEvents[emittedEvents.length - 1].time).toEqual({ hour: 12, minute: 0 });
     });
+
+    it('covers getUniversalDateObject and updateEventFullDate time branches (lines 405-406, 426-427)', () => {
+      // 1. getUniversalDateObject with undefined time
+      const udoNoTime = vm.getUniversalDateObject({
+        date: { era: 0, year: 1, month: 0, day: 1 },
+        calendar_id: 'cal_1',
+      });
+      expect(udoNoTime.original_input.hour).toBe(12);
+      expect(udoNoTime.original_input.minute).toBe(0);
+
+      // 2. getUniversalDateObject with 0 values (falsy number)
+      const udoZero = vm.getUniversalDateObject({
+        date: { era: 0, year: 1, month: 0, day: 1 },
+        time: { hour: 0, minute: 0 },
+        calendar_id: 'cal_1',
+      });
+      expect(udoZero.original_input.hour).toBe(0);
+      expect(udoZero.original_input.minute).toBe(0);
+
+      // 3. updateEventFullDate with undefined hour/minute in original_input
+      vm.updateEventFullDate(0, {
+        calendar_id: 'cal_1',
+        original_input: {
+          era_index: 0,
+          year: 10,
+          month: 1,
+          day: 5,
+          hour: undefined,
+          minute: undefined,
+        },
+      });
+      expect(wrapper.emitted('update:events')).toBeDefined();
+
+      // 4. updateEventFullDate with 0 hour/minute in original_input
+      vm.updateEventFullDate(0, {
+        calendar_id: 'cal_1',
+        original_input: {
+          era_index: 0,
+          year: 10,
+          month: 1,
+          day: 5,
+          hour: 0,
+          minute: 0,
+        },
+      });
+    });
   });
 });
 

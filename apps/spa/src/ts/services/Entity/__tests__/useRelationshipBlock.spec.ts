@@ -273,6 +273,21 @@ describe('useRelationshipBlock', () => {
       expect(rel.foreignItem.value['динамика_отношений']).toEqual([]);
       expect(rel.foreignItem.value['relationshipStates']).toBeUndefined();
     });
+
+    it('addNestedItem via subConf template in allTemplates (line 242)', () => {
+      props.allTemplates = {
+        tpl_nested: { fields: [{ class: 'dyn_class', value: 'def_val' }, { class: 'no_val' }] },
+      };
+      const rel = useRelationshipBlock(props, emit);
+
+      props.item.foreign_ids = undefined;
+      rel.addNestedItem(undefined, { template: 'tpl_nested', id: 'foreign_ids' });
+
+      expect(props.item.foreign_ids.length).toBe(1);
+      expect(props.item.foreign_ids[0].dyn_class).toBe('def_val');
+      expect(props.item.foreign_ids[0].no_val).toBe('');
+      expect(emit).toHaveBeenCalledWith('modified');
+    });
   });
 });
 

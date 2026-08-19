@@ -16,7 +16,7 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const fullConfig = ref<{ templates?: Record<string, { fields?: unknown[] }> }>(uiEditorData);
 
     const availableEntityTypes = computed(() => {
-        let rawSchemas: Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }> = {};
+        let rawSchemas: Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>;
         try {
             rawSchemas = import.meta.glob<Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>>('../../../../../public/struct/editor/*.json', { eager: true });
         } catch {

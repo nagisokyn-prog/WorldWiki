@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { entityApi } from './entity.api';
 import { settingsService } from '@worldwiki/components';
 
@@ -56,6 +56,16 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
   const foreignLoading = ref(false);
   const foreignError = ref('');
   const foreignModified = ref(false);
+
+  watch(
+    foreignItem,
+    (newVal) => {
+      if (newVal) {
+        emit('foreign-update', newVal);
+      }
+    },
+    { deep: true }
+  );
 
   const getResolvedFields = (subConf?: SubConf | { template?: string; fields?: TemplateField[]; fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }> }) => {
     let tpl: { fields?: TemplateField[]; fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }> } | undefined;
@@ -164,16 +174,25 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
       const parentDataPath = tpl.dataPath || tpl.id || tpl.template || 'characterRelationships';
       let matched: Record<string, unknown> | null = null;
-      
+
       const rootObj = (targetData.data && typeof targetData.data === 'object') ? targetData.data as Record<string, unknown> : targetData;
-      const targetArr = (parentDataPath ? (rootObj[parentDataPath] as unknown[]) : null) || [];
+      let targetArr = (parentDataPath ? (rootObj[parentDataPath] as unknown[]) : null) || [];
+      if (!Array.isArray(targetArr) || targetArr.length === 0) {
+        for (const key of Object.keys(rootObj)) {
+          if (Array.isArray(rootObj[key]) && (rootObj[key] as unknown[]).length > 0) {
+            targetArr = rootObj[key] as unknown[];
+            break;
+          }
+        }
+      }
       const backLinkClass = tpl.bidirectionalLinkClass || linkClass.value;
 
       if (Array.isArray(targetArr)) {
         const rawMyId = props.entityId.replace(/^[^:]+:/, '');
         matched = (targetArr.find((it) => {
           if (!it || typeof it !== 'object') return false;
-          const val = (it as Record<string, unknown>)[backLinkClass];
+          const rec = it as Record<string, unknown>;
+          const val = rec[backLinkClass] || rec['target_char'] || rec['character'];
           return val === props.entityId || val === rawMyId || String(val).endsWith(`:${rawMyId}`);
         }) as Record<string, unknown>) || null;
       }
@@ -242,9 +261,8 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
   const getNestedList = (sourceItem?: Record<string, unknown> | null, subConf?: SubConf): Array<Record<string, unknown>> => {
     const item = sourceItem || props.item;
-    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
-    if (!targetSubConf) return [];
-    const path = targetSubConf.dataPath || targetSubConf.id || 'custom_dynamics';
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0] || props.templateConf;
+    const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
     if (!path) return [];
     if (!item[path]) item[path] = [];
     return item[path] as Array<Record<string, unknown>>;
@@ -252,9 +270,8 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
   const addNestedItem = (sourceItem?: Record<string, unknown> | null, subConf?: SubConf) => {
     const item = sourceItem || props.item;
-    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
-    if (!targetSubConf) return;
-    const path = targetSubConf.dataPath || targetSubConf.id || 'custom_dynamics';
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0] || props.templateConf;
+    const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
     if (!path) return;
     if (!item[path]) item[path] = [];
     
@@ -262,7 +279,7 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     const fields = getResolvedFields(targetSubConf);
     fields.forEach((f) => {
       if (f.class) {
-        newItem[f.class] = f.value ?? (f.type === 'number' ? 0 : '');
+        newItem[f.class] = f.value !== undefined ? f.value : (f.type === 'number' ? 0 : '');
       }
     });
 
@@ -273,9 +290,8 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
   const removeNestedItem = (idx: number, sourceItem?: Record<string, unknown> | null, subConf?: SubConf) => {
     const item = sourceItem || props.item;
-    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
-    if (!targetSubConf) return;
-    const path = targetSubConf.dataPath || targetSubConf.id || 'custom_dynamics';
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0] || props.templateConf;
+    const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
     if (!path) return;
     if (!item[path]) return;
     (item[path] as Array<Record<string, unknown>>).splice(idx, 1);

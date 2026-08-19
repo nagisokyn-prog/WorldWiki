@@ -19,15 +19,15 @@ describe('aiModelsApi', () => {
     expect(res).toEqual([{ value: 'm1', label: 'Model 1' }]);
   });
 
-  it('fetches models for openrouter via fetch', async () => {
+  it('fetches models for openrouter via fetchModels delegation', async () => {
     const mockJson = {
       data: [
         {
-          id: 'openai/gpt-4o',
-          name: 'GPT-4o',
+          id: 'custom-claude-3-test',
+          name: '',
           context_length: 128000,
           architecture: { modality: 'text+image', tokenizer: 'openai' },
-          pricing: { prompt: '0.005', completion: '0.015' },
+          pricing: { prompt: undefined, completion: undefined },
         },
       ],
     };
@@ -38,11 +38,23 @@ describe('aiModelsApi', () => {
     });
     globalThis.fetch = fetchMock as any;
 
-    const res = await aiModelsApi.fetchOpenRouterModels('my-key');
-    expect(fetchMock).toHaveBeenCalled();
+    const res = await aiModelsApi.fetchModels('openrouter', 'router-key');
     expect(res.length).toBe(1);
-    expect(res[0].value).toBe('openai/gpt-4o');
+    expect(res[0].description).toBe('custom-claude-3-test');
+    expect(res[0].capabilities?.caching).toBe(true);
     expect(res[0].capabilities?.vision).toBe(true);
+    expect(res[0].pricing).toEqual({ prompt: '0', completion: '0' });
+  });
+
+  it('throws error when OpenRouter response is not ok', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: vi.fn().mockResolvedValue('Unauthorized access'),
+    });
+    globalThis.fetch = fetchMock as any;
+
+    await expect(aiModelsApi.fetchOpenRouterModels('bad-key')).rejects.toThrow('OpenRouter API error: 401 - Unauthorized access');
   });
 
   it('handles empty apiKey, top_provider fallbacks, claude caching, and missing pricing/architecture', async () => {
@@ -80,4 +92,3 @@ describe('aiModelsApi', () => {
     expect(simple?.capabilities).toBeUndefined();
   });
 });
-

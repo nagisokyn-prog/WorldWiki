@@ -37,6 +37,10 @@ describe('useChapterHistory', () => {
     await flushPromises();
     expect(history.isLoadingHistory.value).toBe(false);
 
+    // Toggle off restores data
+    history.toggleHistory();
+    expect(history.showHistory.value).toBe(false);
+
     // Load with null chapter id
     currentChapterId.value = undefined;
     await history.loadHistory();
@@ -53,7 +57,7 @@ describe('useChapterHistory', () => {
     // Null chapter check
     const nullChapter = ref(null);
     const historyNull = useChapterHistory('proj_1', currentChapterId, nullChapter);
-    historyNull.previewHistory({ id: 'rev_1' });
+    historyNull.previewHistory({ id: 'rev_1' } as any);
 
     // Preview with snap.attributes format
     const revWithAttrs = {
@@ -66,19 +70,19 @@ describe('useChapterHistory', () => {
         },
       },
     };
-    history.previewHistory(revWithAttrs);
+    history.previewHistory(revWithAttrs as any);
     expect(currentChapter.value.title).toBe('Attr Title');
     expect(history.previewingRevId.value).toBe('rev_attrs');
 
     // Click same rev to cancel preview
-    history.previewHistory(revWithAttrs);
+    history.previewHistory(revWithAttrs as any);
     expect(currentChapter.value.title).toBe('Chapter 1');
     expect(history.previewingRevId.value).toBeNull();
   });
 
-  it('handles togglePin success and error rollback', async () => {
+  it('handles togglePin success and error rollback with and without chapter ID', async () => {
     const history = useChapterHistory('proj_1', currentChapterId, currentChapter);
-    const rev = { id: 'rev_1', is_pinned: false };
+    const rev: any = { id: 'rev_1', is_pinned: false };
 
     // Success
     vi.mocked(api.toggleChapterHistoryPin).mockResolvedValueOnce(undefined as any);
@@ -88,28 +92,35 @@ describe('useChapterHistory', () => {
     // Rejection / Error
     vi.mocked(api.toggleChapterHistoryPin).mockRejectedValueOnce(new Error('Pin error'));
     await history.togglePin(rev);
-    expect(rev.is_pinned).toBe(true); // toggled to false, then reverted on catch back to true
+    expect(rev.is_pinned).toBe(true); // reverted
+
+    // Without chapter ID
+    currentChapterId.value = undefined;
+    await history.togglePin(rev);
   });
 
-  it('computes diff summary for first version, all field changes, and identical versions', () => {
+  it('computes diff summary for first version, all field changes, nested attributes, and identical versions', () => {
     const history = useChapterHistory('proj_1', currentChapterId, currentChapter);
 
     // First version
-    expect(history.getDiffSummary({ content: {} }, null)).toBe('Первая версия');
+    expect(history.getDiffSummary({ content: {} } as any, undefined)).toBe('Первая версия');
 
-    // All changes
-    const prev = { content: { title: 'T1', content: 'C1', footnotes: { 1: 'a' } } };
-    const curr = { content: { title: 'T2', content: 'C2', footnotes: { 1: 'b' } } };
-    const diff = history.getDiffSummary(curr, prev);
+    // All changes with attributes format
+    const prev = { content: { attributes: { title: 'T1', content: 'C1', footnotes: { 1: 'a' } } } };
+    const curr = { content: { attributes: { title: 'T2', content: 'C2', footnotes: { 1: 'b' } } } };
+    const diff = history.getDiffSummary(curr as any, prev as any);
     expect(diff).toContain('Название');
     expect(diff).toContain('Текст');
     expect(diff).toContain('Сноски');
 
     // Identical
-    expect(history.getDiffSummary(prev, prev)).toBe('Нет визуальных изменений');
+    expect(history.getDiffSummary(prev as any, prev as any)).toBe('Нет визуальных изменений');
+
+    // Empty content objects
+    expect(history.getDiffSummary({ id: '1' } as any, { id: '2' } as any)).toBe('Нет визуальных изменений');
   });
 
-  it('computes changedFields for active preview', () => {
+  it('computes changedFields for active preview including all combinations of changed fields and missing rev', () => {
     const history = useChapterHistory('proj_1', currentChapterId, currentChapter);
 
     // No preview active
@@ -117,12 +128,40 @@ describe('useChapterHistory', () => {
 
     history.revisions.value = [
       {
-        id: 'rev_diff',
-        content: { title: 'Diff Title', content: 'Original Text', footnotes: { 1: 'fn1' } },
+        id: 'rev_all',
+        content: { title: 'Diff Title', content: 'Diff Content', footnotes: { 2: 'fn2' } },
       },
+      {
+        id: 'rev_content_only',
+        content: { title: 'Chapter 1', content: 'Diff Content', footnotes: { 1: 'fn1' } },
+      },
+      {
+        id: 'rev_footnotes_only',
+        content: { title: 'Chapter 1', content: 'Original Text', footnotes: { 99: 'other' } },
+      },
+      {
+        id: 'rev_no_content',
+      } as any,
     ];
 
+    // All fields
     history.previewHistory(history.revisions.value[0]);
-    expect(history.changedFields.value).toEqual(['title']);
+    expect(history.changedFields.value).toEqual(['title', 'content', 'footnotes']);
+
+    // Content only
+    history.previewHistory(history.revisions.value[1]);
+    expect(history.changedFields.value).toEqual(['content']);
+
+    // Footnotes only
+    history.previewHistory(history.revisions.value[2]);
+    expect(history.changedFields.value).toEqual(['footnotes']);
+
+    // No content
+    history.previewHistory(history.revisions.value[3]);
+    expect(history.changedFields.value).toEqual(['title', 'content', 'footnotes']);
+
+    // Revision ID not found in list
+    history.previewingRevId.value = 'unknown_rev';
+    expect(history.changedFields.value).toEqual([]);
   });
 });

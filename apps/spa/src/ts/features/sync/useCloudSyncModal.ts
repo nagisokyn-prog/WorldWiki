@@ -66,7 +66,9 @@ export function useCloudSyncModal(emit: (event: string, ...args: unknown[]) => v
 
     const handleOpenEvent = (e: Event) => {
         const customEvent = e as CustomEvent;
-        openModal(customEvent.detail || 'export');
+        const detail = customEvent.detail;
+        const mode = typeof detail === 'string' ? detail : (detail?.mode || 'export');
+        openModal(mode);
     };
 
     onMounted(() => {

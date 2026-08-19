@@ -33,8 +33,8 @@ export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx
     const draggedOverIdx = ref(-1);
     let draggedItemInfo: DraggedItemInfo | null = null;
 
-    const handleDragStartPalette = (e: DragEvent, kind: string, val: string, label: string) => {
-        draggedItemInfo = { source: 'palette', kind, val, label };
+    const handleDragStartPalette = (e: DragEvent, kind: string, val: string, label: string, template?: string) => {
+        draggedItemInfo = { source: 'palette', kind, val, label, template: template || val };
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'copy';
             e.dataTransfer.setData('text/plain', kind);

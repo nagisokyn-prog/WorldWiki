@@ -71,8 +71,16 @@ describe('useTiptapState', () => {
     state.analyzeText();
   });
 
-  it('handles savePositionState across wysiwyg, split, and markdown modes with DOM elements', () => {
+  it('handles savePositionState across wysiwyg, split, and markdown modes with and without DOM elements', () => {
     const state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
+
+    // Save with no DOM elements in document
+    state.editorMode.value = 'wysiwyg';
+    state.savePositionState();
+    state.editorMode.value = 'split';
+    state.savePositionState();
+    state.editorMode.value = 'markdown';
+    state.savePositionState();
 
     // WYSIWYG
     const wrapperEl = document.createElement('div');
@@ -112,10 +120,13 @@ describe('useTiptapState', () => {
     const key = `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
     const state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
 
-    // Markdown restore with textarea
+    // Markdown restore without textarea in DOM
     localStorage.setItem(key, JSON.stringify({ cursor: 10, scroll: 50 }));
     state.editorMode.value = 'markdown';
+    state.restorePositionState();
+    vi.advanceTimersByTime(200);
 
+    // Markdown restore with textarea
     const textarea = document.createElement('textarea');
     document.body.appendChild(textarea);
     state.restorePositionState();
@@ -149,8 +160,11 @@ describe('useTiptapState', () => {
     vi.advanceTimersByTime(200);
     expect(wrapperEl.scrollTop).toBe(200);
 
+    // Fallback when DOM element is missing
     document.body.removeChild(wrapperEl);
     document.body.removeChild(splitParent);
+    state.restorePositionState();
+    vi.advanceTimersByTime(200);
   });
 
   it('switches modes and calls syncMarkdown only when coming from markdown/split', () => {

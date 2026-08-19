@@ -18,6 +18,7 @@ describe('useExportModal', () => {
       allChapters: [
         { id: 'ch_1', title: 'Chapter 1' },
         { id: 'ch_2', title: 'Chapter 2' },
+        { id: null, title: 'No ID' },
       ],
       currentChapterId: 'ch_1',
     };
@@ -27,7 +28,7 @@ describe('useExportModal', () => {
     vi.useRealTimers();
   });
 
-  it('selects and clears all chapters', () => {
+  it('selects and clears all chapters with and without allChapters', () => {
     const modal = useExportModal(props, emit);
 
     modal.selectAll();
@@ -35,6 +36,10 @@ describe('useExportModal', () => {
 
     modal.clearSelection();
     expect(modal.selectedChapters.value).toEqual([]);
+
+    const emptyModal = useExportModal({ isOpen: true }, emit);
+    emptyModal.selectAll();
+    expect(emptyModal.selectedChapters.value).toEqual([]);
   });
 
   it('exports with mode "current" and closes after timeout', async () => {
@@ -59,7 +64,7 @@ describe('useExportModal', () => {
     expect(emit).toHaveBeenCalledWith('close');
   });
 
-  it('exports with mode "all"', async () => {
+  it('exports with mode "all" with and without allChapters', async () => {
     const modal = useExportModal(props, emit);
     modal.selectionMode.value = 'all';
 
@@ -67,9 +72,14 @@ describe('useExportModal', () => {
     expect(emit).toHaveBeenCalledWith('export', expect.objectContaining({
       chapterIds: ['ch_1', 'ch_2'],
     }));
+
+    const emptyModal = useExportModal({ isOpen: true }, emit);
+    emptyModal.selectionMode.value = 'all';
+    await emptyModal.exportData();
+    expect(appAlert).toHaveBeenCalledWith('Не выбраны главы для экспорта');
   });
 
-  it('exports with mode "custom" and alerts when no chapters selected', async () => {
+  it('exports with mode "custom" and alerts when no chapters selected or no currentChapterId', async () => {
     const modal = useExportModal(props, emit);
     modal.selectionMode.value = 'custom';
     modal.selectedChapters.value = [];
@@ -84,5 +94,11 @@ describe('useExportModal', () => {
     expect(emit).toHaveBeenCalledWith('export', expect.objectContaining({
       chapterIds: ['ch_2'],
     }));
+
+    // Current mode with no currentChapterId
+    const noCurModal = useExportModal({ isOpen: true }, emit);
+    noCurModal.selectionMode.value = 'current';
+    await noCurModal.exportData();
+    expect(appAlert).toHaveBeenCalledWith('Не выбраны главы для экспорта');
   });
 });

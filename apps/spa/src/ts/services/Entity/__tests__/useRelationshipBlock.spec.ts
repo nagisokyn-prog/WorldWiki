@@ -52,7 +52,7 @@ describe('useRelationshipBlock', () => {
     };
   });
 
-  it('computes labels and resolved fields', () => {
+  it('computes labels and resolved fields with all fallbacks', () => {
     const rel = useRelationshipBlock(props, emit);
 
     expect(rel.linkClass.value).toBe('target_char');
@@ -60,7 +60,45 @@ describe('useRelationshipBlock', () => {
     expect(rel.foreignLabel.value).toBe('Merlin');
 
     const fields = rel.getResolvedFields();
-    expect(fields.find((f: any) => f.class === 'role').label).toBe('Custom Role');
+    expect(fields.find((f: any) => f.class === 'role')?.label).toBe('Custom Role');
+
+    // 1. linkClass fallback branches
+    // a. No bidirectionalLinkClass, has select field with entityType
+    const relSelect = useRelationshipBlock({
+      ...props,
+      templateConf: { fields: [{ class: 'custom_link', type: 'select', entityType: 'char' }] },
+    }, emit);
+    expect(relSelect.linkClass.value).toBe('custom_link');
+
+    // b. No bidirectionalLinkClass, fields has no select with entityType
+    const relNoLink = useRelationshipBlock({
+      ...props,
+      templateConf: { fields: [{ class: 'other_field', type: 'text' }] },
+    }, emit);
+    expect(relNoLink.linkClass.value).toBe('character');
+
+    // c. No fields at all
+    const relEmptyConf = useRelationshipBlock({ ...props, templateConf: {} }, emit);
+    expect(relEmptyConf.linkClass.value).toBe('character');
+
+    // 2. myLabel fallbacks: missing referenceData, unknown ID, empty entityId
+    const relUnknownMy = useRelationshipBlock({ ...props, entityId: 'unknown_id', referenceData: {} }, emit);
+    expect(relUnknownMy.myLabel.value).toBe('unknown_id');
+
+    const relEmptyMy = useRelationshipBlock({ ...props, entityId: '', referenceData: {} }, emit);
+    expect(relEmptyMy.myLabel.value).toBe('Текущая сущность');
+
+    // 3. foreignLabel fallbacks: empty foreignId, missing targetType, missing in refList
+    const relNoForeign = useRelationshipBlock({ ...props, item: {} }, emit);
+    expect(relNoForeign.foreignLabel.value).toBe('Не выбрано');
+
+    const relUnknownForeign = useRelationshipBlock({
+      ...props,
+      item: { target_char: 'unknown_foreign' },
+      templateConf: { bidirectionalLinkClass: 'target_char' }, // no fields with entityType and no foreign_type
+      referenceData: {},
+    }, emit);
+    expect(relUnknownForeign.foreignLabel.value).toBe('unknown_foreign');
   });
 
   it('handles item updates and select changes', () => {
@@ -105,7 +143,7 @@ describe('useRelationshipBlock', () => {
 
     expect(entityApi.getEntity).toHaveBeenCalledWith('p1', 'character', 'char_2');
     expect(rel.foreignItem.value).toBeDefined();
-    expect(rel.foreignItem.value.role).toBe('Student');
+    expect(rel.foreignItem.value?.role).toBe('Student');
   });
 
   it('handles sandbox mode for foreign item', async () => {
@@ -141,13 +179,13 @@ describe('useRelationshipBlock', () => {
     const rel = useRelationshipBlock(props, emit);
 
     // Static options
-    expect(rel.getOptions({ options: [{ value: '1', label: '1' }] })).toEqual([{ value: '1', label: '1' }]);
+    expect(rel.getOptions({ class: 'static_f', options: [{ value: '1', label: '1' }] } as any)).toEqual([{ value: '1', label: '1' }]);
 
     // EntityType referenceData
-    expect(rel.getOptions({ entityType: 'character' })).toEqual([{ value: 'c1', label: 'C1' }]);
+    expect(rel.getOptions({ class: 'char_f', entityType: 'character' } as any)).toEqual([{ value: 'c1', label: 'C1' }]);
 
     // Empty fallback
-    expect(rel.getOptions({})).toEqual([]);
+    expect(rel.getOptions({ class: 'plain_f' } as any)).toEqual([]);
 
     // getDynamicContainerFields
     expect(rel.getDynamicContainerFields({ fields: [{ class: 'f0' }] })).toEqual([{ class: 'f0' }]);
@@ -166,8 +204,8 @@ describe('useRelationshipBlock', () => {
     await rel.onLinkChange('target_char')({ target: { value: 'char_empty' } } as any);
 
     expect(rel.foreignItem.value).toBeDefined();
-    expect(rel.foreignItem.value.target_char).toBe('char_1');
-    expect(rel.foreignItem.value.dynamics).toEqual([]);
+    expect(rel.foreignItem.value?.target_char).toBe('char_1');
+    expect(rel.foreignItem.value?.dynamics).toEqual([]);
   });
 
   it('handles foreign load errors gracefully', async () => {
@@ -191,11 +229,26 @@ describe('useRelationshipBlock', () => {
       await rel.onLinkChange('target_char')({ target: { value: '' } } as any);
       expect(rel.foreignItem.value).toBeNull();
 
-      // 2. getOptions with direct type match without _list suffix
-      expect(rel.getOptions({ entityType: 'fraction' })).toEqual([{ value: 'f1', label: 'Fraction 1' }]);
+      // 1b. fetchForeignItem direct call
+      props.item.target_char = '';
+      await rel.fetchForeignItem();
+      expect(rel.foreignItem.value).toBeNull();
+
+      props.item.target_char = 'char_2';
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+        id: 'char_2',
+        data: { characterRelationships: [{ target_char: 'char_1', role: 'Partner' }] },
+      } as any);
+      await rel.fetchForeignItem();
+      expect(rel.foreignItem.value?.role).toBe('Partner');
+
+      // 2. getOptions with direct type match without _list suffix and foreign_type fallback
+      expect(rel.getOptions({ class: 'frac', entityType: 'fraction' } as any)).toEqual([{ value: 'f1', label: 'Fraction 1' }]);
+      props.templateConf.foreign_type = 'fraction';
+      expect(rel.getOptions({ class: 'plain' } as any)).toEqual([{ value: 'f1', label: 'Fraction 1' }]);
 
       // 3. addNestedItem passing Event instance
-      rel.addNestedItem(new Event('click'), { fields: [{ class: 'role', value: 'Hero' }] });
+      rel.addNestedItem(new Event('click') as any, { fields: [{ class: 'role', value: 'Hero' }] });
       expect(emit).toHaveBeenCalledWith('modified');
 
       // 4. removeNestedItem on valid array and invalid non-array
@@ -226,14 +279,9 @@ describe('useRelationshipBlock', () => {
     });
 
     it('deletes relationshipStates when matched has both динамика_отношений and relationshipStates (line 161)', async () => {
-      // matched is newly created object; manually test by setting foreignItem
-      // loadForeignItem creates empty matched and sets dynamicContainers
-      // to force line 160-162, we need the entity NOT to have a prior relation
-      // AND matched to have both special fields — but matched is always {}
-      // So we force it differently: set foreignItem directly and trigger watcher
       const rel = useRelationshipBlock(props, emit);
 
-      // Manually set foreignItem to trigger the watcher branch at line 183-188
+      // Manually set foreignItem to trigger the watcher branch
       rel.foreignItem.value = {
         target_char: 'char_2',
         семейные_отношения: [{ rel: 'sister' }],
@@ -270,8 +318,8 @@ describe('useRelationshipBlock', () => {
       await rel.onLinkChange('target_char')({ target: { value: 'char_empty' } } as any);
 
       expect(rel.foreignItem.value).toBeDefined();
-      expect(rel.foreignItem.value['динамика_отношений']).toEqual([]);
-      expect(rel.foreignItem.value['relationshipStates']).toBeUndefined();
+      expect(rel.foreignItem.value?.['динамика_отношений']).toEqual([]);
+      expect(rel.foreignItem.value?.['relationshipStates']).toBeUndefined();
     });
 
     it('addNestedItem via subConf template in allTemplates (line 242)', () => {
@@ -288,6 +336,67 @@ describe('useRelationshipBlock', () => {
       expect(props.item.foreign_ids[0].no_val).toBe('');
       expect(emit).toHaveBeenCalledWith('modified');
     });
+
+    it('covers makeSelectHandler, notifyNestedItemUpdate, getDynamicContainerFields, and hidden fieldOverrides', () => {
+      props.allTemplates = {
+        tpl_dyn: { fields: [{ class: 'field_dyn', label: 'Field Dyn' }] },
+      };
+      const rel = useRelationshipBlock(props, emit);
+
+      // 1. makeSelectHandler with valid index and list
+      props.item.custom_dynamics = [{ foreign_id: 'old_id' }];
+      const handler = rel.makeSelectHandler(0);
+      handler({ target: { value: 'new_id' } } as any);
+      expect(props.item.custom_dynamics[0].foreign_id).toBe('new_id');
+      expect(emit).toHaveBeenCalledWith('item-updated');
+      expect(emit).toHaveBeenCalledWith('modified');
+
+      // 2. makeSelectHandler with out of bounds index or missing list
+      const outOfBoundsHandler = rel.makeSelectHandler(99);
+      outOfBoundsHandler({ target: { value: 'none' } } as any);
+
+      const missingListHandler = rel.makeSelectHandler(0, { id: 'non_existent_list' });
+      missingListHandler({ target: { value: 'none' } } as any);
+
+      // 3. notifyNestedItemUpdate with and without path
+      rel.notifyNestedItemUpdate();
+      rel.notifyNestedItemUpdate('custom_path');
+      expect(emit).toHaveBeenCalledWith('item-updated');
+
+      // 4. getDynamicContainerFields
+      expect(rel.getDynamicContainerFields(undefined as any)).toEqual([]);
+      expect(rel.getDynamicContainerFields({ fields: [{ class: 'direct_field' }] })).toEqual([{ class: 'direct_field' }]);
+      expect(rel.getDynamicContainerFields({ template: 'tpl_dyn' })).toEqual([{ class: 'field_dyn', label: 'Field Dyn' }]);
+      expect(rel.getDynamicContainerFields({ template: 'unknown_tpl' })).toEqual([]);
+
+      // 5. getResolvedFields with hidden override
+      const relHidden = useRelationshipBlock({
+        ...props,
+        templateConf: {
+          fields: [
+            { class: 'visible_field', label: 'Visible' },
+            { class: 'hidden_field', label: 'Hidden' },
+          ],
+          fieldOverrides: {
+            hidden_field: { hidden: true },
+          },
+        },
+      }, emit);
+      const resolved = relHidden.getResolvedFields();
+      expect(resolved.length).toBe(1);
+      expect(resolved[0].class).toBe('visible_field');
+
+      // 6. addNestedItem with number field type
+      rel.addNestedItem(undefined, {
+        id: 'num_list',
+        fields: [{ class: 'count', type: 'number' }, { class: 'tag', type: 'text' }],
+      });
+      expect(props.item.num_list[0].count).toBe(0);
+      expect(props.item.num_list[0].tag).toBe('');
+
+      // 7. removeNestedItem with missing path or missing item[path]
+      rel.removeNestedItem(0, { no_path: true }, { id: '' } as any);
+      rel.removeNestedItem(0, { uninitialized: {} }, { id: 'missing_prop' });
+    });
   });
 });
-

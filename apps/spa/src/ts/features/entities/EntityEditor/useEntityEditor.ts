@@ -10,7 +10,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   const loading = ref(true);
   const isInitializing = ref(false); 
   const config = shallowRef<SchemaConfig | null>(null);
-  const formData = ref<Record<string, unknown>>({});
+  const formData = ref<Record<string, unknown>>(props.initialData ? JSON.parse(JSON.stringify(props.initialData)) : {});
   const lastEmittedData = ref<string | null>(null);
   const foreignUpdates = ref<Record<string, unknown>>({});
   const activeSection = ref('');

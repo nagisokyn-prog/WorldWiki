@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ref } from 'vue';
 import { useSchemaDnD } from '../useSchemaDnD';
 
@@ -27,15 +27,23 @@ describe('useSchemaDnD', () => {
     expect(activeSection.value.items[2].type).toBe('number');
   });
 
-  it('handles palette drag and drop for module', () => {
+  it('handles palette drag and drop for module with and without timeline in template', () => {
     const dnd = useSchemaDnD(activeSection, activeSectionIdx);
     const event = { dataTransfer: { effectAllowed: '', setData: () => {} } } as any;
 
-    dnd.handleDragStartPalette(event, 'module', 'timelineEvents', 'Timeline');
+    // Timeline template
+    dnd.handleDragStartPalette(event, 'module', 'timelineEvents', 'Timeline', 'timelineEvents');
     dnd.handleDropNew(event);
 
     expect(activeSection.value.items.length).toBe(3);
     expect(activeSection.value.items[2].template).toBe('timelineEvents');
+    expect(activeSection.value.items[2].type).toBe('timeline');
+
+    // Non-timeline template
+    dnd.handleDragStartPalette(event, 'module', 'chars', 'Chars', 'characters');
+    dnd.handleDropNew(event);
+    expect(activeSection.value.items.length).toBe(4);
+    expect(activeSection.value.items[3].type).toBe('dynamic');
   });
 
   it('reorders canvas items via item drop', () => {
@@ -102,7 +110,7 @@ describe('useSchemaDnD', () => {
       expect(activeSection.value.items.length).toBe(2);
     });
 
-    it('handles handleItemDrop for palette atomic, palette module (dynamic), and canvas reorder', () => {
+    it('handles handleItemDrop for palette atomic, timeline module, and canvas reorders', () => {
       const dnd = useSchemaDnD(activeSection, activeSectionIdx);
       const event = { dataTransfer: { effectAllowed: '', setData: () => {} }, preventDefault: () => {} } as any;
 
@@ -110,6 +118,11 @@ describe('useSchemaDnD', () => {
       dnd.handleDragStartPalette(event, 'atomic', 'boolean', 'Checkbox');
       dnd.handleItemDrop(1);
       expect(activeSection.value.items[1].type).toBe('boolean');
+
+      // Drop palette timeline module at specific target index
+      dnd.handleDragStartPalette(event, 'module', 'timelineList', 'Timeline Module', 'timeline_tpl');
+      dnd.handleItemDrop(2);
+      expect(activeSection.value.items[2].type).toBe('timeline');
 
       // Drop palette dynamic module at specific target index
       dnd.handleDragStartPalette(event, 'module', 'characters', 'Chars');
@@ -120,7 +133,11 @@ describe('useSchemaDnD', () => {
       activeSectionIdx.value = 1;
       dnd.handleItemDragStart(event, 2);
       dnd.handleItemDrop(0);
-      expect(activeSection.value.items.length).toBe(4);
+      expect(activeSection.value.items.length).toBe(5);
+
+      // Reorder from idx 0 to idx 2 (srcIdx < targetIdx)
+      dnd.handleItemDragStart(event, 0);
+      dnd.handleItemDrop(2);
 
       // Guard: targetIdx 0 in activeSectionIdx 0 (cannot drop onto title)
       activeSectionIdx.value = 0;
@@ -128,7 +145,25 @@ describe('useSchemaDnD', () => {
       dnd.handleItemDrop(0);
     });
 
-    it('initializes customFields if undefined in handleDropIntoModule', () => {
+    it('handles missing items array in section for drop handlers', () => {
+      const emptySection = ref({} as any);
+      const dnd = useSchemaDnD(emptySection, activeSectionIdx);
+      const event = { dataTransfer: { effectAllowed: '', setData: () => {} } } as any;
+
+      // handleDropNew with uninitialized items
+      dnd.handleDragStartPalette(event, 'atomic', 'text', 'My Field');
+      dnd.handleDropNew(event);
+      expect(emptySection.value.items.length).toBe(1);
+
+      // handleItemDrop with uninitialized items
+      emptySection.value.items = undefined as any;
+      activeSectionIdx.value = 1;
+      dnd.handleDragStartPalette(event, 'atomic', 'number', 'Num');
+      dnd.handleItemDrop(0);
+      expect(emptySection.value.items.length).toBe(1);
+    });
+
+    it('initializes customFields if undefined, and ignores non-atomic or missing module in handleDropIntoModule', () => {
       activeSection.value.items.push({
         id: 'mod_no_fields',
       }); // no customFields property
@@ -136,12 +171,21 @@ describe('useSchemaDnD', () => {
       const dnd = useSchemaDnD(activeSection, activeSectionIdx);
       const event = { dataTransfer: { effectAllowed: '', setData: () => {} } } as any;
 
+      // Drop atomic into module
       dnd.handleDragStartPalette(event, 'atomic', 'select', 'Dropdown');
       dnd.handleDropIntoModule(2);
 
       expect(activeSection.value.items[2].customFields).toBeDefined();
       expect(activeSection.value.items[2].customFields.length).toBe(1);
+
+      // Drop into non-existent module index
+      dnd.handleDragStartPalette(event, 'atomic', 'text', 'Label');
+      dnd.handleDropIntoModule(999);
+
+      // Drop module into module (ignored)
+      dnd.handleDragStartPalette(event, 'module', 'mod', 'Mod');
+      dnd.handleDropIntoModule(2);
+      expect(activeSection.value.items[2].customFields.length).toBe(1);
     });
   });
 });
-

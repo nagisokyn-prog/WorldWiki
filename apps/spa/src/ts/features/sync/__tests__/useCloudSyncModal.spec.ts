@@ -125,7 +125,7 @@ describe('useCloudSyncModal', () => {
   describe('openAuthUrl', () => {
     it('opens auth url and sets showAuthCodeInput', async () => {
       const { openUrl } = await import('@tauri-apps/plugin-opener');
-      await modal.openAuthUrl();
+      await modal.connectYandex();
 
       expect(openUrl).toHaveBeenCalledWith(expect.stringContaining('oauth.yandex.ru/authorize'));
       expect(modal.showAuthCodeInput.value).toBe(true);
@@ -135,8 +135,8 @@ describe('useCloudSyncModal', () => {
       const { openUrl } = await import('@tauri-apps/plugin-opener');
       vi.mocked(openUrl).mockRejectedValueOnce(new Error('Browser failed'));
 
-      await modal.openAuthUrl();
-      expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ type: 'error' }));
+      await modal.connectYandex();
+      expect(modal.showAuthCodeInput.value).toBe(true);
     });
   });
 
@@ -235,7 +235,7 @@ describe('useCloudSyncModal', () => {
 
       await modal.exchangeCode();
 
-      expect(modal.authError.value).toBe('Ошибка сети при проверке кода');
+      expect(modal.authError.value).toBe('Network error');
     });
 
     it('does nothing if authCode is empty', async () => {

@@ -41,6 +41,21 @@ describe('useParticipantsPanel', () => {
     wrapper.unmount();
   });
 
+  it('normalizes string participants, handles null/undefined participants', () => {
+    props.participants = ['character:char_1', 'plain_id'];
+    const panel = useParticipantsPanel(props, emit);
+
+    const norm = panel.normalizedParticipants.value;
+    expect(norm.length).toBe(2);
+    expect(norm[0].type).toBe('character');
+    expect(norm[0].id).toBe('char_1');
+    expect(norm[1].type).toBe('character');
+    expect(norm[1].id).toBe('plain_id');
+
+    const emptyPanel = useParticipantsPanel({ project: 'p1', participants: null }, emit);
+    expect(emptyPanel.normalizedParticipants.value).toEqual([]);
+  });
+
   it('resolves entity names with various formats, nested objects, and fallbacks in mounted component', async () => {
     vi.mocked(api.getEntities).mockResolvedValueOnce([
       { id: '1', name: 'Direct Name' },

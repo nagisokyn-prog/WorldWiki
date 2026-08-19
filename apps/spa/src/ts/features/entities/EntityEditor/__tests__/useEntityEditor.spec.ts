@@ -120,7 +120,7 @@ describe('useEntityEditor', () => {
     expect(staticOptions).toEqual([{ value: '1', label: 'One' }]);
   });
 
-  it('handles photos and photo inputs', () => {
+  it('handles photos and photo inputs', async () => {
     const editor = useEntityEditor(props, emit);
     const mockInput = { click: vi.fn() };
     editor.photoInputs.value = { avatar: mockInput };
@@ -130,5 +130,40 @@ describe('useEntityEditor', () => {
 
     editor.removePhoto('avatar');
     expect(editor.formData.value.avatar).toBe('');
+
+    // handlePhotoFile
+    const fakeFile = new File(['fake-content'], 'photo.png', { type: 'image/png' });
+    await editor.handlePhotoFile({ target: { files: [fakeFile] } }, 'avatar');
+    expect(editor.formData.value.avatar).toBe('/path/to/photo.jpg');
+
+    // handlePhotoDrop
+    await editor.handlePhotoDrop({ dataTransfer: { files: [fakeFile] } }, 'avatar');
+    expect(editor.formData.value.avatar).toBe('/path/to/photo.jpg');
+  });
+
+  it('handles deeply nested foreign updates and dynamic item edge cases', () => {
+    const editor = useEntityEditor(props, emit);
+
+    editor.handleForeignUpdate({ foreignPath: 'profile.stats.strength', value: 18 });
+    expect(editor.foreignUpdates.value.profile?.stats?.strength).toBe(18);
+
+    // addDynamicItem with undefined path
+    editor.addDynamicItem('', 'item_tpl');
+
+    // addDynamicItem with direct object
+    editor.addDynamicItem('skills', {
+      fields: [{ class: 'skillName', default: 'Archery' }],
+    });
+    expect(editor.formData.value.skills).toBeDefined();
+    expect(editor.formData.value.skills[0].skillName).toBe('Archery');
+  });
+
+  it('handles toggle entity history events', () => {
+    const editor = useEntityEditor(props, emit);
+
+    const toggleEvent = new CustomEvent('ww:toggle-entity-history', {
+      detail: { id: 'char_1' },
+    });
+    document.dispatchEvent(toggleEvent);
   });
 });

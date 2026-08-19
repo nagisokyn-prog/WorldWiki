@@ -37,9 +37,28 @@ describe('useGlobalCalendarWidget', () => {
   it('computes master date and local date', async () => {
     const widget = useGlobalCalendarWidget(props);
 
-    await Promise.resolve();
+    // Initial state without loaded master calendar
+    expect(widget.formattedMasterDate.value).toBe('');
+    expect(widget.formattedLocalDate.value).toBe('');
+
+    // Setup master calendar and local calendars
+    const store = useCalendarStore();
+    const list = await store.getCalendars('my-proj');
+    widget.masterCalendar.value = list.find((c: any) => c.is_master);
+    widget.localCalendars.value = list.filter((c: any) => !c.is_master);
 
     expect(widget.currentMasterInput.value.year).toBe(1);
-    expect(widget.formattedMasterDate.value).toBeDefined();
+    expect(widget.formattedMasterDate.value).toBeTruthy();
+
+    // With no selected local cal
+    expect(widget.formattedLocalDate.value).toBe('');
+
+    // Select valid local calendar
+    widget.selectedLocalCal.value = 'cal_local';
+    expect(widget.formattedLocalDate.value).toBeTruthy();
+
+    // Select unknown local calendar
+    widget.selectedLocalCal.value = 'unknown_cal';
+    expect(widget.formattedLocalDate.value).toBe('');
   });
 });

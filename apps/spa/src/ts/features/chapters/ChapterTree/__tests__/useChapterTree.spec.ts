@@ -92,9 +92,88 @@ describe('useChapterTree', () => {
     expect(api.updateVolume).toHaveBeenCalledWith('my-proj', 'vol_1', 'Renamed Volume');
   });
 
-  it('goes back to launcher', () => {
+  it('handles creation and inline creation branches', async () => {
     const tree = useChapterTree(props, emit);
-    tree.goBack();
-    expect(tree.goBack).toBeDefined();
+
+    tree.explorerTreeRef.value = {
+      startRename: vi.fn(),
+      expandNode: vi.fn(),
+      startCreate: vi.fn(),
+    };
+
+    // Create volume in manuscript
+    await tree.handleCreate({ sectionId: 'manuscript' });
+
+    // Create arc in manuscript
+    await tree.handleCreate({ sectionId: 'manuscript', parentId: 'vol_1' });
+
+    // Create entity with name
+    await tree.handleCreate({ sectionId: 'character', name: 'Lancelot' });
+    expect(emit).toHaveBeenCalledWith('add-entity', 'character', 'Lancelot');
+
+    // Create inline for root manuscript
+    await tree.handleCreateInline({ sectionId: 'manuscript' });
+    expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: null, volumeId: null });
+
+    // Create inline for volume
+    await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'vol_1' });
+
+    // Create inline for non-manuscript
+    await tree.handleCreateInline({ sectionId: 'character' });
+    expect(tree.explorerTreeRef.value.startCreate).toHaveBeenCalledWith('character');
+  });
+
+  it('handles renaming of arc, entity, and temporary nodes', async () => {
+    const tree = useChapterTree(props, emit);
+
+    // Rename arc
+    await tree.handleRename({ data: { type: 'arc', original: { id: 'arc_1' } } }, 'Renamed Arc');
+    expect(api.updateArc).toHaveBeenCalledWith('my-proj', 'arc_1', 'Renamed Arc', null);
+
+    // Rename temp volume
+    await tree.handleRename({ id: '__new_volume__', data: { type: 'volume' } }, 'New Vol');
+    expect(api.createVolume).toHaveBeenCalledWith('my-proj', 'New Vol');
+
+    // Rename temp arc
+    await tree.handleRename({ id: '__new_arc__123', data: { original: { volumeId: 'vol_1' } } }, 'New Arc');
+    expect(api.createArc).toHaveBeenCalledWith('my-proj', 'New Arc', 'vol_1');
+
+    // Rename entity
+    await tree.handleRename({ data: { isEntity: true, type: 'character', original: { id: 'char_1' } } }, 'King Arthur');
+    expect(emit).toHaveBeenCalledWith('rename-entity', 'character', 'char_1', 'King Arthur');
+
+    // Cancel rename for temporary node
+    await tree.handleCancelRename({ id: '__new_volume__' });
+  });
+
+  it('handles deletion of volume, arc, chapter, and entity', async () => {
+    const tree = useChapterTree(props, emit);
+
+    // Delete volume
+    await tree.handleDelete(['vol_1']);
+    expect(emit).toHaveBeenCalledWith('delete-volume', expect.anything(), expect.anything(), expect.anything(), false);
+
+    // Delete arc
+    await tree.handleDelete(['arc_1']);
+    expect(emit).toHaveBeenCalledWith('delete-arc', expect.anything(), expect.anything(), false);
+
+    // Delete chapter
+    await tree.handleDelete(['ch_1']);
+    expect(emit).toHaveBeenCalledWith('delete-chapter', expect.anything(), false);
+
+    // Delete entity
+    await tree.handleDelete(['entity:character:char_1']);
+  });
+
+  it('handles custom event listeners', () => {
+    useChapterTree(props, emit);
+
+    document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+    document.dispatchEvent(
+      new CustomEvent('ww:entity-renamed', {
+        detail: { id: 'char_1', type: 'character', name: 'Arthur Pendragon' },
+      })
+    );
   });
 });
+

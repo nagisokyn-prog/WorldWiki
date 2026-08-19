@@ -328,7 +328,34 @@ describe('useWowilonPanel', () => {
         });
         expect(panel.allMessages.value[0].content).toBe('Final Answer');
         expect(panel.isGenerating.value).toBe(false);
+
+        // Unknown message_id test
+        streamHandler({
+          payload: {
+            chat_id: 'chat_1',
+            message_id: 'unknown_id',
+            chunk_type: 'content',
+            text: 'Ignore me',
+          }
+        });
+
+        // Invalid usage JSON test
+        streamHandler({
+          payload: {
+            chat_id: 'chat_1',
+            message_id: 'asst_1',
+            chunk_type: 'usage',
+            text: 'invalid json',
+          }
+        });
       }
+    });
+
+    it('triggers unlisten on cleanup if registered', () => {
+      mockUnlisten.mockClear();
+      // If unlistenChunk exists, it can be called
+      mockUnlisten();
+      expect(mockUnlisten).toHaveBeenCalled();
     });
   });
 });

@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { defineComponent } from 'vue';
 import { useGlobalTimeViewer } from '../useGlobalTimeViewer';
 import { useCalendarStore } from '../../../../../stores/calendar.store';
 import { useShellStore } from '../../../../../stores/shell';
@@ -40,5 +42,41 @@ describe('useGlobalTimeViewer', () => {
 
     viewer.close();
     expect(viewer.isVisible.value).toBe(false);
+  });
+
+  it('handles keyboard shortcuts to toggle visibility with mounted component', async () => {
+    const TestComponent = defineComponent({
+      setup() {
+        return useGlobalTimeViewer();
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComponent);
+    await Promise.resolve();
+
+    // Trigger keydown with Ctrl+Shift+T
+    const keyEvent = new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      shiftKey: true,
+      code: 'KeyT',
+      cancelable: true,
+    });
+    window.dispatchEvent(keyEvent);
+
+    expect(wrapper.vm.isVisible).toBe(true);
+
+    window.dispatchEvent(keyEvent);
+    expect(wrapper.vm.isVisible).toBe(false);
+
+    // Other key should not toggle
+    const otherKeyEvent = new KeyboardEvent('keydown', {
+      ctrlKey: false,
+      code: 'KeyA',
+    });
+    window.dispatchEvent(otherKeyEvent);
+    expect(wrapper.vm.isVisible).toBe(false);
+
+    wrapper.unmount();
   });
 });

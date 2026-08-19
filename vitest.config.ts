@@ -45,7 +45,13 @@ export default defineConfig({
         '**/generated/**',
         '**/auto-imports.d.ts',
         '**/components.d.ts',
-        '**/vite-env.d.ts'
+        '**/vite-env.d.ts',
+        // Type-only / re-export files — no runtime logic to test
+        '**/*.types.ts',
+        '**/*.model.ts',
+        'apps/spa/src/ts/services/api.service.ts',
+        'apps/spa/src/ts/stores/index.ts',
+        'packages/resources/src/index.ts'
       ]
     }
   },

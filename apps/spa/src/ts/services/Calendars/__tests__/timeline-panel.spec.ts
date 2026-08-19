@@ -65,10 +65,44 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
     const minOpts = setupResult.getMinuteOptions('cal_1');
     expect(minOpts.length).toBe(60);
 
+    const noTimeMinOpts = setupResult.getMinuteOptions('missing');
+    expect(noTimeMinOpts.length).toBe(60);
+
     setupResult.toggleCalendarSelection('cal_1');
     expect(setupResult.selectedCalendarIds.value).toContain('cal_1');
 
     setupResult.onChange();
     expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('handles getUniversalDateObject and updateEventFullDate', () => {
+    const setupResult: any = (TimelinePanelComponent.setup as any)(props, { emit });
+    
+    const udo = setupResult.getUniversalDateObject(props.events[0]);
+    expect(udo.calendar_id).toBe('cal_1');
+    expect(udo.original_input.year).toBe(10);
+    expect(udo.original_input.hour).toBe(10);
+    expect(udo.original_input.minute).toBe(30);
+
+    setupResult.updateEventFullDate(0, {
+      calendar_id: 'cal_2',
+      original_input: {
+        era_index: 0,
+        year: 20,
+        month: 1,
+        day: 15,
+        hour: 14,
+        minute: 45
+      }
+    });
+
+    expect(emit).toHaveBeenCalledWith('update:events', [
+      {
+        calendar_id: 'cal_2',
+        date: { era: 0, year: 20, month: 1, day: 15 },
+        time: { hour: 14, minute: 45 },
+        description: 'Event 1'
+      }
+    ]);
   });
 });

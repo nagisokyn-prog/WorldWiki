@@ -120,4 +120,63 @@ describe('useRelationshipBlock', () => {
       динамика_отношений: [],
     });
   });
+
+  it('handles makeSelectHandler and notifyNestedItemUpdate', () => {
+    const rel = useRelationshipBlock(props, emit);
+
+    const handler = rel.makeSelectHandler(0);
+    handler({ target: { value: 'dyn_2' } } as any);
+    expect(props.item.custom_dynamics[0].foreign_id).toBe('dyn_2');
+    expect(emit).toHaveBeenCalledWith('modified');
+
+    rel.notifyNestedItemUpdate('custom_dynamics');
+    expect(emit).toHaveBeenCalledWith('modified');
+  });
+
+  it('handles getOptions and getDynamicContainerFields', () => {
+    props.allTemplates = {
+      dyn_tpl: { fields: [{ class: 'f1', label: 'Field 1' }] },
+    };
+    props.referenceData.character_list = [{ value: 'c1', label: 'C1' }];
+    const rel = useRelationshipBlock(props, emit);
+
+    // Static options
+    expect(rel.getOptions({ options: [{ value: '1', label: '1' }] })).toEqual([{ value: '1', label: '1' }]);
+
+    // EntityType referenceData
+    expect(rel.getOptions({ entityType: 'character' })).toEqual([{ value: 'c1', label: 'C1' }]);
+
+    // Empty fallback
+    expect(rel.getOptions({})).toEqual([]);
+
+    // getDynamicContainerFields
+    expect(rel.getDynamicContainerFields({ fields: [{ class: 'f0' }] })).toEqual([{ class: 'f0' }]);
+    expect(rel.getDynamicContainerFields({ template: 'dyn_tpl' })).toEqual([{ class: 'f1', label: 'Field 1' }]);
+    expect(rel.getDynamicContainerFields({})).toEqual([]);
+  });
+
+  it('creates default matched object when foreign entity has no prior relation', async () => {
+    props.templateConf.dynamicContainers = [{ id: 'dynamics', dataPath: 'dynamics' }];
+    vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+      id: 'char_empty',
+      data: { characterRelationships: [] },
+    } as any);
+
+    const rel = useRelationshipBlock(props, emit);
+    await rel.onLinkChange('target_char')({ target: { value: 'char_empty' } } as any);
+
+    expect(rel.foreignItem.value).toBeDefined();
+    expect(rel.foreignItem.value.target_char).toBe('char_1');
+    expect(rel.foreignItem.value.dynamics).toEqual([]);
+  });
+
+  it('handles foreign load errors gracefully', async () => {
+    vi.mocked(entityApi.getEntity).mockRejectedValueOnce(new Error('Network error'));
+
+    const rel = useRelationshipBlock(props, emit);
+    await rel.onLinkChange('target_char')({ target: { value: 'char_err' } } as any);
+
+    expect(rel.foreignError.value).toContain('Ошибка загрузки');
+    expect(rel.foreignLoading.value).toBe(false);
+  });
 });

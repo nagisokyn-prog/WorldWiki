@@ -28,9 +28,9 @@ describe('projectService (Contract & Integration)', () => {
       const res1 = await projectService.getProjects();
       expect(res1).toHaveLength(2);
       expect(res1[0].icon).toBe('📁');
-      expect(res1[0].stats.characters).toBe(5);
+      expect(res1[0].stats!.characters).toBe(5);
       expect(res1[1].icon).toBe('🌍');
-      expect(res1[1].stats).toEqual({ characters: 0, organizations: 0, states: 0, chapters: 0 });
+      expect(res1[1].stats!).toEqual({ characters: 0, organizations: 0, states: 0, chapters: 0 });
 
       // Second call should return cached data
       const res2 = await projectService.getProjects();

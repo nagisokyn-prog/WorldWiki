@@ -108,16 +108,29 @@ describe('useTreeSelection', () => {
     expect(onDelete).toHaveBeenCalled();
   });
 
-  it('handleKeydown navigates with ArrowUp and ArrowDown', async () => {
+  it('handleKeydown navigates with ArrowUp and ArrowDown and scrolls into view', async () => {
+    vi.useFakeTimers();
+    const scrollMock = vi.fn();
+    const div = document.createElement('div');
+    div.setAttribute('data-id', '1');
+    div.scrollIntoView = scrollMock;
+    document.body.appendChild(div);
+
     const { handleKeydown, isSelected, selectedIds } = useTreeSelection();
 
     await handleKeydown(makeKeyEvt('ArrowDown'), items);
     expect(selectedIds.value).toEqual(['1']);
+
+    vi.advanceTimersByTime(20);
+    expect(scrollMock).toHaveBeenCalledWith({ block: 'nearest' });
 
     await handleKeydown(makeKeyEvt('ArrowDown'), items);
     expect(selectedIds.value).toEqual(['2']);
 
     await handleKeydown(makeKeyEvt('ArrowUp'), items);
     expect(selectedIds.value).toEqual(['1']);
+
+    document.body.removeChild(div);
+    vi.useRealTimers();
   });
 });

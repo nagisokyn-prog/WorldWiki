@@ -96,6 +96,12 @@ describe('chapterApi', () => {
       warnSpy.mockRestore();
       errorSpy.mockRestore();
     });
+
+    it('handles saveChapter with content but without id', async () => {
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'new_id' } as any);
+      const res = await chapterApi.saveChapter('my-proj', { content: '<p>Only content</p>' });
+      expect(res).toEqual({ success: true, id: 'new_id' });
+    });
   });
 
   describe('deleteChapter & revisions', () => {
@@ -140,6 +146,11 @@ describe('chapterApi', () => {
       expect(res.volumes.length).toBe(1);
       expect(res.arcs.length).toBe(1);
       expect(res.chapters.length).toBe(1);
+
+      // when volumes, arcs, chapters are undefined
+      vi.mocked(invoke).mockResolvedValueOnce({});
+      const emptyRes = await chapterApi.getHierarchy('p1');
+      expect(emptyRes).toEqual({});
     });
 
     it('createVolume, updateVolume, deleteVolume', async () => {
@@ -184,16 +195,18 @@ describe('chapterApi', () => {
   });
 
   describe('Plan items methods', () => {
-    it('getPlanItems filters and sorts plans', async () => {
+    it('getPlanItems filters and sorts plans including items with missing sort_order', async () => {
       vi.mocked(invoke).mockResolvedValueOnce([
         { id: 'p1', parent_type: 'chapter', parent_ref: 'ch1', title: 'Plan 1', completed: false, sort_order: 2 },
         { id: 'p2', parent_type: 'chapter', parent_ref: 'ch1', title: 'Plan 0', completed: true, sort_order: 1 },
+        { id: 'p0', parent_type: 'chapter', parent_ref: 'ch1', title: 'Plan No Order', completed: false }, // missing sort_order
         { id: 'p3', parent_type: 'arc', parent_ref: 'a1', title: 'Other' },
       ]);
 
       const res = await chapterApi.getPlanItems('proj', 'chapter', 'ch1');
 
       expect(res).toEqual([
+        { id: 'p0', parentType: 'chapter', parentId: 'ch1', text: 'Plan No Order', done: false, sort_order: undefined },
         { id: 'p2', parentType: 'chapter', parentId: 'ch1', text: 'Plan 0', done: true, sort_order: 1 },
         { id: 'p1', parentType: 'chapter', parentId: 'ch1', text: 'Plan 1', done: false, sort_order: 2 },
       ]);

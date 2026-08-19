@@ -51,6 +51,11 @@ describe('useCalendarOrigin', () => {
       mockSettingsCb({ dropdowns: { wheelOrientation: 'vertical' } });
       expect((wrapper.vm as any).wheelHorizontal).toBe(false);
     }
+
+    // Mount with existing точка_отсчета
+    const existingWrapper = mount(TestComp, { props });
+    await flushPromises();
+    expect(props.modelValue.точка_отсчета.год).toBe(1);
   });
 
   it('handles updateOriginField when origin is defined and when missing', () => {

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/21</span>
+                <span class='fraction'>21/21</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">73.33% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>11/15</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/19</span>
+                <span class='fraction'>19/19</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -122,43 +122,43 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * @file entity.service.ts
  * @description Core service for Entity Domain
@@ -169,44 +169,44 @@ import { entityApi } from './entity.api';
 import type { EntityData } from './entity.types';
 &nbsp;
 class EntityService {
-  async <span class="fstat-no" title="function not covered" >list(p</span>roject: string, type: string, filterParams: Record&lt;string, unknown&gt; | null = <span class="branch-0 cbranch-no" title="branch not covered" >null): Promise&lt;EntityData[]&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    if (!type) {</span>
-<span class="cstat-no" title="statement not covered" >      console.error('❌ Error: entityService.list called without type (type = undefined)');</span>
-<span class="cstat-no" title="statement not covered" >      return [];</span>
+  async list(project: string, type: string, filterParams: Record&lt;string, unknown&gt; | null = null): Promise&lt;EntityData[]&gt; {
+    if (!type) {
+      console.error('❌ Error: entityService.list called without type (type = undefined)');
+      return [];
     }
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    try {</span>
-      const data = <span class="cstat-no" title="statement not covered" >await entityApi.getEntityList(project, type, filterParams || undefined) as unknown;</span>
-      const dataObj = <span class="cstat-no" title="statement not covered" >data as Record&lt;string, unknown&gt; | null;</span>
-      const plural = <span class="cstat-no" title="statement not covered" >type + (type.endsWith('s') ? '' : 's');</span>
-      const entities = (<span class="cstat-no" title="statement not covered" >dataObj?.[plural] || data || []) as (EntityData | string)[];</span>
+    try {
+      const data = await entityApi.getEntityList(project, type, filterParams || undefined) as unknown;
+      const dataObj = data as Record&lt;string, unknown&gt; | null;
+      const plural = type + (type.endsWith('s') ? <span class="branch-0 cbranch-no" title="branch not covered" >'' : '</span>s');
+      const entities = (dataObj?.[plural] || <span class="branch-1 cbranch-no" title="branch not covered" >data || <span class="branch-2 cbranch-no" title="branch not covered" >[</span>]) as (EntityData | string)[];</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      return entities.<span class="fstat-no" title="function not covered" >map(i</span>tem =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >        if (typeof item === 'string') {</span>
-<span class="cstat-no" title="statement not covered" >          try { <span class="cstat-no" title="statement not covered" >return JSON.parse(item) as EntityData; }</span> catch { <span class="cstat-no" title="statement not covered" >return null; }</span></span>
+      return entities.map(item =&gt; {
+        if (typeof item === 'string') {
+          try { return JSON.parse(item) as EntityData; } catch { return null; }
         }
-<span class="cstat-no" title="statement not covered" >        return item as EntityData;</span>
-      }).<span class="fstat-no" title="function not covered" >filter((i</span>tem): item is EntityData =&gt; <span class="cstat-no" title="statement not covered" >item !== null)</span>;
+        return item as EntityData;
+      }).filter((item): item is EntityData =&gt; item !== null);
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.error(`Error loading entities ${type}`, error);</span>
-<span class="cstat-no" title="statement not covered" >      throw error;</span>
+      console.error(`Error loading entities ${type}`, error);
+      throw error;
     }
   }
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >get(p</span>roject: string, type: string, id: string): Promise&lt;EntityData&gt; {
-<span class="cstat-no" title="statement not covered" >    return await entityApi.getEntity(project, type, id) as EntityData;</span>
+  async get(project: string, type: string, id: string): Promise&lt;EntityData&gt; {
+    return await entityApi.getEntity(project, type, id) as EntityData;
   }
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >save(p</span>roject: string, type: string, data: EntityData, id: string | null = <span class="branch-0 cbranch-no" title="branch not covered" >null): Promise&lt;{ success: boolean; id?: string }&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    return await entityApi.saveEntity(project, type, data as Record&lt;string, unknown&gt;, id || undefined, data.name);</span>
+  async save(project: string, type: string, data: EntityData, id: string | null = null): Promise&lt;{ success: boolean; id?: string }&gt; {
+    return await entityApi.saveEntity(project, type, data as Record&lt;string, unknown&gt;, id || <span class="branch-1 cbranch-no" title="branch not covered" >undefined, d</span>ata.name);
   }
 &nbsp;
-  async <span class="fstat-no" title="function not covered" >delete(p</span>roject: string, type: string, id: string): Promise&lt;{ success: boolean }&gt; {
-<span class="cstat-no" title="statement not covered" >    return await entityApi.deleteEntity(project, type, id);</span>
+  async delete(project: string, type: string, id: string): Promise&lt;{ success: boolean }&gt; {
+    return await entityApi.deleteEntity(project, type, id);
   }
 }
 &nbsp;
-export const entityService = <span class="cstat-no" title="statement not covered" >new EntityService();</span>
+export const entityService = new EntityService();
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -214,7 +214,7 @@ export const entityService = <span class="cstat-no" title="statement not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T16:37:05.526Z
+                at 2026-08-19T17:44:17.669Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>

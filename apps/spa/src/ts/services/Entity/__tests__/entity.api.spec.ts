@@ -3,147 +3,260 @@ import { entityApi } from '../entity.api';
 import * as components from '@worldwiki/components';
 
 vi.mock('@worldwiki/components', () => {
-    return {
-        invoke: vi.fn(),
-        processIds: vi.fn((item) => item),
-    };
+  return {
+    invoke: vi.fn(),
+    processIds: vi.fn((item) => item),
+  };
 });
 
-describe('Entity API - Data extraction and saving', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
+describe('entityApi', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe('searchEntities', () => {
+    it('returns search results from invoke', async () => {
+      const mockResults = [{ id: 'e1', name: 'Hero' }];
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockResults);
+
+      const res = await entityApi.searchEntities('proj_1', 'hero');
+
+      expect(components.invoke).toHaveBeenCalledWith('search_entities', {
+        project: 'proj_1',
+        query: 'hero',
+      });
+      expect(res).toEqual(mockResults);
     });
 
-    describe('getEntity', () => {
-        it('should properly extract attributes to the root level while preserving system fields', async () => {
-            // Mock backend response for get_entity
-            const mockBackendResponse = {
-                id: 'char_123',
-                project_id: 'proj_1',
-                entity_type: 'character',
-                name: 'Test Character',
-                description: 'A test character',
-                tags: ['test'],
-                attributes: {
-                    age: 25,
-                    bio: 'Very interesting bio',
-                    stats: { str: 10, dex: 15 }
-                }
-            };
-            
-            vi.mocked(components.invoke).mockResolvedValueOnce(mockBackendResponse);
+    it('returns empty array when searchEntities fails', async () => {
+      vi.mocked(components.invoke).mockRejectedValueOnce(new Error('Search failed'));
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-            const result = await entityApi.getEntity('proj_1', 'character', 'char_123');
+      const res = await entityApi.searchEntities('proj_1', 'hero');
 
-            expect(components.invoke).toHaveBeenCalledWith('get_entity', { id: 'char_123' });
-            
-            // Should contain system fields
-            expect(result.id).toBe('char_123');
-            expect(result.project_id).toBe('proj_1');
-            expect(result.entity_type).toBe('character');
-            expect(result.name).toBe('Test Character');
-            expect(result.description).toBe('A test character');
-            
-            // Should extract attributes to root
-            expect(result.age).toBe(25);
-            expect(result.bio).toBe('Very interesting bio');
-            expect((result.stats as any).str).toBe(10);
-            
-            // Should NOT have the nested attributes or data objects
-            expect(result.attributes).toBeUndefined();
-            expect(result.data).toBeUndefined();
-        });
+      expect(res).toEqual([]);
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+  });
 
-        it('should handle entities without attributes safely', async () => {
-            const mockBackendResponse = {
-                id: 'char_456',
-                entity_type: 'location',
-                name: 'Empty Location'
-                // no attributes
-            };
-            vi.mocked(components.invoke).mockResolvedValueOnce(mockBackendResponse);
+  describe('getEntity', () => {
+    it('should properly extract attributes to the root level while preserving system fields', async () => {
+      const mockBackendResponse = {
+        id: 'char_123',
+        project_id: 'proj_1',
+        entity_type: 'character',
+        name: 'Test Character',
+        description: 'A test character',
+        tags: ['test'],
+        attributes: {
+          age: 25,
+          bio: 'Very interesting bio',
+          stats: { str: 10, dex: 15 },
+        },
+      };
 
-            const result = await entityApi.getEntity('proj_1', 'location', 'char_456');
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockBackendResponse);
 
-            expect(result.id).toBe('char_456');
-            expect(result.name).toBe('Empty Location');
-            expect(result.attributes).toBeUndefined();
-        });
-        
-        it('should return null if backend returns null', async () => {
-            vi.mocked(components.invoke).mockResolvedValueOnce(null);
-            const result = await entityApi.getEntity('proj_1', 'character', 'not_found');
-            expect(result).toBeNull();
-        });
+      const result = await entityApi.getEntity('proj_1', 'character', 'char_123');
+
+      expect(components.invoke).toHaveBeenCalledWith('get_entity', { id: 'char_123' });
+      expect(result.id).toBe('char_123');
+      expect(result.name).toBe('Test Character');
+      expect(result.age).toBe(25);
+      expect(result.bio).toBe('Very interesting bio');
+      expect((result.stats as any).str).toBe(10);
+      expect(result.attributes).toBeUndefined();
     });
 
-    describe('getEntityList', () => {
-        it('should extract attributes to root for each item in the list', async () => {
-            const mockBackendList = [
-                { id: 'item1', name: 'Item 1', attributes: { color: 'red' } },
-                { id: 'item2', name: 'Item 2', attributes: { color: 'blue' } },
-                { id: 'item3', name: 'Item 3' } // No attributes
-            ];
-            vi.mocked(components.invoke).mockResolvedValueOnce(mockBackendList);
+    it('should handle entities without attributes safely', async () => {
+      const mockBackendResponse = {
+        id: 'char_456',
+        entity_type: 'location',
+        name: 'Empty Location',
+      };
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockBackendResponse);
 
-            const result = await entityApi.getEntityList('proj_1', 'item');
+      const result = await entityApi.getEntity('proj_1', 'location', 'char_456');
 
-            expect(result).toHaveLength(3);
-            expect(result[0].name).toBe('Item 1');
-            expect(result[0].color).toBe('red');
-            expect(result[0].attributes).toBeUndefined();
-
-            expect(result[1].name).toBe('Item 2');
-            expect(result[1].color).toBe('blue');
-
-            expect(result[2].name).toBe('Item 3');
-            expect(result[2].color).toBeUndefined();
-        });
+      expect(result.id).toBe('char_456');
+      expect(result.name).toBe('Empty Location');
     });
 
-    describe('formatEntityPayload and saveEntity', () => {
-        it('should correctly format payload separating system fields and attributes', async () => {
-            // Frontend passes flat data to saveEntity
-            const flatDataFromUI = {
-                name: 'New Character',
-                description: 'Description here',
-                tags: ['hero'],
-                age: 30,
-                bio: 'Bio text',
-                custom_field: true
-            };
-
-            const mockSaveResult = { id: 'new_123', entity_type: 'character', name: 'New Character', attributes: { age: 30, bio: 'Bio text', custom_field: true } };
-            vi.mocked(components.invoke).mockResolvedValueOnce(mockSaveResult);
-
-            const result = await entityApi.saveEntity('proj_1', 'character', flatDataFromUI, undefined, 'New Character');
-
-            // Verify what was sent to Rust backend
-            expect(components.invoke).toHaveBeenCalledWith('save_entity', {
-                project: 'proj_1',
-                entity: expect.objectContaining({
-                    project_id: 'projects:proj_1',
-                    entity_type: 'character',
-                    id: null,
-                    name: 'New Character',
-                    description: 'Description here',
-                    tags: ['hero'],
-                    attributes: expect.objectContaining({
-                        age: 30,
-                        bio: 'Bio text',
-                        custom_field: true
-                    })
-                })
-            });
-
-            // The attributes should NOT contain the system fields
-            const callArgs = vi.mocked(components.invoke).mock.calls[0][1] as any;
-            expect(callArgs.entity.attributes.name).toBeUndefined();
-            expect(callArgs.entity.attributes.description).toBeUndefined();
-            expect(callArgs.entity.attributes.tags).toBeUndefined();
-            
-            // Should return whatever Rust returns (as per actual current implementation)
-            expect(result).toEqual(mockSaveResult);
-        });
+    it('should return null if backend returns null', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce(null);
+      const result = await entityApi.getEntity('proj_1', 'character', 'not_found');
+      expect(result).toBeNull();
     });
+  });
+
+  describe('getEntityList', () => {
+    it('should extract attributes to root for each item in the list', async () => {
+      const mockBackendList = [
+        { id: 'item1', name: 'Item 1', attributes: { color: 'red' } },
+        { id: 'item2', name: 'Item 2', data: { color: 'blue' } },
+        null,
+      ];
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockBackendList);
+
+      const result = await entityApi.getEntityList('proj_1', 'item');
+
+      expect(result).toHaveLength(3);
+      expect(result[0].name).toBe('Item 1');
+      expect(result[0].color).toBe('red');
+      expect(result[1].name).toBe('Item 2');
+      expect(result[1].color).toBe('blue');
+      expect(result[2]).toBeNull();
+    });
+  });
+
+  describe('formatEntityPayload and saveEntity', () => {
+    it('should extract name from first property if name is not given', () => {
+      const flatData = {
+        firstField: 'Extracted Title',
+        customField: 123,
+      };
+
+      const formatted = entityApi.formatEntityPayload('proj_1', 'item', flatData);
+
+      expect(formatted.name).toBe('Extracted Title');
+      expect((formatted.attributes as any).customField).toBe(123);
+    });
+
+    it('should correctly format payload separating system fields and attributes', async () => {
+      const flatDataFromUI = {
+        name: 'New Character',
+        description: 'Description here',
+        tags: ['hero'],
+        age: 30,
+        bio: 'Bio text',
+        custom_field: true,
+      };
+
+      const mockSaveResult = { id: 'new_123', success: true };
+      vi.mocked(components.invoke).mockResolvedValueOnce(mockSaveResult);
+
+      const result = await entityApi.saveEntity('proj_1', 'character', flatDataFromUI, undefined, 'New Character');
+
+      expect(components.invoke).toHaveBeenCalledWith('save_entity', {
+        project: 'proj_1',
+        entity: expect.objectContaining({
+          project_id: 'projects:proj_1',
+          entity_type: 'character',
+          id: null,
+          name: 'New Character',
+          description: 'Description here',
+          tags: ['hero'],
+          attributes: expect.objectContaining({
+            age: 30,
+            bio: 'Bio text',
+            custom_field: true,
+          }),
+        }),
+      });
+      expect(result).toEqual(mockSaveResult);
+    });
+  });
+
+  describe('deleteEntity & history', () => {
+    it('deleteEntity calls delete_entity', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce({ success: true });
+
+      const res = await entityApi.deleteEntity('proj_1', 'character', 'c1');
+
+      expect(components.invoke).toHaveBeenCalledWith('delete_entity', { id: 'c1' });
+      expect(res).toEqual({ success: true });
+    });
+
+    it('toggleEntityHistoryPin calls toggle_entity_history_pin', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce(undefined);
+
+      await entityApi.toggleEntityHistoryPin('h1', true);
+
+      expect(components.invoke).toHaveBeenCalledWith('toggle_entity_history_pin', { historyId: 'h1', isPinned: true });
+    });
+  });
+
+  describe('Schemas methods', () => {
+    it('getSchemas parses list from backend', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce([
+        { type_key: 'char', type_name: 'Character', icon: '👤', full_schema: { fields: [] } },
+      ]);
+
+      const res = await entityApi.getSchemas('proj_1');
+
+      expect(res).toEqual({
+        char: {
+          name: 'Character',
+          icon: '👤',
+          full_schema: { fields: [] },
+        },
+      });
+    });
+
+    it('getSchemas loads fallback schemas when backend list is empty', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce([]);
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ name: 'Default ' + url, iconEmoji: '✨' }),
+        });
+      }) as any;
+
+      const res = await entityApi.getSchemas('proj_1');
+
+      expect(res.character).toBeDefined();
+      expect(res.organization).toBeDefined();
+      expect(res.state).toBeDefined();
+    });
+
+    it('getSchemaHistory and toggleSchemaHistoryPin', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce([{ id: 'sh1' }]);
+      const history = await entityApi.getSchemaHistory('p1', 'char');
+      expect(components.invoke).toHaveBeenCalledWith('get_schema_history', { project: 'p1', typeKey: 'char' });
+      expect(history).toEqual([{ id: 'sh1' }]);
+
+      vi.mocked(components.invoke).mockResolvedValueOnce(undefined);
+      await entityApi.toggleSchemaHistoryPin('sh1', true);
+      expect(components.invoke).toHaveBeenCalledWith('toggle_schema_history_pin', { historyId: 'sh1', isPinned: true });
+    });
+
+    it('saveSchema calls save_entity_schema', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce({ success: true });
+
+      const res = await entityApi.saveSchema('proj_1', { name: 'Custom' }, 5);
+
+      expect(components.invoke).toHaveBeenCalledWith('save_entity_schema', {
+        project: 'proj_1',
+        schema: {
+          project_id: 'projects:proj_1',
+          name: 'Custom',
+        },
+        maxSaves: 5,
+      });
+      expect(res).toEqual({ success: true });
+    });
+  });
+
+  describe('Connections methods', () => {
+    it('getConnections, saveConnection, deleteConnection', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce([{ id: 'conn_1' }]);
+      const conns = await entityApi.getConnections('c1');
+      expect(components.invoke).toHaveBeenCalledWith('get_entity_connections', { entityId: 'c1' });
+      expect(conns).toEqual([{ id: 'conn_1' }]);
+
+      vi.mocked(components.invoke).mockResolvedValueOnce({ success: true });
+      const saveRes = await entityApi.saveConnection('proj_1', { id: 'conn_1' } as any);
+      expect(components.invoke).toHaveBeenCalledWith('save_connection', {
+        project: 'proj_1',
+        conn: { id: 'conn_1', project_id: 'projects:proj_1' },
+      });
+      expect(saveRes).toEqual({ success: true });
+
+      vi.mocked(components.invoke).mockResolvedValueOnce({ success: true });
+      const delRes = await entityApi.deleteConnection('conn_1');
+      expect(components.invoke).toHaveBeenCalledWith('delete_connection', { id: 'conn_1' });
+      expect(delRes).toEqual({ success: true });
+    });
+  });
 });

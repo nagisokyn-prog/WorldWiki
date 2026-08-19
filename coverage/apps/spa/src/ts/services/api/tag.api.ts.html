@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/3</span>
+                <span class='fraction'>3/3</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -109,22 +109,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * @file tag.api.ts
  * @description API-методы для работы с тегами
@@ -140,22 +140,22 @@ export interface TagData {
   [key: string]: unknown;
 }
 &nbsp;
-export const tagApi = <span class="cstat-no" title="statement not covered" >{</span>
-  getTags: <span class="fstat-no" title="function not covered" >async (p</span>roject: string): Promise&lt;TagData[]&gt; =&gt; {
-    const list = <span class="cstat-no" title="statement not covered" >await invoke&lt;any[]&gt;('get_tags', { project });</span>
-<span class="cstat-no" title="statement not covered" >    return list.map(processIds) as TagData[];</span>
+export const tagApi = {
+  getTags: async (project: string): Promise&lt;TagData[]&gt; =&gt; {
+    const list = await invoke&lt;any[]&gt;('get_tags', { project });
+    return list.map(processIds) as TagData[];
   },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  saveTag: (p</span>roject: string, tagData: TagData): Promise&lt;{ success: boolean }&gt; =&gt; {
-    const data = <span class="cstat-no" title="statement not covered" >{</span>
+  saveTag: (project: string, tagData: TagData): Promise&lt;{ success: boolean }&gt; =&gt; {
+    const data = {
       ...tagData,
       project_id: projectRecordId(project)
     };
-<span class="cstat-no" title="statement not covered" >    return invoke&lt;{ success: boolean }&gt;('save_tag', { data });</span>
+    return invoke&lt;{ success: boolean }&gt;('save_tag', { data });
   },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  deleteTag: (p</span>roject: string, tagId: string): Promise&lt;{ success: boolean }&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;{ success: boolean }&gt;('delete_tag', { id: tagId }),</span>
+  deleteTag: (project: string, tagId: string): Promise&lt;{ success: boolean }&gt; =&gt;
+    invoke&lt;{ success: boolean }&gt;('delete_tag', { id: tagId }),
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -163,7 +163,7 @@ export const tagApi = <span class="cstat-no" title="statement not covered" >{</s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T16:37:05.526Z
+                at 2026-08-19T17:44:17.669Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>

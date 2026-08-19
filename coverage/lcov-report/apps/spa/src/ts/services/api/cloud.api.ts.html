@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/7</span>
+                <span class='fraction'>7/7</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -87,16 +87,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * @file cloud.api.ts
  * @description API-методы для облачных бэкапов и экспорта
@@ -104,16 +104,16 @@
 &nbsp;
 import { invoke } from '@worldwiki/components';
 &nbsp;
-export const cloudApi = <span class="cstat-no" title="statement not covered" >{</span>
-<span class="fstat-no" title="function not covered" >  createCloudBackup: (): Promise&lt;string&gt; =&gt; <span class="cstat-no" title="statement not covered" >i</span>nvoke&lt;string&gt;('create_cloud_backup'),</span>
+export const cloudApi = {
+  createCloudBackup: (): Promise&lt;string&gt; =&gt; invoke&lt;string&gt;('create_cloud_backup'),
 &nbsp;
-<span class="fstat-no" title="function not covered" >  exportChapters: (p</span>roject: string, chapters: unknown[], format: string, options: Record&lt;string, unknown&gt;): Promise&lt;{ path: string }&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;{ path: string }&gt;('export_chapters', { project, chapters, format, options }),</span>
+  exportChapters: (project: string, chapters: unknown[], format: string, options: Record&lt;string, unknown&gt;): Promise&lt;{ path: string }&gt; =&gt;
+    invoke&lt;{ path: string }&gt;('export_chapters', { project, chapters, format, options }),
 &nbsp;
-  exchangeYandexToken: <span class="fstat-no" title="function not covered" >async (c</span>ode: string): Promise&lt;string&gt; =&gt; <span class="cstat-no" title="statement not covered" >invoke('exchange_yandex_token', { code }),</span>
-  uploadToYandexDisk: <span class="fstat-no" title="function not covered" >async (t</span>oken: string, filePath: string): Promise&lt;void&gt; =&gt; <span class="cstat-no" title="statement not covered" >invoke('upload_to_yandex_disk', { token, filePath }),</span>
-  restoreFromBackup: <span class="fstat-no" title="function not covered" >async (b</span>ackupPath: string): Promise&lt;void&gt; =&gt; <span class="cstat-no" title="statement not covered" >invoke('restore_from_backup', { backupPath }),</span>
-  getLaunchArgs: <span class="fstat-no" title="function not covered" >async (): Promise&lt;string | null&gt; =&gt; <span class="cstat-no" title="statement not covered" >i</span>nvoke('get_launch_args'),</span>
+  exchangeYandexToken: async (code: string): Promise&lt;string&gt; =&gt; invoke('exchange_yandex_token', { code }),
+  uploadToYandexDisk: async (token: string, filePath: string): Promise&lt;void&gt; =&gt; invoke('upload_to_yandex_disk', { token, filePath }),
+  restoreFromBackup: async (backupPath: string): Promise&lt;void&gt; =&gt; invoke('restore_from_backup', { backupPath }),
+  getLaunchArgs: async (): Promise&lt;string | null&gt; =&gt; invoke('get_launch_args'),
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -121,7 +121,7 @@ export const cloudApi = <span class="cstat-no" title="statement not covered" >{<
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T16:37:05.631Z
+                at 2026-08-19T17:44:17.776Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>

@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">7.14% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/14</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/5</span>
+                <span class='fraction'>5/5</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">7.14% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/14</span>
+                <span class='fraction'>14/14</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -110,19 +110,19 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -130,17 +130,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * @file calendar.api.ts
  * @description API-методы для работы с календарями и таймлайнами
@@ -150,18 +150,18 @@ import { invoke } from '@worldwiki/components';
 import { projectRecordId } from './project.api';
 &nbsp;
 export const calendarApi = {
-<span class="fstat-no" title="function not covered" >  getCalendars: (p</span>roject: string): Promise&lt;any[]&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;any[]&gt;('get_calendars', { project }),</span>
+  getCalendars: (project: string): Promise&lt;any[]&gt; =&gt;
+    invoke&lt;any[]&gt;('get_calendars', { project }),
 &nbsp;
-<span class="fstat-no" title="function not covered" >  saveCalendar: (p</span>roject: string, calendarData: any): Promise&lt;{ success: boolean }&gt; =&gt; {
-    const plainData = <span class="cstat-no" title="statement not covered" >JSON.parse(JSON.stringify(calendarData));</span>
-    const { id, is_default, is_master } = <span class="cstat-no" title="statement not covered" >plainData;</span>
-    const calendarPayload = <span class="cstat-no" title="statement not covered" >{ ...plainData };</span>
-<span class="cstat-no" title="statement not covered" >    delete calendarPayload.id;</span>
-<span class="cstat-no" title="statement not covered" >    delete calendarPayload._id;</span>
-<span class="cstat-no" title="statement not covered" >    delete calendarPayload.is_default;</span>
-<span class="cstat-no" title="statement not covered" >    delete calendarPayload.is_master;</span>
-    const rustCalendar = <span class="cstat-no" title="statement not covered" >{</span>
+  saveCalendar: (project: string, calendarData: any): Promise&lt;{ success: boolean }&gt; =&gt; {
+    const plainData = JSON.parse(JSON.stringify(calendarData));
+    const { id, is_default, is_master } = plainData;
+    const calendarPayload = { ...plainData };
+    delete calendarPayload.id;
+    delete calendarPayload._id;
+    delete calendarPayload.is_default;
+    delete calendarPayload.is_master;
+    const rustCalendar = {
       id: id || null,
       project_id: projectRecordId(project),
       name: plainData.название || 'Новый календарь',
@@ -169,17 +169,17 @@ export const calendarApi = {
       is_master: is_master || false,
       data: calendarPayload
     };
-<span class="cstat-no" title="statement not covered" >    return invoke&lt;{ success: boolean }&gt;('save_calendar', { data: rustCalendar });</span>
+    return invoke&lt;{ success: boolean }&gt;('save_calendar', { data: rustCalendar });
   },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  deleteCalendar: (i</span>d: string): Promise&lt;void&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;void&gt;('delete_calendar', { id }),</span>
+  deleteCalendar: (id: string): Promise&lt;void&gt; =&gt;
+    invoke&lt;void&gt;('delete_calendar', { id }),
 &nbsp;
-<span class="fstat-no" title="function not covered" >  getGlobalTimeline: (p</span>roject: string): Promise&lt;unknown&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;unknown&gt;('get_global_timeline', { project }),</span>
+  getGlobalTimeline: (project: string): Promise&lt;unknown&gt; =&gt;
+    invoke&lt;unknown&gt;('get_global_timeline', { project }),
 &nbsp;
-<span class="fstat-no" title="function not covered" >  saveGlobalTimeline: (p</span>roject: string, data: unknown): Promise&lt;{ success: boolean }&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;{ success: boolean }&gt;('save_global_timeline', { project, data }),</span>
+  saveGlobalTimeline: (project: string, data: unknown): Promise&lt;{ success: boolean }&gt; =&gt;
+    invoke&lt;{ success: boolean }&gt;('save_global_timeline', { project, data }),
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -187,7 +187,7 @@ export const calendarApi = {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T16:37:05.526Z
+                at 2026-08-19T17:44:17.669Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>

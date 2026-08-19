@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/4</span>
+                <span class='fraction'>4/4</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/6</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -121,20 +121,20 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
  * @file connection.api.ts
  * @description API-методы для работы со связями между сущностями
@@ -157,20 +157,20 @@ export interface ConnectionData {
   [key: string]: unknown;
 }
 &nbsp;
-export const connectionApi = <span class="cstat-no" title="statement not covered" >{</span>
-  getConnections: <span class="fstat-no" title="function not covered" >async (p</span>roject: string, chapter: string): Promise&lt;ConnectionData[]&gt; =&gt; {
-    const list = <span class="cstat-no" title="statement not covered" >await invoke&lt;any[]&gt;('get_connections', { project, chapter });</span>
-<span class="cstat-no" title="statement not covered" >    return list.map(processIds) as ConnectionData[];</span>
+export const connectionApi = {
+  getConnections: async (project: string, chapter: string): Promise&lt;ConnectionData[]&gt; =&gt; {
+    const list = await invoke&lt;any[]&gt;('get_connections', { project, chapter });
+    return list.map(processIds) as ConnectionData[];
   },
 &nbsp;
-<span class="fstat-no" title="function not covered" >  getConnectionsByEntity: (p</span>roject: string, entityType: string, entityId: string): Promise&lt;ConnectionData[]&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;ConnectionData[]&gt;('get_connections_by_entity', { project, entityType, entityId }),</span>
+  getConnectionsByEntity: (project: string, entityType: string, entityId: string): Promise&lt;ConnectionData[]&gt; =&gt;
+    invoke&lt;ConnectionData[]&gt;('get_connections_by_entity', { project, entityType, entityId }),
 &nbsp;
-<span class="fstat-no" title="function not covered" >  removeConnectionsBySource: (p</span>roject: string, entityType: string, entityId: string): Promise&lt;{ success: boolean }&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;{ success: boolean }&gt;('remove_connections_by_source', { project, entityType, entityId }),</span>
+  removeConnectionsBySource: (project: string, entityType: string, entityId: string): Promise&lt;{ success: boolean }&gt; =&gt;
+    invoke&lt;{ success: boolean }&gt;('remove_connections_by_source', { project, entityType, entityId }),
 &nbsp;
-<span class="fstat-no" title="function not covered" >  saveConnections: (p</span>roject: string, sourceId: string, data: ConnectionData[]): Promise&lt;{ success: boolean }&gt; =&gt;
-<span class="cstat-no" title="statement not covered" >    invoke&lt;{ success: boolean }&gt;('save_connections', { project, sourceId, data }),</span>
+  saveConnections: (project: string, sourceId: string, data: ConnectionData[]): Promise&lt;{ success: boolean }&gt; =&gt;
+    invoke&lt;{ success: boolean }&gt;('save_connections', { project, sourceId, data }),
 };</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -178,7 +178,7 @@ export const connectionApi = <span class="cstat-no" title="statement not covered
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-08-19T16:37:05.631Z
+                at 2026-08-19T17:44:17.776Z
             </div>
         <script src="../../../../../../prettify.js"></script>
         <script>

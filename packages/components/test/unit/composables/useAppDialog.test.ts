@@ -91,6 +91,32 @@ describe('useAppDialog & dialogs', () => {
 
       const result = await promise;
       expect(result).toBe(false);
+
+      // Detached okBtn click
+      const promiseOk = domConfirm('Removed overlay test OK');
+      const overlayOk = document.querySelector('div[style*="z-index:999999"]') as HTMLDivElement;
+      const okBtn = document.querySelector('#app-confirm-ok') as HTMLButtonElement;
+      if (overlayOk && overlayOk.parentNode) {
+        overlayOk.parentNode.removeChild(overlayOk);
+      }
+      okBtn.click();
+      expect(await promiseOk).toBe(true);
+    });
+
+    it('handles null cancelBtn and okBtn querySelector in DOM appConfirm', () => {
+      const origCreate = document.createElement.bind(document);
+      const spy = vi.spyOn(document, 'createElement').mockImplementation((tag: string) => {
+        const el = origCreate(tag);
+        if (tag === 'div') {
+          vi.spyOn(el, 'querySelector').mockReturnValue(null);
+        }
+        return el;
+      });
+
+      domConfirm('Null buttons test');
+      spy.mockRestore();
     });
   });
 });
+
+

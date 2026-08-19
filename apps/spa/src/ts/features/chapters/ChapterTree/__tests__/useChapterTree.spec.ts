@@ -270,6 +270,9 @@ describe('useChapterTree', () => {
       await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'arc_1' });
       expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: 'arc_1', volumeId: 'vol_1' });
 
+      // Manuscript with volume parent -> triggers handleCreate (add arc)
+      await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'vol_1' });
+
       // Manuscript with unknown parent fallback
       await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'unknown_parent_999' });
       expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: null, volumeId: 'unknown_parent_999' });
@@ -279,26 +282,47 @@ describe('useChapterTree', () => {
       expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: null, volumeId: null });
     });
 
+    it('handles handleCreate for manuscript section: new volume and new arc', async () => {
+      const tree = useChapterTree(props, emit);
+      tree.explorerTreeRef.value = {
+        startRename: vi.fn(),
+        expandNode: vi.fn(),
+      };
+
+      // 1. Create volume (no parentId)
+      await tree.handleCreate({ sectionId: 'manuscript' });
+      expect(tree.explorerTreeRef.value.startRename).toHaveBeenCalled();
+
+      // 2. Create arc in volume (with parentId)
+      await tree.handleCreate({ sectionId: 'manuscript', parentId: 'vol_1' });
+      expect(tree.explorerTreeRef.value.expandNode).toHaveBeenCalledWith('vol_1');
+      expect(tree.explorerTreeRef.value.startRename).toHaveBeenCalled();
+    });
+
     it('handles handleRename and handleCancelRename across all node types', async () => {
       const tree = useChapterTree(props, emit);
 
-      // 1. __new_arc__
+      // 1. __new_volume__
+      await tree.handleRename({ id: '__new_volume__', data: {} }, 'Brand New Volume');
+      expect(api.createVolume).toHaveBeenCalledWith('my-proj', 'Brand New Volume');
+
+      // 2. __new_arc__
       await tree.handleRename({ id: '__new_arc__123', data: { original: { volumeId: 'vol_1' } } }, 'New Arc');
       expect(api.createArc).toHaveBeenCalledWith('my-proj', 'New Arc', 'vol_1');
 
-      // 2. Volume
+      // 3. Volume
       await tree.handleRename({ data: { type: 'volume', original: { id: 'vol_1' } } }, 'Renamed Vol');
       expect(api.updateVolume).toHaveBeenCalledWith('my-proj', 'vol_1', 'Renamed Vol');
 
-      // 3. Arc
+      // 4. Arc
       await tree.handleRename({ data: { type: 'arc', original: { id: 'arc_1' } } }, 'Renamed Arc');
       expect(api.updateArc).toHaveBeenCalledWith('my-proj', 'arc_1', 'Renamed Arc', null);
 
-      // 4. Chapter
+      // 5. Chapter
       await tree.handleRename({ data: { type: 'chapter', original: { id: 'ch_1' } } }, 'Renamed Ch');
       expect(emit).toHaveBeenCalledWith('rename-chapter', { id: 'ch_1' }, 'Renamed Ch');
 
-      // 5. Entity
+      // 6. Entity
       await tree.handleRename({
         data: {
           isEntity: true,
@@ -308,7 +332,8 @@ describe('useChapterTree', () => {
       }, 'Renamed Hero');
       expect(emit).toHaveBeenCalledWith('rename-entity', 'character', 'char_1', 'Renamed Hero');
 
-      // Cancel rename for temporary new arc
+      // Cancel rename for temporary new volume and new arc
+      await tree.handleCancelRename({ id: '__new_volume__' });
       await tree.handleCancelRename({ id: '__new_arc__temp' });
     });
 

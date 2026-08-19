@@ -42,4 +42,41 @@ describe('useAiModels', () => {
 
     expect(composable.fetchError.value).toContain('Network error');
   });
+
+  it('handles corrupt cached JSON gracefully', async () => {
+    localStorage.setItem('ai_models_cache_openai', 'invalid json {{{');
+
+    const composable = useAiModels();
+    await composable.fetchModels('openai', 'key123');
+    // Corrupt JSON ignored, fallback to hardcoded
+    expect(composable.availableModels.value.length).toBeGreaterThan(0);
+  });
+
+  it('handles unknown provider with empty fallback', async () => {
+    const composable = useAiModels();
+    await composable.fetchModels('unknown_provider_xyz', 'key123');
+    expect(composable.availableModels.value).toEqual([]);
+  });
+
+  it('handles local provider with and without baseUrl', async () => {
+    const composable = useAiModels();
+
+    // Without baseUrl -> returns early
+    await composable.fetchModels('local', 'key123');
+    expect(aiModelsApi.fetchModels).not.toHaveBeenCalled();
+
+    // With baseUrl
+    vi.mocked(aiModelsApi.fetchModels).mockResolvedValueOnce([]);
+    await composable.fetchModels('local', 'key123', 'http://localhost:11434');
+    expect(aiModelsApi.fetchModels).toHaveBeenCalledWith('local', 'key123');
+  });
+
+  it('handles unforced network errors without setting fetchError', async () => {
+    vi.mocked(aiModelsApi.fetchModels).mockRejectedValueOnce(new Error('Background error'));
+
+    const composable = useAiModels();
+    await composable.fetchModels('openai', 'key123', undefined, false);
+
+    expect(composable.fetchError.value).toBe('');
+  });
 });

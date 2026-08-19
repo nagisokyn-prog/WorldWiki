@@ -159,6 +159,21 @@ describe('useAiChats', () => {
       });
     });
 
+    it('handles falsy newParentId (sets to undefined) and chat not found', async () => {
+      const rawChats = [{ id: 'c1', title: 'Chat 1', parent_chat_id: 'p1' }];
+      vi.mocked(invoke).mockResolvedValue(rawChats);
+
+      const aiChats = useAiChats('project_1');
+      await aiChats.loadChats();
+
+      // Setting null parentId
+      await aiChats.updateChatParent('c1', null);
+      expect(aiChats.chats.value[0].parent_chat_id).toBeUndefined();
+
+      // Chat not found
+      await aiChats.updateChatParent('unknown_chat', 'p2');
+    });
+
     it('reverts on failure by reloading chats', async () => {
       const rawChats = [{ id: 'c1', title: 'Chat 1', parent_chat_id: null }];
       vi.mocked(invoke)
@@ -171,6 +186,41 @@ describe('useAiChats', () => {
 
       await aiChats.updateChatParent('c1', 'parent_2');
       expect(invoke).toHaveBeenCalledWith('get_chat_tree', { projectId: 'project_1' });
+    });
+  });
+
+  describe('chatTree and renameChat branch edge cases', () => {
+    it('handles chats without created_at in sort and tag/parent_chat_id in renameChat', async () => {
+      const rawChats = [
+        { id: 'c1', title: 'Chat 1', tag: 'tag1', parent_chat_id: 'p1' },
+        { id: 'c2', title: 'Chat 2' }, // no tag, no parent_chat_id, no created_at
+      ];
+      vi.mocked(invoke).mockResolvedValue(rawChats);
+
+      const aiChats = useAiChats('project_1');
+      await aiChats.loadChats();
+
+      // Check chatTree with missing created_at
+      const tree = aiChats.chatTree.value;
+      expect(tree).toHaveLength(2);
+
+      // Rename chat with tag and parent_chat_id
+      await aiChats.renameChat('c1', 'New C1');
+      expect(invoke).toHaveBeenCalledWith('save_chat', {
+        data: expect.objectContaining({
+          tag: 'tag1',
+          parent_chat_id: 'p1',
+        }),
+      });
+
+      // Rename chat without tag and parent_chat_id
+      await aiChats.renameChat('c2', 'New C2');
+      expect(invoke).toHaveBeenCalledWith('save_chat', {
+        data: expect.objectContaining({
+          tag: undefined,
+          parent_chat_id: undefined,
+        }),
+      });
     });
   });
 });

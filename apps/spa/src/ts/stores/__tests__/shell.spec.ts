@@ -826,11 +826,126 @@ describe('shell store', () => {
       await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, ['arc_1'], [{ id: 'ch_in_vol' }], true);
       expect(shell.activeTreeNode).toBeNull();
 
-      // 2. deleteArc with matching activeTreeNode
+      // 2. deleteArc with matching activeTreeNode (chapter in arc, and arc itself)
       shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_arc' } };
       await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [{ id: 'ch_in_arc' }], true);
       expect(shell.activeTreeNode).toBeNull();
+
+      shell.activeTreeNode = { type: 'arc', node: { id: 'arc_del' } };
+      await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [], true);
+      expect(shell.activeTreeNode).toBeNull();
+
+      // 3. deleteVolume & deleteArc with open tabs matching volume_id, arc_id, and chapter id
+      (shell as any).openChapterTab?.({ id: 'ch_vol_tab', volume_id: 'vol_tab_1' });
+      (shell as any).openChapterTab?.({ id: 'ch_arc_tab', arc_id: 'arc_tab_1' });
+      (shell as any).openChapterTab?.({ id: 'ch_direct_tab' });
+
+      await shell.deleteVolume(
+        { id: 'vol_tab_1', title: 'Vol with tabs' },
+        [{ id: 'ch_direct_tab' }],
+        ['arc_tab_1'],
+        true
+      );
+
+      // 4. deleteVolume & deleteArc with confirm rejection
+      const { appConfirm } = await import('@worldwiki/components');
+      (appConfirm as any).mockResolvedValueOnce(false);
+      await shell.deleteVolume({ id: 'vol_cancel', title: 'Vol Cancel' }, [], [], false);
+
+      (appConfirm as any).mockResolvedValueOnce(false);
+      await shell.deleteArc({ id: 'arc_cancel', title: 'Arc Cancel' }, [], false);
+
+      // 5. deleteChapter catch within deleteVolume and deleteArc
+      vi.mocked(api.deleteChapter).mockRejectedValueOnce(new Error('Chapter vol error'));
+      await shell.deleteVolume({ id: 'vol_err', title: 'Vol Err' }, [{ id: 'ch_err_1' }], [], true);
+
+      vi.mocked(api.deleteChapter).mockRejectedValueOnce(new Error('Chapter arc error'));
+      await shell.deleteArc({ id: 'arc_err', title: 'Arc Err' }, [{ id: 'ch_err_2' }], true);
+
+      // 6. renameChapter error catch
+      vi.mocked(api.getChapter).mockRejectedValueOnce(new Error('Rename ch error'));
+      await shell.renameChapter({ id: 'ch_1', title: 'Old Title' }, 'New Ch Title');
+    });
+
+    it('covers addNewEntity branches', async () => {
+      // empty type
+      await shell.addNewEntity('');
+      
+      // chapter creation (success)
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('My Chap'));
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_1' } as any);
+      await shell.addNewEntity('chapters');
+      expect(prompt).toHaveBeenCalled();
+      
+      // chapter creation (cancel)
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce(null));
+      await shell.addNewEntity('chapters');
+      
+      // entity creation (success)
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('My Entity'));
+      vi.spyOn(schema, 'loadSchema').mockResolvedValueOnce({ titleField: 'name' } as any);
+      vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({ id: 'e1' } as any);
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'e1', name: 'My Entity' } as any);
+      await shell.addNewEntity('character');
+      
+      // entity creation (cancel)
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce(null));
+      await shell.addNewEntity('character');
+
+      // entity creation (save fails - no id)
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('My Entity 2'));
+      vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({} as any); // no id
+      await shell.addNewEntity('character');
+
+      // entity creation (get fails)
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('My Entity 3'));
+      vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({ id: 'e3' } as any);
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce(null as any);
+      await shell.addNewEntity('character');
+
+      // error catch
+      vi.stubGlobal('prompt', vi.fn().mockReturnValueOnce('Error Entity'));
+      vi.mocked(entityApi.saveEntity).mockRejectedValueOnce(new Error('save failed'));
+      await shell.addNewEntity('character');
+    });
+
+    it('covers createChapterIn branches', async () => {
+      // success with arcId
+      vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
+        chapters: [{ arc_id: 'arc_1', title: 'Глава 1' }]
+      });
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_2' } as any);
+      await shell.createChapterIn({ arcId: 'arc_1' });
+
+      // success with volumeId
+      vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
+        chapters: [{ volume_id: 'vol_1', title: 'Глава 2' }]
+      });
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_3' } as any);
+      await shell.createChapterIn({ volumeId: 'vol_1' });
+
+      // without arc or vol
+      vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
+        chapters: [{ title: 'Глава 3' }]
+      });
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({} as any); // saveRes without id
+      await shell.createChapterIn();
+
+      // error catch
+      vi.mocked(api.getChapterHierarchy).mockRejectedValueOnce(new Error('hierarchy error'));
+      await shell.createChapterIn();
+    });
+
+    it('covers renameEntity branches where actualTabId is missing', async () => {
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'e1', name: 'Hero' } as any);
+      vi.spyOn(schema, 'loadSchema').mockResolvedValueOnce({ titleField: 'name' } as any);
+      // 'e1' is not in open editors, so actualTabId will be null
+      await shell.renameEntity('character', 'e1', 'New Hero');
     });
   });
 });
+
+
+
+
 

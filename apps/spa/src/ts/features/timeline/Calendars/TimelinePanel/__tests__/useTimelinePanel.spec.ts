@@ -300,8 +300,34 @@ describe('useTimelinePanel', () => {
       expect(panel.getHourOptions('unknown').length).toBe(24);
       expect(panel.getMinuteOptions('unknown').length).toBe(60);
       expect(panel.getDaysInMonth('unknown', 0)).toBe(30);
+
+      // Default calId in options helpers
+      expect(panel.getEraOptions().length).toBe(1);
+      expect(panel.getMonthOptions().length).toBe(4);
+      expect(panel.getHourOptions().length).toBe(24);
+      expect(panel.getMinuteOptions().length).toBe(60);
+
+      // Calendars with era.name and month.name or empty
+      panel.availableCalendars.value = [
+        {
+          id: 'cal_alt',
+          data: {
+            эпохи: [{ name: 'Alt Era' }, {}],
+            месяцы: [{ name: 'Alt Month' }, {}],
+          },
+        },
+      ];
+      const altEras = panel.getEraOptions('cal_alt');
+      expect(altEras[0].label).toBe('Alt Era');
+      expect(altEras[1].label).toBe('Эра 2');
+
+      const altMonths = panel.getMonthOptions('cal_alt');
+      expect(altMonths[0].label).toBe('Alt Month');
+      expect(altMonths[1].label).toBe('Месяц 2');
+      expect(panel.calendarOptions.value[0].label).toBe('Календарь');
     });
   });
 });
+
 
 

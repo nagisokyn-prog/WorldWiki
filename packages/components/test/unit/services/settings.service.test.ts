@@ -23,71 +23,32 @@ declare global {
  */
 function setupDomMocks(): void {
   // localStorage
-  const localStorageMock = {
-    getItem: vi.fn(() => null),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn(),
-  };
-  Object.defineProperty(window, 'localStorage', {
-    writable: true,
-    configurable: true,
-    value: localStorageMock,
-  });
+  vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
+  vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {});
+  vi.spyOn(Storage.prototype, 'clear').mockImplementation(() => {});
 
   // document.documentElement.style
-  Object.defineProperty(document, 'documentElement', {
-    writable: true,
-    configurable: true,
-    value: {
-      style: {
-        setProperty: vi.fn(),
-        getPropertyValue: vi.fn(),
-      },
-    },
-  });
+  vi.spyOn(document.documentElement.style, 'setProperty').mockImplementation(() => {});
+  vi.spyOn(document.documentElement.style, 'getPropertyValue').mockImplementation(() => '');
 
-  // document.body + classList
-  Object.defineProperty(document, 'body', {
-    writable: true,
-    configurable: true,
-    value: {
-      classList: {
-        add: vi.fn(),
-        remove: vi.fn(),
-        toggle: vi.fn(),
-        contains: vi.fn(),
-      },
-      setAttribute: vi.fn(),
-      appendChild: vi.fn(),
-    },
-  });
+  // document.body.classList & setAttribute & appendChild
+  vi.spyOn(document.body.classList, 'add').mockImplementation(() => {});
+  vi.spyOn(document.body.classList, 'remove').mockImplementation(() => {});
+  vi.spyOn(document.body.classList, 'toggle').mockImplementation(() => false);
+  vi.spyOn(document.body.classList, 'contains').mockImplementation(() => false);
+  vi.spyOn(document.body, 'setAttribute').mockImplementation(() => {});
+  vi.spyOn(document.body, 'appendChild').mockImplementation((node: any) => node);
 
-  // document.getElementById — по умолчанию отдаёт контейнер для ww-background
-  Object.defineProperty(document, 'getElementById', {
-    writable: true,
-    configurable: true,
-    value: vi.fn((id: string) => {
-      if (id === 'ww-background') {
-        const element = document.createElement('div');
-        element.id = 'ww-background';
-        element.style.cssText = '';
-        element.innerHTML = '';
-        element.appendChild = vi.fn();
-        return element;
-      }
-      return null;
-    }),
-  });
+  // document.getElementById
+  vi.spyOn(document, 'getElementById').mockReturnValue(null);
+
+  // console.warn & console.error
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'error').mockImplementation(() => {});
 }
 
 describe('SettingsService', () => {
-  let originalWindow: typeof window;
-  let originalDocument: typeof document;
-  let originalLocalStorage: Storage;
-  let originalConsole: typeof console;
-  let originalTauri: typeof globalThis.__TAURI__;
-
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
@@ -95,29 +56,6 @@ describe('SettingsService', () => {
 
     // Reset the service to default settings
     settingsService.resetSettings();
-
-    // Store originals
-    originalWindow = globalThis.window;
-    originalDocument = globalThis.document;
-    originalLocalStorage = globalThis.localStorage;
-    originalConsole = globalThis.console;
-    originalTauri = globalThis.__TAURI__;
-
-    // Mock console to reduce noise
-    globalThis.console = {
-      ...console,
-      log: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn()
-    } as typeof console;
-  });
-
-  afterEach(() => {
-    globalThis.window = originalWindow;
-    globalThis.document = originalDocument;
-    globalThis.localStorage = originalLocalStorage;
-    globalThis.console = originalConsole;
-    globalThis.__TAURI__ = originalTauri;
   });
 
   describe('DEFAULT_SETTINGS', () => {

@@ -32,10 +32,15 @@ export const mockEmit = vi.fn((eventName: string, payload: any) => {
 
 export const mockUnlisten = vi.fn();
 
+export const mockTransformCallback = vi.fn((_cb: any, _once?: boolean) => 1);
+export const mockConvertFileSrc = vi.fn((path: string) => path);
+
 // Mock Tauri global
 const tauriMock = {
   core: {
     invoke: mockInvoke,
+    transformCallback: mockTransformCallback,
+    convertFileSrc: mockConvertFileSrc,
   },
   event: {
     listen: mockListen,
@@ -49,6 +54,8 @@ vi.stubGlobal('__TAURI__', tauriMock);
 // Mock @tauri-apps/api/core
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
+  transformCallback: mockTransformCallback,
+  convertFileSrc: mockConvertFileSrc,
 }));
 
 // Mock @tauri-apps/api/event
@@ -140,41 +147,6 @@ vi.mock('@tauri-apps/api/fs', () => ({
   },
 }));
 
-// Mock @worldwiki/components (generic components library)
-vi.mock('@worldwiki/components', () => ({
-  settingsService: {
-    getSettings: vi.fn(() => ({})),
-    saveSettings: vi.fn(),
-    applySettings: vi.fn(),
-    onChange: vi.fn(),
-  },
-  useEditorGroups: vi.fn(() => ({
-    groups: [],
-    activeGroupId: null,
-    createGroup: vi.fn(),
-    closeGroup: vi.fn(),
-    moveTab: vi.fn(),
-    reorderTab: vi.fn(),
-    activateTabInGroup: vi.fn(),
-    focusGroup: vi.fn(),
-  })),
-  setLocale: vi.fn(),
-  i18n: {
-    global: {
-      locale: 'ru',
-      t: vi.fn((key: string) => key),
-    },
-  },
-  appConfirm: vi.fn(() => Promise.resolve(true)),
-  appAlert: vi.fn(),
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    warning: vi.fn(),
-  },
-}));
-
 // Mock vue-router
 vi.mock('vue-router', () => ({
   useRouter: () => ({
@@ -191,31 +163,6 @@ vi.mock('vue-router', () => ({
     path: '/',
   }),
 }));
-
-// Mock pinia - use real pinia for store tests
-// vi.mock('pinia', () => ({
-//   defineStore: vi.fn((name, setup) => {
-//     const store = setup();
-//     return () => store;
-//   }),
-//   storeToRefs: vi.fn((store) => {
-//     const refs: Record<string, any> = {};
-//     for (const key of Object.keys(store)) {
-//       if (key.endsWith('.value') || typeof store[key] === 'object') {
-//         refs[key] = store[key];
-//       }
-//     }
-//     return refs;
-//   }),
-//   setActivePinia: vi.fn(),
-//   createPinia: vi.fn(() => ({
-//     install: vi.fn(),
-//     use: vi.fn(),
-//     _s: new Map(),
-//     _e: vi.fn(),
-//     _p: [],
-//   })),
-// }));
 
 // ============================================================================
 // DOM & Browser Mocks
@@ -237,18 +184,18 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+global.ResizeObserver = class {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+} as any;
 
 // Mock IntersectionObserver
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+global.IntersectionObserver = class {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+} as any;
 
 // Mock localStorage
 const localStorageMock = (() => {

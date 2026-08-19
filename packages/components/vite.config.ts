@@ -26,14 +26,14 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'happy-dom',
+    environment: 'jsdom',
     include: ['test/**/*.test.ts'],
     setupFiles: ['./test/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/ts/services/settings.service.ts', 'src/components/Vue/Settings.vue'],
-      exclude: ['node_modules/', 'dist/', 'test/']
+      include: ['src/ts/**/*.ts'],
+      exclude: ['node_modules/', 'dist/', 'test/', '**/*.d.ts']
     }
   }
 });

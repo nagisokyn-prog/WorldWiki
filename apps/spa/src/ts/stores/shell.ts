@@ -1017,7 +1017,7 @@ export const useShellStore = defineStore('shell', () => {
         
         if (currentSidebarTab.value === type) loadEntityList(type);
         if (type === 'chapter' && chapterTreeRef.value?.load) chapterTreeRef.value.load();
-      });
+      })?.catch?.(() => {});
       
       listen('ww-entity-live-sync', (event: any) => {
         const { type, id, data } = event.payload;
@@ -1033,8 +1033,8 @@ export const useShellStore = defineStore('shell', () => {
             }
           });
         });
-      });
-    });
+      })?.catch?.(() => {});
+    }).catch(() => {});
   }
 
   return {

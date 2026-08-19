@@ -339,7 +339,7 @@ export function useShellApp(config: ShellAppConfig) {
           tauri.core.invoke('toggle_fullscreen').catch(console.error);
         } else {
           if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(console.warn);
+            document.documentElement.requestFullscreen?.()?.catch(console.warn);
           } else {
             document.exitFullscreen?.();
           }

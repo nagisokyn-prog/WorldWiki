@@ -30,8 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   });
 
-  app.use(autoAnimatePlugin);
-  app.use(MotionPlugin);
+  app.use(autoAnimatePlugin as any);
+  app.use(MotionPlugin as any);
   app.use(i18n).mount(root);
 
   document.getElementById('saveBtn')?.addEventListener('click', async () => {

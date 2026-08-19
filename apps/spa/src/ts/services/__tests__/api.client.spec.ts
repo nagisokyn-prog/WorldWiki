@@ -33,10 +33,23 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(res).toEqual({ type: 'novel' });
     });
 
+    it('saveProjectConfig invokes save_project_config', async () => {
+      vi.mocked(invoke).mockResolvedValue({ saved: true });
+      const res = await api.saveProjectConfig('my_project', { custom: 123 });
+      expect(invoke).toHaveBeenCalledWith('save_project_config', { name: 'my_project', config: { custom: 123 } });
+      expect(res).toEqual({ saved: true });
+    });
+
     it('deleteProject invokes delete_project', async () => {
       vi.mocked(invoke).mockResolvedValue('ok');
-      await api.deleteProject('my_project');
+      const res = await api.deleteProject('my_project');
       expect(invoke).toHaveBeenCalledWith('delete_project', { name: 'my_project' });
+      expect(res).toBe('ok');
+    });
+
+    it('handles Tauri invoke rejection', async () => {
+      vi.mocked(invoke).mockRejectedValue(new Error('Project not found'));
+      await expect(api.getProjectConfig('unknown')).rejects.toThrow('Project not found');
     });
   });
 
@@ -45,6 +58,13 @@ describe('api.client (Tauri invoke contract tests)', () => {
       vi.mocked(invoke).mockResolvedValue([]);
       await api.getEntities('proj_1', 'character');
       expect(invoke).toHaveBeenCalledWith('get_entities', { project: 'proj_1', entityType: 'character' });
+    });
+
+    it('getEntitiesBatch invokes get_entities_batch', async () => {
+      vi.mocked(invoke).mockResolvedValue({ char: [] });
+      const res = await api.getEntitiesBatch('proj_1', ['char', 'loc']);
+      expect(invoke).toHaveBeenCalledWith('get_entities_batch', { project: 'proj_1', entityTypes: ['char', 'loc'] });
+      expect(res).toEqual({ char: [] });
     });
 
     it('getEntity invokes get_entity with id', async () => {
@@ -59,6 +79,15 @@ describe('api.client (Tauri invoke contract tests)', () => {
       vi.mocked(invoke).mockResolvedValue(entity);
       await api.saveEntity('proj_1', entity);
       expect(invoke).toHaveBeenCalledWith('save_entity', { project: 'proj_1', entity });
+    });
+
+    it('saveEntityWithRelations invokes save_entity_with_relations', async () => {
+      const entity: any = { id: 'e1' };
+      const fUpdates: any = [{ id: 'e2' }];
+      vi.mocked(invoke).mockResolvedValue(entity);
+      const res = await api.saveEntityWithRelations('proj_1', entity, fUpdates);
+      expect(invoke).toHaveBeenCalledWith('save_entity_with_relations', { project: 'proj_1', entity, foreignUpdates: fUpdates });
+      expect(res).toEqual(entity);
     });
 
     it('deleteEntity invokes delete_entity', async () => {
@@ -80,17 +109,174 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(invoke).toHaveBeenCalledWith('get_entity_schemas', { project: 'proj_1' });
     });
 
+    it('saveEntitySchema invokes save_entity_schema', async () => {
+      const schema: any = { key: 'char' };
+      vi.mocked(invoke).mockResolvedValue(schema);
+      const res = await api.saveEntitySchema('proj_1', schema, 10);
+      expect(invoke).toHaveBeenCalledWith('save_entity_schema', { project: 'proj_1', schema, maxSaves: 10 });
+      expect(res).toEqual(schema);
+    });
+
+    it('deleteEntitySchema invokes delete_entity_schema', async () => {
+      await api.deleteEntitySchema('proj_1', 'char');
+      expect(invoke).toHaveBeenCalledWith('delete_entity_schema', { project: 'proj_1', typeKey: 'char' });
+    });
+
+    it('getSchemaHistory invokes get_schema_history', async () => {
+      vi.mocked(invoke).mockResolvedValue(['hist1']);
+      const res = await api.getSchemaHistory('proj_1', 'char');
+      expect(invoke).toHaveBeenCalledWith('get_schema_history', { project: 'proj_1', typeKey: 'char' });
+      expect(res).toEqual(['hist1']);
+    });
+
     it('toggleSchemaHistoryPin invokes toggle_schema_history_pin', async () => {
       await api.toggleSchemaHistoryPin('hist_1', true);
       expect(invoke).toHaveBeenCalledWith('toggle_schema_history_pin', { historyId: 'hist_1', isPinned: true });
     });
+
+    it('toggleEntityHistoryPin invokes toggle_entity_history_pin', async () => {
+      await api.toggleEntityHistoryPin('ehist_1', false);
+      expect(invoke).toHaveBeenCalledWith('toggle_entity_history_pin', { historyId: 'ehist_1', isPinned: false });
+    });
+
+    it('toggleChapterHistoryPin invokes toggle_chapter_history_pin', async () => {
+      await api.toggleChapterHistoryPin('chist_1', true);
+      expect(invoke).toHaveBeenCalledWith('toggle_chapter_history_pin', { historyId: 'chist_1', isPinned: true });
+    });
   });
 
-  describe('Chapter endpoints', () => {
+  describe('Entity Relations & Relation Schemas', () => {
+    it('getEntityRelations invokes get_entity_relations', async () => {
+      vi.mocked(invoke).mockResolvedValue([]);
+      await api.getEntityRelations('proj_1', 'e1');
+      expect(invoke).toHaveBeenCalledWith('get_entity_relations', { project: 'proj_1', entityId: 'e1' });
+    });
+
+    it('createEntityRelation invokes create_entity_relation', async () => {
+      const rel: any = { type: 'friend' };
+      vi.mocked(invoke).mockResolvedValue(rel);
+      const res = await api.createEntityRelation('proj_1', 'e1', 'e2', rel);
+      expect(invoke).toHaveBeenCalledWith('create_entity_relation', { project: 'proj_1', fromId: 'e1', toId: 'e2', rel });
+      expect(res).toEqual(rel);
+    });
+
+    it('deleteEntityRelation invokes delete_entity_relation', async () => {
+      await api.deleteEntityRelation('rel_1');
+      expect(invoke).toHaveBeenCalledWith('delete_entity_relation', { id: 'rel_1' });
+    });
+
+    it('getRelationSchemas invokes get_relation_schemas', async () => {
+      vi.mocked(invoke).mockResolvedValue([]);
+      await api.getRelationSchemas('proj_1');
+      expect(invoke).toHaveBeenCalledWith('get_relation_schemas', { project: 'proj_1' });
+    });
+
+    it('saveRelationSchema invokes save_relation_schema', async () => {
+      const schema: any = { key: 'friend' };
+      vi.mocked(invoke).mockResolvedValue(schema);
+      const res = await api.saveRelationSchema('proj_1', schema);
+      expect(invoke).toHaveBeenCalledWith('save_relation_schema', { project: 'proj_1', schema });
+      expect(res).toEqual(schema);
+    });
+
+    it('deleteRelationSchema invokes delete_relation_schema', async () => {
+      await api.deleteRelationSchema('proj_1', 'friend');
+      expect(invoke).toHaveBeenCalledWith('delete_relation_schema', { project: 'proj_1', relKey: 'friend' });
+    });
+  });
+
+  describe('File, Photo, & System endpoints', () => {
+    it('uploadPhoto invokes upload_photo', async () => {
+      vi.mocked(invoke).mockResolvedValue('path/to/img.png');
+      const res = await api.uploadPhoto([1, 2, 3], 'img.png');
+      expect(invoke).toHaveBeenCalledWith('upload_photo', { bytes: [1, 2, 3], filename: 'img.png' });
+      expect(res).toBe('path/to/img.png');
+    });
+
+    it('copyBackgroundFile invokes copy_background_file', async () => {
+      vi.mocked(invoke).mockResolvedValue('bg/path.png');
+      const res = await api.copyBackgroundFile('src/path.png');
+      expect(invoke).toHaveBeenCalledWith('copy_background_file', { sourcePath: 'src/path.png' });
+      expect(res).toBe('bg/path.png');
+    });
+
+    it('getLocalFile invokes get_local_file', async () => {
+      vi.mocked(invoke).mockResolvedValue([255, 216]);
+      const res = await api.getLocalFile('assets/file.bin');
+      expect(invoke).toHaveBeenCalledWith('get_local_file', { path: 'assets/file.bin' });
+      expect(res).toEqual([255, 216]);
+    });
+
+    it('runPerformanceBenchmark invokes run_performance_benchmark', async () => {
+      vi.mocked(invoke).mockResolvedValue({ score: 100 });
+      const res = await api.runPerformanceBenchmark();
+      expect(invoke).toHaveBeenCalledWith('run_performance_benchmark');
+      expect(res).toEqual({ score: 100 });
+    });
+
+    it('getPerformanceStyles invokes get_performance_styles', async () => {
+      vi.mocked(invoke).mockResolvedValue('body { filter: none; }');
+      const res = await api.getPerformanceStyles('high');
+      expect(invoke).toHaveBeenCalledWith('get_performance_styles', { level: 'high' });
+      expect(res).toBe('body { filter: none; }');
+    });
+
+    it('saveSettings and loadSettings invoke corresponding commands', async () => {
+      vi.mocked(invoke).mockResolvedValue({ theme: 'dark' });
+      await api.saveSettings({ theme: 'dark' });
+      expect(invoke).toHaveBeenCalledWith('save_settings', { settings: { theme: 'dark' } });
+
+      const loaded = await api.loadSettings();
+      expect(invoke).toHaveBeenCalledWith('load_settings');
+      expect(loaded).toEqual({ theme: 'dark' });
+    });
+
+    it('toggleFullscreen invokes toggle_fullscreen', async () => {
+      await api.toggleFullscreen();
+      expect(invoke).toHaveBeenCalledWith('toggle_fullscreen');
+    });
+
+    it('getCustomThemes, loadTheme, saveCustomTheme invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue(['t1']);
+      const themes = await api.getCustomThemes();
+      expect(invoke).toHaveBeenCalledWith('get_custom_themes');
+      expect(themes).toEqual(['t1']);
+
+      vi.mocked(invoke).mockResolvedValue({ color: 'red' });
+      const theme = await api.loadTheme('t1');
+      expect(invoke).toHaveBeenCalledWith('load_theme', { theme: 't1' });
+      expect(theme).toEqual({ color: 'red' });
+
+      await api.saveCustomTheme('t1', { color: 'blue' });
+      expect(invoke).toHaveBeenCalledWith('save_custom_theme', { name: 't1', settings: { color: 'blue' } });
+    });
+  });
+
+  describe('Hierarchy, Chapters, Volumes, Arcs', () => {
     it('getChapterHierarchy invokes get_chapter_hierarchy', async () => {
       vi.mocked(invoke).mockResolvedValue({ volumes: [], arcs: [], chapters: [] });
       await api.getChapterHierarchy('proj_1');
       expect(invoke).toHaveBeenCalledWith('get_chapter_hierarchy', { project: 'proj_1' });
+    });
+
+    it('createVolume and updateVolume invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue({ id: 'vol_1' });
+      const res = await api.createVolume('proj_1', 'Volume 1');
+      expect(invoke).toHaveBeenCalledWith('create_volume', { project: 'proj_1', title: 'Volume 1' });
+      expect(res).toEqual({ id: 'vol_1' });
+
+      await api.updateVolume('proj_1', 'vol_1', 'Volume 1 Updated');
+      expect(invoke).toHaveBeenCalledWith('update_volume', { Project: 'proj_1', id: 'vol_1', title: 'Volume 1 Updated' });
+    });
+
+    it('createArc and updateArc invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue({ id: 'arc_1' });
+      const res = await api.createArc('proj_1', 'Arc 1', 'vol_1');
+      expect(invoke).toHaveBeenCalledWith('create_arc', { project: 'proj_1', title: 'Arc 1', volumeId: 'vol_1' });
+      expect(res).toEqual({ id: 'arc_1' });
+
+      await api.updateArc('proj_1', 'arc_1', 'Arc 1 Updated', 'vol_2');
+      expect(invoke).toHaveBeenCalledWith('update_arc', { Project: 'proj_1', id: 'arc_1', title: 'Arc 1 Updated', VolumeId: 'vol_2' });
     });
 
     it('assignChapter invokes assign_chapter', async () => {
@@ -102,24 +288,312 @@ describe('api.client (Tauri invoke contract tests)', () => {
         volumeId: 'vol1',
       });
     });
+
+    it('reorderNode invokes reorder_node', async () => {
+      await api.reorderNode('proj_1', 'chapter', 'ch_1', 2);
+      expect(invoke).toHaveBeenCalledWith('reorder_node', { project: 'proj_1', nodeType: 'chapter', id: 'ch_1', sortOrder: 2 });
+    });
   });
 
-  describe('Tags & Calendars', () => {
-    it('getTags invokes get_tags', async () => {
+  describe('Connections & Timeline', () => {
+    it('getConnections and saveConnections invoke correctly', async () => {
       vi.mocked(invoke).mockResolvedValue([]);
-      await api.getTags('proj_1');
+      await api.getConnections('proj_1', 'ch_1');
+      expect(invoke).toHaveBeenCalledWith('get_connections', { project: 'proj_1', chapter: 'ch_1' });
+
+      await api.saveConnections('proj_1', 'src_1', { nodes: [] });
+      expect(invoke).toHaveBeenCalledWith('save_connections', { project: 'proj_1', sourceId: 'src_1', data: { nodes: [] } });
+    });
+
+    it('upsertConnectionsBatch and removeConnectionsBySource invoke correctly', async () => {
+      const conns: any = [{ from: '1', to: '2' }];
+      await api.upsertConnectionsBatch('proj_1', 'chapter', 'src_1', conns);
+      expect(invoke).toHaveBeenCalledWith('upsert_connections_batch', { project: 'proj_1', SourceType: 'chapter', sourceId: 'src_1', connections: conns });
+
+      vi.mocked(invoke).mockResolvedValue(3);
+      const count = await api.removeConnectionsBySource('proj_1', 'chapter', 'src_1');
+      expect(invoke).toHaveBeenCalledWith('remove_connections_by_source', { Project: 'proj_1', EType: 'chapter', eId: 'src_1' });
+      expect(count).toBe(3);
+    });
+
+    it('getGlobalTimeline and exportChapters invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue({ events: [] });
+      const timeline = await api.getGlobalTimeline('proj_1');
+      expect(invoke).toHaveBeenCalledWith('get_global_timeline', { project: 'proj_1' });
+      expect(timeline).toEqual({ events: [] });
+
+      vi.mocked(invoke).mockResolvedValue('export_output.epub');
+      const exported = await api.exportChapters('proj_1', [{ id: 'ch_1' }], 'epub');
+      expect(invoke).toHaveBeenCalledWith('export_chapters', { project: 'proj_1', chapters: [{ id: 'ch_1' }], format: 'epub' });
+      expect(exported).toBe('export_output.epub');
+    });
+  });
+
+  describe('Cloud & Backup Sync', () => {
+    it('createCloudBackup invokes create_cloud_backup', async () => {
+      vi.mocked(invoke).mockResolvedValue('backup.zip');
+      const res = await api.createCloudBackup();
+      expect(invoke).toHaveBeenCalledWith('create_cloud_backup');
+      expect(res).toBe('backup.zip');
+    });
+
+    it('exchangeYandexToken invokes exchange_yandex_token', async () => {
+      vi.mocked(invoke).mockResolvedValue('token_123');
+      const res = await api.exchangeYandexToken('code_abc');
+      expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', { code: 'code_abc' });
+      expect(res).toBe('token_123');
+    });
+
+    it('uploadToYandexDisk invokes upload_to_yandex_disk', async () => {
+      await api.uploadToYandexDisk('tok', '/path/backup.zip');
+      expect(invoke).toHaveBeenCalledWith('upload_to_yandex_disk', { token: 'tok', filePath: '/path/backup.zip' });
+    });
+
+    it('listYandexDiskBackups invokes list_yandex_disk_backups', async () => {
+      vi.mocked(invoke).mockResolvedValue(['b1', 'b2']);
+      const res = await api.listYandexDiskBackups('tok');
+      expect(invoke).toHaveBeenCalledWith('list_yandex_disk_backups', { token: 'tok' });
+      expect(res).toEqual(['b1', 'b2']);
+    });
+
+    it('downloadAndRestoreYandex invokes download_and_restore_yandex', async () => {
+      await api.downloadAndRestoreYandex('tok', 'backup.zip');
+      expect(invoke).toHaveBeenCalledWith('download_and_restore_yandex', { token: 'tok', fileName: 'backup.zip' });
+    });
+
+    it('getLaunchArgs and restoreFromBackup invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue('arg_path');
+      const args = await api.getLaunchArgs();
+      expect(invoke).toHaveBeenCalledWith('get_launch_args');
+      expect(args).toBe('arg_path');
+
+      await api.restoreFromBackup('/backup.zip');
+      expect(invoke).toHaveBeenCalledWith('restore_from_backup', { backupPath: '/backup.zip' });
+    });
+  });
+
+  describe('Revisions, Cal Conversion, TextBlocks', () => {
+    it('getChapterRevisions and getEntityRevisions invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue(['rev1']);
+      const chRev = await api.getChapterRevisions('proj_1', 'ch_1');
+      expect(invoke).toHaveBeenCalledWith('get_chapter_revisions', { project: 'proj_1', chapterId: 'ch_1' });
+      expect(chRev).toEqual(['rev1']);
+
+      const entRev = await api.getEntityRevisions('proj_1', 'e_1');
+      expect(invoke).toHaveBeenCalledWith('get_entity_revisions', { project: 'proj_1', entityId: 'e_1' });
+      expect(entRev).toEqual(['rev1']);
+    });
+
+    it('convertAbsoluteToLocal and saveTextBlocks invoke correctly', async () => {
+      vi.mocked(invoke).mockResolvedValue({ day: 1, month: 1 });
+      const local = await api.convertAbsoluteToLocal(1440, {}, 0);
+      expect(invoke).toHaveBeenCalledWith('convert_absolute_to_local', { absoluteMinute: 1440, calendar: {}, eraIndex: 0 });
+      expect(local).toEqual({ day: 1, month: 1 });
+
+      await api.saveTextBlocks('proj_1', 'ch_1', '<p>Test</p>');
+      expect(invoke).toHaveBeenCalledWith('save_text_blocks', { project: 'proj_1', chapterId: 'ch_1', html: '<p>Test</p>' });
+    });
+  });
+
+  describe('Entities CRUD Operations', () => {
+    it('Chapters CRUD', async () => {
+      const ch: any = { id: 'ch1', title: 'Chapter 1' };
+      vi.mocked(invoke).mockResolvedValueOnce([ch]).mockResolvedValueOnce(ch).mockResolvedValueOnce(ch);
+
+      expect(await api.getChapters('proj_1')).toEqual([ch]);
+      expect(invoke).toHaveBeenCalledWith('get_chapters', { project: 'proj_1' });
+
+      expect(await api.getChapter('ch1')).toEqual(ch);
+      expect(invoke).toHaveBeenCalledWith('get_chapter', { id: 'ch1' });
+
+      expect(await api.saveChapter('proj_1', ch)).toEqual(ch);
+      expect(invoke).toHaveBeenCalledWith('save_chapter', { project: 'proj_1', data: ch });
+
+      await api.deleteChapter('ch1');
+      expect(invoke).toHaveBeenCalledWith('delete_chapter', { id: 'ch1' });
+    });
+
+    it('Volumes CRUD', async () => {
+      const vol: any = { id: 'vol1' };
+      vi.mocked(invoke).mockResolvedValueOnce([vol]).mockResolvedValueOnce(vol).mockResolvedValueOnce(vol);
+
+      expect(await api.getVolumes('proj_1')).toEqual([vol]);
+      expect(invoke).toHaveBeenCalledWith('get_volumes', { project: 'proj_1' });
+
+      expect(await api.getVolume('vol1')).toEqual(vol);
+      expect(invoke).toHaveBeenCalledWith('get_volume', { id: 'vol1' });
+
+      expect(await api.saveVolume('proj_1', vol)).toEqual(vol);
+      expect(invoke).toHaveBeenCalledWith('save_volume', { project: 'proj_1', data: vol });
+
+      await api.deleteVolume('vol1');
+      expect(invoke).toHaveBeenCalledWith('delete_volume', { id: 'vol1' });
+    });
+
+    it('Arcs CRUD', async () => {
+      const arc: any = { id: 'arc1' };
+      vi.mocked(invoke).mockResolvedValueOnce([arc]).mockResolvedValueOnce(arc).mockResolvedValueOnce(arc);
+
+      expect(await api.getArcs('proj_1')).toEqual([arc]);
+      expect(invoke).toHaveBeenCalledWith('get_arcs', { project: 'proj_1' });
+
+      expect(await api.getArc('arc1')).toEqual(arc);
+      expect(invoke).toHaveBeenCalledWith('get_arc', { id: 'arc1' });
+
+      expect(await api.saveArc('proj_1', arc)).toEqual(arc);
+      expect(invoke).toHaveBeenCalledWith('save_arc', { project: 'proj_1', data: arc });
+
+      await api.deleteArc('arc1');
+      expect(invoke).toHaveBeenCalledWith('delete_arc', { id: 'arc1' });
+    });
+
+    it('Plans CRUD', async () => {
+      const plan: any = { id: 'p1' };
+      vi.mocked(invoke).mockResolvedValueOnce([plan]).mockResolvedValueOnce(plan).mockResolvedValueOnce(plan);
+
+      expect(await api.getPlans('proj_1')).toEqual([plan]);
+      expect(invoke).toHaveBeenCalledWith('get_plans', { project: 'proj_1' });
+
+      expect(await api.getPlan('p1')).toEqual(plan);
+      expect(invoke).toHaveBeenCalledWith('get_plan', { id: 'p1' });
+
+      expect(await api.savePlan('proj_1', plan)).toEqual(plan);
+      expect(invoke).toHaveBeenCalledWith('save_plan', { project: 'proj_1', data: plan });
+
+      await api.deletePlan('p1');
+      expect(invoke).toHaveBeenCalledWith('delete_plan', { id: 'p1' });
+    });
+
+    it('Tags CRUD', async () => {
+      const tag: any = { id: 't1' };
+      vi.mocked(invoke).mockResolvedValueOnce([tag]).mockResolvedValueOnce(tag).mockResolvedValueOnce(tag);
+
+      expect(await api.getTags('proj_1')).toEqual([tag]);
       expect(invoke).toHaveBeenCalledWith('get_tags', { project: 'proj_1' });
+
+      expect(await api.getTag('t1')).toEqual(tag);
+      expect(invoke).toHaveBeenCalledWith('get_tag', { id: 't1' });
+
+      expect(await api.saveTag('proj_1', tag)).toEqual(tag);
+      expect(invoke).toHaveBeenCalledWith('save_tag', { project: 'proj_1', data: tag });
+
+      await api.deleteTag('t1');
+      expect(invoke).toHaveBeenCalledWith('delete_tag', { id: 't1' });
     });
 
-    it('saveCalendar invokes save_calendar', async () => {
-      const cal: any = { name: 'Cal 1' };
-      await api.saveCalendar('proj_1', cal);
+    it('Calendars CRUD', async () => {
+      const cal: any = { id: 'c1' };
+      vi.mocked(invoke).mockResolvedValueOnce([cal]).mockResolvedValueOnce(cal).mockResolvedValueOnce(cal);
+
+      expect(await api.getCalendars('proj_1')).toEqual([cal]);
+      expect(invoke).toHaveBeenCalledWith('get_calendars', { project: 'proj_1' });
+
+      expect(await api.getCalendar('c1')).toEqual(cal);
+      expect(invoke).toHaveBeenCalledWith('get_calendar', { id: 'c1' });
+
+      expect(await api.saveCalendar('proj_1', cal)).toEqual(cal);
       expect(invoke).toHaveBeenCalledWith('save_calendar', { project: 'proj_1', data: cal });
+
+      await api.deleteCalendar('c1');
+      expect(invoke).toHaveBeenCalledWith('delete_calendar', { id: 'c1' });
     });
 
-    it('deleteCalendar invokes delete_calendar', async () => {
-      await api.deleteCalendar('cal_1');
-      expect(invoke).toHaveBeenCalledWith('delete_calendar', { id: 'cal_1' });
+    it('TextBlocks CRUD and Search', async () => {
+      const tb: any = { id: 'tb1' };
+      vi.mocked(invoke).mockResolvedValueOnce([tb]).mockResolvedValueOnce(tb).mockResolvedValueOnce(tb).mockResolvedValueOnce([{ entity: tb, score: 1, kind: 'tb' }]);
+
+      expect(await api.getTextblocks('proj_1')).toEqual([tb]);
+      expect(invoke).toHaveBeenCalledWith('get_textblocks', { project: 'proj_1' });
+
+      expect(await api.getTextblock('tb1')).toEqual(tb);
+      expect(invoke).toHaveBeenCalledWith('get_textblock', { id: 'tb1' });
+
+      expect(await api.saveTextblock('proj_1', tb)).toEqual(tb);
+      expect(invoke).toHaveBeenCalledWith('save_textblock', { project: 'proj_1', data: tb });
+
+      await api.deleteTextblock('tb1');
+      expect(invoke).toHaveBeenCalledWith('delete_textblock', { id: 'tb1' });
+
+      const searchRes = await api.searchTextblocks('proj_1', 'findme');
+      expect(invoke).toHaveBeenCalledWith('search_textblocks', { project: 'proj_1', query: 'findme' });
+      expect(searchRes).toHaveLength(1);
+    });
+
+    it('ChatMessages CRUD and Search', async () => {
+      const msg: any = { id: 'm1' };
+      vi.mocked(invoke).mockResolvedValueOnce([msg]).mockResolvedValueOnce(msg).mockResolvedValueOnce(msg).mockResolvedValueOnce([{ entity: msg, score: 1, kind: 'msg' }]);
+
+      expect(await api.getChatmessages('proj_1')).toEqual([msg]);
+      expect(invoke).toHaveBeenCalledWith('get_chatmessages', { project: 'proj_1' });
+
+      expect(await api.getChatmessage('m1')).toEqual(msg);
+      expect(invoke).toHaveBeenCalledWith('get_chatmessage', { id: 'm1' });
+
+      expect(await api.saveChatmessage('proj_1', msg)).toEqual(msg);
+      expect(invoke).toHaveBeenCalledWith('save_chatmessage', { project: 'proj_1', data: msg });
+
+      await api.deleteChatmessage('m1');
+      expect(invoke).toHaveBeenCalledWith('delete_chatmessage', { id: 'm1' });
+
+      const searchRes = await api.searchChatmessages('proj_1', 'query');
+      expect(invoke).toHaveBeenCalledWith('search_chatmessages', { project: 'proj_1', query: 'query' });
+      expect(searchRes).toHaveLength(1);
+    });
+
+    it('AgentMemory CRUD and Search', async () => {
+      const mem: any = { id: 'mem1' };
+      vi.mocked(invoke).mockResolvedValueOnce([mem]).mockResolvedValueOnce(mem).mockResolvedValueOnce(mem).mockResolvedValueOnce([{ entity: mem, score: 1, kind: 'mem' }]);
+
+      expect(await api.getAgentmemorys('proj_1')).toEqual([mem]);
+      expect(invoke).toHaveBeenCalledWith('get_agentmemorys', { project: 'proj_1' });
+
+      expect(await api.getAgentmemory('mem1')).toEqual(mem);
+      expect(invoke).toHaveBeenCalledWith('get_agentmemory', { id: 'mem1' });
+
+      expect(await api.saveAgentmemory('proj_1', mem)).toEqual(mem);
+      expect(invoke).toHaveBeenCalledWith('save_agentmemory', { project: 'proj_1', data: mem });
+
+      await api.deleteAgentmemory('mem1');
+      expect(invoke).toHaveBeenCalledWith('delete_agentmemory', { id: 'mem1' });
+
+      const searchRes = await api.searchAgentmemorys('proj_1', 'query');
+      expect(invoke).toHaveBeenCalledWith('search_agentmemorys', { project: 'proj_1', query: 'query' });
+      expect(searchRes).toHaveLength(1);
+    });
+
+    it('WebCaches CRUD and Search', async () => {
+      const cache: any = { id: 'c1' };
+      vi.mocked(invoke).mockResolvedValueOnce([cache]).mockResolvedValueOnce(cache).mockResolvedValueOnce(cache).mockResolvedValueOnce([{ entity: cache, score: 1, kind: 'cache' }]);
+
+      expect(await api.getWebcaches('proj_1')).toEqual([cache]);
+      expect(invoke).toHaveBeenCalledWith('get_webcaches', { project: 'proj_1' });
+
+      expect(await api.getWebcache('c1')).toEqual(cache);
+      expect(invoke).toHaveBeenCalledWith('get_webcache', { id: 'c1' });
+
+      expect(await api.saveWebcache('proj_1', cache)).toEqual(cache);
+      expect(invoke).toHaveBeenCalledWith('save_webcache', { project: 'proj_1', data: cache });
+
+      await api.deleteWebcache('c1');
+      expect(invoke).toHaveBeenCalledWith('delete_webcache', { id: 'c1' });
+
+      const searchRes = await api.searchWebcaches('proj_1', 'query');
+      expect(invoke).toHaveBeenCalledWith('search_webcaches', { project: 'proj_1', query: 'query' });
+      expect(searchRes).toHaveLength(1);
+    });
+
+    it('Cites CRUD', async () => {
+      const cite: any = { id: 'cite1' };
+      vi.mocked(invoke).mockResolvedValueOnce([cite]).mockResolvedValueOnce(cite);
+
+      expect(await api.getCites('f1', 't1')).toEqual([cite]);
+      expect(invoke).toHaveBeenCalledWith('get_cites', { fromId: 'f1', toId: 't1' });
+
+      expect(await api.createCite('f1', 't1', cite)).toEqual(cite);
+      expect(invoke).toHaveBeenCalledWith('create_cite', { fromId: 'f1', toId: 't1', data: cite });
+
+      await api.deleteCite('cite1');
+      expect(invoke).toHaveBeenCalledWith('delete_cite', { id: 'cite1' });
     });
   });
 });

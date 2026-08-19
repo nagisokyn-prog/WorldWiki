@@ -1,19 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { useWowilonPanel } from '../useWowilonPanel';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }));
 
+const mockUnlisten = vi.fn();
+
 vi.mock('@tauri-apps/api/event', () => ({
-  listen: vi.fn().mockResolvedValue(vi.fn()),
+  listen: vi.fn().mockResolvedValue(mockUnlisten),
 }));
 
 describe('useWowilonPanel', () => {
-  let activeChatId: ReturnType<typeof ref<string>>;
-  let activeModeSlug: ReturnType<typeof ref<string>>;
+  let activeChatId: Ref<string>;
+  let activeModeSlug: Ref<string>;
   let panel: ReturnType<typeof useWowilonPanel>;
 
   beforeEach(() => {
@@ -44,6 +47,12 @@ describe('useWowilonPanel', () => {
       await panel.loadMessages('');
       expect(panel.allMessages.value).toEqual([]);
     });
+
+    it('handles loadMessages error gracefully', async () => {
+      vi.mocked(invoke).mockRejectedValue(new Error('Network error'));
+      await panel.loadMessages('chat_err');
+      expect(panel.allMessages.value).toEqual([]);
+    });
   });
 
   describe('sendMessage', () => {
@@ -69,6 +78,32 @@ describe('useWowilonPanel', () => {
       expect(panel.allMessages.value[1].role).toBe('assistant');
     });
 
+    it('triggers title generation when starting a new chat with empty activeChatId', async () => {
+      activeChatId.value = '';
+      vi.mocked(invoke).mockImplementation(async (cmd: string) => {
+        if (cmd === 'send_chat_message') {
+          return { chat_id: 'new_chat_100', user_msg_id: 'u1', assistant_msg_id: 'a1' };
+        }
+        if (cmd === 'generate_chat_title') {
+          return 'New Title';
+        }
+      });
+
+      await panel.sendMessage('First prompt');
+      expect(activeChatId.value).toBe('new_chat_100');
+      expect(invoke).toHaveBeenCalledWith('generate_chat_title', {
+        chatId: 'new_chat_100',
+        promptText: 'First prompt',
+        projectId: 'proj_1',
+      });
+    });
+
+    it('handles sendMessage error gracefully', async () => {
+      vi.mocked(invoke).mockRejectedValue(new Error('Send failed'));
+      await panel.sendMessage('Prompt');
+      expect(panel.isGenerating.value).toBe(false);
+    });
+
     it('does nothing when text is empty', async () => {
       await panel.sendMessage('   ');
       expect(invoke).not.toHaveBeenCalled();
@@ -84,6 +119,13 @@ describe('useWowilonPanel', () => {
 
       expect(panel.isGenerating.value).toBe(false);
       expect(invoke).toHaveBeenCalledWith('cancel_generation', { chatId: 'chat_1' });
+    });
+
+    it('handles error in cancelGeneration', async () => {
+      panel.isGenerating.value = true;
+      vi.mocked(invoke).mockRejectedValue(new Error('Cancel failed'));
+      await panel.cancelGeneration();
+      expect(panel.isGenerating.value).toBe(false);
     });
   });
 
@@ -102,9 +144,57 @@ describe('useWowilonPanel', () => {
       expect(panel.allMessages.value[0].id).toBe('m2');
     });
 
-    it('ignores temporary messages', async () => {
+    it('ignores temporary messages or empty msgId', async () => {
       await panel.deleteMessage('temp_123');
+      await panel.deleteMessage('');
       expect(invoke).not.toHaveBeenCalled();
+    });
+
+    it('handles deleteMessage error', async () => {
+      panel.allMessages.value = [{ id: 'm1', role: 'user', content: '1' }];
+      vi.mocked(invoke).mockRejectedValue(new Error('Delete error'));
+      await panel.deleteMessage('m1');
+      expect(panel.allMessages.value).toHaveLength(1);
+    });
+  });
+
+  describe('editMessage', () => {
+    it('invokes edit_chat_message and reloads messages', async () => {
+      panel.allMessages.value = [{ id: 'm1', role: 'user', content: 'Old' }];
+      vi.mocked(invoke).mockImplementation(async (cmd: string) => {
+        if (cmd === 'edit_chat_message') {
+          return { chat_id: 'chat_1', user_msg_id: 'm1', assistant_msg_id: 'asst_new' };
+        }
+        if (cmd === 'get_chat_messages') {
+          return [
+            { id: 'm1', role: 'user', content: 'New text', is_active: true },
+            { id: 'asst_new', role: 'assistant', content: '', is_active: true },
+          ];
+        }
+      });
+
+      await panel.editMessage('m1', 'New text');
+
+      expect(invoke).toHaveBeenCalledWith('edit_chat_message', {
+        msgId: 'm1',
+        newText: 'New text',
+        chatId: 'chat_1',
+        project: 'proj_1',
+        modeSlug: 'chat',
+      });
+      expect(panel.allMessages.value).toHaveLength(2);
+    });
+
+    it('ignores edit for temp or empty text', async () => {
+      await panel.editMessage('temp_1', 'hello');
+      await panel.editMessage('m1', '   ');
+      expect(invoke).not.toHaveBeenCalled();
+    });
+
+    it('handles editMessage error', async () => {
+      vi.mocked(invoke).mockRejectedValue(new Error('Edit failed'));
+      await panel.editMessage('m1', 'New text');
+      expect(panel.isGenerating.value).toBe(false);
     });
   });
 
@@ -132,6 +222,111 @@ describe('useWowilonPanel', () => {
       expect(panel.allMessages.value[1].is_active).toBe(false);
       expect(panel.allMessages.value[2].id).toBe('asst_2');
       expect(panel.allMessages.value[2].is_active).toBe(true);
+    });
+
+    it('handles regenerateMessage error', async () => {
+      vi.mocked(invoke).mockRejectedValue(new Error('Regen failed'));
+      await panel.regenerateMessage('user_1');
+      expect(panel.isGenerating.value).toBe(false);
+    });
+  });
+
+  describe('switchVariant', () => {
+    it('invokes switch_message_variant and reloads messages', async () => {
+      vi.mocked(invoke).mockImplementation(async (cmd: string) => {
+        if (cmd === 'switch_message_variant') return undefined;
+        if (cmd === 'get_chat_messages') return [{ id: 'var_2', role: 'assistant', is_active: true }];
+      });
+
+      await panel.switchVariant('var_2');
+      expect(invoke).toHaveBeenCalledWith('switch_message_variant', { msgId: 'var_2' });
+      expect(panel.allMessages.value).toHaveLength(1);
+    });
+
+    it('handles switchVariant error', async () => {
+      vi.mocked(invoke).mockRejectedValue(new Error('Switch failed'));
+      await panel.switchVariant('var_2');
+    });
+  });
+
+  describe('renderedMessages computed tree', () => {
+    it('builds linear tree of active variants correctly', () => {
+      panel.allMessages.value = [
+        { id: 'u1', role: 'user', content: 'Hello', parent_id: null, is_active: true },
+        { id: 'a1_v1', role: 'assistant', content: 'Hi v1', parent_id: 'u1', is_active: false },
+        { id: 'a1_v2', role: 'assistant', content: 'Hi v2', parent_id: 'u1', is_active: true },
+        { id: 'u2', role: 'user', content: 'Next', parent_id: 'a1_v2', is_active: true },
+      ];
+
+      const groups = panel.renderedMessages.value;
+      expect(groups).toHaveLength(3);
+      expect(groups[0].activeMessage.id).toBe('u1');
+      expect(groups[1].variants).toHaveLength(2);
+      expect(groups[1].activeIndex).toBe(1);
+      expect(groups[1].activeMessage.id).toBe('a1_v2');
+      expect(groups[2].activeMessage.id).toBe('u2');
+    });
+  });
+
+  describe('Stream chunk event listening', () => {
+    it('appends streaming reasoning, tool logs, usage, text and finishes on is_done', () => {
+      // Mock stream listener registration
+      panel.allMessages.value = [
+        { id: 'asst_1', role: 'assistant', content: '', reasoning: '', is_active: true }
+      ];
+      panel.isGenerating.value = true;
+
+      // Find the listener callback registered in listen
+      const calls = vi.mocked(listen).mock.calls;
+      const streamHandler = calls.find((c: any) => c[0] === 'chat_stream_chunk')?.[1] as any;
+
+      if (streamHandler) {
+        // Reasoning chunk
+        streamHandler({
+          payload: {
+            chat_id: 'chat_1',
+            message_id: 'asst_1',
+            chunk_type: 'reasoning',
+            text: 'Thinking...',
+          }
+        });
+        expect(panel.allMessages.value[0].reasoning).toBe('Thinking...');
+
+        // Tool log chunk
+        streamHandler({
+          payload: {
+            chat_id: 'chat_1',
+            message_id: 'asst_1',
+            chunk_type: 'tool_log',
+            text: 'Called search tool',
+          }
+        });
+        expect(panel.allMessages.value[0].toolLogs).toEqual(['Called search tool']);
+
+        // Usage chunk
+        streamHandler({
+          payload: {
+            chat_id: 'chat_1',
+            message_id: 'asst_1',
+            chunk_type: 'usage',
+            text: JSON.stringify({ input_tokens: 10, output_tokens: 20, total_tokens: 30 }),
+          }
+        });
+        expect(panel.tokenUsage.value).toEqual({ input_tokens: 10, output_tokens: 20, total_tokens: 30 });
+
+        // Content chunk
+        streamHandler({
+          payload: {
+            chat_id: 'chat_1',
+            message_id: 'asst_1',
+            chunk_type: 'content',
+            text: 'Final Answer',
+            is_done: true,
+          }
+        });
+        expect(panel.allMessages.value[0].content).toBe('Final Answer');
+        expect(panel.isGenerating.value).toBe(false);
+      }
     });
   });
 });

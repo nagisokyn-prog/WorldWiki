@@ -29,6 +29,7 @@ describe('ui-helpers', () => {
       const el = document.createElement('div');
       setCSSVariable('--test-color', '#ff0000', el);
       expect(el.style.getPropertyValue('--test-color')).toBe('#ff0000');
+      expect(getCSSVariable('--test-color', el)).toBe('#ff0000');
     });
 
     it('sets multiple CSS variables', () => {

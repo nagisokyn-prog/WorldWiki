@@ -126,6 +126,7 @@ describe('chapter.store', () => {
 
       const newCh = await store.createNewChapter('project_1', 'arc_1');
 
+      expect(newCh).toBeDefined();
       expect(chapterService.createNew).toHaveBeenCalledWith('Глава 3');
       expect(api.assignChapter).toHaveBeenCalledWith('project_1', 'new_ch_id', 'arc_1', null);
       expect(store.currentChapterId).toBe('new_ch_id');

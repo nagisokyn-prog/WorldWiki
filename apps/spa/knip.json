@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@5/overview/configuration-schema.json",
+  "entry": [
+    "*.html",
+    "src/ts/app/*.ts",
+    "src/ts/features/ai/FloatingWindowAI/ai.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,vue}"
+  ],
+  "ignore": [
+    "src/ts/types/generated/**",
+    "src/**/*.d.ts"
+  ],
+  "ignoreDependencies": [
+    "@vue/server-renderer",
+    "@vue/test-utils"
+  ]
+}

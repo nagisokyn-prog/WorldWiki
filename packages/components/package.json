@@ -25,15 +25,15 @@
     "vue": "^3.5.0",
     "vitest": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
-    "jsdom": "^29.1.1",
+    "jsdom": "^30.0.1",
     "@vitest/coverage-v8": "^4.1.10"
   },
   "peerDependencies": {
     "vue": "^3.5.0",
     "vue-i18n": "^11.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
-    "@vueuse/motion": "^2.0.0",
-    "@formkit/auto-animate": "^0.8.0",
+    "@vueuse/motion": "^3.0.3",
+    "@formkit/auto-animate": "^0.10.0",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-fs": "^2.0.0"
   }

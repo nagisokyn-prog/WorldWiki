@@ -48,7 +48,7 @@ describe('hotkeys store', () => {
   });
 
   it('handles Ctrl+W by closing active editor', () => {
-    shell.activeEditorId = 'ed_1';
+    shell.openChapterTab({ id: 'ed_1', title: 'Chapter 1' });
     const spy = vi.spyOn(shell, 'closeEditor').mockImplementation(() => {});
     triggerKey('KeyW', { ctrlKey: true });
     expect(spy).toHaveBeenCalledWith('ed_1');
@@ -160,5 +160,28 @@ describe('hotkeys store', () => {
     shell.showSettings = true;
     triggerKey('Escape');
     expect(shell.showSettings).toBe(false);
+  });
+
+  it('handles Ctrl+F by focusing sidebar search', () => {
+    const input = document.createElement('input');
+    const container = document.createElement('div');
+    container.className = 'sidebar-search';
+    container.appendChild(input);
+    document.body.appendChild(container);
+
+    const focusSpy = vi.spyOn(input, 'focus');
+    triggerKey('KeyF', { ctrlKey: true });
+    expect(focusSpy).toHaveBeenCalled();
+  });
+
+  it('handles F11 fullscreen toggle', () => {
+    (window as any).__TAURI__ = {
+      core: {
+        invoke: vi.fn().mockResolvedValue(undefined),
+      },
+    };
+    triggerKey('F11');
+    expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledWith('toggle_fullscreen');
+    delete (window as any).__TAURI__;
   });
 });

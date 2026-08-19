@@ -1,15 +1,57 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { editorService } from '../editor.service';
 
 describe('editorService', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    document.body.innerHTML = '';
     editorService.editor = null;
     editorService.cancelAutoSave();
+    delete (window as any).toastui;
+    delete (window as any).editorInstance;
   });
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  describe('init', () => {
+    it('throws error if container element does not exist', () => {
+      expect(() => editorService.init('missing_container')).toThrow(
+        'Editor container #missing_container not found'
+      );
+    });
+
+    it('initializes editor with toastui factory and binds onChange', () => {
+      const container = document.createElement('div');
+      container.id = 'editor_box';
+      document.body.appendChild(container);
+
+      const mockOn = vi.fn();
+      const mockEditorInstance = { on: mockOn };
+      const mockFactory = vi.fn((config) => {
+        // Test addImageBlobHook inside config
+        const callback = vi.fn();
+        const blob = new Blob(['dummy'], { type: 'image/png' });
+        config.hooks.addImageBlobHook(blob, callback);
+        return mockEditorInstance;
+      });
+
+      (window as any).toastui = {
+        Editor: {
+          factory: mockFactory,
+        },
+      };
+
+      const onChange = vi.fn();
+      const instance = editorService.init('editor_box', { onChange });
+
+      expect(mockFactory).toHaveBeenCalled();
+      expect(mockOn).toHaveBeenCalledWith('change', onChange);
+      expect(instance).toBe(mockEditorInstance);
+      expect((window as any).editorInstance).toBe(mockEditorInstance);
+    });
   });
 
   describe('Word & Character count', () => {
@@ -64,10 +106,19 @@ describe('editorService', () => {
 
       expect(editorService.getSelectedText()).toBe('selected text');
     });
+
+    it('handles missing editor safely during text manipulation', () => {
+      editorService.editor = null;
+      expect(editorService.getContent()).toBe('');
+      expect(editorService.getSelectedText()).toBe('');
+      expect(() => editorService.setContent('text')).not.toThrow();
+      expect(() => editorService.insertText('text')).not.toThrow();
+      expect(() => editorService.replaceSelection('text')).not.toThrow();
+    });
   });
 
   describe('Mode switching', () => {
-    it('switches mode via changeMode or setMode', () => {
+    it('switches mode via changeMode or setMode fallback', () => {
       const changeMode = vi.fn();
       editorService.editor = {
         changeMode,
@@ -77,6 +128,23 @@ describe('editorService', () => {
       editorService.switchMode('wysiwyg');
       expect(changeMode).toHaveBeenCalledWith('wysiwyg');
       expect(editorService.getCurrentMode()).toBe('markdown');
+
+      const setMode = vi.fn();
+      editorService.editor = {
+        setMode,
+        isWysiwygMode: vi.fn().mockReturnValue(true),
+      };
+      editorService.switchMode('markdown');
+      expect(setMode).toHaveBeenCalledWith('markdown');
+      expect(editorService.getCurrentMode()).toBe('wysiwyg');
+
+      editorService.editor = {
+        isWysiwygMode: vi.fn().mockReturnValue(false),
+      };
+      expect(editorService.getCurrentMode()).toBe('markdown');
+
+      editorService.editor = null;
+      expect(editorService.getCurrentMode()).toBe('wysiwyg');
     });
   });
 

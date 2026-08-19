@@ -12,7 +12,7 @@ export function useRelationshipBlock(props: any, emit: any) {
 
   const getResolvedFields = (subConf?: any) => {
     subConf = subConf || props.templateConf;
-    let tpl: any = null;
+    let tpl: any;
     if (subConf.fields && !subConf.template) {
       tpl = subConf;
     } else {
@@ -235,7 +235,7 @@ export function useRelationshipBlock(props: any, emit: any) {
       sourceItem[key] = [];
     }
     
-    let tpl: any = null;
+    let tpl: any;
     if (subConf.fields && !subConf.template) {
       tpl = subConf;
     } else {

@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { useCloudSyncModal } from '../useCloudSyncModal';
 import * as api from '../../../services/api.client';
 import { appConfirm } from '@worldwiki/components';
@@ -64,11 +66,20 @@ describe('useCloudSyncModal', () => {
     });
 
     it('responds to open-cloud-sync custom event', () => {
+      let modalInstance: any;
+      const Comp = defineComponent({
+        setup() {
+          modalInstance = useCloudSyncModal(emit);
+          return () => null;
+        }
+      });
+      const wrapper = mount(Comp);
       const event = new CustomEvent('open-cloud-sync', { detail: 'import' });
       window.dispatchEvent(event);
 
-      expect(modal.isOpen.value).toBe(true);
-      expect(modal.syncMode.value).toBe('import');
+      expect(modalInstance.isOpen.value).toBe(true);
+      expect(modalInstance.syncMode.value).toBe('import');
+      wrapper.unmount();
     });
   });
 

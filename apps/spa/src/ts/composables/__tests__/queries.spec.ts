@@ -7,6 +7,10 @@ import * as calendarQueries from '../queries/useCalendarQueries';
 import * as batchQueries from '../queries/useBatchQueries';
 import * as api from '../../services/api.client';
 import { entityApi } from '../../services/Entity/entity.api';
+import { tagApi } from '../../services/api/tag.api';
+import { chapterApi } from '../../services/api/chapter.api';
+import { calendarApi } from '../../services/api/calendar.api';
+import { batchApi } from '../../services/api/batch.api';
 
 vi.mock('@tanstack/vue-query', () => ({
   useQuery: vi.fn((opts) => opts),
@@ -24,17 +28,6 @@ vi.mock('../../services/api.client', () => ({
   deleteProject: vi.fn(),
   saveProjectConfig: vi.fn(),
   getEntitySchemas: vi.fn(),
-  getTags: vi.fn(),
-  saveTag: vi.fn(),
-  deleteTag: vi.fn(),
-  getChapters: vi.fn(),
-  saveChapter: vi.fn(),
-  deleteChapter: vi.fn(),
-  getChapterHierarchy: vi.fn(),
-  getCalendars: vi.fn(),
-  saveCalendar: vi.fn(),
-  deleteCalendar: vi.fn(),
-  getEntitiesBatch: vi.fn(),
 }));
 
 vi.mock('../../services/Entity/entity.api', () => ({
@@ -44,6 +37,42 @@ vi.mock('../../services/Entity/entity.api', () => ({
     getSchemas: vi.fn(),
     saveEntity: vi.fn(),
     deleteEntity: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/api/tag.api', () => ({
+  tagApi: {
+    getTags: vi.fn(),
+    saveTag: vi.fn(),
+    deleteTag: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/api/chapter.api', () => ({
+  chapterApi: {
+    getChaptersList: vi.fn(),
+    getChapter: vi.fn(),
+    getHierarchy: vi.fn(),
+    saveChapter: vi.fn(),
+    deleteChapter: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/api/calendar.api', () => ({
+  calendarApi: {
+    getCalendars: vi.fn(),
+    getGlobalTimeline: vi.fn(),
+    saveCalendar: vi.fn(),
+    deleteCalendar: vi.fn(),
+    saveGlobalTimeline: vi.fn(),
+  },
+}));
+
+vi.mock('../../services/api/batch.api', () => ({
+  batchApi: {
+    getEntitiesBatch: vi.fn(),
+    upsertConnectionsBatch: vi.fn(),
+    saveEntityWithRelations: vi.fn(),
   },
 }));
 
@@ -129,65 +158,84 @@ describe('TanStack Query Composables', () => {
     it('useTags, useSaveTag, useDeleteTag execute correctly', async () => {
       const tagsQ: any = tagQueries.useTags('p1');
       await tagsQ.queryFn();
-      expect(api.getTags).toHaveBeenCalledWith('p1');
+      expect(tagApi.getTags).toHaveBeenCalledWith('p1');
 
       const saveM: any = tagQueries.useSaveTag();
-      await saveM.mutationFn({ project: 'p1', data: { name: 'Lore' } as any });
-      expect(api.saveTag).toHaveBeenCalledWith('p1', { name: 'Lore' });
+      await saveM.mutationFn({ project: 'p1', tag: { name: 'Lore', color: 'red' } });
+      expect(tagApi.saveTag).toHaveBeenCalledWith('p1', { name: 'Lore', color: 'red' });
       saveM.onSuccess(undefined, { project: 'p1' });
 
       const delM: any = tagQueries.useDeleteTag();
-      await delM.mutationFn({ project: 'p1', id: 't1' });
-      expect(api.deleteTag).toHaveBeenCalledWith('t1');
+      await delM.mutationFn({ project: 'p1', name: 't1' });
+      expect(tagApi.deleteTag).toHaveBeenCalledWith('p1', 't1');
       delM.onSuccess(undefined, { project: 'p1' });
     });
   });
 
   describe('Chapter Queries', () => {
-    it('useChapters, useChapterHierarchy, useSaveChapter, useDeleteChapter execute correctly', async () => {
+    it('useChapters, useChapter, useHierarchy, useSaveChapter, useDeleteChapter execute correctly', async () => {
       const chQ: any = chapterQueries.useChapters('p1');
       await chQ.queryFn();
-      expect(api.getChapters).toHaveBeenCalledWith('p1');
+      expect(chapterApi.getChaptersList).toHaveBeenCalledWith('p1');
 
-      const hQ: any = chapterQueries.useChapterHierarchy('p1');
+      const singleChQ: any = chapterQueries.useChapter('p1', 'c1');
+      await singleChQ.queryFn();
+      expect(chapterApi.getChapter).toHaveBeenCalledWith('p1', 'c1');
+
+      const hQ: any = chapterQueries.useHierarchy('p1');
       await hQ.queryFn();
-      expect(api.getChapterHierarchy).toHaveBeenCalledWith('p1');
+      expect(chapterApi.getHierarchy).toHaveBeenCalledWith('p1');
 
       const saveM: any = chapterQueries.useSaveChapter();
-      await saveM.mutationFn({ project: 'p1', data: { title: 'Ch1' } as any });
-      expect(api.saveChapter).toHaveBeenCalledWith('p1', { title: 'Ch1' });
-      saveM.onSuccess(undefined, { project: 'p1' });
+      await saveM.mutationFn({ project: 'p1', data: { id: 'c1', title: 'Ch1' } });
+      expect(chapterApi.saveChapter).toHaveBeenCalledWith('p1', { id: 'c1', title: 'Ch1' });
+      saveM.onSuccess(undefined, { project: 'p1', data: { id: 'c1' } });
 
       const delM: any = chapterQueries.useDeleteChapter();
-      await delM.mutationFn({ project: 'p1', id: 'c1' });
-      expect(api.deleteChapter).toHaveBeenCalledWith('c1');
-      delM.onSuccess(undefined, { project: 'p1' });
+      await delM.mutationFn({ project: 'p1', chapterId: 'c1' });
+      expect(chapterApi.deleteChapter).toHaveBeenCalledWith('p1', 'c1');
+      delM.onSuccess(undefined, { project: 'p1', chapterId: 'c1' });
     });
   });
 
   describe('Calendar Queries', () => {
-    it('useCalendars, useSaveCalendar, useDeleteCalendar execute correctly', async () => {
+    it('useCalendars, useGlobalTimeline, useSaveCalendar, useDeleteCalendar, useSaveGlobalTimeline execute correctly', async () => {
       const calQ: any = calendarQueries.useCalendars('p1');
       await calQ.queryFn();
-      expect(api.getCalendars).toHaveBeenCalledWith('p1');
+      expect(calendarApi.getCalendars).toHaveBeenCalledWith('p1');
+
+      const timeQ: any = calendarQueries.useGlobalTimeline('p1');
+      await timeQ.queryFn();
+      expect(calendarApi.getGlobalTimeline).toHaveBeenCalledWith('p1');
 
       const saveM: any = calendarQueries.useSaveCalendar();
-      await saveM.mutationFn({ project: 'p1', data: { name: 'Cal' } as any });
-      expect(api.saveCalendar).toHaveBeenCalledWith('p1', { name: 'Cal' });
+      await saveM.mutationFn({ project: 'p1', data: { name: 'Cal' } });
+      expect(calendarApi.saveCalendar).toHaveBeenCalledWith('p1', { name: 'Cal' });
       saveM.onSuccess(undefined, { project: 'p1' });
 
       const delM: any = calendarQueries.useDeleteCalendar();
       await delM.mutationFn({ project: 'p1', id: 'cal1' });
-      expect(api.deleteCalendar).toHaveBeenCalledWith('cal1');
+      expect(calendarApi.deleteCalendar).toHaveBeenCalledWith('cal1');
       delM.onSuccess(undefined, { project: 'p1' });
+
+      const saveTimeM: any = calendarQueries.useSaveGlobalTimeline();
+      await saveTimeM.mutationFn({ project: 'p1', data: { era: 1 } });
+      expect(calendarApi.saveGlobalTimeline).toHaveBeenCalledWith('p1', { era: 1 });
+      saveTimeM.onSuccess(undefined, { project: 'p1' });
     });
   });
 
   describe('Batch Queries', () => {
-    it('useEntitiesBatch executes correctly', async () => {
-      const bQ: any = batchQueries.useEntitiesBatch('p1', ['char', 'loc']);
-      await bQ.queryFn();
-      expect(api.getEntitiesBatch).toHaveBeenCalledWith('p1', ['char', 'loc']);
+    it('useSaveEntityWithRelations and useUpsertConnectionsBatch execute correctly', async () => {
+      const saveRelM: any = batchQueries.useSaveEntityWithRelations();
+      await saveRelM.mutationFn({ project: 'p1', entity: { name: 'E' }, relations: [] });
+      expect(batchApi.saveEntityWithRelations).toHaveBeenCalledWith('p1', { name: 'E' }, []);
+      saveRelM.onSuccess(undefined, { project: 'p1' });
+
+      const upsertConnM: any = batchQueries.useUpsertConnectionsBatch();
+      await upsertConnM.mutationFn({ project: 'p1', connections: [] });
+      expect(batchApi.upsertConnectionsBatch).toHaveBeenCalledWith('p1', 'Unknown', 'Unknown', []);
+      upsertConnM.onSuccess(undefined, { project: 'p1' });
     });
   });
 });

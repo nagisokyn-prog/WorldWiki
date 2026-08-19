@@ -48,7 +48,7 @@ export function useEntityHelpers(formData: any, config: any) {
   };
 
   const getResolvedTemplate = (container: any) => {
-    let baseTpl: any = null;
+    let baseTpl: any;
     if (container.fields && !container.template) {
       baseTpl = container;
     } else {

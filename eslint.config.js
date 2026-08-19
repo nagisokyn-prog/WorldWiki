@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import globals from 'globals';
 import ts from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import vue from 'eslint-plugin-vue';
@@ -29,13 +30,8 @@ export default ts.config(
         extraFileExtensions: ['.vue']
       },
       globals: {
-        browser: true,
-        node: true,
-        window: true,
-        document: true,
-        localStorage: true,
-        fetch: true,
-        console: true
+        ...globals.browser,
+        ...globals.node
       }
     },
     rules: {

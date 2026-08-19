@@ -18,7 +18,7 @@ export function useExportModal(props: any, emit: any) {
     };
 
     const exportData = async () => {
-        let targets: string[] = [];
+        let targets: string[];
         if (selectionMode.value === 'current' && props.currentChapterId) {
             targets = [props.currentChapterId];
         } else if (selectionMode.value === 'all') {

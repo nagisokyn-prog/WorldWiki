@@ -8,7 +8,9 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: vi.fn(),
 }));
 
-const mockUnlisten = vi.fn();
+const { mockUnlisten } = vi.hoisted(() => ({
+  mockUnlisten: vi.fn(),
+}));
 
 vi.mock('@tauri-apps/api/event', () => ({
   listen: vi.fn().mockResolvedValue(mockUnlisten),

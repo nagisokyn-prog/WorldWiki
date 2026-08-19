@@ -1,17 +1,20 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   setCSSVariable,
   getCSSVariable,
   setCSSVariables,
+  animateCSSVariable,
   createGlassCard,
   setGlassCardState,
   createGlassPanel,
   createButton,
+  createProjectCard,
   addStateHandlers,
   createRipple,
   toggleElement,
   animateRemoval,
+  animateEntrance,
   initInteractiveElements,
 } from '../ui-helpers';
 
@@ -22,6 +25,10 @@ describe('ui-helpers', () => {
     document.body.innerHTML = '';
     container = document.createElement('div');
     document.body.appendChild(container);
+  });
+
+  afterEach(() => {
+    delete (window as any).gsap;
   });
 
   describe('CSS Variables', () => {
@@ -40,6 +47,12 @@ describe('ui-helpers', () => {
       }, el);
       expect(el.style.getPropertyValue('--color-primary')).toBe('#00ff00');
       expect(el.style.getPropertyValue('--spacing-sm')).toBe('8px');
+    });
+
+    it('animateCSSVariable sets variable directly without GSAP', () => {
+      const el = document.createElement('div');
+      animateCSSVariable('--my-var', '20px', { element: el });
+      expect(el.style.getPropertyValue('--my-var')).toBe('20px');
     });
   });
 
@@ -109,12 +122,65 @@ describe('ui-helpers', () => {
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
 
-    it('creates disabled button', () => {
+    it('creates outline and small button with disabled state', () => {
       const btn = createButton({
-        text: 'Disabled',
+        text: 'Outline',
+        variant: 'outline',
+        size: 'small',
         disabled: true,
       });
+      expect(btn.classList.contains('btn-outline')).toBe(true);
+      expect(btn.classList.contains('btn-small')).toBe(true);
       expect(btn.disabled).toBe(true);
+    });
+
+    it('creates secondary button', () => {
+      const btn = createButton({
+        text: 'Secondary',
+        variant: 'secondary',
+      });
+      expect(btn.classList.contains('btn-secondary')).toBe(true);
+    });
+  });
+
+  describe('Project Card creation', () => {
+    it('creates project card with stats and action callbacks', () => {
+      const onClick = vi.fn();
+      const onEdit = vi.fn();
+      const onDelete = vi.fn();
+
+      const card = createProjectCard({
+        title: 'My Project',
+        subtitle: 'Epic Novel',
+        icon: '📖',
+        stats: { Chapters: 10, Words: 25000 },
+        onClick,
+        onEdit,
+        onDelete,
+      });
+
+      expect(card.querySelector('.project-title')?.textContent).toBe('My Project');
+      expect(card.querySelector('.project-subtitle')?.textContent).toBe('Epic Novel');
+      expect(card.querySelector('.project-stats')?.textContent).toContain('Chapters: 10');
+
+      // Click open button
+      const openBtn = card.querySelector('.btn-open') as HTMLButtonElement;
+      openBtn.click();
+      expect(onClick).toHaveBeenCalledTimes(1);
+
+      // Click edit button
+      const editBtn = card.querySelector('.btn-edit') as HTMLButtonElement;
+      editBtn.click();
+      expect(onEdit).toHaveBeenCalledTimes(1);
+
+      // Click delete button
+      const deleteBtn = card.querySelector('.btn-delete') as HTMLButtonElement;
+      deleteBtn.click();
+      expect(onDelete).toHaveBeenCalledTimes(1);
+
+      // Direct card click
+      card.click();
+      expect(onClick).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -124,8 +190,11 @@ describe('ui-helpers', () => {
       const onHover = vi.fn();
       const onLeave = vi.fn();
       const onActive = vi.fn();
+      const onRelease = vi.fn();
+      const onFocus = vi.fn();
+      const onBlur = vi.fn();
 
-      addStateHandlers(el, { onHover, onLeave, onActive });
+      addStateHandlers(el, { onHover, onLeave, onActive, onRelease, onFocus, onBlur });
 
       el.dispatchEvent(new MouseEvent('mouseenter'));
       expect(onHover).toHaveBeenCalled();
@@ -135,9 +204,18 @@ describe('ui-helpers', () => {
 
       el.dispatchEvent(new MouseEvent('mousedown'));
       expect(onActive).toHaveBeenCalled();
+
+      el.dispatchEvent(new MouseEvent('mouseup'));
+      expect(onRelease).toHaveBeenCalled();
+
+      el.dispatchEvent(new FocusEvent('focus'));
+      expect(onFocus).toHaveBeenCalled();
+
+      el.dispatchEvent(new FocusEvent('blur'));
+      expect(onBlur).toHaveBeenCalled();
     });
 
-    it('creates ripple effect on click', () => {
+    it('creates ripple effect on click and cleans up with timer', () => {
       vi.useFakeTimers();
       const el = document.createElement('div');
       container.appendChild(el);
@@ -154,7 +232,7 @@ describe('ui-helpers', () => {
     });
   });
 
-  describe('Element animation fallbacks (when GSAP is undefined)', () => {
+  describe('Animations (without GSAP)', () => {
     it('toggles element display without GSAP', () => {
       const el = document.createElement('div');
       toggleElement(el, false);
@@ -175,6 +253,12 @@ describe('ui-helpers', () => {
       expect(cb).toHaveBeenCalled();
     });
 
+    it('animateEntrance warns and exits safely without GSAP', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      animateEntrance('.some-el');
+      expect(warnSpy).toHaveBeenCalled();
+    });
+
     it('initializes interactive elements with CSS transition fallback', () => {
       const el = document.createElement('div');
       el.className = 'interactive-el';
@@ -189,6 +273,12 @@ describe('ui-helpers', () => {
 
       el.dispatchEvent(new MouseEvent('mouseleave'));
       expect(el.style.transform).toBe('scale(1)');
+
+      el.dispatchEvent(new MouseEvent('mousedown'));
+      expect(el.style.transform).toContain('scale');
+
+      el.dispatchEvent(new MouseEvent('mouseup'));
+      expect(el.style.transform).toContain('scale');
     });
   });
 });

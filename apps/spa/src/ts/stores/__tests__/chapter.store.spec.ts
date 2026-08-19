@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useChapterStore } from '../chapter.store';
+import { useTimelineStore } from '../timeline.store';
+import { useCalendarStore } from '../calendar.store';
 import { chapterService } from '../../services/chapter.service';
 import * as api from '../../services/api.client';
 
@@ -45,7 +47,7 @@ describe('chapter.store', () => {
     store = useChapterStore();
   });
 
-  describe('loadChapters', () => {
+  describe('loadChapters and hierarchy', () => {
     it('loads hierarchy and updates store state', async () => {
       const mockHierarchy = {
         volumes: [{ id: 'vol_1', title: 'Volume 1' }],
@@ -64,7 +66,7 @@ describe('chapter.store', () => {
     it('handles loadHierarchy error gracefully', async () => {
       vi.mocked(api.getChapterHierarchy).mockRejectedValue(new Error('Fetch failed'));
 
-      await store.loadChapters('project_1');
+      await store.loadHierarchy('project_1');
 
       expect(store.loading).toBe(false);
       expect(store.debugError).toContain('Ошибка загрузки иерархии');
@@ -72,7 +74,7 @@ describe('chapter.store', () => {
   });
 
   describe('openChapter & Computed relations', () => {
-    it('opens existing chapter and populates currentChapterNode, arc, volume', async () => {
+    it('opens existing chapter and populates currentChapterNode, arc, volume via arc', async () => {
       store.hierarchy = {
         volumes: [{ id: 'vol_1', title: 'Volume 1' }],
         arcs: [{ id: 'arc_1', title: 'Arc 1', volume_id: 'vol_1' }],
@@ -97,7 +99,25 @@ describe('chapter.store', () => {
       expect(store.currentVolume?.id).toBe('vol_1');
     });
 
-    it('returns false when chapter is not found', async () => {
+    it('saves unsaved changes prior to opening another chapter', async () => {
+      store.hasUnsavedChanges = true;
+      store.currentChapter = { id: 'ch_old', title: 'Old', content: '', participants: [] };
+      vi.mocked(chapterService.save).mockResolvedValue({} as any);
+      vi.mocked(chapterService.get).mockResolvedValue({ id: 'ch_new', title: 'New', content: '', participants: [] } as any);
+
+      await store.openChapter('project_1', 'ch_new');
+      expect(chapterService.save).toHaveBeenCalled();
+    });
+
+    it('returns false and sets debugError when chapter fetch fails', async () => {
+      vi.mocked(chapterService.get).mockRejectedValue(new Error('Network error'));
+
+      const success = await store.openChapter('project_1', 'err_id');
+      expect(success).toBe(false);
+      expect(store.debugError).toContain('Ошибка загрузки главы');
+    });
+
+    it('returns false when chapter is null', async () => {
       vi.mocked(chapterService.get).mockResolvedValue(null as any);
 
       const success = await store.openChapter('project_1', 'non_existent');
@@ -105,8 +125,63 @@ describe('chapter.store', () => {
     });
   });
 
+  describe('saveChapter', () => {
+    it('parses participants, calls chapterService.save and updates hierarchy', async () => {
+      const timeline = useTimelineStore();
+      vi.spyOn(timeline, 'parseParticipants').mockReturnValue([
+        { id: 'hero', name: 'Hero', type: 'character' } as any,
+      ]);
+
+      store.currentChapter = {
+        id: 'ch_1',
+        title: 'Chapter 1',
+        content: 'Mentions Hero here',
+        participants: [],
+      };
+      store.currentChapterId = 'ch_1';
+      store.chapters = [{ id: 'ch_1', title: 'Old' }];
+
+      const emitSpy = vi.fn();
+      const res = await store.saveChapter('project_1', emitSpy);
+
+      expect(res).toBe(true);
+      expect(chapterService.save).toHaveBeenCalled();
+      expect(emitSpy).toHaveBeenCalledWith('chapter-saved');
+      expect(store.chapters[0].title).toBe('Chapter 1');
+      expect(chapterService.updateIndex).toHaveBeenCalledWith('project_1');
+    });
+
+    it('handles save error and returns false', async () => {
+      store.currentChapter = { id: 'ch_1', title: 'Ch 1', content: '', participants: [] };
+      vi.mocked(chapterService.save).mockRejectedValue(new Error('Save failed'));
+
+      const res = await store.saveChapter('project_1');
+      expect(res).toBe(false);
+      expect(store.debugError).toContain('Ошибка сохранения');
+    });
+  });
+
   describe('createNewChapter', () => {
-    it('creates chapter with incremented title and assigns relations', async () => {
+    it('creates Chapter 1 with default timeline event from calendar', async () => {
+      store.hierarchy = { volumes: [], arcs: [], chapters: [] };
+
+      const calStore = useCalendarStore();
+      vi.spyOn(calStore, 'loadCalendar').mockResolvedValue({
+        точка_отсчета: { эпоха: 1, год: 100, месяц: 2, день: 5 },
+      } as any);
+
+      vi.mocked(chapterService.save).mockResolvedValue('chapters:new_ch_id' as any);
+      vi.mocked(chapterService.get).mockResolvedValue({ id: 'new_ch_id', title: 'Глава 1' } as any);
+      vi.mocked(api.getChapterHierarchy).mockResolvedValue({ volumes: [], arcs: [], chapters: [] });
+
+      const newCh = await store.createNewChapter('project_1');
+
+      expect(newCh).toBeDefined();
+      expect(newCh.timeline_events.length).toBe(1);
+      expect(newCh.timeline_events[0].description).toBe('Начало истории');
+    });
+
+    it('creates subsequent chapter with incremented title and assigns relations', async () => {
       store.hierarchy = {
         volumes: [],
         arcs: [],

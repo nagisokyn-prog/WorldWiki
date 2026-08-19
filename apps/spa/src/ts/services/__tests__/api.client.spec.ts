@@ -500,7 +500,12 @@ describe('api.client (Tauri invoke contract tests)', () => {
 
     it('TextBlocks CRUD and Search', async () => {
       const tb: any = { id: 'tb1' };
-      vi.mocked(invoke).mockResolvedValueOnce([tb]).mockResolvedValueOnce(tb).mockResolvedValueOnce(tb).mockResolvedValueOnce([{ entity: tb, score: 1, kind: 'tb' }]);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce([tb])
+        .mockResolvedValueOnce(tb)
+        .mockResolvedValueOnce(tb)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce([{ entity: tb, score: 1, kind: 'tb' }]);
 
       expect(await api.getTextblocks('proj_1')).toEqual([tb]);
       expect(invoke).toHaveBeenCalledWith('get_textblocks', { project: 'proj_1' });
@@ -521,7 +526,12 @@ describe('api.client (Tauri invoke contract tests)', () => {
 
     it('ChatMessages CRUD and Search', async () => {
       const msg: any = { id: 'm1' };
-      vi.mocked(invoke).mockResolvedValueOnce([msg]).mockResolvedValueOnce(msg).mockResolvedValueOnce(msg).mockResolvedValueOnce([{ entity: msg, score: 1, kind: 'msg' }]);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce([msg])
+        .mockResolvedValueOnce(msg)
+        .mockResolvedValueOnce(msg)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce([{ entity: msg, score: 1, kind: 'msg' }]);
 
       expect(await api.getChatmessages('proj_1')).toEqual([msg]);
       expect(invoke).toHaveBeenCalledWith('get_chatmessages', { project: 'proj_1' });
@@ -542,7 +552,12 @@ describe('api.client (Tauri invoke contract tests)', () => {
 
     it('AgentMemory CRUD and Search', async () => {
       const mem: any = { id: 'mem1' };
-      vi.mocked(invoke).mockResolvedValueOnce([mem]).mockResolvedValueOnce(mem).mockResolvedValueOnce(mem).mockResolvedValueOnce([{ entity: mem, score: 1, kind: 'mem' }]);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce([mem])
+        .mockResolvedValueOnce(mem)
+        .mockResolvedValueOnce(mem)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce([{ entity: mem, score: 1, kind: 'mem' }]);
 
       expect(await api.getAgentmemorys('proj_1')).toEqual([mem]);
       expect(invoke).toHaveBeenCalledWith('get_agentmemorys', { project: 'proj_1' });
@@ -563,7 +578,12 @@ describe('api.client (Tauri invoke contract tests)', () => {
 
     it('WebCaches CRUD and Search', async () => {
       const cache: any = { id: 'c1' };
-      vi.mocked(invoke).mockResolvedValueOnce([cache]).mockResolvedValueOnce(cache).mockResolvedValueOnce(cache).mockResolvedValueOnce([{ entity: cache, score: 1, kind: 'cache' }]);
+      vi.mocked(invoke)
+        .mockResolvedValueOnce([cache])
+        .mockResolvedValueOnce(cache)
+        .mockResolvedValueOnce(cache)
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce([{ entity: cache, score: 1, kind: 'cache' }]);
 
       expect(await api.getWebcaches('proj_1')).toEqual([cache]);
       expect(invoke).toHaveBeenCalledWith('get_webcaches', { project: 'proj_1' });

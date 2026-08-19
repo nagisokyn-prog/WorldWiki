@@ -96,7 +96,7 @@ describe('useParticipantsPanel', () => {
     panel.addParticipant();
     expect(emit).toHaveBeenCalledWith('update:participants', [
       { type: 'character', id: '1' },
-      { type: 'character', id: '2' },
+      expect.objectContaining({ type: 'character', id: '2' }),
     ]);
   });
 

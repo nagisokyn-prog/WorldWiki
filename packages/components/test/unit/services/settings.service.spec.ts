@@ -204,5 +204,77 @@ describe('settings.service', () => {
       settingsService.applyQualityLevel(0);
       expect(settingsService.getSettings().perf.qualityLevel).toBe(0);
     });
+
+    it('handles Tauri constructor event listener and callback (lines 63-71)', async () => {
+      let eventCallback: any;
+      (window as any).__TAURI__ = {
+        event: {
+          listen: vi.fn((name, cb) => {
+            eventCallback = cb;
+            return Promise.resolve();
+          }),
+        },
+      };
+
+      // Create new instance with Tauri event listener present
+      const SvcClass = settingsService.constructor as any;
+      const testService = new SvcClass();
+
+      expect((window as any).__TAURI__.event.listen).toHaveBeenCalledWith('settings-updated', expect.any(Function));
+
+      // Trigger listener with payload
+      eventCallback({ payload: { colors: { accent: '#112233' } } });
+      expect(testService.getSettings().colors.accent).toBe('#112233');
+
+      // Trigger listener with falsy payload
+      eventCallback({ payload: null });
+
+      // Test listener rejection catch
+      (window as any).__TAURI__.event.listen = vi.fn().mockRejectedValue(new Error('Listener failed'));
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      new SvcClass();
+      await Promise.resolve();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('handles loadSettings from Tauri when successful, null, or failing (lines 84-94)', async () => {
+      // 1. Success
+      (window as any).__TAURI__ = {
+        core: { invoke: vi.fn().mockResolvedValue({ colors: { accent: '#445566' } }) },
+      };
+      const loaded = await settingsService.loadSettings();
+      expect(loaded.colors.accent).toBe('#445566');
+
+      // 2. Null response
+      (window as any).__TAURI__.core.invoke = vi.fn().mockResolvedValue(null);
+      await settingsService.loadSettings();
+
+      // 3. Rejection
+      (window as any).__TAURI__.core.invoke = vi.fn().mockRejectedValue(new Error('Tauri load failed'));
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      await settingsService.loadSettings();
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+
+    it('handles saveSettings with Tauri event emit and immediate=true (line 143)', async () => {
+      (window as any).__TAURI__ = {
+        core: { invoke: vi.fn().mockResolvedValue(undefined) },
+        event: { emit: vi.fn().mockResolvedValue(undefined) },
+      };
+
+      // 1. Successful save & emit
+      await settingsService.saveSettings(null, true);
+      expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledWith('save_settings', expect.any(Object));
+      expect((window as any).__TAURI__.event.emit).toHaveBeenCalledWith('settings-updated', expect.any(Object));
+
+      // 2. Tauri invoke fails
+      (window as any).__TAURI__.core.invoke = vi.fn().mockRejectedValue(new Error('Save failed'));
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      await settingsService.saveSettings(null, true);
+      expect(warnSpy).toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
   });
 });

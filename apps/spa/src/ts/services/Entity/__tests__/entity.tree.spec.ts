@@ -217,7 +217,7 @@ describe('useEntityTree', () => {
       return { item: [] };
     });
 
-    const tree = useEntityTree('my-proj', emit);
+    const tree = useEntityTree('concurrent-proj', emit);
     const p1 = tree.loadEntities();
     const p2 = tree.loadEntities(); // should be skipped
     await Promise.all([p1, p2]);

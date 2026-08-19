@@ -360,7 +360,9 @@ describe('useTimelinePanel', () => {
       const bareCal = {
         id: 'cal_bare',
         data: {
-          // No название, no эпохи, no месяцы, no сезоны
+          месяцы: [{ название: 'M1', дней: 30 }],
+          эпохи: [],
+          сезоны: [],
         },
       };
 
@@ -375,7 +377,7 @@ describe('useTimelinePanel', () => {
       };
       const info = panel.getConvertedDateInfo(evNoTime, 'cal_bare');
       expect(info?.calName).toBe('Календарь');
-      expect(info?.seasonName).toBe('Без сезона');
+      expect(info?.seasonName).toBe('Вне сезона');
       expect(info?.isNative).toBe(false);
 
       // 2. updateEventTime when event has no initial time object

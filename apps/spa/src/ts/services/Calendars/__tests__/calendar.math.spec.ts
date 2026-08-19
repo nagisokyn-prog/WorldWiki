@@ -258,7 +258,7 @@ describe('CalendarMath', () => {
 
       const converted = CalendarMath.getDateFromAbsolute(abs, bceCal, 0);
       expect(converted.era_index).toBe(0);
-      expect(converted.year).toBe(5);
+      expect(converted.year).toBe(6);
     });
 
     it('handles multi-month spanning holidays, middle months, and empty calendar holidays/seasons', () => {

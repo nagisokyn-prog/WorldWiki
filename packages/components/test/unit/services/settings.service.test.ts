@@ -808,4 +808,38 @@ describe('SettingsService', () => {
       expect(listener).toHaveBeenCalledWith(expect.objectContaining({ locale: 'en' }));
     });
   });
+
+  describe('switchTheme explicit branch coverage', () => {
+    it('line 389-390: Tauri returns null for dark theme → merges getDefaultSettings()', async () => {
+      globalThis.__TAURI__ = {
+        core: { invoke: vi.fn().mockResolvedValue(null) },
+      } as any;
+      vi.mocked(localStorage.getItem).mockReturnValue(null);
+      const saveSpy = vi.spyOn(settingsService, 'saveSettings');
+
+      await settingsService.switchTheme('dark');
+
+      // Default settings applied
+      expect(settingsService.getSettings().colors.bgBase).toBe('#09090b');
+      expect(saveSpy).toHaveBeenCalled();
+      saveSpy.mockRestore();
+      delete (globalThis as any).__TAURI__;
+    });
+
+    it('line 411: localStorage.getItem throws in switchTheme → console.warn called', async () => {
+      delete (window as any).__TAURI__;
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      vi.mocked(localStorage.getItem).mockImplementationOnce(() => {
+        throw new Error('Storage quota exceeded');
+      });
+
+      await settingsService.switchTheme('light');
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        'localStorage theme load failed for light:', expect.any(Error)
+      );
+
+      warnSpy.mockRestore();
+    });
+  });
 });

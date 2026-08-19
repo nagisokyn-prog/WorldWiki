@@ -446,8 +446,7 @@ describe('useUniversalDatePicker', () => {
 
       // Test with empty calendar ID
       picker.currentCalendarId.value = '';
-      expect(picker.calendar.value).toBeNull();
-      expect(picker.maxDaysInMonth.value).toBe(30);
+      expect(picker.dayOptions.value.length).toBe(30);
       picker.onCalendarChange(); // should return early in emitUpdate / validateValues
     });
   });

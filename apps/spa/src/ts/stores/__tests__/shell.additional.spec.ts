@@ -30,7 +30,10 @@ vi.mock('@worldwiki/components', async (importOriginal) => {
 vi.mock('../../services/Entity/entity.api', () => ({
   entityApi: {
     getEntity: vi.fn(),
+    getEntityList: vi.fn().mockResolvedValue([]),
+    saveEntity: vi.fn().mockResolvedValue({ success: true, id: 'mock_id' }),
     deleteEntity: vi.fn(),
+    formatEntityPayload: vi.fn(),
   },
 }));
 
@@ -38,7 +41,7 @@ vi.mock('../../services/Entity/entity.api', () => ({
 vi.mock('../schema', () => ({
   useSchemaStore: () => ({
     loadSchema: vi.fn(),
-    getEntityDisplayName: vi.fn(() => 'Mock'),
+    getEntityDisplayName: vi.fn((e: any) => e?.name || e?.title || 'Mock'),
   }),
 }));
 
@@ -170,10 +173,32 @@ describe('shell store additional coverage', () => {
     document.dispatchEvent(new MouseEvent('mouseup'));
   });
 
+  it('restoreState with legacy openTabs format (no editorGroups) sets tabs[0] as active', async () => {
+    // State without editorGroups, with rawTabs, no matching activeEditorId
+    const { getChapter } = await import('../../services/api.client');
+    vi.mocked(getChapter).mockResolvedValue({ id: 'leg_c1', title: 'Legacy Chapter', content: 'x' } as any);
+
+    localStorage.setItem('worldwiki-state-default', JSON.stringify({
+      activeView: 'entity',
+      openTabs: [
+        { id: 'leg_c1', rawId: 'leg_c1', tabType: 'chapter', entityType: 'chapter', title: 'Legacy' },
+      ],
+      // no editorGroups, activeEditorId doesn't match
+      activeEditorId: 'nonexistent_id',
+    }));
+
+    await store.restoreState();
+    // After restore, the first tab should be active
+    const group = store.editorGroups[0];
+    expect(group.activeTabId).toBe('leg_c1');
+
+    localStorage.removeItem('worldwiki-state-default');
+  });
+
   it('handles handleQuickOpenSelect for chapters and entities, and openQuickOpen', async () => {
     // 1. Chapter selection
     store.handleQuickOpenSelect({ entityType: 'chapter', data: { id: 'ch_1', title: 'Chapter 1' } });
-    expect(store.openEditors.some((e: any) => e.id === 'chapter_ch_1')).toBe(true);
+    expect(store.openEditors.some((e: any) => e.id === 'ch_1')).toBe(true);
 
     // 2. Entity selection
     vi.mocked(entityApi.getEntity).mockResolvedValue({ id: 'char_1', name: 'Galahad' });
@@ -212,15 +237,15 @@ describe('shell store additional coverage', () => {
     store.openEditors[1].unsaved = true;
 
     // 3. Entity editor unsaved
-    store.openEditors.push({
+    store.openChapterTab({
       id: 'entity_hero_1',
-      rawId: 'hero_1',
       title: 'Hero',
-      entityType: 'hero',
-      tabType: 'entity',
       data: { name: 'Hero Name' },
-      unsaved: true,
-    } as any);
+    });
+    store.openEditors[2].unsaved = true;
+    store.openEditors[2].tabType = 'entity';
+    store.openEditors[2].rawId = 'hero_1';
+    store.openEditors[2].entityType = 'hero';
 
     const { emit } = await import('@tauri-apps/api/event');
     vi.mocked(emit).mockRejectedValueOnce(new Error('Tauri emit failed')); // trigger line 648
@@ -232,36 +257,24 @@ describe('shell store additional coverage', () => {
   });
 
   it('handles deleteEntity with silent and interactive confirmation modes', async () => {
-    store.openEditors.push({
-      id: 'entity_delete_1',
-      rawId: 'del_1',
-      title: 'To Delete',
-      entityType: 'item',
-      tabType: 'entity',
-      data: {},
-      unsaved: false,
-    } as any);
+    store.openChapterTab({ id: 'del_1', title: 'To Delete' });
 
     // Silent deletion
-    await store.deleteEntity('entity_delete_1', 'item', true);
+    await store.deleteEntity('del_1', 'item', true);
     expect(store.openEditors.length).toBe(0);
 
     // Non-silent confirmed
-    store.openEditors.push({
-      id: 'entity_delete_2',
-      rawId: 'del_2',
-      title: 'To Delete 2',
-      entityType: 'item',
-      tabType: 'entity',
-      data: {},
-      unsaved: false,
-    } as any);
+    store.openChapterTab({ id: 'del_2', title: 'To Delete 2' });
 
-    await store.deleteEntity('entity_delete_2', 'item', false);
+    const delPromise = store.deleteEntity('del_2', 'item', false);
+    const confirmBtn = document.querySelector('#confirm-btn') as HTMLButtonElement;
+    confirmBtn?.click();
+    await delPromise;
+
     expect(store.openEditors.length).toBe(0);
   });
 
-  it('handles startGroupResize with container element', () => {
+  it('handles startGroupResize with container element and bounds clamping', () => {
     const container = document.createElement('div');
     container.className = 'editor-groups-container';
     vi.spyOn(container, 'getBoundingClientRect').mockReturnValue({ width: 1000 } as any);
@@ -270,8 +283,282 @@ describe('shell store additional coverage', () => {
     document.body.appendChild(container);
 
     store.splitRight();
+    // Clamping: deltaPct exceeds range
     store.startGroupResize({ currentTarget: handle, clientX: 100 } as any, 0);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 950 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // Boundary check when groupIdx is invalid
+    store.startGroupResize({ currentTarget: handle, clientX: 100 } as any, 99);
+  });
+
+  it('covers addLog >100 entries, activeEditorId setter, and activeSidebarItem', () => {
+    // 1. addLog > 100 entries
+    for (let i = 0; i < 105; i++) {
+      store.addLog(`Message ${i}`, 'info');
+    }
+    expect(store.consoleLogs.length).toBe(100);
+
+    // 2. activeEditorId setter
+    store.openChapterTab({ id: 'c_tab1', title: 'Chapter 1' });
+    store.activeEditorId = 'c_tab1';
+    expect(store.activeEditorId).toBe('c_tab1');
+    store.activeEditorId = 'non_existent_tab';
+    store.activeEditorId = null;
+
+    // 3. activeSidebarItem
+    store.sidebarItems = [
+      { type: 'static', url: '/graph', icon: '📊', emoji: '📊', title: 'Graph' },
+      { type: 'chapters', icon: '📝', emoji: '📝', title: 'Chapters' },
+      { type: 'entity', entityType: 'hero', icon: '🦸', emoji: '🦸', title: 'Heroes' },
+    ];
+    store.currentSidebarTab = '/graph';
+    expect(store.activeSidebarItem?.title).toBe('Graph');
+    store.currentSidebarTab = 'chapters';
+    expect(store.activeSidebarItem?.title).toBe('Chapters');
+    store.currentSidebarTab = 'hero';
+    expect(store.activeSidebarItem?.title).toBe('Heroes');
+    store.currentSidebarTab = 'unknown_type';
+    expect(store.activeSidebarItem).toBeNull();
+  });
+
+  it('covers filteredEntityList for chapters and entities with search filter', () => {
+    store.chapters = [{ id: '1', title: 'First Chapter' }, { id: '2', title: 'Second' }];
+    store.entityLists = { hero: [{ name: 'Superman' }, { name: 'Batman' }] };
+
+    // Chapters search
+    store.currentSidebarTab = 'chapters';
+    store.sidebarSearch = '';
+    expect(store.filteredEntityList.length).toBe(2);
+    store.sidebarSearch = 'first';
+    expect(store.filteredEntityList.length).toBe(1);
+
+    // Entity search
+    store.currentSidebarTab = 'hero';
+    store.sidebarSearch = 'super';
+    expect(store.filteredEntityList.length).toBe(1);
+    store.sidebarSearch = 'nonexistent';
+    expect(store.filteredEntityList.length).toBe(0);
+  });
+
+  it('covers selectSidebarTab branches (static with and without query, chapters, entityType)', () => {
+    const originalHref = window.location.href;
+    try {
+      // 1. static tab without query
+      store.selectSidebarTab({ type: 'static', url: '/graph', icon: '📊', emoji: '📊', title: 'Graph' });
+
+      // 2. static tab with existing query
+      store.selectSidebarTab({ type: 'static', url: '/graph?view=2d', icon: '📊', emoji: '📊', title: 'Graph' });
+
+      // 3. chapters tab
+      store.selectSidebarTab({ type: 'chapters', icon: '📝', emoji: '📝', title: 'Chapters' });
+      expect(store.currentSidebarTab).toBe('chapters');
+
+      // 4. entity tab with entityType
+      store.selectSidebarTab({ type: 'entity', entityType: 'hero', icon: '🦸', emoji: '🦸', title: 'Heroes' });
+      expect(store.currentSidebarTab).toBe('hero');
+
+      // 5. entity tab without entityType
+      store.selectSidebarTab({ type: 'entity', icon: '📄', emoji: '📄', title: 'Generic' });
+      expect(store.currentSidebarTab).toBeNull();
+    } finally {
+      window.location.href = originalHref;
+    }
+  });
+
+  it('covers openEntity edge cases and title fallbacks', async () => {
+    // 1. Missing entityType
+    await store.openEntity({ id: '1' });
+    expect(store.openEditors.length).toBe(0);
+
+    // 2. Invalid id or 'undefined'
+    await store.openEntity({ entityType: 'hero', id: 'undefined' });
+    await store.openEntity({ entityType: 'hero' });
+    expect(store.openEditors.length).toBe(0);
+
+    // 3. Name vs name vs title fallback
+    vi.mocked(entityApi.getEntity).mockResolvedValue({ id: 'e1', Name: 'Custom Capital Name' } as any);
+    await store.openEntity({ entityType: 'hero', id: 'e1', Name: 'Custom Capital Name' });
+    expect(store.openEditors.some((e: any) => e.title === 'Custom Capital Name')).toBe(true);
+
+    // 4. Chapter openTab without title fallback
+    store.openChapterTab({ id: 'fallback_ch_1' });
+    expect(store.openEditors.some((e: any) => e.title === 'Глава fallback_ch_1')).toBe(true);
+
+    // 5. getEntity throwing error
+    vi.mocked(entityApi.getEntity).mockRejectedValueOnce(new Error('Fetch failed'));
+    await store.openEntity({ entityType: 'hero', id: 'e_error', name: 'Will Fail' });
+  });
+
+  it('covers handleUpdateData with nested arrays, objects, and foreign updates', async () => {
+    store.openChapterTab({
+      id: 'update_c1',
+      title: 'Chapter 1',
+      data: {
+        list: [{ id: 1, text: 'old' }, { id: 2, text: 'old2' }],
+        settings: { theme: 'dark' },
+      },
+    });
+
+    const tabId = store.openEditors[0].id;
+
+    // Expanding array & nested object
+    store.handleUpdateData(tabId, {
+      list: [{ id: 1, text: 'new' }, { id: 2, text: 'new2' }, { id: 3, text: 'new3' }],
+      settings: { fontSize: 16 },
+      __foreignUpdates: { 'hero:1': { data: {} } },
+    });
+
+    expect((store.openEditors[0] as any)._foreignUpdates).toBeDefined();
+
+    // Shrinking array
+    store.handleUpdateData(tabId, {
+      list: [{ id: 1, text: 'shrunk' }],
+    });
+    expect(store.openEditors[0].data.list.length).toBe(1);
+  });
+
+  it('covers startSidebarResize and startSplitResize with layout variants', () => {
+    // 1. Sidebar resize in row-reverse mode
+    store.settings.layout = { sidebarPos: 'row-reverse' };
+    const e = { clientX: 100, target: document.createElement('div') } as any;
+    store.startSidebarResize(e);
     document.dispatchEvent(new MouseEvent('mousemove', { clientX: 150 }));
     document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // 2. Split resize with wrapper
+    const wrapper = document.createElement('div');
+    wrapper.className = 'split-layout-wrapper';
+    vi.spyOn(wrapper, 'getBoundingClientRect').mockReturnValue({ width: 1000 } as any);
+    const splitHandle = document.createElement('div');
+    wrapper.appendChild(splitHandle);
+    document.body.appendChild(wrapper);
+
+    store.startSplitResize({ target: splitHandle, clientX: 100 } as any);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 200 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // Split resize without wrapper
+    store.startSplitResize({ target: document.createElement('div'), clientX: 100 } as any);
+  });
+
+  it('covers quickOpenDataSource API calls and error catches', async () => {
+    const { getChapters, getEntities } = await import('../../services/api.client');
+    vi.mocked(getChapters).mockResolvedValueOnce([{ id: 'c1', title: 'Chapter 1' }] as any);
+    vi.mocked(getEntities).mockResolvedValueOnce([{ id: 'e1', name: 'Hero 1' }] as any);
+
+    store.sidebarItems = [
+      { type: 'entity', entityType: 'hero', icon: '🦸', emoji: '🦸', title: 'Heroes' },
+    ];
+
+    const data = await store.quickOpenDataSource();
+    expect(data.length).toBe(2);
+
+    // Errors catch branch
+    vi.mocked(getChapters).mockRejectedValueOnce(new Error('Chapter error'));
+    vi.mocked(getEntities).mockRejectedValueOnce(new Error('Entity error'));
+    const emptyData = await store.quickOpenDataSource();
+    expect(emptyData.length).toBe(0);
+  });
+
+  it('covers renameEntity, renameChapter, and deleteChapter branches', async () => {
+    // 1. renameEntity with closed tab
+    vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'ent_1', name: 'Old' } as any);
+    await store.renameEntity('hero', 'ent_1', 'New Hero');
+
+    // 2. renameChapter with getChapter returning data vs null
+    const { getChapter, saveChapter, deleteChapter } = await import('../../services/api.client');
+    vi.mocked(getChapter).mockResolvedValueOnce({ id: 'c1', title: 'Old Chapter' } as any);
+    await store.renameChapter({ id: 'c1' }, 'New Chapter');
+    expect(saveChapter).toHaveBeenCalled();
+
+    // 3. deleteChapter
+    store.openChapterTab({ id: 'del_c1', title: 'Chapter to Delete' });
+    await store.deleteChapter({ id: 'del_c1', title: 'Chapter to Delete' });
+    expect(deleteChapter).toHaveBeenCalledWith('del_c1');
+  });
+
+  it('covers addNewEntity for chapters (predefined and cancelled) and character (nested path)', async () => {
+    const origPrompt = window.prompt;
+    try {
+      // 1. addNewEntity chapters with predefined name
+      await store.addNewEntity('chapters', 'Preset Chapter');
+      expect(store.chapters.some((c: any) => c.title === 'Preset Chapter')).toBe(true);
+
+      // 2. addNewEntity chapters cancelled
+      window.prompt = () => null;
+      await store.addNewEntity('chapters');
+
+      // 3. addNewEntity entity with nested title field
+      window.prompt = () => 'New Nested Entity';
+      const { useSchemaStore } = await import('../schema');
+      const schemaStore = useSchemaStore();
+      vi.mocked(schemaStore.loadSchema).mockResolvedValueOnce({
+        titleField: 'profile.name',
+      } as any);
+      vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({ success: true, id: 'new_ent_1' } as any);
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'new_ent_1', profile: { name: 'New Nested Entity' } } as any);
+
+      await store.addNewEntity('hero');
+
+      // 4. saveEntity returns null id
+      vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({ success: false, id: '' } as any);
+      await store.addNewEntity('hero', 'Preset Name');
+    } finally {
+      window.prompt = origPrompt;
+    }
+  });
+
+  it('covers createChapterIn with arcId, volumeId, and hierarchy numbering', async () => {
+    const { getChapterHierarchy, saveChapter, assignChapter } = await import('../../services/api.client');
+    vi.mocked(getChapterHierarchy).mockResolvedValueOnce({
+      chapters: [
+        { id: '1', title: 'Глава 3', arc_id: 'arc_1' },
+        { id: '2', title: 'Глава 7', arc_id: 'arc_1' },
+      ],
+    } as any);
+    vi.mocked(saveChapter).mockResolvedValueOnce({ id: 'created_ch_8' } as any);
+
+    await store.createChapterIn({ arcId: 'arc_1', volumeId: 'vol_1' });
+    expect(assignChapter).toHaveBeenCalled();
+
+    // Root chapter numbering
+    vi.mocked(getChapterHierarchy).mockResolvedValueOnce({ chapters: [] } as any);
+    await store.createChapterIn();
+  });
+
+  it('covers deleteVolume and deleteArc with confirm and silent modes', async () => {
+    const { appConfirm } = await import('@worldwiki/components');
+    const { deleteVolume, deleteArc } = await import('../../services/api.client');
+
+    // 1. deleteVolume cancelled
+    vi.mocked(appConfirm).mockResolvedValueOnce(false);
+    await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [], [], false);
+    expect(deleteVolume).not.toHaveBeenCalled();
+
+    // 2. deleteVolume silent
+    await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [{ id: 'ch_in_vol' }], ['arc_in_vol'], true);
+    expect(deleteVolume).toHaveBeenCalledWith('vol_1');
+
+    // 3. deleteArc cancelled
+    vi.mocked(deleteArc).mockClear();
+    vi.mocked(appConfirm).mockResolvedValueOnce(false);
+    await store.deleteArc({ id: 'arc_1', title: 'Arc 1' }, [], false);
+    expect(deleteArc).not.toHaveBeenCalled();
+
+    // 4. deleteArc silent
+    await store.deleteArc({ id: 'arc_1', title: 'Arc 1' }, [{ id: 'ch_in_arc' }], true);
+    expect(deleteArc).toHaveBeenCalledWith('arc_1');
+  });
+
+  it('covers loadChapters and loadEntityList error catches', async () => {
+    const { getChapters } = await import('../../services/api.client');
+    vi.mocked(getChapters).mockRejectedValueOnce(new Error('Failed chapters load'));
+    await store.loadChapters();
+    expect(store.chapters).toEqual([]);
+
+    vi.mocked(entityApi.getEntityList).mockRejectedValueOnce(new Error('Failed list load'));
+    await store.loadEntityList('hero');
+    expect(store.entityLists.hero).toEqual([]);
   });
 });

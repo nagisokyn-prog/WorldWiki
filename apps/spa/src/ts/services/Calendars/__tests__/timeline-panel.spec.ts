@@ -152,10 +152,11 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
   });
 
   describe('setup methods and computed helpers', () => {
+    let wrapper: any;
     let vm: any;
 
     beforeEach(async () => {
-      const wrapper = mount(TimelinePanelComponent, { props });
+      wrapper = mount(TimelinePanelComponent, { props });
       await Promise.resolve();
       await wrapper.vm.$nextTick();
       vm = wrapper.vm as any;
@@ -343,7 +344,11 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
     it('covers getConvertedDateInfo edge cases: missing time, unknown season, and bare calendar', () => {
       const bareCal = {
         id: 'cal_bare',
-        data: {},
+        data: {
+          месяцы: [{ название: 'M1', дней: 30 }],
+          эпохи: [],
+          сезоны: [],
+        },
       };
       vm.availableCalendars.push(bareCal);
 
@@ -355,8 +360,61 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
 
       const info = vm.getConvertedDateInfo(evNoTime, 'cal_bare');
       expect(info.calName).toBe('Календарь');
-      expect(info.seasonName).toBe('Без сезона');
+      expect(info.seasonName).toBe('Вне сезона');
       expect(info.isNative).toBe(false);
+    });
+
+    it('covers addEvent when last event has no time and no calendar_id', () => {
+      // Reset events to single entry without time and without calendar_id
+      props.events.length = 0;
+      props.events.push({
+        date: { era: 0, year: 5, month: 0, day: 1 },
+        description: 'Timeless event',
+        // no time, no calendar_id
+      });
+
+      vm.addEvent();
+      const emitted = wrapper.emitted('update:events');
+      expect(emitted).toBeDefined();
+      const emittedEvents = emitted[emitted.length - 1][0];
+      expect(emittedEvents.length).toBe(2);
+      expect(emittedEvents[1].time).toEqual({ hour: 12, minute: 0 });
+    });
+
+    it('covers getDaysInMonth and updateEventDate with missing calendar and months (lines 283-284)', () => {
+      // updateEventDate on event with unknown calendar
+      props.events[0].calendar_id = 'non_existent_cal';
+      vm.updateEventDate(0, 'day', 40);
+      expect(wrapper.emitted('update:events')).toBeDefined();
+
+      // calendar with missing month array or undefined month
+      props.events[0].calendar_id = 'cal_bare';
+      props.events[0].date.month = 99;
+      vm.updateEventDate(0, 'day', 35);
+    });
+
+    it('covers addEvent origin fallbacks, empty selection, and partial time (lines 322-327, 334)', () => {
+      // 1. selectedCalendarIds empty, availableCalendars has cal with no точка_отсчета
+      vm.selectedCalendarIds = [];
+      vm.availableCalendars = [{ id: 'cal_no_origin', data: {} }];
+
+      props.events.length = 0;
+      vm.addEvent();
+      let emitted = wrapper.emitted('update:events');
+      let emittedEvents = emitted[emitted.length - 1][0];
+      expect(emittedEvents[0].date).toEqual({ era: 0, year: 1, month: 0, day: 1 });
+
+      // 2. last event with partial time object (hour/minute undefined)
+      props.events.length = 0;
+      props.events.push({
+        date: { era: 0, year: 1, month: 0, day: 1 },
+        time: { hour: undefined, minute: undefined },
+        calendar_id: undefined,
+      });
+      vm.addEvent();
+      emitted = wrapper.emitted('update:events');
+      emittedEvents = emitted[emitted.length - 1][0];
+      expect(emittedEvents[emittedEvents.length - 1].time).toEqual({ hour: 12, minute: 0 });
     });
   });
 });

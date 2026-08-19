@@ -154,11 +154,13 @@ import AiActionButtons from './components/AiActionButtons.vue';
 import AiContextSelector from './components/AiContextSelector.vue';
 import AiToolApproval from './components/AiToolApproval.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
-import { useWowilonPanel } from './useWowilonPanel';
+import { useWowilonPanel, type ChatMessage } from './useWowilonPanel';
 import { useAiChats } from './composables/useAiChats';
 import { useAiProfiles } from './composables/useAiProfiles';
 import { invoke } from '@tauri-apps/api/core';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import type { ContextItem } from './components/AiContextSelector.vue';
+import type { AiTopBarMode } from './components/AiChatTopBar.vue';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -169,7 +171,7 @@ const emit = defineEmits(['close']);
 const panelWidth = ref(400);
 const showSidebar = ref(false); // Toggle chat history
 const isSettingsOpen = ref(false);
-const selectedContext = ref<any[]>([]);
+const selectedContext = ref<ContextItem[]>([]);
 
 let currentProject = 'global';
 const hash = window.location.hash;
@@ -201,14 +203,14 @@ const {
 const { activeProfile, loadProfiles } = useAiProfiles(currentProject);
 
 const activeModeSlug = ref('chat');
-const modes = ref<any[]>([]);
+const modes = ref<AiTopBarMode[]>([]);
 
 onMounted(async () => {
   loadChats();
   loadProfiles();
   
   try {
-    const res: any[] = await invoke('get_aimodes', { project: currentProject });
+    const res = await invoke<AiTopBarMode[]>('get_aimodes', { project: currentProject });
     if (res && res.length > 0) {
       modes.value = res;
       // Если есть режим по умолчанию, можно установить его, либо оставить 'chat'
@@ -238,8 +240,8 @@ const {
 const editingMessageId = ref<string | null>(null);
 const editDraft = ref('');
 
-const startEdit = (msg: any) => {
-  editingMessageId.value = msg.id;
+const startEdit = (msg: ChatMessage) => {
+  editingMessageId.value = msg.id || null;
   editDraft.value = msg.content;
 };
 
@@ -276,7 +278,7 @@ watch(() => props.isOpen, (newVal) => {
 });
 
 const messagesContainer = ref<HTMLElement | null>(null);
-const chatInputRef = ref<any>(null);
+const chatInputRef = ref<{ unlock: () => void } | null>(null);
 
 const renderMarkdown = (text: string) => {
   return md.render(text);
@@ -324,7 +326,7 @@ const handleBranch = async (messageId: string | undefined) => {
     return;
   }
   try {
-    const newChat = await invoke<any>('fork_chat', {
+    const newChat = await invoke<{ id: string }>('fork_chat', {
       projectId: currentProject,
       messageId,
       newTitle: 'Новая ветка'
@@ -352,19 +354,19 @@ const handleBranch = async (messageId: string | undefined) => {
   }
 };
 
-const handleContextSelected = (contexts: any[]) => {
+const handleContextSelected = (contexts: ContextItem[]) => {
   selectedContext.value = [...selectedContext.value, ...contexts];
 };
 
-const removeContext = (ctx: any) => {
+const removeContext = (ctx: ContextItem) => {
   selectedContext.value = selectedContext.value.filter(c => c.id !== ctx.id);
 };
 
-const handleToolApproval = (data: any) => {
+const handleToolApproval = (data: unknown) => {
   console.log('Tool approved:', data);
 };
 
-const handleToolRejection = (data: any) => {
+const handleToolRejection = (data: unknown) => {
   console.log('Tool rejected:', data);
 };
 
@@ -443,7 +445,10 @@ const logPanelClick = (event: Event) => {
     chatId,
     project,
     timestamp: Date.now(),
-    path: event.composedPath().map((el: any) => el.tagName?.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className : '')).filter(Boolean).join(' > ')
+    path: event.composedPath().map((el) => {
+      const elem = el as HTMLElement;
+      return elem.tagName?.toLowerCase() + (elem.id ? '#' + elem.id : '') + (elem.className && typeof elem.className === 'string' ? '.' + elem.className : '');
+    }).filter(Boolean).join(' > ')
   });
 };
 
@@ -458,11 +463,11 @@ onMounted(() => {
     console.warn('[PANEL-CLICK] .wowilon-panel not found, attaching to document');
     document.addEventListener('click', listener, true);
   }
-  (window as any).__panelClickListener = { container, listener };
+  (window as unknown as { __panelClickListener?: { container: Element | null; listener: (e: Event) => void } }).__panelClickListener = { container, listener };
 });
 
 onUnmounted(() => {
-  const stored = (window as any).__panelClickListener;
+  const stored = (window as unknown as { __panelClickListener?: { container: Element | null; listener: (e: Event) => void } }).__panelClickListener;
   if (stored?.container) {
     stored.container.removeEventListener('click', stored.listener, true);
   } else if (stored?.listener) {

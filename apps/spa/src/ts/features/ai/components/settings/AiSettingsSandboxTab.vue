@@ -64,11 +64,12 @@ const categories = ref({
   edit_content: false
 });
 
+type CategoryKey = keyof typeof categories.value;
 watch(defaultAction, (val) => {
   if (val === 'allow') {
-    Object.keys(categories.value).forEach(k => (categories.value as any)[k] = true);
+    (Object.keys(categories.value) as CategoryKey[]).forEach(k => { categories.value[k] = true; });
   } else if (val === 'deny' || val === 'ask') {
-    Object.keys(categories.value).forEach(k => (categories.value as any)[k] = false);
+    (Object.keys(categories.value) as CategoryKey[]).forEach(k => { categories.value[k] = false; });
   }
 });
 </script>

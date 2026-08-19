@@ -1,14 +1,20 @@
 import { ref } from 'vue';
+import type { Ref, ShallowRef } from 'vue';
+import type { Editor } from '@tiptap/vue-3';
 import TurndownService from 'turndown';
 import MarkdownIt from 'markdown-it';
 
-export function useTiptapMarkdown(editor: any, emit: any, updateStats: (...args: any[]) => void) {
+export function useTiptapMarkdown(
+  editor: ShallowRef<Editor | null | undefined> | Ref<Editor | null | undefined>,
+  emit: (event: string, ...args: unknown[]) => void,
+  updateStats: () => void
+) {
   const markdownContent = ref('');
   
   const turndownService = new TurndownService();
   turndownService.addRule('denseParagraph', {
     filter: 'p',
-    replacement: function (content: any) {
+    replacement: function (content: string) {
       return '\n' + content + '\n';
     }
   });

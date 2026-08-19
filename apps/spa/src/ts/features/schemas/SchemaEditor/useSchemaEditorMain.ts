@@ -5,8 +5,19 @@ import { useSchemaHistory } from './hooks/useSchemaHistory';
 import { useSchemaDnD } from './hooks/useSchemaDnD';
 import { useSchemaTemplates } from './hooks/useSchemaTemplates';
 
-export function useSchemaEditorMain(props: any, emit: any) {
-    const localEntityType = ref(props.schemaType || props.entityType);
+import type { EntitySchema } from '../../../types/generated/EntitySchema';
+
+export interface SchemaEditorMainProps {
+    project: string;
+    schemaType?: string;
+    entityType?: string;
+    schemaData?: unknown;
+    savedState?: unknown;
+    [key: string]: unknown;
+}
+
+export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: string, ...args: unknown[]) => void) {
+    const localEntityType = ref(props.schemaType || props.entityType || '');
     const catalogWidth = ref(250);
     const scrollContainer = ref<HTMLElement | null>(null);
     const showCatalog = ref(true);
@@ -34,8 +45,8 @@ export function useSchemaEditorMain(props: any, emit: any) {
         document.addEventListener('mouseup', onMouseUp);
     };
 
-    const handleScroll = (e: any) => {
-        emit('scroll-change', e.target.scrollTop);
+    const handleScroll = (e: Event) => {
+        emit('scroll-change', (e.target as HTMLElement).scrollTop);
     };
 
     const handleGlobalKeydown = (e: KeyboardEvent) => {
@@ -50,33 +61,34 @@ export function useSchemaEditorMain(props: any, emit: any) {
             const schemaCopy = JSON.parse(JSON.stringify(dataHook.schema.value));
             schemaCopy.name = localEntityType.value;
             schemaCopy.entityType = localEntityType.value;
-            schemaCopy.sections.forEach((sec: any) => {
+            schemaCopy.sections.forEach((sec: { fields?: unknown[]; dynamicContainers?: unknown[]; items?: unknown[] }) => {
                 sec.fields = [];
                 sec.dynamicContainers = [];
                 if (sec.items) {
-                    sec.items.forEach((item: any) => {
+                    sec.items.forEach((item: unknown) => {
                         if (templatesHook.isAtomicField(item)) {
-                            sec.fields.push(item);
+                            sec.fields?.push(item);
                         } else {
-                            sec.dynamicContainers.push(item);
+                            sec.dynamicContainers?.push(item);
                         }
                     });
                     delete sec.items;
                 }
             });
 
-            const dataToSave = {
+            const dataToSave: EntitySchema = {
                 id: `entity_schemas:${localEntityType.value}`,
+                project_id: props.project ? `projects:${props.project}` : null,
                 type_key: localEntityType.value,
                 type_name: schemaCopy.name || localEntityType.value,
                 icon: schemaCopy.icon || '📄',
                 color: schemaCopy.color || '#333333',
                 fields_schema: [],
                 full_schema: schemaCopy,
-                is_custom: true
+                created_at: null
             };
             
-            await api.saveEntitySchema(props.project, dataToSave as any, historyHook.maxSaves.value);
+            await api.saveEntitySchema(props.project, dataToSave, historyHook.maxSaves.value);
             document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
 
             if (historyHook.isHistoryPreviewMode.value) {

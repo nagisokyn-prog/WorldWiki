@@ -3,8 +3,8 @@ import { ref, watch, onMounted, onUnmounted } from 'vue';
 export function useChapterLayout() {
   const isVolumePlanOpen = ref(false);
   const isArcPlanOpen = ref(false);
-  const volumePlanRef = ref<any>(null);
-  const arcPlanRef = ref<any>(null);
+  const volumePlanRef = ref<{ addItem: () => void } | null>(null);
+  const arcPlanRef = ref<{ addItem: () => void } | null>(null);
   
   const addVolumePlanItem = async () => {
     if (!isVolumePlanOpen.value) {
@@ -137,18 +137,18 @@ export function useChapterLayout() {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('fullscreenchange', onFullscreenChange);
-    document.addEventListener('ww:toggle-right-panel', handleToggleRightPanel as any);
-    document.addEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as any);
-    document.addEventListener('ww:toggle-structure', handleToggleStructure as any);
+    document.addEventListener('ww:toggle-right-panel', handleToggleRightPanel as EventListener);
+    document.addEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as EventListener);
+    document.addEventListener('ww:toggle-structure', handleToggleStructure as EventListener);
   });
 
   onUnmounted(() => {
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     document.removeEventListener('fullscreenchange', onFullscreenChange);
-    document.removeEventListener('ww:toggle-right-panel', handleToggleRightPanel as any);
-    document.removeEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as any);
-    document.removeEventListener('ww:toggle-structure', handleToggleStructure as any);
+    document.removeEventListener('ww:toggle-right-panel', handleToggleRightPanel as EventListener);
+    document.removeEventListener('ww:toggle-chapter-right-panel', toggleRightPanel as EventListener);
+    document.removeEventListener('ww:toggle-structure', handleToggleStructure as EventListener);
   });
 
   return {
@@ -158,13 +158,8 @@ export function useChapterLayout() {
     isZenMode,
     toggleZenMode,
     onFullscreenChange,
-    rightPanelWidth,
-    isRightPanelVisible,
-    toggleRightPanel,
-    startResize,
-    handleToggleRightPanel,
-    handleToggleStructure,
-    hideQuickLinkHintForever,
-    dismissQuickLinkHintForever
+    rightPanelWidth, isRightPanelVisible,
+    startResize, toggleRightPanel,
+    hideQuickLinkHintForever, dismissQuickLinkHintForever
   };
 }

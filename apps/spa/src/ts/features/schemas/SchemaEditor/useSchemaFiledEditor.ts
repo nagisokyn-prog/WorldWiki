@@ -1,4 +1,14 @@
-export function useSchemaFieldEditor(props: any) {
+export interface SchemaFieldItem {
+    label?: string;
+    hidden?: boolean;
+    _val?: unknown;
+    type?: string;
+    placeholder?: string;
+    options?: Array<{ value: string; label: string }>;
+    [key: string]: unknown;
+}
+
+export function useSchemaFieldEditor(props: { item: SchemaFieldItem }) {
     const typeOptions = [
         { val: 'text', icon: '📝', label: 'Текст' },
         { val: 'textarea', icon: '📄', label: 'Абзац' },
@@ -27,7 +37,7 @@ export function useSchemaFieldEditor(props: any) {
         props.item.hidden = !props.item.hidden;
     };
 
-    const updateVal = (val: any) => {
+    const updateVal = (val: unknown) => {
         props.item._val = val;
     };
 

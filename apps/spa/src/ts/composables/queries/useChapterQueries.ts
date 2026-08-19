@@ -25,11 +25,13 @@ export function useHierarchy(project: string) {
   });
 }
 
+import type { Chapter } from '../../types/generated/Chapter';
+
 export function useSaveChapter() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ project, data }: { project: string; data: any }) => 
-      chapterApi.saveChapter(project, data),
+    mutationFn: ({ project, data }: { project: string; data: Chapter | (Record<string, unknown> & { id?: string }) }) => 
+      chapterApi.saveChapter(project, data as Chapter),
     onSuccess: (_, { project, data }) => {
       queryClient.invalidateQueries({ queryKey: ['chapters', project] });
       queryClient.invalidateQueries({ queryKey: ['hierarchy', project] });

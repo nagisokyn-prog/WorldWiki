@@ -14,6 +14,7 @@ import SemanticParagraphNode from '../Semantic/SemanticParagraphNode.vue';
 import * as api from '../../../services/api.client';
 import { AiGhostTextExtension } from './AiGhostTextExtension';
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
 import { useTiptapState } from './hooks/useTiptapState';
 import { useTiptapMarkdown } from './hooks/useTiptapMarkdown';
 import { useTiptapSplitView } from './hooks/useTiptapSplitView';
@@ -72,8 +73,21 @@ const SemanticParagraph = Paragraph.extend({
   }
 });
 
+export interface TiptapEditorProps {
+  content?: string;
+  footnotesData?: Record<string, { id: string; text: string }>;
+  hasUnsavedChanges?: boolean;
+  project: string;
+  title?: string;
+  initialScrollPos?: number;
+  isLocked?: boolean;
+  [key: string]: unknown;
+}
 
-export function useTiptapEditor(props: any, emit: any) {
+export function useTiptapEditor(
+  props: TiptapEditorProps,
+  emit: (event: string, ...args: unknown[]) => void
+) {
   const editorUpdateKey = ref(0);
 
   const editor = useEditor({
@@ -82,7 +96,7 @@ export function useTiptapEditor(props: any, emit: any) {
         paragraph: false,
         codeBlock: false,
       }),
-      (Link as any).configure({
+      Link.configure({
         openOnClick: false,
         autolink: true,
         protocols: ['entity', 'http', 'https', 'ftp', 'mailto']
@@ -99,17 +113,17 @@ export function useTiptapEditor(props: any, emit: any) {
       TableCell,
       EnterHandler,
       AiGhostTextExtension.configure({
-        projectId: 'global' // We can pass actual projectId if we plumb it through props
+        projectId: props.project,
       }),
     ],
     content: props.content || '',
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      emit('update:content', html);
-      emit('change');
-      stateHook.updateStats();
-      mdHook.syncMarkdownFromEditor();
-      editorUpdateKey.value++;
+    onUpdate: () => {
+      if (editor.value) {
+        emit('update:content', editor.value.getHTML());
+        emit('change');
+        stateHook.updateStats();
+        mdHook.syncMarkdownFromEditor();
+      }
     },
   });
 
@@ -119,13 +133,12 @@ export function useTiptapEditor(props: any, emit: any) {
   const formatHook = useTiptapFormatting(editor, emit, editorUpdateKey);
 
   const updateTitle = (e: Event) => {
-    emit('update:title', (e.target as HTMLInputElement).value);
+    emit('update:title', (e.target as HTMLElement).innerText);
     emit('change');
   };
 
   const handleScroll = (e: Event) => {
-    const scrollPos = (e.target as HTMLElement).scrollTop;
-    emit('scroll-change', scrollPos);
+    emit('scroll-change', (e.target as HTMLElement).scrollTop);
   };
 
   watch(() => props.content, (newContent) => {
@@ -137,14 +150,14 @@ export function useTiptapEditor(props: any, emit: any) {
   });
 
   watch(() => props.footnotesData, (newFootnotes) => {
-    formatHook.footnotes.value = { ...newFootnotes };
+    formatHook.footnotes.value = { ...(newFootnotes || {}) };
   });
 
   let handleLinkInteraction: ((e: MouseEvent) => void) | null = null;
   let downHandler: ((e: KeyboardEvent) => void) | null = null;
   let upHandler: ((e: KeyboardEvent) => void) | null = null;
   let handleToggleStructure: (() => void) | null = null;
-  let autoSaveTimer: any = null;
+  let autoSaveTimer: ReturnType<typeof setInterval> | null = null;
 
   onMounted(() => {
     const startAutoSave = () => {
@@ -157,7 +170,7 @@ export function useTiptapEditor(props: any, emit: any) {
       }
     };
 
-    settingsService.onChange((newS: any) => { 
+    settingsService.onChange((newS: AppSettings) => { 
       stateHook.settings.value = newS; 
       startAutoSave();
     });
@@ -278,9 +291,6 @@ export function useTiptapEditor(props: any, emit: any) {
   
           if (type && id) {
             if (isCtrlPressed) {
-              // Note: openEntityEditorWindow needs to be imported or emitted. 
-              // Since we are in a hook, we can emit a new event 'openEntityWindow' and let the component handle it, 
-              // or dispatch a custom event.
               document.dispatchEvent(new CustomEvent('ww:open-entity-window', { detail: { type, id } }));
             } else {
               emit('openEntity', { type, id });

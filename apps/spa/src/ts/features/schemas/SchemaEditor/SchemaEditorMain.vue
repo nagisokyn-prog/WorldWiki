@@ -181,7 +181,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits(['scroll-change', 'section-change', 'modified']);
 
-const hook = useSchemaEditorMain(props, emit);
+const hook = useSchemaEditorMain(props, emit as (event: string, ...args: unknown[]) => void);
 
 const {
   catalogWidth,
@@ -234,8 +234,8 @@ const setIsPreviewMode = (val: boolean) => {
   hook.isPreviewMode.value = val;
 };
 
-const isAtomicField = (item: any) => {
-  return atomicBricks.some((b: any) => b.val === item.type) || item.type === 'tags' || item.type === 'range';
+const isAtomicField = (item: { type?: string }) => {
+  return atomicBricks.some((b: { val: string }) => b.val === item.type) || item.type === 'tags' || item.type === 'range';
 };
 </script>
 

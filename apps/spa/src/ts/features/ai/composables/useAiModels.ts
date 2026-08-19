@@ -56,10 +56,10 @@ export function useAiModels() {
         availableModels.value = res;
         localStorage.setItem(getCacheKey(provider), JSON.stringify(res));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn('Background fetch models failed:', err);
       if (forceNetwork) {
-        fetchError.value = err.toString();
+        fetchError.value = String(err);
       }
     } finally {
       if (forceNetwork) isFetchingModels.value = false;

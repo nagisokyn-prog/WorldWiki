@@ -37,7 +37,8 @@ describe('useTagsManagerModal', () => {
 
     // Error on load
     vi.mocked(api.getTags).mockRejectedValueOnce(new Error('Load error'));
-    await modal.loadTags();
+    modal.open();
+    await Promise.resolve();
     expect(modal.loading.value).toBe(false);
 
     modal.close();

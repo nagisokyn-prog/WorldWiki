@@ -1,6 +1,7 @@
 import { ref, type Ref, onMounted, onUnmounted, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import type { ToolCallPayload } from './components/AiToolApproval.vue';
 
 export interface ChatMessage {
   id?: string;
@@ -8,7 +9,7 @@ export interface ChatMessage {
   content: string;
   reasoning?: string;
   toolLogs?: string[];
-  toolCallWaiting?: any;
+  toolCallWaiting?: ToolCallPayload | null;
   parent_id?: string | null;
   is_active?: boolean;
 }
@@ -30,7 +31,13 @@ export function useWowilonPanel(
   let unlistenChunk: UnlistenFn | null = null;
 
   onMounted(async () => {
-    unlistenChunk = await listen<any>('chat_stream_chunk', (event) => {
+    unlistenChunk = await listen<{
+      chat_id: string;
+      message_id: string;
+      chunk_type?: string;
+      text: string;
+      is_done?: boolean;
+    }>('chat_stream_chunk', (event) => {
       const chunk = event.payload;
       if (chunk.chat_id === activeChatId.value) {
         const msg = allMessages.value.find(m => m.id === chunk.message_id);
@@ -78,8 +85,16 @@ export function useWowilonPanel(
         allMessages.value = [];
         return;
       }
-      const data = await invoke<any[]>('get_chat_messages', { chatId });
-      const loaded = data.map(m => ({
+      const data = await invoke<Array<{
+        id: string;
+        role: 'user' | 'assistant' | 'system';
+        content?: string;
+        reasoning?: string;
+        tool_logs?: string[];
+        parent_id?: string | null;
+        is_active?: boolean;
+      }>>('get_chat_messages', { chatId });
+      const loaded: ChatMessage[] = data.map(m => ({
         id: m.id,
         role: m.role || 'user',
         content: m.content || '',

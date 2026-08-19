@@ -11,10 +11,10 @@
         v-model:footnotes-data="currentChapter.footnotes"
         :project="project"
         :has-unsaved-changes="hasUnsavedChanges"
-        :initial-scroll-pos="currentChapter.scrollPos || 0"
+        :initial-scroll-pos="typeof currentChapter.scrollPos === 'number' ? currentChapter.scrollPos : 0"
         :changed-fields="changedFields"
         @change="markUnsaved"
-        @save="saveChapter"
+        @save="triggerSave"
         @open-entity="handleOpenEntity"
         @scroll-change="handleScrollChange"
         @toggle-history="toggleHistory"
@@ -218,7 +218,6 @@ v-for="(rev, idx) in revisions" :key="rev.id"
 </template>
 
 <script setup lang="ts">
-import { type PropType } from 'vue';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
@@ -226,18 +225,19 @@ import ExportModal from '../Export/ExportModal.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
 import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
 import { useChaptersMain } from './useChaptersMain';
+import type { ActiveTreeNode, ChapterTreeNode } from './useChaptersMain';
 
 const props = withDefaults(defineProps<{
   project: string;
   controlledChapterId?: string | null;
-  activeTreeNode?: { type: string; node: any } | null;
+  activeTreeNode?: ActiveTreeNode | null;
 }>(), {
   controlledChapterId: null,
   activeTreeNode: null
 });
 
 const emit = defineEmits<{
-  'open-chapter-as-tab': [chapter: any];
+  'open-chapter-as-tab': [chapter: ChapterTreeNode];
   'chapter-unsaved': [];
   'chapter-saved': [];
   'chapter-renamed': [payload: { id: string; title: string }];
@@ -252,11 +252,16 @@ const {
   isExportModalOpen, showQuickLinkHint, isZenMode, floatingEditors, showHistory,
   isLoadingHistory, revisions, previewingRevId, maxSaves, toggleHistory,
   previewHistory, togglePin, getDiffSummary, changedFields,
-  rightPanelWidth, isRightPanelVisible, saveChapter,
+  rightPanelWidth, isRightPanelVisible, triggerSave,
+  closeFloatingEditor, startResize,
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
-  markUnsaved, handleOpenEntity, closeFloatingEditor,
-  handleExport, handleScrollChange, startResize
-} = useChaptersMain(props, emit);
+  markUnsaved, handleOpenEntity,
+  handleExport, handleScrollChange
+} = useChaptersMain({
+  project: props.project,
+  controlledChapterId: props.controlledChapterId || undefined,
+  activeTreeNode: props.activeTreeNode || undefined
+}, emit as (event: string, ...args: unknown[]) => void);
 </script>
 
 <style src="./ChaptersMain.vue.css" scoped></style>

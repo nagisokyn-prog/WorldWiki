@@ -1,16 +1,23 @@
 import { ref, shallowRef } from 'vue';
-import * as api from '../../../../services/api.client';;
+import type { Ref } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import * as api from '../../../../services/api.client';
+import type { EntityRevision, EntityEditorProps } from '../EntityEditor.model';
 
-export function useEntityHistory(props: any, emit: any, formData: any) {
+export function useEntityHistory(
+  props: EntityEditorProps,
+  emit: (event: string, ...args: unknown[]) => void,
+  formData: Ref<Record<string, unknown>>
+) {
   const showHistory = ref(false);
   const isLoadingHistory = ref(false);
-  const revisions = shallowRef<any[]>([]);
+  const revisions = shallowRef<EntityRevision[]>([]);
   const isPreviewingHistory = ref(false);
   const previewingRevId = ref<string | null>(null);
-  const currentSavedData = shallowRef<any>(null);
+  const currentSavedData = shallowRef<Record<string, unknown> | null>(null);
   const maxSaves = ref(30);
 
-  const togglePin = async (rev: any) => {
+  const togglePin = async (rev: EntityRevision) => {
     const newStatus = !rev.is_pinned;
     try {
       await api.toggleEntityHistoryPin(rev.id, newStatus);
@@ -21,23 +28,19 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
   };
 
   const loadHistory = async () => {
-    console.log(`[EntityEditor.vue] loadHistory called for project=`, props.project, ` entityId=`, props.entityId);
-    if (!props.project || !props.entityId || !(window as any).__TAURI__) {
-      console.warn(`[EntityEditor.vue] loadHistory aborted due to missing props or TAURI`);
+    if (!props.project || !props.entityId) {
       return;
     }
     isLoadingHistory.value = true;
     try {
-      console.log(`[EntityEditor.vue] invoking get_entity_revisions...`);
-      const rawRevisions = await (window as any).__TAURI__.core.invoke('get_entity_revisions', {
+      const rawRevisions = await invoke<EntityRevision[]>('get_entity_revisions', {
         project: props.project,
         entityId: props.entityId
       }) || [];
-      revisions.value = rawRevisions.map((rev: any) => ({
+      revisions.value = rawRevisions.map((rev) => ({
         ...rev,
         formattedDate: new Date(rev.created_at).toLocaleString()
       }));
-      console.log(`[EntityEditor.vue] get_entity_revisions returned formatted:`, revisions.value);
     } catch (e) {
       console.error('Ошибка загрузки истории:', e);
     } finally {
@@ -52,15 +55,15 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
     }
   };
 
-  const previewHistory = (rev: any) => {
+  const previewHistory = (rev: EntityRevision) => {
     if (!isPreviewingHistory.value) {
       currentSavedData.value = JSON.parse(JSON.stringify(formData.value));
     }
     isPreviewingHistory.value = true;
     previewingRevId.value = rev.id;
     
-    console.log('[EntityEditor] previewHistory rev:', rev);
-    formData.value = JSON.parse(JSON.stringify(rev.content?.attributes || rev.content?.data || rev.content || {}));
+    const content = rev.content as { attributes?: Record<string, unknown>; data?: Record<string, unknown> } | Record<string, unknown>;
+    formData.value = JSON.parse(JSON.stringify(content?.attributes || content?.data || content || {}));
   };
 
   const exitHistoryPreview = () => {
@@ -74,9 +77,10 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
 
   const restoreHistory = async () => {
     if (!previewingRevId.value) return;
-    const rev = revisions.value.find((r: any) => r.id === previewingRevId.value);
+    const rev = revisions.value.find((r) => r.id === previewingRevId.value);
     if (rev && rev.content) {
-      const restored = JSON.parse(JSON.stringify(rev.content.attributes || rev.content.data || rev.content));
+      const content = rev.content as { attributes?: Record<string, unknown>; data?: Record<string, unknown> } | Record<string, unknown>;
+      const restored = JSON.parse(JSON.stringify(content.attributes || content.data || content));
       currentSavedData.value = null;
       formData.value = restored;
       emit('modified');
@@ -85,10 +89,12 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
     }
   };
 
-  const getDiffSummary = (current: any, previous: any) => {
+  const getDiffSummary = (current: EntityRevision, previous: EntityRevision | undefined) => {
     if (!previous) return '';
-    const currData = current.content?.attributes || current.content?.data || current.content || {};
-    const prevData = previous.content?.attributes || previous.content?.data || previous.content || {};
+    const curr = current.content as { attributes?: Record<string, unknown>; data?: Record<string, unknown> } | Record<string, unknown>;
+    const prev = previous.content as { attributes?: Record<string, unknown>; data?: Record<string, unknown> } | Record<string, unknown>;
+    const currData = (curr?.attributes || curr?.data || curr || {}) as Record<string, unknown>;
+    const prevData = (prev?.attributes || prev?.data || prev || {}) as Record<string, unknown>;
     
     const changes = [];
     
@@ -116,8 +122,8 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
 
   const isFieldChanged = (path: string) => {
     if (!isPreviewingHistory.value || !currentSavedData.value) return false;
-    const currentVal = path.split('.').reduce((obj: any, key: string) => (obj && obj[key] !== 'undefined') ? obj[key] : undefined, currentSavedData.value);
-    const historyVal = path.split('.').reduce((obj: any, key: string) => (obj && obj[key] !== 'undefined') ? obj[key] : undefined, formData.value);
+    const currentVal = path.split('.').reduce<unknown>((obj, key) => (obj && typeof obj === 'object' && (obj as Record<string, unknown>)[key] !== undefined) ? (obj as Record<string, unknown>)[key] : undefined, currentSavedData.value);
+    const historyVal = path.split('.').reduce<unknown>((obj, key) => (obj && typeof obj === 'object' && (obj as Record<string, unknown>)[key] !== undefined) ? (obj as Record<string, unknown>)[key] : undefined, formData.value);
     return JSON.stringify(currentVal) !== JSON.stringify(historyVal);
   };
 

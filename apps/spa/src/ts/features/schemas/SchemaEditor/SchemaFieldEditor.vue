@@ -92,9 +92,10 @@ style="color: #f55; background: none; border: none; font-size: 10px; cursor: poi
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import { useSchemaFieldEditor } from './useSchemaFiledEditor';
+import type { SchemaFieldItem } from './useSchemaFiledEditor';
 
 const props = defineProps<{
-  item: any;
+  item: SchemaFieldItem;
   isFirst: boolean;
 }>();
 

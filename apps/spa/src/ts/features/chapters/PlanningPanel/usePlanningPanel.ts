@@ -1,9 +1,24 @@
 import { ref, computed, watch, nextTick } from 'vue';
-import * as api from '../../../services/api.client';;
+import * as api from '../../../services/api.client';
 
-export function usePlanningPanel(props: any) {
-    const items = ref<any[]>([]);
-    const listEl = ref<any>(null);
+export interface PlanItem {
+    id: string;
+    text: string;
+    done: boolean;
+    sort_order?: number;
+    indent: number;
+}
+
+export interface PlanningPanelProps {
+    project: string;
+    parentType?: string;
+    parentId?: string;
+    parentTitle?: string;
+}
+
+export function usePlanningPanel(props: PlanningPanelProps) {
+    const items = ref<PlanItem[]>([]);
+    const listEl = ref<HTMLElement | null>(null);
     const saving = ref(false);
 
     // ─── Computed ────────────────────────────────────────────
@@ -30,11 +45,11 @@ export function usePlanningPanel(props: any) {
             items.value = await api.getPlans(props.project).then(plans => 
                 plans.filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId)
                      .map(p => ({
-                         id: p.id,
-                         text: p.title,
-                         done: p.completed,
+                         id: p.id || '',
+                         text: p.title || '',
+                         done: !!p.completed,
                          sort_order: p.sort_order,
-                         indent: (p as any).indent || 0
+                         indent: (p as { indent?: number }).indent || 0
                      }))
                      .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
             );
@@ -47,14 +62,14 @@ export function usePlanningPanel(props: any) {
     watch(() => [props.project, props.parentType, props.parentId], load, { immediate: true });
 
     // ─── Save ────────────────────────────────────────────────
-    const saveItem = async (item: any) => {
+    const saveItem = async (item: PlanItem) => {
         if (!item.text.trim() && !item.id) return; // пропускаем совсем пустые несохранённые
         try {
-            const planToSave: any = {
+            const planToSave = {
                 id: item.id || null,
                 project_id: `projects:${props.project}`,
-                parent_type: props.parentType,
-                parent_ref: props.parentId,
+                parent_type: props.parentType || '',
+                parent_ref: props.parentId || '',
                 title: item.text,
                 completed: item.done,
                 sort_order: item.sort_order ?? items.value.indexOf(item)
@@ -67,7 +82,7 @@ export function usePlanningPanel(props: any) {
     };
 
     // ─── Toggle ──────────────────────────────────────────────
-    const toggleItem = async (item: any) => {
+    const toggleItem = async (item: PlanItem) => {
         item.done = !item.done;
         try {
             if (item.id) {
@@ -83,7 +98,7 @@ export function usePlanningPanel(props: any) {
 
     // ─── Add ─────────────────────────────────────────────────
     const addItem = async () => {
-        const newItem = {
+        const newItem: PlanItem = {
             id: '',
             text: '',
             done: false,
@@ -92,12 +107,12 @@ export function usePlanningPanel(props: any) {
         };
         items.value.push(newItem);
         await nextTick();
-        const inputs = listEl.value?.querySelectorAll('.plan-text');
+        const inputs = listEl.value?.querySelectorAll<HTMLInputElement>('.plan-text');
         if (inputs?.length) inputs[inputs.length - 1].focus();
     };
 
     const addItemAfter = async (idx: number, indent: number) => {
-        const newItem = {
+        const newItem: PlanItem = {
             id: '',
             text: '',
             done: false,
@@ -110,18 +125,18 @@ export function usePlanningPanel(props: any) {
         items.value.forEach((it, i) => { it.sort_order = i; });
 
         await nextTick();
-        const inputs = listEl.value?.querySelectorAll('.plan-text');
+        const inputs = listEl.value?.querySelectorAll<HTMLInputElement>('.plan-text');
         if (inputs?.[idx + 1]) inputs[idx + 1].focus();
     };
 
     // ─── Indent ──────────────────────────────────────────────
-    const indentItem = async (item: any, delta: number) => {
+    const indentItem = async (item: PlanItem, delta: number) => {
         item.indent = Math.max(0, Math.min(4, (item.indent || 0) + delta));
         await saveItem(item);
     };
 
     // ─── Delete ──────────────────────────────────────────────
-    const deleteItem = async (item: any, idx: number) => {
+    const deleteItem = async (item: PlanItem, idx: number) => {
         items.value.splice(idx, 1);
         if (item.id) {
             try { await api.deletePlan(item.id); } catch { /* ignore */ }
@@ -129,12 +144,12 @@ export function usePlanningPanel(props: any) {
         items.value.forEach((it, i) => { it.sort_order = i; });
     };
 
-    const onDeleteKey = async (e: any, item: any, idx: number) => {
+    const onDeleteKey = async (e: KeyboardEvent, item: PlanItem, idx: number) => {
         if (item.text === '' && e.key === 'Backspace') {
             e.preventDefault();
             await deleteItem(item, idx);
             await nextTick();
-            const inputs = listEl.value?.querySelectorAll('.plan-text');
+            const inputs = listEl.value?.querySelectorAll<HTMLInputElement>('.plan-text');
             if (inputs?.[idx - 1]) inputs[idx - 1].focus();
         }
     };

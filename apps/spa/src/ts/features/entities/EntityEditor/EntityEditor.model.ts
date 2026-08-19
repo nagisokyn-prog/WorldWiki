@@ -22,7 +22,7 @@ export interface DynamicContainer {
   dataPath?: string;
   hidden?: boolean;
   template?: string;
-  fieldOverrides?: Record<string, any>;
+  fieldOverrides?: Record<string, unknown>;
   customChildContainers?: DynamicContainer[];
   emptyMessage?: string;
   isBidirectional?: boolean;
@@ -46,7 +46,7 @@ export interface SchemaConfig {
 export interface EntityRevision {
   id: string;
   created_at: string;
-  content: any;
+  content: unknown;
   formattedDate?: string;
   is_pinned?: boolean;
 }
@@ -55,7 +55,7 @@ export interface EntityEditorProps {
   entityId: string;
   entityType: string;
   project: string;
-  initialData?: Record<string, any>;
+  initialData?: Record<string, unknown>;
   initialSection?: string;
   initialScrollPos?: number;
 }

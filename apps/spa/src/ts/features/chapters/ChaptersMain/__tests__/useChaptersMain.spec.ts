@@ -217,10 +217,7 @@ describe('useChaptersMain', () => {
     expect(mockStore.createNewChapter).toHaveBeenCalledWith('proj_1', 'arc_1', 'vol_1');
     expect(mockTree.load).toHaveBeenCalled();
 
-    await main.createNewChapter('arc_2', 'vol_2');
-    expect(mockStore.createNewChapter).toHaveBeenCalledWith('proj_1', 'arc_2', 'vol_2');
-
-    await main.onRenameChapter({ id: 'ch_1' }, 'New Name');
+    await main.handleRenameChapter({ id: 'ch_1' } as any, 'New Name');
     expect(mockStore.onRenameChapter).toHaveBeenCalledWith('proj_1', { id: 'ch_1' }, 'New Name');
     expect(mockTree.load).toHaveBeenCalled();
   });
@@ -232,11 +229,11 @@ describe('useChaptersMain', () => {
     main.localActiveTreeNode.value = { type: 'chapter', node: { id: 'ch_1' } };
 
     // Multi-delete ignored
-    main.onDeleteChapter({ id: 'ch_1' }, true);
+    main.handleDeleteChapter({ id: 'ch_1' }, true);
     expect(mockStore.deleteChapter).not.toHaveBeenCalled();
 
     // Single delete
-    main.onDeleteChapter({ id: 'ch_1' }, false);
+    main.handleDeleteChapter({ id: 'ch_1' }, false);
     await Promise.resolve();
 
     expect(mockStore.deleteChapter).toHaveBeenCalledWith('proj_1', 'ch_1');

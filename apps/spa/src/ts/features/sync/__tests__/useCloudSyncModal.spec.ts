@@ -5,6 +5,11 @@ import { mount } from '@vue/test-utils';
 import { useCloudSyncModal } from '../useCloudSyncModal';
 import * as api from '../../../services/api.client';
 import { appConfirm } from '@worldwiki/components';
+import { invoke } from '@tauri-apps/api/core';
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn(),
+}));
 
 vi.mock('../../../services/api.client', () => ({
   createCloudBackup: vi.fn(),
@@ -28,7 +33,7 @@ describe('useCloudSyncModal', () => {
     emit = vi.fn();
     (window as any).__TAURI__ = {
       core: {
-        invoke: vi.fn(),
+        invoke: vi.mocked(invoke),
       },
     };
     modal = useCloudSyncModal(emit);
@@ -46,7 +51,7 @@ describe('useCloudSyncModal', () => {
 
     it('opens modal with import mode and triggers fetchBackupsList', async () => {
       localStorage.setItem('yandex_disk_token', 'token_123');
-      (window as any).__TAURI__.core.invoke.mockResolvedValue([
+      vi.mocked(invoke).mockResolvedValue([
         { name: 'backup1.zip', created: '2024-01-01', size: 1024 }
       ]);
 
@@ -100,36 +105,46 @@ describe('useCloudSyncModal', () => {
       wrapper.unmount();
     });
 
-    it('does not fetch backups on openModal import if no token', () => {
-      localStorage.removeItem('yandex_disk_token');
-      modal.openModal('import');
-      expect(modal.isOpen.value).toBe(true);
-      expect((window as any).__TAURI__.core.invoke).not.toHaveBeenCalled();
+    it('handles open-cloud-sync when detail is an object with mode', () => {
+      let modalInstance: any;
+      const Comp = defineComponent({
+        setup() {
+          modalInstance = useCloudSyncModal(emit);
+          return () => null;
+        }
+      });
+      const wrapper = mount(Comp);
+      const event = new CustomEvent('open-cloud-sync', { detail: { mode: 'import' } });
+      window.dispatchEvent(event);
+      expect(modalInstance.isOpen.value).toBe(true);
+      expect(modalInstance.syncMode.value).toBe('import');
+      wrapper.unmount();
     });
   });
 
-  describe('connectYandex', () => {
-    it('opens browser with oauth url and shows auth code input', async () => {
-      await modal.connectYandex();
+  describe('openAuthUrl', () => {
+    it('opens auth url and sets showAuthCodeInput', async () => {
+      const { openUrl } = await import('@tauri-apps/plugin-opener');
+      await modal.openAuthUrl();
+
+      expect(openUrl).toHaveBeenCalledWith(expect.stringContaining('oauth.yandex.ru/authorize'));
       expect(modal.showAuthCodeInput.value).toBe(true);
-      expect(modal.authError.value).toBe('');
     });
 
-    it('handles openUrl failure and sets authError', async () => {
+    it('handles error when openUrl fails', async () => {
       const { openUrl } = await import('@tauri-apps/plugin-opener');
-      vi.mocked(openUrl).mockRejectedValueOnce(new Error('Browser open failed'));
+      vi.mocked(openUrl).mockRejectedValueOnce(new Error('Browser failed'));
 
-      await modal.connectYandex();
-      expect(modal.showAuthCodeInput.value).toBe(true);
-      expect(modal.authError.value).toContain('Не удалось открыть браузер');
+      await modal.openAuthUrl();
+      expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ type: 'error' }));
     });
   });
 
   describe('disconnectYandex', () => {
-    it('removes token from storage and clears backups', () => {
+    it('clears token and state', () => {
       localStorage.setItem('yandex_disk_token', 'token_123');
       modal.yandexToken.value = 'token_123';
-      modal.availableBackups.value = [{ name: 'b1', created: '2024', size: 100 }];
+      modal.availableBackups.value = [{ name: 'bk.zip', created: 'now', size: 100 }];
 
       modal.disconnectYandex();
 
@@ -144,13 +159,13 @@ describe('useCloudSyncModal', () => {
     it('returns early if no token is present', async () => {
       modal.yandexToken.value = null;
       await modal.fetchBackupsList();
-      expect((window as any).__TAURI__.core.invoke).not.toHaveBeenCalled();
+      expect(invoke).not.toHaveBeenCalled();
     });
 
     it('fetches backups when token exists', async () => {
       modal.yandexToken.value = 'tok123';
       const mockList = [{ name: 'bk.zip', created: 'now', size: 2048 }];
-      (window as any).__TAURI__.core.invoke.mockResolvedValue(mockList);
+      vi.mocked(invoke).mockResolvedValue(mockList);
 
       await modal.fetchBackupsList();
       expect(modal.availableBackups.value).toEqual(mockList);
@@ -158,7 +173,7 @@ describe('useCloudSyncModal', () => {
 
     it('handles 401 error during fetchBackupsList and disconnects', async () => {
       modal.yandexToken.value = 'expired_tok';
-      (window as any).__TAURI__.core.invoke.mockRejectedValue('Error: 401 Unauthorized');
+      vi.mocked(invoke).mockRejectedValue('Error: 401 Unauthorized');
 
       await modal.fetchBackupsList();
       expect(modal.yandexToken.value).toBeNull();
@@ -167,7 +182,7 @@ describe('useCloudSyncModal', () => {
 
     it('handles non-401 error during fetchBackupsList without disconnecting', async () => {
       modal.yandexToken.value = 'valid_tok';
-      (window as any).__TAURI__.core.invoke.mockRejectedValue(new Error('Network timeout'));
+      vi.mocked(invoke).mockRejectedValue(new Error('Network timeout'));
 
       await modal.fetchBackupsList();
       expect(modal.yandexToken.value).toBe('valid_tok');
@@ -179,7 +194,7 @@ describe('useCloudSyncModal', () => {
     it('exchanges code for token and updates state, fetching backups in import mode', async () => {
       modal.syncMode.value = 'import';
       modal.authCode.value = 'auth_code_xyz';
-      (window as any).__TAURI__.core.invoke.mockImplementation(async (cmd: string) => {
+      vi.mocked(invoke).mockImplementation(async (cmd: string) => {
         if (cmd === 'exchange_yandex_token') return 'jwt_token_abc';
         if (cmd === 'list_yandex_disk_backups') return [{ name: 'b1.zip' }];
         return null;
@@ -187,7 +202,7 @@ describe('useCloudSyncModal', () => {
 
       await modal.exchangeCode();
 
-      expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledWith('exchange_yandex_token', { code: 'auth_code_xyz' });
+      expect(invoke).toHaveBeenCalledWith('exchange_yandex_token', { code: 'auth_code_xyz' });
       expect(localStorage.getItem('yandex_disk_token')).toBe('jwt_token_abc');
       expect(modal.yandexToken.value).toBe('jwt_token_abc');
       expect(modal.showAuthCodeInput.value).toBe(false);
@@ -198,16 +213,16 @@ describe('useCloudSyncModal', () => {
     it('exchanges code in export mode without fetching backups', async () => {
       modal.syncMode.value = 'export';
       modal.authCode.value = 'code_export';
-      (window as any).__TAURI__.core.invoke.mockResolvedValue('jwt_token_export');
+      vi.mocked(invoke).mockResolvedValue('jwt_token_export');
 
       await modal.exchangeCode();
       expect(modal.yandexToken.value).toBe('jwt_token_export');
-      expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledTimes(1);
+      expect(invoke).toHaveBeenCalledTimes(1);
     });
 
     it('handles exchange error gracefully with string error', async () => {
       modal.authCode.value = 'bad_code';
-      (window as any).__TAURI__.core.invoke.mockRejectedValue('Invalid authorization code');
+      vi.mocked(invoke).mockRejectedValue('Invalid authorization code');
 
       await modal.exchangeCode();
 
@@ -216,7 +231,7 @@ describe('useCloudSyncModal', () => {
 
     it('handles exchange error gracefully with object error', async () => {
       modal.authCode.value = 'bad_code';
-      (window as any).__TAURI__.core.invoke.mockRejectedValue(new Error('Network error'));
+      vi.mocked(invoke).mockRejectedValue(new Error('Network error'));
 
       await modal.exchangeCode();
 
@@ -226,7 +241,7 @@ describe('useCloudSyncModal', () => {
     it('does nothing if authCode is empty', async () => {
       modal.authCode.value = '';
       await modal.exchangeCode();
-      expect((window as any).__TAURI__.core.invoke).not.toHaveBeenCalled();
+      expect(invoke).not.toHaveBeenCalled();
     });
   });
 
@@ -240,12 +255,12 @@ describe('useCloudSyncModal', () => {
     it('creates local backup and uploads to Yandex.Disk', async () => {
       modal.yandexToken.value = 'token_123';
       vi.mocked(api.createCloudBackup).mockResolvedValue('/tmp/backup.zip');
-      (window as any).__TAURI__.core.invoke.mockResolvedValue('ok');
+      vi.mocked(invoke).mockResolvedValue('ok');
 
       await modal.uploadBackup();
 
       expect(api.createCloudBackup).toHaveBeenCalled();
-      expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledWith('upload_to_yandex_disk', {
+      expect(invoke).toHaveBeenCalledWith('upload_to_yandex_disk', {
         token: 'token_123',
         filePath: '/tmp/backup.zip',
       });
@@ -255,7 +270,7 @@ describe('useCloudSyncModal', () => {
     it('handles 401 error by disconnecting Yandex token', async () => {
       modal.yandexToken.value = 'expired_token';
       vi.mocked(api.createCloudBackup).mockResolvedValue('/tmp/backup.zip');
-      (window as any).__TAURI__.core.invoke.mockRejectedValue(new Error('401 Unauthorized'));
+      vi.mocked(invoke).mockRejectedValue(new Error('401 Unauthorized'));
 
       await modal.uploadBackup();
 
@@ -266,7 +281,7 @@ describe('useCloudSyncModal', () => {
     it('handles Token expired string error by disconnecting Yandex token', async () => {
       modal.yandexToken.value = 'expired_token';
       vi.mocked(api.createCloudBackup).mockResolvedValue('/tmp/backup.zip');
-      (window as any).__TAURI__.core.invoke.mockRejectedValue('Token expired');
+      vi.mocked(invoke).mockRejectedValue('Token expired');
 
       await modal.uploadBackup();
 
@@ -277,7 +292,7 @@ describe('useCloudSyncModal', () => {
     it('handles general upload error without disconnecting', async () => {
       modal.yandexToken.value = 'valid_token';
       vi.mocked(api.createCloudBackup).mockResolvedValue('/tmp/backup.zip');
-      (window as any).__TAURI__.core.invoke.mockRejectedValue(new Error('Disk full'));
+      vi.mocked(invoke).mockRejectedValue(new Error('Disk full'));
 
       await modal.uploadBackup();
 
@@ -298,7 +313,7 @@ describe('useCloudSyncModal', () => {
       vi.mocked(appConfirm).mockResolvedValue(false);
 
       await modal.restoreBackup('backup.zip');
-      expect((window as any).__TAURI__.core.invoke).not.toHaveBeenCalled();
+      expect(invoke).not.toHaveBeenCalled();
     });
 
     it('restores backup when confirmed and triggers success toast', async () => {
@@ -312,11 +327,11 @@ describe('useCloudSyncModal', () => {
 
       modal.yandexToken.value = 'tok';
       vi.mocked(appConfirm).mockResolvedValue(true);
-      (window as any).__TAURI__.core.invoke.mockResolvedValue('ok');
+      vi.mocked(invoke).mockResolvedValue('ok');
 
       await modal.restoreBackup('backup.zip');
 
-      expect((window as any).__TAURI__.core.invoke).toHaveBeenCalledWith('download_and_restore_yandex', {
+      expect(invoke).toHaveBeenCalledWith('download_and_restore_yandex', {
         token: 'tok',
         fileName: 'backup.zip',
       });
@@ -330,7 +345,7 @@ describe('useCloudSyncModal', () => {
     it('handles restore error and disconnects on 401', async () => {
       modal.yandexToken.value = 'tok';
       vi.mocked(appConfirm).mockResolvedValue(true);
-      (window as any).__TAURI__.core.invoke.mockRejectedValue(new Error('401 Unauthorized'));
+      vi.mocked(invoke).mockRejectedValue(new Error('401 Unauthorized'));
 
       await modal.restoreBackup('backup.zip');
 
@@ -341,7 +356,7 @@ describe('useCloudSyncModal', () => {
     it('handles restore error with string without disconnecting when not 401', async () => {
       modal.yandexToken.value = 'tok';
       vi.mocked(appConfirm).mockResolvedValue(true);
-      (window as any).__TAURI__.core.invoke.mockRejectedValue('Corrupted archive');
+      vi.mocked(invoke).mockRejectedValue('Corrupted archive');
 
       await modal.restoreBackup('backup.zip');
 

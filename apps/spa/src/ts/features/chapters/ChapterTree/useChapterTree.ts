@@ -1,11 +1,46 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, triggerRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import * as api from '../../../services/api.client';;
+import * as api from '../../../services/api.client';
 import { useEntityTree } from '../../../services/Entity/entity.tree';
 import { useChapterStore } from '../../../stores/chapter.store';
+import type { ChapterTreeProps } from './ChapterTree.model';
 
-export function useChapterTree(props: any, emit: any) {
+export interface ExplorerNodeData {
+    type?: string;
+    isEntity?: boolean;
+    original?: Record<string, unknown>;
+    section?: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
+export interface ExplorerNode {
+    id: string;
+    label: string;
+    emoji?: string;
+    icon?: string;
+    isGroup?: boolean;
+    canAdd?: boolean;
+    addLabel?: string;
+    data?: unknown;
+    children?: ExplorerNode[];
+}
+
+export interface ExplorerSection {
+    id: string;
+    title: string;
+    icon?: string;
+    canAdd?: boolean;
+    canAddInline?: boolean;
+    canEdit?: boolean;
+    itemLabel?: string;
+    nodes: ExplorerNode[];
+}
+
+export function useChapterTree(
+    props: ChapterTreeProps,
+    emit: (event: string, ...args: unknown[]) => void
+) {
     const router = useRouter();
     const store = useChapterStore();
     const { hierarchy } = storeToRefs(store);
@@ -16,10 +51,10 @@ export function useChapterTree(props: any, emit: any) {
     } = useEntityTree(props.project, emit);
 
     // ID Helper
-    const compareIds = (id1: any, id2: any) => {
+    const compareIds = (id1: unknown, id2: unknown) => {
         if (!id1 || !id2) return false;
-        const s1 = typeof id1 === 'string' ? id1 : (id1.id?.String || id1.id || JSON.stringify(id1));
-        const s2 = typeof id2 === 'string' ? id2 : (id2.id?.String || id2.id || JSON.stringify(id2));
+        const s1 = typeof id1 === 'string' ? id1 : ((id1 as { id?: { String?: string } | string }).id || JSON.stringify(id1));
+        const s2 = typeof id2 === 'string' ? id2 : ((id2 as { id?: { String?: string } | string }).id || JSON.stringify(id2));
         const parts1 = String(s1).split(':');
         const parts2 = String(s2).split(':');
         const clean1 = parts1[parts1.length - 1] || String(s1);
@@ -27,63 +62,63 @@ export function useChapterTree(props: any, emit: any) {
         return clean1.replace(/"/g, '') === clean2.replace(/"/g, '');
     };
 
-    const getArcsForVolume = (volumeId: any) => hierarchy.value.arcs.filter(a => compareIds(a.volume_id, volumeId));
+    const getArcsForVolume = (volumeId: unknown) => hierarchy.value.arcs.filter(a => compareIds(a.volume_id, volumeId));
     const getRootArcs = () => hierarchy.value.arcs.filter(a => !a.volume_id);
-    const getChaptersForArc = (arcId: any) => hierarchy.value.chapters.filter(c => compareIds(c.arc_id, arcId));
+    const getChaptersForArc = (arcId: unknown) => hierarchy.value.chapters.filter(c => compareIds(c.arc_id, arcId));
     const getRootChapters = () => hierarchy.value.chapters.filter(c => !c.arc_id && !c.volume_id);
 
     const activeId = computed(() => {
         // if entity is open, use activeEditorId
         if (props.activeEditorId) return props.activeEditorId;
         // if chapter is open, use activeNode id
-        if (props.activeNode && props.activeNode.node) {
-            return String(props.activeNode.node.id);
+        if (props.activeNode && (props.activeNode as { node?: { id?: string } }).node) {
+            return String((props.activeNode as { node: { id: string } }).node.id);
         }
         return undefined;
     });
 
-    const explorerSections = computed<any[]>(() => {
-        const sections: any[] = [];
+    const explorerSections = computed<ExplorerSection[]>(() => {
+        const sections: ExplorerSection[] = [];
 
         // --- 1. MANUSCRIPT SECTION ---
-        const msNodes: any[] = [];
+        const msNodes: ExplorerNode[] = [];
 
         // Volumes
         for (const vol of hierarchy.value.volumes) {
             const arcs = getArcsForVolume(vol.id);
-            const volNode: any = {
+            const volNode: ExplorerNode = {
                 id: String(vol.id),
                 label: vol.title || 'Без названия',
                 emoji: '📚',
                 isGroup: true,
                 canAdd: true,
                 addLabel: 'Арка',
-                data: { type: 'volume', original: vol },
+                data: { type: 'volume', original: vol as unknown as Record<string, unknown> },
                 children: []
             };
 
             for (const arc of arcs) {
                 const chapters = getChaptersForArc(arc.id);
-                const arcNode: any = {
+                const arcNode: ExplorerNode = {
                     id: String(arc.id),
                     label: arc.title || 'Без названия',
                     emoji: '🌀',
                     isGroup: true,
                     canAdd: true,
                     addLabel: 'Глава',
-                    data: { type: 'arc', original: arc },
+                    data: { type: 'arc', original: arc as unknown as Record<string, unknown> },
                     children: []
                 };
 
                 for (const ch of chapters) {
-                    arcNode.children.push({
+                    arcNode.children?.push({
                         id: String(ch.id),
                         label: ch.title || 'Без названия',
                         emoji: '📖',
-                        data: { type: 'chapter', original: ch }
+                        data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
                     });
                 }
-                volNode.children.push(arcNode);
+                volNode.children?.push(arcNode);
             }
             msNodes.push(volNode);
         }
@@ -91,23 +126,23 @@ export function useChapterTree(props: any, emit: any) {
         // Root arcs
         for (const arc of getRootArcs()) {
             const chapters = getChaptersForArc(arc.id);
-            const arcNode: any = {
+            const arcNode: ExplorerNode = {
                 id: String(arc.id),
                 label: arc.title || 'Без названия',
                 emoji: '🌀',
                 isGroup: true,
                 canAdd: true,
                 addLabel: 'Глава',
-                data: { type: 'arc', original: arc },
+                data: { type: 'arc', original: arc as unknown as Record<string, unknown> },
                 children: []
             };
 
             for (const ch of chapters) {
-                arcNode.children.push({
+                arcNode.children?.push({
                     id: String(ch.id),
                     label: ch.title || 'Без названия',
                     emoji: '📖',
-                    data: { type: 'chapter', original: ch }
+                    data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
                 });
             }
             msNodes.push(arcNode);
@@ -119,7 +154,7 @@ export function useChapterTree(props: any, emit: any) {
                 id: String(ch.id),
                 label: ch.title || 'Без названия',
                 emoji: '📖',
-                data: { type: 'chapter', original: ch }
+                data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
             });
         }
 
@@ -133,22 +168,22 @@ export function useChapterTree(props: any, emit: any) {
 
         // --- 2. ENTITY SECTIONS ---
         for (const sect of entitySections.value) {
-            const entNodes: any[] = [];
+            const entNodes: ExplorerNode[] = [];
             const entList = entities.value[sect.type] || [];
 
             for (const ent of entList) {
                 entNodes.push({
-                    id: entityKey(sect.type, ent.id),
+                    id: entityKey(sect.type, String(ent.id)),
                     label: getEntityName(ent, sect.type),
                     emoji: sect.emoji,
-                    data: { isEntity: true, type: sect.type, original: ent, section: sect }
+                    data: { isEntity: true, type: sect.type, original: ent as Record<string, unknown>, section: sect as unknown as Record<string, unknown> }
                 });
             }
 
             sections.push({
                 id: sect.type,
                 title: sect.title,
-                icon: sect.icon,
+                icon: (sect as { icon?: string }).icon || sect.emoji,
                 canAddInline: true,
                 canEdit: true,
                 itemLabel: sect.title.charAt(0) + sect.title.slice(1).toLowerCase(),
@@ -172,10 +207,10 @@ export function useChapterTree(props: any, emit: any) {
 
     const hierarchyChangedHandler = () => load();
 
-    const entityRenamedHandler = (e: any) => {
-        const { id, type, name } = e.detail;
+    const entityRenamedHandler = (e: Event) => {
+        const { id, type, name } = (e as CustomEvent<{ id: string; type: string; name: string }>).detail;
         if (entities.value[type]) {
-            const ent = entities.value[type].find((en: any) => String(en.id) === String(id) || String(en.id).endsWith(`:${id}`));
+            const ent = entities.value[type].find((en) => String(en.id) === String(id) || String(en.id).endsWith(`:${id}`));
             if (ent) {
                 const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
                 if (titleField) ent[titleField] = name;
@@ -186,11 +221,11 @@ export function useChapterTree(props: any, emit: any) {
 
     onMounted(() => {
         document.addEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
-        document.addEventListener('ww:entity-renamed', entityRenamedHandler);
+        document.addEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
     });
     onUnmounted(() => {
         document.removeEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
-        document.removeEventListener('ww:entity-renamed', entityRenamedHandler);
+        document.removeEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
     });
 
     // ─── Actions ────────────────────────────────────────────────────────────────
@@ -198,42 +233,41 @@ export function useChapterTree(props: any, emit: any) {
         router.push('/launcher');
     };
 
-    const handleSelect = (nodes: any[], event: MouseEvent) => {
+    const handleSelect = (nodes: Array<{ id: string; data?: unknown }>, event: MouseEvent) => {
         if (!nodes.length) return;
         const node = nodes[0];
+        const data = node.data as ExplorerNodeData | undefined;
 
-        // Old behavior: entities were handled by handleEntityClick -> emit('open-entity')
-        if (node.data?.isEntity) {
-            emit('open-entity', { ...node.data.original, entityType: node.data.type });
+        if (data?.isEntity) {
+            emit('open-entity', { ...data.original, entityType: data.type });
             return;
         }
 
-        if (node.data) {
-            emit('select-node', { type: node.data.type, node: node.data.original });
-            if (node.data.type === 'chapter') {
+        if (data) {
+            emit('select-node', { type: data.type, node: data.original });
+            if (data.type === 'chapter') {
                 if (!event?.ctrlKey && !event?.shiftKey) {
-                    emit('select-chapter', node.data.original);
+                    emit('select-chapter', data.original);
                 }
             }
         }
     };
 
-    const handleOpen = (node: any) => {
-        if (node.data?.isEntity) {
-            emit('open-entity', { ...node.data.original, entityType: node.data.type });
-        } else if (node.data?.type === 'chapter') {
-            emit('select-chapter', node.data.original);
+    const handleOpen = (node: { id: string; data?: unknown }) => {
+        const data = node.data as ExplorerNodeData | undefined;
+        if (data?.isEntity) {
+            emit('open-entity', { ...data.original, entityType: data.type });
+        } else if (data?.type === 'chapter') {
+            emit('select-chapter', data.original);
         }
     };
 
-    const explorerTreeRef = ref<any>(null);
+    const explorerTreeRef = ref<{ startRename: (node: { id: string }) => void; expandNode: (id: string) => void; startCreate: (sectionId: string) => void } | null>(null);
 
-    const startRename = (node: any, closeCtx: () => void) => {
+    const startRename = (node: { id: string }, closeCtx: () => void) => {
         closeCtx();
         explorerTreeRef.value?.startRename(node);
     };
-
-
 
     const handleDeleteSection = async (sectionId: string) => {
         const confirmed = await new Promise<boolean>(resolve => {
@@ -275,13 +309,13 @@ export function useChapterTree(props: any, emit: any) {
         if (sectionId === 'manuscript') {
             if (!parentId) {
                 const tempId = '__new_volume__';
-                hierarchy.value.volumes.push({ id: tempId, title: 'Новый том', sort_order: 999 } as any);
+                hierarchy.value.volumes.push({ id: tempId, project_id: props.project, title: 'Новый том', sort_order: 999, description: null, created_at: null });
                 await nextTick();
                 const node = findNodeById(tempId);
                 if (node) explorerTreeRef.value?.startRename(node);
             } else {
                 const tempId = '__new_arc__' + Date.now();
-                hierarchy.value.arcs.push({ id: tempId, title: 'Новая арка', volumeId: parentId, sort_order: 999 } as any);
+                hierarchy.value.arcs.push({ id: tempId, project_id: props.project, volume_id: parentId, title: 'Новая арка', sort_order: 999, description: null, created_at: null });
                 explorerTreeRef.value?.expandNode(String(parentId));
                 await nextTick();
                 const node = findNodeById(tempId);
@@ -299,7 +333,7 @@ export function useChapterTree(props: any, emit: any) {
                 const arc = hierarchy.value.arcs.find(a => String(a.id) === String(parentId));
                 if (arc) {
                     console.error('🔥🔥🔥 useChapterTree: emit create-chapter-in ARC', arc);
-                    emit('create-chapter-in', { arcId: arc.id, volumeId: arc.volume_id || arc.volumeId });
+                    emit('create-chapter-in', { arcId: arc.id, volumeId: arc.volume_id || (arc as unknown as { volumeId?: string }).volumeId });
                 } else {
                     const vol = hierarchy.value.volumes.find(v => String(v.id) === String(parentId));
                     if (vol) {
@@ -320,37 +354,42 @@ export function useChapterTree(props: any, emit: any) {
         }
     };
 
-    const handleRename = async (node: any, newName: string) => {
+    const handleRename = async (node: { id: string; data?: unknown }, newName: string) => {
         if (!newName.trim()) return;
+        const data = node.data as ExplorerNodeData | undefined;
         try {
             if (String(node.id).startsWith('__new_volume__')) {
                 await api.createVolume(props.project, newName);
                 await load();
             } else if (String(node.id).startsWith('__new_arc__')) {
-                await api.createArc(props.project, newName, node.data.original.volumeId);
+                const volId = data?.original ? ((data.original.volumeId as string | undefined) || (data.original.volume_id as string | undefined) || null) : null;
+                await api.createArc(props.project, newName, volId);
                 await load();
-            } else if (node.data?.type === 'volume') {
-                const vol = hierarchy.value.volumes.find((v: any) => String(v.id) === String(node.data.original.id));
+            } else if (data?.type === 'volume' && data.original) {
+                const volId = String(data.original.id);
+                const vol = hierarchy.value.volumes.find((v) => String(v.id) === volId);
                 if (vol) vol.title = newName;
-                await api.updateVolume(props.project, node.data.original.id, newName);
+                await api.updateVolume(props.project, volId, newName);
                 await load();
-            } else if (node.data?.type === 'arc') {
-                const arc = hierarchy.value.arcs.find((a: any) => String(a.id) === String(node.data.original.id));
+            } else if (data?.type === 'arc' && data.original) {
+                const arcId = String(data.original.id);
+                const arc = hierarchy.value.arcs.find((a) => String(a.id) === arcId);
                 if (arc) arc.title = newName;
-                await api.updateArc(props.project, node.data.original.id, newName, null);
+                await api.updateArc(props.project, arcId, newName, null);
                 await load();
-            } else if (node.data?.type === 'chapter') {
-                const ch = hierarchy.value.chapters.find((c: any) => String(c.id) === String(node.data.original.id));
+            } else if (data?.type === 'chapter' && data.original) {
+                const chId = String(data.original.id);
+                const ch = hierarchy.value.chapters.find((c) => String(c.id) === chId);
                 if (ch) ch.title = newName;
-                document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: node.data.original.id, title: newName } }));
-                emit('rename-chapter', node.data.original, newName);
-            } else if (node.data?.isEntity) {
-                const entityType = node.data.type;
-                const originalId = node.data.original.id;
+                document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: data.original.id, title: newName } }));
+                emit('rename-chapter', data.original, newName);
+            } else if (data?.isEntity && data.original) {
+                const entityType = data.type || '';
+                const originalId = data.original.id;
                 const idToUpdate = String(originalId).split(':').pop()!;
 
                 if (entities.value[entityType]) {
-                    const ent = entities.value[entityType].find((en: any) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate));
+                    const ent = entities.value[entityType].find((en) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate));
                     if (ent) {
                         const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
                         if (titleField) ent[titleField] = newName;
@@ -365,7 +404,7 @@ export function useChapterTree(props: any, emit: any) {
         }
     };
 
-    const handleCancelRename = async (node: any) => {
+    const handleCancelRename = async (node: { id: string }) => {
         if (String(node.id).startsWith('__new_volume__') || String(node.id).startsWith('__new_arc__')) {
             await load(); // Just reload from server to wipe out temp object
         }
@@ -374,28 +413,29 @@ export function useChapterTree(props: any, emit: any) {
     const handleDelete = async (ids: string[]) => {
         for (const id of ids) {
             const node = findNodeById(id);
-            if (!node) continue;
+            if (!node || !node.data) continue;
 
-            const type = node.data.type;
-            const original = node.data.original;
+            const data = node.data as ExplorerNodeData;
+            const type = data.type;
+            const original = data.original || {};
 
             if (type === 'volume') {
-                const arcs = getArcsForVolume(original.id).map((a: any) => a.id);
-                let chapters = hierarchy.value.chapters.filter((c: any) => compareIds(c.volumeId, original.id));
+                const arcs = getArcsForVolume(original.id).map((a) => a.id);
+                let chapters = hierarchy.value.chapters.filter((c) => compareIds((c as unknown as { volumeId?: string }).volumeId || c.volume_id, original.id));
                 for (const arcId of arcs) chapters = chapters.concat(getChaptersForArc(arcId));
                 emit('delete-volume', original, chapters, arcs, ids.length > 1);
             } else if (type === 'arc') {
                 emit('delete-arc', original, getChaptersForArc(original.id), ids.length > 1);
             } else if (type === 'chapter') {
                 emit('delete-chapter', original, ids.length > 1);
-            } else if (node.data.isEntity) {
-                emit('delete-entity', entityKey(type, original.id), type, ids.length > 1);
+            } else if (data.isEntity && type) {
+                emit('delete-entity', entityKey(type, String(original.id)), type, ids.length > 1);
             }
         }
         await load();
     };
 
-    const findNodeById = (id: string): any => {
+    const findNodeById = (id: string): ExplorerNode | null => {
         for (const sect of explorerSections.value) {
             for (const node of sect.nodes) {
                 if (node.id === id) return node;

@@ -17,11 +17,13 @@ export function useGlobalTimeline(project: string) {
   });
 }
 
+import type { Calendar } from '../../types/generated/Calendar';
+
 export function useSaveCalendar() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ project, data }: { project: string; data: any }) => 
-      calendarApi.saveCalendar(project, data),
+    mutationFn: ({ project, data }: { project: string; data: Calendar | Record<string, unknown> }) => 
+      calendarApi.saveCalendar(project, data as Calendar),
     onSuccess: (_, { project }) => {
       queryClient.invalidateQueries({ queryKey: ['calendars', project] });
     }

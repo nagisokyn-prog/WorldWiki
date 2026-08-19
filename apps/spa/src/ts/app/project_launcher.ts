@@ -35,7 +35,7 @@ const app = createApp({
     const modalVisible = ref(false);
     const isEditing = ref(false);
     const editingProjectName = ref('');
-    const calendarsPanelRef = ref<any>(null);
+    const calendarsPanelRef = ref<{ open: () => void } | null>(null);
 
     const formData = ref<{
       name: string;
@@ -324,9 +324,9 @@ const app = createApp({
       window.addEventListener('keydown', (e) => {
         if (e.code === 'F11') {
           e.preventDefault();
-          const tauri = (window as any).__TAURI__;
+          const tauri = window.__TAURI__;
           if (tauri) {
-            tauri.core.invoke('toggle_fullscreen').catch((err: any) => console.error(err));
+            tauri.core.invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
           }
         }
       }, true);
@@ -336,7 +336,7 @@ const app = createApp({
       loadProjects();
     });
 
-    const cloudSyncModalRef = ref<any>(null);
+    const cloudSyncModalRef = ref<{ open: (mode: 'import' | 'export') => void } | null>(null);
     const cloudSyncMode = ref<'import' | 'export'>('export');
 
     function openCloudSync(mode: 'import' | 'export') {
@@ -345,7 +345,7 @@ const app = createApp({
       window.dispatchEvent(new CustomEvent('open-cloud-sync', { detail: mode }));
     }
 
-    function showToast(toast: any) {
+    function showToast(toast: string | { message: string }) {
       // Implement toast or reuse existing logic
       console.log('Toast:', toast);
     }

@@ -1,6 +1,13 @@
 import { ref } from 'vue';
+import type { Ref, ShallowRef } from 'vue';
+import type { Editor } from '@tiptap/vue-3';
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 
-export function useTiptapFormatting(editor: any, emit: any, editorUpdateKey: any) {
+export function useTiptapFormatting(
+  editor: ShallowRef<Editor | null | undefined> | Ref<Editor | null | undefined>,
+  emit: (event: string, ...args: unknown[]) => void,
+  editorUpdateKey: Ref<number>
+) {
   const footnotes = ref<Record<string, {id: string, text: string}>>({});
 
   const toggleBold = () => editor.value?.chain().focus().toggleBold().run();
@@ -60,9 +67,9 @@ export function useTiptapFormatting(editor: any, emit: any, editorUpdateKey: any
     
     let currentPIndex = 0;
     let targetPos = -1;
-    let targetNode: any = null;
+    let targetNode: ProseMirrorNode | null = null;
     
-    editor.value.state.doc.descendants((node: any, pos: number) => {
+    editor.value.state.doc.descendants((node: ProseMirrorNode, pos: number) => {
       if (node.type.name === 'paragraph') {
         if (currentPIndex === pIndex) {
           targetPos = pos;
@@ -74,12 +81,12 @@ export function useTiptapFormatting(editor: any, emit: any, editorUpdateKey: any
     });
     
     if (targetPos !== -1 && targetNode) {
-      const currentTag = targetNode.attrs.semanticTag || 'desc';
+      const currentTag = (targetNode as ProseMirrorNode).attrs.semanticTag || 'desc';
       const nextTag = currentTag === 'desc' ? 'dialog' : (currentTag === 'dialog' ? 'thought' : 'desc');
       
       editor.value.view.dispatch(
         editor.value.state.tr.setNodeMarkup(targetPos, undefined, {
-          ...targetNode.attrs,
+          ...(targetNode as ProseMirrorNode).attrs,
           semanticTag: nextTag
         })
       );

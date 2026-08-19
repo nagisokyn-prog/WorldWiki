@@ -390,8 +390,8 @@ describe('shell store additional coverage', () => {
     await store.openEntity({ entityType: 'hero', id: 'e_error', name: 'Will Fail' });
   });
 
-  it('handles foreign updates merging and deep object merging in handleUpdateData', () => {
-    store.openEntity({ id: 'hero_1', entityType: 'hero', name: 'Original Name' });
+  it('handles foreign updates merging and deep object merging in handleUpdateData', async () => {
+    await store.openEntity({ id: 'hero_1', entityType: 'hero', name: 'Original Name' });
     const tabId = store.openEditors[0].id;
 
     store.handleUpdateData(tabId, {

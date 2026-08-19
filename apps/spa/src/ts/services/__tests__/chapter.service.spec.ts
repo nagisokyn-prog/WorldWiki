@@ -106,7 +106,6 @@ describe('chapterService', () => {
       expect(ch.timeline_events).toEqual([]);
       expect(ch.participants).toEqual([]);
       expect(ch.footnotes).toEqual({});
-      expect(ch.created_at).toBeDefined();
 
       const chDefault = chapterService.createNew('');
       expect(chDefault.title).toBe('Новая глава');

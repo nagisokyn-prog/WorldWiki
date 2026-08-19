@@ -1,6 +1,12 @@
 import { computed } from 'vue';
 import uiEditorData from '../../../../../../public/struct/editor/ui_editor.json';
 
+export interface SchemaTemplateItem {
+    type?: string;
+    fields?: unknown[];
+    [key: string]: unknown;
+}
+
 export function useSchemaTemplates() {
     const atomicBricks = [
         { val: 'text', icon: '📝', label: 'Текст' },
@@ -17,27 +23,28 @@ export function useSchemaTemplates() {
 
     const HELPER_TEMPLATES = ['dynamicEndDateTemplate', 'dynamicDisbandDateTemplate', 'dynamicAbolitionDateTemplate', 'stateCollapseDateTemplate'];
 
-    const timelineTemplates = computed(() => {
-        const all = uiEditorData.templates || {} as any;
-        const result: Record<string, any> = {};
-        Object.entries(all).forEach(([key, tpl]: [string, any]) => {
+    const timelineTemplates = computed<Record<string, SchemaTemplateItem>>(() => {
+        const all = (uiEditorData.templates || {}) as Record<string, SchemaTemplateItem>;
+        const result: Record<string, SchemaTemplateItem> = {};
+        Object.entries(all).forEach(([key, tpl]) => {
             if (HELPER_TEMPLATES.includes(key)) return;
             if (tpl.type === 'timeline') result[key] = tpl;
         });
         return result;
     });
 
-    const dynamicTemplates = computed(() => {
-        const all = uiEditorData.templates || {} as any;
-        const result: Record<string, any> = {};
-        Object.entries(all).forEach(([key, tpl]: [string, any]) => {
+    const dynamicTemplates = computed<Record<string, SchemaTemplateItem>>(() => {
+        const all = (uiEditorData.templates || {}) as Record<string, SchemaTemplateItem>;
+        const result: Record<string, SchemaTemplateItem> = {};
+        Object.entries(all).forEach(([key, tpl]) => {
             if (HELPER_TEMPLATES.includes(key)) return;
             if (tpl.type === 'dynamic') result[key] = tpl;
         });
         return result;
     });
 
-    const isAtomicField = (item: any) => {
+    const isAtomicField = (item: { type?: string } | null | undefined) => {
+        if (!item) return false;
         return atomicBricks.some(b => b.val === item.type) || item.type === 'tags' || item.type === 'range';
     };
 

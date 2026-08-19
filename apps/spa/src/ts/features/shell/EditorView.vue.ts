@@ -32,7 +32,7 @@ export default defineComponent({
     AppDialog,
   },
    
-  setup(): Record<string, any> {
+  setup(): Record<string, unknown> {
     const route = useRoute();
     const rawProject = typeof route.query.project === 'string' ? route.query.project : 'default';
     const routeProject = rawProject.trim() === '' ? 'default' : rawProject;
@@ -75,29 +75,29 @@ export default defineComponent({
     const showSettings = computed(() => shell.showSettings);
     const sidebarSearch = computed(() => shell.sidebarSearch);
     const activePanelTab = computed(() => shell.activePanelTab);
-    const openEditors = computed(() => shell.openEditors as any);
+    const openEditors = computed(() => shell.openEditors);
     const activeEditorId = computed(() => shell.activeEditorId);
-    const activeEditor = computed(() => shell.activeEditor as any);
+    const activeEditor = computed(() => shell.activeEditor);
     const activeEntityRawId = computed(() => shell.activeEntityRawId);
-    const consoleLogs = computed(() => shell.consoleLogs as any);
+    const consoleLogs = computed(() => shell.consoleLogs);
     const activeField = computed(() => shell.activeField);
     const panelHeight = computed(() => shell.panelHeight);
     const sidebarWidth = computed(() => shell.sidebarWidth);
-    const sidebarItems = computed(() => shell.sidebarItems as any);
-    const activeSidebarItem = computed(() => shell.activeSidebarItem as any);
+    const sidebarItems = computed(() => shell.sidebarItems);
+    const activeSidebarItem = computed(() => shell.activeSidebarItem);
     const filteredEntityList = computed(() => shell.filteredEntityList);
     const chapters = computed(() => shell.chapters);
-    const chapterTreeRef = ref<any>(null);
+    const chapterTreeRef = ref<{ reload?: () => Promise<void> } | null>(null);
     const sidebarVisible = computed(() => shell.sidebarVisible);
     const zoomLevel = computed(() => shell.zoomLevel);
-    const quickOpenRef = ref<any>(null);
-    const commandPaletteRef = ref<any>(null);
-    const tagsManagerRef = ref<any>(null);
+    const quickOpenRef = ref<{ open: () => void; close?: () => void } | null>(null);
+    const commandPaletteRef = ref<{ open: () => void; close?: () => void } | null>(null);
+    const tagsManagerRef = ref<{ open: () => void; close?: () => void } | null>(null);
     const unsavedCount = computed(() => shell.unsavedCount);
     const settings = computed(() => shell.settings);
     const toasts = computed(() => console.toasts);
     const activeTreeNode = computed(() => shell.activeTreeNode);
-    const editorGroups = computed(() => shell.editorGroups as any);
+    const editorGroups = computed(() => shell.editorGroups);
     const activeGroupId = computed(() => shell.activeGroupId);
     
     const isWowilonOpen = computed(() => shell.isWowilonOpen);
@@ -152,7 +152,7 @@ export default defineComponent({
     const addToast = console.addToast;
     const getToastIcon = console.getToastIcon;
 
-    const onGroupCloseTab = (g: any, t: any) => closeEditor(t);
+    const onGroupCloseTab = (_g: unknown, t: string) => closeEditor(t);
 
     // Refs are synced to shell store in onMounted
 

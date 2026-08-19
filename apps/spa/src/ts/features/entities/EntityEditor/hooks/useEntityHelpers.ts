@@ -1,6 +1,11 @@
 import { ref } from 'vue';
+import type { Ref } from 'vue';
+import type { SchemaConfig, DynamicContainer, SchemaField } from '../EntityEditor.model';
 
-export function useEntityHelpers(formData: any, config: any) {
+export function useEntityHelpers(
+  formData: Ref<Record<string, unknown>>,
+  config: Ref<SchemaConfig | null>
+) {
   const photoUrlCache = ref<Record<string, string>>({});
   
   const getPhotoUrl = (path: string) => {
@@ -14,58 +19,71 @@ export function useEntityHelpers(formData: any, config: any) {
     return '';
   };
 
-  const getProp = (obj: any, path?: any) => {
-    if (path === undefined) {
-      path = obj;
+  const getProp = (objOrPath: unknown, maybePath?: string): unknown => {
+    let path: string;
+    let obj: unknown;
+    if (maybePath === undefined) {
+      path = typeof objOrPath === 'string' ? objOrPath : '';
       obj = formData.value;
+    } else {
+      path = maybePath;
+      obj = objOrPath;
     }
     if (!path) return '';
     const parts = path.split('.');
-    let current = obj;
+    let current: unknown = obj;
     for (let i = 0; i < parts.length; i++) {
-      if (current === undefined || current === null) return '';
-      current = current[parts[i]];
+      if (current === undefined || current === null || typeof current !== 'object') return '';
+      current = (current as Record<string, unknown>)[parts[i]];
     }
     return current;
   };
 
-  const setProp = (obj: any, path: any, val?: any) => {
-    if (val === undefined) {
-      val = path;
-      path = obj;
+  const setProp = (objOrPath: unknown, pathOrVal: unknown, maybeVal?: unknown) => {
+    let path: string;
+    let obj: Record<string, unknown>;
+    let val: unknown;
+    if (maybeVal === undefined) {
+      val = pathOrVal;
+      path = typeof objOrPath === 'string' ? objOrPath : '';
       obj = formData.value;
+    } else {
+      val = maybeVal;
+      path = typeof pathOrVal === 'string' ? pathOrVal : '';
+      obj = (objOrPath && typeof objOrPath === 'object' ? objOrPath : formData.value) as Record<string, unknown>;
     }
     if (!path) return;
     const parts = path.split('.');
-    let current = obj;
+    let current: Record<string, unknown> = obj;
     for (let i = 0; i < parts.length - 1; i++) {
-      if (current[parts[i]] === undefined || current[parts[i]] === null) {
+      if (current[parts[i]] === undefined || current[parts[i]] === null || typeof current[parts[i]] !== 'object') {
         current[parts[i]] = {};
       }
-      current = current[parts[i]];
+      current = current[parts[i]] as Record<string, unknown>;
     }
     current[parts[parts.length - 1]] = val;
   };
 
-  const getResolvedTemplate = (container: any) => {
-    let baseTpl: any;
+  const getResolvedTemplate = (container: DynamicContainer & { fields?: SchemaField[] }) => {
+    let baseTpl: { fields?: SchemaField[]; dynamicContainers?: DynamicContainer[] } | undefined;
     if (container.fields && !container.template) {
       baseTpl = container;
-    } else {
+    } else if (container.template) {
       baseTpl = config.value?.templates?.[container.template];
     }
     if (!baseTpl) return null;
     
     let resolvedFields = baseTpl.fields || [];
     if (container.fieldOverrides) {
-      resolvedFields = resolvedFields.map((f: any) => {
-        const override = container.fieldOverrides[f.class];
+      const overrides = container.fieldOverrides as Record<string, Partial<SchemaField>>;
+      resolvedFields = resolvedFields.map((f: SchemaField) => {
+        const override = f.class ? overrides[f.class] : undefined;
         if (override) {
           if (override.hidden) return null;
           return { ...f, ...override };
         }
         return f;
-      }).filter(Boolean);
+      }).filter((f): f is SchemaField => f !== null);
     }
     return { ...baseTpl, fields: resolvedFields };
   };
@@ -84,7 +102,8 @@ export function useEntityHelpers(formData: any, config: any) {
     { val: 'range', label: 'Ползунок (Range)' }
   ];
 
-  const isAtomicField = (item: any) => {
+  const isAtomicField = (item: { type?: string } | null | undefined) => {
+    if (!item) return false;
     return atomicBricks.some(b => b.val === item.type) || item.type === 'tags' || item.type === 'range';
   };
 

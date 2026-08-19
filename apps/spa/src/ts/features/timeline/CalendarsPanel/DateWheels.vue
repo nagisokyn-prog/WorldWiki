@@ -69,16 +69,14 @@
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import { useDateWheels } from './useDateWheels';
+import type { DateWheelsProps, DateWheelsModelValue } from './useDateWheels';
 
-const props = withDefaults(defineProps<{
-  project: string;
-  modelValue?: Record<string, any> | null;
-}>(), {
+const props = withDefaults(defineProps<DateWheelsProps>(), {
   modelValue: null
 });
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', val: any): void;
+  (e: 'update:modelValue', val: DateWheelsModelValue | null): void;
 }>();
 
 const {

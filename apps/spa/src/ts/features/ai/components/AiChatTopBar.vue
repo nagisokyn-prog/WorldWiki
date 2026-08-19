@@ -40,14 +40,21 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, type PropType } from 'vue';
+import { computed, watch } from 'vue';
 import type { AiProfile } from '../types/ai.types';
 import { useAiModels } from '../composables/useAiModels';
+
+export interface AiTopBarMode {
+  slug: string;
+  name: string;
+  icon?: string;
+  [key: string]: unknown;
+}
 
 const props = withDefaults(defineProps<{
   activeProfile?: AiProfile | null;
   tokenUsage?: { input_tokens: number; output_tokens: number; total_tokens: number };
-  modes?: any[];
+  modes?: AiTopBarMode[];
   activeModeSlug?: string;
 }>(), {
   activeProfile: null,

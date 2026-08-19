@@ -232,9 +232,10 @@ v-if="['dynamic', 'timeline'].includes(item.type)"
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import { useSchemaContainer } from './useSchemaContainer';
+import type { SchemaContainerItem } from './useSchemaContainer';
 
 const props = defineProps<{
-  item: any;
+  item: SchemaContainerItem;
 }>();
 
 defineEmits<{

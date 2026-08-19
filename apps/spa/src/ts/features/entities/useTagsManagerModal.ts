@@ -1,10 +1,11 @@
 import { ref } from 'vue';
-import * as api from '../../services/api.client';;
+import * as api from '../../services/api.client';
+import type { Tag } from '../../types/generated/Tag';
 
-export function useTagsManagerModal(props: any) {
+export function useTagsManagerModal(props: { project: string }) {
     const isOpen = ref(false);
     const loading = ref(false);
-    const tags = ref<any[]>([]);
+    const tags = ref<Tag[]>([]);
     const newTagName = ref('');
     const newTagColor = ref('#7c3aed');
 
@@ -35,7 +36,7 @@ export function useTagsManagerModal(props: any) {
         }
     };
 
-    const updateTag = async (tag: any) => {
+    const updateTag = async (tag: Tag) => {
         try {
             if (!tag.project_id) tag.project_id = props.project;
             await api.saveTag(props.project, tag);
@@ -70,11 +71,10 @@ export function useTagsManagerModal(props: any) {
         tags,
         newTagName,
         newTagColor,
-        loadTags,
+        open,
+        close,
         addTag,
         updateTag,
-        deleteTag,
-        open,
-        close
+        deleteTag
     };
 }

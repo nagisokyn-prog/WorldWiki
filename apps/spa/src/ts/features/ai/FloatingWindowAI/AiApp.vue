@@ -116,7 +116,10 @@ const logClick = (event: Event) => {
     chatId,
     project,
     timestamp: Date.now(),
-    path: event.composedPath().map((el: any) => el.tagName?.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className : '')).filter(Boolean).join(' > ')
+    path: event.composedPath().map((el) => {
+      const elem = el as HTMLElement;
+      return elem.tagName?.toLowerCase() + (elem.id ? '#' + elem.id : '') + (elem.className && typeof elem.className === 'string' ? '.' + elem.className : '');
+    }).filter(Boolean).join(' > ')
   });
 };
 
@@ -134,11 +137,11 @@ onMounted(() => {
   }
   
   // Store for cleanup
-  (window as any).__chatClickListener = { container, listener };
+  (window as unknown as { __chatClickListener?: { container: Element | null; listener: (e: Event) => void } }).__chatClickListener = { container, listener };
 });
 
 onUnmounted(() => {
-  const stored = (window as any).__chatClickListener;
+  const stored = (window as unknown as { __chatClickListener?: { container: Element | null; listener: (e: Event) => void } }).__chatClickListener;
   if (stored?.container) {
     stored.container.removeEventListener('click', stored.listener, true);
   } else if (stored?.listener) {

@@ -1,10 +1,12 @@
 import { ref, watch, computed } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
+import type { CalendarRecord } from '../../../stores/calendar.store';
+import type { CalendarData } from '../../../services/Calendars/calendar.types';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 
-export function useCalendarsPanel(props: any) {
+export function useCalendarsPanel(props: { project: string }) {
     const project = computed(() => props.project || '');
-    const calendars = ref<any[]>([]);
+    const calendars = ref<CalendarRecord[]>([]);
     const expandedCalendars = ref<Set<number>>(new Set());
 
     const isExpanded = (idx: number) => expandedCalendars.value.has(idx);
@@ -31,18 +33,18 @@ export function useCalendarsPanel(props: any) {
                 const defaultData = CalendarMath.getDefaultCalendar();
                 await useCalendarStore().saveCalendar(project.value, { ...defaultData, is_default: true, tempId: `temp_${Date.now()}` });
                 const newList = await useCalendarStore().getCalendars(project.value);
-                calendars.value = newList.map((c: any) => ({
+                calendars.value = newList.map((c: CalendarRecord) => ({
                     id: c.id,
                     is_default: c.is_default,
-                    is_master: c.is_master || (c.data && c.data.is_master),
-                    data: c.data || c
+                    is_master: c.is_master || (c.data && (c.data as Record<string, unknown>).is_master as boolean),
+                    data: c.data || (c as unknown as CalendarRecord['data'])
                 }));
             } else {
-                calendars.value = list.map((c: any) => ({
+                calendars.value = list.map((c: CalendarRecord) => ({
                     id: c.id,
                     is_default: c.is_default,
-                    is_master: c.is_master || (c.data && c.data.is_master),
-                    data: c.data || c
+                    is_master: c.is_master || (c.data && (c.data as Record<string, unknown>).is_master as boolean),
+                    data: c.data || (c as unknown as CalendarRecord['data'])
                 }));
             }
 
@@ -80,11 +82,12 @@ export function useCalendarsPanel(props: any) {
         if (!project.value) return;
 
         const cal = calendars.value[idx];
-        const payload = {
+        const payload: CalendarData & { [key: string]: unknown } = {
+            название: 'Календарь',
             ...cal.data,
             is_default: cal.is_default,
             id: cal.id?.startsWith('temp_') ? undefined : cal.id
-        };
+        } as CalendarData & { [key: string]: unknown };
 
         try {
             const success = await useCalendarStore().saveCalendar(project.value, payload);

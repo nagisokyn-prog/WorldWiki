@@ -7,7 +7,7 @@
         <div style="display: flex; flex-direction: column;">
           <strong style="color: var(--text-main); font-size: 14px;">{{ templateConf.headerTitle || 'Связь' }}</strong>
           <span style="font-size: 11px; color: var(--text-muted); opacity: 0.7;">
-            с сущностью типа «{{ templateConf.foreign_type || (templateConf.fields.find((f: any) => f.class === linkClass)?.entityType) || '?' }}»
+            с сущностью типа «{{ templateConf.foreign_type || (templateConf.fields?.find((f) => f.class === linkClass)?.entityType) || '?' }}»
           </span>
         </div>
       </div>
@@ -25,35 +25,35 @@
           🟣 СТОРОНА А ({{ myLabel }})
         </div>
 
-        <div v-for="cf in templateConf.fields" :key="'a-' + cf.class" style="margin-bottom: 14px;">
+        <div v-for="cf in templateConf.fields || []" :key="'a-' + cf.class" style="margin-bottom: 14px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label class="form-label-micro" style="color: rgb(167, 139, 250);">{{ cf.label || formatLabel(cf.class) }}</label>
+            <label class="form-label-micro" style="color: rgb(167, 139, 250);">{{ cf.label || formatLabel(cf.class || '') }}</label>
           </div>
           
           <template v-if="cf.class === linkClass">
             <XboxWheel 
-              :model-value="item[cf.class] || ''"
-              :options="getOptions(cf).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
+              :model-value="(item[cf.class] as string | number) || ''"
+              :options="getOptions(cf).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
               placeholder="-- Выберите сущность --"
-              @update:model-value="(val: any) => updateItemField(cf.class, val)"
+              @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
           </template>
           <template v-else>
             <XboxWheel 
               v-if="cf.type === 'select'" 
-              :model-value="item[cf.class] || ''"
-              :options="(cf.options || []).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
+              :model-value="(item[cf.class] as string | number) || ''"
+              :options="(cf.options || []).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
               placeholder="-- Не указано --"
-              @update:model-value="(val: any) => updateItemField(cf.class, val)"
+              @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
-            <textarea v-else-if="cf.type === 'textarea'" :value="item[cf.class]" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="updateItemField(cf.class, ($event.target as HTMLTextAreaElement).value)"></textarea>
-            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="item[cf.class]" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="updateItemField(cf.class, Number(($event.target as HTMLInputElement).value))">
-            <input v-else :value="item[cf.class]" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder" @input="updateItemField(cf.class, ($event.target as HTMLInputElement).value)">
+            <textarea v-else-if="cf.type === 'textarea'" :value="(item[cf.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="updateItemField(cf.class, ($event.target as HTMLTextAreaElement).value)"></textarea>
+            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="(item[cf.class] as number) || 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="updateItemField(cf.class, Number(($event.target as HTMLInputElement).value))">
+            <input v-else :value="(item[cf.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="updateItemField(cf.class, ($event.target as HTMLInputElement).value)">
           </template>
         </div>
 
         <!-- Dynamic Containers A -->
-        <div v-for="subConf in templateConf.dynamicContainers" :key="'adc-' + subConf.id" style="margin-top: 12px; border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 8px; overflow: hidden;">
+        <div v-for="subConf in templateConf.dynamicContainers || []" :key="'adc-' + (subConf.id || '')" style="margin-top: 12px; border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 8px; overflow: hidden;">
           <div style="background: rgba(167, 139, 250, 0.12); padding: 8px 12px; font-size: 10px; font-weight: 900; color: rgb(167, 139, 250); letter-spacing: 0.5px; text-transform: uppercase;">
             ⏱️ {{ subConf.title }}
           </div>
@@ -64,17 +64,17 @@
               </button>
               
               <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" style="margin-bottom: 6px;">
-                <label class="form-label-micro" style="color: rgba(167, 139, 250, 0.8); margin-bottom: 2px;">{{ nField.label || formatLabel(nField.class) }}</label>
+                <label class="form-label-micro" style="color: rgba(167, 139, 250, 0.8); margin-bottom: 2px;">{{ nField.label || formatLabel(nField.class || '') }}</label>
                 <XboxWheel 
                   v-if="nField.type === 'select'" 
-                  :model-value="nItem[nField.class] || ''"
-                  :options="getOptions(nField).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
+                  :model-value="(nItem[nField.class] as string | number) || ''"
+                  :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                   placeholder="-- Не указано --"
-                  @update:model-value="(val: any) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
+                  @update:model-value="(val: unknown) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                 />
-                <textarea v-else-if="nField.type === 'textarea'" v-model="nItem[nField.class]" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder" @input="notifyNestedItemUpdate(subConf.dataPath || subConf.id)"></textarea>
-                <input v-else-if="nField.type === 'number' || nField.type === 'range'" v-model.number="nItem[nField.class]" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder" @input="notifyNestedItemUpdate(subConf.dataPath || subConf.id)">
-                <input v-else v-model="nItem[nField.class]" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder" @input="notifyNestedItemUpdate(subConf.dataPath || subConf.id)">
+                <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="nItem[nField.class] = ($event.target as HTMLTextAreaElement).value; notifyNestedItemUpdate(subConf.dataPath || subConf.id)"></textarea>
+                <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="nItem[nField.class] = Number(($event.target as HTMLInputElement).value); notifyNestedItemUpdate(subConf.dataPath || subConf.id)">
+                <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="nItem[nField.class] = ($event.target as HTMLInputElement).value; notifyNestedItemUpdate(subConf.dataPath || subConf.id)">
               </div>
             </div>
             
@@ -101,9 +101,9 @@
           Сначала выберите сущность
         </div>
         <div v-else>
-          <div v-for="cf in templateConf.fields" :key="'b-' + cf.class" style="margin-bottom: 14px;">
+          <div v-for="cf in templateConf.fields || []" :key="'b-' + cf.class" style="margin-bottom: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label class="form-label-micro" style="color: rgb(96, 165, 250);">{{ cf.label || formatLabel(cf.class) }}</label>
+              <label class="form-label-micro" style="color: rgb(96, 165, 250);">{{ cf.label || formatLabel(cf.class || '') }}</label>
             </div>
             
             <template v-if="cf.class === linkClass">
@@ -113,19 +113,19 @@
             <template v-else>
               <XboxWheel 
                 v-if="cf.type === 'select'" 
-                :model-value="foreignItem[cf.class] || ''"
-                :options="(cf.options || []).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
+                :model-value="foreignItem ? ((foreignItem[cf.class] as string | number) || '') : ''"
+                :options="(cf.options || []).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                 placeholder="-- Не указано --"
-                @update:model-value="(val: any) => { foreignItem[cf.class] = val; }"
+                @update:model-value="(val: unknown) => { if (foreignItem) { foreignItem[cf.class] = val; } }"
               />
-              <textarea v-else-if="cf.type === 'textarea'" v-model="foreignItem[cf.class]" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;"></textarea>
-              <input v-else-if="cf.type === 'number' || cf.type === 'range'" v-model.number="foreignItem[cf.class]" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;">
-              <input v-else v-model="foreignItem[cf.class]" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;">
+              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? ((foreignItem[cf.class] as string) || '') : ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" @input="if (foreignItem) foreignItem[cf.class] = ($event.target as HTMLTextAreaElement).value"></textarea>
+              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? ((foreignItem[cf.class] as number) || 0) : 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="if (foreignItem) foreignItem[cf.class] = Number(($event.target as HTMLInputElement).value)">
+              <input v-else :value="foreignItem ? ((foreignItem[cf.class] as string) || '') : ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="if (foreignItem) foreignItem[cf.class] = ($event.target as HTMLInputElement).value">
             </template>
           </div>
 
           <!-- Dynamic Containers B (Mirror) -->
-          <div v-for="subConf in templateConf.dynamicContainers" :key="'bdc-' + subConf.id" style="margin-top: 12px; border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 8px; overflow: hidden;">
+          <div v-for="subConf in templateConf.dynamicContainers || []" :key="'bdc-' + (subConf.id || '')" style="margin-top: 12px; border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 8px; overflow: hidden;">
             <div style="background: rgba(96, 165, 250, 0.12); padding: 8px 12px; font-size: 10px; font-weight: 900; color: rgb(96, 165, 250); letter-spacing: 0.5px; text-transform: uppercase;">
               ⏱️ {{ subConf.title }}
             </div>
@@ -135,17 +135,17 @@
                   <i class="fas fa-times"></i>
                 </button>
                 <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" style="margin-bottom: 6px;">
-                  <label class="form-label-micro" style="color: rgba(96, 165, 250, 0.8); margin-bottom: 2px;">{{ nField.label || formatLabel(nField.class) }}</label>
+                  <label class="form-label-micro" style="color: rgba(96, 165, 250, 0.8); margin-bottom: 2px;">{{ nField.label || formatLabel(nField.class || '') }}</label>
                   <XboxWheel 
                     v-if="nField.type === 'select'" 
-                    :model-value="nItem[nField.class] || ''"
-                    :options="getOptions(nField).map((o: any) => ({ value: o.value || o.id, label: o.label || o.name || o.value || o.id }))"
+                    :model-value="(nItem[nField.class] as string | number) || ''"
+                    :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                     placeholder="-- Не указано --"
-                    @update:model-value="(val: any) => { nItem[nField.class] = val; }"
+                    @update:model-value="(val: unknown) => { nItem[nField.class] = val; }"
                   />
-                  <textarea v-else-if="nField.type === 'textarea'" v-model="nItem[nField.class]" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;"></textarea>
-                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" v-model.number="nItem[nField.class]" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;">
-                  <input v-else v-model="nItem[nField.class]" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;">
+                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" @input="nItem[nField.class] = ($event.target as HTMLTextAreaElement).value"></textarea>
+                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="nItem[nField.class] = Number(($event.target as HTMLInputElement).value)">
+                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="nItem[nField.class] = ($event.target as HTMLInputElement).value">
                 </div>
               </div>
               
@@ -168,19 +168,10 @@
 
 <script setup lang="ts">
 import { useRelationshipBlock } from '../../../services/Entity/useRelationshipBlock';
+import type { RelationshipBlockProps } from '../../../services/Entity/useRelationshipBlock';
 import { XboxWheel } from '@worldwiki/components';
 
-const props = withDefaults(defineProps<{
-    item: Record<string, any>;
-    idx: number;
-    templateConf: Record<string, any>;
-    allTemplates: Record<string, any>;
-    referenceData: Record<string, any>;
-    entityId: string;
-    entityType: string;
-    project: string;
-    sandboxMode?: boolean;
-}>(), {
+const props = withDefaults(defineProps<RelationshipBlockProps>(), {
     sandboxMode: false
 });
 
@@ -204,7 +195,7 @@ const {
   addNestedItem,
   removeNestedItem,
   updateItemField
-} = useRelationshipBlock(props, emit);
+} = useRelationshipBlock(props, emit as (event: string, ...args: unknown[]) => void);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/modules/relationship-block.css"></style>

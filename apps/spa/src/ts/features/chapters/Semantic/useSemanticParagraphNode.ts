@@ -1,6 +1,17 @@
 import { computed } from 'vue';
 
-export function useSemanticParagraphNode(props: any) {
+export interface SemanticParagraphNodeProps {
+    node?: {
+        attrs?: {
+            semanticTag?: string;
+            [key: string]: unknown;
+        };
+        [key: string]: unknown;
+    };
+    updateAttributes?: (attrs: Record<string, unknown>) => void;
+}
+
+export function useSemanticParagraphNode(props: SemanticParagraphNodeProps) {
     const tagLabel = computed(() => {
         const tag = props.node?.attrs?.semanticTag || 'desc';
         if (tag === 'desc') return '!о';

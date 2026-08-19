@@ -17,7 +17,7 @@
       @rename="handleRename"
       @cancel-rename="handleCancelRename"
       @delete="handleDelete"
-      @edit-section="(sectionId: any) => $emit('edit-schema', sectionId)"
+      @edit-section="(sectionId: string) => $emit('edit-schema', sectionId)"
       @delete-section="handleDeleteSection"
     >
       <template #header-actions>
@@ -28,14 +28,14 @@
 
       <!-- Контекстное меню -->
       <template #context-menu="{ node, close }">
-        <template v-if="node.data?.type === 'chapter'">
+        <template v-if="isNodeType(node, 'chapter')">
           <div class="ctx-item" @click="startRename(node, close)">
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
           </div>
         </template>
         
-        <template v-else-if="node.data?.type === 'volume'">
+        <template v-else-if="isNodeType(node, 'volume')">
           <div class="ctx-item" @click="startRename(node, close)">
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
@@ -48,7 +48,7 @@
           </div>
         </template>
         
-        <template v-else-if="node.data?.type === 'arc'">
+        <template v-else-if="isNodeType(node, 'arc')">
           <div class="ctx-item" @click="startRename(node, close)">
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
@@ -58,7 +58,7 @@
           </div>
         </template>
         
-        <template v-else-if="node.data?.isEntity">
+        <template v-else-if="isEntityNode(node)">
           <div class="ctx-item" @click="startRename(node, close)">
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
@@ -86,12 +86,9 @@
 import { ExplorerTree } from '@worldwiki/components';
 import GlobalCalendarWidget from '../../timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
+import type { ChapterTreeProps } from './ChapterTree.model';
 
-const props = withDefaults(defineProps<{
-  project: string;
-  activeNode?: any;
-  activeEditorId?: string | null;
-}>(), {
+const props = withDefaults(defineProps<ChapterTreeProps>(), {
   activeNode: null,
   activeEditorId: null
 });
@@ -116,7 +113,15 @@ const {
   handleDelete,
   handleDeleteSection,
   load
-} = useChapterTree(props, emit);
+} = useChapterTree(props, emit as (event: string, ...args: unknown[]) => void);
+
+const isNodeType = (node: { data?: unknown }, type: string) => {
+  return (node.data as { type?: string } | undefined)?.type === type;
+};
+
+const isEntityNode = (node: { data?: unknown }) => {
+  return Boolean((node.data as { isEntity?: boolean } | undefined)?.isEntity);
+};
 
 defineExpose({ load });
 </script>

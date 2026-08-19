@@ -81,8 +81,20 @@ const props = defineProps<{
   currentProject: string
 }>();
 
+export interface AiMode {
+  slug: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  profile_id?: string;
+  system_prompt?: string;
+  allowed_tools?: string[];
+  is_global?: boolean;
+  [key: string]: unknown;
+}
+
 const isLoading = ref(true);
-const modes = ref<any[]>([]);
+const modes = ref<AiMode[]>([]);
 const activeModeSlug = ref<string>('');
 const isNewMode = ref(false);
 const saveMessage = ref('');
@@ -132,7 +144,7 @@ onMounted(async () => {
 const loadModes = async () => {
   isLoading.value = true;
   try {
-    const res: any[] = await invoke('get_aimodes', { project: props.currentProject });
+    const res = await invoke<AiMode[]>('get_aimodes', { project: props.currentProject });
     modes.value = res.length > 0 ? res : getDefaultModes();
     
     if (modes.value.length > 0 && !activeModeSlug.value) {

@@ -1,4 +1,4 @@
-. <template>
+<template>
   <div class="editor-core" style="flex: 1; display: flex; flex-direction: column; padding: 24px; overflow: hidden; min-width: 0;">
     
     <!-- Toolbar -->
@@ -165,8 +165,9 @@ import EntityLinkSelector from './EntityLinkSelector.vue';
 const isEntitySelectorOpen = ref(false);
 const activeEditorTarget = ref<'wysiwyg'|'markdown'>('markdown');
 
-const handleOpenEntitySelector = (e: any) => {
-  activeEditorTarget.value = e.detail?.target || 'markdown';
+const handleOpenEntitySelector = (e: Event) => {
+  const detail = (e as CustomEvent<{ target?: 'wysiwyg' | 'markdown' }>).detail;
+  activeEditorTarget.value = detail?.target || 'markdown';
   isEntitySelectorOpen.value = true;
 };
 
@@ -205,7 +206,7 @@ const props = withDefaults(defineProps<{
   title?: string;
   content?: string;
   hasUnsavedChanges?: boolean;
-  footnotesData?: Record<string, any>;
+  footnotesData?: Record<string, { id: string; text: string }>;
   initialScrollPos?: number;
   changedFields?: string[];
 }>(), {
@@ -257,12 +258,12 @@ const {
     cycleGlobalTag,
     startResizeLeft,
     startResizeRight
-} = useTiptapEditor(props, emit);
+} = useTiptapEditor(props, emit as (event: string, ...args: unknown[]) => void);
 
 import { openEntityEditorWindow } from '../../../utils/windowManager';
 
-const handleOpenEntityWindow = (e: any) => {
-  const { type, id } = e.detail;
+const handleOpenEntityWindow = (e: Event) => {
+  const { type, id } = (e as CustomEvent<{ type: string; id: string }>).detail;
   // We need to resolve name, but we can pass a generic one and the window will load it
   openEntityEditorWindow(props.project, type, id, id.split(':').pop() || 'Сущность');
 };

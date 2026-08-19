@@ -113,8 +113,15 @@ const currentCategory = ref('');
 const currentEntityType = ref('');
 const searchQuery = ref('');
 
+export interface ContextItem {
+  id: string;
+  title: string;
+  type: string;
+  [key: string]: unknown;
+}
+
 // Example selected items
-const selectedContexts = ref<any[]>([]);
+const selectedContexts = ref<ContextItem[]>([]);
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value;
@@ -161,7 +168,7 @@ const entityTypes = [
   { key: 'organization', label: 'Организация' }
 ];
 
-const mockItems = [
+const mockItems: ContextItem[] = [
   { id: '1', title: 'Гарри Поттер', type: 'character' },
   { id: '2', title: 'Хогвартс', type: 'location' },
   { id: '3', title: 'Том 1: Философский камень', type: 'volume' },
@@ -187,11 +194,11 @@ const filteredItems = computed(() => {
   return items;
 });
 
-const isSelected = (item: any) => {
+const isSelected = (item: ContextItem) => {
   return selectedContexts.value.some(i => i.id === item.id);
 };
 
-const toggleItem = (item: any) => {
+const toggleItem = (item: ContextItem) => {
   if (isSelected(item)) {
     selectedContexts.value = selectedContexts.value.filter(i => i.id !== item.id);
   } else {

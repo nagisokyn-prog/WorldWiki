@@ -150,7 +150,7 @@ describe('chapterApi', () => {
       // when volumes, arcs, chapters are undefined
       vi.mocked(invoke).mockResolvedValueOnce({});
       const emptyRes = await chapterApi.getHierarchy('p1');
-      expect(emptyRes).toEqual({});
+      expect(emptyRes).toEqual({ volumes: [], arcs: [], chapters: [] });
     });
 
     it('createVolume, updateVolume, deleteVolume', async () => {
@@ -165,7 +165,7 @@ describe('chapterApi', () => {
 
       vi.mocked(invoke).mockResolvedValueOnce(undefined);
       await chapterApi.deleteVolume('p1', 'vol_1');
-      expect(invoke).toHaveBeenCalledWith('delete_volume', { project: 'p1', id: 'vol_1' });
+      expect(invoke).toHaveBeenCalledWith('delete_volume', { id: 'vol_1' });
     });
 
     it('createArc, updateArc, deleteArc', async () => {
@@ -180,7 +180,7 @@ describe('chapterApi', () => {
 
       vi.mocked(invoke).mockResolvedValueOnce(undefined);
       await chapterApi.deleteArc('p1', 'arc_1');
-      expect(invoke).toHaveBeenCalledWith('delete_arc', { project: 'p1', id: 'arc_1' });
+      expect(invoke).toHaveBeenCalledWith('delete_arc', { id: 'arc_1' });
     });
 
     it('assignChapter and reorderNode', async () => {
@@ -206,7 +206,7 @@ describe('chapterApi', () => {
       const res = await chapterApi.getPlanItems('proj', 'chapter', 'ch1');
 
       expect(res).toEqual([
-        { id: 'p0', parentType: 'chapter', parentId: 'ch1', text: 'Plan No Order', done: false, sort_order: undefined },
+        { id: 'p0', parentType: 'chapter', parentId: 'ch1', text: 'Plan No Order', done: false, sort_order: 0 },
         { id: 'p2', parentType: 'chapter', parentId: 'ch1', text: 'Plan 0', done: true, sort_order: 1 },
         { id: 'p1', parentType: 'chapter', parentId: 'ch1', text: 'Plan 1', done: false, sort_order: 2 },
       ]);

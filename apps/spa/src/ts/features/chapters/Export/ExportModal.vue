@@ -1,92 +1,84 @@
 <template>
-  <Transition name="fade">
-  <div v-if="isOpen" class="modal" style="display: flex;">
-    <div v-motion-pop class="modal-content">
+  <Transition name="modal-fade">
+  <div v-if="isOpen" class="modal-backdrop" @click.self="$emit('close')">
+    <div class="modal-window export-modal">
       <div class="modal-header">
-        <h2>Экспорт глав</h2>
-        <button class="close-btn" @click="$emit('close')">&times;</button>
+        <h3><i class="fas fa-file-export"></i> Экспорт проекта</h3>
+        <button class="btn-close" @click="$emit('close')">✕</button>
       </div>
       
       <div class="modal-body">
-        <div class="export-section">
-          <h3>Формат файла</h3>
-          <div class="format-grid">
-            <label class="format-option">
-              <input v-model="format" type="radio" value="txt">
-              <div class="format-icon"><i class="fas fa-file-alt"></i></div>
-              <span>TXT</span><small>Текст</small>
-            </label>
-            <label class="format-option">
-              <input v-model="format" type="radio" value="docx">
-              <div class="format-icon"><i class="fas fa-file-word"></i></div>
-              <span>DOCX</span><small>Word</small>
-            </label>
-            <label class="format-option">
-              <input v-model="format" type="radio" value="pdf">
-              <div class="format-icon"><i class="fas fa-file-pdf"></i></div>
-              <span>PDF</span><small>Документ</small>
-            </label>
+        <!-- Формат -->
+        <div class="form-group">
+          <label class="form-label">Формат файла</label>
+          <div class="format-chips">
+            <button class="chip-btn" :class="{ active: format === 'txt' }" @click="format = 'txt'">
+              <i class="fas fa-file-alt"></i> TXT
+            </button>
+            <button class="chip-btn" :class="{ active: format === 'md' }" @click="format = 'md'">
+              <i class="fab fa-markdown"></i> Markdown
+            </button>
+            <button class="chip-btn" :class="{ active: format === 'fb2' }" @click="format = 'fb2'">
+              <i class="fas fa-book"></i> FB2
+            </button>
+            <button class="chip-btn" :class="{ active: format === 'epub' }" @click="format = 'epub'">
+              <i class="fas fa-book-open"></i> EPUB
+            </button>
+            <button class="chip-btn" :class="{ active: format === 'docx' }" @click="format = 'docx'">
+              <i class="fas fa-file-word"></i> DOCX
+            </button>
+            <button class="chip-btn" :class="{ active: format === 'pdf' }" @click="format = 'pdf'">
+              <i class="fas fa-file-pdf"></i> PDF
+            </button>
           </div>
         </div>
 
-        <div class="export-section">
-          <h3>Главы для экспорта</h3>
-          <div class="chapters-selection">
-            <label class="selection-option">
+        <!-- Состав экспорта -->
+        <div class="form-group">
+          <label class="form-label">Что экспортировать</label>
+          <div class="radio-group">
+            <label class="radio-label">
               <input v-model="selectionMode" type="radio" value="current">
-              <span>Текущая глава</span>
+              <span>Текущую главу</span>
             </label>
-            <label class="selection-option">
+            <label class="radio-label">
               <input v-model="selectionMode" type="radio" value="all">
-              <span>Все главы</span>
+              <span>Все главы книги</span>
             </label>
-            <label class="selection-option">
+            <label class="radio-label">
               <input v-model="selectionMode" type="radio" value="selected">
-              <span>Выбрать главы</span>
+              <span>Выбранные главы...</span>
             </label>
-          </div>
-          
-          <div v-if="selectionMode === 'selected'" style="margin-top: 20px;">
-            <div class="chapters-dropdown-container" style="position: relative;">
-              <div class="chapters-dropdown export-black" style="display: block;">
-                <div class="dropdown-controls" style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                  <div class="selected-count" style="font-size: 12px; color: #666;">
-                    Выбрано: {{ selectedChapters.length }} глав
-                  </div>
-                  <div class="control-buttons" style="display: flex; gap: 8px;">
-                    <button class="small-btn" style="padding: 4px 8px; font-size: 12px;" @click="selectAll">
-                      <i class="fas fa-check-double"></i> Все
-                    </button>
-                    <button class="small-btn" style="padding: 4px 8px; font-size: 12px;" @click="clearSelection">
-                      <i class="fas fa-times"></i> Очистить
-                    </button>
-                  </div>
-                </div>
-                <div class="chapters-list" style="max-height: 200px; overflow-y: auto; padding: 10px;">
-                  <div v-for="ch in allChapters" :key="ch.id" style="margin-bottom: 5px;">
-                    <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer;">
-                      <input v-model="selectedChapters" type="checkbox" :value="ch.id">
-                      {{ ch.title || 'Без названия' }}
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        <div class="export-section">
-          <h3>Дополнительно</h3>
-          <div class="export-options">
-            <label class="option-checkbox">
+        <!-- Список глав (если выбран режим selected) -->
+        <div v-if="selectionMode === 'selected'" class="chapters-selection-box">
+          <div class="selection-actions">
+            <button class="btn-link" @click="selectAll">Выбрать все</button>
+            <button class="btn-link" @click="clearSelection">Снять всё</button>
+          </div>
+          <div class="chapters-checklist">
+            <label v-for="c in allChapters" :key="c.id" class="checkbox-label">
+              <input v-model="selectedChapters" type="checkbox" :value="c.id">
+              <span>{{ c.title || 'Без названия' }}</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Опции экспорта -->
+        <div class="form-group options-box">
+          <label class="form-label">Дополнительные опции</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
               <input v-model="addTOC" type="checkbox">
-              <span>Добавить оглавление</span>
+              <span>Создать оглавление</span>
             </label>
-            <label class="option-checkbox">
+            <label class="checkbox-label">
               <input v-model="addPageNumbers" type="checkbox">
-              <span>Нумерация страниц</span>
+              <span>Нумерация страниц (для PDF/DOCX)</span>
             </label>
-            <label class="option-checkbox">
+            <label class="checkbox-label">
               <input v-model="includeMetadata" type="checkbox">
               <span>Включить метаданные</span>
             </label>
@@ -107,10 +99,11 @@
 
 <script setup lang="ts">
 import { useExportModal } from './useExportModal';
+import type { ExportChapterItem, ExportPayload } from './useExportModal';
 
 const props = withDefaults(defineProps<{
   isOpen: boolean;
-  allChapters?: any[];
+  allChapters?: ExportChapterItem[];
   currentChapterId?: string | null;
 }>(), {
   allChapters: () => [],
@@ -119,7 +112,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'export', payload: any): void;
+  (e: 'export', payload: ExportPayload): void;
 }>();
 
 const {
@@ -133,7 +126,7 @@ const {
   selectAll,
   clearSelection,
   exportData
-} = useExportModal(props, emit);
+} = useExportModal(props, emit as (event: 'close' | 'export', ...args: unknown[]) => void);
 </script>
 
 <style scoped src="./ExportModal.vue.css"></style>

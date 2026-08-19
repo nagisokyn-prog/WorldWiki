@@ -1,7 +1,7 @@
 export interface ChapterTreeProps {
   project: string;
-  activeNode?: Record<string, any> | null;
-  activeEditorId?: string;
+  activeNode?: Record<string, unknown> | null;
+  activeEditorId?: string | null;
 }
 
 export interface ChapterTreeNode {
@@ -11,6 +11,6 @@ export interface ChapterTreeNode {
   isGroup?: boolean;
   canAdd?: boolean;
   addLabel?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   children?: ChapterTreeNode[];
 }

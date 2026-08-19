@@ -172,6 +172,7 @@ import { settingsService, AppDialog } from '@worldwiki/components';
 import { XboxWheel as VanillaXboxWheel } from '@worldwiki/components';
 import CalendarsPanel from '../../features/timeline/CalendarsPanel/CalendarsPanel.vue';
 import CloudSyncModal from '../../features/sync/CloudSyncModal.vue';
+import { invoke } from '@tauri-apps/api/core';
 import GlobalTimeViewer from '../../features/timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue';
 
 const router = useRouter();
@@ -181,7 +182,7 @@ const projects = shallowRef<Array<{ name: string; icon: string; stats: Record<st
 const modalVisible = ref(false);
 const isEditing = ref(false);
 const editingProjectName = ref('');
-const calendarsPanelRef = ref<any>(null);
+const calendarsPanelRef = ref<{ saveAll?: () => Promise<void> } | null>(null);
 
 const formData = ref<{
     name: string;
@@ -368,10 +369,10 @@ const submitButtonText = computed(() => {
 async function loadProjects() {
     try {
         const list = await projectService.getProjects();
-        projects.value = list.map((p: any) => ({
+        projects.value = list.map((p) => ({
             name: p.name,
-            icon: String(p.icon) || '📁',
-            stats: p.stats || {}
+            icon: String(p.icon || '📁'),
+            stats: (p.stats as unknown as Record<string, number>) || {}
         }));
     } catch (e) {
         console.error('Ошибка загрузки проектов:', e);
@@ -466,10 +467,7 @@ onMounted(async () => {
     window.addEventListener('keydown', (e) => {
         if (e.code === 'F11') {
             e.preventDefault();
-            const tauri = (window as any).__TAURI__;
-            if (tauri) {
-                tauri.core.invoke('toggle_fullscreen').catch((err: any) => console.error(err));
-            }
+            invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
         }
     }, true);
 
@@ -486,7 +484,7 @@ function openCloudSync(mode: 'import' | 'export') {
     window.dispatchEvent(new CustomEvent('open-cloud-sync', { detail: mode }));
 }
 
-function showToast(toast: any) {
+function showToast(toast: { text?: string; type?: string; [key: string]: unknown }) {
     console.log('Toast:', toast);
 }
 </script>

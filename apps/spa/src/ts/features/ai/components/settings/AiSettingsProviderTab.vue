@@ -153,15 +153,17 @@ const emit = defineEmits(['fetch-models', 'save-profile', 'provider-changed']);
 
 const isAdvancedOpen = ref(false);
 
-const updateField = (field: keyof AiProfile, value: any) => {
+const updateField = <K extends keyof AiProfile>(field: K, value: AiProfile[K]) => {
   if (props.activeProfile) {
-    (props.activeProfile as any)[field] = value;
+    // eslint-disable-next-line vue/no-mutating-props
+    props.activeProfile[field] = value;
   }
 };
 
-const updateSetting = (field: keyof AiProfile['settings'], value: any) => {
+const updateSetting = <K extends keyof AiProfile['settings']>(field: K, value: AiProfile['settings'][K]) => {
   if (props.activeProfile && props.activeProfile.settings) {
-    (props.activeProfile.settings as any)[field] = value;
+    // eslint-disable-next-line vue/no-mutating-props
+    props.activeProfile.settings[field] = value;
   }
 };
 

@@ -1,10 +1,36 @@
 import { ref, computed } from 'vue';
-import * as api from '../../../../services/api.client';;
+import type { Ref } from 'vue';
+import * as api from '../../../../services/api.client';
+import type { EntitySchema } from '../../../../types/generated/EntitySchema';
 
-export function useSchemaData(props: any, emit: any, localEntityType: any, scrollContainer: any) {
-    const schema = ref<any>({ sections: [] });
+export interface SchemaDataSection {
+    id: string;
+    title: string;
+    icon: string;
+    items: Array<Record<string, unknown>>;
+    dynamicContainers?: Array<Record<string, unknown>>;
+    fields?: Array<Record<string, unknown>>;
+    [key: string]: unknown;
+}
+
+export interface SchemaDataModel {
+    name?: string;
+    entityType?: string;
+    type_key?: string;
+    titleField?: string;
+    sections: SchemaDataSection[];
+    [key: string]: unknown;
+}
+
+export function useSchemaData(
+    props: { project: string; entityType?: string; initialSection?: string; initialScrollPos?: number; [key: string]: unknown },
+    _emit: (event: string, ...args: unknown[]) => void,
+    localEntityType: Ref<string>,
+    scrollContainer: Ref<HTMLElement | null>
+) {
+    const schema = ref<SchemaDataModel>({ sections: [] });
     const activeSectionIdx = ref(0);
-    const activeSection = computed(() => schema.value.sections[activeSectionIdx.value]);
+    const activeSection = computed(() => schema.value.sections[activeSectionIdx.value] || { id: '', title: '', icon: '', items: [] });
 
     const isPreviewMode = ref(false);
     const showJsonPreview = ref(false);
@@ -37,7 +63,7 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
     const loadSchema = async (_forceRefetch = false) => {
         try {
             const schemas = await api.getEntitySchemas(props.project);
-            const foundSchema = schemas.find((s: any) => s.type_key === props.entityType);
+            const foundSchema = schemas.find((s: EntitySchema) => s.type_key === props.entityType);
             if (foundSchema && foundSchema.full_schema) {
                 schema.value = JSON.parse(JSON.stringify(foundSchema.full_schema));
             } else {
@@ -69,10 +95,10 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
 
             // Заполняем items и восстанавливаем id/dataPath для dynamicContainers
             if (schema.value && schema.value.sections) {
-                schema.value.sections.forEach((sec: any) => {
+                schema.value.sections.forEach((sec: SchemaDataSection) => {
                     if (sec.dynamicContainers) {
-                        sec.dynamicContainers.forEach((dc: any, idx: number) => {
-                            if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
+                        sec.dynamicContainers.forEach((dc: Record<string, unknown>, idx: number) => {
+                            if (!dc.id) dc.id = dc.template ? `dyn_${String(dc.template)}` : `dyn_${idx}`;
                             if (!dc.dataPath) dc.dataPath = dc.id;
                         });
                     }
@@ -93,15 +119,15 @@ export function useSchemaData(props: any, emit: any, localEntityType: any, scrol
                 ];
             }
             if (props.initialSection) {
-                const idx = schema.value.sections.findIndex((s: any) => s.id === props.initialSection);
+                const idx = schema.value.sections.findIndex((s: SchemaDataSection) => s.id === props.initialSection);
                 activeSectionIdx.value = idx !== -1 ? idx : 0;
             } else {
                 activeSectionIdx.value = 0;
             }
 
             setTimeout(() => {
-                if (scrollContainer.value && props.initialScrollPos > 0) {
-                    scrollContainer.value.scrollTop = props.initialScrollPos;
+                if (scrollContainer.value && (props.initialScrollPos ?? 0) > 0) {
+                    scrollContainer.value.scrollTop = props.initialScrollPos ?? 0;
                 }
             }, 50);
 

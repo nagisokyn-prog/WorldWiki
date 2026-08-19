@@ -1,6 +1,11 @@
 import { ref } from 'vue';
+import type { CalendarData, CalendarEra } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarEras(props: any, _emit?: any) {
+export interface CalendarErasProps {
+  modelValue: Partial<CalendarData> & { эпохи?: CalendarEra[]; [key: string]: unknown };
+}
+
+export function useCalendarEras(props: CalendarErasProps, _emit?: (event: string, ...args: unknown[]) => void) {
   const isCollapsed = ref(false);
 
   const moveItem = (idx: number, delta: number) => {

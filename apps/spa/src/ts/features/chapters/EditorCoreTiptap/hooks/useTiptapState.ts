@@ -1,7 +1,25 @@
 import { ref } from 'vue';
+import type { Ref, ShallowRef, ComputedRef } from 'vue';
+import type { Editor } from '@tiptap/vue-3';
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
+import type { DocumentBlock } from './useTiptapSplitView';
 
-export function useTiptapState(props: any, emit: any, editor: any, editorUpdateKey: any, documentStructure: any) {
+export interface TiptapStateProps {
+  project: string;
+  title?: string;
+  initialScrollPos?: number;
+  hasUnsavedChanges?: boolean;
+  [key: string]: unknown;
+}
+
+export function useTiptapState(
+  props: TiptapStateProps,
+  emit: (event: string, ...args: unknown[]) => void,
+  editor: ShallowRef<Editor | null | undefined> | Ref<Editor | null | undefined>,
+  _editorUpdateKey: Ref<number>,
+  documentStructure: ComputedRef<DocumentBlock[]> | Ref<DocumentBlock[]>
+) {
   const modeOptions = [
     { value: 'wysiwyg', label: '📝 WYSIWYG' },
     { value: 'markdown', label: '✏️ Markdown' },
@@ -26,7 +44,7 @@ export function useTiptapState(props: any, emit: any, editor: any, editorUpdateK
   };
 
   const editorMode = ref<'wysiwyg' | 'markdown' | 'split'>(loadInitialMode());
-  const settings = ref<any>(settingsService.getSettings());
+  const settings = ref<AppSettings | null>(settingsService.getSettings());
   const ctrlPressed = ref(false);
 
   const wordCount = ref(0);
@@ -104,7 +122,7 @@ export function useTiptapState(props: any, emit: any, editor: any, editorUpdateK
     } else if (props.initialScrollPos) {
       setTimeout(() => {
         const wrapper = document.querySelector('.editor-wrapper') as HTMLElement;
-        if (wrapper) wrapper.scrollTop = props.initialScrollPos;
+        if (wrapper) wrapper.scrollTop = props.initialScrollPos || 0;
       }, 150);
     }
   };
@@ -119,7 +137,7 @@ export function useTiptapState(props: any, emit: any, editor: any, editorUpdateK
   };
 
   const toggleLinkLock = () => {
-    const newS = JSON.parse(JSON.stringify(settings.value));
+    const newS = JSON.parse(JSON.stringify(settings.value || {})) as AppSettings;
     if (!newS.editor) newS.editor = {};
     newS.editor.requireCtrlForLinks = !newS.editor.requireCtrlForLinks;
     settingsService.saveSettings(newS);

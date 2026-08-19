@@ -65,6 +65,24 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import * as api from '../../../services/api.client';
+import type { EntitySchema } from '../../../types/generated/EntitySchema';
+
+export interface EntityTypeItem {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+export interface EntitySelectorItem {
+  id: string;
+  name: string;
+  [key: string]: unknown;
+}
+
+export interface InsertEntityPayload {
+  type: string;
+  id: string;
+}
 
 const props = withDefaults(defineProps<{
   project: string;
@@ -75,7 +93,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'insert', payload: any): void;
+  (e: 'insert', payload: InsertEntityPayload): void;
 }>();
 
 const step = ref<'type' | 'entity'>('type');
@@ -84,12 +102,12 @@ const selectedIndex = ref(0);
 const searchInput = ref<HTMLInputElement | null>(null);
 const listEl = ref<HTMLElement | null>(null);
 
-const loadedSchemas = ref<any[]>([]);
-const selectedType = ref<any>(null);
-const entitiesList = ref<any[]>([]);
+const loadedSchemas = ref<EntitySchema[]>([]);
+const selectedType = ref<EntityTypeItem | null>(null);
+const entitiesList = ref<EntitySelectorItem[]>([]);
 
-const entityTypes = computed(() => {
-  return loadedSchemas.value.map((s: any) => ({
+const entityTypes = computed<EntityTypeItem[]>(() => {
+  return loadedSchemas.value.map((s) => ({
     id: s.type_key,
     name: s.type_name,
     icon: s.icon || '📌'
@@ -157,20 +175,19 @@ const selectCurrent = () => {
   }
 };
 
-const selectType = async (type: any) => {
+const selectType = async (type: EntityTypeItem) => {
   selectedType.value = type;
   searchQuery.value = '';
   selectedIndex.value = 0;
   
   try {
     const res = await api.getEntities(props.project, type.id);
-    entitiesList.value = res.map((r: any) => {
-      // Very basic name extraction
+    entitiesList.value = res.map((r) => {
       let name = 'Без названия';
       if (r.name) name = r.name;
-      else if (r.title) name = r.title;
-      else if (r.fio) name = r.fio;
-      return { ...r, name };
+      else if ((r as { title?: string }).title) name = (r as { title?: string }).title || 'Без названия';
+      else if ((r as { fio?: string }).fio) name = (r as { fio?: string }).fio || 'Без названия';
+      return { ...r, id: r.id || '', name };
     });
   } catch (e) {
     console.error('Failed to load entities', e);
@@ -181,8 +198,10 @@ const selectType = async (type: any) => {
   nextTick(() => searchInput.value?.focus());
 };
 
-const selectEntity = (entity: any) => {
-  emit('insert', { type: selectedType.value.id, id: entity.id });
+const selectEntity = (entity: EntitySelectorItem) => {
+  if (selectedType.value) {
+    emit('insert', { type: selectedType.value.id, id: entity.id });
+  }
   close();
 };
 

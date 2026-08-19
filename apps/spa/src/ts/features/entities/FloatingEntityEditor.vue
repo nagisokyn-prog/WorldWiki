@@ -49,11 +49,13 @@ const props = defineProps<{
   isOpen: boolean;
 }>();
 
+import type { EntitySchema } from '../../types/generated/EntitySchema';
+
 const emit = defineEmits(['close', 'focus', 'saved']);
 
 const loading = ref(true);
-const config = ref<any>(null);
-const entityData = ref<any>(null);
+const config = ref<Record<string, unknown> | null>(null);
+const entityData = ref<Record<string, unknown> | null>(null);
 
 const windowTitle = computed(() => {
   return `Редактор: ${props.entityType.charAt(0).toUpperCase() + props.entityType.slice(1)}`;
@@ -97,8 +99,8 @@ const loadData = async () => {
   try {
     // Fetch template
     const schemas = await api.getEntitySchemas(props.project);
-    const foundSchema = schemas ? schemas.find((s: any) => s.type_key === props.entityType) : null;
-    config.value = foundSchema ? foundSchema.full_schema : null;
+    const foundSchema = schemas ? schemas.find((s: EntitySchema) => s.type_key === props.entityType) : null;
+    config.value = foundSchema ? (foundSchema.full_schema as Record<string, unknown>) : null;
     
     // Fetch entity data
     entityData.value = await entityApi.getEntity(props.project, props.entityType, props.entityId);

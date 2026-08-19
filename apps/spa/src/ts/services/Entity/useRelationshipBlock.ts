@@ -1,37 +1,52 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { entityApi } from './entity.api';
 import { settingsService } from '@worldwiki/components';
 
+export interface TemplateField {
+  class: string;
+  label?: string;
+  type?: string;
+  value?: unknown;
+  placeholder?: string;
+  entityType?: string;
+  options?: Array<{ value: string; label: string }>;
+  [key: string]: unknown;
+}
+
+export interface SubConf {
+  id?: string;
+  template?: string;
+  title?: string;
+  emptyMessage?: string;
+  fields?: TemplateField[];
+  fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }>;
+  dataPath?: string;
+  [key: string]: unknown;
+}
+
 export interface TemplateConf {
+  headerTitle?: string;
   template?: string;
   bidirectionalLinkClass?: string;
-  fields?: Array<{ class?: string; entityType?: string; options?: Array<{ value: string; label: string }>; value?: unknown; [key: string]: unknown }>;
-  dynamicContainers?: Array<{ id: string; template?: string; dataPath?: string; [key: string]: unknown }>;
+  fields?: TemplateField[];
+  dynamicContainers?: SubConf[];
   foreign_type?: string;
   fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }>;
   dataPath?: string;
   id?: string;
+  isBidirectional?: boolean;
   [key: string]: unknown;
 }
 
 export interface RelationshipBlockProps {
   templateConf: TemplateConf;
-  allTemplates: Record<string, { fields?: Array<{ class?: string; value?: unknown; [key: string]: unknown }>; [key: string]: unknown }>;
-  referenceData: Record<string, Array<{ value: unknown; label: string; [key: string]: unknown }>>;
+  allTemplates: Record<string, { fields?: TemplateField[]; [key: string]: unknown }>;
+  referenceData: Record<string, Array<{ value: unknown; label: string; id?: unknown; name?: unknown; [key: string]: unknown }>>;
   item: Record<string, unknown>;
   entityType: string;
   entityId: string;
   project: string;
   sandboxMode?: boolean;
-}
-
-export interface SubConf {
-  template?: string;
-  fields?: Array<{ class?: string; value?: unknown; [key: string]: unknown }>;
-  fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }>;
-  dataPath?: string;
-  id?: string;
-  [key: string]: unknown;
 }
 
 export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event: string, ...args: unknown[]) => void) {
@@ -42,110 +57,99 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
   const foreignError = ref('');
   const foreignModified = ref(false);
 
-  const getResolvedFields = (subConf?: SubConf) => {
-    const config = subConf || props.templateConf;
-    let tpl: { fields?: Array<{ class?: string; [key: string]: unknown }> } | undefined;
-    const templateKey = typeof config.template === 'string' ? config.template : '';
-    if (config.fields && !config.template) {
-      tpl = config;
-    } else if (templateKey && props.allTemplates[templateKey]) {
-      tpl = props.allTemplates[templateKey];
-    }
-    if (!tpl || !tpl.fields) return [];
-    const overrides = config.fieldOverrides as Record<string, { hidden?: boolean; [key: string]: unknown }> | undefined;
-    if (!overrides) return tpl.fields;
-    
-    return tpl.fields.map((f) => {
-      const override = f.class && overrides ? overrides[f.class] : undefined;
-      if (override) {
-        if (override.hidden) return null;
-        return { ...f, ...override };
+  const getResolvedFields = (subConf?: SubConf | { template?: string; fields?: TemplateField[]; fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }> }) => {
+    let tpl: { fields?: TemplateField[]; fieldOverrides?: Record<string, { hidden?: boolean; [key: string]: unknown }> } | undefined;
+    if (subConf) {
+      if (subConf.fields) {
+        tpl = subConf;
+      } else if (subConf.template) {
+        const templateKey = subConf.template;
+        tpl = props.allTemplates[templateKey] || undefined;
       }
-      return f;
-    }).filter((f): f is NonNullable<typeof f> => f !== null);
+    } else {
+      tpl = props.templateConf;
+    }
+    if (!tpl) return [];
+
+    let fields = tpl.fields || [];
+    const overrides = (subConf ? subConf.fieldOverrides : props.templateConf.fieldOverrides) || {};
+    
+    if (overrides) {
+      fields = fields.map((f) => {
+        const override = f.class ? overrides[f.class] : undefined;
+        if (override) {
+          if (override.hidden) return null;
+          return { ...f, ...override };
+        }
+        return f;
+      }).filter((f): f is TemplateField => f !== null);
+    }
+    return fields;
   };
 
-  // Имя поля-ссылки (персонаж / родственник)
-  const linkClass = computed(() => props.templateConf.bidirectionalLinkClass || '');
-
-  // Подпись "моей" стороны
-  const myLabel = computed(() => {
-    const myList = props.referenceData[props.entityType] || [];
-    return myList.find((o) => String(o.value) === String(props.entityId))?.label || 'Эта запись';
+  const linkClass = computed<string>(() => {
+    if (props.templateConf.bidirectionalLinkClass) {
+      return props.templateConf.bidirectionalLinkClass;
+    }
+    const tpl = props.templateConf;
+    if (tpl.fields) {
+      const linkField = tpl.fields.find((f) => f.type === 'select' && f.entityType);
+      if (linkField && linkField.class) return linkField.class;
+    }
+    return 'character';
   });
 
-  // Подпись чужой
-  const foreignLabel = computed(() => {
-    if (!props.item[linkClass.value]) return 'Взаимное отношение';
-    const entityType = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType;
-    const list = entityType ? (props.referenceData[entityType] || []) : [];
-    return list.find((o) => String(o.value) === String(props.item[linkClass.value]))?.label || 'Выбранная запись';
+  const getDynamicContainerFields = (subConf: SubConf) => {
+    if (!subConf) return [];
+    if (subConf.fields && subConf.fields.length > 0) {
+      return subConf.fields;
+    }
+    if (subConf.template) {
+      const templateKey = subConf.template;
+      const tpl = props.allTemplates[templateKey];
+      if (tpl && tpl.fields) {
+        return tpl.fields;
+      }
+    }
+    return [];
+  };
+
+  const myLabel = computed<string>(() => {
+    const rawId = props.entityId;
+    const refList = props.referenceData[`${props.entityType}_list`] || props.referenceData[props.entityType];
+    if (refList) {
+      const found = refList.find((e) => e.value === rawId || String(e.id) === rawId);
+      if (found) return found.label || (found.name as string) || String(found.value);
+    }
+    return props.entityId || 'Текущая сущность';
   });
 
-  // Helper для синхронизации item с родителем
-  const notifyItemUpdate = (_e?: Event): void => {
-    emit('modified');
-  };
-
-  // Helper для синхронизации вложенного контейнера
-  const notifyNestedItemUpdate = (containerKeyOrEvent?: string | Event): void => {
-    const containerKey = typeof containerKeyOrEvent === 'string' ? containerKeyOrEvent : (props.templateConf.dataPath || props.templateConf.id || 'foreign_ids');
-    if (typeof containerKey === 'string' && props.item[containerKey] && Array.isArray(props.item[containerKey])) {
-      const containerBefore = props.item[containerKey] as unknown[];
-      props.item[containerKey] = [...containerBefore];
-    }
-    emit('modified');
-  };
-
-  // Обработчик для select полей
-  const onSelectChange = (fieldClass: string, val: unknown): void => {
-    props.item[fieldClass] = val;
-    notifyItemUpdate();
-  };
-
-  const makeSelectHandler = (nIdx: number) => {
-    return (e: Event) => {
-      const val = (e.target as HTMLSelectElement).value;
-      const arr = getNestedList();
-      if (arr[nIdx]) {
-        arr[nIdx].foreign_id = val;
-        notifyItemUpdate();
+  const foreignLabel = computed<string>(() => {
+    const foreignId = props.item[linkClass.value];
+    if (!foreignId) return 'Не выбрано';
+    const targetType = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType || (props.templateConf.foreign_type as string | undefined);
+    if (targetType) {
+      const refList = props.referenceData[`${targetType}_list`] || props.referenceData[targetType];
+      if (refList) {
+        const found = refList.find((e) => e.value === foreignId || String(e.id) === String(foreignId));
+        if (found) return found.label || (found.name as string) || String(found.value);
       }
-    };
-  };
-
-  const fetchForeignItem = async () => {
-    const targetId = props.item[linkClass.value];
-    
-    if (!targetId) {
-      foreignItem.value = null;
-      return;
     }
+    return String(foreignId);
+  });
 
+  const loadForeignItem = async (targetId: unknown): Promise<void> => {
     if (props.sandboxMode) {
       foreignItem.value = {
         [linkClass.value]: props.entityId,
-        динамика_отношений: []
+        'динамика_отношений': []
       };
       return;
     }
 
-    await loadForeignItem(targetId);
-  };
-
-  const onLinkChange = (fieldClass: string) => async (e: Event): Promise<void> => {
-    if (!props.item.link_data || typeof props.item.link_data !== 'object') {
-      props.item.link_data = {};
-    }
-    (props.item.link_data as Record<string, unknown>)[fieldClass] = (e.target as HTMLInputElement | HTMLSelectElement).value;
-    emit('modified');
-    await fetchForeignItem();
-  };
-
-  const loadForeignItem = async (targetId: unknown): Promise<void> => {
     const tpl = props.templateConf;
     const linkField = tpl.fields?.find((f) => f.class === linkClass.value);
-    const targetEntityType = linkField?.entityType;
+    const targetEntityType = linkField?.entityType || (tpl.foreign_type as string | undefined) || 'character';
     if (!targetEntityType) return;
 
     foreignLoading.value = true;
@@ -158,86 +162,76 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
         throw new Error(`Entity ${targetId} not found or returned null`);
       }
 
-      let relArray: Array<Record<string, unknown>> = [];
-      const tData = (targetData as { data?: Record<string, unknown> }).data || targetData;
-
-      if (tpl.dynamicContainers) {
-        for (const sub of tpl.dynamicContainers) {
-          const key = sub.dataPath || sub.id;
-          const arr = getDeepProp(tData, key);
-          if (Array.isArray(arr)) { relArray = arr as Array<Record<string, unknown>>; break; }
-        }
-      }
+      const parentDataPath = tpl.dataPath || tpl.id || tpl.template || 'characterRelationships';
+      let matched: Record<string, unknown> | null = null;
       
-      if (relArray.length === 0 && Array.isArray(tData.characterRelationships)) {
-        relArray = tData.characterRelationships as Array<Record<string, unknown>>;
+      const rootObj = (targetData.data && typeof targetData.data === 'object') ? targetData.data as Record<string, unknown> : targetData;
+      const targetArr = (parentDataPath ? (rootObj[parentDataPath] as unknown[]) : null) || [];
+      const backLinkClass = tpl.bidirectionalLinkClass || linkClass.value;
+
+      if (Array.isArray(targetArr)) {
+        const rawMyId = props.entityId.replace(/^[^:]+:/, '');
+        matched = (targetArr.find((it) => {
+          if (!it || typeof it !== 'object') return false;
+          const val = (it as Record<string, unknown>)[backLinkClass];
+          return val === props.entityId || val === rawMyId || String(val).endsWith(`:${rawMyId}`);
+        }) as Record<string, unknown>) || null;
       }
 
-      let matched: Record<string, unknown> | undefined = relArray.find((r) => String(r[linkClass.value]) === String(props.entityId));
-      
       if (!matched) {
-        const rawEntityId = String(props.entityId).split(':').pop() || String(props.entityId);
-        matched = relArray.find((r) => {
-          const rawTargetId = String(r[linkClass.value]).split(':').pop() || String(r[linkClass.value]);
-          return rawTargetId === rawEntityId;
+        matched = {
+          [backLinkClass]: props.entityId,
+          _autoCreatedMirror: true
+        };
+        tpl.fields?.forEach((f) => {
+          if (f.class && f.class !== backLinkClass) {
+            matched![f.class] = f.type === 'number' ? 0 : '';
+          }
         });
       }
-      
-      if (!matched) {
-        matched = { [linkClass.value]: props.entityId };
-        
-        if (props.templateConf.dynamicContainers) {
-          props.templateConf.dynamicContainers.forEach((sub) => {
-            const key = sub.dataPath || sub.id;
-            (matched as Record<string, unknown>)[key] = [];
-          });
-        }
-        
-        if (matched['динамика_отношений'] !== undefined && matched['relationshipStates'] !== undefined) {
+
+      // Ensure dynamic container arrays exist
+      if (tpl.dynamicContainers) {
+        tpl.dynamicContainers.forEach((sub) => {
+          const subPath = sub.dataPath || sub.id || sub.template;
+          if (subPath && matched && matched[subPath] === undefined) {
+            matched[subPath] = [];
+          }
+        });
+        if (matched && matched['динамика_отношений'] !== undefined && matched['relationshipStates'] !== undefined) {
           delete matched['relationshipStates'];
         }
       }
 
       const deepCopied = JSON.parse(JSON.stringify(matched)) as Record<string, unknown>;
       foreignItem.value = deepCopied;
-    } catch(e) {
-      foreignError.value = 'Ошибка загрузки: ' + String(e);
+    } catch (err: unknown) {
+      console.warn('[useRelationshipBlock] Failed to load foreign item:', err);
+      foreignError.value = 'Ошибка загрузки: ' + String(err);
+      foreignItem.value = null;
     } finally {
       foreignLoading.value = false;
     }
   };
 
-  watch(() => props.item[linkClass.value], (newVal) => {
-    if (newVal && !foreignItem.value) {
-      loadForeignItem(String(newVal));
+  const fetchForeignItem = async (): Promise<void> => {
+    const targetId = props.item[linkClass.value];
+    if (!targetId) {
+      foreignItem.value = null;
+      return;
     }
-  }, { immediate: true });
+    await loadForeignItem(targetId);
+  };
 
-  watch(foreignItem, (val) => {
-    if (val) {
-      const cleanedData = { ...(val || {}) };
-      if (cleanedData['динамика_отношений'] !== undefined) {
-        delete cleanedData['relationshipStates'];
-      }
-      if (cleanedData['семейные_отношения'] !== undefined) {
-        delete cleanedData['familyRelationshipStates'];
-      }
-      
-      const entityTypeVal = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType;
-      const targetEntityId = String(props.item[linkClass.value]);
-      
-      emit('foreign-update', {
-        entityType: entityTypeVal,
-        entityId: targetEntityId,
-        data: cleanedData,
-        linkClass: linkClass.value,
-        backLinkValue: props.entityId
-      });
-    }
-  }, { deep: true, flush: 'sync' });
+  const onLinkChange = (fieldClass: string) => async (e: Event): Promise<void> => {
+    const val = (e.target as HTMLInputElement | HTMLSelectElement).value;
+    props.item[fieldClass] = val;
+    emit('modified');
+    await loadForeignItem(val);
+  };
 
-  const getOptions = (field?: { options?: Array<{ value: string; label: string }>; entityType?: string }): Array<{ value: unknown; label: string }> => {
-    if (field?.options?.length) return field.options;
+  const getOptions = (field: TemplateField) => {
+    if (field?.options) return field.options;
     const type = field?.entityType || (props.templateConf.foreign_type as string | undefined);
     if (type) {
       if (props.referenceData[`${type}_list`]) return props.referenceData[`${type}_list`];
@@ -246,64 +240,77 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     return [];
   };
 
-  const getNestedList = (sourceItem?: Record<string, unknown>, subConf?: SubConf): Array<Record<string, unknown>> => {
+  const getNestedList = (sourceItem?: Record<string, unknown> | null, subConf?: SubConf): Array<Record<string, unknown>> => {
     const item = sourceItem || props.item;
-    const config = subConf || props.templateConf;
-    const key = config.dataPath || config.id || 'foreign_ids';
-    const val = getDeepProp(item, key);
-    return Array.isArray(val) ? (val as Array<Record<string, unknown>>) : [];
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
+    if (!targetSubConf) return [];
+    const path = targetSubConf.dataPath || targetSubConf.id || 'custom_dynamics';
+    if (!path) return [];
+    if (!item[path]) item[path] = [];
+    return item[path] as Array<Record<string, unknown>>;
   };
 
-  const getDynamicContainerFields = (subConf: SubConf): Array<{ class?: string; value?: unknown; [key: string]: unknown }> => {
-    if (subConf.fields && subConf.fields.length > 0) return subConf.fields;
-    if (subConf.template && props.allTemplates[subConf.template]) {
-      return props.allTemplates[subConf.template].fields || [];
-    }
-    return [];
-  };
-
-  const addNestedItem = (sourceItemOrEvent?: Record<string, unknown> | Event, subConf?: SubConf): void => {
-    const sourceItem: Record<string, unknown> = (sourceItemOrEvent instanceof Event) ? props.item : ((sourceItemOrEvent as Record<string, unknown>) || props.item);
-    const config = subConf || props.templateConf;
-    const key = config.dataPath || config.id || 'foreign_ids';
-    
-    if (!sourceItem[key]) {
-      sourceItem[key] = [];
-    }
-    
-    let tpl: { fields?: Array<{ class?: string; value?: unknown }> } | undefined;
-    const templateKey = typeof config.template === 'string' ? config.template : '';
-    if (config.fields && !config.template) {
-      tpl = config;
-    } else if (templateKey && props.allTemplates[templateKey]) {
-      tpl = props.allTemplates[templateKey];
-    }
-    const newEntry: Record<string, unknown> = {};
-    tpl?.fields?.forEach((f) => { if (f.class) newEntry[f.class] = f.value ?? ''; });
-    
-    (sourceItem[key] as Array<Record<string, unknown>>).push(newEntry);
-    notifyItemUpdate();
-  };
-
-  const removeNestedItem = (nIdx: number, sourceItem?: Record<string, unknown>, subConf?: SubConf): void => {
+  const addNestedItem = (sourceItem?: Record<string, unknown> | null, subConf?: SubConf) => {
     const item = sourceItem || props.item;
-    const config = subConf || props.templateConf;
-    const key = config.dataPath || config.id || 'foreign_ids';
-    const list = item[key];
-    if (Array.isArray(list)) {
-      list.splice(nIdx, 1);
-      notifyItemUpdate();
-    }
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
+    if (!targetSubConf) return;
+    const path = targetSubConf.dataPath || targetSubConf.id || 'custom_dynamics';
+    if (!path) return;
+    if (!item[path]) item[path] = [];
+    
+    const newItem: Record<string, unknown> = {};
+    const fields = getResolvedFields(targetSubConf);
+    fields.forEach((f) => {
+      if (f.class) {
+        newItem[f.class] = f.value ?? (f.type === 'number' ? 0 : '');
+      }
+    });
+
+    (item[path] as Array<Record<string, unknown>>).push(newItem);
+    emit('item-updated');
+    emit('modified');
   };
 
-  const getDeepProp = (obj: Record<string, unknown> | null | undefined, path: string): unknown => {
-    if (!path || !obj) return undefined;
-    return path.split('.').reduce((cur: unknown, k: string) => (cur != null && typeof cur === 'object' ? (cur as Record<string, unknown>)[k] : undefined), obj as unknown);
+  const removeNestedItem = (idx: number, sourceItem?: Record<string, unknown> | null, subConf?: SubConf) => {
+    const item = sourceItem || props.item;
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
+    if (!targetSubConf) return;
+    const path = targetSubConf.dataPath || targetSubConf.id || 'custom_dynamics';
+    if (!path) return;
+    if (!item[path]) return;
+    (item[path] as Array<Record<string, unknown>>).splice(idx, 1);
+    emit('item-updated');
+    emit('modified');
   };
 
   const updateItemField = (fieldClass: string, val: unknown) => {
     props.item[fieldClass] = val;
-    notifyItemUpdate();
+    emit('modified');
+    emit('item-updated');
+  };
+
+  const onSelectChange = (fieldClass: string, val: unknown) => {
+    updateItemField(fieldClass, val);
+  };
+
+  const makeSelectHandler = (index: number, subConf?: SubConf) => {
+    const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0];
+    const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
+    return (e: Event) => {
+      const list = props.item[path] as Array<Record<string, unknown>> | undefined;
+      if (list && list[index]) {
+        const val = (e.target as HTMLSelectElement | HTMLInputElement)?.value;
+        const linkField = getResolvedFields(targetSubConf).find(f => f.type === 'select')?.class || 'foreign_id';
+        list[index][linkField] = val;
+        emit('item-updated');
+        emit('modified');
+      }
+    };
+  };
+
+  const notifyNestedItemUpdate = (_path?: string) => {
+    emit('item-updated');
+    emit('modified');
   };
 
   return {
@@ -315,18 +322,18 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     linkClass,
     myLabel,
     foreignLabel,
-    getResolvedFields,
-    notifyItemUpdate,
-    notifyNestedItemUpdate,
-    onSelectChange,
-    makeSelectHandler,
+    fetchForeignItem,
     onLinkChange,
+    loadForeignItem,
     getOptions,
+    getResolvedFields,
     getNestedList,
-    getDynamicContainerFields,
     addNestedItem,
     removeNestedItem,
-    getDeepProp,
-    updateItemField
+    getDynamicContainerFields,
+    updateItemField,
+    onSelectChange,
+    makeSelectHandler,
+    notifyNestedItemUpdate
   };
 }

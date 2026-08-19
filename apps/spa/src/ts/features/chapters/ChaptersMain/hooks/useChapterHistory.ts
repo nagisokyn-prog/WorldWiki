@@ -1,14 +1,41 @@
 import { ref, shallowRef, computed, type Ref } from 'vue';
-import * as api from '../../../../services/api.client';;
+import * as api from '../../../../services/api.client';
+import type { Chapter } from '../../../../types/generated/Chapter';
 
-export function useChapterHistory(project: string, currentChapterId: Ref<string | undefined>, currentChapter: Ref<any>) {
+export interface ChapterRevisionContent {
+  content?: string;
+  title?: string;
+  footnotes?: Record<string, { id: string; text: string }>;
+  attributes?: {
+    content?: string;
+    title?: string;
+    footnotes?: Record<string, { id: string; text: string }>;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export interface ChapterRevision {
+  id: string;
+  created_at: string;
+  formattedDate?: string;
+  is_pinned?: boolean;
+  content: ChapterRevisionContent;
+  [key: string]: unknown;
+}
+
+export function useChapterHistory(
+  project: string,
+  currentChapterId: Ref<string | undefined>,
+  currentChapter: Ref<Chapter | null>
+) {
   const showHistory = ref(false);
   const isLoadingHistory = ref(false);
-  const revisions = shallowRef<any[]>([]);
+  const revisions = shallowRef<ChapterRevision[]>([]);
   const previewingRevId = ref<string | null>(null);
   const maxSaves = ref(20);
 
-  const originalData = ref<{ content: any; title: string; footnotes: any } | null>(null);
+  const originalData = ref<{ content: string; title: string; footnotes: unknown } | null>(null);
 
   const toggleHistory = () => {
     showHistory.value = !showHistory.value;
@@ -22,7 +49,7 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
     try {
       isLoadingHistory.value = true;
       const history = await api.getChapterRevisions(project, currentChapterId.value) || [];
-      revisions.value = history.map((rev: any) => ({
+      revisions.value = (history as ChapterRevision[]).map((rev) => ({
         ...rev,
         formattedDate: new Date(rev.created_at).toLocaleString()
       }));
@@ -33,7 +60,7 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
     }
   };
 
-  const previewHistory = (rev: any) => {
+  const previewHistory = (rev: ChapterRevision) => {
     if (!currentChapter.value) return;
     if (previewingRevId.value === rev.id) {
       if (originalData.value) {
@@ -46,24 +73,22 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
       return;
     }
 
-    console.log('[useChapterHistory] previewHistory - rev:', rev);
     if (!originalData.value) {
       originalData.value = {
-        content: currentChapter.value.content,
-        title: currentChapter.value.title,
+        content: currentChapter.value.content || '',
+        title: currentChapter.value.title || '',
         footnotes: JSON.parse(JSON.stringify(currentChapter.value.footnotes || {}))
       };
     }
 
-    const snap = rev.content;
-    console.log('[useChapterHistory] previewHistory - snap:', snap);
+    const snap = rev.content || {};
     currentChapter.value.content = snap.content || snap.attributes?.content || '';
     currentChapter.value.title = snap.title || snap.attributes?.title || '';
     currentChapter.value.footnotes = snap.footnotes || snap.attributes?.footnotes || {};
     previewingRevId.value = rev.id;
   };
 
-  const togglePin = async (rev: any) => {
+  const togglePin = async (rev: ChapterRevision) => {
     try {
       rev.is_pinned = !rev.is_pinned;
       await api.toggleChapterHistoryPin(rev.id, rev.is_pinned);
@@ -73,12 +98,12 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
     }
   };
 
-  const getDiffSummary = (current: any, previous: any) => {
+  const getDiffSummary = (current: ChapterRevision, previous: ChapterRevision | undefined) => {
     if (!previous) return 'Первая версия';
-    const currSnap = current.content.attributes || current.content;
-    const prevSnap = previous.content.attributes || previous.content;
+    const currSnap = current.content?.attributes || current.content || {};
+    const prevSnap = previous.content?.attributes || previous.content || {};
 
-    const changes = [];
+    const changes: string[] = [];
     if (currSnap.title !== prevSnap.title) changes.push('Название');
     if (currSnap.content !== prevSnap.content) changes.push('Текст');
     if (JSON.stringify(currSnap.footnotes) !== JSON.stringify(prevSnap.footnotes)) changes.push('Сноски');
@@ -89,25 +114,34 @@ export function useChapterHistory(project: string, currentChapterId: Ref<string 
     return 'Нет визуальных изменений';
   };
 
-  const changedFields = computed(() => {
+  const changedFields = computed<string[]>(() => {
     if (!previewingRevId.value || !originalData.value) return [];
 
     const currentSnap = revisions.value.find(r => r.id === previewingRevId.value);
     if (!currentSnap) return [];
 
-    const snapData = currentSnap.content.attributes || currentSnap.content;
+    const snapData = currentSnap.content?.attributes || currentSnap.content || {};
     const original = originalData.value;
 
-    const changes = [];
-    if (snapData.title !== original.title) changes.push('title');
-    if (snapData.content !== original.content) changes.push('content');
-    if (JSON.stringify(snapData.footnotes) !== JSON.stringify(original.footnotes)) changes.push('footnotes');
+    const changed: string[] = [];
+    if (snapData.title !== original.title) changed.push('title');
+    if (snapData.content !== original.content) changed.push('content');
+    if (JSON.stringify(snapData.footnotes) !== JSON.stringify(original.footnotes)) changed.push('footnotes');
 
-    return changes;
+    return changed;
   });
 
   return {
-    showHistory, isLoadingHistory, revisions, previewingRevId, maxSaves, originalData,
-    toggleHistory, loadHistory, previewHistory, togglePin, getDiffSummary, changedFields
+    showHistory,
+    isLoadingHistory,
+    revisions,
+    previewingRevId,
+    maxSaves,
+    toggleHistory,
+    loadHistory,
+    previewHistory,
+    togglePin,
+    getDiffSummary,
+    changedFields
   };
 }

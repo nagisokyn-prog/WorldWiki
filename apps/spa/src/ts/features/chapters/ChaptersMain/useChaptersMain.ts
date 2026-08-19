@@ -5,8 +5,30 @@ import { useChapterHistory } from './hooks/useChapterHistory';
 import { useChapterLayout } from './hooks/useChapterLayout';
 import { useFloatingEntities } from './hooks/useFloatingEntities';
 import { useTimelineStore } from '../../../stores/timeline.store';
+import type { ExportPayload } from '../Export/useExportModal';
+import type { Chapter } from '../../../types/generated/Chapter';
 
-export function useChaptersMain(props: any, emit: any) {
+export interface ChapterTreeNode {
+  id?: string;
+  title?: string;
+  [key: string]: unknown;
+}
+
+export interface ActiveTreeNode {
+  type: string;
+  node: ChapterTreeNode;
+}
+
+export interface ChaptersMainProps {
+  project: string;
+  controlledChapterId?: string;
+  activeTreeNode?: ActiveTreeNode;
+}
+
+export function useChaptersMain(
+  props: ChaptersMainProps,
+  emit: (event: string, ...args: unknown[]) => void
+) {
   const store = useChapterStore();
   const { 
     loading, chapters, hierarchy, currentChapterId, currentChapter, 
@@ -23,18 +45,26 @@ export function useChaptersMain(props: any, emit: any) {
   const layoutHook = useChapterLayout();
   const floatingHook = useFloatingEntities(props.project);
 
-  const localActiveTreeNode = ref<{ type: string; node: any } | undefined>(undefined);
-  const chapterTreeRef = ref<any>(null);
+  const localActiveTreeNode = ref<ActiveTreeNode | undefined>(undefined);
+  const chapterTreeRef = ref<{ load: () => Promise<void> } | null>(null);
   
-  let saveTimeout: any = null;
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  const handleGlobalChapterRename = (e: any) => {
-    const { id, title } = e.detail;
+  const handleGlobalChapterRename = (e: Event) => {
+    const { id, title } = (e as CustomEvent<{ id: string; title: string }>).detail;
     if (currentChapter.value && String(currentChapter.value.id) === String(id)) {
       if (currentChapter.value.title !== title) {
         currentChapter.value.title = title;
       }
     }
+  };
+
+  const triggerSave = () => {
+    saveChapter(props.project, emit);
+  };
+
+  const reloadHierarchy = () => {
+    loadChapters(props.project);
   };
 
   onMounted(async () => {
@@ -46,21 +76,17 @@ export function useChaptersMain(props: any, emit: any) {
       await openChapter(props.project, props.controlledChapterId);
     }
     
-    document.addEventListener('ww:trigger-chapter-save', triggerSave as any);
-    document.addEventListener('ww:hierarchy-changed', reloadHierarchy as any);
-    document.addEventListener('ww:chapter-renamed', handleGlobalChapterRename as any);
+    document.addEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
+    document.addEventListener('ww:hierarchy-changed', reloadHierarchy as EventListener);
+    document.addEventListener('ww:chapter-renamed', handleGlobalChapterRename as EventListener);
   });
 
   onUnmounted(() => {
-    document.removeEventListener('ww:trigger-chapter-save', triggerSave as any);
-    document.removeEventListener('ww:hierarchy-changed', reloadHierarchy as any);
-    document.removeEventListener('ww:chapter-renamed', handleGlobalChapterRename as any);
+    document.removeEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
+    document.removeEventListener('ww:hierarchy-changed', reloadHierarchy as EventListener);
+    document.removeEventListener('ww:chapter-renamed', handleGlobalChapterRename as EventListener);
     if (saveTimeout) clearTimeout(saveTimeout);
   });
-
-  const reloadHierarchy = () => {
-    loadChapters(props.project);
-  }
 
   watch(() => props.controlledChapterId, async (newId) => {
     if (newId && newId !== currentChapterId.value) {
@@ -80,10 +106,6 @@ export function useChaptersMain(props: any, emit: any) {
     }
   }, { immediate: true });
 
-  const triggerSave = () => {
-    saveChapter(props.project, emit);
-  };
-
   const markUnsaved = () => {
     hasUnsavedChanges.value = true;
     emit('chapter-unsaved');
@@ -91,11 +113,11 @@ export function useChaptersMain(props: any, emit: any) {
     saveTimeout = setTimeout(() => saveChapter(props.project, emit), 2000);
   };
 
-  const onTreeNodeSelect = (nodeData: { type: string; node: any }) => {
+  const onTreeNodeSelect = (nodeData: ActiveTreeNode) => {
     localActiveTreeNode.value = nodeData;
   };
 
-  const openChapterFromTree = async (ch: any) => {
+  const openChapterFromTree = async (ch: ChapterTreeNode) => {
     localActiveTreeNode.value = { type: 'chapter', node: ch };
     emit('open-chapter-as-tab', ch);
   };
@@ -105,20 +127,20 @@ export function useChaptersMain(props: any, emit: any) {
     await chapterTreeRef.value?.load();
   };
   
-  const handleRenameChapter = async (chapter: any, newTitle: string) => {
-    await onRenameChapter(props.project, chapter, newTitle);
+  const handleRenameChapter = async (chapter: Chapter | ChapterTreeNode, newTitle: string) => {
+    await onRenameChapter(props.project, chapter as Chapter, newTitle);
     await chapterTreeRef.value?.load();
   };
   
-  const handleDeleteChapter = (original: any, multi: boolean) => {
-    if (multi) return;
+  const handleDeleteChapter = (original: { id?: string | null }, multi: boolean) => {
+    if (multi || !original.id) return;
     deleteChapter(props.project, original.id).then(() => {
         chapterTreeRef.value?.load();
         localActiveTreeNode.value = undefined;
     });
   };
 
-  const handleExport = async (exportData: any) => {
+  const handleExport = async (exportData: ExportPayload) => {
     const { appAlert } = await import('@worldwiki/components');
     appAlert(`Начат экспорт ${exportData.chapterIds.length} глав в формат ${exportData.format}...`);
   };
@@ -138,12 +160,7 @@ export function useChaptersMain(props: any, emit: any) {
     ...layoutHook,
     ...floatingHook,
     triggerSave, markUnsaved, onTreeNodeSelect, openChapterFromTree,
-    createChapterIn, createNewChapter: async (a?: string, v?: string) => { await createNewChapter(props.project, a, v); await chapterTreeRef.value?.load(); },
-    onRenameChapter: handleRenameChapter, onDeleteChapter: handleDeleteChapter, deleteChapter,
-    ...floatingHook,
-    handleExport, handleScrollChange, saveChapter: () => saveChapter(props.project, emit),
-    loadChapters: () => loadChapters(props.project), loadHierarchy: reloadHierarchy,
-    openChapter: (id: string) => openChapter(props.project, id),
-    handleGlobalChapterRename
+    createChapterIn, handleRenameChapter, handleDeleteChapter, handleExport,
+    handleScrollChange
   };
 }

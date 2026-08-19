@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import * as api from '../../services/api.client';
 
 const YANDEX_CLIENT_ID = '200295d252b44387a21ec64a80d7d124';
@@ -9,7 +10,7 @@ export interface YandexBackupFile {
     size: number;
 }
 
-export function useCloudSyncModal(emit: any) {
+export function useCloudSyncModal(emit: (event: string, ...args: unknown[]) => void) {
     const isOpen = ref(false);
     const syncMode = ref<'import' | 'export'>('export');
     const yandexToken = ref<string | null>(null);
@@ -30,13 +31,13 @@ export function useCloudSyncModal(emit: any) {
         if (!yandexToken.value) return;
         isLoadingBackups.value = true;
         try {
-            const backups = await (window as any).__TAURI__.core.invoke('list_yandex_disk_backups', {
+            const backups = await invoke<YandexBackupFile[]>('list_yandex_disk_backups', {
                 token: yandexToken.value
             });
             availableBackups.value = backups;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Failed to list backups:', err);
-            const errMsg = typeof err === 'string' ? err : err.message;
+            const errMsg = err instanceof Error ? err.message : String(err);
             if (errMsg && errMsg.includes('401')) {
                 disconnectYandex();
             }
@@ -103,7 +104,7 @@ export function useCloudSyncModal(emit: any) {
         authError.value = '';
 
         try {
-            const token = await (window as any).__TAURI__.core.invoke('exchange_yandex_token', { code: authCode.value.trim() });
+            const token = await invoke<string>('exchange_yandex_token', { code: authCode.value.trim() });
             localStorage.setItem('yandex_disk_token', token);
             yandexToken.value = token;
             showAuthCodeInput.value = false;
@@ -113,9 +114,9 @@ export function useCloudSyncModal(emit: any) {
             if (syncMode.value === 'import') {
                 fetchBackupsList();
             }
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            authError.value = typeof err === 'string' ? err : 'Ошибка сети при проверке кода';
+            authError.value = err instanceof Error ? err.message : (typeof err === 'string' ? err : 'Ошибка сети при проверке кода');
         } finally {
             isLoading.value = false;
         }
@@ -131,16 +132,16 @@ export function useCloudSyncModal(emit: any) {
             const backupFilePath = await api.createCloudBackup();
             emit('toast', { text: 'Бекап создан, отправляем в облако...', type: 'info' });
 
-            await (window as any).__TAURI__.core.invoke('upload_to_yandex_disk', {
+            await invoke<void>('upload_to_yandex_disk', {
                 token: yandexToken.value,
                 filePath: backupFilePath
             });
 
             emit('toast', { text: 'Бекап успешно сохранен в Яндекс.Диск!', type: 'success' });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            const errMsg = typeof err === 'string' ? err : err.message;
+            const errMsg = err instanceof Error ? err.message : String(err);
             if (errMsg && (errMsg.includes('Token expired') || errMsg.includes('401'))) disconnectYandex();
             emit('toast', { text: `Ошибка: ${errMsg}`, type: 'error' });
         } finally {
@@ -160,7 +161,7 @@ export function useCloudSyncModal(emit: any) {
         try {
             emit('toast', { text: 'Скачивание и восстановление бекапа...', type: 'info' });
             
-            await (window as any).__TAURI__.core.invoke('download_and_restore_yandex', {
+            await invoke<void>('download_and_restore_yandex', {
                 token: yandexToken.value,
                 fileName: fileName
             });
@@ -170,9 +171,9 @@ export function useCloudSyncModal(emit: any) {
                 window.location.reload();
             }, 1500);
             
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            const errMsg = typeof err === 'string' ? err : err.message;
+            const errMsg = err instanceof Error ? err.message : String(err);
             if (errMsg && errMsg.includes('401')) disconnectYandex();
             emit('toast', { text: `Ошибка восстановления: ${errMsg}`, type: 'error' });
         } finally {

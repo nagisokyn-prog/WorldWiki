@@ -126,7 +126,7 @@ describe('useTiptapEditor', () => {
   it('handles updateTitle and handleScroll correctly', () => {
     const tiptap = useTiptapEditor(props, emit);
 
-    const inputEvent = { target: { value: 'New Title' } } as any;
+    const inputEvent = { target: { innerText: 'New Title', value: 'New Title' } } as any;
     tiptap.updateTitle(inputEvent);
     expect(emit).toHaveBeenCalledWith('update:title', 'New Title');
     expect(emit).toHaveBeenCalledWith('change');

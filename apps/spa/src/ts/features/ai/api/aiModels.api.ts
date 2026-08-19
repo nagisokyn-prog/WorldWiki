@@ -24,16 +24,34 @@ export const aiModelsApi = {
       throw new Error(`OpenRouter API error: ${response.status} - ${await response.text()}`);
     }
     
-    const json = await response.json();
-    const res: AiModelInfo[] = json.data.map((m: any) => ({
+    interface OpenRouterModel {
+      id: string;
+      name?: string;
+      context_length?: number;
+      top_provider?: {
+        context_length?: number;
+        max_completion_tokens?: number;
+      };
+      pricing?: {
+        prompt?: string | number;
+        completion?: string | number;
+      };
+      architecture?: {
+        modality?: string;
+        tokenizer?: string;
+      };
+    }
+
+    const json = await response.json() as { data: OpenRouterModel[] };
+    const res: AiModelInfo[] = json.data.map((m) => ({
       value: m.id,
       label: m.id,
-      description: m.name,
+      description: m.name || m.id,
       context_length: m.context_length || m.top_provider?.context_length,
       max_completion_tokens: m.top_provider?.max_completion_tokens,
       pricing: m.pricing ? {
-        prompt: m.pricing.prompt,
-        completion: m.pricing.completion
+        prompt: String(m.pricing.prompt ?? '0'),
+        completion: String(m.pricing.completion ?? '0')
       } : undefined,
       capabilities: m.architecture ? {
         vision: m.architecture.modality?.includes('image') || false,

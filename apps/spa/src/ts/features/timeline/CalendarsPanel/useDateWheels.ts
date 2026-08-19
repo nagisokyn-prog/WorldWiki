@@ -2,18 +2,33 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 import { settingsService } from '@worldwiki/components';
+import type { AppSettings } from '@worldwiki/components';
+import type { CalendarData, CalendarEra, CalendarMonth } from '../../../services/Calendars/calendar.types';
 
-export function useDateWheels(props: any, emit: any) {
+export interface DateWheelsModelValue {
+  эпоха_ключ?: number;
+  год?: number;
+  месяц?: number;
+  день?: number;
+  [key: string]: unknown;
+}
+
+export interface DateWheelsProps {
+  project: string;
+  modelValue?: DateWheelsModelValue | null;
+}
+
+export function useDateWheels(props: DateWheelsProps, emit: (event: 'update:modelValue', val: unknown) => void) {
     const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
-    const calendar = ref<any>(null);
+    const calendar = ref<CalendarData | null>(null);
 
     const currentEraIdx = ref(0);
     const currentYear = ref(1);
     const currentMonthIdx = ref(0);
     const currentDay = ref(1);
 
-    const eras = computed(() => calendar.value?.эпохи || []);
-    const months = computed(() => calendar.value?.месяцы || []);
+    const eras = computed<CalendarEra[]>(() => calendar.value?.эпохи || []);
+    const months = computed<CalendarMonth[]>(() => calendar.value?.месяцы || []);
 
     const currentEra = computed(() => eras.value[currentEraIdx.value] || eras.value[0] || {
         год_начала: 1, год_конца: 9999, название: ''
@@ -23,7 +38,7 @@ export function useDateWheels(props: any, emit: any) {
     const yearInputMode = computed(() => yearRange.value > 500);
 
     const eraOptions = computed(() => {
-        return eras.value.map((e: any, i: number) => ({
+        return eras.value.map((e: CalendarEra, i: number) => ({
             value: i, label: e.название || `Эпоха ${i + 1}`
         }));
     });
@@ -38,7 +53,7 @@ export function useDateWheels(props: any, emit: any) {
     });
 
     const monthOptions = computed(() => {
-        return months.value.map((m: any, i: number) => ({
+        return months.value.map((m: CalendarMonth, i: number) => ({
             value: i, label: m.название || `Месяц ${i + 1}`
         }));
     });
@@ -138,7 +153,7 @@ export function useDateWheels(props: any, emit: any) {
 
         syncFromProps();
 
-        settingsService.onChange(s => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
+        settingsService.onChange((s: AppSettings) => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
     });
 
     watch(() => props.modelValue, (newVal) => {

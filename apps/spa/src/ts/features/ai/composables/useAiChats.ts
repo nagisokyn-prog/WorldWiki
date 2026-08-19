@@ -21,7 +21,7 @@ export function useAiChats(currentProject: string) {
   const loadChats = async () => {
     isLoading.value = true;
     try {
-      const data = await invoke<any[]>('get_chat_tree', { projectId: currentProject });
+      const data = await invoke<AiChat[]>('get_chat_tree', { projectId: currentProject });
       chats.value = data.map(c => ({
         id: c.id,
         title: c.title,
@@ -84,7 +84,7 @@ export function useAiChats(currentProject: string) {
 
   const branchChat = async (messageId: string, newTitle: string = 'Новая ветка') => {
     try {
-      const newChat = await invoke<any>('fork_chat', {
+      const newChat = await invoke<{ id: string }>('fork_chat', {
         projectId: currentProject,
         messageId,
         newTitle

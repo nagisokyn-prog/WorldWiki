@@ -1,6 +1,31 @@
 import { ref } from 'vue';
 
-export function useExportModal(props: any, emit: any) {
+export interface ExportChapterItem {
+    id?: string | null;
+    title?: string | null;
+    [key: string]: unknown;
+}
+
+export interface ExportPayload {
+    format: string;
+    chapterIds: string[];
+    options: {
+        addTOC: boolean;
+        addPageNumbers: boolean;
+        includeMetadata: boolean;
+    };
+}
+
+export interface ExportModalProps {
+    isOpen: boolean;
+    allChapters?: ExportChapterItem[];
+    currentChapterId?: string | null;
+}
+
+export function useExportModal(
+    props: ExportModalProps,
+    emit: (event: 'close' | 'export', ...args: unknown[]) => void
+) {
     const format = ref('txt');
     const selectionMode = ref('current');
     const selectedChapters = ref<string[]>([]);
@@ -10,7 +35,7 @@ export function useExportModal(props: any, emit: any) {
     const loading = ref(false);
 
     const selectAll = () => {
-        selectedChapters.value = props.allChapters.map((c: any) => c.id);
+        selectedChapters.value = (props.allChapters || []).map((c) => String(c.id || '')).filter(Boolean);
     };
 
     const clearSelection = () => {
@@ -22,7 +47,7 @@ export function useExportModal(props: any, emit: any) {
         if (selectionMode.value === 'current' && props.currentChapterId) {
             targets = [props.currentChapterId];
         } else if (selectionMode.value === 'all') {
-            targets = props.allChapters.map((c: any) => c.id);
+            targets = (props.allChapters || []).map((c) => String(c.id || '')).filter(Boolean);
         } else {
             targets = [...selectedChapters.value];
         }
@@ -34,7 +59,7 @@ export function useExportModal(props: any, emit: any) {
         }
 
         loading.value = true;
-        emit('export', {
+        const payload: ExportPayload = {
             format: format.value,
             chapterIds: targets,
             options: {
@@ -42,7 +67,8 @@ export function useExportModal(props: any, emit: any) {
                 addPageNumbers: addPageNumbers.value,
                 includeMetadata: includeMetadata.value
             }
-        });
+        };
+        emit('export', payload);
 
         setTimeout(() => {
             loading.value = false;

@@ -1,6 +1,17 @@
 import { computed } from 'vue';
 
-export function useSemanticParagraph(props: any) {
+export interface SemanticParagraphProps {
+    node: {
+        attrs: {
+            semanticTag?: string;
+            [key: string]: unknown;
+        };
+        [key: string]: unknown;
+    };
+    updateAttributes: (attrs: Record<string, unknown>) => void;
+}
+
+export function useSemanticParagraph(props: SemanticParagraphProps) {
     const tags = ['desc', 'dialog', 'thought'];
     const tagLabels: Record<string, { label: string, title: string }> = {
         'desc': { label: '!о', title: 'Описание' },

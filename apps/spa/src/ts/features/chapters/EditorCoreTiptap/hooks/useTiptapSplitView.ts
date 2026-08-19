@@ -1,6 +1,19 @@
 import { ref, computed } from 'vue';
+import type { Ref, ShallowRef } from 'vue';
+import type { Editor, JSONContent } from '@tiptap/vue-3';
 
-export function useTiptapSplitView(editor: any, editorUpdateKey: any) {
+export interface DocumentBlock {
+  type: string;
+  text: string;
+  level?: number;
+  semanticTag?: string;
+  pIndex?: number;
+}
+
+export function useTiptapSplitView(
+  editor: ShallowRef<Editor | null | undefined> | Ref<Editor | null | undefined>,
+  editorUpdateKey: Ref<number>
+) {
   const showStructure = ref(localStorage.getItem('split-view-show-structure') !== 'false');
   const leftPanelWidth = ref(40);
   const rightPanelWidth = ref(35);
@@ -67,25 +80,25 @@ export function useTiptapSplitView(editor: any, editorUpdateKey: any) {
     document.addEventListener('mouseup', onMouseUp);
   };
 
-  const documentStructure = computed(() => {
+  const documentStructure = computed<DocumentBlock[]>(() => {
     void editorUpdateKey.value;
     if (!editor.value) return [];
     const doc = editor.value.getJSON();
-    const blocks: Array<{ type: string; text: string; level?: number; semanticTag?: string; pIndex?: number }> = [];
+    const blocks: DocumentBlock[] = [];
     
     let pIndexCounter = 0;
     
-    function traverse(node: any, depth = 0) {
+    function traverse(node: JSONContent | JSONContent[], depth = 0) {
       if (!node) return;
       
       if (Array.isArray(node)) {
-        node.forEach((n: any) => traverse(n, depth));
+        node.forEach((n) => traverse(n, depth));
       } else if (node.type) {
         let text = '';
         const type = node.type;
         
         if (node.content) {
-          node.content.forEach((c: any) => {
+          node.content.forEach((c: JSONContent) => {
             if (c.type === 'text' && c.text) text += c.text;
           });
         }
@@ -94,9 +107,9 @@ export function useTiptapSplitView(editor: any, editorUpdateKey: any) {
         if (text.length === 60) text += '...';
         
         if (type === 'heading') {
-          blocks.push({ type: `H${node.attrs?.level || 1}`, text, level: node.attrs?.level });
+          blocks.push({ type: `H${node.attrs?.level || 1}`, text, level: node.attrs?.level as number | undefined });
         } else if (type === 'paragraph') {
-          blocks.push({ type: 'Paragraph', text, semanticTag: node.attrs?.semanticTag || 'desc', pIndex: pIndexCounter });
+          blocks.push({ type: 'Paragraph', text, semanticTag: (node.attrs?.semanticTag as string) || 'desc', pIndex: pIndexCounter });
           pIndexCounter++;
         } else if (type === 'bulletList' || type === 'orderedList') {
           blocks.push({ type: type === 'bulletList' ? 'List' : 'Ordered', text: `(${node.content?.length || 0} items)` });
@@ -109,7 +122,7 @@ export function useTiptapSplitView(editor: any, editorUpdateKey: any) {
         }
         
         if (node.content) {
-          node.content.forEach((c: any) => traverse(c, depth + 1));
+          node.content.forEach((c: JSONContent) => traverse(c, depth + 1));
         }
       }
     }

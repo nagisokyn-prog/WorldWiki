@@ -45,8 +45,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
+export interface ToolCallPayload {
+  tool_call_id?: string;
+  tool_name?: string;
+  arguments?: unknown;
+  [key: string]: unknown;
+}
+
 const props = defineProps<{
-  toolCall: any;
+  toolCall: ToolCallPayload;
 }>();
 
 const emit = defineEmits<{
@@ -58,7 +65,7 @@ const feedbackText = ref('');
 const hasResponded = ref(false);
 const isApproved = ref(false);
 
-const formatArgs = (args: any) => {
+const formatArgs = (args: unknown) => {
   try {
     return JSON.stringify(args, null, 2);
   } catch {
@@ -69,14 +76,14 @@ const formatArgs = (args: any) => {
 const approveTool = () => {
   hasResponded.value = true;
   isApproved.value = true;
-  emit('approve', { toolCallId: props.toolCall.tool_call_id, approved: true });
+  emit('approve', { toolCallId: props.toolCall.tool_call_id || '', approved: true });
 };
 
 const rejectWithFeedback = () => {
   hasResponded.value = true;
   isApproved.value = false;
   emit('reject', { 
-    toolCallId: props.toolCall.tool_call_id, 
+    toolCallId: props.toolCall.tool_call_id || '', 
     approved: false, 
     feedback: feedbackText.value 
   });

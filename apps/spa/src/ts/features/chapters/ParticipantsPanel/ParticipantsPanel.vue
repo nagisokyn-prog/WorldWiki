@@ -3,11 +3,11 @@
     <h4><i class="fas fa-users"></i> Участники</h4>
     
     <div class="participants-list" style="display: flex; flex-direction: column; gap: 8px;">
-      <div v-if="participants.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
+      <div v-if="normalizedParticipants.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
         Упомяните сущность в тексте (через @ или [Имя]), чтобы она появилась здесь.
       </div>
       
-      <div v-for="(p, idx) in (participants as any[])" :key="idx" class="participant-item" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+      <div v-for="(p, idx) in normalizedParticipants" :key="idx" class="participant-item" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span>{{ getIcon(p.type) }}</span>
           <span style="font-size: 13px; font-weight: 500;">{{ p.name || resolveEntityName(p.id, p.type) }}</span>
@@ -21,24 +21,26 @@
 
 <script setup lang="ts">
 import { useParticipantsPanel } from './useParticipantsPanel';
+import type { ParticipantItem } from './useParticipantsPanel';
 
 const props = withDefaults(defineProps<{
   project: string;
-  participants?: any[];
+  participants?: ParticipantItem[] | string[] | null;
 }>(), {
   participants: () => []
 });
 
 const emit = defineEmits<{
-  (e: 'update:participants', val: any[]): void;
+  (e: 'update:participants', val: ParticipantItem[]): void;
   (e: 'change'): void;
 }>();
 
 const {
   getIcon,
   resolveEntityName,
+  normalizedParticipants,
   removeParticipant
-} = useParticipantsPanel(props, emit);
+} = useParticipantsPanel(props, emit as (event: 'update:participants' | 'change', ...args: unknown[]) => void);
 </script>
 
 <style scoped src="./ParticipantsPanel.vue.css"></style>

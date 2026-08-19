@@ -74,10 +74,9 @@
 
 <script setup lang="ts">
 import { useCalendarEras } from './useCalendarEras';
+import type { CalendarErasProps } from './useCalendarEras';
 
-const props = defineProps<{
-  modelValue: Record<string, any>;
-}>();
+const props = defineProps<CalendarErasProps>();
 
 const { isCollapsed, moveItem, addEra, removeEra } = useCalendarEras(props);
 </script>

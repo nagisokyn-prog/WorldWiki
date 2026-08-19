@@ -76,7 +76,9 @@ export function useEntityHistory(props: any, emit: any, formData: any) {
     if (!previewingRevId.value) return;
     const rev = revisions.value.find((r: any) => r.id === previewingRevId.value);
     if (rev && rev.content) {
-      formData.value = JSON.parse(JSON.stringify(rev.content.data || rev.content));
+      const restored = JSON.parse(JSON.stringify(rev.content.attributes || rev.content.data || rev.content));
+      currentSavedData.value = null;
+      formData.value = restored;
       emit('modified');
       emit('update:modelValue', formData.value);
       exitHistoryPreview();

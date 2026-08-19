@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 import { useSchemaData } from '../useSchemaData';
-import * as api from '../../../../../../services/api.client';
+import * as api from '../../../../../services/api.client';
 
-vi.mock('../../../../../../services/api.client', () => ({
+vi.mock('../../../../../services/api.client', () => ({
   getEntitySchemas: vi.fn(),
 }));
 

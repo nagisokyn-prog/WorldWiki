@@ -187,8 +187,8 @@ describe('useRelationshipBlock', () => {
 
       const rel = useRelationshipBlock(props, emit);
 
-      // 1. fetchForeignItem with empty targetId
-      await rel.fetchForeignItem();
+      // 1. empty targetId reset
+      await rel.onLinkChange('target_char')({ target: { value: '' } } as any);
       expect(rel.foreignItem.value).toBeNull();
 
       // 2. getOptions with direct type match without _list suffix

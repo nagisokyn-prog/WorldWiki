@@ -304,6 +304,43 @@ describe('useUniversalDatePicker', () => {
       pickerNull.onCalendarChange();
       expect(emit).toHaveBeenCalledWith('update:modelValue', expect.any(Object));
     });
+
+    it('handles onEraChange year bounds clamping, legacy modelValue watch, and unnamed calendarOptions', async () => {
+      const reactiveProps = reactive({
+        project: 'p1',
+        showTime: false,
+        modelValue: {
+          calendar_id: 'cal_1',
+          original_input: { era_index: 0, year: 150, month: 0, day: 5 },
+        } as any,
+      });
+
+      const picker = useUniversalDatePicker(reactiveProps, emit);
+      picker.allCalendars.value = [
+        mockCalendar,
+        { id: 'cal_empty', data: {} }, // unnamed calendar
+      ];
+      picker.currentCalendarId.value = 'cal_1';
+
+      // 1. unnamed calendar in calendarOptions
+      expect(picker.calendarOptions.value[1].label).toBe('Календарь');
+
+      // 2. onEraChange when currentYear (150) is out of bounds for Era 2 (201-1000)
+      picker.currentEraIdx.value = 1;
+      picker.onEraChange();
+      expect(picker.currentYear.value).toBe(201); // Clamped to Era 2's год_начала
+
+      // 3. legacy modelValue watch format with эпоха_ключ
+      reactiveProps.modelValue = {
+        эпоха_ключ: 0,
+        год: 77,
+        месяц: 0,
+        день: 12,
+      };
+      await nextTick();
+      expect(picker.currentYear.value).toBe(77);
+    });
   });
 });
+
 

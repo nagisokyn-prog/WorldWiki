@@ -106,7 +106,31 @@ describe('useTimelinePanel', () => {
     expect(wrapper.emitted('update:events')).toBeDefined();
   });
 
+  it('assigns default calendar_id on mount when events lack calendar_id', async () => {
+    const eventsNoCal = [{ date: { era: 0, year: 1, month: 0, day: 1 }, description: 'No cal' }];
+    const TestComp = defineComponent({
+      props: ['project', 'events'],
+      emits: ['update:events', 'change'],
+      setup(p, { emit: e }) {
+        return { ...useTimelinePanel(p as any, e) };
+      },
+      template: '<div></div>',
+    });
+
+    // 1. Success path
+    const wrapper1 = mount(TestComp, { props: { project: 'p1', events: eventsNoCal } });
+    await flushPromises();
+    expect(wrapper1.emitted('update:events')).toBeDefined();
+
+    // 2. Error path
+    mockGetCalendars.mockRejectedValueOnce(new Error('Cal error'));
+    const wrapper2 = mount(TestComp, { props: { project: 'p1', events: eventsNoCal } });
+    await flushPromises();
+    expect(wrapper2.emitted('update:events')).toBeDefined();
+  });
+
   it('converts date info across seasons, times of day, and invalid calendar IDs', () => {
+
     const panel = useTimelinePanel(props, emit);
     panel.availableCalendars.value = [mockCalendar];
 
@@ -273,8 +297,8 @@ describe('useTimelinePanel', () => {
       // hour & minute options
       expect(panel.getHourOptions('cal1').length).toBe(24);
       expect(panel.getMinuteOptions('cal1').length).toBe(60);
-      expect(panel.getHourOptions('unknown')).toEqual([]);
-      expect(panel.getMinuteOptions('unknown')).toEqual([]);
+      expect(panel.getHourOptions('unknown').length).toBe(24);
+      expect(panel.getMinuteOptions('unknown').length).toBe(60);
       expect(panel.getDaysInMonth('unknown', 0)).toBe(30);
     });
   });

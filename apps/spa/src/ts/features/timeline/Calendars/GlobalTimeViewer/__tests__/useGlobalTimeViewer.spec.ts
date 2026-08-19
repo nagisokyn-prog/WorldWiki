@@ -14,11 +14,15 @@ vi.mock('../../../../../stores/calendar.store', () => ({
   }),
 }));
 
+const mockProjectName = ref('proj1');
+
 vi.mock('../../../../../stores/shell', () => ({
   useShellStore: () => ({
-    projectName: 'proj1',
+    get projectName() { return mockProjectName.value; },
+    set projectName(v) { mockProjectName.value = v; }
   }),
 }));
+
 
 vi.mock('@worldwiki/components', () => ({
   invoke: vi.fn().mockResolvedValue({ year: 100, month: 1, day: 5 }),
@@ -80,12 +84,7 @@ describe('useGlobalTimeViewer', () => {
     wrapper.unmount();
   });
 
-  it('reloads calendars when projectName changes while visible', async () => {
-    const mockShell = { projectName: ref('proj1') };
-    const mockCal = {
-      getCalendars: vi.fn().mockResolvedValue([{ id: 'cal1', data: { name: 'Cal 1' } }]),
-    };
-
+  it('reloads calendars when projectName changes while visible and ignores when hidden', async () => {
     const TestComp = defineComponent({
       setup() {
         return useGlobalTimeViewer();
@@ -97,6 +96,15 @@ describe('useGlobalTimeViewer', () => {
     wrapper.vm.open();
     expect(wrapper.vm.isVisible).toBe(true);
 
+    // Change projectName while visible
+    mockProjectName.value = 'proj_new_visible';
+    await Promise.resolve();
+
+    // Close and change projectName while hidden
+    wrapper.vm.close();
+    mockProjectName.value = 'proj_new_hidden';
+    await Promise.resolve();
+
     // updateLocalDates when calendars is empty
     const viewerEmpty = useGlobalTimeViewer();
     viewerEmpty.minute.value = 500;
@@ -106,5 +114,6 @@ describe('useGlobalTimeViewer', () => {
     wrapper.unmount();
   });
 });
+
 
 

@@ -17,6 +17,11 @@ describe('packages/components footnote.service', () => {
 
     expect(footnoteService.counter).toBe(6);
     expect(Object.keys(footnoteService.getFootnotes()).length).toBe(2);
+
+    footnoteService.load(undefined);
+    expect(footnoteService.counter).toBe(1);
+    expect(footnoteService.getFootnotes()).toEqual({});
+    expect(window.footnoteService).toBeDefined();
   });
 
   it('adds footnote and notifies callback', () => {

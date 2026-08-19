@@ -87,6 +87,13 @@ describe('useCalendarPlayground', () => {
     expect(hook.origin.value.месяц).toBe(1);
     expect(hook.origin.value.год).toBe(1);
 
+    // Prev month when month > 0 -> month 0, year 1
+    hook.prevMonth();
+    expect(hook.origin.value.месяц).toBe(0);
+    expect(hook.origin.value.год).toBe(1);
+
+    // Next month to month 1
+    hook.nextMonth();
     // Next month across year boundary -> month 0, year 2
     hook.nextMonth();
     expect(hook.origin.value.месяц).toBe(0);
@@ -150,6 +157,15 @@ describe('useCalendarPlayground', () => {
   it('handles multi-month holiday spanning and unknown season colors', () => {
     const spanningCalendar: any = {
       ...props.calendar,
+      месяцы: [
+        { название: 'Месяц 1', дней: 30 },
+        { название: 'Месяц 2', дней: 30 },
+        { название: 'Месяц 3', дней: 30 },
+      ],
+      точка_отсчета: {
+        ...props.calendar.точка_отсчета,
+        месяц: 1,
+      },
       праздники: [
         {
           название: '3-Month Festival',
@@ -162,13 +178,35 @@ describe('useCalendarPlayground', () => {
       ],
     };
 
+    // Month 1 (middle of 3-month festival)
     const hook = useCalendarPlayground({ calendar: spanningCalendar });
-    // Switch to month 1 (middle of 3-month festival)
-    hook.origin.value.месяц = 1;
     const days = hook.gridDays.value;
 
     expect(days[0].holidayText).toBe('3-Month Festival');
     expect(days[0].seasonColor).toBe('rgba(255,255,255,0.03)'); // fallback color
+
+    // Holiday on end month (month 2, day 5 in, day 16 out)
+    const endCal = {
+      ...spanningCalendar,
+      точка_отсчета: {
+        ...spanningCalendar.точка_отсчета,
+        месяц: 2,
+      },
+    };
+    const endHook = useCalendarPlayground({ calendar: endCal });
+    const endDays = endHook.gridDays.value;
+    expect(endDays[4].holidayText).toBe('3-Month Festival');
+    expect(endDays[15].holidayText).toBe(''); // after holiday end (day 10)
+
+    // Single-day holiday without дата_конца
+    const singleDayCal: any = {
+      ...props.calendar,
+      праздники: [{ название: 'One Day', дата_начала: { месяц: 0, день: 10 } }],
+    };
+    const singleHook = useCalendarPlayground({ calendar: singleDayCal });
+    const singleDays = singleHook.gridDays.value;
+    expect(singleDays[9].holidayText).toBe('One Day');
+    expect(singleDays[10].holidayText).toBe('');
   });
 });
 

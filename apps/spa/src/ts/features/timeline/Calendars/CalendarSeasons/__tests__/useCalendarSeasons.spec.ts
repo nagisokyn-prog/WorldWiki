@@ -31,6 +31,20 @@ describe('useCalendarSeasons', () => {
     expect(emptyProps.modelValue.сезоны[0].месяцы).toEqual([]);
   });
 
+  it('adds and removes seasons on populated modelValue', () => {
+    const hook = useCalendarSeasons(props);
+
+    // Month 3 is unused (Весна has 0,1, Лето has 2)
+    hook.addSeason();
+    expect(props.modelValue.сезоны.length).toBe(3);
+    expect(props.modelValue.сезоны[2].название).toBe('Сезон 3');
+    expect(props.modelValue.сезоны[2].месяцы).toEqual([3]);
+
+    hook.removeSeason(1);
+    expect(props.modelValue.сезоны.length).toBe(2);
+    expect(props.modelValue.сезоны[1].название).toBe('Сезон 3');
+  });
+
   it('moves items within bounds and ignores out of bounds moves', () => {
     const hook = useCalendarSeasons(props);
 

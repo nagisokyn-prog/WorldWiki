@@ -97,4 +97,33 @@ describe('useSchemaEditorMain', () => {
     await main.saveSchema();
     expect(appAlert).toHaveBeenCalledWith('Ошибка сохранения');
   });
+
+  it('covers fallback properties, section without items, and non-matching global save events', async () => {
+    // 1. props without schemaType (falling back to entityType)
+    const mainNoSchemaType = useSchemaEditorMain({ project: 'p1', entityType: 'location' }, emit);
+    expect(mainNoSchemaType.localEntityType.value).toBe('location');
+
+    // 2. schema with section without items, and missing icon/color
+    mainNoSchemaType.schema.value = {
+      sections: [{ id: 'sec_empty' }],
+    };
+    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce(undefined as any);
+    await mainNoSchemaType.saveSchema();
+    expect(api.saveEntitySchema).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({
+        icon: '📄',
+        color: '#333333',
+      }),
+      expect.anything()
+    );
+
+    // 3. Non-matching trigger-schema-save event
+    document.dispatchEvent(new CustomEvent('ww:trigger-schema-save', {
+      detail: { entityType: 'other_type' },
+    }));
+
+    // 4. trigger-schema-save event with null detail
+    document.dispatchEvent(new CustomEvent('ww:trigger-schema-save', { detail: null }));
+  });
 });

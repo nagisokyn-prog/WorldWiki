@@ -115,4 +115,48 @@ describe('usePlanningPanel', () => {
     expect(preventDefault).toHaveBeenCalled();
     expect(panel.items.value.length).toBe(1);
   });
+
+  it('covers progressPct, sort_order fallbacks, toggleItem success and DOM input focus', async () => {
+    const panel = usePlanningPanel(props);
+    expect(panel.progressPct.value).toBe(0);
+
+    // Load with missing sort_order and indent
+    vi.mocked(api.getPlans).mockResolvedValueOnce([
+      { id: 'p1', parent_type: 'chapter', parent_ref: 'ch_1', title: 'Task 1', completed: true, sort_order: undefined },
+      { id: 'p2', parent_type: 'chapter', parent_ref: 'ch_1', title: 'Task 2', completed: false, sort_order: 1 },
+    ] as any);
+    await panel.load();
+    expect(panel.progressPct.value).toBe(50);
+
+    // Toggle item with id (success path)
+    vi.mocked(api.getPlans).mockResolvedValueOnce([
+      { id: 'p1', parent_type: 'chapter', parent_ref: 'ch_1', title: 'Task 1', completed: true },
+    ] as any);
+    vi.mocked(api.savePlan).mockResolvedValueOnce({ id: 'p1' } as any);
+    await panel.toggleItem(panel.items.value[0]);
+    expect(panel.items.value[0].done).toBe(false);
+
+    // DOM focus inputs in addItem, addItemAfter, onDeleteKey
+    const input1 = document.createElement('input');
+    input1.className = 'plan-text';
+    const input2 = document.createElement('input');
+    input2.className = 'plan-text';
+    const focusSpy1 = vi.spyOn(input1, 'focus');
+    const focusSpy2 = vi.spyOn(input2, 'focus');
+
+    const container = document.createElement('div');
+    container.appendChild(input1);
+    container.appendChild(input2);
+    panel.listEl.value = container;
+
+    await panel.addItem();
+    expect(focusSpy2).toHaveBeenCalled();
+
+    await panel.addItemAfter(0, 0);
+    expect(focusSpy2).toHaveBeenCalled();
+
+    panel.items.value = [{ id: '1', text: 'T1' }, { id: '2', text: '' }];
+    await panel.onDeleteKey({ key: 'Backspace', preventDefault: vi.fn() }, panel.items.value[1], 1);
+    expect(focusSpy1).toHaveBeenCalled();
+  });
 });

@@ -232,7 +232,7 @@ export function useTiptapEditor(props: any, emit: any) {
       const url = link.getAttribute('href') || link.getAttribute('data-href') || '';
       if (!url) return;
       if (url && (url.includes('type=') || url.includes('id=') || url.startsWith('entity://'))) {
-        const isLocked = true; // Always require Ctrl for links
+        const isLocked = props.isLocked !== undefined ? props.isLocked : true; // Always require Ctrl for links unless unlocked
         const isCtrlPressed = e.ctrlKey || e.metaKey || stateHook.ctrlPressed.value;
   
         if (isLocked && !isCtrlPressed) {

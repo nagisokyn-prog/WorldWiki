@@ -43,7 +43,7 @@ vi.mock('../Semantic/SemanticParagraphNode.vue', () => ({
 }));
 
 const TestComponent = defineComponent({
-  props: ['content', 'project', 'title', 'hasUnsavedChanges', 'footnotesData'],
+  props: ['content', 'project', 'title', 'hasUnsavedChanges', 'footnotesData', 'isLocked'],
   emits: ['update:content', 'update:title', 'change', 'scroll-change', 'save', 'openEntity'],
   setup(p, { emit: e }) {
     return { ...useTiptapEditor(p, e) };
@@ -174,6 +174,7 @@ describe('useTiptapEditor', () => {
 
       // Mod-й with matching pattern
       expect(shortcuts['Mod-й']({ editor: mockEdMatch })).toBe(true);
+      expect(shortcuts['Mod-й']({ editor: mockEdNoMatch })).toBe(false);
     });
   });
 
@@ -388,6 +389,140 @@ describe('useTiptapEditor', () => {
         document.body.removeChild(a);
         wrapper.unmount();
       });
+
+      it('handles link click without Ctrl when not locked, data-href, and normal query links', async () => {
+        const dispatchSpy = vi.spyOn(document, 'dispatchEvent');
+        const wrapper = mount(TestComponent, { props });
+        await flushPromises();
+
+        // 1. Link with data-href
+        const a1 = document.createElement('a');
+        a1.setAttribute('data-href', '?type=item&id=it_1');
+        document.body.appendChild(a1);
+        a1.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }));
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'ww:open-entity-window',
+            detail: { type: 'item', id: 'it_1' },
+          })
+        );
+        document.body.removeChild(a1);
+
+        // 2. Link with empty href
+        const aEmpty = document.createElement('a');
+        document.body.appendChild(aEmpty);
+        aEmpty.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        document.body.removeChild(aEmpty);
+
+        // 3. Normal non-entity link
+        const aNormal = document.createElement('a');
+        aNormal.setAttribute('href', 'https://google.com');
+        document.body.appendChild(aNormal);
+        aNormal.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        document.body.removeChild(aNormal);
+
+        // 4. Query link without Ctrl (locked -> preventDefault) and with Ctrl (triggers window open)
+        const aQuery = document.createElement('a');
+        aQuery.setAttribute('href', '?type=location&id=loc_1');
+        document.body.appendChild(aQuery);
+
+        const evNoCtrl = new MouseEvent('click', { bubbles: true, cancelable: true });
+        aQuery.dispatchEvent(evNoCtrl);
+        expect(evNoCtrl.defaultPrevented).toBe(true);
+
+        const evCtrl = new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true });
+        aQuery.dispatchEvent(evCtrl);
+        expect(dispatchSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: 'ww:open-entity-window',
+            detail: { type: 'location', id: 'loc_1' },
+          })
+        );
+        document.body.removeChild(aQuery);
+
+        wrapper.unmount();
+
+        // 5. Unlocked link click (covers line 286: emit('openEntity'))
+        const unlockedWrapper = mount(TestComponent, {
+          props: { ...props, isLocked: false },
+        });
+        await flushPromises();
+
+        const aUnlocked = document.createElement('a');
+        aUnlocked.setAttribute('href', '?type=character&id=char_unlocked');
+        document.body.appendChild(aUnlocked);
+        aUnlocked.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+        expect(unlockedWrapper.emitted('openEntity')).toBeDefined();
+        expect(unlockedWrapper.emitted('openEntity')![0]).toEqual([{ type: 'character', id: 'char_unlocked' }]);
+        document.body.removeChild(aUnlocked);
+        unlockedWrapper.unmount();
+      });
+    });
+
+    it('covers switchEditorMode, quickLink error catch, content and footnotesData watchers', async () => {
+      // 1. switchEditorMode
+      const tiptap = useTiptapEditor(props, emit);
+      tiptap.switchEditorMode('markdown');
+
+      // 2. quickLink error catch
+      (api.searchEntities as any).mockRejectedValueOnce(new Error('Search failed'));
+      const wrapper = mount(TestComponent, { props });
+      await flushPromises();
+
+      document.dispatchEvent(
+        new CustomEvent('ww:quick-link', {
+          detail: { name: 'FailEntity', startPos: 0, endPos: 5 },
+        })
+      );
+      await flushPromises();
+      expect(appAlert).toHaveBeenCalledWith('Ошибка при поиске сущности "FailEntity"');
+
+      // 3. Watchers on content & footnotesData via reactive props (covers lines 132-135, 140)
+      const { reactive, nextTick } = await import('vue');
+      const reactiveP = reactive({
+        content: '<p>Initial</p>',
+        project: 'p1',
+        title: 'T',
+        hasUnsavedChanges: false,
+        footnotesData: {},
+      });
+      const reactiveEmit = vi.fn();
+      const tiptapReactive = useTiptapEditor(reactiveP, reactiveEmit);
+      
+      reactiveP.content = '<p>New Content Differs From GetHTML</p>';
+      await nextTick();
+      expect(mockEditorInstance.commands.setContent).toHaveBeenCalledWith('<p>New Content Differs From GetHTML</p>');
+
+      reactiveP.content = '';
+      await nextTick();
+
+      reactiveP.footnotesData = { 'fn2': { text: 'New Footnote' } };
+      await nextTick();
+      expect(tiptapReactive.footnotes.value).toEqual({ 'fn2': { text: 'New Footnote' } });
+
+      // 4. Ctrl+R reload keydown
+      const rEvent = new KeyboardEvent('keydown', { key: 'r', ctrlKey: true, cancelable: true });
+      document.dispatchEvent(rEvent);
+      expect(wrapper.emitted('save')).toBeDefined();
+
+      // 5. Link parse error & query without type/id
+      const aBad = document.createElement('a');
+      aBad.setAttribute('href', 'ui_editor.html?type=1&id=2');
+      document.body.appendChild(aBad);
+      const origURL = window.URL;
+      (window as any).URL = vi.fn().mockImplementation(() => { throw new Error('Bad URL'); });
+      aBad.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }));
+      (window as any).URL = origURL;
+      document.body.removeChild(aBad);
+
+      // Query without type/id
+      const aNoTypeId = document.createElement('a');
+      aNoTypeId.setAttribute('href', '?other=123');
+      document.body.appendChild(aNoTypeId);
+      aNoTypeId.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true }));
+      document.body.removeChild(aNoTypeId);
+
+      wrapper.unmount();
     });
   });
 });

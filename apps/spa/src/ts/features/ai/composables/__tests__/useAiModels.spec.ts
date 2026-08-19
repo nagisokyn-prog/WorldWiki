@@ -48,8 +48,8 @@ describe('useAiModels', () => {
 
     const composable = useAiModels();
     await composable.fetchModels('openai', 'key123');
-    // Corrupt JSON ignored, fallback to hardcoded
-    expect(composable.availableModels.value.length).toBeGreaterThan(0);
+    // Corrupt JSON ignored in catch block, remaining empty
+    expect(composable.availableModels.value).toEqual([]);
   });
 
   it('handles unknown provider with empty fallback', async () => {

@@ -91,6 +91,22 @@ describe('useSchemaHistory', () => {
     // 4. previewHistory without full_schema or sections
     history.previewHistory({ id: 'h_empty', snapshot: {} });
     history.previewHistory({ id: 'h_no_sec', snapshot: { full_schema: {} } });
+
+    // 5. loadHistory when API returns null
+    vi.mocked(api.getSchemaHistory).mockResolvedValueOnce(null as any);
+    await history.loadHistory();
+    expect(history.schemaHistory.value).toEqual([]);
+
+    // 6. previewHistory with section without fields and without dynamicContainers
+    history.previewHistory({
+      id: 'h_empty_sec',
+      snapshot: {
+        full_schema: {
+          sections: [{ id: 'sec_without_fields_and_dc' }],
+        },
+      },
+    });
+    expect(schema.value.sections[0].items).toEqual([]);
   });
 });
 

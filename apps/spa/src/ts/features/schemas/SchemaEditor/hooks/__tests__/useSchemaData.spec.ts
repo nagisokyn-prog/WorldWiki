@@ -134,4 +134,51 @@ describe('useSchemaData', () => {
     data.removeItem(1);
     expect(data.activeSection.value.items.length).toBe(1);
   });
+
+  it('covers openPreview, exportSchema, fetch ok=false, empty sections, non-matching initialSection and load error', async () => {
+    const data = useSchemaData(props, emit, localEntityType, scrollContainer);
+    data.schema.value = { sections: [{ id: 's1', items: [] }] };
+
+    // 1. openPreview
+    data.openPreview();
+    expect(data.isPreviewMode.value).toBe(true);
+    expect(sessionStorage.getItem('sandbox_preview_config')).toBeDefined();
+
+    // 2. exportSchema
+    data.exportSchema();
+
+    // 3. fetch with ok=false
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([] as any);
+    global.fetch = vi.fn().mockResolvedValueOnce({ ok: false } as any);
+    await data.loadSchema();
+    expect(data.schema.value.sections[0].id).toBe('page_main');
+
+    // 4. empty sections in loaded schema fallback to default page_main
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+      { type_key: 'character', full_schema: { sections: [] } }
+    ] as any);
+    await data.loadSchema();
+    expect(data.schema.value.sections[0].id).toBe('page_main');
+
+    // 5. non-matching initialSection fallback to 0
+    props.initialSection = 'non_existent_section';
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+      { type_key: 'character', full_schema: { sections: [{ id: 'sec_1' }] } }
+    ] as any);
+    await data.loadSchema();
+    expect(data.activeSectionIdx.value).toBe(0);
+
+    // 6. loadSchema error catch
+    vi.mocked(api.getEntitySchemas).mockRejectedValueOnce(new Error('Fatal error'));
+    await data.loadSchema();
+
+    // 7. deleteSection when activeSectionIdx was on deleted index
+    data.schema.value = {
+      sections: [{ id: 's1' }, { id: 's2' }],
+    };
+    data.activeSectionIdx.value = 1;
+    vi.mocked(appConfirm).mockResolvedValueOnce(true);
+    await data.deleteSection(1);
+    expect(data.activeSectionIdx.value).toBe(0);
+  });
 });

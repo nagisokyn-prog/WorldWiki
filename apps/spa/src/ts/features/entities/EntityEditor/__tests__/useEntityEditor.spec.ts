@@ -43,7 +43,7 @@ describe('useEntityEditor', () => {
       },
     };
 
-    global.fetch = vi.fn().mockImplementation((url: string) => {
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
       if (url.includes('ui_editor.json')) {
         return Promise.resolve({
           ok: true,
@@ -119,13 +119,47 @@ describe('useEntityEditor', () => {
     expect(editor.config.value.sections[0].id).toBe('preview_sec');
   });
 
-  it('handles static schema fallback when entity schema is not in database', async () => {
+  it('handles static schema fallback, missing config fallback, and fetch failures', async () => {
+    // 1. static schema fetch failure (covers line 126)
     vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([]);
+    (globalThis.fetch as any).mockImplementationOnce(() => Promise.reject(new Error('Static schema error')));
+    const editorStaticFail = useEntityEditor(props, emit);
+    await editorStaticFail.loadConfigAndData();
+    expect(editorStaticFail.config.value).toBeDefined();
 
+    // 2. !config.value fallback (covers line 132)
+    // entityType not in staticTypes, so it skips the first fetch and leaves config.value undefined
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([]);
+    const editorNoConfig = useEntityEditor({ ...props, entityType: 'unknown_type' }, emit);
+    await editorNoConfig.loadConfigAndData();
+    expect(editorNoConfig.config.value.templates).toBeDefined();
+
+    // 3. ui_editor.json fetch failure (covers line 147)
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([]);
+    (globalThis.fetch as any).mockImplementation((url: string) => {
+      if (url.includes('ui_editor.json')) return Promise.reject(new Error('ui_editor fetch failed'));
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({ sections: [] }) });
+    });
+    const editorUiFail = useEntityEditor(props, emit);
+    await editorUiFail.loadConfigAndData();
+    expect(editorUiFail.config.value).toBeDefined();
+    (globalThis.fetch as any).mockRestore();
+  });
+
+  it('handles scrollContainer initial scroll position and scroll events', async () => {
+    props.initialScrollPos = 250;
     const editor = useEntityEditor(props, emit);
-    await editor.loadConfigAndData();
+    const div = document.createElement('div');
+    editor.scrollContainer.value = div;
 
-    expect(editor.config.value).toBeDefined();
+    await editor.loadConfigAndData();
+    vi.advanceTimersByTime(150);
+    expect(div.scrollTop).toBe(250);
+
+    // Scroll event on container
+    div.scrollTop = 300;
+    div.dispatchEvent(new Event('scroll'));
+    expect(emit).toHaveBeenCalledWith('scroll-change', 300);
   });
 
   it('handles dynamic items addition and removal', () => {
@@ -217,7 +251,7 @@ describe('useEntityEditor', () => {
       project: 'p1',
       entityType: 'character',
       entityId: 'char_1',
-      initialData: { name: 'Arthur', items: [] },
+      initialData: { name: 'Arthur', items: [] as any[] },
       initialSection: 'sec_1',
       initialScrollPos: 0,
     });
@@ -231,11 +265,31 @@ describe('useEntityEditor', () => {
     expect(editor.formData.value.name).toBe('King Arthur');
   });
 
-  it('handles toggle entity history events', () => {
-    const toggleEvent = new CustomEvent('ww:toggle-entity-history', {
-      detail: { id: 'char_1' },
-    });
-    document.dispatchEvent(toggleEvent);
+  it('runs onMounted and onUnmounted hooks and handles toggle history variants', async () => {
+    const Comp = {
+      props: ['project', 'entityType', 'entityId', 'initialData', 'initialSection', 'initialScrollPos'],
+      setup(p: any, { emit: e }: any) {
+        return { ...useEntityEditor(p, e) };
+      },
+      template: '<div></div>',
+    };
+
+    const { mount } = await import('@vue/test-utils');
+    const wrapper = mount(Comp as any, { props });
+
+    // Matching by entityId
+    document.dispatchEvent(new CustomEvent('ww:toggle-entity-history', { detail: { id: 'char_1' } }));
+
+    // Matching by prefix entityType:entityId
+    document.dispatchEvent(new CustomEvent('ww:toggle-entity-history', { detail: { id: 'character:char_1' } }));
+
+    // Non matching
+    document.dispatchEvent(new CustomEvent('ww:toggle-entity-history', { detail: { id: 'char_99' } }));
+
+    // Global save triggered event
+    window.dispatchEvent(new CustomEvent('ww:global-save-triggered'));
+
+    wrapper.unmount();
   });
 
   it('handles photo input refs, triggerPhotoUpload and empty file drops/events', async () => {
@@ -256,6 +310,47 @@ describe('useEntityEditor', () => {
 
     // 3. handlePhotoDrop with empty files
     await editor.handlePhotoDrop({ dataTransfer: { files: [] } }, 'avatar');
+  });
+
+  it('covers addDynamicItem edge cases (empty path, missing template, undefined default), unmount, and ref error', async () => {
+    const editor = useEntityEditor(props, emit);
+    editor.config.value = {
+      templates: {
+        item_no_default: {
+          fields: [{ class: 'title' }], // no default
+        },
+      },
+    };
+    editor.formData.value = { items: [] };
+
+    // 1. empty path
+    editor.addDynamicItem('', 'item_no_default');
+
+    // 2. missing template
+    editor.addDynamicItem('items', 'unknown_template');
+
+    // 3. template field with undefined default
+    editor.addDynamicItem('items', 'item_no_default');
+    expect(editor.formData.value.items[0].title).toBe('');
+
+    // 4. loadReferenceData with getEntities throwing error
+    editor.config.value = {
+      sections: [{ fields: [{ type: 'select', entityType: 'failing_type' }] }],
+    };
+    vi.mocked(api.getEntities).mockRejectedValueOnce(new Error('Network error'));
+    await editor.loadReferenceData();
+
+    // 5. initialSection fallback when initialSection is not found in schema
+    const fallbackProps = { ...props, initialSection: 'non_existent_sec' };
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+      {
+        type_key: 'character',
+        full_schema: { sections: [{ id: 'sec_real', title: 'Real Section' }] },
+      },
+    ] as any);
+    const fallbackEditor = useEntityEditor(fallbackProps, emit);
+    await fallbackEditor.loadConfigAndData();
+    expect(fallbackEditor.activeSection.value).toBe('sec_real');
   });
 });
 

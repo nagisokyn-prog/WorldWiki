@@ -136,9 +136,14 @@ describe('useCloudSyncModal', () => {
   });
 
   describe('exchangeCode', () => {
-    it('exchanges code for token and updates state', async () => {
+    it('exchanges code for token and updates state, fetching backups in import mode', async () => {
+      modal.syncMode.value = 'import';
       modal.authCode.value = 'auth_code_xyz';
-      (window as any).__TAURI__.core.invoke.mockResolvedValue('jwt_token_abc');
+      (window as any).__TAURI__.core.invoke.mockImplementation(async (cmd: string) => {
+        if (cmd === 'exchange_yandex_token') return 'jwt_token_abc';
+        if (cmd === 'list_yandex_disk_backups') return [{ name: 'b1.zip' }];
+        return null;
+      });
 
       await modal.exchangeCode();
 
@@ -147,6 +152,7 @@ describe('useCloudSyncModal', () => {
       expect(modal.yandexToken.value).toBe('jwt_token_abc');
       expect(modal.showAuthCodeInput.value).toBe(false);
       expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ type: 'success' }));
+      expect(modal.availableBackups.value).toEqual([{ name: 'b1.zip' }]);
     });
 
     it('handles exchange error gracefully', async () => {
@@ -204,6 +210,13 @@ describe('useCloudSyncModal', () => {
 
     it('restores backup when confirmed and triggers success toast', async () => {
       vi.useFakeTimers();
+      const reloadMock = vi.fn();
+      Object.defineProperty(window, 'location', {
+        value: { reload: reloadMock },
+        writable: true,
+        configurable: true,
+      });
+
       modal.yandexToken.value = 'tok';
       vi.mocked(appConfirm).mockResolvedValue(true);
       (window as any).__TAURI__.core.invoke.mockResolvedValue('ok');
@@ -215,6 +228,9 @@ describe('useCloudSyncModal', () => {
         fileName: 'backup.zip',
       });
       expect(emit).toHaveBeenCalledWith('toast', expect.objectContaining({ type: 'success' }));
+      
+      vi.advanceTimersByTime(1500);
+      expect(reloadMock).toHaveBeenCalled();
       vi.useRealTimers();
     });
 

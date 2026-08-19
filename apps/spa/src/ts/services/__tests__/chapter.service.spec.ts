@@ -69,6 +69,21 @@ describe('chapterService', () => {
         })
       );
     });
+    it('preserves existing chapters: prefix and project_id prefix', async () => {
+      vi.mocked(api.saveChapter).mockResolvedValue({} as any);
+
+      const data = { id: 'chapters:existing_123', title: 'Chapter 1' };
+      const returnedId = await chapterService.save('projects:my_world', data);
+
+      expect(returnedId).toBe('chapters:existing_123');
+      expect(api.saveChapter).toHaveBeenCalledWith(
+        'projects:my_world',
+        expect.objectContaining({
+          id: 'chapters:existing_123',
+          project_id: 'projects:my_world',
+        })
+      );
+    });
   });
 
   describe('delete', () => {
@@ -82,15 +97,20 @@ describe('chapterService', () => {
   });
 
   describe('createNew', () => {
-    it('creates initial chapter object with default values', () => {
-      const ch = chapterService.createNew('Глава 1');
+    it('creates initial chapter object with default values and fallback title', () => {
+      const ch = chapterService.createNew('Глава 1', 'Custom content');
       expect(ch.title).toBe('Глава 1');
+      expect(ch.content).toBe('Custom content');
       expect(ch.id).toMatch(/^chapter_\d+_/);
       expect(ch.word_count).toBe(0);
       expect(ch.timeline_events).toEqual([]);
       expect(ch.participants).toEqual([]);
       expect(ch.footnotes).toEqual({});
       expect(ch.created_at).toBeDefined();
+
+      const chDefault = chapterService.createNew('');
+      expect(chDefault.title).toBe('Новая глава');
+      expect(chDefault.content).toContain('Новая глава');
     });
   });
 

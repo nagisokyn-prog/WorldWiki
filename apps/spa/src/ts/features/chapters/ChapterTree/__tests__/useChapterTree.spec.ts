@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ref } from 'vue';
+import { ref, defineComponent } from 'vue';
+import { mount } from '@vue/test-utils';
 import { useChapterTree } from '../useChapterTree';
 import * as api from '../../../../services/api.client';
 import { appAlert } from '@worldwiki/components';
@@ -131,11 +132,21 @@ describe('useChapterTree', () => {
     expect(api.deleteEntitySchema).not.toHaveBeenCalled();
 
     // Confirm deletion
+    const reloadMock = vi.fn();
+    Object.defineProperty(window, 'location', {
+      value: { reload: reloadMock },
+      writable: true,
+      configurable: true,
+    });
+    vi.useFakeTimers();
     const promise2 = tree.handleDeleteSection('char_type');
     const confirmBtn = document.getElementById('confirm-btn') as HTMLButtonElement;
     confirmBtn.click();
     await promise2;
     expect(api.deleteEntitySchema).toHaveBeenCalledWith('my-proj', 'char_type');
+    vi.advanceTimersByTime(600);
+    expect(reloadMock).toHaveBeenCalled();
+    vi.useRealTimers();
 
     // Confirm deletion error
     vi.mocked(api.deleteEntitySchema).mockRejectedValueOnce(new Error('Delete schema error'));
@@ -144,6 +155,41 @@ describe('useChapterTree', () => {
     confirmBtn3.click();
     await promise3;
     expect(appAlert).toHaveBeenCalled();
+  });
+
+  it('runs onMounted and onUnmounted lifecycle hooks in component wrapper', () => {
+    const Comp = defineComponent({
+      props: ['project'],
+      setup(p, { emit: e }) {
+        return { ...useChapterTree(p, e) };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Comp, { props });
+    document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+    document.dispatchEvent(new CustomEvent('ww:entity-renamed', {
+      detail: { id: 'char_1', type: 'character', name: 'King Arthur II' }
+    }));
+    wrapper.unmount();
+  });
+
+  it('covers load catch error and root arc with child chapters', async () => {
+    // 1. Root arc with chapters
+    mockHierarchy.value = {
+      volumes: [],
+      arcs: [{ id: 'arc_root_with_ch', title: 'Root Arc With Ch' }],
+      chapters: [{ id: 'ch_in_root_arc', arc_id: 'arc_root_with_ch', title: 'Child Ch' }],
+    };
+    const tree = useChapterTree(props, emit);
+    const msSection = tree.explorerSections.value.find((s: any) => s.id === 'manuscript');
+    expect(msSection.nodes[0].children.length).toBe(1);
+
+    // 2. Load catch error
+    const { useChapterStore } = await import('../../../../stores/chapter.store');
+    const store = useChapterStore();
+    vi.mocked(store.loadChapters).mockRejectedValueOnce(new Error('Load chapters error'));
+    await tree.load();
   });
 
   it('handles handleRename guards and error handling', async () => {
@@ -260,7 +306,11 @@ describe('useChapterTree', () => {
 
     it('handles handleCreateInline branches: arc parent, volume parent, unknown parent, non-manuscript', async () => {
       const tree = useChapterTree(props, emit);
-      tree.explorerTreeRef.value = { startCreate: vi.fn() };
+      tree.explorerTreeRef.value = {
+        startCreate: vi.fn(),
+        expandNode: vi.fn(),
+        startRename: vi.fn(),
+      };
 
       // Non-manuscript
       await tree.handleCreateInline({ sectionId: 'character' });

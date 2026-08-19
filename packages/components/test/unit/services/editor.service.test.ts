@@ -118,6 +118,9 @@ describe('packages/components editor.service', () => {
         isWysiwygMode: vi.fn().mockReturnValue(false),
       };
       expect(editorService.getCurrentMode()).toBe('markdown');
+
+      editorService.editor = {} as any;
+      expect(editorService.getCurrentMode()).toBe('wysiwyg');
     });
   });
 

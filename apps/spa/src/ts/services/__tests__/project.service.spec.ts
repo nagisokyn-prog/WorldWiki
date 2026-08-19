@@ -103,6 +103,12 @@ describe('projectService (Contract & Integration)', () => {
     });
   });
 
+    it('handles null/undefined raw getProjects response', async () => {
+      vi.mocked(api.getProjects).mockResolvedValue(null as any);
+      const res = await projectService.getProjects();
+      expect(res).toEqual([]);
+    });
+
   describe('getProjectMetadata', () => {
     it('combines project config and stats into metadata', async () => {
       vi.mocked(api.getProjectConfig).mockResolvedValue({
@@ -120,6 +126,19 @@ describe('projectService (Contract & Integration)', () => {
       expect(meta.type).toBe('fantasy');
       expect(meta.genres).toEqual(['magic']);
       expect(meta.stats.characters).toBe(10);
+    });
+
+    it('uses fallback default values when config and stats are empty', async () => {
+      vi.mocked(api.getProjectConfig).mockResolvedValue({} as any);
+      vi.mocked(api.getProjects).mockResolvedValue([]);
+
+      const meta = await projectService.getProjectMetadata('Missing Project');
+      expect(meta.name).toBe('Missing Project');
+      expect(meta.type).toBe('novel');
+      expect(meta.genres).toEqual([]);
+      expect(meta.created).toBeDefined();
+      expect(meta.updated).toBeDefined();
+      expect(meta.stats).toEqual({ characters: 0, organizations: 0, states: 0, chapters: 0 });
     });
   });
 });

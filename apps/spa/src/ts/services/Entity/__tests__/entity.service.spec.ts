@@ -43,6 +43,15 @@ describe('entityService', () => {
       ]);
     });
 
+    it('handles type ending with s and direct array response', async () => {
+      vi.mocked(entityApi.getEntityList).mockResolvedValueOnce([
+        { id: 'sp1', name: 'Elf' }
+      ] as any);
+
+      const res = await entityService.list('p1', 'species');
+      expect(res).toEqual([{ id: 'sp1', name: 'Elf' }]);
+    });
+
     it('rethrows error on load failure', async () => {
       vi.mocked(entityApi.getEntityList).mockRejectedValueOnce(new Error('Load error'));
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -61,11 +70,15 @@ describe('entityService', () => {
       expect(res).toEqual({ id: '1', name: 'Hero' });
     });
 
-    it('save calls entityApi.saveEntity', async () => {
-      vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({ success: true, id: '1' });
-      const res = await entityService.save('p1', 'character', { id: '1', name: 'Hero' } as any, '1');
+    it('save calls entityApi.saveEntity with and without id', async () => {
+      vi.mocked(entityApi.saveEntity).mockResolvedValue({ success: true, id: '1' });
+      const res1 = await entityService.save('p1', 'character', { id: '1', name: 'Hero' } as any, '1');
       expect(entityApi.saveEntity).toHaveBeenCalledWith('p1', 'character', { id: '1', name: 'Hero' }, '1', 'Hero');
-      expect(res).toEqual({ success: true, id: '1' });
+      expect(res1).toEqual({ success: true, id: '1' });
+
+      const res2 = await entityService.save('p1', 'character', { name: 'Hero 2' } as any);
+      expect(entityApi.saveEntity).toHaveBeenCalledWith('p1', 'character', { name: 'Hero 2' }, undefined, 'Hero 2');
+      expect(res2).toEqual({ success: true, id: '1' });
     });
 
     it('delete calls entityApi.deleteEntity', async () => {

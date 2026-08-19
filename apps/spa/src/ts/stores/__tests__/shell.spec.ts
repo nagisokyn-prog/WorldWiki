@@ -821,12 +821,28 @@ describe('shell store', () => {
     });
 
     it('resets activeTreeNode during deleteVolume and deleteArc', async () => {
-      // 1. deleteVolume with matching activeTreeNode (volume and chapter)
-      shell.activeTreeNode = { type: 'volume', node: { id: 'vol_del' } };
-      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, ['arc_1'], [{ id: 'ch_in_vol' }], true);
+      // 1. deleteVolume with matching activeTreeNode (chapter)
+      shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_vol' } };
+      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [{ id: 'ch_in_vol' }], [], true);
       expect(shell.activeTreeNode).toBeNull();
 
-      // 2. deleteArc with matching activeTreeNode (chapter in arc, and arc itself)
+      // 2. deleteVolume with matching activeTreeNode (arc)
+      shell.activeTreeNode = { type: 'arc', node: { id: 'arc_in_vol' } };
+      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [], ['arc_in_vol'], true);
+      expect(shell.activeTreeNode).toBeNull();
+
+      // 3. deleteVolume with matching activeTreeNode (volume itself)
+      shell.activeTreeNode = { type: 'volume', node: { id: 'vol_del' } };
+      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [], [], true);
+      expect(shell.activeTreeNode).toBeNull();
+
+      // 4. closeEditorsFor with activeTreeNode matching closed editor
+      await shell.openChapterTab({ id: 'ch_active_node_tab', volume_id: 'vol_node_1' });
+      shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_active_node_tab' } };
+      await shell.deleteVolume({ id: 'vol_node_1', title: 'Vol Node' }, [], [], true);
+      expect(shell.activeTreeNode).toBeNull();
+
+      // 5. deleteArc with matching activeTreeNode (chapter in arc, and arc itself)
       shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_arc' } };
       await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [{ id: 'ch_in_arc' }], true);
       expect(shell.activeTreeNode).toBeNull();
@@ -835,10 +851,14 @@ describe('shell store', () => {
       await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [], true);
       expect(shell.activeTreeNode).toBeNull();
 
-      // 3. deleteVolume & deleteArc with open tabs matching volume_id, arc_id, and chapter id
-      (shell as any).openChapterTab?.({ id: 'ch_vol_tab', volume_id: 'vol_tab_1' });
-      (shell as any).openChapterTab?.({ id: 'ch_arc_tab', arc_id: 'arc_tab_1' });
-      (shell as any).openChapterTab?.({ id: 'ch_direct_tab' });
+      // 6. deleteArc with open tabs matching arcId (camelCase)
+      await shell.openChapterTab({ id: 'ch_arc_camel', arcId: 'arc_camel_1' });
+      await shell.deleteArc({ id: 'arc_camel_1', title: 'Arc Camel' }, [], true);
+
+      // 7. deleteVolume with open tabs matching volume_id, arc_id, and chapter id
+      await shell.openChapterTab({ id: 'ch_vol_tab', volume_id: 'vol_tab_1' });
+      await shell.openChapterTab({ id: 'ch_arc_tab', arc_id: 'arc_tab_1' });
+      await shell.openChapterTab({ id: 'ch_direct_tab' });
 
       await shell.deleteVolume(
         { id: 'vol_tab_1', title: 'Vol with tabs' },
@@ -941,6 +961,40 @@ describe('shell store', () => {
       vi.spyOn(schema, 'loadSchema').mockResolvedValueOnce({ titleField: 'name' } as any);
       // 'e1' is not in open editors, so actualTabId will be null
       await shell.renameEntity('character', 'e1', 'New Hero');
+    });
+
+    it('covers additional error and edge case branches (loadChapters, saveAllEntities, deleteEntity, deleteChapter)', async () => {
+      // 1. loadChapters catch
+      vi.mocked(api.getChapters).mockRejectedValueOnce(new Error('Load chapters failed'));
+      await shell.loadChapters();
+      expect(shell.chapters).toEqual([]);
+
+      // 2. saveAll error branches (covers 624, 648, 652)
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'err_save' } as any);
+      await shell.openEntity({ entityType: 'character', id: 'err_save', name: 'Error Save' });
+      const errTab = shell.openEditors.find((t: any) => t.rawId === 'err_save');
+      if (errTab) errTab.unsaved = true;
+
+      // 2a. Line 624: error scanning deleted relationships
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = vi.fn().mockRejectedValueOnce(new Error('Fetch schema fail'));
+      vi.mocked(api.saveEntityWithRelations).mockResolvedValueOnce({ id: 'entities:err_save' } as any);
+      await shell.saveAll();
+      globalThis.fetch = origFetch;
+
+      // 2b. Line 652: api.saveEntityWithRelations failure
+      if (errTab) errTab.unsaved = true;
+      vi.mocked(api.saveEntityWithRelations).mockRejectedValueOnce(new Error('Save failed'));
+      await shell.saveAll();
+
+      // 3. deleteEntity with matching activeTreeNode
+      shell.activeTreeNode = { type: 'character', node: { id: 'del_node' } };
+      await shell.deleteEntity('character:del_node', 'character', true);
+      expect(shell.activeTreeNode).toBeNull();
+
+      // 4. deleteChapter catch
+      vi.mocked(api.deleteChapter).mockRejectedValueOnce(new Error('Delete chapter failed'));
+      await shell.deleteChapter({ id: 'ch_fail', title: 'Fail' });
     });
   });
 });

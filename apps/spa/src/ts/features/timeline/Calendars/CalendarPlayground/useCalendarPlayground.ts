@@ -84,10 +84,15 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
       const sm = h.дата_начала.месяц, sd = h.дата_начала.день;
       const em = h.дата_конца?.месяц ?? sm, ed = h.дата_конца?.день ?? sd;
       if (monthIdx >= sm && monthIdx <= em) {
-        if (monthIdx === sm && monthIdx === em && day >= sd && day <= ed) return h;
-        if (monthIdx === sm && day >= sd) return h;
-        if (monthIdx === em && day <= ed) return h;
-        if (monthIdx > sm && monthIdx < em) return h;
+        if (monthIdx === sm && monthIdx === em) {
+          if (day >= sd && day <= ed) return h;
+        } else if (monthIdx === sm) {
+          if (day >= sd) return h;
+        } else if (monthIdx === em) {
+          if (day <= ed) return h;
+        } else {
+          return h;
+        }
       }
     }
     return null;

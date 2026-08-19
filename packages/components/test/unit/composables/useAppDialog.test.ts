@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useAppDialog, appConfirm as appDialogConfirm, appAlert } from '../../../src/ts/composables/useAppDialog';
 import { appConfirm as domConfirm } from '../../../src/ts/utils/dialogs';
 

@@ -1,6 +1,15 @@
-// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useShellApp } from '../../../src/ts/composables/useShellApp';
+import type { EditorTab } from '../../../src/ts/composables/useEditorGroups';
+
+const createTab = (tab: Partial<EditorTab> & { id: string; title: string }): EditorTab => ({
+  rawId: tab.id,
+  entityType: 'chapter',
+  tabType: 'chapter',
+  data: {},
+  unsaved: false,
+  ...tab,
+});
 
 describe('useShellApp', () => {
   beforeEach(() => {
@@ -101,7 +110,7 @@ describe('useShellApp', () => {
     });
 
     shell.activePanelTab.value = 'console';
-    shell.eg.openTab({ id: 'tab1', title: 'T1' });
+    shell.eg.openTab(createTab({ id: 'tab1', title: 'T1' }));
     shell.saveState();
 
     const raw = localStorage.getItem('my-app:state');
@@ -139,7 +148,7 @@ describe('useShellApp', () => {
 
   it('resizes between editor groups', () => {
     const shell = useShellApp({ storagePrefix: 'my-app' });
-    shell.eg.openTab({ id: 't1', title: 'T1' });
+    shell.eg.openTab(createTab({ id: 't1', title: 'T1' }));
     shell.splitRight();
 
     const container = document.createElement('div');
@@ -197,8 +206,8 @@ describe('useShellApp', () => {
   it('group management helper methods delegate to editorGroups', () => {
     const shell = useShellApp({ storagePrefix: 'my-app' });
 
-    shell.eg.openTab({ id: 't1', title: 'T1' });
-    shell.eg.openTab({ id: 't2', title: 'T2' });
+    shell.eg.openTab(createTab({ id: 't1', title: 'T1' }));
+    shell.eg.openTab(createTab({ id: 't2', title: 'T2' }));
     shell.splitRight();
 
     expect(shell.editorGroups.value.length).toBe(2);
@@ -242,12 +251,16 @@ describe('useShellApp', () => {
       const wrapper = mount(Comp);
       await Promise.resolve();
 
-      shellInstance.eg.openTab({ id: 't1', title: 'T1' });
-      shellInstance.eg.openTab({ id: 't2', title: 'T2' });
+      shellInstance.eg.openTab(createTab({ id: 't1', title: 'T1' }));
+      shellInstance.eg.openTab(createTab({ id: 't2', title: 'T2' }));
 
       // Ctrl+S
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS', ctrlKey: true }));
       expect(onSave).toHaveBeenCalled();
+
+      // Ctrl+Shift+S
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS', ctrlKey: true, shiftKey: true }));
+      expect(onSave).toHaveBeenCalledTimes(2);
 
       // Ctrl+, (toggle settings)
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Comma', ctrlKey: true }));
@@ -256,6 +269,9 @@ describe('useShellApp', () => {
       // Escape (closes settings)
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
       expect(shellInstance.showSettings.value).toBe(false);
+
+      // Escape when settings already closed
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' }));
 
       // Ctrl+B (toggle sidebar)
       const prevSidebar = shellInstance.sidebarVisible.value;
@@ -289,9 +305,13 @@ describe('useShellApp', () => {
 
       // Ctrl+Digit1..9
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit1', ctrlKey: true }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit9', ctrlKey: true }));
 
-      // F11 (fullscreen)
+      // F11 (fullscreen without fullscreenElement, then with fullscreenElement)
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'F11' }));
+      Object.defineProperty(document, 'fullscreenElement', { value: document.documentElement, configurable: true });
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'F11' }));
+      Object.defineProperty(document, 'fullscreenElement', { value: null, configurable: true });
 
       // Ctrl+W (close tab)
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW', ctrlKey: true }));

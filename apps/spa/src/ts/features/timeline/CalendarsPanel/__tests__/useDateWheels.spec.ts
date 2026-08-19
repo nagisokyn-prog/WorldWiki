@@ -198,6 +198,56 @@ describe('useDateWheels', () => {
     // 2. identical modelValue
     reactiveProps.modelValue = { эпоха_ключ: 0, год: 10, месяц: 0, день: 5 };
     await nextTick();
+
+    // 3. change month only
+    reactiveProps.modelValue = { эпоха_ключ: 0, год: 10, месяц: 1, день: 5 };
+    await nextTick();
+
+    // 4. change day only
+    reactiveProps.modelValue = { эпоха_ключ: 0, год: 10, месяц: 1, день: 20 };
+    await nextTick();
+
+    // 5. change era only
+    reactiveProps.modelValue = { эпоха_ключ: 1, год: 10, месяц: 1, день: 20 };
+    await nextTick();
+  });
+
+  it('handles missing/unnamed fields, empty eras, and syncFromProps fallback branches', () => {
+    const bareCal = {
+      // no eras, no months
+    };
+
+    const emptyObjProps = {
+      project: 'p1',
+      modelValue: {}, // empty object without fields
+    };
+
+    const wheels = useDateWheels(emptyObjProps, emit);
+    wheels.calendar.value = bareCal;
+
+    expect(wheels.currentEra.value.год_начала).toBe(1);
+    expect(wheels.currentEra.value.год_конца).toBe(9999);
+    expect(wheels.eraOptions.value).toEqual([]);
+    expect(wheels.monthOptions.value).toEqual([]);
+
+    // Calendar without calendar.value
+    wheels.calendar.value = null;
+    expect(wheels.dayOptions.value.length).toBe(30);
+
+    // onEraChange when currentYear is within bounds
+    wheels.calendar.value = mockCal;
+    wheels.currentEraIdx.value = 0;
+    wheels.currentYear.value = 50; // within Era 1 (1-100)
+    wheels.onEraChange();
+    expect(wheels.currentYear.value).toBe(50);
+
+    // Options with unnamed era and month
+    wheels.calendar.value = {
+      эпохи: [{ год_начала: 1, год_конца: 10 }], // no название
+      месяцы: [{}], // no название
+    };
+    expect(wheels.eraOptions.value[0].label).toBe('Эпоха 1');
+    expect(wheels.monthOptions.value[0].label).toBe('Месяц 1');
   });
 });
 

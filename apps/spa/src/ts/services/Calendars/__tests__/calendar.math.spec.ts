@@ -200,15 +200,106 @@ describe('CalendarMath', () => {
       expect(formatted).toBe('2024 год, Январь 15 (Наша эра) в 10:30');
     });
 
-    it('merges calendar data correctly', () => {
+    it('merges calendar data correctly including nested objects', () => {
       const custom = CalendarMath.mergeCalendarData(defaultCal, {
         название: 'Кастомный календарь',
         дней_в_неделе: 8,
+        настройки_времени: {
+          часов_в_сутках: 30,
+        } as any,
       });
 
       expect(custom.название).toBe('Кастомный календарь');
       expect(custom.дней_в_неделе).toBe(8);
+      expect(custom.настройки_времени?.часов_в_сутках).toBe(30);
+      expect(custom.настройки_времени?.минут_в_часе).toBe(60);
       expect(custom.месяцы.length).toBe(12);
+    });
+
+    it('handles getMonthName and getDayName with valid and out of bounds indices', () => {
+      expect(CalendarMath.getMonthName(defaultCal, 0)).toBe('Январь');
+      expect(CalendarMath.getMonthName(defaultCal, 99)).toBe('Неизвестный месяц');
+
+      expect(CalendarMath.getDayName(defaultCal, 0)).toBe('Понедельник');
+      expect(CalendarMath.getDayName(defaultCal, 99)).toBe('День');
+    });
+
+    it('handles formatDate fallbacks for null inputs, undefined parts, missing era and missing time', () => {
+      expect(CalendarMath.formatDate(defaultCal, null as any)).toBe('');
+      expect(CalendarMath.formatDate(defaultCal, {} as any)).toBe('');
+      expect(CalendarMath.formatDate(defaultCal, { original_input: {} } as any)).toBe('');
+
+      // Missing era and missing time
+      const bareCal = {
+        ...defaultCal,
+        эпохи: [],
+        месяцы: [{} as any],
+      };
+      const formatted = CalendarMath.formatDate(bareCal, {
+        original_input: {
+          era_index: 0,
+          year: 500,
+          month: 0,
+          day: 10,
+        },
+      } as any);
+      expect(formatted).toBe('500 год, Месяц 1 10');
+    });
+
+    it('handles reverse countdown eras and negative years in absolute minute conversions', () => {
+      const bceCal: CalendarData = {
+        ...defaultCal,
+        эпохи: [{ название: 'До н.э.', год_начала: 1, год_конца: 1000, обратный_отсчет: true }],
+      };
+
+      const input = { era_index: 0, year: 5, month: 2, day: 10, hour: 8, minute: 15 };
+      const abs = CalendarMath.getAbsoluteMinute(input, bceCal);
+      expect(abs).toBeLessThan(0);
+
+      const converted = CalendarMath.getDateFromAbsolute(abs, bceCal, 0);
+      expect(converted.era_index).toBe(0);
+      expect(converted.year).toBe(5);
+    });
+
+    it('handles multi-month spanning holidays, middle months, and empty calendar holidays/seasons', () => {
+      const calMulti: CalendarData = {
+        ...defaultCal,
+        праздники: [{
+          название: 'Фестиваль трех месяцев',
+          дата_начала: { месяц: 0, день: 20 },
+          дата_конца: { месяц: 2, день: 10 },
+          описание: 'Фестиваль',
+        }],
+      };
+
+      // Start month before start day
+      expect(CalendarMath.isHoliday(calMulti, 2024, 0, 15)).toBe(false);
+      // Start month on or after start day
+      expect(CalendarMath.isHoliday(calMulti, 2024, 0, 25)).toBe(true);
+      // Middle month (monthIdx 1: strictly between 0 and 2)
+      expect(CalendarMath.isHoliday(calMulti, 2024, 1, 15)).toBe(true);
+      // End month before or on end day
+      expect(CalendarMath.isHoliday(calMulti, 2024, 2, 5)).toBe(true);
+      // End month after end day
+      expect(CalendarMath.isHoliday(calMulti, 2024, 2, 15)).toBe(false);
+
+      // Null calendar / empty holidays & seasons
+      expect(CalendarMath.isHoliday(null as any, 2024, 0, 1)).toBe(false);
+      expect(CalendarMath.getSeasonForDate(null as any, 2024, 0)).toBe('Вне сезона');
+      expect(CalendarMath.getSeasonForDate({ ...defaultCal, сезоны: [] }, 2024, 0)).toBe('Вне сезона');
+    });
+
+    it('calculates moon phases for negative phases and missing phase_names', () => {
+      const moons = [{
+        name: 'DarkMoon',
+        period_days: 10,
+        initial_phase: -0.5,
+        // no phase_names
+      }];
+
+      const res = CalendarMath.calculateMoonPhases(-1000, moons as any, defaultCal);
+      expect(res.length).toBe(1);
+      expect(res[0].name).toBeDefined();
     });
   });
 

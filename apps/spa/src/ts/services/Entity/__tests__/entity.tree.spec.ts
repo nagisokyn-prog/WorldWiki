@@ -175,5 +175,53 @@ describe('useEntityTree', () => {
     vi.mocked(appConfirm).mockResolvedValueOnce(false);
     await tree.deleteEntityCtxNode();
     expect(emit).not.toHaveBeenCalledWith('delete-entity', expect.anything(), expect.anything(), true);
+
+    // Single confirm success
+    tree.entityCtx.value = { entityType: 'character', entity: { id: 'c1', name: 'Arthur' } };
+    tree.entitySelection.hasSelection.value = false;
+    vi.mocked(appConfirm).mockResolvedValueOnce(true);
+    await tree.deleteEntityCtxNode();
+    expect(emit).toHaveBeenCalledWith('delete-entity', 'entity:character:c1', 'character', true);
+    expect(tree.entities.value.character.length).toBe(0);
+  });
+
+  it('handles openEntityCtx when item is selected vs not selected', () => {
+    const tree = useEntityTree('my-proj', emit);
+    const mockEvent = { clientX: 100, clientY: 200 } as MouseEvent;
+
+    // 1. Not selected -> triggers handleClick
+    (tree.entitySelection.isSelected as any).mockReturnValue(false);
+    tree.openEntityCtx(mockEvent, 'character', { id: 'c1' }, { type: 'character' });
+    expect(tree.entitySelection.handleClick).toHaveBeenCalled();
+    expect(tree.entityCtx.value).toEqual({
+      x: 100,
+      y: 200,
+      entityType: 'character',
+      entity: { id: 'c1' },
+      sect: { type: 'character' },
+    });
+
+    // 2. Already selected -> does not trigger handleClick
+    (tree.entitySelection.handleClick as any).mockClear();
+    (tree.entitySelection.isSelected as any).mockReturnValue(true);
+    tree.openEntityCtx(mockEvent, 'character', { id: 'c1' }, { type: 'character' });
+    expect(tree.entitySelection.handleClick).not.toHaveBeenCalled();
+  });
+
+  it('handles concurrent loadEntities skip and schema iconEmoji', async () => {
+    vi.mocked(entityApi.getSchemas).mockResolvedValueOnce({
+      item: { name: 'Item', iconEmoji: '⚔️' },
+    } as any);
+    vi.mocked(api.getEntitiesBatch).mockImplementation(async () => {
+      await new Promise((r) => setTimeout(r, 10));
+      return { item: [] };
+    });
+
+    const tree = useEntityTree('my-proj', emit);
+    const p1 = tree.loadEntities();
+    const p2 = tree.loadEntities(); // should be skipped
+    await Promise.all([p1, p2]);
+
+    expect(tree.entitySections.value[0].emoji).toBe('⚔️');
   });
 });

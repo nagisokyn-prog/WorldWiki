@@ -326,6 +326,79 @@ describe('useTimelinePanel', () => {
       expect(altMonths[1].label).toBe('Месяц 2');
       expect(panel.calendarOptions.value[0].label).toBe('Календарь');
     });
+
+    it('covers createNextEvent and updateEventFullDate with undefined hours/minutes', () => {
+      const eventsWithoutTime = [
+        {
+          date: { era: 0, year: 50, month: 1, day: 10 },
+          description: 'Event Without Time',
+          calendar_id: 'cal1',
+        },
+      ];
+
+      const panel = useTimelinePanel({ project: 'p1', events: eventsWithoutTime as any }, emit);
+      panel.availableCalendars.value = [mockCalendar];
+      panel.relativeInput.value[0] = '+1y';
+
+      panel.createNextEvent(0);
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+
+      // updateEventFullDate without hour and minute in original_input
+      panel.updateEventFullDate(0, {
+        calendar_id: 'cal1',
+        original_input: {
+          era_index: 0,
+          year: 55,
+          month: 1,
+          day: 10,
+        },
+      });
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+    });
+
+    it('covers getConvertedDateInfo edge cases: missing time, unknown season, missing era, foreign cal', () => {
+      const bareCal = {
+        id: 'cal_bare',
+        data: {
+          // No название, no эпохи, no месяцы, no сезоны
+        },
+      };
+
+      const panel = useTimelinePanel(props, emit);
+      panel.availableCalendars.value = [mockCalendar, bareCal];
+
+      // 1. Event without time converted in bare calendar
+      const evNoTime = {
+        date: { era: 0, year: 100, month: 0, day: 15 },
+        description: 'No Time',
+        calendar_id: 'cal1',
+      };
+      const info = panel.getConvertedDateInfo(evNoTime, 'cal_bare');
+      expect(info?.calName).toBe('Календарь');
+      expect(info?.seasonName).toBe('Без сезона');
+      expect(info?.isNative).toBe(false);
+
+      // 2. updateEventTime when event has no initial time object
+      panel.updateEventTime(0, 'hour', 10);
+      panel.updateEventTime(0, 'minute', 20);
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+    });
+
+    it('covers addEvent with previous event without time or calendar_id', () => {
+      const customEvents = [
+        {
+          date: { era: 0, year: 10, month: 0, day: 1 },
+          description: 'Legacy event',
+          // no time, no calendar_id
+        },
+      ];
+      const panel = useTimelinePanel({ project: 'p1', events: customEvents as any }, emit);
+      panel.availableCalendars.value = [mockCalendar];
+      panel.selectedCalendarIds.value = []; // empty selectedCalendarIds
+
+      panel.addEvent();
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+    });
   });
 });
 

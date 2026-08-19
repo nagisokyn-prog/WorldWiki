@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { settingsService } from '../../src/ts/services/settings.service';
+import { settingsService } from '../../../src/ts/services/settings.service';
 
 describe('settings.service', () => {
   beforeEach(() => {
@@ -138,6 +138,71 @@ describe('settings.service', () => {
       settingsService.getSettings().colors.accent = '#newcolor';
       settingsService.saveSettings();
       expect(listener).toHaveBeenCalled();
+    });
+  });
+
+  describe('window storage event & additional branches', () => {
+    it('handles window storage event with matching key and valid JSON', () => {
+      const listener = vi.fn();
+      settingsService.onChange(listener);
+
+      const event = new StorageEvent('storage', {
+        key: 'app:settings',
+        newValue: JSON.stringify({ colors: { accent: '#778899' } }),
+      });
+      window.dispatchEvent(event);
+
+      expect(settingsService.getSettings().colors.accent).toBe('#778899');
+      expect(listener).toHaveBeenCalled();
+    });
+
+    it('handles window storage event with invalid JSON or mismatched key gracefully', () => {
+      const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Mismatched key
+      window.dispatchEvent(new StorageEvent('storage', { key: 'other:key', newValue: '{}' }));
+
+      // Invalid JSON
+      window.dispatchEvent(new StorageEvent('storage', { key: 'app:settings', newValue: 'invalid{json' }));
+      expect(errorSpy).toHaveBeenCalled();
+      errorSpy.mockRestore();
+    });
+
+    it('handles switchTheme for light theme with Tauri failure and null response', async () => {
+      (window as any).__TAURI__ = {
+        core: {
+          invoke: vi.fn().mockResolvedValue(null),
+        },
+      };
+
+      // 1. null response for light theme
+      await settingsService.switchTheme('light');
+      expect(settingsService.saveSettings).toHaveBeenCalled();
+
+      // 2. rejected response for light theme
+      (window as any).__TAURI__.core.invoke.mockRejectedValue(new Error('Tauri failed'));
+      await settingsService.switchTheme('light');
+      expect(settingsService.saveSettings).toHaveBeenCalled();
+    });
+
+    it('handles localStorage throw in switchTheme', async () => {
+      delete (window as any).__TAURI__;
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const origGetItem = localStorage.getItem;
+      localStorage.getItem = () => { throw new Error('Storage disabled'); };
+
+      await settingsService.switchTheme('light');
+      expect(warnSpy).toHaveBeenCalledWith('localStorage theme load failed for light:', expect.any(Error));
+
+      localStorage.getItem = origGetItem;
+      warnSpy.mockRestore();
+    });
+
+    it('handles applyQualityLevel scaling', () => {
+      settingsService.applyQualityLevel(80);
+      expect(settingsService.getSettings().perf.qualityLevel).toBe(80);
+      settingsService.applyQualityLevel(0);
+      expect(settingsService.getSettings().perf.qualityLevel).toBe(0);
     });
   });
 });

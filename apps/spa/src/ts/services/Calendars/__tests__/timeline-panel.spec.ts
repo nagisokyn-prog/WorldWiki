@@ -299,6 +299,65 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
       props.events.length = 0;
       vm.addEvent();
     });
+
+    it('covers createNextEvent and updateEventFullDate without hours/minutes, and alternate era/month names', () => {
+      props.events.length = 0;
+      props.events.push({
+        date: { era: 0, year: 20, month: 0, day: 5 },
+        description: 'No time event',
+        calendar_id: 'cal_1',
+      });
+
+      vm.relativeInput[0] = '+1y';
+      vm.createNextEvent(0);
+
+      // updateEventFullDate without hour and minute in original_input
+      vm.updateEventFullDate(0, {
+        calendar_id: 'cal_1',
+        original_input: {
+          era_index: 0,
+          year: 25,
+          month: 1,
+          day: 10,
+        },
+      });
+
+      // Alternate era and month with .name
+      vm.availableCalendars = [
+        {
+          id: 'cal_alt',
+          data: {
+            эпохи: [{ name: 'Alt Era' }, {}],
+            месяцы: [{ name: 'Alt Month' }, {}],
+          },
+        },
+      ];
+
+      expect(vm.getEraOptions('cal_alt')[0].label).toBe('Alt Era');
+      expect(vm.getEraOptions('cal_alt')[1].label).toBe('Эра 2');
+      expect(vm.getMonthOptions('cal_alt')[0].label).toBe('Alt Month');
+      expect(vm.getMonthOptions('cal_alt')[1].label).toBe('Месяц 2');
+      expect(vm.calendarOptions[0].label).toBe('Календарь');
+    });
+
+    it('covers getConvertedDateInfo edge cases: missing time, unknown season, and bare calendar', () => {
+      const bareCal = {
+        id: 'cal_bare',
+        data: {},
+      };
+      vm.availableCalendars.push(bareCal);
+
+      const evNoTime = {
+        date: { era: 0, year: 10, month: 0, day: 5 },
+        description: 'No time event',
+        calendar_id: 'cal_1',
+      };
+
+      const info = vm.getConvertedDateInfo(evNoTime, 'cal_bare');
+      expect(info.calName).toBe('Календарь');
+      expect(info.seasonName).toBe('Без сезона');
+      expect(info.isNative).toBe(false);
+    });
   });
 });
 

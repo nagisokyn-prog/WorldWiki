@@ -340,6 +340,116 @@ describe('useUniversalDatePicker', () => {
       await nextTick();
       expect(picker.currentYear.value).toBe(77);
     });
+
+    it('covers all watch branches: null newVal, identical values, different properties, showTime', async () => {
+      const reactiveProps = reactive({
+        project: 'p1',
+        showTime: true,
+        modelValue: {
+          calendar_id: 'cal_1',
+          original_input: { era_index: 0, year: 100, month: 0, day: 15, hour: 14, minute: 30 },
+        } as any,
+      });
+
+      const picker = useUniversalDatePicker(reactiveProps, emit);
+      picker.allCalendars.value = [mockCalendar];
+      await nextTick();
+
+      // 1. null newVal
+      reactiveProps.modelValue = null;
+      await nextTick();
+
+      // 2. Identical values (no sync)
+      reactiveProps.modelValue = {
+        calendar_id: 'cal_1',
+        original_input: { era_index: 0, year: 100, month: 0, day: 15, hour: 14, minute: 30 },
+      };
+      await nextTick();
+
+      // 3. Different era_index
+      reactiveProps.modelValue = {
+        calendar_id: 'cal_1',
+        original_input: { era_index: 1, year: 205, month: 0, day: 15, hour: 14, minute: 30 },
+      };
+      await nextTick();
+      expect(picker.currentEraIdx.value).toBe(1);
+
+      // 4. Different month
+      reactiveProps.modelValue = {
+        calendar_id: 'cal_1',
+        original_input: { era_index: 1, year: 205, month: 1, day: 15, hour: 14, minute: 30 },
+      };
+      await nextTick();
+
+      // 5. Different minute
+      reactiveProps.modelValue = {
+        calendar_id: 'cal_1',
+        original_input: { era_index: 1, year: 205, month: 1, day: 15, hour: 14, minute: 45 },
+      };
+      await nextTick();
+      expect(picker.currentMinute.value).toBe(45);
+
+      // 6. Object without matching fields
+      reactiveProps.modelValue = { foo: 'bar' } as any;
+      await nextTick();
+    });
+
+    it('handles empty list returned from getCalendars and fallback calendar generation', async () => {
+      mockGetCalendars.mockResolvedValueOnce([]);
+
+      const TestComponent = defineComponent({
+        props: ['project', 'showTime', 'modelValue'],
+        emits: ['update:modelValue'],
+        setup(p, { emit: e }) {
+          return { ...useUniversalDatePicker(p, e) };
+        },
+        template: '<div></div>',
+      });
+
+      const wrapper = mount(TestComponent, {
+        props: { project: 'p1', showTime: false, modelValue: null },
+      });
+      await flushPromises();
+
+      const vm = wrapper.vm as any;
+      expect(vm.allCalendars.length).toBe(1);
+      expect(vm.currentCalendarId).toBe('temp');
+
+      wrapper.unmount();
+    });
+
+    it('handles unnamed eras, months, and missing calendar gracefully', () => {
+      const bareCalendar = {
+        id: 'cal_bare',
+        data: {
+          эпохи: [{ год_начала: 1, год_конца: 10 }], // No название
+          месяцы: [{}], // No название
+          настройки_времени: { часов_в_сутках: 10, минут_в_часе: 20 },
+        },
+      };
+
+      const propsBare = {
+        project: 'p1',
+        showTime: false,
+        modelValue: {
+          эпоха_ключ: 0,
+          // no год, месяц, день
+        },
+      };
+
+      const picker = useUniversalDatePicker(propsBare, emit);
+      picker.allCalendars.value = [bareCalendar];
+      picker.currentCalendarId.value = 'cal_bare';
+
+      expect(picker.eraOptions.value[0].label).toBe('Эпоха 1');
+      expect(picker.monthOptions.value[0].label).toBe('Месяц 1');
+
+      // Test with empty calendar ID
+      picker.currentCalendarId.value = '';
+      expect(picker.calendar.value).toBeNull();
+      expect(picker.maxDaysInMonth.value).toBe(30);
+      picker.onCalendarChange(); // should return early in emitUpdate / validateValues
+    });
   });
 });
 

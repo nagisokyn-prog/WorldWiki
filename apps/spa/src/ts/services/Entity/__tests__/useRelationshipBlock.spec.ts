@@ -179,4 +179,31 @@ describe('useRelationshipBlock', () => {
     expect(rel.foreignError.value).toContain('Ошибка загрузки');
     expect(rel.foreignLoading.value).toBe(false);
   });
+
+  describe('Additional branch edge cases for useRelationshipBlock', () => {
+    it('handles empty targetId reset, direct referenceData type, and add/removeNestedItem branches', async () => {
+      props.item.target_char = '';
+      props.referenceData = { fraction: [{ value: 'f1', label: 'Fraction 1' }] };
+
+      const rel = useRelationshipBlock(props, emit);
+
+      // 1. fetchForeignItem with empty targetId
+      await rel.fetchForeignItem();
+      expect(rel.foreignItem.value).toBeNull();
+
+      // 2. getOptions with direct type match without _list suffix
+      expect(rel.getOptions({ entityType: 'fraction' })).toEqual([{ value: 'f1', label: 'Fraction 1' }]);
+
+      // 3. addNestedItem passing Event instance
+      rel.addNestedItem(new Event('click'), { fields: [{ class: 'role', value: 'Hero' }] });
+      expect(emit).toHaveBeenCalledWith('modified');
+
+      // 4. removeNestedItem on valid array and invalid non-array
+      rel.removeNestedItem(0);
+      expect(emit).toHaveBeenCalledWith('modified');
+
+      rel.removeNestedItem(0, {}, { dataPath: 'missing_path' });
+    });
+  });
 });
+

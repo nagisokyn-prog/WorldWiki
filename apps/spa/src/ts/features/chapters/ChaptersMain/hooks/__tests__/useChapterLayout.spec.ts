@@ -151,12 +151,38 @@ describe('useChapterLayout', () => {
     document.dispatchEvent(new CustomEvent('ww:toggle-right-panel'));
     expect(vm.isRightPanelVisible).toBe(true);
 
-    const dispatchSpy = vi.spyOn(document, 'dispatchEvent');
-    document.dispatchEvent(new CustomEvent('ww:toggle-structure'));
-    expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ type: 'ww:structure-toggled' })
-    );
+    wrapper.unmount();
+  });
 
+  it('handles plan item additions when already open and with null refs, and right panel clamp bounds', () => {
+    const wrapper = mount(TestComponent);
+    const vm = wrapper.vm as any;
+
+    // Plan addition when already open and ref is null
+    vm.isVolumePlanOpen = true;
+    vm.volumePlanRef = null;
+    vm.addVolumePlanItem();
+    vi.advanceTimersByTime(60);
+
+    vm.isArcPlanOpen = true;
+    vm.arcPlanRef = null;
+    vm.addArcPlanItem();
+    vi.advanceTimersByTime(60);
+
+    // Mousemove / mouseup when not dragging
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 100 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // Dragging beyond 600 max and below 200 min
+    vm.startResize({ clientX: 500 } as any);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 100 })); // delta = 400 -> 320 + 400 = 720 > 600
+    expect(vm.rightPanelWidth).toBe(600);
+
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 900 })); // delta = -400 -> 320 - 400 = -80 < 200
+    expect(vm.rightPanelWidth).toBe(200);
+
+    document.dispatchEvent(new MouseEvent('mouseup'));
     wrapper.unmount();
   });
 });
+

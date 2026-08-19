@@ -97,7 +97,14 @@ describe('useGlobalTimeViewer', () => {
     wrapper.vm.open();
     expect(wrapper.vm.isVisible).toBe(true);
 
+    // updateLocalDates when calendars is empty
+    const viewerEmpty = useGlobalTimeViewer();
+    viewerEmpty.minute.value = 500;
+    await Promise.resolve();
+    expect(viewerEmpty.localDates.value).toEqual([]);
+
     wrapper.unmount();
   });
 });
+
 

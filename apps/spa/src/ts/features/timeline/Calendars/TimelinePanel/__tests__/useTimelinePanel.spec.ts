@@ -213,8 +213,11 @@ describe('useTimelinePanel', () => {
       panel.toggleExpand(0);
       expect(panel.isExpanded(0)).toBe(false);
 
-      // updateEventField
-      panel.updateEventField(0, 'description', 'Updated description');
+      // updateEventDate and updateEventTime
+      panel.updateEventDate(0, 'year', 200);
+      expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+
+      panel.updateEventTime(0, 'hour', 15);
       expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
 
       // removeEvent
@@ -250,6 +253,31 @@ describe('useTimelinePanel', () => {
       });
       expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
     });
+
+    it('handles onYearInput, onDayInput, date fields update, and hour/minute options', () => {
+      const panel = useTimelinePanel(props, emit);
+      panel.availableCalendars.value = [mockCalendar];
+
+      // onYearInput & onDayInput with valid and invalid values
+      panel.onYearInput(0, { target: { value: '150' } } as any);
+      panel.onYearInput(0, { target: { value: 'invalid' } } as any);
+
+      panel.onDayInput(0, { target: { value: '25' } } as any);
+      panel.onDayInput(0, { target: { value: '' } } as any);
+
+      // updateEventDate for era, month, day (with day clamped by maxDays)
+      panel.updateEventDate(0, 'era', 0);
+      panel.updateEventDate(0, 'month', 0);
+      panel.updateEventDate(0, 'day', 999); // Clamped to month's max days
+
+      // hour & minute options
+      expect(panel.getHourOptions('cal1').length).toBe(24);
+      expect(panel.getMinuteOptions('cal1').length).toBe(60);
+      expect(panel.getHourOptions('unknown')).toEqual([]);
+      expect(panel.getMinuteOptions('unknown')).toEqual([]);
+      expect(panel.getDaysInMonth('unknown', 0)).toBe(30);
+    });
   });
 });
+
 

@@ -300,6 +300,7 @@ describe('useUniversalDatePicker', () => {
       pickerNull.allCalendars.value = [
         { id: 'cal_no_def', data: mockCalendar.data },
       ];
+      pickerNull.currentCalendarId.value = 'cal_no_def';
       pickerNull.onCalendarChange();
       expect(emit).toHaveBeenCalledWith('update:modelValue', expect.any(Object));
     });

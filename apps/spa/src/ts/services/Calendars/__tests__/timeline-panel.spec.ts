@@ -280,5 +280,25 @@ describe('TimelinePanel (services/Calendars/timeline-panel.ts)', () => {
         },
       });
     });
+
+    it('handles input invalid fallbacks, time initialization, and createNextEvent guards', () => {
+      // onYearInput & onDayInput with non-numeric strings
+      vm.onYearInput(0, { target: { value: 'not-a-number' } });
+      vm.onDayInput(0, { target: { value: '' } });
+
+      // updateEventTime on event without time
+      props.events[0].time = undefined;
+      vm.updateEventTime(0, 'hour', 10);
+      vm.updateEventTime(0, 'minute', 30);
+
+      // createNextEvent with missing input
+      vm.relativeInput[0] = '';
+      vm.createNextEvent(0);
+
+      // addEvent with empty events array
+      props.events.length = 0;
+      vm.addEvent();
+    });
   });
 });
+

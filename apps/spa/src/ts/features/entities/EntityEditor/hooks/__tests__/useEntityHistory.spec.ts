@@ -110,7 +110,43 @@ describe('useEntityHistory', () => {
     const rev = { id: 'rev_1', content: { data: { name: 'Arthur Old' } } };
 
     history.previewHistory(rev);
-
     expect(history.isFieldChanged('name')).toBe(true);
   });
+
+  describe('Additional branch edge cases for useEntityHistory', () => {
+    it('handles errors in togglePin and loadHistory', async () => {
+      // togglePin error catch
+      vi.mocked(api.toggleEntityHistoryPin).mockRejectedValueOnce(new Error('Pin error'));
+      const history = useEntityHistory(props, emit, formData);
+      await history.togglePin({ id: 'r1', is_pinned: false });
+
+      // loadHistory without project, entityId, or tauri
+      const historyNoProps = useEntityHistory({}, emit, formData);
+      await historyNoProps.loadHistory();
+
+      // loadHistory error catch
+      vi.mocked((window as any).__TAURI__.core.invoke).mockRejectedValueOnce(new Error('Invoke error'));
+      await history.loadHistory();
+      expect(history.isLoadingHistory.value).toBe(false);
+    });
+
+    it('handles restoreHistory guards and diff summary edge cases', () => {
+      const history = useEntityHistory(props, emit, formData);
+
+      // restoreHistory without previewingRevId
+      history.restoreHistory();
+
+      // restoreHistory when rev has no content
+      history.previewingRevId.value = 'non_existent';
+      history.restoreHistory();
+
+      // getDiffSummary with null previous and empty changes
+      expect(history.getDiffSummary({}, null)).toBe('');
+      expect(history.getDiffSummary({ content: { name: 'same' } }, { content: { name: 'same' } })).toBe('Без изменений');
+
+      // isFieldChanged when not previewing
+      expect(history.isFieldChanged('name')).toBe(false);
+    });
+  });
 });
+

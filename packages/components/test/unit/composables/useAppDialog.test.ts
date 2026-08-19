@@ -77,5 +77,20 @@ describe('useAppDialog & dialogs', () => {
       expect(result).toBe(true);
       expect(document.querySelector('#app-confirm-ok')).toBeNull();
     });
+
+    it('handles cleanup when overlay is already removed from DOM', async () => {
+      const promise = domConfirm('Removed overlay test');
+      const overlay = document.querySelector('div[style*="z-index:999999"]') as HTMLDivElement;
+      const cancelBtn = document.querySelector('#app-confirm-cancel') as HTMLButtonElement;
+
+      // Detach overlay before clicking
+      if (overlay && overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+      cancelBtn.click();
+
+      const result = await promise;
+      expect(result).toBe(false);
+    });
   });
 });

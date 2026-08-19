@@ -819,5 +819,18 @@ describe('shell store', () => {
       vi.mocked(entityApi.getEntity).mockRejectedValueOnce(new Error('Rename error'));
       await shell.renameEntity('character', 'c1', 'New Name');
     });
+
+    it('resets activeTreeNode during deleteVolume and deleteArc', async () => {
+      // 1. deleteVolume with matching activeTreeNode (volume and chapter)
+      shell.activeTreeNode = { type: 'volume', node: { id: 'vol_del' } };
+      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, ['arc_1'], [{ id: 'ch_in_vol' }], true);
+      expect(shell.activeTreeNode).toBeNull();
+
+      // 2. deleteArc with matching activeTreeNode
+      shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_arc' } };
+      await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [{ id: 'ch_in_arc' }], true);
+      expect(shell.activeTreeNode).toBeNull();
+    });
   });
 });
+

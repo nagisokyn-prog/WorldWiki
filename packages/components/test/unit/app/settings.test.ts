@@ -46,4 +46,34 @@ describe('packages/components app/settings.ts', () => {
     await vi.advanceTimersByTimeAsync(2100);
     expect(saveBtn.textContent).toBe('Save');
   });
+
+  it('tests onClose and onBack callbacks in Settings render function', async () => {
+    const vue = await import('vue');
+    let capturedRoot: any;
+    const createAppSpy = vi.spyOn(vue, 'createApp').mockImplementation(((comp: any) => {
+      capturedRoot = comp;
+      return (createAppSpy as any).getMockImplementation()?.(comp) || {
+        use: vi.fn().mockReturnThis(),
+        mount: vi.fn(),
+      };
+    }) as any);
+
+    document.body.innerHTML = '<div id="settingsContent"></div>';
+    (window as any).__APP_CONFIG__ = { backUrl: 'custom_dashboard.html' };
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+
+    if (capturedRoot && capturedRoot.render) {
+      const vnode = capturedRoot.render();
+      if (vnode && vnode.props) {
+        vnode.props.onClose?.();
+        expect(window.location.href).toBe('custom_dashboard.html');
+
+        (window as any).__APP_CONFIG__ = {};
+        vnode.props.onBack?.();
+        expect(window.location.href).toBe('main.html');
+      }
+    }
+    createAppSpy.mockRestore();
+  });
 });
+

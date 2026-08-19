@@ -181,5 +181,24 @@ describe('useDateWheels', () => {
     wheels.onDayChange();
     expect(wheels.currentDay.value).toBe(1);
   });
+
+  it('handles null and identical modelValue updates in watch', async () => {
+    const reactiveProps = reactive({
+      project: 'p1',
+      modelValue: { эпоха_ключ: 0, год: 10, месяц: 0, день: 5 },
+    });
+
+    const wheels = useDateWheels(reactiveProps, emit);
+    wheels.calendar.value = mockCal;
+
+    // 1. null modelValue
+    (reactiveProps as any).modelValue = null;
+    await nextTick();
+
+    // 2. identical modelValue
+    reactiveProps.modelValue = { эпоха_ключ: 0, год: 10, месяц: 0, день: 5 };
+    await nextTick();
+  });
 });
+
 

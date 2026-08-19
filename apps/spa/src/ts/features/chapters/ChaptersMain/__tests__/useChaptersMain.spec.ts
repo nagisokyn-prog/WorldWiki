@@ -1,33 +1,39 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ref } from 'vue';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { ref, nextTick } from 'vue';
+import { mount, flushPromises } from '@vue/test-utils';
+import { defineComponent } from 'vue';
 import { useChaptersMain } from '../useChaptersMain';
+import { useChapterStore } from '../../../../stores/chapter.store';
+import { useTimelineStore } from '../../../../stores/timeline.store';
+import { appAlert } from '@worldwiki/components';
+
+let mockStore: any;
+let mockTimelineInit: any;
 
 vi.mock('../../../../stores/chapter.store', () => ({
-  useChapterStore: () => ({
-    loading: ref(false),
-    chapters: ref([]),
-    hierarchy: ref({ volumes: [], arcs: [], chapters: [] }),
-    currentChapterId: ref('ch_1'),
-    currentChapter: ref({ id: 'ch_1', title: 'Prologue' }),
-    hasUnsavedChanges: ref(false),
-    debugError: ref(''),
-    isSaving: ref(false),
-    currentChapterNode: ref(null),
-    currentArc: ref(null),
-    currentVolume: ref(null),
-    loadChapters: vi.fn().mockResolvedValue([]),
-    saveChapter: vi.fn(),
-    openChapter: vi.fn(),
-    createNewChapter: vi.fn(),
-    onRenameChapter: vi.fn(),
-    deleteChapter: vi.fn().mockResolvedValue(undefined),
-  }),
+  useChapterStore: () => mockStore,
 }));
 
 vi.mock('../../../../stores/timeline.store', () => ({
   useTimelineStore: () => ({
-    init: vi.fn().mockResolvedValue(undefined),
+    init: mockTimelineInit,
   }),
+}));
+
+vi.mock('@worldwiki/components', () => ({
+  appAlert: vi.fn(),
+  settingsService: {
+    getSettings: () => ({}),
+    onChange: vi.fn(),
+  },
+}));
+
+vi.mock('../hooks/useChapterHistory', () => ({
+  useChapterHistory: () => ({ history: ref([]) }),
+}));
+
+vi.mock('../hooks/useFloatingEntities', () => ({
+  useFloatingEntities: () => ({ floatingEntities: ref([]) }),
 }));
 
 describe('useChaptersMain', () => {
@@ -35,19 +41,190 @@ describe('useChaptersMain', () => {
   let emit: any;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
     emit = vi.fn();
-    props = { project: 'proj_1' };
+    props = {
+      project: 'proj_1',
+      controlledChapterId: null,
+      activeTreeNode: null,
+    };
+
+    mockTimelineInit = vi.fn().mockResolvedValue(undefined);
+    mockStore = {
+      loading: ref(false),
+      chapters: ref([]),
+      hierarchy: ref({ volumes: [], arcs: [], chapters: [] }),
+      currentChapterId: ref('ch_1'),
+      currentChapter: ref({ id: 'ch_1', title: 'Prologue', scrollPos: 0 }),
+      hasUnsavedChanges: ref(false),
+      debugError: ref(''),
+      isSaving: ref(false),
+      currentChapterNode: ref(null),
+      currentArc: ref(null),
+      currentVolume: ref(null),
+      loadChapters: vi.fn().mockResolvedValue([]),
+      saveChapter: vi.fn(),
+      openChapter: vi.fn().mockResolvedValue(undefined),
+      createNewChapter: vi.fn().mockResolvedValue(undefined),
+      onRenameChapter: vi.fn().mockResolvedValue(undefined),
+      deleteChapter: vi.fn().mockResolvedValue(undefined),
+    };
   });
 
-  it('initializes and triggers save', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('initializes onMounted, loads chapters and opens controlled chapter when provided', async () => {
+    const TestComponent = defineComponent({
+      props: ['project', 'controlledChapterId', 'activeTreeNode'],
+      setup(p, { emit: e }) {
+        return { ...useChaptersMain(p, e) };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComponent, {
+      props: {
+        project: 'proj_1',
+        controlledChapterId: 'ch_target',
+        activeTreeNode: null,
+      },
+    });
+
+    await flushPromises();
+
+    expect(mockStore.loadChapters).toHaveBeenCalledWith('proj_1');
+    expect(mockTimelineInit).toHaveBeenCalledWith('proj_1');
+    expect(mockStore.openChapter).toHaveBeenCalledWith('proj_1', 'ch_target');
+
+    wrapper.unmount();
+  });
+
+  it('handles custom event listeners (save, reload hierarchy, rename)', async () => {
+    const TestComponent = defineComponent({
+      props: ['project', 'controlledChapterId', 'activeTreeNode'],
+      setup(p, { emit: e }) {
+        return { ...useChaptersMain(p, e) };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComponent, {
+      props: {
+        project: 'proj_1',
+        controlledChapterId: 'ch_1',
+        activeTreeNode: null,
+      },
+    });
+
+    await flushPromises();
+
+    // Trigger save custom event
+    document.dispatchEvent(new CustomEvent('ww:trigger-chapter-save'));
+    expect(mockStore.saveChapter).toHaveBeenCalled();
+
+    // Trigger hierarchy changed event
+    document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+    expect(mockStore.loadChapters).toHaveBeenCalled();
+
+    // Set current chapter
+    mockStore.currentChapter.value = { id: 'ch_1', title: 'Prologue' };
+
+    // Trigger rename event matching currentChapter
+    document.dispatchEvent(
+      new CustomEvent('ww:chapter-renamed', {
+        detail: { id: 'ch_1', title: 'Updated Prologue' },
+      })
+    );
+    expect(mockStore.currentChapter.value.title).toBe('Updated Prologue');
+
+    wrapper.unmount();
+  });
+
+  it('marks unsaved and triggers autosave debounce', () => {
     const main = useChaptersMain(props, emit);
 
     main.markUnsaved();
     expect(main.hasUnsavedChanges.value).toBe(true);
     expect(emit).toHaveBeenCalledWith('chapter-unsaved');
 
-    main.triggerSave();
-    expect(main.saveChapter).toBeDefined();
+    vi.advanceTimersByTime(2000);
+    expect(mockStore.saveChapter).toHaveBeenCalledWith('proj_1', emit);
+  });
+
+  it('handles tree node selection and opening chapter as tab', () => {
+    const main = useChaptersMain(props, emit);
+
+    main.onTreeNodeSelect({ type: 'arc', node: { id: 'arc_1' } });
+    expect(main.localActiveTreeNode.value).toEqual({ type: 'arc', node: { id: 'arc_1' } });
+
+    main.openChapterFromTree({ id: 'ch_2', title: 'Chapter 2' });
+    expect(main.localActiveTreeNode.value).toEqual({
+      type: 'chapter',
+      node: { id: 'ch_2', title: 'Chapter 2' },
+    });
+    expect(emit).toHaveBeenCalledWith('open-chapter-as-tab', { id: 'ch_2', title: 'Chapter 2' });
+  });
+
+  it('creates and renames chapters with tree reload', async () => {
+    const main = useChaptersMain(props, emit);
+    const mockTree = { load: vi.fn().mockResolvedValue(undefined) };
+    main.chapterTreeRef.value = mockTree;
+
+    await main.createChapterIn({ arcId: 'arc_1', volumeId: 'vol_1' });
+    expect(mockStore.createNewChapter).toHaveBeenCalledWith('proj_1', 'arc_1', 'vol_1');
+    expect(mockTree.load).toHaveBeenCalled();
+
+    await main.createNewChapter('arc_2', 'vol_2');
+    expect(mockStore.createNewChapter).toHaveBeenCalledWith('proj_1', 'arc_2', 'vol_2');
+
+    await main.onRenameChapter({ id: 'ch_1' }, 'New Name');
+    expect(mockStore.onRenameChapter).toHaveBeenCalledWith('proj_1', { id: 'ch_1' }, 'New Name');
+    expect(mockTree.load).toHaveBeenCalled();
+  });
+
+  it('handles chapter deletion (ignoring multi-select and deleting single)', async () => {
+    const main = useChaptersMain(props, emit);
+    const mockTree = { load: vi.fn().mockResolvedValue(undefined) };
+    main.chapterTreeRef.value = mockTree;
+    main.localActiveTreeNode.value = { type: 'chapter', node: { id: 'ch_1' } };
+
+    // Multi-delete ignored
+    main.onDeleteChapter({ id: 'ch_1' }, true);
+    expect(mockStore.deleteChapter).not.toHaveBeenCalled();
+
+    // Single delete
+    main.onDeleteChapter({ id: 'ch_1' }, false);
+    await Promise.resolve();
+
+    expect(mockStore.deleteChapter).toHaveBeenCalledWith('proj_1', 'ch_1');
+    expect(mockTree.load).toHaveBeenCalled();
+    expect(main.localActiveTreeNode.value).toBeUndefined();
+  });
+
+  it('handles export, scroll change, and chapter wrappers', async () => {
+    const main = useChaptersMain(props, emit);
+    mockStore.currentChapter.value = { id: 'ch_1', scrollPos: 0 };
+
+    await main.handleExport({ chapterIds: ['ch_1', 'ch_2'], format: 'pdf' });
+    expect(appAlert).toHaveBeenCalledWith('Начат экспорт 2 глав в формат pdf...');
+
+    main.handleScrollChange(450);
+    expect(mockStore.currentChapter.value.scrollPos).toBe(450);
+    expect(emit).toHaveBeenCalledWith('scroll-change', 450);
+
+    main.saveChapter();
+    expect(mockStore.saveChapter).toHaveBeenCalledWith('proj_1', emit);
+
+    main.loadChapters();
+    expect(mockStore.loadChapters).toHaveBeenCalledWith('proj_1');
+
+    main.loadHierarchy();
+    expect(mockStore.loadChapters).toHaveBeenCalled();
+
+    main.openChapter('ch_99');
+    expect(mockStore.openChapter).toHaveBeenCalledWith('proj_1', 'ch_99');
   });
 });

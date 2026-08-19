@@ -1,10 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { mount, flushPromises } from '@vue/test-utils';
+import { defineComponent } from 'vue';
 import { useCalendarLeapYear } from '../useCalendarLeapYear';
+import { settingsService } from '@worldwiki/components';
+
+let mockSettingsCb: any;
 
 vi.mock('@worldwiki/components', () => ({
   settingsService: {
     getSettings: () => ({ dropdowns: { wheelOrientation: 'horizontal' } }),
-    onChange: vi.fn(),
+    onChange: vi.fn((cb) => { mockSettingsCb = cb; }),
   },
 }));
 
@@ -12,6 +17,7 @@ describe('useCalendarLeapYear', () => {
   let props: any;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     props = {
       modelValue: {
         правило_високосного_года: 'none',
@@ -20,7 +26,55 @@ describe('useCalendarLeapYear', () => {
     };
   });
 
-  it('updates rules and custom rule values', () => {
+  it('mounts and initializes default custom rule and settings listener', async () => {
+    const emptyProps = { modelValue: {} };
+    const TestComp = defineComponent({
+      props: ['modelValue'],
+      setup(p) {
+        return { ...useCalendarLeapYear(p) };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComp, { props: emptyProps });
+    await flushPromises();
+
+    expect(emptyProps.modelValue.пользовательское_високосное_правило).toEqual({
+      месяц: 0,
+      день_смещения: 1,
+    });
+
+    if (mockSettingsCb) {
+      mockSettingsCb({ dropdowns: { wheelOrientation: 'vertical' } });
+      expect((wrapper.vm as any).wheelHorizontal).toBe(false);
+    }
+  });
+
+  it('handles getters and setters when custom rule object is missing', () => {
+    const emptyProps = { modelValue: {} };
+    const hook = useCalendarLeapYear(emptyProps);
+
+    // Getters with missing rule
+    expect(hook.customRuleMonth.value).toBe(0);
+    expect(hook.customRuleDays.value).toBe(1);
+
+    // Set month when rule is missing
+    hook.customRuleMonth.value = 5;
+    expect(emptyProps.modelValue.пользовательское_високосное_правило).toEqual({
+      месяц: 5,
+      день_смещения: 1,
+    });
+
+    // Reset and set days when rule is missing
+    emptyProps.modelValue.пользовательское_високосное_правило = undefined;
+    hook.customRuleDays.value = 3;
+    expect(emptyProps.modelValue.пользовательское_високосное_правило).toEqual({
+      месяц: 0,
+      день_смещения: 3,
+    });
+  });
+
+  it('updates rule and existing custom rule', () => {
     const hook = useCalendarLeapYear(props);
 
     hook.updateRule('gregorian');

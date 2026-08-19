@@ -7,26 +7,78 @@ describe('useTiptapSplitView', () => {
   let editorUpdateKey: any;
 
   beforeEach(() => {
+    localStorage.clear();
     editorUpdateKey = ref(0);
     editor = ref({
       getJSON: () => ({
         type: 'doc',
         content: [
-          { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'Chapter Title' }] },
+          { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'Chapter Subtitle' }] },
           { type: 'paragraph', attrs: { semanticTag: 'desc' }, content: [{ type: 'text', text: 'Paragraph body' }] },
+          { type: 'bulletList', content: [{ type: 'listItem' }, { type: 'listItem' }] },
+          { type: 'orderedList', content: [{ type: 'listItem' }] },
+          { type: 'blockquote', content: [{ type: 'text', text: 'A wise quote' }] },
+          { type: 'codeBlock', content: [{ type: 'text', text: 'const x = 1;' }] },
+          { type: 'table', content: [{ type: 'tableRow' }, { type: 'tableRow' }] },
         ],
       }),
     });
   });
 
-  it('traverses document structure and handles block scrolling', () => {
+  it('traverses all document structure types and handles block scrolling', () => {
     const split = useTiptapSplitView(editor, editorUpdateKey);
 
-    expect(split.documentStructure.value.length).toBe(2);
-    expect(split.documentStructure.value[0].type).toBe('H1');
-    expect(split.documentStructure.value[1].type).toBe('Paragraph');
+    const blocks = split.documentStructure.value;
+    expect(blocks.length).toBe(7);
+    expect(blocks[0].type).toBe('H2');
+    expect(blocks[1].type).toBe('Paragraph');
+    expect(blocks[2].type).toBe('List');
+    expect(blocks[3].type).toBe('Ordered');
+    expect(blocks[4].type).toBe('Quote');
+    expect(blocks[5].type).toBe('Code');
+    expect(blocks[6].type).toBe('Table');
 
-    split.scrollToBlock(1);
-    expect(split.selectedBlockIdx.value).toBe(1);
+    split.scrollToBlock(3);
+    expect(split.selectedBlockIdx.value).toBe(3);
+  });
+
+  it('handles left and right panel resizing', () => {
+    const split = useTiptapSplitView(editor, editorUpdateKey);
+
+    const parent = document.createElement('div');
+    Object.defineProperty(parent, 'offsetWidth', { value: 1000 });
+    const handle = document.createElement('div');
+    parent.appendChild(handle);
+    document.body.appendChild(parent);
+
+    const event = {
+      preventDefault: () => {},
+      currentTarget: handle,
+      clientX: 200,
+    } as any;
+
+    // Resize Left
+    split.startResizeLeft(event);
+    expect(split.resizing.value).toBe('left');
+
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 250 }));
+    expect(split.leftPanelWidth.value).toBe(45);
+
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(split.resizing.value).toBeNull();
+    expect(localStorage.getItem('split-view-left-width')).toBe('45');
+
+    // Resize Right
+    split.startResizeRight(event);
+    expect(split.resizing.value).toBe('middle');
+
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 300 }));
+    expect(split.rightPanelWidth.value).toBe(45);
+
+    document.dispatchEvent(new MouseEvent('mouseup'));
+    expect(split.resizing.value).toBeNull();
+    expect(localStorage.getItem('split-view-right-width')).toBe('45');
+
+    document.body.removeChild(parent);
   });
 });

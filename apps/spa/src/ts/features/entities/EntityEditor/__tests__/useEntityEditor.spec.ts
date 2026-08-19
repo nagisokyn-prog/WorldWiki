@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { reactive, nextTick } from 'vue';
 import { useEntityEditor } from '../useEntityEditor';
 import * as api from '../../../../services/api.client';
+import { appAlert } from '@worldwiki/components';
 
 vi.mock('../../../../services/api.client', () => ({
   getEntitySchemas: vi.fn(),
@@ -12,6 +14,7 @@ vi.mock('../../../../services/api.client', () => ({
 vi.mock('@worldwiki/components', () => ({
   settingsService: {
     getSettings: () => ({ dropdowns: { wheelOrientation: 'horizontal' } }),
+    onChange: vi.fn(),
   },
   appAlert: vi.fn(),
 }));
@@ -21,14 +24,17 @@ describe('useEntityEditor', () => {
   let emit: any;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
+    sessionStorage.clear();
+
     props = {
       project: 'p1',
       entityType: 'character',
       entityId: 'char_1',
       initialData: { name: 'Arthur', bio: 'Hero', items: [] },
       initialSection: 'sec_1',
-      initialScrollPos: 0,
+      initialScrollPos: 100,
     };
     emit = vi.fn();
     (window as any).__TAURI__ = {
@@ -36,6 +42,23 @@ describe('useEntityEditor', () => {
         invoke: vi.fn().mockResolvedValue([]),
       },
     };
+
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('ui_editor.json')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ templates: { shared_tpl: { fields: [] } } }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ sections: [{ id: 'static_sec', title: 'Static' }] }),
+      });
+    }) as any;
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('initializes and loads config and reference data', async () => {
@@ -48,30 +71,61 @@ describe('useEntityEditor', () => {
               id: 'sec_1',
               title: 'Main',
               fields: [{ type: 'select', entityType: 'fraction', class: 'frac' }],
+              dynamicContainers: [{ template: 'inventory' }, { id: 'custom_dc', dataPath: 'custom_path' }],
             },
           ],
           templates: {
             item: {
-              fields: [{ class: 'itemName', default: 'Sword' }],
+              fields: [{ class: 'itemName', type: 'multiselect', entityType: 'item' }],
+              dynamicContainers: [{ id: 'sub_dc', fields: [{ type: 'select', entityType: 'sub_item' }] }],
             },
           },
         },
       },
     ] as any);
 
-    vi.mocked(api.getEntities).mockResolvedValueOnce([
+    vi.mocked(api.getEntities).mockResolvedValue([
       { id: 'f1', name: 'Knights' },
     ] as any);
 
     const editor = useEntityEditor(props, emit);
+    await editor.loadConfigAndData();
 
-    expect(editor.loading.value).toBe(true);
+    expect(editor.loading.value).toBe(false);
+    expect(editor.config.value.sections.length).toBe(1);
+    expect(editor.config.value.sections[0].dynamicContainers[0].id).toBe('dyn_inventory');
+    expect(emit).toHaveBeenCalledWith('section-change', 'sec_1');
 
-    editor.formData.value = { ...props.initialData };
+    editor.formData.value = { ...props.initialData, name: 'Arthur Pendragon' };
     editor.markModified();
 
     expect(emit).toHaveBeenCalledWith('modified');
-    expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({ name: 'Arthur' }));
+    expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({ name: 'Arthur Pendragon' }));
+  });
+
+  it('handles sandbox preview config from sessionStorage', async () => {
+    sessionStorage.setItem(
+      'sandbox_preview_config',
+      JSON.stringify({
+        sections: [{ id: 'preview_sec', title: 'Preview' }],
+      })
+    );
+
+    props.entityId = 'preview';
+
+    const editor = useEntityEditor(props, emit);
+    await editor.loadConfigAndData();
+
+    expect(editor.config.value.sections[0].id).toBe('preview_sec');
+  });
+
+  it('handles static schema fallback when entity schema is not in database', async () => {
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([]);
+
+    const editor = useEntityEditor(props, emit);
+    await editor.loadConfigAndData();
+
+    expect(editor.config.value).toBeDefined();
   });
 
   it('handles dynamic items addition and removal', () => {
@@ -105,6 +159,9 @@ describe('useEntityEditor', () => {
 
     editor.handleForeignUpdate({ entityType: 'char', entityId: 'c2', value: 'Ally' });
     expect(editor.foreignUpdates.value['char:c2']).toBeDefined();
+
+    editor.handleForeignUpdate({ foreignPath: 'profile.stats.strength', value: 18 });
+    expect(editor.foreignUpdates.value.profile?.stats?.strength).toBe(18);
   });
 
   it('gets options for fields', () => {
@@ -141,21 +198,37 @@ describe('useEntityEditor', () => {
     expect(editor.formData.value.avatar).toBe('/path/to/photo.jpg');
   });
 
-  it('handles deeply nested foreign updates and dynamic item edge cases', () => {
+  it('handles photo upload failure with appAlert', async () => {
+    vi.mocked(api.uploadPhoto).mockRejectedValueOnce(new Error('Upload failed'));
+
     const editor = useEntityEditor(props, emit);
+    const fakeFile = new File(['bad-content'], 'test.png', { type: 'image/png' });
 
-    editor.handleForeignUpdate({ foreignPath: 'profile.stats.strength', value: 18 });
-    expect(editor.foreignUpdates.value.profile?.stats?.strength).toBe(18);
+    await editor.handlePhotoFile({ target: { files: [fakeFile] } }, 'avatar');
+    expect(appAlert).toHaveBeenCalledWith('Ошибка загрузки фото');
 
-    // addDynamicItem with undefined path
-    editor.addDynamicItem('', 'item_tpl');
+    vi.mocked(api.uploadPhoto).mockRejectedValueOnce(new Error('Drop upload failed'));
+    await editor.handlePhotoDrop({ dataTransfer: { files: [fakeFile] } }, 'avatar');
+    expect(appAlert).toHaveBeenCalledWith('Ошибка загрузки фото');
+  });
 
-    // addDynamicItem with direct object
-    editor.addDynamicItem('skills', {
-      fields: [{ class: 'skillName', default: 'Archery' }],
+  it('reacts to initialData prop changes when not in history preview mode', async () => {
+    const reactiveProps = reactive({
+      project: 'p1',
+      entityType: 'character',
+      entityId: 'char_1',
+      initialData: { name: 'Arthur', items: [] },
+      initialSection: 'sec_1',
+      initialScrollPos: 0,
     });
-    expect(editor.formData.value.skills).toBeDefined();
-    expect(editor.formData.value.skills[0].skillName).toBe('Archery');
+
+    const editor = useEntityEditor(reactiveProps, emit);
+    editor.formData.value = { name: 'Arthur', items: [] };
+
+    reactiveProps.initialData = { name: 'King Arthur', items: ['Excalibur'] };
+    await nextTick();
+
+    expect(editor.formData.value.name).toBe('King Arthur');
   });
 
   it('handles toggle entity history events', () => {

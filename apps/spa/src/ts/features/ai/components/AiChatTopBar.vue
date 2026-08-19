@@ -46,7 +46,7 @@ import { useAiModels } from '../composables/useAiModels';
 
 const props = withDefaults(defineProps<{
   activeProfile?: AiProfile | null;
-  tokenUsage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
+  tokenUsage?: { input_tokens: number; output_tokens: number; total_tokens: number };
   modes?: any[];
   activeModeSlug?: string;
 }>(), {
@@ -85,13 +85,13 @@ const maxTokens = computed(() => {
 
 const progressPercent = computed(() => {
   if (maxTokens.value === 0) return 0;
-  return Math.min(100, (props.tokenUsage.total_tokens / maxTokens.value) * 100);
+  return Math.min(100, ((props.tokenUsage?.total_tokens || 0) / maxTokens.value) * 100);
 });
 
-const formatTokens = (val: number) => {
+const formatTokens = (val: number = 0) => {
   if (val >= 1000000) return (val / 1000000).toFixed(1) + 'm';
   if (val >= 1000) return (val / 1000).toFixed(1) + 'k';
-  return val.toString();
+  return (val || 0).toString();
 };
 </script>
 

@@ -7,9 +7,9 @@
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    background: var(--bg-panel, #0d0d17);
-    color: var(--text-main, #cccccc);
-    font-family: 'Inter', sans-serif;
+    background: var(--bg-panel);
+    color: var(--text-main);
+    font-family: inherit;
     user-select: none;
 }
 

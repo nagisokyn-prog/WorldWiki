@@ -284,3 +284,5 @@
 </template>
 
 <script src="./EditorView.vue.ts" lang="ts"></script>
+
+<style src="@worldwiki/resources/styles/features/shell/EditorView.css"></style>

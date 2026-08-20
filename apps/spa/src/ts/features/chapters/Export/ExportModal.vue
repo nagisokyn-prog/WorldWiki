@@ -59,7 +59,7 @@
             <button class="btn-link" @click="clearSelection">Снять всё</button>
           </div>
           <div class="chapters-checklist">
-            <label v-for="c in allChapters" :key="c.id" class="checkbox-label">
+            <label v-for="(c, idx) in allChapters" :key="c.id ?? idx" class="checkbox-label">
               <input v-model="selectedChapters" type="checkbox" :value="c.id">
               <span>{{ c.title || 'Без названия' }}</span>
             </label>

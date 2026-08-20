@@ -26,8 +26,8 @@ vi.mock('@worldwiki/components', () => ({
 }));
 
 let mockHierarchy: any;
-let mockLoadChapters = vi.fn().mockResolvedValue([]);
-let mockLoadEntities = vi.fn().mockResolvedValue([]);
+const mockLoadChapters = vi.fn().mockResolvedValue([]);
+const mockLoadEntities = vi.fn().mockResolvedValue([]);
 
 vi.mock('../../../../stores/chapter.store', () => ({
   useChapterStore: () => ({

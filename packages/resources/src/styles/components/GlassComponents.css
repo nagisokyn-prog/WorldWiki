@@ -54,6 +54,38 @@
     transform: translateY(-4px);
 }
 
+.glass-card-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    border-radius: var(--radius-card, 16px);
+    overflow: hidden;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+    background: var(--bg-card, rgba(22, 22, 26, 0.6));
+    backdrop-filter: blur(var(--glass-blur, 16px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+}
+
+.glass-card-bg {
+    position: absolute;
+    inset: 0;
+    background: var(--glass-shine);
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.glass-card-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .glass-btn {
     position: relative;
     display: inline-flex;

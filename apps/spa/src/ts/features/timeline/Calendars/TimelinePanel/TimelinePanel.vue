@@ -8,12 +8,12 @@
       <div v-if="availableCalendars.length > 0" class="calendar-pills">
         <button 
           v-for="cal in availableCalendars" 
-          :key="cal.id"
+          :key="cal.id || 'cal'"
           class="calendar-pill interactive-el"
-          :class="{ active: selectedCalendarIds.includes(cal.id) }"
-          @click="toggleCalendarSelection(cal.id)"
+          :class="{ active: cal.id ? selectedCalendarIds.includes(cal.id) : false }"
+          @click="cal.id && toggleCalendarSelection(cal.id)"
         >
-          {{ cal.data.название || 'Календарь' }}
+          {{ cal.data?.название || 'Календарь' }}
         </button>
       </div>
       <div v-else style="font-size: 12px; color: var(--text-muted);">
@@ -117,6 +117,6 @@ const {
   relativeInput,
   createNextEvent,
   addEvent
-} = useTimelinePanel(props, emit);
+} = useTimelinePanel(props, emit as (event: string, ...args: unknown[]) => void);
 </script>
 <style src="@worldwiki/resources/styles/features/timeline/TimelinePanel.css" scoped></style>

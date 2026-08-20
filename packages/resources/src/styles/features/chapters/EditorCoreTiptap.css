@@ -1,14 +1,18 @@
 /* EditorCoreTiptap styles moved from scoped block */
 .editor-core {
   height: 100%;
+  width: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 20px 24px;
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
+  box-sizing: border-box;
 }
 .chapter-header {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   position: relative;
 }
 .chapter-title-input {
@@ -25,25 +29,35 @@
 }
 .editor-container {
   flex: 1;
+  width: 100%;
   display: flex;
   gap: 16px;
   overflow: hidden;
   min-width: 0;
+  min-height: 0;
   position: relative;
 }
 .editor-wrapper {
   flex: 1;
-  overflow: auto;
-  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: var(--radius-card, 8px);
   border: 1px solid var(--border-color);
-  background: #ffffff;
-  color: #000000;
+  background: var(--bg-card, rgba(22, 22, 26, 0.6));
+  color: var(--text-main, #ffffff);
+  min-height: 0;
 }
 .editor-content .ProseMirror,
 .editor-content-split .ProseMirror {
   column-count: var(--layout-columns, 1);
   column-gap: 40px;
   column-rule: 1px solid var(--border-color);
+  min-height: 100%;
+  padding: 20px;
+  outline: none;
+  color: var(--text-main, #ffffff);
 }
 .status-bar {
   display: flex;
@@ -60,16 +74,19 @@
 }
 .markdown-editor-textarea {
   flex: 1;
-  background: #ffffff;
-  color: #000000;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-card, rgba(22, 22, 26, 0.6));
+  color: var(--text-main, #ffffff);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 6px);
   padding: 16px;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-base);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-base, 14px);
   line-height: 1.6;
   resize: none;
   outline: none;
+  box-sizing: border-box;
 }
 .markdown-editor-textarea.split {
   border: none;
@@ -77,18 +94,23 @@
 }
 .split-editor-box {
   flex: 1;
+  width: 100%;
+  height: 100%;
   display: flex;
   overflow: hidden;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sm, 6px);
   border: 1px solid var(--border-color);
+  background: var(--bg-card, rgba(22, 22, 26, 0.6));
+  min-height: 0;
 }
 .split-panel-header {
-  background: var(--bg-input);
+  background: var(--bg-input, rgba(255, 255, 255, 0.05));
   border-bottom: 1px solid var(--border-color);
   padding: 8px 12px;
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-semibold, 600);
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 .drag-handle-col {
   width: 6px;

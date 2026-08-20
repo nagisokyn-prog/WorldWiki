@@ -11,7 +11,7 @@ import '@worldwiki/resources/styles/font-awesome.min.css';
 import '@worldwiki/resources/styles/app.css';
 import '@worldwiki/resources/styles/glass-animations.css';
 import '@worldwiki/resources/styles/features/shell/ProjectLauncher.css';
-import '@worldwiki/resources/styles/modules/settings.css';
+import '@worldwiki/resources/styles/components/Settings.css';
 
 import { createApp, ref, computed, onMounted, shallowRef } from 'vue';
 import { projectService } from '../services/project.service';

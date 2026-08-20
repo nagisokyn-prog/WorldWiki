@@ -64,33 +64,39 @@ export function useSchemaData(
         try {
             const schemas = await api.getEntitySchemas(props.project);
             const foundSchema = schemas.find((s: EntitySchema) => s.type_key === props.entityType);
+            const BUILTIN_SCHEMAS = ['character', 'organization', 'state', 'ui_editor'];
+            const createDefaultSchema = (typeKey: string) => ({
+                name: typeKey,
+                entityType: typeKey,
+                titleField: 'name',
+                sections: [
+                    {
+                        id: 'page_main',
+                        title: 'Главное',
+                        icon: '📄',
+                        items: [
+                            { type: 'text', class: 'name', label: 'НАЗВАНИЕ', placeholder: '...', _isSystemName: true }
+                        ]
+                    }
+                ]
+            });
+
+            const currentType = props.entityType || 'universal';
             if (foundSchema && foundSchema.full_schema) {
                 schema.value = JSON.parse(JSON.stringify(foundSchema.full_schema));
-            } else {
+            } else if (props.entityType && BUILTIN_SCHEMAS.includes(props.entityType)) {
                 try {
                     const res = await fetch(`/struct/editor/${props.entityType}.json`);
                     if (res.ok) {
                         schema.value = await res.json();
                     } else {
-                        throw new Error('Not found');
+                        schema.value = createDefaultSchema(currentType);
                     }
                 } catch {
-                    schema.value = {
-                        name: props.entityType,
-                        entityType: props.entityType,
-                        titleField: 'name',
-                        sections: [
-                            {
-                                id: 'page_main',
-                                title: 'Главное',
-                                icon: '📄',
-                                items: [
-                                    { type: 'text', class: 'name', label: 'НАЗВАНИЕ', placeholder: '...', _isSystemName: true }
-                                ]
-                            }
-                        ]
-                    };
+                    schema.value = createDefaultSchema(currentType);
                 }
+            } else {
+                schema.value = createDefaultSchema(currentType);
             }
 
             // Заполняем items и восстанавливаем id/dataPath для dynamicContainers

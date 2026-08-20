@@ -47,37 +47,37 @@
               <div v-show="activeCategory === 'glass' || activeCategory === 'all'" class="settings-group">
                 <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.glass') }}</h3>
                 <div class="control-row"><label>{{ t('settings.fields.islandAlpha') }}</label><span class="val-badge">{{ Math.round(settings.glass.islandAlpha * 100) }}%</span></div>
-                <input v-model.number="settings.glass.islandAlpha" type="range" min="0" max="1" step="0.05" class="interactive-el" @change="save()">
+                <input v-model.number="settings.glass.islandAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.cardAlpha') }}</label><span class="val-badge">{{ Math.round(settings.glass.cardAlpha * 100) }}%</span></div>
-                <input v-model.number="settings.glass.cardAlpha" type="range" min="0" max="0.5" step="0.01" class="interactive-el" @change="save()">
+                <input v-model.number="settings.glass.cardAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.blur') }}</label><span class="val-badge">{{ settings.glass.blur }}px</span></div>
-                <input v-model.number="settings.glass.blur" type="range" min="0" max="100" class="interactive-el" @change="save()">
+                <input v-model.number="settings.glass.blur" type="range" min="0" max="60" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.borderAlpha') }}</label><span class="val-badge">{{ Math.round(settings.glass.borderAlpha * 100) }}%</span></div>
-                <input v-model.number="settings.glass.borderAlpha" type="range" min="0" max="1" step="0.05" class="interactive-el" @change="save()">
+                <input v-model.number="settings.glass.borderAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
               </div>
 
               <!-- 4. СКРУГЛЕНИЯ -->
               <div v-show="activeCategory === 'radii' || activeCategory === 'all'" class="settings-group">
                 <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.radii') }}</h3>
                 <div class="control-row"><label>{{ t('settings.fields.islandRadius') }}</label><span class="val-badge">{{ settings.radii.island }}px</span></div>
-                <input v-model.number="settings.radii.island" type="range" min="0" max="60" class="interactive-el" @change="save()">
+                <input v-model.number="settings.radii.island" type="range" min="0" max="60" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.cardRadius') }}</label><span class="val-badge">{{ settings.radii.card }}px</span></div>
-                <input v-model.number="settings.radii.card" type="range" min="0" max="40" class="interactive-el" @change="save()">
+                <input v-model.number="settings.radii.card" type="range" min="0" max="40" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.btnRadius') }}</label><span class="val-badge">{{ settings.radii.btn }}px</span></div>
-                <input v-model.number="settings.radii.btn" type="range" min="0" max="40" class="interactive-el" @change="save()">
+                <input v-model.number="settings.radii.btn" type="range" min="0" max="40" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.inputRadius') }}</label><span class="val-badge">{{ settings.radii.input }}px</span></div>
-                <input v-model.number="settings.radii.input" type="range" min="0" max="30" class="interactive-el" @change="save()">
+                <input v-model.number="settings.radii.input" type="range" min="0" max="30" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.dropdownRadius') }}</label><span class="val-badge">{{ settings.radii.dropdown }}px</span></div>
-                <input v-model.number="settings.radii.dropdown" type="range" min="0" max="30" class="interactive-el" @change="save()">
+                <input v-model.number="settings.radii.dropdown" type="range" min="0" max="30" class="interactive-el" @input="save()">
               </div>
 
               <!-- 5. ТЕНИ И ОБЪЕМ -->
               <div v-show="activeCategory === 'shadows' || activeCategory === 'all'" class="settings-group">
                 <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.shadows') }}</h3>
                 <div class="control-row"><label>{{ t('settings.fields.shadowOffsetY') }}</label><span class="val-badge">{{ settings.shadows.islandY }}px</span></div>
-                <input v-model.number="settings.shadows.islandY" type="range" min="0" max="50" class="interactive-el" @change="save()">
+                <input v-model.number="settings.shadows.islandY" type="range" min="0" max="50" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.shadowBlur') }}</label><span class="val-badge">{{ settings.shadows.islandBlur }}px</span></div>
-                <input v-model.number="settings.shadows.islandBlur" type="range" min="0" max="100" class="interactive-el" @change="save()">
+                <input v-model.number="settings.shadows.islandBlur" type="range" min="0" max="100" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.shadowInset') }}</label><label class="toggle-switch"><input v-model="settings.shadows.useInset" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
               </div>
 
@@ -86,14 +86,14 @@
                 <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.animations') }}</h3>
                 <div class="control-row"><label>{{ t('settings.fields.animationsEnabled') }}</label><label class="toggle-switch"><input v-model="settings.animations.enabled" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
                 <div class="control-row"><label>{{ t('settings.fields.animationSpeed') }}</label><span class="val-badge">{{ settings.animations.speed }}s</span></div>
-                <input v-model.number="settings.animations.speed" type="range" min="0.1" max="1.0" step="0.05" class="interactive-el" :disabled="!settings.animations.enabled" @change="save()">
+                <input v-model.number="settings.animations.speed" type="range" min="0.1" max="1.0" step="0.05" class="interactive-el" :disabled="!settings.animations.enabled" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.entrance') }}</label><span class="val-badge">{{ settings.animations.entrance }}s</span></div>
-                <input v-model.number="settings.animations.entrance" type="range" min="0.1" max="2.0" step="0.1" class="interactive-el" :disabled="!settings.animations.enabled" @change="save()">
+                <input v-model.number="settings.animations.entrance" type="range" min="0.1" max="2.0" step="0.1" class="interactive-el" :disabled="!settings.animations.enabled" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.pulse') }}</label><label class="toggle-switch"><input v-model="settings.animations.pulse" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
                 <div class="control-row"><label>{{ t('settings.fields.scalePush') }}</label><span class="val-badge">{{ settings.animations.scalePush }}x</span></div>
-                <input v-model.number="settings.animations.scalePush" type="range" min="0.8" max="1.0" step="0.01" class="interactive-el" @change="save()">
+                <input v-model.number="settings.animations.scalePush" type="range" min="0.8" max="1.0" step="0.01" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.scalePull') }}</label><span class="val-badge">{{ settings.animations.scalePull }}x</span></div>
-                <input v-model.number="settings.animations.scalePull" type="range" min="1.0" max="1.2" step="0.01" class="interactive-el" @change="save()">
+                <input v-model.number="settings.animations.scalePull" type="range" min="1.0" max="1.2" step="0.01" class="interactive-el" @input="save()">
               </div>
 
               <!-- 7. ШРИФТЫ -->
@@ -104,20 +104,20 @@
                   <div v-for="font in fontOptions" :key="font.val" class="radio-btn" :class="{ active: settings.fonts.family === font.val }" :style="{ fontFamily: font.val }" @click="settings.fonts.family = font.val; save()">{{ t(font.titleKey) }}</div>
                 </div>
                 <div class="control-row mt-3"><label>{{ t('settings.fields.fontSize') }}</label><span class="val-badge">{{ settings.fonts.size }}px</span></div>
-                <input v-model.number="settings.fonts.size" type="range" min="12" max="24" class="interactive-el" @change="save()">
+                <input v-model.number="settings.fonts.size" type="range" min="12" max="24" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.fontLineHeight') }}</label><span class="val-badge">{{ settings.fonts.lineHeight }}</span></div>
-                <input v-model.number="settings.fonts.lineHeight" type="range" min="1.0" max="2.0" step="0.1" class="interactive-el" @change="save()">
+                <input v-model.number="settings.fonts.lineHeight" type="range" min="1.0" max="2.0" step="0.1" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.fontLetterSpacing') }}</label><span class="val-badge">{{ settings.fonts.letterSpacing }}px</span></div>
-                <input v-model.number="settings.fonts.letterSpacing" type="range" min="-1" max="3" step="0.1" class="interactive-el" @change="save()">
+                <input v-model.number="settings.fonts.letterSpacing" type="range" min="-1" max="3" step="0.1" class="interactive-el" @input="save()">
               </div>
 
               <!-- 8. ОТСТУПЫ И ПЛОТНОСТЬ -->
               <div v-show="activeCategory === 'spacing' || activeCategory === 'all'" class="settings-group">
                 <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.spacing') }}</h3>
                 <div class="control-row"><label>{{ t('settings.fields.density') }}</label><span class="val-badge">{{ settings.spacing.density }}x</span></div>
-                <input v-model.number="settings.spacing.density" type="range" min="0.5" max="2.0" step="0.1" class="interactive-el" @change="save()">
+                <input v-model.number="settings.spacing.density" type="range" min="0.5" max="2.0" step="0.1" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.sidebarWidth') }}</label><span class="val-badge">{{ settings.spacing.sidebarWidth }}px</span></div>
-                <input v-model.number="settings.spacing.sidebarWidth" type="range" min="200" max="500" step="10" class="interactive-el" @change="save()">
+                <input v-model.number="settings.spacing.sidebarWidth" type="range" min="200" max="500" step="10" class="interactive-el" @input="save()">
                 <div class="control-row"><label>{{ t('settings.fields.panelHeight') }}</label><span class="val-badge">{{ settings.spacing.panelHeight }}px</span></div>
                 <input v-model.number="settings.spacing.panelHeight" type="range" min="150" max="500" step="10" class="interactive-el" @change="save()">
               </div>
@@ -223,10 +223,10 @@
                 </div>
 
                 <div class="control-row mt-3"><label>Прозрачность</label><span class="val-badge">{{ Math.round((settings.background?.opacity || 0) * 100) }}%</span></div>
-                <input v-model.number="settings.background!.opacity" type="range" min="0" max="1" step="0.05" class="interactive-el" @change="save()">
+                <input v-model.number="settings.background!.opacity" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
                 
                 <div class="control-row"><label>Размытие</label><span class="val-badge">{{ settings.background?.blur || 0 }}px</span></div>
-                <input v-model.number="settings.background!.blur" type="range" min="0" max="50" class="interactive-el" @change="save()">
+                <input v-model.number="settings.background!.blur" type="range" min="0" max="50" class="interactive-el" @input="save()">
               </div>
 
               <!-- 19. РЕДАКТОР -->
@@ -234,13 +234,13 @@
                 <h3 class="form-label settings-group-title">Редактор (Сохранение)</h3>
                 
                 <div class="control-row"><label>Интервал автосохранения</label><span class="val-badge">{{ settings.editor.autoSaveInterval === 0 ? 'Выкл' : settings.editor.autoSaveInterval + ' сек' }}</span></div>
-                <input v-model.number="settings.editor.autoSaveInterval" type="range" min="0" max="300" step="10" class="interactive-el" @change="save()">
+                <input v-model.number="settings.editor.autoSaveInterval" type="range" min="0" max="300" step="10" class="interactive-el" @input="save()">
                 
                 <div class="control-row"><label>Интервал снапшотов</label><span class="val-badge">{{ settings.editor.snapshotInterval === 0 ? 'Выкл' : settings.editor.snapshotInterval + ' мин' }}</span></div>
-                <input v-model.number="settings.editor.snapshotInterval" type="range" min="0" max="60" step="5" class="interactive-el" @change="save()">
+                <input v-model.number="settings.editor.snapshotInterval" type="range" min="0" max="60" step="5" class="interactive-el" @input="save()">
                 
                 <div class="control-row"><label>Максимум снапшотов на главу</label><span class="val-badge">{{ settings.editor.maxSnapshots }}</span></div>
-                <input v-model.number="settings.editor.maxSnapshots" type="range" min="1" max="50" step="1" class="interactive-el" @change="save()">
+                <input v-model.number="settings.editor.maxSnapshots" type="range" min="1" max="50" step="1" class="interactive-el" @input="save()">
               </div>
             </div>
           </div>

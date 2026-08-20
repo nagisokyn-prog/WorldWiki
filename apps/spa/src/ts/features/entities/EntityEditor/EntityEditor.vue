@@ -19,16 +19,15 @@
     </div>
 
     <div class="entity-editor-layout" :class="{ 'with-history': showHistory }">
-      <!-- MAIN FORM CONTAINER -->
-      <div ref="scrollContainer" class="form-container">
-        <!-- SECTIONS NAV (TABS) -->
-        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav flex gap-2 border-b mb-4 pb-2 overflow-x-auto">
+      <!-- MAIN COLUMN -->
+      <div class="entity-main-pane flex-1 flex-col overflow-hidden min-h-0">
+        <!-- SECTIONS NAV (TABS - FIXED ON TOP) -->
+        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav flex gap-2 border-b overflow-x-auto flex-shrink-0">
           <button
             v-for="sec in config.sections" 
             :key="sec.id"
-            class="section-tab-btn interactive-el text-xs font-bold flex items-center gap-1 cursor-pointer p-2"
+            class="section-tab-btn interactive-el"
             :class="{ active: activeSection === sec.id }"
-            :style="{ background: activeSection === sec.id ? 'var(--accent)' : 'transparent', color: activeSection === sec.id ? '#fff' : 'var(--text-muted)' }"
             @click="activeSection = sec.id"
           >
             <span>{{ sec.icon || '📄' }}</span>
@@ -36,9 +35,11 @@
           </button>
         </div>
 
-        <!-- RENDER ACTIVE SECTION -->
-        <transition name="fade-fast" mode="out-in">
-          <div v-if="config && config.sections" :key="activeSection" class="active-section-content">
+        <!-- MAIN FORM CONTAINER -->
+        <div ref="scrollContainer" class="form-container">
+          <!-- RENDER ACTIVE SECTION -->
+          <transition name="fade-fast" mode="out-in">
+            <div v-if="config && config.sections" :key="activeSection" class="active-section-content">
             <template v-for="section in config.sections" :key="section.id">
               <div v-if="section.id === activeSection">
                 <!-- Обычные поля секции -->
@@ -268,6 +269,7 @@
             </template>
           </div>
         </transition>
+      </div>
       </div>
 
       <!-- RIGHT SIDEBAR (HISTORY) -->

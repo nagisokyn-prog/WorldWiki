@@ -11,6 +11,8 @@
 @import "./utilities/text.css";
 @import "./utilities/position.css";
 @import "./components/GlassComponents.css";
+@import "./components/ExplorerTree.css";
+@import "./features/shell/EditorView.css";
 
 /* ==========================================================================
    MAIN LAYOUT
@@ -21,6 +23,7 @@
   height: 100vh;
   position: relative;
   z-index: 1;
+  background: transparent;
 }
 
 .main-area {

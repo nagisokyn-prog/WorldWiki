@@ -128,8 +128,8 @@ describe('shell store', () => {
     it('filteredEntityList computes correctly for chapters and entities', () => {
       shell.currentSidebarTab = 'chapters';
       shell.chapters = [
-        { id: '1', title: 'Prologue' },
-        { id: '2', title: 'First Encounter' },
+        { id: '1', title: 'Prologue' } as any,
+        { id: '2', title: 'First Encounter' } as any,
       ];
 
       shell.sidebarSearch = '';
@@ -360,7 +360,7 @@ describe('shell store', () => {
     });
 
     it('renameChapter updates local state and saves to backend', async () => {
-      shell.chapters = [{ id: 'ch_1', title: 'Old' }];
+      shell.chapters = [{ id: 'ch_1', title: 'Old' } as any];
       vi.mocked(api.getChapter).mockResolvedValue({ id: 'ch_1', title: 'Old' } as any);
       vi.mocked(api.saveChapter).mockResolvedValue({} as any);
 
@@ -436,15 +436,20 @@ describe('shell store', () => {
 
     it('handleQuickOpenSelect opens the selected item', () => {
       shell.handleQuickOpenSelect({
+        id: 'ch_1',
+        rawId: 'ch_1',
+        title: 'Ch 1',
+        typeLabel: 'Глава',
+        emoji: '📄',
         entityType: 'chapter',
         data: { id: 'ch_1', title: 'Ch 1' },
-      });
+      } as any);
       expect(shell.openEditors.length).toBe(1);
     });
 
     it('group management helpers (splitRight, closeGroup, moveTab, reorderTab, selectTreeNode, handleScrollChange, handleSectionChange, activateTabInGroup, focusGroup)', () => {
-      shell.selectTreeNode({ id: 'node_1', type: 'chapter' });
-      expect(shell.activeTreeNode).toEqual({ id: 'node_1', type: 'chapter' });
+      shell.selectTreeNode({ type: 'chapter', node: { id: 'node_1' } });
+      expect(shell.activeTreeNode).toEqual({ type: 'chapter', node: { id: 'node_1' } });
 
       shell.openChapterTab({ id: 'ch_1', title: 'Ch 1' });
       shell.openChapterTab({ id: 'ch_2', title: 'Ch 2' });
@@ -609,7 +614,7 @@ describe('shell store', () => {
       // Successful volume deletion
       await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], ['a1'], true);
       expect(shell.activeTreeNode).toBeNull();
-      expect(shell.chapterTreeRef.load).toHaveBeenCalled();
+      expect(shell.chapterTreeRef?.load).toHaveBeenCalled();
 
       // Cancelled volume deletion
       const { appConfirm } = await import('@worldwiki/components');
@@ -797,7 +802,7 @@ describe('shell store', () => {
       expect(shell.sidebarWidth).toBe(330);
       document.dispatchEvent(new MouseEvent('mouseup'));
 
-      shell.settings = { layout: { sidebarPos: 'row-reverse' } };
+      shell.settings = { layout: { sidebarPos: 'row-reverse' } } as any;
       shell.startSidebarResize({ clientX: 200 } as any);
       document.dispatchEvent(new MouseEvent('mousemove', { clientX: 250 }));
       expect(shell.sidebarWidth).toBe(280);
@@ -884,7 +889,7 @@ describe('shell store', () => {
 
       // 6. renameChapter error catch
       vi.mocked(api.getChapter).mockRejectedValueOnce(new Error('Rename ch error'));
-      await shell.renameChapter({ id: 'ch_1', title: 'Old Title' }, 'New Ch Title');
+      await shell.renameChapter({ id: 'ch_1' }, 'New Ch Title');
     });
 
     it('covers addNewEntity branches', async () => {

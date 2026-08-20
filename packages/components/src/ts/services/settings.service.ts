@@ -228,19 +228,21 @@ class SettingsService {
         container.style.position = 'fixed';
         container.style.top = '0';
         container.style.left = '0';
+        container.style.right = '0';
+        container.style.bottom = '0';
         container.style.width = '100vw';
         container.style.height = '100vh';
-        container.style.zIndex = '-1';
+        container.style.zIndex = '0';
         container.style.pointerEvents = 'none';
-        document.body.appendChild(container);
+        container.style.overflow = 'hidden';
+        document.body.prepend(container);
       }
       
       container.innerHTML = ''; // Очищаем старый фон
-      container.style.opacity = String(bg.opacity);
-      container.style.filter = `blur(${bg.blur}px)`;
+      container.style.opacity = String(bg.opacity ?? 1);
+      container.style.filter = bg.blur ? `blur(${bg.blur}px)` : 'none';
       
       const applySrc = (el: HTMLImageElement | HTMLVideoElement, path: string) => {
-        // Не конвертируем, если путь уже является URL (asset.localhost, blob:, data:, http:)
         const isAlreadyUrl = path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:');
         if (!isAlreadyUrl && window.__TAURI__?.core?.convertFileSrc) {
           el.src = window.__TAURI__.core.convertFileSrc(path);
@@ -250,24 +252,39 @@ class SettingsService {
       };
 
       if (bg.type === 'color') {
+        document.documentElement.style.background = 'var(--bg-base)';
+        document.body.style.background = 'var(--bg-base)';
         container.style.backgroundColor = 'var(--bg-base)';
       } else if (bg.type === 'image' && bg.imagePath) {
+        document.documentElement.style.background = 'transparent';
+        document.body.style.background = 'transparent';
         const img = document.createElement('img');
         applySrc(img, bg.imagePath);
         img.style.width = '100%';
         img.style.height = '100%';
-        img.style.objectFit = bg.fit;
+        img.style.objectFit = bg.fit || 'cover';
         container.appendChild(img);
       } else if (bg.type === 'video' && bg.videoPath) {
+        document.documentElement.style.background = 'transparent';
+        document.body.style.background = 'transparent';
         const video = document.createElement('video');
-        applySrc(video, bg.videoPath);
         video.autoplay = true;
         video.loop = true;
         video.muted = true;
+        video.playsInline = true;
+        video.setAttribute('autoplay', '');
+        video.setAttribute('loop', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        applySrc(video, bg.videoPath);
         video.style.width = '100%';
         video.style.height = '100%';
-        video.style.objectFit = bg.fit;
+        video.style.objectFit = bg.fit || 'cover';
         container.appendChild(video);
+        video.play().catch(e => console.warn('[settingsService] Video autoplay blocked/failed:', e));
+      } else {
+        document.documentElement.style.background = 'var(--bg-base)';
+        document.body.style.background = 'var(--bg-base)';
       }
     } catch (e) {
       console.error('Error applying background:', e);
@@ -284,10 +301,33 @@ class SettingsService {
     
     this.applyBackground();
 
+    // Helper to calculate color with alpha
+    const withAlpha = (colorStr: string, alpha: number): string => {
+      if (!colorStr) return `rgba(255, 255, 255, ${alpha})`;
+      if (colorStr.startsWith('#')) {
+        let hex = colorStr.slice(1);
+        if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+        const r = parseInt(hex.slice(0, 2), 16) || 0;
+        const g = parseInt(hex.slice(2, 4), 16) || 0;
+        const b = parseInt(hex.slice(4, 6), 16) || 0;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+      const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (match) {
+        return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+      }
+      return colorStr;
+    };
+
+    const panelBgWithAlpha = withAlpha(s.colors.bgPanel, s.glass.islandAlpha);
+    const cardBgWithAlpha = withAlpha(s.colors.bgInput || s.colors.bgSecondary, s.glass.cardAlpha);
+    const borderWithAlpha = withAlpha(s.colors.borderColor || '#ffffff', s.glass.borderAlpha);
+
     // Colors
     root.style.setProperty('--bg-base', s.colors.bgBase);
     root.style.setProperty('--bg-secondary', s.colors.bgSecondary);
-    root.style.setProperty('--bg-panel', s.colors.bgPanel);
+    root.style.setProperty('--bg-panel', panelBgWithAlpha);
+    root.style.setProperty('--bg-card', cardBgWithAlpha);
     root.style.setProperty('--bg-input', s.colors.bgInput);
     root.style.setProperty('--text-main', s.colors.textMain);
     root.style.setProperty('--text-muted', s.colors.textMuted);
@@ -298,11 +338,13 @@ class SettingsService {
     root.style.setProperty('--accent-disabled', s.colors.accentDisabled);
     root.style.setProperty('--accent-glow', s.colors.accentGlow);
     root.style.setProperty('--accent-text', s.colors.accentText);
-    root.style.setProperty('--border-color', s.colors.borderColor);
+    root.style.setProperty('--border-color', borderWithAlpha);
     root.style.setProperty('--border-active', s.colors.borderActive);
     root.style.setProperty('--shadow-color', s.colors.shadowColor);
 
     // Glass
+    root.style.setProperty('--glass-bg', panelBgWithAlpha);
+    root.style.setProperty('--glass-card', cardBgWithAlpha);
     root.style.setProperty('--glass-island-alpha', String(s.glass.islandAlpha));
     root.style.setProperty('--glass-card-alpha', String(s.glass.cardAlpha));
     root.style.setProperty('--glass-blur', `${s.glass.blur}px`);
@@ -377,7 +419,8 @@ class SettingsService {
    */
   async switchTheme(themeName: 'dark' | 'light'): Promise<void> {
     console.log(`[settingsService] switching to ${themeName} theme`);
-    
+
+
     if (window.__TAURI__?.core) {
       try {
         const themeSettings = await window.__TAURI__.core.invoke<AppSettings>(
@@ -386,17 +429,10 @@ class SettingsService {
         );
         if (themeSettings) {
           this.settings = this.deepMerge(this.settings, themeSettings);
-        } else if (themeName === 'dark') {
-          this.settings = this.deepMerge(this.settings, this.getDefaultSettings());
         }
       } catch (e) {
         console.warn(`Tauri theme load failed for ${themeName}:`, e);
-        if (themeName === 'dark') {
-          this.settings = this.deepMerge(this.settings, this.getDefaultSettings());
-        }
       }
-    } else if (themeName === 'dark') {
-      this.settings = this.deepMerge(this.settings, this.getDefaultSettings());
     }
 
     // Fallback: локальное хранилище
@@ -411,7 +447,7 @@ class SettingsService {
       console.warn(`localStorage theme load failed for ${themeName}:`, e);
     }
 
-    this.saveSettings();
+    await this.saveSettings(this.settings, true);
   }
 
   /**

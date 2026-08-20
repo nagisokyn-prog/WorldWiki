@@ -1,12 +1,12 @@
 import { computed } from 'vue';
+import type { NodeViewProps } from '@tiptap/vue-3';
 
 export interface SemanticParagraphNodeProps {
-    node?: {
+    node?: NodeViewProps['node'] | {
         attrs?: {
             semanticTag?: string;
             [key: string]: unknown;
         };
-        [key: string]: unknown;
     };
     updateAttributes?: (attrs: Record<string, unknown>) => void;
 }

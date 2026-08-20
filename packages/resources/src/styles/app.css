@@ -10,6 +10,7 @@
 @import "./utilities/cards.css";
 @import "./utilities/text.css";
 @import "./utilities/position.css";
+@import "./components/GlassComponents.css";
 
 /* ==========================================================================
    MAIN LAYOUT

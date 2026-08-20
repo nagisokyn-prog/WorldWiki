@@ -1,3 +1,27 @@
+.wowilon-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--anim-speed) var(--anim-ease);
+}
+
+.wowilon-toggle-btn:hover {
+  transform: scale(1.1);
+}
+
 .wowilon-panel {
   position: relative;
   height: 100%;

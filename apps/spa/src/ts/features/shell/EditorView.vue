@@ -38,7 +38,7 @@
       <div class="content-area-new">
         <div
           v-if="activeView === 'sandbox'"
-          style="flex: 1; display: flex; align-items: center; justify-content: center;"
+          class="flex-1 flex items-center justify-center"
         >
           <h2>Песочница удалена в рамках Phase 5.</h2>
         </div>
@@ -65,7 +65,7 @@
                   :project="projectName"
                   :controlled-chapter-id="tab.id"
                   :active-tree-node="activeTreeNode"
-                  style="flex: 1"
+                  class="flex-1"
                   @chapter-unsaved="markUnsaved(tab.id)"
                   @chapter-saved="markSaved(tab.id)"
                   @chapter-renamed="onChapterRenamed"
@@ -75,83 +75,31 @@
               </template>
 
               <template #entity="{ tab, groupId }">
-                <div
-                  class="chapter-editor"
-                  style="
-                    flex: 1;
-                    padding: 24px;
-                    display: flex;
-                    flex-direction: column;
-                    min-height: 0;
-                    overflow: hidden;
-                  "
-                >
-                  <div
-                    class="glass-card-container"
-                    style="
-                      flex: 1;
-                      display: flex;
-                      flex-direction: column;
-                      min-height: 0;
-                    "
-                  >
+                <div class="chapter-editor flex-1 p-6 flex-col overflow-hidden">
+                  <div class="glass-card-container flex-1 flex-col">
                     <div class="glass-card-bg"></div>
-                    <div
-                      class="glass-card-content"
-                      style="
-                        flex: 1;
-                        display: flex;
-                        flex-direction: column;
-                        min-height: 0;
-                        padding: 0;
-                        overflow: hidden;
-                      "
-                    >
-                      <div
-                        class="chapter-toolbar"
-                        style="
-                          display: flex;
-                          justify-content: space-between;
-                          align-items: center;
-                          padding: 12px 24px;
-                          border-bottom: 1px solid var(--border-color);
-                        "
-                      >
+                    <div class="glass-card-content flex-1 flex-col p-0 overflow-hidden">
+                      <div class="chapter-toolbar flex justify-between items-center px-6 py-3 border-b">
                         <div class="toolbar-group">
                           <button
-                            class="btn-outline-new interactive-el"
-                            style="
-                              padding: 6px 12px;
-                              border-radius: 8px;
-                              border: 1px solid var(--border-color);
-                              background: transparent;
-                              color: var(--text-main);
-                              cursor: pointer;
-                            "
+                            class="btn-outline-new interactive-el text-main cursor-pointer"
                             @click="closeEditor(tab.id)"
                           >
                             ← Назад
                           </button>
                         </div>
-                        <div class="toolbar-group" style="flex: 1; margin-left: 16px">
-                          <h1
-                            style="
-                              font-size: 16px;
-                              font-weight: 600;
-                              margin: 0;
-                              color: var(--accent);
-                            "
-                          >
+                        <div class="toolbar-group flex-1 ml-4">
+                          <h1 class="text-accent font-bold text-base m-0">
                             {{ tab.title }}
                           </h1>
                         </div>
-                        <div class="toolbar-group" style="border: none; display: flex; gap: 8px">
+                        <div class="toolbar-group flex gap-2 border-none">
                           <button
                             class="btn-new btn-outline-new interactive-el"
                             title="История изменений"
                             @click="toggleEntityHistory(tab.rawId)"
                           >
-                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg" style="display:inline;vertical-align:middle"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
+                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg" class="inline align-middle"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
                           </button>
                           <button class="btn-new interactive-el" @click="saveAll">
                             💾 Сохранить
@@ -188,23 +136,12 @@
                         @scroll-change="handleScrollChange(groupId, tab.id, $event)"
                       ></entity-editor-vue>
 
-                      <div
-                        class="status-bar"
-                        style="
-                          display: flex;
-                          justify-content: space-between;
-                          padding: 8px 24px;
-                          border-top: 1px solid var(--border-color);
-                          font-size: 11px;
-                          color: var(--text-muted);
-                          background: var(--bg-input);
-                        "
-                      >
+                      <div class="status-bar flex justify-between px-6 py-2 border-t text-xs text-muted bg-input">
                         <div>
                           <span>Готов</span>
                           <span
                             v-if="tab.unsaved"
-                            style="color: var(--accent); margin-left: 12px"
+                            class="text-accent ml-3"
                             >● Есть изменения</span
                           >
                         </div>
@@ -216,16 +153,7 @@
               </template>
 
               <template #schema-editor="{ tab, groupId }">
-                <div
-                  class="chapter-editor"
-                  style="
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    min-height: 0;
-                    overflow: hidden;
-                  "
-                >
+                <div class="chapter-editor flex-1 flex-col overflow-hidden">
                   <schema-editor-main-vue
                     :key="tab.id + '-' + groupId"
                     :project="projectName"
@@ -268,11 +196,10 @@
         @mousedown.prevent="startResize"
       ></div>
       <div
-        class="panel-header-new"
-        style="justify-content: space-between"
+        class="panel-header-new flex justify-between"
         @click="activePanelTab = activePanelTab === '' ? 'console' : ''"
       >
-        <div style="display: flex; gap: 8px">
+        <div class="flex gap-2">
           <div
             class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'console' }"
@@ -288,7 +215,7 @@
             📊 Аналитика
           </div>
         </div>
-        <div style="font-size: 11px; padding-right: 16px; opacity: 0.5">
+        <div class="text-xs pr-4 opacity-50">
           {{ activePanelTab === '' ? '▲ Развернуть панель' : '▼ Свернуть панель' }}
         </div>
       </div>
@@ -335,7 +262,7 @@
       :project="projectName"
     ></tags-manager-modal-vue>
 
-    <div class="toast-container-new" :class="settings.settings?.notifications?.position || 'bottom-right'">
+    <div class="toast-container-new" :class="settings?.notifications?.position || 'bottom-right'">
       <transition-group name="fade">
         <div v-for="toast in toasts" :key="toast.id" class="toast-new">
           <i :class="getToastIcon(toast.type)"></i>
@@ -347,10 +274,7 @@
     <!-- Global Floating Button for AI -->
     <button 
       v-show="!isWowilonOpen" 
-      class="wowilon-toggle-btn" 
-      style="position: fixed; bottom: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: white; border: none; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 999; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;"
-      onmouseover="this.style.transform='scale(1.1)'"
-      onmouseout="this.style.transform='scale(1)'"
+      class="wowilon-toggle-btn interactive-el" 
       title="Открыть WoWiLon AI (Ctrl+Shift+A)"
       @click="toggleWowilon"
     >

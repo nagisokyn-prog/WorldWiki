@@ -1,8 +1,8 @@
 === CSS Анализ Проекта ===
 
-Всего .css файлов: 81 (13079 строк)
+Всего .css файлов: 82 (13293 строк)
 Всего .vue файлов со <style> тегами: 59 (60 строк CSS внутри)
-Всего .vue файлов с inline стилями (style="..."): 50 (527 вхождений)
+Всего .vue файлов с inline стилями (style="..."): 50 (369 вхождений)
 
 --- Топ 10 самых больших .css файлов ---
 1440 строк - packages\resources\src\styles\new-ui-theme.css
@@ -10,8 +10,8 @@
 856 строк - packages\resources\src\styles\app.css
 728 строк - packages\resources\src\styles\redact-sandbox-v2.css
 658 строк - packages\resources\src\styles\redact-sandbox.css
+447 строк - packages\resources\src\styles\components\Settings.css
 418 строк - packages\resources\src\styles\glass-theme.css
-398 строк - packages\resources\src\styles\components\Settings.css
 364 строк - packages\resources\src\styles\features\timeline\TimelinePanel.css
 311 строк - packages\resources\src\styles\features\ai\WowilonPanel.css
 301 строк - packages\resources\src\styles\components\ExplorerTree.css
@@ -34,10 +34,6 @@
 1 строк - apps\spa\src\ts\features\ai\FloatingWindowAI\AiApp.vue
 
 --- Топ 15 .vue файлов с наибольшим количеством inline-стилей ---
-52 вхождений style="..." - apps\spa\src\ts\features\entities\EntityEditor\EntityEditor.vue
-51 вхождений style="..." - packages\components\src\components\Vue\Settings.vue
-42 вхождений style="..." - apps\spa\src\ts\features\chapters\EditorCoreTiptap\EditorCoreTiptap.vue
-42 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\SchemaFieldEditor.vue
 23 вхождений style="..." - apps\spa\src\ts\features\shell\EditorView.vue
 22 вхождений style="..." - apps\spa\src\ts\features\sync\CloudSyncModal.vue
 19 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarPlayground\CalendarPlayground.vue
@@ -45,10 +41,14 @@
 15 вхождений style="..." - apps\spa\src\ts\features\chapters\ChaptersMain\ChaptersMain.vue
 15 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarMoons\CalendarMoons.vue
 14 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarSettings\CalendarSettings.vue
+13 вхождений style="..." - apps\spa\src\ts\features\entities\EntityEditor\EntityEditor.vue
 13 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\SchemaEditorMain.vue
 12 вхождений style="..." - apps\spa\src\ts\features\shell\ProjectLauncher.vue
 12 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarSeasons\CalendarSeasons.vue
 11 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\RelationshipBlock.vue
+11 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\SchemaContainer.vue
+11 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarHolidays\CalendarHolidays.vue
+11 вхождений style="..." - apps\spa\src\ts\features\timeline\CalendarsPanel\DateWheels.vue
 
 
 Детальный список всех .css файлов:
@@ -57,8 +57,8 @@
 856 строк - packages\resources\src\styles\app.css
 728 строк - packages\resources\src\styles\redact-sandbox-v2.css
 658 строк - packages\resources\src\styles\redact-sandbox.css
+447 строк - packages\resources\src\styles\components\Settings.css
 418 строк - packages\resources\src\styles\glass-theme.css
-398 строк - packages\resources\src\styles\components\Settings.css
 364 строк - packages\resources\src\styles\features\timeline\TimelinePanel.css
 311 строк - packages\resources\src\styles\features\ai\WowilonPanel.css
 301 строк - packages\resources\src\styles\components\ExplorerTree.css
@@ -78,6 +78,7 @@
 156 строк - packages\resources\src\styles\features\ai\AiToolApproval.css
 152 строк - packages\resources\src\styles\features\chapters\ExportModal.css
 141 строк - packages\resources\src\styles\components\EditorTabBar.css
+135 строк - packages\resources\src\styles\features\chapters\EditorCoreTiptap.css
 131 строк - packages\resources\src\styles\components\HistorySidebar.css
 129 строк - packages\resources\src\styles\features\timeline\CalendarPlayground.css
 128 строк - packages\resources\src\styles\components\TagsField.css
@@ -91,6 +92,7 @@
 99 строк - packages\resources\src\styles\features\ai\AiSelect.css
 94 строк - packages\resources\src\styles\features\ai\AiChatInput.css
 91 строк - packages\resources\src\styles\tokens\typography.css
+90 строк - packages\resources\src\styles\features\schemas\SchemaFieldEditor.css
 88 строк - packages\resources\src\styles\components\FloatingWindow.css
 86 строк - packages\resources\src\styles\features\timeline\CalendarMoons.css
 84 строк - packages\resources\src\styles\features\ai\AiHeader.css
@@ -102,7 +104,6 @@
 67 строк - packages\resources\src\styles\tokens\theme-dark.css
 66 строк - packages\resources\src\styles\features\chapters\ChapterTree.css
 62 строк - packages\resources\src\styles\tokens\theme-glass.css
-60 строк - packages\resources\src\styles\features\chapters\EditorCoreTiptap.css
 57 строк - packages\resources\src\styles\base\layout.css
 56 строк - packages\resources\src\styles\features\chapters\SemanticParagraph.css
 53 строк - packages\resources\src\styles\utilities\flex.css

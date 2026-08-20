@@ -1,0 +1,89 @@
+/* SchemaFieldEditor.css - Стили редактора полей схем */
+
+.schema-field-editor {
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+
+.schema-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.schema-field-title-input {
+  margin: 0;
+  background: transparent;
+  border: none;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-black);
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+}
+
+.schema-field-preview {
+  margin-bottom: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--bg-input);
+}
+
+.schema-field-settings {
+  padding: 16px;
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+}
+
+.photo-placeholder-ui {
+  height: 140px;
+  background: var(--bg-panel);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+
+.type-btn-mini {
+  padding: 4px 8px;
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: all var(--anim-speed) var(--anim-ease);
+  color: var(--text-main);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+}
+
+.type-btn-mini.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.option-item-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.range-badge {
+  background: var(--accent);
+  color: var(--text-main);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-black);
+  font-size: var(--font-size-md);
+  min-width: 60px;
+  text-align: center;
+  box-shadow: 0 0 15px var(--accent-glow);
+}

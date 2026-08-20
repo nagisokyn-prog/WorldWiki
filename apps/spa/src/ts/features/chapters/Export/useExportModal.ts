@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 
 export interface ExportChapterItem {
-    id?: string;
+    id?: string | null;
     title?: string | null;
     [key: string]: unknown;
 }

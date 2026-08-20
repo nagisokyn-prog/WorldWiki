@@ -32,7 +32,7 @@ export default defineComponent({
     AppDialog,
   },
    
-  setup(): Record<string, unknown> {
+  setup() {
     const route = useRoute();
     const rawProject = typeof route.query.project === 'string' ? route.query.project : 'default';
     const routeProject = rawProject.trim() === '' ? 'default' : rawProject;

@@ -1,28 +1,28 @@
 <template>
-  <div class="calendar-section playground-section" style="width: 100%;">
-    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
-      <h4 style="color: var(--accent); margin: 0;"><i class="fas fa-calendar-alt"></i> Точка отсчёта в произведении</h4>
-      <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
+  <div class="calendar-section playground-section">
+    <div class="section-header playground-section-header" @click="isCollapsed = !isCollapsed">
+      <h4 class="text-accent m-0"><i class="fas fa-calendar-alt"></i> Точка отсчёта в произведении</h4>
+      <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" style="margin-top: 16px;">
+    <div v-show="!isCollapsed" class="mt-4">
       
       <!-- Controls -->
       <div class="playground-controls">
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+        <div class="flex gap-3 items-center flex-wrap">
           <!-- Era -->
           <select v-if="calendar.эпохи && calendar.эпохи.length > 0" v-model.number="origin.эпоха" class="interactive-el glass-select">
             <option v-for="(era, idx) in calendar.эпохи" :key="idx" :value="idx">{{ era.название || `Эра ${idx+1}` }}</option>
           </select>
           
           <!-- Year -->
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label style="font-size: 11px; color: var(--text-muted);">Год:</label>
+          <div class="flex items-center gap-1">
+            <label class="text-xs text-muted">Год:</label>
             <input v-model.number="origin.год" type="number" class="interactive-el glass-input" style="width: 70px;">
           </div>
           
           <!-- Month Nav -->
-          <div style="display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 4px;">
+          <div class="month-nav-box">
             <button class="btn-icon interactive-el" title="Предыдущий месяц" @click="prevMonth">◀</button>
             <select v-model.number="origin.месяц" class="interactive-el glass-select" style="min-width: 120px;">
               <option v-for="(m, idx) in calendar.месяцы" :key="idx" :value="idx">{{ m.название || `Месяц ${idx+1}` }}</option>
@@ -31,14 +31,14 @@
           </div>
           
           <!-- Day -->
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label style="font-size: 11px; color: var(--text-muted);">День:</label>
+          <div class="flex items-center gap-1">
+            <label class="text-xs text-muted">День:</label>
             <input v-model.number="origin.день" type="number" class="interactive-el glass-input" style="width: 50px;" min="1" :max="currentDaysCount">
           </div>
           
           <!-- Weekday -->
-          <div v-if="calendar.названия_дней_недели && calendar.названия_дней_недели.length > 0" style="display: flex; align-items: center; gap: 6px;">
-            <label style="font-size: 11px; color: var(--text-muted);">День недели:</label>
+          <div v-if="calendar.названия_дней_недели && calendar.названия_дней_недели.length > 0" class="flex items-center gap-1">
+            <label class="text-xs text-muted">День недели:</label>
             <select v-model.number="origin.день_недели" class="interactive-el glass-select">
               <option v-for="(day, idx) in calendar.названия_дней_недели" :key="idx" :value="idx">{{ day }}</option>
             </select>

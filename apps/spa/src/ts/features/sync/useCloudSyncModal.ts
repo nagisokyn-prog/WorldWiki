@@ -10,7 +10,12 @@ export interface YandexBackupFile {
     size: number;
 }
 
-export function useCloudSyncModal(emit: (event: string, ...args: unknown[]) => void) {
+export type CloudSyncEmit = {
+    (e: 'close'): void;
+    (e: 'toast', payload: { text: string; type: 'info' | 'success' | 'error' }): void;
+};
+
+export function useCloudSyncModal(emit: CloudSyncEmit) {
     const isOpen = ref(false);
     const syncMode = ref<'import' | 'export'>('export');
     const yandexToken = ref<string | null>(null);

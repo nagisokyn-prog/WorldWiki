@@ -10,12 +10,12 @@
           <button class="close-btn" @click="close">&times;</button>
         </div>
 
-        <div class="cloud-sync-body" style="position: relative;">
+        <div class="cloud-sync-body relative">
           <!-- Оверлей загрузки -->
-          <div v-if="isSyncing" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color); opacity: 0.9; backdrop-filter: blur(4px); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;">
-            <i class="fas fa-circle-notch fa-spin" style="font-size: 32px; color: var(--accent-color); margin-bottom: 16px;"></i>
-            <div style="font-weight: 500; font-size: 15px;">{{ syncMode === 'import' ? 'Восстановление проекта...' : 'Отправка в облако...' }}</div>
-            <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px; text-align: center;">Пожалуйста, не закрывайте окно<br>и дождитесь завершения</div>
+          <div v-if="isSyncing" class="sync-loading-overlay">
+            <i class="fas fa-circle-notch fa-spin sync-loading-spinner"></i>
+            <div class="font-medium text-base">{{ syncMode === 'import' ? 'Восстановление проекта...' : 'Отправка в облако...' }}</div>
+            <div class="text-xs text-muted mt-2 text-center">Пожалуйста, не закрывайте окно<br>и дождитесь завершения</div>
           </div>
           <div class="cloud-provider-card">
             <div class="provider-info">
@@ -49,13 +49,13 @@
                 {{ isLoading ? 'Подключение...' : 'Подтвердить' }}
               </button>
             </div>
-            <p v-if="authError" class="text-error" style="margin-top: 8px;">{{ authError }}</p>
+            <p v-if="authError" class="text-error mt-2">{{ authError }}</p>
           </div>
 
-          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+          <div class="mt-6 pt-6 border-t">
             <!-- EXPORT MODE -->
             <template v-if="syncMode === 'export'">
-              <div style="display: flex; gap: 12px; align-items: center; justify-content: center;">
+              <div class="flex gap-3 items-center justify-center">
                 <button 
                   class="btn-sync-primary interactive-el"
                   :disabled="!yandexToken || isSyncing"
@@ -65,37 +65,37 @@
                   Отправить бекап в облако
                 </button>
               </div>
-              <p style="text-align: center; margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+              <p class="text-center mt-3 text-xs text-muted">
                 Архив текущего состояния проекта будет сохранен в папке <b>Приложения/WorldWiki</b> на вашем Яндекс.Диске.
               </p>
             </template>
 
             <!-- IMPORT MODE -->
             <template v-else-if="syncMode === 'import'">
-              <div v-if="!yandexToken" style="text-align: center; color: var(--text-muted); font-size: 13px;">
+              <div v-if="!yandexToken" class="text-center text-muted text-sm">
                 Подключите Яндекс.Диск для загрузки бекапов
               </div>
               <div v-else>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <h4 style="margin: 0; font-size: 14px;">Доступные бекапы</h4>
-                  <button class="btn btn-secondary" style="padding: 4px 8px; font-size: 12px;" :disabled="isLoadingBackups" title="Обновить список" @click="fetchBackupsList">
+                <div class="flex justify-between items-center mb-3">
+                  <h4 class="m-0 text-sm">Доступные бекапы</h4>
+                  <button class="btn btn-secondary text-xs px-2 py-1" :disabled="isLoadingBackups" title="Обновить список" @click="fetchBackupsList">
                     <i class="fas fa-sync-alt" :class="{'fa-spin': isLoadingBackups}"></i> Обновить
                   </button>
                 </div>
                 
-                <div v-if="isLoadingBackups" style="text-align: center; padding: 20px; color: var(--text-muted);">
+                <div v-if="isLoadingBackups" class="text-center p-5 text-muted">
                   <i class="fas fa-spinner fa-spin"></i> Загрузка списка...
                 </div>
-                <div v-else-if="availableBackups.length === 0" style="text-align: center; padding: 20px; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 6px;">
+                <div v-else-if="availableBackups.length === 0" class="text-center p-5 text-muted border border-dashed rounded-md">
                   Бекапы не найдены в папке Приложения/WorldWiki
                 </div>
-                <div v-else style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
-                  <div v-for="backup in availableBackups" :key="backup.name" style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px;">
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                      <div style="font-size: 13px; font-weight: 500; word-break: break-all;"><i class="far fa-file-archive" style="margin-right: 6px; color: var(--text-muted);"></i>{{ backup.name }}</div>
-                      <div style="font-size: 11px; color: var(--text-muted);">{{ new Date(backup.created).toLocaleString() }} • {{ (backup.size / 1024 / 1024).toFixed(2) }} MB</div>
+                <div v-else class="flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                  <div v-for="backup in availableBackups" :key="backup.name" class="backup-item-row">
+                    <div class="flex-col gap-1">
+                      <div class="text-sm font-medium break-all"><i class="far fa-file-archive mr-1 text-muted"></i>{{ backup.name }}</div>
+                      <div class="text-xs text-muted">{{ new Date(backup.created).toLocaleString() }} • {{ (backup.size / 1024 / 1024).toFixed(2) }} MB</div>
                     </div>
-                    <button class="btn btn-yandex" style="padding: 6px 12px; font-size: 12px; white-space: nowrap; margin-left: 12px;" :disabled="isSyncing" @click="restoreBackup(backup.name)">
+                    <button class="btn btn-yandex text-xs px-3 py-1 whitespace-nowrap ml-3" :disabled="isSyncing" @click="restoreBackup(backup.name)">
                       <i class="fas fa-download"></i> Восстановить
                     </button>
                   </div>
@@ -110,9 +110,9 @@
 </template>
 
 <script setup lang="ts">
-import { useCloudSyncModal } from './useCloudSyncModal';
+import { useCloudSyncModal, type CloudSyncEmit } from './useCloudSyncModal';
 
-const emit = defineEmits(['close', 'toast']);
+const emit = defineEmits<CloudSyncEmit>();
 
 const {
   isOpen,

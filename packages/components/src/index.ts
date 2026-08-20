@@ -1,5 +1,4 @@
 // Components
-import '../../resources/src/styles/explorer-tree.css';
 export { default as CommandPalette } from './components/Vue/CommandPalette.vue';
 export { default as EditorGroupPane } from './components/Vue/EditorGroupPane.vue';
 export { default as EditorTabBar } from './components/Vue/EditorTabBar.vue';

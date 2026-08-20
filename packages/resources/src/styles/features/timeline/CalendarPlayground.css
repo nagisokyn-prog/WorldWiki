@@ -3,6 +3,14 @@
   border: 1px solid var(--border-color);
   padding: 16px;
   border-radius: 12px;
+  width: 100%;
+}
+.playground-section-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
 }
 .playground-controls {
   display: flex;
@@ -23,6 +31,15 @@
   padding: 6px 12px;
   border-radius: 6px;
 }
+.month-nav-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+  padding: 4px;
+}
+
 .btn-icon {
   background: transparent;
   border: none;

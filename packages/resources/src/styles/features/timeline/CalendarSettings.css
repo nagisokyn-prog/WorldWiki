@@ -38,3 +38,42 @@
 .glass-label {
   color: var(--text-muted);
 }
+.settings-section-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.help-icon {
+  cursor: help;
+  color: #3498db;
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-left: 4px;
+}
+.help-icon-summer {
+  cursor: help;
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-left: 4px;
+}
+.label-summer {
+  color: #f39c12;
+}
+.label-winter {
+  color: #3498db;
+}
+.settings-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+.seasonal-box {
+  margin-top: 16px;
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  padding-top: 16px;
+}
+

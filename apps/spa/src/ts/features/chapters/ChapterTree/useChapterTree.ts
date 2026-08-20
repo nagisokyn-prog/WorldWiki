@@ -326,12 +326,7 @@ export function useChapterTree(
         }
     };
 
-    let _createInlineGuard = false;
     const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
-        if (_createInlineGuard) return;
-        _createInlineGuard = true;
-        setTimeout(() => { _createInlineGuard = false; }, 300);
-
         if (sectionId === 'manuscript') {
             if (parentId) {
                 const arc = hierarchy.value.arcs.find(a => String(a.id) === String(parentId));

@@ -110,9 +110,6 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
       if (anySelect && anySelect.class) return anySelect.class;
       return 'character';
     }
-    for (const key of Object.keys(props.item)) {
-      if (key === 'персонаж' || key === 'character' || key === 'target_char') return key;
-    }
     return 'character';
   });
 
@@ -268,14 +265,13 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
   watch(
     () => getTargetForeignId(),
-    (newTargetId) => {
-      if (newTargetId) {
+    (newTargetId, oldTargetId) => {
+      if (newTargetId && newTargetId !== oldTargetId) {
         loadForeignItem(newTargetId);
-      } else {
+      } else if (!newTargetId) {
         foreignItem.value = null;
       }
-    },
-    { immediate: true }
+    }
   );
 
   const onLinkChange = (fieldClass: string) => async (e: Event): Promise<void> => {
@@ -292,8 +288,6 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
       if (props.referenceData[`${type}_list`]) return props.referenceData[`${type}_list`];
       if (props.referenceData[type]) return props.referenceData[type];
     }
-    if (props.referenceData['character_list']) return props.referenceData['character_list'];
-    if (props.referenceData['character']) return props.referenceData['character'];
     return [];
   };
 

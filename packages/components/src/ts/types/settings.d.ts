@@ -134,10 +134,10 @@ export interface NotificationSettings {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
-// Производительность
-// @rust-ready ✅ loadMeter calculation, fpsLimit, level detection
+export type GraphicsProfile = 'Automatic' | 'Eco' | 'Balanced' | 'Quality' | 'Max' | 'auto' | 'high' | 'medium' | 'low' | string;
+
 export interface PerfSettings {
-  level: 'auto' | 'high' | 'medium' | 'low';  // Уровень производительности
+  level: GraphicsProfile;  // Уровень / профиль производительности
   fpsLimit: number;  // Лимит FPS: 30, 60, 90, 120, 144, 165, 240
   loadMeter: number;      // Нагрузка на систему (0-100%)
   qualityLevel: number;   // Качество визуала (0-100)

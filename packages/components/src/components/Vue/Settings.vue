@@ -1,248 +1,25 @@
 <template>
-  <div class="settings-modal-content">
+  <div class="settings-modal-content cinematic-settings">
     <div class="settings-layout">
-      <!-- Сайдбар с категориями -->
-      <div class="settings-sidebar">
-        <div class="sidebar-heading">{{ t('settings.categories.title') }}</div>
-        <div v-for="cat in categories" :key="cat.id" class="settings-nav-item" :class="{ active: activeCategory === cat.id }" @click="activeCategory = cat.id">
-          <span>{{ cat.icon }}</span> {{ t(cat.titleKey) }}
-        </div>
-      </div>
+      <!-- Навигация (AAA Style) -->
+      <SettingsNavRail 
+        :active-tab="activeTab"
+        @update:active-tab="val => activeTab = val"
+      />
 
-      <!-- Контент настроек -->
+      <!-- Контентная область с плавной сменой сцен -->
       <div class="settings-content-area">
         <div class="glass-card-container">
           <div class="glass-card-bg"></div>
           <div class="glass-card-content">
-            <div class="settings-header-row">
-              <h2 class="card-title">⚙️ {{ t('settings.title') }}</h2>
-            </div>
-
-            <p class="settings-desc">{{ t('settings.description', { category: getCategoryTitle(activeCategory) }) }}</p>
-
-            <div v-auto-animate class="settings-grid">
-              <!-- 1. ТЕМА ОФОРМЛЕНИЯ -->
-              <div v-show="activeCategory === 'theme' || activeCategory === 'all'" class="settings-group">
-                 <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.theme') }}</h3>
-                <ThemeSwitcher />
-              </div>
-
-              <!-- 2. ЦВЕТОВАЯ СХЕМА -->
-              <div v-show="activeCategory === 'colors' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.colors') }}</h3>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.bgBase') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.bgBase)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('bgBase', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.bgBase" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.bgSecondary') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.bgSecondary)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('bgSecondary', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.bgSecondary" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.bgPanel') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.bgPanel)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('bgPanel', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.bgPanel" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.bgInput') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.bgInput)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('bgInput', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.bgInput" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.textMain') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.textMain)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('textMain', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.textMain" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.textMuted') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.textMuted)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('textMuted', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.textMuted" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.accent') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.accent)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('accent', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.accent" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.accentHover') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.accentHover)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('accentHover', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.accentHover" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.accentText') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.accentText)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('accentText', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.accentText" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.borderColor') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.borderColor)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('borderColor', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.borderColor" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-                <div class="color-control"><span class="color-label">{{ t('settings.fields.shadowColor') }}</span><div class="color-control-inputs"><input type="color" :value="toHex(settings.colors.shadowColor)" class="interactive-el color-picker-input" @input="e => updateColorAlpha('shadowColor', (e.target as HTMLInputElement).value)"><input v-model="settings.colors.shadowColor" type="text" class="interactive-el color-text-input" @input="save()"></div></div>
-              </div>
-
-              <!-- 3. ПРОЗРАЧНОСТЬ И СТЕКЛО -->
-              <div v-show="activeCategory === 'glass' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.glass') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.islandAlpha') }}</label><span class="val-badge">{{ Math.round(settings.glass.islandAlpha * 100) }}%</span></div>
-                <input v-model.number="settings.glass.islandAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.cardAlpha') }}</label><span class="val-badge">{{ Math.round(settings.glass.cardAlpha * 100) }}%</span></div>
-                <input v-model.number="settings.glass.cardAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.blur') }}</label><span class="val-badge">{{ settings.glass.blur }}px</span></div>
-                <input v-model.number="settings.glass.blur" type="range" min="0" max="60" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.borderAlpha') }}</label><span class="val-badge">{{ Math.round(settings.glass.borderAlpha * 100) }}%</span></div>
-                <input v-model.number="settings.glass.borderAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
-              </div>
-
-              <!-- 4. СКРУГЛЕНИЯ -->
-              <div v-show="activeCategory === 'radii' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.radii') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.islandRadius') }}</label><span class="val-badge">{{ settings.radii.island }}px</span></div>
-                <input v-model.number="settings.radii.island" type="range" min="0" max="60" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.cardRadius') }}</label><span class="val-badge">{{ settings.radii.card }}px</span></div>
-                <input v-model.number="settings.radii.card" type="range" min="0" max="40" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.btnRadius') }}</label><span class="val-badge">{{ settings.radii.btn }}px</span></div>
-                <input v-model.number="settings.radii.btn" type="range" min="0" max="40" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.inputRadius') }}</label><span class="val-badge">{{ settings.radii.input }}px</span></div>
-                <input v-model.number="settings.radii.input" type="range" min="0" max="30" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.dropdownRadius') }}</label><span class="val-badge">{{ settings.radii.dropdown }}px</span></div>
-                <input v-model.number="settings.radii.dropdown" type="range" min="0" max="30" class="interactive-el" @input="save()">
-              </div>
-
-              <!-- 5. ТЕНИ И ОБЪЕМ -->
-              <div v-show="activeCategory === 'shadows' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.shadows') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.shadowOffsetY') }}</label><span class="val-badge">{{ settings.shadows.islandY }}px</span></div>
-                <input v-model.number="settings.shadows.islandY" type="range" min="0" max="50" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.shadowBlur') }}</label><span class="val-badge">{{ settings.shadows.islandBlur }}px</span></div>
-                <input v-model.number="settings.shadows.islandBlur" type="range" min="0" max="100" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.shadowInset') }}</label><label class="toggle-switch"><input v-model="settings.shadows.useInset" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-              </div>
-
-              <!-- 6. АНИМАЦИИ -->
-              <div v-show="activeCategory === 'animations' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.animations') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.animationsEnabled') }}</label><label class="toggle-switch"><input v-model="settings.animations.enabled" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-                <div class="control-row"><label>{{ t('settings.fields.animationSpeed') }}</label><span class="val-badge">{{ settings.animations.speed }}s</span></div>
-                <input v-model.number="settings.animations.speed" type="range" min="0.1" max="1.0" step="0.05" class="interactive-el" :disabled="!settings.animations.enabled" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.entrance') }}</label><span class="val-badge">{{ settings.animations.entrance }}s</span></div>
-                <input v-model.number="settings.animations.entrance" type="range" min="0.1" max="2.0" step="0.1" class="interactive-el" :disabled="!settings.animations.enabled" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.pulse') }}</label><label class="toggle-switch"><input v-model="settings.animations.pulse" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-                <div class="control-row"><label>{{ t('settings.fields.scalePush') }}</label><span class="val-badge">{{ settings.animations.scalePush }}x</span></div>
-                <input v-model.number="settings.animations.scalePush" type="range" min="0.8" max="1.0" step="0.01" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.scalePull') }}</label><span class="val-badge">{{ settings.animations.scalePull }}x</span></div>
-                <input v-model.number="settings.animations.scalePull" type="range" min="1.0" max="1.2" step="0.01" class="interactive-el" @input="save()">
-              </div>
-
-              <!-- 7. ШРИФТЫ -->
-              <div v-show="activeCategory === 'fonts' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.fonts') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.fontFamily') }}</label></div>
-                <div class="radio-group flex-col">
-                  <div v-for="font in fontOptions" :key="font.val" class="radio-btn" :class="{ active: settings.fonts.family === font.val }" :style="{ fontFamily: font.val }" @click="settings.fonts.family = font.val; save()">{{ t(font.titleKey) }}</div>
-                </div>
-                <div class="control-row mt-3"><label>{{ t('settings.fields.fontSize') }}</label><span class="val-badge">{{ settings.fonts.size }}px</span></div>
-                <input v-model.number="settings.fonts.size" type="range" min="12" max="24" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.fontLineHeight') }}</label><span class="val-badge">{{ settings.fonts.lineHeight }}</span></div>
-                <input v-model.number="settings.fonts.lineHeight" type="range" min="1.0" max="2.0" step="0.1" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.fontLetterSpacing') }}</label><span class="val-badge">{{ settings.fonts.letterSpacing }}px</span></div>
-                <input v-model.number="settings.fonts.letterSpacing" type="range" min="-1" max="3" step="0.1" class="interactive-el" @input="save()">
-              </div>
-
-              <!-- 8. ОТСТУПЫ И ПЛОТНОСТЬ -->
-              <div v-show="activeCategory === 'spacing' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.spacing') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.density') }}</label><span class="val-badge">{{ settings.spacing.density }}x</span></div>
-                <input v-model.number="settings.spacing.density" type="range" min="0.5" max="2.0" step="0.1" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.sidebarWidth') }}</label><span class="val-badge">{{ settings.spacing.sidebarWidth }}px</span></div>
-                <input v-model.number="settings.spacing.sidebarWidth" type="range" min="200" max="500" step="10" class="interactive-el" @input="save()">
-                <div class="control-row"><label>{{ t('settings.fields.panelHeight') }}</label><span class="val-badge">{{ settings.spacing.panelHeight }}px</span></div>
-                <input v-model.number="settings.spacing.panelHeight" type="range" min="150" max="500" step="10" class="interactive-el" @change="save()">
-              </div>
-
-              <!-- 9. КОМПОНОВКА -->
-              <div v-show="activeCategory === 'layout' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.layout') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.columns') }}</label></div>
-                <div class="radio-group">
-                  <div v-for="n in [1,2,3,4]" :key="n" class="radio-btn" :class="{ active: settings.layout.columns === n }" @click="settings.layout.columns = n; save()">{{ n }}</div>
-                </div>
-                <div class="control-row"><label>{{ t('settings.fields.sidebarPosition') }}</label></div>
-                <div class="radio-group">
-                  <div class="radio-btn" :class="{ active: settings.layout.sidebarPos === 'row' }" @click="settings.layout.sidebarPos = 'row'; save()">{{ t('settings.fields.left') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.layout.sidebarPos === 'row-reverse' }" @click="settings.layout.sidebarPos = 'row-reverse'; save()">{{ t('settings.fields.right') }}</div>
-                </div>
-                <div class="control-row"><label>{{ t('settings.fields.focusMode') }}</label><label class="toggle-switch"><input v-model="settings.layout.focusMode" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-              </div>
-
-              <!-- 10. ИНПУТЫ И ФОРМЫ -->
-              <div v-show="activeCategory === 'inputs' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.inputs') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.inputStyle') }}</label></div>
-                <div class="radio-group">
-                  <div class="radio-btn" :class="{ active: settings.inputs.style === 'outline' }" @click="settings.inputs.style = 'outline'; save()">{{ t('settings.fields.withOutline') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.inputs.style === 'filled' }" @click="settings.inputs.style = 'filled'; save()">{{ t('settings.fields.withBackground') }}</div>
-                </div>
-                <div class="control-row mt-3"><label>{{ t('settings.fields.inputFocusAnimation') }}</label><label class="toggle-switch"><input v-model="settings.inputs.focusAnim" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-              </div>
-
-              <!-- 11. КНОПКИ -->
-              <div v-show="activeCategory === 'buttons' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.buttons') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.hoverEffect') }}</label><label class="toggle-switch"><input v-model="settings.buttons.hoverScale" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-                <div class="control-row"><label>{{ t('settings.fields.clickEffect') }}</label><label class="toggle-switch"><input v-model="settings.buttons.clickPress" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-              </div>
-
-              <!-- 12. ВКЛАДКИ -->
-              <div v-show="activeCategory === 'tabs' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.tabs') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.tabsPosition') }}</label></div>
-                <div class="radio-group">
-                  <div class="radio-btn" :class="{ active: settings.tabs.pos === 'row' }" @click="settings.tabs.pos = 'row'; save()">{{ t('settings.fields.top') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.tabs.pos === 'column' }" @click="settings.tabs.pos = 'column'; save()">{{ t('settings.fields.left') }}</div>
-                </div>
-              </div>
-
-              <!-- 13. ВЫПАДАЮЩИЕ СПИСКИ -->
-              <div v-show="activeCategory === 'dropdowns' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.dropdowns') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.wheel3DEffect') }}</label><label class="toggle-switch"><input v-model="settings.dropdowns.use3DWheel" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-                <div v-if="settings.dropdowns.use3DWheel" class="control-row mt-3"><label>{{ t('settings.fields.wheelOrientation') }}</label></div>
-                <div v-if="settings.dropdowns.use3DWheel" class="radio-group">
-                  <div class="radio-btn" :class="{ active: settings.dropdowns.wheelOrientation === 'vertical' || !settings.dropdowns.wheelOrientation }" @click="settings.dropdowns.wheelOrientation = 'vertical'; save()">{{ t('settings.fields.vertical') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.dropdowns.wheelOrientation === 'horizontal' }" @click="settings.dropdowns.wheelOrientation = 'horizontal'; save()">{{ t('settings.fields.horizontal') }}</div>
-                </div>
-              </div>
-
-              <!-- 14. КАРТОЧКИ И СПИСКИ -->
-              <div v-show="activeCategory === 'cards' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.cards') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.compactList') }}</label><label class="toggle-switch"><input v-model="settings.cards.compactList" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-                <div class="control-row"><label>{{ t('settings.fields.showIcons') }}</label><label class="toggle-switch"><input v-model="settings.cards.showIcons" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label></div>
-              </div>
-
-              <!-- 16. УВЕДОМЛЕНИЯ -->
-              <div v-show="activeCategory === 'notifications' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.notifications') }}</h3>
-                <div class="control-row"><label>{{ t('settings.fields.notificationDuration') }}</label><span class="val-badge">{{ settings.notifications.duration }}ms</span></div>
-                <input v-model.number="settings.notifications.duration" type="range" min="1000" max="10000" step="500" class="interactive-el" @change="save()">
-                
-                <div class="control-row mt-3"><label>{{ t('settings.fields.notificationPosition') }}</label></div>
-                <div class="radio-group flex-wrap gap-2">
-                  <div class="radio-btn" :class="{ active: settings.notifications.position === 'top-left' }" @click="settings.notifications.position = 'top-left'; save()">{{ t('settings.fields.topLeft') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.notifications.position === 'top-right' }" @click="settings.notifications.position = 'top-right'; save()">{{ t('settings.fields.topRight') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.notifications.position === 'bottom-left' }" @click="settings.notifications.position = 'bottom-left'; save()">{{ t('settings.fields.bottomLeft') }}</div>
-                  <div class="radio-btn" :class="{ active: settings.notifications.position === 'bottom-right' }" @click="settings.notifications.position = 'bottom-right'; save()">{{ t('settings.fields.bottomRight') }}</div>
-                </div>
-              </div>
-
-              <!-- 17. ПРОИЗВОДИТЕЛЬНОСТЬ -->
-              <div v-show="activeCategory === 'perf' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.perf') || 'Производительность' }}</h3>
-                <div class="control-row"><label>Качество визуала (Master Quality)</label><span class="val-badge">{{ settings.perf.qualityLevel }}%</span></div>
-                <input v-model.number="settings.perf.qualityLevel" type="range" min="0" max="100" step="5" class="interactive-el" @change="applyQuality()">
-              </div>
-
-              <!-- 18. ФОН -->
-              <div v-show="activeCategory === 'background' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">Фон</h3>
-                <div class="control-row"><label>Тип фона</label></div>
-                <div class="radio-group flex-wrap gap-2">
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'none' }" @click="settings.background!.type = 'none'; save()">Нет</div>
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'color' }" @click="settings.background!.type = 'color'; save()">Цвет</div>
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'image' }" @click="settings.background!.type = 'image'; save()">Изображение</div>
-                  <div class="radio-btn" :class="{ active: settings.background?.type === 'video' }" @click="settings.background!.type = 'video'; save()">Видео</div>
-                </div>
-                
-                <div v-if="settings.background?.type === 'image' || settings.background?.type === 'video'" class="mt-3">
-                  <button class="interactive-el btn-pick-bg" @click="pickBackgroundFile()">Выбрать файл...</button>
-                  <div v-if="settings.background.type === 'image' && settings.background.imagePath" class="text-xs text-muted mt-1">{{ settings.background.imagePath }}</div>
-                  <div v-if="settings.background.type === 'video' && settings.background.videoPath" class="text-xs text-muted mt-1">{{ settings.background.videoPath }}</div>
-                </div>
-
-                <div class="control-row mt-3"><label>Прозрачность</label><span class="val-badge">{{ Math.round((settings.background?.opacity || 0) * 100) }}%</span></div>
-                <input v-model.number="settings.background!.opacity" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
-                
-                <div class="control-row"><label>Размытие</label><span class="val-badge">{{ settings.background?.blur || 0 }}px</span></div>
-                <input v-model.number="settings.background!.blur" type="range" min="0" max="50" class="interactive-el" @input="save()">
-              </div>
-
-              <!-- 19. РЕДАКТОР -->
-              <div v-show="activeCategory === 'editor' || activeCategory === 'all'" class="settings-group">
-                <h3 class="form-label settings-group-title">Редактор (Сохранение)</h3>
-                
-                <div class="control-row"><label>Интервал автосохранения</label><span class="val-badge">{{ settings.editor.autoSaveInterval === 0 ? 'Выкл' : settings.editor.autoSaveInterval + ' сек' }}</span></div>
-                <input v-model.number="settings.editor.autoSaveInterval" type="range" min="0" max="300" step="10" class="interactive-el" @input="save()">
-                
-                <div class="control-row"><label>Интервал снапшотов</label><span class="val-badge">{{ settings.editor.snapshotInterval === 0 ? 'Выкл' : settings.editor.snapshotInterval + ' мин' }}</span></div>
-                <input v-model.number="settings.editor.snapshotInterval" type="range" min="0" max="60" step="5" class="interactive-el" @input="save()">
-                
-                <div class="control-row"><label>Максимум снапшотов на главу</label><span class="val-badge">{{ settings.editor.maxSnapshots }}</span></div>
-                <input v-model.number="settings.editor.maxSnapshots" type="range" min="1" max="50" step="1" class="interactive-el" @input="save()">
-              </div>
-            </div>
+            <Transition name="scene" mode="out-in">
+              <component 
+                :is="activeComponent" 
+                :settings="settings" 
+                :save="save" 
+                @pick-background-file="pickBackgroundFile"
+              />
+            </Transition>
           </div>
         </div>
       </div>
@@ -251,84 +28,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import ThemeSwitcher from './ThemeSwitcher.vue';
 import { settingsService } from '../../ts/services/settings.service.js';
 import { setLocale } from "../../ts/i18n.js";
 import { open } from '@tauri-apps/plugin-dialog';
 import type { AppSettings } from '../../ts/types/settings.js';
+
+import type { Component } from 'vue';
+
+// Импорт новых сцен
+import SettingsNavRail from './Settings/SettingsNavRail.vue';
+import SettingsAppearance from './Settings/SettingsAppearance.vue';
+import SettingsInterface from './Settings/SettingsInterface.vue';
+import SettingsMotion from './Settings/SettingsMotion.vue';
+import SettingsTypography from './Settings/SettingsTypography.vue';
+import SettingsEditor from './Settings/SettingsEditor.vue';
+import SettingsPerformance from './Settings/SettingsPerformance.vue';
+
 defineEmits(['close', 'back']);
 
 const { t } = useI18n();
-const activeCategory = ref('theme');
+
+const activeTab = ref('appearance');
 const settings = ref<AppSettings>(settingsService.getSettings());
 
-const categories = [
-  { id: 'theme', icon: '🎨', titleKey: 'settings.categories.theme' },
-  { id: 'all', icon: '📋', titleKey: 'settings.categories.all' },
-  { id: 'colors', icon: '🎨', titleKey: 'settings.categories.colors' },
-  { id: 'glass', icon: '🪟', titleKey: 'settings.categories.glass' },
-  { id: 'radii', icon: '⭕', titleKey: 'settings.categories.radii' },
-  { id: 'shadows', icon: '🌑', titleKey: 'settings.categories.shadows' },
-  { id: 'animations', icon: '🎬', titleKey: 'settings.categories.animations' },
-  { id: 'fonts', icon: '🔤', titleKey: 'settings.categories.fonts' },
-  { id: 'spacing', icon: '📏', titleKey: 'settings.categories.spacing' },
-  { id: 'layout', icon: '📐', titleKey: 'settings.categories.layout' },
-  { id: 'inputs', icon: '📝', titleKey: 'settings.categories.inputs' },
-  { id: 'buttons', icon: '🔘', titleKey: 'settings.categories.buttons' },
-  { id: 'tabs', icon: '📑', titleKey: 'settings.categories.tabs' },
-  { id: 'dropdowns', icon: '📋', titleKey: 'settings.categories.dropdowns' },
-  { id: 'cards', icon: '🃏', titleKey: 'settings.categories.cards' },
-  { id: 'notifications', icon: '🔔', titleKey: 'settings.categories.notifications' },
-  { id: 'perf', icon: '⚡', titleKey: 'settings.groupTitles.perf' },
-  { id: 'background', icon: '🖼️', titleKey: 'settings.categories.background' },
-  { id: 'editor', icon: '📝', titleKey: 'settings.categories.editor' }
-];
-
-const fontOptions = [
-  { val: 'Inter', titleKey: 'settings.fonts.interDefault' },
-  { val: 'Roboto', titleKey: 'settings.fonts.roboto' },
-  { val: 'SF Pro Display', titleKey: 'settings.fonts.sfPro' },
-  { val: 'Segoe UI', titleKey: 'settings.fonts.segoe' },
-  { val: 'Fira Code', titleKey: 'settings.fonts.firaCode' }
-];
-
-const toHex = (color: string): string => {
-  if (!color) return '#000000';
-  if (color.startsWith('#')) return color;
-  const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  if (match) {
-    const r = parseInt(match[1]).toString(16).padStart(2, '0');
-    const g = parseInt(match[2]).toString(16).padStart(2, '0');
-    const b = parseInt(match[3]).toString(16).padStart(2, '0');
-    return `#${r}${g}${b}`;
-  }
-  return '#000000';
+const componentsMap: Record<string, Component> = {
+  appearance: SettingsAppearance,
+  interface: SettingsInterface,
+  motion: SettingsMotion,
+  typography: SettingsTypography,
+  editor: SettingsEditor,
+  performance: SettingsPerformance
 };
 
-const updateColorAlpha = (key: keyof AppSettings['colors'], newHex: string) => {
-  const oldVal = settings.value.colors[key] || '';
-  if (oldVal.startsWith('rgba')) {
-    const alphaMatch = oldVal.match(/,\s*([\d.]+)\)/);
-    if (alphaMatch) {
-      const alpha = alphaMatch[1];
-      const r = parseInt(newHex.slice(1,3), 16);
-      const g = parseInt(newHex.slice(3,5), 16);
-      const b = parseInt(newHex.slice(5,7), 16);
-      settings.value.colors[key] = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-      save();
-      return;
-    }
-  }
-  settings.value.colors[key as keyof typeof settings.value.colors] = newHex;
-  save();
-};
-
-const getCategoryTitle = (id: string): string => {
-  const cat = categories.find(c => c.id === id);
-  return cat ? t(cat.titleKey) : '';
-};
+const activeComponent = computed(() => componentsMap[activeTab.value] || SettingsAppearance);
 
 const changeLocale = async (lang: 'ru' | 'en') => {
   settings.value.locale = lang;
@@ -351,11 +85,6 @@ const save = async () => {
   }
 };
 
-const applyQuality = () => {
-  settingsService.applyQualityLevel(settings.value.perf.qualityLevel);
-  settings.value = settingsService.getSettings();
-};
-
 const pickBackgroundFile = async () => {
   if (!window.__TAURI__) return;
   const isVideo = settings.value.background?.type === 'video';
@@ -372,7 +101,6 @@ const pickBackgroundFile = async () => {
       const invoke = window.__TAURI__?.core?.invoke;
 
       const applyPath = (rawPath: string) => {
-        // Храним сырой путь — settings.service.ts сам вызовет convertFileSrc при рендере
         if (isVideo) {
           settings.value.background!.videoPath = rawPath;
         } else {
@@ -383,12 +111,10 @@ const pickBackgroundFile = async () => {
 
       if (invoke) {
         try {
-          // Копируем файл в папку приложения через Rust — получаем путь внутри data/
           const savedPath = await invoke('copy_background_file', { sourcePath: selected });
           applyPath(savedPath as string);
         } catch (err) {
           console.warn('[background] copy_background_file failed, using original path:', err);
-          // Фолбек: исходный путь на диске — всё равно сработает через convertFileSrc
           applyPath(selected);
         }
       } else {
@@ -396,13 +122,12 @@ const pickBackgroundFile = async () => {
       }
     }
   } catch(e) {
-    console.warn('Failed to invoke dialog plugin (is it installed?). Error:', e);
-    alert('Плагин диалогов не установлен. Пожалуйста, выполните: pnpm add @tauri-apps/plugin-dialog');
+    console.warn('Failed to invoke dialog plugin:', e);
   }
 };
 
 const resetSettings = () => {
-  if (confirm(t('settings.confirmReset'))) {
+  if (confirm(t('settings.confirmReset', 'Сбросить все настройки по умолчанию?'))) {
     settingsService.resetSettings();
     settings.value = settingsService.getSettings();
   }
@@ -418,9 +143,146 @@ onMounted(async () => {
 });
 
 defineExpose({
+  activeTab,
+  settings,
   changeLocale,
   resetSettings
 });
 </script>
 
-<style scoped src="@worldwiki/resources/styles/components/Vue_Settings.css"></style>
+<style scoped>
+@import '@worldwiki/resources/styles/components/Vue_Settings.css';
+
+/* Переопределение компоновки для нового Cinematic Settings */
+.cinematic-settings .settings-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-base, #111);
+}
+
+.cinematic-settings .settings-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.cinematic-settings .glass-card-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+.cinematic-settings .glass-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 32px 40px;
+}
+
+/* Анимации перехода (Смена сцен) */
+.scene-enter-active,
+.scene-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.scene-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.scene-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* Общие стили для сцен */
+:deep(.settings-scene) {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  overflow: hidden;
+}
+
+:deep(.scene-header), :deep(.settings-live-preview) {
+  flex-shrink: 0;
+}
+
+:deep(.settings-grid) {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 16px;
+  margin-right: -16px;
+}
+
+:deep(.scene-header) {
+  margin-bottom: 8px;
+}
+:deep(.scene-header h2) {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+:deep(.scene-desc) {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+:deep(.impact-badge) {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+:deep(.impact-badge.cost-high) {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+:deep(.impact-badge.cost-low) {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+:deep(.impact-badge.visual-high) {
+  background: rgba(79, 172, 254, 0.1);
+  color: #4facfe;
+  border: 1px solid rgba(79, 172, 254, 0.2);
+}
+
+:deep(.settings-group) {
+  background: var(--bg-panel, rgba(255,255,255,0.02));
+  border: 1px solid var(--border-color, rgba(255,255,255,0.05));
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+:deep(.settings-group-title) {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+</style>

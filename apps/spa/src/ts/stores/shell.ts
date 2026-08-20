@@ -94,6 +94,17 @@ export const useShellStore = defineStore('shell', () => {
   const commandPaletteRef = ref<{ open: () => void; close?: () => void } | null>(null);
   const tagsManagerRef = ref<{ open: () => void; close?: () => void } | null>(null);
   const settings = ref<AppSettings>(settingsService.getSettings());
+  
+  // Реактивная синхронизация настроек с состоянием шелла
+  settingsService.onChange((s: AppSettings) => {
+    settings.value = s;
+    if (s.spacing?.sidebarWidth) sidebarWidth.value = s.spacing.sidebarWidth;
+    if (s.spacing?.panelHeight) panelHeight.value = s.spacing.panelHeight;
+    if (s.layout?.focusMode !== undefined) {
+      sidebarVisible.value = !s.layout.focusMode;
+    }
+  });
+
   const isCreatingEntity = ref(false);
   const chapterTreeRef = ref<{ load?: (id?: string) => void; refresh?: () => void; [key: string]: unknown } | null>(null);
   const sidebarItems = ref<SidebarItem[]>([]);

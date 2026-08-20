@@ -42,6 +42,7 @@ vi.mock('@worldwiki/components', async (importOriginal) => {
     settingsService: {
       getSettings: vi.fn(() => ({ layout: { sidebarPos: 'row' } })),
       resetSettings: vi.fn(),
+      onChange: vi.fn(),
     },
   };
 });

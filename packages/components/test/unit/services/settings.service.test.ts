@@ -39,6 +39,7 @@ function setupDomMocks(): void {
   vi.spyOn(document.body.classList, 'contains').mockImplementation(() => false);
   vi.spyOn(document.body, 'setAttribute').mockImplementation(() => {});
   vi.spyOn(document.body, 'appendChild').mockImplementation((node: any) => node);
+  vi.spyOn(document.body, 'prepend').mockImplementation((...nodes: any[]) => {});
 
   // document.getElementById
   vi.spyOn(document, 'getElementById').mockReturnValue(null);
@@ -422,14 +423,14 @@ describe('SettingsService', () => {
       expect(settingsService.getSettings().animations.speed).toBeCloseTo(0.6, 1);
     });
 
-    it('should scale islandAlpha inversely to quality', () => {
-      // 100% -> 0.45 (more transparent)
+    it('should scale islandAlpha directly with quality', () => {
+      // 100% -> 0.60 (60% transparent glass)
       settingsService.applyQualityLevel(100);
-      expect(settingsService.getSettings().glass.islandAlpha).toBeCloseTo(0.45, 2);
+      expect(settingsService.getSettings().glass.islandAlpha).toBeCloseTo(0.60, 2);
       
-      // 0% -> 0.9 (less transparent)
+      // 0% -> 0.0 (0% transparent / solid)
       settingsService.applyQualityLevel(0);
-      expect(settingsService.getSettings().glass.islandAlpha).toBeCloseTo(0.9, 2);
+      expect(settingsService.getSettings().glass.islandAlpha).toBeCloseTo(0.0, 2);
     });
 
     it('should call saveSettings after applying quality level', () => {
@@ -449,7 +450,7 @@ describe('SettingsService', () => {
       settingsService.applyBackground();
       
       expect(spy).toHaveBeenCalledWith('div');
-      expect(document.body.appendChild).toHaveBeenCalled();
+      expect(document.body.prepend).toHaveBeenCalled();
     });
 
     it('should reuse existing background container', () => {

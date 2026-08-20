@@ -150,6 +150,7 @@ export async function loadSettings(): Promise<Record<string, unknown>> {
     return await invoke('load_settings');
 }
 
+
 export async function toggleFullscreen(): Promise<void> {
     return await invoke('toggle_fullscreen');
 }

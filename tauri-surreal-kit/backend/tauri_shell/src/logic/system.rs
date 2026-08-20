@@ -209,6 +209,7 @@ pub async fn get_custom_themes() -> Result<Vec<String>, String> {
             }
         }
     }
+    themes.retain(|t| t != "dark" && t != "light");
     Ok(themes)
 }
 

@@ -1,4 +1,5 @@
 /* layout.css - Глобальная разметка приложения и скролл */
+@import "../features/shell/DynamicSettings.css";
 
 html, body {
     height: 100vh;
@@ -59,6 +60,15 @@ html, body {
 
 ::-webkit-scrollbar-corner {
     background: transparent;
+}
+
+/* Принудительное аппаратное отключение размытия (WebKit fallback fix) */
+body.no-glass-blur,
+body.no-glass-blur *,
+body.no-glass-blur *::before,
+body.no-glass-blur *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 /* Firefox scrollbar support */

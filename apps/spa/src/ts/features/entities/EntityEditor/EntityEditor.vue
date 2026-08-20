@@ -317,7 +317,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { XboxWheel, TagsField } from '@worldwiki/components';
 import UniversalDatePicker from '../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
 import RelationshipBlock from '../../../features/schemas/SchemaEditor/RelationshipBlock.vue';
@@ -327,10 +326,9 @@ import type { EntityEditorProps } from './EntityEditor.model';
 const props = defineProps<EntityEditorProps>();
 const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change', 'update:modelValue']);
 
-const photoInputs = ref<Record<string, HTMLInputElement>>({});
-
 const {
     loading,
+    photoInputs,
     wheelHorizontal,
     config,
     formData,

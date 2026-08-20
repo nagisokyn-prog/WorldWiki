@@ -19,7 +19,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     borderColor: 'rgba(255,255,255,0.1)', borderActive: 'rgba(139,92,246,0.5)',
     shadowColor: 'rgba(0,0,0,0.5)'
   },
-  glass: { islandAlpha: 0.45, cardAlpha: 0.03, blur: 24, borderAlpha: 0.1, highlight: 'rgba(255,255,255,0.08)' },
+  glass: { islandAlpha: 0.55, cardAlpha: 0.95, blur: 24, borderAlpha: 0.9, highlight: 'rgba(255,255,255,0.08)' },
   radii: { island: 28, card: 20, btn: 40, input: 16, dropdown: 16 },
   shadows: { islandY: 20, islandBlur: 35, useInset: false },
   animations: { enabled: true, speed: 0.3, ease: 'cubic-bezier(0.2,0.8,0.2,1)', entrance: 0.4, pulse: true, scalePush: 0.98, scalePull: 1.05 },
@@ -190,25 +190,30 @@ class SettingsService {
   }
 
   /**
-   * Применяет "Уровень красоты" ко всем связанным параметрам
+   * Применяет "Уровень красоты" ко всем связанным параметрам графики
    */
   applyQualityLevel(level: number): void {
     this.settings.perf.qualityLevel = level;
     
-    // Масштабируем параметры от 0 до 100
-    const ratio = level / 100;
+    // Масштабируем параметры от 0 до 1
+    const ratio = Math.max(0, Math.min(100, level)) / 100;
     
-    // Blur от 0 до 24
+    // Блюр интерфейса: 24px при 100%
     this.settings.glass.blur = Math.round(24 * ratio);
     
-    // Анимации отключаем при < 20%
+    // Анимации: отключаем при низком качестве (< 20%)
     this.settings.animations.enabled = level >= 20;
+    this.settings.animations.pulse = level >= 50;
+    this.settings.animations.speed = +(0.6 - (0.3 * ratio)).toFixed(2);
     
-    // Скорость анимации: при 100% - 0.3s, при 20% - 0.6s
-    this.settings.animations.speed = 0.6 - (0.3 * ratio);
+    // Тени: от 0px при 0% до сочных 25px при 100%
+    this.settings.shadows.islandBlur = Math.round(25 * ratio);
+    this.settings.shadows.islandY = Math.round(12 * ratio);
+    this.settings.shadows.useInset = level >= 40;
     
-    // Прозрачность островков: при 100% - 0.45, при 0% - 0.9 (менее прозрачно для экономии)
-    this.settings.glass.islandAlpha = 0.9 - (0.45 * ratio);
+    // Прозрачность островков и карточек: при 0% - глухие (0% прозрачности), при 100% - стекло (60% прозрачности)
+    this.settings.glass.islandAlpha = +(0.60 * ratio).toFixed(2);
+    this.settings.glass.cardAlpha = +(0.60 * ratio).toFixed(2);
     
     this.saveSettings();
   }
@@ -238,14 +243,39 @@ class SettingsService {
         document.body.prepend(container);
       }
       
-      container.innerHTML = ''; // Очищаем старый фон
+      // Обновляем CSS-свойства в реальном времени
       container.style.opacity = String(bg.opacity ?? 1);
       container.style.filter = bg.blur ? `blur(${bg.blur}px)` : 'none';
+
+      // Проверяем, нужно ли пересоздавать DOM-элемент видео/картинки
+      const newPath = bg.type === 'image' ? bg.imagePath : (bg.type === 'video' ? bg.videoPath : '');
+      const currentType = container.getAttribute('data-bg-type');
+      const currentPath = container.getAttribute('data-bg-path');
+      
+      if (currentType === bg.type && currentPath === newPath) {
+        return; // Ресурс тот же, DOM перестраивать не нужно
+      }
+      
+      container.setAttribute('data-bg-type', bg.type || 'none');
+      container.setAttribute('data-bg-path', newPath || '');
+      container.innerHTML = ''; // Очищаем старый фон
       
       const applySrc = (el: HTMLImageElement | HTMLVideoElement, path: string) => {
         const isAlreadyUrl = path.startsWith('http') || path.startsWith('blob:') || path.startsWith('data:');
-        if (!isAlreadyUrl && window.__TAURI__?.core?.convertFileSrc) {
-          el.src = window.__TAURI__.core.convertFileSrc(path);
+        if (isAlreadyUrl) {
+          el.src = path;
+          return;
+        }
+        const w = window as unknown as {
+          __TAURI__?: { core?: { convertFileSrc?: (p: string) => string }; convertFileSrc?: (p: string) => string };
+          __TAURI_INTERNALS__?: { convertFileSrc?: (p: string) => string };
+        };
+        if (w.__TAURI__?.core?.convertFileSrc) {
+          el.src = w.__TAURI__.core.convertFileSrc(path);
+        } else if (w.__TAURI__?.convertFileSrc) {
+          el.src = w.__TAURI__.convertFileSrc(path);
+        } else if (w.__TAURI_INTERNALS__?.convertFileSrc) {
+          el.src = w.__TAURI_INTERNALS__.convertFileSrc(path);
         } else {
           el.src = path;
         }
@@ -263,6 +293,9 @@ class SettingsService {
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.objectFit = bg.fit || 'cover';
+        img.style.position = 'absolute';
+        img.style.top = '0';
+        img.style.left = '0';
         container.appendChild(img);
       } else if (bg.type === 'video' && bg.videoPath) {
         document.documentElement.style.background = 'transparent';
@@ -272,14 +305,19 @@ class SettingsService {
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
+        video.preload = 'auto';
         video.setAttribute('autoplay', '');
         video.setAttribute('loop', '');
         video.setAttribute('muted', '');
         video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
         applySrc(video, bg.videoPath);
         video.style.width = '100%';
         video.style.height = '100%';
         video.style.objectFit = bg.fit || 'cover';
+        video.style.position = 'absolute';
+        video.style.top = '0';
+        video.style.left = '0';
         container.appendChild(video);
         video.play().catch(e => console.warn('[settingsService] Video autoplay blocked/failed:', e));
       } else {
@@ -303,32 +341,39 @@ class SettingsService {
 
     // Helper to calculate color with alpha
     const withAlpha = (colorStr: string, alpha: number): string => {
-      if (!colorStr) return `rgba(255, 255, 255, ${alpha})`;
+      const clampedAlpha = Math.max(0, Math.min(1, alpha));
+      if (!colorStr) return `rgba(255, 255, 255, ${clampedAlpha})`;
       if (colorStr.startsWith('#')) {
         let hex = colorStr.slice(1);
         if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
         const r = parseInt(hex.slice(0, 2), 16) || 0;
         const g = parseInt(hex.slice(2, 4), 16) || 0;
         const b = parseInt(hex.slice(4, 6), 16) || 0;
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
       }
       const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
       if (match) {
-        return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+        return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${clampedAlpha})`;
       }
       return colorStr;
     };
 
-    const panelBgWithAlpha = withAlpha(s.colors.bgPanel, s.glass.islandAlpha);
-    const cardBgWithAlpha = withAlpha(s.colors.bgInput || s.colors.bgSecondary, s.glass.cardAlpha);
-    const borderWithAlpha = withAlpha(s.colors.borderColor || '#ffffff', s.glass.borderAlpha);
+    // Inverted logic: Transparency (0.0 = 0% прозрачности / сплошной, 1.0 = 100% прозрачности / стекло)
+    const islandOpacity = +(Math.max(0, Math.min(1, 1 - (s.glass.islandAlpha ?? 0.55)))).toFixed(2);
+    const cardOpacity = +(Math.max(0, Math.min(1, 1 - (s.glass.cardAlpha ?? 0.95)))).toFixed(2);
+    const borderOpacity = +(Math.max(0, Math.min(1, 1 - (s.glass.borderAlpha ?? 0.9)))).toFixed(2);
+
+    const panelBgWithAlpha = withAlpha(s.colors.bgPanel, islandOpacity);
+    const cardBgWithAlpha = withAlpha(s.colors.bgInput || s.colors.bgSecondary, cardOpacity);
+    const inputBgWithAlpha = withAlpha(s.colors.bgInput, cardOpacity);
+    const borderWithAlpha = withAlpha(s.colors.borderColor || '#ffffff', borderOpacity);
 
     // Colors
     root.style.setProperty('--bg-base', s.colors.bgBase);
     root.style.setProperty('--bg-secondary', s.colors.bgSecondary);
     root.style.setProperty('--bg-panel', panelBgWithAlpha);
     root.style.setProperty('--bg-card', cardBgWithAlpha);
-    root.style.setProperty('--bg-input', s.colors.bgInput);
+    root.style.setProperty('--bg-input', inputBgWithAlpha);
     root.style.setProperty('--text-main', s.colors.textMain);
     root.style.setProperty('--text-muted', s.colors.textMuted);
     root.style.setProperty('--text-heading', s.colors.textHeading);
@@ -345,10 +390,10 @@ class SettingsService {
     // Glass
     root.style.setProperty('--glass-bg', panelBgWithAlpha);
     root.style.setProperty('--glass-card', cardBgWithAlpha);
-    root.style.setProperty('--glass-island-alpha', String(s.glass.islandAlpha));
-    root.style.setProperty('--glass-card-alpha', String(s.glass.cardAlpha));
+    root.style.setProperty('--glass-island-alpha', String(islandOpacity));
+    root.style.setProperty('--glass-card-alpha', String(cardOpacity));
     root.style.setProperty('--glass-blur', `${s.glass.blur}px`);
-    root.style.setProperty('--glass-border-alpha', String(s.glass.borderAlpha));
+    root.style.setProperty('--glass-border-alpha', String(borderOpacity));
     root.style.setProperty('--glass-highlight', s.glass.highlight);
 
     // Radii
@@ -400,11 +445,14 @@ class SettingsService {
 
     // Apply logical UI settings as classes and attributes to body
     const body = document.body;
+    body.classList.toggle('no-glass-blur', Number(s.glass.blur) === 0);
     body.classList.toggle('shadows-inset', s.shadows.useInset);
     body.classList.toggle('animations-pulse', s.animations.pulse);
     body.classList.toggle('focus-mode', s.layout.focusMode);
     
     body.setAttribute('data-input-style', s.inputs.style);
+    body.setAttribute('data-toast-pos', s.notifications?.position || 'bottom-right');
+    body.setAttribute('data-tab-pos', s.layout?.tabPos || 'row');
     body.classList.toggle('input-focus-anim', s.inputs.focusAnim);
     body.classList.toggle('btn-hover-scale', s.buttons.hoverScale);
     body.classList.toggle('btn-click-press', s.buttons.clickPress);

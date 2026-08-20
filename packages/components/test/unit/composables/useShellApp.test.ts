@@ -203,6 +203,119 @@ describe('useShellApp', () => {
     delete (window as any).__TAURI__;
   });
 
+  // Line 293: catch when native WebviewWindow constructor throws → fallback to inline
+  it('falls back to inline floating editor when native Tauri window throws', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const throwingCtor = vi.fn(() => { throw new Error('Native window failed'); });
+    (window as any).__TAURI__ = { webviewWindow: { WebviewWindow: throwingCtor } };
+
+    const shell = useShellApp({ storagePrefix: 'my-app', appId: 'test-app' });
+    shell.openFloatingEditor('character', 'c42');
+
+    expect(throwingCtor).toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalled();
+    // Встроенный fallback добавлен
+    expect(shell.floatingEditors.value.length).toBe(1);
+    expect(shell.floatingEditors.value[0].id).toBe('character:c42');
+    expect(shell.floatingEditors.value[0].entityId).toBe('c42');
+
+    warnSpy.mockRestore();
+    delete (window as any).__TAURI__;
+  });
+
+  // Line 339: F11 invokes toggle_fullscreen via Tauri core
+  it('F11 invokes toggle_fullscreen through Tauri core when available', async () => {
+    const invoke = vi.fn().mockResolvedValue(undefined);
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    (window as any).__TAURI__ = { core: { invoke } };
+
+    const { mount } = await import('@vue/test-utils');
+    const { defineComponent } = await import('vue');
+
+    let shellInstance: any;
+    const Comp = defineComponent({
+      setup() {
+        shellInstance = useShellApp({ storagePrefix: 'test-f11' });
+        return () => null;
+      },
+    });
+    const wrapper = mount(Comp);
+    await Promise.resolve();
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { code: 'F11' }));
+    expect(invoke).toHaveBeenCalledWith('toggle_fullscreen');
+
+    errSpy.mockRestore();
+    wrapper.unmount();
+    delete (window as any).__TAURI__;
+  });
+
+  // Lines 446-447: settings.value is updated from settingsService.onChange
+  it('synchronizes settings.value via settingsService.onChange (lines 446-447)', async () => {
+    const { settingsService } = await import('../../../src/ts/services/settings.service');
+    let captured: ((s: unknown) => void) | null = null;
+    const onChangeSpy = vi.spyOn(settingsService, 'onChange').mockImplementation((cb: any) => { captured = cb; });
+
+    const { mount } = await import('@vue/test-utils');
+    const { defineComponent } = await import('vue');
+
+    let shellInstance: any;
+    const Comp = defineComponent({
+      setup() {
+        shellInstance = useShellApp({ storagePrefix: 'test-settings-sync' });
+        return () => null;
+      },
+    });
+    const wrapper = mount(Comp);
+    await Promise.resolve();
+
+    expect(onChangeSpy).toHaveBeenCalled();
+    expect(captured).not.toBeNull();
+
+    const newSettings = { theme: 'light', colors: { accent: '#abcdef' } };
+    captured!(newSettings);
+    // ref() оборачивает значение в reactive-прокси, поэтому сравниваем по значению
+    expect(shellInstance.settings.value).toStrictEqual(newSettings);
+
+    onChangeSpy.mockRestore();
+    wrapper.unmount();
+  });
+
+  // Line 459: deep watch on getSettings triggers saveSettings
+  it('persists settings through the deep watch (line 459)', async () => {
+    const { settingsService } = await import('../../../src/ts/services/settings.service');
+    const saveSpy = vi.spyOn(settingsService, 'saveSettings').mockImplementation(() => {});
+
+    // Источник watch — стабильный ref; его замена триггерит глубокий watcher
+    const { ref } = await import('vue');
+    const settingsRef = ref<any>({ ...(settingsService.getSettings() as any) });
+    const getSpy = vi.spyOn(settingsService, 'getSettings').mockImplementation(() => settingsRef.value);
+
+    const { mount } = await import('@vue/test-utils');
+    const { defineComponent, nextTick } = await import('vue');
+
+    const Comp = defineComponent({
+      setup() {
+        useShellApp({ storagePrefix: 'test-watch-save' });
+        return () => null;
+      },
+    });
+    const wrapper = mount(Comp);
+    await Promise.resolve();
+
+    // Полная замена объекта настроек → источник watcher возвращает новое значение
+    settingsRef.value = { ...settingsRef.value, colors: { ...(settingsRef.value.colors || {}), accent: '#654321' } };
+    await nextTick();
+    // flush watcher queue
+    await vi.runAllTicks();
+
+    expect(saveSpy).toHaveBeenCalled();
+
+    saveSpy.mockRestore();
+    getSpy.mockRestore();
+    wrapper.unmount();
+  });
+
   it('group management helper methods delegate to editorGroups', () => {
     const shell = useShellApp({ storagePrefix: 'my-app' });
 

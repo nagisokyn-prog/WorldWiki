@@ -29,6 +29,24 @@ describe('packages/components api.service', () => {
     it('handles object with String property', () => {
       expect(stringifyId({ String: 'locations:city_1' })).toBe('locations:city_1');
     });
+
+    it('handles Uuid wrapper in nested tb/id object (line 69)', () => {
+      expect(stringifyId({ tb: 'thing', id: { Uuid: '550e8400-e29b-41d4-a716-446655440000' } }))
+        .toBe('thing:550e8400-e29b-41d4-a716-446655440000');
+    });
+
+    it('falls back to JSON.stringify for unknown inner id object (line 69)', () => {
+      // Строка 71 убирает кавычки из результата, поэтому без "
+      expect(stringifyId({ tb: 'item', id: { foo: 'bar', num: 1 } })).toBe('item:{foo:bar,num:1}');
+      // compound object без String/Int/Uuid
+      expect(stringifyId({ tb: 'item', id: { deep: { x: 'y' } } })).toBe('item:{deep:{x:y}}');
+    });
+
+    it('strips quotes, angle and corner brackets from inner ids (lines 71-76)', () => {
+      expect(stringifyId({ tb: 'thing', id: { String: 'a"b' } })).toBe('thing:ab');
+      expect(stringifyId({ String: 'a"b⟨c⟩d' })).toBe('abcd');
+      expect(stringifyId({ tb: 'thing', id: { Int: 42 } })).toBe('thing:42');
+    });
   });
 
   describe('processIds', () => {

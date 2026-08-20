@@ -237,5 +237,104 @@ describe('useEditorGroups', () => {
       eg.switchTabInGroup(gid, 1);
     });
   });
+
+  // ── Coverage additions ─────────────────────────────────────────────────────
+  describe('closeGroup, openTab existing, moveTab empty-source (94 / 115-117 / 239)', () => {
+    // Line 94: closeGroup → removeGroup
+    it('closeGroup removes the targeted group', () => {
+      const eg = useEditorGroups();
+      expect(eg.groups.value).toHaveLength(1);
+      const firstId = eg.groups.value[0].id;
+
+      eg.splitRight();
+      expect(eg.groups.value).toHaveLength(2);
+      const secondId = eg.groups.value[1].id;
+
+      eg.closeGroup(secondId);
+
+      expect(eg.groups.value).toHaveLength(1);
+      expect(eg.groups.value.some(g => g.id === secondId)).toBe(false);
+      expect(eg.groups.value[0].id).toBe(firstId);
+    });
+
+    it('closeGroup with non-existent id is a safe no-op', () => {
+      const eg = useEditorGroups();
+      const before = eg.groups.value.length;
+      expect(() => eg.closeGroup('missing-group')).not.toThrow();
+      expect(eg.groups.value).toHaveLength(before);
+    });
+
+    // Lines 115-117: openTab activates an already-open tab instead of duplicating
+    it('openTab re-activates an existing tab without duplicating it', () => {
+      const eg = useEditorGroups();
+      const gid = eg.groups.value[0].id;
+
+      eg.openTab(createTab({ id: 'tab1', title: 'Chapter 1' }));
+      expect(eg.groups.value[0].tabs).toHaveLength(1);
+
+      // Re-open the same tab with (potentially) changed data — no duplicate,
+      // data is NOT updated (only activation happens in the existing branch)
+      eg.openTab(createTab({ id: 'tab1', title: 'Renamed' }));
+
+      expect(eg.groups.value[0].tabs).toHaveLength(1);
+      expect(eg.groups.value[0].tabs[0].title).toBe('Chapter 1');
+      expect(eg.groups.value[0].activeTabId).toBe('tab1');
+      expect(eg.activeGroupId.value).toBe(gid);
+      expect(eg.activeTab.value?.id).toBe('tab1');
+    });
+
+    it('openTab activates existing tab targeted to a specific group', () => {
+      const eg = useEditorGroups();
+      eg.splitRight();
+      const g2 = eg.groups.value[1].id;
+
+      eg.openTab(createTab({ id: 'tab1', title: 'Chapter 1' }), g2);
+      expect(eg.groups.value[1].activeTabId).toBe('tab1');
+
+      // Re-open in group 1 — it must be created there, group 2 keeps its own copy
+      const g1 = eg.groups.value[0].id;
+      eg.openTab(createTab({ id: 'tab1', title: 'Chapter 1' }), g1);
+      expect(eg.groups.value[0].activeTabId).toBe('tab1');
+      expect(eg.groups.value[0].tabs).toHaveLength(1);
+      expect(eg.groups.value[1].tabs).toHaveLength(1);
+    });
+
+    // Line 239: moveTab removes the source group when it becomes empty & >1 remain
+    it('moveTab removes source group once it becomes empty and multiple groups exist', () => {
+      const eg = useEditorGroups();
+      eg.splitRight();
+      expect(eg.groups.value).toHaveLength(2);
+      const g1 = eg.groups.value[0].id;
+      const g2 = eg.groups.value[1].id;
+
+      eg.openTab(createTab({ id: 'tabA', title: 'Chapter A' }), g1);
+
+      // Move the only tab out of g1 → g1 empty & total groups > 1 → g1 removed
+      eg.moveTab('tabA', g2);
+
+      expect(eg.groups.value).toHaveLength(1);
+      expect(eg.groups.value[0].id).toBe(g2);
+      expect(eg.groups.value[0].tabs).toHaveLength(1);
+      expect(eg.groups.value[0].activeTabId).toBe('tabA');
+    });
+
+    it('moveTab keeps source group when it still has remaining tabs', () => {
+      const eg = useEditorGroups();
+      eg.splitRight();
+      const g1 = eg.groups.value[0].id;
+      const g2 = eg.groups.value[1].id;
+
+      eg.openTab(createTab({ id: 'tabA', title: 'Chapter A' }), g1);
+      eg.openTab(createTab({ id: 'tabB', title: 'Chapter B' }), g1);
+      expect(eg.groups.value[0].tabs).toHaveLength(2);
+
+      eg.moveTab('tabA', g2);
+
+      expect(eg.groups.value).toHaveLength(2);
+      expect(eg.groups.value[0].tabs).toHaveLength(1);
+      expect(eg.groups.value[0].tabs[0].id).toBe('tabB');
+      expect(eg.groups.value[1].tabs).toHaveLength(1);
+    });
+  });
 });
 

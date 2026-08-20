@@ -125,6 +125,7 @@ export function useParticipantsPanel(
         getIcon,
         resolveEntityName,
         addParticipant,
-        removeParticipant
+        removeParticipant,
+        loadEntitiesForType
     };
 }

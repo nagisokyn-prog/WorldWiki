@@ -159,5 +159,15 @@ describe('useParticipantsPanel', () => {
     await flushPromises();
     expect(panel.entities.value).toEqual([]);
     wrapperFail.unmount();
+
+    // Cache hit and null api return
+    vi.mocked(api.getEntities).mockResolvedValueOnce(null as any);
+    panel.newType.value = 'location';
+    await panel.loadEntitiesForType();
+    expect(panel.entities.value).toEqual([]);
+
+    // Call loadEntitiesForType again with same type (cache hit branch)
+    await panel.loadEntitiesForType();
+    expect(panel.entities.value).toEqual([]);
   });
 });

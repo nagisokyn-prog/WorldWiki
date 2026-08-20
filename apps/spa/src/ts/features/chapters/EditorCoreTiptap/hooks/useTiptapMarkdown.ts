@@ -98,7 +98,7 @@ export function useTiptapMarkdown(
         // Restore selection around the text
         target.setSelectionRange(start + 1, start + 1 + selected.length);
       }
-    } else if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'q' || e.code === 'KeyQ' || e.key === 'й' || e.key === 'Й')) {
+    } else if ((e.ctrlKey || e.metaKey) && (e.key?.toLowerCase() === 'q' || e.code === 'KeyQ' || e.key === 'й' || e.key === 'Й')) {
       const target = e.target as HTMLTextAreaElement;
       if (target) {
         const textBefore = target.value.substring(0, target.selectionStart);

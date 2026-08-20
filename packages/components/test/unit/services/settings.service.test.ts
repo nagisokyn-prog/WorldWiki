@@ -702,6 +702,19 @@ describe('SettingsService', () => {
       
       expect(applyBackgroundSpy).toHaveBeenCalled();
     });
+
+    it('should correctly format colors with alpha for 3-digit hex, rgb, rgba, and named colors', () => {
+      const s = settingsService.getSettings();
+      s.colors.bgPanel = '#abc';
+      s.colors.bgInput = 'rgb(10, 20, 30)';
+      s.colors.bgSecondary = 'rgba(40, 50, 60, 0.8)';
+      s.colors.borderColor = 'currentColor';
+
+      settingsService.applySettings();
+      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith('--bg-panel', expect.stringContaining('rgba(170, 187, 204'));
+      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith('--bg-input', expect.stringContaining('rgba(10, 20, 30'));
+      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith('--text-main', expect.any(String));
+    });
   });
 
   describe('switchTheme', () => {

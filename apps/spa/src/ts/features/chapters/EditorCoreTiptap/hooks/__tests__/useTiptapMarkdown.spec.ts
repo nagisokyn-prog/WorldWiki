@@ -137,6 +137,44 @@ describe('useTiptapMarkdown', () => {
       textarea.value = 'normal text without parens';
       textarea.selectionStart = textarea.value.length;
       md.onMarkdownKeydown(qEvent);
+
+      // With Meta+KeyQ, key 'й', and null target
+      const metaKeyQEvent = {
+        code: 'KeyQ',
+        metaKey: true,
+        target: textarea,
+        preventDefault: vi.fn(),
+      } as any;
+      textarea.value = 'Testing ((Merlin))';
+      textarea.selectionStart = textarea.value.length;
+      md.onMarkdownKeydown(metaKeyQEvent);
+      expect(dispatchSpy).toHaveBeenCalled();
+
+      const russianQEvent = {
+        key: 'й',
+        ctrlKey: true,
+        target: textarea,
+        preventDefault: vi.fn(),
+      } as any;
+      md.onMarkdownKeydown(russianQEvent);
+      expect(dispatchSpy).toHaveBeenCalled();
+
+      // Null target
+      const nullTargetEvent = { key: 'q', ctrlKey: true, target: null } as any;
+      expect(() => md.onMarkdownKeydown(nullTargetEvent)).not.toThrow();
+    });
+
+    it('tests turndown entityLinks replacement with various href formats', () => {
+      const md = useTiptapMarkdown(editor, emit, updateStats);
+      const { turndownService } = md as any;
+
+      // Link with leading slash
+      const md1 = turndownService.turndown('<a href="/ui_editor.html?id=1">Hero</a>');
+      expect(md1).toContain('((Hero))[ui_editor.html?id=1]');
+
+      // Link without leading slash
+      const md2 = turndownService.turndown('<a href="ui_editor.html?id=2">Wizard</a>');
+      expect(md2).toContain('((Wizard))[ui_editor.html?id=2]');
     });
 
     it('handles markdown parse error in onMarkdownInput gracefully', () => {

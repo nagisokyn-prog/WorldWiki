@@ -29,6 +29,13 @@ describe('useSemanticParagraphNode', () => {
 
     const emptyNode = useSemanticParagraphNode({});
     expect(emptyNode.tagLabel.value).toBe('!о');
+    expect(emptyNode.tagTooltip.value).toContain('Описание');
+    expect(emptyNode.badgeStyle.value.color).toBe('#94a3b8');
+
+    const noAttrsNode = useSemanticParagraphNode({ node: {} });
+    expect(noAttrsNode.tagLabel.value).toBe('!о');
+    expect(noAttrsNode.tagTooltip.value).toContain('Описание');
+    expect(noAttrsNode.badgeStyle.value.color).toBe('#94a3b8');
   });
 
   it('cycles tags through desc -> dialog -> thought -> desc and handles missing updateAttributes', () => {

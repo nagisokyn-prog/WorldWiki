@@ -84,6 +84,15 @@ describe('calendar.store', () => {
       const cal = await store.loadCalendar('project_1');
       expect(cal).toBeNull();
     });
+
+    it('handles loadCalendar error and returns null', async () => {
+      vi.mocked(api.getCalendars).mockRejectedValue(new Error('Load failure'));
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const cal = await store.loadCalendar('err_proj');
+      expect(cal).toBeNull();
+      expect(spy).toHaveBeenCalledWith('Ошибка загрузки календаря:', expect.any(Error));
+      spy.mockRestore();
+    });
   });
 
   describe('saveCalendar & deleteCalendar', () => {

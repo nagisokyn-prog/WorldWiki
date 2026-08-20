@@ -90,6 +90,7 @@ describe('useChapterLayout', () => {
     Object.defineProperty(document, 'exitFullscreen', {
       value: exitFullscreen,
       writable: true,
+      configurable: true,
     });
 
     const layout = useChapterLayout();
@@ -116,6 +117,11 @@ describe('useChapterLayout', () => {
 
     layout.toggleZenMode();
     expect(exitFullscreen).toHaveBeenCalled();
+
+    // When exitFullscreen is not supported on document
+    // @ts-expect-error test undefined exitFullscreen
+    delete (document as any).exitFullscreen;
+    expect(() => layout.toggleZenMode()).not.toThrow();
 
     Object.defineProperty(document, 'fullscreenElement', {
       value: null,

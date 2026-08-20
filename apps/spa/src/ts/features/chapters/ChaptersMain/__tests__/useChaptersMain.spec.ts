@@ -294,5 +294,16 @@ describe('useChaptersMain', () => {
     document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: 'ch_1', title: 'Renamed Global' } }));
 
     wrapper.unmount();
+
+    // Mount without controlledChapterId
+    const wrapperNoCtrl = mount(Component, {
+      props: {
+        project: 'proj_1',
+        controlledChapterId: null,
+        activeTreeNode: null,
+      },
+    });
+    await flushPromises();
+    wrapperNoCtrl.unmount();
   });
 });

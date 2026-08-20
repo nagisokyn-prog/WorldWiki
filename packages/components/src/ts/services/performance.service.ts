@@ -206,7 +206,7 @@ export class PerformanceManager {
     }
 
     settingsService.saveSettings(settings);
-    settingsService.applyAllCSSVariables(settings);
+    settingsService.applySettings();
   }
 
   public getInitialCapabilitiesHint(): GraphicsProfile {

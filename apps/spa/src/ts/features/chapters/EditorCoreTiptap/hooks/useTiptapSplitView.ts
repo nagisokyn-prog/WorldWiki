@@ -99,7 +99,7 @@ export function useTiptapSplitView(
         
         if (node.content) {
           node.content.forEach((c: JSONContent) => {
-            if (c.type === 'text' && c.text) text += c.text;
+            if (c && c.type === 'text' && c.text) text += c.text;
           });
         }
         
@@ -122,7 +122,9 @@ export function useTiptapSplitView(
         }
         
         if (node.content) {
-          node.content.forEach((c: JSONContent) => traverse(c, depth + 1));
+          node.content.forEach((c: JSONContent) => {
+            if (c) traverse(c, depth + 1);
+          });
         }
       }
     }

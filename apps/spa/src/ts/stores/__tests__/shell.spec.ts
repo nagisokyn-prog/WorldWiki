@@ -33,6 +33,7 @@ vi.mock('../../services/Entity/entity.api', () => ({
   },
 }));
 
+let settingsChangeCb: any = null;
 vi.mock('@worldwiki/components', async (importOriginal) => {
   const actual: any = await importOriginal();
   return {
@@ -42,7 +43,8 @@ vi.mock('@worldwiki/components', async (importOriginal) => {
     settingsService: {
       getSettings: vi.fn(() => ({ layout: { sidebarPos: 'row' } })),
       resetSettings: vi.fn(),
-      onChange: vi.fn(),
+      onChange: vi.fn((cb) => { settingsChangeCb = cb; }),
+      _triggerChange: (s: any) => settingsChangeCb && settingsChangeCb(s),
     },
   };
 });
@@ -1001,6 +1003,47 @@ describe('shell store', () => {
       // 4. deleteChapter catch
       vi.mocked(api.deleteChapter).mockRejectedValueOnce(new Error('Delete chapter failed'));
       await shell.deleteChapter({ id: 'ch_fail', title: 'Fail' });
+
+      // 5. Lines 100-104: settingsService.onChange callback
+      if (settingsChangeCb) {
+        settingsChangeCb({
+          spacing: { sidebarWidth: 320, panelHeight: 280 },
+          layout: { focusMode: true },
+        });
+        expect(shell.sidebarWidth).toBe(320);
+        expect(shell.panelHeight).toBe(280);
+        expect(shell.sidebarVisible).toBe(false);
+
+        settingsChangeCb({
+          layout: { focusMode: false },
+        });
+        expect(shell.sidebarVisible).toBe(true);
+      }
+
+      // 6. Lines 496-513: startSplitResize
+      // When container does not exist
+      shell.startSplitResize(new MouseEvent('mousedown'));
+
+      // When container exists
+      const splitDiv = document.createElement('div');
+      splitDiv.id = 'shellMainSplit';
+      Object.defineProperty(splitDiv, 'getBoundingClientRect', {
+        value: () => ({ left: 0, width: 1000, top: 0, right: 1000, bottom: 500 }),
+      });
+      document.body.appendChild(splitDiv);
+
+      shell.startSplitResize(new MouseEvent('mousedown'));
+      expect(document.body.classList.contains('resizing')).toBe(true);
+
+      // Move mouse
+      document.dispatchEvent(new MouseEvent('mousemove', { clientX: 600 }));
+      expect(shell.splitLeftWidth).toBe(60);
+      expect(localStorage.getItem('app-split-width')).toBe('60');
+
+      // Mouse up
+      document.dispatchEvent(new MouseEvent('mouseup'));
+      expect(document.body.classList.contains('resizing')).toBe(false);
+      document.body.removeChild(splitDiv);
     });
   });
 });

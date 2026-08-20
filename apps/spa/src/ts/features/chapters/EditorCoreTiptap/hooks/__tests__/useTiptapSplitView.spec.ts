@@ -125,7 +125,7 @@ describe('useTiptapSplitView', () => {
       expect(blocks[0].text.endsWith('...')).toBe(true);
       expect(blocks[1].semanticTag).toBe('desc');
 
-      // Array node passed to traverse (covers line 95)
+      // Array node passed to traverse (covers line 95) and null node (line 92) and empty lists (lines 115, 121)
       const arrayDocEditor = ref({
         getJSON: () => ({
           type: 'doc',
@@ -133,11 +133,15 @@ describe('useTiptapSplitView', () => {
             [
               { type: 'paragraph', content: [{ type: 'text', text: 'In array' }] },
             ] as any,
+            null as any,
+            undefined as any,
+            { type: 'orderedList' }, // no content, covers line 115
+            { type: 'table' },       // no content, covers line 121
           ],
         }),
       });
       const splitArray = useTiptapSplitView(arrayDocEditor, editorUpdateKey);
-      expect(splitArray.documentStructure.value.length).toBe(1);
+      expect(splitArray.documentStructure.value.length).toBe(3);
     });
 
     it('clamps left and right panel widths to min (20%) and max (60%)', () => {

@@ -97,6 +97,11 @@ describe('useChapterHistory', () => {
     history.previewHistory(revWithAttrs as any);
     expect(currentChapter.value.title).toBe('Chapter 1');
     expect(history.previewingRevId.value).toBeNull();
+
+    // Click same rev when originalData is already null
+    history.previewingRevId.value = 'rev_manual';
+    history.previewHistory({ id: 'rev_manual' } as any);
+    expect(history.previewingRevId.value).toBeNull();
   });
 
   it('handles togglePin success and error rollback with and without chapter ID', async () => {

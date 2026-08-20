@@ -206,6 +206,30 @@ describe('chapter.store', () => {
       expect(api.assignChapter).toHaveBeenCalledWith('project_1', 'new_ch_id', 'arc_1', null);
       expect(store.currentChapterId).toBe('new_ch_id');
     });
+
+    it('creates chapter under volume when volumeId is provided and filters chapters correctly', async () => {
+      store.hierarchy = {
+        volumes: [],
+        arcs: [],
+        chapters: [
+          { id: 'ch_1', title: 'Глава 1', volume_id: 'vol_1' },
+          { id: 'ch_2', title: 'Глава 2', volume_id: 'vol_1', arc_id: 'arc_inside' }, // has arc_id, filtered out
+          { id: 'ch_3', title: 'Глава 9', volume_id: 'vol_other' },                   // other volume, hits line 163 return false
+        ],
+      };
+
+      vi.mocked(chapterService.save).mockResolvedValue('chapters:new_vol_ch' as any);
+      vi.mocked(chapterService.get).mockResolvedValue({ id: 'new_vol_ch', title: 'Глава 2' } as any);
+      vi.mocked(api.getChapterHierarchy).mockResolvedValue({
+        volumes: [],
+        arcs: [],
+        chapters: [{ id: 'new_vol_ch', title: 'Глава 2' }],
+      });
+
+      const newCh = await store.createNewChapter('project_1', undefined, 'vol_1');
+      expect(newCh).toBeDefined();
+      expect(chapterService.createNew).toHaveBeenCalledWith('Глава 2');
+    });
   });
 
   describe('onRenameChapter & deleteChapter', () => {

@@ -253,6 +253,29 @@ describe('hotkeys store', () => {
       };
       triggerKey('F11');
       delete (window as any).__TAURI__;
+
+      // 4. requestFullscreen rejection (line 35)
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      document.documentElement.requestFullscreen = vi.fn().mockRejectedValueOnce(new Error('Blocked fullscreen'));
+      Object.defineProperty(document, 'fullscreenElement', { value: null, configurable: true });
+      triggerKey('F11');
+      expect(warnSpy).toBeDefined();
+      warnSpy.mockRestore();
+    });
+
+    it('handles Ctrl+Tab, Ctrl+Digit1..9 and Ctrl+Shift+S, Ctrl+Shift+Tab', () => {
+      // Line 99 (Ctrl+Tab, Ctrl+Digit1..9)
+      triggerKey('Tab', { ctrlKey: true });
+      triggerKey('Digit1', { ctrlKey: true });
+      triggerKey('Digit5', { ctrlKey: true });
+      triggerKey('Digit9', { ctrlKey: true });
+
+      // Lines 121-125 (Ctrl+Shift+S and Ctrl+Shift+Tab)
+      const saveSpy = vi.spyOn(shell, 'saveAll').mockImplementation(() => {});
+      triggerKey('KeyS', { ctrlKey: true, shiftKey: true });
+      expect(saveSpy).toHaveBeenCalled();
+
+      triggerKey('Tab', { ctrlKey: true, shiftKey: true });
     });
   });
 });

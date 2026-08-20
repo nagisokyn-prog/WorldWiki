@@ -397,6 +397,14 @@ describe('useRelationshipBlock', () => {
       // 7. removeNestedItem with missing path or missing item[path]
       rel.removeNestedItem(0, { no_path: true }, { id: '' } as any);
       rel.removeNestedItem(0, { uninitialized: {} }, { id: 'missing_prop' });
+
+      // 8. updateItemField and onSelectChange branches
+      rel.updateItemField('target_char', 'char_3');
+      expect(emit).toHaveBeenCalledWith('modified');
+      rel.updateItemField('target_char', null);
+      expect(rel.foreignItem.value).toBeNull();
+      rel.onSelectChange('role', 'Leader');
+      expect(props.item.role).toBe('Leader');
     });
   });
 });

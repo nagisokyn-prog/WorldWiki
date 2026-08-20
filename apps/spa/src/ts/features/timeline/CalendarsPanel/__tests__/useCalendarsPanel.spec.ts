@@ -111,4 +111,40 @@ describe('useCalendarsPanel', () => {
     await panel.saveCalendar(0);
     await panel.removeCalendar(0);
   });
+
+  it('logs error when loadCalendars fails (covers line 63)', async () => {
+    mockGetCalendars.mockRejectedValueOnce(new Error('Network error'));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    useCalendarsPanel({ project: 'p1' });
+    await new Promise(r => setTimeout(r, 10));
+
+    expect(spy).toHaveBeenCalledWith('Ошибка при загрузке календарей:', expect.any(Error));
+    spy.mockRestore();
+  });
+
+  it('logs error when saveCalendar throws (covers line 107)', async () => {
+    mockSaveCalendar.mockRejectedValueOnce(new Error('Save failed'));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const panel = useCalendarsPanel(props);
+    await Promise.resolve();
+
+    await panel.saveCalendar(0);
+
+    expect(spy).toHaveBeenCalledWith(expect.any(Error));
+    spy.mockRestore();
+  });
+
+  it('shows appAlert when deleteCalendar returns false (covers lines 120-122)', async () => {
+    const { appConfirm, appAlert } = await import('@worldwiki/components');
+    mockDeleteCalendar.mockResolvedValueOnce(false);
+
+    const panel = useCalendarsPanel(props);
+    await Promise.resolve();
+
+    await panel.removeCalendar(0);
+
+    expect(appAlert).toHaveBeenCalledWith('Ошибка при удалении календаря.');
+  });
 });

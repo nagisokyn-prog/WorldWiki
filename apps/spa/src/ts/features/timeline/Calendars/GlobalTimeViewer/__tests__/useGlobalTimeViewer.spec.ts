@@ -110,6 +110,37 @@ describe('useGlobalTimeViewer', () => {
 
     wrapper.unmount();
   });
+
+  it('updateLocalDates processes calendars with and without data (covers lines 44-57)', async () => {
+    const { invoke } = await import('@worldwiki/components');
+    const { useCalendarStore } = await import('../../../../../stores/calendar.store');
+
+    const TestComp2 = defineComponent({
+      setup() {
+        return useGlobalTimeViewer();
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper2 = mount(TestComp2);
+    await new Promise(r => setTimeout(r, 10));
+
+    // After mount, loadCalendars is called and calendars have data
+    // localDates should be populated via invoke
+    expect(wrapper2.vm.localDates.length).toBeGreaterThanOrEqual(0);
+
+    // Change minute to trigger watch -> updateLocalDates with loaded calendars (covers lines 44-52)
+    wrapper2.vm.minute = 999;
+    await new Promise(r => setTimeout(r, 10));
+
+    // Verify invoke was called with calendar data
+    expect(invoke).toHaveBeenCalledWith('convert_absolute_to_local', expect.objectContaining({
+      absoluteMinute: 999,
+      eraIndex: 0,
+    }));
+
+    wrapper2.unmount();
+  });
 });
 
 

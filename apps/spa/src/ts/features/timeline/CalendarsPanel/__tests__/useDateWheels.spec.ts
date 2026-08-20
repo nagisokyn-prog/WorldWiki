@@ -247,6 +247,72 @@ describe('useDateWheels', () => {
     expect(wheels.eraOptions.value[0].label).toBe('Эпоха 1');
     expect(wheels.monthOptions.value[0].label).toBe('Месяц 1');
   });
+
+  it('syncFromProps handles partial modelValue fields and emitIfChanged (covers lines 78-81, 114)', async () => {
+    // modelValue with only some fields - covers undefined fallbacks in lines 78-81
+    const partialProps = reactive({
+      project: 'p1',
+      modelValue: { эпоха_ключ: 1 } as any, // год, месяц, день all undefined
+    });
+
+    let wheels: any;
+    const TestComp = defineComponent({
+      props: ['project', 'modelValue'],
+      emits: ['update:modelValue'],
+      setup(p, { emit: e }) {
+        wheels = useDateWheels(p, e);
+        return { ...wheels };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComp, { props: partialProps });
+    await Promise.resolve();
+    await wrapper.vm.$nextTick();
+
+    // syncFromProps is called during onMounted; verify fallback values
+    expect(wheels.currentEraIdx.value).toBe(1);
+    // год falls back to currentEra.value.год_начала
+    expect(wheels.currentYear.value).toBe(mockCal.эпохи[1].год_начала);
+    // месяц falls back to 0
+    expect(wheels.currentMonthIdx.value).toBe(0);
+    // день falls back to 1
+    expect(wheels.currentDay.value).toBe(1);
+
+    wrapper.unmount();
+  });
+
+  it('watch triggers syncFromProps with clamping and emitIfChanged (covers lines 114, 161)', async () => {
+    const reactiveProps = reactive({
+      project: 'p1',
+      modelValue: { эпоха_ключ: 0, год: 10, месяц: 0, день: 5 },
+    });
+
+    let wheels: any;
+    const TestComp = defineComponent({
+      props: ['project', 'modelValue'],
+      emits: ['update:modelValue'],
+      setup(p, { emit: e }) {
+        wheels = useDateWheels(p, e);
+        return { ...wheels };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComp, { props: reactiveProps });
+    await Promise.resolve();
+    await wrapper.vm.$nextTick();
+
+    // Trigger watch with out-of-range values (covers line 114 - emitIfChanged)
+    await wrapper.setProps({ modelValue: { эпоха_ключ: 0, год: 9999, месяц: 99, день: 999 } });
+    await nextTick();
+
+    expect(wheels.currentYear.value).toBeLessThanOrEqual(100);
+    expect(wheels.currentMonthIdx.value).toBe(0);
+    expect(wheels.currentDay.value).toBeLessThanOrEqual(30);
+
+    wrapper.unmount();
+  });
 });
 
 

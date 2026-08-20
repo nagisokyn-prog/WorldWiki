@@ -153,4 +153,4 @@ const {
 } = useUniversalDatePicker(props, emit);
 </script>
 
-<style scoped src="./UniversalDatePicker.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/UniversalDatePicker.css"></style>

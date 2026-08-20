@@ -1,12 +1,12 @@
 <template>
-  <div class="relationship-block glass-panel" :class="linkClass" style="padding: 0; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 24px;">
+  <div class="rel-block glass-panel" :class="linkClass">
     
-    <div style="padding: 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 20px;">🔗</span>
-        <div style="display: flex; flex-direction: column;">
-          <strong style="color: var(--text-main); font-size: 14px;">{{ templateConf.headerTitle || 'Связь' }}</strong>
-          <span style="font-size: 11px; color: var(--text-muted); opacity: 0.7;">
+    <div class="rel-header">
+      <div class="flex items-center gap-3">
+        <span class="text-xl">🔗</span>
+        <div class="flex-col">
+          <strong class="text-main text-sm">{{ templateConf.headerTitle || 'Связь' }}</strong>
+          <span class="text-xs text-muted" style="opacity: 0.7;">
             с сущностью типа «{{ templateConf.foreign_type || (templateConf.fields?.find((f) => f.class === linkClass)?.entityType) || '?' }}»
           </span>
         </div>
@@ -17,16 +17,16 @@
     </div>
 
     <!-- BIDIRECTIONAL SPLIT -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 16px;">
+    <div class="rel-split">
       
       <!-- СТОРОНА А -->
-      <div style="background: rgba(167, 139, 250, 0.04); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 12px; padding: 14px;">
-        <div style="font-size: 10px; font-weight: 900; color: rgb(167, 139, 250); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid rgba(167, 139, 250, 0.15); padding-bottom: 8px;">
+      <div class="rel-side rel-side-left">
+        <div class="rel-side-header">
           🟣 СТОРОНА А ({{ myLabel }})
         </div>
 
-        <div v-for="cf in templateConf.fields || []" :key="'a-' + cf.class" style="margin-bottom: 14px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <div v-for="cf in templateConf.fields || []" :key="'a-' + cf.class" class="mb-3">
+          <div class="field-label-row">
             <label class="form-label-micro" style="color: rgb(167, 139, 250);">{{ cf.label || formatLabel(cf.class || '') }}</label>
           </div>
           
@@ -46,25 +46,25 @@
               placeholder="-- Не указано --"
               @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
-            <textarea v-else-if="cf.type === 'textarea'" :value="(item[cf.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputValue(e))"></textarea>
-            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="(item[cf.class] as number) || 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputNumber(e))">
-            <input v-else :value="(item[cf.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputValue(e))">
+            <textarea v-else-if="cf.type === 'textarea'" :value="(item[cf.class] as string) || ''" class="input-base interactive-el w-full text-xs p-2" rows="2" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputValue(e))"></textarea>
+            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="(item[cf.class] as number) || 0" :type="cf.type" class="input-base interactive-el w-full text-xs p-2" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputNumber(e))">
+            <input v-else :value="(item[cf.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-2" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputValue(e))">
           </template>
         </div>
 
         <!-- Dynamic Containers A -->
-        <div v-for="subConf in templateConf.dynamicContainers || []" :key="'adc-' + (subConf.id || '')" style="margin-top: 12px; border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 8px; overflow: hidden;">
-          <div style="background: rgba(167, 139, 250, 0.12); padding: 8px 12px; font-size: 10px; font-weight: 900; color: rgb(167, 139, 250); letter-spacing: 0.5px; text-transform: uppercase;">
-            ⏱️ {{ subConf.title }}
+        <div v-for="subConf in templateConf.dynamicContainers || []" :key="'adc-' + (subConf.id || '')" class="sub-container-wrap">
+          <div class="sub-header">
+            <span>⏱️ {{ subConf.title }}</span>
           </div>
-          <div v-auto-animate style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
-            <div v-for="(nItem, nIdx) in getNestedList(item, subConf)" :key="nIdx" style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; position: relative;">
-              <button class="btn-icon danger interactive-el" style="position: absolute; top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;" title="Удалить" @click="removeNestedItem(nIdx, item, subConf)">
+          <div v-auto-animate class="p-2 flex-col gap-2">
+            <div v-for="(nItem, nIdx) in getNestedList(item, subConf)" :key="nIdx" class="nested-item card-secondary relative">
+              <button class="btn-icon danger interactive-el absolute" style="top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;" title="Удалить" @click="removeNestedItem(nIdx, item, subConf)">
                 <i class="fas fa-times"></i>
               </button>
               
-              <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" style="margin-bottom: 6px;">
-                <label class="form-label-micro" style="color: rgba(167, 139, 250, 0.8); margin-bottom: 2px;">{{ nField.label || formatLabel(nField.class || '') }}</label>
+              <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
+                <label class="nested-field-label">{{ nField.label || formatLabel(nField.class || '') }}</label>
                 <XboxWheel 
                   v-if="nField.type === 'select'" 
                   :model-value="(nItem[nField.class] as string | number) || ''"
@@ -72,16 +72,16 @@
                   placeholder="-- Не указано --"
                   @update:model-value="(val: unknown) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                 />
-                <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"></textarea>
-                <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
-                <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
+                <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"></textarea>
+                <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
+                <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
               </div>
             </div>
             
-            <button class="btn-new btn-outline-new interactive-el" style="width: 100%; padding: 6px; font-size: 10px; border-style: dashed; border-color: rgba(167, 139, 250, 0.4); color: rgb(167, 139, 250);" @click="addNestedItem(item, subConf)">
+            <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: rgba(167, 139, 250, 0.4); color: rgb(167, 139, 250);" @click="addNestedItem(item, subConf)">
               ➕ Добавить
             </button>
-            <div v-if="getNestedList(item, subConf).length === 0" style="text-align: center; padding: 8px; opacity: 0.25; font-size: 10px; border-radius: 6px;">
+            <div v-if="getNestedList(item, subConf).length === 0" class="sub-empty">
               {{ subConf.emptyMessage || 'Динамика не добавлена' }}
             </div>
           </div>
@@ -89,26 +89,26 @@
       </div>
 
       <!-- СТОРОНА Б -->
-      <div style="background: rgba(96, 165, 250, 0.04); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 12px; padding: 14px;">
-        <div style="font-size: 10px; font-weight: 900; color: rgb(96, 165, 250); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; border-bottom: 1px solid rgba(96, 165, 250, 0.15); padding-bottom: 8px;">
+      <div class="rel-side rel-side-right">
+        <div class="rel-side-header">
           🔵 СТОРОНА Б ({{ foreignLabel }})
         </div>
 
-        <div v-if="foreignLoading" style="color: #60a5fa; font-size: 11px; text-align: center; padding: 20px;">
+        <div v-if="foreignLoading" class="text-xs text-center p-4" style="color: #60a5fa;">
           Загрузка...
         </div>
-        <div v-else-if="!foreignItem || !item[linkClass]" style="color: rgba(96, 165, 250, 0.4); font-size: 11px; text-align: center; padding: 20px; border: 1px dashed rgba(96,165,250,0.2); border-radius: 8px;">
+        <div v-else-if="!foreignItem || !item[linkClass]" class="rel-side-empty">
           Сначала выберите сущность
         </div>
         <div v-else>
-          <div v-for="cf in templateConf.fields || []" :key="'b-' + cf.class" style="margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div v-for="cf in templateConf.fields || []" :key="'b-' + cf.class" class="mb-3">
+            <div class="field-label-row">
               <label class="form-label-micro" style="color: rgb(96, 165, 250);">{{ cf.label || formatLabel(cf.class || '') }}</label>
             </div>
             
             <template v-if="cf.class === linkClass">
                <!-- Зеркально это будет наша сущность -->
-              <input class="input-base" style="font-size: 12px; padding: 6px; width: 100%; pointer-events: none; opacity: 0.5;" :value="myLabel" readonly>
+              <input class="input-base text-xs w-full p-2 pointer-events-none" style="opacity: 0.5;" :value="myLabel" readonly>
             </template>
             <template v-else>
               <XboxWheel 
@@ -118,24 +118,24 @@
                 placeholder="-- Не указано --"
                 @update:model-value="(val) => { if (foreignItem) { foreignItem[cf.class] = val; } }"
               />
-              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }"></textarea>
-              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? (Number(foreignItem[cf.class]) || 0) : 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputNumber(e) }">
-              <input v-else :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }">
+              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" class="input-base interactive-el w-full text-xs p-2" rows="2" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }"></textarea>
+              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? (Number(foreignItem[cf.class]) || 0) : 0" :type="cf.type" class="input-base interactive-el w-full text-xs p-2" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputNumber(e) }">
+              <input v-else :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" type="text" class="input-base interactive-el w-full text-xs p-2" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }">
             </template>
           </div>
 
           <!-- Dynamic Containers B (Mirror) -->
-          <div v-for="subConf in templateConf.dynamicContainers || []" :key="'bdc-' + (subConf.id || '')" style="margin-top: 12px; border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 8px; overflow: hidden;">
-            <div style="background: rgba(96, 165, 250, 0.12); padding: 8px 12px; font-size: 10px; font-weight: 900; color: rgb(96, 165, 250); letter-spacing: 0.5px; text-transform: uppercase;">
-              ⏱️ {{ subConf.title }}
+          <div v-for="subConf in templateConf.dynamicContainers || []" :key="'bdc-' + (subConf.id || '')" class="sub-container-wrap">
+            <div class="sub-header">
+              <span>⏱️ {{ subConf.title }}</span>
             </div>
             <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
-              <div v-for="(nItem, nIdx) in getNestedList(foreignItem, subConf)" :key="nIdx" style="padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 6px; position: relative;">
-                <button class="btn-icon danger interactive-el" style="position: absolute; top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;" title="Удалить" @click="removeNestedItem(nIdx, foreignItem, subConf)">
+              <div v-for="(nItem, nIdx) in getNestedList(foreignItem, subConf)" :key="nIdx" class="nested-item card-secondary relative">
+                <button class="btn-icon danger interactive-el absolute" style="top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;" title="Удалить" @click="removeNestedItem(nIdx, foreignItem, subConf)">
                   <i class="fas fa-times"></i>
                 </button>
-                <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" style="margin-bottom: 6px;">
-                  <label class="form-label-micro" style="color: rgba(96, 165, 250, 0.8); margin-bottom: 2px;">{{ nField.label || formatLabel(nField.class || '') }}</label>
+                <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
+                  <label class="nested-field-label" style="color: rgba(96, 165, 250, 0.8);">{{ nField.label || formatLabel(nField.class || '') }}</label>
                   <XboxWheel 
                     v-if="nField.type === 'select'" 
                     :model-value="(nItem[nField.class] as string | number) || ''"
@@ -143,17 +143,17 @@
                     placeholder="-- Не указано --"
                     @update:model-value="(val: unknown) => { nItem[nField.class] = val; }"
                   />
-                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" @input="(e) => { nItem[nField.class] = getInputValue(e) }"></textarea>
-                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="(e) => { nItem[nField.class] = getInputNumber(e) }">
-                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="(e) => { nItem[nField.class] = getInputValue(e) }">
+                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e) }"></textarea>
+                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e) }">
+                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e) }">
                 </div>
               </div>
               
-              <button class="btn-new btn-outline-new interactive-el" style="width: 100%; padding: 6px; font-size: 10px; border-style: dashed; border-color: rgba(96, 165, 250, 0.4); color: rgb(96, 165, 250);" @click="addNestedItem(foreignItem, subConf)">
+              <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: rgba(96, 165, 250, 0.4); color: rgb(96, 165, 250);" @click="addNestedItem(foreignItem, subConf)">
                 ➕ Добавить
               </button>
               
-              <div v-if="getNestedList(foreignItem, subConf).length === 0" style="text-align: center; padding: 8px; opacity: 0.25; font-size: 10px; border-radius: 6px;">
+              <div v-if="getNestedList(foreignItem, subConf).length === 0" class="sub-empty">
                 {{ subConf.emptyMessage || 'Динамика не добавлена' }}
               </div>
             </div>
@@ -204,4 +204,4 @@ const {
 } = useRelationshipBlock(props, emit as (event: string, ...args: unknown[]) => void);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/modules/relationship-block.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/schemas/RelationshipBlock.css"></style>

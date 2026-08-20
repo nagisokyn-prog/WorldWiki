@@ -140,10 +140,14 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     const refList = props.referenceData[`${props.entityType}_list`] || props.referenceData[props.entityType];
     if (refList) {
       const found = refList.find((e) => {
-        const itemVal = String(e.value || (e as any).id || '').replace(/^[^:]+:/, '');
-        return itemVal === rawMyId || e.value === props.entityId || String((e as any).id) === props.entityId;
+        const item = e as Record<string, unknown>;
+        const itemVal = String(item.value || item.id || '').replace(/^[^:]+:/, '');
+        return itemVal === rawMyId || item.value === props.entityId || String(item.id) === props.entityId;
       });
-      if (found) return found.label || (found as any).name || String(found.value);
+      if (found) {
+        const item = found as Record<string, unknown>;
+        return String(item.label || item.name || item.value || '');
+      }
     }
     return props.entityId || 'Текущая сущность';
   });
@@ -156,10 +160,14 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     const refList = props.referenceData[`${targetType}_list`] || props.referenceData[targetType] || props.referenceData['character_list'] || props.referenceData['character'];
     if (refList) {
       const found = refList.find((e) => {
-        const itemVal = String(e.value || (e as any).id || '').replace(/^[^:]+:/, '');
-        return itemVal === rawForeignId || e.value === foreignId || String((e as any).id) === String(foreignId);
+        const item = e as Record<string, unknown>;
+        const itemVal = String(item.value || item.id || '').replace(/^[^:]+:/, '');
+        return itemVal === rawForeignId || item.value === foreignId || String(item.id) === String(foreignId);
       });
-      if (found) return found.label || (found as any).name || String(found.value);
+      if (found) {
+        const item = found as Record<string, unknown>;
+        return String(item.label || item.name || item.value || '');
+      }
     }
     return String(foreignId);
   });

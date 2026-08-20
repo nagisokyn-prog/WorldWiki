@@ -1,10 +1,94 @@
+/* ChaptersMain.css - Стили основного экрана глав и редактора */
+
+.chapters-view-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  color: var(--text-main);
+  background: var(--bg-base);
+}
+
+.chapter-right-panel {
+  background: rgba(0, 0, 0, 0.15);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.parent-plans-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.parent-plan-accordion {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin: 0 14px;
+}
+
+.accordion-header {
+  cursor: pointer;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background var(--anim-speed) var(--anim-ease);
+}
+
+.accordion-header:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.accordion-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-from-header-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  font-weight: bold;
+  font-size: var(--font-size-base);
+  transition: background var(--anim-speed) var(--anim-ease);
+}
+
+.add-from-header-btn:hover {
+  background: var(--bg-selected);
+}
+
+.accordion-body {
+  border-top: 1px solid var(--border-color);
+  height: 200px;
+  min-height: 100px;
+  max-height: 600px;
+  resize: vertical;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .chapter-item:hover {
   background: rgba(255, 255, 255, 0.05);
 }
 
 .chapter-item.active {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: var(--bg-selected);
+  border-color: var(--border-active);
 }
 
 .btn-icon:hover {

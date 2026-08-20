@@ -46,4 +46,4 @@ const {
 } = useGlobalTimeViewer();
 </script>
 
-<style scoped src="./GlobalTimeViewer.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/GlobalTimeViewer.css"></style>

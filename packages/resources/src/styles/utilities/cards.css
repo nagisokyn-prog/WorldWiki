@@ -1,0 +1,46 @@
+/* cards.css - Утилиты панелей, карточек и контейнеров */
+
+.card-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    backdrop-filter: blur(var(--glass-blur));
+}
+
+.card-secondary {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.card-glass {
+    background: var(--glass-card);
+    backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.card-interactive {
+    transition: transform var(--anim-speed) var(--anim-ease),
+                border-color var(--anim-speed) var(--anim-ease),
+                box-shadow var(--anim-speed) var(--anim-ease);
+}
+
+.card-interactive:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.card-interactive:active {
+    transform: scale(var(--scale-push));
+}
+
+/* Разделители и границы */
+.border-b { border-bottom: 1px solid var(--border-color); }
+.border-t { border-top: 1px solid var(--border-color); }
+.border-l { border-left: 1px solid var(--border-color); }
+.border-r { border-right: 1px solid var(--border-color); }
+.border-none { border: none !important; }

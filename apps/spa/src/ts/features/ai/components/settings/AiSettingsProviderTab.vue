@@ -190,29 +190,4 @@ const recommendModel = (modelId: string) => {
 };
 </script>
 
-<style scoped>
-.provider-tab-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.range-slider {
-  width: 100%;
-  margin-top: 8px;
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsProviderTab.css"></style>

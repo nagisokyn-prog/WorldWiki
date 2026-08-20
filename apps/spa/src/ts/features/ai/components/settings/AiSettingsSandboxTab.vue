@@ -74,46 +74,4 @@ watch(defaultAction, (val) => {
 });
 </script>
 
-<style scoped>
-.sandbox-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.sandbox-header h3 {
-  margin: 0;
-  font-size: 15px;
-  color: var(--text-main);
-}
-
-.toggle-switch {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.categories-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  background: var(--bg-surface);
-  padding: 15px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  margin-top: 15px;
-}
-
-.categories-grid.disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsSandboxTab.css"></style>

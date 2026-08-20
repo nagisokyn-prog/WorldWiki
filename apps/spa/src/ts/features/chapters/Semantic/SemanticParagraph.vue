@@ -27,4 +27,4 @@ const {
 } = useSemanticParagraph(props as unknown as SemanticParagraphProps);
 </script>
 
-<style scoped src="./SemanticParagraph.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/SemanticParagraph.css"></style>

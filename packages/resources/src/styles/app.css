@@ -1,57 +1,15 @@
-
 /* ==========================================================================
-   RESET & BASE
+   WORLNWIKI DESIGN SYSTEM IMPORTS
    ========================================================================== */
-[v-cloak] { display: none !important; }
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  min-height: 100vh;
-  background: var(--bg-base);
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-base);
-  line-height: var(--line-height-base);
-  color: var(--text-main);
-  overflow: hidden;
-  transition: background var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
-}
-
-/* Фоновые сферы */
-.bg-glow {
-  position: fixed;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-  opacity: 0.15;
-  z-index: 0;
-  pointer-events: none;
-  transition: all var(--anim-speed) var(--anim-ease);
-}
-.bg-glow.top-left {
-  top: -25%;
-  left: -25%;
-  width: 80vw;
-  height: 80vw;
-}
-.bg-glow.bottom-right {
-  bottom: -25%;
-  right: -25%;
-  width: 90vw;
-  height: 90vw;
-}
-
-/* Скроллбары */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--radius-btn);
-}
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+@import "./tokens/typography.css";
+@import "./tokens/theme-dark.css";
+@import "./tokens/theme-glass.css";
+@import "./base/reset.css";
+@import "./base/layout.css";
+@import "./utilities/flex.css";
+@import "./utilities/cards.css";
+@import "./utilities/text.css";
+@import "./utilities/position.css";
 
 /* ==========================================================================
    MAIN LAYOUT

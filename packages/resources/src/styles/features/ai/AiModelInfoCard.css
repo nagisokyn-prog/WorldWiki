@@ -1,0 +1,70 @@
+.model-info-card {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.model-desc {
+  margin-bottom: 12px;
+  line-height: 1.4;
+  color: var(--text-main);
+}
+
+.model-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.capabilities-list {
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pricing-list {
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.success {
+  color: var(--success);
+}
+
+.error {
+  color: var(--error);
+}
+
+.model-hint {
+  font-size: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 8px;
+}
+
+.model-hint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.model-hint a:hover {
+  text-decoration: underline;
+}

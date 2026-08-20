@@ -22,5 +22,5 @@
 <script src="./Splash.vue.ts" lang="ts"></script>
 
 
-<style src="./Splash.vue.css"></style>
+<style src="@worldwiki/resources/styles/features/shell/Splash.css"></style>
 

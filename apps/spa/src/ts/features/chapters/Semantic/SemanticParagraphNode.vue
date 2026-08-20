@@ -32,4 +32,4 @@ const {
 } = useSemanticParagraphNode(props);
 </script>
 
-<style scoped src="./SemanticParagraphNode.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/SemanticParagraphNode.css"></style>

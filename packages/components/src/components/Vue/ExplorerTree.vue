@@ -353,6 +353,4 @@ defineExpose({
 });
 </script>
 
-<style scoped>
-/* See explorer-tree.css for core styling, this is minimal structure */
-</style>
+<style scoped src="@worldwiki/resources/styles/components/Vue_ExplorerTree.css"></style>

@@ -105,4 +105,4 @@ const {
 defineExpose({ saveAll });
 </script>
 
-<style scoped src="./CalendarsPanel.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarsPanel.css"></style>

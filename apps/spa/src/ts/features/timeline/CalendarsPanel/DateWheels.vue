@@ -100,4 +100,4 @@ const {
 } = useDateWheels(props, emit);
 </script>
 
-<style scoped src="./DateWheels.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/DateWheels.css"></style>

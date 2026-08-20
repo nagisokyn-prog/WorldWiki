@@ -103,4 +103,4 @@ defineExpose({
 });
 </script>
 
-<style scoped src="./PlanningPanel.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/PlanningPanel.css"></style>

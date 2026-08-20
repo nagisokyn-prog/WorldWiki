@@ -1,0 +1,140 @@
+.editor-tab-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: var(--bg-secondary, #121214);
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  min-height: 36px;
+  max-height: 36px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Тонкая индикаторная полоска внизу активной группы */
+.editor-tab-bar.is-active-group::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--accent, #8b5cf6);
+  opacity: 0.4;
+}
+
+.editor-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-right: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  border-top: 2px solid transparent;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-muted, rgba(255,255,255,0.6));
+  white-space: nowrap;
+  max-width: 180px;
+  min-width: 80px;
+  position: relative;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.editor-tab:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-main, #fff);
+}
+
+.editor-tab.active {
+  background: var(--bg-base, #09090b);
+  border-top-color: var(--accent, #8b5cf6);
+  color: var(--text-main, #fff);
+}
+
+.editor-tab.drag-source {
+  opacity: 0.4;
+}
+
+.tab-icon { font-size: 11px; flex-shrink: 0; }
+
+.tab-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.tab-dot {
+  font-size: 8px;
+  color: var(--accent, #8b5cf6);
+  flex-shrink: 0;
+}
+
+.tab-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+.editor-tab:hover .tab-close,
+.editor-tab.active .tab-close { opacity: 1; }
+.tab-close:hover { color: #ff5555; background: rgba(255,85,85,0.12); }
+
+/* Drop indicator lines */
+.tab-drop-line {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--accent, #8b5cf6);
+  border-radius: 2px;
+  z-index: 10;
+  box-shadow: 0 0 6px var(--accent, #8b5cf6);
+}
+.tab-drop-line--left  { left: -1px; }
+.tab-drop-line--right { right: -1px; }
+
+/* Empty bar drop zone */
+.tab-bar-empty-drop {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  padding: 0 12px;
+}
+
+/* Spacer takes remaining width */
+.tab-bar-spacer {
+  flex: 1;
+  min-width: 16px;
+}
+
+/* Action buttons (split / close group) */
+.tab-bar-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 8px;
+  font-size: 14px;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.tab-bar-action:hover { color: var(--text-main); background: rgba(255,255,255,0.05); }
+.tab-bar-close-group:hover { color: #ff5555; }

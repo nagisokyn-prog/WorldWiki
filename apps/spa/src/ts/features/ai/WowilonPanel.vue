@@ -477,4 +477,4 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped src="./WowilonPanel.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/ai/WowilonPanel.css"></style>

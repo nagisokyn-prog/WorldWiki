@@ -105,7 +105,4 @@ const vFocus = {
 };
 </script>
 
-<style scoped>
-/* Rely on global explorer-tree.css */
-.spacer { display: inline-block; width: 16px; height: 16px; margin-right: 4px; }
-</style>
+<style scoped src="@worldwiki/resources/styles/components/TreeNodes.css"></style>

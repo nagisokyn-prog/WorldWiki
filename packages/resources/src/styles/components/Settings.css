@@ -157,6 +157,55 @@ input.color-text-input {
     box-sizing: border-box !important;
 }
 
+.color-control-inputs {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.sidebar-heading {
+    font-size: var(--font-size-xs);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 1px;
+}
+
+.settings-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+}
+
+.settings-desc {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    font-size: var(--font-size-base);
+}
+
+.settings-group-title {
+    color: var(--accent);
+    margin-bottom: 16px;
+}
+
+.btn-pick-bg {
+    padding: 8px 16px;
+    border-radius: var(--radius-round);
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background var(--anim-speed) var(--anim-ease);
+}
+
+.btn-pick-bg:hover {
+    background: var(--accent-hover);
+}
+
 .val-badge {
     background: rgba(255, 255, 255, 0.1);
     padding: 4px 10px;

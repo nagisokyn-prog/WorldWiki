@@ -50,4 +50,4 @@ const emit = defineEmits<{
 const { isCollapsed, calendar, addMoon, moveItem } = useCalendarMoons(props, emit);
 </script>
 
-<style scoped src="./CalendarMoons.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarMoons.css"></style>

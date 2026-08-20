@@ -127,4 +127,4 @@ const {
 } = useCalendarPlayground(props);
 </script>
 
-<style scoped src="./CalendarPlayground.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarPlayground.css"></style>

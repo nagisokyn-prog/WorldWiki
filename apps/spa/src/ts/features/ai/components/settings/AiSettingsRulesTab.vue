@@ -38,23 +38,4 @@ const denylistText = ref('');
 const allowlistText = ref('');
 </script>
 
-<style scoped>
-.sandbox-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.sandbox-header h3 {
-  margin: 0;
-  font-size: 15px;
-  color: var(--text-main);
-}
-
-.toggle-switch {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsRulesTab.css"></style>

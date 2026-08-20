@@ -129,4 +129,4 @@ const {
 } = useExportModal(props, emit as (event: 'close' | 'export', ...args: unknown[]) => void);
 </script>
 
-<style scoped src="./ExportModal.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/ExportModal.css"></style>

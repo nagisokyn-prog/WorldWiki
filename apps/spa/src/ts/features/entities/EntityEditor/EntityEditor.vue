@@ -2,13 +2,13 @@
   <div class="entity-editor-wrapper">
     <div v-if="loading" class="loading-overlay">
       <div class="spinner"></div>
-      <div style="margin-top:12px; font-size:12px; color:var(--text-muted)">Загрузка сущности...</div>
+      <div class="mt-2 text-xs text-muted">Загрузка сущности...</div>
     </div>
 
     <!-- PREVIEW HEADER NOTIFICATION -->
     <div v-if="isPreviewingHistory" class="history-preview-banner">
       <span>👁️ Вы просматриваете сохраненную версию от <strong>{{ revisions.find(r => r.id === previewingRevId)?.formattedDate }}</strong></span>
-      <div style="display: flex; gap: 8px;">
+      <div class="flex gap-2">
         <button class="btn btn-small btn-primary" @click="restoreHistory">Восстановить эту версию</button>
         <button class="btn btn-small btn-outline" @click="exitHistoryPreview">Выйти</button>
       </div>
@@ -22,13 +22,12 @@
       <!-- MAIN FORM CONTAINER -->
       <div ref="scrollContainer" class="form-container">
         <!-- SECTIONS NAV (TABS) -->
-        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav" style="display:flex; gap:8px; border-bottom:1px solid var(--border-color); margin-bottom:24px; padding-bottom:8px; overflow-x:auto;">
+        <div v-if="config && config.sections && config.sections.length > 1" class="sections-nav flex gap-2 border-b mb-4 pb-2 overflow-x-auto">
           <button
             v-for="sec in config.sections" 
             :key="sec.id"
-            class="section-tab-btn interactive-el"
+            class="section-tab-btn interactive-el text-xs font-bold flex items-center gap-1 cursor-pointer p-2"
             :class="{ active: activeSection === sec.id }"
-            style="padding:6px 14px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; transition:all 0.2s;"
             :style="{ background: activeSection === sec.id ? 'var(--accent)' : 'transparent', color: activeSection === sec.id ? '#fff' : 'var(--text-muted)' }"
             @click="activeSection = sec.id"
           >
@@ -43,13 +42,13 @@
             <template v-for="section in config.sections" :key="section.id">
               <div v-if="section.id === activeSection">
                 <!-- Обычные поля секции -->
-                <div v-if="section.fields && section.fields.length > 0" class="glass-card" style="margin-bottom:24px; padding:20px;">
-                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                <div v-if="section.fields && section.fields.length > 0" class="glass-card mb-4 p-4">
+                    <div class="form-grid grid-dynamic">
                       <template v-for="field in section.fields" :key="field.id || field.class">
                         <div v-if="!field.hidden" class="form-group" :class="{ 'full-width': field.fullWidth || field.type === 'textarea' || field.type === 'tags' || field.type === 'multiselect' }">
-                          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                          <label class="form-label flex justify-between items-center">
                             {{ field.label }} 
-                            <span v-if="field.required" style="color:var(--accent)">*</span>
+                            <span v-if="field.required" class="text-accent">*</span>
                             <span v-if="isFieldChanged(field.path || field.id || field.class || '')" class="changed-indicator" title="Значение отличается от текущей версии">Изменено</span>
                           </label>
                           
@@ -63,7 +62,7 @@
 
                           <!-- Photo upload field -->
                           <div v-else-if="field.type === 'photo'" class="photo-upload-zone" @click="triggerPhotoUpload(field.path || field.id || field.class || '')" @dragover.prevent @drop.prevent="e => handlePhotoDrop(e, field.path || field.id || field.class || '')">
-                            <input :ref="el => { if (el) photoInputs[field.path || field.id || field.class || ''] = el as HTMLInputElement; }" type="file" accept="image/*" style="display:none" @change="e => handlePhotoFile(e, field.path || field.id || field.class || '')" />
+                            <input :ref="el => { if (el) photoInputs[field.path || field.id || field.class || ''] = el as HTMLInputElement; }" type="file" accept="image/*" class="hidden" style="display:none;" @change="e => handlePhotoFile(e, field.path || field.id || field.class || '')" />
                             <div v-if="getProp(field.path || field.id || field.class || '')" class="photo-preview">
                               <img :src="getPhotoUrl(String(getProp(field.path || field.id || field.class || '') ?? ''))" alt="Фото" />
                               <button class="photo-remove-btn" title="Удалить фото" @click.stop="removePhoto(field.path || field.id || field.class || '')">✕</button>
@@ -81,13 +80,13 @@
                             :options="getOptionsFor(field)"
                             @update:model-value="(val: unknown) => { setProp(field.path || field.id || field.class || '', val); markModified(); }" />
 
-                          <div v-else-if="field.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
-                            <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;">
+                          <div v-else-if="field.type === 'multiselect'" class="multiselect-grid">
+                            <label v-for="opt in getOptionsFor(field)" :key="opt.value" class="checkbox-item interactive-el">
                               <input
                                 type="checkbox" 
                                 :value="opt.value" 
                                 :checked="((getProp(field.path || field.id || field.class || '') as string[]) || []).includes(opt.value)"
-                                style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
+                                style="accent-color: var(--accent); width: 16px; height: 16px;"
                                 @change="e => { 
                                   let arr = ((getProp(field.path || field.id || field.class || '') as string[]) || []); 
                                   if (!Array.isArray(arr)) arr = [];
@@ -97,7 +96,7 @@
                                   setProp(field.path || field.id || field.class || '', arr);
                                   markModified();
                                 }"> 
-                              <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
+                              <span class="text-sm text-main">{{ opt.label }}</span>
                             </label>
                           </div>
 
@@ -124,33 +123,33 @@
                             :placeholder="field.placeholder"
                             @input="e => { setProp(field.path || field.id || field.class || '', (e.target as HTMLInputElement).value); markModified(); }">
                                 
-                          <div v-if="field.hint" class="form-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;">{{ field.hint }}</div>
+                          <div v-if="field.hint" class="form-hint">{{ field.hint }}</div>
                         </div>
                       </template>
                     </div>
                 </div>
 
                 <!-- Динамические контейнеры (Массивы записей) -->
-                <div v-if="section.dynamicContainers && section.dynamicContainers.length > 0" style="margin-top:24px;">
+                <div v-if="section.dynamicContainers && section.dynamicContainers.length > 0" class="mt-4">
                   <template v-for="(container, cIdx) in section.dynamicContainers" :key="container.id">
                     <div
                       v-if="!container.hidden" 
                       :class="{ 'history-changed': isFieldChanged(container.dataPath || container.id || '') }"
-                      style="margin-bottom:24px; position: relative; overflow: visible;" 
+                      class="mb-4 relative" 
                       :style="{ zIndex: 100 - cIdx }">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                      <h4 style="color:var(--text-muted); text-transform:uppercase; font-size:12px; font-weight:600; letter-spacing:1px;">
+                    <div class="flex justify-between items-center mb-2">
+                      <h4 class="text-xs font-bold text-muted uppercase tracking-wide">
                         {{ container.title || 'Дополнительно' }}
                         <span v-if="isFieldChanged(container.dataPath || container.id || '')" class="changed-indicator" title="Связи отличаются от текущей версии">Изменено</span>
                       </h4>
                       <button class="btn btn-small btn-outline interactive-el" @click="addDynamicItem(container.dataPath || container.id || '', container.template || '')">➕ Добавить</button>
                     </div>
 
-                    <div v-if="!getProp(container.dataPath || container.id || '') || (getProp(container.dataPath || container.id || '') as unknown[]).length === 0" class="empty-timeline" style="padding:20px; text-align:center; color:var(--text-muted); background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--border-color);">
+                    <div v-if="!getProp(container.dataPath || container.id || '') || (getProp(container.dataPath || container.id || '') as unknown[]).length === 0" class="empty-timeline">
                       {{ container.emptyMessage || 'Элементы не добавлены' }}
                     </div>
                     
-                     <div v-else style="position: relative; z-index: 50;">
+                     <div v-else class="relative z-50">
                       <!-- Двусторонние связи — свой компонент -->
                       <template v-if="container.isBidirectional || (getResolvedTemplate(container) as any)?.isBidirectional">
                         <RelationshipBlock
@@ -182,16 +181,16 @@
 
                       <!-- Обычные динамические элементы -->
                       <template v-else>
-                        <div v-for="(item, idx) in ((getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>) || [])" :key="idx" class="glass-card" :style="{ marginBottom: '16px', padding: '16px', overflow: 'visible', position: 'relative', zIndex: 50 - idx }">
-                          <div style="display:flex; justify-content:space-between; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                            <strong style="color:var(--accent);">Элемент #{{ idx + 1 }}</strong>
-                            <button class="btn-danger-icon interactive-el" style="background:transparent; border:none; color:#ef4444; cursor:pointer;" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id || '', idx)">🗑️</button>
+                        <div v-for="(item, idx) in ((getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>) || [])" :key="idx" class="glass-card mb-3 p-3 relative" :style="{ zIndex: 50 - idx }">
+                          <div class="flex justify-between mb-2 pb-2 border-b">
+                            <strong class="text-accent">Элемент #{{ idx + 1 }}</strong>
+                            <button class="btn-danger-icon interactive-el text-error cursor-pointer bg-transparent border-none" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id || '', idx)">🗑️</button>
                           </div>
                           
                           <!-- Рендерим шаблон -->
                           <div v-if="getResolvedTemplate(container)">
-                            <div v-for="tField in getResolvedTemplate(container)?.fields || []" :key="tField.id || tField.class" class="form-group" style="margin-bottom:12px;">
-                              <label v-if="tField.label" class="form-label" style="font-size:10px;">{{ tField.label }}</label>
+                            <div v-for="tField in getResolvedTemplate(container)?.fields || []" :key="tField.id || tField.class" class="form-group mb-2">
+                              <label v-if="tField.label" class="form-label text-xs">{{ tField.label }}</label>
                               
                               <textarea
                                 v-if="tField.type === 'textarea'" 
@@ -209,13 +208,13 @@
                                 :placeholder="tField.placeholder"
                                 @update:model-value="(val: unknown) => { setProp(item, tField.id || tField.class || '', val); markModified(); }" />
                                       
-                              <div v-else-if="tField.type === 'multiselect'" class="multiselect-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 8px;">
-                                <label v-for="opt in getOptionsFor(tField)" :key="opt.value" class="checkbox-item interactive-el" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: var(--bg-input, rgba(255,255,255,0.05)); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 8px; transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;">
+                              <div v-else-if="tField.type === 'multiselect'" class="multiselect-grid">
+                                <label v-for="opt in getOptionsFor(tField)" :key="opt.value" class="checkbox-item interactive-el">
                                   <input
                                     type="checkbox" 
                                     :value="opt.value" 
                                     :checked="((getProp(item, tField.id || tField.class || '') as string[]) || []).includes(opt.value)"
-                                    style="accent-color: var(--accent, #7c3aed); width: 16px; height: 16px;"
+                                    style="accent-color: var(--accent); width: 16px; height: 16px;"
                                     @change="e => { 
                                       let arr = ((getProp(item, tField.id || tField.class || '') as string[]) || []); 
                                       if (!Array.isArray(arr)) arr = [];
@@ -225,7 +224,7 @@
                                       setProp(item, tField.id || tField.class || '', arr);
                                       markModified();
                                     }"> 
-                                  <span style="font-size: 13px; color: var(--text-main, #fff);">{{ opt.label }}</span>
+                                  <span class="text-sm text-main">{{ opt.label }}</span>
                                 </label>
                               </div>
                               
@@ -235,10 +234,11 @@
                                   :min="tField.min ?? -100"
                                   :max="tField.max ?? 100"
                                   :value="Number(getProp(item, tField.id || tField.class || '') ?? 0)"
-                                  style="flex:1; accent-color: var(--accent);"
+                                  class="flex-1"
+                                  style="accent-color: var(--accent);"
                                   @input="e => { setProp(item, tField.id || tField.class || '', Number((e.target as HTMLInputElement).value)); markModified(); }"
                                 >
-                                <span style="min-width:36px; text-align:right; font-size:12px; color:var(--accent); font-weight:600;">{{ getProp(item, tField.id || tField.class || '') ?? 0 }}</span>
+                                <span class="text-xs text-accent font-bold" style="min-width: 36px; text-align: right;">{{ getProp(item, tField.id || tField.class || '') ?? 0 }}</span>
                               </div>
 
                               <UniversalDatePicker
@@ -271,41 +271,41 @@
       </div>
 
       <!-- RIGHT SIDEBAR (HISTORY) -->
-      <aside v-if="showHistory" style="width: 280px; background: var(--bg-panel); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 10;">
-          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+      <aside v-if="showHistory" class="schema-catalog" style="width: 280px; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 10;">
+          <div class="flex justify-between items-center p-3 border-b text-xs font-bold">
               <span>История изменений</span>
-              <button style="background: none; border: none; cursor: pointer; color: var(--text-muted);" @click="showHistory = false">✕</button>
+              <button class="cursor-pointer text-muted" @click="showHistory = false">✕</button>
           </div>
           
-          <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
-            <label style="font-size: 10px; color: var(--text-muted);">Хранить последних версий:</label>
-            <input v-model="maxSaves" type="number" class="input-base" style="width: 100%; font-size: 12px; padding: 4px; margin-top: 4px;">
+          <div class="p-3 border-b">
+            <label class="text-xs text-muted">Хранить последних версий:</label>
+            <input v-model="maxSaves" type="number" class="input-base text-xs w-full mt-1">
           </div>
           
-          <div v-if="isLoadingHistory" style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
+          <div v-if="isLoadingHistory" class="p-4 text-center text-muted text-xs">
               Загрузка истории...
           </div>
-          <div v-else style="flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
-              <div v-if="revisions.length === 0" style="font-size: 10px; color: var(--text-muted); text-align: center;">Нет сохраненных версий</div>
+          <div v-else class="flex-1 overflow-y-auto p-3 flex-col gap-2">
+              <div v-if="revisions.length === 0" class="text-xs text-muted text-center">Нет сохраненных версий</div>
               
               <div
                 v-for="(rev, idx) in revisions" :key="rev.id" 
+                class="catalog-item interactive-el"
                 :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
-                style="padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; transition: transform 0.2s, background-color 0.2s, opacity 0.2s;"
                 @click="previewHistory(rev)">
-                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                       <span style="font-size: 11px; font-weight: bold;">{{ rev.formattedDate }}</span>
-                       <button style="background: none; border: none; cursor: pointer; font-size: 12px; color: var(--accent);" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'" @click.stop="togglePin(rev)">
+                   <div class="flex justify-between items-center w-full">
+                       <span class="text-xs font-bold">{{ rev.formattedDate }}</span>
+                       <button class="cursor-pointer text-accent text-sm" :title="rev.is_pinned ? 'Открепить' : 'Закрепить от удаления'" @click.stop="togglePin(rev)">
                          {{ rev.is_pinned ? '📍' : '📌' }}
                        </button>
                    </div>
-                   <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px; line-height: 1.4;">
+                   <div class="text-xs text-muted mt-1" style="line-height: 1.4;">
                        <!-- eslint-disable-next-line vue/no-v-html -->
                        <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
                        <span v-else>Базовая версия</span>
                    </div>
-                   <div v-if="previewingRevId === rev.id" style="margin-top: 8px;">
-                       <span style="font-size: 9px; color: #f5a623;">Режим предпросмотра</span>
+                   <div v-if="previewingRevId === rev.id" class="mt-1">
+                       <span class="text-xs" style="color: #f5a623;">Режим предпросмотра</span>
                    </div>
               </div>
           </div>
@@ -372,4 +372,4 @@ defineExpose({
 </script>
 
 <style scoped src="@worldwiki/resources/styles/modules/entity-editor.css"></style>
-<style scoped src="./EntityEditor.style.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/entities/EntityEditor.css"></style>

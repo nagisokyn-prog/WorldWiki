@@ -279,4 +279,4 @@ onUnmounted(() => {
 });
 </script>
 
-<style src="./EditorCoreTiptap.style.css"></style>
+<style src="@worldwiki/resources/styles/features/chapters/EditorCoreTiptap.css"></style>

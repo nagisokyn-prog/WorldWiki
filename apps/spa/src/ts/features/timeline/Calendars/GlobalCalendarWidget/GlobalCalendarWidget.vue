@@ -55,4 +55,4 @@ const {
 } = useGlobalCalendarWidget(props);
 </script>
 
-<style scoped src="./GlobalCalendarWidget.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/GlobalCalendarWidget.css"></style>

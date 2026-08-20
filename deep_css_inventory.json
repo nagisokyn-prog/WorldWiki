@@ -1,0 +1,1776 @@
+{
+  "cssFilesAnalysis": [
+    {
+      "file": "packages\\resources\\src\\styles\\new-ui-theme.css",
+      "lines": 1440,
+      "hasVariables": true,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        "*",
+        "body",
+        ".bg-glow",
+        ".bg-glow.top-left",
+        ".bg-glow.bottom-right",
+        "::-webkit-scrollbar",
+        "::-webkit-scrollbar-track",
+        "::-webkit-scrollbar-thumb"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\project_launcher.css",
+      "lines": 1287,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": true,
+      "sampleSelectors": [
+        ".hk-item",
+        ".hk-item kbd",
+        ".hk-item span",
+        ".app-container",
+        ".launcher-header",
+        ".logo h1",
+        ".logo p",
+        ".launcher-main"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\app.css",
+      "lines": 898,
+      "hasVariables": false,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        "[v-cloak]",
+        "*",
+        "body",
+        ".bg-glow",
+        ".bg-glow.top-left",
+        ".bg-glow.bottom-right",
+        "::-webkit-scrollbar",
+        "::-webkit-scrollbar-track"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\redact-sandbox-v2.css",
+      "lines": 728,
+      "hasVariables": false,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".redact-app",
+        ".redact-header",
+        ".redact-header h1",
+        ".redact-controls",
+        ".entity-name-input",
+        ".entity-name-input:focus",
+        ".pages-tabs",
+        ".page-tab"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\redact-sandbox.css",
+      "lines": 658,
+      "hasVariables": false,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".redact-app",
+        ".redact-header",
+        ".redact-header h1",
+        ".redact-controls",
+        ".entity-name-input",
+        ".entity-name-input:focus",
+        ".pages-tabs",
+        ".page-tab"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\glass-theme.css",
+      "lines": 418,
+      "hasVariables": true,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ":root",
+        "*",
+        "html",
+        "body",
+        ".bg-glow",
+        ".bg-glow.top-left",
+        ".bg-glow.bottom-right",
+        ".bg-glow.center"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\modules\\settings.css",
+      "lines": 398,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        "[v-cloak]",
+        ".settings-modal-content",
+        ".settings-modal-content",
+        ".settings-layout",
+        ".settings-sidebar",
+        ".settings-nav-item",
+        ".settings-nav-item:hover",
+        ".settings-nav-item.active"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\modules\\timeline-panel.css",
+      "lines": 364,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".tool-section",
+        ".tool-section h4",
+        ".timeline-events-list",
+        ".timeline-event-item",
+        ".timeline-event-item:hover",
+        ".event-header",
+        ".event-title",
+        ".header-left"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\WowilonPanel.vue.css",
+      "lines": 311,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".wowilon-panel",
+        ".wowilon-panel:not(.is-open)",
+        ".wowilon-resize-handle",
+        ".wowilon-resize-handle:hover",
+        ".wowilon-inner",
+        ".wowilon-header",
+        ".wowilon-title",
+        ".wowilon-actions"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\explorer-tree.css",
+      "lines": 301,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".explorer-tree",
+        ".tree-header",
+        ".tree-title",
+        ".tree-back-btn",
+        ".tree-back-btn:hover",
+        ".tree-section-header",
+        ".tree-section-header:hover",
+        ".tree-section-header i"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\CalendarsPanel\\CalendarsPanel.vue.css",
+      "lines": 257,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": true,
+      "sampleSelectors": [
+        ".tool-section",
+        ".tool-section h4",
+        ".timeline-events-list",
+        ".timeline-event-item",
+        ".timeline-event-item:hover",
+        ".event-header",
+        ".event-title",
+        ".header-left"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\modules\\relationship-block.css",
+      "lines": 243,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": true,
+      "sampleSelectors": [
+        ".rel-block",
+        ".rel-header",
+        ".rel-title",
+        ".rel-split",
+        "media (max-width: 700px)",
+        ".rel-split",
+        ".rel-side",
+        ".rel-side-header"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\chapter-tree.css",
+      "lines": 242,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".chapter-tree",
+        ".tree-section-header",
+        ".tree-section-header:hover",
+        ".tree-section-header i",
+        ".section-actions",
+        ".tree-section-header:hover .section-actions",
+        ".section-actions i:hover",
+        ".tree-item-row"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\EntityEditor\\EntityEditor.style.css",
+      "lines": 208,
+      "hasVariables": false,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".entity-editor-vue",
+        ".editor-tabs-new",
+        ".editor-tab-new",
+        ".editor-tab-new.active",
+        ".split-view",
+        ".split-editor-core",
+        ".section-content",
+        ".grid-dynamic"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\PlanningPanel\\PlanningPanel.vue.css",
+      "lines": 198,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".planning-panel",
+        ".plan-header",
+        ".plan-title",
+        ".plan-icon",
+        ".plan-name",
+        ".plan-stats",
+        ".plan-progress-bar",
+        ".plan-progress-fill"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\TagsManagerModal.vue.css",
+      "lines": 183,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".modal-overlay",
+        ".tags-manager-modal",
+        ".modal-header",
+        ".modal-header h3",
+        ".modal-header h3 i",
+        ".close-btn",
+        ".close-btn:hover",
+        ".modal-body"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\sync\\CloudSyncModal.vue.css",
+      "lines": 163,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".cloud-sync-overlay",
+        ".cloud-sync-modal",
+        ".cloud-sync-header",
+        ".cloud-sync-header h3",
+        ".close-btn",
+        ".close-btn:hover",
+        ".cloud-sync-body",
+        ".cloud-provider-card"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Export\\ExportModal.vue.css",
+      "lines": 152,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".modal",
+        ".modal-content",
+        ".modal-header",
+        ".modal-header h2",
+        ".close-btn",
+        ".modal-body",
+        ".export-section h3",
+        ".format-grid"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChaptersMain\\ChaptersMain.vue.css",
+      "lines": 133,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".chapter-item:hover",
+        ".chapter-item.active",
+        ".btn-icon:hover",
+        ".chapters-sidebar-resize,\r\n.panel-resize-handle",
+        ".chapters-sidebar-resize",
+        ".chapters-sidebar-resize::after",
+        ".chapters-sidebar-resize:hover",
+        ".chapters-sidebar-resize:hover::after"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarPlayground\\CalendarPlayground.vue.css",
+      "lines": 129,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".playground-section",
+        ".playground-controls",
+        ".glass-select, .glass-input",
+        ".btn-icon",
+        ".btn-icon:hover",
+        ".filters",
+        ".filter-label",
+        ".calendar-wrapper"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\shell\\Splash.vue.css",
+      "lines": 125,
+      "hasVariables": false,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        "*",
+        ".splash-wrapper",
+        ".splash-container",
+        ".ascii-art",
+        "keyframes fadeIn",
+        "from",
+        "to",
+        ".title"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\modules\\entity-editor.css",
+      "lines": 105,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".fade-enter-active, .fade-leave-active",
+        ".fade-enter-from, .fade-leave-to",
+        ".photo-upload-zone",
+        ".photo-upload-zone:hover",
+        ".photo-placeholder",
+        ".photo-icon",
+        ".photo-hint",
+        ".photo-preview"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarMoons\\CalendarMoons.vue.css",
+      "lines": 86,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".calendar-section",
+        ".calendar-section h4",
+        ".item-list",
+        ".item-row",
+        ".moon-row",
+        ".item-name",
+        ".item-name:hover, .item-name:focus",
+        ".item-duration"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\glass-animations.css",
+      "lines": 80,
+      "hasVariables": true,
+      "hasKeyframes": true,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ":root",
+        ".interactive-el",
+        ".interactive-el:hover",
+        ".interactive-el:active",
+        "input.interactive-el:hover, \r\ntextarea.interactive-el:hover, \r\nselect.interactive-el:hover,\r\ninput[type=\"range\"].interactive-el:hover,\r\ninput[type=\"range\"].interactive-el:active",
+        ".breathe",
+        ".breathe-slow",
+        ".breathe-fast"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\fonts.css",
+      "lines": 71,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        "font-face",
+        "font-face",
+        "font-face",
+        "font-face",
+        "font-face",
+        "font-face",
+        "font-face",
+        "font-face"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalTimeViewer\\GlobalTimeViewer.vue.css",
+      "lines": 67,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".global-time-viewer",
+        ".header",
+        ".header h3",
+        ".close-btn",
+        ".content",
+        ".clock-input-group",
+        ".clock-input-group button",
+        ".clock-input-group input"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChapterTree\\ChapterTree.style.css",
+      "lines": 66,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".chapter-tree-wrapper",
+        ".ctx-item",
+        ".ctx-item:hover",
+        ".ctx-label",
+        ".ctx-icon",
+        ".ctx-item:hover .ctx-icon",
+        ".ctx-kbd",
+        ".ctx-item:hover .ctx-kbd"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\EditorCoreTiptap\\EditorCoreTiptap.style.css",
+      "lines": 60,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".editor-core",
+        ".chapter-header",
+        ".chapter-title-input",
+        ".editor-container",
+        ".editor-wrapper",
+        ".editor-content .ProseMirror,\r\n.editor-content-split .ProseMirror",
+        ".status-bar",
+        ".footnotes-panel"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Semantic\\SemanticParagraph.vue.css",
+      "lines": 56,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".semantic-block",
+        ".semantic-tag-badge",
+        ".semantic-tag-badge.desc",
+        ".semantic-tag-badge.dialog",
+        ".semantic-tag-badge.thought",
+        ".semantic-tag-badge:hover",
+        ".semantic-content",
+        ":deep(.semantic-content p)"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarSettings\\CalendarSettings.vue.css",
+      "lines": 41,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".calendar-section",
+        ".calendar-section h4",
+        ".grid-2",
+        ".calendar-field",
+        ".calendar-field label",
+        ".calendar-field input[type=\"number\"], .calendar-field input[type=\"text\"]",
+        ".calendar-field small",
+        ".glass-label"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalCalendarWidget\\GlobalCalendarWidget.vue.css",
+      "lines": 24,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".global-calendar-widget",
+        ".gc-header",
+        ".gc-title",
+        ".gc-icon",
+        ".gc-controls input, .gc-controls select"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\UniversalDatePicker\\UniversalDatePicker.vue.css",
+      "lines": 20,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".date-wheels-container",
+        ".date-wheel-group",
+        ".input-base",
+        ".input-base:focus"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\CalendarsPanel\\DateWheels.vue.css",
+      "lines": 19,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".date-wheels-container",
+        ".date-wheel-group",
+        ".input-base",
+        ".input-base:focus"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaEditorMain.vue.css",
+      "lines": 14,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".is-dragging-over",
+        ".schema-item-card",
+        ".catalog-item:hover"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ParticipantsPanel\\ParticipantsPanel.vue.css",
+      "lines": 13,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".tool-section",
+        ".tool-section h4"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Semantic\\SemanticParagraphNode.vue.css",
+      "lines": 13,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".semantic-paragraph-node",
+        ".semantic-tag-badge:hover",
+        ".content-wrapper"
+      ]
+    },
+    {
+      "file": "packages\\resources\\src\\styles\\font-awesome.min.css",
+      "lines": 6,
+      "hasVariables": true,
+      "hasKeyframes": true,
+      "hasMedia": true,
+      "sampleSelectors": [
+        ".fa",
+        ".fa,.fa-brands,.fa-duotone,.fa-light,.fa-regular,.fa-solid,.fa-thin,.fab,.fad,.fal,.far,.fas,.fat",
+        ".fa-1x",
+        ".fa-2x",
+        ".fa-3x",
+        ".fa-4x",
+        ".fa-5x",
+        ".fa-6x"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaContainer.vue.css",
+      "lines": 3,
+      "hasVariables": false,
+      "hasKeyframes": false,
+      "hasMedia": false,
+      "sampleSelectors": [
+        ".schema-container"
+      ]
+    }
+  ],
+  "vueStylesAnalysis": [
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\settings\\AiSettingsModal.vue",
+      "totalLines": 195,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 195
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiContextSelector.vue",
+      "totalLines": 166,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 166
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\ThemeSwitcher.vue",
+      "totalLines": 160,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 160
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiToolApproval.vue",
+      "totalLines": 157,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 157
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\EditorTabBar.vue",
+      "totalLines": 142,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 142
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\HistorySidebar.vue",
+      "totalLines": 132,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 132
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\TagsField.vue",
+      "totalLines": 129,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 129
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\EditorCoreTiptap\\EntityLinkSelector.vue",
+      "totalLines": 126,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 126
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\WorkspaceLayout.vue",
+      "totalLines": 124,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 124
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\settings\\AiSettingsView.vue",
+      "totalLines": 117,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 117
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\FloatingWindowAI\\AiApp.vue",
+      "totalLines": 106,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 106
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiChatHistory.vue",
+      "totalLines": 100,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 100
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiSelect.vue",
+      "totalLines": 100,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 100
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\AiChatInput.vue",
+      "totalLines": 95,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 95
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\FloatingWindow.vue",
+      "totalLines": 89,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 89
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiHeader.vue",
+      "totalLines": 85,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 85
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiChatTopBar.vue",
+      "totalLines": 76,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 76
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiModelInfoCard.vue",
+      "totalLines": 72,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 72
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\AppDialog.vue",
+      "totalLines": 51,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 51
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\QuickOpen.vue",
+      "totalLines": 50,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 50
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiActionButtons.vue",
+      "totalLines": 47,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 47
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsModesTab.vue",
+      "totalLines": 46,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 46
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsSandboxTab.vue",
+      "totalLines": 43,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 43
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\FloatingEntityEditor.vue",
+      "totalLines": 42,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 42
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\CommandPalette.vue",
+      "totalLines": 40,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 40
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\XboxWheel.vue",
+      "totalLines": 39,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 39
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\EditorGroupPane.vue",
+      "totalLines": 38,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 38
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsProviderTab.vue",
+      "totalLines": 26,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 26
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsRulesTab.vue",
+      "totalLines": 20,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 20
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\EditorCoreTiptap\\EditorToolbar.vue",
+      "totalLines": 15,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 15
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\TreeNodes.vue",
+      "totalLines": 4,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\shell\\ProjectLauncher.vue",
+      "totalLines": 3,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\ExplorerTree.vue",
+      "totalLines": 3,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\Settings.vue",
+      "totalLines": 3,
+      "styles": [
+        {
+          "scoped": true,
+          "src": null,
+          "lines": 3
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\EntityEditor\\EntityEditor.vue",
+      "totalLines": 2,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "@worldwiki/resources/styles/modules/entity-editor.css",
+          "lines": 1
+        },
+        {
+          "scoped": true,
+          "src": "./EntityEditor.style.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\WowilonPanel.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./WowilonPanel.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChaptersMain\\ChaptersMain.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./ChaptersMain.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChapterTree\\ChapterTree.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./ChapterTree.style.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\EditorCoreTiptap\\EditorCoreTiptap.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": false,
+          "src": "./EditorCoreTiptap.style.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Export\\ExportModal.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./ExportModal.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ParticipantsPanel\\ParticipantsPanel.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./ParticipantsPanel.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\PlanningPanel\\PlanningPanel.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./PlanningPanel.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Semantic\\SemanticParagraph.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./SemanticParagraph.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Semantic\\SemanticParagraphNode.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./SemanticParagraphNode.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\TagsManagerModal.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./TagsManagerModal.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\RelationshipBlock.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "@worldwiki/resources/styles/modules/relationship-block.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaContainer.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./SchemaContainer.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaEditorMain.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./SchemaEditorMain.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\shell\\Splash.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": false,
+          "src": "./Splash.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\sync\\CloudSyncModal.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./CloudSyncModal.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarMoons\\CalendarMoons.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./CalendarMoons.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarPlayground\\CalendarPlayground.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./CalendarPlayground.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarSettings\\CalendarSettings.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./CalendarSettings.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalCalendarWidget\\GlobalCalendarWidget.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./GlobalCalendarWidget.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalTimeViewer\\GlobalTimeViewer.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./GlobalTimeViewer.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\TimelinePanel\\TimelinePanel.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "../../../../../../../../packages/resources/src/styles/modules/timeline-panel.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\CalendarsPanel\\CalendarsPanel.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./CalendarsPanel.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\CalendarsPanel\\DateWheels.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./DateWheels.vue.css",
+          "lines": 1
+        }
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\UniversalDatePicker\\UniversalDatePicker.vue",
+      "totalLines": 1,
+      "styles": [
+        {
+          "scoped": true,
+          "src": "./UniversalDatePicker.vue.css",
+          "lines": 1
+        }
+      ]
+    }
+  ],
+  "vueInlineAnalysis": [
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaContainer.vue",
+      "count": 98,
+      "sampleStyles": [
+        "{ opacity: item.hidden ? 0.4 : 1 }",
+        "padding: 24px; background: var(--bg-panel); border-radius: 20px; border: 1px solid var(--border-color);",
+        "display: flex; justify-content: space-between; align-items: flex-start; cursor: move;",
+        "display: flex; align-items: center; gap: 16px;",
+        "opacity: 0.2;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaEditorMain.vue",
+      "count": 76,
+      "sampleStyles": [
+        "width: 100%; height: 100%; display: flex; flex-direction: column;",
+        "border-radius: 0; border: none; border-bottom: 1px solid var(--border-color); padding: 0 24px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; height: 50px; background: var(--bg-panel); backdrop-filter: blur(20px); flex-shrink: 0;",
+        "display: flex; align-items: center; gap: 30px;",
+        "font-weight: 900; color: var(--accent); font-size: 14px; display: flex; align-items: center; gap: 8px;",
+        "background: transparent; border: none; font-weight: 900; color: var(--accent); font-size: 14px; text-transform: uppercase; padding: 0;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChaptersMain\\ChaptersMain.vue",
+      "count": 64,
+      "sampleStyles": [
+        "display: flex; height: 100%; overflow: hidden; color: var(--text-main);",
+        "flex: 1; display: flex; overflow: hidden;",
+        "width: 4px; cursor: col-resize; background: transparent; transition: background 0.2s;",
+        "{ width: rightPanelWidth + 'px' }",
+        "background: rgba(0,0,0,0.15); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\EntityEditor\\EntityEditor.vue",
+      "count": 52,
+      "sampleStyles": [
+        "margin-top:12px; font-size:12px; color:var(--text-muted)",
+        "display: flex; gap: 8px;",
+        "background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd;",
+        "display:flex; gap:8px; border-bottom:1px solid var(--border-color); margin-bottom:24px; padding-bottom:8px; overflow-x:auto;",
+        "padding:6px 14px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; transition:all 0.2s;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\RelationshipBlock.vue",
+      "count": 51,
+      "sampleStyles": [
+        "padding: 0; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-bottom: 24px;",
+        "padding: 16px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;",
+        "display: flex; align-items: center; gap: 12px;",
+        "font-size: 20px;",
+        "display: flex; flex-direction: column;"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\Settings.vue",
+      "count": 51,
+      "sampleStyles": [
+        "width:100%;height:100%;overflow:hidden;display:flex;flex-direction:column;",
+        "height:100%;width:100%;flex:1 1 auto;",
+        "font-size:11px;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;font-weight:bold;letter-spacing:1px;",
+        "width:100%;min-width:0;height:100%;display:flex;flex-direction:column;overflow-y:auto;flex:1 1 auto;",
+        "border-color:var(--accent);"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\EditorCoreTiptap\\EditorCoreTiptap.vue",
+      "count": 42,
+      "sampleStyles": [
+        "flex: 1; display: flex; flex-direction: column; padding: 24px; overflow: hidden; min-width: 0;",
+        "margin-bottom: 20px; position: relative;",
+        "position: absolute; right: -8px; top: -8px; z-index: 5;",
+        "background: var(--accent); color: white; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);",
+        "width: 100%; background: transparent; border: none; border-bottom: 2px solid transparent; color: var(--accent); font-size: 24px; font-weight: 700; outline: none; transition: all 0.3s; padding-bottom: 4px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\schemas\\SchemaEditor\\SchemaFieldEditor.vue",
+      "count": 42,
+      "sampleStyles": [
+        "{ opacity: item.hidden ? 0.4 : 1 }",
+        "display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;",
+        "{ cursor: isFirst ? 'default' : 'move' }",
+        "display: flex; align-items: center; gap: 10px; flex: 1;",
+        "opacity: 0.2; font-size: 14px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\shell\\EditorView.vue",
+      "count": 23,
+      "sampleStyles": [
+        "{ width: sidebarWidth + 'px' }",
+        "flex: 1; display: flex; align-items: center; justify-content: center;",
+        "{ flexBasis: group.flexBasis + '%' }",
+        "flex: 1",
+        "flex: 1;\r\n                    padding: 24px;\r\n                    display: flex;\r\n                    flex-direction: column;\r\n                    min-height: 0;\r\n                    overflow: hidden;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\sync\\CloudSyncModal.vue",
+      "count": 22,
+      "sampleStyles": [
+        "position: relative;",
+        "position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-color); opacity: 0.9; backdrop-filter: blur(4px); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px;",
+        "font-size: 32px; color: var(--accent-color); margin-bottom: 16px;",
+        "font-weight: 500; font-size: 15px;",
+        "font-size: 12px; color: var(--text-muted); margin-top: 8px; text-align: center;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarPlayground\\CalendarPlayground.vue",
+      "count": 19,
+      "sampleStyles": [
+        "width: 100%;",
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "color: var(--accent); margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 16px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\UniversalDatePicker\\UniversalDatePicker.vue",
+      "count": 18,
+      "sampleStyles": [
+        "display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); flex-wrap: wrap;",
+        "flex: 1.5; min-width: 140px;",
+        "font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;",
+        "flex: 1; min-width: 120px;",
+        "font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarMoons\\CalendarMoons.vue",
+      "count": 15,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "flex-direction: column; align-items: stretch; gap: 8px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarSettings\\CalendarSettings.vue",
+      "count": 14,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "margin-top: 16px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\shell\\ProjectLauncher.vue",
+      "count": 12,
+      "sampleStyles": [
+        "display:flex;gap:8px;align-items:center;",
+        "display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;",
+        "text-align: center;",
+        "margin-top: 32px;",
+        "padding: 20px 24px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarSeasons\\CalendarSeasons.vue",
+      "count": 12,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "flex-direction: column; align-items: stretch"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarHolidays\\CalendarHolidays.vue",
+      "count": 11,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "display: flex; gap: 12px; align-items: center; width: 100%;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\CalendarsPanel\\DateWheels.vue",
+      "count": 11,
+      "sampleStyles": [
+        "display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color);",
+        "flex: 1; min-width: 120px;",
+        "font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;",
+        "flex: 1; min-width: 90px;",
+        "font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\GlobalCalendarWidget\\GlobalCalendarWidget.vue",
+      "count": 10,
+      "sampleStyles": [
+        "font-size: 10px; color: var(--text-muted);",
+        "display: flex; gap: 4px; margin-bottom: 8px;",
+        "width: 60px",
+        "flex: 1;",
+        "width: 50px"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsProviderTab.vue",
+      "count": 8,
+      "sampleStyles": [
+        "display: flex; justify-content: space-between; align-items: center;",
+        "font-size: 11px;",
+        "color: var(--error);",
+        "margin-left: 24px;",
+        "display: flex; justify-content: space-between;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\CalendarsPanel\\CalendarsPanel.vue",
+      "count": 8,
+      "sampleStyles": [
+        "color: #e74c3c; font-size: 12px; padding: 10px; text-align: center; border: 1px dashed var(--border-color); border-radius: 8px;",
+        "color: var(--text-muted); font-size: 12px; padding: 10px",
+        "cursor: pointer;",
+        "margin-left: 8px; font-size: 10px; background: #e67e22; color: white; padding: 2px 6px; border-radius: 4px;",
+        "margin-left: 8px; font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ParticipantsPanel\\ParticipantsPanel.vue",
+      "count": 7,
+      "sampleStyles": [
+        "display: flex; flex-direction: column; gap: 8px;",
+        "color: var(--text-muted); font-size: 12px; padding: 10px;",
+        "display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);",
+        "display: flex; align-items: center; gap: 8px;",
+        "font-size: 13px; font-weight: 500;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarEras\\CalendarEras.vue",
+      "count": 7,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "margin-bottom: 10px"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarLeapYear\\CalendarLeapYear.vue",
+      "count": 7,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "margin-top: 10px; display: flex; align-items: center; gap: 8px"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\EditorGroupPane.vue",
+      "count": 7,
+      "sampleStyles": [
+        "flex:1; display:flex; overflow:hidden;",
+        "flex:1; display:flex; overflow:hidden;",
+        "display:flex; flex-direction:column; flex:1; min-height:0;",
+        "display:flex; flex-direction:column; flex:1; min-height:0;",
+        "font-size:40px; opacity:0.15;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarMonths\\CalendarMonths.vue",
+      "count": 6,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "max-width: 120px;"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\ExplorerTree.vue",
+      "count": 6,
+      "sampleStyles": [
+        "display: flex; align-items: center;",
+        "margin-left: auto; display: flex; gap: 4px;",
+        "margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;",
+        "margin-right: 8px; opacity: 0.7; font-size: 10px;",
+        "font-size: 28px; opacity: 0.2; margin-bottom: 10px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiChatTopBar.vue",
+      "count": 5,
+      "sampleStyles": [
+        "margin-right: 12px; display: flex; align-items: center; cursor: pointer;",
+        "--dsl-button-height: 34px;",
+        "font-size: inherit;",
+        "margin-right: 12px; display: flex; align-items: center; gap: 4px;",
+        "{ width: progressPercent + '%' }"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\EditorCoreTiptap\\EditorToolbar.vue",
+      "count": 5,
+      "sampleStyles": [
+        "display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; gap: 8px;",
+        "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
+        "display: flex; gap: 4px; border-left: 1px solid var(--border-color); padding-left: 8px;",
+        "display: flex; align-items: center; gap: 8px;",
+        "font-size: 11px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarWeekdays\\CalendarWeekdays.vue",
+      "count": 5,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;",
+        "max-width: 140px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\TimelinePanel\\TimelinePanel.vue",
+      "count": 5,
+      "sampleStyles": [
+        "font-size: 12px; color: var(--text-muted);",
+        "color: var(--text-muted); font-size: 12px; padding: 10px;",
+        "cursor: pointer;",
+        "{ background: getConvertedDateInfo(ev, calId)?.seasonColor }",
+        "{ background: getConvertedDateInfo(ev, calId)?.timeOfDayColor }"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\XboxWheel.vue",
+      "count": 5,
+      "sampleStyles": [
+        "{ zIndex: isOpen ? 10005 : 1000 }",
+        "font-weight: 500;",
+        "dropdownStyle",
+        "getItemStyle(i)",
+        "padding: 20px; text-align: center; color: var(--text-muted); padding-top: 100px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\settings\\AiSettingsView.vue",
+      "count": 4,
+      "sampleStyles": [
+        "display: flex; justify-content: space-between; align-items: center;",
+        "padding: 6px 12px;",
+        "display: flex; gap: 8px;",
+        "flex: 1;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarOrigin\\CalendarOrigin.vue",
+      "count": 4,
+      "sampleStyles": [
+        "cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;",
+        "margin: 0;",
+        "font-size: 10px; color: var(--text-muted); opacity: 0.7;",
+        "margin-top: 12px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\timeline\\Calendars\\CalendarTimezones\\CalendarTimezones.vue",
+      "count": 4,
+      "sampleStyles": [
+        "font-size: 11px; color: var(--text-muted); margin-bottom: 8px;",
+        "margin-bottom: 8px; padding: 8px;",
+        "margin-top: 8px; width: 100%",
+        "width: 100%; justify-content: center;"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\TagsField.vue",
+      "count": 4,
+      "sampleStyles": [
+        "{ zIndex: isDropdownOpen ? 10005 : 10 }",
+        "{ borderColor: getTagColor(tag) }",
+        "dropdownStyle",
+        "{ background: tag.color }"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsModesTab.vue",
+      "count": 3,
+      "sampleStyles": [
+        "display: flex; gap: 10px; margin-top: 5px;",
+        "flex: 1;",
+        "margin-top: 20px; text-align: right;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\settings\\AiSettingsModal.vue",
+      "count": 3,
+      "sampleStyles": [
+        "font-size: 13px; margin-bottom: 20px;",
+        "margin-top: 15px;",
+        "margin-top: 20px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\PlanningPanel\\PlanningPanel.vue",
+      "count": 3,
+      "sampleStyles": [
+        "{ width: progressPct + '%' }",
+        "{ paddingLeft: (12 + item.indent * 20) + 'px' }",
+        "display:block; margin-top:4px; font-size:11px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsRulesTab.vue",
+      "count": 2,
+      "sampleStyles": [
+        "font-size: 13px; margin-bottom: 20px;",
+        "margin-top: 20px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\settings\\AiSettingsSandboxTab.vue",
+      "count": 2,
+      "sampleStyles": [
+        "font-size: 13px; margin-bottom: 20px;",
+        "margin-top: 20px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\WowilonPanel.vue",
+      "count": 2,
+      "sampleStyles": [
+        "{ width: panelWidth + 'px' }",
+        "flex: 1; min-width: 0;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChapterTree\\ChapterTree.vue",
+      "count": 2,
+      "sampleStyles": [
+        "height: 100%; display: flex; flex-direction: column;",
+        "background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\Semantic\\SemanticParagraphNode.vue",
+      "count": 2,
+      "sampleStyles": [
+        "position: relative; padding-left: 24px; min-height: 24px;",
+        "badgeStyle"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\WorkspaceLayout.vue",
+      "count": 2,
+      "sampleStyles": [
+        "{ width: sidebarWidth + 'px' }",
+        "{ flex: group.flexBasis }"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\ai\\components\\AiChatHistory.vue",
+      "count": 1,
+      "sampleStyles": [
+        "font-size: 11px; text-align: center; margin-top: 10px;"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\chapters\\ChaptersView.vue",
+      "count": 1,
+      "sampleStyles": [
+        "width: 100%; height: 100%; background: var(--bg-main);"
+      ]
+    },
+    {
+      "file": "apps\\spa\\src\\ts\\features\\entities\\TagsManagerModal.vue",
+      "count": 1,
+      "sampleStyles": [
+        "{ background: tag.color }"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\FloatingWindow.vue",
+      "count": 1,
+      "sampleStyles": [
+        "windowStyle"
+      ]
+    },
+    {
+      "file": "packages\\components\\src\\components\\Vue\\ThemeSwitcher.vue",
+      "count": 1,
+      "sampleStyles": [
+        "width: 100%; margin-bottom: 16px; border-radius: 8px; padding: 10px;"
+      ]
+    }
+  ]
+}

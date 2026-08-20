@@ -119,4 +119,4 @@ const {
   addEvent
 } = useTimelinePanel(props, emit);
 </script>
-<style src="../../../../../../../../packages/resources/src/styles/modules/timeline-panel.css" scoped></style>
+<style src="@worldwiki/resources/styles/features/timeline/TimelinePanel.css" scoped></style>

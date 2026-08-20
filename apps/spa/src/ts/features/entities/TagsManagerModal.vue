@@ -80,4 +80,4 @@ const {
 defineExpose({ open, close });
 </script>
 
-<style scoped src="./TagsManagerModal.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/entities/TagsManagerModal.css"></style>

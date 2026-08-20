@@ -23,7 +23,6 @@ body {
     line-height: var(--line-height-base);
     letter-spacing: var(--letter-spacing-base);
     color: var(--text-main);
-    overflow: hidden;
     transition: background var(--anim-speed) var(--anim-ease), 
                 color var(--anim-speed) var(--anim-ease);
 }

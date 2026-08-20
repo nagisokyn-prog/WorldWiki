@@ -1,0 +1,193 @@
+/* SchemaContainer.css - Стили для карточек и блоков редактора схем */
+
+.schema-container {
+    transition: all var(--anim-speed) var(--anim-ease);
+}
+
+.schema-container-card {
+    padding: 24px;
+    background: var(--bg-panel);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(var(--glass-blur));
+}
+
+.schema-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    cursor: move;
+}
+
+.schema-title-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.schema-drag-dots {
+    opacity: 0.2;
+    font-size: 16px;
+}
+
+.schema-icon {
+    font-size: 24px;
+}
+
+.schema-title-input {
+    background: transparent;
+    border: none;
+    font-weight: var(--font-weight-black);
+    font-size: var(--font-size-lg);
+    color: var(--text-main);
+    padding: 0;
+}
+
+.schema-empty-msg-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    padding: 0;
+    width: 300px;
+}
+
+.schema-header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 4px;
+}
+
+.schema-btn-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--font-size-md);
+    color: var(--text-muted);
+    transition: color var(--anim-speed) var(--anim-ease);
+}
+
+.schema-btn-icon:hover {
+    color: var(--text-main);
+}
+
+.schema-btn-delete {
+    color: var(--error);
+    background: none;
+    border: none;
+    font-size: var(--font-size-md);
+    cursor: pointer;
+    transition: opacity var(--anim-speed) var(--anim-ease);
+}
+
+.schema-btn-delete:hover {
+    opacity: 0.8;
+}
+
+/* Двусторонние схемы (Сторона А и Сторона Б) */
+.bidirectional-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.side-panel-a {
+    background: rgba(167, 139, 250, 0.04);
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    border-radius: var(--radius-md);
+    padding: 14px;
+}
+
+.side-header-a {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-black);
+    color: #a78bfa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(167, 139, 250, 0.15);
+    padding-bottom: 8px;
+}
+
+.side-panel-b {
+    background: rgba(96, 165, 250, 0.04);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: var(--radius-md);
+    padding: 14px;
+}
+
+.side-header-b {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-black);
+    color: #60a5fa;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.15);
+    padding-bottom: 8px;
+}
+
+.side-override-box {
+    margin-top: 6px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-xs);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.side-dynamic-container-a {
+    margin-top: 12px;
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.side-dynamic-header-a {
+    background: rgba(167, 139, 250, 0.12);
+    padding: 8px 12px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-black);
+    color: #a78bfa;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.side-dynamic-container-b {
+    margin-top: 12px;
+    border: 1px solid rgba(96, 165, 250, 0.25);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.side-dynamic-header-b {
+    background: rgba(96, 165, 250, 0.12);
+    padding: 8px 12px;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-black);
+    color: #60a5fa;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.dynamic-empty-box {
+    text-align: center;
+    padding: 8px;
+    opacity: 0.35;
+    font-size: var(--font-size-xs);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-xs);
+}
+
+.field-item-box {
+    padding: 12px 14px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

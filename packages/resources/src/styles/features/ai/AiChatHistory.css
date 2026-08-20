@@ -1,0 +1,98 @@
+.chat-history-sidebar {
+  width: 250px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.history-header {
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.new-chat-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: opacity 0.2s;
+}
+
+.new-chat-btn:hover {
+  opacity: 0.8;
+}
+
+.history-search {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.history-search input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.loading-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Context Menu styles (same as ChapterTree) */
+.ctx-item {
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-main);
+}
+.ctx-item:hover {
+  background: var(--bg-hover);
+}
+.ctx-icon {
+  width: 16px;
+  margin-right: 6px;
+  opacity: 0.7;
+}
+.ctx-kbd {
+  font-size: 10px;
+  opacity: 0.5;
+  background: rgba(255,255,255,0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.ctx-sep {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+.ctx-danger {
+  color: #ff5555;
+}
+.ctx-danger .ctx-icon {
+  color: #ff5555;
+}

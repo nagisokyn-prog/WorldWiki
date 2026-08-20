@@ -489,6 +489,4 @@ function showToast(toast: { text?: string; type?: string; [key: string]: unknown
 }
 </script>
 
-<style scoped>
-@import '@worldwiki/resources/styles/project_launcher.css';
-</style>
+<style scoped src="@worldwiki/resources/styles/features/shell/shell_ProjectLauncher.css"></style>

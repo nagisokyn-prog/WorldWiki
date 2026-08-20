@@ -1,0 +1,37 @@
+.wheel-wrapper {
+  margin: 0;
+  height: 280px; /* Force height since we use v-if now */
+  opacity: 1;    /* Force opacity since we use v-if now */
+  pointer-events: auto;
+  transform: scale(var(--local-zoom, 1));
+  transform-origin: top left;
+}
+
+.wheel-fade-enter-active, .wheel-fade-leave-active {
+  transition: opacity 0.3s, transform 0.3s;
+}
+.wheel-fade-enter-from, .wheel-fade-leave-to {
+  opacity: 0;
+  transform: scale(var(--local-zoom, 1)) translateY(-10px);
+}
+
+/* Horizontal Mode Overrides */
+.wheel-wrapper.is-horizontal {
+  height: 80px !important; 
+}
+.wheel-wrapper.is-horizontal::after {
+  top: 10px !important;
+  bottom: 10px !important;
+  left: 50% !important;
+  width: 100px !important;
+  height: auto !important;
+  margin-top: 0 !important;
+  margin-left: -50px !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: 1px solid var(--glass-highlight) !important;
+  border-right: 1px solid var(--glass-highlight) !important;
+}
+.is-horizontal .wheel-container {
+  height: 100% !important;
+}

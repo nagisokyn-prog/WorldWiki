@@ -71,4 +71,4 @@ const emit = defineEmits<{
 const { isCollapsed, settings, dayLengthAnchor } = useCalendarSettings(props, emit);
 </script>
 
-<style scoped src="./CalendarSettings.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarSettings.css"></style>

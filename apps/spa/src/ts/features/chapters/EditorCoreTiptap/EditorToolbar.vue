@@ -93,18 +93,4 @@ defineProps<{
 defineEmits(['update:editorMode', 'save', 'toggle-history']);
 </script>
 
-<style scoped>
-.toolbar-btn {
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-main);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  cursor: pointer;
-}
-.toolbar-btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-color);
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/EditorToolbar.css"></style>

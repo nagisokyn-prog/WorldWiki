@@ -1,0 +1,36 @@
+.editor-group-pane {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  border-right: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  transition: border-color 0.15s;
+}
+
+.editor-group-pane:last-child {
+  border-right: none;
+}
+
+/* Подсветка активной группы */
+.editor-group-pane.is-active {
+  border-right-color: rgba(139, 92, 246, 0.2);
+}
+
+.editor-group-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.editor-group-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  padding: 24px;
+}

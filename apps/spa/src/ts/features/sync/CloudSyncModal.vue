@@ -138,4 +138,4 @@ const {
 defineExpose({ open: openModal, close });
 </script>
 
-<style scoped src="./CloudSyncModal.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/shell/CloudSyncModal.css"></style>

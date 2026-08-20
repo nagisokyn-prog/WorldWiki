@@ -126,4 +126,4 @@ const isEntityNode = (node: { data?: unknown }) => {
 defineExpose({ load });
 </script>
 
-<style scoped src="./ChapterTree.style.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/ChapterTree.css"></style>

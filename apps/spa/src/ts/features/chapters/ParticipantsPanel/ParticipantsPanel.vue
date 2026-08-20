@@ -43,4 +43,4 @@ const {
 } = useParticipantsPanel(props, emit as (event: 'update:participants' | 'change', ...args: unknown[]) => void);
 </script>
 
-<style scoped src="./ParticipantsPanel.vue.css"></style>
+<style scoped src="@worldwiki/resources/styles/features/chapters/ParticipantsPanel.css"></style>

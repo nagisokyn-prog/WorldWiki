@@ -1,0 +1,166 @@
+/* SchemaEditorMain.css - Стили главного экрана редактора схем */
+
+.schema-editor-main {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.schema-header {
+    border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: var(--z-modal);
+    height: 50px;
+    background: var(--bg-panel);
+    backdrop-filter: blur(var(--glass-blur));
+    flex-shrink: 0;
+}
+
+.schema-header-title {
+    font-weight: var(--font-weight-black);
+    color: var(--accent);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.schema-header-input {
+    background: transparent;
+    border: none;
+    font-weight: var(--font-weight-black);
+    color: var(--accent);
+    font-size: var(--font-size-base);
+    text-transform: uppercase;
+    padding: 0;
+}
+
+.schema-history-banner {
+    background: rgba(245, 166, 35, 0.1);
+    border-bottom: 1px solid rgba(245, 166, 35, 0.3);
+    padding: 8px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schema-history-text {
+    font-size: var(--font-size-xs);
+    color: var(--warning);
+    font-weight: var(--font-weight-bold);
+}
+
+.schema-tabs-bar {
+    padding: 8px 24px;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--bg-input);
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+}
+
+.schema-canvas {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.schema-canvas-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.schema-page-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+}
+
+.schema-page-title-input {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-black);
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    flex: 1;
+    padding: 0;
+}
+
+.empty-canvas-state {
+    padding: 40px;
+    border: 2px dashed var(--border-active);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    opacity: 0.5;
+}
+
+.schema-item-card {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    transition: all var(--anim-speed) var(--anim-ease);
+}
+
+.is-dragging-over {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 15px var(--accent-glow);
+    transform: scale(1.02);
+}
+
+.schema-resizer {
+    width: 8px;
+    cursor: ew-resize;
+    background: transparent;
+    z-index: 100;
+    transition: background var(--anim-speed) var(--anim-ease);
+}
+
+.schema-resizer:hover {
+    background: var(--accent);
+}
+
+.schema-catalog {
+    border-left: 1px solid var(--border-color);
+    background: var(--bg-panel);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.catalog-section-title {
+    padding: 16px;
+    font-weight: var(--font-weight-black);
+    font-size: var(--font-size-sm);
+    opacity: 0.5;
+}
+
+.catalog-item {
+    padding: 12px;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: grab;
+    transition: all var(--anim-speed) var(--anim-ease);
+}
+
+.catalog-item:hover {
+    background: var(--bg-selected) !important;
+    border-color: var(--border-active) !important;
+}

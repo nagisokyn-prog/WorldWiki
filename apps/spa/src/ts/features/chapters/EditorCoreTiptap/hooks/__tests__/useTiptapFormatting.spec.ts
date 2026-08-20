@@ -133,6 +133,15 @@ describe('useTiptapFormatting', () => {
       formatting.cycleGlobalTag(0);
       expect(editor.value.view.dispatch).toHaveBeenCalled();
 
+      // multiple paragraphs, target second paragraph (covers line 79 currentPIndex++)
+      editor.value.state.doc.descendants = (cb: any) => {
+        cb({ type: { name: 'paragraph' }, attrs: { semanticTag: 'desc' } }, 0);
+        cb({ type: { name: 'paragraph' }, attrs: { semanticTag: 'desc' } }, 10);
+      };
+      editor.value.view.dispatch.mockClear();
+      formatting.cycleGlobalTag(1);
+      expect(editor.value.view.dispatch).toHaveBeenCalled();
+
       // paragraph not found (pos === -1)
       editor.value.state.doc.descendants = (cb: any) => {
         cb({ type: { name: 'heading' }, attrs: {} }, 0);

@@ -138,5 +138,17 @@ describe('useTiptapMarkdown', () => {
       textarea.selectionStart = textarea.value.length;
       md.onMarkdownKeydown(qEvent);
     });
+
+    it('handles markdown parse error in onMarkdownInput gracefully', () => {
+      const md = useTiptapMarkdown(editor, emit, updateStats);
+      const spyError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // Set content that triggers error by mocking preprocessMarkdown or invalid structure
+      md.markdownContent.value = null as any;
+      md.onMarkdownInput();
+
+      expect(spyError).toHaveBeenCalledWith('Markdown parse error:', expect.any(Error));
+      spyError.mockRestore();
+    });
   });
 });

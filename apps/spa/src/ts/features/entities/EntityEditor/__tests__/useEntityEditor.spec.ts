@@ -378,4 +378,38 @@ describe('useEntityEditor', () => {
 
     wrapper.unmount();
   });
+
+  it('collects entityTypesToLoad from dynamicContainers template, direct fields and config.templates foreign_type', async () => {
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+      {
+        type: 'character',
+        schema: {
+          sections: [
+            {
+              id: 'sec_extra',
+              dynamicContainers: [
+                {
+                  id: 'dc_with_tpl',
+                  template: 'foreign_tpl',
+                  fields: [{ type: 'select', entityType: 'dc_field_type' }],
+                },
+              ],
+            },
+          ],
+          templates: {
+            foreign_tpl: {
+              foreign_type: 'guild_type',
+              fields: [{ type: 'select', entityType: 'tpl_field_type' }],
+            },
+          },
+        },
+      },
+    ] as any);
+
+    const editor = useEntityEditor(props, emit);
+    await editor.loadConfigAndData();
+    expect(api.getEntities).toHaveBeenCalledWith('proj_1', 'guild_type');
+    expect(api.getEntities).toHaveBeenCalledWith('proj_1', 'dc_field_type');
+    expect(api.getEntities).toHaveBeenCalledWith('proj_1', 'tpl_field_type');
+  });
 });

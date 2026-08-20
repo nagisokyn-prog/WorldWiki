@@ -47,8 +47,27 @@ describe('useChapterHistory', () => {
 
     // API error
     currentChapterId.value = 'ch_1';
+    // Null return from api (tests line 51 || [])
+    vi.mocked(api.getChapterRevisions).mockResolvedValueOnce(null as any);
+    await history.loadHistory();
+    expect(history.revisions.value).toEqual([]);
+
     vi.mocked(api.getChapterRevisions).mockRejectedValueOnce(new Error('Network error'));
     await history.loadHistory();
+  });
+
+  it('handles previewHistory when currentChapter fields are empty or null', () => {
+    const emptyChapter = ref({ id: 'ch_empty', content: null, title: null, footnotes: null } as any);
+    const history = useChapterHistory('proj_1', currentChapterId, emptyChapter);
+
+    history.previewHistory({ id: 'rev_empty', content: {} } as any);
+    expect(emptyChapter.value.title).toBe('');
+    expect(emptyChapter.value.content).toBe('');
+    expect(history.previewingRevId.value).toBe('rev_empty');
+
+    // Cancel preview to restore empty
+    history.previewHistory({ id: 'rev_empty', content: {} } as any);
+    expect(history.previewingRevId.value).toBeNull();
   });
 
   it('previews revisions, restores original data on toggle, and handles nested attributes', () => {

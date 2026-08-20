@@ -45,5 +45,17 @@ describe('useSemanticParagraphNode', () => {
     // Missing updateAttributes guard
     const noopNode = useSemanticParagraphNode({});
     noopNode.cycleTag();
+
+    // cycleTag with empty node (triggers default 'desc' -> 'dialog')
+    const updateAttrsDefault = vi.fn();
+    const emptyAttrsNode = useSemanticParagraphNode({ updateAttributes: updateAttrsDefault });
+    emptyAttrsNode.cycleTag();
+    expect(updateAttrsDefault).toHaveBeenCalledWith({ semanticTag: 'dialog' });
+
+    // cycleTag with custom tag not in list (indexOf = -1 -> (-1+1)%3 = 0 -> 'desc')
+    const updateAttrsCustom = vi.fn();
+    const customNode = useSemanticParagraphNode({ node: { attrs: { semanticTag: 'unknown_tag' } }, updateAttributes: updateAttrsCustom });
+    customNode.cycleTag();
+    expect(updateAttrsCustom).toHaveBeenCalledWith({ semanticTag: 'desc' });
   });
 });

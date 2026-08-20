@@ -151,6 +151,10 @@ describe('useChapterLayout', () => {
     document.dispatchEvent(new CustomEvent('ww:toggle-right-panel'));
     expect(vm.isRightPanelVisible).toBe(true);
 
+    const spyDispatch = vi.spyOn(document, 'dispatchEvent');
+    document.dispatchEvent(new CustomEvent('ww:toggle-structure'));
+    expect(spyDispatch).toHaveBeenCalledWith(expect.objectContaining({ type: 'ww:structure-toggled' }));
+
     wrapper.unmount();
   });
 

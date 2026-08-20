@@ -26,10 +26,12 @@ vi.mock('@worldwiki/components', () => ({
 }));
 
 let mockHierarchy: any;
+let mockLoadChapters = vi.fn().mockResolvedValue([]);
+let mockLoadEntities = vi.fn().mockResolvedValue([]);
 
 vi.mock('../../../../stores/chapter.store', () => ({
   useChapterStore: () => ({
-    loadChapters: vi.fn().mockResolvedValue([]),
+    loadChapters: mockLoadChapters,
     hierarchy: mockHierarchy,
   }),
 }));
@@ -38,7 +40,7 @@ vi.mock('../../../../services/Entity/entity.tree', () => ({
   useEntityTree: () => ({
     entities: ref({ character: [{ id: 'char_1', name: 'Arthur' }] }),
     entitySections: ref([{ type: 'character', title: 'Персонажи', icon: 'user', emoji: '👤' }]),
-    loadEntities: vi.fn(),
+    loadEntities: mockLoadEntities,
     getEntityName: vi.fn((e) => e.name),
     entityKey: vi.fn((t, id) => `entity:${t}:${id}`),
   }),
@@ -95,10 +97,14 @@ describe('useChapterTree', () => {
     expect(mockPush).toHaveBeenCalledWith('/launcher');
 
     const closeCtx = vi.fn();
-    tree.explorerTreeRef.value = { startRename: vi.fn() };
+    tree.explorerTreeRef.value = {
+      startRename: vi.fn(),
+      expandNode: vi.fn(),
+      startCreate: vi.fn(),
+    };
     tree.startRename({ id: '1' }, closeCtx);
     expect(closeCtx).toHaveBeenCalled();
-    expect(tree.explorerTreeRef.value.startRename).toHaveBeenCalled();
+    expect(tree.explorerTreeRef.value?.startRename).toHaveBeenCalled();
   });
 
   it('handles select and open for entities, chapters with ctrl/shift keys', () => {
@@ -108,16 +114,16 @@ describe('useChapterTree', () => {
     tree.handleSelect([], {} as any);
 
     // Select chapter with ctrlKey (does not select-chapter)
-    tree.handleSelect([{ data: { type: 'chapter', original: { id: 'ch_1' } } }], { ctrlKey: true } as any);
+    tree.handleSelect([{ id: 'ch_1', data: { type: 'chapter', original: { id: 'ch_1' } } }], { ctrlKey: true } as any);
     expect(emit).toHaveBeenCalledWith('select-node', expect.anything());
     expect(emit).not.toHaveBeenCalledWith('select-chapter', expect.anything());
 
     // Normal select chapter
-    tree.handleSelect([{ data: { type: 'chapter', original: { id: 'ch_1' } } }], {} as any);
+    tree.handleSelect([{ id: 'ch_1', data: { type: 'chapter', original: { id: 'ch_1' } } }], {} as any);
     expect(emit).toHaveBeenCalledWith('select-chapter', { id: 'ch_1' });
 
     // Open chapter
-    tree.handleOpen({ data: { type: 'chapter', original: { id: 'ch_1' } } });
+    tree.handleOpen({ id: 'ch_1', data: { type: 'chapter', original: { id: 'ch_1' } } });
     expect(emit).toHaveBeenCalledWith('select-chapter', { id: 'ch_1' });
   });
 
@@ -183,7 +189,7 @@ describe('useChapterTree', () => {
     };
     const tree = useChapterTree(props, emit);
     const msSection = tree.explorerSections.value.find((s: any) => s.id === 'manuscript');
-    expect(msSection.nodes[0].children.length).toBe(1);
+    expect(msSection?.nodes?.[0]?.children?.length).toBe(1);
 
     // 2. Load catch error
     const { useChapterStore } = await import('../../../../stores/chapter.store');
@@ -196,12 +202,12 @@ describe('useChapterTree', () => {
     const tree = useChapterTree(props, emit);
 
     // Empty new name
-    await tree.handleRename({ data: { type: 'volume' } }, '   ');
+    await tree.handleRename({ id: 'vol_1', data: { type: 'volume' } }, '   ');
     expect(api.updateVolume).not.toHaveBeenCalled();
 
     // API error during rename
     vi.mocked(api.updateVolume).mockRejectedValueOnce(new Error('Update failed'));
-    await tree.handleRename({ data: { type: 'volume', original: { id: 'vol_1' } } }, 'New Vol');
+    await tree.handleRename({ id: 'vol_1', data: { type: 'volume', original: { id: 'vol_1' } } }, 'New Vol');
 
     // Cancel rename non-temp
     await tree.handleCancelRename({ id: 'vol_1' });
@@ -230,7 +236,7 @@ describe('useChapterTree', () => {
 
       const tree = useChapterTree(props, emit);
       const msSection = tree.explorerSections.value.find((s: any) => s.id === 'manuscript');
-      expect(msSection.nodes[0].children.length).toBe(1);
+      expect(msSection?.nodes?.[0]?.children?.length).toBe(1);
     });
 
     it('handles untitled volumes, arcs, chapters and deep grandchild hierarchy', () => {
@@ -249,9 +255,9 @@ describe('useChapterTree', () => {
       const tree = useChapterTree(props, emit);
       const msSection = tree.explorerSections.value.find((s: any) => s.id === 'manuscript');
       expect(msSection).toBeDefined();
-      expect(msSection.nodes[0].label).toBe('Без названия');
-      expect(msSection.nodes[0].children[0].label).toBe('Без названия');
-      expect(msSection.nodes[0].children[0].children[0].label).toBe('Без названия');
+      expect(msSection?.nodes?.[0]?.label).toBe('Без названия');
+      expect(msSection?.nodes?.[0]?.children?.[0]?.label).toBe('Без названия');
+      expect(msSection?.nodes?.[0]?.children?.[0]?.children?.[0]?.label).toBe('Без названия');
     });
 
 
@@ -259,10 +265,11 @@ describe('useChapterTree', () => {
       const tree = useChapterTree(props, emit);
 
       // Node without data
-      tree.handleSelect([{}], {} as any);
+      tree.handleSelect([{ id: 'empty_node' }], {} as any);
 
       // Entity select
       const entNode = {
+        id: 'entity:character:char_1',
         data: {
           isEntity: true,
           type: 'character',
@@ -337,16 +344,17 @@ describe('useChapterTree', () => {
       tree.explorerTreeRef.value = {
         startRename: vi.fn(),
         expandNode: vi.fn(),
+        startCreate: vi.fn(),
       };
 
       // 1. Create volume (no parentId)
       await tree.handleCreate({ sectionId: 'manuscript' });
-      expect(tree.explorerTreeRef.value.startRename).toHaveBeenCalled();
+      expect(tree.explorerTreeRef.value?.startRename).toHaveBeenCalled();
 
       // 2. Create arc in volume (with parentId)
       await tree.handleCreate({ sectionId: 'manuscript', parentId: 'vol_1' });
-      expect(tree.explorerTreeRef.value.expandNode).toHaveBeenCalledWith('vol_1');
-      expect(tree.explorerTreeRef.value.startRename).toHaveBeenCalled();
+      expect(tree.explorerTreeRef.value?.expandNode).toHaveBeenCalledWith('vol_1');
+      expect(tree.explorerTreeRef.value?.startRename).toHaveBeenCalled();
     });
 
     it('handles handleRename and handleCancelRename across all node types', async () => {
@@ -361,19 +369,20 @@ describe('useChapterTree', () => {
       expect(api.createArc).toHaveBeenCalledWith('my-proj', 'New Arc', 'vol_1');
 
       // 3. Volume
-      await tree.handleRename({ data: { type: 'volume', original: { id: 'vol_1' } } }, 'Renamed Vol');
+      await tree.handleRename({ id: 'vol_1', data: { type: 'volume', original: { id: 'vol_1' } } }, 'Renamed Vol');
       expect(api.updateVolume).toHaveBeenCalledWith('my-proj', 'vol_1', 'Renamed Vol');
 
       // 4. Arc
-      await tree.handleRename({ data: { type: 'arc', original: { id: 'arc_1' } } }, 'Renamed Arc');
+      await tree.handleRename({ id: 'arc_1', data: { type: 'arc', original: { id: 'arc_1' } } }, 'Renamed Arc');
       expect(api.updateArc).toHaveBeenCalledWith('my-proj', 'arc_1', 'Renamed Arc', null);
 
       // 5. Chapter
-      await tree.handleRename({ data: { type: 'chapter', original: { id: 'ch_1' } } }, 'Renamed Ch');
+      await tree.handleRename({ id: 'ch_1', data: { type: 'chapter', original: { id: 'ch_1' } } }, 'Renamed Ch');
       expect(emit).toHaveBeenCalledWith('rename-chapter', { id: 'ch_1' }, 'Renamed Ch');
 
       // 6. Entity
       await tree.handleRename({
+        id: 'entities:char_1',
         data: {
           isEntity: true,
           type: 'character',
@@ -401,6 +410,16 @@ describe('useChapterTree', () => {
       // Delete entity
       await tree.handleDelete(['entity:character:char_1']);
       expect(emit).toHaveBeenCalledWith('delete-entity', 'entity:character:char_1', 'character', false);
+    });
+
+    it('handles load error in load() gracefully', async () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockLoadChapters.mockRejectedValueOnce(new Error('Load failure'));
+
+      const tree = useChapterTree(props, emit);
+      await tree.load();
+      expect(consoleSpy).toHaveBeenCalledWith('ChapterTree load error:', expect.any(Error));
+      consoleSpy.mockRestore();
     });
   });
 });

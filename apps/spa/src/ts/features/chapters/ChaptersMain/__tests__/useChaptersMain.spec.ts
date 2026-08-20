@@ -257,4 +257,42 @@ describe('useChaptersMain', () => {
     main.handleScrollChange(500);
     expect(emit).toHaveBeenCalledWith('scroll-change', 500);
   });
+
+  it('runs onMounted, event listeners, and onUnmounted with controlledChapterId', async () => {
+    const Component = defineComponent({
+      props: ['project', 'controlledChapterId', 'activeTreeNode'],
+      emits: ['chapter-unsaved', 'open-chapter-as-tab', 'scroll-change'],
+      setup(p, { emit: e }) {
+        return useChaptersMain(p, e);
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(Component, {
+      props: {
+        project: 'proj_1',
+        controlledChapterId: 'ch_ctrl',
+        activeTreeNode: null,
+      },
+    });
+
+    await flushPromises();
+    expect(mockStore.openChapter).toHaveBeenCalledWith('proj_1', 'ch_ctrl');
+
+    // Trigger markUnsaved twice to verify saveTimeout clearance
+    const vm: any = wrapper.vm;
+    vm.markUnsaved();
+    vm.markUnsaved();
+    expect(mockStore.hasUnsavedChanges.value).toBe(true);
+
+    vi.advanceTimersByTime(2500);
+    expect(mockStore.saveChapter).toHaveBeenCalled();
+
+    // Trigger global events
+    document.dispatchEvent(new CustomEvent('ww:trigger-chapter-save'));
+    document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
+    document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: 'ch_1', title: 'Renamed Global' } }));
+
+    wrapper.unmount();
+  });
 });

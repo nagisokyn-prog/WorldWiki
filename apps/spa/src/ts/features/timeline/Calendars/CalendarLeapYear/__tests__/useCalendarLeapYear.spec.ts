@@ -47,6 +47,13 @@ describe('useCalendarLeapYear', () => {
       mockSettingsCb({ dropdowns: { wheelOrientation: 'vertical' } });
       expect((wrapper.vm as any).wheelHorizontal).toBe(false);
     }
+    wrapper.unmount();
+
+    // Mount when custom rule already exists (covers branch line 25 false)
+    const wrapperWithProps = mount(TestComp, { props });
+    await flushPromises();
+    expect(props.modelValue.пользовательское_високосное_правило.месяц).toBe(1);
+    wrapperWithProps.unmount();
   });
 
   it('handles getters and setters when custom rule object is missing', () => {

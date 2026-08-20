@@ -108,6 +108,17 @@ describe('useAiChats', () => {
       expect(aiChats.activeChatId.value).toBe('');
     });
 
+    it('does not reset activeChatId when it is not among deleted chats', async () => {
+      vi.mocked(invoke).mockResolvedValue([]);
+
+      const aiChats = useAiChats('project_1');
+      aiChats.activeChatId.value = 'c3';
+
+      await aiChats.deleteChats(['c1', 'c2']);
+
+      expect(aiChats.activeChatId.value).toBe('c3');
+    });
+
     it('handles delete error gracefully', async () => {
       vi.mocked(invoke).mockRejectedValue(new Error('Delete error'));
       const aiChats = useAiChats('project_1');

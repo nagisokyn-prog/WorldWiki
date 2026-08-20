@@ -124,6 +124,15 @@ describe('useTiptapSplitView', () => {
       expect(blocks[0].type).toBe('H1');
       expect(blocks[0].text.endsWith('...')).toBe(true);
       expect(blocks[1].semanticTag).toBe('desc');
+
+      // Array node passed to traverse (covers line 95)
+      const arrayDocEditor = ref({
+        getJSON: () => ([
+          { type: 'paragraph', content: [{ type: 'text', text: 'In array' }] },
+        ] as any),
+      });
+      const splitArray = useTiptapSplitView(arrayDocEditor, editorUpdateKey);
+      expect(splitArray.documentStructure.value.length).toBe(1);
     });
 
     it('clamps left and right panel widths to min (20%) and max (60%)', () => {

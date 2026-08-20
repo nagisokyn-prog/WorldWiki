@@ -262,6 +262,48 @@ describe('AiGhostTextExtension', () => {
         spyError.mockRestore();
       });
 
+      it('ignores completion when response is empty and guards against concurrent isFetching', async () => {
+        let resolveInvoke: (val: string) => void;
+        (invoke as any).mockImplementationOnce(() => new Promise((res) => { resolveInvoke = res; }));
+
+        const viewObj = plugin.spec.view({});
+        plugin.spec.key.getState = vi.fn(() => null);
+
+        const currentView: any = {
+          state: {
+            tr: { setMeta: vi.fn().mockReturnThis() },
+            doc: { eq: () => false },
+            selection: {
+              eq: () => false,
+              $head: {
+                pos: 20,
+                parentOffset: 20,
+                parent: {
+                  content: { size: 20 },
+                  textContent: '12345678901234567890',
+                },
+              },
+            },
+          },
+          dispatch: vi.fn(),
+        };
+
+        // First timer trigger starts fetching
+        viewObj.update(currentView, { doc: { eq: () => false }, selection: { eq: () => false } });
+        vi.advanceTimersByTime(1000);
+
+        // While isFetching is true, trigger another update
+        viewObj.update(currentView, { doc: { eq: () => false }, selection: { eq: () => false } });
+        vi.advanceTimersByTime(1000);
+
+        // Resolve first invoke with empty string
+        resolveInvoke!('   ');
+        await Promise.resolve();
+
+        // Dispatch should not have set ghost text
+        expect(currentView.dispatch).not.toHaveBeenCalled();
+      });
+
       it('destroys and cleans up timer', () => {
         const viewObj = plugin.spec.view({});
         expect(() => viewObj.destroy()).not.toThrow();

@@ -161,6 +161,20 @@ describe('useSchemaEditorMain', () => {
     // 6. trigger-schema-save event with null detail
     document.dispatchEvent(new CustomEvent('ww:trigger-schema-save', { detail: null }));
 
+    // 7. Save schema with sec without items (sec.items is undefined) and empty schema name
+    const mainNoItems = useSchemaEditorMain({ project: 'p1' }, emit);
+    mainNoItems.schema.value = {
+      name: '',
+      sections: [{ id: 'sec_no_items', title: 'No Items' }], // items is undefined
+    } as any;
+    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce(undefined as any);
+    await mainNoItems.saveSchema();
+    expect(api.saveEntitySchema).toHaveBeenCalledWith(
+      'p1',
+      expect.objectContaining({ type_name: '' }),
+      expect.anything()
+    );
+
     wrapper2.unmount();
   });
 });

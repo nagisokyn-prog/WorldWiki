@@ -58,5 +58,36 @@ describe('useCalendarHolidays', () => {
     hook.moveItem(0, -1);
     hook.moveItem(0, 10);
   });
+
+  it('subscribes to settings onChange onMounted and updates wheelHorizontal', async () => {
+    const { mount } = await import('@vue/test-utils');
+    const { defineComponent } = await import('vue');
+
+    let cbOnChange: any;
+    const { settingsService } = await import('@worldwiki/components');
+    vi.mocked(settingsService.onChange).mockImplementation((cb: any) => {
+      cbOnChange = cb;
+    });
+
+    let hookInstance: any;
+    const TestComp = defineComponent({
+      props: ['modelValue'],
+      setup(p) {
+        hookInstance = useCalendarHolidays(p as any);
+        return { ...hookInstance };
+      },
+      template: '<div></div>',
+    });
+
+    const wrapper = mount(TestComp, { props });
+    expect(hookInstance.wheelHorizontal.value).toBe(true);
+
+    if (cbOnChange) {
+      cbOnChange({ dropdowns: { wheelOrientation: 'vertical' } });
+      expect(hookInstance.wheelHorizontal.value).toBe(false);
+    }
+
+    wrapper.unmount();
+  });
 });
 

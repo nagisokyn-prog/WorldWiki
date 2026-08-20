@@ -46,5 +46,10 @@ describe('useCalendarMonths', () => {
 
     hook.removeMonth(0);
     expect(props.modelValue.месяцы.length).toBe(1);
+
+    // addMonth when array already exists
+    hook.addMonth();
+    expect(props.modelValue.месяцы.length).toBe(2);
+    expect(props.modelValue.месяцы[1].название).toBe('Месяц 2');
   });
 });

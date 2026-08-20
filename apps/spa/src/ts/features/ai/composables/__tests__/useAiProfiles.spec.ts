@@ -31,6 +31,21 @@ describe('useAiProfiles', () => {
       expect(activeProfile.value?.name).toBe('GPT-4o');
     });
 
+    it('loads profiles and sets first profile when none is active', async () => {
+      const mockProfiles = [
+        { id: 'p1', name: 'Claude Sonnet', is_active: false },
+        { id: 'p2', name: 'GPT-4o', is_active: false },
+      ];
+      vi.mocked(aiProfilesApi.getProfiles).mockResolvedValue(mockProfiles as any);
+
+      const { profiles, activeProfileId, activeProfile, loadProfiles } = useAiProfiles('proj_1');
+      await loadProfiles();
+
+      expect(profiles.value).toEqual(mockProfiles);
+      expect(activeProfileId.value).toBe('p1');
+      expect(activeProfile.value?.name).toBe('Claude Sonnet');
+    });
+
     it('creates default profile when list is empty', async () => {
       vi.mocked(aiProfilesApi.getProfiles).mockResolvedValue([]);
 

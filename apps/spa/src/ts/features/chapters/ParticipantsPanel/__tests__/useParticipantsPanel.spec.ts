@@ -127,4 +127,32 @@ describe('useParticipantsPanel', () => {
     expect(panel.getIcon('location')).toBe('🌍');
     expect(panel.getIcon('unknown')).toBe('📌');
   });
+
+  it('handles loadEntitiesForType with cache and API rejection', async () => {
+    vi.mocked(api.getEntities).mockRejectedValueOnce(new Error('Fetch failed'));
+    const panel = useParticipantsPanel(props, emit);
+
+    panel.newType.value = 'organization';
+    await panel.loadEntitiesForType();
+    expect(panel.entities.value).toEqual([]);
+
+    // Call again - uses cache (branch line 27)
+    await panel.loadEntitiesForType();
+    expect(panel.entities.value).toEqual([]);
+  });
+
+  it('handles resolveEntityName with edge cases in searchByNameKey', () => {
+    const panel = useParticipantsPanel(props, emit);
+    panel.entityCache.value = {
+      character: [
+        { id: '10', name: '   ' }, // empty whitespace name
+        { id: '11', nested: { name: null, sub: { title: 'Deep Title' } } }, // deep nested name
+        { id: '12', nonObj: 123 }, // no name keys
+      ],
+    };
+
+    expect(panel.resolveEntityName('10', 'character')).toBe('Без названия');
+    expect(panel.resolveEntityName('11', 'character')).toBe('Deep Title');
+    expect(panel.resolveEntityName('12', 'character')).toBe('Без названия');
+  });
 });

@@ -77,7 +77,8 @@ describe('useEntityHelpers', () => {
   it('resolves template with container fields, template lookup, overrides, and missing template', () => {
     const helpers = useEntityHelpers(formData, config);
 
-    // Template lookup with overrides
+    // Template lookup with overrides (and un-overridden field for line 85)
+    config.value.templates!.roleTpl.fields!.push({ class: 'unmodified', label: 'Keep As Is' });
     const container = {
       template: 'roleTpl',
       fieldOverrides: {
@@ -86,11 +87,12 @@ describe('useEntityHelpers', () => {
       },
     };
     const resolved = helpers.getResolvedTemplate(container);
-    expect(resolved?.fields?.length).toBe(1);
+    expect(resolved?.fields?.length).toBe(2);
     expect(resolved?.fields?.[0]).toEqual({
       class: 'role',
       label: 'Primary Role',
     });
+    expect(resolved?.fields?.[1]?.class).toBe('unmodified');
 
     // Container with direct fields and no template
     const directContainer = {

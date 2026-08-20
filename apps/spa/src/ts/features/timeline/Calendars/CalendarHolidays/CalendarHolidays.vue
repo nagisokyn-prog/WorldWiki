@@ -1,21 +1,20 @@
 <template>
   <div class="calendar-section">
-    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
-      <h4 style="margin: 0;">🎉 Праздники</h4>
-      <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
+    <div class="section-header holidays-section-header" @click="isCollapsed = !isCollapsed">
+      <h4 class="m-0">🎉 Праздники</h4>
+      <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" style="margin-top: 12px;">
+    <div v-show="!isCollapsed" class="mt-3">
       <div v-auto-animate class="item-list">
-        <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row" style="display: flex; gap: 12px; align-items: center; width: 100%;">
+        <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row holiday-row-wrap">
           <input
             v-model="holiday.название"
             type="text"
-            class="item-name interactive-el"
+            class="item-name holiday-name-input interactive-el"
             placeholder="Название праздника"
-            style="flex: 1;"
           />
-          <div style="display: flex; gap: 12px; align-items: center; flex: 2;">
+          <div class="holiday-dates-wrap">
             <XboxWheel
               v-model.number="holiday.дата_начала.месяц"
               :horizontal="wheelHorizontal"
@@ -25,10 +24,10 @@
                   label: m.название,
                 }))
               "
-              style="flex: 1; min-width: 0;"
+              class="holiday-wheel-select"
             >
             </XboxWheel>
-              <input
+            <input
               v-model.number="holiday.дата_начала.день"
               type="number"
               min="1"
@@ -39,8 +38,7 @@
                   holiday.дата_начала.месяц,
                 )
               "
-              style="width: 60px"
-              class="interactive-el"
+              class="holiday-day-input interactive-el"
             />
             <span v-if="holiday.дата_конца">—</span>
             <XboxWheel
@@ -53,7 +51,7 @@
                   label: m.название,
                 }))
               "
-              style="flex: 1; min-width: 0;"
+              class="holiday-wheel-select"
             >
             </XboxWheel>
             <input
@@ -68,8 +66,7 @@
                   holiday.дата_конца.месяц,
                 )
               "
-              style="width: 60px"
-              class="interactive-el"
+              class="holiday-day-input interactive-el"
             />
           </div>
           <div class="item-actions">
@@ -112,3 +109,6 @@ const props = defineProps<{
 
 const { isCollapsed, wheelHorizontal, getDaysInMonth, moveItem, addHoliday, removeHoliday } = useCalendarHolidays(props);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarHolidays.css"></style>
+

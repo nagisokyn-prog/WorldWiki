@@ -25,6 +25,32 @@
   font-size: 12px;
   color: var(--text-muted);
 }
+.hotkeys-header-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.hotkeys-grid-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.form-group-fixed-type {
+  width: 300px;
+  flex-shrink: 0;
+}
+.genres-card-content {
+  padding: 12px;
+}
+.header-btn-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: inherit;
+}
+
 
 /* ===== Layout ===== */
 .app-container {

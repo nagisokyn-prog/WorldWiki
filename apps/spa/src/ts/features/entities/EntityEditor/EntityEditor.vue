@@ -371,5 +371,4 @@ defineExpose({
 });
 </script>
 
-<style scoped src="@worldwiki/resources/styles/modules/entity-editor.css"></style>
 <style scoped src="@worldwiki/resources/styles/features/entities/EntityEditor.css"></style>

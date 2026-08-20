@@ -1,0 +1,96 @@
+.calendar-section {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.holidays-section-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.item-row {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 6px;
+}
+.holiday-row-wrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+.holiday-name-input {
+  flex: 1;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+.holiday-name-input:hover,
+.holiday-name-input:focus {
+  border-color: var(--accent);
+  background: rgba(0, 0, 0, 0.3);
+}
+.holiday-dates-wrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 2;
+}
+.holiday-wheel-select {
+  flex: 1;
+  min-width: 0;
+}
+.holiday-day-input {
+  width: 60px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-align: center;
+}
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+.btn-icon:hover:not(:disabled) {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.1);
+}
+.btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.btn-add {
+  width: 100%;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border-color);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+.btn-add:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent);
+}

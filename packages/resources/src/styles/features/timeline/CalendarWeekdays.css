@@ -1,0 +1,72 @@
+.calendar-section {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.weekdays-section-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.item-row {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px 10px;
+  border-radius: 6px;
+  align-items: center;
+}
+.weekday-input {
+  max-width: 140px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+.weekday-input:hover,
+.weekday-input:focus {
+  border-color: var(--accent);
+  background: rgba(0, 0, 0, 0.3);
+}
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+.btn-icon:hover:not(:disabled) {
+  color: var(--text-color);
+  background: rgba(255, 255, 255, 0.1);
+}
+.btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.btn-add {
+  width: 100%;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed var(--border-color);
+  color: var(--text-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+.btn-add:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent);
+}

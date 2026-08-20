@@ -5,26 +5,26 @@
     <div v-auto-animate class="timeline-events-list">
       <div
         v-if="!project"
-        style="color: #e74c3c; font-size: 12px; padding: 10px; text-align: center; border: 1px dashed var(--border-color); border-radius: 8px;"
+        class="calendar-warning-box"
       >
         ⚠️ Пожалуйста, введите название произведения выше, чтобы создавать календари.
       </div>
       <div
         v-else-if="calendars.length === 0"
-        style="color: var(--text-muted); font-size: 12px; padding: 10px"
+        class="calendar-empty-box"
       >
         Нет календарей в проекте. Создайте первый календарь!
       </div>
       
       <div v-for="(cal, idx) in calendars" :key="cal.id || idx" class="timeline-event-item">
-        <div class="event-header" style="cursor: pointer;" @click="toggleExpand(idx)">
+        <div class="event-header cursor-pointer" @click="toggleExpand(idx)">
           <div class="header-left">
             <span class="expand-icon">{{ isExpanded(idx) ? '▼' : '▶' }}</span>
             <span class="event-title">{{ cal.data?.название || 'Новый календарь' }}</span>
-            <span v-if="cal.is_master" class="badge-default" style="margin-left: 8px; font-size: 10px; background: #e67e22; color: white; padding: 2px 6px; border-radius: 4px;">🌍 Календарь Мира</span>
-            <span v-else-if="cal.is_default" class="badge-default" style="margin-left: 8px; font-size: 10px; background: var(--accent); color: white; padding: 2px 6px; border-radius: 4px;">По умолчанию</span>
+            <span v-if="cal.is_master" class="badge-master">🌍 Календарь Мира</span>
+            <span v-else-if="cal.is_default" class="badge-default-accent">По умолчанию</span>
           </div>
-          <div style="display: flex; gap: 8px;">
+          <div class="flex gap-2">
             <button type="button" class="btn-icon interactive-el" title="Сделать основным" :style="{ opacity: cal.is_default ? 1 : 0.5 }" @click.stop="setDefault(idx)">🌟</button>
             <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(idx)">💾</button>
             <button v-if="!cal.is_master" type="button" class="delete-btn" @click.stop="removeCalendar(idx)">🗑️</button>
@@ -68,7 +68,7 @@
         </div>
       </div>
       
-      <button v-if="project" type="button" class="glass-btn btn-add-event interactive-el" style="width: 100%; justify-content: center; margin-top: 10px;" @click.prevent="addCalendar">
+      <button v-if="project" type="button" class="glass-btn btn-add-event btn-add-calendar-full interactive-el" @click.prevent="addCalendar">
         <i class="fas fa-plus"></i> Создать новый календарь
       </button>
     </div>

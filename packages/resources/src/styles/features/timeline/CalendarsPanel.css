@@ -53,12 +53,43 @@
     gap: 8px;
 }
 
-.expand-icon {
+.badge-master {
+    margin-left: 8px;
     font-size: 10px;
-    color: var(--text-muted);
-    width: 12px;
+    background: #e67e22;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.badge-default-accent {
+    margin-left: 8px;
+    font-size: 10px;
+    background: var(--accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.calendar-warning-box {
+    color: #e74c3c;
+    font-size: 12px;
+    padding: 10px;
     text-align: center;
-    display: inline-block;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+}
+
+.calendar-empty-box {
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 10px;
+}
+
+.btn-add-calendar-full {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 .calendar-settings-section {
@@ -67,6 +98,7 @@
     padding: 12px;
     border-radius: 8px;
 }
+
 
 .grid-2 {
     display: grid;

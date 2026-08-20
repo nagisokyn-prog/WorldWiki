@@ -9,10 +9,8 @@ import { VueQueryPlugin } from '@tanstack/vue-query';
 
 import '@worldwiki/resources/styles/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/glass-theme.css';
-import '@worldwiki/resources/styles/modules/settings.css';
-import '@worldwiki/resources/styles/new-ui-theme.css';
-import '@worldwiki/resources/styles/chapter-tree.css';
+import '@worldwiki/resources/styles/app.css';
+import '@worldwiki/resources/styles/glass-animations.css';
 
 import * as api from '../services/api.client';;
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
@@ -89,8 +87,8 @@ async function init() {
   app.component('EditorGroupPaneVue', EditorGroupPaneVue);
   app.component('CloudSyncModalVue', CloudSyncModalVue);
 
-  app.use(autoAnimatePlugin);
-  app.use(MotionPlugin);
+  app.use(autoAnimatePlugin as unknown as Plugin);
+  app.use(MotionPlugin as unknown as Plugin);
   setupGlass(app);
   app.use(i18n as unknown as Plugin).mount('#app');
 }

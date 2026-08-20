@@ -1,9 +1,9 @@
 <template>
-  <div v-if="calendar" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color);">
+  <div v-if="calendar" class="date-wheels-container">
     
     <!-- Эпоха -->
-    <div v-if="eras.length > 1" class="date-wheel-group" style="flex: 1; min-width: 120px;">
-      <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Эпоха</div>
+    <div v-if="eras.length > 1" class="date-wheel-group grow-sm">
+      <div class="date-wheel-label">Эпоха</div>
       <XboxWheel
         v-model="currentEraIdx" 
         :horizontal="wheelHorizontal"
@@ -14,16 +14,15 @@
     </div>
 
     <!-- Год -->
-    <div class="date-wheel-group" style="flex: 1; min-width: 90px;">
-      <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Год</div>
+    <div class="date-wheel-group grow-xs">
+      <div class="date-wheel-label">Год</div>
       <template v-if="yearInputMode">
         <input 
           v-model.number="currentYear" 
           type="number"
           :min="currentEra.год_начала" 
           :max="currentEra.год_конца"
-          class="input-base"
-          style="text-align: center; height: 44px; padding: 0; box-sizing: border-box;"
+          class="input-base year-input-wheel"
           @change="onYearChange"
         />
       </template>
@@ -39,8 +38,8 @@
     </div>
 
     <!-- Месяц -->
-    <div class="date-wheel-group" style="flex: 1.5; min-width: 140px;">
-      <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Месяц</div>
+    <div class="date-wheel-group grow-md">
+      <div class="date-wheel-label">Месяц</div>
       <XboxWheel
         v-model="currentMonthIdx" 
         :horizontal="wheelHorizontal"
@@ -51,8 +50,8 @@
     </div>
 
     <!-- День -->
-    <div class="date-wheel-group" style="flex: 0.8; min-width: 70px;">
-      <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">День</div>
+    <div class="date-wheel-group grow-mini">
+      <div class="date-wheel-label">День</div>
       <XboxWheel
         v-model="currentDay" 
         :horizontal="wheelHorizontal"
@@ -63,7 +62,7 @@
     </div>
 
   </div>
-  <div v-else style="padding: 10px; color: var(--text-muted); font-size: 12px;">Загрузка календаря...</div>
+  <div v-else class="loading-state">Загрузка календаря...</div>
 </template>
 
 <script setup lang="ts">

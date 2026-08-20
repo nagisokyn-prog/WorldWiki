@@ -1,6 +1,5 @@
 // Export generic CSS
-import './styles/new-ui-theme.css';
-import './styles/glass-theme.css';
-import './styles/glass-animations.css';
 import './styles/fonts.css';
+import './styles/font-awesome.min.css';
 import './styles/app.css';
+import './styles/glass-animations.css';

@@ -8,7 +8,7 @@
                 <h1>📚 World Wiki</h1>
                 <p>Выберите или создайте проект</p>
             </div>
-            <div class="header-actions" style="display:flex;gap:8px;align-items:center;">
+            <div class="header-actions flex gap-2 items-center">
                 <button
 class="glass-btn outline interactive-el" title="Загрузить из облака"
                     @click="openCloudSync('import')">
@@ -20,8 +20,7 @@ class="glass-btn outline interactive-el" title="Сохранить в облак
                     ☁️ Экспорт
                 </button>
                 <a
-href="settings.html" class="glass-btn outline interactive-el" title="Настройки"
-                    style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:inherit;">
+href="settings.html" class="glass-btn outline interactive-el header-btn-link" title="Настройки">
                     <i class="fas fa-cog"></i>
                 </a>
                 <button class="glass-btn primary interactive-el" @click="openCreateModal">
@@ -60,7 +59,7 @@ class="glass-btn outline" title="Удалить"
                 <!-- Пустое состояние -->
                 <div v-if="projects.length === 0" class="empty-state glass-card">
                     <div class="glass-card-bg"></div>
-                    <div class="glass-card-content" style="text-align: center;">
+                    <div class="glass-card-content text-center">
                         <div class="empty-icon">📁</div>
                         <h3>Нет проектов</h3>
                         <p>Создайте свой первый проект чтобы начать работу</p>
@@ -72,17 +71,15 @@ class="glass-btn outline" title="Удалить"
             </div>
 
             <!-- Hotkeys reminder -->
-            <div v-once class="hotkeys-reminder glass-card" style="margin-top: 32px;">
+            <div v-once class="hotkeys-reminder glass-card mt-8">
                 <div class="glass-card-bg"></div>
-                <div class="glass-card-content" style="padding: 20px 24px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-                        <span style="font-size: 18px;">⌨️</span>
-                        <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: var(--text-main);">Горячие
-                            клавиши в редакторе</h3>
-                        <span style="font-size: 11px; color: var(--text-muted); margin-left: auto;">Ctrl+Shift+P —
-                            открыть список всех команд</span>
+                <div class="glass-card-content px-6 py-5">
+                    <div class="hotkeys-header-row">
+                        <span class="text-lg">⌨️</span>
+                        <h3 class="m-0 text-sm font-semibold text-main">Горячие клавиши в редакторе</h3>
+                        <span class="text-xs text-muted ml-auto">Ctrl+Shift+P — открыть список всех команд</span>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px;">
+                    <div class="hotkeys-grid-cols">
                         <div class="hk-item"><kbd>Ctrl+P</kbd> <span>Быстрое открытие</span></div>
                         <div class="hk-item"><kbd>Ctrl+Shift+P</kbd> <span>Командная панель</span></div>
                         <div class="hk-item"><kbd>Ctrl+S</kbd> <span>Сохранить всё</span></div>
@@ -118,7 +115,7 @@ id="projectName" v-model="formData.name" type="text" class="glass-input"
                                 <small class="glass-label">Название вашего произведения</small>
                             </div>
 
-                            <div class="form-group" style="width: 300px; flex-shrink: 0;">
+                            <div class="form-group form-group-fixed-type">
                                 <label class="glass-label">Тип произведения</label>
                                 <vanilla-xbox-wheel
 v-model="formData.type"
@@ -130,7 +127,7 @@ v-model="formData.type"
                             <label class="glass-label">Жанры произведения</label>
                             <div class="genres-grid glass-card">
                                 <div class="glass-card-bg"></div>
-                                <div class="glass-card-content" style="padding: 12px;">
+                                <div class="glass-card-content genres-card-content">
                                     <div class="genres-grid-inner">
                                         <label v-for="genre in genres" :key="genre.value" class="genre-checkbox">
                                             <input v-model="formData.genres" type="checkbox" :value="genre.value">

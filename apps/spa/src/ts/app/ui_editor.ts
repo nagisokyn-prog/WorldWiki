@@ -7,8 +7,7 @@ import { createApp, ref, onMounted } from 'vue';
 
 import '@worldwiki/resources/styles/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/glass-theme.css';
-import '@worldwiki/resources/styles/new-ui-theme.css';
+import '@worldwiki/resources/styles/app.css';
 
 import { settingsService, i18n } from '@worldwiki/components';
 import type { Plugin } from 'vue';

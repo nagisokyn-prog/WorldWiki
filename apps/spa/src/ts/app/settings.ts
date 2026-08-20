@@ -7,9 +7,8 @@ import { createApp, type Plugin } from 'vue';
 
 import '@worldwiki/resources/styles/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/glass-theme.css';
+import '@worldwiki/resources/styles/app.css';
 import '@worldwiki/resources/styles/glass-animations.css';
-import '@worldwiki/resources/styles/modules/settings.css';
 
 
 
@@ -29,7 +28,7 @@ async function init() {
   
   // Монтируем Vue компонент Settings
   const app = createApp(Settings);
-  app.use(autoAnimatePlugin);
+  app.use(autoAnimatePlugin as unknown as Plugin);
   app.use(i18n as unknown as Plugin).mount('#settingsContent');
   console.log('[settings] Settings component mounted');
   

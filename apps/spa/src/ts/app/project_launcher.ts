@@ -8,10 +8,9 @@ import * as Vue from 'vue';
 
 import '@worldwiki/resources/styles/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/new-ui-theme.css';
-import '@worldwiki/resources/styles/glass-theme.css';
+import '@worldwiki/resources/styles/app.css';
 import '@worldwiki/resources/styles/glass-animations.css';
-import '@worldwiki/resources/styles/project_launcher.css';
+import '@worldwiki/resources/styles/features/shell/ProjectLauncher.css';
 import '@worldwiki/resources/styles/modules/settings.css';
 
 import { createApp, ref, computed, onMounted, shallowRef } from 'vue';
@@ -382,8 +381,8 @@ app.component('CloudSyncModal', CloudSyncModalVue);
 // Get the HTML template content and use it as Vue template
 const appEl = document.getElementById('app');
 if (appEl) {
-  app.use(autoAnimatePlugin);
-  app.use(MotionPlugin);
+  app.use(autoAnimatePlugin as unknown as Plugin);
+  app.use(MotionPlugin as unknown as Plugin);
   app.mount('#app');
 }
 

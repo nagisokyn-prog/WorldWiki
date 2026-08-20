@@ -4,9 +4,17 @@ import type { CalendarRecord } from '../../../stores/calendar.store';
 import type { CalendarData } from '../../../services/Calendars/calendar.types';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
 
-export function useCalendarsPanel(props: { project: string }) {
+export interface PanelCalendarItem {
+    id?: string;
+    is_default?: boolean;
+    is_master?: boolean;
+    data: CalendarData;
+    [key: string]: unknown;
+}
+
+export function useCalendarsPanel(props: { project?: string }) {
     const project = computed(() => props.project || '');
-    const calendars = ref<CalendarRecord[]>([]);
+    const calendars = ref<PanelCalendarItem[]>([]);
     const expandedCalendars = ref<Set<number>>(new Set());
 
     const isExpanded = (idx: number) => expandedCalendars.value.has(idx);
@@ -37,14 +45,14 @@ export function useCalendarsPanel(props: { project: string }) {
                     id: c.id,
                     is_default: c.is_default,
                     is_master: c.is_master || (c.data && (c.data as Record<string, unknown>).is_master as boolean),
-                    data: c.data || (c as unknown as CalendarRecord['data'])
+                    data: (c.data || c) as CalendarData
                 }));
             } else {
                 calendars.value = list.map((c: CalendarRecord) => ({
                     id: c.id,
                     is_default: c.is_default,
                     is_master: c.is_master || (c.data && (c.data as Record<string, unknown>).is_master as boolean),
-                    data: c.data || (c as unknown as CalendarRecord['data'])
+                    data: (c.data || c) as CalendarData
                 }));
             }
 
@@ -83,11 +91,11 @@ export function useCalendarsPanel(props: { project: string }) {
 
         const cal = calendars.value[idx];
         const payload: CalendarData & { [key: string]: unknown } = {
-            название: 'Календарь',
             ...cal.data,
+            название: cal.data.название || 'Календарь',
             is_default: cal.is_default,
             id: cal.id?.startsWith('temp_') ? undefined : cal.id
-        } as CalendarData & { [key: string]: unknown };
+        };
 
         try {
             const success = await useCalendarStore().saveCalendar(project.value, payload);

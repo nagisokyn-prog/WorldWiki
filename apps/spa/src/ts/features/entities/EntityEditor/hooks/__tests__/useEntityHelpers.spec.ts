@@ -104,6 +104,18 @@ describe('useEntityHelpers', () => {
     // Missing template in config
     const unknownTpl = { template: 'unknownTpl' };
     expect(helpers.getResolvedTemplate(unknownTpl)).toBeNull();
+
+    // Template without fields and field without class (covers lines 76, 80)
+    config.value.templates!.emptyTpl = {};
+    const resEmpty = helpers.getResolvedTemplate({ template: 'emptyTpl', fieldOverrides: { f1: { hidden: true } } });
+    expect(resEmpty?.fields).toEqual([]);
+
+    config.value.templates!.noClassTpl = { fields: [{ label: 'No Class' } as any] };
+    const resNoClass = helpers.getResolvedTemplate({ template: 'noClassTpl', fieldOverrides: { f1: { hidden: true } } });
+    expect(resNoClass?.fields?.length).toBe(1);
+
+    // Container with neither fields nor template (covers line 71 else)
+    expect(helpers.getResolvedTemplate({} as any)).toBeNull();
   });
 
   it('identifies atomic fields, null and undefined', () => {
@@ -115,5 +127,12 @@ describe('useEntityHelpers', () => {
     expect(helpers.isAtomicField({ type: 'dynamic' })).toBe(false);
     expect(helpers.isAtomicField(null)).toBe(false);
     expect(helpers.isAtomicField(undefined)).toBe(false);
+
+    // Edge cases for getProp & setProp (lines 26, 48-52)
+    expect(helpers.getProp(123)).toBe('');
+    helpers.setProp(123, 'ignored');
+    helpers.setProp({}, 123, 'ignored');
+    helpers.setProp(null, 'name', 'King Arthur');
+    expect(formData.value.name).toBe('King Arthur');
   });
 });

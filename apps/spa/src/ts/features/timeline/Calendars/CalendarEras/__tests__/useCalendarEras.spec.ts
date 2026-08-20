@@ -46,5 +46,9 @@ describe('useCalendarEras', () => {
 
     hook.removeEra(0);
     expect(props.modelValue.эпохи.length).toBe(1);
+
+    // addEra on existing array (covers line 20 false branch)
+    hook.addEra();
+    expect(props.modelValue.эпохи.length).toBe(2);
   });
 });

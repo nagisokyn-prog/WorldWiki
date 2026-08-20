@@ -25,6 +25,9 @@ describe('useCalendarSeasons', () => {
     // Remove on undefined
     hook.removeSeason(0);
 
+    // moveItem on undefined seasons (covers line 13 if (!arr) return)
+    hook.moveItem(0, 1);
+
     // Add on undefined seasons and months
     hook.addSeason();
     expect(emptyProps.modelValue.сезоны.length).toBe(1);

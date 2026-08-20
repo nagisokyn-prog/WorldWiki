@@ -58,12 +58,14 @@ describe('useGlobalCalendarWidget', () => {
   it('computes master date and local date with edge cases', async () => {
     const widget = useGlobalCalendarWidget(props);
 
-    // Initial state without loaded master calendar
+    // Initial state without loaded master calendar (covers line 33)
+    expect(widget.currentAbsoluteMinute.value).toBe(0);
     expect(widget.formattedMasterDate.value).toBe('');
     expect(widget.formattedLocalDate.value).toBe('');
 
     // Master calendar without data
     widget.masterCalendar.value = { id: 'cal_master', is_master: true };
+    expect(widget.currentAbsoluteMinute.value).toBe(0);
     expect(widget.formattedMasterDate.value).toBe('');
 
     // Setup master calendar and local calendars

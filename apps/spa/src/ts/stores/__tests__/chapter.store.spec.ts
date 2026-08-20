@@ -76,9 +76,9 @@ describe('chapter.store', () => {
   describe('openChapter & Computed relations', () => {
     it('opens existing chapter and populates currentChapterNode, arc, volume via arc', async () => {
       store.hierarchy = {
-        volumes: [{ id: 'vol_1', title: 'Volume 1' }],
-        arcs: [{ id: 'arc_1', title: 'Arc 1', volume_id: 'vol_1' }],
-        chapters: [{ id: 'ch_1', title: 'Chapter 1', arc_id: 'arc_1' }],
+        volumes: [{ id: 'vol_1', title: 'Volume 1' }] as any,
+        arcs: [{ id: 'arc_1', title: 'Arc 1', volume_id: 'vol_1' }] as any,
+        chapters: [{ id: 'ch_1', title: 'Chapter 1', arc_id: 'arc_1' }] as any,
       };
 
       const fullChapter = {
@@ -101,7 +101,7 @@ describe('chapter.store', () => {
 
     it('saves unsaved changes prior to opening another chapter', async () => {
       store.hasUnsavedChanges = true;
-      store.currentChapter = { id: 'ch_old', title: 'Old', content: '', participants: [] };
+      store.currentChapter = { id: 'ch_old', title: 'Old', content: '', participants: [] } as any;
       vi.mocked(chapterService.save).mockResolvedValue({} as any);
       vi.mocked(chapterService.get).mockResolvedValue({ id: 'ch_new', title: 'New', content: '', participants: [] } as any);
 
@@ -137,9 +137,9 @@ describe('chapter.store', () => {
         title: 'Chapter 1',
         content: 'Mentions Hero here',
         participants: [],
-      };
+      } as any;
       store.currentChapterId = 'ch_1';
-      store.chapters = [{ id: 'ch_1', title: 'Old' }];
+      store.chapters = [{ id: 'ch_1', title: 'Old' }] as any;
 
       const emitSpy = vi.fn();
       const res = await store.saveChapter('project_1', emitSpy);
@@ -152,7 +152,7 @@ describe('chapter.store', () => {
     });
 
     it('handles save error and returns false', async () => {
-      store.currentChapter = { id: 'ch_1', title: 'Ch 1', content: '', participants: [] };
+      store.currentChapter = { id: 'ch_1', title: 'Ch 1', content: '', participants: [] } as any;
       vi.mocked(chapterService.save).mockRejectedValue(new Error('Save failed'));
 
       const res = await store.saveChapter('project_1');
@@ -189,7 +189,7 @@ describe('chapter.store', () => {
           { id: 'ch_1', title: 'Глава 1', arc_id: 'arc_1' },
           { id: 'ch_2', title: 'Глава 2', arc_id: 'arc_1' },
         ],
-      };
+      } as any;
 
       vi.mocked(chapterService.save).mockResolvedValue('chapters:new_ch_id' as any);
       vi.mocked(chapterService.get).mockResolvedValue({ id: 'new_ch_id', title: 'Глава 3' } as any);
@@ -197,7 +197,7 @@ describe('chapter.store', () => {
         volumes: [],
         arcs: [],
         chapters: [{ id: 'new_ch_id', title: 'Глава 3' }],
-      });
+      } as any);
 
       const newCh = await store.createNewChapter('project_1', 'arc_1');
 
@@ -213,10 +213,10 @@ describe('chapter.store', () => {
         arcs: [],
         chapters: [
           { id: 'ch_1', title: 'Глава 1', volume_id: 'vol_1' },
-          { id: 'ch_2', title: 'Глава 2', volume_id: 'vol_1', arc_id: 'arc_inside' }, // has arc_id, filtered out
-          { id: 'ch_3', title: 'Глава 9', volume_id: 'vol_other' },                   // other volume, hits line 163 return false
+          { id: 'ch_2', title: 'Глава 2', volume_id: 'vol_1', arc_id: 'arc_inside' },
+          { id: 'ch_3', title: 'Глава 9', volume_id: 'vol_other' },
         ],
-      };
+      } as any;
 
       vi.mocked(chapterService.save).mockResolvedValue('chapters:new_vol_ch' as any);
       vi.mocked(chapterService.get).mockResolvedValue({ id: 'new_vol_ch', title: 'Глава 2' } as any);
@@ -224,7 +224,7 @@ describe('chapter.store', () => {
         volumes: [],
         arcs: [],
         chapters: [{ id: 'new_vol_ch', title: 'Глава 2' }],
-      });
+      } as any);
 
       const newCh = await store.createNewChapter('project_1', undefined, 'vol_1');
       expect(newCh).toBeDefined();
@@ -235,25 +235,25 @@ describe('chapter.store', () => {
   describe('onRenameChapter & deleteChapter', () => {
     it('renames chapter and updates active state if matching', async () => {
       store.currentChapterId = 'ch_1';
-      store.currentChapter = { id: 'ch_1', title: 'Old' };
+      store.currentChapter = { id: 'ch_1', title: 'Old' } as any;
 
-      await store.onRenameChapter('project_1', { id: 'ch_1', title: 'Old' }, 'New Title');
+      await store.onRenameChapter('project_1', { id: 'ch_1', title: 'Old' } as any, 'New Title');
 
       expect(chapterService.save).toHaveBeenCalledWith('project_1', { id: 'ch_1', title: 'New Title' });
-      expect(store.currentChapter.title).toBe('New Title');
+      expect(store.currentChapter?.title).toBe('New Title');
     });
 
     it('renames chapter and does not update active state if not matching', async () => {
       store.currentChapterId = 'ch_other';
-      store.currentChapter = { id: 'ch_other', title: 'Other' };
+      store.currentChapter = { id: 'ch_other', title: 'Other' } as any;
 
-      await store.onRenameChapter('project_1', { id: 'ch_1', title: 'Old' }, 'New Title');
-      expect(store.currentChapter.title).toBe('Other');
+      await store.onRenameChapter('project_1', { id: 'ch_1', title: 'Old' } as any, 'New Title');
+      expect(store.currentChapter?.title).toBe('Other');
     });
 
     it('deletes chapter and resets currentChapter if active', async () => {
       store.currentChapterId = 'ch_1';
-      store.currentChapter = { id: 'ch_1' };
+      store.currentChapter = { id: 'ch_1' } as any;
 
       await store.deleteChapter('project_1', 'ch_1');
 
@@ -264,7 +264,7 @@ describe('chapter.store', () => {
 
     it('deletes chapter and does not reset currentChapter if not active', async () => {
       store.currentChapterId = 'ch_active';
-      store.currentChapter = { id: 'ch_active' };
+      store.currentChapter = { id: 'ch_active' } as any;
 
       await store.deleteChapter('project_1', 'ch_different');
 
@@ -276,9 +276,9 @@ describe('chapter.store', () => {
   describe('Additional branch edge cases', () => {
     it('handles currentVolume directly via chapter.volume_id and volume not found', () => {
       store.hierarchy = {
-        volumes: [{ id: 'vol_direct', title: 'Direct Volume' }],
+        volumes: [{ id: 'vol_direct', title: 'Direct Volume' }] as any,
         arcs: [],
-        chapters: [{ id: 'ch_direct', title: 'Direct Chapter', volume_id: 'vol_direct' }],
+        chapters: [{ id: 'ch_direct', title: 'Direct Chapter', volume_id: 'vol_direct' }] as any,
       };
       store.currentChapterId = 'ch_direct';
       expect(store.currentVolume?.id).toBe('vol_direct');
@@ -294,7 +294,7 @@ describe('chapter.store', () => {
       expect(await store.saveChapter('project_1')).toBe(false);
 
       // 2. isSaving already true
-      store.currentChapter = { id: 'ch_1', content: '', participants: [] };
+      store.currentChapter = { id: 'ch_1', content: '', participants: [] } as any;
       store.isSaving = true;
       expect(await store.saveChapter('project_1')).toBe(false);
       store.isSaving = false;
@@ -308,13 +308,13 @@ describe('chapter.store', () => {
         id: 'ch_1',
         content: 'Mentions char_1',
         participants: [{ id: 'char_1', type: 'character' }],
-      };
+      } as any;
       store.chapters = []; // listIdx === -1
       vi.mocked(chapterService.save).mockResolvedValue({} as any);
 
       const res = await store.saveChapter('project_1'); // no emitFn
       expect(res).toBe(true);
-      expect(store.currentChapter.participants.length).toBe(1);
+      expect(store.currentChapter?.participants?.length).toBe(1);
     });
 
     it('handles createNewChapter with arcId and volumeId, volumeId only, and calendar failure edge cases', async () => {
@@ -322,22 +322,22 @@ describe('chapter.store', () => {
 
       // 1. Both arcId and volumeId passed
       store.hierarchy = {
-        volumes: [{ id: 'vol_1' }],
-        arcs: [{ id: 'arc_1', volume_id: 'vol_1' }],
-        chapters: [{ id: 'ch_1', arc_id: 'arc_1', volume_id: 'vol_1', title: 'Глава 1' }],
+        volumes: [{ id: 'vol_1' }] as any,
+        arcs: [{ id: 'arc_1', volume_id: 'vol_1' }] as any,
+        chapters: [{ id: 'ch_1', arc_id: 'arc_1', volume_id: 'vol_1', title: 'Глава 1' }] as any,
       };
       vi.mocked(chapterService.save).mockResolvedValue('chapters:new_ch_2' as any);
       vi.mocked(chapterService.get).mockResolvedValue({ id: 'new_ch_2', title: 'Глава 2' } as any);
-      vi.mocked(api.getChapterHierarchy).mockResolvedValue({ volumes: [], arcs: [], chapters: [] });
+      vi.mocked(api.getChapterHierarchy).mockResolvedValue({ volumes: [], arcs: [], chapters: [] } as any);
 
       await store.createNewChapter('project_1', 'arc_1', 'vol_1');
       expect(api.assignChapter).toHaveBeenCalledWith('project_1', 'new_ch_id', 'arc_1', 'vol_1');
 
       // 2. Only volumeId passed
       store.hierarchy = {
-        volumes: [{ id: 'vol_2' }],
+        volumes: [{ id: 'vol_2' }] as any,
         arcs: [],
-        chapters: [{ id: 'ch_v', volume_id: 'vol_2', title: 'Глава 1' }],
+        chapters: [{ id: 'ch_v', volume_id: 'vol_2', title: 'Глава 1' }] as any,
       };
       await store.createNewChapter('project_1', undefined, 'vol_2');
       expect(api.assignChapter).toHaveBeenCalledWith('project_1', 'new_ch_id', null, 'vol_2');

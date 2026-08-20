@@ -42,17 +42,17 @@ export function usePlanningPanel(props: PlanningPanelProps) {
             return;
         }
         try {
-            items.value = await api.getPlans(props.project).then(plans => 
-                plans.filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId)
-                     .map(p => ({
-                         id: p.id || '',
-                         text: p.title || '',
-                         done: !!p.completed,
-                         sort_order: p.sort_order,
-                         indent: (p as { indent?: number }).indent || 0
-                     }))
-                     .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-            );
+            const plans = (await api.getPlans(props.project)) || [];
+            items.value = plans
+                .filter(p => p.parent_type === props.parentType && p.parent_ref === props.parentId)
+                .map(p => ({
+                    id: p.id || '',
+                    text: p.title || '',
+                    done: !!p.completed,
+                    sort_order: p.sort_order,
+                    indent: (p as { indent?: number }).indent || 0
+                }))
+                .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
         } catch (e) {
             console.error('Ошибка загрузки плана:', e);
             items.value = [];

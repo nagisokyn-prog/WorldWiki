@@ -43,5 +43,9 @@ describe('useCalendarWeekdays', () => {
 
     hook.removeDay(0);
     expect(props.modelValue.названия_дней_недели.length).toBe(1);
+
+    // updateDay on populated array (covers line 28)
+    hook.updateDay(0, 'Понедельник');
+    expect(props.modelValue.названия_дней_недели[0]).toBe('Понедельник');
   });
 });

@@ -150,6 +150,14 @@ describe('useTiptapFormatting', () => {
       formatting.cycleGlobalTag(0);
       expect(editor.value.view.dispatch).toHaveBeenCalled();
 
+      // semanticTag is empty string (covers line 84 falsy fallback)
+      editor.value.state.doc.descendants = (cb: any) => {
+        cb({ type: { name: 'paragraph' }, attrs: { semanticTag: '' } }, 0);
+      };
+      editor.value.view.dispatch.mockClear();
+      formatting.cycleGlobalTag(0);
+      expect(editor.value.view.dispatch).toHaveBeenCalled();
+
       // paragraph not found (pos === -1)
       editor.value.state.doc.descendants = (cb: any) => {
         cb({ type: { name: 'heading' }, attrs: {} }, 0);

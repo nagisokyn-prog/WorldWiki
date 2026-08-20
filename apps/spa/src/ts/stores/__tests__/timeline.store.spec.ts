@@ -393,5 +393,12 @@ describe('useTimelineStore', () => {
 
       expect(result).toHaveLength(0);
     });
+
+    it('deduplicates participants in legacy format', () => {
+      const text = '[Hero](...type=char&id=1...) and again [Hero](...type=char&id=1...)';
+      const result = store.parseParticipants(text);
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({ type: 'char', id: '1', name: 'Hero' });
+    });
   });
 });

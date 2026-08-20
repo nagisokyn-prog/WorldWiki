@@ -86,7 +86,15 @@ describe('calendar.store', () => {
     });
 
     it('handles loadCalendar error and returns null', async () => {
-      vi.mocked(api.getCalendars).mockRejectedValue(new Error('Load failure'));
+      const mockList = [
+        {
+          id: 'cal_err',
+          is_default: true,
+          is_master: true,
+          data: Object.freeze({ name: 'Frozen' }),
+        },
+      ];
+      vi.mocked(api.getCalendars).mockResolvedValueOnce(mockList as any);
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const cal = await store.loadCalendar('err_proj');
       expect(cal).toBeNull();

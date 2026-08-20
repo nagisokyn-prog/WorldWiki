@@ -135,6 +135,7 @@ describe('useTiptapSplitView', () => {
             ] as any,
             null as any,
             undefined as any,
+            { attrs: { some: 'attr' } } as any, // covers line 96 else when node.type is missing
             { type: 'orderedList' }, // no content, covers line 115
             { type: 'table' },       // no content, covers line 121
           ],

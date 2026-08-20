@@ -55,17 +55,24 @@ describe('packages/components app/settings.ts', () => {
     const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
 
     // Trigger save rejection
-    vi.spyOn(settingsService, 'saveSettings').mockRejectedValueOnce(new Error('Save failed'));
+    const saveSpy = vi.spyOn(settingsService, 'saveSettings').mockRejectedValueOnce(new Error('Save failed'));
     saveBtn.click();
     await vi.advanceTimersByTimeAsync(10);
 
     // Trigger successful save
-    vi.spyOn(settingsService, 'saveSettings').mockResolvedValueOnce(undefined as any);
+    saveSpy.mockResolvedValueOnce(undefined as any);
     saveBtn.click();
     await vi.advanceTimersByTimeAsync(10);
     expect(saveBtn.textContent).toBe('✅ Saved');
     await vi.advanceTimersByTimeAsync(2100);
     expect(saveBtn.textContent).toBe('Save');
+
+    // Trigger save when button is removed before resolving (covers line 41 else)
+    saveSpy.mockImplementationOnce(async () => {
+      saveBtn.remove();
+    });
+    saveBtn.click();
+    await vi.advanceTimersByTimeAsync(10);
   });
 });
 

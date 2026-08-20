@@ -10,6 +10,9 @@ describe('useSchemaTemplates', () => {
     expect(templates.isAtomicField({ type: 'tags' })).toBe(true);
     expect(templates.isAtomicField({ type: 'range' })).toBe(true);
     expect(templates.isAtomicField({ type: 'custom_module' })).toBe(false);
+    // Line 47: null & undefined checks
+    expect(templates.isAtomicField(null)).toBe(false);
+    expect(templates.isAtomicField(undefined)).toBe(false);
   });
 
   it('computes timeline and dynamic templates from uiEditorData', () => {

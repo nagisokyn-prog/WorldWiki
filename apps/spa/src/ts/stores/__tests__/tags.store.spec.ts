@@ -37,6 +37,12 @@ describe('tags.store', () => {
       await store.init('proj_1');
       expect(api.getTags).toHaveBeenCalledTimes(1);
     });
+
+    it('handles null return from api.getTags and defaults to empty array', async () => {
+      vi.mocked(api.getTags).mockResolvedValue(null as any);
+      await store.init('proj_null');
+      expect(store.globalTags).toEqual([]);
+    });
   });
 
   describe('createNewTag', () => {

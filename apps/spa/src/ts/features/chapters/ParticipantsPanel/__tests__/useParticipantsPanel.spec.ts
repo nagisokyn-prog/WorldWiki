@@ -133,6 +133,7 @@ describe('useParticipantsPanel', () => {
       { id: '10', name: '   ' }, // empty whitespace name
       { id: '11', nested: { name: null, sub: { title: 'Deep Title' } } }, // deep nested name
       { id: '12', nonObj: 123 }, // no name keys
+      { id: '13', emptyObj: null, deep: { nothing: 123 } }, // nested object returning null (covers lines 59, 69)
     ] as any);
 
     let panel: any;
@@ -150,6 +151,7 @@ describe('useParticipantsPanel', () => {
     expect(panel.resolveEntityName('10', 'character')).toBe('Без названия');
     expect(panel.resolveEntityName('11', 'character')).toBe('Deep Title');
     expect(panel.resolveEntityName('12', 'character')).toBe('Без названия');
+    expect(panel.resolveEntityName('13', 'character')).toBe('Без названия');
 
     wrapper.unmount();
 

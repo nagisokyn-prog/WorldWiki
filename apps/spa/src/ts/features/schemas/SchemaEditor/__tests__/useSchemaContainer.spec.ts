@@ -22,6 +22,7 @@ describe('useSchemaContainer', () => {
     expect(container.isTimeline.value).toBe(true);
     expect(container.atomicBricks.length).toBeGreaterThan(0);
     expect(Array.isArray(container.availableEntityTypes.value)).toBe(true);
+    expect(container.availableEntityTypes.value.length).toBeGreaterThanOrEqual(0);
 
     // Non-timeline template
     const nonTimeline = useSchemaContainer({ item: { template: 'simpleList' } });

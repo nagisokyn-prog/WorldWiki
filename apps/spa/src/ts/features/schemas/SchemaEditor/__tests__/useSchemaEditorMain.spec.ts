@@ -54,13 +54,28 @@ describe('useSchemaEditorMain', () => {
     vm.handleScroll({ target: { scrollTop: 80 } });
     expect(wrapper.emitted('scroll-change')).toBeDefined();
 
-    // Keydown toggle catalog
+    // Keydown toggle catalog (covers line 53 true and false)
     document.dispatchEvent(new KeyboardEvent('keydown', {
       ctrlKey: true,
       shiftKey: true,
       code: 'KeyB',
     }));
     expect(vm.showCatalog).toBe(false);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      shiftKey: true,
+      code: 'KeyB',
+    }));
+    expect(vm.showCatalog).toBe(true);
+
+    // Other keydown
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      shiftKey: true,
+      code: 'KeyX',
+    }));
+    expect(vm.showCatalog).toBe(true);
 
     // Global save event matching schemaType
     document.dispatchEvent(new CustomEvent('ww:trigger-schema-save', {

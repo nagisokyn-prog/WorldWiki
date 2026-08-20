@@ -30,6 +30,13 @@ describe('useSchemaHistory', () => {
 
     expect(history.schemaHistory.value.length).toBe(1);
     expect(history.schemaHistory.value[0].formattedDate).toBeDefined();
+
+    // With undefined entityType and null API return (covers line 48 fallbacks)
+    vi.mocked(api.getSchemaHistory).mockResolvedValueOnce(null as any);
+    const noTypeHistory = useSchemaHistory({ project: 'p1' }, schema, loadSchema);
+    await noTypeHistory.loadHistory();
+    expect(api.getSchemaHistory).toHaveBeenCalledWith('p1', '');
+    expect(noTypeHistory.schemaHistory.value).toEqual([]);
   });
 
   it('toggles history panel and pin', async () => {

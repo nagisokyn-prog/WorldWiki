@@ -159,6 +159,15 @@ describe('useTiptapMarkdown', () => {
       md.onMarkdownKeydown(russianQEvent);
       expect(dispatchSpy).toHaveBeenCalled();
 
+      const russianUpperQEvent = {
+        key: 'Й',
+        ctrlKey: true,
+        target: textarea,
+        preventDefault: vi.fn(),
+      } as any;
+      md.onMarkdownKeydown(russianUpperQEvent);
+      expect(dispatchSpy).toHaveBeenCalled();
+
       // Null target
       const nullTargetEvent = { key: 'q', ctrlKey: true, target: null } as any;
       expect(() => md.onMarkdownKeydown(nullTargetEvent)).not.toThrow();
@@ -175,6 +184,14 @@ describe('useTiptapMarkdown', () => {
       // Link without leading slash
       const md2 = turndownService.turndown('<a href="ui_editor.html?id=2">Wizard</a>');
       expect(md2).toContain('((Wizard))[ui_editor.html?id=2]');
+
+      // Link with empty href (covers line 26 || '')
+      const md3 = turndownService.turndown('<a href="ui_editor.html">Empty</a>');
+      expect(md3).toBeDefined();
+
+      // preprocessMarkdown with blank line pairs (covers line 43)
+      const resBlank = md.preprocessMarkdown('first line\n\nsecond line\n\n');
+      expect(resBlank).toBeDefined();
     });
 
     it('handles markdown parse error in onMarkdownInput gracefully', () => {

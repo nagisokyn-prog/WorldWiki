@@ -1,19 +1,66 @@
 import { computed, ref } from 'vue';
 import uiEditorData from '../../../../../public/struct/editor/ui_editor.json';
 
+export interface SchemaCustomField {
+    label?: string;
+    type?: string;
+    placeholder?: string;
+    sourceType?: string;
+    targetType?: string;
+    options?: Array<{ value: string; label: string }>;
+    [key: string]: unknown;
+}
+
+export interface SchemaTemplateField {
+    class: string;
+    label?: string;
+    type?: string;
+    placeholder?: string;
+    entityType?: string;
+    options?: Array<{ value: string; label: string }>;
+    [key: string]: unknown;
+}
+
+export interface SchemaDynamicContainer {
+    id: string;
+    title?: string;
+    emptyMessage?: string;
+    fields?: SchemaTemplateField[];
+    [key: string]: unknown;
+}
+
+export interface SchemaTemplateConfig {
+    isBidirectional?: boolean;
+    fields?: SchemaTemplateField[];
+    dynamicContainers?: SchemaDynamicContainer[];
+    [key: string]: unknown;
+}
+
+export interface SchemaFieldOverride {
+    hidden?: boolean;
+    label?: string;
+    placeholder?: string;
+    type?: string;
+    entityType?: string;
+    options?: Array<{ value: string; label: string }>;
+    [key: string]: unknown;
+}
+
 export interface SchemaContainerItem {
+    id?: string;
+    type?: string;
     template?: string;
     title?: string;
     emptyMessage?: string;
     hidden?: boolean;
-    customFields?: unknown[];
-    fieldOverrides?: Record<string, { hidden?: boolean; options?: Array<{ value: string; label: string }>; [key: string]: unknown }>;
+    customFields?: SchemaCustomField[];
+    fieldOverrides?: Record<string, SchemaFieldOverride>;
     [key: string]: unknown;
 }
 
 export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const isDraggedOver = ref(false);
-    const fullConfig = ref<{ templates?: Record<string, { fields?: unknown[] }> }>(uiEditorData);
+    const fullConfig = ref<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }>(uiEditorData as unknown as { templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown });
 
     const availableEntityTypes = computed(() => {
         let rawSchemas: Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>;
@@ -46,8 +93,9 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         { value: 'photo', label: 'Фото' }
     ];
 
-    const getRawTemplateFields = (templateName: string) => {
-        return fullConfig.value.templates?.[templateName]?.fields || [];
+    const getRawTemplateFields = (templateName?: string): SchemaTemplateField[] => {
+        if (!templateName) return [];
+        return (fullConfig.value.templates?.[templateName]?.fields as SchemaTemplateField[]) || [];
     };
 
     const ensureFieldOverride = (item: SchemaContainerItem, fieldClass: string) => {

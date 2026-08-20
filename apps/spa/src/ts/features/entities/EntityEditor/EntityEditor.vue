@@ -167,10 +167,12 @@
                           @remove="removeDynamicItem(container.dataPath || container.id || '', idx)"
                           @modified="markModified"
                           @foreign-update="handleForeignUpdate"
-                          @item-updated="({ item: updatedItem, idx: itemIdx }: any) => { 
+                          @item-updated="(payload?: { item?: Record<string, unknown>; idx?: number }) => { 
+                            const itemIdx = payload?.idx ?? idx;
+                            const updatedItem = payload?.item ?? item;
                             const structuredArr = getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>;
                             if (structuredArr && Array.isArray(structuredArr) && itemIdx < structuredArr.length) {
-                              structuredArr[itemIdx] = updatedItem;
+                              if (payload?.item) structuredArr[itemIdx] = updatedItem;
                               console.log('[EntityEditor.vue] 🔄 item-updated: обновил структурированный путь', itemIdx, 'в', container.dataPath || container.id);
                               markModified();
                             }

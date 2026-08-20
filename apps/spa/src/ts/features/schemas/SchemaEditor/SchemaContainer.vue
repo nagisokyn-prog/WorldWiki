@@ -24,7 +24,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
     </div>
     
     <!-- BIDIRECTIONAL SPLIT CONFIGURATOR -->
-    <template v-if="fullConfig.templates?.[item.template]?.isBidirectional">
+    <template v-if="item.template && fullConfig.templates?.[item.template]?.isBidirectional">
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
         <!-- СТОРОНА А -->
         <div style="background: rgba(167,139,250,0.04); border: 1px solid rgba(167,139,250,0.2); border-radius: 12px; padding: 14px;">
@@ -54,7 +54,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
                   <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" style="display:flex;gap:4px;align-items:center;">
                     <input v-model="opt.value" class="input-base" style="font-size:10px;padding:3px;flex:1;font-family:monospace;" placeholder="value">
                     <input v-model="opt.label" class="input-base" style="font-size:10px;padding:3px;flex:2;" placeholder="Label">
-                    <button style="color:#f55;background:none;border:none;font-size:11px;" @click="ensureFieldOverride(item, bField.class).options.splice(Number(oIdx),1)">✕</button>
+                    <button style="color:#f55;background:none;border:none;font-size:11px;" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx),1)">✕</button>
                   </div>
                   <button class="btn-new btn-outline-new" style="font-size:9px;padding:4px;" @click="addFieldOption(item, bField.class)">+ вариант</button>
                 </div>
@@ -62,7 +62,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
             </div>
           </div>
           <!-- dynamicContainers LEFT -->
-          <div v-for="subConf in (fullConfig.templates?.[item.template]?.dynamicContainers || [])" :key="'ldc-'+subConf.id" style="margin-top:12px;border:1px solid rgba(167,139,250,0.25);border-radius:8px;overflow:hidden;">
+          <div v-for="subConf in (item.template ? fullConfig.templates?.[item.template]?.dynamicContainers || [] : [])" :key="'ldc-'+subConf.id" style="margin-top:12px;border:1px solid rgba(167,139,250,0.25);border-radius:8px;overflow:hidden;">
             <div style="background:rgba(167,139,250,0.12);padding:8px 12px;font-size:10px;font-weight:900;color:#a78bfa;letter-spacing:0.5px;text-transform:uppercase;">⏱️ {{ subConf.title }}</div>
             <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'lnf-'+nIdx" style="padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;">
@@ -95,7 +95,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
             </template>
           </div>
           <!-- dynamicContainers RIGHT mirror -->
-          <div v-for="subConf in (fullConfig.templates?.[item.template]?.dynamicContainers || [])" :key="'rdc-'+subConf.id" style="margin-top:12px;border:1px solid rgba(96,165,250,0.25);border-radius:8px;overflow:hidden;">
+          <div v-for="subConf in (item.template ? fullConfig.templates?.[item.template]?.dynamicContainers || [] : [])" :key="'rdc-'+subConf.id" style="margin-top:12px;border:1px solid rgba(96,165,250,0.25);border-radius:8px;overflow:hidden;">
             <div style="background:rgba(96,165,250,0.12);padding:8px 12px;font-size:10px;font-weight:900;color:#60a5fa;letter-spacing:0.5px;text-transform:uppercase;">⏱️ {{ subConf.title }}</div>
             <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'rnf-'+nIdx" style="padding:8px;background:rgba(0,0,0,0.2);border-radius:6px;">
@@ -139,7 +139,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
             
             <div style="margin-top: 8px;">
               <label class="form-label-micro">Переопределить тип</label>
-              <XboxWheel :model-value="ensureFieldOverride(item, bField.class).type || ''" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" @update:model-value="val => ensureFieldOverride(item, bField.class).type = val" />
+              <XboxWheel :model-value="String(ensureFieldOverride(item, bField.class).type || '')" :options="[{ value: '', label: '(Как в базе: ' + bField.type + ')' }, ...atomicBricks]" @update:model-value="val => ensureFieldOverride(item, bField.class).type = val" />
             </div>
             
             <div v-if="(ensureFieldOverride(item, bField.class).type || bField.type) === 'select' || (ensureFieldOverride(item, bField.class).type || bField.type) === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
@@ -148,7 +148,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
                 <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" style="display: flex; gap: 6px; align-items: center;">
                   <input v-model="opt.value" class="input-base" style="font-size: 10px; padding: 4px; flex: 1; font-family: monospace;" placeholder="value">
                   <input v-model="opt.label" class="input-base" style="font-size: 10px; padding: 4px; flex: 2;" placeholder="Label">
-                  <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="ensureFieldOverride(item, bField.class).options.splice(Number(oIdx), 1)">✕</button>
+                  <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx), 1)">✕</button>
                 </div>
                 <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 6px;" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
               </div>
@@ -173,17 +173,18 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
       <!-- INLINE SETTINGS -->
       <div style="margin-top: 8px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>
-              <label class="form-label-micro">Название (Label)</label>
-              <input v-model="cField.label" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="Название поля">
-            </div>
-            <div>
+          <div>
+            <label class="form-label-micro">Название (Label)</label>
+            <input v-model="cField.label" class="input-base" style="font-size: 10px; padding: 4px;" placeholder="Название поля">
+          </div>
+          <div>
             <label class="form-label-micro">Тип</label>
             <XboxWheel :model-value="cField.type || ''" :options="atomicBricks" @update:model-value="(val: any) => cField.type = val" />
+          </div>
         </div>
         
         <div v-if="cField.type === 'select' || cField.type === 'multiselect'" style="margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-            <template v-if="fullConfig.templates[item.template]?.isBidirectional">
+            <template v-if="item.template && fullConfig.templates?.[item.template]?.isBidirectional">
               <div style="display: flex; gap: 8px; justify-content: space-between;">
                   <div style="flex: 1;">
                     <label class="form-label-micro">ИСТОЧНИК (SOURCE)</label>
@@ -205,7 +206,7 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
                   <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" style="display: flex; gap: 6px; align-items: center;">
                     <input v-model="opt.value" class="input-base" style="font-size: 10px; padding: 4px; flex: 1; font-family: monospace;" placeholder="value" />
                     <input v-model="opt.label" class="input-base" style="font-size: 10px; padding: 4px; flex: 2;" placeholder="Label" />
-                    <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="cField.options.splice(Number(oIdx), 1)">✕</button>
+                    <button style="color: #f55; background: none; border: none; font-size: 12px;" @click="cField.options?.splice(Number(oIdx), 1)">✕</button>
                   </div>
                   <button class="btn-new btn-outline-new" style="font-size: 10px; padding: 6px;" @click="() => { if(!cField.options) cField.options=[]; cField.options.push({label:'', value:''}) }">+ ДОБАВИТЬ ВАРИАНТ</button>
               </div>
@@ -216,13 +217,13 @@ style="background: none; border: none; cursor: pointer; font-size: 16px;"
 
     <!-- DROP ZONE FOR CUSTOM FIELDS -->
     <div
-v-if="['dynamic', 'timeline'].includes(item.type)"
-        style="margin-top: 16px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
-        :style="{ borderColor: isDraggedOver ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: isDraggedOver ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }"
-        @dragenter.prevent="isDraggedOver = true"
-        @dragover.prevent="isDraggedOver = true"
-        @dragleave="isDraggedOver = false"
-        @drop.stop="isDraggedOver = false; $emit('drop-custom')">
+      v-if="['dynamic', 'timeline'].includes(String(item.type))"
+      style="margin-top: 16px; padding: 20px; border: 2px dashed rgba(255,165,0,0.3); border-radius: 12px; text-align: center; background: rgba(255,165,0,0.05); cursor: grab;"
+      :style="{ borderColor: isDraggedOver ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: isDraggedOver ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }"
+      @dragenter.prevent="isDraggedOver = true"
+      @dragover.prevent="isDraggedOver = true"
+      @dragleave="isDraggedOver = false"
+      @drop.stop="isDraggedOver = false; $emit('drop-custom')">
       <div style="font-size: 12px; font-weight: 900; color: rgba(255,165,0,0.6);">🎯 СЮДА КИДАЙ ПОЛЯ</div>
       <div style="font-size: 10px; color: rgba(255,165,0,0.4); margin-top: 4px;">Захвати поле из левой панели</div>
     </div>

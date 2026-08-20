@@ -66,7 +66,7 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
                 sec.dynamicContainers = [];
                 if (sec.items) {
                     sec.items.forEach((item: unknown) => {
-                        if (templatesHook.isAtomicField(item)) {
+                        if (templatesHook.isAtomicField(item as { type?: string } | null | undefined)) {
                             sec.fields?.push(item);
                         } else {
                             sec.dynamicContainers?.push(item);

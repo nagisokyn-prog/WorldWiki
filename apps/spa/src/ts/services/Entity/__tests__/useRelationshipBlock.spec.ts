@@ -348,7 +348,7 @@ describe('useRelationshipBlock', () => {
       const handler = rel.makeSelectHandler(0);
       handler({ target: { value: 'new_id' } } as any);
       expect(props.item.custom_dynamics[0].foreign_id).toBe('new_id');
-      expect(emit).toHaveBeenCalledWith('item-updated');
+      expect(emit).toHaveBeenCalledWith('item-updated', { item: props.item, idx: undefined });
       expect(emit).toHaveBeenCalledWith('modified');
 
       // 2. makeSelectHandler with out of bounds index or missing list
@@ -361,7 +361,7 @@ describe('useRelationshipBlock', () => {
       // 3. notifyNestedItemUpdate with and without path
       rel.notifyNestedItemUpdate();
       rel.notifyNestedItemUpdate('custom_path');
-      expect(emit).toHaveBeenCalledWith('item-updated');
+      expect(emit).toHaveBeenCalledWith('item-updated', { item: props.item, idx: undefined });
 
       // 4. getDynamicContainerFields
       expect(rel.getDynamicContainerFields(undefined as any)).toEqual([]);

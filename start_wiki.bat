@@ -1,11 +1,14 @@
 @echo off
 cd /d C:\Users\Kuzma\Desktop\WorldWiki
 
-:: Удаляем артефакты от старых сборок, оставляя текущую
+:: Удаляем артефакты от старых сборок, если установлен cargo-sweep
 cd src-tauri
 if exist target (
-    echo Removing old build artifacts...
-    cargo sweep --time 14
+    where cargo-sweep >nul 2>nul
+    if %errorlevel% equ 0 (
+        echo Removing old build artifacts...
+        cargo sweep --time 14
+    )
 )
 cd ..
 

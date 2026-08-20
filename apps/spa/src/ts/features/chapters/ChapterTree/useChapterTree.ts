@@ -326,30 +326,29 @@ export function useChapterTree(
         }
     };
 
+    let _createInlineGuard = false;
     const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
-        console.error('🔥🔥🔥 useChapterTree: handleCreateInline called with', { sectionId, parentId });
+        if (_createInlineGuard) return;
+        _createInlineGuard = true;
+        setTimeout(() => { _createInlineGuard = false; }, 300);
+
         if (sectionId === 'manuscript') {
             if (parentId) {
                 const arc = hierarchy.value.arcs.find(a => String(a.id) === String(parentId));
                 if (arc) {
-                    console.error('🔥🔥🔥 useChapterTree: emit create-chapter-in ARC', arc);
                     emit('create-chapter-in', { arcId: arc.id, volumeId: arc.volume_id || (arc as unknown as { volumeId?: string }).volumeId });
                 } else {
                     const vol = hierarchy.value.volumes.find(v => String(v.id) === String(parentId));
                     if (vol) {
-                        console.error('🔥🔥🔥 useChapterTree: handleCreate VOLUME (Add arc)', vol);
                         handleCreate({ sectionId: 'manuscript', parentId });
                     } else {
-                        console.error('🔥🔥🔥 useChapterTree: fallback create-chapter-in VOLUME', parentId);
                         emit('create-chapter-in', { arcId: null, volumeId: parentId });
                     }
                 }
             } else {
-                console.error('🔥🔥🔥 useChapterTree: emit create-chapter-in ROOT');
                 emit('create-chapter-in', { arcId: null, volumeId: null });
             }
         } else {
-            console.error('🔥🔥🔥 useChapterTree: fallback startCreate', sectionId);
             explorerTreeRef.value?.startCreate(sectionId);
         }
     };

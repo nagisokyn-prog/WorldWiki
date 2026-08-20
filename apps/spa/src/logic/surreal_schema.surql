@@ -70,14 +70,14 @@ DEFINE EVENT OVERWRITE cascade_arc_delete ON TABLE arcs WHEN $event = "DELETE" T
 
 DEFINE TABLE OVERWRITE chapters SCHEMAFULL CHANGEFEED 30d;
 DEFINE FIELD OVERWRITE project_id      ON chapters TYPE record<projects>;
-DEFINE FIELD OVERWRITE title           ON chapters TYPE string;
-DEFINE FIELD OVERWRITE content         ON chapters TYPE string;
-DEFINE FIELD OVERWRITE summary         ON chapters TYPE option<string>;
+DEFINE FIELD OVERWRITE title          ON chapters TYPE string;
+DEFINE FIELD OVERWRITE content        ON chapters TYPE string;
+DEFINE FIELD OVERWRITE summary        ON chapters TYPE option<string | null>;
 DEFINE FIELD OVERWRITE word_count      ON chapters TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
-DEFINE FIELD OVERWRITE footnotes       ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT [];
 
 -- Исправление ошибки timeline_events

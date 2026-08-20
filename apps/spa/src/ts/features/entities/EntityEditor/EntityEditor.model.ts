@@ -26,6 +26,9 @@ export interface DynamicContainer {
   customChildContainers?: DynamicContainer[];
   emptyMessage?: string;
   isBidirectional?: boolean;
+  foreign_type?: string;
+  fields?: SchemaField[];
+  [key: string]: unknown;
 }
 
 export interface SchemaSection {
@@ -35,12 +38,14 @@ export interface SchemaSection {
   hidden?: boolean;
   fields?: SchemaField[];
   dynamicContainers?: DynamicContainer[];
+  [key: string]: unknown;
 }
 
 export interface SchemaConfig {
   sections: SchemaSection[];
-  templates?: Record<string, { fields: SchemaField[]; dynamicContainers?: DynamicContainer[] }>;
+  templates?: Record<string, { fields?: SchemaField[]; dynamicContainers?: DynamicContainer[]; foreign_type?: string; [key: string]: unknown }>;
   titleField?: string;
+  [key: string]: unknown;
 }
 
 export interface EntityRevision {

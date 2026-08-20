@@ -43,6 +43,7 @@ export interface RelationshipBlockProps {
   allTemplates: Record<string, { fields?: TemplateField[]; [key: string]: unknown }>;
   referenceData: Record<string, Array<{ value: unknown; label: string; id?: unknown; name?: unknown; [key: string]: unknown }>>;
   item: Record<string, unknown>;
+  idx?: number;
   entityType: string;
   entityId: string;
   project: string;
@@ -103,11 +104,21 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     }
     const tpl = props.templateConf;
     if (tpl.fields) {
-      const linkField = tpl.fields.find((f) => f.type === 'select' && f.entityType);
+      const linkField = tpl.fields.find((f) => f.type === 'select' && (f.entityType || f.class === 'character' || f.class === 'персонаж'));
       if (linkField && linkField.class) return linkField.class;
+      const anySelect = tpl.fields.find((f) => f.type === 'select');
+      if (anySelect && anySelect.class) return anySelect.class;
+      return 'character';
+    }
+    for (const key of Object.keys(props.item)) {
+      if (key === 'персонаж' || key === 'character' || key === 'target_char') return key;
     }
     return 'character';
   });
+
+  const getTargetForeignId = () => {
+    return props.item[linkClass.value] || props.item['персонаж'] || props.item['character'] || props.item['target_char'];
+  };
 
   const getDynamicContainerFields = (subConf: SubConf) => {
     if (!subConf) return [];
@@ -125,25 +136,30 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
   };
 
   const myLabel = computed<string>(() => {
-    const rawId = props.entityId;
+    const rawMyId = String(props.entityId || '').replace(/^[^:]+:/, '');
     const refList = props.referenceData[`${props.entityType}_list`] || props.referenceData[props.entityType];
     if (refList) {
-      const found = refList.find((e) => e.value === rawId || String(e.id) === rawId);
-      if (found) return found.label || (found.name as string) || String(found.value);
+      const found = refList.find((e) => {
+        const itemVal = String(e.value || (e as any).id || '').replace(/^[^:]+:/, '');
+        return itemVal === rawMyId || e.value === props.entityId || String((e as any).id) === props.entityId;
+      });
+      if (found) return found.label || (found as any).name || String(found.value);
     }
     return props.entityId || 'Текущая сущность';
   });
 
   const foreignLabel = computed<string>(() => {
-    const foreignId = props.item[linkClass.value];
+    const foreignId = getTargetForeignId();
     if (!foreignId) return 'Не выбрано';
-    const targetType = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType || (props.templateConf.foreign_type as string | undefined);
-    if (targetType) {
-      const refList = props.referenceData[`${targetType}_list`] || props.referenceData[targetType];
-      if (refList) {
-        const found = refList.find((e) => e.value === foreignId || String(e.id) === String(foreignId));
-        if (found) return found.label || (found.name as string) || String(found.value);
-      }
+    const rawForeignId = String(foreignId).replace(/^[^:]+:/, '');
+    const targetType = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType || (props.templateConf.foreign_type as string | undefined) || 'character';
+    const refList = props.referenceData[`${targetType}_list`] || props.referenceData[targetType] || props.referenceData['character_list'] || props.referenceData['character'];
+    if (refList) {
+      const found = refList.find((e) => {
+        const itemVal = String(e.value || (e as any).id || '').replace(/^[^:]+:/, '');
+        return itemVal === rawForeignId || e.value === foreignId || String((e as any).id) === String(foreignId);
+      });
+      if (found) return found.label || (found as any).name || String(found.value);
     }
     return String(foreignId);
   });
@@ -192,8 +208,8 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
         matched = (targetArr.find((it) => {
           if (!it || typeof it !== 'object') return false;
           const rec = it as Record<string, unknown>;
-          const val = rec[backLinkClass] || rec['target_char'] || rec['character'];
-          return val === props.entityId || val === rawMyId || String(val).endsWith(`:${rawMyId}`);
+          const val = rec[backLinkClass] || rec['персонаж'] || rec['target_char'] || rec['character'];
+          return val === props.entityId || val === rawMyId || String(val).endsWith(`:${rawMyId}`) || (typeof val === 'string' && val.includes(rawMyId));
         }) as Record<string, unknown>) || null;
       }
 
@@ -234,13 +250,25 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
   };
 
   const fetchForeignItem = async (): Promise<void> => {
-    const targetId = props.item[linkClass.value];
+    const targetId = getTargetForeignId();
     if (!targetId) {
       foreignItem.value = null;
       return;
     }
     await loadForeignItem(targetId);
   };
+
+  watch(
+    () => getTargetForeignId(),
+    (newTargetId) => {
+      if (newTargetId) {
+        loadForeignItem(newTargetId);
+      } else {
+        foreignItem.value = null;
+      }
+    },
+    { immediate: true }
+  );
 
   const onLinkChange = (fieldClass: string) => async (e: Event): Promise<void> => {
     const val = (e.target as HTMLInputElement | HTMLSelectElement).value;
@@ -250,12 +278,14 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
   };
 
   const getOptions = (field: TemplateField) => {
-    if (field?.options) return field.options;
-    const type = field?.entityType || (props.templateConf.foreign_type as string | undefined);
+    if (field?.options && field.options.length > 0) return field.options;
+    const type = field?.entityType || (props.templateConf.foreign_type as string | undefined) || (field.class === linkClass.value || field.class === 'персонаж' || field.class === 'character' ? 'character' : undefined);
     if (type) {
       if (props.referenceData[`${type}_list`]) return props.referenceData[`${type}_list`];
       if (props.referenceData[type]) return props.referenceData[type];
     }
+    if (props.referenceData['character_list']) return props.referenceData['character_list'];
+    if (props.referenceData['character']) return props.referenceData['character'];
     return [];
   };
 
@@ -284,7 +314,7 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     });
 
     (item[path] as Array<Record<string, unknown>>).push(newItem);
-    emit('item-updated');
+    emit('item-updated', { item: props.item, idx: props.idx });
     emit('modified');
   };
 
@@ -295,14 +325,21 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     if (!path) return;
     if (!item[path]) return;
     (item[path] as Array<Record<string, unknown>>).splice(idx, 1);
-    emit('item-updated');
+    emit('item-updated', { item: props.item, idx: props.idx });
     emit('modified');
   };
 
   const updateItemField = (fieldClass: string, val: unknown) => {
     props.item[fieldClass] = val;
     emit('modified');
-    emit('item-updated');
+    emit('item-updated', { item: props.item, idx: props.idx });
+    if (fieldClass === linkClass.value || fieldClass === 'персонаж' || fieldClass === 'character') {
+      if (val) {
+        loadForeignItem(val);
+      } else {
+        foreignItem.value = null;
+      }
+    }
   };
 
   const onSelectChange = (fieldClass: string, val: unknown) => {
@@ -318,14 +355,14 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
         const val = (e.target as HTMLSelectElement | HTMLInputElement)?.value;
         const linkField = getResolvedFields(targetSubConf).find(f => f.type === 'select')?.class || 'foreign_id';
         list[index][linkField] = val;
-        emit('item-updated');
+        emit('item-updated', { item: props.item, idx: props.idx });
         emit('modified');
       }
     };
   };
 
   const notifyNestedItemUpdate = (_path?: string) => {
-    emit('item-updated');
+    emit('item-updated', { item: props.item, idx: props.idx });
     emit('modified');
   };
 

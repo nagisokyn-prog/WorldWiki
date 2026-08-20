@@ -150,6 +150,9 @@ importers:
       knip:
         specifier: ^6.32.2
         version: 6.32.2
+      markdown-coverage-reporter:
+        specifier: ^1.0.0-alpha.6
+        version: 1.0.0-alpha.6
       prettier:
         specifier: ^3.9.6
         version: 3.9.6
@@ -3401,6 +3404,9 @@ packages:
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
+
+  markdown-coverage-reporter@1.0.0-alpha.6:
+    resolution: {integrity: sha512-H4pccfjikjRV9lDAFiFwwusWbH6dK97a3JN8pe1eBJ/gWZeg7/8nR/QnEYLvR8w1rPliGuJSVIa/5f619HuR+Q==}
 
   markdown-it@15.0.0:
     resolution: {integrity: sha512-Lf8ajvVNdRpzSNB4VegxNy7gjs8gU35l4b4+ET49LrQC5PKYwLZ72u60LeJ9gv3qiaesuYjJWCyVeQmv/QWKQw==}
@@ -7509,6 +7515,11 @@ snapshots:
   make-dir@4.0.0:
     dependencies:
       semver: 7.8.5
+
+  markdown-coverage-reporter@1.0.0-alpha.6:
+    dependencies:
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
 
   markdown-it@15.0.0:
     dependencies:

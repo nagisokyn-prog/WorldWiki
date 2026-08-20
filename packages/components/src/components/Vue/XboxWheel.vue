@@ -108,7 +108,13 @@ const normalizedOptions = computed(() => {
 });
 
 const getIndex = (val) => {
-  const i = normalizedOptions.value.findIndex(o => o.value === val);
+  if (val === undefined || val === null || val === '') return 0;
+  const rawVal = String(val).replace(/^[^:]+:/, '');
+  const i = normalizedOptions.value.findIndex(o => {
+    if (o.value === val) return true;
+    const rawOpt = String(o.value || '').replace(/^[^:]+:/, '');
+    return rawOpt === rawVal && rawVal !== '';
+  });
   return i !== -1 ? i : 0;
 };
 
@@ -117,10 +123,26 @@ const wheelAcc = ref(0);
 const ITEM_HEIGHT = 44;
 const LEN = computed(() => normalizedOptions.value.length);
 
+watch(normalizedOptions, () => {
+  currentIndex.value = getIndex(props.modelValue);
+});
+
 const selectedLabel = computed(() => {
+  if (props.modelValue === '' || props.modelValue === null || props.modelValue === undefined) {
+    return placeholderText.value;
+  }
+  const rawVal = String(props.modelValue).replace(/^[^:]+:/, '');
+  const found = normalizedOptions.value.find(o => {
+    if (o.value === props.modelValue) return true;
+    const rawOpt = String(o.value || '').replace(/^[^:]+:/, '');
+    return rawOpt === rawVal && rawVal !== '';
+  });
+  if (found) return found.label;
   const opt = normalizedOptions.value[currentIndex.value];
-  if (opt) return opt.label;
-  return props.modelValue !== '' && props.modelValue !== null && props.modelValue !== undefined ? props.modelValue : placeholderText.value;
+  if (opt && (opt.value === props.modelValue || String(opt.value).replace(/^[^:]+:/, '') === rawVal)) {
+    return opt.label;
+  }
+  return props.modelValue;
 });
 
 const toggle = () => {

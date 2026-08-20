@@ -36,7 +36,7 @@ describe('useUniversalDatePicker', () => {
   let props: any;
   let emit: any;
 
-  const mockCalendar = {
+  const mockCalendar: any = {
     id: 'cal_1',
     is_default: true,
     data: {
@@ -282,7 +282,7 @@ describe('useUniversalDatePicker', () => {
       const nullProps = { project: 'p1', showTime: true, modelValue: null };
       const pickerNull = useUniversalDatePicker(nullProps as any, emit);
       pickerNull.allCalendars.value = [
-        { id: 'cal_no_def', data: mockCalendar.data },
+        { id: 'cal_no_def', data: mockCalendar.data } as any,
       ];
       pickerNull.currentCalendarId.value = 'cal_no_def';
       pickerNull.onCalendarChange();
@@ -302,7 +302,7 @@ describe('useUniversalDatePicker', () => {
       const picker = useUniversalDatePicker(reactiveProps, emit);
       picker.allCalendars.value = [
         mockCalendar,
-        { id: 'cal_empty', data: {} }, // unnamed calendar
+        { id: 'cal_empty', data: {} } as any,
       ];
       picker.currentCalendarId.value = 'cal_1';
 
@@ -394,7 +394,7 @@ describe('useUniversalDatePicker', () => {
     });
 
     it('handles unnamed eras, months, and missing calendar gracefully', () => {
-      const bareCalendar = {
+      const bareCalendar: any = {
         id: 'cal_bare',
         data: {
           эпохи: [{ год_начала: 1, год_конца: 10 }], // No название

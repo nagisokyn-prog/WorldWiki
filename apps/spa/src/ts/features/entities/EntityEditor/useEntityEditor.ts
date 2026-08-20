@@ -14,7 +14,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   const lastEmittedData = ref<string | null>(null);
   const foreignUpdates = ref<Record<string, unknown>>({});
   const activeSection = ref('');
-  const referenceData = shallowRef<Record<string, Array<{ value: string; label: string }>>>({});
+  const referenceData = ref<Record<string, Array<{ value: string; label: string }>>>({});
   const photoInputs = ref<Record<string, HTMLInputElement>>({});
   const hoverState = ref(false);
   const scrollContainer = ref<HTMLElement | null>(null);
@@ -38,35 +38,61 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   };
 
   const loadReferenceData = async () => {
-    if (!config.value || !config.value.sections) return;
+    const entityTypesToLoad = new Set<string>();
     
-    const fieldsToLoad: { field: SchemaField, sectionId: string }[] = [];
-    config.value.sections.forEach((sec: SchemaSection) => {
-      if (sec.fields) {
-        sec.fields.forEach((f: SchemaField) => {
-          if ((f.type === 'select' || f.type === 'multiselect') && f.entityType) {
-            fieldsToLoad.push({ field: f, sectionId: sec.id });
-          }
-        });
-      }
-    });
+    // Always load current entity type list so myLabel and self-references work
+    if (props.entityType) {
+      entityTypesToLoad.add(props.entityType);
+    }
+    // Always ensure character is loaded since bidirectional relations heavily use character
+    entityTypesToLoad.add('character');
 
-    if (config.value.templates) {
+    if (config.value?.sections) {
+      config.value.sections.forEach((sec: SchemaSection) => {
+        if (sec.fields) {
+          sec.fields.forEach((f: SchemaField) => {
+            if (f.entityType) {
+              entityTypesToLoad.add(f.entityType);
+            }
+          });
+        }
+        if (sec.dynamicContainers) {
+          sec.dynamicContainers.forEach((dc: DynamicContainer) => {
+            if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
+            const tplConf = dc.template && config.value?.templates ? config.value.templates[dc.template] : undefined;
+            if (tplConf?.foreign_type) {
+              entityTypesToLoad.add(tplConf.foreign_type);
+            }
+            if (dc.fields) {
+              dc.fields.forEach((f: SchemaField) => {
+                if (f.entityType) entityTypesToLoad.add(f.entityType);
+              });
+            }
+          });
+        }
+      });
+    }
+
+    if (config.value?.templates) {
       Object.keys(config.value.templates).forEach(tplKey => {
         const tpl = config.value?.templates?.[tplKey];
+        if (tpl?.foreign_type) {
+          entityTypesToLoad.add(tpl.foreign_type);
+        }
         if (tpl?.fields) {
           tpl.fields.forEach((f: SchemaField) => {
-            if ((f.type === 'select' || f.type === 'multiselect') && f.entityType) {
-              fieldsToLoad.push({ field: f, sectionId: 'template_' + tplKey });
+            if (f.entityType) {
+              entityTypesToLoad.add(f.entityType);
             }
           });
         }
         if (tpl?.dynamicContainers) {
-          tpl.dynamicContainers.forEach((dc: DynamicContainer & { fields?: SchemaField[] }) => {
+          tpl.dynamicContainers.forEach((dc: DynamicContainer) => {
+            if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
             if (dc.fields) {
               dc.fields.forEach((f: SchemaField) => {
-                if ((f.type === 'select' || f.type === 'multiselect') && f.entityType) {
-                  fieldsToLoad.push({ field: f, sectionId: 'template_dc_' + dc.id });
+                if (f.entityType) {
+                  entityTypesToLoad.add(f.entityType);
                 }
               });
             }
@@ -75,19 +101,24 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
       });
     }
 
-    for (const item of fieldsToLoad) {
+    const newRefData: Record<string, Array<{ value: string; label: string }>> = { ...referenceData.value };
+    for (const type of entityTypesToLoad) {
       try {
-        if (item.field.entityType) {
-          const entities = await api.getEntities(props.project, item.field.entityType);
-          referenceData.value[`${item.field.entityType}_list`] = entities.map((e) => ({
-            value: e.id || '',
-            label: e.name || 'Без названия'
-          }));
-        }
+        const entities = await api.getEntities(props.project, type);
+        const mapped = entities.map((e) => {
+          const item = e as Record<string, unknown>;
+          return {
+            value: String(item.id || ''),
+            label: String(item.name || item.title || item.label || 'Без названия')
+          };
+        });
+        newRefData[`${type}_list`] = mapped;
+        newRefData[type] = mapped;
       } catch (e) {
-        console.error(`Error loading ref data for ${item.field.entityType}:`, e);
+        console.error(`Error loading ref data for ${type}:`, e);
       }
     }
+    referenceData.value = newRefData;
   };
 
   const loadConfigAndData = async () => {

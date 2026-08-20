@@ -73,12 +73,12 @@ import { usePlanningPanel } from './usePlanningPanel';
 
 const props = withDefaults(defineProps<{
   project: string;
-  parentType?: string | null;
-  parentId?: string | null;
+  parentType?: string;
+  parentId?: string;
   parentTitle?: string;
 }>(), {
-  parentType: null,
-  parentId: null,
+  parentType: undefined,
+  parentId: undefined,
   parentTitle: ''
 });
 

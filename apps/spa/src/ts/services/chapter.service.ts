@@ -40,9 +40,9 @@ class ChapterService {
       project_id: null,
       title: title || 'Новая глава',
       content,
-      summary: null,
+      summary: undefined,
       word_count: 0 as unknown as bigint,
-      embeddings: null,
+      embeddings: {},
       footnotes: {},
       timeline_events: [],
       participants: []

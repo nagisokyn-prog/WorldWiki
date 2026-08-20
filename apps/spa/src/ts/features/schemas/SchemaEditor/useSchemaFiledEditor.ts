@@ -55,7 +55,7 @@ export function useSchemaFieldEditor(props: { item: SchemaFieldItem }) {
     };
 
     const removeOption = (idx: number) => {
-        props.item.options.splice(idx, 1);
+        props.item.options?.splice(idx, 1);
     };
 
     return {

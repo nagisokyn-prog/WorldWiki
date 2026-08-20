@@ -272,7 +272,10 @@ export async function getChapter(id: string): Promise<Chapter | null> {
 }
 
 export async function saveChapter(project: string, data: Chapter): Promise<Chapter> {
-    return await invoke('save_chapter', { project, data });
+    const cleaned = Object.fromEntries(
+        Object.entries(data).filter(([, v]) => v !== null && v !== undefined)
+    );
+    return await invoke('save_chapter', { project, data: cleaned });
 }
 
 export async function deleteChapter(id: string): Promise<void> {

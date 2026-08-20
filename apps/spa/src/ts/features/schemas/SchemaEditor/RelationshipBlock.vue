@@ -46,9 +46,9 @@
               placeholder="-- Не указано --"
               @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
-            <textarea v-else-if="cf.type === 'textarea'" :value="(item[cf.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="updateItemField(cf.class, ($event.target as HTMLTextAreaElement).value)"></textarea>
-            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="(item[cf.class] as number) || 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="updateItemField(cf.class, Number(($event.target as HTMLInputElement).value))">
-            <input v-else :value="(item[cf.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="updateItemField(cf.class, ($event.target as HTMLInputElement).value)">
+            <textarea v-else-if="cf.type === 'textarea'" :value="(item[cf.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputValue(e))"></textarea>
+            <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="(item[cf.class] as number) || 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputNumber(e))">
+            <input v-else :value="(item[cf.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" :placeholder="cf.placeholder || ''" @input="(e) => updateItemField(cf.class, getInputValue(e))">
           </template>
         </div>
 
@@ -72,9 +72,9 @@
                   placeholder="-- Не указано --"
                   @update:model-value="(val: unknown) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
                 />
-                <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="nItem[nField.class] = ($event.target as HTMLTextAreaElement).value; notifyNestedItemUpdate(subConf.dataPath || subConf.id)"></textarea>
-                <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="nItem[nField.class] = Number(($event.target as HTMLInputElement).value); notifyNestedItemUpdate(subConf.dataPath || subConf.id)">
-                <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="nItem[nField.class] = ($event.target as HTMLInputElement).value; notifyNestedItemUpdate(subConf.dataPath || subConf.id)">
+                <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"></textarea>
+                <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
+                <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
               </div>
             </div>
             
@@ -113,14 +113,14 @@
             <template v-else>
               <XboxWheel 
                 v-if="cf.type === 'select'" 
-                :model-value="foreignItem ? ((foreignItem[cf.class] as string | number) || '') : ''"
+                :model-value="foreignItem ? String(foreignItem[cf.class] || '') : ''"
                 :options="(cf.options || []).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                 placeholder="-- Не указано --"
-                @update:model-value="(val: unknown) => { if (foreignItem) { foreignItem[cf.class] = val; } }"
+                @update:model-value="(val) => { if (foreignItem) { foreignItem[cf.class] = val; } }"
               />
-              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? ((foreignItem[cf.class] as string) || '') : ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" @input="if (foreignItem) foreignItem[cf.class] = ($event.target as HTMLTextAreaElement).value"></textarea>
-              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? ((foreignItem[cf.class] as number) || 0) : 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="if (foreignItem) foreignItem[cf.class] = Number(($event.target as HTMLInputElement).value)">
-              <input v-else :value="foreignItem ? ((foreignItem[cf.class] as string) || '') : ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="if (foreignItem) foreignItem[cf.class] = ($event.target as HTMLInputElement).value">
+              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" class="input-base interactive-el" rows="2" style="font-size: 12px; padding: 6px; width: 100%;" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }"></textarea>
+              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? (Number(foreignItem[cf.class]) || 0) : 0" :type="cf.type" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputNumber(e) }">
+              <input v-else :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" type="text" class="input-base interactive-el" style="font-size: 12px; padding: 6px; width: 100%;" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }">
             </template>
           </div>
 
@@ -143,9 +143,9 @@
                     placeholder="-- Не указано --"
                     @update:model-value="(val: unknown) => { nItem[nField.class] = val; }"
                   />
-                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" @input="nItem[nField.class] = ($event.target as HTMLTextAreaElement).value"></textarea>
-                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="nItem[nField.class] = Number(($event.target as HTMLInputElement).value)">
-                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="nItem[nField.class] = ($event.target as HTMLInputElement).value">
+                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el" rows="2" style="font-size: 11px; padding: 4px; width: 100%;" @input="(e) => { nItem[nField.class] = getInputValue(e) }"></textarea>
+                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="(e) => { nItem[nField.class] = getInputNumber(e) }">
+                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el" style="font-size: 11px; padding: 4px; width: 100%;" @input="(e) => { nItem[nField.class] = getInputValue(e) }">
                 </div>
               </div>
               
@@ -181,6 +181,12 @@ const formatLabel = (str: string) => {
   if (!str) return '';
   return str.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 };
+
+const getInputValue = (event: Event): string =>
+  (event.target as HTMLInputElement | HTMLTextAreaElement).value;
+
+const getInputNumber = (event: Event): number =>
+  Number((event.target as HTMLInputElement).value);
 
 const {
   foreignItem,

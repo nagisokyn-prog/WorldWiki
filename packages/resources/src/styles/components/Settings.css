@@ -8,10 +8,6 @@
 /* Settings Modal Content */
 .settings-modal-content {
     height: 100%;
-}
-
-.settings-modal-content {
-    height: 100%;
     overflow: hidden;
     min-height: 0;
     width: 100%;
@@ -277,7 +273,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 input[type="color"] {
     -webkit-appearance: none;
     appearance: none;
-    border: none;
     width: 40px;
     height: 40px;
     min-width: 40px;

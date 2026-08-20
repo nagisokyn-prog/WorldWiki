@@ -870,10 +870,6 @@
     width: 80px;
 }
 
-.preview-day {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
 .preview-day.offset {
     opacity: 0.2;
 }
@@ -1164,7 +1160,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
 input[type="color"] {
     -webkit-appearance: none;
     appearance: none;
-    border: none;
     width: 40px;
     height: 40px;
     border-radius: 8px;

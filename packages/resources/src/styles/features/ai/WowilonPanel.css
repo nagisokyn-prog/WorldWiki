@@ -176,10 +176,6 @@
   min-width: 0;
 }
 
-.message-content {
-  overflow-x: auto;
-}
-
 .empty-chat-state {
   flex: 1;
   display: flex;

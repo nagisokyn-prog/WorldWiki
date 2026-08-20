@@ -89,7 +89,6 @@
 /* Sidebar */
 .sidebar {
   width: 280px;
-  flex-shrink: 0;
   background: var(--bg-panel);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -100,7 +99,6 @@
   transition: width var(--anim-speed);
   position: relative;
   height: 100%;
-  flex: 0 0 auto;
 }
 
 .sidebar-header {

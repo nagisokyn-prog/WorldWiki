@@ -127,9 +127,14 @@ describe('useTiptapSplitView', () => {
 
       // Array node passed to traverse (covers line 95)
       const arrayDocEditor = ref({
-        getJSON: () => ([
-          { type: 'paragraph', content: [{ type: 'text', text: 'In array' }] },
-        ] as any),
+        getJSON: () => ({
+          type: 'doc',
+          content: [
+            [
+              { type: 'paragraph', content: [{ type: 'text', text: 'In array' }] },
+            ] as any,
+          ],
+        }),
       });
       const splitArray = useTiptapSplitView(arrayDocEditor, editorUpdateKey);
       expect(splitArray.documentStructure.value.length).toBe(1);

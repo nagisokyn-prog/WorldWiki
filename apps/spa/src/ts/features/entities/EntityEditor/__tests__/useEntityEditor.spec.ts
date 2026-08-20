@@ -382,8 +382,8 @@ describe('useEntityEditor', () => {
   it('collects entityTypesToLoad from dynamicContainers template, direct fields and config.templates foreign_type', async () => {
     vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
       {
-        type: 'character',
-        schema: {
+        type_key: 'character',
+        full_schema: {
           sections: [
             {
               id: 'sec_extra',
@@ -408,8 +408,8 @@ describe('useEntityEditor', () => {
 
     const editor = useEntityEditor(props, emit);
     await editor.loadConfigAndData();
-    expect(api.getEntities).toHaveBeenCalledWith('proj_1', 'guild_type');
-    expect(api.getEntities).toHaveBeenCalledWith('proj_1', 'dc_field_type');
-    expect(api.getEntities).toHaveBeenCalledWith('proj_1', 'tpl_field_type');
+    expect(api.getEntities).toHaveBeenCalledWith('p1', 'guild_type');
+    expect(api.getEntities).toHaveBeenCalledWith('p1', 'dc_field_type');
+    expect(api.getEntities).toHaveBeenCalledWith('p1', 'tpl_field_type');
   });
 });

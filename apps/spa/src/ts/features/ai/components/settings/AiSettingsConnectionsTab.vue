@@ -12,7 +12,7 @@
         <label class="form-label">Активное подключение</label>
         <div class="profile-actions">
           <select 
-            :value="activeProfile?.id" 
+            :value="localProfile?.id" 
             class="input-base profile-select" 
             @change="$emit('select-profile', ($event.target as HTMLSelectElement).value)"
           >
@@ -35,11 +35,11 @@
       </div>
     </div>
 
-    <div v-if="activeProfile" class="connection-form">
+    <div v-if="localProfile" class="connection-form">
       <div class="form-group">
         <label>Название подключения</label>
         <input 
-          v-model="activeProfile.name" 
+          v-model="localProfile.name" 
           type="text" 
           class="input-base" 
           placeholder="Например: Мой OpenRouter или Локальный сервер" 
@@ -49,9 +49,9 @@
       <div class="form-group">
         <label>Провайдер</label>
         <select 
-          v-model="activeProfile.provider" 
+          v-model="localProfile.provider" 
           class="input-base" 
-          @change="$emit('provider-changed', activeProfile.provider)"
+          @change="$emit('provider-changed', localProfile.provider)"
         >
           <option value="openrouter">OpenRouter (Все современные нейросети)</option>
           <option value="anthropic">Anthropic (Claude 3.5 Sonnet / Haiku / Opus)</option>
@@ -63,11 +63,11 @@
         </select>
       </div>
 
-      <div v-if="activeProfile.provider !== 'local'" class="form-group">
+      <div v-if="localProfile.provider !== 'local'" class="form-group">
         <label>API-ключ</label>
         <div class="api-key-wrapper">
           <input 
-            v-model="activeProfile.api_key" 
+            v-model="localProfile.api_key" 
             :type="showApiKey ? 'text' : 'password'" 
             class="input-base" 
             placeholder="sk-..." 
@@ -87,16 +87,16 @@
       <div class="form-group">
         <label>Адрес сервера (URL эндпоинта)</label>
         <input 
-          v-model="activeProfile.base_url" 
+          v-model="localProfile.base_url" 
           type="text" 
           class="input-base" 
-          :placeholder="getDefaultUrl(activeProfile.provider)" 
+          :placeholder="getDefaultUrl(localProfile.provider)" 
         />
         <span class="field-hint">Оставьте пустым для использования стандартного официального адреса API.</span>
       </div>
 
       <div class="form-actions" style="margin-top: 24px;">
-        <button class="btn-primary" @click="$emit('save-profile')">
+        <button class="btn-primary" @click="handleSave">
           <i class="fas fa-check"></i> Сохранить подключение
         </button>
       </div>
@@ -105,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { AiProfile } from '../../types/ai.types';
 
 const props = defineProps<{
@@ -113,9 +113,22 @@ const props = defineProps<{
   activeProfile: AiProfile | null;
 }>();
 
-defineEmits(['select-profile', 'create-profile', 'delete-profile', 'save-profile', 'provider-changed']);
+const emit = defineEmits(['select-profile', 'create-profile', 'delete-profile', 'save-profile', 'provider-changed']);
 
 const showApiKey = ref(false);
+const localProfile = ref<AiProfile | null>(null);
+
+watch(() => props.activeProfile, (newVal) => {
+  if (newVal) {
+    localProfile.value = { ...newVal };
+  } else {
+    localProfile.value = null;
+  }
+}, { immediate: true, deep: true });
+
+const handleSave = () => {
+  emit('save-profile', localProfile.value);
+};
 
 const getProviderLabel = (provider: string) => {
   const map: Record<string, string> = {

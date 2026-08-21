@@ -24,21 +24,16 @@ pub enum RuntimeKind {
     Ollama,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS, PartialEq, Eq, Default)]
 #[ts(export)]
 pub enum ExecutionPolicy {
     #[serde(rename = "direct")]
     Direct,
     #[serde(rename = "tool_assisted")]
+    #[default]
     ToolAssisted,
     #[serde(rename = "agentic")]
     Agentic,
-}
-
-impl Default for ExecutionPolicy {
-    fn default() -> Self {
-        Self::ToolAssisted
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS, PartialEq, Eq)]

@@ -1,6 +1,5 @@
 /// Recursive text chunker for RAG pipeline.
 /// Splits large text into semantically cohesive chunks respecting natural boundaries.
-
 pub struct DocumentChunker {
     pub chunk_size: usize,
     pub chunk_overlap: usize,

@@ -7,7 +7,7 @@
       </p>
     </div>
 
-    <div v-if="activeProfile" class="models-config-grid">
+    <div v-if="localSettings" class="models-config-grid">
       <!-- Блок 1: Основная модель для чата и письма -->
       <div class="config-card">
         <div class="card-header">
@@ -20,10 +20,10 @@
           <div style="display: flex; gap: 8px;">
             <div style="flex: 1;">
               <AiSelect
-                :model-value="activeProfile.settings.model"
+                :model-value="localSettings.model"
                 :options="availableModelOptions"
                 placeholder="Выберите или введите название модели"
-                @update:model-value="val => activeProfile!.settings.model = val"
+                @update:model-value="val => localSettings!.model = val"
               />
             </div>
             <button 
@@ -44,10 +44,10 @@
           <div class="execution-policies">
             <label 
               class="policy-card" 
-              :class="{ active: (activeProfile.settings.execution_policy || 'agentic') === 'direct' }"
+              :class="{ active: (localSettings.execution_policy || 'agentic') === 'direct' }"
             >
               <input 
-                v-model="activeProfile.settings.execution_policy" 
+                v-model="localSettings.execution_policy" 
                 type="radio" 
                 value="direct" 
               />
@@ -59,10 +59,10 @@
 
             <label 
               class="policy-card" 
-              :class="{ active: activeProfile.settings.execution_policy === 'tool_assisted' }"
+              :class="{ active: localSettings.execution_policy === 'tool_assisted' }"
             >
               <input 
-                v-model="activeProfile.settings.execution_policy" 
+                v-model="localSettings.execution_policy" 
                 type="radio" 
                 value="tool_assisted" 
               />
@@ -74,10 +74,10 @@
 
             <label 
               class="policy-card" 
-              :class="{ active: activeProfile.settings.execution_policy === 'agentic' }"
+              :class="{ active: localSettings.execution_policy === 'agentic' }"
             >
               <input 
-                v-model="activeProfile.settings.execution_policy" 
+                v-model="localSettings.execution_policy" 
                 type="radio" 
                 value="agentic" 
               />
@@ -100,7 +100,7 @@
         <div class="form-group">
           <label class="toggle-row">
             <input 
-              v-model="activeProfile.settings.enable_auto_rag" 
+              v-model="localSettings.enable_auto_rag" 
               type="checkbox" 
             />
             <div class="toggle-text">
@@ -113,7 +113,7 @@
         <div class="form-group">
           <label class="toggle-row">
             <input 
-              v-model="activeProfile.settings.enable_semantic_search" 
+              v-model="localSettings.enable_semantic_search" 
               type="checkbox" 
             />
             <div class="toggle-text">
@@ -126,7 +126,7 @@
         <div class="form-group" style="margin-top: 10px;">
           <label>Модель эмбеддингов для лора</label>
           <input 
-            v-model="activeProfile.settings.embed_model_path" 
+            v-model="localSettings.embed_model_path" 
             type="text" 
             class="input-base" 
             placeholder="nvidia/nemotron-3-embed-gguf или путь к GGUF" 
@@ -145,10 +145,10 @@
         <div class="form-group">
           <div class="slider-header">
             <label>Температура (Креативность)</label>
-            <span class="slider-value">{{ activeProfile.settings.temperature }}</span>
+            <span class="slider-value">{{ localSettings.temperature }}</span>
           </div>
           <input 
-            v-model.number="activeProfile.settings.temperature" 
+            v-model.number="localSettings.temperature" 
             type="range" 
             min="0" 
             max="1.5" 
@@ -166,7 +166,7 @@
           <div class="form-group">
             <label>Максимум токенов вывода</label>
             <input 
-              v-model.number="activeProfile.settings.max_tokens" 
+              v-model.number="localSettings.max_tokens" 
               type="number" 
               class="input-base" 
               placeholder="4096" 
@@ -175,7 +175,7 @@
 
           <div class="form-group">
             <label>Уровень рассуждений (CoT)</label>
-            <select v-model="activeProfile.settings.reasoning_effort" class="input-base">
+            <select v-model="localSettings.reasoning_effort" class="input-base">
               <option value="none">Отключено</option>
               <option value="low">Низкий (Быстро)</option>
               <option value="medium">Средний (Сбалансировано)</option>
@@ -187,7 +187,7 @@
         <div class="form-group">
           <label>Таймаут выполнения (минуты)</label>
           <input 
-            v-model.number="activeProfile.settings.timeout_mins" 
+            v-model.number="localSettings.timeout_mins" 
             type="number" 
             class="input-base" 
             placeholder="30" 
@@ -196,7 +196,7 @@
       </div>
 
       <div class="form-actions">
-        <button class="btn-primary" @click="$emit('save-profile')">
+        <button class="btn-primary" @click="handleSave">
           <i class="fas fa-check"></i> Сохранить настройки моделей
         </button>
       </div>
@@ -205,8 +205,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { AiModelInfo, AiProfile } from '../../types/ai.types';
+import { ref, computed, watch } from 'vue';
+import type { AiModelInfo, AiProfile, AiProfileSettings } from '../../types/ai.types';
 import AiSelect from '../AiSelect.vue';
 
 const props = defineProps<{
@@ -216,7 +216,23 @@ const props = defineProps<{
   fetchError: string | null;
 }>();
 
-defineEmits(['save-profile', 'fetch-models']);
+const emit = defineEmits(['save-profile', 'fetch-models']);
+
+const localSettings = ref<AiProfileSettings | null>(null);
+
+watch(() => props.activeProfile?.settings, (newSettings) => {
+  if (newSettings) {
+    localSettings.value = { ...newSettings };
+  } else {
+    localSettings.value = null;
+  }
+}, { immediate: true, deep: true });
+
+const handleSave = () => {
+  if (localSettings.value) {
+    emit('save-profile', { settings: localSettings.value });
+  }
+};
 
 const availableModelOptions = computed(() => {
   return props.availableModels.map(m => ({

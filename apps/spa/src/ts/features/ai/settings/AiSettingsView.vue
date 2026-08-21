@@ -66,7 +66,7 @@
             @select-profile="handleProfileSelect"
             @create-profile="createNewProfile"
             @delete-profile="deleteActiveProfile"
-            @save-profile="saveActiveProfile"
+            @save-profile="handleSaveProfile"
             @provider-changed="handleProviderChange"
           />
 
@@ -77,7 +77,7 @@
             :available-models="availableModels"
             :is-fetching-models="isFetchingModels"
             :fetch-error="fetchError"
-            @save-profile="saveActiveProfile"
+            @save-profile="handleSaveProfile"
             @fetch-models="handleFetchModels"
           />
 
@@ -85,7 +85,7 @@
           <AiSettingsLocalTab 
             v-if="activeTab === 'local_ai'"
             :active-profile="activeProfile"
-            @save-profile="saveActiveProfile"
+            @save-profile="handleSaveProfile"
           />
 
           <!-- 4. РЕЖИМЫ (MODES) -->
@@ -107,6 +107,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import type { AiProfile } from '../types/ai.types';
 import AiSettingsConnectionsTab from '../components/settings/AiSettingsConnectionsTab.vue';
 import AiSettingsModelsTab from '../components/settings/AiSettingsModelsTab.vue';
 import AiSettingsLocalTab from '../components/settings/AiSettingsLocalTab.vue';
@@ -177,6 +178,16 @@ const handleFetchModels = async (forceNetwork = false) => {
       forceNetwork
     );
   }
+};
+
+const handleSaveProfile = async (updatedData?: Partial<AiProfile>) => {
+  if (updatedData && activeProfile.value) {
+    if (updatedData.settings && activeProfile.value.settings) {
+      Object.assign(activeProfile.value.settings, updatedData.settings);
+    }
+    Object.assign(activeProfile.value, updatedData);
+  }
+  await saveActiveProfile();
 };
 
 const handleSavePermissions = async () => {

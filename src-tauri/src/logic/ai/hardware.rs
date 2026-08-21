@@ -3,6 +3,7 @@
 use super::types::{HardwareInfo, MemoryEstimation, RecommendedModelCard};
 
 #[cfg(target_os = "windows")]
+#[allow(non_snake_case, non_camel_case_types, clippy::upper_case_acronyms)]
 mod win_mem {
     #[repr(C)]
     pub struct MEMORYSTATUSEX {

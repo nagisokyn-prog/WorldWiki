@@ -201,7 +201,7 @@
 
     <!-- 4. СРЕДА ВЫПОЛНЕНИЯ (ГИК-НАСТРОЙКИ) -->
     <div v-if="subTab === 'runtime'" class="sub-pane">
-      <div v-if="activeProfile" class="runtime-card">
+      <div v-if="localSettings" class="runtime-card">
         <h4>Параметры инференса llama.cpp</h4>
         <p class="text-muted">
           Тонкая настройка аппаратного ускорения и распределения памяти для локальных моделей.
@@ -211,7 +211,7 @@
           <div class="form-group">
             <label>Размер контекста (Токены)</label>
             <input 
-              v-model.number="activeProfile.settings.n_ctx" 
+              v-model.number="localSettings.n_ctx" 
               type="number" 
               class="input-base" 
               placeholder="8192" 
@@ -222,7 +222,7 @@
           <div class="form-group">
             <label>Слои на GPU (GPU Offload Layers)</label>
             <input 
-              v-model.number="activeProfile.settings.n_gpu_layers" 
+              v-model.number="localSettings.n_gpu_layers" 
               type="number" 
               class="input-base" 
               placeholder="-1 (Все слои на GPU)" 
@@ -234,7 +234,7 @@
         <div class="form-group" style="margin-top: 14px;">
           <label class="toggle-row">
             <input 
-              v-model="activeProfile.settings.enable_tcq" 
+              v-model="localSettings.enable_tcq" 
               type="checkbox" 
             />
             <div class="toggle-text">
@@ -245,7 +245,7 @@
         </div>
 
         <div class="form-actions" style="margin-top: 20px;">
-          <button class="btn-primary" @click="$emit('save-profile')">
+          <button class="btn-primary" @click="handleSaveRuntime">
             <i class="fas fa-check"></i> Сохранить параметры среды
           </button>
         </div>
@@ -255,33 +255,60 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { 
   AiProfile, 
+  AiProfileSettings,
   HardwareInfo, 
   InstalledModelInfo, 
   ModelLifecycleState, 
   RecommendedModelCard 
 } from '../../types/ai.types';
 
+interface HfGgufFile {
+  filename: string;
+  quantization: string;
+  size_bytes: number;
+  size_gb: number;
+}
+
+interface HfModelItem {
+  id: string;
+  name: string;
+  author?: string;
+  downloads: number;
+  likes: number;
+  tags: string[];
+  gguf_files: HfGgufFile[];
+}
+
 const props = defineProps<{
   activeProfile: AiProfile | null;
 }>();
 
-defineEmits(['save-profile']);
+const emit = defineEmits(['save-profile']);
 
 const subTab = ref<'recommended' | 'library' | 'explore' | 'runtime'>('recommended');
 const hardware = ref<HardwareInfo | null>(null);
 const recommendedModels = ref<RecommendedModelCard[]>([]);
 const installedModels = ref<InstalledModelInfo[]>([]);
-const hfModels = ref<any[]>([]);
+const hfModels = ref<HfModelItem[]>([]);
 const searchQuery = ref('');
 const isSearching = ref(false);
 const downloadProgress = ref<Record<string, { percent: number }>>({});
+const localSettings = ref<AiProfileSettings | null>(null);
 
-let searchTimeout: any = null;
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(() => props.activeProfile?.settings, (newSettings) => {
+  if (newSettings) {
+    localSettings.value = { ...newSettings };
+  } else {
+    localSettings.value = null;
+  }
+}, { immediate: true, deep: true });
 
 onMounted(async () => {
   await loadHardware();
@@ -289,6 +316,12 @@ onMounted(async () => {
   await loadInstalled();
   listenToProgress();
 });
+
+const handleSaveRuntime = () => {
+  if (localSettings.value) {
+    emit('save-profile', { settings: localSettings.value });
+  }
+};
 
 const loadHardware = async () => {
   try {
@@ -358,12 +391,14 @@ const deleteModel = async (filename: string) => {
 };
 
 const onSearchInput = () => {
-  clearTimeout(searchTimeout);
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
   searchTimeout = setTimeout(async () => {
     if (!searchQuery.value.trim()) return;
     isSearching.value = true;
     try {
-      hfModels.value = await invoke('fetch_hf_models', { query: searchQuery.value.trim() });
+      hfModels.value = await invoke<HfModelItem[]>('fetch_hf_models', { query: searchQuery.value.trim() });
     } catch (e) {
       console.error('Ошибка поиска HF:', e);
     } finally {
@@ -374,7 +409,7 @@ const onSearchInput = () => {
 
 const listenToProgress = async () => {
   try {
-    await listen('model_download_progress', (event: any) => {
+    await listen<{ filename?: string; is_done?: boolean; percent: number }>('model_download_progress', (event) => {
       const payload = event.payload;
       if (payload && payload.filename) {
         if (payload.is_done) {

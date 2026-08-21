@@ -1,0 +1,2045 @@
+Давай разберём твою ситуацию по полочкам. Сначала поищу актуальную инфу по ключевым компонентам твоей системы, а потом дам конкретную архитектуру под твой стек.
+Вот как делают умные ребята. Твоя интуиция из диалога права: **большая модель не должна дёргать embedding-модель через tool calling**. Это архитектурный антипаттерн для твоего случая. Вместо этого retrieval — это слой middleware в твоём Rust-приложении, а LLM просто получает готовый контекст.
+
+---
+
+## 1. Ключевые факты про Nemotron (исправления из твоего диалога)
+
+| Параметр | Факт |
+|---|---|
+| Размерность | **2048** (не 1024). Можно срезать до 1024/512, но после среза нужна повторная L2-нормализация  |
+| Префиксы | `query:` для вопроса, `passage:` (или `document:`) для документов. NVIDIA предупреждает: неправильный `input_type` заметно портит accuracy  |
+| Контекст | 32K токенов |
+| Вес | ~550–650 МБ в Q4_K_M / ~2.6 GB в BF16 |
+| Скорость | ~25–40 мс на CPU, ~5 мс на GPU для коротких запросов |
+
+---
+
+## 2. Архитектура, которую я бы заложил в твою IDE
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      USER MESSAGE                           │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+          ┌────────────────────────┐
+          │   Retrieval Router     │  ← твой Rust-код в Tauri
+          │   (zero LLM calls)     │
+          └───────────┬────────────┘
+                      │
+        ┌─────────────┼─────────────┐
+        │             │             │
+        ▼             ▼             ▼
+   [Привет,         [@Валтис]     [Сложный вопрос]
+    спасибо,]            │             │
+    < 8 симв.            │             ▼
+        │                │      llama-turboquant
+        │                │      --embedding
+        │                │      (Nemotron GGUF)
+        │                │             │
+        ▼                ▼             ▼
+     SKIP           Direct ID    Vector search
+     (0.1 мс)       lookup       SurrealDB HNSW
+                       │             │
+                       └──────┬──────┘
+                              ▼
+                       Candidate pool
+                              │
+                              ▼
+                         Reranker (опц.)
+                              │
+                              ▼
+                       Score gating
+                    (cosine > threshold?)
+                              │
+                    ┌─────────┴─────────┐
+                    ▼                   ▼
+              Ниже 0.65            Выше 0.75
+                    │                   │
+                    ▼                   ▼
+            [Чистый промпт]    [Промпт + <world_context>]
+                    │                   │
+                    └─────────┬─────────┘
+                              ▼
+                    ┌──────────────────┐
+                    │  Claude / GPT    │
+                    │  / DeepSeek      │
+                    └──────────────────┘
+```
+
+**Главное:** LLM вообще не знает о существовании Nemotron, SurrealDB и HNSW. Она получает либо чистый запрос, либо запрос с уже встроенным контекстом.
+
+---
+
+## 3. Почему именно так — разбор твоих вопросов
+
+### "Как большая модель понимает, что ей нужна БД?"
+
+**Ответ:** Она не понимает. Это не её работа.
+
+Ты платишь за каждый токен и каждую миллисекунду latency в облако. Зачем платить за принятие решения "нужен ли поиск", если твой бэкенд может решить это математически за 8 мс?
+
+Логика простая:
+1. **Всегда** прогоняешь запрос через embedding-модель (она дешёвая и быстрая)
+2. **Всегда** делаешь vector search
+3. Если `max(similarity) < 0.65` — ничего релевантного нет, отправляешь чистый промпт
+4. Если `max(similarity) > 0.75` — вставляешь найденные chunks в `<world_context>` и отправляешь
+
+Так работают production RAG-системы: retrieval — это инфраструктура, а не агентское решение LLM.
+
+### "Как связать llama-turboquant с Nemotron?"
+
+Твой `llama-turboquant` (форк llama.cpp) умеет embedding-инференс:
+
+```bash
+# Запуск embedding-сервера
+llama-server \
+  -m nemotron-3-embed-1b-q4_k_m.gguf \
+  --embedding \
+  --pooling cls \
+  -ub 8192 \
+  -c 32768
+```
+
+Он поднимает OpenAI-compatible endpoint `/embedding`. Из Rust ты можешь ходить туда локально по `http://localhost:port/v1/embeddings`.
+
+Но для desktop-приложения лучше **не поднимать HTTP-сервер**, а использовать llama.cpp как библиотеку через FFI или готовые Rust-биндинги (`llama-cpp-rs`). Тогда модель сидит в памяти процесса Tauri и отвечает за **25–40 мс** без оверхеда HTTP.
+
+### "Модель в ОЗУ грузить — ок?"
+
+Да, и это правильно. Но сделай lazy loading:
+
+```
+Tauri AppState
+├── llm_runner: Option<Arc<Mutex<LlamaModel>>>  ← генеративная модель (если локальная)
+├── embedder: Option<Arc<Mutex<Embedder>>>       ← Nemotron, резидентный
+├── db: SurrealDB
+└── ...
+```
+
+```rust
+// Псевдокод для твоего runner.rs
+impl Embedder {
+    async fn embed_query(&self, text: &str) -> Vec<f32> {
+        // Автоматически добавляем префикс
+        let prefixed = format!("query: {}", text);
+        // llama.cpp inference
+        self.model.embed(&prefixed, Normalize::L2)
+    }
+    
+    async fn embed_passage(&self, text: &str) -> Vec<f32> {
+        let prefixed = format!("passage: {}", text);
+        self.model.embed(&prefixed, Normalize::L2)
+    }
+}
+```
+
+Первая загрузка модели — при первом запросе, требующем retrieval. Дальше она висит в RAM. Если 30 минут не использовалась — unload.
+
+---
+
+## 4. Конкретика под твою БД (entities + SurrealDB)
+
+У тебя в БД уже есть `embeddings.local` (HNSW 1024) и `embeddings.openai` (HNSW 1536). Но Nemotron-3 выдаёт **2048 dim**. Значит тебе нужен третий индекс:
+
+```sql
+DEFINE INDEX embeddings_nemotron ON entities FIELDS embeddings.nemotron HNSW DIMENSION 2048;
+```
+
+Или срезать до 1024 (с повторной нормализацией) и использовать существующий `embeddings.local`, но тогда теряешь accuracy.
+
+### Chunking для больших entities
+
+Твоя entity "Валтис" может быть на 20 страниц. Не делай один embedding на всю entity — сигнал размазывается.
+
+```rust
+struct EntityChunk {
+    entity_id: String,
+    chunk_index: u16,
+    text: String,
+    embedding: Vec<f32>,  // 2048 dim
+}
+
+// При сохранении entity:
+// 1. Разбиваешь content на chunks (по ~512 токенов с overlap)
+// 2. Каждый chunk: "passage: {chunk_text}"
+// 3. Сохраняешь в отдельную таблицу entity_chunks
+```
+
+При retrieval находишь chunks, а `context_builder` группирует их обратно по `entity_id` и собирает контекст для LLM.
+
+### Hybrid search (BM25 + Vector)
+
+У тебя уже есть `name BM25` и `description BM25`. Используй оба:
+
+```rust
+async fn retrieve(query: &str, project_id: &str) -> Vec<Context> {
+    // Параллельно:
+    let vector_candidates = vector_search(query, project_id).await;  // Nemotron + HNSW
+    let lexical_candidates = bm25_search(query, project_id).await;   // name + description
+    
+    // Объединяем, dedup по entity_id
+    let merged = merge_and_dedup(vector_candidates, lexical_candidates);
+    
+    // Reranker (опционально, можно позже)
+    // let ranked = rerank(query, merged).await;
+    
+    // Фильтруем по score
+    merged.into_iter().filter(|c| c.score > 0.70).collect()
+}
+```
+
+### Graph expansion (entity_rel)
+
+Это самое мощное в твоей схеме. После semantic search:
+
+```rust
+// Нашли Валтиса и Элину через vector search
+let seed_entities = vec!["Валтис", "Элина"];
+
+// Достаём их связи из entity_rel
+let relations = db.query("
+    SELECT * FROM entity_rel 
+    WHERE in IN $seeds OR out IN $seeds
+").bind(("seeds", seed_entities)).await?;
+
+// Добавляем связанные entities в контекст
+// Валтис --[distrust]--> Элина (start_chapter: 17)
+```
+
+LLM получает не просто сырые тексты, а структурированный контекст:
+
+```xml
+<world_context>
+<Entity name="Валтис" type="персонаж">
+  <Description>Лорд Валтис — 4-й король Элении...</Description>
+  <RelevantChunk>После осады Валтис потерял доверие к Элине...</RelevantChunk>
+</Entity>
+
+<Relation from="Валтис" to="Элина" type="distrust" strength="0.9">
+  <Description>Перестал доверять после смерти Рейна</Description>
+  <StartChapter>17</StartChapter>
+</Relation>
+</world_context>
+```
+
+---
+
+## 5. System Prompt для облачной модели
+
+Вот что вставляешь в system prompt (Claude/GPT/DeepSeek):
+
+```xml
+Ты — соавтор и эксперт по миру проекта. 
+
+Правила:
+1. Если в запросе присутствует блок <world_context>, используй факты из него как абсолютную истину (канон мира).
+2. Если ответа нет в контексте, но вопрос касается мира — опирайся на логику повествования, не противоречь установленным фактам.
+3. Если контекста нет — отвечай как обычный ассистент по письменности.
+```
+
+Модель не решает "искать или нет". Она просто видит блок — использует. Не видит — креативит.
+
+---
+
+## 6. Итоговая схема для твоего runner.rs
+
+```rust
+// Псевдокод
+pub async fn process_message(
+    &self,
+    user_msg: String,
+    session: SessionContext,
+) -> Result<Stream<Token>, Error> {
+    
+    // 1. Retrieval (всегда, но дёшево)
+    let context = if should_skip_retrieval(&user_msg) {
+        None  // "Привет", "спасибо", < 8 символов
+    } else {
+        let query_emb = self.embedder.embed_query(&user_msg).await?;
+        let candidates = self.db.vector_search(&query_emb, &session.project_id).await?;
+        
+        // Hybrid: добавляем BM25
+        let lexical = self.db.bm25_search(&user_msg, &session.project_id).await?;
+        let merged = merge(candidates, lexical);
+        
+        // Graph expansion
+        let with_relations = self.expand_graph(merged).await?;
+        
+        // Score gating
+        if with_relations.max_score() < 0.65 {
+            None
+        } else {
+            Some(self.context_builder.build(with_relations))
+        }
+    };
+    
+    // 2. LLM call (ровно 1 запрос в облако!)
+    let prompt = build_prompt(user_msg, context, session);
+    self.llm.generate(prompt).await
+}
+```
+
+**Ключевые метрики:**
+- **1 запрос** к облачной LLM (вместо 2–3 при tool calling)
+- **~30 мс** на CPU для embedding
+- **~5 мс** на vector search (HNSW)
+- **0 токенов** потрачено на "решение искать или нет"
+
+---
+
+## 7. Что я бы НЕ делал (прямо из твоего диалога)
+
+❌ **Tool calling для retrieval** — лишний round-trip, платишь за latency ×2 и токены на JSON-схему  
+❌ **Заставлять LLM решать "нужна ли БД"** — это математически измеримая задача, не требующая нейросети  
+❌ **Один embedding на всю entity** — размазывает сигнал  
+❌ **1024 dim без перепроверки** — Nemotron-3 выдаёт 2048, срезать можно, но с осторожностью  
+❌ **Грузить модель с диска на каждый запрос** — resident в RAM через `Arc<Mutex<>>` или lazy init  
+
+---
+
+**Вывод:** "Умные ребята" делают retrieval **middleware**, а не **tool**. Твой Nemotron — это не агент, которому LLM даёт задания. Это компрессор текста → вектор, который работает на уровне инфраструктуры приложения. LLM вообще не знает о его существовании.
+
+
+
+Не убирать. Оставить оба пути — это не костыль, а **feature flags по уровням зрелости пользователя**.
+
+Вот как выглядит нормальная архитектура, где tool calling и Auto-RAG сосуществуют:
+
+```
+                    USER MESSAGE
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │  FAST LAYER (всегда)│  ← не требует нейросети
+              │  BM25 + exact match │
+              │  по name/description│
+              └──────────┬──────────┘
+                         │
+            ┌────────────┴────────────┐
+            │                         │
+            ▼                         ▼
+    Нашли по имени              Ничего не нашли
+    (score > 0.8)               BM25 пуст/слаб
+            │                         │
+            ▼                         ▼
+    ┌───────────────┐      ┌──────────────────────┐
+    │ Вставляем в   │      │  Настройка юзера?    │
+    │ контекст      │      │                      │
+    └───────┬───────┘      ├── Local Nemotron ON ─┤
+            │              │                      │
+            │              ▼                      ▼
+            │      ┌──────────────┐      ┌──────────────┐
+            │      │ Semantic RAG │      │ Tool Calling │
+            │      │ (middleware) │      │ (LLM решает) │
+            │      └──────┬───────┘      └──────┬───────┘
+            │             │                     │
+            └─────────────┴─────────┬───────────┘
+                                    ▼
+                         ┌────────────────────┐
+                         │   LLM GENERATION   │
+                         │  (1 запрос в API)  │
+                         └────────────────────┘
+```
+
+---
+
+## Почему оставлять tool calling — правильно
+
+**BM25 по именам entities работает без нейросети вообще.** У тебя уже есть индексы `name BM25` и `description BM25`. Это 0.5 мс на запрос, не требует RAM под модель, не требует скачивания GGUF.
+
+Поэтому даже пользователь **без Nemotron** получает базовый RAG:
+- Пишет «Что Валтис думает об Элине?»
+- BM25 находит entities по именам
+- Контекст вставляется в промпт **автоматически**
+- LLM отвечает с фактами
+
+А tool calling остаётся для случаев, когда middleware не справилась:
+- «Тот предатель из третьей главы» — BM25 не найдёт, embedding тоже может промахнуться
+- LLM с tool `search_lore()` может сделать **переформулированный** поиск
+- Или вообще пойти в веб, если у тебя есть `web_search` tool
+
+---
+
+## Три режима в настройках приложения
+
+```rust
+enum RetrievalStrategy {
+    /// Для слабых ноутов и ленивых пользователей
+    /// BM25 + tool calling. Нет локальной модели.
+    CloudOnly,
+    
+    /// Для тех, кто скачал Nemotron
+    /// Middleware делает semantic search, LLM не знает о БД
+    LocalAutoRag,
+    
+    /// Золотая середина (рекомендую)
+    /// BM25 всегда → Nemotron если есть → tools как fallback
+    Hybrid,
+}
+```
+
+### Режим CloudOnly (default)
+
+```rust
+// В runner.rs
+async fn handle_cloud_only(&self, msg: &str) -> Result<Response> {
+    // 1. Быстрый BM25 — почти бесплатно
+    let quick_hits = self.db.bm25_search_names(msg).await?;
+    
+    let context = if quick_hits.max_score() > 0.75 {
+        // Нашли точно по имени — вставляем сразу
+        Some(self.build_context(quick_hits))
+    } else {
+        None
+    };
+    
+    // 2. Отправляем LLM. Если контекста нет — дадим tools
+    let tools = if context.is_none() {
+        vec![self.search_lore_tool(), self.web_search_tool()]
+    } else {
+        vec![] // LLM уже видит контекст, пусть просто отвечает
+    };
+    
+    self.llm.generate(msg, context, tools).await
+}
+```
+
+### Режим LocalAutoRag
+
+```rust
+async fn handle_local_rag(&self, msg: &str) -> Result<Response> {
+    // 1. BM25 (всегда)
+    let lexical = self.db.bm25_search(msg).await?;
+    
+    // 2. Nemotron (только если загружен)
+    let semantic = if let Some(emb) = &self.embedder {
+        let vec = emb.embed_query(msg).await?;
+        self.db.vector_search(&vec).await?
+    } else {
+        vec![]
+    };
+    
+    // 3. Merge + rerank
+    let candidates = merge(lexical, semantic);
+    
+    let context = if candidates.max_score() > 0.70 {
+        Some(self.build_context(candidates))
+    } else {
+        None
+    };
+    
+    // 4. LLM получает готовый промпт, tools не нужны для поиска лора
+    // Но tools для веба/другого можно оставить
+    self.llm.generate(msg, context, vec![]).await
+}
+```
+
+### Режим Hybrid (рекомендую)
+
+```rust
+async fn handle_hybrid(&self, msg: &str) -> Result<Response> {
+    // Layer 1: BM25 (всегда, дёшево)
+    let mut context_parts = vec![];
+    let lexical = self.db.bm25_search(msg).await?;
+    if lexical.max_score() > 0.75 {
+        context_parts.push(lexical);
+    }
+    
+    // Layer 2: Nemotron (если включен)
+    if let Some(emb) = &self.embedder {
+        let vec = emb.embed_query(msg).await?;
+        let semantic = self.db.vector_search(&vec).await?;
+        if semantic.max_score() > 0.70 {
+            context_parts.push(semantic);
+        }
+    }
+    
+    // Layer 3: Graph expansion (если нашли entities)
+    if !context_parts.is_empty() {
+        let relations = self.expand_graph(&context_parts).await?;
+        context_parts.push(relations);
+    }
+    
+    let context = if context_parts.is_empty() {
+        None
+    } else {
+        Some(self.build_context(context_parts))
+    };
+    
+    // Layer 4: LLM
+    // Если контекст есть — LLM просто отвечает
+    // Если контекста нет — даём tools, пусть сама решает
+    let tools = if context.is_none() {
+        vec![self.search_lore_tool()]
+    } else {
+        vec![]
+    };
+    
+    self.llm.generate(msg, context, tools).await
+}
+```
+
+---
+
+## Что происходит на практике
+
+| Сценарий | BM25 | Nemotron | Tool calling | Результат |
+|---|---|---|---|---|
+| «Привет!» | — | — | — | Чистый промпт, LLM болтает |
+| «Что Валтис думает об Элине?» | Нашёл по имени | (опц.) | Не нужен | Контекст вставлен автоматически |
+| «Тот предатель из 3-й главы» | Пусто | Нашёл «предательство» | **Не нужен** | Auto-RAG справился |
+| «А что там у них с магией?» | Пусто | Score 0.45 (низкий) | **Вызывается** | LLM сама решает, что искать |
+| Пользователь без Nemotron | Работает | Выключен | Работает | BM25 + tools |
+
+---
+
+## Tool calling куда деть
+
+Оставь tools для **всего, что не является фактическим поиском по твоей БД**:
+
+```rust
+vec![
+    // Этот tool можно вообще выпилить для пользователей с Auto-RAG
+    // или оставить как "глубокий поиск" для сложных случаев
+    Tool::search_lore(),
+    
+    // Этот точно оставляем — веб не заменить middleware
+    Tool::web_search(),
+    
+    // Этот тоже оставляем
+    Tool::generate_image(),
+]
+```
+
+**Ключевой инсайт:** tool `search_lore()` не обязан уметь semantic search. Для облачных пользователей он может делать простой `SELECT WHERE name CONTAINS $term` — LLM сама сформулирует правильный запрос. А для локальных пользователей у тебя есть Nemotron, который делает это лучше и быстрее.
+
+---
+
+## Итог
+
+**Не убирай tools.** Сделай слоистую систему:
+
+1. **BM25** — всегда, бесплатно, не требует модели
+2. **Nemotron** — опционально, для тех кто скачал
+3. **Tool calling** — fallback, когда middleware не нашла ничего релевантного, или для веба/других интеграций
+
+Тогда:
+- Пользователь с Intel UHD и 4 GB RAM → BM25 + tools, всё работает
+- Пользователь с RTX 4060 → полный Auto-RAG с графом и reranker
+- Ты не поддерживаешь два разных приложения — один `runner.rs`, три режима в настройках
+
+Это и есть "как делают умные ребята" — не выбирать между подходами, а **складывать их по уровням уверенности**.
+
+
+
+Да. И вот тут как раз в том диалоге нейронка **слегка уехала не туда**.
+
+Ты спрашиваешь не «как сделать RAG», а гораздо более интересную вещь:
+
+> **как сделать так, чтобы большая модель сама решала: “мне сейчас нужны данные из локальной БД”, но при этом поиск выполнялся маленькой embedding-моделью, а не через tool call большой модели?**
+
+И «умные ребята» обычно **не заставляют embedding-модель самой решать, нужен ли поиск**. Они разделяют это на несколько уровней.
+
+### Главное: embedding-модель вообще не должна решать «нужна ли БД»
+
+Она умеет примерно следующее:
+
+```text
+текст
+  ↓
+embedding model
+  ↓
+[0.12, -0.03, 0.87, ...]
+```
+
+То есть она отвечает на вопрос:
+
+> «Насколько этот запрос похож на вот эти документы?»
+
+А не:
+
+> «Нужно ли нам сейчас обращаться к БД?»
+
+И NVIDIA именно так описывает стандартный RAG pipeline: запрос превращается в embedding → по нему ищутся документы → найденный контекст передаётся LLM. ([NVIDIA Docs][1])
+
+---
+
+# Как я бы сделал именно твою систему
+
+У тебя IDE для писателя. Поэтому я бы **вообще не заставлял Claude/GPT/что там выбрано заниматься retrieval**.
+
+Схема:
+
+```text
+                         ┌──────────────┐
+                         │   User msg   │
+                         └──────┬───────┘
+                                │
+                                ▼
+                    ┌──────────────────────┐
+                    │   Retrieval Router   │
+                    │      Rust/Tauri      │
+                    └──────────┬───────────┘
+                               │
+                  ┌────────────┴────────────┐
+                  │                         │
+             очевидно нет              возможно да
+                  │                         │
+                  │                         ▼
+                  │               ┌────────────────┐
+                  │               │ Embedder 1B    │
+                  │               │ Nemotron        │
+                  │               └───────┬────────┘
+                  │                       │
+                  │                       ▼
+                  │                Vector DB
+                  │                       │
+                  │                       ▼
+                  │                top-K + scores
+                  │                       │
+                  └───────────────┬───────┘
+                                  │
+                                  ▼
+                       ┌─────────────────────┐
+                       │ Context assembler   │
+                       └──────────┬──────────┘
+                                  │
+                                  ▼
+                         ┌────────────────┐
+                         │ Claude / GPT /  │
+                         │ DeepSeek / ... │
+                         └────────────────┘
+```
+
+То есть **LLM вообще может не знать, что существует embedding model**.
+
+И это, на мой взгляд, гораздо правильнее для твоей IDE.
+
+---
+
+## Но тогда возникает твой главный вопрос
+
+> А как понять, что сообщение требует БД?
+
+Вот тут есть **три нормальных варианта**.
+
+### Вариант №1 — всегда делать дешёвый retrieval
+
+Это самый простой.
+
+Каждое сообщение:
+
+```text
+"Привет, как дела?"
+        ↓
+Nemotron
+        ↓
+vector search
+        ↓
+0.19
+        ↓
+ничего
+        ↓
+LLM
+```
+
+А:
+
+```text
+"Что было между Валтисом и Элиной после осады?"
+        ↓
+Nemotron
+        ↓
+vector search
+        ↓
+0.91
+        ↓
+нашли lore
+        ↓
+LLM + lore
+```
+
+И **это не обязательно дорого**.
+
+И вот здесь в предыдущем диалоге была важная ошибка: утверждение вроде
+
+> «Nemotron будет работать 25–40 мс на любом CPU»
+
+нельзя считать универсальной характеристикой.
+
+Текущий `nvidia/nemotron-3-embed-1b` — действительно embedding-модель примерно 1.14B параметров, но NVIDIA указывает **2048-dimensional embeddings**, а не те 1024, которые были написаны в твоём тексте. У неё также есть отдельные режимы `query` и `passage`. ([NVIDIA Documentation][2])
+
+Поэтому я бы не строил архитектуру вокруг красивых «5 мс».
+
+---
+
+# Но есть более умный вариант
+
+И вот **это я бы сделал у тебя**.
+
+Не:
+
+```text
+User
+ ↓
+Nemotron
+ ↓
+DB
+ ↓
+LLM
+```
+
+а:
+
+```text
+User
+ ↓
+Cheap router
+ ↓
+ ├── NO → LLM
+ │
+ └── MAYBE
+       ↓
+     Embed
+       ↓
+     Search
+       ↓
+     relevance
+       ↓
+   ┌───┴────┐
+   │        │
+  low     high
+   │        │
+   ▼        ▼
+  LLM    LLM+DB
+```
+
+Причём `Cheap router` **не обязан быть ещё одной нейросетью**.
+
+---
+
+# И тут есть очень прикольная штука
+
+У тебя уже есть **структура самой IDE**.
+
+Например:
+
+```text
+@Валтис
+@Элина
+@Орден_Луны
+```
+
+Это вообще не надо искать embedding'ом.
+
+Если пользователь написал:
+
+> Что Валтис думает об Ордене Луны?
+
+ты уже знаешь:
+
+```text
+entities:
+    Валтис
+    Орден Луны
+```
+
+Делаешь:
+
+```sql
+SELECT ...
+FROM entities
+WHERE id IN [...]
+```
+
+И всё.
+
+Embedding здесь даже не нужен.
+
+---
+
+## А вот это:
+
+> А почему он после третьей главы перестал ей доверять?
+
+Тут уже другой случай.
+
+Нет явного имени.
+
+Нужен semantic retrieval:
+
+```text
+query
+ ↓
+Nemotron
+ ↓
+vector search
+ ↓
+"Глава 3 — предательство..."
+"Отношения Валтиса и Элины..."
+"Сцена после осады..."
+```
+
+---
+
+# А ещё лучше — hybrid retrieval
+
+Вот это уже действительно production-подход.
+
+Не выбирать:
+
+> vector **ИЛИ** обычный поиск
+
+а делать:
+
+```text
+             user query
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+      BM25             Embedding
+        │                 │
+        └────────┬────────┘
+                 ▼
+             candidates
+                 │
+                 ▼
+              reranker
+                 │
+                 ▼
+              top 5
+```
+
+Это особенно полезно для писательской IDE.
+
+Потому что у тебя будут:
+
+```text
+"Валтис"
+"Валтис-7"
+"Меч Аргент"
+"Глава 17"
+"Орден Луны"
+```
+
+Для таких точных сущностей **lexical search может быть лучше embedding search**.
+
+А для:
+
+> «Что происходило между ними после того случая?»
+
+embedding гораздо полезнее.
+
+NVIDIA сама сейчас описывает NeMo Retriever как связку **embedding → vector search → reranking → generation**, то есть reranker является отдельным этапом, а не обязанностью основной LLM. ([NVIDIA Developer][3])
+
+---
+
+# А теперь самое интересное: LLM может всё-таки участвовать в решении
+
+Если ты хочешь именно:
+
+> «Большая модель должна понимать, что ей нужна информация из БД»
+
+то можно сделать **маленький router**, а не заставлять основную модель вызывать tool.
+
+Например:
+
+```text
+User:
+"Почему Валтис ненавидит Элину?"
+```
+
+маленький classifier:
+
+```json
+{
+  "needs_retrieval": true,
+  "scope": ["characters", "relationships"],
+  "query": "причина ненависти Валтиса к Элине"
+}
+```
+
+Дальше:
+
+```text
+router
+  ↓
+Nemotron
+  ↓
+SurrealDB
+  ↓
+context
+  ↓
+Claude
+```
+
+Но даже здесь я бы **не использовал большую модель для router**.
+
+Можно начать вообще с обычной логики.
+
+---
+
+# И вот какую архитектуру я бы реально заложил в твою IDE
+
+```text
+                  ┌───────────────────┐
+                  │    USER MESSAGE   │
+                  └─────────┬─────────┘
+                            │
+                            ▼
+                 ┌─────────────────────┐
+                 │   Retrieval Router   │
+                 │        Rust         │
+                 └──────────┬──────────┘
+                            │
+             ┌──────────────┼───────────────┐
+             │              │               │
+             ▼              ▼               ▼
+       Entity lookup    Keyword/BM25    Semantic search
+             │              │               │
+             │              │          Nemotron 1B
+             │              │               │
+             └──────────────┼───────────────┘
+                            ▼
+                     Candidate set
+                            │
+                            ▼
+                       Reranker
+                            │
+                            ▼
+                     relevance score
+                            │
+                     ┌──────┴──────┐
+                     │             │
+                  irrelevant    relevant
+                     │             │
+                     ▼             ▼
+                    LLM       LLM + context
+```
+
+И **вот это уже нормальная архитектура**, а не магическое:
+
+> «Загрузим Nemotron в RAM и пусть он как-то понимает, когда нужен RAG».
+
+---
+
+## Причём embedding-модель можно держать в RAM
+
+Вот тут твоя первоначальная идея была абсолютно здравая.
+
+**Не загружать модель на каждый запрос.**
+
+Она должна быть отдельным resident-компонентом:
+
+```text
+Tauri process
+│
+├── AI runner
+│
+├── embedding service
+│     └── Nemotron 1B
+│
+├── SurrealDB
+│
+└── cloud LLM client
+```
+
+Запустил приложение → embedding-модель загрузилась → дальше живёт.
+
+А если пользователь вообще не пользуется функциями, которым нужен retrieval, можно сделать **lazy loading**:
+
+```text
+IDE startup
+   ↓
+Nemotron НЕ загружаем
+
+первый запрос, требующий поиска
+   ↓
+load embedding model
+   ↓
+держим в RAM
+```
+
+И после некоторого idle timeout:
+
+```text
+30 мин без retrieval
+       ↓
+unload
+       ↓
+RAM освобождена
+```
+
+Это уже гораздо приятнее для ноутбуков.
+
+---
+
+# И ещё важный момент про Nemotron
+
+В твоём файле написано:
+
+> «1024 float-числа»
+
+Это уже не стоит переносить в новую архитектуру как факт.
+
+Для актуального `nemotron-3-embed-1b` NVIDIA указывает **2048 dimensions**. Причём NVIDIA отдельно поддерживает `float`, `int8`, `uint8`, `binary` и `ubinary`, что позволяет уменьшать память под сами вектора. ([NVIDIA Documentation][2])
+
+И ещё важнее: `query` и `passage` действительно различаются — NVIDIA прямо предупреждает, что неправильный `input_type` заметно ухудшает retrieval accuracy. ([NVIDIA NIM API][4])
+
+То есть идея из твоего диалога про:
+
+```text
+passage: ...
+query: ...
+```
+
+**по сути правильная**, но конкретную реализацию надо делать согласно API/модели, а не вручную лепить эти префиксы наугад.
+
+---
+
+# А вот чего я бы НЕ делал
+
+Я бы не делал:
+
+```text
+Cloud LLM
+   ↓
+"Мне надо найти что-то?"
+   ↓
+tool call
+   ↓
+embedding model
+   ↓
+DB
+   ↓
+tool result
+   ↓
+Cloud LLM
+```
+
+Для твоего случая это действительно лишняя прослойка.
+
+И не делал бы:
+
+```text
+каждый запрос
+ ↓
+большая LLM
+ ↓
+"надо ли искать?"
+```
+
+Потому что ты платишь latency и токены **за принятие решения, которое приложение вполне может принять само**.
+
+---
+
+# Самая здравая концепция
+
+Я бы вообще сформулировал её так:
+
+> **LLM не управляет retrieval. Retrieval является частью inference pipeline приложения.**
+
+LLM получает уже подготовленный:
+
+```xml
+<user_message>
+Почему Валтис перестал доверять Элине?
+</user_message>
+
+<retrieved_context>
+...
+</retrieved_context>
+```
+
+И всё.
+
+Она не обязана знать:
+
+* что есть SurrealDB;
+* что есть Nemotron;
+* что был HNSW;
+* сколько документов нашли;
+* каким embedding-моделям это обязано;
+* был ли это BM25 или vector search.
+
+Это **инфраструктура вокруг LLM**.
+
+И именно такая двухфазная схема соответствует тому, как NVIDIA сейчас описывает retrieval-системы: сначала retrieval, затем передача найденных chunks генеративной модели. ([NVIDIA Docs][1])
+
+---
+
+## А если хочется прям «умно»
+
+Тогда я бы сделал **4 источника retrieval одновременно**:
+
+```text
+                         QUERY
+                           │
+        ┌──────────────────┼──────────────────┐
+        ▼                  ▼                  ▼
+   @entities             BM25             Nemotron
+        │                  │                  │
+        │                  └────────┬─────────┘
+        │                           │
+        └───────────────────────────┤
+                                    ▼
+                              candidate pool
+                                    │
+                                    ▼
+                                reranker
+                                    │
+                                    ▼
+                              top 3–8 chunks
+                                    │
+                                    ▼
+                             context builder
+                                    │
+                                    ▼
+                                  LLM
+```
+
+И **только context builder решает**, что реально показать большой модели.
+
+Это уже очень похоже на то, что делают нормальные RAG-системы, а не на «давайте дадим GPT инструмент `search_lore()` и надеяться, что он его вызовет». NVIDIA, например, отдельно использует retrieval и reranking перед generation. ([NVIDIA Developer][3])
+
+---
+
+**Короче:** твоя исходная мысль «большая модель не должна сама дёргать embedding tool» — **хорошая**. Я бы только поменял формулировку.
+
+Не:
+
+> «заставить большую модель использовать Nemotron»
+
+а:
+
+> **«сделать retrieval middleware между сообщением пользователя и любой подключённой LLM»**.
+
+Тогда пользователь выбирает хоть Claude, хоть GPT, хоть DeepSeek — **а retrieval-слой вообще не меняется**.
+
+И это, кстати, очень хорошо ложится именно на твой `runner.rs`: я бы делал не `LLM → tool → embedding`, а `runner → retrieval pipeline → provider`. 
+
+[1]: https://docs.nvidia.com/nim/nemo-retriever/text-embedding/latest/overview.html?utm_source=chatgpt.com "Overview of NVIDIA NeMo Retriever Embedding NIM — NeMo Retriever Embedding NIM"
+[2]: https://docs.api.nvidia.com/nim/reference/nvidia-nemotron-3-embed-1b?utm_source=chatgpt.com "nvidia / nemotron-3-embed-1b"
+[3]: https://developer.nvidia.com/nemo-retriever?ncid=no-ncid&utm_source=chatgpt.com "NeMo Retriever | NVIDIA Developer"
+[4]: https://build.nvidia.com/nvidia/llama-nemotron-embed-1b-v2?utm_source=chatgpt.com "llama-nemotron-embed-1b-v2 Model by NVIDIA | NVIDIA NIM"
+
+Да, тут я хуйню сказал. 😄
+
+Я смешал **внутренний механизм retrieval** с тем, что должен видеть пользователь. Пользователь, очевидно, **не должен писать ни `SELECT`, ни `@Валтис`, ни вообще знать, что там SurrealDB**.
+
+Нормальная схема для твоего случая выглядит иначе.
+
+### Пользователь пишет вообще что угодно
+
+> Почему Валтис после осады перестал доверять Элине?
+
+А дальше приложение само:
+
+```text
+                    USER MESSAGE
+                         │
+                         ▼
+                ┌─────────────────┐
+                │ Retrieval layer │
+                └────────┬────────┘
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+       semantic search        lexical search
+        Nemotron               / FTS / BM25
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+                   candidate docs
+                         │
+                         ▼
+                      reranker
+                         │
+                         ▼
+                  relevant context
+                         │
+                         ▼
+                 Claude / GPT / etc.
+```
+
+**Всё до последнего блока — внутренняя кухня приложения.**
+
+---
+
+### И даже `id IN [...]` здесь не нужен
+
+Это был мой особенно тупой пример.
+
+Если у тебя сущности представлены в БД, то retrieval-слой должен работать с **естественным запросом**, а не требовать от пользователя идентификаторы.
+
+Например, приложение само получает:
+
+```text
+"Почему Валтис после осады перестал доверять Элине?"
+```
+
+Embedding:
+
+```text
+query embedding
+        ↓
+vector search
+        ↓
+top 20 candidates
+```
+
+Параллельно:
+
+```text
+query
+ ↓
+FTS/BM25
+ ↓
+top 20 candidates
+```
+
+Потом объединение:
+
+```text
+40 кандидатов
+      ↓
+dedup
+      ↓
+reranker
+      ↓
+top 5
+```
+
+И только **после этого** твой Rust-код знает, какие записи нужно достать полностью.
+
+То есть условно:
+
+```rust
+let candidates = retrieval.search(&user_message).await?;
+let context = context_builder.build(candidates).await?;
+let response = llm.generate(user_message, context).await?;
+```
+
+А не:
+
+```rust
+// пользователь каким-то хуём должен знать ID
+SELECT ... WHERE id IN (...)
+```
+
+---
+
+## Более того: я бы вообще не делал `entities` единственной точкой поиска
+
+У тебя же писательская IDE.
+
+Там потенциально есть:
+
+```text
+characters
+locations
+events
+chapters
+scenes
+relationships
+notes
+worldbuilding
+documents
+```
+
+Но retrieval должен представлять их для модели **не как таблицы**, а как единое семантическое пространство.
+
+Например:
+
+```text
+┌──────────────────────────────┐
+│        Knowledge Store       │
+├──────────────────────────────┤
+│ Character: Валтис            │
+│ Character: Элина             │
+│ Event: Осада                 │
+│ Scene: разговор после осады  │
+│ Chapter 17                   │
+│ Note: отношения Валтис/Элина │
+└───────────────┬──────────────┘
+                │
+             embeddings
+                │
+                ▼
+          Vector index
+```
+
+Пользователь вообще не знает, где физически лежит информация.
+
+---
+
+# И вот тут появляется реально интересный вопрос
+
+Ты изначально спрашивал:
+
+> **как большая модель понимает, что ей вообще надо искать?**
+
+И после твоего замечания ответ становится гораздо интереснее.
+
+**Не обязательно заставлять большую модель это понимать.**
+
+Можно сделать retrieval **всегда**, но сделать его настолько дешёвым и аккуратным, чтобы результатом было:
+
+```text
+query
+ ↓
+retrieval
+ ↓
+"ничего релевантного"
+ ↓
+LLM получает обычный запрос
+```
+
+или:
+
+```text
+query
+ ↓
+retrieval
+ ↓
+"вот 4 реально релевантных фрагмента"
+ ↓
+LLM получает запрос + контекст
+```
+
+То есть вопрос:
+
+> «Нужна ли БД?»
+
+превращается в:
+
+> **«Есть ли в БД достаточно релевантный контекст?»**
+
+И это уже **математически измеримая задача**, которую retrieval-система может решать сама.
+
+---
+
+## Причём можно сделать ещё красивее
+
+Допустим:
+
+> «Сделай диалог между двумя друзьями, которые встретились в баре».
+
+Embedding search найдёт:
+
+```text
+0.31  сцена в баре
+0.29  друзья
+0.24  разговор
+```
+
+Ниже порога.
+
+→ **контекст не передаём.**
+
+А:
+
+> «Почему Валтис после убийства Рейна больше не доверяет Элине?»
+
+получаем:
+
+```text
+0.91  убийство Рейна
+0.89  Валтис
+0.87  отношения Валтиса и Элины
+0.84  последствия убийства
+```
+
+→ передаём.
+
+Пользователь ничего не делает.
+
+---
+
+И вот это уже то, что я бы называл **автоматическим retrieval middleware**:
+
+```text
+                  любой текст пользователя
+                           │
+                           ▼
+                 ┌───────────────────┐
+                 │ Query preprocessing│
+                 └─────────┬─────────┘
+                           │
+                ┌──────────┴──────────┐
+                ▼                     ▼
+             BM25                 Embedding
+                │                     │
+                └──────────┬──────────┘
+                           ▼
+                       candidates
+                           │
+                           ▼
+                       reranker
+                           │
+                           ▼
+                     score / gate
+                      │          │
+                  ниже порога   выше
+                      │          │
+                      ▼          ▼
+                     ∅        context
+                      │          │
+                      └────┬─────┘
+                           ▼
+                       BIG LLM
+```
+
+**Вот эту архитектуру я бы уже реально рассматривал для твоей IDE.**
+
+И главное — **LLM-провайдер вообще ничего не знает про эту механику**. Можно поменять Claude на GPT, DeepSeek или локальную модель — retrieval остаётся тем же.
+
+А твоя Nemotron тогда становится не «моделью, которой большая модель должна дать задание», а **внутренним retrieval-компонентом приложения**.
+
+Это гораздо чище.
+
+
+А, тогда да — **я здесь неправильно понял модель данных**.
+
+Если `entities` у тебя — это не фиксированная таблица вроде `characters`, `locations`, `events`, а **пользователь сам создаёт произвольные сущности**, то наоборот:
+
+> **`entities` как единая точка поиска — это как раз правильная архитектура.**
+
+Причём это даже сильно упрощает retrieval.
+
+У тебя получается примерно:
+
+```text
+Entity
+├── id
+├── name
+├── type              ← пользовательский тип / категория
+├── description
+├── content
+├── metadata
+└── embedding
+```
+
+Пользователь может создать хоть:
+
+```text
+Валтис
+Элина
+Королевство Эления
+Меч Предателя
+Война Трёх Королей
+Магическая система
+Правило №17
+любая хуйня, которую он считает сущностью
+```
+
+Для retrieval **неважно, что это за сущность**.
+
+---
+
+### Тогда я бы вообще строил систему вокруг `entities`
+
+```text
+                    USER MESSAGE
+                         │
+                         ▼
+                 query preprocessing
+                         │
+                         ▼
+                   Embedding model
+                         │
+                         ▼
+                  entity vector index
+                         │
+                         ▼
+                 relevant entities
+                         │
+                         ▼
+                   context builder
+                         │
+                         ▼
+                       LLM
+```
+
+И всё.
+
+При этом пользователь **не должен знать вообще ничего** про вектора.
+
+---
+
+### А вот где появляется действительно важный нюанс
+
+У тебя entity может быть огромной.
+
+Например:
+
+```text
+Entity:
+  name: Валтис
+
+  description:
+    ...
+
+  content:
+    20 страниц истории персонажа...
+
+  relationships:
+    ...
+
+  notes:
+    ...
+```
+
+Тогда я бы **не делал один embedding на всю entity**.
+
+Иначе запрос:
+
+> «Почему Валтис ненавидит Элину?»
+
+может получить embedding всей огромной карточки Валтиса, и сигнал размазывается.
+
+Лучше:
+
+```text
+Entity: Валтис
+
+  ├── chunk 1: внешность
+  ├── chunk 2: детство
+  ├── chunk 3: отношения с Элиной
+  ├── chunk 4: участие в войне
+  ├── chunk 5: убийство Рейна
+  └── chunk 6: события после осады
+```
+
+Но **все эти chunks принадлежат одной entity**.
+
+То есть retrieval возвращает:
+
+```text
+entity_id = Валтис
+chunk_id = 17
+score = 0.91
+```
+
+И context builder уже решает:
+
+> «Мне нужен chunk 17, а возможно ещё соседние chunks этой entity».
+
+---
+
+## И тогда твоя система становится очень красивой
+
+У тебя есть **одна универсальная сущность**:
+
+```text
+Entity
+```
+
+и поверх неё несколько механизмов:
+
+```text
+                    Entity Store
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+        exact          lexical       semantic
+        lookup          search         search
+          │              │              │
+          └──────────────┼──────────────┘
+                         ▼
+                    reranking
+                         │
+                         ▼
+                    context
+                         │
+                         ▼
+                        LLM
+```
+
+Причём `exact lookup` тоже **внутренний**.
+
+Если пользователь пишет:
+
+> «Что Валтис думает об Элине?»
+
+система может заметить, что в тексте встречаются имена существующих entities:
+
+```text
+Валтис → entity: abc123
+Элина  → entity: def456
+```
+
+и добавить их в candidate pool.
+
+Пользователь при этом ничего не вводил кроме обычного текста.
+
+---
+
+### И вот тут я бы ещё сильнее отделил две вещи
+
+**Entity retrieval** и **document retrieval**.
+
+Если у тебя вся информация пользователя живёт в entities, это не означает, что embedding должен быть:
+
+```text
+entity → один vector
+```
+
+Скорее:
+
+```text
+                 Entity
+                   │
+       ┌───────────┼───────────┐
+       ▼           ▼           ▼
+    metadata     chunks    relationships
+       │           │           │
+       ▼           ▼           ▼
+     vector      vectors    vectors
+```
+
+Но все они имеют:
+
+```text
+entity_id
+```
+
+То есть vector search ищет **кусочки информации**, а приложение потом собирает их обратно в контекст сущностей.
+
+---
+
+И это уже хорошо сочетается с твоей первоначальной задумкой про Nemotron:
+
+**Nemotron не является “умным агентом”.**
+
+Он просто делает:
+
+```text
+текст → vector
+```
+
+А твой retrieval engine делает:
+
+```text
+vector
+  ↓
+найти похожие куски
+  ↓
+проверить score
+  ↓
+сгруппировать по entity
+  ↓
+собрать контекст
+```
+
+А большая модель получает уже:
+
+```text
+<world_context>
+
+<Entity name="Валтис">
+...
+</Entity>
+
+<Entity name="Элина">
+...
+</Entity>
+
+</world_context>
+```
+
+И ей совершенно похуй, как ты это нашёл.
+
+**Вот это, на мой взгляд, уже действительно нормальная архитектура именно под твою модель “пользователь сам создаёт любые сущности”.**
+
+
+А, **теперь БД реально меняет картину**. Я посмотрел схему — и да, твоя идея с `entities` гораздо логичнее, чем я её сначала понял.
+
+У тебя `entities` — действительно **универсальная пользовательская сущность**:
+
+* `entity_type` — произвольный тип;
+* `name`;
+* `description`;
+* `attributes` — гибкий объект;
+* `tags`;
+* `embeddings`;
+* плюс отдельный граф `entity_rel`, где связи тоже имеют пользовательский `rel_type`.  
+
+То есть условно пользователь может создать:
+
+```text
+"Валтис"
+type = персонаж
+
+"Серебряная чума"
+type = болезнь
+
+"Правило магии №7"
+type = правило
+
+"Зелёный чай"
+type = предмет
+
+"Как работает магия крови"
+type = лор
+
+"Странная хуйня из сна героя"
+type = ???
+```
+
+И **система не должна заранее знать, что это такое**.
+
+---
+
+## И вот что особенно важно в твоей БД
+
+Ты уже фактически подготовил инфраструктуру для того, что мы обсуждаем.
+
+У `entities` уже есть **два разных semantic retrieval индекса**:
+
+```text
+embeddings.openai
+    HNSW 1536
+
+embeddings.local
+    HNSW 1024
+```
+
+и отдельно:
+
+```text
+name → BM25
+description → BM25
+```
+
+
+
+То есть тебе **не надо придумывать новую систему поиска сущностей**.
+
+У тебя уже есть:
+
+```text
+                 entities
+                     │
+       ┌─────────────┼─────────────┐
+       ▼             ▼             ▼
+    name BM25    description    vector
+                   BM25        local/OpenAI
+```
+
+И вот это, на мой взгляд, и надо использовать.
+
+---
+
+# Но я бы теперь сделал важное различие
+
+Твоя БД содержит **не только entities**.
+
+Есть ещё:
+
+```text
+chapters
+text_blocks
+chat_messages
+agent_memory
+web_cache
+```
+
+и у нескольких из них тоже есть embeddings. Например `text_blocks` прямо помечены как предназначенные для семантики/RAG. 
+
+Поэтому я бы не говорил:
+
+> «RAG ищет по всей БД».
+
+Я бы говорил:
+
+> **Есть несколько retrieval-пулов, и каждый имеет своё назначение.**
+
+Например:
+
+### 1. Knowledge retrieval
+
+```text
+entities
+text_blocks
+chapters
+```
+
+Это **мир проекта / содержимое книги**.
+
+### 2. Conversation retrieval
+
+```text
+chat_messages
+```
+
+Это история общения с AI. У тебя она тоже уже имеет embedding index. 
+
+### 3. Agent memory
+
+```text
+agent_memory
+```
+
+Отдельная память агента, тоже с embedding. 
+
+### 4. Web knowledge
+
+```text
+web_cache
+```
+
+Вообще отдельный источник, который появляется после web search. 
+
+---
+
+# Поэтому я бы сделал не один RAG
+
+А **retrieval orchestrator**.
+
+Примерно:
+
+```text
+                    User message
+                         │
+                         ▼
+               ┌──────────────────┐
+               │ Retrieval Router  │
+               └─────────┬────────┘
+                         │
+        ┌────────────────┼─────────────────┐
+        │                │                 │
+        ▼                ▼                 ▼
+     Entities       Text/Chapters      Memories
+        │                │                 │
+        └────────────────┼─────────────────┘
+                         │
+                         ▼
+                    Candidates
+                         │
+                         ▼
+                      Rerank
+                         │
+                         ▼
+                  Context Builder
+                         │
+                         ▼
+                    Cloud LLM
+```
+
+И **router здесь не обязан быть LLM**.
+
+---
+
+# А вот твой `session_context` — вообще золотая штука
+
+У тебя в `chats` есть:
+
+```text
+session_context
+```
+
+с комментарием:
+
+> массив жёстко закреплённых в контекст томов/арок/глав. 
+
+Вот это я бы обязательно использовал.
+
+Потому что retrieval тогда имеет **два источника контекста**:
+
+```text
+               Context
+                  │
+        ┌─────────┴─────────┐
+        ▼                   ▼
+   Hard context        Dynamic RAG
+        │                   │
+  session_context      semantic search
+        │                   │
+        └─────────┬─────────┘
+                  ▼
+             Context builder
+                  │
+                  ▼
+                 LLM
+```
+
+То есть если пользователь открыл чат внутри:
+
+```text
+Том 2
+  └── Арка "Предательство"
+       └── Глава 17
+```
+
+эта информация может быть **гарантированно доступна модели**, а semantic retrieval уже ищет дополнительную информацию.
+
+---
+
+# И самое главное — теперь я понимаю, зачем тебе `entity_rel`
+
+Вот здесь начинается действительно интересная часть.
+
+Допустим запрос:
+
+> «Почему Валтис перестал доверять Элине после смерти Рейна?»
+
+Vector search находит:
+
+```text
+Entity: Валтис
+Entity: Элина
+Entity: Рейн
+```
+
+Но у тебя между entities существует граф:
+
+```text
+Валтис
+   │
+   ├── [отношение] ──> Элина
+   │
+   └── [связь] ──────> Рейн
+```
+
+причём relation имеет:
+
+```text
+rel_type
+description
+strength
+start_chapter
+end_chapter
+attributes
+```
+
+
+
+**И вот это уже гораздо мощнее обычного RAG.**
+
+---
+
+## Получается двухступенчатый retrieval
+
+Например:
+
+```text
+User:
+"Почему Валтис перестал доверять Элине?"
+```
+
+### Шаг 1 — semantic retrieval
+
+Nemotron:
+
+```text
+query
+ ↓
+vector
+ ↓
+entities
+ ↓
+top candidates
+```
+
+Получили:
+
+```text
+Валтис      0.91
+Элина       0.89
+Предательство 0.84
+Рейн        0.81
+```
+
+### Шаг 2 — graph expansion
+
+Теперь retrieval engine говорит:
+
+```text
+нашли Валтиса
+нашли Элину
+
+→ посмотреть их связи
+
+→ посмотреть связанные entities
+```
+
+Получаем:
+
+```text
+Валтис
+ └── distrust → Элина
+       ├── description: ...
+       ├── start_chapter: 17
+       └── related: Рейн
+```
+
+И вот **только это** идёт большой модели.
+
+---
+
+# Вот теперь твоя архитектура становится реально интересной
+
+Потому что LLM не должна решать:
+
+> «Дай-ка я вызову `get_entities()`».
+
+Она получает:
+
+```text
+User query
+     │
+     ▼
+Retrieval engine
+     │
+     ├── semantic
+     ├── lexical
+     ├── graph
+     ├── session context
+     └── memory
+     │
+     ▼
+Relevant project context
+     │
+     ▼
+LLM
+```
+
+То есть **LLM — генератор/рассуждатель, а retrieval engine — отдельный мозг доступа к знаниям проекта.**
+
+---
+
+И ещё одна вещь, которую я теперь вижу в твоей схеме:
+
+у тебя уже есть `fn::get_rag_context`, но сейчас она вообще заточена только под **chapters + OpenAI embeddings**. 
+
+То есть я бы **не стал поверх неё городить ещё один `entities search`**.
+
+Я бы скорее переделал концепцию в отдельный retrieval service:
+
+```rust
+retrieve(
+    project_id,
+    query,
+    session_context,
+    retrieval_policy
+) -> RetrievalResult
+```
+
+где внутри уже:
+
+```text
+entities
+chapters
+text_blocks
+memory
+chat history
+graph relations
+```
+
+а наружу возвращается **единый набор найденного контекста**.
+
+И вот **это**, судя по твоей БД, выглядит намного ближе к той архитектуре, которую ты на самом деле строишь.

@@ -29,7 +29,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   inputs: { style: 'outline', focusAnim: true },
   buttons: { hoverScale: true, clickPress: true },
   tabs: { pos: 'row' },
-  dropdowns: { use3DWheel: true, wheelOrientation: 'vertical' },
+  dropdowns: { use3DWheel: true, wheelOrientation: 'vertical', transparency: 0 },
   cards: { compactList: false, showIcons: true },
   editor: { showWordCount: true, requireCtrlForLinks: false, autoSaveInterval: 60, snapshotInterval: 15, maxSnapshots: 10 },
   notifications: { duration: 3000, position: 'bottom-right' },
@@ -442,6 +442,15 @@ class SettingsService {
     root.style.setProperty('--layout-columns', String(s.layout.columns));
     root.style.setProperty('--sidebar-pos', s.layout.sidebarPos);
     root.style.setProperty('--tab-pos', s.layout.tabPos);
+
+    // Dropdowns
+    const dropdownTransparency = s.dropdowns?.transparency ?? 0;
+    const dropdownOpacity = +(Math.max(0, Math.min(1, 1 - dropdownTransparency / 100))).toFixed(2);
+    const dropdownBgWithAlpha = withAlpha(s.colors.bgPanel || s.colors.bgBase || '#0f0f14', dropdownOpacity);
+
+    root.style.setProperty('--dropdown-transparency', `${dropdownTransparency}%`);
+    root.style.setProperty('--dropdown-opacity', String(dropdownOpacity));
+    root.style.setProperty('--dropdown-bg', dropdownBgWithAlpha);
 
     // Apply logical UI settings as classes and attributes to body
     const body = document.body;

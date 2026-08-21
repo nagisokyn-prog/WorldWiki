@@ -11,6 +11,16 @@ export interface AiProfileSettings {
   enable_task_list?: boolean;
   reasoning_effort?: string;
   timeout_mins?: number;
+  // Local LLM (llama-turboquant-cpp) settings
+  n_ctx?: number;
+  n_gpu_layers?: number;
+  enable_tcq?: boolean;
+  enable_swa?: boolean;
+  swa_window?: number;
+  triattention_path?: string;
+  draft_model_path?: string;
+  embed_model_path?: string;
+  auto_checkpoint?: boolean;
 }
 
 export interface AiProfile {

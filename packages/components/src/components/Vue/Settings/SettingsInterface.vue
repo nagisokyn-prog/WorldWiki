@@ -122,6 +122,19 @@
       <div class="settings-group">
         <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.dropdowns', 'Выпадающие списки') }}</h3>
         <div class="control-row">
+          <label>{{ t('settings.fields.dropdownTransparency', 'Прозрачность') }}</label>
+          <span class="val-badge">{{ settings.dropdowns.transparency ?? 0 }}%</span>
+        </div>
+        <input 
+          v-model.number="settings.dropdowns.transparency" 
+          type="range" 
+          min="0" 
+          max="100" 
+          step="5" 
+          class="interactive-el" 
+          @input="save()"
+        >
+        <div class="control-row mt-3">
           <label>{{ t('settings.fields.wheel3DEffect', 'Эффект 3D-колеса') }}</label>
           <label class="toggle-switch"><input v-model="settings.dropdowns.use3DWheel" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label>
         </div>

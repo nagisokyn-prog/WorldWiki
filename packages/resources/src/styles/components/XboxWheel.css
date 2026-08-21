@@ -47,7 +47,7 @@
   height: 240px;
   overflow: hidden;
   pointer-events: auto;
-  background: var(--bg-panel, rgba(15, 15, 20, 0.96));
+  background: var(--dropdown-bg, #0f0f14);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));

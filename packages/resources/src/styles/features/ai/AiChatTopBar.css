@@ -69,6 +69,6 @@
   padding: 2px 4px;
 }
 .mode-select option {
-  background: var(--bg-surface);
+  background: var(--dropdown-bg, var(--bg-base, #121214));
   color: var(--text-main);
 }

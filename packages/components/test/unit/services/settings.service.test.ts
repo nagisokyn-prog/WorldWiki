@@ -703,6 +703,14 @@ describe('SettingsService', () => {
       expect(applyBackgroundSpy).toHaveBeenCalled();
     });
 
+    it('should set dropdown transparency and opacity CSS variables', () => {
+      settingsService.getSettings().dropdowns.transparency = 40;
+      settingsService.applySettings();
+      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith('--dropdown-transparency', '40%');
+      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith('--dropdown-opacity', '0.6');
+      expect(document.documentElement.style.setProperty).toHaveBeenCalledWith('--dropdown-bg', expect.stringContaining('0.6'));
+    });
+
     it('should correctly format colors with alpha for 3-digit hex, rgb, rgba, and named colors', () => {
       const s = settingsService.getSettings();
       s.colors.bgPanel = '#abc';

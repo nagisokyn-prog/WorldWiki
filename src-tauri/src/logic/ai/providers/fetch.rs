@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
@@ -201,33 +202,65 @@ pub async fn fetch_ai_models(
             }
         }
         "local" => {
-            // Attempt to fetch from llama.cpp / vllm local server
-            let res = client
-                .get("http://localhost:8080/v1/models")
-                .send()
-                .await
-                .map_err(|e| e.to_string())?;
+            let mut models: Vec<AiModelInfo> = Vec::new();
 
-            if res.status().is_success() {
-                let json = res
-                    .json::<OpenAiResponse>()
-                    .await
-                    .map_err(|e| e.to_string())?;
-                let mut models: Vec<AiModelInfo> = json
-                    .data
-                    .into_iter()
-                    .map(|m| AiModelInfo {
-                        value: m.id.clone(),
-                        label: m.id.clone(),
-                        description: "Local / OpenAI Compatible Model".to_string(),
-                        context_length: None,
-                        max_completion_tokens: None,
-                    })
-                    .collect();
-                models.sort_by(|a, b| a.label.cmp(&b.label));
-                return Ok(models);
+            // Scan AppData/WorldWiki/models and ./models directories
+            let mut candidate_dirs = Vec::new();
+            if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
+                candidate_dirs.push(PathBuf::from(&local_app_data).join("WorldWiki").join("models"));
+                candidate_dirs.push(PathBuf::from(&local_app_data).join("world-wiki").join("models"));
             }
-            Err(format!("Local API error: {}", res.status()))
+            if let Ok(app_data) = std::env::var("APPDATA") {
+                candidate_dirs.push(PathBuf::from(&app_data).join("WorldWiki").join("models"));
+                candidate_dirs.push(PathBuf::from(&app_data).join("world-wiki").join("models"));
+            }
+            candidate_dirs.push(PathBuf::from("./models"));
+            candidate_dirs.push(PathBuf::from("../models"));
+
+            for dir in candidate_dirs {
+                if dir.exists() {
+                    if let Ok(entries) = std::fs::read_dir(dir) {
+                        for entry in entries.flatten() {
+                            let path = entry.path();
+                            if path.extension().and_then(|s| s.to_str()).map(|s| s.to_lowercase()) == Some("gguf".to_string()) {
+                                let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("model.gguf");
+                                let path_str = path.to_string_lossy().to_string();
+                                if !models.iter().any(|m| m.value == path_str) {
+                                    models.push(AiModelInfo {
+                                        value: path_str,
+                                        label: filename.to_string(),
+                                        description: "Local GGUF Model (llama-turboquant-cpp)".to_string(),
+                                        context_length: Some(8192),
+                                        max_completion_tokens: None,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fallback check for local OpenAI-compatible server (e.g. llama-server or vLLM)
+            if let Ok(res) = client.get("http://localhost:8080/v1/models").send().await {
+                if res.status().is_success() {
+                    if let Ok(json) = res.json::<OpenAiResponse>().await {
+                        for m in json.data {
+                            if !models.iter().any(|existing| existing.value == m.id) {
+                                models.push(AiModelInfo {
+                                    value: m.id.clone(),
+                                    label: format!("{} (Server :8080)", m.id),
+                                    description: "Local Server Model".to_string(),
+                                    context_length: None,
+                                    max_completion_tokens: None,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            models.sort_by(|a, b| a.label.cmp(&b.label));
+            Ok(models)
         }
         _ => Ok(vec![]),
     }

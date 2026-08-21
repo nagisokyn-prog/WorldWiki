@@ -35,7 +35,8 @@
   },
   "dropdowns": {
     "use3DWheel": true,
-    "wheelOrientation": "vertical"
+    "wheelOrientation": "vertical",
+    "transparency": 0
   },
   "editor": {
     "requireCtrlForLinks": false,

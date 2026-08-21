@@ -40,6 +40,11 @@ input, textarea, select {
     outline: none;
 }
 
+select option {
+    background: var(--dropdown-bg, var(--bg-base, #121214));
+    color: var(--text-main, #ffffff);
+}
+
 img, svg, video, canvas {
     display: block;
     max-width: 100%;

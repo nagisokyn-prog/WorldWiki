@@ -111,6 +111,7 @@ export interface TabSettings {
 export interface DropdownSettings {
   use3DWheel: boolean;    // 3D эффект колеса
   wheelOrientation?: 'vertical' | 'horizontal'; // Ориентация 3D колеса
+  transparency?: number;  // Прозрачность (0% - непрозрачный, 100% - полностью прозрачный)
 }
 
 // Карточки

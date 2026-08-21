@@ -165,6 +165,8 @@ pub fn run() {
             get_ai_completion,
             generate_chat_title,
             delete_ai_chat,
+            fetch_hf_models,
+            download_hf_model,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],

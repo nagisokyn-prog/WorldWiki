@@ -174,6 +174,7 @@ DEFINE INDEX OVERWRITE idx_entity_type    ON entities FIELDS project_id, entit
 DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities COLUMNS name FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities COLUMNS description FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_entity_emb_openai ON entities COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_entity_emb_local ON entities COLUMNS embeddings.local HNSW DIMENSION 1024 DIST COSINE;
 
 -- ===============================================
 -- ТИПЫ ГРАФ-РЁБЕР И СВЯЗИ

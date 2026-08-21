@@ -69,7 +69,7 @@ describe('Settings.vue', () => {
     inputs: { style: 'outline', focusAnim: true },
     buttons: { hoverScale: true, clickPress: true },
     tabs: { pos: 'row' },
-    dropdowns: { use3DWheel: true, wheelOrientation: 'vertical' },
+    dropdowns: { use3DWheel: true, wheelOrientation: 'vertical', transparency: 0 },
     cards: { compactList: false, showIcons: true },
     editor: { showWordCount: true, requireCtrlForLinks: false, autoSaveInterval: 60, snapshotInterval: 15, maxSnapshots: 10 },
     notifications: { duration: 3000, position: 'bottom-right' },

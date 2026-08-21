@@ -1,2 +1,5 @@
 [build]
 rustflags = ["--cfg", "surrealdb_unstable"]
+
+[target.x86_64-pc-windows-msvc]
+rustflags = ["--cfg", "surrealdb_unstable", "-C", "link-arg=/NODEFAULTLIB:libcmt.lib"]

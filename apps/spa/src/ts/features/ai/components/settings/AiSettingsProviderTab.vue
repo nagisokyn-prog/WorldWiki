@@ -124,6 +124,45 @@
             <span class="hint">Количество последовательных ошибок или повторных действий перед показом диалогового окна. Установите 0, чтобы отключить этот механизм.</span>
           </div>
 
+          <!-- Local LLM Settings -->
+          <div v-if="activeProfile.provider === 'local'" class="local-llm-settings" style="border: 1px solid var(--border-color, #444); border-radius: 8px; padding: 12px; margin-bottom: 16px; background: rgba(255,255,255,0.02);">
+            <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+              <span>🦙 Параметры локального инференса (llama-turboquant-cpp)</span>
+            </div>
+
+            <div class="form-group">
+              <label>Размер контекста (n_ctx)</label>
+              <input :value="activeProfile.settings.n_ctx ?? 8192" type="number" min="512" max="131072" step="512" class="input-base" placeholder="8192" @input="updateSetting('n_ctx', Number(($event.target as HTMLInputElement).value))">
+              <span class="hint">Количество токенов контекстного окна модели.</span>
+            </div>
+
+            <div class="form-group">
+              <label>Слои на GPU (n_gpu_layers)</label>
+              <input :value="activeProfile.settings.n_gpu_layers ?? -1" type="number" min="-1" max="120" class="input-base" placeholder="-1 (все слои)" @input="updateSetting('n_gpu_layers', Number(($event.target as HTMLInputElement).value))">
+              <span class="hint">-1 означает полную загрузку модели в память видеокарты (VRAM).</span>
+            </div>
+
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input :checked="activeProfile.settings.enable_tcq ?? true" type="checkbox" @change="updateSetting('enable_tcq', ($event.target as HTMLInputElement).checked)">
+                <span>TCQ (Trellis-Coded Quantization KV-cache)</span>
+              </label>
+              <span class="hint">Сжатие KV кэша в 7 раз без потери точности для экономии VRAM.</span>
+            </div>
+
+            <div class="form-group">
+              <label>Модель эмбеддингов для Auto-RAG поиска <span class="text-muted">(.gguf)</span></label>
+              <input :value="activeProfile.settings.embed_model_path" type="text" class="input-base" placeholder="Путь к Nemotron/Nomic .gguf модели для поиска" @input="updateSetting('embed_model_path', ($event.target as HTMLInputElement).value)">
+              <span class="hint">Если указана, база данных автоматически ищет факты через эмбеддинги без затрат на вызовы инструментов.</span>
+            </div>
+
+            <div class="form-group">
+              <label>Файл калибровки TriAttention <span class="text-muted">(.triattention)</span></label>
+              <input :value="activeProfile.settings.triattention_path" type="text" class="input-base" placeholder="Путь к файлу .triattention (опционально)" @input="updateSetting('triattention_path', ($event.target as HTMLInputElement).value)">
+              <span class="hint">Калиброванная эвикция KV кэша для сверхдлинных контекстов.</span>
+            </div>
+          </div>
+
           <div class="form-group">
             <label>Custom Instructions (Системный промпт)</label>
             <textarea :value="activeProfile.settings.custom_instructions" class="input-base" rows="3" placeholder="Дополнительные инструкции для этого профиля..." @input="updateSetting('custom_instructions', ($event.target as HTMLTextAreaElement).value)"></textarea>

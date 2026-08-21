@@ -340,14 +340,6 @@ async fn run_agent_inner(
         emit_err!("В активном AI-профиле не выбрана модель.");
         return;
     }
-    let provider_client = match build_provider_client(&provider, &api_key, base_url) {
-        Ok(c) => c,
-        Err(e) => {
-            emit_err!(format!("Не удалось настроить провайдера: {e}"));
-            return;
-        }
-    };
-
     let history = match get_chat_messages_impl(&db, &chat_id).await {
         Ok(v) => v,
         Err(e) => {
@@ -362,6 +354,78 @@ async fn run_agent_inner(
     }
 
     let system = build_system_prompt(&role_def, &combined_custom_instructions, &project_id);
+
+    // Native in-process Local LLM inference (llama-turboquant-cpp)
+    if provider == "local" && (model.ends_with(".gguf") || model.contains('/') || model.contains('\\')) {
+        #[cfg(feature = "ai-local")]
+        {
+            let n_ctx = settings.get("n_ctx").and_then(|v| v.as_u64()).unwrap_or(8192) as u32;
+            let n_gpu_layers = settings.get("n_gpu_layers").and_then(|v| v.as_i64()).unwrap_or(-1) as i32;
+            let enable_tcq = settings.get("enable_tcq").and_then(|v| v.as_bool()).unwrap_or(true);
+            let embed_model_path = settings.get("embed_model_path").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let triattention_path = settings.get("triattention_path").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let checkpoint_path = settings.get("checkpoint_path").and_then(|v| v.as_str()).map(|s| s.to_string());
+
+            let history_text: String = messages.iter().map(|m| {
+                let role = if m.role == "user" { "User" } else { "Assistant" };
+                let text = m.content.iter().map(|block| match block {
+                    InputContentBlock::Text { text } => text.clone(),
+                    _ => String::new(),
+                }).collect::<Vec<_>>().join(" ");
+                format!("{role}: {text}")
+            }).collect::<Vec<_>>().join("\n\n");
+
+            let prompt = format!("{system}\n\n{history_text}\nAssistant:");
+
+            match crate::logic::ai::agent_runtime::run_local_agent_loop(
+                app.clone(),
+                project_id,
+                chat_id.clone(),
+                assistant_msg_id.clone(),
+                prompt,
+                model,
+                embed_model_path,
+                triattention_path,
+                checkpoint_path,
+                n_ctx,
+                n_gpu_layers,
+                enable_tcq,
+            ).await {
+                Ok(answer) => {
+                    let clean_id = assistant_msg_id.trim_matches('`');
+                    let parts: Vec<&str> = clean_id.split(':').collect();
+                    let rec_id = if parts.len() == 2 {
+                        surrealdb::types::RecordId::new(parts[0], parts[1])
+                    } else {
+                        surrealdb::types::RecordId::new("chat_messages", clean_id)
+                    };
+                    let _ = db
+                        .query("UPDATE $id SET content = $content, updated_at = time::now()")
+                        .bind(("id", rec_id))
+                        .bind(("content", answer))
+                        .await;
+                    return;
+                }
+                Err(e) => {
+                    emit_err!(format!("Ошибка локальной генерации: {e}"));
+                    return;
+                }
+            }
+        }
+        #[cfg(not(feature = "ai-local"))]
+        {
+            emit_err!("Локальный LLM не скомпилирован. Пересоберите с feature 'ai-local'.");
+            return;
+        }
+    }
+
+    let provider_client = match build_provider_client(&provider, &api_key, base_url) {
+        Ok(c) => c,
+        Err(e) => {
+            emit_err!(format!("Не удалось настроить провайдера: {e}"));
+            return;
+        }
+    };
     let tools_def = crate::logic::ai::tools::tool_definitions();
     let ww_tools = WorldWikiTools {
         db: db.clone(),

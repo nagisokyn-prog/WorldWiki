@@ -96,8 +96,8 @@ const progressPercent = computed(() => {
 });
 
 const formatTokens = (val: number = 0) => {
-  if (val >= 1000000) return (val / 1000000).toFixed(1) + 'm';
-  if (val >= 1000) return (val / 1000).toFixed(1) + 'k';
+  if (val >= 1000000) return (val / 1000000).toFixed(1) + ' млн';
+  if (val >= 1000) return (val / 1000).toFixed(1) + ' тыс';
   return (val || 0).toString();
 };
 </script>

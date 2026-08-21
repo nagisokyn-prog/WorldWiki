@@ -12,7 +12,7 @@ use surrealdb::Surreal;
 use tauri::{AppHandle, Emitter, Manager};
 
 use super::prompt::{
-    build_system_prompt, build_system_prompt_with_context, history_to_input_messages,
+    build_system_prompt_with_context, history_to_input_messages,
     DEFAULT_MAX_TOKENS, MAX_AGENT_ITERATIONS,
 };
 use crate::logic::ai::chat::tree::get_chat_messages_impl;

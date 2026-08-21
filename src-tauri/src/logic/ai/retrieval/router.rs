@@ -2,7 +2,7 @@ use serde_json::Value;
 use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
 use surrealdb::Surreal;
-use std::collections::{HashSet, HashMap};
+use std::collections::HashSet;
 
 use super::embedder::EmbedderService;
 
@@ -14,16 +14,9 @@ pub struct RetrievalCandidate {
     pub entity_id: Option<String>,
 }
 
+#[derive(Default)]
 pub struct RetrievalRouter {
     embedder: EmbedderService,
-}
-
-impl Default for RetrievalRouter {
-    fn default() -> Self {
-        Self {
-            embedder: EmbedderService::default(),
-        }
-    }
 }
 
 impl RetrievalRouter {

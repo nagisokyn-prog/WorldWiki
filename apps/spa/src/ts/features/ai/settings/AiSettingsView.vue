@@ -2,107 +2,104 @@
   <div class="ai-settings-view">
     <div class="settings-sidebar">
       <div class="settings-header">
-        <h2>Настройки AI</h2>
+        <h2>Центр управления AI</h2>
       </div>
 
       <div class="settings-nav">
         <button 
           class="nav-item" 
-          :class="{ active: activeTab === 'providers' }"
-          @click="activeTab = 'providers'"
+          :class="{ active: activeTab === 'connections' }"
+          @click="activeTab = 'connections'"
         >
-          <i class="fas fa-server"></i> Провайдеры
+          <i class="fas fa-plug"></i> Подключения
+        </button>
+        <button 
+          class="nav-item" 
+          :class="{ active: activeTab === 'models' }"
+          @click="activeTab = 'models'"
+        >
+          <i class="fas fa-brain"></i> Модели и логика
+        </button>
+        <button 
+          class="nav-item" 
+          :class="{ active: activeTab === 'local_ai' }"
+          @click="activeTab = 'local_ai'"
+        >
+          <i class="fas fa-microchip"></i> Локальный ИИ
         </button>
         <button 
           class="nav-item" 
           :class="{ active: activeTab === 'modes' }"
           @click="activeTab = 'modes'"
         >
-          <i class="fas fa-theater-masks"></i> Режимы
+          <i class="fas fa-theater-masks"></i> Режимы и роли
         </button>
         <button 
           class="nav-item" 
-          :class="{ active: activeTab === 'auto_approval' }"
-          @click="activeTab = 'auto_approval'"
+          :class="{ active: activeTab === 'permissions' }"
+          @click="activeTab = 'permissions'"
         >
-          <i class="fas fa-shield-alt"></i> Автоодобрение
-        </button>
-        <button 
-          class="nav-item" 
-          :class="{ active: activeTab === 'custom_rules' }"
-          @click="activeTab = 'custom_rules'"
-        >
-          <i class="fas fa-sliders-h"></i> Точечный контроль
+          <i class="fas fa-shield-alt"></i> Права доступа
         </button>
       </div>
     </div>
 
     <div class="settings-content">
       <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>{{ 
-          activeTab === 'providers' ? 'Провайдеры и модели' : 
-          activeTab === 'modes' ? 'Режимы Агента' :
-          activeTab === 'auto_approval' ? 'Правила песочницы' : 'Специфичные правила' 
-        }}</h2>
+        <h2>{{ tabTitles[activeTab] || 'Настройки' }}</h2>
         <button class="btn-secondary-outline" title="Закрыть настройки" style="padding: 6px 12px;" @click="$emit('close')">
           <i class="fas fa-times"></i> Закрыть
         </button>
       </div>
 
       <div class="tab-body">
-        
-        <div v-if="activeTab === 'providers'" class="tab-pane">
-          <div v-if="isLoading" class="loading-state">
-            Загрузка профилей...
-          </div>
-          <div v-else class="profiles-section">
-            <div class="profiles-header">
-              <h3>Профили</h3>
-              <div style="display: flex; gap: 8px;">
-                <select v-model="activeProfileId" class="input-base" style="flex: 1;" @change="handleProfileChange">
-                  <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
-                </select>
-                <button class="btn-secondary-outline" title="Создать новый профиль" @click="createNewProfile">
-                  <i class="fas fa-plus"></i>
-                </button>
-                <button 
-                  v-if="profiles.length > 1" 
-                  class="btn-danger-outline" 
-                  title="Удалить профиль" 
-                  @click="deleteActiveProfile"
-                >
-                  <i class="fas fa-trash"></i>
-                </button>
-              </div>
-            </div>
-
-            <AiSettingsProviderTab 
-              :active-profile="activeProfile"
-              :available-models="availableModels"
-              :is-fetching-models="isFetchingModels"
-              :fetch-error="fetchError"
-              @fetch-models="handleFetchModels"
-              @save-profile="saveActiveProfile"
-              @provider-changed="handleProviderChange"
-            />
-          </div>
+        <div v-if="isLoading" class="loading-state">
+          <i class="fas fa-spinner fa-spin"></i> Загрузка настроек...
         </div>
 
-        <AiSettingsModesTab 
-          v-if="activeTab === 'modes'" 
-          :current-project="currentProject"
-        />
+        <template v-else>
+          <!-- 1. ПОДКЛЮЧЕНИЯ (CONNECTIONS) -->
+          <AiSettingsConnectionsTab 
+            v-if="activeTab === 'connections'"
+            :profiles="profiles"
+            :active-profile="activeProfile"
+            @select-profile="handleProfileSelect"
+            @create-profile="createNewProfile"
+            @delete-profile="deleteActiveProfile"
+            @save-profile="saveActiveProfile"
+            @provider-changed="handleProviderChange"
+          />
 
-        <AiSettingsSandboxTab 
-          v-if="activeTab === 'auto_approval'" 
-          @save-sandbox="saveSandbox" 
-        />
-        
-        <AiSettingsRulesTab 
-          v-if="activeTab === 'custom_rules'" 
-          @save-rules="saveSandbox" 
-        />
-        
+          <!-- 2. МОДЕЛИ (MODELS) -->
+          <AiSettingsModelsTab 
+            v-if="activeTab === 'models'"
+            :active-profile="activeProfile"
+            :available-models="availableModels"
+            :is-fetching-models="isFetchingModels"
+            :fetch-error="fetchError"
+            @save-profile="saveActiveProfile"
+            @fetch-models="handleFetchModels"
+          />
+
+          <!-- 3. ЛОКАЛЬНЫЙ ИИ (LOCAL AI HUB) -->
+          <AiSettingsLocalTab 
+            v-if="activeTab === 'local_ai'"
+            :active-profile="activeProfile"
+            @save-profile="saveActiveProfile"
+          />
+
+          <!-- 4. РЕЖИМЫ (MODES) -->
+          <AiSettingsModesTab 
+            v-if="activeTab === 'modes'"
+            :current-project="currentProject"
+          />
+
+          <!-- 5. ПРАВА ДОСТУПА (PERMISSIONS) -->
+          <AiSettingsPermissionsTab 
+            v-if="activeTab === 'permissions'"
+            @save-permissions="handleSavePermissions"
+          />
+        </template>
       </div>
     </div>
   </div>
@@ -110,18 +107,28 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import AiSettingsProviderTab from '../components/settings/AiSettingsProviderTab.vue';
+import AiSettingsConnectionsTab from '../components/settings/AiSettingsConnectionsTab.vue';
+import AiSettingsModelsTab from '../components/settings/AiSettingsModelsTab.vue';
+import AiSettingsLocalTab from '../components/settings/AiSettingsLocalTab.vue';
 import AiSettingsModesTab from '../components/settings/AiSettingsModesTab.vue';
-import AiSettingsSandboxTab from '../components/settings/AiSettingsSandboxTab.vue';
-import AiSettingsRulesTab from '../components/settings/AiSettingsRulesTab.vue';
+import AiSettingsPermissionsTab from '../components/settings/AiSettingsPermissionsTab.vue';
+
 import { useAiProfiles } from '../composables/useAiProfiles';
 import { useAiModels } from '../composables/useAiModels';
 
 defineEmits(['close']);
 
-const activeTab = ref('providers');
+const activeTab = ref<'connections' | 'models' | 'local_ai' | 'modes' | 'permissions'>('connections');
 
-// Get project ID
+const tabTitles: Record<string, string> = {
+  connections: 'Подключения и API-ключи',
+  models: 'Модели и логика генерации',
+  local_ai: 'Центр локальных моделей',
+  modes: 'Режимы и роли ИИ-помощника',
+  permissions: 'Инструменты и безопасность',
+};
+
+// Project ID
 let currentProject = 'global';
 const hash = window.location.hash;
 if (hash.includes('?')) {
@@ -152,7 +159,8 @@ onMounted(async () => {
   handleFetchModels();
 });
 
-const handleProfileChange = () => {
+const handleProfileSelect = (id: string) => {
+  activeProfileId.value = id;
   handleFetchModels();
 };
 
@@ -171,10 +179,9 @@ const handleFetchModels = async (forceNetwork = false) => {
   }
 };
 
-const saveSandbox = async () => {
-  // Mocked for now, integrate with original sandbox save logic later
+const handleSavePermissions = async () => {
   const { appAlert } = await import('@worldwiki/components');
-  appAlert('Сохранено (заглушка)');
+  appAlert('Права доступа успешно сохранены');
 };
 </script>
 

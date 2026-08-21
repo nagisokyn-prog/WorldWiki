@@ -167,6 +167,14 @@ pub fn run() {
             delete_ai_chat,
             fetch_hf_models,
             download_hf_model,
+            get_hardware_info,
+            calculate_quantization_estimates,
+            get_recommended_local_models,
+            list_installed_models,
+            load_local_model,
+            unload_local_model,
+            delete_local_model,
+            get_tool_permissions_catalog,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
@@ -183,7 +191,8 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| if let tauri::WindowEvent::CloseRequested { .. } = event {
-            println!("[DEBUG] Emergency backup before close...");
+            println!("[DEBUG] Emergency backup and model shutdown before close...");
+            logic::ai::manager::shutdown_local_models();
             let state = window.state::<AppState>();
             let db = state.db.clone();
             let backup_path = std::env::current_dir().unwrap_or_default().join("data").join("backup_latest.surql");

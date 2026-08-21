@@ -5,6 +5,10 @@ pub mod providers;
 pub mod model_hub;
 pub mod chunker;
 pub mod retrieval;
+pub mod types;
+pub mod hardware;
+pub mod manager;
+pub mod permissions;
 
 #[cfg(feature = "ai-local")]
 pub mod local_llm;
@@ -31,3 +35,14 @@ pub use providers::fetch::fetch_ai_models;
 pub use chat::operations::delete_ai_chat;
 pub use model_hub::fetch_hf_models;
 pub use model_hub::download_hf_model;
+
+pub use hardware::get_hardware_info;
+pub use hardware::calculate_quantization_estimates;
+pub use hardware::get_recommended_local_models;
+
+pub use manager::list_installed_models;
+pub use manager::load_local_model;
+pub use manager::unload_local_model;
+pub use manager::delete_local_model;
+
+pub use permissions::get_tool_permissions_catalog;

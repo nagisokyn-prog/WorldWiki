@@ -37,6 +37,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE FROM appears_in WHERE project_id = $pid;
     DELETE FROM auto_approval_settings WHERE project_id = $pid;
     DELETE FROM ai_profiles WHERE project_id = $pid;
+    DELETE FROM entity_chunks WHERE project_id = $pid;
     DELETE FROM artifacts WHERE project_id = $pid;
     DELETE FROM ai_skills WHERE project_id = $pid;
 };
@@ -87,42 +88,45 @@ DEFINE FIELD OVERWRITE timeline_events.*.date ON chapters TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE timeline_events.*.epoch ON chapters TYPE option<string>;
 DEFINE FIELD OVERWRITE timeline_events.*.time ON chapters TYPE option<object> FLEXIBLE;
 
-DEFINE INDEX OVERWRITE idx_chapter_ft  ON chapters COLUMNS content FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_chapter_ft  ON chapters COLUMNS content FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_chapter_title_ft ON chapters COLUMNS title FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_chapter_emb_openai ON chapters COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_chapter_emb_nemotron ON chapters COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
 
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
-    DELETE text_blocks WHERE chapter_id = $before.id;
-    DELETE plans WHERE parent_ref = $before.id;
+    DELETE text_blocks WHERE chapter_id = $before.id;
+    DELETE plans WHERE parent_ref = $before.id;
 };
 
 -- ===============================================
 -- БЛОКИ ТЕКСТА (Для семантики и RAG)
 -- ===============================================
 DEFINE TABLE OVERWRITE text_blocks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON text_blocks TYPE record<projects>;
-DEFINE FIELD OVERWRITE chapter_id  ON text_blocks TYPE record<chapters>;
-DEFINE FIELD OVERWRITE block_type  ON text_blocks TYPE string DEFAULT 'description';
+DEFINE FIELD OVERWRITE project_id  ON text_blocks TYPE record<projects>;
+DEFINE FIELD OVERWRITE chapter_id  ON text_blocks TYPE record<chapters>;
+DEFINE FIELD OVERWRITE block_type  ON text_blocks TYPE string DEFAULT 'description';
 DEFINE FIELD OVERWRITE order_index ON text_blocks TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE content     ON text_blocks TYPE string;
-DEFINE FIELD OVERWRITE embeddings  ON text_blocks TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE created_at  ON text_blocks TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE content     ON text_blocks TYPE string;
+DEFINE FIELD OVERWRITE embeddings  ON text_blocks TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at  ON text_blocks TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_textblock_project ON text_blocks FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_textblock_chapter ON text_blocks FIELDS chapter_id;
 DEFINE INDEX OVERWRITE idx_textblock_emb_openai ON text_blocks COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_textblock_emb_nemotron ON text_blocks COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
 
 -- ===============================================
 -- ТЕГИ И КАЛЕНДАРИ
 -- ===============================================
 DEFINE TABLE OVERWRITE tags SCHEMAFULL;
-DEFINE FIELD OVERWRITE name       ON tags TYPE string;
-DEFINE FIELD OVERWRITE color      ON tags TYPE string;
+DEFINE FIELD OVERWRITE name       ON tags TYPE string;
+DEFINE FIELD OVERWRITE color      ON tags TYPE string;
 DEFINE FIELD OVERWRITE project_id ON tags TYPE record<projects>;
 
 DEFINE TABLE OVERWRITE calendars SCHEMAFULL;
-DEFINE FIELD OVERWRITE name        ON calendars TYPE string;
+DEFINE FIELD OVERWRITE name        ON calendars TYPE string;
 DEFINE FIELD OVERWRITE description ON calendars TYPE option<string>;
-DEFINE FIELD OVERWRITE data        ON calendars TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE data        ON calendars TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE is_default  ON calendars TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_master   ON calendars TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE project_id  ON calendars TYPE record<projects>;
@@ -131,14 +135,14 @@ DEFINE FIELD OVERWRITE project_id  ON calendars TYPE record<projects>;
 -- МЕТА: Типы сущностей (Схемы)
 -- ===============================================
 DEFINE TABLE OVERWRITE entity_schemas SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id    ON entity_schemas TYPE record<projects>;
-DEFINE FIELD OVERWRITE type_key      ON entity_schemas TYPE string;
-DEFINE FIELD OVERWRITE type_name     ON entity_schemas TYPE string;
-DEFINE FIELD OVERWRITE icon          ON entity_schemas TYPE string;
-DEFINE FIELD OVERWRITE color         ON entity_schemas TYPE string;
+DEFINE FIELD OVERWRITE project_id    ON entity_schemas TYPE record<projects>;
+DEFINE FIELD OVERWRITE type_key      ON entity_schemas TYPE string;
+DEFINE FIELD OVERWRITE type_name     ON entity_schemas TYPE string;
+DEFINE FIELD OVERWRITE icon          ON entity_schemas TYPE string;
+DEFINE FIELD OVERWRITE color         ON entity_schemas TYPE string;
 DEFINE FIELD OVERWRITE fields_schema ON entity_schemas TYPE array<object> FLEXIBLE DEFAULT [];
-DEFINE FIELD OVERWRITE full_schema   ON entity_schemas TYPE option<object> FLEXIBLE;
-DEFINE FIELD OVERWRITE created_at    ON entity_schemas TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE full_schema   ON entity_schemas TYPE option<object> FLEXIBLE;
+DEFINE FIELD OVERWRITE created_at    ON entity_schemas TYPE datetime DEFAULT time::now();
 
 -- Убран UNIQUE, так как он баговал в 3.0.4. В 3.2.0 можно вернуть, но для надежности пока оставляем обычный индекс.
 DEFINE INDEX OVERWRITE idx_schema_type ON entity_schemas FIELDS project_id, type_key;
@@ -147,34 +151,55 @@ DEFINE INDEX OVERWRITE idx_schema_type ON entity_schemas FIELDS project_id, type
 -- ИСТОРИЯ СХЕМ
 -- ===============================================
 DEFINE TABLE OVERWRITE schema_history SCHEMAFULL;
-DEFINE FIELD OVERWRITE schema_id  ON schema_history TYPE record<entity_schemas>;
-DEFINE FIELD OVERWRITE type_key   ON schema_history TYPE string;
+DEFINE FIELD OVERWRITE schema_id  ON schema_history TYPE record<entity_schemas>;
+DEFINE FIELD OVERWRITE type_key   ON schema_history TYPE string;
 DEFINE FIELD OVERWRITE project_id ON schema_history TYPE record<projects>;
-DEFINE FIELD OVERWRITE snapshot   ON schema_history TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE saved_at   ON schema_history TYPE string;
-DEFINE FIELD OVERWRITE is_pinned  ON schema_history TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE snapshot   ON schema_history TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE saved_at   ON schema_history TYPE string;
+DEFINE FIELD OVERWRITE is_pinned  ON schema_history TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE commit_msg ON schema_history TYPE option<string>;
 
 -- ===============================================
 -- СУЩНОСТИ (универсальная таблица)
 -- ===============================================
 DEFINE TABLE OVERWRITE entities SCHEMAFULL CHANGEFEED 30d;
-DEFINE FIELD OVERWRITE project_id   ON entities TYPE record<projects>;
-DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string;
-DEFINE FIELD OVERWRITE name         ON entities TYPE string;
-DEFINE FIELD OVERWRITE description  ON entities TYPE option<string>;
-DEFINE FIELD OVERWRITE attributes   ON entities TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE tags         ON entities TYPE array<string> DEFAULT [];
-DEFINE FIELD OVERWRITE embeddings   ON entities TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE created_at   ON entities TYPE option<datetime> DEFAULT time::now();
-DEFINE FIELD OVERWRITE updated_at   ON entities TYPE option<datetime> DEFAULT time::now();
+DEFINE FIELD OVERWRITE project_id   ON entities TYPE record<projects>;
+DEFINE FIELD OVERWRITE entity_type  ON entities TYPE string;
+DEFINE FIELD OVERWRITE name         ON entities TYPE string;
+DEFINE FIELD OVERWRITE description  ON entities TYPE option<string>;
+DEFINE FIELD OVERWRITE attributes   ON entities TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE tags         ON entities TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE embeddings   ON entities TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at   ON entities TYPE option<datetime> DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at   ON entities TYPE option<datetime> DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_entity_project ON entities FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_entity_type    ON entities FIELDS project_id, entity_type;
+DEFINE INDEX OVERWRITE idx_entity_type    ON entities FIELDS project_id, entity_type;
 DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities COLUMNS name FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities COLUMNS description FULLTEXT ANALYZER like BM25;
 DEFINE INDEX OVERWRITE idx_entity_emb_openai ON entities COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
 DEFINE INDEX OVERWRITE idx_entity_emb_local ON entities COLUMNS embeddings.local HNSW DIMENSION 1024 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_entity_emb_nemotron ON entities COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
+
+DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DELETE" THEN {
+    DELETE FROM entity_chunks WHERE entity_id = $before.id;
+};
+
+-- ===============================================
+-- ЧАНКИ СУЩНОСТЕЙ (Для детального семантического поиска Auto-RAG)
+-- ===============================================
+DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id   ON entity_chunks TYPE record<projects>;
+DEFINE FIELD OVERWRITE entity_id    ON entity_chunks TYPE record<entities>;
+DEFINE FIELD OVERWRITE chunk_index  ON entity_chunks TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE content      ON entity_chunks TYPE string;
+DEFINE FIELD OVERWRITE embeddings   ON entity_chunks TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at   ON entity_chunks TYPE option<datetime> DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_chunk_project ON entity_chunks FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_chunk_entity  ON entity_chunks FIELDS entity_id;
+DEFINE INDEX OVERWRITE idx_chunk_content_ft ON entity_chunks COLUMNS content FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
 
 -- ===============================================
 -- ТИПЫ ГРАФ-РЁБЕР И СВЯЗИ

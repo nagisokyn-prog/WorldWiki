@@ -11,8 +11,12 @@ use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 use tauri::{AppHandle, Emitter, Manager};
 
-use super::prompt::{build_system_prompt, history_to_input_messages, DEFAULT_MAX_TOKENS, MAX_AGENT_ITERATIONS};
+use super::prompt::{
+    build_system_prompt, build_system_prompt_with_context, history_to_input_messages,
+    DEFAULT_MAX_TOKENS, MAX_AGENT_ITERATIONS,
+};
 use crate::logic::ai::chat::tree::get_chat_messages_impl;
+use crate::logic::ai::retrieval::RetrievalRouter;
 use crate::logic::ai::tools::WorldWikiTools;
 use crate::AppState;
 
@@ -353,7 +357,40 @@ async fn run_agent_inner(
         return;
     }
 
-    let system = build_system_prompt(&role_def, &combined_custom_instructions, &project_id);
+    let enable_auto_rag = settings
+        .get("enable_auto_rag")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true);
+    let enable_semantic = settings
+        .get("enable_semantic_search")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(true);
+
+    let last_user_query = messages
+        .iter()
+        .rev()
+        .find(|m| m.role == "user")
+        .and_then(|m| {
+            m.content.iter().find_map(|b| match b {
+                InputContentBlock::Text { text } => Some(text.as_str()),
+                _ => None,
+            })
+        })
+        .unwrap_or("");
+
+    let router = RetrievalRouter::default();
+    let retrieved_context = if enable_auto_rag && !last_user_query.is_empty() {
+        router.retrieve(&db, &project_id, last_user_query, enable_semantic).await
+    } else {
+        None
+    };
+
+    let system = build_system_prompt_with_context(
+        &role_def,
+        &combined_custom_instructions,
+        &project_id,
+        retrieved_context.as_deref(),
+    );
 
     // Native in-process Local LLM inference (llama-turboquant-cpp)
     if provider == "local" && (model.ends_with(".gguf") || model.contains('/') || model.contains('\\')) {
@@ -426,7 +463,12 @@ async fn run_agent_inner(
             return;
         }
     };
-    let tools_def = crate::logic::ai::tools::tool_definitions();
+    let mut tools_def = crate::logic::ai::tools::tool_definitions();
+    // If Auto-RAG successfully found context or is enabled, remove redundant search tools
+    if enable_auto_rag && retrieved_context.is_some() {
+        tools_def.retain(|t| t.name != "rag_search" && t.name != "search_entities");
+    }
+
     let ww_tools = WorldWikiTools {
         db: db.clone(),
         project_id: project_id.clone(),

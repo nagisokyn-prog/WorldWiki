@@ -71,6 +71,22 @@
             </label>
             <span class="hint">При включении ИИ может создавать и управлять списками задач для отслеживания прогресса.</span>
           </div>
+
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input :checked="activeProfile.settings.enable_auto_rag ?? true" type="checkbox" @change="updateSetting('enable_auto_rag', ($event.target as HTMLInputElement).checked)">
+              <span>Автоматический поиск контекста мира (Auto-RAG)</span>
+            </label>
+            <span class="hint">Автоматически подтягивает релевантный лор из базы данных прямо в контекст до обращения к ИИ. Ускоряет генерацию и экономит токены.</span>
+          </div>
+
+          <div v-if="activeProfile.settings.enable_auto_rag ?? true" class="form-group checkbox-group" style="margin-left: 20px;">
+            <label class="checkbox-label">
+              <input :checked="activeProfile.settings.enable_semantic_search ?? true" type="checkbox" @change="updateSetting('enable_semantic_search', ($event.target as HTMLInputElement).checked)">
+              <span>Использовать локальную нейросеть для поиска лора (Nemotron, ~600МБ ОЗУ)</span>
+            </label>
+            <span class="hint">Включает глубокий семантический векторный поиск по смыслу. Если выключено — поиск работает быстрее по ключевым словам (BM25).</span>
+          </div>
           
           <div class="form-group">
             <label>Уровень размышлений (Reasoning Effort)</label>

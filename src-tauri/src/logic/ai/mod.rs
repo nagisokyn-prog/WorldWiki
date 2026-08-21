@@ -3,6 +3,8 @@ pub mod agent;
 pub mod tools;
 pub mod providers;
 pub mod model_hub;
+pub mod chunker;
+pub mod retrieval;
 
 #[cfg(feature = "ai-local")]
 pub mod local_llm;

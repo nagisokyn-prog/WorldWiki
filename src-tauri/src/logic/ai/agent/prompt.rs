@@ -61,6 +61,24 @@ pub fn build_system_prompt(
     out
 }
 
+/// Системный промпт с автоматическим внедрением контекста (Auto-RAG).
+pub fn build_system_prompt_with_context(
+    role_definition: &str,
+    custom_instructions: &str,
+    project_id: &str,
+    world_context: Option<&str>,
+) -> String {
+    let mut out = build_system_prompt(role_definition, custom_instructions, project_id);
+    if let Some(ctx) = world_context {
+        if !ctx.trim().is_empty() {
+            out.push_str("\n\n====\nКОНТЕКСТ МИРА (WORLD CONTEXT):\n");
+            out.push_str("Ниже приведены факты из базы данных мира, автоматически извлеченные под текущий диалог. Опирайся на них как на канонические факты:\n");
+            out.push_str(ctx.trim());
+        }
+    }
+    out
+}
+
 pub fn history_to_input_messages(history: &[Value], assistant_msg_id: &str) -> Vec<InputMessage> {
     use std::collections::HashMap;
 

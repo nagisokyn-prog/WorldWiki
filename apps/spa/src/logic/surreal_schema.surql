@@ -125,7 +125,7 @@ DEFINE FIELD OVERWRITE project_id ON tags TYPE record<projects>;
 
 DEFINE TABLE OVERWRITE calendars SCHEMAFULL;
 DEFINE FIELD OVERWRITE name        ON calendars TYPE string;
-DEFINE FIELD OVERWRITE description ON calendars TYPE option<string>;
+DEFINE FIELD OVERWRITE description ON calendars TYPE option<string | null>;
 DEFINE FIELD OVERWRITE data        ON calendars TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE is_default  ON calendars TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_master   ON calendars TYPE bool DEFAULT false;
@@ -217,11 +217,11 @@ DEFINE FIELD OVERWRITE to_types   ON relation_schemas TYPE array<string> DEFAU
 DEFINE TABLE OVERWRITE entity_rel TYPE RELATION IN entities OUT entities SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id    ON entity_rel TYPE record<projects>;
 DEFINE FIELD OVERWRITE rel_type      ON entity_rel TYPE string;
-DEFINE FIELD OVERWRITE description   ON entity_rel TYPE option<string>;
-DEFINE FIELD OVERWRITE strength      ON entity_rel TYPE option<int>;
+DEFINE FIELD OVERWRITE description   ON entity_rel TYPE option<string | null>;
+DEFINE FIELD OVERWRITE strength      ON entity_rel TYPE option<int | null>;
 DEFINE FIELD OVERWRITE attributes    ON entity_rel TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE start_chapter ON entity_rel TYPE option<record<chapters>>;
-DEFINE FIELD OVERWRITE end_chapter   ON entity_rel TYPE option<record<chapters>>;
+DEFINE FIELD OVERWRITE start_chapter ON entity_rel TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE end_chapter   ON entity_rel TYPE option<record<chapters> | null>;
 DEFINE FIELD OVERWRITE created_at    ON entity_rel TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_rel_project ON entity_rel FIELDS project_id;
@@ -230,8 +230,8 @@ DEFINE INDEX OVERWRITE idx_rel_type    ON entity_rel FIELDS rel_type;
 -- Связи: Сущность ↔ Глава
 DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects>;
-DEFINE FIELD OVERWRITE role       ON appears_in TYPE option<string>;
-DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string>;
+DEFINE FIELD OVERWRITE role       ON appears_in TYPE option<string | null>;
+DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string | null>;
 
 -- ===============================================
 -- ПЛАНЫ
@@ -239,7 +239,7 @@ DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string>;
 DEFINE TABLE OVERWRITE plans SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON plans TYPE record<projects>;
 DEFINE FIELD OVERWRITE title       ON plans TYPE string;
-DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE record<chapters> | record<arcs> | record<volumes> | record<plans>;
+DEFINE FIELD OVERWRITE parent_ref  ON plans TYPE option<record<chapters> | record<arcs> | record<volumes> | record<plans> | null>;
 DEFINE FIELD OVERWRITE parent_type ON plans TYPE string;
 DEFINE FIELD OVERWRITE sort_order  ON plans TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
@@ -269,7 +269,7 @@ DEFINE FIELD OVERWRITE slug                ON ai_modes TYPE string;
 DEFINE FIELD OVERWRITE name                ON ai_modes TYPE string;
 DEFINE FIELD OVERWRITE role_definition     ON ai_modes TYPE string;
 DEFINE FIELD OVERWRITE custom_instructions ON ai_modes TYPE string;
-DEFINE FIELD OVERWRITE api_profile_id      ON ai_modes TYPE option<string>;
+DEFINE FIELD OVERWRITE api_profile_id      ON ai_modes TYPE option<string | null>;
 DEFINE FIELD OVERWRITE allowed_tools       ON ai_modes TYPE array<string> DEFAULT [];
 DEFINE FIELD OVERWRITE is_global           ON ai_modes TYPE bool DEFAULT false;
 DEFINE INDEX OVERWRITE idx_aimode_project ON ai_modes FIELDS project_id;
@@ -279,7 +279,7 @@ DEFINE INDEX OVERWRITE idx_aimode_slug ON ai_modes FIELDS slug;
 DEFINE TABLE OVERWRITE chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON chats TYPE record<projects>;
 DEFINE FIELD OVERWRITE title      ON chats TYPE string;
-DEFINE FIELD OVERWRITE tag        ON chats TYPE option<string>;
+DEFINE FIELD OVERWRITE tag        ON chats TYPE option<string | null>;
 DEFINE FIELD OVERWRITE session_context ON chats TYPE array<record> DEFAULT []; -- Массив жестко закрепленных в контекст томов/арок/глав
 DEFINE FIELD OVERWRITE created_at ON chats TYPE datetime DEFAULT time::now();
 
@@ -293,12 +293,12 @@ DEFINE FIELD OVERWRITE project_id       ON chat_messages TYPE record<projects>;
 DEFINE FIELD OVERWRITE chat_id          ON chat_messages TYPE record<chats>;
 DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
-DEFINE FIELD OVERWRITE reasoning        ON chat_messages TYPE option<string>;
-DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE option<array<string>>;
+DEFINE FIELD OVERWRITE reasoning        ON chat_messages TYPE option<string | null>;
+DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE option<array<string> | null>;
 DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object> FLEXIBLE;
-DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string>;
-DEFINE FIELD OVERWRITE feedback_comment ON chat_messages TYPE option<string>;
+DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string | null>;
+DEFINE FIELD OVERWRITE feedback_comment ON chat_messages TYPE option<string | null>;
 DEFINE FIELD OVERWRITE rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE parent_id        ON chat_messages TYPE option<record<chat_messages>>;
@@ -373,7 +373,22 @@ DEFINE FIELD OVERWRITE content     ON web_cache TYPE string;
 DEFINE FIELD OVERWRITE embeddings  ON web_cache TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE fetched_at  ON web_cache TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE expires_at  ON web_cache TYPE option<datetime>;
-DEFINE INDEX OVERWRITE idx_web_emb_openai ON web_cache COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+-- Чанки лора и энциклопедии для RAG-поиска (Гибридный HNSW + BM25)
+DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects>;
+DEFINE FIELD OVERWRITE chapter_id          ON entity_chunks TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE entity_id           ON entity_chunks TYPE option<record<entities> | null>;
+DEFINE FIELD OVERWRITE title               ON entity_chunks TYPE string;
+DEFINE FIELD OVERWRITE content             ON entity_chunks TYPE string;
+DEFINE FIELD OVERWRITE chunk_index         ON entity_chunks TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE embedding_nemotron  ON entity_chunks TYPE option<array<float> | null>;
+DEFINE FIELD OVERWRITE embedding_nomic     ON entity_chunks TYPE option<array<float> | null>;
+DEFINE FIELD OVERWRITE embedding_openai    ON entity_chunks TYPE option<array<float> | null>;
+DEFINE FIELD OVERWRITE created_at          ON entity_chunks TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_chunk_project   ON entity_chunks FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_chunk_content_bm25 ON entity_chunks COLUMNS content FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embedding_nemotron HNSW DIMENSION 2048 DIST COSINE;
 
 -- ===============================================
 -- РЕВИЗИИ

@@ -65,6 +65,36 @@ unsafe impl Send for LocalLlm {}
 #[cfg(feature = "ai-local")]
 unsafe impl Sync for LocalLlm {}
 
+pub fn resolve_model_path(path_str: &str) -> std::path::PathBuf {
+    let p = std::path::Path::new(path_str);
+    if p.exists() {
+        return p.to_path_buf();
+    }
+    
+    // Check %APPDATA%/com.worldwiki.app/models/<filename>
+    if let Some(app_data) = std::env::var_os("APPDATA") {
+        let candidate = std::path::PathBuf::from(app_data).join("com.worldwiki.app").join("models").join(path_str);
+        if candidate.exists() {
+            return candidate;
+        }
+    }
+
+    if let Some(user_prof) = std::env::var_os("USERPROFILE") {
+        let candidate = std::path::PathBuf::from(user_prof).join("AppData").join("Roaming").join("com.worldwiki.app").join("models").join(path_str);
+        if candidate.exists() {
+            return candidate;
+        }
+    }
+    
+    // Check local models directory ./models/<filename>
+    let local_candidate = std::path::PathBuf::from("models").join(path_str);
+    if local_candidate.exists() {
+        return local_candidate;
+    }
+
+    p.to_path_buf()
+}
+
 #[cfg(feature = "ai-local")]
 impl LocalLlm {
     /// Load model from a GGUF file
@@ -74,10 +104,11 @@ impl LocalLlm {
         model_params.use_mmap = params.use_mmap;
         model_params.use_mlock = params.use_mlock;
 
-        let c_path = CString::new(model_path).map_err(|e| e.to_string())?;
+        let resolved = resolve_model_path(model_path);
+        let c_path = CString::new(resolved.to_string_lossy().as_bytes()).map_err(|e| e.to_string())?;
         let model = unsafe { llama_model_load_from_file(c_path.as_ptr(), model_params) };
         if model.is_null() {
-            return Err(format!("Failed to load model from {model_path}"));
+            return Err(format!("Failed to load model from {model_path} (resolved: {})", resolved.display()));
         }
 
         let vocab = unsafe { llama_model_get_vocab(model) };
@@ -136,19 +167,23 @@ impl LocalLlm {
         model_params.n_gpu_layers = params.n_gpu_layers;
         model_params.use_mmap = params.use_mmap;
 
-        let c_path = CString::new(model_path).map_err(|e| e.to_string())?;
+        let resolved = resolve_model_path(model_path);
+        let c_path = CString::new(resolved.to_string_lossy().as_bytes()).map_err(|e| e.to_string())?;
         let model = unsafe { llama_model_load_from_file(c_path.as_ptr(), model_params) };
         if model.is_null() {
-            return Err(format!("Failed to load embedding model from {model_path}"));
+            return Err(format!("Failed to load embedding model from {model_path} (resolved: {})", resolved.display()));
         }
 
         let vocab = unsafe { llama_model_get_vocab(model) };
         let n_vocab = unsafe { llama_vocab_n_tokens(vocab) };
 
+        let train_ctx = unsafe { llama_model_n_ctx_train(model) };
+        let actual_ctx = if train_ctx > 0 { train_ctx as u32 } else { params.n_ctx };
+
         let mut ctx_params = unsafe { llama_context_default_params() };
-        ctx_params.n_ctx = params.n_ctx;
-        ctx_params.n_batch = params.n_batch;
-        ctx_params.n_ubatch = params.n_batch;
+        ctx_params.n_ctx = actual_ctx;
+        ctx_params.n_batch = actual_ctx;
+        ctx_params.n_ubatch = actual_ctx;
         ctx_params.embeddings = true;
 
         let ctx = unsafe { llama_init_from_model(model, ctx_params) };
@@ -162,7 +197,7 @@ impl LocalLlm {
             ctx,
             sampler: ptr::null_mut(),
             vocab,
-            n_ctx: params.n_ctx,
+            n_ctx: actual_ctx,
             n_vocab,
             params,
             n_past: 0,
@@ -387,9 +422,12 @@ impl LocalLlm {
 
     /// Extract vector embeddings for given text
     pub fn get_embeddings(&mut self, text: &str) -> Result<Vec<f32>, String> {
-        let tokens = self.tokenize(text, true, false)?;
+        let mut tokens = self.tokenize(text, true, false)?;
         if tokens.is_empty() {
             return Ok(Vec::new());
+        }
+        if tokens.len() > self.n_ctx as usize {
+            tokens.truncate(self.n_ctx as usize);
         }
 
         let mut batch = unsafe { llama_batch_init(tokens.len() as i32, 0, 1) };

@@ -3,7 +3,7 @@
 //! and session context checkpointing.
 
 #[cfg(feature = "ai-local")]
-use crate::logic::ai::local_llm::{LocalLlm, ModelParams, TokenEvent};
+use crate::logic::ai::local_llm::{resolve_model_path, LocalLlm, ModelParams, TokenEvent};
 use crate::AppState;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
@@ -65,10 +65,11 @@ pub async fn run_local_agent_loop(
     // 1. Auto-RAG: Retrieve semantic context from SurrealDB entities
     let mut augmented_context = String::new();
     if let Some(ref emb_path) = embed_model_path {
-        if std::path::Path::new(emb_path).exists() {
+        let resolved_emb = resolve_model_path(emb_path);
+        if resolved_emb.exists() {
             emit_chunk("🔍 Поиск контекста в базе знаний WorldWiki...".to_string(), false, "tool_log");
             
-            let emb_path_clone = emb_path.clone();
+            let emb_path_clone = resolved_emb.to_string_lossy().to_string();
             let prompt_clone = prompt.clone();
             
             let emb_vec_res = tauri::async_runtime::spawn_blocking(move || {
@@ -185,4 +186,22 @@ pub async fn run_local_agent_loop(
             Err(e.to_string())
         }
     }
+}
+
+#[cfg(not(feature = "ai-local"))]
+pub async fn run_local_agent_loop(
+    _app: AppHandle,
+    _project_id: String,
+    _chat_id: String,
+    _assistant_msg_id: String,
+    _prompt: String,
+    _model_path: String,
+    _embed_model_path: Option<String>,
+    _triattention_path: Option<String>,
+    _checkpoint_path: Option<String>,
+    _n_ctx: u32,
+    _n_gpu_layers: i32,
+    _enable_tcq: bool,
+) -> Result<String, String> {
+    Err("Локальный LLM не скомпилирован. Пересоберите с feature 'ai-local'".to_string())
 }

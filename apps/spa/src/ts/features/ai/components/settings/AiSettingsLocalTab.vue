@@ -16,7 +16,19 @@
           <span class="hw-val">{{ hardware?.free_vram_gb || 0 }} ГБ свободно из {{ hardware?.total_vram_gb || 0 }} ГБ ({{ hardware?.gpu_name || 'GPU' }})</span>
         </div>
       </div>
+      <button 
+        class="chart-toggle-btn" 
+        :class="{ active: showChart }"
+        title="Показать / скрыть график ресурсов в реальном времени"
+        @click="showChart = !showChart"
+      >
+        <i class="fas fa-chart-area"></i>
+        <span>{{ showChart ? 'Скрыть график' : 'График ресурсов' }}</span>
+      </button>
     </div>
+
+    <!-- Живой график uPlot -->
+    <HardwareMonitorChart v-if="showChart" :hardware="hardware" />
 
     <!-- Внутренние вкладки локального ИИ -->
     <div class="local-nav">
@@ -80,7 +92,7 @@
               <div class="progress-bar-bg">
                 <div class="progress-fill" :style="{ width: downloadProgress[card.filename].percent + '%' }"></div>
               </div>
-              <span class="progress-text">Загрузка: {{ Math.round(downloadProgress[card.filename].percent) }}%</span>
+              <span class="progress-text">Загрузка: {{ (downloadProgress[card.filename].percent || 0).toFixed(1) }}%</span>
             </div>
             <button 
               v-else-if="isModelInstalled(card.filename)" 
@@ -112,10 +124,16 @@
       </div>
 
       <div v-else class="installed-list">
-        <div v-for="m in installedModels" :key="m.id" class="installed-card">
+        <div v-for="m in installedModels" :key="m.id" class="installed-card" :class="{ 'is-active-model': localSettings?.model === m.filename }">
           <div class="installed-main">
             <div class="installed-title-row">
               <span class="installed-name">{{ m.name }}</span>
+              <span v-if="localSettings?.model === m.filename" class="active-pill">
+                <i class="fas fa-check-circle"></i> Активная модель чата
+              </span>
+              <span v-if="localSettings?.embed_model_path === m.filename" class="active-pill embed-pill">
+                <i class="fas fa-brain"></i> Активный эмбеддер
+              </span>
               <span class="state-badge" :class="'state-' + m.state">
                 <i class="fas" :class="getStateIcon(m.state)"></i> {{ getStateLabel(m.state) }}
               </span>
@@ -127,7 +145,7 @@
             <button 
               v-if="m.state === 'installed' || m.state === 'sleeping'" 
               class="btn-secondary" 
-              @click="loadModel(m.filename)"
+              @click="loadModel(m.filename, m.kind)"
             >
               <i class="fas fa-play"></i> Загрузить в память
             </button>
@@ -197,14 +215,24 @@
           <div class="hf-files-list">
             <label class="hf-files-label">Доступные файлы квантования:</label>
             <div class="files-chips">
-              <div v-for="f in hf.gguf_files" :key="f.filename" class="file-chip">
+              <div v-for="f in hf.gguf_files" :key="f.filename" class="file-chip" :class="{ 'is-downloading': !!downloadProgress[f.filename] }">
                 <span class="chip-name">{{ f.quantization }}</span>
+
+                <div v-if="downloadProgress[f.filename]" class="chip-progress">
+                  <div class="chip-progress-bar">
+                    <div class="chip-progress-fill" :style="{ width: downloadProgress[f.filename].percent + '%' }"></div>
+                  </div>
+                  <span class="chip-progress-text">{{ (downloadProgress[f.filename].percent || 0).toFixed(1) }}%</span>
+                </div>
+
                 <button 
+                  v-else
                   class="chip-btn" 
-                  :disabled="isModelInstalled(f.filename) || !!downloadProgress[f.filename]"
+                  :disabled="isModelInstalled(f.filename)"
                   @click="downloadModel(hf.id, f.filename)"
                 >
                   <i class="fas" :class="isModelInstalled(f.filename) ? 'fa-check' : 'fa-download'"></i>
+                  <span style="margin-left: 4px;">{{ isModelInstalled(f.filename) ? 'Установлено' : 'Скачать' }}</span>
                 </button>
               </div>
             </div>
@@ -269,9 +297,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
+import HardwareMonitorChart from './HardwareMonitorChart.vue';
 import type { 
   AiProfile, 
   AiProfileSettings,
@@ -305,6 +334,7 @@ const props = defineProps<{
 const emit = defineEmits(['save-profile']);
 
 const subTab = ref<'recommended' | 'library' | 'explore' | 'runtime'>('recommended');
+const showChart = ref(true);
 const hardware = ref<HardwareInfo | null>(null);
 const recommendedModels = ref<RecommendedModelCard[]>([]);
 const installedModels = ref<InstalledModelInfo[]>([]);
@@ -315,6 +345,7 @@ const downloadProgress = ref<Record<string, { percent: number }>>({});
 const localSettings = ref<AiProfileSettings | null>(null);
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+let hwPollTimer: ReturnType<typeof setInterval> | null = null;
 
 const hfToken = ref(localStorage.getItem('worldwiki_hf_token') || '');
 
@@ -335,6 +366,11 @@ onMounted(async () => {
   await loadRecommended();
   await loadInstalled();
   listenToProgress();
+  hwPollTimer = setInterval(loadHardware, 2000);
+});
+
+onUnmounted(() => {
+  if (hwPollTimer) clearInterval(hwPollTimer);
 });
 
 const handleSaveRuntime = () => {
@@ -388,10 +424,21 @@ const downloadModel = async (repoId: string, filename: string) => {
   }
 };
 
-const loadModel = async (filename: string) => {
+const loadModel = async (filename: string, kind?: string) => {
   try {
     await invoke('load_local_model', { filename });
     await loadInstalled();
+
+    if (localSettings.value) {
+      const updated = { ...localSettings.value };
+      if (kind === 'embedding' || filename.toLowerCase().includes('embed')) {
+        updated.embed_model_path = filename;
+      } else {
+        updated.model = filename;
+      }
+      localSettings.value = updated;
+      emit('save-profile', { settings: updated });
+    }
   } catch (e) {
     console.error('Ошибка загрузки модели:', e);
   }
@@ -494,13 +541,39 @@ const formatNumber = (num: number) => {
   gap: 18px;
 }
 .hardware-banner {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
   background: rgba(88, 166, 255, 0.05);
   border: 1px solid rgba(88, 166, 255, 0.18);
   border-radius: 8px;
   padding: 12px 16px;
+}
+.chart-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-color, #fff);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chart-toggle-btn:hover {
+  background: rgba(88, 166, 255, 0.15);
+  border-color: #58a6ff;
+  color: #58a6ff;
+}
+.chart-toggle-btn.active {
+  background: rgba(88, 166, 255, 0.2);
+  border-color: #58a6ff;
+  color: #58a6ff;
 }
 .hw-item {
   display: flex;
@@ -706,6 +779,27 @@ const formatNumber = (num: number) => {
   font-weight: 600;
   color: var(--text-color, #fff);
 }
+.installed-card.is-active-model {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.05);
+}
+.active-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(88, 166, 255, 0.15);
+  color: #58a6ff;
+  border: 1px solid rgba(88, 166, 255, 0.3);
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.active-pill.embed-pill {
+  background: rgba(188, 140, 255, 0.15);
+  color: #bc8cff;
+  border-color: rgba(188, 140, 255, 0.3);
+}
 .installed-meta {
   font-size: 12px;
   color: var(--text-muted, #8b949e);
@@ -846,6 +940,33 @@ const formatNumber = (num: number) => {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-muted, #8b949e);
   cursor: not-allowed;
+}
+.file-chip.is-downloading {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.08);
+}
+.chip-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+}
+.chip-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.chip-progress-fill {
+  height: 100%;
+  background: #58a6ff;
+  transition: width 0.2s ease;
+}
+.chip-progress-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #58a6ff;
 }
 .runtime-card {
   background: var(--bg-card, rgba(255, 255, 255, 0.03));

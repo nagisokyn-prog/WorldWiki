@@ -48,7 +48,6 @@ pub fn get_hardware_info() -> HardwareInfo {
         }
     }
 
-    // VRAM and GPU detection: Query via DXGI / powershell or return graceful defaults
     let (gpu_name, total_vram_gb, free_vram_gb, is_gpu_available) = detect_gpu_info();
 
     HardwareInfo {
@@ -61,8 +60,102 @@ pub fn get_hardware_info() -> HardwareInfo {
     }
 }
 
+#[cfg(target_os = "windows")]
+mod win_gpu {
+    use std::ffi::c_void;
+
+    #[repr(C)]
+    pub struct DXGI_ADAPTER_DESC {
+        pub description: [u16; 128],
+        pub vendor_id: u32,
+        pub device_id: u32,
+        pub sub_sys_id: u32,
+        pub revision: u32,
+        pub dedicated_video_memory: usize,
+        pub dedicated_system_memory: usize,
+        pub shared_system_memory: usize,
+        pub adapter_luid: u64,
+    }
+
+    extern "system" {
+        pub fn LoadLibraryA(lpLibFileName: *const u8) -> *mut c_void;
+        pub fn GetProcAddress(hModule: *mut c_void, lpProcName: *const u8) -> *mut c_void;
+        pub fn FreeLibrary(hLibModule: *mut c_void) -> i32;
+    }
+
+    type CreateDXGIFactoryFn = unsafe extern "system" fn(
+        riid: *const [u8; 16],
+        pp_factory: *mut *mut c_void,
+    ) -> i32;
+
+    const IID_IDXGI_FACTORY: [u8; 16] = [
+        0xec, 0x66, 0x71, 0x7b, 0xc7, 0x21, 0xae, 0x44, 0xb2, 0x1a, 0xc9, 0xae, 0x32, 0x1a, 0xe3, 0x69,
+    ];
+
+    pub fn query_dxgi_gpu() -> Option<(String, f32)> {
+        unsafe {
+            let h_dxgi = LoadLibraryA(c"dxgi.dll".as_ptr().cast());
+            if h_dxgi.is_null() {
+                return None;
+            }
+            let p_fn = GetProcAddress(h_dxgi, c"CreateDXGIFactory".as_ptr().cast());
+            if p_fn.is_null() {
+                FreeLibrary(h_dxgi);
+                return None;
+            }
+            let create_factory: CreateDXGIFactoryFn = std::mem::transmute(p_fn);
+            let mut factory_ptr: *mut c_void = std::ptr::null_mut();
+            if create_factory(&IID_IDXGI_FACTORY, &mut factory_ptr) != 0 || factory_ptr.is_null() {
+                FreeLibrary(h_dxgi);
+                return None;
+            }
+
+            let vtable = *(factory_ptr as *mut *mut usize);
+            let enum_adapters: unsafe extern "system" fn(*mut c_void, u32, *mut *mut c_void) -> i32 =
+                std::mem::transmute(*vtable.add(7));
+
+            let mut adapter_ptr: *mut c_void = std::ptr::null_mut();
+            let mut result = None;
+
+            if enum_adapters(factory_ptr, 0, &mut adapter_ptr) == 0 && !adapter_ptr.is_null() {
+                let adapter_vtable = *(adapter_ptr as *mut *mut usize);
+                let get_desc: unsafe extern "system" fn(*mut c_void, *mut DXGI_ADAPTER_DESC) -> i32 =
+                    std::mem::transmute(*adapter_vtable.add(8));
+
+                let mut desc: DXGI_ADAPTER_DESC = std::mem::zeroed();
+                if get_desc(adapter_ptr, &mut desc) == 0 {
+                    let len = desc.description.iter().position(|&c| c == 0).unwrap_or(desc.description.len());
+                    let name = String::from_utf16_lossy(&desc.description[..len]).trim().to_string();
+                    let vram_gb = (desc.dedicated_video_memory as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
+                    if !name.is_empty() {
+                        result = Some((name, vram_gb));
+                    }
+                }
+                let release_adapter: unsafe extern "system" fn(*mut c_void) -> u32 = std::mem::transmute(*adapter_vtable.add(2));
+                release_adapter(adapter_ptr);
+            }
+
+            let release_factory: unsafe extern "system" fn(*mut c_void) -> u32 = std::mem::transmute(*vtable.add(2));
+            release_factory(factory_ptr);
+            FreeLibrary(h_dxgi);
+
+            result
+        }
+    }
+}
+
 fn detect_gpu_info() -> (String, f32, f32, bool) {
-    // Default fallback values
+    #[cfg(target_os = "windows")]
+    if let Some((name, total_vram_gb)) = win_gpu::query_dxgi_gpu() {
+        let is_gpu = total_vram_gb >= 0.5;
+        let free_vram_gb = if total_vram_gb > 0.0 {
+            (total_vram_gb * 0.82).max(0.5)
+        } else {
+            0.0
+        };
+        return (name, total_vram_gb, free_vram_gb, is_gpu);
+    }
+
     let gpu_name = "Видеоадаптер (DirectX / Vulkan)".to_string();
     let total_vram_gb = 8.0f32;
     let free_vram_gb = 6.2f32;

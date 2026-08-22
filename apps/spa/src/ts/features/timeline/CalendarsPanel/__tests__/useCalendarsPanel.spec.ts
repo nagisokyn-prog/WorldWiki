@@ -137,7 +137,7 @@ describe('useCalendarsPanel', () => {
   });
 
   it('shows appAlert when deleteCalendar returns false (covers lines 120-122)', async () => {
-    const { appConfirm, appAlert } = await import('@worldwiki/components');
+    const { appAlert } = await import('@worldwiki/components');
     mockDeleteCalendar.mockResolvedValueOnce(false);
 
     const panel = useCalendarsPanel(props);

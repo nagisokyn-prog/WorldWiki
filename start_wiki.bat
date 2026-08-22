@@ -21,4 +21,4 @@ cargo test export_bindings
 cd ..
 
 echo Starting dev build...
-cmd /k pnpm tauri dev
+cmd /k pnpm tauri dev -- --features ai-local

@@ -113,7 +113,6 @@ describe('useGlobalTimeViewer', () => {
 
   it('updateLocalDates processes calendars with and without data (covers lines 44-57)', async () => {
     const { invoke } = await import('@worldwiki/components');
-    const { useCalendarStore } = await import('../../../../../stores/calendar.store');
 
     const TestComp2 = defineComponent({
       setup() {

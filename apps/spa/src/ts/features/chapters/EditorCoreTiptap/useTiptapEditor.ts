@@ -133,7 +133,8 @@ export function useTiptapEditor(
   const formatHook = useTiptapFormatting(editor, emit, editorUpdateKey);
 
   const updateTitle = (e: Event) => {
-    emit('update:title', (e.target as HTMLElement).innerText);
+    const val = (e.target as HTMLInputElement).value;
+    emit('update:title', val);
     emit('change');
   };
 

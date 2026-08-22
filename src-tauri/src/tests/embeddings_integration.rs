@@ -143,3 +143,52 @@ async fn vector_search_cosine_knn_retrieval() {
     let sim = matches[0]["sim"].as_f64().expect("similarity score exists");
     assert!(sim > 0.95, "косинусное сходство для близких векторов должно быть > 0.95 (получено {sim})");
 }
+
+#[tokio::test]
+async fn test_high_performance_lore_reindexing() {
+    let db = create_test_db().await;
+    seed_project(&db, "p_lore", "High Performance Lore Indexing Project").await;
+
+    // 1. Создаем главу на ~15 000 символов (3000+ слов)
+    let long_chapter_text = (0..50)
+        .map(|i| format!("Параграф {i}: Древний замок возвышался на скале над бушующим морем. Ветер завывал в бойницах, разнося запах соли и грозы. Герои обсуждали план штурма цитадели."))
+        .collect::<Vec<_>>()
+        .join("\n\n");
+
+    db.query("CREATE chapters SET project_id = type::record('projects:p_lore'), title = 'Глава 1. Цитадель Ветров', content = $content, word_count = 3040;")
+        .bind(("content", long_chapter_text))
+        .await
+        .unwrap();
+
+    // 2. Создаем несколько сущностей энциклопедии
+    for i in 0..10 {
+        db.query("CREATE entities SET project_id = type::record('projects:p_lore'), name = $name, type_key = 'character', custom_fields = $fields;")
+            .bind(("name", format!("Герой {i}")))
+            .bind(("fields", json!({ "role": "рыцарь", "ability": "магия ветра" })))
+            .await
+            .unwrap();
+    }
+
+    // 3. Запускаем высокопроизводительную переиндексацию
+    let start = std::time::Instant::now();
+    let total_chunks = crate::logic::ai::retrieval::reindex_project_lore_inner(&db, "p_lore")
+        .await
+        .expect("reindexing must succeed");
+
+    let elapsed = start.elapsed();
+    println!("[TEST] Переиндексация {total_chunks} чанков завершена за {:?}", elapsed);
+
+    assert!(total_chunks >= 10, "должно быть создано не менее 10 чанков (создано {total_chunks})");
+    assert!(elapsed.as_secs_f64() < 5.0, "переиндексация должна выполняться быстрее 5 секунд");
+
+    // 4. Проверяем наличие записей в entity_chunks
+    let mut res = db
+        .query("SELECT count() FROM entity_chunks WHERE project_id = type::record('projects:p_lore') GROUP ALL")
+        .await
+        .unwrap();
+    let count_val: Option<serde_json::Value> = res.take(0).unwrap();
+    let count = count_val.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0);
+
+    assert_eq!(count, total_chunks as u64, "количество записей в entity_chunks должно точно совпадать с числом созданных чанков");
+}
+

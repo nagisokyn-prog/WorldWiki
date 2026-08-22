@@ -13,7 +13,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [features]
-default = ["ai-cloud"]
+default = ["ai-cloud", "ai-local"]
 ai-cloud = ["dep:claw_runtime", "dep:claw_api"]
 ai-local = ["ai-cloud", "dep:llama-sys"]
 

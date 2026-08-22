@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mount, flushPromises, VueWrapper } from '@vue/test-utils';
+import { mount, type VueWrapper } from '@vue/test-utils';
 import Settings from '../../src/components/Vue/Settings.vue';
-import SettingsNavRail from '../../src/components/Vue/Settings/SettingsNavRail.vue';
 import SettingsTypography from '../../src/components/Vue/Settings/SettingsTypography.vue';
 import SettingsInterface from '../../src/components/Vue/Settings/SettingsInterface.vue';
 import SettingsEditor from '../../src/components/Vue/Settings/SettingsEditor.vue';

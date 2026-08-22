@@ -209,6 +209,8 @@ pub async fn download_hf_model(
         .map_err(|e| format!("Failed to create target file: {e}"))?;
 
     let mut downloaded_bytes = 0u64;
+    let mut last_emitted_percent = 0.0f32;
+    let mut last_emit_time = std::time::Instant::now();
 
     while let Some(chunk) = resp.chunk().await.map_err(|e| {
         let err_msg = format!("Chunk stream error: {e}");
@@ -238,18 +240,23 @@ pub async fn download_hf_model(
             0.0
         };
 
-        let _ = app.emit(
-            "model_download_progress",
-            DownloadProgressEvent {
-                repo_id: repo_id.clone(),
-                filename: filename.clone(),
-                downloaded_bytes,
-                total_bytes,
-                percent,
-                is_done: false,
-                error: None,
-            },
-        );
+        if percent - last_emitted_percent >= 0.2 || last_emit_time.elapsed().as_millis() >= 200 {
+            last_emitted_percent = percent;
+            last_emit_time = std::time::Instant::now();
+
+            let _ = app.emit(
+                "model_download_progress",
+                DownloadProgressEvent {
+                    repo_id: repo_id.clone(),
+                    filename: filename.clone(),
+                    downloaded_bytes,
+                    total_bytes,
+                    percent,
+                    is_done: false,
+                    error: None,
+                },
+            );
+        }
     }
 
     file.flush()

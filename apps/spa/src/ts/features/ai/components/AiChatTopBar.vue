@@ -32,15 +32,33 @@
           <div class="token-progress" :style="{ width: progressPercent + '%' }"></div>
         </div>
       </div>
-      <div class="cost-badge" title="Примерная стоимость (в будущем из claw-code)">
-        $0.0000
-      </div>
+
+      <!-- КНОПКА ИНДЕКСАЦИИ ЛОРА -->
+      <button 
+        class="action-pill-btn" 
+        :title="isIndexing ? 'Индексация лора...' : 'Переиндексировать главы и энциклопедию для векторного Auto-RAG поиска'"
+        :disabled="isIndexing"
+        @click="handleReindexLore"
+      >
+        <i class="fas" :class="isIndexing ? 'fa-spinner fa-spin' : 'fa-brain'"></i>
+        <span>{{ isIndexing ? 'Индексация...' : 'Индекс лора' }}</span>
+      </button>
+
+      <!-- КНОПКА ПЕРЕЗАПУСКА СЕССИИ / СБРОСА -->
+      <button 
+        class="action-pill-btn restart-btn" 
+        title="Перезапустить или отменить зависший запрос к ИИ"
+        @click="$emit('restart-session')"
+      >
+        <i class="fas fa-redo-alt"></i>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import type { AiProfile } from '../types/ai.types';
 import { useAiModels } from '../composables/useAiModels';
 
@@ -56,31 +74,49 @@ const props = withDefaults(defineProps<{
   tokenUsage?: { input_tokens: number; output_tokens: number; total_tokens: number };
   modes?: AiTopBarMode[];
   activeModeSlug?: string;
+  currentProject?: string;
 }>(), {
   activeProfile: null,
   tokenUsage: () => ({ input_tokens: 0, output_tokens: 0, total_tokens: 0 }),
   modes: () => [],
-  activeModeSlug: 'chat'
+  activeModeSlug: 'chat',
+  currentProject: 'global'
 });
 
-defineEmits(['change-mode', 'toggle-sidebar']);
+defineEmits(['change-mode', 'toggle-sidebar', 'restart-session']);
 
+const isIndexing = ref(false);
 const { availableModels, fetchModels } = useAiModels();
+
+const handleReindexLore = async () => {
+  if (isIndexing.value) return;
+  isIndexing.value = true;
+  try {
+    const totalChunks = await invoke<number>('reindex_project_lore', { 
+      projectId: props.currentProject || 'global' 
+    });
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert(`Лор проекта успешно проиндексирован: создано ${totalChunks} фрагментов.`);
+  } catch (e) {
+    console.error('Ошибка индексации лора:', e);
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert(`Ошибка индексации лора: ${e}`);
+  } finally {
+    isIndexing.value = false;
+  }
+};
 
 // Автоматически подгружаем список моделей из кэша (или API) при смене профиля
 watch(() => props.activeProfile, (profile) => {
   if (profile && profile.provider) {
-    // Вызываем без forceNetwork, чтобы просто достать из кэша
     fetchModels(profile.provider, profile.api_key || '');
   }
 }, { immediate: true });
 
 const maxTokens = computed(() => {
-  // 1. Приоритет ручным настройкам профиля
   if (props.activeProfile?.settings?.context_window) {
     return props.activeProfile.settings.context_window;
   }
-  // 2. Ищем модель в загруженном кэше провайдера
   if (props.activeProfile?.settings?.model) {
     const modelInfo = availableModels.value.find(m => m.value === props.activeProfile?.settings?.model);
     if (modelInfo && modelInfo.context_length) {
@@ -103,3 +139,36 @@ const formatTokens = (val: number = 0) => {
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiChatTopBar.css"></style>
+
+<style scoped>
+.action-pill-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-color, #e6edf3);
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.action-pill-btn:hover:not(:disabled) {
+  background: rgba(88, 166, 255, 0.15);
+  border-color: #58a6ff;
+  color: #fff;
+}
+.action-pill-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.restart-btn {
+  padding: 4px 8px;
+}
+.restart-btn:hover {
+  background: rgba(248, 81, 73, 0.15);
+  border-color: #f85149;
+  color: #f85149;
+}
+</style>

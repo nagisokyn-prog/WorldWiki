@@ -46,3 +46,5 @@ pub use manager::unload_local_model;
 pub use manager::delete_local_model;
 
 pub use permissions::get_tool_permissions_catalog;
+pub use retrieval::reindex_project_lore;
+

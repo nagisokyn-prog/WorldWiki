@@ -163,6 +163,20 @@
         />
       </div>
 
+      <div class="hf-token-box">
+        <div class="form-group" style="margin: 0;">
+          <label style="font-size: 12px;">Токен Hugging Face (опционально, для моделей с ограниченным доступом):</label>
+          <input 
+            v-model="hfToken" 
+            type="password" 
+            class="input-base" 
+            placeholder="hf_..." 
+            style="font-size: 12px; padding: 6px 10px;"
+            @change="saveHfToken" 
+          />
+        </div>
+      </div>
+
       <div v-if="isSearching" class="loading-state">
         <i class="fas fa-spinner fa-spin"></i> Поиск моделей на Hugging Face...
       </div>
@@ -302,6 +316,12 @@ const localSettings = ref<AiProfileSettings | null>(null);
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
+const hfToken = ref(localStorage.getItem('worldwiki_hf_token') || '');
+
+const saveHfToken = () => {
+  localStorage.setItem('worldwiki_hf_token', hfToken.value.trim());
+};
+
 watch(() => props.activeProfile?.settings, (newSettings) => {
   if (newSettings) {
     localSettings.value = { ...newSettings };
@@ -354,11 +374,17 @@ const isModelInstalled = (filename: string) => {
 const downloadModel = async (repoId: string, filename: string) => {
   try {
     downloadProgress.value[filename] = { percent: 1 };
-    await invoke('download_hf_model', { repoId, filename });
+    await invoke('download_hf_model', { 
+      repoId, 
+      filename, 
+      token: hfToken.value.trim() || null 
+    });
     await loadInstalled();
   } catch (e) {
-    console.error('Ошибка скачивания модели:', e);
     delete downloadProgress.value[filename];
+    console.error('Ошибка скачивания модели:', e);
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert(typeof e === 'string' ? e : 'Не удалось скачать модель. Проверьте соединение или наличие токена.');
   }
 };
 
@@ -398,7 +424,10 @@ const onSearchInput = () => {
     if (!searchQuery.value.trim()) return;
     isSearching.value = true;
     try {
-      hfModels.value = await invoke<HfModelItem[]>('fetch_hf_models', { query: searchQuery.value.trim() });
+      hfModels.value = await invoke<HfModelItem[]>('fetch_hf_models', { 
+        query: searchQuery.value.trim(),
+        token: hfToken.value.trim() || null
+      });
     } catch (e) {
       console.error('Ошибка поиска HF:', e);
     } finally {
@@ -739,6 +768,12 @@ const formatNumber = (num: number) => {
 }
 .search-input {
   padding-left: 36px;
+}
+.hf-token-box {
+  background: var(--bg-card, rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 6px;
+  padding: 10px 12px;
 }
 .hf-models-list {
   display: flex;

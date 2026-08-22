@@ -474,12 +474,23 @@ async fn run_agent_inner(
         project_id: project_id.clone(),
     };
 
+    let execution_policy = settings
+        .get("execution_policy")
+        .and_then(|v| v.as_str())
+        .unwrap_or("agentic");
+
+    let tools_payload = if execution_policy == "direct" {
+        None
+    } else {
+        Some(tools_def.clone())
+    };
+
     let mut req = MessageRequest {
         model: model.clone(),
         max_tokens,
         messages: messages.clone(),
         system: Some(system.clone()),
-        tools: Some(tools_def.clone()),
+        tools: tools_payload,
         temperature: Some(temperature),
         stream: true,
         ..Default::default()

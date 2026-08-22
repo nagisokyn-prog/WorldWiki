@@ -175,6 +175,7 @@ pub fn run() {
             unload_local_model,
             delete_local_model,
             get_tool_permissions_catalog,
+            reindex_project_lore,
 
             // --- Генерируемые команды для системных сущностей ---
             @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],

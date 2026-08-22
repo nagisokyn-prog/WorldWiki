@@ -1,8 +1,18 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { AiModelInfo } from '../types/ai.types';
+import type { AiModelInfo, InstalledModelInfo } from '../types/ai.types';
 
 export const aiModelsApi = {
   async fetchModels(provider: string, apiKey: string): Promise<AiModelInfo[]> {
+    if (provider === 'local') {
+      const installed = await invoke<InstalledModelInfo[]>('list_installed_models');
+      return (installed || []).map(m => ({
+        value: m.filename,
+        label: m.filename,
+        description: `${m.name} (${m.size_gb} ГБ)`,
+        context_length: 8192,
+        max_completion_tokens: 4096,
+      }));
+    }
     if (provider === 'openrouter') {
       return await this.fetchOpenRouterModels(apiKey);
     } else {
@@ -55,7 +65,7 @@ export const aiModelsApi = {
       } : undefined,
       capabilities: m.architecture ? {
         vision: m.architecture.modality?.includes('image') || false,
-        caching: m.architecture.tokenizer === 'claude' || m.id.includes('claude-3') // Simple heuristic for now
+        caching: m.architecture.tokenizer === 'claude' || m.id.includes('claude-3')
       } : undefined
     }));
     

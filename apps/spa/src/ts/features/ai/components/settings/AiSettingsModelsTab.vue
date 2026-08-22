@@ -28,7 +28,7 @@
             </div>
             <button 
               class="btn-secondary-outline" 
-              :title="isFetchingModels ? 'Загрузка...' : 'Обновить список моделей из API'"
+              :title="isFetchingModels ? 'Загрузка...' : 'Обновить список моделей из API / диска'"
               :disabled="isFetchingModels"
               @click="$emit('fetch-models', true)"
             >
@@ -36,7 +36,9 @@
             </button>
           </div>
           <span v-if="fetchError" class="error-text">{{ fetchError }}</span>
-          <span class="field-hint">Например: <code>anthropic/claude-3.5-sonnet</code>, <code>openai/gpt-4o</code> или <code>qwen2.5-14b</code></span>
+          <span class="field-hint">
+            {{ activeProfile?.provider === 'local' ? 'Выберите скачанный .gguf файл из списка' : 'Например: anthropic/claude-3.5-sonnet, openai/gpt-4o или qwen2.5-14b' }}
+          </span>
         </div>
 
         <div class="form-group">
@@ -125,13 +127,35 @@
 
         <div class="form-group" style="margin-top: 10px;">
           <label>Модель эмбеддингов для лора</label>
-          <input 
+          <select 
             v-model="localSettings.embed_model_path" 
+            class="input-base"
+          >
+            <option value="">-- Выберите модель эмбеддингов --</option>
+            <optgroup v-if="installedModels.length > 0" label="Скачанные локальные модели (GGUF)">
+              <option v-for="m in installedModels" :key="m.filename" :value="m.filename">
+                {{ m.name }} ({{ m.filename }})
+              </option>
+            </optgroup>
+            <optgroup label="Облачные API (OpenRouter / OpenAI)">
+              <option value="nvidia/nemotron-3-embed">NVIDIA Nemotron-3 Embed (2048 dim)</option>
+              <option value="openai/text-embedding-3-small">OpenAI text-embedding-3-small (1536 dim)</option>
+              <option value="openai/text-embedding-3-large">OpenAI text-embedding-3-large (3072 dim)</option>
+            </optgroup>
+            <option value="custom">Пользовательский путь или название...</option>
+          </select>
+
+          <!-- Поле для ручного ввода, если выбрана кастомная опция или путь не из списка -->
+          <input 
+            v-if="isCustomEmbedPath" 
+            v-model="customEmbedInput" 
             type="text" 
             class="input-base" 
-            placeholder="nvidia/nemotron-3-embed-gguf или путь к GGUF" 
+            style="margin-top: 8px;"
+            placeholder="Введите путь к .gguf файлу или имя модели"
+            @input="onCustomEmbedInput"
           />
-          <span class="field-hint">Рекомендуется: <code>nemotron-3-embed</code> (2048 измерений для максимальной точности).</span>
+          <span class="field-hint">Для локального поиска выберите скачанный файл (например, <code>nemotron-3-embed-1b-q4_k_m.gguf</code>).</span>
         </div>
       </div>
 
@@ -205,8 +229,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
-import type { AiModelInfo, AiProfile, AiProfileSettings } from '../../types/ai.types';
+import { ref, computed, watch, onMounted } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import type { AiModelInfo, AiProfile, AiProfileSettings, InstalledModelInfo } from '../../types/ai.types';
 import AiSelect from '../AiSelect.vue';
 
 const props = defineProps<{
@@ -219,17 +244,59 @@ const props = defineProps<{
 const emit = defineEmits(['save-profile', 'fetch-models']);
 
 const localSettings = ref<AiProfileSettings | null>(null);
+const installedModels = ref<InstalledModelInfo[]>([]);
+const customEmbedInput = ref('');
+
+const standardEmbedOptions = [
+  '',
+  'nvidia/nemotron-3-embed',
+  'openai/text-embedding-3-small',
+  'openai/text-embedding-3-large',
+];
+
+const isCustomEmbedPath = computed(() => {
+  if (!localSettings.value?.embed_model_path) return false;
+  if (localSettings.value.embed_model_path === 'custom') return true;
+  const inInstalled = installedModels.value.some(m => m.filename === localSettings.value?.embed_model_path);
+  const inStandard = standardEmbedOptions.includes(localSettings.value.embed_model_path);
+  return !inInstalled && !inStandard;
+});
+
+onMounted(async () => {
+  await loadInstalledModels();
+});
+
+const loadInstalledModels = async () => {
+  try {
+    const list = await invoke<InstalledModelInfo[]>('list_installed_models');
+    installedModels.value = list || [];
+  } catch (e) {
+    console.error('Ошибка загрузки локальных моделей:', e);
+  }
+};
 
 watch(() => props.activeProfile?.settings, (newSettings) => {
   if (newSettings) {
     localSettings.value = { ...newSettings };
+    if (isCustomEmbedPath.value) {
+      customEmbedInput.value = localSettings.value.embed_model_path || '';
+    }
   } else {
     localSettings.value = null;
   }
 }, { immediate: true, deep: true });
 
+const onCustomEmbedInput = () => {
+  if (localSettings.value) {
+    localSettings.value.embed_model_path = customEmbedInput.value;
+  }
+};
+
 const handleSave = () => {
   if (localSettings.value) {
+    if (localSettings.value.embed_model_path === 'custom') {
+      localSettings.value.embed_model_path = customEmbedInput.value;
+    }
     emit('save-profile', { settings: localSettings.value });
   }
 };

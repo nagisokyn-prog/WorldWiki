@@ -36,8 +36,10 @@
             :token-usage="tokenUsage"
             :modes="modes"
             :active-mode-slug="activeModeSlug"
+            :current-project="currentProject"
             @change-mode="m => activeModeSlug = m"
             @toggle-sidebar="showSidebar = !showSidebar"
+            @restart-session="cancelGeneration"
           />
           
           <div ref="messagesContainer" class="messages-container">

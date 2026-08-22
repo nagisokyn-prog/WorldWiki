@@ -60,7 +60,7 @@ pub struct DownloadProgressEvent {
 
 /// Fetch popular or searched GGUF models from Hugging Face
 #[tauri::command]
-pub async fn fetch_hf_models(query: Option<String>) -> Result<Vec<HfModelCard>, String> {
+pub async fn fetch_hf_models(query: Option<String>, token: Option<String>) -> Result<Vec<HfModelCard>, String> {
     let search_part = if let Some(ref q) = query {
         if !q.trim().is_empty() {
             let encoded: String = q
@@ -79,17 +79,26 @@ pub async fn fetch_hf_models(query: Option<String>) -> Result<Vec<HfModelCard>, 
     let url = format!("https://huggingface.co/api/models?filter=gguf&sort=downloads&direction=-1&limit=40&full=true{search_part}");
 
     let client = Client::new();
-    let resp = client
+    let mut req = client
         .get(&url)
-        .header("User-Agent", "WorldWiki/1.0")
-        .send()
-        .await
-        .map_err(|e| format!("HF request error: {e}"))?;
-    if !resp.status().is_success() {
-        return Err(format!("HF API returned error: {}", resp.status()));
+        .header("User-Agent", "WorldWiki/1.0");
+
+    if let Some(tok) = token {
+        let t = tok.trim();
+        if !t.is_empty() {
+            req = req.header("Authorization", format!("Bearer {t}"));
+        }
     }
 
-    let items: Vec<HfApiResponseItem> = resp.json().await.map_err(|e| format!("HF JSON parse error: {e}"))?;
+    let resp = req
+        .send()
+        .await
+        .map_err(|e| format!("Ошибка подключения к Hugging Face: {e}"))?;
+    if !resp.status().is_success() {
+        return Err(format!("Hugging Face вернул ошибку: {}", resp.status()));
+    }
+
+    let items: Vec<HfApiResponseItem> = resp.json().await.map_err(|e| format!("Ошибка парсинга ответа Hugging Face: {e}"))?;
 
     let mut result = Vec::new();
     for item in items {
@@ -154,30 +163,44 @@ pub async fn download_hf_model(
     app: AppHandle,
     repo_id: String,
     filename: String,
+    token: Option<String>,
 ) -> Result<String, String> {
     let models_dir = app
         .path()
         .app_data_dir()
-        .unwrap_or(PathBuf::from("."))
+        .unwrap_or_else(|_| PathBuf::from("."))
         .join("models");
 
     tokio::fs::create_dir_all(&models_dir)
         .await
-        .map_err(|e| format!("Failed to create models directory: {e}"))?;
+        .map_err(|e| format!("Не удалось создать директорию моделей: {e}"))?;
 
     let dest_path = models_dir.join(&filename);
     let download_url = format!("https://huggingface.co/{repo_id}/resolve/main/{filename}");
 
     let client = Client::new();
-    let mut resp = client
+    let mut req = client
         .get(&download_url)
-        .header("User-Agent", "WorldWiki/1.0")
+        .header("User-Agent", "WorldWiki/1.0");
+
+    if let Some(tok) = token {
+        let t = tok.trim();
+        if !t.is_empty() {
+            req = req.header("Authorization", format!("Bearer {t}"));
+        }
+    }
+
+    let mut resp = req
         .send()
         .await
-        .map_err(|e| format!("Download request error: {e}"))?;
+        .map_err(|e| format!("Ошибка запроса на скачивание: {e}"))?;
 
-    if !resp.status().is_success() {
-        return Err(format!("Download failed with status: {}", resp.status()));
+    if resp.status().as_u16() == 401 {
+        return Err("Ошибка 401 (Нет доступа): Модель требует авторизации через HF Token или файл не найден в репозитории.".to_string());
+    } else if resp.status().as_u16() == 404 {
+        return Err("Ошибка 404: Файл модели не найден на сервере Hugging Face.".to_string());
+    } else if !resp.status().is_success() {
+        return Err(format!("Загрузка завершилась со статусом: {}", resp.status()));
     }
 
     let total_bytes = resp.content_length().unwrap_or(0);

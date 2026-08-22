@@ -27,10 +27,25 @@ export function useAiModels() {
 
   const getCacheKey = (provider: string) => `ai_models_cache_${provider}`;
 
-  const fetchModels = async (provider: string, apiKey: string, baseUrl?: string, forceNetwork = false) => {
+  const fetchModels = async (provider: string, apiKey: string, _baseUrl?: string, forceNetwork = false) => {
     fetchError.value = '';
 
-    // 1. Load from cache or hardcode immediately for UX
+    // 1. For local provider, fetch installed models directly
+    if (provider === 'local') {
+      try {
+        isFetchingModels.value = true;
+        const localList = await aiModelsApi.fetchModels('local', '');
+        availableModels.value = localList;
+        localStorage.setItem(getCacheKey('local'), JSON.stringify(localList));
+      } catch (err) {
+        console.warn('Failed to load local models:', err);
+      } finally {
+        isFetchingModels.value = false;
+      }
+      return;
+    }
+
+    // 2. Load from cache or hardcode immediately for UX
     const cached = localStorage.getItem(getCacheKey(provider));
     if (cached) {
       try {
@@ -44,9 +59,7 @@ export function useAiModels() {
       availableModels.value = [];
     }
 
-    // 2. Fetch in background (or foreground if forced)
-    if (provider === 'local' && !baseUrl) return; // Need url for local
-    
+    // 3. Fetch in background (or foreground if forced)
     if (forceNetwork) isFetchingModels.value = true;
     
     try {

@@ -38,8 +38,8 @@ function setupDomMocks(): void {
   vi.spyOn(document.body.classList, 'toggle').mockImplementation(() => false);
   vi.spyOn(document.body.classList, 'contains').mockImplementation(() => false);
   vi.spyOn(document.body, 'setAttribute').mockImplementation(() => {});
-  vi.spyOn(document.body, 'appendChild').mockImplementation((node: any) => node);
-  vi.spyOn(document.body, 'prepend').mockImplementation((...nodes: any[]) => {});
+  vi.spyOn(document.body, 'appendChild').mockImplementation((_node: any) => _node);
+  vi.spyOn(document.body, 'prepend').mockImplementation((..._nodes: any[]) => {});
 
   // document.getElementById
   vi.spyOn(document, 'getElementById').mockReturnValue(null);

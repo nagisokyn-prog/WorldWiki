@@ -232,10 +232,9 @@ describe('useShellApp', () => {
     const { mount } = await import('@vue/test-utils');
     const { defineComponent } = await import('vue');
 
-    let shellInstance: any;
     const Comp = defineComponent({
       setup() {
-        shellInstance = useShellApp({ storagePrefix: 'test-f11' });
+        useShellApp({ storagePrefix: 'test-f11' });
         return () => null;
       },
     });

@@ -41,6 +41,14 @@ pub async fn list_installed_models(app: AppHandle) -> Result<Vec<InstalledModelI
     let states = get_states_map().lock().unwrap().clone();
     let mut installed = Vec::new();
 
+    #[cfg(feature = "ai-local")]
+    let loaded_filename = {
+        use crate::logic::ai::local_llm::get_loaded_model_slot;
+        get_loaded_model_slot().lock().ok().and_then(|slot| {
+            slot.as_ref().map(|s| s.model_path.clone())
+        })
+    };
+
     while let Ok(Some(entry)) = dir.next_entry().await {
         let path = entry.path();
         if path.is_file() {
@@ -66,10 +74,20 @@ pub async fn list_installed_models(app: AppHandle) -> Result<Vec<InstalledModelI
                     ModelKind::Generation
                 };
 
-                let state = states
-                    .get(&filename)
-                    .cloned()
-                    .unwrap_or(ModelLifecycleState::Installed);
+                #[cfg(feature = "ai-local")]
+                let state = if let Some(ref lfn) = loaded_filename {
+                    if lfn == &filename {
+                        ModelLifecycleState::Ready
+                    } else {
+                        states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                    }
+                } else {
+                    states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                };
+
+                #[cfg(not(feature = "ai-local"))]
+                let state = states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed);
+
                 let display_name = format_friendly_model_name(&filename);
 
                 installed.push(InstalledModelInfo {
@@ -108,44 +126,119 @@ fn format_friendly_model_name(filename: &str) -> String {
     }
 }
 
+pub fn set_model_lifecycle_state(filename: &str, state: ModelLifecycleState) {
+    let mut states = get_states_map().lock().unwrap();
+    states.insert(filename.to_string(), state);
+}
+
 /// Load a local model into memory/GPU
 #[tauri::command]
 pub async fn load_local_model(_app: AppHandle, filename: String) -> Result<(), String> {
+    set_model_lifecycle_state(&filename, ModelLifecycleState::Loading);
+
+    #[cfg(feature = "ai-local")]
     {
-        let mut states = get_states_map().lock().unwrap();
-        states.insert(filename.clone(), ModelLifecycleState::Loading);
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, resolve_model_path, LoadedModelSlot, LocalLlm, ModelParams};
+        let resolved = resolve_model_path(&filename);
+        if !resolved.exists() {
+            set_model_lifecycle_state(&filename, ModelLifecycleState::Error);
+            return Err(format!("Файл модели не найден: {filename}"));
+        }
+
+        let is_embed = filename.to_lowercase().contains("embed")
+            || filename.to_lowercase().contains("nomic")
+            || filename.to_lowercase().contains("bge");
+
+        let path_str = resolved.to_string_lossy().to_string();
+        let load_res = tauri::async_runtime::spawn_blocking(move || {
+            let params = ModelParams {
+                n_gpu_layers: -1,
+                ..Default::default()
+            };
+            if is_embed {
+                LocalLlm::load_embedding_model(&path_str, params)
+            } else {
+                LocalLlm::load_model(&path_str, params)
+            }
+        }).await.map_err(|e| e.to_string())?;
+
+        match load_res {
+            Ok(llm) => {
+                if is_embed {
+                    let mut slot = get_loaded_embed_slot().lock().unwrap();
+                    *slot = Some(LoadedModelSlot {
+                        model_path: filename.clone(),
+                        llm,
+                    });
+                } else {
+                    let mut slot = get_loaded_model_slot().lock().unwrap();
+                    *slot = Some(LoadedModelSlot {
+                        model_path: filename.clone(),
+                        llm,
+                    });
+                }
+                set_model_lifecycle_state(&filename, ModelLifecycleState::Ready);
+                println!("[AI Manager] Модель {filename} успешно загружена в память GPU.");
+                Ok(())
+            }
+            Err(e) => {
+                set_model_lifecycle_state(&filename, ModelLifecycleState::Error);
+                Err(format!("Ошибка загрузки модели: {e}"))
+            }
+        }
     }
 
-    // Simulate async initialization or call local llama runtime
-    tokio::time::sleep(tokio::time::Duration::from_millis(600)).await;
-
+    #[cfg(not(feature = "ai-local"))]
     {
-        let mut states = get_states_map().lock().unwrap();
-        states.insert(filename, ModelLifecycleState::Ready);
+        set_model_lifecycle_state(&filename, ModelLifecycleState::Error);
+        Err("Локальный инференс отключен (нет feature ai-local)".to_string())
     }
-    Ok(())
 }
 
 /// Unload a local model from memory/GPU
 #[tauri::command]
 pub async fn unload_local_model(_app: AppHandle, filename: String) -> Result<(), String> {
+    set_model_lifecycle_state(&filename, ModelLifecycleState::Unloading);
+
+    #[cfg(feature = "ai-local")]
     {
-        let mut states = get_states_map().lock().unwrap();
-        states.insert(filename.clone(), ModelLifecycleState::Unloading);
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        if filename.to_lowercase().contains("embed") || filename.to_lowercase().contains("nomic") {
+            let mut slot = get_loaded_embed_slot().lock().unwrap();
+            *slot = None;
+        } else {
+            let mut slot = get_loaded_model_slot().lock().unwrap();
+            *slot = None;
+        }
+        println!("[AI Manager] Модель {filename} выгружена из GPU.");
     }
 
-    tokio::time::sleep(tokio::time::Duration::from_millis(300)).await;
-
-    {
-        let mut states = get_states_map().lock().unwrap();
-        states.insert(filename, ModelLifecycleState::Installed);
-    }
+    set_model_lifecycle_state(&filename, ModelLifecycleState::Installed);
     Ok(())
 }
 
 /// Delete a downloaded model file
 #[tauri::command]
 pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), String> {
+    #[cfg(feature = "ai-local")]
+    {
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        if let Ok(mut slot) = get_loaded_model_slot().lock() {
+            if let Some(ref loaded) = *slot {
+                if loaded.model_path == filename {
+                    *slot = None;
+                }
+            }
+        }
+        if let Ok(mut slot) = get_loaded_embed_slot().lock() {
+            if let Some(ref loaded) = *slot {
+                if loaded.model_path == filename {
+                    *slot = None;
+                }
+            }
+        }
+    }
+
     let models_dir = get_models_dir(&app);
     let target_path = models_dir.join(&filename);
 
@@ -164,6 +257,16 @@ pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), 
 /// Graceful shutdown handler: unloads all active models and cleans up child processes
 pub fn shutdown_local_models() {
     println!("[AI Manager] Остановка локальных моделей и освобождение VRAM/RAM...");
+    #[cfg(feature = "ai-local")]
+    {
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        if let Ok(mut slot) = get_loaded_model_slot().lock() {
+            *slot = None;
+        }
+        if let Ok(mut slot) = get_loaded_embed_slot().lock() {
+            *slot = None;
+        }
+    }
     let mut states = get_states_map().lock().unwrap();
     states.clear();
     println!("[AI Manager] Все локальные модели успешно выгружены.");

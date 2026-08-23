@@ -99,8 +99,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
 import type { AiProfile } from '../../types/ai.types';
+import { aiProfilesApi } from '../../api/aiProfiles.api';
 
 export interface AiMode {
   id?: string;
@@ -134,11 +134,9 @@ onMounted(async () => {
 
 const loadProfiles = async () => {
   try {
-    const raw = await invoke<AiProfile[]>('get_entities_batch', {
-      table: 'ai_profiles',
-      filter: null,
-    });
-    profiles.value = raw || [];
+    if (props.currentProject) {
+      profiles.value = await aiProfilesApi.getProfiles(props.currentProject);
+    }
   } catch (e) {
     console.error('Ошибка загрузки профилей:', e);
   }
@@ -147,13 +145,9 @@ const loadProfiles = async () => {
 const loadModes = async () => {
   isLoading.value = true;
   try {
-    const raw = await invoke<AiMode[]>('get_entities_batch', {
-      table: 'ai_modes',
-      filter: null,
-    });
-
-    if (raw && raw.length > 0) {
-      modes.value = raw;
+    const saved = localStorage.getItem(`worldwiki_modes_${props.currentProject || 'default'}`);
+    if (saved) {
+      modes.value = JSON.parse(saved);
     } else {
       modes.value = [
         {
@@ -204,7 +198,7 @@ const createNewMode = () => {
   isNewMode.value = true;
   activeModeSlug.value = 'new_mode';
   activeMode.value = {
-    slug: 'new_mode',
+    slug: `mode_${Date.now()}`,
     name: 'Новый режим',
     role_definition: 'Ты — специализированный ассистент...',
     custom_instructions: '',
@@ -217,12 +211,14 @@ const createNewMode = () => {
 const saveMode = async () => {
   if (!activeMode.value) return;
   try {
-    await invoke('save_entity', {
-      table: 'ai_modes',
-      data: activeMode.value,
-    });
+    const idx = modes.value.findIndex(m => m.slug === activeMode.value?.slug);
+    if (idx >= 0) {
+      modes.value[idx] = { ...activeMode.value };
+    } else {
+      modes.value.push({ ...activeMode.value });
+    }
+    localStorage.setItem(`worldwiki_modes_${props.currentProject || 'default'}`, JSON.stringify(modes.value));
     isNewMode.value = false;
-    await loadModes();
     emit('mode-saved');
   } catch (e) {
     console.error('Ошибка сохранения режима:', e);
@@ -230,15 +226,13 @@ const saveMode = async () => {
 };
 
 const deleteMode = async () => {
-  if (!activeMode.value || !activeMode.value.id) return;
+  if (!activeMode.value) return;
   if (!confirm(`Удалить режим "${activeMode.value.name}"?`)) return;
   try {
-    await invoke('delete_entity', {
-      table: 'ai_modes',
-      id: activeMode.value.id,
-    });
+    modes.value = modes.value.filter(m => m.slug !== activeMode.value?.slug);
+    localStorage.setItem(`worldwiki_modes_${props.currentProject || 'default'}`, JSON.stringify(modes.value));
     activeModeSlug.value = 'chat';
-    await loadModes();
+    onModeChange();
   } catch (e) {
     console.error('Ошибка удаления режима:', e);
   }

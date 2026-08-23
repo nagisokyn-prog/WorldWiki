@@ -61,7 +61,7 @@ export function useWowilonPanel(
             // ignore
           }
         } else {
-          msg.content = chunk.text;
+          msg.content = (msg.content || '') + chunk.text;
         }
 
         if (chunk.is_done) {

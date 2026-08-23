@@ -294,10 +294,10 @@ describe('PerformanceManager', () => {
     });
 
     it('should handle Battery API errors and events gracefully', async () => {
-      const listeners: Record<string, Function> = {};
+      const listeners: Record<string, (...args: any[]) => void> = {};
       const mockBattery = {
         charging: false,
-        addEventListener: (event: string, fn: Function) => {
+        addEventListener: (event: string, fn: (...args: any[]) => void) => {
           listeners[event] = fn;
         }
       };

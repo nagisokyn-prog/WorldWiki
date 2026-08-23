@@ -106,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import type { AiProfile } from '../types/ai.types';
 import AiSettingsConnectionsTab from '../components/settings/AiSettingsConnectionsTab.vue';
 import AiSettingsModelsTab from '../components/settings/AiSettingsModelsTab.vue';
@@ -119,7 +119,13 @@ import { useAiModels } from '../composables/useAiModels';
 
 defineEmits(['close']);
 
-const activeTab = ref<'connections' | 'models' | 'local_ai' | 'modes' | 'permissions'>('connections');
+type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions';
+const savedTab = localStorage.getItem('worldwiki_ai_settings_active_tab') as TabType;
+const activeTab = ref<TabType>(savedTab && ['connections', 'models', 'local_ai', 'modes', 'permissions'].includes(savedTab) ? savedTab : 'connections');
+
+watch(activeTab, (val) => {
+  localStorage.setItem('worldwiki_ai_settings_active_tab', val);
+});
 
 const tabTitles: Record<string, string> = {
   connections: 'Подключения и API-ключи',

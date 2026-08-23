@@ -6,6 +6,7 @@ use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
 use std::sync::mpsc;
+use std::sync::{Mutex, OnceLock};
 
 #[cfg(feature = "ai-local")]
 use llama_sys::*;
@@ -328,30 +329,39 @@ impl LocalLlm {
             return Ok(());
         }
 
-        // Prefill prompt
-        let mut batch = unsafe { llama_batch_init(tokens.len() as i32, 0, 1) };
-        batch.n_tokens = tokens.len() as i32;
-        for (i, &tok) in tokens.iter().enumerate() {
-            unsafe {
-                *batch.token.add(i) = tok;
-                *batch.pos.add(i) = self.n_past + i as i32;
-                *(*batch.seq_id.add(i)).add(0) = 0;
-                *batch.n_seq_id.add(i) = 1;
-                *batch.logits.add(i) = if i == tokens.len() - 1 { 1 } else { 0 };
+        // Prefill prompt in chunks of n_batch
+        let n_batch = (self.params.n_batch as usize).max(1);
+        let mut batch = unsafe { llama_batch_init(n_batch as i32, 0, 1) };
+
+        for (chunk_idx, chunk) in tokens.chunks(n_batch).enumerate() {
+            batch.n_tokens = chunk.len() as i32;
+            let offset = chunk_idx * n_batch;
+
+            for (i, &tok) in chunk.iter().enumerate() {
+                let global_idx = offset + i;
+                unsafe {
+                    *batch.token.add(i) = tok;
+                    *batch.pos.add(i) = self.n_past + global_idx as i32;
+                    *(*batch.seq_id.add(i)).add(0) = 0;
+                    *batch.n_seq_id.add(i) = 1;
+                    *batch.logits.add(i) = if global_idx == tokens.len() - 1 { 1 } else { 0 };
+                }
+            }
+
+            let decode_res = unsafe { llama_decode(self.ctx, batch) };
+            if decode_res != 0 {
+                unsafe { llama_batch_free(batch) };
+                return Err(format!("Prefill decode failed with code: {decode_res}"));
             }
         }
-
-        let decode_res = unsafe { llama_decode(self.ctx, batch) };
         unsafe { llama_batch_free(batch) };
-        if decode_res != 0 {
-            return Err(format!("Prefill decode failed with code: {decode_res}"));
-        }
 
         self.n_past += tokens.len() as i32;
         self.tokens.extend_from_slice(&tokens);
 
         let mut n_decode = 0;
         let max_tokens = (self.n_ctx as i32 - self.n_past - 1).max(0);
+        let mut generated_buffer = String::new();
 
         while n_decode < max_tokens {
             let token = unsafe { llama_sampler_sample(self.sampler, self.ctx, -1) };
@@ -378,16 +388,34 @@ impl LocalLlm {
             };
             if n > 0 {
                 let piece = std::str::from_utf8(&buf[..n as usize]).unwrap_or("");
-                if !piece.is_empty() {
-                    if tx
+                generated_buffer.push_str(piece);
+
+                // Stop conditions for ChatML and other instruct formats
+                let is_stop = piece.contains("<|im_end|>")
+                    || piece.contains("<|im_start|>")
+                    || piece.contains("<|endoftext|>")
+                    || piece.contains("<|eot_id|>")
+                    || piece.contains("</s>")
+                    || generated_buffer.ends_with("<|im_end|>")
+                    || generated_buffer.ends_with("<|im_start|>");
+
+                if is_stop {
+                    let _ = tx.send(TokenEvent {
+                        token: String::new(),
+                        is_done: true,
+                    });
+                    break;
+                }
+
+                if !piece.is_empty()
+                    && tx
                         .send(TokenEvent {
                             token: piece.to_string(),
                             is_done: false,
                         })
                         .is_err()
-                    {
-                        break;
-                    }
+                {
+                    break;
                 }
             }
 
@@ -475,6 +503,67 @@ impl LocalLlm {
 
         Ok(result)
     }
+
+    /// Re-initialize working context and sampler while keeping model weights in GPU memory
+    pub fn reset_context(&mut self) -> Result<(), String> {
+        unsafe {
+            if !self.sampler.is_null() {
+                llama_sampler_free(self.sampler);
+                self.sampler = ptr::null_mut();
+            }
+            if !self.ctx.is_null() {
+                llama_free(self.ctx);
+                self.ctx = ptr::null_mut();
+            }
+
+            let mut ctx_params = llama_context_default_params();
+            ctx_params.n_ctx = self.n_ctx;
+            ctx_params.n_batch = self.params.n_batch;
+            ctx_params.n_ubatch = self.params.n_batch;
+            ctx_params.rope_freq_base = self.params.rope_freq_base;
+            ctx_params.rope_freq_scale = self.params.rope_freq_scale;
+
+            let ctx = llama_init_from_model(self.model, ctx_params);
+            if ctx.is_null() {
+                return Err("Failed to reset llama context".to_string());
+            }
+
+            let sparams = llama_sampler_chain_default_params();
+            let sampler = llama_sampler_chain_init(sparams);
+            llama_sampler_chain_add(sampler, llama_sampler_init_top_k(40));
+            llama_sampler_chain_add(sampler, llama_sampler_init_top_p(0.95, 1));
+            llama_sampler_chain_add(sampler, llama_sampler_init_temp(0.7));
+            llama_sampler_chain_add(sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+
+            self.ctx = ctx;
+            self.sampler = sampler;
+            self.n_past = 0;
+            self.tokens.clear();
+        }
+        Ok(())
+    }
+}
+
+#[cfg(feature = "ai-local")]
+pub struct LoadedModelSlot {
+    pub model_path: String,
+    pub llm: LocalLlm,
+}
+
+#[cfg(feature = "ai-local")]
+static LOADED_MODEL: OnceLock<Mutex<Option<LoadedModelSlot>>> = OnceLock::new();
+
+#[cfg(feature = "ai-local")]
+pub fn get_loaded_model_slot() -> &'static Mutex<Option<LoadedModelSlot>> {
+    LOADED_MODEL.get_or_init(|| Mutex::new(None))
+}
+
+#[cfg(feature = "ai-local")]
+static LOADED_EMBED: OnceLock<Mutex<Option<LoadedModelSlot>>> = OnceLock::new();
+
+#[cfg(feature = "ai-local")]
+pub fn get_loaded_embed_slot() -> &'static Mutex<Option<LoadedModelSlot>> {
+    LOADED_EMBED.get_or_init(|| Mutex::new(None))
 }
 
 #[cfg(feature = "ai-local")]

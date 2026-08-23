@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 
 export interface AiChat {
@@ -15,8 +15,16 @@ export interface AiChatTreeNode extends AiChat {
 
 export function useAiChats(currentProject: string) {
   const chats = ref<AiChat[]>([]);
-  const activeChatId = ref<string>('');
+  const activeChatId = ref<string>(localStorage.getItem(`worldwiki_ai_active_chat_${currentProject}`) || '');
   const isLoading = ref(false);
+
+  watch(activeChatId, (id) => {
+    if (id) {
+      localStorage.setItem(`worldwiki_ai_active_chat_${currentProject}`, id);
+    } else {
+      localStorage.removeItem(`worldwiki_ai_active_chat_${currentProject}`);
+    }
+  });
 
   const loadChats = async () => {
     isLoading.value = true;

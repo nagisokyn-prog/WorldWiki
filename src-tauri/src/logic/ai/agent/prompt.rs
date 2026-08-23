@@ -61,6 +61,33 @@ pub fn build_system_prompt(
     out
 }
 
+/// Чистый системный промпт для прямого режима (Direct / Local Auto-RAG)
+pub fn build_system_prompt_direct(
+    role_definition: &str,
+    custom_instructions: &str,
+    project_id: &str,
+) -> String {
+    let base = if role_definition.trim().is_empty() {
+        "Ты — соавтор и редактор писательской вселенной в приложении WorldWiki."
+    } else {
+        role_definition
+    };
+
+    let global_rules = "====\nПРАВИЛА ЛИТЕРАТУРНОГО СОАВТОРА WORLDWIKI:\n\n\
+        1. Ты — соавтор и творческий партнер писателя. Отвечай живым, выразительным языком, помогай развивать сюжет и персонажей.\n\
+        2. Знание лора и глав: Материалы из базы данных передаются тебе в секции <context>. Считай их полностью достоверными и отвечай прямо на их основе.\n\
+        3. Если в переданном контексте нет информации о событии, честно скажи об этом и предложи интересные творческие варианты развития.\n\
+        4. Не пиши шаблонных вступлений (\"Конечно, я помогу\", \"Как языковая модель...\"). Сразу переходи к сути вопроса.\n\
+        5. Не упоминай технические термины, базы данных или ID — общайся как внимательный соавтор и редактор.";
+
+    let mut out = format!("{}\n\n{}\n\nПроект: {}", base, global_rules, project_id);
+    if !custom_instructions.trim().is_empty() {
+        out.push_str("\n\n====\nУказания автора:\n");
+        out.push_str(custom_instructions.trim());
+    }
+    out
+}
+
 /// Системный промпт с автоматическим внедрением контекста (Auto-RAG).
 pub fn build_system_prompt_with_context(
     role_definition: &str,

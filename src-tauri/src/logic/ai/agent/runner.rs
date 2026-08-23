@@ -385,12 +385,23 @@ async fn run_agent_inner(
         None
     };
 
-    let system = build_system_prompt_with_context(
-        &role_def,
-        &combined_custom_instructions,
-        &project_id,
-        retrieved_context.as_deref(),
-    );
+    let is_local = provider == "local" && (model.ends_with(".gguf") || model.contains('/') || model.contains('\\'));
+    let exec_policy = settings.get("execution_policy").and_then(|v| v.as_str()).unwrap_or("direct");
+
+    let system = if is_local || exec_policy == "direct" {
+        crate::logic::ai::agent::prompt::build_system_prompt_direct(
+            &role_def,
+            &combined_custom_instructions,
+            &project_id,
+        )
+    } else {
+        build_system_prompt_with_context(
+            &role_def,
+            &combined_custom_instructions,
+            &project_id,
+            retrieved_context.as_deref(),
+        )
+    };
 
     // Native in-process Local LLM inference (llama-turboquant-cpp)
     if provider == "local" && (model.ends_with(".gguf") || model.contains('/') || model.contains('\\')) {
@@ -403,23 +414,45 @@ async fn run_agent_inner(
             let triattention_path = settings.get("triattention_path").and_then(|v| v.as_str()).map(|s| s.to_string());
             let checkpoint_path = settings.get("checkpoint_path").and_then(|v| v.as_str()).map(|s| s.to_string());
 
-            let history_text: String = messages.iter().map(|m| {
-                let role = if m.role == "user" { "User" } else { "Assistant" };
+            let mut formatted_prompt = String::new();
+            if !system.trim().is_empty() {
+                formatted_prompt.push_str(&format!("<|im_start|>system\n{}<|im_end|>\n", system.trim()));
+            }
+            for m in &messages {
+                let role = if m.role == "user" { "user" } else { "assistant" };
                 let text = m.content.iter().map(|block| match block {
                     InputContentBlock::Text { text } => text.clone(),
                     _ => String::new(),
                 }).collect::<Vec<_>>().join(" ");
-                format!("{role}: {text}")
-            }).collect::<Vec<_>>().join("\n\n");
+                if !text.trim().is_empty() {
+                    formatted_prompt.push_str(&format!("<|im_start|>{role}\n{}<|im_end|>\n", text.trim()));
+                }
+            }
+            formatted_prompt.push_str("<|im_start|>assistant\n");
 
-            let prompt = format!("{system}\n\n{history_text}\nAssistant:");
+            let last_user_query = messages
+                .iter()
+                .rev()
+                .find(|m| m.role == "user")
+                .map(|m| {
+                    m.content
+                        .iter()
+                        .map(|block| match block {
+                            InputContentBlock::Text { text } => text.clone(),
+                            _ => String::new(),
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                })
+                .unwrap_or_default();
 
             match crate::logic::ai::agent_runtime::run_local_agent_loop(
                 app.clone(),
                 project_id,
                 chat_id.clone(),
                 assistant_msg_id.clone(),
-                prompt,
+                last_user_query,
+                formatted_prompt,
                 model,
                 embed_model_path,
                 triattention_path,

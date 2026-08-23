@@ -42,7 +42,7 @@
             @restart-session="cancelGeneration"
           />
           
-          <div ref="messagesContainer" class="messages-container">
+          <div ref="messagesContainer" class="messages-container" @scroll="saveScroll">
             <!-- Empty state: no chat selected OR chat selected but no messages -->
             <div v-if="messages.length === 0" class="empty-chat-state">
               <i class="fas fa-comment-dots"></i>
@@ -170,10 +170,15 @@ const props = defineProps<{
 
 const emit = defineEmits(['close']);
 
-const panelWidth = ref(400);
-const showSidebar = ref(false); // Toggle chat history
-const isSettingsOpen = ref(false);
+const savedWidth = parseInt(localStorage.getItem('worldwiki_ai_panel_width') || '400', 10);
+const panelWidth = ref(Number.isNaN(savedWidth) ? 400 : Math.max(300, Math.min(1200, savedWidth)));
+const showSidebar = ref(localStorage.getItem('worldwiki_ai_show_sidebar') === 'true'); // Toggle chat history
+const isSettingsOpen = ref(localStorage.getItem('worldwiki_ai_settings_open') === 'true');
 const selectedContext = ref<ContextItem[]>([]);
+
+watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_width', String(w)));
+watch(showSidebar, (v) => localStorage.setItem('worldwiki_ai_show_sidebar', String(v)));
+watch(isSettingsOpen, (v) => localStorage.setItem('worldwiki_ai_settings_open', String(v)));
 
 let currentProject = 'global';
 const hash = window.location.hash;
@@ -204,18 +209,19 @@ const {
 
 const { activeProfile, loadProfiles } = useAiProfiles(currentProject);
 
-const activeModeSlug = ref('chat');
+const activeModeSlug = ref(localStorage.getItem(`worldwiki_ai_active_mode_${currentProject}`) || 'chat');
 const modes = ref<AiTopBarMode[]>([]);
 
+watch(activeModeSlug, (m) => localStorage.setItem(`worldwiki_ai_active_mode_${currentProject}`, m));
+
 onMounted(async () => {
-  loadChats();
+  await loadChats();
   loadProfiles();
   
   try {
     const res = await invoke<AiTopBarMode[]>('get_aimodes', { project: currentProject });
     if (res && res.length > 0) {
       modes.value = res;
-      // Если есть режим по умолчанию, можно установить его, либо оставить 'chat'
     } else {
       modes.value = [{ slug: 'chat', name: 'Собеседник' }, { slug: 'edit', name: 'Редактор' }, { slug: 'analyze', name: 'Аналитик' }];
     }
@@ -261,20 +267,40 @@ const saveEdit = (id: string) => {
 
 const isSending = ref(false);
 
+const saveScroll = () => {
+  if (messagesContainer.value && activeChatId.value) {
+    localStorage.setItem(`worldwiki_ai_scroll_${activeChatId.value}`, String(messagesContainer.value.scrollTop));
+  }
+};
+
+const restoreScroll = () => {
+  nextTick(() => {
+    if (messagesContainer.value && activeChatId.value) {
+      const saved = localStorage.getItem(`worldwiki_ai_scroll_${activeChatId.value}`);
+      if (saved !== null) {
+        messagesContainer.value.scrollTop = parseFloat(saved);
+      } else {
+        scrollToBottom();
+      }
+    }
+  });
+};
+
 watch(activeChatId, (newId) => {
   if (newId) {
     if (isGenerating.value && messages.value.length > 0) {
       return; 
     }
-    loadMessages(newId);
+    loadMessages(newId).then(() => {
+      restoreScroll();
+    });
   } else {
     messages.value = [];
   }
 }, { immediate: true });
 
 watch(() => props.isOpen, (newVal) => {
-  if (newVal) {
-    // При каждом открытии панели мы переходим в режим "Новый чат"
+  if (newVal && !activeChatId.value) {
     createNewChat();
   }
 });

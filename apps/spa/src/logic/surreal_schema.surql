@@ -189,17 +189,22 @@ DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DE
 -- ЧАНКИ СУЩНОСТЕЙ (Для детального семантического поиска Auto-RAG)
 -- ===============================================
 DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id   ON entity_chunks TYPE record<projects>;
-DEFINE FIELD OVERWRITE entity_id    ON entity_chunks TYPE record<entities>;
-DEFINE FIELD OVERWRITE chunk_index  ON entity_chunks TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE content      ON entity_chunks TYPE string;
-DEFINE FIELD OVERWRITE embeddings   ON entity_chunks TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE created_at   ON entity_chunks TYPE option<datetime> DEFAULT time::now();
+DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects>;
+DEFINE FIELD OVERWRITE chapter_id          ON entity_chunks TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE entity_id           ON entity_chunks TYPE option<record<entities> | null>;
+DEFINE FIELD OVERWRITE title               ON entity_chunks TYPE option<string | null>;
+DEFINE FIELD OVERWRITE chunk_index         ON entity_chunks TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE content             ON entity_chunks TYPE string;
+DEFINE FIELD OVERWRITE embedding_nemotron  ON entity_chunks TYPE option<array<float, 2048> | null>;
+DEFINE FIELD OVERWRITE embedding_nomic     ON entity_chunks TYPE option<array<float, 768> | null>;
+DEFINE FIELD OVERWRITE created_at          ON entity_chunks TYPE option<datetime> DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_chunk_project ON entity_chunks FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_chunk_chapter ON entity_chunks FIELDS chapter_id;
 DEFINE INDEX OVERWRITE idx_chunk_entity  ON entity_chunks FIELDS entity_id;
 DEFINE INDEX OVERWRITE idx_chunk_content_ft ON entity_chunks COLUMNS content FULLTEXT ANALYZER like BM25;
-DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embedding_nemotron HNSW DIMENSION 2048 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_chunk_emb_nomic ON entity_chunks COLUMNS embedding_nomic HNSW DIMENSION 768 DIST COSINE;
 
 -- ===============================================
 -- ТИПЫ ГРАФ-РЁБЕР И СВЯЗИ

@@ -157,59 +157,104 @@ pub async fn reindex_project_lore_inner(
     }
 
     let total_count = pending_chunks.len();
-    println!("[INDEXER] Нарезано {total_count} чанков. Проверяем доступность эмбеддера...");
+    println!("[INDEXER] Нарезано {total_count} чанков. Подготовка к векторизации...");
 
-    // 4. Ping test embedder: check if server is reachable in 1 fast call
-    let is_embedder_alive = embedder.embed_passage("test").await.is_ok();
-    if is_embedder_alive {
-        println!("[INDEXER] Сервер эмбеддингов доступен. Запуск параллельной векторизации (Tokio Pool)...");
-    } else {
-        println!(
-            "[INDEXER] Сервер эмбеддингов оффлайн. Вставка чанков с полнотекстовым поиском BM25..."
-        );
+    let mut processed_chunks: Vec<ProcessedChunk> = Vec::with_capacity(total_count);
+    let mut vectorized_locally = false;
+
+    #[cfg(feature = "ai-local")]
+    {
+        use crate::logic::ai::local_llm::{resolve_model_path, LocalLlm, ModelParams};
+        let mut model_filename = "nomic-embed-text-v1.5.Q4_K_M.gguf".to_string();
+
+        let prof_query = "SELECT settings FROM ai_profiles WHERE (project_id = $proj OR is_global = true) AND is_active = true LIMIT 1";
+        if let Ok(mut resp) = db.query(prof_query).bind(("proj", proj_rec.clone())).await {
+            if let Ok(Some(prof)) = resp.take::<Option<serde_json::Value>>(0) {
+                if let Some(path) = prof.get("settings").and_then(|s| s.get("embed_model_path")).and_then(|v| v.as_str()) {
+                    if !path.trim().is_empty() {
+                        model_filename = path.to_string();
+                    }
+                }
+            }
+        }
+
+        let resolved = resolve_model_path(&model_filename);
+        if resolved.exists() {
+            println!("[INDEXER] Загрузка прямого локального CUDA-эмбеддера: {}", resolved.display());
+            let emb_params = ModelParams {
+                n_gpu_layers: -1,
+                ..Default::default()
+            };
+            match LocalLlm::load_embedding_model(&model_filename, emb_params) {
+                Ok(mut emb_model) => {
+                    println!("[INDEXER] Генерация эмбеддингов для {total_count} чанков через GPU CUDA...");
+                    for chunk in pending_chunks.iter() {
+                        let doc_text = format!("search_document: {}", chunk.content);
+                        let embedding = emb_model.get_embeddings(&doc_text).ok();
+                        processed_chunks.push(ProcessedChunk {
+                            chapter_id: chunk.chapter_id.clone(),
+                            entity_id: chunk.entity_id.clone(),
+                            title: chunk.title.clone(),
+                            content: chunk.content.clone(),
+                            chunk_index: chunk.chunk_index,
+                            embedding,
+                        });
+                    }
+                    vectorized_locally = true;
+                    println!("[INDEXER] Векторизация завершена успешно ({total_count} чанков на GPU)!");
+                }
+                Err(e) => {
+                    eprintln!("[INDEXER] Не удалось загрузить локальный эмбеддер: {e}");
+                }
+            }
+        }
     }
 
-    // 5. Concurrent vector generation via Tokio JoinSet (Parallel Workers)
-    let mut processed_chunks: Vec<ProcessedChunk> = Vec::with_capacity(total_count);
+    if !vectorized_locally {
+        // 4. Ping test embedder: check if server is reachable in 1 fast call
+        let is_embedder_alive = embedder.embed_passage("test").await.is_ok();
+        if is_embedder_alive {
+            println!("[INDEXER] Сервер эмбеддингов доступен. Запуск параллельной векторизации (Tokio Pool)...");
+            let mut join_set = JoinSet::new();
+            let semaphore = Arc::new(tokio::sync::Semaphore::new(16));
 
-    if is_embedder_alive {
-        let mut join_set = JoinSet::new();
-        // Limit max concurrent workers to 16 to avoid socket exhaustion
-        let semaphore = Arc::new(tokio::sync::Semaphore::new(16));
+            for chunk in pending_chunks {
+                let emb_svc = Arc::clone(&embedder);
+                let sem = Arc::clone(&semaphore);
 
-        for chunk in pending_chunks {
-            let emb_svc = Arc::clone(&embedder);
-            let sem = Arc::clone(&semaphore);
+                join_set.spawn(async move {
+                    let _permit = sem.acquire().await.ok();
+                    let embedding = emb_svc.embed_passage(&chunk.content).await.ok();
+                    ProcessedChunk {
+                        chapter_id: chunk.chapter_id,
+                        entity_id: chunk.entity_id,
+                        title: chunk.title,
+                        content: chunk.content,
+                        chunk_index: chunk.chunk_index,
+                        embedding,
+                    }
+                });
+            }
 
-            join_set.spawn(async move {
-                let _permit = sem.acquire().await.ok();
-                let embedding = emb_svc.embed_passage(&chunk.content).await.ok();
-                ProcessedChunk {
+            while let Some(res) = join_set.join_next().await {
+                if let Ok(processed) = res {
+                    processed_chunks.push(processed);
+                }
+            }
+        } else {
+            println!(
+                "[INDEXER] Внешний сервер оффлайн. Вставка чанков с полнотекстовым поиском BM25..."
+            );
+            for chunk in pending_chunks {
+                processed_chunks.push(ProcessedChunk {
                     chapter_id: chunk.chapter_id,
                     entity_id: chunk.entity_id,
                     title: chunk.title,
                     content: chunk.content,
                     chunk_index: chunk.chunk_index,
-                    embedding,
-                }
-            });
-        }
-
-        while let Some(res) = join_set.join_next().await {
-            if let Ok(processed) = res {
-                processed_chunks.push(processed);
+                    embedding: None,
+                });
             }
-        }
-    } else {
-        for chunk in pending_chunks {
-            processed_chunks.push(ProcessedChunk {
-                chapter_id: chunk.chapter_id,
-                entity_id: chunk.entity_id,
-                title: chunk.title,
-                content: chunk.content,
-                chunk_index: chunk.chunk_index,
-                embedding: None,
-            });
         }
     }
 
@@ -227,10 +272,11 @@ pub async fn reindex_project_lore_inner(
             let p_title = format!("title_{i}");
             let p_content = format!("content_{i}");
             let p_idx = format!("idx_{i}");
-            let p_emb = format!("emb_{i}");
+            let p_emb_nomic = format!("emb_nomic_{i}");
+            let p_emb_nemo = format!("emb_nemo_{i}");
 
             query.push_str(&format!(
-                "CREATE entity_chunks SET project_id = $proj, chapter_id = IF ${p_chap} != NONE AND ${p_chap} != NULL {{ type::record('chapters', ${p_chap}) }} ELSE {{ NONE }}, entity_id = IF ${p_ent} != NONE AND ${p_ent} != NULL {{ type::record('entities', ${p_ent}) }} ELSE {{ NONE }}, title = ${p_title}, content = ${p_content}, chunk_index = ${p_idx}, embedding_nemotron = ${p_emb}, created_at = time::now();\n"
+                "CREATE entity_chunks SET project_id = $proj, chapter_id = IF ${p_chap} != NONE AND ${p_chap} != NULL {{ type::record('chapters', ${p_chap}) }} ELSE {{ NONE }}, entity_id = IF ${p_ent} != NONE AND ${p_ent} != NULL {{ type::record('entities', ${p_ent}) }} ELSE {{ NONE }}, title = ${p_title}, content = ${p_content}, chunk_index = ${p_idx}, embedding_nomic = ${p_emb_nomic}, embedding_nemotron = ${p_emb_nemo}, created_at = time::now();\n"
             ));
 
             let chap_clean = c.chapter_id.as_ref().and_then(|id| {
@@ -242,12 +288,19 @@ pub async fn reindex_project_lore_inner(
                 if clean.is_empty() { None } else { Some(clean.to_string()) }
             });
 
+            let (emb_nomic, emb_nemo) = match c.embedding.as_ref() {
+                Some(v) if v.len() == 768 => (Some(v.clone()), None),
+                Some(v) if v.len() == 2048 => (None, Some(v.clone())),
+                _ => (None, None),
+            };
+
             bindings.push((p_chap, json!(chap_clean)));
             bindings.push((p_ent, json!(ent_clean)));
             bindings.push((p_title, json!(c.title)));
             bindings.push((p_content, json!(c.content)));
             bindings.push((p_idx, json!(c.chunk_index as i64)));
-            bindings.push((p_emb, json!(c.embedding)));
+            bindings.push((p_emb_nomic, json!(emb_nomic)));
+            bindings.push((p_emb_nemo, json!(emb_nemo)));
         }
 
         query.push_str("COMMIT TRANSACTION;\n");

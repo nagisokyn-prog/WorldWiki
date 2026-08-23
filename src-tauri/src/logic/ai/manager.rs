@@ -42,11 +42,15 @@ pub async fn list_installed_models(app: AppHandle) -> Result<Vec<InstalledModelI
     let mut installed = Vec::new();
 
     #[cfg(feature = "ai-local")]
-    let loaded_filename = {
-        use crate::logic::ai::local_llm::get_loaded_model_slot;
-        get_loaded_model_slot().lock().ok().and_then(|slot| {
+    let (loaded_gen_fn, loaded_emb_fn) = {
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        let gen_fn = get_loaded_model_slot().try_lock().ok().and_then(|slot| {
             slot.as_ref().map(|s| s.model_path.clone())
-        })
+        });
+        let emb_fn = get_loaded_embed_slot().try_lock().ok().and_then(|slot| {
+            slot.as_ref().map(|s| s.model_path.clone())
+        });
+        (gen_fn, emb_fn)
     };
 
     while let Ok(Some(entry)) = dir.next_entry().await {
@@ -75,14 +79,26 @@ pub async fn list_installed_models(app: AppHandle) -> Result<Vec<InstalledModelI
                 };
 
                 #[cfg(feature = "ai-local")]
-                let state = if let Some(ref lfn) = loaded_filename {
-                    if lfn == &filename {
-                        ModelLifecycleState::Ready
+                let state = if is_embed {
+                    if let Some(ref efn) = loaded_emb_fn {
+                        if efn == &filename || efn.ends_with(&filename) {
+                            ModelLifecycleState::Ready
+                        } else {
+                            states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                        }
                     } else {
                         states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
                     }
                 } else {
-                    states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                    if let Some(ref gfn) = loaded_gen_fn {
+                        if gfn == &filename || gfn.ends_with(&filename) {
+                            ModelLifecycleState::Ready
+                        } else {
+                            states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                        }
+                    } else {
+                        states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                    }
                 };
 
                 #[cfg(not(feature = "ai-local"))]
@@ -251,6 +267,25 @@ pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), 
     let mut states = get_states_map().lock().unwrap();
     states.remove(&filename);
 
+    Ok(())
+}
+
+/// Emergency unload of ALL local models from GPU and RAM
+#[tauri::command]
+pub async fn unload_all_local_models(_app: AppHandle) -> Result<(), String> {
+    #[cfg(feature = "ai-local")]
+    {
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        if let Ok(mut slot) = get_loaded_model_slot().lock() {
+            *slot = None;
+        }
+        if let Ok(mut slot) = get_loaded_embed_slot().lock() {
+            *slot = None;
+        }
+    }
+    let mut states = get_states_map().lock().unwrap();
+    states.clear();
+    println!("[AI Manager] Все локальные модели экстренно выгружены из GPU!");
     Ok(())
 }
 

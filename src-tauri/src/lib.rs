@@ -173,6 +173,7 @@ pub fn run() {
             list_installed_models,
             load_local_model,
             unload_local_model,
+            unload_all_local_models,
             delete_local_model,
             get_tool_permissions_catalog,
             reindex_project_lore,

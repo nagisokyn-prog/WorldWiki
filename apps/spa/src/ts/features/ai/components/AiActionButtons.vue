@@ -1,7 +1,10 @@
 <template>
   <div v-if="isVisible" class="ai-action-buttons">
-    <button v-if="isGenerating" class="action-btn cancel" @click="$emit('cancel')">
+    <button v-if="isGenerating" class="action-btn cancel" title="Остановить генерацию" @click="$emit('cancel')">
       <i class="fas fa-stop-circle"></i> Отменить
+    </button>
+    <button v-if="isGenerating || hasError" class="action-btn unload" title="Экстренно выгрузить модели из видеопамяти GPU" @click="$emit('unload-models')">
+      <i class="fas fa-memory"></i> Сброс памяти GPU
     </button>
     <button v-if="!isGenerating && hasError" class="action-btn retry" @click="$emit('retry')">
       <i class="fas fa-redo"></i> Повторить
@@ -27,6 +30,7 @@ const props = withDefaults(defineProps<{
 
 defineEmits<{
   (e: 'cancel'): void;
+  (e: 'unload-models'): void;
   (e: 'retry'): void;
   (e: 'resume'): void;
 }>();

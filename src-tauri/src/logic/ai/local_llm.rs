@@ -143,6 +143,7 @@ impl LocalLlm {
         }
 
         unsafe {
+            llama_sampler_chain_add(sampler, llama_sampler_init_penalties(64, 1.15, 0.0, 0.0));
             llama_sampler_chain_add(sampler, llama_sampler_init_top_k(40));
             llama_sampler_chain_add(sampler, llama_sampler_init_top_p(0.95, 1));
             llama_sampler_chain_add(sampler, llama_sampler_init_temp(0.7));
@@ -530,6 +531,7 @@ impl LocalLlm {
 
             let sparams = llama_sampler_chain_default_params();
             let sampler = llama_sampler_chain_init(sparams);
+            llama_sampler_chain_add(sampler, llama_sampler_init_penalties(64, 1.15, 0.0, 0.0));
             llama_sampler_chain_add(sampler, llama_sampler_init_top_k(40));
             llama_sampler_chain_add(sampler, llama_sampler_init_top_p(0.95, 1));
             llama_sampler_chain_add(sampler, llama_sampler_init_temp(0.7));

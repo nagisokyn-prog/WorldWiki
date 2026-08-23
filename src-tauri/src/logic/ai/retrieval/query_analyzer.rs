@@ -6,6 +6,7 @@ pub struct ExtractedIntent {
     pub chapter_num: Option<i64>,
     pub volume_num: Option<i64>,
     pub arc_num: Option<i64>,
+    pub is_chitchat: bool,
     pub semantic_query: String,
 }
 
@@ -96,6 +97,7 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
         chapter_num: None,
         volume_num: None,
         arc_num: None,
+        is_chitchat: false,
         semantic_query: user_query.trim().to_string(),
     };
 
@@ -151,6 +153,21 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
                 }
             }
         }
+    }
+
+    // Detect pure chitchat / greetings (do not trigger RAG context on smalltalk)
+    let is_lore_query = lower.contains("глав") || lower.contains("персонаж") || lower.contains("геро") 
+        || lower.contains("сюжет") || lower.contains("книг") || lower.contains("мир") 
+        || lower.contains("событи") || lower.contains("описан") || lower.contains("кто так") 
+        || lower.contains("расскажи") || lower.contains("что происход") || lower.contains("почему");
+
+    let is_greeting = lower.contains("привет") || lower.contains("здравствуй") || lower.contains("добрый день")
+        || lower.contains("добрый вечер") || lower.contains("доброе утро") || lower.contains("проверка связи")
+        || lower.contains("тестовое сообщение") || lower.contains("как дела") || lower.contains("как полет")
+        || lower.contains("как полёт") || lower.contains("ты тут") || lower == "тест" || lower == "хай" || lower == "ку";
+
+    if is_greeting && !is_lore_query && intent.chapter_num.is_none() && intent.volume_num.is_none() {
+        intent.is_chitchat = true;
     }
 
     intent

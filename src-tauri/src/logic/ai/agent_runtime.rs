@@ -81,7 +81,9 @@ pub async fn run_local_agent_loop(
     // --- Query Analyzer (Deterministic Intent & Reference Extraction) ---
     let intent = crate::logic::ai::retrieval::analyze_user_query(&user_query);
 
-    if let Some(ch_num) = intent.chapter_num {
+    if intent.is_chitchat {
+        println!("[RAG Trace 2/8] Query Analyzer intent: chitchat_greeting (skip RAG)");
+    } else if let Some(ch_num) = intent.chapter_num {
         println!("[RAG Trace 2/8] Query Analyzer intent: retrieve_chapter(number={})", ch_num);
         let num_str = ch_num.to_string();
         let exact_q = "SELECT title, content, chunk_index FROM entity_chunks WHERE project_id = $proj AND (title CONTAINS $num_str OR title CONTAINS 'Глава' OR title CONTAINS 'Chapter' OR title CONTAINS 'глава') ORDER BY chunk_index ASC LIMIT 8";
@@ -99,8 +101,8 @@ pub async fn run_local_agent_loop(
         println!("[RAG Trace 2/8] Query Analyzer intent: general_semantic_search");
     }
 
-    // --- Semantic Vector Search (only if exact match did not already find specific chunks) ---
-    if found_chunks.is_empty() {
+    // --- Semantic Vector Search (only if not chitchat and exact match did not already find specific chunks) ---
+    if !intent.is_chitchat && found_chunks.is_empty() {
         if let Some(ref emb_path) = embed_model_path {
             let resolved_emb = resolve_model_path(emb_path);
             if resolved_emb.exists() {

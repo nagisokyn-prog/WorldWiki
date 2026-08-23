@@ -124,6 +124,7 @@
               :has-error="false"
               :can-resume="false"
               @cancel="cancelGeneration"
+              @unload-models="handleEmergencyUnload"
               @retry="() => {}"
               @resume="() => {}"
             />
@@ -316,6 +317,15 @@ const getChatTitle = (chatId: string): string => {
   // Try to find chat in sidebar tree
   // For now return the ID if we can't find title
   return chatId.replace('chats:', '');
+};
+
+const handleEmergencyUnload = async () => {
+  try {
+    await cancelGeneration();
+    await invoke('unload_all_local_models');
+  } catch (err) {
+    console.error('Emergency unload failed:', err);
+  }
 };
 
 const closePanel = () => {

@@ -44,6 +44,17 @@
         <span>{{ isIndexing ? 'Индексация...' : 'Индекс лора' }}</span>
       </button>
 
+      <!-- КНОПКА ЭКСТРЕННОЙ ВЫГРУЗКИ МОДЕЛЕЙ ИЗ GPU -->
+      <button 
+        class="action-pill-btn unload-btn" 
+        :title="isUnloading ? 'Выгрузка...' : 'Экстренно выгрузить модели и освободить видеопамять GPU'"
+        :disabled="isUnloading"
+        @click="handleUnloadAll"
+      >
+        <i class="fas" :class="isUnloading ? 'fa-spinner fa-spin' : 'fa-memory'"></i>
+        <span>{{ isUnloading ? 'Выгрузка...' : 'Сброс GPU' }}</span>
+      </button>
+
       <!-- КНОПКА ПЕРЕЗАПУСКА СЕССИИ / СБРОСА -->
       <button 
         class="action-pill-btn restart-btn" 
@@ -130,6 +141,21 @@ const progressPercent = computed(() => {
   if (maxTokens.value === 0) return 0;
   return Math.min(100, ((props.tokenUsage?.total_tokens || 0) / maxTokens.value) * 100);
 });
+
+const isUnloading = ref(false);
+
+const handleUnloadAll = async () => {
+  if (isUnloading.value) return;
+  isUnloading.value = true;
+  try {
+    await invoke('cancel_generation').catch(() => {});
+    await invoke('unload_all_local_models');
+  } catch (err) {
+    console.error('Failed to unload models:', err);
+  } finally {
+    isUnloading.value = false;
+  }
+};
 
 const formatTokens = (val: number = 0) => {
   if (val >= 1000000) return (val / 1000000).toFixed(1) + ' млн';

@@ -43,6 +43,7 @@ pub use hardware::get_recommended_local_models;
 pub use manager::list_installed_models;
 pub use manager::load_local_model;
 pub use manager::unload_local_model;
+pub use manager::unload_all_local_models;
 pub use manager::delete_local_model;
 
 pub use permissions::get_tool_permissions_catalog;

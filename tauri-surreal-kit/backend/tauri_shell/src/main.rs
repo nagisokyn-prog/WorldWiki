@@ -78,7 +78,7 @@ async fn init_database(
 fn main() {
     use logic::system::*;
 
-    tauri::Builder::default()
+    tauri::Builder::<tauri::test::MockRuntime>::default()
         .invoke_handler(surreal_domain::entity_commands![
             // ── System commands (always included) ──────────────────────────
             upload_photo,

@@ -342,3 +342,64 @@ fn test_search_result_serialization() {
     assert!(json["entity"].is_object());
     assert_eq!(json["entity"]["title"], "Test");
 }
+
+#[test]
+fn test_similar_result_serialization_and_chapter_range() {
+    let entity = SearchableEntity {
+        id: Some("entities:e2".into()),
+        project_id: Some("projects:p2".into()),
+        title: "Similar Entity".into(),
+        content: "Some content".into(),
+        embedding: Some(vec![0.5, 0.5, 0.5]),
+        tags: vec![],
+    };
+
+    let sim_result = SimilarResult {
+        entity: entity.clone(),
+        similarity: 0.987,
+    };
+
+    let sim_json = serde_json::to_value(&sim_result).expect("Should serialize SimilarResult");
+    assert_eq!(sim_json["similarity"], 0.987);
+    assert_eq!(sim_json["entity"]["title"], "Similar Entity");
+
+    // ChapterRange tests
+    let default_range = surreal_domain::ChapterRange::default();
+    assert!(default_range.start_chapter.is_none());
+    assert!(default_range.end_chapter.is_none());
+
+    let custom_range = surreal_domain::ChapterRange {
+        start_chapter: Some("chapters:1".to_string()),
+        end_chapter: Some("chapters:5".to_string()),
+    };
+
+    let range_json = serde_json::to_value(&custom_range).expect("Should serialize ChapterRange");
+    assert_eq!(range_json["start_chapter"], "chapters:1");
+    assert_eq!(range_json["end_chapter"], "chapters:5");
+}
+
+#[test]
+fn test_core_graph_edge_and_neighborhood_serialization() {
+    let edge: surreal_domain::GraphEdge<String, String> = surreal_domain::GraphEdge {
+        edge_id: "knows:1".to_string(),
+        edge_data: "friend".to_string(),
+        node: "characters:bob".to_string(),
+        direction: surreal_domain::EdgeDirection::Both,
+    };
+
+    let edge_str = serde_json::to_string(&edge).unwrap();
+    let edge_deser: surreal_domain::GraphEdge<String, String> = serde_json::from_str(&edge_str).unwrap();
+    assert_eq!(edge_deser.edge_id, "knows:1");
+    let _debug = format!("{:?}", edge_deser);
+
+    let neighborhood = surreal_domain::GraphNeighborhood {
+        center_id: "c1".to_string(),
+        nodes: vec![json!({"id": "c2"})],
+        edges: vec![json!({"id": "e1"})],
+        depth: 2,
+    };
+    let n_str = serde_json::to_string(&neighborhood).unwrap();
+    let n_deser: surreal_domain::GraphNeighborhood = serde_json::from_str(&n_str).unwrap();
+    assert_eq!(n_deser.depth, 2);
+    let _debug_n = format!("{:?}", n_deser);
+}

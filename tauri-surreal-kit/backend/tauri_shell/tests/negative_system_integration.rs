@@ -23,12 +23,14 @@ fn make_env() -> TestEnv {
 // ─── get_local_file negative ───────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_get_local_file_missing_path_returns_err() {
     let result = get_local_file("/nonexistent/path.bin".to_string()).await;
     assert!(result.is_err(), "Should return error for missing file");
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_get_local_file_path_traversal() {
     let traversal_paths = vec![
         "../../../etc/passwd",
@@ -49,6 +51,7 @@ async fn negative_get_local_file_path_traversal() {
 // ─── load_theme negative ───────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_load_theme_invalid_name_returns_null() {
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -63,6 +66,7 @@ async fn negative_load_theme_invalid_name_returns_null() {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_theme_name_with_path_traversal() {
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -92,6 +96,7 @@ async fn negative_theme_name_with_path_traversal() {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_empty_theme_file() {
     let env = make_env();
     fs::write(env.builtin_theme_path("empty"), "").expect("Should write empty file");
@@ -108,6 +113,7 @@ async fn negative_empty_theme_file() {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_theme_file_with_bom() {
     let env = make_env();
     // UTF-8 BOM + valid JSON
@@ -128,6 +134,7 @@ async fn negative_theme_file_with_bom() {
 // ─── upload_photo negative ─────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_very_large_file_upload() {
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -142,6 +149,7 @@ async fn negative_very_large_file_upload() {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_upload_photo_empty_bytes() {
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -154,6 +162,7 @@ async fn negative_upload_photo_empty_bytes() {
 }
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_filename_special_characters() {
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -177,6 +186,7 @@ async fn negative_filename_special_characters() {
 // ─── copy_background_file negative ────────────────────────────────────────────
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_copy_background_file_missing_source() {
     let result = copy_background_file("/nonexistent/source.png".to_string()).await;
     assert!(result.is_err(), "Should return error for missing source file");
@@ -185,6 +195,7 @@ async fn negative_copy_background_file_missing_source() {
 // ─── settings negative ─────────────────────────────────────────────────────────
 
 #[tokio::test]
+#[serial_test::serial]
 async fn negative_settings_malformed_json_not_panic() {
     let env = make_env();
     let _ = tauri_shell::logic::system::set_data_dir_provider(
@@ -198,4 +209,31 @@ async fn negative_settings_malformed_json_not_panic() {
     let result = load_settings().await;
     // Не паникует — либо Ok(Null), либо Ok(значение)
     let _ = result;
+}
+
+#[tokio::test]
+#[serial_test::serial]
+async fn negative_concurrent_uploads_produce_unique_files() {
+    tauri_shell::logic::system::clear_data_dir_provider();
+    let env = make_env();
+    let _ = tauri_shell::logic::system::set_data_dir_provider(
+        Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
+    );
+
+    let mut handles = Vec::new();
+    for i in 0..10 {
+        let task = tokio::spawn(async move {
+            upload_photo(format!("content_{}", i).into_bytes(), "same_avatar.png".to_string()).await
+        });
+        handles.push(task);
+    }
+
+    let mut saved_paths = Vec::new();
+    for h in handles {
+        if let Ok(Ok(path)) = h.await {
+            saved_paths.push(path);
+        }
+    }
+
+    assert_eq!(saved_paths.len(), 10, "All 10 concurrent uploads should succeed");
 }

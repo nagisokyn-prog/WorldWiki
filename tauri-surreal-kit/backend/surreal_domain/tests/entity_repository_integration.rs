@@ -323,11 +323,52 @@ async fn test_repository_null_field_removal() {
 
     assert!(created.id.is_some());
 
-    let fetched = TestEntity::find_by_id(&db, &created.id.as_ref().unwrap())
-        .await
-        .unwrap()
-        .unwrap();
-
     // Null fields should be stripped during create
     assert_eq!(fetched.name, "Test");
+}
+
+#[tokio::test]
+async fn test_repository_save_fallback_and_wrong_table_handling() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    // 1. Wrong table prefix returns None / Ok(())
+    let wrong_prefix_find = TestEntity::find_by_id(&db, "other_table:123").await.expect("should not error");
+    assert!(wrong_prefix_find.is_none(), "Wrong table prefix should return None");
+
+    let wrong_prefix_del = TestEntity::delete(&db, "other_table:123").await;
+    assert!(wrong_prefix_del.is_ok(), "Wrong table delete should be no-op Ok");
+
+    // 2. Real delete
+    let created = TestEntity::create(
+        &db,
+        TestEntity {
+            id: None,
+            project_id: Some("projects:p1".into()),
+            name: "ToDelete".into(),
+            description: None,
+            tags: vec![],
+            attributes: json!({}),
+        },
+    )
+    .await
+    .expect("create entity");
+
+    let id = created.id.unwrap();
+    TestEntity::delete(&db, &id).await.expect("delete should succeed");
+    let after_del = TestEntity::find_by_id(&db, &id).await.expect("find after delete");
+    assert!(after_del.is_none(), "Entity should be deleted");
+
+    // 3. Save fallback when record does not exist
+    let unsaved_entity = TestEntity {
+        id: Some("test_entities:new_upsert_item".into()),
+        project_id: Some("projects:p1".into()),
+        name: "Upserted Fallback".into(),
+        description: Some("Has description".into()),
+        tags: vec!["tag".into()],
+        attributes: json!({"k": "v"}),
+    };
+
+    let saved = TestEntity::save(&db, &unsaved_entity).await.expect("save should fallback and succeed");
+    assert_eq!(saved.name, "Upserted Fallback");
 }

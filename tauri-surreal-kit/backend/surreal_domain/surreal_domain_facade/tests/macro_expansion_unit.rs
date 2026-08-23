@@ -47,10 +47,19 @@ surreal_relation! {
     }
 }
 
-// 5. Schema validation macro
+// 5. Relation with project_scoped and flexible attributes
+surreal_relation! {
+    #[project_scoped]
+    pub struct TaggedRelation {
+        #[flexible]
+        pub custom_data: Option<serde_json::Value>,
+    }
+}
+
+// 6. Schema validation macro
 surreal_schema! {
     entities: [CustomBook, Author, Article],
-    relations: [WroteEdge]
+    relations: [WroteEdge, TaggedRelation]
 }
 
 #[test]

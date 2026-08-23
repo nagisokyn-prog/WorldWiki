@@ -10,6 +10,7 @@ export function useCalendarEras(props: CalendarErasProps, _emit?: (event: string
 
   const moveItem = (idx: number, delta: number) => {
     const arr = props.modelValue.эпохи;
+    if (!arr) return;
     const n = idx + delta;
     if (n >= 0 && n < arr.length) {
       [arr[idx], arr[n]] = [arr[n], arr[idx]];

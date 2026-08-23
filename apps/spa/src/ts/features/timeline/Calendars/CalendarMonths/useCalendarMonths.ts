@@ -10,6 +10,7 @@ export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: st
 
   const moveItem = (idx: number, delta: number) => {
     const arr = props.modelValue.месяцы;
+    if (!arr) return;
     const n = idx + delta;
     if (n >= 0 && n < arr.length) {
       [arr[idx], arr[n]] = [arr[n], arr[idx]];

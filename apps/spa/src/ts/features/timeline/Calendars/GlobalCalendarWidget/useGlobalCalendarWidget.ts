@@ -21,7 +21,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
 
   const loadCalendars = async () => {
     const list = await useCalendarStore().getCalendars(props.project);
-    masterCalendar.value = list.find(c => c.is_master);
+    masterCalendar.value = list.find(c => c.is_master) || null;
     localCalendars.value = list.filter(c => !c.is_master);
   };
 
@@ -38,7 +38,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     if (!masterCalendar.value?.data) return '';
     const dateObj = { 
       absolute_minute: currentAbsoluteMinute.value,
-      calendar_id: masterCalendar.value.id,
+      calendar_id: masterCalendar.value.id || '',
       original_input: currentMasterInput.value
     };
     return CalendarMath.formatDate(masterCalendar.value.data, dateObj);
@@ -53,7 +53,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     
     const dateObj = {
       absolute_minute: currentAbsoluteMinute.value,
-      calendar_id: localCal.id,
+      calendar_id: localCal.id || '',
       original_input: localInput
     };
     

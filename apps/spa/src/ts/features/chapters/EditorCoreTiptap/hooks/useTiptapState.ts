@@ -137,10 +137,14 @@ export function useTiptapState(
   };
 
   const toggleLinkLock = () => {
-    const newS = JSON.parse(JSON.stringify(settings.value || {})) as AppSettings;
-    if (!newS.editor) newS.editor = {};
-    newS.editor.requireCtrlForLinks = !newS.editor.requireCtrlForLinks;
-    settingsService.saveSettings(newS);
+    const current = settingsService.getSettings();
+    const requireCtrlForLinks = !current.editor?.requireCtrlForLinks;
+    settingsService.saveSettings({
+      editor: {
+        ...(current.editor || {}),
+        requireCtrlForLinks
+      } as AppSettings['editor']
+    });
   };
 
   const analyzeText = () => {

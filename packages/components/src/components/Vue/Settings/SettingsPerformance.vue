@@ -127,7 +127,7 @@ const statusColorClass = computed(() => {
   return 'text-green-500';
 });
 
-const recommendedProfile = computed(() => {
+const recommendedProfile = computed<'Eco' | 'Balanced' | 'Quality' | 'Max'>(() => {
   const status = performanceManager.status.value;
   if (status === 'Poor') return 'Eco';
   if (status === 'Limited') return 'Balanced';

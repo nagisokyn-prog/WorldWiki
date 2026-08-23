@@ -119,7 +119,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
       const defaultCal = availableCalendars.value.find(c => c.is_default) || availableCalendars.value[0];
       console.log('[Timeline] Selected default calendar:', defaultCal);
       if (defaultCal) {
-        selectedCalendarIds.value = [defaultCal.id];
+        selectedCalendarIds.value = defaultCal.id ? [defaultCal.id] : [];
         loadCalendarData(defaultCal);
 
         const newEvents = JSON.parse(JSON.stringify(props.events)) as TimelineEvent[];
@@ -127,7 +127,7 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
         let hasChanges = false;
 
         if (newEvents.length === 0) {
-          const origin = defaultCal.data.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
+          const origin = defaultCal.data?.точка_отсчета || { эпоха: 0, год: 1, месяц: 0, день: 1 };
           console.log('[Timeline] Auto-creating first event with origin:', origin);
           newEvents.push({
             date: {
@@ -242,8 +242,8 @@ export function useTimelinePanel(props: { project: string, events: TimelineEvent
 
     const era = targetCal.эпохи?.[localDate.era_index];
     const month = targetCal.месяцы?.[localDate.month];
-    let dateStr = `${localDate.year} год, ${month?.название || month?.name || 'Месяц'} ${localDate.day}`;
-    if (era) dateStr += ` (${era.название || era.name})`;
+    let dateStr = `${localDate.year} год, ${month?.название || 'Месяц'} ${localDate.day}`;
+    if (era) dateStr += ` (${era.название})`;
 
     if (event.time?.hour !== undefined) {
       dateStr += `, ${String(localDate.hour || 0).padStart(2, '0')}:${String(localDate.minute || 0).padStart(2, '0')}`;

@@ -12,7 +12,7 @@ export function useProjects() {
 export function useProjectConfig(name: string) {
   return useQuery({
     queryKey: ['projects', name, 'config'],
-    queryFn: () => api.getProjectConfig(name) as Promise<ProjectConfig>,
+    queryFn: () => api.getProjectConfig(name) as unknown as Promise<ProjectConfig>,
     enabled: !!name
   });
 }
@@ -42,7 +42,7 @@ export function useSaveProjectConfig() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ name, config }: { name: string; config: ProjectConfig }) => 
-      api.saveProjectConfig(name, config),
+      api.saveProjectConfig(name, config as unknown as Record<string, unknown>),
     onSuccess: (_, { name }) => {
       queryClient.invalidateQueries({ queryKey: ['projects', name, 'config'] });
     }

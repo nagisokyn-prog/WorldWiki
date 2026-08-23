@@ -19,7 +19,7 @@
             <div class="item-actions">
               <button class="btn-icon interactive-el" :disabled="Number(mIdx)===0" @click.prevent="moveItem(calendar.moons, Number(mIdx), -1)">↑</button>
               <button class="btn-icon interactive-el" :disabled="Number(mIdx)===(calendar.moons?.length || 0)-1" @click.prevent="moveItem(calendar.moons, Number(mIdx), 1)">↓</button>
-              <button class="btn-icon interactive-el" @click.prevent="calendar.moons.splice(Number(mIdx), 1)">🗑️</button>
+              <button class="btn-icon interactive-el" @click.prevent="calendar.moons?.splice(Number(mIdx), 1)">🗑️</button>
             </div>
           </div>
           

@@ -2,7 +2,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useCalendarStore } from '../../../stores/calendar.store';
 import type { CalendarRecord } from '../../../stores/calendar.store';
 import { CalendarMath } from '../../../services/Calendars/calendar.math';
-import type { CalendarData, CalendarEra, CalendarMonth, TimeInput } from '../../../services/Calendars/calendar.types';
+import type { CalendarData, CalendarEra, CalendarMonth } from '../../../services/Calendars/calendar.types';
 import { settingsService } from '@worldwiki/components';
 import type { AppSettings } from '@worldwiki/components';
 
@@ -177,7 +177,14 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
   const emitUpdate = () => {
     if (!calendar.value) return;
 
-    const original_input: TimeInput = {
+    const original_input: {
+      era_index: number;
+      year: number;
+      month: number;
+      day: number;
+      hour?: number;
+      minute?: number;
+    } = {
       era_index: currentEraIdx.value,
       year: currentYear.value,
       month: currentMonthIdx.value,

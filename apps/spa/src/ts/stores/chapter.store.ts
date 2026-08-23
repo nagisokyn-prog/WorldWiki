@@ -68,7 +68,7 @@ export const useChapterStore = defineStore('chapter', () => {
     try {
       console.log('📚 chapterStore.loadChapters: загружаю иерархию для проекта', project);
       loading.value = true;
-      hierarchy.value = await api.getChapterHierarchy(project) as ChapterHierarchy;
+      hierarchy.value = (await api.getChapterHierarchy(project)) as unknown as ChapterHierarchy;
       console.log('✅ chapterStore.loadChapters: иерархия загружена', hierarchy.value);
       debugError.value = null;
       loading.value = false;
@@ -207,7 +207,7 @@ export const useChapterStore = defineStore('chapter', () => {
       console.error('🔥🔥🔥 chapter.store: api.assignChapter DONE!');
     }
     console.error('🔥🔥🔥 chapter.store: fetching hierarchy...');
-    hierarchy.value = await api.getChapterHierarchy(project).catch(() => hierarchy.value);
+    hierarchy.value = (await api.getChapterHierarchy(project).catch(() => hierarchy.value)) as unknown as ChapterHierarchy;
     console.error('🔥🔥🔥 chapter.store: hierarchy loaded!', hierarchy.value);
     if (newCh.id) {
       await openChapter(project, newCh.id);

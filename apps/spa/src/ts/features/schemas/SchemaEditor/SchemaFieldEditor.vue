@@ -44,7 +44,7 @@
 
        <!-- RANGE -->
        <div v-else-if="item.type === 'range'" class="flex items-center gap-4">
-          <input :value="item._val || 0" type="range" :min="item.min || 0" :max="item.max || 100" class="flex-1" style="accent-color: var(--accent);" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
+          <input :value="item._val || 0" type="range" :min="Number(item.min) || 0" :max="Number(item.max) || 100" class="flex-1" style="accent-color: var(--accent);" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
           <div class="range-badge">{{ item._val || (item.value || 0) }}</div>
        </div>
 

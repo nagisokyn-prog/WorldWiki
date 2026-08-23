@@ -51,6 +51,12 @@
   "exclude": [
     "src/ts/libs/**",
     "src/ts/toastui/**",
+    "src/**/__tests__/**",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "../../packages/**/__tests__/**",
+    "../../packages/**/*.spec.ts",
+    "../../packages/**/*.test.ts",
     "node_modules",
     "dist"
   ]

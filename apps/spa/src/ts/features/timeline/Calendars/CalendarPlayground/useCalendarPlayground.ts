@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
-import type { CalendarData } from '../../../../services/Calendars/calendar.types';
+import type { CalendarData, MoonPhaseResult } from '../../../../services/Calendars/calendar.types';
 
 export function useCalendarPlayground(props: { calendar: CalendarData }) {
   const isCollapsed = ref(false);
@@ -118,7 +118,7 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
       const inputDate = { era_index: origin.value.эпоха ?? 0, year: origin.value.год, month: origin.value.месяц, day: i, hour: 12, minute: 0 };
       const absMinute = CalendarMath.getAbsoluteMinute(inputDate, cal);
       
-      let moons: Array<{ emoji?: string; name?: string; moon?: { name?: string }; [key: string]: unknown }> = [];
+      let moons: MoonPhaseResult[] = [];
       if (filters.value.moons) {
         moons = CalendarMath.calculateMoonPhases(absMinute, cal.moons || [], cal);
       }

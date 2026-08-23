@@ -142,6 +142,9 @@ export interface PerfSettings {
   fpsLimit: number;  // Лимит FPS: 30, 60, 90, 120, 144, 165, 240
   loadMeter: number;      // Нагрузка на систему (0-100%)
   qualityLevel: number;   // Качество визуала (0-100)
+  autoDowngrade?: boolean;
+  limitAnimations?: boolean;
+  limitGlass?: boolean;
 }
 
 // Пользовательский фон

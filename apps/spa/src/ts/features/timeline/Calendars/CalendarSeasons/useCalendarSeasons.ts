@@ -1,8 +1,8 @@
 import { ref } from 'vue';
-import type { CalendarData, CalendarSeason } from '../../../../services/Calendars/calendar.types';
+import type { CalendarData, CalendarSeason, CalendarMonth } from '../../../../services/Calendars/calendar.types';
 
 export interface CalendarSeasonsProps {
-  modelValue: Partial<CalendarData> & { сезоны?: CalendarSeason[]; месяцы?: unknown[]; [key: string]: unknown };
+  modelValue: Partial<CalendarData> & { сезоны?: CalendarSeason[]; месяцы?: CalendarMonth[]; [key: string]: unknown };
 }
 
 export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: string, ...args: unknown[]) => void) {

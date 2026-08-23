@@ -26,14 +26,14 @@ export const projectApi = {
     return { success: true };
   },
   getProjectConfig: async (name: string): Promise<ProjectConfig> => {
-    return (await api.getProjectConfig(name)) as ProjectConfig;
+    return (await api.getProjectConfig(name)) as unknown as ProjectConfig;
   },
   deleteProject: async (name: string): Promise<{ success: boolean }> => {
     await api.deleteProject(name);
     return { success: true };
   },
   saveProjectConfig: async (name: string, config: ProjectConfig): Promise<{ success: boolean }> => {
-    await api.saveProjectConfig(name, config);
+    await api.saveProjectConfig(name, config as unknown as Record<string, unknown>);
     return { success: true };
   },
 };

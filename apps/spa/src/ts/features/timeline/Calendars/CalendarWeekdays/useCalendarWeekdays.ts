@@ -10,6 +10,7 @@ export function useCalendarWeekdays(props: CalendarWeekdaysProps, _emit?: (event
 
   const moveItem = (idx: number, delta: number) => {
     const arr = props.modelValue.названия_дней_недели;
+    if (!arr) return;
     const n = idx + delta;
     if (n >= 0 && n < arr.length) {
       [arr[idx], arr[n]] = [arr[n], arr[idx]];

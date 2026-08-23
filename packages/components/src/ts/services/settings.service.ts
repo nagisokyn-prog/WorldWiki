@@ -119,10 +119,10 @@ class SettingsService {
    * Сохраняет настройки в Tauri и localStorage
    * @rust-ready ✅
    */
-  async saveSettings(settings: AppSettings | null = null, immediate = false): Promise<void> {
+  async saveSettings(settings: Partial<AppSettings> | null = null, immediate = false): Promise<void> {
     if (settings) {
       // Очищаем объект от Vue Proxy перед сохранением
-      this.settings = JSON.parse(JSON.stringify(settings));
+      this.settings = this.deepMerge(this.settings, JSON.parse(JSON.stringify(settings)));
     }
 
     // Применяем стили и язык мгновенно для отзывчивости UI

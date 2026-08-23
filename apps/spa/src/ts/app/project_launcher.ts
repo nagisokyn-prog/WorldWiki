@@ -34,7 +34,7 @@ const app = createApp({
     const modalVisible = ref(false);
     const isEditing = ref(false);
     const editingProjectName = ref('');
-    const calendarsPanelRef = ref<{ open: () => void } | null>(null);
+    const calendarsPanelRef = ref<{ open?: () => void; saveAll?: () => Promise<void> } | null>(null);
 
     const formData = ref<{
       name: string;
@@ -381,8 +381,8 @@ app.component('CloudSyncModal', CloudSyncModalVue);
 // Get the HTML template content and use it as Vue template
 const appEl = document.getElementById('app');
 if (appEl) {
-  app.use(autoAnimatePlugin as unknown as Plugin);
-  app.use(MotionPlugin as unknown as Plugin);
+  app.use(autoAnimatePlugin as unknown as Parameters<typeof app.use>[0]);
+  app.use(MotionPlugin as unknown as Parameters<typeof app.use>[0]);
   app.mount('#app');
 }
 

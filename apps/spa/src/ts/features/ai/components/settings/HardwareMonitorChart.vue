@@ -28,7 +28,7 @@
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import type { HardwareInfo } from '../../api/aiModels.api';
+import type { HardwareInfo } from '../../types/ai.types';
 
 const props = defineProps<{
   hardware: HardwareInfo | null;

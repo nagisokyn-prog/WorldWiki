@@ -40,7 +40,7 @@ class ChapterService {
       project_id: null,
       title: title || 'Новая глава',
       content,
-      summary: undefined,
+      summary: null,
       word_count: 0 as unknown as bigint,
       embeddings: {},
       footnotes: {},

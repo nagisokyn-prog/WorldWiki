@@ -12,7 +12,7 @@
         <div style="display: flex; gap: 4px; margin-bottom: 8px;">
            <input v-model.number="currentMasterInput.year" type="number" class="interactive-el" style="width: 60px" title="Год">
            <select v-model.number="currentMasterInput.month" class="interactive-el" style="flex: 1;" title="Месяц">
-             <option v-for="(m, i) in masterCalendar.data.месяцы" :key="i" :value="i">{{ m.название }}</option>
+             <option v-for="(m, i) in masterCalendar?.data?.месяцы || []" :key="i" :value="i">{{ m.название }}</option>
            </select>
            <input v-model.number="currentMasterInput.day" type="number" class="interactive-el" style="width: 50px" title="День">
         </div>

@@ -25,7 +25,15 @@ export function useCalendarSettings(props: CalendarSettingsProps, emit: (event: 
     };
   }
 
-  const settings = computed(() => calendar.value.настройки_времени);
+  const defaultSettings = {
+    часов_в_сутках: 24,
+    минут_в_часе: 60,
+    секунд_в_минуте: 60,
+    широта: 45,
+    учитывать_сезонную_длительность_дня: false
+  };
+
+  const settings = computed(() => calendar.value.настройки_времени || defaultSettings);
 
   watch(() => settings.value.учитывать_сезонную_длительность_дня, (val) => {
     if (val && !calendar.value.day_length_anchor) {

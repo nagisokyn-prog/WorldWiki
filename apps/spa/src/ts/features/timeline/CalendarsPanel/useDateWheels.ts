@@ -18,7 +18,7 @@ export interface DateWheelsProps {
   modelValue?: DateWheelsModelValue | null;
 }
 
-export function useDateWheels(props: DateWheelsProps, emit: (event: 'update:modelValue', val: unknown) => void) {
+export function useDateWheels(props: DateWheelsProps, emit: (event: 'update:modelValue', val: DateWheelsModelValue | null) => void) {
     const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
     const calendar = ref<CalendarData | null>(null);
 

@@ -84,13 +84,13 @@
             </div>
 
             <!-- Moons Overlay -->
-            <div v-if="filters.moons && day.moons.length" class="moons-container">
-              <template v-for="m in day.moons" :key="m.moon.name">
+            <div v-if="filters.moons && day.moons && day.moons.length" class="moons-container">
+              <template v-for="(m, mIdx) in day.moons" :key="mIdx">
                 <div
-                     v-if="isSignificantPhase(m.phase)" 
+                     v-if="m && isSignificantPhase(Number(m.phase))" 
                      class="moon-dot" 
-                     :style="{ backgroundColor: m.moon.color || '#fff' }"
-                     :title="`${m.emoji} ${m.moon.name}: ${m.name}`">
+                     :style="{ backgroundColor: '#fff' }"
+                     :title="`${m.emoji || ''} ${m.moon?.name || ''}: ${m.name || ''}`">
                 </div>
               </template>
             </div>

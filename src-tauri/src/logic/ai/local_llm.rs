@@ -5,8 +5,15 @@
 use std::ffi::CString;
 use std::os::raw::c_char;
 use std::ptr;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc;
 use std::sync::{Mutex, OnceLock};
+
+pub static CANCEL_LOCAL_GEN: AtomicBool = AtomicBool::new(false);
+
+pub fn trigger_cancel_local_gen() {
+    CANCEL_LOCAL_GEN.store(true, Ordering::SeqCst);
+}
 
 #[cfg(feature = "ai-local")]
 use llama_sys::*;
@@ -180,12 +187,21 @@ impl LocalLlm {
         let n_vocab = unsafe { llama_vocab_n_tokens(vocab) };
 
         let train_ctx = unsafe { llama_model_n_ctx_train(model) };
-        let actual_ctx = if train_ctx > 0 { train_ctx as u32 } else { params.n_ctx };
+        // Embedding chunks can be up to 1000+ tokens. Cap context and batch to 4096
+        // to ensure any chunk fits in a single batch pass while using only ~300MB VRAM on GPU.
+        let actual_ctx = if params.n_ctx > 0 {
+            params.n_ctx.min(4096)
+        } else if train_ctx > 0 {
+            (train_ctx as u32).min(4096)
+        } else {
+            2048
+        };
+        let actual_batch = actual_ctx;
 
         let mut ctx_params = unsafe { llama_context_default_params() };
         ctx_params.n_ctx = actual_ctx;
-        ctx_params.n_batch = actual_ctx;
-        ctx_params.n_ubatch = actual_ctx;
+        ctx_params.n_batch = actual_batch;
+        ctx_params.n_ubatch = actual_batch;
         ctx_params.embeddings = true;
 
         let ctx = unsafe { llama_init_from_model(model, ctx_params) };
@@ -193,6 +209,8 @@ impl LocalLlm {
             unsafe { llama_model_free(model) };
             return Err("Failed to create embedding context".to_string());
         }
+
+        println!("[LocalLlm] Эмбеддинг-модель {model_path} загружена (n_ctx: {actual_ctx}, n_batch: {actual_batch})");
 
         Ok(Self {
             model,
@@ -321,6 +339,7 @@ impl LocalLlm {
         prompt: &str,
         tx: mpsc::Sender<TokenEvent>,
     ) -> Result<(), String> {
+        CANCEL_LOCAL_GEN.store(false, Ordering::SeqCst);
         let tokens = self.tokenize(prompt, false, true)?;
         if tokens.is_empty() {
             let _ = tx.send(TokenEvent {
@@ -335,6 +354,15 @@ impl LocalLlm {
         let mut batch = unsafe { llama_batch_init(n_batch as i32, 0, 1) };
 
         for (chunk_idx, chunk) in tokens.chunks(n_batch).enumerate() {
+            if CANCEL_LOCAL_GEN.load(Ordering::SeqCst) {
+                unsafe { llama_batch_free(batch) };
+                let _ = tx.send(TokenEvent {
+                    token: String::new(),
+                    is_done: true,
+                });
+                return Ok(());
+            }
+
             batch.n_tokens = chunk.len() as i32;
             let offset = chunk_idx * n_batch;
 
@@ -365,6 +393,15 @@ impl LocalLlm {
         let mut generated_buffer = String::new();
 
         while n_decode < max_tokens {
+            if CANCEL_LOCAL_GEN.load(Ordering::SeqCst) {
+                println!("[LocalLlm] Генерация моментально остановлена по сигналу выгрузки/отмены.");
+                let _ = tx.send(TokenEvent {
+                    token: String::new(),
+                    is_done: true,
+                });
+                break;
+            }
+
             let token = unsafe { llama_sampler_sample(self.sampler, self.ctx, -1) };
             unsafe { llama_sampler_accept(self.sampler, token) };
 
@@ -455,8 +492,9 @@ impl LocalLlm {
         if tokens.is_empty() {
             return Ok(Vec::new());
         }
-        if tokens.len() > self.n_ctx as usize {
-            tokens.truncate(self.n_ctx as usize);
+        let max_len = (self.n_ctx as usize).min(self.params.n_batch as usize);
+        if tokens.len() > max_len {
+            tokens.truncate(max_len);
         }
 
         let mut batch = unsafe { llama_batch_init(tokens.len() as i32, 0, 1) };

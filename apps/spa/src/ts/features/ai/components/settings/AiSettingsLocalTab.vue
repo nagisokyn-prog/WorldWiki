@@ -361,12 +361,12 @@ watch(() => props.activeProfile?.settings, (newSettings) => {
   }
 }, { immediate: true, deep: true });
 
-onMounted(async () => {
-  await loadHardware();
-  await loadRecommended();
-  await loadInstalled();
+onMounted(() => {
+  loadHardware();
+  loadRecommended();
+  loadInstalled();
   listenToProgress();
-  hwPollTimer = setInterval(loadHardware, 2000);
+  hwPollTimer = setInterval(loadHardware, 3000);
 });
 
 onUnmounted(() => {

@@ -297,6 +297,11 @@ pub async fn cancel_generation(
     chat_id: String,
     state: State<'_, AgentTasks>,
 ) -> Result<(), String> {
+    #[cfg(feature = "ai-local")]
+    {
+        crate::logic::ai::local_llm::trigger_cancel_local_gen();
+    }
+
     let mut tasks = state.0.lock().await;
     if let Some(handle) = tasks.remove(&chat_id) {
         handle.abort();

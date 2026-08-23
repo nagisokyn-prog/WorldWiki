@@ -284,7 +284,30 @@ export function useWowilonPanel(
       let activeIndex = currentVariants.findIndex(m => m.is_active !== false);
       if (activeIndex === -1) activeIndex = currentVariants.length - 1; // Fallback
       
-      const activeMessage = currentVariants[activeIndex];
+      const rawActive = currentVariants[activeIndex];
+      let content = rawActive.content || '';
+      let reasoning = rawActive.reasoning || '';
+
+      if (content.includes('<think>')) {
+        const start = content.indexOf('<think>');
+        const end = content.indexOf('</think>');
+        if (end !== -1) {
+          const thinkText = content.substring(start + 7, end).trim();
+          if (!reasoning) reasoning = thinkText;
+          content = (content.substring(0, start) + content.substring(end + 8)).trim();
+        } else {
+          const thinkText = content.substring(start + 7).trim();
+          if (!reasoning) reasoning = thinkText;
+          content = content.substring(0, start).trim();
+        }
+      }
+
+      const activeMessage: ChatMessage = {
+        ...rawActive,
+        content,
+        reasoning
+      };
+
       groups.push({
         variants: currentVariants,
         activeIndex,
@@ -292,7 +315,7 @@ export function useWowilonPanel(
       });
       
       // Ищем детей активного сообщения
-      currentVariants = allMessages.value.filter(m => m.parent_id === activeMessage.id);
+      currentVariants = allMessages.value.filter(m => m.parent_id === rawActive.id);
     }
     
     return groups;

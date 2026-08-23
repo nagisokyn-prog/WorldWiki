@@ -393,6 +393,7 @@ async fn run_agent_inner(
             &role_def,
             &combined_custom_instructions,
             &project_id,
+            if is_local { None } else { retrieved_context.as_deref() },
         )
     } else {
         build_system_prompt_with_context(
@@ -402,6 +403,17 @@ async fn run_agent_inner(
             retrieved_context.as_deref(),
         )
     };
+
+    println!(
+        "\n[PROMPT ASSEMBLY TRACE]\n├─ Provider: {} | Model: {}\n├─ Execution Policy: {}\n├─ Auto-RAG Context: {} chars\n├─ System Prompt: {} chars\n├─ Messages Count: {}\n└─ Reasoning Effort: {:?}",
+        provider,
+        model,
+        exec_policy,
+        retrieved_context.as_ref().map(|c| c.len()).unwrap_or(0),
+        system.len(),
+        messages.len(),
+        settings.get("reasoning_effort").and_then(|v| v.as_str())
+    );
 
     // Native in-process Local LLM inference (llama-turboquant-cpp)
     if provider == "local" && (model.ends_with(".gguf") || model.contains('/') || model.contains('\\')) {
@@ -533,7 +545,13 @@ async fn run_agent_inner(
         if effort != "none" && !effort.is_empty() {
             req.extra_body
                 .insert("reasoning".to_string(), json!({ "effort": effort }));
+            req.extra_body
+                .insert("reasoning_effort".to_string(), json!(effort));
         }
+    }
+    if provider == "openrouter" {
+        req.extra_body
+            .insert("include_reasoning".to_string(), json!(true));
     }
 
     let mut final_answer: Option<String> = None;
@@ -598,7 +616,7 @@ async fn run_agent_inner(
                 {
                     ContentBlockDelta::TextDelta { text } => {
                         assistant_text.push_str(&text);
-                        emit_chunk(assistant_text.clone(), false, "text");
+                        emit_chunk(text, false, "text");
                     }
                     ContentBlockDelta::ThinkingDelta { thinking } => {
                         accumulated_reasoning.push_str(&thinking);
@@ -712,7 +730,7 @@ async fn run_agent_inner(
         eprintln!("[AGENT ERROR] Failed to save final message to DB: {}", e);
     }
 
-    emit_chunk(answer, true, "text");
+    emit_chunk(String::new(), true, "text");
     println!("[AGENT] finished: chat={chat_id}");
 }
 

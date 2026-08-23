@@ -54,12 +54,39 @@ impl RetrievalRouter {
             return None;
         }
 
+        let intent = super::query_analyzer::analyze_user_query(query);
+        if intent.is_chitchat {
+            println!("[RetrievalRouter] Intent: chitchat_greeting -> Skip retrieval");
+            return None;
+        }
+
         let clean_proj = project_id
             .strip_prefix("projects:")
             .unwrap_or(project_id)
             .trim_matches('`')
             .to_string();
         let proj_rec = RecordId::new("projects", clean_proj.as_str());
+
+        // 0. Exact Document Retrieval (if user specifically asked for Chapter/Volume)
+        if let Some(ch_num) = intent.chapter_num {
+            println!("[RetrievalRouter] Intent: Exact Document Retrieval for Chapter {}", ch_num);
+            let num_str = ch_num.to_string();
+            let exact_q = "SELECT title, content, chunk_index FROM entity_chunks WHERE project_id = $proj AND (title CONTAINS $num_str OR title CONTAINS 'Глава' OR title CONTAINS 'Chapter' OR title CONTAINS 'глава') ORDER BY chunk_index ASC LIMIT 8";
+            if let Ok(mut resp) = db.query(exact_q).bind(("proj", proj_rec.clone())).bind(("num_str", num_str)).await {
+                if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                    if !rows.is_empty() {
+                        let mut doc_out = format!("### Документ: Глава {}\n", ch_num);
+                        for r in rows {
+                            let title = r.get("title").and_then(|v| v.as_str()).unwrap_or("Фрагмент");
+                            let content = r.get("content").and_then(|v| v.as_str()).unwrap_or("");
+                            doc_out.push_str(&format!("#### {}\n{}\n\n", title, content));
+                        }
+                        println!("[RetrievalRouter] Exact document fetch assembled {} characters", doc_out.len());
+                        return Some(doc_out);
+                    }
+                }
+            }
+        }
 
         let mut candidates: Vec<RetrievalCandidate> = Vec::new();
         let mut entity_ids: HashSet<String> = HashSet::new();

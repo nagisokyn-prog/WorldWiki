@@ -218,7 +218,10 @@ pub async fn unload_local_model(_app: AppHandle, filename: String) -> Result<(),
 
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen};
+        trigger_cancel_local_gen();
+        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+
         if filename.to_lowercase().contains("embed") || filename.to_lowercase().contains("nomic") {
             let mut slot = get_loaded_embed_slot().lock().unwrap();
             *slot = None;
@@ -238,7 +241,8 @@ pub async fn unload_local_model(_app: AppHandle, filename: String) -> Result<(),
 pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), String> {
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen};
+        trigger_cancel_local_gen();
         if let Ok(mut slot) = get_loaded_model_slot().lock() {
             if let Some(ref loaded) = *slot {
                 if loaded.model_path == filename {
@@ -275,7 +279,10 @@ pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), 
 pub async fn unload_all_local_models(_app: AppHandle) -> Result<(), String> {
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
+        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen};
+        trigger_cancel_local_gen();
+        tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
+
         if let Ok(mut slot) = get_loaded_model_slot().lock() {
             *slot = None;
         }

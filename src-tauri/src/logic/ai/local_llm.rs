@@ -28,7 +28,7 @@ pub struct ModelParams {
 impl Default for ModelParams {
     fn default() -> Self {
         Self {
-            n_ctx: 8192,
+            n_ctx: 16384,
             n_batch: 512,
             n_gpu_layers: -1, // all layers on GPU
             use_mmap: true,
@@ -320,7 +320,7 @@ impl LocalLlm {
         prompt: &str,
         tx: mpsc::Sender<TokenEvent>,
     ) -> Result<(), String> {
-        let tokens = self.tokenize(prompt, true, false)?;
+        let tokens = self.tokenize(prompt, false, true)?;
         if tokens.is_empty() {
             let _ = tx.send(TokenEvent {
                 token: String::new(),

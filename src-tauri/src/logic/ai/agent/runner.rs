@@ -407,7 +407,7 @@ async fn run_agent_inner(
     if provider == "local" && (model.ends_with(".gguf") || model.contains('/') || model.contains('\\')) {
         #[cfg(feature = "ai-local")]
         {
-            let n_ctx = settings.get("n_ctx").and_then(|v| v.as_u64()).unwrap_or(8192) as u32;
+            let n_ctx = settings.get("n_ctx").and_then(|v| v.as_u64()).unwrap_or(16384) as u32;
             let n_gpu_layers = settings.get("n_gpu_layers").and_then(|v| v.as_i64()).unwrap_or(-1) as i32;
             let enable_tcq = settings.get("enable_tcq").and_then(|v| v.as_bool()).unwrap_or(true);
             let embed_model_path = settings.get("embed_model_path").and_then(|v| v.as_str()).map(|s| s.to_string());

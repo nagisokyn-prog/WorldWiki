@@ -37,8 +37,8 @@
             :modes="modes"
             :active-mode-slug="activeModeSlug"
             :current-project="currentProject"
-            @change-mode="m => activeModeSlug = m"
-            @toggle-sidebar="showSidebar = !showSidebar"
+            @change-mode="handleModeChange"
+            @toggle-sidebar="toggleSidebar"
             @restart-session="cancelGeneration"
           />
           
@@ -125,8 +125,8 @@
               :can-resume="false"
               @cancel="cancelGeneration"
               @unload-models="handleEmergencyUnload"
-              @retry="() => {}"
-              @resume="() => {}"
+              @retry="handleRetry"
+              @resume="handleResume"
             />
             <div class="context-bar">
               <AiContextSelector @context-selected="handleContextSelected" />
@@ -212,6 +212,17 @@ const { activeProfile, loadProfiles } = useAiProfiles(currentProject);
 
 const activeModeSlug = ref(localStorage.getItem(`worldwiki_ai_active_mode_${currentProject}`) || 'chat');
 const modes = ref<AiTopBarMode[]>([]);
+
+const handleModeChange = (mode: string) => {
+  activeModeSlug.value = mode;
+};
+
+const toggleSidebar = () => {
+  showSidebar.value = !showSidebar.value;
+};
+
+const handleRetry = () => {};
+const handleResume = () => {};
 
 watch(activeModeSlug, (m) => localStorage.setItem(`worldwiki_ai_active_mode_${currentProject}`, m));
 

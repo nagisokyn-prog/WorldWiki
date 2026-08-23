@@ -14,19 +14,33 @@ src-tauri/src/
 │   ├── mod.rs           # Реэкспорт всех модулей logic (включая ai)
 │   ├── ai/
 │   │   ├── mod.rs       # Re-экспорт всех публичных AI-функций
-│   │   ├── agent/       # Агент: промпты и цикл выполнения
+│   │   ├── agent_runtime.rs # Локальный агент: Auto-RAG, бюджетирование токенов, стриминг (local)
+│   │   ├── local_llm.rs # C++ FFI обёртка над llama-sys/llama.cpp: инференс, эмбеддинги, KV-кэш
+│   │   ├── hardware.rs  # Детекция RAM/VRAM (DXGI/Windows API), оценка квантования, рекомендации
+│   │   ├── manager.rs   # Управление локальными моделями: загрузка, выгрузка, экстренный сброс GPU
+│   │   ├── model_hub.rs # Поиск и скачивание GGUF моделей с HuggingFace (stream download)
+│   │   ├── permissions.rs # Каталог прав доступа и уровней автоодобрения инструментов
+│   │   ├── chunker.rs   # Разбиение текста глав и сущностей на чанки для векторизации
+│   │   ├── types.rs     # DTO структуры (InstalledModelInfo, HardwareInfo, ModelLifecycleState)
+│   │   ├── agent/       # Агент: промпты, планировщик и цикл выполнения
 │   │   │   ├── mod.rs   # Объявление подмодулей (prompt, runner)
-│   │   │   ├── prompt.rs # Промпт соавтора, лимиты, история → сообщения LLM
-│   │   │   └── runner.rs # Цикл агента: провайдеры LLM, стрим, tool calls (ключ.)
+│   │   │   ├── prompt.rs # Промпт соавтора, правила ролей (автор vs персонаж), контекст
+│   │   │   └── runner.rs # Цикл агента: провайдеры LLM, стрим дельт, CoT reasoning, tool calls
 │   │   ├── chat/        # Дерево чатов и операции
 │   │   │   ├── mod.rs   # Хелперы parse_record_id / clean_surreal_id
 │   │   │   ├── tree.rs  # Дерево чатов и сообщений (get_chat_tree и др.)
-│   │   │   └── operations.rs # send/fork/edit/delete/cancel/regenerate
+│   │   │   └── operations.rs # send/fork/edit/delete/cancel/regenerate/switch_variant
 │   │   ├── providers/   # Списки моделей провайдеров
 │   │   │   ├── mod.rs   # Объявление модуля
 │   │   │   └── fetch.rs # fetch_ai_models — каталоги моделей провайдеров
+│   │   ├── retrieval/   # Продвинутая подсистема RAG и индексации
+│   │   │   ├── mod.rs   # Экспорт query_analyzer, router, indexer
+│   │   │   ├── query_analyzer.rs # Парсер числительных (1–100), римских цифр, Chitchat/Greeting
+│   │   │   ├── router.rs # Query Planner: Exact Document Fetch vs Hybrid Semantic Vector RAG
+│   │   │   ├── embedder.rs # Сервис HTTP-клиента эмбеддингов (префиксы query:/passage:)
+│   │   │   └── indexer.rs # Фоновый векторизатор базы знаний (reindex_project_lore)
 │   │   └── tools/       # Инструменты агента (RAG + запись)
-│   │       └── mod.rs   # WorldWikiTools — 19 инструментов (ключ.)
+│   │       └── mod.rs   # WorldWikiTools — 19 инструментов (чтение, запись, таймлайн)
 │   ├── models.rs        # Определение всех сущностей (surreal_entity! макросы)
 │   ├── projects.rs      # CRUD проектов
 │   ├── entities.rs      # CRUD сущностей, схем, связей, истории ревизий
@@ -251,8 +265,73 @@ pub mod volumes;
 - `chat::operations` → `fork_chat`, `update_chat_parent`, `send_chat_message`, `cancel_generation`, `delete_chat_message`, `edit_chat_message`, `regenerate_chat_message`, `switch_message_variant`, `delete_ai_chat`
 - `agent::runner` → `get_ai_completion`, `generate_chat_title`
 - `providers::fetch` → `fetch_ai_models`
+- `hardware` → `get_hardware_info`, `calculate_quantization_estimates`, `get_recommended_local_models`
+- `manager` → `list_installed_models`, `load_local_model`, `unload_local_model`, `unload_all_local_models`, `delete_local_model`
+- `model_hub` → `fetch_hf_models`, `download_hf_model`
+- `retrieval` → `reindex_project_lore`, `reindex_project_lore_inner`
+- `permissions` → `get_tool_permissions_catalog`
 
-**Зависимости**: `chat::*`, `agent::*`, `providers::*`, `tools::*`
+**Зависимости**: `chat::*`, `agent::*`, `providers::*`, `tools::*`, `local_llm::*`, `retrieval::*`, `hardware::*`, `manager::*`
+
+---
+
+#### `logic/ai/local_llm.rs` — **Ключевой файл (Local LLM & CUDA C++ Engine)**
+**Назначение**: Прямая FFI-обвязка над библиотекой `llama.cpp` (через `llama-sys`):
+- `LocalLlm::load_model(path, params)` — загрузка генеративной модели в память GPU с настраиваемыми слоями `n_gpu_layers = -1`, контекстом 16K, аппаратными сэмплерами (Repetition Penalties 1.15, Top-K 40, Top-P 0.95, Temperature 0.7) и ChatML-токенизатором.
+- `LocalLlm::load_embedding_model(path, params)` — инициализация эмбеддеров (Nemotron, Nomic, BGE) с безопасным контекстом и батчем до 4096 токенов для исключения VRAM OOM.
+- `generate_stream(...)` — потоковая генерация токенов с немедленной остановкой по атомарному флагу `CANCEL_LOCAL_GEN`.
+- `get_embeddings(text)` — прямое вычисление плотных векторов (Dense Embeddings) float32.
+- `enable_triattention(stats_path, budget)` — интеграция сжатия и TriAttention KV-cache эвикшена.
+
+---
+
+#### `logic/ai/agent_runtime.rs` — **Ключевой файл (Local Agent Execution)**
+**Назначение**: Полный цикл автономного локального соавтора:
+1. Вызов детерминированного `QueryAnalyzer` для классификации интента.
+2. Селективное извлечение цельных глав (Exact Document Fetch) или векторных чанков.
+3. Бюджетирование контекста (до 12 000 символов) и инъекция в пользовательский ход диалога (`rfind("<|im_end|>")`).
+4. Запуск инференса в отдельном рабочем потоке `spawn_blocking` со стримингом токенов во фронтенд через `chat_stream_chunk`.
+
+---
+
+#### `logic/ai/hardware.rs`
+**Назначение**: Прямой опрос аппаратных ресурсов рабочей станции:
+- `get_hardware_info()` — WinAPI `GlobalMemoryStatusEx` для RAM и DirectX DXGI `CreateDXGIFactory` для точного объема видеопамяти VRAM на GPU NVIDIA/AMD.
+- `calculate_quantization_estimates(model_size_b)` — расчет расхода VRAM/RAM для Q4_K_M, Q8_0, BF16.
+- `get_recommended_local_models()` — список карточек рекомендуемых моделей (Nemotron, Qwen 2.5 7B/14B/3B, Saiga).
+
+---
+
+#### `logic/ai/manager.rs`
+**Назначение**: Управление файлами и жизненным циклом локальных моделей в памяти:
+- `list_installed_models()` — сканирование директории моделей с неблокирующим `try_lock()`.
+- `load_local_model(filename)` / `unload_local_model(filename)` — загрузка и выгрузка слотов моделей (`LOADED_MODEL` / `LOADED_EMBED`).
+- `unload_all_local_models()` — экстренный сброс видеопамяти и обнуление глобальных указателей llama.
+- `delete_local_model(filename)` — удаление `.gguf` с диска.
+
+---
+
+#### `logic/ai/model_hub.rs`
+**Назначение**: Каталог HuggingFace Model Hub и фоновое скачивание квантованных GGUF:
+- `fetch_hf_models(query)` — поиск по репозиториям HuggingFace API.
+- `download_hf_model(repo_id, filename, token)` — потоковая загрузка с отправкой прогресса во фронтенд через событие `hf_download_progress`.
+
+---
+
+#### `logic/ai/permissions.rs`
+**Назначение**: Каталог уровней разрешений и автоодобрения (Auto-Approval System):
+- Категории: `read`, `edit_entities`, `edit_content`, `edit_relations`, `edit_calendar`, `analyze`.
+- Пресеты: Безопасный (Safe), Сбалансированный (Balanced), Экспертный (Expert).
+- Allowlist / Denylist по типам сущностей, связей и путям проекта.
+
+---
+
+#### `logic/ai/retrieval/` — **Продвинутая подсистема RAG**
+**Назначение**: Модульная архитектура информационного поиска и индексации лора:
+- `query_analyzer.rs` — морфологический анализ русских числительных (от «первая» до «сотая», римские `I..L`, арабские `1..100`), детекция приветствий/смолл-тока.
+- `router.rs` — **Query Planner**: маршрутизация запросов между Exact Document Retrieval (глава/том целиком) и Hybrid Semantic Vector Search (BM25 + Cosine Similarity).
+- `embedder.rs` — HTTP-клиент к сервисам эмбеддингов с форматированием префиксов (`query:` / `passage:`).
+- `indexer.rs` — фоновый индексатор проекта: нарезка глав и сущностей на чанки, параллельная генерация векторов на GPU и сохранение в SurrealDB.
 
 ---
 
@@ -432,7 +511,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph Frontend[Frontend (Vue/TypeScript)]
+    subgraph Frontend["Frontend (Vue/TypeScript)"]
         UI[UI Components]
         Stores[Pinia Stores]
         API[API Services]
@@ -983,43 +1062,68 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor User
-    participant Frontend
-    participant Tauri
-    participant Send as send_chat_message
+    participant Frontend as Frontend (WowilonPanel)
+    participant Tauri as Tauri (operations.rs)
     participant Tasks as AgentTasks
     participant Runner as run_agent_loop
-    participant Provider as LLM Provider
+    participant QA as QueryAnalyzer / Router
+    participant LocalLLM as LocalLlm (CUDA FFI)
+    participant CloudLLM as Provider (OpenRouter/API)
     participant Tools as WorldWikiTools
     participant DB as SurrealDB
-    participant Profile as ai_profiles
 
-    User->>Frontend: Пишет сообщение
-    Frontend->>Tauri: invoke("send_chat_message", {project_id, chat_id, text})
-    Tauri->>Send: send_chat_message(..., state, app)
-    Send->>DB: CREATE chats / chat_messages (user + assistant stub)
-    Send->>Tasks: tokio::spawn(run_agent_loop(keyed by chat_id))
-    Note over Runner,DB: Фоновая генерация (не блокирует UI)
+    User->>Frontend: Вводит запрос / вопрос по главе
+    Frontend->>Tauri: invoke("send_chat_message", {chatId, text, project, modeSlug})
+    Tauri->>DB: CREATE chat_messages (user_msg + assistant_placeholder)
+    Tauri->>Tasks: tokio::spawn(run_agent_loop(keyed by chat_id))
+    Tauri-->>Frontend: {chat_id, assistant_msg_id, user_msg_id}
+    Note over Runner,DB: Асинхронное исполнение без блокировки UI
 
-    Runner->>Profile: SELECT активный AiProfile
-    Profile-->>Runner: provider, model, api_key, settings
-    Runner->>DB: get_chat_messages_impl(chat_id) + history_to_input_messages
-    Runner->>Runner: build_system_prompt(role, instructions, project_id)
+    Runner->>DB: SELECT активный AiProfile + история (parent_id)
+    Runner->>QA: analyze_user_query(text)
+    
+    alt Chitchat / Приветствие
+        QA-->>Runner: Skip RAG
+    else Запрос по главе (Chapter 1)
+        QA->>DB: Exact Document Retrieval (упорядоченные чанки главы)
+        DB-->>QA: Полный связный текст главы
+        QA-->>Runner: retrieved_context (Document-level)
+    else Общий вопрос по лору
+        QA->>DB: Hybrid Search (BM25 + Dense Vector Cosine Similarity)
+        DB-->>QA: Top-K фрагментов сущностей и чанков
+        QA-->>Runner: retrieved_context (Semantic chunks)
+    end
 
-    loop До MAX_AGENT_ITERATIONS (8)
-        Runner->>Provider: stream_message(messages + tools)
-        Provider-->>Runner: ContentBlockDelta / tool_use
-        Runner->>Frontend: emit("chat_stream_chunk", StreamChunk)
-        alt tool_use
-            Runner->>Frontend: emit("agent_tool", AgentToolEvent)
-            Runner->>Tools: WorldWikiTools::run(name, args)
-            Tools->>DB: RAG / CRUD инструмент
-            Tools-->>Runner: result (JSON)
+    alt Локальный инференс (provider == "local")
+        Runner->>Runner: Внедрение контекста в реплику (rfind) + бюджетирование 12K
+        Runner->>LocalLLM: spawn_blocking(generate_stream)
+        loop Генерация токенов на GPU
+            LocalLLM->>LocalLLM: Проверка CANCEL_LOCAL_GEN
+            LocalLLM->>Frontend: emit("chat_stream_chunk", {text: delta, is_done: false})
+        end
+    else Облачный провайдер (OpenRouter / Anthropic / OpenAI)
+        Runner->>Runner: Сборка системного промпта с <context>
+        Runner->>CloudLLM: stream_message(messages + tools, reasoning_effort)
+        loop Стриминг событий
+            alt Рассуждения (Thinking / CoT)
+                CloudLLM-->>Runner: ThinkingDelta / reasoning_content
+                Runner->>Frontend: emit("chat_stream_chunk", {chunk_type: "reasoning", text})
+            else Текстовый ответ
+                CloudLLM-->>Runner: TextDelta
+                Runner->>Frontend: emit("chat_stream_chunk", {chunk_type: "text", text: delta})
+            else Вызов инструмента (ToolUse)
+                CloudLLM-->>Runner: ToolUse (name, args)
+                Runner->>Frontend: emit("agent_tool", AgentToolEvent)
+                Runner->>Tools: WorldWikiTools::run(name, args)
+                Tools->>DB: Чтение / Запись лора
+                Tools-->>Runner: Результат исполнения (JSON)
+            end
         end
     end
 
-    Runner->>DB: UPDATE chat_messages SET content = answer
-    Runner-->>Frontend: emit("chat_stream_chunk", {is_done: true})
-    Frontend->>User: Ответ отрисован
+    Runner->>DB: UPDATE chat_messages SET content = answer, reasoning = reasoning
+    Runner-->>Frontend: emit("chat_stream_chunk", {text: "", is_done: true})
+    Frontend->>User: Ответ отрисован, аккордеон мыслей доступен
 ```
 
 ---
@@ -1033,6 +1137,11 @@ sequenceDiagram
 5. **Типизация RecordId**: везде используется формат `table:id`, хелперы `safe_id`/`flatten_thing` нормализуют
 6. **Транзакции**: критичные операции (удаление, батч) обёрнуты в `BEGIN`/`COMMIT`
 7. **Производительность**: `get_entities_batch`, `upsert_connections_batch` минимизируют round-trip'ы
-8. **AI-стек**: агент использует `claw_api` (Anthropic/OpenAI/OpenRouter/Gemini/DeepSeek/локальные), инструменты `WorldWikiTools` (RAG по БД), а история чатов хранится в `chat_messages` с ветвлением через `parent_id`/`is_active`
-9. **Стриминг ответа**: UI получает чанки через события `chat_stream_chunk` (payload `StreamChunk`) и `agent_tool` (payload `AgentToolEvent`); генерация запускается в `tokio::spawn` и регистрируется в `AgentTasks` для отмены через `cancel_generation`
-10. **Лимиты контекста**: `prompt.rs` задаёт `MAX_AGENT_ITERATIONS = 8`, `DEFAULT_MAX_TOKENS = 4096`, `HISTORY_CHAR_BUDGET = 120_000`
+8. **AI-стек**:
+   - Локальный инференс через прямой C++ FFI `llama-sys` / `llama.cpp` на GPU CUDA, сэмплеры со штрафами повторений, KV-кэш 16K, безопасный батчинг эмбеддеров (4096 токенов).
+   - Облачный инференс через `claw_api` (OpenRouter, Anthropic, OpenAI, DeepSeek, Gemini).
+   - Продвинутый **Query Planner** (`query_analyzer.rs` + `router.rs`), разделяющий **Document-Level Retrieval** (главы целиком) и **Hybrid Semantic Vector RAG** (BM25 + Cosine Similarity).
+   - Поддержка потокового **Reasoning / CoT (Thinking)** с отображением рассуждений в аккордеоне UI.
+   - История чатов хранится в `chat_messages` в виде направленного ациклического графа (DAG) с поддержкой форков, веток и вариантов `< 1/3 >`.
+9. **Стриминг ответа**: UI получает дельты через события `chat_stream_chunk` (payload `StreamChunk`) и `agent_tool` (payload `AgentToolEvent`); генерация запускается в `tokio::spawn` и регистрируется в `AgentTasks` для отмены через `cancel_generation` (включая мгновенный сброс GPU через атомик `CANCEL_LOCAL_GEN`).
+10. **Лимиты контекста**: `prompt.rs` задаёт `MAX_AGENT_ITERATIONS = 8`, `DEFAULT_MAX_TOKENS = 4096`, `HISTORY_CHAR_BUDGET = 120_000`, локальный бюджет лора `12_000` символов.

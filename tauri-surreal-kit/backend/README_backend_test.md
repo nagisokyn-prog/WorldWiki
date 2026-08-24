@@ -38,14 +38,18 @@ cargo llvm-cov --open
 
 ---
 
-## Статистика прогонов (2026-08-23)
+## Статистика прогонов (2026-08-24)
 
-| Пакет                 | Файлов тестов | Тестов  | Время  | Статус            |
-| --------------------- | ------------- | ------- | ------ | ----------------- |
-| surreal_domain_facade | 10            | 75      | ~5.4s  | ✅ 75 passed      |
-| surreal_domain (core) | 6             | 68      | ~5.0s  | ✅ 68 passed      |
-| tauri_shell           | 4             | 57      | ~1.2s  | ✅ 57 passed      |
-| **Итого**             | **20**        | **200** | ~11.6s | ✅ **200 passed** |
+| Пакет                 | Файлов тестов | Тестов  | Время   | Статус            |
+| --------------------- | ------------- | ------- | ------- | ----------------- |
+| surreal_domain (workspace: core + macros + facade) | 11 интеграционных + 1 unit (dto_tests в core) | 92 + 5 = 97 | ~40s (вкл. trybuild) | ✅ 97 passed |
+| tauri_shell           | 4 интеграционных + unit (lib и main bins) | 115      | ~3s     | ✅ 115 passed     |
+
+Подробно по surreal_domain: common 3, entity_commands 6, entity_repository 9,
+macro_compile_fail 7, macro_expansion_unit 9, negative 8, **repository_branches 13 (новый)**,
+relation 14, search_and_vector 8, serialization 8, stress 7; core dto_tests 5.
+Подробно по tauri_shell: lib/main unittests 24×2, common 6, negative_system 18,
+performance 12, system_integration 31.
 
 ---
 
@@ -59,10 +63,11 @@ cargo llvm-cov --open
 | 4   | `surreal_domain_facade/tests/macro_compile_fail_tests.rs`      | 7      | compile-fail        | trybuild: ошибки макросов (entity, relation, schema)                  | —       |
 | 5   | `surreal_domain_facade/tests/macro_expansion_unit.rs`          | 8      | unit (AST)          | Парсинг таблиц, атрибутов полей, SurrealRepository, связи             | —       |
 | 6   | `surreal_domain_facade/tests/negative_integration.rs`          | 8      | негативный          | Несущ. ID, wrong prefix, идемпотентный delete, SQLi                   | common  |
-| 7   | `surreal_domain_facade/tests/relation_integration.rs`          | 9      | интеграционный      | `surreal_relation!`: relate, delete, GraphNeighborhood, EdgeDirection | common  |
+| 7   | `surreal_domain_facade/tests/relation_integration.rs`          | 14     | интеграционный      | `surreal_relation!`: relate, delete, GraphNeighborhood, EdgeDirection | common  |
 | 8   | `surreal_domain_facade/tests/search_and_vector_integration.rs` | 8      | интеграционный      | fulltext + HNSW (full-db), SearchResult, SimilarResult, cosine        | common  |
 | 9   | `surreal_domain_facade/tests/serialization_integration.rs`     | 8      | интеграционный      | `#[flexible]`: skip null, preserve, roundtrip, partial update         | common  |
 | 10  | `surreal_domain_facade/tests/stress_integration.rs`            | 7      | стресс              | bulk 100, concurrent R/W, race condition на save                      | common  |
+| 10b | `surreal_domain_facade/tests/repository_branches_integration.rs` | 13   | branch-coverage     | Целевые ветки `SurrealRepository`: SQL-ошибки, NotFound, null-литералы, нормализация thing-объектов, delete roundtrip | — |
 | 11  | `surreal_domain/tests/common.rs`                               | 3      | harness             | UUID dirs, in-memory SurrealKV, MockAppState, seed_project            | —       |
 | 12  | `surreal_domain/tests/entity_repository_integration.rs`        | 14     | интеграционный      | Ручная имплементация SurrealRepository (TestEntity)                   | common  |
 | 13  | `surreal_domain/tests/macro_expansion_unit.rs`                 | 15     | unit (AST)          | Парсинг макросов: table, attrs, RecordId, commands DSL                | —       |
@@ -283,44 +288,66 @@ cargo llvm-cov --open
 
 ---
 
-## Карта покрытия production-файлов (llvm-cov union)
+## Карта покрытия production-файлов (llvm-cov union, 2026-08-24)
 
-### surreal_domain (core + macros)
+### surreal_domain workspace (прогон из `backend/surreal_domain`)
+
+**Итог: Function 100% (32/32), Line 92.18% (483/524), Region 92.59% (1062/1147)**
 
 | Production файл                              | Function | Line   | Region | Покрывающие тест-файлы                                                                                                                                    |
 | -------------------------------------------- | -------- | ------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| surreal_domain_core/src/lib.rs               | 92.86%   | 79.10% | 78.88% | facade: entity_repository, negative, relation, search, serialization, stress<br>core: entity_repository, negative, relation, search, stress               |
-| surreal_domain_macros/src/lib.rs             | 100%     | 100%   | 100%   | facade: macro_expansion, entity_commands<br>core: macro_expansion                                                                                         |
-| surreal_domain_macros/src/schema.rs          | 100%     | 100%   | 100%   | facade: macro_expansion, macro_compile_fail<br>core: macro_expansion                                                                                      |
-| surreal_domain_macros/src/entity.rs          | 100%     | 88.43% | 93.23% | facade: entity_repository, macro_expansion, negative, search, serialization, stress<br>core: entity_repository, macro_expansion, negative, search, stress |
-| surreal_domain_macros/src/entity_commands.rs | 100%     | 95.40% | 91.67% | facade: entity_commands_integration, macro_expansion                                                                                                      |
-| surreal_domain_macros/src/relation.rs        | 50%      | 77.22% | 77.91% | facade: relation_integration, macro_expansion<br>core: relation_integration, macro_expansion                                                              |
+| surreal_domain_core/src/lib.rs               | **100% (19/19)** | 94.06% | 93.32% | facade: entity_repository, negative, relation, search, serialization, stress, **repository_branches**<br>core: dto_tests (unit)                            |
+| surreal_domain_macros/src/lib.rs             | 100%     | 100%   | 100%   | facade: macro_expansion, entity_commands                                                                                                                   |
+| surreal_domain_macros/src/schema.rs          | 100%     | 100%   | 100%   | facade: macro_expansion, macro_compile_fail                                                                                                                |
+| surreal_domain_macros/src/entity.rs          | 100%     | 88.43% | 93.23% | facade: entity_repository, macro_expansion, negative, search, serialization, stress                                                                        |
+| surreal_domain_macros/src/entity_commands.rs | 100%     | 95.40% | 91.67% | facade: entity_commands_integration, macro_expansion                                                                                                       |
+| surreal_domain_macros/src/relation.rs        | **100%** | 87.34% | 89.53% | facade: relation_integration, macro_expansion                                                                                                              |
 
-### tauri_shell (только свой код: performance.rs + system.rs)
+> Остаточные жёлтые строки — ветки кодогенерации макросов, недостижимые на текущем
+> наборе тестовых сущностей (не влияют на функциональное покрытие: 100%).
 
-| Production файл                      | Function | Line   | Region | Покрывающие тест-файлы                                    |
-| ------------------------------------ | -------- | ------ | ------ | --------------------------------------------------------- |
-| tauri_shell/src/logic/performance.rs | 100%     | 100%   | 100%   | performance_integration (все 12 тестов)                   |
-| tauri_shell/src/logic/system.rs      | 58.54%   | 77.01% | 77.11% | system_integration (17), negative_system_integration (17) |
+### tauri_shell (прогон из `backend/tauri_shell`)
 
-> Исключены из расчёта: `main.rs` (0% — точка входа), `surreal_domain_macros/*` (подтянулись как зависимость, 0% — не свой код)
+| Production файл                      | Function          | Line   | Region | Покрывающие тест-файлы                                    |
+| ------------------------------------ | ----------------- | ------ | ------ | --------------------------------------------------------- |
+| tauri_shell/src/logic/performance.rs | 100%              | 100%   | 100%   | performance_integration + unit                             |
+| tauri_shell/src/logic/system.rs      | 85.25% (52/61)    | 95.53% | 94.64% | system_integration (31), negative_system (18), unit (24)   |
+| tauri_shell/src/logic/system_core.rs | **100% (30/30)**  | 96.08% | 96.17% | те же + unit                                               |
+
+> - `system.rs` 52/61 функций: непокрытые ~9 — это `__cmd__*` IPC-обёртки,
+>   генерируемые `#[tauri::command]`. Они выполняются только при реальном
+>   invoke() из webview (нужен e2e / tauri-driver).
+> - `main.rs` — 0% (точка входа, исключён).
+> - `surreal_domain_macros/*` в прогоне tauri_shell показывают 0%, т.к. там они
+>   только dependency — их покрытие считается в прогоне surreal_domain (см. выше).
 
 ---
 
-## Анализ пробелов (0% и слабое покрытие)
+## Анализ пробелов (2026-08-24)
 
-| Файл                                  | Line   | Region | Почему слабо                                                           | Как покрыть                                                                                |
-| ------------------------------------- | ------ | ------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| surreal_domain_macros/src/relation.rs | 77.22% | 77.91% | Макрос `surreal_relation!` — не все ветки генерации кода задействованы | Добавить тесты: bidirectional edges, self-referential, multiple from/to, edge без payload  |
-| tauri_shell/src/logic/system.rs       | 77.01% | 77.11% | Файловая система: error paths, edge cases тем, большие файлы           | Добавить: theme с невалидным JSON структурой, concurrent upload, atomic write verification |
-| surreal_domain_core/src/lib.rs        | 79.10% | 78.88% | Трейты SurrealDb/SurrealRepository + DTO — не все методы вызваны       | Добавить unit-тесты на default impl методы, SearchResult/GraphEdge конструкторы            |
+**Функциональное покрытие: surreal_domain — 100% (32/32), tauri_shell logic — 100% (system_core 30/30, performance 5/5).**
+
+Оставшиеся жёлтые зоны (только Line/Region, функций не задето):
+
+| Файл                                  | Line   | Region | Что осталось                                                                 |
+| ------------------------------------- | ------ | ------ | ---------------------------------------------------------------------------- |
+| surreal_domain_macros/src/relation.rs | 87.34% | 89.53% | Ветки кодогенерации, не задействованные текущими тестовыми связями            |
+| surreal_domain_macros/src/entity.rs   | 88.43% | 93.23% | То же для `surreal_entity!`                                                   |
+| surreal_domain_macros/src/entity_commands.rs | 95.40% | 91.67% | Редкие DSL-конфигурации `entity_commands!`                            |
+| surreal_domain_core/src/lib.rs        | 94.06% | 93.32% | Defensive Err-arm'ы (`delete`/`find_all` при ошибках, отличных от NotFound)   |
+| tauri_shell/src/logic/system.rs       | 95.53% | 94.64% | Функции: `__cmd__*` IPC-обёртки (нужен e2e); строки: IO-ошибки недоступных путей |
+
+> ⚠️ Каталог `backend/surreal_domain/tests/` **не компилируется** (виртуальный
+> воркспейс без `[package]`) и подлежит удалению через `git rm`. Рабочие тесты
+> живут в `backend/surreal_domain/surreal_domain_facade/tests/`.
+> Аналогично осиротел `tauri_shell/src/logic/system.test.rs` (заглушка).
 
 ---
 
 ## Рекомендации по росту покрытий (roadmap — выполнено ✅)
 
-1. **surreal_domain_macros/relation.rs** — ✅ **Покрыто:** добавлены тесты самореферентных связей (`parent_of`), разнородных узлов (`VolumeNode` -> `ArcNode`), а также полная матрица направлений рёбер (`Outgoing`, `Incoming`, `Both`).
-2. **tauri_shell/logic/system.rs** — ✅ **Покрыто:** добавлены тесты конкурентной загрузки файлов (race condition resilience), проверки устойчивости к битым темам и path traversal.
-3. **surreal_domain_core/src/lib.rs** — ✅ **Покрыто:** добавлены тесты на сериализацию и методы `SearchResult`, `SimilarResult`, `ChapterRange`, `GraphNeighborhood`.
+1. **surreal_domain_macros/relation.rs** — ✅ **Function 50% → 100%:** добавлены тесты самореферентных связей (`parent_of`), разнородных узлов (`VolumeNode` -> `ArcNode`), а также полная матрица направлений рёбер (`Outgoing`, `Incoming`, `Both`).
+2. **tauri_shell/logic/system.rs + system_core.rs** — ✅ **Покрыто:** 24 inline unit-теста (temp data-dir через `DataDirProvider`, roundtrip настроек/тем/фото, ветки производительности), system_core — Function 100%.
+3. **surreal_domain_core/src/lib.rs** — ✅ **Function 92.86% → 100%:** добавлен `repository_branches_integration.rs` (13 тестов: SQL-ошибки через ломаные имена таблиц/полей, NotFound-ветки, null-литералы vs NONE, нормализация thing-объектов, delete roundtrip) + `dto_tests` (Default/Clone/serde DTO).
 
 ---

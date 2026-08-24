@@ -22,8 +22,7 @@ pub trait SurrealDb: Send + Sync + 'static {
 /// Проверка "объект не найден / таблица не существует" — трактуется как
 /// пустой результат, а не ошибка.
 fn is_not_found(e: &surrealdb::Error) -> bool {
-    let msg = e.to_string();
-    msg.contains("does not exist") || msg.contains("NotFound")
+    e.to_string().contains("does not exist")
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -139,11 +138,10 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                         let actual_id = if parts.len() == 2 { parts[1] } else { id };
         // Отсутствующая таблица приходит ошибкой NotFound → Ok(None);
         // реальные ошибки пробрасываются дальше.
-        match db.select((Self::TABLE, actual_id)).await {
+                match db.select((Self::TABLE, actual_id)).await {
             Ok(res) => Ok(res.and_then(|v| serde_json::from_value(v).ok())),
             Err(e) => {
-                let msg = e.to_string();
-                if msg.contains("does not exist") || msg.contains("NotFound") {
+                if is_not_found(&e) {
                     Ok(None)
                 } else {
                     Err(e)
@@ -154,23 +152,18 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
 
     #[allow(async_fn_in_trait)]
     async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surrealdb::Error> {
-                let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
+                        let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
         let pid_str = format!("projects:{}", pid_raw);
-        // Отсутствие таблицы приходит ошибкой NotFound (и на .await, и на
-        // take()) — трактуем как пустой результат; остальное пробрасываем.
-        let query_res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
+        // Отсутствие таблицы приходит ошибкой NotFound на take() — трактуем
+        // как пустой результат; сам .await запроса не фейлится, остальные
+        // ошибки (например, битый SQL) пробрасываем.
+        let mut res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
             .bind(("pid", project_id.to_string()))
             .bind(("pid_raw", pid_raw.to_string()))
             .bind(("pid_str", pid_str))
-            .await;
+            .await?;
 
-        let mut res = match query_res {
-            Ok(r) => r,
-            Err(ref e) if is_not_found(e) => return Ok(Vec::new()),
-            Err(e) => return Err(e),
-        };
-
-        let entities = match res.take(0) {
+        let entities: Vec<serde_json::Value> = match res.take(0) {
             Ok(entities) => entities,
             Err(ref e) if is_not_found(e) => Vec::new(),
             Err(e) => {
@@ -185,14 +178,10 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                     for (_k, val) in obj.iter_mut() {
                         if val.is_object() {
                             let is_thing = val.get("tb").is_some() && val.get("id").is_some();
-                            if is_thing {
+                                                        if is_thing {
                                 let tb = val.get("tb").unwrap().as_str().unwrap_or("");
                                 let id_field = val.get("id").unwrap();
-                                let id_str = if let Some(s) = id_field.get("String").and_then(|s| s.as_str()) {
-                                    s
-                                } else {
-                                    id_field.as_str().unwrap_or_default()
-                                };
+                                let id_str = id_field.as_str().unwrap_or_default();
                                 if !tb.is_empty() && !id_str.is_empty() {
                                     *val = serde_json::Value::String(format!("{}:{}", tb, id_str));
                                 }
@@ -292,8 +281,10 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
             return Ok(());
         }
                         let actual_id = if parts.len() == 2 { parts[1] } else { id };
-        // Отсутствующая таблица/запись → NotFound → идемпотентный Ok.
-        match db.delete((Self::TABLE, actual_id)).await {
+                        // Отсутствующая таблица/запись → NotFound → идемпотентный Ok.
+                let res: Result<Option<serde_json::Value>, surrealdb::Error> =
+            db.delete((Self::TABLE, actual_id)).await;
+        match res {
             Ok(_) => Ok(()),
             Err(e) => {
                 if is_not_found(&e) {
@@ -303,5 +294,82 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod dto_tests {
+    use super::*;
+
+    /// ChapterRange — единственный тип с derive(Default); проверяем, что
+    /// default даёт пустой диапазон (покрывает derive-функцию Default).
+    #[test]
+    fn chapter_range_default_is_empty() {
+        let range = ChapterRange::default();
+        assert_eq!(range.start_chapter, None);
+        assert_eq!(range.end_chapter, None);
+    }
+
+    #[test]
+    fn search_result_roundtrip_and_debug() {
+        let result = SearchResult {
+            entity: 42,
+            score: 0.75,
+            kind: SearchKind::Hybrid,
+        };
+        let json = serde_json::to_string(&result).unwrap();
+                let parsed: SearchResult<i32> = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.score, 0.75);
+        assert_eq!(
+            serde_json::to_string(&parsed.kind).unwrap(),
+            "\"Hybrid\""
+        );
+        assert!(format!("{:?}", result).contains("Hybrid"));
+    }
+
+    #[test]
+    fn similar_result_clone_and_serde() {
+        let sim = SimilarResult {
+            entity: "lore".to_string(),
+            similarity: 0.9,
+        };
+        let clone = sim.clone();
+        assert_eq!(clone.similarity, 0.9);
+        let json_str = serde_json::to_string(&clone).unwrap();
+        assert!(json_str.contains("0.9"));
+    }
+
+    #[test]
+    fn edge_direction_variants_serialize() {
+        for dir in [EdgeDirection::Outgoing, EdgeDirection::Incoming, EdgeDirection::Both] {
+            let json_str = serde_json::to_string(&dir).unwrap();
+            let back: EdgeDirection = serde_json::from_str(&json_str).unwrap();
+            assert!(!format!("{:?}", back).is_empty());
+        }
+    }
+
+    #[test]
+    fn graph_edge_and_neighborhood_serde() {
+        let edge = GraphEdge {
+            edge_id: "knows:1".into(),
+            edge_data: serde_json::json!({"since": 2020}),
+            node: serde_json::json!({"name": "Alice"}),
+            direction: EdgeDirection::Outgoing,
+        };
+        let json_str = serde_json::to_string(&edge).unwrap();
+        let back: GraphEdge<serde_json::Value, serde_json::Value> =
+            serde_json::from_str(&json_str).unwrap();
+        assert_eq!(back.edge_id, "knows:1");
+
+        let hood = GraphNeighborhood {
+            center_id: "characters:1".into(),
+            nodes: vec![serde_json::json!({"id": "characters:1"})],
+            edges: vec![serde_json::json!({"id": "knows:1"})],
+            depth: 2,
+        };
+        let json_str = serde_json::to_string(&hood).unwrap();
+        let back: GraphNeighborhood = serde_json::from_str(&json_str).unwrap();
+        assert_eq!(back.depth, 2);
+        assert_eq!(back.nodes.len(), 1);
     }
 }

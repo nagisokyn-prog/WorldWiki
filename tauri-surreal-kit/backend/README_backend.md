@@ -687,6 +687,40 @@ sequenceDiagram
 
 ---
 
+## 🧪 Тестирование и покрытие
+
+> Детальный разбор — в [README_backend_test.md](./README_backend_test.md).
+
+Запуск (Windows / PowerShell):
+
+```powershell
+# surreal_domain workspace (core + macros + facade) — Function 100% (32/32)
+cd tauri-surreal-kit\backend\surreal_domain
+cargo llvm-cov --open
+
+# tauri_shell — system_core/performance 100%, system.rs 85% (__cmd__* IPC-обёртки)
+cd tauri-surreal-kit\backend\tauri_shell
+cargo llvm-cov --open
+```
+
+Состояние на 2026-08-24:
+
+| Crate                        | Function        | Line   | Region |
+| ---------------------------- | --------------- | ------ | ------ |
+| surreal_domain_core          | 100% (19/19)    | 94.06% | 93.32% |
+| surreal_domain_macros (весь) | 100% (13/13)    | ~90%   | ~92%   |
+| tauri_shell logic (system_core + performance) | 100% | ~98% | ~98% |
+| tauri_shell logic/system.rs  | 85.25% (52/61)¹ | 95.53% | 94.64% |
+
+¹ Непокрытые функции — `__cmd__*` IPC-обёртки `#[tauri::command]`, выполняются
+только при реальном invoke() из webview (нужен e2e / tauri-driver).
+
+Ключевые тестовые файлы: интеграционные тесты живут в `*/tests/` каждого пакета;
+branch-coverage репозитория — `surreal_domain_facade/tests/repository_branches_integration.rs`;
+юнит-тесты DTO — `surreal_domain_core/src/lib.rs` (`mod dto_tests`).
+
+---
+
 ## 📝 Примечания
 
 1. **Architecture**: `surreal_domain` — это библиотека кодогенерации (compile-time), `tauri_shell` — шаблон runtime.

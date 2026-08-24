@@ -37,6 +37,9 @@ surreal_domain/target
 temp_ddl_test
 *.md.bak
 
+# Prebuilt llama.cpp static libs (llama-sys persistent build cache)
+src-tauri/llama-sys/prebuilt-libs/
+
 rust-analyzer/
 build/
 target/

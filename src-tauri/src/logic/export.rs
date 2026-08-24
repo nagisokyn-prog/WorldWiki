@@ -444,6 +444,24 @@ pub async fn restore_from_backup_inner(
         return Err("Invalid backup file: database.surql not found".to_string());
     }
 
+    // SurrealDB export пишет и родительское поле, и вложенное (`tool_logs` +
+    // `tool_logs.*`). При повторном импорте v3 считает `.*`-определение
+    // конфликтом типов с родителем. Родительский DEFINE уже покрывает вложенные
+    // поля, поэтому безопасно вырезать все `DEFINE FIELD <table>.*` из дампа.
+    let raw_dump = fs::read_to_string(&surql_path)
+        .map_err(|e| format!("Failed to read dump: {e}"))?;
+    let sanitized: String = raw_dump
+        .lines()
+        .filter(|line| {
+            let t = line.trim_start();
+            !(t.starts_with("DEFINE FIELD")
+                && t.contains("OVERWRITE")
+                && t.split_whitespace().nth(3).map_or(false, |f| f.ends_with(".*")))
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    fs::write(&surql_path, sanitized).map_err(|e| format!("Failed to write dump: {e}"))?;
+
     // Clear current database before importing to prevent duplicates?
     // In SurrealDB, importing a dump usually overwrites records with the same ID,
     // but we might want to clear it first. Let's assume import handles it.

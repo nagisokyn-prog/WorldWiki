@@ -1,35 +1,67 @@
 use std::env;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 
 fn main() {
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     let vendor_dir = Path::new(&manifest_dir).join("../../vendor/llama-turboquant-cpp");
+    // Постоянный кэш вне target/: переживает cargo clean.
+    let cache_dir = Path::new(&manifest_dir).join("prebuilt-libs");
+    let build_dir = cache_dir.join("build");
+    let marker_file = cache_dir.join(".build-ok");
 
     println!("cargo:rerun-if-changed={}", vendor_dir.join("CMakeLists.txt").display());
     println!("cargo:rerun-if-changed={}", vendor_dir.join("include").display());
     println!("cargo:rerun-if-changed={}", vendor_dir.join("src").display());
     println!("cargo:rerun-if-changed={}", vendor_dir.join("ggml").display());
+    println!("cargo:rerun-if-env-changed=LLAMA_SYS_FORCE_REBUILD");
 
-    let mut cmake_config = cmake::Config::new(&vendor_dir);
+    let force_rebuild = env::var("LLAMA_SYS_FORCE_REBUILD")
+        .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+        .unwrap_or(false);
 
-    cmake_config
-        .profile("Release")
-        .define("BUILD_SHARED_LIBS", "OFF")
-        .define("GGML_CUDA", "ON")
-        .define("CMAKE_CUDA_ARCHITECTURES", "75;80;86;89;120;121")
-        .define("LLAMA_BUILD_COMMON", "OFF")
-        .define("LLAMA_BUILD_TESTS", "OFF")
-        .define("LLAMA_BUILD_EXAMPLES", "OFF")
-        .define("LLAMA_BUILD_TOOLS", "OFF")
-        .define("LLAMA_BUILD_SERVER", "OFF")
-        .define("LLAMA_BUILD_RPC", "OFF")
-        .define("LLAMA_CURL", "OFF")
-        .define("LLAMA_LLAMAFILE", "OFF")
-        .define("GGML_TCQ", "ON")
-        .define("LLAMA_SWA", "ON")
-        .define("LLAMA_HYBRID_RECURRENT", "ON");
+    if force_rebuild || !marker_file.exists() {
+        if force_rebuild && build_dir.exists() {
+            let _ = std::fs::remove_dir_all(&build_dir);
+        }
+        let _ = std::fs::create_dir_all(&build_dir);
 
-    let dst = cmake_config.build();
+        // 1. Configure
+        let mut configure = Command::new("cmake");
+        configure.arg("-S").arg(&vendor_dir).arg("-B").arg(&build_dir);
+        for (k, v) in [
+            ("CMAKE_BUILD_TYPE", "Release"),
+            ("BUILD_SHARED_LIBS", "OFF"),
+            ("GGML_CUDA", "ON"),
+            // Только PTX-совместимая базовая архитектура: лёгкий fatbin,
+            // JIT-компиляция драйвером на любых более новых GPU (кэшируется).
+            ("CMAKE_CUDA_ARCHITECTURES", "75"),
+            ("LLAMA_BUILD_COMMON", "OFF"),
+            ("LLAMA_BUILD_TESTS", "OFF"),
+            ("LLAMA_BUILD_EXAMPLES", "OFF"),
+            ("LLAMA_BUILD_TOOLS", "OFF"),
+            ("LLAMA_BUILD_SERVER", "OFF"),
+            ("LLAMA_BUILD_RPC", "OFF"),
+            ("LLAMA_CURL", "OFF"),
+            ("LLAMA_LLAMAFILE", "OFF"),
+            ("GGML_TCQ", "ON"),
+            ("LLAMA_SWA", "ON"),
+            ("LLAMA_HYBRID_RECURRENT", "ON"),
+        ] {
+            configure.arg(format!("-D{k}={v}"));
+        }
+        run(&mut configure);
+
+        // 2. Build
+        run(Command::new("cmake")
+            .arg("--build").arg(&build_dir)
+            .arg("--config").arg("Release")
+            .arg("--parallel"));
+
+        std::fs::write(&marker_file, "ok").expect("failed to write build marker");
+    }
+
+    let dst = &cache_dir;
 
     let lib_dirs = [
         dst.join("lib"),
@@ -110,4 +142,16 @@ fn main() {
     bindings
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
+}
+
+/// Запускает команду, наследуя stdout/stderr; паникует при ошибке.
+fn run(cmd: &mut Command) {
+    let status = cmd
+        .stdout(std::process::Stdio::inherit())
+        .stderr(std::process::Stdio::inherit())
+        .status()
+        .unwrap_or_else(|e| panic!("failed to spawn {:?}: {}", cmd.get_program(), e));
+    if !status.success() {
+        panic!("command failed with {}: {:?}", status, cmd);
+    }
 }

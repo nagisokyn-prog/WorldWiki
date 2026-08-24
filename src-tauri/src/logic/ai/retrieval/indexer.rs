@@ -109,7 +109,7 @@ pub async fn reindex_project_lore_inner(
 
     // 3. Collect and chunk all entities
     let ent_query =
-        "SELECT id, name, type_key, custom_fields FROM entities WHERE project_id = $proj";
+        "SELECT id, name, entity_type, attributes FROM entities WHERE project_id = $proj";
     if let Ok(mut resp) = db.query(ent_query).bind(("proj", proj_rec.clone())).await {
         if let Ok(entities) = resp.take::<Vec<serde_json::Value>>(0) {
             for ent in entities {
@@ -124,12 +124,12 @@ pub async fn reindex_project_lore_inner(
                     .unwrap_or("Сущность")
                     .to_string();
                 let type_key = ent
-                    .get("type_key")
+                    .get("entity_type")
                     .and_then(|v| v.as_str())
                     .unwrap_or("general")
                     .to_string();
                 let fields_str = ent
-                    .get("custom_fields")
+                    .get("attributes")
                     .map(|f| f.to_string())
                     .unwrap_or_default();
 

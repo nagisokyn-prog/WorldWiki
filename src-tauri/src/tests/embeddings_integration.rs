@@ -162,7 +162,7 @@ async fn test_high_performance_lore_reindexing() {
 
     // 2. Создаем несколько сущностей энциклопедии
     for i in 0..10 {
-        db.query("CREATE entities SET project_id = type::record('projects:p_lore'), name = $name, type_key = 'character', custom_fields = $fields;")
+        db.query("CREATE entities SET project_id = type::record('projects:p_lore'), name = $name, entity_type = 'character', attributes = $fields;")
             .bind(("name", format!("Герой {i}")))
             .bind(("fields", json!({ "role": "рыцарь", "ability": "магия ветра" })))
             .await

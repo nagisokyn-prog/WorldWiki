@@ -90,6 +90,7 @@ pub async fn save_custom_theme(name: String, settings: Value) -> Result<(), Stri
 mod tests {
     use super::*;
     use serial_test::serial;
+    use serde_json::json;
     use std::fs;
     use tempfile::TempDir;
     use tauri::Manager;
@@ -374,4 +375,206 @@ mod tests {
         teardown_data_dir();
     }
 
-    // ─── custom themes: get / save / load ──────────────────────────────────────
+        // ─── custom themes: get / save / load ──────────────────────────────────────
+
+    #[tokio::test]
+    #[serial]
+    async fn test_get_custom_themes_excludes_builtins_and_base() {
+        let _temp = setup_temp_data_dir();
+
+        let data_dir = get_data_dir();
+        fs::write(data_dir.join("settings.json"), b"{}").unwrap();
+        fs::write(data_dir.join("settings-dark.json"), b"{}").unwrap();
+        fs::write(data_dir.join("settings-light.json"), b"{}").unwrap();
+        fs::write(data_dir.join("settings-theme-ocean.json"), b"{\"name\":\"ocean\"}").unwrap();
+        fs::write(data_dir.join("settings-theme-forest.json"), b"{\"name\":\"forest\"}").unwrap();
+
+        let themes = get_custom_themes().await.expect("get themes");
+        assert!(themes.contains(&"ocean".to_string()), "ocean must be listed");
+        assert!(themes.contains(&"forest".to_string()), "forest must be listed");
+        assert!(!themes.contains(&"settings".to_string()), "settings.json must not be listed");
+        assert!(!themes.contains(&"dark".to_string()), "builtin dark must not be listed");
+        assert!(!themes.contains(&"light".to_string()), "builtin light must not be listed");
+
+        teardown_data_dir();
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_save_and_load_custom_theme() {
+        let _temp = setup_temp_data_dir();
+
+        let theme = json!({ "name": "nebula", "colors": { "bg": "#000", "fg": "#fff" } });
+        save_custom_theme("nebula".to_string(), theme.clone())
+            .await
+            .expect("save custom theme");
+
+        let loaded = load_theme("nebula".to_string())
+            .await
+            .expect("load custom theme");
+        assert_eq!(loaded["name"], "nebula");
+        assert_eq!(loaded["colors"]["bg"], "#000");
+
+        teardown_data_dir();
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_load_theme_builtin() {
+        let _temp = setup_temp_data_dir();
+
+        let data_dir = get_data_dir();
+        fs::write(
+            data_dir.join("settings-dark.json"),
+            serde_json::to_string_pretty(&json!({ "name": "dark", "colors": { "bg": "#000", "fg": "#fff" } })).unwrap(),
+        )
+        .expect("write builtin theme");
+
+        let loaded = load_theme("dark".to_string())
+            .await
+            .expect("load builtin theme");
+        assert_eq!(loaded["name"], "dark");
+        assert_eq!(loaded["colors"]["bg"], "#000");
+
+        teardown_data_dir();
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_load_theme_unknown_returns_null() {
+        let _temp = setup_temp_data_dir();
+        let loaded = load_theme("nonexistent_theme".to_string())
+            .await
+            .expect("load_theme must not panic");
+        assert_eq!(loaded, serde_json::Value::Null);
+        teardown_data_dir();
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_load_theme_empty_file_returns_null() {
+        let _temp = setup_temp_data_dir();
+
+        let data_dir = get_data_dir();
+        fs::write(data_dir.join("settings-empty.json"), "").expect("write empty theme");
+        let loaded = load_theme("empty".to_string())
+            .await
+            .expect("load_theme must not panic");
+        assert_eq!(loaded, serde_json::Value::Null);
+
+        teardown_data_dir();
+    }
+
+        #[tokio::test]
+    #[serial]
+    async fn test_get_custom_themes_empty_when_fresh() {
+        let _temp = setup_temp_data_dir();
+        let themes = get_custom_themes().await.expect("get themes");
+        assert!(themes.is_empty(), "no themes expected in fresh dir");
+        teardown_data_dir();
+    }
+
+    // ─── performance: классификация + CSS ────────────────────────────────────────
+
+    #[test]
+    fn test_classify_performance_thresholds() {
+        use crate::logic::performance::{classify_performance, PerformanceLevel};
+
+        // HIGH: CPU<150, Mem<300, cores>=8
+        assert_eq!(classify_performance(149, 299, 8), PerformanceLevel::High);
+        // cpu ровно 150 → не High
+        assert_ne!(classify_performance(150, 299, 8), PerformanceLevel::High);
+        // MEDIUM: CPU<400, Mem<600, cores>=4
+        assert_eq!(classify_performance(399, 599, 4), PerformanceLevel::Medium);
+        // cpu слишком велик → LOW
+        assert_eq!(classify_performance(500, 599, 8), PerformanceLevel::Low);
+        // cores мало → LOW
+        assert_eq!(classify_performance(100, 100, 2), PerformanceLevel::Low);
+    }
+
+    #[test]
+    fn test_get_performance_styles_all_branches() {
+        let low = get_performance_styles("low".into());
+        assert!(low.contains("backdrop-filter: none"), "low CSS");
+        let med = get_performance_styles("medium".into());
+        assert!(med.contains("backdrop-filter: blur(10px)"), "medium CSS");
+        let high = get_performance_styles("high".into());
+        assert!(high.is_empty(), "high CSS empty");
+        let unknown = get_performance_styles("potato".into());
+        assert!(unknown.is_empty(), "unknown defaults to High");
+    }
+
+    #[test]
+    fn test_run_performance_benchmark_structure() {
+        let info = run_performance_benchmark();
+        assert!(
+            matches!(info.level.as_str(), "low" | "medium" | "high"),
+            "level: {}",
+            info.level
+        );
+        assert!(info.cores >= 1, "cores >= 1");
+    }
+
+        // ─── DataDirProvider ─────────────────────────────────────────────────────────
+
+    #[test]
+    #[serial]
+    fn test_custom_data_dir_provider() {
+        clear_data_dir_provider();
+
+        let fake = std::path::PathBuf::from("/fake/test/data/path");
+        set_data_dir_provider(Box::new(TestDataDirProvider {
+            data_dir: fake.clone(),
+        }));
+        assert_eq!(
+            get_data_dir(),
+            fake,
+            "get_data_dir should return provider path"
+        );
+
+        clear_data_dir_provider();
+        let after = get_data_dir();
+        assert!(
+            after.ends_with("data"),
+            "after clear should fall back to default"
+        );
+    }
+
+    #[test]
+    fn test_default_data_dir_provider() {
+        let dir = DefaultDataDirProvider.get_data_dir();
+        assert!(
+            dir.ends_with("data"),
+            "should end with 'data', got: {}",
+            dir.display()
+        );
+        assert!(!dir.as_os_str().is_empty(), "Path should not be empty");
+    }
+
+    // ─── toggle_fullscreen ───────────────────────────────────────────────────────
+
+    #[test]
+    fn test_toggle_fullscreen_both_directions() {
+        let app = tauri::test::mock_builder()
+            .invoke_handler(tauri::generate_handler![toggle_fullscreen])
+            .build(tauri::generate_context!())
+            .unwrap();
+
+        let _ = tauri::WebviewWindowBuilder::new(
+            &app,
+            "toggle-fs",
+            tauri::WebviewUrl::App("index.html".into()),
+        )
+        .build();
+
+        if let Some(win) = app.webview_windows().get("toggle-fs") {
+            let r1 = tauri::async_runtime::block_on(toggle_fullscreen(win.clone()));
+            assert!(r1.is_ok(), "first toggle must succeed: {:?}", r1.err());
+            let r2 = tauri::async_runtime::block_on(toggle_fullscreen(win.clone()));
+            assert!(r2.is_ok(), "second toggle must succeed: {:?}", r2.err());
+        } else if let Some(win) = app.webview_windows().values().next() {
+            let r = tauri::async_runtime::block_on(toggle_fullscreen(win.clone()));
+            assert!(r.is_ok(), "toggle must succeed: {:?}", r.err());
+        }
+    }
+}

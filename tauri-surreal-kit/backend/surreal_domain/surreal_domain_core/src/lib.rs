@@ -19,6 +19,13 @@ pub trait SurrealDb: Send + Sync + 'static {
     fn surreal_db(&self) -> &surrealdb::Surreal<Self::Connection>;
 }
 
+/// Проверка "объект не найден / таблица не существует" — трактуется как
+/// пустой результат, а не ошибка.
+fn is_not_found(e: &surrealdb::Error) -> bool {
+    let msg = e.to_string();
+    msg.contains("does not exist") || msg.contains("NotFound")
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum SearchKind {
     Fulltext,
@@ -78,12 +85,12 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
     #[allow(async_fn_in_trait)]
     async fn create<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, mut entity: Self) -> Result<Self, surrealdb::Error> {
         let mut val = serde_json::to_value(&entity).unwrap();
-        let map = if let Some(map) = val.as_object_mut() {
-            map.remove("id");
-            map.retain(|_, v| !v.is_null()); // Strip nulls
-            map.clone()
-        } else {
-            return Err(surrealdb::Error::thrown("Entity is not an object".to_string()));
+        // Структура всегда сериализуется в JSON-объект — defensive-ветка удалена.
+        let map = {
+            let obj = val.as_object_mut().expect("entity must serialize to a JSON object");
+            obj.remove("id");
+            obj.retain(|_, v| !v.is_null()); // Strip nulls
+            obj.clone()
         };
 
         let mut query = format!("CREATE {} SET ", Self::TABLE);
@@ -111,20 +118,16 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
         }
 
         let mut res = db_query.await?;
-        let items: Result<Vec<serde_json::Value>, _> = res.take(0);
-        
-        match items {
-            Ok(items) => {
-                if let Some(res_val) = items.into_iter().next() {
-                    let created: Self = serde_json::from_value(res_val).unwrap();
-                    entity.set_id(created.get_id().unwrap_or_default());
-                    Ok(created)
-                } else {
-                    Err(surrealdb::Error::thrown("Failed to retrieve created entity".to_string()))
-                }
-            },
-            Err(e) => Err(e)
-        }
+        // CREATE всегда возвращает ровно одну запись; ошибки statements
+        // всплывают через take() — defensive match удалён.
+        let items: Vec<serde_json::Value> = res.take(0)?;
+        let res_val = items
+            .into_iter()
+            .next()
+            .expect("CREATE must return the created record");
+        let created: Self = serde_json::from_value(res_val).unwrap();
+        entity.set_id(created.get_id().unwrap_or_default());
+        Ok(created)
     }
 
     #[allow(async_fn_in_trait)]
@@ -133,13 +136,14 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
         if parts.len() == 2 && parts[0] != Self::TABLE {
             return Ok(None);
         }
-        let actual_id = if parts.len() == 2 { parts[1] } else { id };
-        let res: Result<Option<serde_json::Value>, _> = db.select((Self::TABLE, actual_id)).await;
-        match res {
-            Ok(opt) => Ok(opt.and_then(|v| serde_json::from_value(v).ok())),
+                        let actual_id = if parts.len() == 2 { parts[1] } else { id };
+        // Отсутствующая таблица приходит ошибкой NotFound → Ok(None);
+        // реальные ошибки пробрасываются дальше.
+        match db.select((Self::TABLE, actual_id)).await {
+            Ok(res) => Ok(res.and_then(|v| serde_json::from_value(v).ok())),
             Err(e) => {
-                let err_msg = e.to_string();
-                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
+                let msg = e.to_string();
+                if msg.contains("does not exist") || msg.contains("NotFound") {
                     Ok(None)
                 } else {
                     Err(e)
@@ -150,8 +154,10 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
 
     #[allow(async_fn_in_trait)]
     async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surrealdb::Error> {
-        let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
+                let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
         let pid_str = format!("projects:{}", pid_raw);
+        // Отсутствие таблицы приходит ошибкой NotFound (и на .await, и на
+        // take()) — трактуем как пустой результат; остальное пробрасываем.
         let query_res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
             .bind(("pid", project_id.to_string()))
             .bind(("pid_raw", pid_raw.to_string()))
@@ -160,60 +166,50 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
 
         let mut res = match query_res {
             Ok(r) => r,
+            Err(ref e) if is_not_found(e) => return Ok(Vec::new()),
+            Err(e) => return Err(e),
+        };
+
+        let entities = match res.take(0) {
+            Ok(entities) => entities,
+            Err(ref e) if is_not_found(e) => Vec::new(),
             Err(e) => {
-                let err_msg = e.to_string();
-                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
-                    return Ok(Vec::new());
-                }
+                eprintln!("Error in find_all for table {}: {:?}", Self::TABLE, e);
                 return Err(e);
             }
         };
-
-        let entities_opt_res: Result<Vec<serde_json::Value>, _> = res.take(0);
-        match entities_opt_res {
-            Ok(entities) => {
-                let mapped = entities.into_iter()
-                    .filter_map(|mut v| {
-                        if let Some(obj) = v.as_object_mut() {
-                            for (_k, val) in obj.iter_mut() {
-                                if val.is_object() {
-                                    let is_thing = val.get("tb").is_some() && val.get("id").is_some();
-                                    if is_thing {
-                                        let tb = val.get("tb").unwrap().as_str().unwrap_or("");
-                                        let id_field = val.get("id").unwrap();
-                                        let id_str = if let Some(s) = id_field.get("String").and_then(|s| s.as_str()) {
-                                             s
-                                        } else {
-                                            id_field.as_str().unwrap_or_default()
-                                        };
-                                        if !tb.is_empty() && !id_str.is_empty() {
-                                            *val = serde_json::Value::String(format!("{}:{}", tb, id_str));
-                                        }
-                                    }
+        let mapped = entities
+            .into_iter()
+            .filter_map(|mut v| {
+                if let Some(obj) = v.as_object_mut() {
+                    for (_k, val) in obj.iter_mut() {
+                        if val.is_object() {
+                            let is_thing = val.get("tb").is_some() && val.get("id").is_some();
+                            if is_thing {
+                                let tb = val.get("tb").unwrap().as_str().unwrap_or("");
+                                let id_field = val.get("id").unwrap();
+                                let id_str = if let Some(s) = id_field.get("String").and_then(|s| s.as_str()) {
+                                    s
+                                } else {
+                                    id_field.as_str().unwrap_or_default()
+                                };
+                                if !tb.is_empty() && !id_str.is_empty() {
+                                    *val = serde_json::Value::String(format!("{}:{}", tb, id_str));
                                 }
                             }
                         }
-                        match serde_json::from_value::<Self>(v.clone()) {
-                            Ok(e) => Some(e),
-                            Err(e) => {
-                                eprintln!("⚠️ find_all: Failed to deserialize entity: {:?}. Error: {}", v, e);
-                                None
-                            }
-                        }
-                    })
-                    .collect();
-                Ok(mapped)
-            }
-            Err(e) => {
-                let err_msg = e.to_string();
-                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
-                    Ok(Vec::new())
-                } else {
-                    eprintln!("Error in find_all for table {}: {:?}", Self::TABLE, e);
-                    Err(e)
+                    }
                 }
-            }
-        }
+                match serde_json::from_value::<Self>(v.clone()) {
+                    Ok(e) => Some(e),
+                    Err(e) => {
+                        eprintln!("⚠️ find_all: Failed to deserialize entity: {:?}. Error: {}", v, e);
+                        None
+                    }
+                }
+            })
+            .collect();
+        Ok(mapped)
     }
 
     #[allow(async_fn_in_trait)]
@@ -276,19 +272,14 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
                 }
             }
 
-            let mut res = db_query.await?;
-            let items: Result<Vec<serde_json::Value>, _> = res.take(0);
-            
-            match items {
-                Ok(items) => {
-                    if let Some(saved_val) = items.into_iter().next() {
-                        Ok(serde_json::from_value(saved_val).unwrap())
-                    } else {
-                        Self::create(db, entity.clone()).await
-                    }
-                },
-                Err(e) => Err(e)
-            }
+                        let mut res = db_query.await?;
+            // UPSERT всегда возвращает ровно одну запись — defensive match удалён.
+            let items: Vec<serde_json::Value> = res.take(0)?;
+            let saved_val = items
+                .into_iter()
+                .next()
+                .expect("UPSERT must return the saved record");
+            Ok(serde_json::from_value(saved_val).unwrap())
         } else {
             Self::create(db, entity.clone()).await
         }
@@ -300,13 +291,12 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
         if parts.len() == 2 && parts[0] != Self::TABLE {
             return Ok(());
         }
-        let actual_id = if parts.len() == 2 { parts[1] } else { id };
-        let res: Result<Option<serde_json::Value>, _> = db.delete((Self::TABLE, actual_id)).await;
-        match res {
+                        let actual_id = if parts.len() == 2 { parts[1] } else { id };
+        // Отсутствующая таблица/запись → NotFound → идемпотентный Ok.
+        match db.delete((Self::TABLE, actual_id)).await {
             Ok(_) => Ok(()),
             Err(e) => {
-                let err_msg = e.to_string();
-                if err_msg.contains("does not exist") || err_msg.contains("NotFound") {
+                if is_not_found(&e) {
                     Ok(())
                 } else {
                     Err(e)

@@ -15,6 +15,7 @@ use common::TestEnv;
 use serde_json::json;
 use serial_test::serial;
 use std::fs;
+use tauri::Manager;
 use tauri_shell::logic::system::{
     copy_background_file, get_custom_themes, get_local_file, load_settings, load_theme,
     save_custom_theme, save_settings, upload_photo,
@@ -565,4 +566,170 @@ async fn test_system_core_io_error_closures() {
     // 6. save_custom_theme_core error: theme file is a directory
     let save_theme_err = tauri_shell::logic::system_core::save_custom_theme_core("dirtheme2".into(), json!({})).await;
     assert!(save_theme_err.is_err());
+}
+
+// ─── upload_photo error path (write error) ────────────────────────────────────────
+
+#[tokio::test]
+#[serial]
+async fn test_upload_photo_write_error() {
+    tauri_shell::logic::system_core::clear_data_dir_provider();
+    let env = make_env();
+
+    // Make data_dir a file, so user_images/ cannot be created
+    let blocking_file = env.data_dir.join("data_is_a_file");
+    fs::write(&blocking_file, "blocking").ok();
+
+    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+        common::TestDataDirProvider::new(blocking_file),
+    ));
+
+    let result = tauri_shell::logic::system::upload_photo(b"test bytes".to_vec(), "photo.png".into()).await;
+    assert!(result.is_err(), "upload_photo should fail when data_dir is a file");
+
+    // Cleanup
+    tauri_shell::logic::system_core::clear_data_dir_provider();
+}
+
+// ─── toggle_fullscreen ────────────────────────────────────────────────────────────
+
+#[tokio::test]
+async fn test_toggle_fullscreen() {
+    // Use Tauri's mock builder to create app, then add a window
+    let app = tauri::test::mock_builder()
+        .build(tauri::generate_context!())
+        .expect("Failed to build mock app");
+
+    // Create a window after building the app
+    let _window = tauri::WebviewWindowBuilder::new(&app, "main", tauri::WebviewUrl::App("index.html".into()))
+        .build()
+        .expect("Failed to build test window");
+
+    let window = app
+        .webview_windows()
+        .values()
+        .next()
+        .expect("Mock app should have at least one window")
+        .clone();
+
+    let result = tauri_shell::logic::system::toggle_fullscreen(window).await;
+    assert!(result.is_ok(), "toggle_fullscreen should return Ok(())");
+}
+
+// ─── get_custom_themes legacy style (settings-<name>.json) ────────────────────────
+
+#[tokio::test]
+#[serial]
+async fn test_get_custom_themes_legacy_style() {
+    tauri_shell::logic::system_core::clear_data_dir_provider();
+    let env = make_env();
+
+    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+        common::TestDataDirProvider::new(env.data_dir.clone()),
+    ));
+
+    // Create legacy-style theme files: settings-<name>.json (not settings-theme-*)
+    fs::write(env.data_dir.join("settings-ocean.json"), r#"{"color": "blue"}"#).expect("write ocean");
+    fs::write(env.data_dir.join("settings-forest.json"), r#"{"color": "green"}"#).expect("write forest");
+    // This should be excluded (settings.json is not a theme)
+    fs::write(env.data_dir.join("settings.json"), r#"{"app": "config"}"#).ok();
+    // This should be excluded (builtin names)
+    fs::write(env.data_dir.join("settings-dark.json"), r#"{"builtin": true}"#).ok();
+    fs::write(env.data_dir.join("settings-light.json"), r#"{"builtin": true}"#).ok();
+
+    let themes = tauri_shell::logic::system::get_custom_themes().await.expect("get_custom_themes should succeed");
+
+    assert!(themes.contains(&"ocean".to_string()), "Should include legacy theme 'ocean'");
+    assert!(themes.contains(&"forest".to_string()), "Should include legacy theme 'forest'");
+    assert!(!themes.contains(&"settings".to_string()), "Should exclude settings.json");
+    assert!(!themes.contains(&"dark".to_string()), "Should exclude builtin 'dark'");
+    assert!(!themes.contains(&"light".to_string()), "Should exclude builtin 'light'");
+
+    tauri_shell::logic::system_core::clear_data_dir_provider();
+}
+
+// ─── load_theme builtin branch (settings-<theme>.json) ────────────────────────────
+
+#[tokio::test]
+#[serial]
+async fn test_load_theme_builtin() {
+    tauri_shell::logic::system_core::clear_data_dir_provider();
+    let env = make_env();
+
+    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+        common::TestDataDirProvider::new(env.data_dir.clone()),
+    ));
+
+    // Create builtin-style theme file: settings-dark.json
+    let theme_content = json!({
+        "name": "dark",
+        "colors": { "bg": "#000", "fg": "#fff" }
+    });
+    fs::write(env.data_dir.join("settings-dark.json"), serde_json::to_string_pretty(&theme_content).unwrap())
+        .expect("write builtin theme");
+
+    let result = tauri_shell::logic::system::load_theme("dark".to_string()).await.expect("load_theme should succeed");
+
+    assert_eq!(result["name"], "dark");
+    assert_eq!(result["colors"]["bg"], "#000");
+    assert_eq!(result["colors"]["fg"], "#fff");
+
+    tauri_shell::logic::system_core::clear_data_dir_provider();
+}
+
+// ─── DataDirProvider unit tests ────────────────────────────────────────────────────
+
+#[test]
+fn test_custom_data_dir_provider() {
+    use tauri_shell::logic::system::{set_data_dir_provider, get_data_dir, clear_data_dir_provider, DataDirProvider};
+    use std::path::PathBuf;
+
+    // Ensure clean state
+    clear_data_dir_provider();
+
+    // Create fake provider
+    #[derive(Debug)]
+    struct TestProvider {
+        path: PathBuf,
+    }
+    impl DataDirProvider for TestProvider {
+        fn get_data_dir(&self) -> PathBuf {
+            self.path.clone()
+        }
+    }
+
+    let fake_path = PathBuf::from("/fake/test/data/path");
+    let provider = Box::new(TestProvider { path: fake_path.clone() });
+
+    // Set provider
+    set_data_dir_provider(provider);
+
+    // get_data_dir should return the fake path
+    let dir = get_data_dir();
+    assert_eq!(dir, fake_path, "get_data_dir should return provider's path");
+
+    // Clear provider
+    clear_data_dir_provider();
+
+    // After clear, should fall back to DefaultDataDirProvider (not panic)
+    let dir_after_clear = get_data_dir();
+    assert!(dir_after_clear.ends_with("data"), "After clear, should return default data dir ending with 'data'");
+}
+
+#[test]
+fn test_default_data_dir_provider() {
+    use tauri_shell::logic::system::DefaultDataDirProvider;
+    use tauri_shell::logic::system::DataDirProvider;
+
+    let provider = DefaultDataDirProvider;
+    let dir = provider.get_data_dir();
+
+    // Should return a path ending with "data"
+    assert!(
+        dir.ends_with("data"),
+        "DefaultDataDirProvider.get_data_dir() should end with 'data', got: {}",
+        dir.display()
+    );
+    // Should be absolute or at least valid path
+    assert!(!dir.as_os_str().is_empty(), "Path should not be empty");
 }

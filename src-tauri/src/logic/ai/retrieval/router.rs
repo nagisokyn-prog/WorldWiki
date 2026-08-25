@@ -264,3 +264,44 @@ impl RetrievalRouter {
         Some(ctx)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn skip_empty_and_short_queries() {
+        assert!(RetrievalRouter::should_skip_retrieval(""));
+        assert!(RetrievalRouter::should_skip_retrieval("   "));
+        assert!(RetrievalRouter::should_skip_retrieval("ку"));
+        assert!(RetrievalRouter::should_skip_retrieval("ок"));
+        assert!(RetrievalRouter::should_skip_retrieval("abc"));
+    }
+
+    #[test]
+    fn skip_greetings() {
+        for g in ["привет", "Привет!", "здравствуй.", "добрый день", "хай", "ку", "спасибо",
+                  "hello", "Hi!", "thanks.", "bye"] {
+            assert!(RetrievalRouter::should_skip_retrieval(g), "должен скипнуть: {g}");
+        }
+    }
+
+    #[test]
+    fn lore_questions_are_not_skipped() {
+        assert!(!RetrievalRouter::should_skip_retrieval(
+            "расскажи про первого короля королевства"
+        ));
+        assert!(!RetrievalRouter::should_skip_retrieval(
+            "кто такой Артур и почему он предал брата?"
+        ));
+        // Приветствие внутри содержательного вопроса не триггерит скип
+        assert!(!RetrievalRouter::should_skip_retrieval(
+            "привет, расскажи сюжет второй главы"
+        ));
+    }
+
+    #[test]
+    fn greeting_with_trailing_whitespace_is_skipped() {
+        assert!(RetrievalRouter::should_skip_retrieval("  привет  "));
+    }
+}

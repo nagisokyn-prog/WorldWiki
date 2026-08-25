@@ -136,6 +136,7 @@ mod tests {
     fn test_empty_and_small() {
         let chunker = DocumentChunker::new(100, 20);
         assert!(chunker.split_text("").is_empty());
+        assert!(chunker.split_text("   ").is_empty(), "пробелы тримятся → пусто");
         assert_eq!(chunker.split_text("Short text").len(), 1);
     }
 
@@ -148,5 +149,123 @@ mod tests {
         for chunk in &chunks {
             assert!(chunk.chars().count() <= 60); // within tolerance
         }
+    }
+
+    // ---------- Волна 1: граничные случаи ----------
+
+    #[test]
+    fn text_exactly_chunk_size_is_single_chunk() {
+        let size = 50;
+        let chunker = DocumentChunker::new(size, 10);
+        let text = "a".repeat(size);
+        let chunks = chunker.split_text(&text);
+        assert_eq!(chunks.len(), 1);
+        assert_eq!(chunks[0].chars().count(), size);
+    }
+
+    #[test]
+    fn text_one_char_over_limit_is_split() {
+        let size = 50;
+        let chunker = DocumentChunker::new(size, 0);
+        let text = "b".repeat(size + 1);
+        let chunks = chunker.split_text(&text);
+        assert!(chunks.len() > 1);
+    }
+
+    #[test]
+    fn no_separators_falls_back_to_hard_char_split() {
+        let size = 40;
+        let overlap = 8;
+        let chunker = DocumentChunker::new(size, overlap);
+        let text = "c".repeat(200); // ни одного разделителя из списка
+        let chunks = chunker.split_text(&text);
+
+        assert!(chunks.len() >= 3, "должен быть hard split");
+        for chunk in &chunks {
+            assert!(chunk.chars().count() <= size, "чанк не больше chunk_size");
+            assert!(!chunk.trim().is_empty());
+        }
+        // Начало текста и конец текста сохранены
+        assert!(chunks[0].starts_with('c'));
+        assert!(chunks.last().unwrap().ends_with('c'));
+        // Шаг без overlap = size; с overlap покрытие не теряется:
+        let joined_len: usize = chunks.iter().map(|c| c.chars().count()).sum();
+        let min_expected = 200 - overlap * (chunks.len() - 1);
+        assert!(
+            joined_len >= min_expected,
+            "overlap не должен рвать покрытие: {joined_len} < {min_expected}"
+        );
+    }
+
+    #[test]
+    fn unicode_codepoints_not_broken_in_half() {
+        // Эмодзи (суррогатные пары UTF-16) и CJK — работа по char, а не по байтам
+        let emoji = "🐉🗡️🌍";
+        let cjk = "世界終末";
+        let text = format!("{} {}", emoji.repeat(60), cjk.repeat(60));
+
+        let chunker = DocumentChunker::new(30, 5);
+        let chunks = chunker.split_text(&text);
+
+        assert!(chunks.len() > 1);
+        let mut total_chars = 0;
+        for chunk in &chunks {
+            // Каждый чанк — валидная строка (гарантия Rust), но проверим отсутствие
+            // replacement-мусора, который был бы при байтовом сплите
+            assert!(!chunk.contains('\u{FFFD}'), "кодпоинт разорван!");
+            total_chars += chunk.chars().count();
+        }
+        let original_chars = text.trim().chars().count();
+        assert!(
+            total_chars >= original_chars.saturating_sub(5 * (chunks.len() - 1)),
+            "unicode-контент потерян сверх допустимого overlap"
+        );
+    }
+
+    #[test]
+    fn overlap_tail_breaks_at_word_boundary_when_possible() {
+        let chunker = DocumentChunker::new(100, 10);
+        let long_word_chunk = "abcdefghij"; // без пробелов
+        let tail = chunker.get_overlap_tail(long_word_chunk);
+        assert_eq!(tail, long_word_chunk, "без пробела возвращается весь хвост");
+
+        let with_space = "word word2 x";
+        let tail2 = chunker.get_overlap_tail(with_space);
+        assert_eq!(tail2, "word2 x", "хвост отрезается по первому пробелу");
+    }
+
+    #[test]
+    fn short_text_shorter_than_overlap_kept_whole_as_tail() {
+        let chunker = DocumentChunker::new(100, 200);
+        let small = "tiny";
+        assert_eq!(chunker.get_overlap_tail(small), "tiny");
+    }
+
+    #[test]
+    fn paragraph_content_preserved_across_chunks() {
+        let chunker = DocumentChunker::new(80, 15);
+        let paragraphs: Vec<String> = (0..12)
+            .map(|i| format!("Абзац номер {} с достаточно длинным содержимым про мир.", i))
+            .collect();
+        let text = paragraphs.join("\n\n");
+
+        let chunks = chunker.split_text(&text);
+        assert!(chunks.len() > 1);
+        // Все номера абзацев где-то присутствуют (с учётом overlap ничего не потеряно)
+        for i in 0..12 {
+            let marker = format!("номер {}", i);
+            assert!(
+                chunks.iter().any(|c| c.contains(&marker)),
+                "абзац {i} пропал после чанковки"
+            );
+        }
+    }
+
+    #[test]
+    fn default_params_are_reasonable() {
+        let c = DocumentChunker::default();
+        assert_eq!(c.chunk_size, 1800);
+        assert_eq!(c.chunk_overlap, 200);
+        assert!(c.chunk_overlap < c.chunk_size);
     }
 }

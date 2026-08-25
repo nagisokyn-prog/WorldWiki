@@ -231,3 +231,96 @@ async fn reorder_node_updates_sort_order() {
     let h = get_chapter_hierarchy_inner(&db, "p1").await.unwrap();
     assert_eq!(h["volumes"][0]["sort_order"], 42);
 }
+
+// =====================================================
+// Волна 2: негативы и сохранение порядка соседей
+// =====================================================
+
+#[tokio::test]
+async fn update_volume_nonexistent_is_noop_ok() {
+    let db = create_test_db().await;
+
+    // UPDATE по несуществующему id — SurrealDB не считает это ошибкой
+    let res = update_volume_inner(&db, "volumes:ghost_vol", "Призрачное имя").await;
+    assert!(res.is_ok(), "update несуществующего тома → Ok (no-op)");
+}
+
+#[tokio::test]
+async fn reorder_keeps_sort_order_of_other_nodes() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    let v1 = create_volume_inner(&db, "p1", "Том 1").await.unwrap();
+    let v2 = create_volume_inner(&db, "p1", "Том 2").await.unwrap();
+    let v3 = create_volume_inner(&db, "p1", "Том 3").await.unwrap();
+
+    // Переносим Том 2 в конец
+    assert_eq!(v1["sort_order"].as_i64(), Some(0), "сосед 1 создан в базовом порядке");
+    assert_eq!(v3["sort_order"].as_i64(), Some(2), "сосед 3 создан в базовом порядке");
+    let v2_id = v2["id"].as_str().unwrap();
+    reorder_node_inner(&db, "p1", "volume", v2_id, 10).await.unwrap();
+
+    let h = get_chapter_hierarchy_inner(&db, "p1").await.unwrap();
+    let volumes = h["volumes"].as_array().unwrap();
+
+    let order_of = |title: &str| -> i64 {
+        volumes.iter()
+            .find(|v| v["title"] == title)
+            .unwrap()["sort_order"]
+            .as_i64()
+            .unwrap()
+    };
+
+    assert_eq!(order_of("Том 1"), 0, "соседи не должны менять sort_order");
+    assert_eq!(order_of("Том 3"), 2, "соседи не должны менять sort_order");
+    assert_eq!(order_of("Том 2"), 10);
+}
+
+#[tokio::test]
+async fn assign_chapter_to_project_root_clears_old_parent_edge() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    let vol = create_volume_inner(&db, "p1", "Том 1").await.unwrap();
+    let vol_id = vol["id"].as_str().unwrap().to_string();
+    let ch_id = seed_chapter(&db, "p1", "ch_migrate", "Кочующая глава", "").await;
+
+    // Сначала привязываем к тому
+    assign_chapter_inner(&db, "p1", &ch_id, None, Some(vol_id.clone())).await.unwrap();
+    // Потом «открепляем» на корень проекта
+    assign_chapter_inner(&db, "p1", &ch_id, None, None).await.unwrap();
+
+    let mut e = db.query("SELECT in FROM contains WHERE out = type::record($ch)")
+        .bind(("ch", ch_id.clone()))
+        .await.unwrap();
+    let edges: Vec<serde_json::Value> = e.take(0).unwrap();
+
+    assert_eq!(edges.len(), 1, "ровно одно ребро после миграции");
+    assert_eq!(
+        edges[0]["in"], "projects:p1",
+        "после открепления родителем становится проект"
+    );
+}
+
+#[tokio::test]
+async fn arc_update_title_roundtrip_via_direct_read() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    let a1 = create_arc_inner(&db, "p1", "Черновик арки", None).await.unwrap();
+    let a1_id = a1["id"].as_str().unwrap().to_string();
+    // Документируем поведение: арка без тома привязывается к КОРНЮ ПРОЕКТА —
+    // volume_id получает id проекта, а не Null.
+    assert_eq!(
+        a1["volume_id"], "projects:p1",
+        "арка без тома наследует корень проекта как volume_id"
+    );
+
+    update_arc_inner(&db, &a1_id, "Финальная арка").await.unwrap();
+
+    let mut res = db.query("SELECT title FROM type::record($id)")
+        .bind(("id", a1_id))
+        .await.unwrap();
+    let rows: Vec<serde_json::Value> = res.take(0).unwrap();
+    assert_eq!(rows[0]["title"], "Финальная арка");
+}

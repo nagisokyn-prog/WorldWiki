@@ -144,8 +144,16 @@ pub async fn update_chat_parent(
     new_parent_id: Option<String>,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
-    let db = state.surreal_db();
-    let chat_rec = parse_record_id(&chat_id, "chats");
+    update_chat_parent_impl(state.surreal_db(), &chat_id, new_parent_id.as_deref()).await
+}
+
+/// Тестируемое ядро `update_chat_parent` (без `tauri::State`).
+pub async fn update_chat_parent_impl(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    chat_id: &str,
+    new_parent_id: Option<&str>,
+) -> Result<(), String> {
+    let chat_rec = parse_record_id(chat_id, "chats");
 
     // Удаляем старую связь parent -> chat
     db.query("DELETE contains WHERE out = $chat")
@@ -154,7 +162,7 @@ pub async fn update_chat_parent(
         .map_err(|e| e.to_string())?;
 
     if let Some(parent) = new_parent_id {
-        let parent_rec = parse_record_id(&parent, "chats");
+        let parent_rec = parse_record_id(parent, "chats");
         db.query("RELATE $parent -> contains -> $chat SET sort_order = 0")
             .bind(("parent", parent_rec))
             .bind(("chat", chat_rec))
@@ -174,10 +182,40 @@ pub async fn send_chat_message(
     app: tauri::AppHandle,
 ) -> Result<SendChatResult, String> {
     let state = app.state::<AppState>();
-    let db = state.surreal_db();
-    let proj_rec = parse_record_id(&project, "projects");
+    let result = send_message_db_core(state.surreal_db(), &chat_id, &project, &text).await?;
 
-    let mut actual_chat_rec = parse_record_id(&chat_id, "chats");
+    // 2. Запустить фоновый цикл агента
+    let tasks_state = app.state::<AgentTasks>();
+    let app2 = app.clone();
+    let chat_id_str = result.chat_id.clone();
+    let assistant_msg_id_str = result.assistant_msg_id.clone();
+
+    let handle = tokio::spawn(async move {
+        run_agent_loop(app2.clone(), project, chat_id_str.clone(), assistant_msg_id_str, text, mode_slug).await;
+        let tasks_state = app2.state::<AgentTasks>();
+        let mut tasks = tasks_state.0.lock().await;
+        tasks.remove(&chat_id_str);
+    });
+
+    let mut tasks = tasks_state.0.lock().await;
+    tasks.insert(result.chat_id.clone(), handle);
+
+    Ok(result)
+}
+
+/// Тестируемое ядро `send_chat_message`: проверка существования чата
+/// (автосоздание с заголовком из первых 40 символов) и создание пары
+/// сообщений user → assistant-заглушка, привязанных к последнему сообщению.
+#[allow(clippy::too_many_arguments)]
+pub async fn send_message_db_core(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    chat_id: &str,
+    project: &str,
+    text: &str,
+) -> Result<SendChatResult, String> {
+    let proj_rec = parse_record_id(project, "projects");
+
+    let mut actual_chat_rec = parse_record_id(chat_id, "chats");
 
     // Проверяем существует ли чат
     let mut check = db
@@ -187,7 +225,7 @@ pub async fn send_chat_message(
         .map_err(|e| e.to_string())?;
     let chat_exists: Option<Value> = check.take(0).unwrap_or_default();
 
-    let mut actual_chat_id_str = chat_id.clone();
+    let mut actual_chat_id_str = chat_id.to_string();
     if chat_exists.is_none() {
         let new_id = uuid::Uuid::new_v4().to_string();
         actual_chat_id_str = format!("chats:{}", new_id);
@@ -221,31 +259,26 @@ pub async fn send_chat_message(
     let last_msg: Option<Value> = check_last.take(0).unwrap_or_default();
     let parent_id_val = last_msg.and_then(|m| m.get("id").cloned());
 
-    let mut query = db.query(r#"
+    let has_parent = parent_id_val.is_some();
+
+    let mut query = db.query(if has_parent { r#"
         CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
         CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
-    "#);
+    "# } else { r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
+        CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+    "# });
 
-    if let Some(p) = parent_id_val {
-        println!(
-            "[SEND] user_msg={} parent={:?} assistant={}",
-            user_msg_uuid, p, assistant_msg_uuid
-        );
-        if let Some(clean_p) = clean_surreal_id(&p) {
+    if let Some(p) = &parent_id_val {
+        println!("[SEND] user_msg={} parent={:?} assistant={}", user_msg_uuid, p, assistant_msg_uuid);
+        if let Some(clean_p) = clean_surreal_id(p) {
             let p_rec = parse_record_id(&clean_p, "chat_messages");
             query = query.bind(("parent", p_rec));
         } else {
-            query = query.bind(("parent", p)); // fallback
+            query = query.bind(("parent", p.clone())); // fallback
         }
     } else {
-        println!(
-            "[SEND] user_msg={} parent=NONE (first msg) assistant={}",
-            user_msg_uuid, assistant_msg_uuid
-        );
-        query = db.query(r#"
-            CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
-            CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
-        "#);
+        println!("[SEND] user_msg={} parent=NONE (first msg) assistant={}", user_msg_uuid, assistant_msg_uuid);
     }
 
     query
@@ -253,37 +286,9 @@ pub async fn send_chat_message(
         .bind(("aid", assistant_msg_rec.clone()))
         .bind(("chat", actual_chat_rec.clone()))
         .bind(("proj", proj_rec.clone()))
-        .bind(("content", text.clone()))
+        .bind(("content", text.to_string()))
         .await
         .map_err(|e| e.to_string())?;
-
-    let chat_id_str = actual_chat_id_str.clone();
-
-    // 2. Запустить фоновый цикл агента
-    let project_id_str = project.clone();
-    let assistant_msg_id_str = format!("chat_messages:{}", assistant_msg_uuid);
-
-    let tasks_state = app.state::<AgentTasks>();
-    let app2 = app.clone();
-    let chat_id_str2 = chat_id_str.clone();
-    let handle = tokio::spawn(async move {
-        run_agent_loop(
-            app2.clone(),
-            project_id_str,
-            chat_id_str,
-            assistant_msg_id_str,
-            text,
-            mode_slug,
-        )
-        .await;
-        let tasks_state = app2.state::<AgentTasks>();
-        let mut tasks = tasks_state.0.lock().await;
-        tasks.remove(&chat_id_str2);
-    });
-
-    // Store handle
-    let mut tasks = tasks_state.0.lock().await;
-    tasks.insert(actual_chat_id_str.clone(), handle);
 
     Ok(SendChatResult {
         chat_id: actual_chat_id_str,
@@ -315,8 +320,15 @@ pub async fn delete_chat_message(
     msg_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
-    let db = state.surreal_db();
-    let msg_rec = parse_record_id(&msg_id, "chat_messages");
+    delete_chat_message_impl(state.surreal_db(), &msg_id).await
+}
+
+/// Тестируемое ядро `delete_chat_message` (без `tauri::State`).
+pub async fn delete_chat_message_impl(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    msg_id: &str,
+) -> Result<(), String> {
+    let msg_rec = parse_record_id(msg_id, "chat_messages");
     db.query("DELETE $msg")
         .bind(("msg", msg_rec))
         .await
@@ -334,10 +346,39 @@ pub async fn edit_chat_message(
     app: tauri::AppHandle,
 ) -> Result<SendChatResult, String> {
     let state = app.state::<AppState>();
-    let db = state.surreal_db();
-    let msg_rec = parse_record_id(&msg_id, "chat_messages");
-    let proj_rec = parse_record_id(&project, "projects");
-    let chat_rec = parse_record_id(&chat_id, "chats");
+    let result =
+        edit_message_db_core(state.surreal_db(), &msg_id, &new_text, &chat_id, &project).await?;
+
+    // Start background agent
+    let tasks_state = app.state::<AgentTasks>();
+    let app2 = app.clone();
+    let chat_id_str = result.chat_id.clone();
+    let assistant_msg_id_str = result.assistant_msg_id.clone();
+
+    let handle = tokio::spawn(async move {
+        run_agent_loop(app2.clone(), project, chat_id_str.clone(), assistant_msg_id_str, new_text, mode_slug).await;
+        let tasks = app2.state::<AgentTasks>();
+        let mut tasks_lock = tasks.0.lock().await;
+        tasks_lock.remove(&chat_id_str);
+    });
+    let mut tasks = tasks_state.0.lock().await;
+    tasks.insert(result.chat_id.clone(), handle);
+
+    Ok(result)
+}
+
+/// Тестируемое ядро `edit_chat_message`: деактивация сиблингов исходного
+/// сообщения и создание новой пары user (с новым текстом) → assistant-заглушка.
+pub async fn edit_message_db_core(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    msg_id: &str,
+    new_text: &str,
+    chat_id: &str,
+    project: &str,
+) -> Result<SendChatResult, String> {
+    let msg_rec = parse_record_id(msg_id, "chat_messages");
+    let proj_rec = parse_record_id(project, "projects");
+    let chat_rec = parse_record_id(chat_id, "chats");
 
     // Fetch the parent_id of the original message
     let mut check = db
@@ -378,14 +419,14 @@ pub async fn edit_chat_message(
     let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
     let new_assistant_rec = parse_record_id(&new_assistant_uuid, "chat_messages");
 
-    let mut query_create = db.query(if is_none {
-        r#"
-        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
+    let has_parent = !is_none;
+
+    let mut query_create = db.query(if has_parent { r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
         CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
         "#
-    } else {
-        r#"
-        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+    } else { r#"
+        CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
         CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
         "#
     });
@@ -403,36 +444,12 @@ pub async fn edit_chat_message(
         .bind(("aid", new_assistant_rec.clone()))
         .bind(("chat", chat_rec.clone()))
         .bind(("proj", proj_rec.clone()))
-        .bind(("content", new_text.clone()))
+        .bind(("content", new_text.to_string()))
         .await
         .map_err(|e| e.to_string())?;
 
-    // Start background agent
-    let project_id_str = project.clone();
-    let assistant_msg_id_str = format!("chat_messages:{}", new_assistant_uuid);
-    let chat_id_str2 = chat_id.clone();
-    let app2 = app.clone();
-
-    let tasks_state = app.state::<AgentTasks>();
-    let handle = tokio::spawn(async move {
-        run_agent_loop(
-            app2.clone(),
-            project_id_str,
-            chat_id.clone(),
-            assistant_msg_id_str,
-            new_text,
-            mode_slug,
-        )
-        .await;
-        let tasks = app2.state::<AgentTasks>();
-        let mut tasks_lock = tasks.0.lock().await;
-        tasks_lock.remove(&chat_id);
-    });
-    let mut tasks = tasks_state.0.lock().await;
-    tasks.insert(chat_id_str2.clone(), handle);
-
     Ok(SendChatResult {
-        chat_id: chat_id_str2,
+        chat_id: chat_id.to_string(),
         assistant_msg_id: format!("chat_messages:{}", new_assistant_uuid),
         user_msg_id: format!("chat_messages:{}", new_user_uuid),
     })
@@ -447,10 +464,43 @@ pub async fn regenerate_chat_message(
     app: tauri::AppHandle,
 ) -> Result<SendChatResult, String> {
     let state = app.state::<AppState>();
-    let db = state.surreal_db();
-    let chat_rec = parse_record_id(&chat_id, "chats");
-    let proj_rec = parse_record_id(&project, "projects");
-    let user_msg_rec = parse_record_id(&parent_msg_id, "chat_messages");
+    let (assistant_uuid, user_text) =
+        regenerate_variant_db_core(state.surreal_db(), &parent_msg_id, &chat_id, &project).await?;
+
+    // Start background agent
+    let tasks_state = app.state::<AgentTasks>();
+    let app2 = app.clone();
+    let chat_id_str = chat_id.clone();
+    let assistant_msg_id_str = format!("chat_messages:{}", assistant_uuid);
+
+    let handle = tokio::spawn(async move {
+        run_agent_loop(app2.clone(), project, chat_id_str.clone(), assistant_msg_id_str, user_text, mode_slug).await;
+        let tasks = app2.state::<AgentTasks>();
+        let mut tasks_lock = tasks.0.lock().await;
+        tasks_lock.remove(&chat_id_str);
+    });
+    let mut tasks = tasks_state.0.lock().await;
+    tasks.insert(chat_id.clone(), handle);
+
+    Ok(SendChatResult {
+        chat_id,
+        assistant_msg_id: format!("chat_messages:{}", assistant_uuid),
+        user_msg_id: "".to_string(),
+    })
+}
+
+/// Тестируемое ядро `regenerate_chat_message`: читает текст родительского
+/// user-сообщения, деактивирует старые assistant-варианты и создаёт новую
+/// заглушку. Возвращает (uuid новой заглушки, текст для генерации).
+pub async fn regenerate_variant_db_core(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    parent_msg_id: &str,
+    chat_id: &str,
+    project: &str,
+) -> Result<(String, String), String> {
+    let _chat_rec = parse_record_id(chat_id, "chats");
+    let proj_rec = parse_record_id(project, "projects");
+    let user_msg_rec = parse_record_id(parent_msg_id, "chat_messages");
 
     // Достать текст запроса из родительского сообщения пользователя
     let mut check_user = db
@@ -488,40 +538,12 @@ pub async fn regenerate_chat_message(
         CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $parent, is_active = true, created_at = time::now();
     "#)
     .bind(("aid", new_assistant_rec.clone()))
-    .bind(("chat", chat_rec.clone()))
-    .bind(("proj", proj_rec.clone()))
+    .bind(("chat", parse_record_id(chat_id, "chats")))
+    .bind(("proj", proj_rec))
     .bind(("parent", user_msg_rec))
     .await.map_err(|e| e.to_string())?;
 
-    // Start background agent
-    let project_id_str = project.clone();
-    let assistant_msg_id_str = format!("chat_messages:{}", new_assistant_uuid);
-    let chat_id_str2 = chat_id.clone();
-    let app2 = app.clone();
-
-    let tasks_state = app.state::<AgentTasks>();
-    let handle = tokio::spawn(async move {
-        run_agent_loop(
-            app2.clone(),
-            project_id_str,
-            chat_id.clone(),
-            assistant_msg_id_str,
-            user_text,
-            mode_slug,
-        )
-        .await;
-        let tasks = app2.state::<AgentTasks>();
-        let mut tasks_lock = tasks.0.lock().await;
-        tasks_lock.remove(&chat_id);
-    });
-    let mut tasks = tasks_state.0.lock().await;
-    tasks.insert(chat_id_str2.clone(), handle);
-
-    Ok(SendChatResult {
-        chat_id: chat_id_str2,
-        assistant_msg_id: format!("chat_messages:{}", new_assistant_uuid),
-        user_msg_id: "".to_string(),
-    })
+    Ok((new_assistant_uuid, user_text))
 }
 
 #[tauri::command]
@@ -529,8 +551,15 @@ pub async fn switch_message_variant(
     msg_id: String,
     state: tauri::State<'_, AppState>,
 ) -> Result<(), String> {
-    let db = state.surreal_db();
-    let msg_rec = parse_record_id(&msg_id, "chat_messages");
+    switch_message_variant_impl(state.surreal_db(), &msg_id).await
+}
+
+/// Тестируемое ядро `switch_message_variant` (без `tauri::State`).
+pub async fn switch_message_variant_impl(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    msg_id: &str,
+) -> Result<(), String> {
+    let msg_rec = parse_record_id(msg_id, "chat_messages");
 
     // Fetch the target parent_id
     let mut check = db
@@ -580,8 +609,15 @@ pub async fn switch_message_variant(
 
 #[tauri::command]
 pub async fn delete_ai_chat(id: String, state: tauri::State<'_, AppState>) -> Result<(), String> {
-    let db = state.surreal_db();
-    let chat_rec = parse_record_id(&id, "chats");
+    delete_ai_chat_impl(state.surreal_db(), &id).await
+}
+
+/// Тестируемое ядро `delete_ai_chat` (без `tauri::State`).
+pub async fn delete_ai_chat_impl(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    id: &str,
+) -> Result<(), String> {
+    let chat_rec = parse_record_id(id, "chats");
 
     // 1. Delete all messages for this chat
     db.query("DELETE chat_messages WHERE chat_id = $chat")

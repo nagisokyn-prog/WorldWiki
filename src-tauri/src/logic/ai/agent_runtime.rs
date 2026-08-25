@@ -33,8 +33,8 @@ pub struct AgentToolEvent {
 
 #[cfg(feature = "ai-local")]
 #[allow(clippy::too_many_arguments)]
-pub async fn run_local_agent_loop(
-    app: AppHandle,
+pub async fn run_local_agent_loop<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     chat_id: String,
     assistant_msg_id: String,

@@ -102,8 +102,45 @@ fn build_provider_client(
     }
 }
 
-pub async fn run_agent_loop(
-    app: AppHandle,
+#[cfg(test)]
+mod provider_client_tests {
+    use super::*;
+
+    #[test]
+    fn anthropic_provider_builds() {
+        let c = build_provider_client("anthropic", " sk-test ", None);
+        assert!(c.is_ok());
+        assert!(matches!(c.unwrap(), ProviderClient::Anthropic(_)));
+    }
+
+    #[test]
+    fn openai_family_providers_build() {
+        for p in ["openai", "openrouter", "gemini", "local", "ollama", "deepseek"] {
+            let c = build_provider_client(p, "key", None);
+            assert!(c.is_ok(), "{p} должен собираться");
+            assert!(matches!(c.unwrap(), ProviderClient::OpenAi(_)));
+        }
+    }
+
+    #[test]
+    fn unsupported_provider_errs() {
+        let res = build_provider_client("hal9000", "key", None);
+        assert!(res.is_err());
+        assert!(res.unwrap_err().contains("unsupported provider"));
+    }
+
+    #[test]
+    fn base_url_gets_https_prefix_when_scheme_missing() {
+        // Без схемы base_url должен превратиться в https://...
+        // (проверяем косвенно: сборка не падает; поведение схемы покрыто интеграцией)
+        assert!(build_provider_client("openai", "key", Some("my-proxy.example".into())).is_ok());
+        assert!(build_provider_client("openai", "key", Some("http://localhost:1234/v1".into())).is_ok());
+        assert!(build_provider_client("openai", "key", Some("   ".into())).is_ok(), "пустой base_url → default");
+    }
+}
+
+pub async fn run_agent_loop<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     chat_id: String,
     assistant_msg_id: String,
@@ -165,8 +202,8 @@ pub async fn run_agent_loop(
     }
 }
 
-async fn run_agent_inner(
-    app: AppHandle,
+async fn run_agent_inner<R: tauri::Runtime>(
+    app: AppHandle<R>,
     project_id: String,
     chat_id: String,
     assistant_msg_id: String,

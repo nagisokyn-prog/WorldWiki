@@ -172,3 +172,157 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
 
     intent
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ---------- parse_roman_numeral ----------
+
+    #[test]
+    fn roman_basic_values() {
+        assert_eq!(parse_roman_numeral("I"), Some(1));
+        assert_eq!(parse_roman_numeral("IV"), Some(4));
+        assert_eq!(parse_roman_numeral("V"), Some(5));
+        assert_eq!(parse_roman_numeral("IX"), Some(9));
+        assert_eq!(parse_roman_numeral("XIX"), Some(19));
+        assert_eq!(parse_roman_numeral("XLII"), Some(42));
+        assert_eq!(parse_roman_numeral("XCIX"), Some(99));
+        assert_eq!(parse_roman_numeral("CDXCIX"), Some(499));
+        assert_eq!(parse_roman_numeral("D"), Some(500));
+    }
+
+    #[test]
+    fn roman_case_and_whitespace_insensitive() {
+        assert_eq!(parse_roman_numeral("iv"), Some(4));
+        assert_eq!(parse_roman_numeral("  xIv "), Some(14));
+        assert_eq!(parse_roman_numeral("mMm"), None, "свыше лимита в 500");
+    }
+
+    #[test]
+    fn roman_invalid_inputs() {
+        assert_eq!(parse_roman_numeral(""), None);
+        assert_eq!(parse_roman_numeral("   "), None);
+        assert_eq!(parse_roman_numeral("ABC"), None);
+        assert_eq!(parse_roman_numeral("12"), None);
+        assert_eq!(parse_roman_numeral("глава"), None);
+        // Аддитивная запись «IIII» парсером принимается как 4 (известное поведение)
+        assert_eq!(parse_roman_numeral("IIII"), Some(4));
+    }
+
+    #[test]
+    fn roman_over_limit_returns_none() {
+        // Лимит парсера — 500 (главы не нумеруются римскими свыше)
+        assert_eq!(parse_roman_numeral("DC"), None);   // 600
+        assert_eq!(parse_roman_numeral("M"), None);     // 1000
+        assert_eq!(parse_roman_numeral("MMMCMXCIX"), None); // 3999
+    }
+
+    // ---------- parse_russian_ordinal (через analyze_user_query) ----------
+
+    #[test]
+    fn russian_ordinals_before_keyword() {
+        let i1 = analyze_user_query("третья глава");
+        assert_eq!(i1.chapter_num, Some(3));
+
+        let i2 = analyze_user_query("первый том");
+        assert_eq!(i2.volume_num, Some(1));
+
+        let i3 = analyze_user_query("вторая арка");
+        assert_eq!(i3.arc_num, Some(2));
+
+        let i4 = analyze_user_query("пятая глава мне интересна");
+        assert_eq!(i4.chapter_num, Some(5));
+    }
+
+    #[test]
+    fn russian_ordinals_after_keyword() {
+        let i1 = analyze_user_query("глава третья");
+        assert_eq!(i1.chapter_num, Some(3));
+        let i2 = analyze_user_query("том второй");
+        assert_eq!(i2.volume_num, Some(2));
+    }
+
+    #[test]
+    fn ordinary_word_is_not_ordinal() {
+        // «перчатки» начинается с «перв»-стема? нет («перча»), но проверим реальный кейс:
+        // слово без совпадения со стемами не даёт число.
+        let intent = analyze_user_query("глава перчаток короля");
+        assert_eq!(intent.chapter_num, None);
+
+        // «пятнышко» содержит стем «пят» → это известное поведение stem-парсера,
+        // документируем его тестом как допустимое совпадение по префиксу.
+        let intent2 = analyze_user_query("глада пятнышко"); // опечатка: ключевого слова нет
+        assert_eq!(intent2.chapter_num, None, "без ключевого слова fallback не срабатывает");
+    }
+
+    // ---------- analyze_user_query ----------
+
+    #[test]
+    fn extracts_chapter_arabic_after_keyword() {
+        let intent = analyze_user_query("расскажи про главу 3");
+        assert_eq!(intent.chapter_num, Some(3));
+        assert!(!intent.is_chitchat);
+    }
+
+    #[test]
+    fn extracts_chapter_roman_after_keyword() {
+        let intent = analyze_user_query("что происходит в главе IV?");
+        assert_eq!(intent.chapter_num, Some(4));
+    }
+
+    #[test]
+    fn extracts_volume_and_arc() {
+        let v = analyze_user_query("события тома 2 очень важны");
+        assert_eq!(v.volume_num, Some(2));
+        assert_eq!(v.chapter_num, None);
+
+        let a = analyze_user_query("акт 3 завершается битвой");
+        assert_eq!(a.arc_num, Some(3));
+    }
+
+    #[test]
+    fn first_reference_wins_when_duplicated() {
+        let intent = analyze_user_query("глава 5 и потом глава 7");
+        assert_eq!(intent.chapter_num, Some(5), "берётся первая найденная глава");
+    }
+
+    #[test]
+    fn chitchat_greeting_detected() {
+        for q in ["привет", "как дела?", "добрый день", "ты тут?", "хай"] {
+            let intent = analyze_user_query(q);
+            assert!(intent.is_chitchat, "ожидается chitchat: {q}");
+        }
+    }
+
+    #[test]
+    fn lore_question_is_not_chitchat_even_with_greeting_word() {
+        let intent = analyze_user_query("привет! расскажи о мире этого романа");
+        assert!(!intent.is_chitchat, "вопрос про лор не должен считаться болтовнёй");
+        assert_eq!(intent.chapter_num, None);
+    }
+
+    #[test]
+    fn chapter_question_with_ordinal_fallback_without_direct_number() {
+        // Ключевое слово есть, но числа рядом нет → standalone ordinal fallback
+        let intent = analyze_user_query("какая глава первая по сюжету?");
+        assert_eq!(intent.chapter_num, Some(1));
+    }
+
+    #[test]
+    fn semantic_query_preserves_trimmed_input() {
+        let intent = analyze_user_query("  кто такой Артур?  ");
+        assert_eq!(intent.semantic_query, "кто такой Артур?");
+        // «кто так…» — лор-маркер, болтовнёй не считается
+        assert!(!intent.is_chitchat);
+    }
+
+    #[test]
+    fn default_intent_for_plain_lore_question() {
+        let intent = analyze_user_query("кто такой Артур?");
+        assert_eq!(intent.chapter_num, None);
+        assert_eq!(intent.volume_num, None);
+        assert_eq!(intent.arc_num, None);
+        assert!(!intent.is_chitchat, "«кто так…» — лор-вопрос");
+    }
+}

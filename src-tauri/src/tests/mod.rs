@@ -12,3 +12,7 @@ pub mod negative_integration;
 pub mod batch_and_connections_integration;
 pub mod chat_integration;
 pub mod export_integration;
+pub mod retrieval_integration;
+pub mod tools_integration;
+pub mod chat_operations_integration;
+//pub mod agent_runner_integration;

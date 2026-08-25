@@ -428,5 +428,134 @@ mod tests {
             "при 10 часах в сутках разница между днями = 600 минут"
         );
     }
+
+    // ---------- Волна 1: границы и property-тесты ----------
+
+    #[test]
+    fn last_minute_of_year_roundtrips() {
+        let cal = gregorian_calendar();
+        // Последняя минута года: 31 декабря 23:59
+        let abs = CalendarMath::get_absolute_minute(&cal, 0, 1999, 11, 31, 23, 59);
+        let (y, m, d, h, mi) = CalendarMath::get_date_from_absolute(abs, &cal, 0);
+        assert_eq!((y, m, d, h, mi), (1999, 11, 31, 23, 59));
+
+        // Первая минута следующего года
+        let next = abs + 1;
+        let (y2, m2, d2, h2, mi2) = CalendarMath::get_date_from_absolute(next, &cal, 0);
+        assert_eq!((y2, m2, d2, h2, mi2), (2000, 0, 1, 0, 0));
+    }
+
+    #[test]
+    fn minute_zero_of_custom_calendar_is_epoch() {
+        let mut cal = gregorian_calendar();
+        cal.time_settings = Some(CalendarSettings {
+            часов_в_сутках: 7,
+            минут_в_часе: 43,
+            секунд_в_минуте: 60,
+            широта: 0.0,
+            учитывать_сезонную_длительность_дня: false,
+        });
+        // Абсолютная минута 0 всегда → начало эпохи независимо от настроек времени
+        let val = convert_absolute_to_local(0, cal.clone(), 0);
+        assert_eq!(val["year"], 1);
+        assert_eq!(val["day"], 1);
+        assert_eq!(val["hour"], 0);
+        assert_eq!(val["minute"], 0);
+
+        // minutes_in_day = 7 * 43 = 301
+        let day1 = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 1, 0, 0);
+        let day2 = CalendarMath::get_absolute_minute(&cal, 0, 1, 0, 2, 0, 0);
+        assert_eq!(day2 - day1, 301);
+    }
+
+    #[test]
+    fn custom_time_last_minute_of_day_boundary() {
+        let mut cal = gregorian_calendar();
+        cal.time_settings = Some(CalendarSettings {
+            часов_в_сутках: 10,
+            минут_в_часе: 50,
+            секунд_в_минуте: 60,
+            широта: 0.0,
+            учитывать_сезонную_длительность_дня: false,
+        });
+        // minutes_in_day = 500; последняя минута суток = 9:49
+        let val = convert_absolute_to_local(499, cal.clone(), 0);
+        assert_eq!(val["hour"], 9);
+        assert_eq!(val["minute"], 49);
+
+        // Следующая минута — уже новый день
+        let val2 = convert_absolute_to_local(500, cal, 0);
+        assert_eq!(val2["hour"], 0);
+        assert_eq!(val2["minute"], 0);
+    }
+
+    #[test]
+    fn negative_year_time_of_day_is_preserved() {
+        // Известная асимметрия: обратный проход по отрицательным годам даёт
+        // off-by-one в номере года (задокументировано), но время суток
+        // считается до обхода годов и потому сохраняется точно.
+        let cal = gregorian_calendar();
+        let abs = CalendarMath::get_absolute_minute(&cal, 0, -5, 2, 10, 3, 30);
+        assert!(abs < 0);
+        let (_, _, _, h, mi) = CalendarMath::get_date_from_absolute(abs, &cal, 0);
+        assert_eq!((h, mi), (3, 30));
+    }
+
+    #[test]
+    fn property_roundtrip_thousands_of_random_minutes() {
+        let cal = gregorian_calendar();
+        // Детерминированный LCG вместо внешнего крейта property-testing
+        let mut state: u64 = 0x9E37_79B9_7F4A_7C15;
+        let max_abs: u64 = 365 * 25 * 24 * 60; // ~25 лет
+
+        for _ in 0..2500 {
+            state = state
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            let abs = 1 + (state % max_abs) as i64;
+
+            let (y, m, d, h, mi) = CalendarMath::get_date_from_absolute(abs, &cal, 0);
+            let back = CalendarMath::get_absolute_minute(&cal, 0, y, m, d, h, mi);
+            assert_eq!(back, abs, "roundtrip сломался на abs={abs} → {y}-{m}-{d} {h}:{mi}");
+        }
+    }
+
+    #[test]
+    fn leap_day_minute_arithmetic_documents_no_custom_rule_behavior() {
+        // Документируем поведение: без custom_leap_rule февраль всегда 28 дней,
+        // поэтому «переполнение» 28.02+1мин уходит в индекс следующего месяца,
+        // а существующий roundtrip-тест (2000-02-29) показывает симметрию этого
+        // представления. Проверяем обе стороны:
+        let cal = gregorian_calendar();
+        let feb28 = CalendarMath::get_absolute_minute(&cal, 0, 2024, 1, 28, 23, 59);
+        let (y, m, d, _, _) = CalendarMath::get_date_from_absolute(feb28 + 1, &cal, 0);
+        assert_eq!((y, m, d), (2024, 2, 1), "без leap-rule за 28.02 идёт месяц с индексом 2");
+
+        // Симметрия: полученная дата конвертируется обратно в ту же минуту
+        let back = CalendarMath::get_absolute_minute(&cal, 0, y, m, d, 0, 0);
+        assert_eq!(back, feb28 + 1);
+
+        // В невисокосном 2023 то же самое
+        let feb28_23 = CalendarMath::get_absolute_minute(&cal, 0, 2023, 1, 28, 23, 59);
+        let r23 = CalendarMath::get_date_from_absolute(feb28_23 + 1, &cal, 0);
+        assert_eq!(r23, (2023, 2, 1, 0, 0));
+    }
+
+    #[test]
+    fn custom_leap_rule_extends_target_month_only_in_leap_years() {
+        let mut cal = gregorian_calendar();
+        cal.custom_leap_rule = Some(CustomLeapRule {
+            месяц: 1,               // второй месяц
+            день_смещения: 1,
+        });
+
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2024), 366);
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2023), 365);
+
+        // Год 1900 по григорианскому правилу НЕ високосный
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 1900), 365);
+        // А 2000 — високосный (делится на 400)
+        assert_eq!(CalendarMath::get_days_in_year(&cal, 2000), 366);
+    }
 }
 

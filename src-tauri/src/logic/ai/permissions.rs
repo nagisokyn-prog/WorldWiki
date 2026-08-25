@@ -195,3 +195,91 @@ pub fn get_tool_permissions_catalog() -> Vec<ToolPermissionConfig> {
         },
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashSet;
+
+    #[test]
+    fn catalog_is_not_empty() {
+        let catalog = get_tool_permissions_catalog();
+        assert!(catalog.len() >= 10, "каталог должен содержать все инструменты");
+    }
+
+    #[test]
+    fn catalog_ids_are_unique() {
+        let catalog = get_tool_permissions_catalog();
+        let ids: HashSet<&str> = catalog.iter().map(|t| t.id.as_str()).collect();
+        assert_eq!(ids.len(), catalog.len(), "дубликаты id инструментов недопустимы");
+    }
+
+    #[test]
+    fn every_entry_has_metadata() {
+        for t in get_tool_permissions_catalog() {
+            assert!(!t.id.is_empty());
+            assert!(!t.name.is_empty(), "{}: имя пустое", t.id);
+            assert!(!t.description.is_empty(), "{}: описание пустое", t.id);
+        }
+    }
+
+    #[test]
+    fn read_tools_are_low_risk_allow_by_default() {
+        for t in get_tool_permissions_catalog() {
+            if matches!(t.category, ToolCategory::Read) {
+                assert!(
+                    matches!(t.risk, RiskLevel::Low),
+                    "{}: читающий инструмент должен быть Low risk",
+                    t.id
+                );
+                assert!(
+                    matches!(t.default_level, PermissionLevel::Allow),
+                    "{}: читающий инструмент должен быть Allow по умолчанию",
+                    t.id
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn edit_tools_ask_by_default_and_system_denied() {
+        for t in get_tool_permissions_catalog() {
+            match t.category {
+                ToolCategory::Edit => {
+                    assert!(
+                        matches!(t.default_level, PermissionLevel::Ask),
+                        "{}: редактирование должно требовать подтверждения",
+                        t.id
+                    );
+                }
+                ToolCategory::System => {
+                    assert!(
+                        matches!(t.default_level, PermissionLevel::Deny),
+                        "{}: системные команды должны быть запрещены по умолчанию",
+                        t.id
+                    );
+                    assert!(matches!(t.risk, RiskLevel::Critical | RiskLevel::High));
+                }
+                _ => {}
+            }
+        }
+    }
+
+    #[test]
+    fn user_level_is_none_for_defaults() {
+        // Каталог — это дефолты; пользовательские переопределения приходят отдельно
+        for t in get_tool_permissions_catalog() {
+            assert!(t.user_level.is_none(), "{}: user_level должен быть None", t.id);
+        }
+    }
+
+    #[test]
+    fn key_rag_tools_present_in_catalog() {
+        let catalog = get_tool_permissions_catalog();
+        let ids: HashSet<&str> = catalog.iter().map(|t| t.id.as_str()).collect();
+        for expected in ["rag_search", "search_entities", "get_entity", "get_relations",
+                         "create_entity", "update_entity", "delete_entity", "update_chapter"] {
+            assert!(ids.contains(expected), "в каталоге отсутствует инструмент {expected}");
+        }
+    }
+}

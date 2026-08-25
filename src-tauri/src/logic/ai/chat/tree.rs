@@ -125,3 +125,83 @@ pub async fn get_message_branch(
 ) -> Result<Vec<Value>, String> {
     get_chat_messages_impl(state.surreal_db(), &chat_id).await
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn msg(id: Value, parent: Option<Value>) -> Value {
+        let mut m = json!({ "id": id, "content": "x" });
+        if let Some(p) = parent {
+            m["parent_id"] = p;
+        }
+        m
+    }
+
+    #[test]
+    fn sanitizes_record_id_objects_to_strings() {
+        let messages = vec![
+            msg(json!({ "tb": "chat_messages", "id": { "String": "m1" } }), None),
+            msg(
+                json!({ "tb": "chat_messages", "id": { "Number": 5 } }),
+                Some(json!({ "tb": "chat_messages", "id": { "String": "m1" } })),
+            ),
+        ];
+
+        let out = sanitize_message_ids(messages);
+        assert_eq!(out[0]["id"], json!("chat_messages:m1"));
+        assert_eq!(out[1]["id"], json!("chat_messages:5"));
+        assert_eq!(out[1]["parent_id"], json!("chat_messages:m1"));
+    }
+
+    #[test]
+    fn cleans_decorated_string_ids() {
+        let messages = vec![msg(
+            json!("⟨chats:root⟩"),
+            Some(json!("`chats:root`")),
+        )];
+        let out = sanitize_message_ids(messages);
+        assert_eq!(out[0]["id"], json!("chats:root"));
+        assert_eq!(out[0]["parent_id"], json!("chats:root"));
+    }
+
+    #[test]
+    fn none_parent_id_is_left_untouched() {
+        // clean_surreal_id(NONE) → None → значение не перезаписывается
+        let messages = vec![msg(json!("chats:a"), Some(json!("NONE")))];
+        let out = sanitize_message_ids(messages);
+        assert_eq!(out[0]["parent_id"], json!("NONE"));
+    }
+
+    #[test]
+    fn null_parent_id_is_left_untouched() {
+        let messages = vec![msg(json!("chats:a"), Some(Value::Null))];
+        let out = sanitize_message_ids(messages);
+        assert_eq!(out[0]["parent_id"], Value::Null);
+    }
+
+    #[test]
+    fn non_object_entries_pass_through() {
+        let messages: Vec<Value> = vec![json!("garbage"), json!(null), json!(42)];
+        let out = sanitize_message_ids(messages);
+        assert_eq!(out.len(), 3);
+        assert_eq!(out[0], json!("garbage"));
+        assert_eq!(out[2], json!(42));
+    }
+
+    #[test]
+    fn other_fields_are_preserved() {
+        let messages = vec![json!({
+            "id": { "tb": "chat_messages", "id": { "String": "m9" } },
+            "content": "привет",
+            "role": "user",
+            "is_active": true
+        })];
+        let out = sanitize_message_ids(messages);
+        assert_eq!(out[0]["content"], json!("привет"));
+        assert_eq!(out[0]["role"], json!("user"));
+        assert_eq!(out[0]["is_active"], json!(true));
+        assert_eq!(out[0]["id"], json!("chat_messages:m9"));
+    }
+}

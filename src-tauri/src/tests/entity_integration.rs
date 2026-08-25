@@ -384,3 +384,286 @@ async fn toggle_entity_history_pin_marks_revision_pinned() {
     let pinned: Option<bool> = res.take(0).expect("take is_pinned");
     assert_eq!(pinned, Some(true), "после toggle ревизия сущности должна быть закреплена");
 }
+
+// =====================================================
+// Волна 2: поиск, связи, схемы связей, каскад схем
+// =====================================================
+
+async fn seed_entity(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    project: &str,
+    entity_type: &str,
+    name: &str,
+    description: Option<&str>,
+) -> Entity {
+    save_entity_inner(db, project, Entity {
+        id: None,
+        project_id: Some(format!("projects:{project}")),
+        entity_type: entity_type.into(),
+        name: name.into(),
+        description: description.map(|d| d.into()),
+        attributes: json!({}),
+        tags: vec![],
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.expect("seed entity should succeed")
+}
+
+#[tokio::test]
+async fn search_entities_finds_by_name_token() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    seed_entity(&db, "p1", "character", "Гарри Поттер", Some("Мальчик, который выжил")).await;
+    seed_entity(&db, "p1", "character", "Поттер Вилли", None).await;
+    seed_entity(&db, "p1", "location", "Хогвартс", None).await;
+
+    let found = search_entities_inner(&db, "p1", "поттер", None)
+        .await
+        .expect("search should succeed");
+
+    assert_eq!(found.len(), 2, "должны найтись оба «Поттера»");
+    let names: Vec<&str> = found.iter().map(|e| e.name.as_str()).collect();
+    assert!(names.contains(&"Гарри Поттер"));
+    assert!(names.contains(&"Поттер Вилли"));
+}
+
+#[tokio::test]
+async fn search_entities_type_filter_restricts_results() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    seed_entity(&db, "p1", "character", "Драконий Всадник", None).await;
+    seed_entity(&db, "p1", "location", "Драконий Хребет", None).await;
+
+    let only_chars = search_entities_inner(&db, "p1", "драконий", Some("character".into()))
+        .await
+        .expect("search with type filter");
+    assert_eq!(only_chars.len(), 1);
+    assert_eq!(only_chars[0].entity_type, "character");
+}
+
+#[tokio::test]
+async fn search_entities_no_match_returns_empty() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    seed_entity(&db, "p1", "character", "Алиса", None).await;
+
+    let found = search_entities_inner(&db, "p1", "крокодил", None)
+        .await
+        .expect("search no match");
+    assert!(found.is_empty(), "несовпадающий запрос → пустой список");
+}
+
+#[tokio::test]
+async fn search_entities_scoped_to_project() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "P1").await;
+    seed_project(&db, "p2", "P2").await;
+
+    seed_entity(&db, "p1", "character", "Борис Общий", None).await;
+    seed_entity(&db, "p2", "character", "Борис Чужой", None).await;
+
+    let p1_only = search_entities_inner(&db, "p1", "борис", None).await.unwrap();
+    assert_eq!(p1_only.len(), 1, "поиск не должен пересекать проекты");
+    assert_eq!(p1_only[0].name, "Борис Общий");
+}
+
+#[tokio::test]
+async fn create_relation_with_attributes_roundtrip() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    let e1 = seed_entity(&db, "p1", "character", "Анна", None).await;
+    let e2 = seed_entity(&db, "p1", "character", "Марк", None).await;
+
+    let rel = create_entity_relation_inner(&db, "p1", e1.id.as_ref().unwrap(), e2.id.as_ref().unwrap(), EntityRel {
+        id: None,
+        r#in: None,
+        out: None,
+        project_id: None,
+        rel_type: "rival".into(),
+        description: Some("Соперники за трон".into()),
+        strength: Some(7),
+        attributes: json!({ "since": "битва при Аргенте" }),
+        start_chapter: None,
+        end_chapter: None,
+        created_at: None,
+    }).await.expect("create relation");
+
+    assert_eq!(rel.rel_type, "rival");
+    assert_eq!(rel.strength, Some(7));
+    assert_eq!(rel.attributes["since"], "битва при Аргенте");
+    assert!(rel.id.is_some(), "RELATE RETURN AFTER должен вернуть id ребра");
+
+    // Roundtrip через get
+    let rels = get_entity_relations_inner(&db, "p1", Some(e1.id.clone().unwrap()))
+        .await
+        .expect("get relations");
+    assert_eq!(rels.len(), 1);
+    assert_eq!(rels[0].description, Some("Соперники за трон".into()));
+}
+
+#[tokio::test]
+async fn self_relation_is_currently_allowed_documented() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    let e1 = seed_entity(&db, "p1", "character", "Нарцисс", None).await;
+    let id = e1.id.unwrap();
+
+    // Документируем текущее поведение: валидации self-relation НЕТ,
+    // RELATE с from == to проходит успешно (известное ограничение).
+    let res = create_entity_relation_inner(&db, "p1", &id, &id, EntityRel {
+        id: None, r#in: None, out: None, project_id: None,
+        rel_type: "mirror".into(),
+        description: None, strength: None, attributes: json!({}),
+        start_chapter: None, end_chapter: None, created_at: None,
+    }).await;
+
+    assert!(res.is_ok(), "self-relation сейчас разрешена (задокументировано)");
+}
+
+#[tokio::test]
+async fn delete_relation_is_idempotent_on_missing() {
+    let db = create_test_db().await;
+
+    // Удаление несуществующей связи → Ok без ошибки
+    delete_entity_relation_inner(&db, "entity_rel:no_such_rel")
+        .await
+        .expect("delete missing relation should be Ok");
+}
+
+#[tokio::test]
+async fn relations_are_scoped_by_entity_and_project() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "P1").await;
+    seed_project(&db, "p2", "P2").await;
+
+    let a1 = seed_entity(&db, "p1", "character", "A1", None).await;
+    let a2 = seed_entity(&db, "p1", "character", "A2", None).await;
+    let b1 = seed_entity(&db, "p2", "character", "B1", None).await;
+    let b2 = seed_entity(&db, "p2", "character", "B2", None).await;
+
+    let mk = |rt: &str| EntityRel {
+        id: None, r#in: None, out: None, project_id: None,
+        rel_type: rt.into(), description: None, strength: None,
+        attributes: json!({}), start_chapter: None, end_chapter: None, created_at: None,
+    };
+
+    create_entity_relation_inner(&db, "p1", a1.id.as_ref().unwrap(), a2.id.as_ref().unwrap(), mk("ally"))
+        .await.expect("rel p1");
+    create_entity_relation_inner(&db, "p2", b1.id.as_ref().unwrap(), b2.id.as_ref().unwrap(), mk("enemy"))
+        .await.expect("rel p2");
+
+    // Фильтр по сущности
+    let for_a1 = get_entity_relations_inner(&db, "p1", Some(a1.id.clone().unwrap())).await.unwrap();
+    assert_eq!(for_a1.len(), 1);
+    assert_eq!(for_a1[0].rel_type, "ally");
+
+    // Без фильтра — все связи проекта
+    let all_p1 = get_entity_relations_inner(&db, "p1", None).await.unwrap();
+    assert_eq!(all_p1.len(), 1, "связи p2 не должны попадать в p1");
+    assert_eq!(all_p1[0].rel_type, "ally");
+}
+
+#[tokio::test]
+async fn relation_schemas_get_roundtrip_from_raw_rows() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    // save_relation_schema — tauri command (без _inner), поэтому вставляем сырую строку
+    // и проверяем десериализацию через тестируемое ядро get_relation_schemas_inner.
+    db.query(
+        "CREATE relation_schemas SET \
+         project_id = type::record('projects', 'p1'), rel_key = 'mentor', rel_name = 'Наставник', \
+         icon = 'graduation', color = '#00ff00', directed = true, \
+         from_types = ['character'], to_types = ['character']",
+    ).await.expect("insert raw relation schema");
+
+    let schemas = get_relation_schemas_inner(&db, "p1").await.expect("get relation schemas");
+    assert_eq!(schemas.len(), 1);
+    assert_eq!(schemas[0].rel_key, "mentor");
+    assert_eq!(schemas[0].rel_name, "Наставник");
+    assert!(schemas[0].directed);
+    assert_eq!(schemas[0].from_types, vec!["character".to_string()]);
+}
+
+#[tokio::test]
+async fn delete_entity_schema_cascades_entities_of_type() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    save_entity_schema_inner(&db, "p1", EntitySchema {
+        id: None,
+        project_id: Some("projects:p1".into()),
+        type_key: "creature".into(),
+        type_name: "Существо".into(),
+        icon: "paw".into(),
+        color: "#00aa00".into(),
+        fields_schema: vec![],
+        full_schema: None,
+        created_at: None,
+    }, None).await.expect("save schema");
+
+    let dragon = seed_entity(&db, "p1", "creature", "Дракон", None).await;
+    let goblin = seed_entity(&db, "p1", "creature", "Гоблин", None).await;
+    let hero = seed_entity(&db, "p1", "character", "Герой", None).await;
+
+    create_entity_relation_inner(&db, "p1", dragon.id.as_ref().unwrap(), goblin.id.as_ref().unwrap(), EntityRel {
+        id: None, r#in: None, out: None, project_id: None,
+        rel_type: "hunts".into(), description: None, strength: None,
+        attributes: json!({}), start_chapter: None, end_chapter: None, created_at: None,
+    }).await.expect("relation between creatures");
+
+    delete_entity_schema_inner(&db, "p1", "creature").await.expect("delete schema");
+
+    let dragons = get_entity_inner(&db, dragon.id.as_ref().unwrap()).await.unwrap();
+    let goblins = get_entity_inner(&db, goblin.id.as_ref().unwrap()).await.unwrap();
+    assert!(dragons.is_none(), "сущности удаляемого типа должны удалиться каскадом");
+    assert!(goblins.is_none());
+
+    let heroes = get_entity_inner(&db, hero.id.as_ref().unwrap()).await.unwrap();
+    assert!(heroes.is_some(), "сущности других типов не задеты");
+
+    let schemas = get_entity_schemas_inner(&db, "p1").await.unwrap();
+    assert!(schemas.iter().all(|s| s.type_key != "creature"), "схема должна исчезнуть");
+}
+
+#[tokio::test]
+async fn update_entity_omitted_fields_are_preserved() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1", "Project 1").await;
+
+    let full = seed_entity(
+        &db, "p1", "character",
+        "Полное описание",
+        Some("Изначальное описание"),
+    ).await;
+    let id = full.id.unwrap();
+
+    // Обновляем ТОЛЬКО имя: description/tags в payload отсутствуют/пусты
+    let renamed = save_entity_inner(&db, "p1", Entity {
+        id: Some(id.clone()),
+        project_id: Some("projects:p1".into()),
+        entity_type: "character".into(),
+        name: "Переименованный".into(),
+        description: None,      // опущено → не должно затереть старое
+        attributes: json!({}),
+        tags: vec![],           // пустой → не трогаем
+        embeddings: None,
+        created_at: None,
+        updated_at: None,
+    }).await.expect("update entity");
+
+    assert_eq!(renamed.name, "Переименованный");
+
+    let fetched = get_entity_inner(&db, &id).await.unwrap().unwrap();
+    assert_eq!(
+        fetched.description,
+        Some("Изначальное описание".into()),
+        "опущенное поле description должно сохраниться (частичный UPDATE)"
+    );
+}

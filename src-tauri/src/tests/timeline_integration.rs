@@ -254,3 +254,65 @@ async fn toggle_chapter_history_pin_marks_revision_pinned() {
     let pinned: Option<bool> = res.take(0).expect("take is_pinned");
     assert_eq!(pinned, Some(true), "после toggle ревизия должна быть закреплена");
 }
+
+#[tokio::test]
+async fn timeline_duplicate_chapter_ids_updates_same_row_twice() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    db.query("CREATE chapters:ch_dup SET project_id = type::record('projects','p1'), title = 'Дубль', content = ''")
+        .await
+        .expect("create chapter");
+
+    // Два элемента с ОДИНАКОВЫМ chapter_id: оба UPDATE бьют в одну главу.
+    let data = json!([
+        { "chapter_id": "chapters:ch_dup", "chapter_title": "Дубль",
+          "events": [ { "date": {"year": 100}, "title": "Первое" } ], "participants": [] },
+        { "chapter_id": "chapters:ch_dup", "chapter_title": "Дубль",
+          "events": [ { "date": {"year": 200}, "title": "Второе" } ], "participants": [] }
+    ]);
+    let res = Chapter::save_global_timeline_inner(&db, "p1", data)
+        .await
+        .expect("timeline with duplicates should succeed");
+    assert_eq!(res["updated"], 2, "формально обработано 2 элемента");
+
+    // Итоговое состояние главы — последний wins
+    let chapters = Chapter::find_all(&db, "projects:p1").await.unwrap();
+    assert_eq!(chapters.len(), 1);
+    let ev = chapters[0].timeline_events.as_ref().unwrap().as_array().unwrap();
+    assert_eq!(ev.len(), 1, "последний элемент перезаписывает events");
+    assert_eq!(ev[0]["title"], "Второе");
+
+    // Каждый UPDATE логирует ревизию → их должно быть две
+    let revisions = get_chapter_revisions_inner(&db, "p1", "chapters:ch_dup")
+        .await
+        .expect("get revisions");
+    assert_eq!(revisions.len(), 2, "два UPDATE → два снапшота");
+}
+
+#[tokio::test]
+async fn multiple_revisions_ordered_desc_with_before_content() {
+    let db = create_test_db().await;
+    seed_project(&db, "p1").await;
+
+    db.query("CREATE chapters:ch_hist SET project_id = type::record('projects','p1'), title = 'v1', content = 'текст-1'")
+        .await
+        .expect("create chapter");
+
+    for v in ["текст-2", "текст-3", "текст-4"] {
+        db.query(format!("UPDATE chapters:ch_hist SET content = '{v}'"))
+            .await
+            .expect("update chapter");
+    }
+
+    let revisions = get_chapter_revisions_inner(&db, "p1", "chapters:ch_hist")
+        .await
+        .expect("get revisions");
+
+    assert_eq!(revisions.len(), 3, "3 UPDATE → 3 ревизии");
+    // По убыванию времени: самая первая ревизия хранит самое старое состояние (v1),
+    // но идут они от последнего изменения к первому.
+    assert_eq!(revisions[0]["content"]["content"], "текст-3", "первая в списке — предпоследнее состояние");
+    assert_eq!(revisions[1]["content"]["content"], "текст-2");
+    assert_eq!(revisions[2]["content"]["content"], "текст-1", "последняя — исходное состояние ($before)");
+}

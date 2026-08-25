@@ -313,3 +313,81 @@ pub fn shutdown_local_models() {
     states.clear();
     println!("[AI Manager] Все локальные модели успешно выгружены.");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::logic::ai::types::ModelLifecycleState;
+
+    // ---------- format_friendly_model_name ----------
+
+    #[test]
+    fn friendly_names_known_families() {
+        assert_eq!(
+            format_friendly_model_name("Nemotron-3-embed-1b.Q4_K_M.gguf"),
+            "Эмбеддер Nemotron-3 (Лор-поиск)"
+        );
+        assert_eq!(
+            format_friendly_model_name("Qwen2.5-7B-Instruct-Q4_K_M.gguf").to_lowercase(),
+            "универсальный писатель qwen 2.5 (7b)".to_lowercase()
+        );
+        assert_eq!(
+            format_friendly_model_name("Qwen2.5-14B-Instruct-Q8_0.gguf").to_lowercase(),
+            "глубокий писатель qwen 2.5 (14b)".to_lowercase()
+        );
+        assert_eq!(
+            format_friendly_model_name("Qwen2.5-3B-Instruct.gguf").to_lowercase(),
+            "быстрый ассистент qwen 2.5 (3b)".to_lowercase()
+        );
+        assert_eq!(
+            format_friendly_model_name("saiga-qwen-v2.gguf").to_lowercase(),
+            "сайга (творческий стиль)".to_lowercase()
+        );
+    }
+
+    #[test]
+    fn unknown_model_keeps_filename_without_gguf_ext() {
+        assert_eq!(
+            format_friendly_model_name("Mistral-7B-Q5.gguf"),
+            "Mistral-7B-Q5"
+        );
+        assert_eq!(format_friendly_model_name("plain"), "plain");
+    }
+
+    #[test]
+    fn embed_marker_takes_priority_over_family() {
+        // nemotron+embed проверяется первой веткой
+        assert!(format_friendly_model_name("nemotron.embed.gguf").contains("Эмбеддер"));
+    }
+
+    // ---------- set_model_lifecycle_state ----------
+
+    #[test]
+    fn lifecycle_state_set_and_overwritten() {
+        let name = "test-model-lifecycle.gguf";
+
+        set_model_lifecycle_state(name, ModelLifecycleState::Loading);
+        {
+            let states = get_states_map().lock().unwrap();
+            assert!(matches!(states.get(name), Some(ModelLifecycleState::Loading)));
+        }
+
+        // Переход loading → ready
+        set_model_lifecycle_state(name, ModelLifecycleState::Ready);
+        {
+            let states = get_states_map().lock().unwrap();
+            assert!(matches!(states.get(name), Some(ModelLifecycleState::Ready)));
+        }
+
+        // Переход ready → unloading → installed
+        set_model_lifecycle_state(name, ModelLifecycleState::Unloading);
+        set_model_lifecycle_state(name, ModelLifecycleState::Installed);
+        {
+            let states = get_states_map().lock().unwrap();
+            assert!(matches!(states.get(name), Some(ModelLifecycleState::Installed)));
+        }
+
+        // Убираем за собой, чтобы не влиять на другие тесты
+        get_states_map().lock().unwrap().remove(name);
+    }
+}

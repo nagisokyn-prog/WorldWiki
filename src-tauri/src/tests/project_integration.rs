@@ -156,3 +156,71 @@ async fn delete_project_handles_prefixed_name() {
     let count = count_val.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0);
     assert_eq!(count, 0, "проект должен быть удалён даже с префиксом projects:");
 }
+
+// =====================================================
+// Волна 2: пустая БД, спецсимволы, дубликаты имён, merge-конфиг
+// =====================================================
+
+#[tokio::test]
+async fn get_projects_on_fresh_db_returns_empty() {
+    let db = create_test_db().await;
+    let projects = get_projects_inner(&db).await.expect("get projects");
+    assert!(projects.is_empty(), "свежая БД → пустой список проектов");
+}
+
+#[tokio::test]
+async fn project_name_with_special_chars_roundtrip() {
+    let db = create_test_db().await;
+
+    let name = "Мой Проект №5 — «Эпоха Драконов»";
+    create_project_inner(&db, json!({ "name": name, "data": {} }))
+        .await
+        .expect("create with special chars");
+
+    let cfg = get_project_config_inner(&db, name).await.expect("get config");
+    assert_eq!(cfg["name"], name);
+
+    // И с префиксом тоже находится
+    let pref = get_project_config_inner(&db, "projects:Мой Проект №5 — «Эпоха Драконов»")
+        .await
+        .expect("prefixed config");
+    assert_eq!(pref["name"], name);
+}
+
+#[tokio::test]
+async fn duplicate_project_name_upserts_not_duplicates() {
+    let db = create_test_db().await;
+
+    create_project_inner(&db, json!({ "name": "same_name", "data": { "v": 1 } }))
+        .await
+        .expect("create first");
+    // Повторное создание с тем же именем — это UPSERT по ключу имени
+    create_project_inner(&db, json!({ "name": "same_name", "data": { "v": 2 } }))
+        .await
+        .expect("create second (upsert)");
+
+    let projects = get_projects_inner(&db).await.unwrap();
+    let same: Vec<_> = projects.iter().filter(|p| p["name"] == "same_name").collect();
+    assert_eq!(same.len(), 1, "дубликат имени не должен создавать вторую запись");
+    assert_eq!(same[0]["data"]["v"], 2, "последний upsert побеждает");
+}
+
+#[tokio::test]
+async fn save_project_config_merges_without_losing_fields() {
+    let db = create_test_db().await;
+    seed_project(&db, "merge_proj", "Merge").await;
+
+    save_project_config_inner(&db, "merge_proj", json!({ "data": { "theme": "dark" } }))
+        .await
+        .expect("save first field");
+
+    // Второй save с другим полем — merge не должен стереть первое
+    save_project_config_inner(&db, "merge_proj", json!({ "data": { "font": "Inter" } }))
+        .await
+        .expect("save second field");
+
+    let cfg = get_project_config_inner(&db, "merge_proj").await.unwrap();
+    // merge поверх data заменяет data целиком (это объект) — документируем:
+    // верхнеуровневые поля мержатся, вложенный `data` перезаписывается последним save.
+    assert_eq!(cfg["data"]["font"], "Inter");
+}

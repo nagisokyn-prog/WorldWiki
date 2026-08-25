@@ -157,6 +157,81 @@ fn detect_quant_from_filename(filename: &str) -> String {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn detects_standard_quants() {
+        assert_eq!(detect_quant_from_filename("model-Q4_K_M.gguf"), "Q4_K_M");
+        assert_eq!(detect_quant_from_filename("model-Q4_K_S.gguf"), "Q4_K_S");
+        assert_eq!(detect_quant_from_filename("model-Q5_K_M.gguf"), "Q5_K_M");
+        assert_eq!(detect_quant_from_filename("model-q8_0.gguf"), "Q8_0");
+    }
+
+    #[test]
+    fn case_insensitive() {
+        assert_eq!(detect_quant_from_filename("MODEL-q4_k_m.GGUF"), "Q4_K_M");
+        assert_eq!(detect_quant_from_filename("QwEn-Q8_0-Instruct.gguf"), "Q8_0");
+    }
+
+    #[test]
+    fn detects_turboquant_family() {
+        assert_eq!(detect_quant_from_filename("nemotron-TURBO3_TCQ.gguf"), "TCQ (2.25-bit)");
+        assert_eq!(detect_quant_from_filename("x_TCQ_y.gguf"), "TCQ (2.25-bit)");
+        assert_eq!(detect_quant_from_filename("qwen-TURBO2.gguf"), "TurboQuant 2-bit");
+        assert_eq!(detect_quant_from_filename("qwen-TQ1.gguf"), "TurboQuant 2-bit");
+        assert_eq!(detect_quant_from_filename("qwen-TURBO3.gguf"), "TurboQuant 3-bit");
+        assert_eq!(detect_quant_from_filename("qwen-TURBO4.gguf"), "TurboQuant 4-bit");
+        assert_eq!(detect_quant_from_filename("qwen-TQ2.gguf"), "TurboQuant 4-bit");
+    }
+
+    #[test]
+    fn tcq_has_priority_over_other_turbo_marks() {
+        // TCQ проверяется первым даже при наличии TURBO3 в имени
+        assert_eq!(
+            detect_quant_from_filename("TURBO3_TCQ_final.gguf"),
+            "TCQ (2.25-bit)"
+        );
+    }
+
+    #[test]
+    fn detects_half_precision() {
+        assert_eq!(detect_quant_from_filename("model-BF16.gguf"), "F16");
+        assert_eq!(detect_quant_from_filename("model-f16.gguf"), "F16");
+    }
+
+    #[test]
+    fn unknown_quant_defaults_to_gguf() {
+        assert_eq!(detect_quant_from_filename("plain-model.gguf"), "GGUF");
+        assert_eq!(detect_quant_from_filename(""), "GGUF");
+        assert_eq!(detect_quant_from_filename("IQ2_XS.gguf"), "GGUF", "несписочный квант → default");
+    }
+
+    #[test]
+    fn hf_model_card_parsing_shape() {
+        // Проверяем, что DTO-структуры сериализуемы туда-обратно (используются фронтом)
+        let card = HfModelCard {
+            id: "author/model".into(),
+            author: Some("author".into()),
+            name: "model".into(),
+            downloads: 10,
+            likes: 2,
+            tags: vec!["gguf".into()],
+            gguf_files: vec![GgufFileInfo {
+                filename: "m.Q4_K_M.gguf".into(),
+                size_bytes: 123,
+                size_gb: 0.1,
+                quantization: detect_quant_from_filename("m.Q4_K_M.gguf"),
+            }],
+        };
+        let json = serde_json::to_string(&card).expect("serialize");
+        let back: HfModelCard = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(back.id, "author/model");
+        assert_eq!(back.gguf_files[0].quantization, "Q4_K_M");
+    }
+}
+
 /// Download a GGUF model file directly into local models directory with streaming progress
 #[tauri::command]
 pub async fn download_hf_model(

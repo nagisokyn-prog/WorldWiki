@@ -122,3 +122,67 @@ pub fn normalize_l2(vec: &mut [f32]) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn norm(v: &[f32]) -> f32 {
+        v.iter().map(|x| x * x).sum::<f32>().sqrt()
+    }
+
+    #[test]
+    fn zero_vector_stays_zero_without_nan() {
+        let mut v = vec![0.0f32; 8];
+        normalize_l2(&mut v);
+        assert!(v.iter().all(|&x| x == 0.0));
+        assert!(v.iter().all(|x| x.is_finite()), "не должно быть NaN/inf");
+    }
+
+    #[test]
+    fn known_vector_normalized() {
+        let mut v = vec![3.0f32, 4.0];
+        normalize_l2(&mut v);
+        assert!((v[0] - 0.6).abs() < 1e-6);
+        assert!((v[1] - 0.8).abs() < 1e-6);
+        assert!((norm(&v) - 1.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn unit_length_after_normalization() {
+        for seed in 0..20u32 {
+            let mut v: Vec<f32> = (0..64)
+                .map(|i| ((seed * 31 + i * 7) % 13) as f32 - 6.0)
+                .collect();
+            normalize_l2(&mut v);
+            assert!(
+                (norm(&v) - 1.0).abs() < 1e-5,
+                "после L2-нормы длина должна быть 1 (seed={seed})"
+            );
+        }
+    }
+
+    #[test]
+    fn negative_components_handled() {
+        let mut v = vec![-3.0f32, 4.0];
+        normalize_l2(&mut v);
+        assert!((v[0] + 0.6).abs() < 1e-6, "знак сохраняется");
+        assert!((v[1] - 0.8).abs() < 1e-6);
+    }
+
+    #[test]
+    fn empty_slice_is_noop() {
+        let mut v: Vec<f32> = Vec::new();
+        normalize_l2(&mut v);
+        assert!(v.is_empty());
+    }
+
+    #[test]
+    fn tiny_values_below_epsilon_are_left_alone() {
+        // Норма ниже 1e-12 — вектор не трогаем (защита от деления на ноль)
+        let tiny = 1e-20f32;
+        let mut v = vec![tiny, tiny];
+        normalize_l2(&mut v);
+        assert_eq!(v, vec![tiny, tiny]);
+    }
+}

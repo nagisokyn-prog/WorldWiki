@@ -285,3 +285,118 @@ pub fn get_recommended_local_models() -> Vec<RecommendedModelCard> {
         },
     ]
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ---------- calculate_quantization_estimates ----------
+
+    #[test]
+    fn returns_all_five_quant_variants_in_order() {
+        let est = calculate_quantization_estimates(7.0, Some(8192));
+        let names: Vec<&str> = est.iter().map(|e| e.quant_name.as_str()).collect();
+        assert_eq!(names, vec!["Q8_0", "Q6_K", "Q5_K_M", "Q4_K_M", "Q3_K_M"]);
+    }
+
+    #[test]
+    fn default_context_is_8k() {
+        let with_none = calculate_quantization_estimates(7.0, None);
+        let explicit = calculate_quantization_estimates(7.0, Some(8192));
+        assert_eq!(
+            with_none.iter().map(|e| e.estimated_vram_gb).collect::<Vec<_>>(),
+            explicit.iter().map(|e| e.estimated_vram_gb).collect::<Vec<_>>(),
+            "None должен быть эквивалентен 8192 токенов контекста"
+        );
+    }
+
+    #[test]
+    fn estimates_are_monotonically_decreasing_by_quant() {
+        let est = calculate_quantization_estimates(14.0, Some(16384));
+        for w in est.windows(2) {
+            assert!(
+                w[0].estimated_vram_gb >= w[1].estimated_vram_gb,
+                "Q8_0 должен требовать не меньше VRAM, чем Q6_K и т.д."
+            );
+            assert!(
+                w[0].size_gb >= w[1].size_gb,
+                "размер весов тоже монотонно убывает"
+            );
+        }
+    }
+
+    #[test]
+    fn larger_context_needs_more_vram() {
+        let small = calculate_quantization_estimates(7.0, Some(2048));
+        let large = calculate_quantization_estimates(7.0, Some(32768));
+        for (s, l) in small.iter().zip(large.iter()) {
+            assert!(
+                l.estimated_vram_gb >= s.estimated_vram_gb,
+                "больший контекст → не меньше VRAM ({})", s.quant_name
+            );
+        }
+    }
+
+    #[test]
+    fn status_values_are_valid_and_at_most_one_recommended() {
+        let est = calculate_quantization_estimates(30.0, Some(8192));
+        for e in &est {
+            assert!(
+                matches!(e.status.as_str(), "ok" | "warning" | "exceeds"),
+                "невалидный статус: {}", e.status
+            );
+            assert!(e.estimated_vram_gb > 0.0);
+            assert!(e.size_gb > 0.0);
+        }
+        let recommended_count = est.iter().filter(|e| e.is_recommended).count();
+        assert!(recommended_count <= 1, "рекомендация максимум одна");
+    }
+
+    #[test]
+    fn tiny_model_gets_recommended_top_quality() {
+        // 0.1B параметров помещается в любую VRAM → самый качественный квант рекомендован
+        let est = calculate_quantization_estimates(0.1, Some(512));
+        assert!(est[0].is_recommended, "Q8_0 для крошечной модели должен быть ok+recommended");
+        assert_eq!(est[0].status, "ok");
+    }
+
+    // ---------- get_hardware_info / get_recommended_local_models ----------
+
+    #[test]
+    fn hardware_info_smoke_no_panic_sane_values() {
+        let hw = get_hardware_info();
+        assert!(hw.total_ram_gb > 0.0, "RAM должна определяться положительной");
+        assert!(hw.free_ram_gb >= 0.0 && hw.free_ram_gb <= hw.total_ram_gb);
+        if hw.is_gpu_available {
+            assert!(hw.total_vram_gb >= 0.0);
+            assert!(!hw.gpu_name.is_empty(), "GPU доступен, но имя пустое");
+        }
+    }
+
+    #[test]
+    fn recommended_models_catalog_is_consistent() {
+        let models = get_recommended_local_models();
+        assert!(models.len() >= 4, "каталог не пуст");
+
+        let mut ids: Vec<&str> = models.iter().map(|m| m.id.as_str()).collect();
+        ids.sort();
+        ids.dedup();
+        assert_eq!(ids.len(), models.len(), "id уникальны");
+
+        for m in &models {
+            assert!(m.filename.to_lowercase().ends_with(".gguf"), "файл модели .gguf: {}", m.filename);
+            assert!(m.size_gb > 0.0);
+            assert!(!m.name.is_empty());
+            assert!(!m.repo_id.is_empty());
+            assert!(!m.recommended_quant.is_empty());
+            assert!(m.is_commercial_allowed, "в каталоге только commercial-ok модели");
+            assert!(!m.tags.is_empty());
+        }
+
+        // Есть эмбеддер для Auto-RAG
+        assert!(
+            models.iter().any(|m| m.id.contains("embed") || m.filename.contains("embed")),
+            "в каталоге должен быть embedding-модели"
+        );
+    }
+}

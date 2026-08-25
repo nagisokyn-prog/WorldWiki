@@ -1,0 +1,45 @@
+﻿use claw_api::{
+    AnthropicClient, AuthSource, ContentBlockDelta, ContentBlockDeltaEvent, ContentBlockStartEvent,
+    InputContentBlock, InputMessage, MessageRequest, OpenAiCompatClient, OpenAiCompatConfig,
+    OutputContentBlock, ProviderClient, StreamEvent,
+};
+use serde::Serialize;
+use serde_json::{json, Value};
+use surreal_domain::SurrealDb as _;
+use surrealdb::engine::local::Db;
+use surrealdb::types::RecordId;
+use surrealdb::Surreal;
+use tauri::{AppHandle, Emitter, Manager};
+
+use super::prompt::{
+    build_system_prompt_with_context, history_to_input_messages,
+    DEFAULT_MAX_TOKENS, MAX_AGENT_ITERATIONS,
+};
+use crate::logic::ai::chat::tree::get_chat_messages_impl;
+use crate::logic::ai::retrieval::RetrievalRouter;
+use crate::logic::ai::tools::WorldWikiTools;
+use crate::AppState;
+
+#[derive(Clone, Serialize)]
+pub struct StreamChunk {
+    pub chat_id: String,
+    pub message_id: String,
+    pub text: String,
+    pub is_done: bool,
+    pub chunk_type: String,
+}
+
+#[derive(Clone, Serialize)]
+pub struct AgentToolEvent {
+    pub chat_id: String,
+    pub message_id: String,
+    pub tool_name: String,
+    pub tool_args: Value,
+}
+
+struct ToolAssembler {
+    id: String,
+    name: String,
+    input_buf: String,
+}
+

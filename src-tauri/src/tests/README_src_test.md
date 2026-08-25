@@ -374,30 +374,33 @@ roundtrip, негатив: missing file → «does not exist», zip без `data
 ---
 
 
-| Файл | Line | Почему 0 % / слабо | Как покрыть |
-|---|---|---|---|
-| `lib.rs` | 0.00 % | тесты вызывают `_inner` напрямую, минуя `run()`/`invoke_handler` | e2e‑тест через `#[tauri::test]` либо unit‑тест `run()` с mock‑runtime |
-| `main.rs` | 0.00 % | `main()` стартует Tauri‑приложение; в `cfg(test)` нет unit‑тестов | покрывается E2E/сценариями запуска |
-| `logic/schema.rs` | 0.00 % | DDL применяется raw‑SQL из `common.rs`, а не через runtime‑миграции | добавить тест, который вызывает `apply_schema`/мigrator из `schema.rs` (если он существует) |
-| `logic/ai/agent/runner.rs` | 0.00 % | стрим + tool‑use цикл требует LLM‑ответов; пока нет mock‑провайдера в тестовом пути | `mock-anthropic-service` (уже в dev‑deps) → `build_provider_client`‑тест с `mockito`‑подобным stub; покрыть `run_agent_loop` до 8 итераций + `cancel_generation` |
-| `logic/ai/providers/fetch.rs` | 0.00 % | `fetch_ai_models` не вызывается | тест с stub‑HTTP (mockito/wiremock) для `idx_entity_emb_*`‑provider‑catalog |
-| `logic/export.rs` | 34.26 % | покрыты 8 из 72 fn | дописать Yandex‑disk flow (oauth token exchange) + `convert_absolute_to_local` |
-| `logic/entities.rs` | 57.70 % | большой файл (915 line); слабы редкие ветки `get_entity_relations`‑scopes | дополнить `negative`/`entity` кейсами на edge‑relations |
-| `logic/ai/chat/operations.rs` | 16.60 % | покрыты 3 из 61 fn | добавить тесты на `send_chat_message_impl` с mock‑LLM + `cancel_generation`/`regenerate`/`edit`/`delete` |
-| `logic/ai/tools/mod.rs` | 36.38 % | покрыто 7 из 19 инструментов | добавить тесты для `update_chapter`, `delete_entity`, `list_entities`, `update_entity`, `get_entity_schemas`, `save_relation_schema`, `get_ai_profile`/settings |
+| Файл | Line | Почему 0 % / слабо *(на 2026-08-19)* | Как покрыть | Статус 2026-08-26 |
+|---|---|---|---|---|
+| `lib.rs` | 0→**12.5%** func | тесты вызывают `_inner` напрямую, минуя `run()`/`invoke_handler` | e2e‑тест через `#[tauri::test]` либо unit‑тест `run()` с mock‑runtime | 🔶 частично: init_database задет pipeline-тестом |
+| `main.rs` | 0.00 % | `main()` стартует Tauri‑приложение; в `cfg(test)` нет unit‑тестов | покрывается E2E/сценариями запуска | ⬜ принятое исключение |
+| `logic/schema.rs` | 0.00 % | DDL применяется raw‑SQL из `common.rs` | тест на runtime‑миграцию | ⬜ исключение |
+| `logic/ai/agent/runner.rs` | 0→**37.1%** line / **25.7%** func | стрим + tool-use требует LLM-ответов | mock-провайдер + полный цикл | ✅ **закрыто**: `tests/agent_pipeline.rs` (mock OpenAI SSE, фича `agent-pipeline`); остаток = tool-use ветки и local-LLM путь |
+| `logic/ai/providers/fetch.rs` | 0→**84.8%** line / 60.4% func | `fetch_ai_models` не вызывался | stub-HTTP для каталогов моделей | ✅ **закрыто**: `fetch_ai_models_inner` + мок-сервер (7 inline-тестов) |
+| `logic/export.rs` | 34→**85.4%** line (mod) | покрыты 8 из 72 fn | Yandex flow + restore | 🔶 логика покрыта; Yandex-команды изолированы в `commands.rs`, мок-тесты OAuth — волна 4в |
+| `logic/entities.rs` | 57.7→**79.4%** line (mod) | большой файл; слабы edge-relations | negative/entity кейсы | 🔶 резня выполнена; edge-кейсы частично (self-relation задокументирована) |
+| `logic/ai/chat/operations.rs` | 16.6→**87.1%** line (mod) | покрыты 3 из 61 fn | send/cancel/regenerate/edit/delete | ✅ **в основном закрыто**: 13 тестов на все `_db_core` ядра; spawn-обёртки остались в IPC |
+| `logic/ai/tools/mod.rs` | 36.4→**94.7%** line / 65.1% func | 7 из 19 инструментов | недостающие тулы | ✅ **закрыто**: 17 интеграционных тестов на диспетчер и все тулы |
 
 ---
 
-## Рекомендации по росту покрытий (для ТЗ / roadmap)
+## Рекомендации по росту покрытий (roadmap от 2026-08-19 → статус)
 
-1. **AI‑pipeline (самый большой просвет):** подключить `mock-anthropic-service`
-   (уже в `dev-dependencies`) в `ai_integration.rs`/`chat_integration.rs`, чтобы покрыть
-   `run_agent_loop`, `send_chat_message_impl`, `cancel_generation` и `fetch_ai_models`.
-   Целевой порог: `runner.rs` ≥ 70 %, `operations.rs` ≥ 50 %, `fetch.rs` ≥ 60 %.
-2. **export.rs:** изолировать Yandex‑HTTP через stub‑client, добавить 3‑4 теста → цель 60 %.
-3. **schema.rs:** покрыть runtime‑миграцию отдельной test‑фичей, чтобы вывести из 0 %.
-4. **lib.rs / main.rs:** один `#[tauri::test]` на `setup`+`state` (`AppState.db`) даст
-   покрытие инициализации DB + `init_database()`.
+1. **AI-pipeline:** подключить mock-провайдера для `run_agent_loop`,
+   `send_chat_message_impl`, `cancel_generation`, `fetch_ai_models`.
+   Цель: runner ≥ 70%, operations ≥ 50%, fetch ≥ 60%.
+   → **Статус:** fetch ✅ (84.8%); operations ✅ (87.1%, цель превышена);
+   runner 🔶 (37.1% через pipeline-тест; tool-use ветки — следующая сессия).
+2. **export.rs:** изолировать Yandex-HTTP через stub-client, 3–4 теста → 60%.
+   → **Статус:** 🔶 резня готова (команды изолированы), сами мок-тесты — волна 4в.
+3. **schema.rs:** runtime-миграция под test-фичей. → ⬜ исключение.
+4. **lib.rs / main.rs:** `#[tauri::test]` на инициализацию. → 🔶 частично (pipeline дёргает AppState).
+5. **Stress → CI:** вынести в `#[ignore]` + nightly. → ⬜ не делалось.
+
 
 
 

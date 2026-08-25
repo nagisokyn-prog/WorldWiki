@@ -2,6 +2,7 @@
 //! All business logic lives in mod.rs (*_inner).
 
 use super::*;
+use tauri::State;
 
 /// Создаёт новую ветку чата от определённого сообщения
 #[tauri::command]
@@ -62,6 +63,14 @@ pub async fn cancel_generation(
     {
         crate::logic::ai::local_llm::trigger_cancel_local_gen();
     }
+
+    let mut tasks = state.0.lock().await;
+    if let Some(handle) = tasks.remove(&chat_id) {
+        handle.abort();
+        println!("[DEBUG] Aborted generation for chat {}", chat_id);
+    }
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn delete_chat_message(

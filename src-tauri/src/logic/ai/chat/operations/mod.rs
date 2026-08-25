@@ -251,14 +251,6 @@ pub async fn send_message_db_core(
     })
 }
 
-    let mut tasks = state.0.lock().await;
-    if let Some(handle) = tasks.remove(&chat_id) {
-        handle.abort();
-        println!("[DEBUG] Aborted generation for chat {}", chat_id);
-    }
-    Ok(())
-}
-
 /// Тестируемое ядро `delete_chat_message` (без `tauri::State`).
 pub async fn delete_chat_message_impl(
     db: &surrealdb::Surreal<surrealdb::engine::local::Db>,

@@ -1,6 +1,6 @@
 use claw_api::{
     ContentBlockDelta, ContentBlockDeltaEvent, ContentBlockStartEvent,
-    InputContentBlock, InputMessage, MessageRequest, OutputContentBlock, ProviderClient, StreamEvent,
+    InputContentBlock, InputMessage, MessageRequest, OutputContentBlock, StreamEvent,
 };
 use serde::Serialize;
 use serde_json::{json, Value};

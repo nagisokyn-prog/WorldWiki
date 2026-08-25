@@ -2,7 +2,7 @@ use serde_json::Value;
 use std::env;
 use std::fs;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 use tauri::Manager; // Важно для работы с путями в Tauri 2.0
@@ -208,7 +208,7 @@ pub async fn restore_from_backup_inner(
             let t = line.trim_start();
             !(t.starts_with("DEFINE FIELD")
                 && t.contains("OVERWRITE")
-                && t.split_whitespace().nth(3).map_or(false, |f| f.ends_with(".*")))
+                && t.split_whitespace().nth(3).is_some_and(|f| f.ends_with(".*")))
         })
         .collect::<Vec<_>>()
         .join("\n");
@@ -227,4 +227,3 @@ pub async fn restore_from_backup_inner(
     Ok(())
 }
 
-}

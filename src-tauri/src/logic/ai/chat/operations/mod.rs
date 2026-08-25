@@ -5,7 +5,7 @@ use crate::AppState;
 use serde::Serialize;
 use serde_json::Value;
 use surreal_domain::SurrealDb;
-use tauri::{Manager, State};
+use tauri::Manager;
 
 // IPC layer extracted (architecture split):
 mod commands;

@@ -1,14 +1,20 @@
 fn main() {
-    if cfg!(target_os = "windows") {
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         println!("cargo:rustc-link-arg=/NODEFAULTLIB:libcmt.lib");
-        // Тестовые бинари не получают манифест от tauri_build (тот линкует его
-        // только в bins). Без манифеста тестовый exe биндится на comctl32 v5,
-        // где нет TaskDialogIndirect (его тянет tauri/mock-runtime) ->
+        // Интеграционные тесты (tests/*.rs) не получают манифест от tauri_build
+        // (тот линкует его только в bins через .res-ресурс). Без манифеста с
+        // Common-Controls v6 тестовый exe биндится на comctl32 v5, где нет
+        // TaskDialogIndirect (его тянет tauri/mock-runtime) ->
         // краш загрузки 0xc0000139 (STATUS_ENTRYPOINT_NOT_FOUND).
-        // Встраиваем манифест с Common-Controls v6 только в тестовые таргеты.
+        // Встраиваем манифест ТОЛЬКО в тестовые таргеты (-tests не пересекается с -bins).
+        let manifest = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests.manifest");
+        println!("cargo:rerun-if-changed={}", manifest.display());
         println!("cargo:rustc-link-arg-tests=/MANIFEST:EMBED");
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
-        println!("cargo:rustc-link-arg-tests=/MANIFESTINPUT:{manifest_dir}\\tests.manifest");
+        println!(
+            "cargo:rustc-link-arg-tests=/MANIFESTINPUT:{}",
+            manifest.display()
+        );
     }
     tauri_build::build()
 }

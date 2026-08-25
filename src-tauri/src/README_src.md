@@ -22,17 +22,20 @@ src-tauri/src/
 │   │   ├── permissions.rs # Каталог прав доступа и уровней автоодобрения инструментов
 │   │   ├── chunker.rs   # Разбиение текста глав и сущностей на чанки для векторизации
 │   │   ├── types.rs     # DTO структуры (InstalledModelInfo, HardwareInfo, ModelLifecycleState)
-│   │   ├── agent/       # Агент: промпты, планировщик и цикл выполнения
-│   │   │   ├── mod.rs   # Объявление подмодулей (prompt, runner)
+│   │   ├── agent/       # Агент: промпты, клиент провайдеров и цикл выполнения
+│   │   │   ├── mod.rs   # Объявление подмодулей (client, prompt, runner)
+│   │   │   ├── client.rs # build_provider_client: сборка Anthropic/OpenAI-compat клиентов (+юниты)
 │   │   │   ├── prompt.rs # Промпт соавтора, правила ролей (автор vs персонаж), контекст
-│   │   │   └── runner.rs # Цикл агента: провайдеры LLM, стрим дельт, CoT reasoning, tool calls
+│   │   │   └── runner.rs # Цикл агента <R: Runtime>: стрим дельт, CoT reasoning, tool calls
 │   │   ├── chat/        # Дерево чатов и операции
 │   │   │   ├── mod.rs   # Хелперы parse_record_id / clean_surreal_id
 │   │   │   ├── tree.rs  # Дерево чатов и сообщений (get_chat_tree и др.)
-│   │   │   └── operations.rs # send/fork/edit/delete/cancel/regenerate/switch_variant
+│   │   │   └── operations/ # IPC отделён от логики (архитектурная резня)
+│   │   │       ├── mod.rs     # Логика: *_db_core ядра send/edit/regenerate/fork/delete
+│   │   │       └── commands.rs # Тонкие #[tauri::command] обёртки
 │   │   ├── providers/   # Списки моделей провайдеров
 │   │   │   ├── mod.rs   # Объявление модуля
-│   │   │   └── fetch.rs # fetch_ai_models — каталоги моделей провайдеров
+│   │   │   └── fetch.rs # fetch_ai_models_inner (+base_override для тестов)
 │   │   ├── retrieval/   # Продвинутая подсистема RAG и индексации
 │   │   │   ├── mod.rs   # Экспорт query_analyzer, router, indexer
 │   │   │   ├── query_analyzer.rs # Парсер числительных (1–100), римских цифр, Chitchat/Greeting
@@ -42,16 +45,44 @@ src-tauri/src/
 │   │   └── tools/       # Инструменты агента (RAG + запись)
 │   │       └── mod.rs   # WorldWikiTools — 19 инструментов (чтение, запись, таймлайн)
 │   ├── models.rs        # Определение всех сущностей (surreal_entity! макросы)
-│   ├── projects.rs      # CRUD проектов
-│   ├── entities.rs      # CRUD сущностей, схем, связей, истории ревизий
-│   ├── chapters.rs      # Главы, текстовые блоки, ревизии глав
-│   ├── volumes.rs       # Иерархия томов/арок/глав, CRUD
-│   ├── connections.rs   # Связи между сущностями (entity_rel)
-│   ├── export.rs        # Экспорт, бэкапы, Yandex Disk, восстановление
-│   ├── batch.rs         # Пакетные операции, транзакции
+│   ├── projects/        # CRUD проектов (резня: логика + commands)
+│   │   ├── mod.rs
+│   │   └── commands.rs
+│   ├── entities/        # CRUD сущностей, схем, связей, ревизий (резня)
+│   │   ├── mod.rs       # Логика: *_inner над &Surreal<Db>
+│   │   └── commands.rs  # 18 тонких команд
+│   ├── chapters/        # Главы, текстовые блоки, ревизии (резня)
+│   │   ├── mod.rs
+│   │   └── commands.rs
+│   ├── volumes/         # Иерархия томов/арок/глав (резня)
+│   │   ├── mod.rs
+│   │   └── commands.rs
+│   ├── connections/     # Связи между сущностями (резня)
+│   │   ├── mod.rs
+│   │   └── commands.rs
+│   ├── export/          # Бэкапы .wwiki, Yandex Disk, восстановление (резня)
+│   │   ├── mod.rs       # create_cloud_backup_inner, restore_from_backup_inner
+│   │   └── commands.rs  # + Yandex OAuth/Disk команды
+│   ├── batch/           # Пакетные операции, транзакции (резня)
+│   │   ├── mod.rs
+│   │   └── commands.rs
 │   ├── schema.rs        # Заглушка для совместимости
 │   └── calendar_math.rs # Календарная математика
 ```
+
+### 🪓 Архитектурное соглашение «резни» (2026-08-26)
+
+Каждый толстый модуль разделён на **IPC-слой** (`commands.rs`: только тонкие
+`#[tauri::command]`, распаковка `State` → вызов ядра) и **логику** (`mod.rs`:
+функции `*_inner` над `&Surreal<Db>`, полностью тестируемые без Tauri).
+Внешние пути не изменились (`mod commands; pub use commands::*;`) — lib.rs,
+invoke_handler и codegen.js не затронуты. Инструмент: `scripts/split-commands.cjs`
+(dry-run, классификация thin/glue/fat). Подробности и таблица статусов —
+`docs/backend_test_coverage_plan.md`, раздел «Архитектурная резня».
+
+> ⚠️ Подробные описания файлов ниже по документу могут ссылаться на старые
+> однофайловые пути (`entities.rs`, `export.rs`, ...). Актуальная структура —
+> в дереве выше; содержимое описаний по-прежнему верно.
 
 ---
 

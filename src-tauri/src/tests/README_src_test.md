@@ -11,13 +11,26 @@
 
 ## Как запустить
 
-Официальный способ воспроизвести отчёт (Windows / PowerShell):
+**Официальная метрика (merged, 2026-08-26)** — lib + pipeline в одном прогоне:
+
+```powershell
+cd src-tauri
+cargo llvm-cov --open --features agent-pipeline
+```
+
+Фича `agent-pipeline` включает интеграционный тест AI-пайплайна
+(`tests/agent_pipeline.rs`: реальный `run_agent_loop` + mock OpenAI SSE-сервер +
+реальная SurrealKv БД). Требует манифеста Common-Controls v6 — встраивается
+автоматически через `build.rs` (`cargo:rustc-link-arg-tests`, файл `tests.manifest`).
+
+Исторический способ воспроизведения старого отчёта (только core):
 
 ```powershell
 cd src-tauri
 $env:CARGO_TARGET_DIR = "C:\Users\Kuzma\Desktop\WorldWiki\src-tauri\target\llvm-cov-target"
 cargo llvm-cov --open
 ```
+
 
 - `cargo llvm-cov` автоматически выставляет `cfg(coverage)` (сообщение: `info:
   cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage`).
@@ -42,7 +55,22 @@ cargo llvm-cov --open
 
 ---
 
-## Статистика прогона (Report 2 — `2026-08-19 00:37`, `src-tauri`)
+## Статистика прогона
+
+### Актуальный merged-прогон (2026-08-26 00:25)
+
+```
+core:      test result: ok. 311 passed; 0 failed; 0 ignored
+pipeline:  test result: ok. 1 passed; 0 failed  (--features agent-pipeline)
+ИТОГО:     312 тестов
+Coverage:  function 45.50% (511/1123) · line 63.45% (5377/8475) · region 64.92%
+```
+
+### Исторический снапшот (Report 2 — `2026-08-19 00:37`)
+
+> ⚠️ **ВСЁ СОДЕРЖИМОЕ ЭТОГО И ПОСЛЕДУЮЩИХ СТАРЫХ РАЗДЕЛОВ — УСТАРЕВШИЙ
+> СНПИШОТ** (139 тестов). Актуальные числа — в блоке «Актуальный merged-прогон»
+> выше и в таблице покрытия. Сохранено для истории динамики.
 
 ```
 running 139 tests
@@ -58,7 +86,21 @@ test result: ok. 139 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
 ---
 
-## Инвентарь тестов (15 файлов)
+## Инвентарь тестов (15 файлов + 6 новых волны 2–4 + pipeline)
+
+### Добавлено волнами 2–4 (2026-08-26)
+
+| # | Файл | Тестов | Тип | Покрываемое |
+|---|---|---|---|---|
+| 16 | `tools_integration.rs` | ~17 | интеграционный | `tools/mod.rs`: диспетчер run(), все 19 тулов, сквозной сценарий «агент пополняет лор» |
+| 17 | `retrieval_integration.rs` | ~3 | интеграционный | reindex пустого проекта, чанки с chapter_id, идемпотентность |
+| 18 | `chat_operations_integration.rs` | ~13 | интеграционный | fork/reparent/delete/switch/send/edit/regenerate `_impl`-ядра операций чата |
+| — | `logic/ai/permissions.rs` (inline) | 7 | unit | каталог тулов: уровни доступа, уникальность id |
+| — | `logic/ai/providers/fetch.rs` (inline) | 7 | mock | каталоги моделей openrouter/openai/gemini/anthropic + local-скан GGUF |
+| — | `logic/ai/agent/client.rs` (inline) | 4 | unit | build_provider_client: все провайдеры, base_url |
+| — | `tests/agent_pipeline.rs` (отдельный target) | 1 | интеграционный (E2E backend) | полный цикл агента: профиль → клиент → SSE → парсинг → запись; за фичей `agent-pipeline` |
+
+Полный исходный инвентарь (15 файлов):
 
 | # | Файл | Тестов | Тип | Главное покрываемое назначение | Используемые хелперы `common` |
 |---|---|---|---|---|---|
@@ -292,7 +334,45 @@ roundtrip, негатив: missing file → «does not exist», zip без `data
 
 ---
 
-## Анализ пробелов (0 % и слабое покрытие)
+## Актуальное покрытие (merged-прогон 2026-08-26 00:25)
+
+> После волн 1–4 и архитектурной резни. IPC-слой вынесен в `*/commands.rs`
+> (намеренно 0% — исключение). Полный merged требует
+> `cargo llvm-cov --open --features agent-pipeline`.
+
+| Файл | Func | Line | Комментарий |
+|---|---|---|---|
+| `logic/ai/chat/mod.rs` | 100% | 99.0% | ✅ эталон |
+| `logic/ai/chunker.rs` | 100% | 98.9% | ✅ |
+| `logic/ai/hardware.rs` | 100% | 94.1% | ✅ |
+| `logic/ai/permissions.rs` | 100% | 100% | ✅ |
+| `logic/ai/retrieval/query_analyzer.rs` | 100% | 98.5% | ✅ |
+| `logic/calendar_math.rs` | 100% | 98.3% | ✅ |
+| `logic/ai/agent/client.rs` | 88.9% | 98.6% | выделен из runner |
+| `logic/ai/agent/prompt.rs` | 87.5% | 76.5% | вырос после pipeline-теста |
+| `logic/export/mod.rs` | 34.6% func / **85.4% line** | | резня: команды → commands.rs |
+| `logic/ai/chat/operations/mod.rs` | 48.9% func / **87.1% line** | | резня |
+| `logic/entities/mod.rs` | 49.0% func / **79.4% line** | | резня |
+| `logic/ai/tools/mod.rs` | 65.1% | **94.7%** | почти вся логика покрыта |
+| `logic/ai/retrieval/indexer.rs` | 64.7% | 73.3% | |
+| `logic/batch.rs` | 55.3% | 81.1% | |
+| `logic/models.rs` | 60.9% | 72.9% | |
+| `logic/volumes.rs` | 50.8% | 71.3% | |
+| `logic/chapters.rs` | 35.1% | 67.1% | |
+| `logic/entities.rs` (до резни) | 32.6% | 67.0% → 79.4% (mod) | |
+| `logic/projects.rs` | 27.0% | 59.4% | |
+| `logic/connections.rs` | 31.8% | 72.9% | |
+| `logic/ai/local_llm.rs` | 44.8% | 36.5% | CUDA/GPU-профиль |
+| `logic/ai/manager.rs` | 21.1% | 22.4% | GPU-lifecycle |
+| `logic/ai/model_hub.rs` | 33.3% | 30.0% | HTTP к HF — кандидат на мок |
+| `logic/ai/retrieval/router.rs` | 20.0% | 16.6% | retrieve() — следующая цель |
+| `logic/ai/agent/runner.rs` | **25.7%** | **37.1%** | оживлён pipeline-тестом (было 0%) |
+| `*/commands.rs` (IPC ×4) + старые обёртки | ~0% | ~0% | намеренное исключение (~140 ф.) |
+
+Итого: **func 45.50% · line 63.45% · region 64.92%**.
+
+---
+
 
 | Файл | Line | Почему 0 % / слабо | Как покрыть |
 |---|---|---|---|
@@ -318,8 +398,6 @@ roundtrip, негатив: missing file → «does not exist», zip без `data
 3. **schema.rs:** покрыть runtime‑миграцию отдельной test‑фичей, чтобы вывести из 0 %.
 4. **lib.rs / main.rs:** один `#[tauri::test]` на `setup`+`state` (`AppState.db`) даст
    покрытие инициализации DB + `init_database()`.
-5. **Stress → в CI:** `stress_integration.rs` долгий — вынести в `#[ignore]` + nightly,
-   чтобы default `cargo test` был < 1 мин, а `cargo llvm-cov --include-ignored` — полный.
 
 
 

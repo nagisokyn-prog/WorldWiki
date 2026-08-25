@@ -283,10 +283,27 @@
 | Файл | Строк | Статус |
 |---|---|---|
 | `logic/entities.rs` → `entities/{mod,commands}.rs` | 1065 | ✅ **Готово**: 18 команд изолированы (54 функции IPC в одном файле), 3 инлайн-логики извлечены в ядра (`save_relation_schema_inner`, `delete_relation_schema_inner`, `get_entity_revisions_inner`). Line-покрытие логики: 67% → **79.4%** |
-| `ai/agent/runner.rs` (~840) | ~840 | 🔜 Следующий: `client.rs` (build_provider_client), `stream.rs` (два SSE-хендлера станут отдельно тестируемыми), `loop.rs` |
-| `ai/tools/mod.rs` (602) | 602 | план: definitions/handlers/dispatch |
-| `export.rs` (414) | 414 | план: wwiki/yandex/commands — перед мок-волной Yandex |
-| `ai/chat/operations.rs`, `local_llm.rs` | 536/471 | хвосты после основных |
+| `ai/agent/runner.rs` | ~840→714 | 🔶 Частично: `client.rs` выделен (88.9% func / 98.6% line). Дальнейший разрез = рефакторинг монолита `run_agent_inner`, отложено |
+| `logic/export.rs` → `export/{mod,commands}.rs` | 486 | ✅ Готово (сплиттер): 8 команд изолированы. Логика: 36.5% → **85.4% line** |
+| `ai/chat/operations.rs` → `operations/{mod,commands}.rs` | 641 | ✅ Готово (сплиттер): 9 команд изолированы. Логика: 64.2% → **87.1% line** |
+| `projects.rs` → папка | 126 | ✅ Готово (CJS-сплиттер): 5 команд |
+| `connections.rs` → папка | 166 | ✅ Готово: 3 команды |
+| `batch.rs` → папка | 409 | ✅ Готово: 3 команды |
+| `volumes.rs` → папка | 329 | ✅ Готово: 7 команд |
+| `chapters.rs` → папка | 262 | ✅ Готово: 5 команд (+ извлечено ядро `get_global_timeline_inner`) |
+| `ai/tools/mod.rs` (602) | 602 | план: definitions/handlers/dispatch (команд нет — другой тип разреза) |
+| `ai/local_llm.rs` (684) | 684 | осознанно не режется: cfg(feature)-монолит, разрез размножит cfg-шум |
+
+Инструмент резни: `scripts/split-commands.cjs` (Node; подсчёт глубины скобок со
+стейт-машиной строк/комментов, классификация thin/glue/fat, блокировка команд,
+самих ходящих в БД; dry-run режим). PowerShell-версия (`split_commands.ps1`)
+устарела — имела баг «первая }» и проблемы кодировки, оставлена для истории.
+
+Исправленная классификация остатков (вместо «Ignored-волны»):
+- **~140 ф. IPC** (`*/commands.rs`) — исключение, изолированы;
+- **~45 ф. true-GPU** (`load_model` большой LLM, `generate_stream`, checkpoints, `run_local_agent_loop`) — `#[ignore]`-профиль, руками;
+- **~25 ф. тестируемые без GPU**: model_hub HTTP к HF (патч мока), manager dir-scan (temp-dir);
+- частично уже живые через CUDA-тесты эмбеддера — сверить local_llm по merged-отчёту.
 
 Текущее покрытие (после entities-резни): **func 43.6%, line 60.0%**.
 Старт сессии: func 35.62%, line 44.49%.

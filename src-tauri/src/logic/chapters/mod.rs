@@ -3,12 +3,15 @@ use serde_json::{json, Value};
 use surreal_domain::SurrealRepository;
 use surrealdb::{engine::local::Db, Surreal};
 
-#[tauri::command]
-pub async fn get_global_timeline(
-    project: String,
-    state: tauri::State<'_, crate::AppState>,
+// IPC layer extracted (architecture split):
+mod commands;
+pub use commands::*;
+
+
+pub async fn get_global_timeline_inner(
+    db: &Surreal<Db>,
+    project: &str,
 ) -> Result<Value, String> {
-    let db = &state.db;
     let proj_id = format!("projects:{}", project);
     let chapters = Chapter::find_all(db, &proj_id)
         .await
@@ -16,25 +19,6 @@ pub async fn get_global_timeline(
     Ok(json!(chapters))
 }
 
-/// Сохраняет глобальный таймлайн для проекта, распределяя `timeline_events`
-/// и `participants` по главам.
-///
-/// Фронтенд передаёт массив объектов вида
-/// `[{ chapter_id, chapter_title, events, participants }]`.
-/// Каждая глава обновляется через `UPSERT type::record($cid)` с сохранением
-/// `title`/`content` (для новой записи content defaults к пустой строке,
-/// т.к. `chapters.content` — `TYPE string`, а не option).
-///
-/// Возвращает `{ success: true, updated: <n> }` — контракт фронтенда
-/// (`SaveGlobalTimelineResult = { success: boolean }`).
-#[tauri::command]
-pub async fn save_global_timeline(
-    project: String,
-    data: Value,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Value, String> {
-    Chapter::save_global_timeline_inner(&state.db, &project, data).await
-}
 
 impl Chapter {
     /// Тестируемое ядро `save_global_timeline` (без `tauri::State`).
@@ -120,15 +104,6 @@ impl Chapter {
     }
 }
 
-#[tauri::command]
-pub async fn save_text_blocks(
-    project: String,
-    chapter_id: String,
-    html: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    save_text_blocks_inner(&state.db, &project, &chapter_id, &html).await
-}
 
 pub async fn save_text_blocks_inner(
     db: &Surreal<Db>,
@@ -207,14 +182,6 @@ pub async fn save_text_blocks_inner(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn get_chapter_revisions(
-    project: String,
-    chapter_id: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Value>, String> {
-    get_chapter_revisions_inner(&state.db, &project, &chapter_id).await
-}
 
 pub async fn get_chapter_revisions_inner(
     db: &Surreal<Db>,
@@ -235,14 +202,6 @@ pub async fn get_chapter_revisions_inner(
     Ok(revisions)
 }
 
-#[tauri::command]
-pub async fn toggle_chapter_history_pin(
-    history_id: String,
-    is_pinned: bool,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    toggle_chapter_history_pin_inner(&state.db, &history_id, is_pinned).await
-}
 
 pub async fn toggle_chapter_history_pin_inner(
     db: &Surreal<Db>,
@@ -260,3 +219,4 @@ pub async fn toggle_chapter_history_pin_inner(
 
     Ok(())
 }
+

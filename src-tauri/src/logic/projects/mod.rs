@@ -1,10 +1,10 @@
 use serde_json::{json, Value};
 use surrealdb::{engine::local::Db, Surreal};
 
-#[tauri::command]
-pub async fn get_projects(state: tauri::State<'_, crate::AppState>) -> Result<Vec<Value>, String> {
-    get_projects_inner(&state.db).await
-}
+// IPC layer extracted (architecture split):
+mod commands;
+pub use commands::*;
+
 
 pub async fn get_projects_inner(db: &Surreal<Db>) -> Result<Vec<Value>, String> {
     let mut res = db
@@ -15,13 +15,6 @@ pub async fn get_projects_inner(db: &Surreal<Db>) -> Result<Vec<Value>, String> 
     Ok(projects)
 }
 
-#[tauri::command]
-pub async fn create_project(
-    project_data: Value,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<String, String> {
-    create_project_inner(&state.db, project_data).await
-}
 
 pub async fn create_project_inner(
     db: &Surreal<Db>,
@@ -43,13 +36,6 @@ pub async fn create_project_inner(
     Ok(name)
 }
 
-#[tauri::command]
-pub async fn get_project_config(
-    name: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Value, String> {
-    get_project_config_inner(&state.db, &name).await
-}
 
 pub async fn get_project_config_inner(
     db: &Surreal<Db>,
@@ -74,14 +60,6 @@ pub async fn get_project_config_inner(
     Ok(res.unwrap_or(json!({})))
 }
 
-#[tauri::command]
-pub async fn save_project_config(
-    name: String,
-    config: Value,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<Value, String> {
-    save_project_config_inner(&state.db, &name, config).await
-}
 
 pub async fn save_project_config_inner(
     db: &Surreal<Db>,
@@ -100,13 +78,6 @@ pub async fn save_project_config_inner(
     Ok(json!({"success": true}))
 }
 
-#[tauri::command]
-pub async fn delete_project(
-    name: String,
-    state: tauri::State<'_, crate::AppState>,
-) -> Result<String, String> {
-    delete_project_inner(&state.db, &name).await
-}
 
 pub async fn delete_project_inner(
     db: &Surreal<Db>,

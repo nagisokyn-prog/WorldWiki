@@ -54,6 +54,16 @@ pub async fn fetch_ai_models(
     provider: String,
     api_key: Option<String>,
 ) -> Result<Vec<AiModelInfo>, String> {
+    fetch_ai_models_inner(&provider, api_key.as_deref(), None).await
+}
+
+/// Ядро получения списка моделей. `base_override` подменяет endpoint каталога
+/// моделей (для тестов с локальным mock-сервером); в проде всегда None.
+pub(crate) async fn fetch_ai_models_inner(
+    provider: &str,
+    api_key: Option<&str>,
+    base_override: Option<String>,
+) -> Result<Vec<AiModelInfo>, String> {
     let client = Client::builder()
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         .default_headers({
@@ -66,9 +76,10 @@ pub async fn fetch_ai_models(
         .build()
         .unwrap_or_else(|_| Client::new());
 
-    match provider.as_str() {
+    match provider {
         "openrouter" => {
-            let mut req = client.get("https://openrouter.ai/api/v1/models");
+            let url = base_override.unwrap_or_else(|| "https://openrouter.ai/api/v1/models".to_string());
+            let mut req = client.get(url);
             if let Some(key) = &api_key {
                 if !key.is_empty() {
                     req = req.bearer_auth(key);
@@ -105,7 +116,7 @@ pub async fn fetch_ai_models(
                     return Ok(vec![]);
                 }
                 let res = client
-                    .get("https://api.openai.com/v1/models")
+                    .get(base_override.unwrap_or_else(|| "https://api.openai.com/v1/models".to_string()))
                     .bearer_auth(key)
                     .send()
                     .await
@@ -138,8 +149,10 @@ pub async fn fetch_ai_models(
                 if key.is_empty() {
                     return Ok(vec![]);
                 }
+                let base = base_override.unwrap_or_else(|| "https://generativelanguage.googleapis.com/v1beta/models".to_string());
                 let url = format!(
-                    "https://generativelanguage.googleapis.com/v1beta/models?key={}",
+                    "{}?key={}",
+                    base,
                     key
                 );
                 let res = client.get(&url).send().await.map_err(|e| e.to_string())?;
@@ -172,7 +185,7 @@ pub async fn fetch_ai_models(
                     return Ok(vec![]);
                 }
                 let res = client
-                    .get("https://api.anthropic.com/v1/models")
+                    .get(base_override.unwrap_or_else(|| "https://api.anthropic.com/v1/models".to_string()))
                     .header("x-api-key", key)
                     .header("anthropic-version", "2023-06-01")
                     .send()
@@ -263,5 +276,149 @@ pub async fn fetch_ai_models(
             Ok(models)
         }
         _ => Ok(vec![]),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Асинхронный mock-сервер: отвечает одним JSON на любой запрос.
+    /// Полностью tokio::net — блокирующий std::net вешает shutdown рантайма.
+    async fn spawn_mock_json(body: &'static str) -> String {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move {
+            for _ in 0..5 {
+                let mut s = match listener.accept().await {
+                    Ok((s, _)) => s,
+                    Err(_) => break,
+                };
+                use tokio::io::{AsyncReadExt, AsyncWriteExt};
+                let mut buf = [0u8; 8192];
+                let mut total = 0;
+                loop {
+                    let n = match s.read(&mut buf[total..]).await {
+                        Ok(0) | Err(_) => break,
+                        Ok(n) => n,
+                    };
+                    total += n;
+                    if buf[..total].windows(4).any(|w| w == b"\r\n\r\n") {
+                        break;
+                    }
+                }
+                let response = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                );
+                let _ = s.write_all(response.as_bytes()).await;
+                drop(s);
+            }
+        });
+        format!("http://127.0.0.1:{port}/models")
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn openrouter_models_parsed_and_sorted() {
+        let url = spawn_mock_json(
+            r#"{"data":[
+                {"id":"z/model","name":"Zeta","description":"last"},
+                {"id":"a/model","name":"Alpha","description":null}
+            ]}"#,
+        )
+        .await;
+        let models = fetch_ai_models_inner("openrouter", Some("key"), Some(url))
+            .await
+            .unwrap();
+        assert_eq!(models.len(), 2);
+        // сортировка по label
+        assert_eq!(models[0].label, "Alpha");
+        assert_eq!(models[1].label, "Zeta");
+        assert_eq!(models[0].value, "a/model");
+        assert_eq!(models[1].description, "last");
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn openai_models_parsed() {
+        let url = spawn_mock_json(r#"{"data":[{"id":"gpt-x"},{"id":"gpt-a"}]}"#).await;
+        let models = fetch_ai_models_inner("openai", Some("sk-key"), Some(url))
+            .await
+            .unwrap();
+        assert_eq!(models.len(), 2);
+        assert_eq!(models[0].value, "gpt-a");
+        assert_eq!(models[0].description, "OpenAI Model");
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn gemini_display_name_and_prefix_stripped() {
+        let url = spawn_mock_json(
+            r#"{"models":[
+                {"name":"models/gemini-1.5-pro","displayName":"Gemini 1.5 Pro","description":"desc"}
+            ]}"#,
+        )
+        .await;
+        let models = fetch_ai_models_inner("gemini", Some("g-key"), Some(url))
+            .await
+            .unwrap();
+        assert_eq!(models.len(), 1);
+        assert_eq!(models[0].value, "gemini-1.5-pro", "префикс models/ снимается");
+        assert_eq!(models[0].description, "desc", "description приоритетнее displayName");
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn anthropic_openai_like_schema_parsed() {
+        let url = spawn_mock_json(r#"{"data":[{"id":"claude-x"}]}"#).await;
+        let models = fetch_ai_models_inner("anthropic", Some("ak-key"), Some(url))
+            .await
+            .unwrap();
+        assert_eq!(models.len(), 1);
+        assert_eq!(models[0].value, "claude-x");
+        assert_eq!(models[0].description, "Anthropic Model");
+    }
+
+    #[tokio::test]
+    async fn empty_or_missing_keys_short_circuit_to_empty_vec() {
+        for provider in ["openai", "gemini", "anthropic"] {
+            let none = fetch_ai_models_inner(provider, None, None).await.unwrap();
+            assert!(none.is_empty(), "{provider}: None key → []");
+            let empty = fetch_ai_models_inner(provider, Some(""), None)
+                .await
+                .unwrap();
+            assert!(empty.is_empty(), "{provider}: пустой key → []");
+        }
+    }
+
+    #[tokio::test]
+    async fn unknown_provider_returns_empty_ok() {
+        let models = fetch_ai_models_inner("hal9000", Some("k"), None).await.unwrap();
+        assert!(models.is_empty());
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn local_branch_scans_gguf_from_env_dirs_without_dedup() {
+        // Подменяем APPDATA/LOCALAPPDATA на temp и кладём .gguf файлы
+        let tmp = std::env::temp_dir().join(format!("ww_fetch_{}", uuid::Uuid::new_v4()));
+        let dir = tmp.join("WorldWiki").join("models");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("b-model.gguf"), b"fake").unwrap();
+        std::fs::write(dir.join("a-model.GGUF"), b"fake").unwrap();
+        std::fs::write(dir.join("ignored.txt"), b"nope").unwrap();
+
+        std::env::set_var("APPDATA", &tmp);
+        std::env::set_var("LOCALAPPDATA", &tmp);
+
+        let models = fetch_ai_models_inner("local", None, None).await.unwrap();
+        let _ = std::fs::remove_dir_all(&tmp);
+
+        let labels: Vec<&str> = models.iter().map(|m| m.label.as_str()).collect();
+        assert_eq!(labels.len(), 2, "только .gguf (любой регистр), txt игнорится: {labels:?}");
+        assert!(labels.contains(&"a-model.GGUF"));
+        assert!(labels.contains(&"b-model.gguf"));
+        // сортировка по label
+        assert_eq!(labels[0], "a-model.GGUF");
+        // дедупликация по value не порождает дублей при повторном скане каталогов
+        let values: std::collections::HashSet<_> = models.iter().map(|m| &m.value).collect();
+        assert_eq!(values.len(), models.len());
     }
 }

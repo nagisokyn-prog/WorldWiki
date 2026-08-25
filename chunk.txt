@@ -1,45 +1,21 @@
-﻿use claw_api::{
-    AnthropicClient, AuthSource, ContentBlockDelta, ContentBlockDeltaEvent, ContentBlockStartEvent,
-    InputContentBlock, InputMessage, MessageRequest, OpenAiCompatClient, OpenAiCompatConfig,
-    OutputContentBlock, ProviderClient, StreamEvent,
-};
-use serde::Serialize;
-use serde_json::{json, Value};
-use surreal_domain::SurrealDb as _;
-use surrealdb::engine::local::Db;
-use surrealdb::types::RecordId;
-use surrealdb::Surreal;
-use tauri::{AppHandle, Emitter, Manager};
-
-use super::prompt::{
-    build_system_prompt_with_context, history_to_input_messages,
-    DEFAULT_MAX_TOKENS, MAX_AGENT_ITERATIONS,
-};
-use crate::logic::ai::chat::tree::get_chat_messages_impl;
-use crate::logic::ai::retrieval::RetrievalRouter;
-use crate::logic::ai::tools::WorldWikiTools;
-use crate::AppState;
-
-#[derive(Clone, Serialize)]
-pub struct StreamChunk {
-    pub chat_id: String,
-    pub message_id: String,
-    pub text: String,
-    pub is_done: bool,
-    pub chunk_type: String,
+﻿
+    Ok(SendChatResult {
+        chat_id: actual_chat_id_str,
+        assistant_msg_id: format!("chat_messages:{}", assistant_msg_uuid),
+        user_msg_id: format!("chat_messages:{}", user_msg_uuid),
+    })
 }
 
-#[derive(Clone, Serialize)]
-pub struct AgentToolEvent {
-    pub chat_id: String,
-    pub message_id: String,
-    pub tool_name: String,
-    pub tool_args: Value,
+    let mut tasks = state.0.lock().await;
+    if let Some(handle) = tasks.remove(&chat_id) {
+        handle.abort();
+        println!("[DEBUG] Aborted generation for chat {}", chat_id);
+    }
+    Ok(())
 }
 
-struct ToolAssembler {
-    id: String,
-    name: String,
-    input_buf: String,
-}
-
+/// Тестируемое ядро `delete_chat_message` (без `tauri::State`).
+pub async fn delete_chat_message_impl(
+    db: &surrealdb::Surreal<surrealdb::engine::local::Db>,
+    msg_id: &str,
+) -> Result<(), String> {

@@ -16,9 +16,14 @@ tauri-build = { version = "2", features = [] }
 default = ["ai-cloud", "ai-local"]
 ai-cloud = ["dep:claw_runtime", "dep:claw_api"]
 ai-local = ["ai-cloud", "dep:llama-sys"]
+# Интеграционный тест AI-пайплайна (run_agent_loop + mock OpenAI SSE + реальная БД).
+# Тянет tauri/mock-runtime: на части Windows-машен меняет native linking тестового
+# бинаря (0xc0000139 при загрузке). Поэтому НЕ входит в default.
+# Запуск: cargo test --lib --features agent-pipeline
+agent-pipeline = ["tauri/test"]
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset", "test"] }
+tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-opener = "2"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"

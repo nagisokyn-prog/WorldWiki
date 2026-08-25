@@ -15,4 +15,8 @@ pub mod export_integration;
 pub mod retrieval_integration;
 pub mod tools_integration;
 pub mod chat_operations_integration;
-//pub mod agent_runner_integration;
+// Интеграционный тест AI-пайплайна: run_agent_loop + mock OpenAI SSE-сервер + реальная БД.
+// Требует tauri/mock-runtime -> включается только через --features agent-pipeline
+// (на части Windows-машен mock-runtime ломает загрузку тестового бинаря, 0xc0000139).
+#[cfg(feature = "agent-pipeline")]
+pub mod agent_pipeline_integration;

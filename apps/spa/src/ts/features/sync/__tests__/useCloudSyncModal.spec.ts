@@ -236,6 +236,11 @@ describe('useCloudSyncModal', () => {
       await modal.exchangeCode();
 
       expect(modal.authError.value).toBe('Network error');
+
+      // Generic object error
+      vi.mocked(invoke).mockRejectedValue({ code: 500 });
+      await modal.exchangeCode();
+      expect(modal.authError.value).toBe('Ошибка сети при проверке кода');
     });
 
     it('does nothing if authCode is empty', async () => {

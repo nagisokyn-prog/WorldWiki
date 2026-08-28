@@ -276,6 +276,23 @@ describe('PerformanceManager', () => {
       expect(applySpy).toHaveBeenCalled();
     });
 
+    it('calibrates successfully through all workloads and recommends Max', async () => {
+      vi.useRealTimers();
+      mockSettings.perf!.level = 'Automatic';
+
+      let time = 1000;
+      vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb: FrameRequestCallback) => {
+        time += 16;
+        setTimeout(() => cb(time), 1);
+        return 1;
+      });
+
+      const applySpy = vi.spyOn(performanceManager, 'applyProfile');
+      await performanceManager.runCalibration();
+
+      expect(applySpy).toHaveBeenCalled();
+    });
+
     it('should preserve manual profile selection after calibration', async () => {
       vi.useRealTimers();
       mockSettings.perf!.level = 'Max'; // Manual profile

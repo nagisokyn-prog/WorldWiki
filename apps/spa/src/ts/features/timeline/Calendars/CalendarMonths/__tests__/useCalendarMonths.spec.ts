@@ -19,6 +19,7 @@ describe('useCalendarMonths', () => {
     const emptyProps: any = { modelValue: {} };
     const hook = useCalendarMonths(emptyProps);
 
+    hook.moveItem(0, 1);
     hook.removeMonth(0);
     expect(emptyProps.modelValue.месяцы).toBeUndefined();
 

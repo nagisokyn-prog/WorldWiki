@@ -300,6 +300,17 @@ describe('CalendarMath', () => {
       const res = CalendarMath.calculateMoonPhases(-1000, moons as any, defaultCal);
       expect(res.length).toBe(1);
       expect(res[0].name).toBeDefined();
+
+      // Waxing phase (0.2) and waning phase (0.7)
+      const testMoons = [
+        { name: 'WaxMoon', period_days: 10, initial_phase: 0.2 },
+        { name: 'WaneMoon', period_days: 10, initial_phase: 0.7 },
+      ];
+      const resPhases = CalendarMath.calculateMoonPhases(0, testMoons as any, defaultCal);
+      expect(resPhases[0].emoji).toBe('🌓');
+      expect(resPhases[0].name).toBe('Растущая');
+      expect(resPhases[1].emoji).toBe('🌗');
+      expect(resPhases[1].name).toBe('Убывающая');
     });
   });
 

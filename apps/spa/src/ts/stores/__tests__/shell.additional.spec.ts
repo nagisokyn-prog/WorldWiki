@@ -485,10 +485,10 @@ describe('shell store additional coverage', () => {
       const { useSchemaStore } = await import('../schema');
       const schemaStore = useSchemaStore();
       vi.mocked(schemaStore.loadSchema).mockResolvedValueOnce({
-        titleField: 'profile.name',
+        titleField: 'profile.deep.name',
       } as any);
       vi.mocked(entityApi.saveEntity).mockResolvedValueOnce({ success: true, id: 'new_ent_1' } as any);
-      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'new_ent_1', profile: { name: 'New Nested Entity' } } as any);
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'new_ent_1', profile: { deep: { name: 'New Nested Entity' } } } as any);
 
       await store.addNewEntity('hero');
 

@@ -138,5 +138,10 @@ describe('packages/components api.service', () => {
       expect(await apiModule.invoke('load_theme')).toBeNull();
       expect(await apiModule.invoke('unknown_cmd')).toBeNull();
     });
+
+    it('attaches globals to window in browser/jsdom environment', () => {
+      expect(window.__TSK_INVOKE__).toBeDefined();
+      expect(window.__TSK_STRINGIFY_ID__).toBeDefined();
+    });
   });
 });

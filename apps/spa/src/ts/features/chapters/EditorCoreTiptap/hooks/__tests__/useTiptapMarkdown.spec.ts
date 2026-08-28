@@ -171,6 +171,10 @@ describe('useTiptapMarkdown', () => {
       // Null target
       const nullTargetEvent = { key: 'q', ctrlKey: true, target: null } as any;
       expect(() => md.onMarkdownKeydown(nullTargetEvent)).not.toThrow();
+
+      // Normal key without ctrl/meta
+      const normalKeyEvent = { key: 'a', ctrlKey: false, metaKey: false, target: textarea } as any;
+      expect(() => md.onMarkdownKeydown(normalKeyEvent)).not.toThrow();
     });
 
     it('tests turndown entityLinks replacement with various href formats', () => {

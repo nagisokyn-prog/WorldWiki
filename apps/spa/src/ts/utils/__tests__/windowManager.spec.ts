@@ -6,7 +6,9 @@ vi.mock('@tauri-apps/api/webviewWindow', () => {
   const mockWebview = vi.fn().mockImplementation(function (this: any, label: string, options: any) {
     this.label = label;
     this.options = options;
-    this.once = vi.fn();
+    this.once = vi.fn((event: string, cb: (e?: any) => void) => {
+      cb({ error: 'dummy' });
+    });
     this.setFocus = vi.fn();
     return this;
   });

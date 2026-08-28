@@ -615,5 +615,22 @@ describe('api.client (Tauri invoke contract tests)', () => {
       await api.deleteCite('cite1');
       expect(invoke).toHaveBeenCalledWith('delete_cite', { id: 'cite1' });
     });
+
+    it('Plot Promises CRUD', async () => {
+      const promise: any = { id: 'prom1', quote: 'Test' };
+      vi.mocked(invoke).mockResolvedValueOnce([promise]).mockResolvedValueOnce(promise).mockResolvedValueOnce(promise);
+
+      expect(await api.getPlotPromises('proj_1')).toEqual([promise]);
+      expect(invoke).toHaveBeenCalledWith('get_plot_promises', { project: 'proj_1' });
+
+      expect(await api.getPlotPromise('prom1')).toEqual(promise);
+      expect(invoke).toHaveBeenCalledWith('get_plot_promise', { id: 'prom1' });
+
+      expect(await api.savePlotPromise('proj_1', promise)).toEqual(promise);
+      expect(invoke).toHaveBeenCalledWith('save_plot_promise', { project: 'proj_1', data: promise });
+
+      await api.deletePlotPromise('prom1');
+      expect(invoke).toHaveBeenCalledWith('delete_plot_promise', { id: 'prom1' });
+    });
   });
 });

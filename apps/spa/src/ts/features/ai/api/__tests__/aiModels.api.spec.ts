@@ -19,6 +19,24 @@ describe('aiModelsApi', () => {
     expect(res).toEqual([{ value: 'm1', label: 'Model 1' }]);
   });
 
+  it('fetches installed models for local provider', async () => {
+    vi.mocked(invoke).mockResolvedValueOnce([
+      { filename: 'llama3.gguf', name: 'Llama 3', size_gb: 4.5 },
+    ]);
+
+    const res = await aiModelsApi.fetchModels('local', '');
+    expect(invoke).toHaveBeenCalledWith('list_installed_models');
+    expect(res).toEqual([
+      {
+        value: 'llama3.gguf',
+        label: 'llama3.gguf',
+        description: 'Llama 3 (4.5 ГБ)',
+        context_length: 8192,
+        max_completion_tokens: 4096,
+      },
+    ]);
+  });
+
   it('fetches models for openrouter via fetchModels delegation', async () => {
     const mockJson = {
       data: [

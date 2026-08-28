@@ -84,6 +84,36 @@ describe('chapterService', () => {
         })
       );
     });
+
+    it('formats participants with objects and strings', async () => {
+      vi.mocked(api.saveChapter).mockResolvedValue({} as any);
+
+      const data: any = {
+        id: 'ch_parts',
+        participants: [
+          'direct_string',
+          { id: 'hero', type: 'character' },
+          { id: 'loc:castle', type: 'location' },
+          { id: 'no_type' },
+          123,
+          null,
+        ],
+      };
+      await chapterService.save('my_world', data);
+
+      expect(api.saveChapter).toHaveBeenCalledWith(
+        'my_world',
+        expect.objectContaining({
+          participants: [
+            'direct_string',
+            'character:hero',
+            'loc:castle',
+            'no_type',
+            '123',
+          ],
+        })
+      );
+    });
   });
 
   describe('delete', () => {

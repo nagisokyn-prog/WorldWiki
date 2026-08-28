@@ -135,4 +135,50 @@ describe('useEntityHelpers', () => {
     helpers.setProp(null, 'name', 'King Arthur');
     expect(formData.value.name).toBe('King Arthur');
   });
+
+  describe('getPhotoUrl', () => {
+    it('handles web prefixes and cache', () => {
+      const helpers = useEntityHelpers(formData, config);
+
+      expect(helpers.getPhotoUrl('')).toBe('');
+      expect(helpers.getPhotoUrl('http://example.com/img.png')).toBe('http://example.com/img.png');
+      expect(helpers.getPhotoUrl('data:image/png;base64,...')).toBe('data:image/png;base64,...');
+      expect(helpers.getPhotoUrl('blob:http://...')).toBe('blob:http://...');
+      expect(helpers.getPhotoUrl('asset://...')).toBe('asset://...');
+      expect(helpers.getPhotoUrl('tauri://...')).toBe('tauri://...');
+    });
+
+    it('converts file src via tauri variants and handles errors', async () => {
+      const helpers = useEntityHelpers(formData, config);
+
+      // 1. __TAURI__.core.convertFileSrc
+      (window as any).__TAURI__ = {
+        core: { convertFileSrc: (p: string) => `asset://${p}` },
+      };
+      expect(helpers.getPhotoUrl('C:/path/1.png')).toBe('asset://C:/path/1.png');
+
+      // 2. __TAURI__.convertFileSrc
+      (window as any).__TAURI__ = {
+        convertFileSrc: (p: string) => `tauri://${p}`,
+      };
+      expect(helpers.getPhotoUrl('C:/path/2.png')).toBe('tauri://C:/path/2.png');
+
+      // 3. __TAURI_INTERNALS__.convertFileSrc
+      delete (window as any).__TAURI__;
+      (window as any).__TAURI_INTERNALS__ = {
+        convertFileSrc: (p: string) => `internal://${p}`,
+      };
+      expect(helpers.getPhotoUrl('C:/path/3.png')).toBe('internal://C:/path/3.png');
+
+      // 4. Exception in convertFileSrc
+      (window as any).__TAURI_INTERNALS__ = {
+        convertFileSrc: () => { throw new Error('Crash'); },
+      };
+      expect(helpers.getPhotoUrl('C:/path/4.png')).toBe('C:/path/4.png');
+
+      // 5. No Tauri at all
+      delete (window as any).__TAURI_INTERNALS__;
+      expect(helpers.getPhotoUrl('C:/path/5.png')).toBe('C:/path/5.png');
+    });
+  });
 });

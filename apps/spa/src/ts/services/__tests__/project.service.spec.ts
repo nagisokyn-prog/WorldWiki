@@ -40,12 +40,13 @@ describe('projectService (Contract & Integration)', () => {
 
     it('handles response wrapped in { projects: [...] } object', async () => {
       vi.mocked(api.getProjects).mockResolvedValue({
-        projects: [{ name: 'Wrapped Project' }]
+        projects: [{ name: 'Wrapped Project' }, { icon: '✨' }]
       } as any);
 
       const res = await projectService.getProjects();
-      expect(res).toHaveLength(1);
+      expect(res).toHaveLength(2);
       expect(res[0].name).toBe('Wrapped Project');
+      expect(res[1].name).toBe('');
     });
   });
 

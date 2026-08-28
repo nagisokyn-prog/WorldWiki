@@ -410,5 +410,15 @@ describe('useTimelineStore', () => {
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual({ type: 'char', id: '1', name: 'Hero' });
     });
+
+    it('parses raw id without colon and HTML links', () => {
+      const text = '((Plain))[pure_id_123] and <a href="entity://location/castle_1">Камелот</a> and <a href="http://wiki?type=char&id=char_99">Мерлин</a>';
+      const result = store.parseParticipants(text);
+
+      expect(result).toHaveLength(3);
+      expect(result[0]).toEqual({ type: 'entity', id: 'pure_id_123', name: 'Plain' });
+      expect(result[1]).toEqual({ type: 'location', id: 'castle_1', name: 'Камелот' });
+      expect(result[2]).toEqual({ type: 'char', id: 'char_99', name: 'Мерлин' });
+    });
   });
 });

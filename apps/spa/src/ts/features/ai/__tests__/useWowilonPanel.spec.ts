@@ -268,6 +268,31 @@ describe('useWowilonPanel', () => {
       expect(groups[1].activeMessage.id).toBe('a1_v2');
       expect(groups[2].activeMessage.id).toBe('u2');
     });
+
+    it('extracts <think> tags into reasoning', () => {
+      panel.allMessages.value = [
+        {
+          id: 'a1',
+          role: 'assistant',
+          content: '<think>Reasoning thoughts</think>Clean message',
+          parent_id: null,
+          is_active: true,
+        },
+        {
+          id: 'a2',
+          role: 'assistant',
+          content: '<think>Unfinished thoughts',
+          parent_id: null,
+          is_active: true,
+        },
+      ];
+
+      const groups = panel.renderedMessages.value;
+      expect(groups[0].activeMessage.reasoning).toBe('Reasoning thoughts');
+      expect(groups[0].activeMessage.content).toBe('Clean message');
+      expect(groups[1].activeMessage.reasoning).toBe('Unfinished thoughts');
+      expect(groups[1].activeMessage.content).toBe('');
+    });
   });
 
   describe('Stream chunk event listening', () => {

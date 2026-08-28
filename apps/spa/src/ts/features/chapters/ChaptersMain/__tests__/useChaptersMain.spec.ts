@@ -307,4 +307,24 @@ describe('useChaptersMain', () => {
     await flushPromises();
     wrapperNoCtrl.unmount();
   });
+
+  it('handles handleAddParticipant and avoids duplicates', () => {
+    const main = useChaptersMain(props, emit);
+    mockStore.currentChapter.value = {
+      id: 'ch_1',
+      participants: [{ id: 'char_1', type: 'character' }],
+    };
+
+    // Add duplicate
+    main.handleAddParticipant({ id: 'char_1', type: 'character' });
+    expect(mockStore.currentChapter.value.participants).toHaveLength(1);
+
+    // Add new
+    main.handleAddParticipant({ id: 'char_2', type: 'character', name: 'Bob' });
+    expect(mockStore.currentChapter.value.participants).toHaveLength(2);
+
+    // Add when currentChapter is null
+    mockStore.currentChapter.value = null;
+    expect(() => main.handleAddParticipant({ id: 'char_3', type: 'character' })).not.toThrow();
+  });
 });

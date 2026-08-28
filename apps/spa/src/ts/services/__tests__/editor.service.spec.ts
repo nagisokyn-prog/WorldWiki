@@ -143,6 +143,9 @@ describe('editorService', () => {
       };
       expect(editorService.getCurrentMode()).toBe('markdown');
 
+      editorService.editor = {} as any;
+      expect(editorService.getCurrentMode()).toBe('wysiwyg');
+
       editorService.editor = null;
       expect(editorService.getCurrentMode()).toBe('wysiwyg');
     });

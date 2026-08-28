@@ -236,6 +236,25 @@ describe('entityApi', () => {
       });
       expect(res).toEqual({ success: true });
     });
+
+    it('flattenEntity handles data object and getSchemas handles fetch errors', async () => {
+      const flattened = entityApi.flattenEntity({
+        id: 'e1',
+        data: { customField: 'value1' },
+      });
+      expect(flattened.customField).toBe('value1');
+      expect(flattened.data).toBeUndefined();
+
+      // getSchemas catch error when fetch fails
+      vi.mocked(components.invoke).mockResolvedValueOnce([]); // empty DB schemas
+      const spyError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Fetch failure'));
+
+      const dict = await entityApi.getSchemas('proj_empty');
+      expect(dict).toBeDefined();
+      expect(spyError).toHaveBeenCalled();
+      spyError.mockRestore();
+    });
   });
 
   describe('Connections methods', () => {

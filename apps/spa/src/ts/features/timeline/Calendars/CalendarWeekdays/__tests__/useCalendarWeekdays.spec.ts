@@ -16,6 +16,7 @@ describe('useCalendarWeekdays', () => {
     const emptyProps: any = { modelValue: {} };
     const hook = useCalendarWeekdays(emptyProps);
 
+    hook.moveItem(0, 1);
     hook.removeDay(0);
     hook.updateDay(0, 'Test');
     expect(emptyProps.modelValue.названия_дней_недели).toBeUndefined();

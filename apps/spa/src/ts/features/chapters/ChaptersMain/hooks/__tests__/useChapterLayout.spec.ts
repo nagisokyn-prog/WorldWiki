@@ -40,6 +40,14 @@ describe('useChapterLayout', () => {
     expect(layout.isArcPlanOpen.value).toBe(true);
     vi.advanceTimersByTime(60);
     expect(mockArcRef.addItem).toHaveBeenCalled();
+
+    const mockChapterRef = { addItem: vi.fn() };
+    layout.chapterPlanRef.value = mockChapterRef;
+    expect(layout.isChapterPlanOpen.value).toBe(false);
+    layout.addChapterPlanItem();
+    expect(layout.isChapterPlanOpen.value).toBe(true);
+    vi.advanceTimersByTime(60);
+    expect(mockChapterRef.addItem).toHaveBeenCalled();
   });
 
   it('handles chapters sidebar resizing with limits', () => {

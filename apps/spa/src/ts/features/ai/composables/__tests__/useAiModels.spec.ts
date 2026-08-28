@@ -65,6 +65,11 @@ describe('useAiModels', () => {
     await composable.fetchModels('local', 'key123');
     expect(aiModelsApi.fetchModels).toHaveBeenCalledWith('local', '');
     expect(composable.availableModels.value).toEqual([{ value: 'llama3', label: 'Llama 3' }]);
+
+    // Local error catch
+    vi.mocked(aiModelsApi.fetchModels).mockRejectedValueOnce(new Error('Local fail'));
+    await composable.fetchModels('local', 'key123');
+    expect(composable.isFetchingModels.value).toBe(false);
   });
 
   it('handles unforced network errors without setting fetchError', async () => {

@@ -112,7 +112,7 @@ describe('useSchemaEditorMain', () => {
     main.showHistory.value = true;
 
     // Success save
-    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce(undefined as any);
+    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce({ id: 'saved_schema_id' } as any);
     await main.saveSchema();
     expect(appAlert).toHaveBeenCalledWith('Схема сохранена!');
     expect(main.isHistoryPreviewMode.value).toBe(false);

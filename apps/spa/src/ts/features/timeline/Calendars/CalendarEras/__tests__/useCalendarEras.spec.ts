@@ -19,6 +19,7 @@ describe('useCalendarEras', () => {
     const emptyProps: any = { modelValue: {} };
     const hook = useCalendarEras(emptyProps);
 
+    hook.moveItem(0, 1);
     hook.removeEra(0);
     expect(emptyProps.modelValue.эпохи).toBeUndefined();
 

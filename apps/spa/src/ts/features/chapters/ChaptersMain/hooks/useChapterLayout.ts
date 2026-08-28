@@ -145,7 +145,12 @@ export function useChapterLayout() {
     }
 
     const savedWidth = localStorage.getItem('chapters-tools-panel-width');
-    if (savedWidth) rightPanelWidth.value = parseInt(savedWidth);
+    if (savedWidth) {
+      const parsed = parseInt(savedWidth);
+      if (!isNaN(parsed)) {
+        rightPanelWidth.value = Math.max(200, Math.min(600, parsed));
+      }
+    }
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);

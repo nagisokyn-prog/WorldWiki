@@ -2,7 +2,7 @@
   <div class="chapters-view-container" :class="{ 'zen-mode-active': isZenMode }">
     
     <!-- MAIN AREA -->
-    <div v-if="currentChapter" class="flex-1 flex overflow-hidden">
+    <div v-if="currentChapter" class="flex-1 flex overflow-hidden min-w-0">
       
       <!-- Editor -->
       <EditorCore
@@ -13,18 +13,20 @@
         :has-unsaved-changes="hasUnsavedChanges"
         :initial-scroll-pos="typeof currentChapter.scrollPos === 'number' ? currentChapter.scrollPos : 0"
         :changed-fields="changedFields"
+        class="flex-1 min-w-0"
         @change="markUnsaved"
         @save="triggerSave"
         @open-entity="handleOpenEntity"
         @scroll-change="handleScrollChange"
         @toggle-history="toggleHistory"
+        @add-participant="handleAddParticipant"
       />
 
       <!-- Right Panel Resizer -->
       <div v-if="isRightPanelVisible" class="panel-resize-handle" @mousedown="startResize"></div>
 
       <!-- Right Panel -->
-      <div v-if="isRightPanelVisible" class="chapter-right-panel" :style="{ width: rightPanelWidth + 'px' }">
+      <div v-if="isRightPanelVisible" class="chapter-right-panel flex-shrink-0" :style="{ width: rightPanelWidth + 'px', minWidth: '200px', maxWidth: '600px' }">
 
         <!-- Том или Арка выбрана: показываем только план -->
         <div v-if="localActiveTreeNode && localActiveTreeNode.type !== 'chapter'" class="flex-1 flex-col overflow-hidden">
@@ -268,7 +270,7 @@ const {
   closeFloatingEditor, startResize,
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
   markUnsaved, handleOpenEntity,
-  handleExport, handleScrollChange
+  handleExport, handleScrollChange, handleAddParticipant
 } = useChaptersMain({
   project: props.project,
   controlledChapterId: props.controlledChapterId || undefined,

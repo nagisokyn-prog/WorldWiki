@@ -17,7 +17,7 @@
       @rename="handleRename"
       @cancel-rename="handleCancelRename"
       @delete="handleDelete"
-      @edit-section="(sectionId: string) => $emit('edit-schema', sectionId)"
+      @edit-section="(sectionId) => $emit('edit-schema', sectionId)"
       @delete-section="handleDeleteSection"
     >
       <template #header-actions>

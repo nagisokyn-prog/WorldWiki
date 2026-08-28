@@ -71,7 +71,7 @@ export function useTiptapMarkdown(
       const processed = preprocessMarkdown(markdownContent.value);
       let html = mdIt.render(processed);
       // Transform custom syntax to standard HTML links for Tiptap
-      html = html.replace(/\(\((.*?)\)\)\[(ui_editor\.html[^\]]+)\]/g, '<a href="/$2">$1</a>');
+      html = html.replace(/\(\((.*?)\)\)\[(.*?)\]/g, '<a href="/$2">$1</a>');
       if (editor.value) {
         editor.value.commands.setContent(html);
       }
@@ -102,7 +102,7 @@ export function useTiptapMarkdown(
       const target = e.target as HTMLTextAreaElement;
       if (target) {
         const textBefore = target.value.substring(0, target.selectionStart);
-        if (/\(\([^)]+\)\)$/.test(textBefore)) {
+        if (/\(\([^)]*\)\)$/.test(textBefore)) {
           e.preventDefault();
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'markdown' } }));
         }

@@ -87,10 +87,10 @@ export const useChapterStore = defineStore('chapter', () => {
     isSaving.value = true;
 
     const timelineStore = useTimelineStore();
-    const autoParts = timelineStore.parseParticipants(currentChapter.value.content);
+    const autoParts = timelineStore.parseParticipants(currentChapter.value.content || '');
     const participantsList = (currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string; autoParsed?: boolean; [key: string]: unknown }>;
-    autoParts.forEach(p => {
-      if (!participantsList.some((ep) => ep.id === p.id && ep.type === p.type)) {
+    autoParts.forEach((p: { id?: string; type?: string; name?: string }) => {
+      if (!participantsList.some((ep: { id?: string; type?: string }) => ep.id === p.id && ep.type === p.type)) {
         participantsList.push({ ...p, autoParsed: true });
       }
     });
@@ -137,6 +137,16 @@ export const useChapterStore = defineStore('chapter', () => {
       if (!full.timeline_events) full.timeline_events = [];
       if (!full.participants) full.participants = [];
       if (!full.footnotes) full.footnotes = {};
+
+      const timelineStore = useTimelineStore();
+      const autoParts = timelineStore.parseParticipants(full.content || '');
+      const partsList = (full.participants || []) as unknown as Array<{ id?: string; type?: string; name?: string; autoParsed?: boolean; [key: string]: unknown }>;
+      autoParts.forEach((p: { id?: string; type?: string; name?: string }) => {
+        if (!partsList.some((ep: { id?: string; type?: string; name?: string }) => (ep.id === p.id && ep.type === p.type) || (ep.name === p.name && ep.type === p.type))) {
+          partsList.push({ ...p, autoParsed: true });
+        }
+      });
+      full.participants = partsList as unknown as string[];
 
       currentChapter.value = JSON.parse(JSON.stringify(full));
       currentChapterId.value = id;

@@ -67,6 +67,11 @@ export function useChaptersMain(
     loadChapters(props.project);
   };
 
+  const onAddParticipantEvent = (e: Event) => {
+    const detail = (e as CustomEvent<{ type: string; id: string; name?: string }>).detail;
+    if (detail) handleAddParticipant(detail);
+  };
+
   onMounted(async () => {
     console.log('🚀 ChaptersMain onMounted');
     await loadChapters(props.project);
@@ -79,12 +84,14 @@ export function useChaptersMain(
     document.addEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
     document.addEventListener('ww:hierarchy-changed', reloadHierarchy as EventListener);
     document.addEventListener('ww:chapter-renamed', handleGlobalChapterRename as EventListener);
+    document.addEventListener('ww:add-participant', onAddParticipantEvent as EventListener);
   });
 
   onUnmounted(() => {
     document.removeEventListener('ww:trigger-chapter-save', triggerSave as EventListener);
     document.removeEventListener('ww:hierarchy-changed', reloadHierarchy as EventListener);
     document.removeEventListener('ww:chapter-renamed', handleGlobalChapterRename as EventListener);
+    document.removeEventListener('ww:add-participant', onAddParticipantEvent as EventListener);
     if (saveTimeout) clearTimeout(saveTimeout);
   });
 
@@ -106,8 +113,42 @@ export function useChaptersMain(
     }
   }, { immediate: true });
 
+  const syncAutoParticipants = () => {
+    if (!currentChapter.value) return;
+    const timelineStore = useTimelineStore();
+    const autoParts = timelineStore.parseParticipants(currentChapter.value.content || '');
+    const currentList = (currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string; name?: string; autoParsed?: boolean; [key: string]: unknown }>;
+    
+    const manualParts = currentList.filter((p: { autoParsed?: boolean; [key: string]: unknown }) => typeof p === 'object' && p && !p.autoParsed);
+    const newAutoParts = autoParts.map(p => ({ ...p, autoParsed: true }));
+    
+    const combined = [...manualParts];
+    newAutoParts.forEach((ap: { id?: string; type?: string; name?: string; autoParsed?: boolean }) => {
+      if (!combined.some((p: { id?: string; type?: string; name?: string }) => (p.id && p.id === ap.id && p.type === ap.type) || (p.name && p.name === ap.name))) {
+        combined.push(ap);
+      }
+    });
+    
+    currentChapter.value.participants = combined as unknown as string[];
+  };
+
+  const handleAddParticipant = (p: { type: string; id: string; name?: string }) => {
+    if (!currentChapter.value) return;
+    const currentList = (currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string; name?: string; autoParsed?: boolean; [key: string]: unknown }>;
+    const rawId = p.id.includes(':') ? p.id.split(':').slice(1).join(':') : p.id;
+    if (!currentList.some(item => item.id === p.id || (rawId && item.id && item.id.includes(rawId)))) {
+      currentChapter.value.participants = [...currentList, { type: p.type, id: p.id, name: p.name || p.id, autoParsed: true }] as unknown as string[];
+      markUnsaved();
+    }
+  };
+
+  watch(() => currentChapter.value?.content, () => {
+    syncAutoParticipants();
+  }, { immediate: true });
+
   const markUnsaved = () => {
     hasUnsavedChanges.value = true;
+    syncAutoParticipants();
     emit('chapter-unsaved');
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => saveChapter(props.project, emit), 2000);
@@ -161,6 +202,6 @@ export function useChaptersMain(
     ...floatingHook,
     triggerSave, markUnsaved, onTreeNodeSelect, openChapterFromTree,
     createChapterIn, handleRenameChapter, handleDeleteChapter, handleExport,
-    handleScrollChange
+    handleScrollChange, handleAddParticipant
   };
 }

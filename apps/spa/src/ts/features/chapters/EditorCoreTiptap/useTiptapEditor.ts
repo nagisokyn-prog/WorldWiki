@@ -34,7 +34,7 @@ const EnterHandler = Extension.create({
         const { state } = editor;
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        if (/\(\([^)]+\)\)$/.test(textBefore)) {
+        if (/\(\([^)]*\)\)$/.test(textBefore)) {
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
           return true;
         }
@@ -44,7 +44,7 @@ const EnterHandler = Extension.create({
         const { state } = editor;
         const { $from } = state.selection;
         const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-        if (/\(\([^)]+\)\)$/.test(textBefore)) {
+        if (/\(\([^)]*\)\)$/.test(textBefore)) {
           document.dispatchEvent(new CustomEvent('ww:open-entity-selector', { detail: { target: 'wysiwyg' } }));
           return true;
         }

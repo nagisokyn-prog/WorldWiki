@@ -396,6 +396,14 @@ describe('useTimelineStore', () => {
       expect(result[1]).toEqual({ type: 'org', id: 'm1', name: 'Merlin' });
     });
 
+    it('supports empty (()) with id parameter or url', () => {
+      const text = '(())[id=entities%3Amkok8w4qke0t6bkx9qg0] and (())[ui_editor.html?project=proj&type=character&id=entities%3A123]';
+      const result = store.parseParticipants(text);
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ type: 'entity', id: 'entities:mkok8w4qke0t6bkx9qg0', name: '' });
+      expect(result[1]).toEqual({ type: 'character', id: 'entities:123', name: '' });
+    });
+
     it('deduplicates participants in legacy format', () => {
       const text = '[Hero](...type=char&id=1...) and again [Hero](...type=char&id=1...)';
       const result = store.parseParticipants(text);

@@ -167,22 +167,27 @@ const handleOpenEntitySelector = (e: Event) => {
 
 const markdownTextareaRef = ref<HTMLTextAreaElement | null>(null);
 
-const handleEntityInsert = (payload: { type: string; id: string }) => {
+const handleEntityInsert = (payload: { type: string; id: string; name?: string }) => {
   const url = `ui_editor.html?project=${encodeURIComponent(props.project)}&type=${encodeURIComponent(payload.type)}&id=${encodeURIComponent(payload.id)}`;
-  const linkText = `[${url}]`;
+  const displayName = payload.name || payload.id;
 
   if (activeEditorTarget.value === 'wysiwyg' && (editorMode.value === 'wysiwyg' || editorMode.value === 'split')) {
     if (editor.value) {
       const { state } = editor.value;
       const { $from } = state.selection;
       const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-      const match = /\(\(([^)]+)\)\)$/.exec(textBefore);
+      const match = /\(\(([^)]*)\)\)$/.exec(textBefore);
       if (match) {
         const start = $from.pos - match[0].length;
         const end = $from.pos;
+        const finalName = match[1]?.trim() || displayName;
         editor.value.chain().focus()
           .deleteRange({ from: start, to: end })
-          .insertContent(`<a href="/${url}">${match[1]}</a>`)
+          .insertContent(`<a href="/${url}">${finalName}</a>`)
+          .run();
+      } else {
+        editor.value.chain().focus()
+          .insertContent(`<a href="/${url}">${displayName}</a>`)
           .run();
       }
     }
@@ -190,9 +195,28 @@ const handleEntityInsert = (payload: { type: string; id: string }) => {
     const target = markdownTextareaRef.value;
     if (target) {
       target.focus();
-      document.execCommand('insertText', false, linkText);
+      const val = target.value;
+      const selStart = target.selectionStart;
+      const selEnd = target.selectionEnd;
+      const before = val.substring(0, selStart);
+      const match = /\(\(([^)]*)\)\)$/.exec(before);
+      if (match) {
+        const replaceStart = selStart - match[0].length;
+        const finalName = match[1]?.trim() || displayName;
+        const fullInsert = `((${finalName}))[${url}]`;
+        target.setRangeText(fullInsert, replaceStart, selEnd, 'end');
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      } else {
+        const fullInsert = `((${displayName}))[${url}]`;
+        target.setRangeText(fullInsert, selStart, selEnd, 'end');
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     }
   }
+
+  // Мгновенная регистрация участника в главе
+  emit('add-participant', { type: payload.type, id: payload.id, name: payload.name });
+  document.dispatchEvent(new CustomEvent('ww:add-participant', { detail: { type: payload.type, id: payload.id, name: payload.name } }));
 };
 
 const props = withDefaults(defineProps<{
@@ -212,7 +236,7 @@ const props = withDefaults(defineProps<{
   changedFields: () => []
 });
 
-const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history', 'open-entity-selector']);
+const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history', 'open-entity-selector', 'add-participant']);
 
 const {
     modeOptions,

@@ -82,6 +82,7 @@ export interface EntitySelectorItem {
 export interface InsertEntityPayload {
   type: string;
   id: string;
+  name?: string;
 }
 
 const props = withDefaults(defineProps<{
@@ -123,17 +124,18 @@ const filteredTypes = computed(() => {
 const filteredEntities = computed(() => {
   if (!searchQuery.value) return entitiesList.value;
   const q = searchQuery.value.toLowerCase();
-  return entitiesList.value.filter(e => 
-    (e.name && e.name.toLowerCase().includes(q)) || 
-    (e.id && String(e.id).toLowerCase().includes(q))
-  );
+  return entitiesList.value.filter(e => e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q));
 });
 
-watch(() => props.isOpen, async (val) => {
-  if (val) {
+const isModalOpen = computed(() => props.isOpen);
+
+watch(isModalOpen, async (open) => {
+  if (open) {
     step.value = 'type';
     searchQuery.value = '';
     selectedIndex.value = 0;
+    selectedType.value = null;
+    entitiesList.value = [];
     if (loadedSchemas.value.length === 0) {
       try {
         loadedSchemas.value = await api.getEntitySchemas(props.project);
@@ -200,7 +202,11 @@ const selectType = async (type: EntityTypeItem) => {
 
 const selectEntity = (entity: EntitySelectorItem) => {
   if (selectedType.value) {
-    emit('insert', { type: selectedType.value.id, id: entity.id });
+    emit('insert', {
+      type: selectedType.value.id,
+      id: entity.id,
+      name: entity.name
+    });
   }
   close();
 };

@@ -427,4 +427,69 @@ describe('CalendarMath', () => {
       expect(roundtrip.minute).toBe(30);
     });
   });
+
+  describe('Literary Date Explainer & Humanized Offset', () => {
+    it('formats anchor offset description in human words', () => {
+      const master = CalendarMath.getDefaultCalendar();
+      master.is_master = true;
+
+      const local = CalendarMath.getDefaultCalendar();
+      local.is_master = false;
+      local.sync_anchor = {
+        linked_to_master: true,
+        local_anchor_date: { era_index: 0, year: 1, month: 0, day: 1, hour: 0, minute: 0 },
+        master_anchor_date: { era_index: 0, year: 1, month: 0, day: 1, hour: 0, minute: 0 },
+      };
+
+      expect(CalendarMath.formatAnchorOffsetDescription(local, master)).toBe('Точка отсчета совпадает с началом Календаря Мира.');
+
+      // Local is 40 year, master is 1 year -> local began 39 years EARLIER
+      local.sync_anchor.local_anchor_date!.year = 40;
+      local.sync_anchor.master_anchor_date!.year = 1;
+      const descEarlier = CalendarMath.formatAnchorOffsetDescription(local, master);
+      expect(descEarlier).toContain('раньше Календаря Мира');
+      expect(descEarlier).toContain('39 г.');
+
+      // Unlinked
+      local.sync_anchor.linked_to_master = false;
+      expect(CalendarMath.formatAnchorOffsetDescription(local, master)).toContain('Календарь ещё не привязан');
+    });
+
+    it('formats daylight without scientific jargon', () => {
+      const daylight = {
+        sunrise: '04:18',
+        sunset: '22:00',
+        zenith: '12:00',
+        duration_hours: 17.7,
+      };
+      const formatted = CalendarMath.formatDaylightLiterary(daylight);
+      expect(formatted).not.toBeNull();
+      expect(formatted!.duration).toBe('Световой день: 17 ч 42 мин');
+      expect(formatted!.sunrise).toBe('Восход: 04:18');
+      expect(formatted!.sunset).toBe('Закат: 22:00');
+    });
+
+    it('generates rich lore explanation and snippet for writer', () => {
+      const master = CalendarMath.getDefaultCalendar();
+      master.is_master = true;
+      master.название = 'Календарь Мира';
+
+      const tribal = CalendarMath.getDefaultCalendar();
+      tribal.is_master = false;
+      tribal.название = 'Племя Тумба-Юмб';
+      tribal.sync_anchor = {
+        linked_to_master: true,
+        local_anchor_date: { era_index: 0, year: 40, month: 0, day: 1, hour: 0, minute: 0 },
+        master_anchor_date: { era_index: 0, year: 1200, month: 0, day: 1, hour: 0, minute: 0 },
+      };
+
+      const date = { era_index: 0, year: 40, month: 0, day: 1, hour: 12, minute: 0 };
+      const explanation = CalendarMath.explainDate(date, tribal, [master, tribal], master);
+
+      expect(explanation.localDateFormatted).toContain('40 год');
+      expect(explanation.masterDateFormatted).toContain('1200 год');
+      expect(explanation.snippet).toContain('40 год');
+      expect(explanation.snippet).toContain('по Календарю Мира');
+    });
+  });
 });

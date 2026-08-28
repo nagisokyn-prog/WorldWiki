@@ -52,10 +52,17 @@ export const useCalendarStore = defineStore('calendar', () => {
 
     try {
       const rawList = (await api.getCalendars(projectName)) as CalendarRecord[];
-      const list = (rawList || []).map((c) => ({
-        ...c,
-        id: normalizeCalendarId(c.id),
-      }));
+      const list = (rawList || []).map((c) => {
+        let calData = c.data;
+        if (calData && typeof calData === 'object' && 'data' in calData && typeof (calData as Record<string, unknown>).data === 'object' && !Array.isArray((calData as Record<string, unknown>).data)) {
+          calData = (calData as Record<string, unknown>).data as any;
+        }
+        return {
+          ...c,
+          id: normalizeCalendarId(c.id),
+          ...(calData ? { data: calData as CalendarData } : {})
+        };
+      });
 
       if (list && list.length > 0) {
         const hasMaster = list.some((c) => c.is_master);

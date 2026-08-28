@@ -38,6 +38,23 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     return CalendarMath.getAbsoluteMinute(currentMasterInput.value, masterCalendar.value.data);
   });
 
+  const maxDaysInCurrentMonth = computed(() => {
+    if (!masterCalendar.value?.data) return 31;
+    return CalendarMath.getDaysInMonth(
+      masterCalendar.value.data,
+      currentMasterInput.value.year,
+      currentMasterInput.value.month
+    );
+  });
+
+  const maxHoursInDay = computed(() => {
+    return masterCalendar.value?.data?.настройки_времени?.часов_в_сутках || 24;
+  });
+
+  const maxMinutesInHour = computed(() => {
+    return masterCalendar.value?.data?.настройки_времени?.минут_в_часе || 60;
+  });
+
   const activeMoons = computed(() => {
     if (!masterCalendar.value?.data?.moons) return [];
     return CalendarMath.calculateMoonPhases(
@@ -133,11 +150,42 @@ export function useGlobalCalendarWidget(props: { project: string }) {
   const openAtlas = () => { isAtlasOpen.value = true; };
   const closeAtlas = () => { isAtlasOpen.value = false; };
 
+  const isExplainerOpen = ref(false);
+  const toggleExplainer = () => { isExplainerOpen.value = !isExplainerOpen.value; };
+  const closeExplainer = () => { isExplainerOpen.value = false; };
+
+  const dateExplanation = computed(() => {
+    if (!masterCalendar.value?.data) return null;
+    const allCals = [
+      masterCalendar.value.data,
+      ...(localCalendars.value.map(c => c.data).filter(Boolean) as any[])
+    ];
+    const activeLocal = localCalendars.value.find(c => c.id === selectedLocalCal.value)?.data;
+    return CalendarMath.explainDate(
+      currentMasterInput.value,
+      activeLocal || masterCalendar.value.data,
+      allCals,
+      masterCalendar.value.data
+    );
+  });
+
+  const isCopied = ref(false);
+  const copySnippet = async () => {
+    if (dateExplanation.value?.snippet && navigator?.clipboard) {
+      await navigator.clipboard.writeText(dateExplanation.value.snippet);
+      isCopied.value = true;
+      setTimeout(() => { isCopied.value = false; }, 2000);
+    }
+  };
+
   return {
     masterCalendar,
     localCalendars,
     selectedLocalCal,
     currentMasterInput,
+    maxDaysInCurrentMonth,
+    maxHoursInDay,
+    maxMinutesInHour,
     formattedMasterDate,
     formattedLocalDate,
     activeMoons,
@@ -147,5 +195,11 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     closeAtlas,
     prevDay,
     nextDay,
+    isExplainerOpen,
+    toggleExplainer,
+    closeExplainer,
+    dateExplanation,
+    isCopied,
+    copySnippet,
   };
 }

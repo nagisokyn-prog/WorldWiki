@@ -132,3 +132,15 @@ export interface CalendarData {
   
   [key: string]: unknown;
 }
+
+export interface LoreDateExplanation {
+  masterDateFormatted: string;
+  localDateFormatted: string;
+  crossDates: Array<{ calendarName: string; formatted: string }>;
+  moons: MoonPhaseResult[];
+  daylightText?: string;
+  sunriseText?: string;
+  sunsetText?: string;
+  holidays: string[];
+  snippet: string;
+}

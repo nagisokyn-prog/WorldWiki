@@ -107,9 +107,24 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, e
     return { season, holiday, moons };
   };
 
-  // Детектор совпадений (культурные коллизии)
+  // Детектор совпадений (культурные коллизии и природные маркеры)
   const activeAlignments = computed(() => {
-    const events: Array<{ calName: string; text: string; type: 'holiday' | 'moon' }> = [];
+    const events: Array<{ calName: string; text: string; type: 'holiday' | 'moon' | 'sun' }> = [];
+    
+    // Световой день планеты
+    const master = masterCalendar.value;
+    if (master) {
+      const daylight = CalendarMath.calculateDaylight(currentWorldMinute.value, master);
+      const daylightInfo = CalendarMath.formatDaylightLiterary(daylight);
+      if (daylightInfo) {
+        events.push({
+          calName: 'Солнце',
+          text: `${daylightInfo.duration} (${daylightInfo.sunrise}, ${daylightInfo.sunset})`,
+          type: 'sun'
+        });
+      }
+    }
+
     for (const calRec of allCalendars.value) {
       const cal = calRec.data as CalendarData;
       if (!cal) continue;

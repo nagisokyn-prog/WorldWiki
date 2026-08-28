@@ -8,6 +8,7 @@
       <div class="gc-header-actions">
         <button class="gc-step-btn interactive-el" title="Предыдущий день" @click="prevDay">◀</button>
         <button class="gc-step-btn interactive-el" title="Следующий день" @click="nextDay">▶</button>
+        <button class="gc-step-btn interactive-el" :style="isExplainerOpen ? 'background: var(--bg-selected); border-color: var(--accent);' : ''" title="🔮 Объяснить дату (сводка для рукописи)" @click="toggleExplainer">🔮</button>
         <button class="gc-atlas-btn interactive-el" title="Открыть Атлас Времени (Синхронизатор)" @click="openAtlas">
           <i class="fas fa-expand-alt"></i>
         </button>
@@ -15,23 +16,74 @@
     </div>
 
     <div v-if="masterCalendar" class="gc-content">
-      <!-- Мировое время с контролами -->
+      <!-- Мировое время с интерактивными инпутами дня, месяца и года -->
       <div class="gc-world-date-box">
-        <div class="gc-date-primary">
-          {{ formattedMasterDate }}
-        </div>
-        <div class="gc-badges-row">
-          <span v-if="activeHoliday" class="gc-badge holiday-badge" title="Праздник в Календаре Мира">
-            🎉 Праздник
-          </span>
-          <span
-            v-for="(moon, mIdx) in activeMoons"
-            :key="mIdx"
-            class="gc-badge moon-badge"
-            :title="`${moon.moon.name}: ${moon.name}`"
+        <div class="gc-date-edit-row">
+          <input
+            v-model.number="currentMasterInput.day"
+            type="number"
+            min="1"
+            :max="maxDaysInCurrentMonth"
+            class="interactive-el gc-day-input"
+            title="День"
+          />
+          <select
+            v-model.number="currentMasterInput.month"
+            class="interactive-el gc-month-select"
+            title="Месяц"
           >
-            {{ moon.emoji }}
-          </span>
+            <option
+              v-for="(m, mIdx) in masterCalendar?.data?.месяцы || []"
+              :key="mIdx"
+              :value="mIdx"
+            >
+              {{ m.название }}
+            </option>
+          </select>
+          <input
+            v-model.number="currentMasterInput.year"
+            type="number"
+            class="interactive-el gc-year-input"
+            title="Год"
+          />
+          <span class="gc-year-suffix">г.</span>
+        </div>
+
+        <div class="gc-time-badge-row">
+          <div class="gc-time-inputs" title="Время суток">
+            <span class="gc-time-icon">🕐</span>
+            <input
+              v-model.number="currentMasterInput.hour"
+              type="number"
+              min="0"
+              :max="maxHoursInDay - 1"
+              class="interactive-el gc-time-input"
+              title="Час"
+            />
+            <span class="gc-time-colon">:</span>
+            <input
+              v-model.number="currentMasterInput.minute"
+              type="number"
+              min="0"
+              :max="maxMinutesInHour - 1"
+              class="interactive-el gc-time-input"
+              title="Минуты"
+            />
+          </div>
+
+          <div class="gc-badges-row">
+            <span v-if="activeHoliday" class="gc-badge holiday-badge" title="Праздник в Календаре Мира">
+              🎉 Праздник
+            </span>
+            <span
+              v-for="(moon, mIdx) in activeMoons"
+              :key="mIdx"
+              class="gc-badge moon-badge"
+              :title="`${moon.moon.name}: ${moon.name}`"
+            >
+              {{ moon.emoji }}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -49,6 +101,61 @@
         <div v-if="selectedLocalCal" class="gc-local-result">
           <span class="gc-arrow">↳</span>
           <span class="gc-local-text">{{ formattedLocalDate }}</span>
+        </div>
+      </div>
+
+      <!-- Карточка «Объяснить дату» для автора -->
+      <div v-if="isExplainerOpen && dateExplanation" class="gc-explainer-card mt-2">
+        <div class="gc-explainer-header">
+          <span class="gc-explainer-title">🔮 Сводка для рукописи</span>
+          <button class="gc-explainer-close-btn" @click="closeExplainer">×</button>
+        </div>
+
+        <div class="gc-explainer-body">
+          <div class="gc-explainer-item">
+            <span class="gc-explainer-dim">🌍 Мир: </span>
+            <span class="gc-explainer-val">{{ dateExplanation.masterDateFormatted }}</span>
+          </div>
+
+          <div v-for="(cd, idx) in dateExplanation.crossDates" :key="idx" class="gc-explainer-item">
+            <span class="gc-explainer-dim">🏛️ {{ cd.calendarName }}: </span>
+            <span class="gc-explainer-val">{{ cd.formatted }}</span>
+          </div>
+
+          <div v-if="dateExplanation.moons.length > 0" class="gc-explainer-item">
+            <span class="gc-explainer-dim">🌙 Небо: </span>
+            <span class="gc-explainer-val">
+              <span v-for="(m, mIdx) in dateExplanation.moons" :key="mIdx" class="mr-2">
+                {{ m.emoji }} {{ m.moon.name }}: {{ m.name }}
+              </span>
+            </span>
+          </div>
+
+          <div v-if="dateExplanation.daylightText" class="gc-explainer-item">
+            <span class="gc-explainer-dim">☀️ День: </span>
+            <span class="gc-explainer-val">
+              {{ dateExplanation.daylightText }}
+              <small class="gc-explainer-dim">({{ dateExplanation.sunriseText }}, {{ dateExplanation.sunsetText }})</small>
+            </span>
+          </div>
+
+          <div v-if="dateExplanation.holidays.length > 0" class="gc-explainer-item">
+            <span class="gc-explainer-dim">🎉 Праздники: </span>
+            <span class="gc-explainer-accent">{{ dateExplanation.holidays.join(', ') }}</span>
+          </div>
+
+          <div class="gc-snippet-container">
+            <div class="gc-snippet-quote">
+              "{{ dateExplanation.snippet }}"
+            </div>
+            <button
+              type="button"
+              class="glass-btn gc-snippet-btn interactive-el"
+              @click="copySnippet"
+            >
+              <span>{{ isCopied ? '✓ Скопировано' : '📋 Скопировать фразу' }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -76,6 +183,10 @@ const {
   masterCalendar,
   localCalendars,
   selectedLocalCal,
+  currentMasterInput,
+  maxDaysInCurrentMonth,
+  maxHoursInDay,
+  maxMinutesInHour,
   formattedMasterDate,
   formattedLocalDate,
   activeMoons,
@@ -85,6 +196,12 @@ const {
   closeAtlas,
   prevDay,
   nextDay,
+  isExplainerOpen,
+  toggleExplainer,
+  closeExplainer,
+  dateExplanation,
+  isCopied,
+  copySnippet,
 } = useGlobalCalendarWidget(props);
 </script>
 

@@ -1,43 +1,63 @@
+/* ==========================================================================
+   GlobalCalendarWidget.css — Компактный адаптивный виджет даты рукописи
+   ========================================================================== */
+
 .global-calendar-widget {
-  padding: 10px 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-panel);
   backdrop-filter: blur(var(--glass-blur-sm, 12px));
   -webkit-backdrop-filter: blur(var(--glass-blur-sm, 12px));
   user-select: none;
+  overflow: hidden;
+}
+
+.global-calendar-widget *,
+.global-calendar-widget *:before,
+.global-calendar-widget *:after {
+  box-sizing: border-box;
 }
 
 .gc-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  width: 100%;
 }
 
 .gc-header-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
 }
 
 .gc-icon {
-  font-size: 14px;
+  font-size: 13px;
+  flex-shrink: 0;
 }
 
 .gc-title {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .gc-header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  flex-shrink: 0;
 }
 
 .gc-step-btn {
@@ -45,13 +65,14 @@
   border: 1px solid var(--border-color);
   color: var(--text-muted);
   border-radius: var(--radius-xs, 4px);
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   font-size: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
   transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
@@ -66,13 +87,14 @@
   border: 1px solid var(--border-active);
   color: var(--accent);
   border-radius: var(--radius-xs, 4px);
-  width: 22px;
-  height: 22px;
-  font-size: 10px;
+  width: 20px;
+  height: 20px;
+  font-size: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  padding: 0;
   transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
   margin-left: 2px;
 }
@@ -83,33 +105,162 @@
   box-shadow: var(--shadow-glow);
 }
 
+.gc-content {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
+/* Карточка Мирового времени */
 .gc-world-date-box {
+  width: 100%;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm, 6px);
   padding: 6px 8px;
-  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
 }
 
-.gc-date-primary {
-  font-size: 12px;
+.gc-date-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.gc-day-input {
+  width: 32px;
+  min-width: 28px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 11px;
   font-weight: 600;
+  padding: 2px 2px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
   color: var(--text-main);
-  line-height: 1.3;
+  outline: none;
+}
+
+.gc-day-input:focus,
+.gc-year-input:focus,
+.gc-month-select:focus,
+.gc-time-input:focus {
+  border-color: var(--accent);
+}
+
+.gc-month-select {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 4px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-main);
+  outline: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.gc-year-input {
+  width: 48px;
+  min-width: 40px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 2px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-main);
+  outline: none;
+}
+
+.gc-year-suffix {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Строка времени суток и маркеров (луны, праздники) */
+.gc-time-badge-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.gc-time-inputs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-input);
+  padding: 1px 4px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.gc-time-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-right: 2px;
+}
+
+.gc-time-input {
+  width: 20px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 0;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.gc-time-input::-webkit-outer-spin-button,
+.gc-time-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.gc-time-colon {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-muted);
+  line-height: 1;
 }
 
 .gc-badges-row {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 4px;
+  gap: 3px;
   flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+  flex: 1;
 }
 
 .gc-badge {
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: var(--radius-xs, 3px);
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
 }
 
 .holiday-badge {
@@ -125,33 +276,42 @@
   border: 1px solid var(--border-color);
 }
 
+/* Сравнительный локальный календарь */
 .gc-local-section {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gc-local-selector-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
 }
 
 .gc-local-label {
   font-size: 10px;
   color: var(--text-muted);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .gc-select {
   flex: 1;
-  font-size: 11px;
-  padding: 2px 6px;
+  min-width: 0;
+  font-size: 10px;
+  padding: 2px 4px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xs, 4px);
   color: var(--text-main);
   outline: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .gc-select:focus {
@@ -160,29 +320,147 @@
 
 .gc-local-result {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 3px 6px;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 4px 6px;
   background: var(--bg-selected);
   border: 1px solid var(--border-active);
   border-radius: var(--radius-xs, 4px);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .gc-arrow {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--accent);
   font-weight: bold;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .gc-local-text {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--accent-light, var(--text-main));
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 1.35;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  min-width: 0;
+  flex: 1;
+}
+
+/* Карточка «Объяснить дату» для автора (The Lore Explainer) */
+.gc-explainer-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  padding: 6px 8px;
+  margin-top: 6px;
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.gc-explainer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  width: 100%;
+}
+
+.gc-explainer-title {
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.gc-explainer-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  line-height: 1;
+}
+
+.gc-explainer-close-btn:hover {
+  color: var(--text-main);
+}
+
+.gc-explainer-body {
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-main);
+  width: 100%;
+  min-width: 0;
+}
+
+.gc-explainer-item {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.gc-explainer-dim {
+  color: var(--text-muted);
+}
+
+.gc-explainer-val {
+  color: var(--text-main);
+}
+
+.gc-explainer-accent {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.gc-snippet-container {
+  margin-top: 5px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  background: var(--bg-input);
+  border: 1px dashed var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.gc-snippet-quote {
+  font-size: 10px;
+  font-style: italic;
+  color: var(--text-main);
+  line-height: 1.3;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.gc-snippet-btn {
+  padding: 2px 6px;
+  font-size: 9px;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
 }
 
 .gc-empty {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   padding: 4px 0;
 }

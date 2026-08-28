@@ -52,4 +52,14 @@ describe('useCalendarEras', () => {
     hook.addEra();
     expect(props.modelValue.эпохи.length).toBe(2);
   });
+
+  it('correctly renames era via onNameInput and synchronizes name aliases', () => {
+    const hook = useCalendarEras(props);
+    const era = props.modelValue.эпохи[0];
+    const event = { target: { value: 'Эпоха Драконов' } } as unknown as Event;
+
+    hook.onNameInput(era, event);
+    expect(era.название).toBe('Эпоха Драконов');
+    expect((era as any).name).toBe('Эпоха Драконов');
+  });
 });

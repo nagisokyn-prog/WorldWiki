@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { CalendarData, CalendarEra } from '../../../../services/Calendars/calendar.types';
 
 export interface CalendarErasProps {
@@ -34,10 +34,34 @@ export function useCalendarEras(props: CalendarErasProps, _emit?: (event: string
     }
   };
 
+  const onNameInput = (era: CalendarEra, e: Event) => {
+    const val = (e.target as HTMLInputElement).value;
+    era.название = val;
+    (era as Record<string, unknown>).name = val;
+  };
+
+  watch(
+    () => props.modelValue?.эпохи,
+    (eras) => {
+      if (eras && Array.isArray(eras)) {
+        eras.forEach((e) => {
+          if (!e.название && (e as Record<string, unknown>).name) {
+            e.название = (e as Record<string, unknown>).name as string;
+          }
+          if (!(e as Record<string, unknown>).name && e.название) {
+            (e as Record<string, unknown>).name = e.название;
+          }
+        });
+      }
+    },
+    { immediate: true, deep: true }
+  );
+
   return {
     isCollapsed,
     moveItem,
     addEra,
-    removeEra
+    removeEra,
+    onNameInput,
   };
 }

@@ -13,15 +13,20 @@ export const calendarApi = {
   saveCalendar: (project: string, calendarData: Record<string, unknown>): Promise<{ success: boolean }> => {
     const plainData = JSON.parse(JSON.stringify(calendarData)) as Record<string, unknown>;
     const { id, is_default, is_master } = plainData;
-    const calendarPayload = { ...plainData };
+    const actualData = (plainData.data && typeof plainData.data === 'object' && !Array.isArray(plainData.data))
+      ? (plainData.data as Record<string, unknown>)
+      : plainData;
+
+    const calendarPayload = { ...actualData };
     delete calendarPayload.id;
     delete calendarPayload._id;
     delete calendarPayload.is_default;
     delete calendarPayload.is_master;
+
     const rustCalendar = {
       id: id || null,
       project_id: projectRecordId(project),
-      name: plainData.название || 'Новый календарь',
+      name: (actualData.название as string) || (plainData.name as string) || 'Новый календарь',
       is_default: is_default || false,
       is_master: is_master || false,
       data: calendarPayload

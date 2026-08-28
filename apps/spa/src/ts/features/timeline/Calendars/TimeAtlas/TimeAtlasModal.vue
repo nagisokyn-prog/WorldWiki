@@ -557,6 +557,12 @@ const {
   color: var(--accent-light, var(--text-main));
 }
 
+.alignment-tag.sun {
+  background: var(--bg-hover);
+  border-color: var(--border-active);
+  color: var(--accent);
+}
+
 .master-pinned-section {
   margin-bottom: 20px;
 }

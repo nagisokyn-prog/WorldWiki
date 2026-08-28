@@ -101,29 +101,31 @@ export function useCalendarSyncAnchor(props: {
     );
   });
 
-  const offsetMinutes = computed(() => {
-    if (!isLinked.value || !props.masterCalendar) return 0;
-    return CalendarMath.getAnchorOffset(props.modelValue, props.masterCalendar);
+  const masterStartYear = computed({
+    get: () => masterAnchorDate.value.year,
+    set: (y: number) => {
+      masterAnchorDate.value.year = Number(y) || 1;
+    },
   });
+
+  const showAdvanced = ref(false);
 
   const offsetDescription = computed(() => {
     if (!isLinked.value) return 'Синхронизация отключена (календари не связаны)';
     if (!props.masterCalendar) return 'Календарь Мира не найден';
 
-    const minsInDay =
-      (props.masterCalendar.настройки_времени?.часов_в_сутках || 24) *
-      (props.masterCalendar.настройки_времени?.минут_в_часе || 60);
+    const startYear = masterStartYear.value;
+    if (startYear === 1 && masterAnchorDate.value.month === 0 && masterAnchorDate.value.day === 1) {
+      return 'Летоисчисление культуры началось одновременно с основанием Календаря Мира (1 год).';
+    }
 
-    const diffDays = Math.floor(offsetMinutes.value / minsInDay);
+    if (startYear > 1) {
+      const masterMonthName = masterMonths.value[masterAnchorDate.value.month]?.название || '';
+      return `1-й год культуры наступил в ${startYear} году Календаря Мира (${masterAnchorDate.value.day} ${masterMonthName}).`;
+    }
 
-    const localMonthName =
-      localMonths.value[localAnchorDate.value.month]?.название ||
-      `Месяц ${localAnchorDate.value.month + 1}`;
-    const masterMonthName =
-      masterMonths.value[masterAnchorDate.value.month]?.название ||
-      `Месяц ${masterAnchorDate.value.month + 1}`;
-
-    return `День ${localAnchorDate.value.day}, ${localMonthName}, ${localAnchorDate.value.year} г. ↔ День ${masterAnchorDate.value.day}, ${masterMonthName}, ${masterAnchorDate.value.year} г. (Смещение: ${diffDays >= 0 ? '+' : ''}${diffDays} дн.)`;
+    const yearsBefore = Math.abs(startYear) + 1;
+    return `Летоисчисление культуры началось за ${yearsBefore} г. до Календаря Мира.`;
   });
 
   return {
@@ -138,6 +140,8 @@ export function useCalendarSyncAnchor(props: {
     masterAnchorDate,
     localMaxDays,
     masterMaxDays,
+    masterStartYear,
+    showAdvanced,
     offsetDescription,
   };
 }

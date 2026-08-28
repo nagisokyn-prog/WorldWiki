@@ -64,3 +64,57 @@
 .tree-action-btn:hover {
   opacity: 1;
 }
+
+/* Ресайзер и контейнер виджета календаря над деревом */
+.calendar-widget-container {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.calendar-widget-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.calendar-widget-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.panel-resize-handle-h {
+  height: 6px;
+  cursor: row-resize;
+  flex-shrink: 0;
+  background: transparent;
+  position: relative;
+  transition: background 0.15s;
+  z-index: 10;
+  border-top: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+}
+
+.panel-resize-handle-h:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(139, 92, 246, 0.3);
+  transition: background 0.15s, width 0.15s;
+}
+
+.panel-resize-handle-h:hover {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.panel-resize-handle-h:hover:after {
+  background: var(--accent, #8b5cf6);
+  width: 54px;
+}
+
+.panel-resize-handle-h:active {
+  background: rgba(139, 92, 246, 0.25);
+}

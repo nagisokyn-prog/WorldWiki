@@ -1,4 +1,4 @@
-import type { CalendarData, CalendarDate, MoonConfig, MoonPhaseResult, DaylightResult, SyncAnchorDate } from '../Calendars/calendar.types';
+import type { CalendarData, CalendarDate, MoonConfig, MoonPhaseResult, DaylightResult, SyncAnchorDate, LoreDateExplanation } from '../Calendars/calendar.types';
 
 export class CalendarMath {
 
@@ -457,5 +457,130 @@ export class CalendarMath {
     }
     const masterMin = this.localDateToMasterMinute(date, fromCal, masterCal);
     return this.masterMinuteToLocalDate(masterMin, toCal, masterCal, to_era_index);
+  }
+
+  /**
+   * Литературное описание смещения эпох вместо технических минут/дней.
+   */
+  public static formatAnchorOffsetDescription(localCal: CalendarData, masterCal?: CalendarData | null): string {
+    if (!localCal) return '';
+    if (localCal.is_master) return 'Календарь Мира (эталон физического времени).';
+    if (!localCal.sync_anchor?.linked_to_master) {
+      return 'Календарь ещё не привязан к Календарю Мира.';
+    }
+
+    const offsetMinutes = this.getAnchorOffset(localCal, masterCal);
+    if (offsetMinutes === 0) {
+      return 'Точка отсчета совпадает с началом Календаря Мира.';
+    }
+
+    const settings = localCal.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const minutesInDay = (settings.часов_в_сутках || 24) * (settings.минут_в_часе || 60);
+    const daysDiff = Math.round(offsetMinutes / minutesInDay);
+    const daysInYear = this.getDaysInYear(localCal, 1) || 365;
+
+    const absDays = Math.abs(daysDiff);
+    const years = Math.floor(absDays / daysInYear);
+    const remDays = absDays % daysInYear;
+
+    let timeSpan = '';
+    if (years > 0 && remDays > 0) {
+      timeSpan = `${years} г. и ${remDays} дн.`;
+    } else if (years > 0) {
+      timeSpan = `${years} г.`;
+    } else {
+      timeSpan = `${remDays} дн.`;
+    }
+
+    if (offsetMinutes < 0) {
+      return `Летоисчисление культуры началось на ${timeSpan} раньше Календаря Мира.`;
+    } else {
+      return `Летоисчисление культуры началось на ${timeSpan} позже Календаря Мира.`;
+    }
+  }
+
+  /**
+   * Литературное форматирование светового дня (без терминов вроде «инсоляция»)
+   */
+  public static formatDaylightLiterary(daylight: DaylightResult | null): { duration: string; sunrise: string; sunset: string } | null {
+    if (!daylight) return null;
+    const totalHours = daylight.duration_hours;
+    const h = Math.floor(totalHours);
+    const m = Math.round((totalHours - h) * 60);
+    return {
+      duration: `Световой день: ${h} ч ${m} мин`,
+      sunrise: `Восход: ${daylight.sunrise}`,
+      sunset: `Закат: ${daylight.sunset}`,
+    };
+  }
+
+  /**
+   * Комплексное объяснение даты для автора (The Lore Explainer)
+   */
+  public static explainDate(
+    date: CalendarDate['original_input'],
+    activeCal: CalendarData,
+    allCalendars: CalendarData[],
+    masterCal?: CalendarData | null
+  ): LoreDateExplanation {
+    const effectiveMaster = masterCal || allCalendars.find(c => c.is_master) || activeCal;
+    const masterMin = this.localDateToMasterMinute(date, activeCal, effectiveMaster);
+    
+    const masterDateObj = this.getDateFromAbsolute(masterMin, effectiveMaster, 0);
+    const masterFormatted = this.formatDate(effectiveMaster, { absolute_minute: masterMin, calendar_id: effectiveMaster._id || '', original_input: masterDateObj });
+
+    const localFormatted = this.formatDate(activeCal, { absolute_minute: masterMin, calendar_id: activeCal._id || '', original_input: date });
+
+    const crossDates: Array<{ calendarName: string; formatted: string }> = [];
+    for (const cal of allCalendars) {
+      if (cal === activeCal || (cal._id && cal._id === activeCal._id)) continue;
+      const otherDate = this.masterMinuteToLocalDate(masterMin, cal, effectiveMaster, 0);
+      crossDates.push({
+        calendarName: cal.название || 'Календарь',
+        formatted: this.formatDate(cal, { absolute_minute: masterMin, calendar_id: cal._id || '', original_input: otherDate }),
+      });
+    }
+
+    const moons = this.calculateMoonPhases(masterMin, effectiveMaster.moons || activeCal.moons || [], effectiveMaster);
+
+    const daylight = this.calculateDaylight(masterMin, effectiveMaster);
+    const daylightInfo = this.formatDaylightLiterary(daylight);
+
+    const holidays: string[] = [];
+    if (activeCal.праздники) {
+      for (const h of activeCal.праздники) {
+        if (this.isHoliday(activeCal, date.year, date.month, date.day)) {
+          holidays.push(`${h.название} (${activeCal.название})`);
+        }
+      }
+    }
+    if (effectiveMaster !== activeCal && effectiveMaster.праздники) {
+      for (const h of effectiveMaster.праздники) {
+        if (this.isHoliday(effectiveMaster, masterDateObj.year, masterDateObj.month, masterDateObj.day)) {
+          holidays.push(`${h.название} (${effectiveMaster.название})`);
+        }
+      }
+    }
+
+    let snippet = `${localFormatted}`;
+    if (effectiveMaster !== activeCal) {
+      snippet += ` (по Календарю Мира: ${masterFormatted})`;
+    }
+    const fullMoon = moons.find(m => m.name === 'Полнолуние' || m.emoji === '🌕');
+    if (fullMoon) {
+      snippet += `, в полнолуние ${fullMoon.moon.name}`;
+    }
+
+    return {
+      masterDateFormatted: masterFormatted,
+      localDateFormatted: localFormatted,
+      crossDates,
+      moons,
+      daylightText: daylightInfo?.duration,
+      sunriseText: daylightInfo?.sunrise,
+      sunsetText: daylightInfo?.sunset,
+      holidays: Array.from(new Set(holidays)),
+      snippet,
+    };
   }
 }

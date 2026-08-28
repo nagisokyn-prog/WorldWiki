@@ -94,26 +94,34 @@ export function useCalendarsPanel(props: { project?: string }) {
         }
     };
 
-    const saveCalendar = async (idx: number) => {
+    const saveCalendar = async (idx: number, skipReload = false) => {
         if (!project.value) return;
 
         const cal = calendars.value[idx];
         const idStr = String(cal.id || '').replace(/["'⟨⟩]/g, '').trim();
+        let rawData = cal.data;
+        if (rawData && typeof rawData === 'object' && 'data' in rawData && typeof (rawData as Record<string, unknown>).data === 'object') {
+            rawData = (rawData as Record<string, unknown>).data as any;
+        }
+
         const payload: CalendarData & { [key: string]: unknown } = {
-            ...cal.data,
-            название: cal.data.название || 'Календарь',
+            ...rawData,
+            название: rawData.название || 'Календарь',
             is_default: cal.is_default,
+            is_master: cal.is_master,
             id: idStr.startsWith('temp_') ? undefined : idStr
         };
 
         try {
             const success = await useCalendarStore().saveCalendar(project.value, payload);
-            if (success) {
-                // Reload to get real IDs
+            if (success && !skipReload) {
+                // Reload to get real IDs only for single manual save
                 await loadCalendars();
             }
+            return success;
         } catch (e) {
             console.error(e);
+            return false;
         }
     };
 
@@ -161,8 +169,9 @@ export function useCalendarsPanel(props: { project?: string }) {
 
     const saveAll = async () => {
         for (let i = 0; i < calendars.value.length; i++) {
-            await saveCalendar(i);
+            await saveCalendar(i, true);
         }
+        await loadCalendars();
     };
 
     const masterCalendar = computed(() => {

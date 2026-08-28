@@ -30,7 +30,7 @@ describe('useCalendarSyncAnchor', () => {
     expect(isLinked.value).toBe(true);
     expect(localAnchorDate.value.year).toBe(1);
     expect(masterAnchorDate.value.year).toBe(1);
-    expect(offsetDescription.value).toContain('Смещение: +0 дн.');
+    expect(offsetDescription.value).toContain('Летоисчисление культуры началось одновременно с основанием Календаря Мира');
 
     // Toggle link off
     isLinked.value = false;
@@ -53,12 +53,12 @@ describe('useCalendarSyncAnchor', () => {
       },
     };
 
-    const { offsetDescription } = useCalendarSyncAnchor({
+    const { masterStartYear, offsetDescription } = useCalendarSyncAnchor({
       modelValue: localCal,
       masterCalendar: masterCal,
     });
 
-    expect(offsetDescription.value).toContain('Смещение: +');
-    expect(offsetDescription.value).toContain('дн.');
+    expect(masterStartYear.value).toBe(10);
+    expect(offsetDescription.value).toContain('1-й год культуры наступил в 10 году Календаря Мира');
   });
 });

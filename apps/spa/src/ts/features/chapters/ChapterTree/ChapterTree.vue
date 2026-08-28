@@ -1,8 +1,23 @@
 <template>
-  <div class="chapter-tree-wrapper" style="height: 100%; display: flex; flex-direction: column;">
-    <GlobalCalendarWidget v-if="project" :project="project" />
+  <div class="chapter-tree-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+    <div
+      v-if="project"
+      class="calendar-widget-container"
+      :style="{ height: calendarHeight + 'px', minHeight: '70px', maxHeight: '500px', flexShrink: 0, overflowY: 'auto' }"
+    >
+      <GlobalCalendarWidget :project="project" />
+    </div>
+
+    <div
+      v-if="project"
+      class="panel-resize-handle panel-resize-handle-h"
+      title="Потяните для изменения высоты календаря"
+      @mousedown="startResizeCalendar"
+    ></div>
+
     <ExplorerTree
       ref="explorerTreeRef"
+      style="flex: 1; min-height: 0; overflow-y: auto;"
       title="Структура"
       icon="fas fa-book-open"
       :show-back="true"
@@ -83,10 +98,40 @@
 
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { ExplorerTree } from '@worldwiki/components';
 import GlobalCalendarWidget from '../../timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 import type { ChapterTreeProps } from './ChapterTree.model';
+
+const calendarHeight = ref(
+  typeof window !== 'undefined'
+    ? Number(localStorage.getItem('worldwiki-calendar-widget-height')) || 170
+    : 170
+);
+
+const startResizeCalendar = (e: MouseEvent) => {
+  e.preventDefault();
+  const startY = e.clientY;
+  const startHeight = calendarHeight.value;
+
+  const onMouseMove = (moveEvent: MouseEvent) => {
+    const deltaY = moveEvent.clientY - startY;
+    const newHeight = Math.max(70, Math.min(500, startHeight + deltaY));
+    calendarHeight.value = newHeight;
+  };
+
+  const onMouseUp = () => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('worldwiki-calendar-widget-height', String(calendarHeight.value));
+    }
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+  };
+
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+};
 
 const props = withDefaults(defineProps<ChapterTreeProps>(), {
   activeNode: null,

@@ -14,6 +14,7 @@
               type="text"
               class="item-name interactive-el"
               placeholder="Название эпохи"
+              @input="onNameInput(era, $event)"
             />
             <input
               v-model.number="era.год_начала"
@@ -78,5 +79,5 @@ import type { CalendarErasProps } from './useCalendarEras';
 
 const props = defineProps<CalendarErasProps>();
 
-const { isCollapsed, moveItem, addEra, removeEra } = useCalendarEras(props);
+const { isCollapsed, moveItem, addEra, removeEra, onNameInput } = useCalendarEras(props);
 </script>

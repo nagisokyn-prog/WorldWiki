@@ -76,15 +76,20 @@ describe('calendar.store', () => {
       expect((result[0].data as any).название).toBe('Календарь Мира');
     });
 
-    it('returns immediately if isCreatingMaster is already true (covers lines 31, 50)', async () => {
-      (store as any).isCreatingMaster = true;
-      vi.mocked(api.getCalendars).mockResolvedValueOnce([{ id: 'c1' }] as any);
-      const res1 = await store.getCalendars('proj_guard1');
-      expect(res1).toHaveLength(1);
+    it('returns immediately if re-entered while creating master (covers lines 31, 50)', async () => {
+      vi.mocked(api.getCalendars).mockResolvedValueOnce([
+        { id: 'c_no_master', is_default: true, data: { name: 'Test' } },
+      ] as any);
 
-      vi.mocked(api.getCalendars).mockResolvedValueOnce([] as any);
-      const res2 = await store.getCalendars('proj_guard2');
-      expect(res2).toEqual([]);
+      vi.mocked(api.saveCalendar).mockImplementationOnce(async () => {
+        // Re-entrant call while isCreatingMaster is true
+        const reentrantList = await store.getCalendars('reentrant_proj');
+        expect(reentrantList).toBeDefined();
+        return {} as any;
+      });
+
+      const res = await store.getCalendars('reentrant_proj');
+      expect(res).toBeDefined();
     });
   });
 

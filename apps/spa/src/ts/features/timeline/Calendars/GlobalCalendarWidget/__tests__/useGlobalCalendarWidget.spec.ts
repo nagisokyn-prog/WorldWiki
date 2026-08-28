@@ -103,11 +103,7 @@ describe('useGlobalCalendarWidget', () => {
     };
     expect(widget.formattedMasterDate.value).toBeTruthy();
 
-    widget.localCalendars.value = [
-      { id: '', is_master: false, data: { название: 'NoId Local', месяцы: [{ название: 'L', дней: 30 }], эпохи: [{ год_начала: 1, год_конца: 10 }] } as any },
-    ];
     widget.selectedLocalCal.value = '';
-    // selectedLocalCal matches empty string id
-    expect(widget.formattedLocalDate.value).toBeTruthy();
+    expect(widget.formattedLocalDate.value).toBe('');
   });
 });

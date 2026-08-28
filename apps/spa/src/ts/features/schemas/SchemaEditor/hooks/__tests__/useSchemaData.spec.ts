@@ -181,21 +181,20 @@ describe('useSchemaData', () => {
     await data.deleteSection(1);
     expect(data.activeSectionIdx.value).toBe(0);
 
-    // 8. loadSchemaPreview with legacy items (covers lines 51-54)
-    data.loadSchemaPreview({
-      full_schema: {
-        sections: [
-          {
-            id: 'sec_prev',
-            items: [
-              { template: 'rel_tpl', type: 'dynamic' },
-              { class: 'normal_field', type: 'text' },
-            ],
-          },
-        ],
-      },
-    } as any);
-    const prevSec: any = data.schema.value.sections[0];
+    // 8. buildCleanSchema with legacy items via jsonPreviewContent (covers lines 51-54)
+    data.schema.value = {
+      sections: [
+        {
+          id: 'sec_prev',
+          items: [
+            { template: 'rel_tpl', type: 'dynamic' },
+            { class: 'normal_field', type: 'text' },
+          ],
+        },
+      ],
+    } as any;
+    const cleanSchema = JSON.parse(data.jsonPreviewContent.value);
+    const prevSec: any = cleanSchema.sections[0];
     expect(prevSec.fields).toHaveLength(1);
     expect(prevSec.dynamicContainers).toHaveLength(1);
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { reactive, nextTick } from 'vue';
+import { reactive, nextTick, defineComponent } from 'vue';
+import { mount, flushPromises } from '@vue/test-utils';
 import { useEntityEditor } from '../useEntityEditor';
 import * as api from '../../../../services/api.client';
 import { appAlert } from '@worldwiki/components';
@@ -442,19 +443,33 @@ describe('useEntityEditor', () => {
   });
 
   it('responds to ww:schema-updated window events', async () => {
-    const editor = useEntityEditor(props, emit);
-    const loadSpy = vi.spyOn(editor, 'loadConfigAndData').mockResolvedValue(undefined);
+    vi.mocked(api.getEntitySchemas).mockClear();
+    const Comp = defineComponent({
+      setup() {
+        return useEntityEditor(props, emit);
+      },
+      template: '<div></div>',
+    });
+    const wrapper = mount(Comp);
+    await flushPromises();
+
+    vi.mocked(api.getEntitySchemas).mockClear();
 
     // Event with non-matching entityType -> does not reload
     window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: 'other_type' } }));
-    expect(loadSpy).not.toHaveBeenCalled();
+    await flushPromises();
+    expect(api.getEntitySchemas).not.toHaveBeenCalled();
 
     // Event with matching entityType -> reloads
     window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: props.entityType } }));
-    expect(loadSpy).toHaveBeenCalledTimes(1);
+    await flushPromises();
+    expect(api.getEntitySchemas).toHaveBeenCalledTimes(1);
 
     // Event without detail -> reloads
     window.dispatchEvent(new CustomEvent('ww:schema-updated'));
-    expect(loadSpy).toHaveBeenCalledTimes(2);
+    await flushPromises();
+    expect(api.getEntitySchemas).toHaveBeenCalledTimes(2);
+
+    wrapper.unmount();
   });
 });

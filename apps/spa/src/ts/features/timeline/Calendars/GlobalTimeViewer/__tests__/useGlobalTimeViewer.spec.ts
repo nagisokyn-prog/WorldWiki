@@ -149,7 +149,9 @@ describe('useGlobalTimeViewer', () => {
     ]);
 
     const viewer = useGlobalTimeViewer();
-    await viewer.loadCalendars();
+    viewer.open();
+    mockProjectName.value = 'proj_bare_reload';
+    await new Promise(r => setTimeout(r, 20));
     expect(viewer.localDates.value.length).toBe(1);
   });
 });

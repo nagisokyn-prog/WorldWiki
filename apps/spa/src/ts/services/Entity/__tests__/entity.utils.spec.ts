@@ -67,7 +67,7 @@ describe('entity.utils', () => {
       expect(getEntityDisplayName(entity, schema)).toBe('King Arthur');
 
       // titleField is empty string or whitespace
-      const emptyEntity = { details: { title: '   ' }, alias: 'Lancelot' };
+      const emptyEntity = { alias: 'Lancelot', details: { title: '   ' } };
       expect(getEntityDisplayName(emptyEntity, schema)).toBe('Lancelot');
     });
 

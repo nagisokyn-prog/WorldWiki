@@ -416,8 +416,8 @@ describe('useRelationshipBlock', () => {
       });
 
       const rel = useRelationshipBlock(reactiveProps as any, emit);
-      // Line 170: foreignItemLabel returns String(foreignId)
-      expect(rel.foreignItemLabel.value).toBe('unknown_foreign_id');
+      // Line 170: foreignLabel returns String(foreignId)
+      expect(rel.foreignLabel.value).toBe('unknown_foreign_id');
 
       // Watcher lines 270-273: change target_char to newTargetId
       vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'char_watch', data: {} } as any);

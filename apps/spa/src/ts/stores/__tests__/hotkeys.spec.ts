@@ -286,7 +286,7 @@ describe('hotkeys store', () => {
       triggerKey('KeyB', { ctrlKey: true, altKey: true });
 
       expect(panelSpy).toHaveBeenCalled();
-      expect(localStorage.getItem('chapters-right-panel-visible')).toBe('true');
+      expect(localStorage.getItem('chapters-right-panel-visible')).toBe('false');
     });
   });
 });

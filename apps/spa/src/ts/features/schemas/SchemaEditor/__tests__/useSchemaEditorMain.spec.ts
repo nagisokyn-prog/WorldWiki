@@ -132,7 +132,7 @@ describe('useSchemaEditorMain', () => {
     expect(appAlert).toHaveBeenCalledWith('Ошибка сохранения');
 
     // Save with schemaCache delete fallback (covers lines 112-113)
-    const { useSchemaStore } = await import('@/stores/schema');
+    const { useSchemaStore } = await import('../../../../stores/schema');
     const schemaStore = useSchemaStore() as any;
     schemaStore.invalidateSchema = undefined;
     const cacheMap: Record<string, unknown> = { character: { some: 'cached' } };

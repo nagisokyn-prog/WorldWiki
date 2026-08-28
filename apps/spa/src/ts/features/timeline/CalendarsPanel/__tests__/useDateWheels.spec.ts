@@ -314,12 +314,12 @@ describe('useDateWheels', () => {
     wrapper.unmount();
   });
 
-  it('calls emitUpdate when validateValues is called with emitIfChanged = true and values change', () => {
+  it('calls emitUpdate when value is out of bounds and onYearChange is called', () => {
     const mockEmit = vi.fn();
     const wheels = useDateWheels({ project: 'p1', modelValue: {} }, mockEmit);
     wheels.calendar.value = mockCal;
     wheels.currentYear.value = -999;
-    wheels.validateValues(true);
+    wheels.onYearChange();
     expect(mockEmit).toHaveBeenCalledWith('update:modelValue', expect.anything());
   });
 });

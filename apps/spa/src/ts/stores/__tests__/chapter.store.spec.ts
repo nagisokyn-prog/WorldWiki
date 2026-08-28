@@ -115,8 +115,9 @@ describe('chapter.store', () => {
       vi.mocked(chapterService.get).mockResolvedValue(fullChapter as any);
 
       await store.openChapter('project_1', 'ch_with_parts');
-      expect(store.currentChapter?.participants).toHaveLength(2);
-      expect((store.currentChapter?.participants[1] as any).autoParsed).toBe(true);
+      expect(store.currentChapter?.participants?.length).toBe(2);
+      const secondPart = (store.currentChapter?.participants as any)?.[1];
+      expect(secondPart?.autoParsed).toBe(true);
     });
 
     it('saves unsaved changes prior to opening another chapter', async () => {

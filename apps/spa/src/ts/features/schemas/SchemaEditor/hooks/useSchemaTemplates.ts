@@ -21,25 +21,28 @@ export function useSchemaTemplates() {
         { val: 'photo', icon: '🖼️', label: 'Фото' }
     ];
 
-    const HELPER_TEMPLATES = ['dynamicEndDateTemplate', 'dynamicDisbandDateTemplate', 'dynamicAbolitionDateTemplate', 'stateCollapseDateTemplate'];
+    const ALLOWED_TIMELINE_KEYS = ['Базовая хронология'];
+    const ALLOWED_DYNAMIC_KEYS = ['Динамический элемент', 'Двунаправленная связь', 'Одиночный параметр'];
 
     const timelineTemplates = computed<Record<string, SchemaTemplateItem>>(() => {
         const all = (uiEditorData.templates || {}) as Record<string, SchemaTemplateItem>;
         const result: Record<string, SchemaTemplateItem> = {};
-        Object.entries(all).forEach(([key, tpl]) => {
-            if (HELPER_TEMPLATES.includes(key)) return;
-            if (tpl.type === 'timeline') result[key] = tpl;
-        });
+        for (const key of ALLOWED_TIMELINE_KEYS) {
+            if (all[key]) {
+                result[key] = all[key];
+            }
+        }
         return result;
     });
 
     const dynamicTemplates = computed<Record<string, SchemaTemplateItem>>(() => {
         const all = (uiEditorData.templates || {}) as Record<string, SchemaTemplateItem>;
         const result: Record<string, SchemaTemplateItem> = {};
-        Object.entries(all).forEach(([key, tpl]) => {
-            if (HELPER_TEMPLATES.includes(key)) return;
-            if (tpl.type === 'dynamic') result[key] = tpl;
-        });
+        for (const key of ALLOWED_DYNAMIC_KEYS) {
+            if (all[key]) {
+                result[key] = all[key];
+            }
+        }
         return result;
     });
 

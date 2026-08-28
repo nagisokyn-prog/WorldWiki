@@ -110,17 +110,23 @@
 
         <div class="catalog-section-title mt-2">⏱️ TIMELINE-МОДУЛИ</div>
         <div class="flex-col gap-2 p-2">
-          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="catalog-item interactive-el" draggable="true" @dragstart="handleDragStartPalette($event, 'module', String(key), String(key))">
-            <span class="text-lg">⏱️</span>
-            <span class="text-xs font-bold">{{ key }}</span>
+          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="catalog-item interactive-el flex justify-between items-center" draggable="true" @dragstart="handleDragStartPalette($event, 'module', String(key), String(key))">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">⏱️</span>
+              <span class="text-xs font-bold">{{ key }}</span>
+            </div>
+            <ModuleHelpPreview :template-key="String(key)" />
           </div>
         </div>
 
         <div class="catalog-section-title mt-2">📋 DYNAMIC-МОДУЛИ</div>
         <div class="flex-col gap-2 p-2">
-          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="catalog-item interactive-el" draggable="true" @dragstart="handleDragStartPalette($event, 'module', String(key), String(key))">
-            <span class="text-lg">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>
-            <span class="text-xs font-bold">{{ key }}</span>
+          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="catalog-item interactive-el flex justify-between items-center" draggable="true" @dragstart="handleDragStartPalette($event, 'module', String(key), String(key))">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>
+              <span class="text-xs font-bold">{{ key }}</span>
+            </div>
+            <ModuleHelpPreview :template-key="String(key)" />
           </div>
         </div>
       </aside>
@@ -175,6 +181,7 @@
 <script setup lang="ts">
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
+import ModuleHelpPreview from './ModuleHelpPreview.vue';
 import EntityEditorVue from '../../../features/entities/EntityEditor/EntityEditor.vue';
 import { useSchemaEditorMain } from './useSchemaEditorMain';
 

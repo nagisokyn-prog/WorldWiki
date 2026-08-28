@@ -15,9 +15,16 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, e
   const loading = ref(false);
 
   // Мастер-календарь проекта
+  const masterCalendarRecord = computed<CalendarRecord | null>(() => {
+    return allCalendars.value.find(c => c.is_master) || allCalendars.value[0] || null;
+  });
+
+  const localCalendarRecords = computed<CalendarRecord[]>(() => {
+    return allCalendars.value.filter(c => !c.is_master);
+  });
+
   const masterCalendar = computed<CalendarData | null>(() => {
-    const found = allCalendars.value.find(c => c.is_master) || allCalendars.value[0];
-    return found ? (found.data as CalendarData) : null;
+    return masterCalendarRecord.value ? (masterCalendarRecord.value.data as CalendarData) : null;
   });
 
   // Текущая мировая абсолютная минута (единый якорь времени в Атласе)
@@ -37,12 +44,13 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, e
     loading.value = true;
     try {
       const list = await useCalendarStore().getCalendars(props.project);
-      allCalendars.value = list || [];
+      const sorted = (list || []).slice().sort((a, b) => (b.is_master ? 1 : 0) - (a.is_master ? 1 : 0));
+      allCalendars.value = sorted;
 
-      const master = list.find(c => c.is_master) || list[0];
+      const master = sorted.find(c => c.is_master) || sorted[0];
       if (master && selectedCalIds.value.length === 0) {
-        selectedCalIds.value = list.map(c => c.id!).filter(Boolean);
-        matrixBaseCalId.value = list.find(c => !c.is_master)?.id || master.id || '';
+        selectedCalIds.value = sorted.map(c => c.id!).filter(Boolean);
+        matrixBaseCalId.value = sorted.find(c => !c.is_master)?.id || master.id || '';
         matrixCompareCalId.value = master.id || '';
       }
     } finally {
@@ -245,6 +253,8 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, e
     allCalendars,
     loading,
     masterCalendar,
+    masterCalendarRecord,
+    localCalendarRecords,
     currentWorldMinute,
     selectedCalIds,
     matrixBaseCalId,

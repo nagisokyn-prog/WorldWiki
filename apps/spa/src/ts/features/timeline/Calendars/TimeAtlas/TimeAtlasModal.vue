@@ -58,31 +58,29 @@
 
           <!-- ВКЛАДКА 1: Мост Времени -->
           <div v-if="activeTab === 'converter'" class="tab-pane">
-            <div class="converter-grid">
-              <div
-                v-for="calRec in allCalendars"
-                :key="calRec.id"
-                class="calendar-sync-card glass-panel"
-                :class="{ 'is-master': calRec.is_master }"
-              >
+            <!-- ЗАКРЕПЛЕННЫЙ СВЕРХУ КАЛЕНДАРЬ МИРА (MASTER CLOCK) -->
+            <div v-if="masterCalendarRecord" class="master-pinned-section">
+              <div class="section-label">
+                <span>🌍 КАЛЕНДАРЬ МИРА (ГЛОБАЛЬНЫЙ ЭТАЛОН ВРЕМЕНИ)</span>
+              </div>
+              <div class="calendar-sync-card glass-panel is-master pinned-card">
                 <div class="card-top">
                   <div class="cal-badge-row">
-                    <span v-if="calRec.is_master" class="badge-master">🌍 Календарь Мира</span>
-                    <span v-else class="badge-local">🏛️ Локальный</span>
-                    <span class="cal-name">{{ (calRec.data as any)?.название }}</span>
+                    <span class="badge-master">🌍 Календарь Мира</span>
+                    <span class="cal-name">{{ (masterCalendarRecord.data as any)?.название }}</span>
                   </div>
+                  <span class="badge-pinned-tag">📌 Закреплен эталон</span>
                 </div>
 
-                <!-- Контролы даты -->
                 <div class="controls-row">
                   <div class="control-group">
                     <label class="control-label">Год</label>
                     <input
-                      :value="getLocalDateForCal(calRec.data as any).year"
+                      :value="getLocalDateForCal(masterCalendarRecord.data as any).year"
                       type="number"
                       class="interactive-el glass-input"
-                      @input="updateFromLocalDate(calRec.data as any, {
-                        ...getLocalDateForCal(calRec.data as any),
+                      @input="updateFromLocalDate(masterCalendarRecord.data as any, {
+                        ...getLocalDateForCal(masterCalendarRecord.data as any),
                         year: Number(($event.target as HTMLInputElement).value)
                       })"
                     >
@@ -91,15 +89,15 @@
                   <div class="control-group flex-1">
                     <label class="control-label">Месяц</label>
                     <select
-                      :value="getLocalDateForCal(calRec.data as any).month"
+                      :value="getLocalDateForCal(masterCalendarRecord.data as any).month"
                       class="interactive-el glass-select"
-                      @change="updateFromLocalDate(calRec.data as any, {
-                        ...getLocalDateForCal(calRec.data as any),
+                      @change="updateFromLocalDate(masterCalendarRecord.data as any, {
+                        ...getLocalDateForCal(masterCalendarRecord.data as any),
                         month: Number(($event.target as HTMLSelectElement).value)
                       })"
                     >
                       <option
-                        v-for="(m, mIdx) in (calRec.data as any)?.месяцы || []"
+                        v-for="(m, mIdx) in (masterCalendarRecord.data as any)?.месяцы || []"
                         :key="mIdx"
                         :value="mIdx"
                       >
@@ -111,39 +109,37 @@
                   <div class="control-group">
                     <label class="control-label">День</label>
                     <input
-                      :value="getLocalDateForCal(calRec.data as any).day"
+                      :value="getLocalDateForCal(masterCalendarRecord.data as any).day"
                       type="number"
                       min="1"
                       class="interactive-el glass-input day-input"
-                      @input="updateFromLocalDate(calRec.data as any, {
-                        ...getLocalDateForCal(calRec.data as any),
+                      @input="updateFromLocalDate(masterCalendarRecord.data as any, {
+                        ...getLocalDateForCal(masterCalendarRecord.data as any),
                         day: Number(($event.target as HTMLInputElement).value)
                       })"
                     >
                   </div>
                 </div>
 
-                <!-- Мета-информация (Сезон, Праздник, Луны) -->
                 <div class="card-meta">
                   <div class="meta-row">
                     <span class="meta-pill season-pill">
-                      🌱 {{ getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).season }}
+                      🌱 {{ getDateMeta(masterCalendarRecord.data as any, getLocalDateForCal(masterCalendarRecord.data as any)).season }}
                     </span>
                     <span
-                      v-if="getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).holiday"
+                      v-if="getDateMeta(masterCalendarRecord.data as any, getLocalDateForCal(masterCalendarRecord.data as any)).holiday"
                       class="meta-pill holiday-pill"
                     >
-                      🎉 {{ getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).holiday }}
+                      🎉 {{ getDateMeta(masterCalendarRecord.data as any, getLocalDateForCal(masterCalendarRecord.data as any)).holiday }}
                     </span>
                   </div>
 
-                  <!-- Фазы лун -->
                   <div
-                    v-if="getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).moons.length > 0"
+                    v-if="getDateMeta(masterCalendarRecord.data as any, getLocalDateForCal(masterCalendarRecord.data as any)).moons.length > 0"
                     class="moons-row"
                   >
                     <span
-                      v-for="(m, mIdx) in getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).moons"
+                      v-for="(m, mIdx) in getDateMeta(masterCalendarRecord.data as any, getLocalDateForCal(masterCalendarRecord.data as any)).moons"
                       :key="mIdx"
                       class="moon-badge"
                       :title="`${m.moon.name}: ${m.name}`"
@@ -152,6 +148,109 @@
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- ЛОКАЛЬНЫЕ КАЛЕНДАРИ (ПОДЧИНЕННЫЕ) -->
+            <div class="local-calendars-section mt-4">
+              <div class="section-label">
+                <span>🏛️ ЛОКАЛЬНЫЕ КАЛЕНДАРИ НАРОДОВ И ПЛЕМЁН (СИНХРОНИЗАЦИЯ)</span>
+              </div>
+
+              <div v-if="localCalendarRecords.length > 0" class="converter-grid">
+                <div
+                  v-for="calRec in localCalendarRecords"
+                  :key="calRec.id"
+                  class="calendar-sync-card glass-panel"
+                >
+                  <div class="card-top">
+                    <div class="cal-badge-row">
+                      <span class="badge-local">🏛️ Локальный</span>
+                      <span class="cal-name">{{ (calRec.data as any)?.название }}</span>
+                    </div>
+                  </div>
+
+                  <div class="controls-row">
+                    <div class="control-group">
+                      <label class="control-label">Год</label>
+                      <input
+                        :value="getLocalDateForCal(calRec.data as any).year"
+                        type="number"
+                        class="interactive-el glass-input"
+                        @input="updateFromLocalDate(calRec.data as any, {
+                          ...getLocalDateForCal(calRec.data as any),
+                          year: Number(($event.target as HTMLInputElement).value)
+                        })"
+                      >
+                    </div>
+
+                    <div class="control-group flex-1">
+                      <label class="control-label">Месяц</label>
+                      <select
+                        :value="getLocalDateForCal(calRec.data as any).month"
+                        class="interactive-el glass-select"
+                        @change="updateFromLocalDate(calRec.data as any, {
+                          ...getLocalDateForCal(calRec.data as any),
+                          month: Number(($event.target as HTMLSelectElement).value)
+                        })"
+                      >
+                        <option
+                          v-for="(m, mIdx) in (calRec.data as any)?.месяцы || []"
+                          :key="mIdx"
+                          :value="mIdx"
+                        >
+                          {{ m.название }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div class="control-group">
+                      <label class="control-label">День</label>
+                      <input
+                        :value="getLocalDateForCal(calRec.data as any).day"
+                        type="number"
+                        min="1"
+                        class="interactive-el glass-input day-input"
+                        @input="updateFromLocalDate(calRec.data as any, {
+                          ...getLocalDateForCal(calRec.data as any),
+                          day: Number(($event.target as HTMLInputElement).value)
+                        })"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="card-meta">
+                    <div class="meta-row">
+                      <span class="meta-pill season-pill">
+                        🌱 {{ getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).season }}
+                      </span>
+                      <span
+                        v-if="getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).holiday"
+                        class="meta-pill holiday-pill"
+                      >
+                        🎉 {{ getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).holiday }}
+                      </span>
+                    </div>
+
+                    <div
+                      v-if="getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).moons.length > 0"
+                      class="moons-row"
+                    >
+                      <span
+                        v-for="(m, mIdx) in getDateMeta(calRec.data as any, getLocalDateForCal(calRec.data as any)).moons"
+                        :key="mIdx"
+                        class="moon-badge"
+                        :title="`${m.moon.name}: ${m.name}`"
+                      >
+                        {{ m.emoji }} {{ m.moon.name }}: {{ m.name }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div v-else class="no-locals-box glass-panel">
+                <span>Нет локальных календарей. Создайте календарь племени или народа в настройках проекта, чтобы сопоставлять даты с Календарём Мира.</span>
               </div>
             </div>
           </div>
@@ -271,6 +370,8 @@ const emit = defineEmits<{
 const {
   activeTab,
   allCalendars,
+  masterCalendarRecord,
+  localCalendarRecords,
   currentWorldMinute,
   matrixBaseCalId,
   matrixCompareCalId,
@@ -295,9 +396,10 @@ const {
 .time-atlas-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  z-index: 9999;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(var(--glass-blur-sm, 8px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm, 8px));
+  z-index: 10000;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -308,10 +410,10 @@ const {
   width: 90vw;
   max-width: 1100px;
   height: 85vh;
-  background: rgba(18, 18, 26, 0.95);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(100, 108, 255, 0.1);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 16px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -322,7 +424,7 @@ const {
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .atlas-badge {
@@ -332,7 +434,7 @@ const {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--accent, #646cff);
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -340,7 +442,7 @@ const {
   margin: 4px 0 0 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-main, #fff);
+  color: var(--text-main);
 }
 
 .header-actions {
@@ -351,50 +453,51 @@ const {
 
 .atlas-tabs {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-input);
   padding: 3px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm, 8px);
+  border: 1px solid var(--border-color);
   gap: 2px;
 }
 
 .atlas-tab-btn {
   background: transparent;
   border: none;
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
   padding: 6px 14px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs, 6px);
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
 .atlas-tab-btn.active {
-  background: var(--accent, #646cff);
+  background: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(100, 108, 255, 0.4);
+  box-shadow: var(--shadow-glow);
 }
 
 .atlas-close-btn {
   background: transparent;
   border: none;
   font-size: 24px;
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
   cursor: pointer;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
-  transition: 0.2s;
+  border-radius: var(--radius-xs, 6px);
+  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .atlas-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--bg-hover);
+  color: var(--error, #ef4444);
 }
 
 .atlas-body {
@@ -408,19 +511,20 @@ const {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: linear-gradient(90deg, rgba(245, 158, 11, 0.15), rgba(139, 92, 246, 0.15));
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 10px;
+  background: var(--bg-selected);
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-md, 10px);
   margin-bottom: 20px;
 }
 
 .alignment-icon {
   font-size: 20px;
+  color: var(--accent);
 }
 
 .alignment-title {
   font-size: 11px;
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -435,19 +539,62 @@ const {
 .alignment-tag {
   font-size: 12px;
   padding: 2px 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border-radius: var(--radius-xs, 4px);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
 }
 
 .alignment-tag.holiday {
-  background: rgba(239, 68, 68, 0.25);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--error, #ef4444);
 }
 
 .alignment-tag.moon {
-  background: rgba(139, 92, 246, 0.25);
-  border: 1px solid rgba(139, 92, 246, 0.4);
+  background: var(--bg-selected);
+  border-color: var(--border-active);
+  color: var(--accent-light, var(--text-main));
+}
+
+.master-pinned-section {
+  margin-bottom: 20px;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.pinned-card {
+  box-shadow: 0 4px 20px var(--accent-glow);
+  border: 1px solid var(--border-active) !important;
+}
+
+.badge-pinned-tag {
+  font-size: 10px;
+  color: var(--accent);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs, 4px);
+  margin-left: auto;
+}
+
+.no-locals-box {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  border-radius: var(--radius-md, 10px);
+  border: 1px dashed var(--border-color);
 }
 
 .converter-grid {
@@ -458,17 +605,17 @@ const {
 
 .calendar-sync-card {
   padding: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 12px);
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
 .calendar-sync-card.is-master {
-  border-color: rgba(100, 108, 255, 0.3);
-  background: rgba(100, 108, 255, 0.03);
+  border-color: var(--border-active);
+  background: var(--bg-selected);
 }
 
 .cal-badge-row {
@@ -479,26 +626,28 @@ const {
 
 .badge-master {
   font-size: 10px;
-  background: rgba(100, 108, 255, 0.2);
-  color: #818cf8;
+  background: var(--bg-selected);
+  color: var(--accent-light, var(--text-main));
+  border: 1px solid var(--border-active);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   font-weight: 600;
 }
 
 .badge-local {
   font-size: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #ccc;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   font-weight: 600;
 }
 
 .cal-name {
   font-weight: 600;
   font-size: 14px;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .controls-row {
@@ -515,15 +664,33 @@ const {
 
 .control-label {
   font-size: 10px;
-  color: var(--text-muted, #888);
+  color: var(--text-muted);
 }
 
 .day-input {
   width: 55px;
 }
 
+.glass-input,
+.glass-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: var(--radius-xs, 4px);
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+  transition: border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+}
+
+.glass-input:focus,
+.glass-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
 .card-meta {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-color);
   padding-top: 10px;
   display: flex;
   flex-direction: column;
@@ -539,18 +706,18 @@ const {
 .meta-pill {
   font-size: 11px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
 }
 
 .season-pill {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success, #10b981);
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .holiday-pill {
   background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
+  color: var(--error, #ef4444);
   border: 1px solid rgba(239, 68, 68, 0.3);
   font-weight: 600;
 }
@@ -563,10 +730,11 @@ const {
 
 .moon-badge {
   font-size: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #bbb;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
 }
 
 /* Сетка */
@@ -576,9 +744,9 @@ const {
   align-items: center;
   flex-wrap: wrap;
   padding: 12px 16px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md, 10px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   margin-bottom: 16px;
 }
 
@@ -587,7 +755,7 @@ const {
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
 }
 
 .matrix-nav-group {
@@ -598,18 +766,23 @@ const {
 }
 
 .matrix-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  color: #fff;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   cursor: pointer;
+}
+
+.matrix-btn:hover {
+  background: var(--bg-active);
+  border-color: var(--border-hover);
 }
 
 .matrix-cur-month {
   font-weight: 600;
   font-size: 14px;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .matrix-grid {
@@ -619,27 +792,27 @@ const {
 }
 
 .matrix-day-cell {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 8px);
   padding: 8px;
   min-height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  transition: 0.15s;
+  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .matrix-day-cell:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
 }
 
 .matrix-day-cell.is-active {
-  border-color: var(--accent, #646cff);
-  background: rgba(100, 108, 255, 0.1);
-  box-shadow: 0 0 10px rgba(100, 108, 255, 0.3);
+  border-color: var(--border-active);
+  background: var(--bg-selected);
+  box-shadow: var(--shadow-glow);
 }
 
 .cell-top {
@@ -651,15 +824,16 @@ const {
 .base-day-num {
   font-weight: 700;
   font-size: 15px;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .comp-day-tag {
   font-size: 10px;
-  color: var(--accent, #818cf8);
-  background: rgba(100, 108, 255, 0.15);
+  color: var(--accent);
+  background: var(--bg-selected);
+  border: 1px solid var(--border-active);
   padding: 1px 4px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs, 3px);
 }
 
 .cell-body {
@@ -672,7 +846,7 @@ const {
 .cell-holiday-tag {
   font-size: 9px;
   padding: 1px 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs, 2px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -680,12 +854,14 @@ const {
 
 .base-holiday {
   background: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+  color: var(--error, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .comp-holiday {
   background: rgba(245, 158, 11, 0.2);
-  color: #fcd34d;
+  color: var(--warning, #f59e0b);
+  border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
 .cell-moons {
@@ -694,7 +870,7 @@ const {
 
 /* Сниппеты */
 .snippets-intro {
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
   font-size: 13px;
   margin-bottom: 16px;
 }
@@ -707,9 +883,9 @@ const {
 
 .snippet-card {
   padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 10px);
 }
 
 .snippet-header {
@@ -722,36 +898,39 @@ const {
 .snippet-title {
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
 }
 
 .copy-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   font-size: 12px;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs, 6px);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: 0.2s;
+  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .copy-btn:hover {
-  background: var(--accent, #646cff);
-  border-color: var(--accent, #646cff);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
 }
 
 .copy-btn.copied {
-  background: #10b981;
-  border-color: #10b981;
+  background: var(--success, #10b981);
+  border-color: var(--success, #10b981);
+  color: #fff;
 }
 
 .snippet-text {
   font-size: 14px;
-  color: #fff;
+  color: var(--text-main);
   font-family: Georgia, serif;
   font-style: italic;
 }

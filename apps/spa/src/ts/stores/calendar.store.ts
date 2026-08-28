@@ -15,6 +15,33 @@ export interface CalendarRecord {
   [key: string]: unknown;
 }
 
+export function normalizeCalendarId(id: unknown): string {
+  if (!id) return '';
+  if (typeof id === 'string') {
+    let s = id;
+    if (s.includes('{String:')) {
+      s = s.replace(/.*String:\"?([^\"]+)\"?.*/, '$1');
+    }
+    return s.replace(/["'⟨⟩]/g, '').trim();
+  }
+  if (typeof id === 'object') {
+    const obj = id as Record<string, unknown>;
+    if (obj.tb && obj.id) {
+      const tb = String(obj.tb);
+      let inner = obj.id;
+      if (typeof inner === 'object' && inner !== null) {
+        const innerObj = inner as Record<string, unknown>;
+        inner = innerObj.String ?? innerObj.Int ?? innerObj.Uuid ?? JSON.stringify(inner);
+      }
+      return `${tb}:${String(inner).replace(/["'⟨⟩]/g, '')}`.trim();
+    }
+    if (obj.String) {
+      return String(obj.String).replace(/["'⟨⟩]/g, '').trim();
+    }
+  }
+  return String(id).replace(/["'⟨⟩]/g, '').trim();
+}
+
 export const useCalendarStore = defineStore('calendar', () => {
   const isCreatingMaster = ref(false);
 
@@ -24,7 +51,12 @@ export const useCalendarStore = defineStore('calendar', () => {
     if (cached) return cached;
 
     try {
-      const list = (await api.getCalendars(projectName)) as CalendarRecord[];
+      const rawList = (await api.getCalendars(projectName)) as CalendarRecord[];
+      const list = (rawList || []).map((c) => ({
+        ...c,
+        id: normalizeCalendarId(c.id),
+      }));
+
       if (list && list.length > 0) {
         const hasMaster = list.some((c) => c.is_master);
         if (!hasMaster) {
@@ -37,8 +69,8 @@ export const useCalendarStore = defineStore('calendar', () => {
               defaultCal.data.is_master = true;
               defaultCal.data.calendar_type = 'master';
               if (list.length === 1) {
-                 defaultCal.data.название = 'Календарь Мира';
-                 defaultCal.name = 'Календарь Мира';
+                defaultCal.data.название = 'Календарь Мира';
+                defaultCal.name = 'Календарь Мира';
               }
             }
             await saveCalendar(projectName, { ...(defaultCal.data || {}), id: defaultCal.id, is_default: defaultCal.is_default, is_master: true } as unknown as CalendarData);
@@ -55,7 +87,11 @@ export const useCalendarStore = defineStore('calendar', () => {
           defaultCalData.calendar_type = 'master';
           defaultCalData.название = 'Календарь Мира';
           await saveCalendar(projectName, { ...defaultCalData, is_default: true, is_master: true } as unknown as CalendarData);
-          const newList = (await api.getCalendars(projectName)) as CalendarRecord[];
+          const rawNewList = (await api.getCalendars(projectName)) as CalendarRecord[];
+          const newList = (rawNewList || []).map((c) => ({
+            ...c,
+            id: normalizeCalendarId(c.id),
+          }));
           setCache(cacheKey, newList || []);
           return newList || [];
         } finally {
@@ -115,9 +151,11 @@ export const useCalendarStore = defineStore('calendar', () => {
     }
   }
 
-  async function deleteCalendar(id: string): Promise<boolean> {
+  async function deleteCalendar(id: unknown): Promise<boolean> {
     try {
-      await api.deleteCalendar(id);
+      const cleanId = normalizeCalendarId(id);
+      if (!cleanId) return false;
+      await api.deleteCalendar(cleanId);
       invalidateCache('calendars:');
       return true;
     } catch (error) {
@@ -135,6 +173,7 @@ export const useCalendarStore = defineStore('calendar', () => {
   }
 
   return {
+    isCreatingMaster,
     getCalendars,
     loadCalendar,
     saveCalendar,

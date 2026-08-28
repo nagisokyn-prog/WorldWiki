@@ -56,6 +56,14 @@ export function useCalendarsPanel(props: { project?: string }) {
                 }));
             }
 
+            // Календарь Мира (is_master) всегда закреплен сверху первым.
+            // Все остальные локальные календари сохраняют порядок добавления внизу.
+            calendars.value.sort((a, b) => {
+                if (a.is_master && !b.is_master) return -1;
+                if (!a.is_master && b.is_master) return 1;
+                return 0;
+            });
+
             if (calendars.value.length > 0 && expandedCalendars.value.size === 0) {
                 expandedCalendars.value.add(0);
             }
@@ -74,15 +82,15 @@ export function useCalendarsPanel(props: { project?: string }) {
 
         const tempPayload = {
             ...newCal,
-            is_default: calendars.value.length === 0,
-            is_master: calendars.value.length === 0,
+            is_default: false,
+            is_master: false,
             id: undefined
         };
 
         if (project.value) {
             await useCalendarStore().saveCalendar(project.value, tempPayload);
             await loadCalendars();
-            expandedCalendars.value.add(calendars.value.length - 1);
+            // Новый календарь создается свернутым внизу списка
         }
     };
 
@@ -90,11 +98,12 @@ export function useCalendarsPanel(props: { project?: string }) {
         if (!project.value) return;
 
         const cal = calendars.value[idx];
+        const idStr = String(cal.id || '').replace(/["'⟨⟩]/g, '').trim();
         const payload: CalendarData & { [key: string]: unknown } = {
             ...cal.data,
             название: cal.data.название || 'Календарь',
             is_default: cal.is_default,
-            id: cal.id?.startsWith('temp_') ? undefined : cal.id
+            id: idStr.startsWith('temp_') ? undefined : idStr
         };
 
         try {
@@ -109,17 +118,34 @@ export function useCalendarsPanel(props: { project?: string }) {
     };
 
     const removeCalendar = async (idx: number) => {
-        const { appConfirm } = await import('@worldwiki/components');
-        if (!await appConfirm('Вы уверены, что хотите удалить этот календарь?')) return;
+        let confirmed = false;
+        try {
+            const { appConfirm } = await import('@worldwiki/components');
+            confirmed = await Promise.race([
+                appConfirm('Вы уверены, что хотите удалить этот календарь?'),
+                new Promise<boolean>((resolve) => setTimeout(() => {
+                    if (!document.querySelector('.app-dialog-overlay')) {
+                        resolve(typeof window !== 'undefined' ? window.confirm('Вы уверены, что хотите удалить этот календарь?') : true);
+                    }
+                }, 300))
+            ]);
+        } catch {
+            confirmed = typeof window !== 'undefined' ? window.confirm('Вы уверены, что хотите удалить этот календарь?') : true;
+        }
+
+        if (!confirmed) return;
         if (!project.value) return;
 
         const cal = calendars.value[idx];
-        if (!cal.id?.startsWith('temp_') && cal.id) {
-            const success = await useCalendarStore().deleteCalendar(cal.id);
-            if (!success) {
-                const { appAlert } = await import('@worldwiki/components');
-                appAlert('Ошибка при удалении календаря.');
-                return;
+        if (cal) {
+            const idStr = String(cal.id || '').replace(/["'⟨⟩]/g, '').trim();
+            if (idStr && !idStr.startsWith('temp_')) {
+                const success = await useCalendarStore().deleteCalendar(idStr);
+                if (!success) {
+                    const { appAlert } = await import('@worldwiki/components');
+                    appAlert('Ошибка при удалении календаря.');
+                    return;
+                }
             }
         }
         calendars.value.splice(idx, 1);

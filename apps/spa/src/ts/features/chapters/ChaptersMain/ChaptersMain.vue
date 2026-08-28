@@ -13,6 +13,7 @@
         :has-unsaved-changes="hasUnsavedChanges"
         :footnotes-data="currentChapter.footnotes"
         :changed-fields="changedFields"
+        :existing-promises="promisesPanelRef?.promises || []"
         @update:title="markUnsaved"
         @update:content="markUnsaved"
         @change="markUnsaved"
@@ -22,6 +23,7 @@
         @toggle-history="toggleHistory"
         @add-participant="handleAddParticipant"
         @create-promise="handleCreatePromise"
+        @link-milestone="handleLinkMilestone"
       />
 
       <!-- Right Panel Resizer -->
@@ -299,7 +301,7 @@ const emit = defineEmits<{
 }>();
 
 const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string) => void } | null>(null);
-const promisesPanelRef = ref<{ addPromise: (p: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => Promise<void>; loadPromises: () => Promise<void> } | null>(null);
+const promisesPanelRef = ref<InstanceType<typeof PromisesPanel> | null>(null);
 
 const isTimelineOpen = ref(true);
 const isParticipantsOpen = ref(true);
@@ -327,6 +329,19 @@ const {
 
 const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
   promisesPanelRef.value?.addPromise(payload);
+};
+
+const handleLinkMilestone = (payload: {
+  promiseId: string;
+  stage: 'progression' | 'resolution';
+  quote: string;
+  paragraph_index: number;
+  block_id?: string | null;
+}) => {
+  promisesPanelRef.value?.addMilestone({
+    ...payload,
+    chapterId: currentChapter.value?.id || undefined
+  });
 };
 
 const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }) => {

@@ -3,15 +3,35 @@
     v-if="isOpen"
     ref="menuRef"
     class="promise-context-menu"
-    :style="{ top: `${position.y}px`, left: `${position.x}px` }"
+    :style="{ top: `${adjustedPos.y}px`, left: `${adjustedPos.x}px` }"
     @click.stop
   >
+    <!-- Header with tab switch if existing promises exist -->
     <div class="promise-menu-header">
       <span class="header-icon">🎯</span>
       <span class="header-title">Сюжетное обещание</span>
     </div>
 
-    <div class="promise-menu-items">
+    <!-- Mode Tabs: Создать новое / Привязать к существующему -->
+    <div v-if="activeExistingPromises.length > 0" class="menu-tabs">
+      <button 
+        class="tab-btn" 
+        :class="{ active: currentTab === 'create' }"
+        @click="currentTab = 'create'"
+      >
+        ✨ Создать
+      </button>
+      <button 
+        class="tab-btn" 
+        :class="{ active: currentTab === 'link' }"
+        @click="currentTab = 'link'"
+      >
+        🔗 Привязать ({{ activeExistingPromises.length }})
+      </button>
+    </div>
+
+    <!-- TAB 1: CREATE NEW PROMISE -->
+    <div v-if="currentTab === 'create'" class="promise-menu-items">
       <div
         v-for="(item, idx) in promiseTypes"
         :key="item.kind"
@@ -27,11 +47,43 @@
         </div>
       </div>
     </div>
+
+    <!-- TAB 2: LINK TO EXISTING PROMISE (Progress or Resolve) -->
+    <div v-else-if="currentTab === 'link'" class="existing-promises-list">
+      <div 
+        v-for="p in activeExistingPromises" 
+        :key="p.id || p.quote"
+        class="existing-promise-card"
+      >
+        <div class="existing-promise-info">
+          <span class="promise-kind-badge">{{ getKindIcon(p.kind) }} {{ getKindLabel(p.kind) }}</span>
+          <div class="promise-quote-preview">«{{ p.quote }}»</div>
+        </div>
+        
+        <div class="milestone-action-buttons">
+          <button 
+            class="btn-milestone btn-progress" 
+            title="Добавить как этап развития / напоминания"
+            @click="selectMilestone(p, 'progression')"
+          >
+            🌿 Развить
+          </button>
+          <button 
+            class="btn-milestone btn-resolve" 
+            title="Отметить как развязку / выстрел ружья"
+            @click="selectMilestone(p, 'resolution')"
+          >
+            🎯 Отстрелять
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
 
 export interface PromiseTypeOption {
   kind: string;
@@ -70,18 +122,39 @@ const promiseTypes: PromiseTypeOption[] = [
 const props = defineProps<{
   isOpen: boolean;
   position: { x: number; y: number };
+  existingPromises?: PlotPromise[];
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'select', item: PromiseTypeOption): void;
+  (e: 'link-milestone', payload: { promise: PlotPromise; stage: 'progression' | 'resolution' }): void;
 }>();
 
 const menuRef = ref<HTMLElement | null>(null);
 const selectedIndex = ref(0);
+const currentTab = ref<'create' | 'link'>('create');
+const adjustedPos = ref({ x: 0, y: 0 });
+
+const activeExistingPromises = computed(() => {
+  return (props.existingPromises || []).filter((p) => p.status !== 'resolved');
+});
+
+const getKindIcon = (kind: string) => {
+  return promiseTypes.find((t) => t.kind === kind)?.icon || '📌';
+};
+
+const getKindLabel = (kind: string) => {
+  return promiseTypes.find((t) => t.kind === kind)?.label || 'Обещание';
+};
 
 const selectItem = (item: PromiseTypeOption) => {
   emit('select', item);
+  emit('close');
+};
+
+const selectMilestone = (promise: PlotPromise, stage: 'progression' | 'resolution') => {
+  emit('link-milestone', { promise, stage });
   emit('close');
 };
 
@@ -91,16 +164,17 @@ const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') {
     e.preventDefault();
     emit('close');
-  } else if (e.key === 'ArrowDown') {
-    e.preventDefault();
-    selectedIndex.value = (selectedIndex.value + 1) % promiseTypes.length;
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    selectedIndex.value = (selectedIndex.value - 1 + promiseTypes.length) % promiseTypes.length;
-  } else if (e.key === 'Enter') {
-    e.preventDefault();
-    const item = promiseTypes[selectedIndex.value];
-    if (item) selectItem(item);
+  } else if (currentTab.value === 'create') {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      selectedIndex.value = (selectedIndex.value + 1) % promiseTypes.length;
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      selectedIndex.value = (selectedIndex.value - 1 + promiseTypes.length) % promiseTypes.length;
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      selectItem(promiseTypes[selectedIndex.value]);
+    }
   }
 };
 
@@ -113,79 +187,116 @@ const handleClickOutside = (e: MouseEvent) => {
 watch(() => props.isOpen, (open) => {
   if (open) {
     selectedIndex.value = 0;
+    currentTab.value = 'create';
+    adjustedPos.value = { ...props.position };
     nextTick(() => {
-      // Adjust menu position if overflowing viewport
       if (menuRef.value) {
         const rect = menuRef.value.getBoundingClientRect();
-        if (rect.right > window.innerWidth) {
-          menuRef.value.style.left = `${Math.max(10, window.innerWidth - rect.width - 10)}px`;
+        let x = props.position.x;
+        let y = props.position.y;
+        if (x + rect.width > window.innerWidth - 16) {
+          x = window.innerWidth - rect.width - 16;
         }
-        if (rect.bottom > window.innerHeight) {
-          menuRef.value.style.top = `${Math.max(10, window.innerHeight - rect.height - 10)}px`;
+        if (y + rect.height > window.innerHeight - 16) {
+          y = window.innerHeight - rect.height - 16;
         }
+        adjustedPos.value = { x: Math.max(16, x), y: Math.max(16, y) };
       }
     });
   }
 });
 
 onMounted(() => {
-  window.addEventListener('keydown', handleKeyDown);
-  window.addEventListener('mousedown', handleClickOutside);
+  document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('mousedown', handleClickOutside);
 });
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeyDown);
-  window.removeEventListener('mousedown', handleClickOutside);
+  document.removeEventListener('keydown', handleKeyDown);
+  document.removeEventListener('mousedown', handleClickOutside);
 });
 </script>
 
 <style scoped>
 .promise-context-menu {
   position: fixed;
-  z-index: 1000;
-  width: 280px;
+  z-index: 10000;
+  width: 320px;
+  max-width: 90vw;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 8px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border-color);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
   padding: 6px;
-  user-select: none;
-  font-family: inherit;
-  animation: fadeIn var(--anim-speed-fast, 0.12s) ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: menuAppear 0.12s ease-out forwards;
 }
 
-@keyframes fadeIn {
+@keyframes menuAppear {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.96) translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
 .promise-menu-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px 8px;
+  gap: 6px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 4px;
 }
 
 .header-icon {
-  font-size: 1rem;
+  font-size: 14px;
 }
 
 .header-title {
   font-size: var(--font-size-xs, 11px);
-  font-weight: var(--font-weight-bold, 600);
+  font-weight: var(--font-weight-bold, 700);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.menu-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-input);
+  padding: 2px;
+  border-radius: var(--radius-xs, 4px);
+  margin-bottom: 4px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
   color: var(--text-muted);
+  font-size: var(--font-size-xs, 11px);
+  padding: 3px 6px;
+  border-radius: var(--radius-xs, 3px);
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.12s) ease;
+  font-family: inherit;
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
 }
 
 .promise-menu-items {
@@ -197,26 +308,35 @@ onUnmounted(() => {
 .promise-menu-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 8px;
   border-radius: var(--radius-xs, 6px);
   cursor: pointer;
-  transition: background var(--anim-speed-fast, 0.12s) ease;
+  transition: all var(--anim-speed-fast, 0.12s) ease;
+  user-select: none;
 }
 
 .promise-menu-item:hover,
 .promise-menu-item.active {
   background: var(--bg-selected);
+  box-shadow: 0 0 0 1px var(--border-active) inset;
 }
 
 .item-icon {
-  font-size: 1.15rem;
-  line-height: 1;
+  font-size: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
 }
 
 .item-content {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 1px;
 }
 
 .item-label {
@@ -228,6 +348,93 @@ onUnmounted(() => {
 .item-desc {
   font-size: var(--font-size-xs, 11px);
   color: var(--text-muted);
-  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.existing-promises-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.existing-promises-list::-webkit-scrollbar {
+  width: 4px;
+}
+.existing-promises-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.existing-promise-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs, 6px);
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.existing-promise-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.promise-kind-badge {
+  font-size: 10px;
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+.promise-quote-preview {
+  font-size: var(--font-size-xs, 11px);
+  color: var(--text-main);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.milestone-action-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-milestone {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 6px;
+  border-radius: var(--radius-xs, 4px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.12s) ease;
+  font-family: inherit;
+}
+
+.btn-progress {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning, #f59e0b);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.btn-progress:hover {
+  background: var(--warning, #f59e0b);
+  color: #000;
+}
+
+.btn-resolve {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success, #10b981);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.btn-resolve:hover {
+  background: var(--success, #10b981);
+  color: #fff;
 }
 </style>

@@ -458,10 +458,32 @@ DEFINE FUNCTION OVERWRITE fn::project_word_count($proj: record<projects>) {
 };
 
 DEFINE FUNCTION OVERWRITE fn::get_rag_context($proj: record<projects>, $emb: array<float>, $limit: int) {
-    RETURN (
-        SELECT id, title, content, vector::similarity::cosine(embeddings.openai, $emb) AS vec_score 
-        FROM chapters 
-        WHERE project_id = $proj AND embeddings.openai != NONE 
-        ORDER BY vec_score ASC LIMIT $limit
-    );
+    RETURN (
+        SELECT id, title, content, vector::similarity::cosine(embeddings.openai, $emb) AS vec_score 
+        FROM chapters 
+        WHERE project_id = $proj AND embeddings.openai != NONE 
+        ORDER BY vec_score ASC LIMIT $limit
+    );
 };
+
+-- ===============================================
+-- СЮЖЕТНЫЕ ОБЕЩАНИЯ (ЧЕХОВСКИЕ РУЖЬЯ, ТАЙНЫ)
+-- ===============================================
+DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id          ON plot_promises TYPE record<projects>;
+DEFINE FIELD OVERWRITE chapter_id          ON plot_promises TYPE string;
+DEFINE FIELD OVERWRITE kind                ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question'
+DEFINE FIELD OVERWRITE quote               ON plot_promises TYPE string;
+DEFINE FIELD OVERWRITE paragraph_index     ON plot_promises TYPE number DEFAULT 1;
+DEFINE FIELD OVERWRITE block_id            ON plot_promises TYPE option<string>;
+DEFINE FIELD OVERWRITE note                ON plot_promises TYPE option<string>;
+DEFINE FIELD OVERWRITE status              ON plot_promises TYPE string DEFAULT 'planted'; -- 'planted' | 'developed' | 'resolved'
+DEFINE FIELD OVERWRITE progressions        ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE resolution          ON plot_promises TYPE option<object> FLEXIBLE;
+DEFINE FIELD OVERWRITE resolved_in_volume  ON plot_promises TYPE option<string>;
+DEFINE FIELD OVERWRITE resolved_in_arc     ON plot_promises TYPE option<string>;
+DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_promise_project ON plot_promises FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_promise_chapter ON plot_promises FIELDS chapter_id;

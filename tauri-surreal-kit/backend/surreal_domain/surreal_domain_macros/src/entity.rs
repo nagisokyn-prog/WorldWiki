@@ -242,7 +242,19 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                             println!("[ERROR] {}: {:?}", stringify!(#get_one_fn), e);
                             e.to_string()
                         })?;
-                    println!("[DEBUG] <- {}: returned {:?}", stringify!(#get_one_fn), item);
+                    if let Some(ref val) = item {
+                        let mut dbg_val = serde_json::to_value(val).unwrap_or_default();
+                        if let Some(obj) = dbg_val.as_object_mut() {
+                            if let Some(c) = obj.get_mut("content") {
+                                if let Some(s) = c.as_str() {
+                                    *c = serde_json::json!(format!("[{} chars]", s.len()));
+                                }
+                            }
+                        }
+                        println!("[DEBUG] <- {}: returned Some({})", stringify!(#get_one_fn), dbg_val);
+                    } else {
+                        println!("[DEBUG] <- {}: returned None", stringify!(#get_one_fn));
+                    }
                     Ok(serde_json::json!(item))
                 }
 
@@ -251,7 +263,15 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                     data: serde_json::Value,
                     state: tauri::State<'_, crate::AppState>
                 ) -> Result<serde_json::Value, String> {
-                    println!("[DEBUG] -> {}: data={}", stringify!(#save_fn), data);
+                    let mut dbg_in = data.clone();
+                    if let Some(obj) = dbg_in.as_object_mut() {
+                        if let Some(c) = obj.get_mut("content") {
+                            if let Some(s) = c.as_str() {
+                                *c = serde_json::json!(format!("[{} chars]", s.len()));
+                            }
+                        }
+                    }
+                    println!("[DEBUG] -> {}: data={}", stringify!(#save_fn), dbg_in);
                     let mut data = data.clone();
                     if let Some(obj) = data.as_object_mut() {
                         // Helper to normalize a value to a record-reference STRING "table:id".
@@ -317,7 +337,15 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                             println!("[ERROR] {}: failed to save: {:?}", stringify!(#save_fn), e);
                             e.to_string()
                         })?;
-                    println!("[DEBUG] <- {}: saved {:?}", stringify!(#save_fn), saved);
+                    let mut dbg_saved = serde_json::to_value(&saved).unwrap_or_default();
+                    if let Some(obj) = dbg_saved.as_object_mut() {
+                        if let Some(c) = obj.get_mut("content") {
+                            if let Some(s) = c.as_str() {
+                                *c = serde_json::json!(format!("[{} chars]", s.len()));
+                            }
+                        }
+                    }
+                    println!("[DEBUG] <- {}: saved {}", stringify!(#save_fn), dbg_saved);
                     Ok(serde_json::json!(saved))
                 }
 

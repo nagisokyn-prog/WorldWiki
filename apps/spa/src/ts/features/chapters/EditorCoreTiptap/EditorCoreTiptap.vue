@@ -152,8 +152,10 @@
     <PromiseContextMenu
       :is-open="isPromiseMenuOpen"
       :position="promiseMenuPos"
+      :existing-promises="existingPromises"
       @close="isPromiseMenuOpen = false"
       @select="handlePromiseSelect"
+      @link-milestone="handleMilestoneSelect"
     />
   </div>
 </template>
@@ -165,6 +167,7 @@ import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
 import EntityLinkSelector from './EntityLinkSelector.vue';
 import PromiseContextMenu, { type PromiseTypeOption } from './PromiseContextMenu.vue';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
 
 const isEntitySelectorOpen = ref(false);
 const activeEditorTarget = ref<'wysiwyg'|'markdown'>('markdown');
@@ -243,6 +246,17 @@ const handleContextMenu = (e: MouseEvent) => {
 const handlePromiseSelect = (item: PromiseTypeOption) => {
   emit('create-promise', {
     kind: item.kind,
+    quote: selectedPromiseData.value.quote,
+    paragraph_index: selectedPromiseData.value.paragraph_index,
+    block_id: selectedPromiseData.value.block_id
+  });
+};
+
+const handleMilestoneSelect = (payload: { promise: PlotPromise; stage: 'progression' | 'resolution' }) => {
+  if (!payload.promise.id) return;
+  emit('link-milestone', {
+    promiseId: payload.promise.id,
+    stage: payload.stage,
     quote: selectedPromiseData.value.quote,
     paragraph_index: selectedPromiseData.value.paragraph_index,
     block_id: selectedPromiseData.value.block_id
@@ -377,13 +391,15 @@ const props = withDefaults(defineProps<{
   footnotesData?: Record<string, { id: string; text: string }>;
   initialScrollPos?: number;
   changedFields?: string[];
+  existingPromises?: PlotPromise[];
 }>(), {
   title: '',
   content: '',
   hasUnsavedChanges: false,
   footnotesData: () => ({}),
   initialScrollPos: 0,
-  changedFields: () => []
+  changedFields: () => [],
+  existingPromises: () => []
 });
 
 const emit = defineEmits([
@@ -397,7 +413,8 @@ const emit = defineEmits([
   'toggle-history',
   'open-entity-selector',
   'add-participant',
-  'create-promise'
+  'create-promise',
+  'link-milestone'
 ]);
 
 const {

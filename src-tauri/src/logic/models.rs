@@ -238,6 +238,8 @@ surreal_entity! {
         pub block_id: Option<String>,
         pub note: Option<String>,
         pub status: String,
+        #[flexible] #[serde(default)] pub progressions: serde_json::Value,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub resolution: Option<serde_json::Value>,
         pub resolved_in_volume: Option<String>,
         pub resolved_in_arc: Option<String>,
         pub resolved_in_chapter: Option<String>,

@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import * as api from '@/services/api.client';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { PlotPromise, PromiseMilestone } from '@/types/generated/PlotPromise';
 
 export interface ChapterMetaItem {
   id: string | null;
@@ -132,6 +132,8 @@ export function usePromisesPanel(
       block_id: payload.block_id || null,
       note: null,
       status: 'planted',
+      progressions: [],
+      resolution: null,
       resolved_in_volume: null,
       resolved_in_arc: null,
       resolved_in_chapter: null
@@ -147,6 +149,79 @@ export function usePromisesPanel(
     } catch (e) {
       console.warn('[PromisesPanel] Backend command save_plot_promise not yet available, saved locally:', e);
       promises.value.push(newPromise);
+    }
+    syncLocalBackup();
+    emit('change');
+  };
+
+  const addMilestone = async (payload: {
+    promiseId: string;
+    stage: 'progression' | 'resolution';
+    quote: string;
+    paragraph_index: number;
+    block_id?: string | null;
+    chapterId?: string | null;
+  }) => {
+    const targetClean = cleanId(payload.promiseId);
+    const target = promises.value.find((p) => cleanId(p.id) === targetClean);
+    if (!target) return;
+
+    const chapId = payload.chapterId || props.chapterId || target.chapter_id;
+    const milestone: PromiseMilestone = {
+      id: `ms_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      chapter_id: chapId,
+      paragraph_index: payload.paragraph_index || 1,
+      quote: payload.quote,
+      created_at: new Date().toISOString()
+    };
+
+    if (payload.stage === 'progression') {
+      if (!Array.isArray(target.progressions)) {
+        target.progressions = [];
+      }
+      target.progressions.push(milestone);
+      if (target.status === 'planted') {
+        target.status = 'developed';
+      }
+    } else if (payload.stage === 'resolution') {
+      target.resolution = milestone;
+      target.status = 'resolved';
+      target.resolved_in_chapter = chapId;
+      target.resolved_in_volume = props.currentVolumeId || null;
+      target.resolved_in_arc = props.currentArcId || null;
+    }
+
+    try {
+      await api.savePlotPromise(props.project, target);
+    } catch (e) {
+      console.warn('[PromisesPanel] Backend save milestone not available, saved locally:', e);
+    }
+    syncLocalBackup();
+    emit('change');
+  };
+
+  const removeMilestone = async (
+    promise: PlotPromise,
+    milestoneId: string,
+    stage: 'progression' | 'resolution'
+  ) => {
+    if (stage === 'progression' && Array.isArray(promise.progressions)) {
+      promise.progressions = promise.progressions.filter((m) => m.id !== milestoneId);
+      if (promise.progressions.length === 0 && promise.status === 'developed') {
+        promise.status = 'planted';
+      }
+    } else if (stage === 'resolution') {
+      promise.resolution = null;
+      promise.status = (promise.progressions && promise.progressions.length > 0) ? 'developed' : 'planted';
+      promise.resolved_in_chapter = null;
+      promise.resolved_in_volume = null;
+      promise.resolved_in_arc = null;
+    }
+
+    try {
+      await api.savePlotPromise(props.project, promise);
+    } catch (e) {
+      console.warn('[PromisesPanel] Backend delete milestone not available, saved locally:', e);
     }
     syncLocalBackup();
     emit('change');
@@ -205,7 +280,7 @@ export function usePromisesPanel(
     emit('change');
   };
 
-  const locateSource = (item: PlotPromise) => {
+  const locateSource = (item: { chapter_id: string; paragraph_index: number; quote: string; block_id?: string | null }) => {
     emit('locate', {
       chapterId: item.chapter_id,
       paragraphIndex: item.paragraph_index,
@@ -232,6 +307,8 @@ export function usePromisesPanel(
     statusFilter,
     loadPromises,
     addPromise,
+    addMilestone,
+    removeMilestone,
     updateStatus,
     startEditNote,
     saveNote,

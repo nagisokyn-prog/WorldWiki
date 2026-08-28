@@ -67,7 +67,7 @@
         <div class="text-xs text-muted">
           {{ scopeFilter === 'current' ? 'В текущей главе нет сюжетных обещаний.' : 'В проекте пока нет сюжетных обещаний.' }}
           <br />
-          Выделите текст и нажмите <kbd class="kbd-hint">ПКМ</kbd>, чтобы добавить.
+          Выделите текст и нажмите <kbd class="kbd-hint">ПКМ</kbd>, чтобы добавить или развить.
         </div>
       </div>
 
@@ -93,17 +93,113 @@
             </button>
           </div>
 
-          <div class="card-location">
-            <span class="location-chapter font-medium">{{ getChapterTitle(item.chapter_id) }}</span>
-            <span class="location-sep">·</span>
-            <span>абзац {{ item.paragraph_index }}</span>
-            <span v-if="isCurrentChapterPromise(item.chapter_id)" class="badge-current-chapter">текущая</span>
+          <!-- ХРОНОЛОГИЯ ЖИЗНИ ОБЕЩАНИЯ (МИНИ-ТАЙМЛАЙН) -->
+          <div class="promise-timeline">
+
+            <!-- 1. 🌱 ТОЧКА ПОСАДКИ (PLANT) -->
+            <div class="timeline-step step-plant">
+              <div class="step-badge">
+                <span class="step-icon">🌱</span>
+                <span class="step-name">Посажено:</span>
+                <span class="step-location">{{ getChapterTitle(item.chapter_id) }} · абз. {{ item.paragraph_index }}</span>
+                <span v-if="isCurrentChapterPromise(item.chapter_id)" class="badge-current-chapter">текущая</span>
+              </div>
+              
+              <blockquote class="card-quote">
+                «{{ item.quote }}»
+              </blockquote>
+
+              <div class="step-actions">
+                <button class="btn-locate-step" @click="locateSource(item)">
+                  📍 Перейти к сцене
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. 🌿 ТОЧКИ РАЗВИТИЯ (PROGRESSIONS) -->
+            <div v-if="item.progressions && item.progressions.length > 0" class="timeline-group-progressions">
+              <div class="group-header">
+                <span class="step-icon">🌿</span>
+                <span class="group-title">Развитие ({{ item.progressions.length }}):</span>
+              </div>
+
+              <div 
+                v-for="prog in item.progressions" 
+                :key="prog.id"
+                class="timeline-step step-progression"
+              >
+                <div class="step-badge">
+                  <span class="step-connector">├─</span>
+                  <span class="step-location font-medium">{{ getChapterTitle(prog.chapter_id) }} · абз. {{ prog.paragraph_index }}</span>
+                  <span v-if="isCurrentChapterPromise(prog.chapter_id)" class="badge-current-chapter">текущая</span>
+                  <button 
+                    class="btn-delete-step" 
+                    title="Удалить это упоминание"
+                    @click="removeMilestone(item, prog.id, 'progression')"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <blockquote class="card-quote quote-small">
+                  «{{ prog.quote }}»
+                </blockquote>
+
+                <div class="step-actions">
+                  <button class="btn-locate-step" @click="locateSource(prog)">
+                    📍 Перейти
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. 🎯 ТОЧКА ВЫСТРЕЛА / РАЗВЯЗКИ (RESOLUTION) -->
+            <div v-if="item.resolution" class="timeline-step step-resolution">
+              <div class="step-badge">
+                <span class="step-icon">🎯</span>
+                <span class="step-name font-bold text-success">Отстреляно:</span>
+                <span class="step-location font-semibold">{{ getChapterTitle(item.resolution.chapter_id) }} · абз. {{ item.resolution.paragraph_index }}</span>
+                <span v-if="isCurrentChapterPromise(item.resolution.chapter_id)" class="badge-current-chapter">текущая</span>
+                <button 
+                  class="btn-delete-step" 
+                  title="Сбросить выстрел"
+                  @click="removeMilestone(item, item.resolution.id, 'resolution')"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <blockquote class="card-quote quote-resolution">
+                «{{ item.resolution.quote }}»
+              </blockquote>
+
+              <div class="step-actions">
+                <button class="btn-locate-step" @click="locateSource(item.resolution)">
+                  📍 Перейти к финалу
+                </button>
+              </div>
+            </div>
+
           </div>
 
-          <!-- Цитата -->
-          <blockquote class="card-quote">
-            «{{ item.quote }}»
-          </blockquote>
+          <!-- Быстрые действия с карточкой -->
+          <div class="card-quick-actions">
+            <button 
+              class="btn-quick btn-quick-progress" 
+              title="Развить обещание выделенной фразой"
+              @click="promptAttachMilestone(item, 'progression')"
+            >
+              🌿 + Развить
+            </button>
+            <button 
+              v-if="!item.resolution"
+              class="btn-quick btn-quick-resolve" 
+              title="Отстрелять обещание в текущей главе"
+              @click="promptAttachMilestone(item, 'resolution')"
+            >
+              🎯 Отстрелять
+            </button>
+          </div>
 
           <!-- Заметка -->
           <div class="card-note-section">
@@ -130,13 +226,12 @@
               class="btn-add-note" 
               @click="startEditNote(item)"
             >
-              + Добавить заметку
+              + Заметка
             </button>
           </div>
 
-          <!-- Статус -->
+          <!-- Статус-радио переключатель -->
           <div class="card-status-section">
-            <div class="status-title">Статус</div>
             <div class="status-options">
               <label 
                 v-for="st in PROMISE_STATUSES" 
@@ -157,10 +252,6 @@
             </div>
           </div>
 
-          <!-- Кнопка перехода к источнику -->
-          <button class="btn-locate" @click="locateSource(item)">
-            📍 Открыть источник
-          </button>
         </div>
       </div>
     </div>
@@ -170,6 +261,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { usePromisesPanel, PROMISE_STATUSES, type ChapterMetaItem } from './usePromisesPanel';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
 
 const props = defineProps<{
   project: string;
@@ -198,6 +290,8 @@ const {
   statusFilter,
   loadPromises,
   addPromise,
+  addMilestone,
+  removeMilestone,
   updateStatus,
   startEditNote,
   saveNote,
@@ -209,8 +303,25 @@ const {
   isCurrentChapterPromise
 } = usePromisesPanel(props, emit);
 
+const promptAttachMilestone = (item: PlotPromise, stage: 'progression' | 'resolution') => {
+  if (!item.id) return;
+  const sel = window.getSelection()?.toString().trim();
+  const quote = sel || prompt(stage === 'progression' ? 'Введите цитату/текст упоминания:' : 'Введите цитату кульминации/выстрела:');
+  if (!quote) return;
+
+  addMilestone({
+    promiseId: item.id,
+    stage,
+    quote,
+    paragraph_index: 1,
+    chapterId: props.chapterId || undefined
+  });
+};
+
 defineExpose({
+  promises,
   addPromise,
+  addMilestone,
   loadPromises
 });
 </script>
@@ -221,7 +332,9 @@ defineExpose({
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
 }
 
 .section-header {
@@ -229,10 +342,11 @@ defineExpose({
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
+  background: var(--bg-card-header, rgba(255, 255, 255, 0.02));
   cursor: pointer;
   user-select: none;
-  background: rgba(255, 255, 255, 0.02);
-  transition: background var(--anim-speed, 0.2s) ease;
+  border-bottom: 1px solid var(--border-color);
+  transition: background var(--anim-speed-fast) ease;
 }
 
 .section-header:hover {
@@ -240,63 +354,41 @@ defineExpose({
 }
 
 .collapse-icon {
-  font-size: var(--font-size-xs, 11px);
+  font-size: 10px;
   color: var(--text-muted);
 }
 
 .badge-subtle {
-  font-size: var(--font-size-xs, 11px);
-  padding: 1px 6px;
   background: var(--bg-selected);
-  color: var(--accent-light);
-  border-radius: var(--radius-round, 9999px);
-}
-
-.btn-icon-subtle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0.6;
-  padding: 2px 4px;
-  border-radius: var(--radius-xs, 4px);
   color: var(--text-main);
-  transition: opacity var(--anim-speed, 0.2s) ease;
-}
-.btn-icon-subtle:hover {
-  opacity: 1;
-  background: var(--bg-hover);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .section-content {
-  padding: 10px;
-  max-height: 380px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 480px;
   overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .section-content::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
-
-.section-content::-webkit-scrollbar-track {
-  background: transparent;
-}
-
 .section-content::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: var(--radius-round, 9999px);
-}
-
-.section-content::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover, rgba(255, 255, 255, 0.2));
+  border-radius: 4px;
 }
 
 .promise-filters-bar {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -305,8 +397,7 @@ defineExpose({
   gap: 4px;
   background: var(--bg-input);
   padding: 2px;
-  border-radius: var(--radius-xs, 6px);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
 }
 
 .tab-pill {
@@ -314,13 +405,13 @@ defineExpose({
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: var(--font-size-xs, 11px);
+  font-size: 11px;
   padding: 4px 6px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.12s) ease;
-  white-space: nowrap;
+  transition: all var(--anim-speed-fast) ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .tab-pill:hover {
@@ -330,14 +421,21 @@ defineExpose({
 .tab-pill.active {
   background: var(--accent);
   color: #fff;
-  font-weight: 500;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
 }
 
 .status-pills {
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.status-pills::-webkit-scrollbar {
+  height: 2px;
+}
+.status-pills::-webkit-scrollbar-thumb {
+  background: var(--border-color);
 }
 
 .status-pill-btn {
@@ -346,37 +444,38 @@ defineExpose({
   color: var(--text-muted);
   font-size: 10px;
   padding: 2px 6px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.12s) ease;
+  transition: all var(--anim-speed-fast) ease;
+  white-space: nowrap;
   font-family: inherit;
 }
 
 .status-pill-btn:hover {
+  border-color: var(--border-active);
   color: var(--text-main);
-  border-color: var(--border-hover);
 }
 
 .status-pill-btn.active {
   background: var(--bg-selected);
-  border-color: var(--border-active);
+  border-color: var(--accent);
   color: var(--accent-light);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .empty-state {
-  padding: 14px 8px;
   text-align: center;
+  padding: 16px 8px;
   line-height: 1.5;
 }
 
 .kbd-hint {
-  background: var(--bg-hover);
-  padding: 1px 4px;
-  border-radius: var(--radius-xs, 4px);
-  font-size: var(--font-size-xs, 11px);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  color: var(--text-muted);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: inherit;
+  color: var(--accent-light);
 }
 
 .promises-list {
@@ -386,26 +485,29 @@ defineExpose({
 }
 
 .promise-card {
-  background: var(--bg-input);
+  background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-sm);
   padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  transition: border-color var(--anim-speed, 0.2s) ease;
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--anim-speed-fast) ease;
+  position: relative;
 }
 
 .promise-card.status-planted {
-  border-left-color: var(--success, #10b981);
+  border-left: 3px solid var(--warning, #f59e0b);
 }
+
 .promise-card.status-developed {
-  border-left-color: var(--warning, #f59e0b);
+  border-left: 3px solid var(--info, #3b82f6);
 }
+
 .promise-card.status-resolved {
-  border-left-color: var(--text-disabled, rgba(255, 255, 255, 0.35));
-  opacity: 0.85;
+  border-left: 3px solid var(--success, #10b981);
+  opacity: 0.92;
 }
 
 .card-header {
@@ -415,11 +517,11 @@ defineExpose({
 }
 
 .kind-icon {
-  font-size: 1rem;
+  font-size: 15px;
 }
 
 .kind-label {
-  font-size: var(--font-size-sm, 13px);
+  font-size: 12px;
   color: var(--text-main);
 }
 
@@ -427,53 +529,183 @@ defineExpose({
   background: none;
   border: none;
   color: var(--text-muted);
-  font-size: var(--font-size-xs, 11px);
+  font-size: 11px;
   cursor: pointer;
-  padding: 2px 5px;
-  border-radius: var(--radius-xs, 4px);
-  transition: all var(--anim-speed, 0.2s) ease;
-}
-.btn-delete:hover {
-  color: var(--error, #ef4444);
-  background: rgba(239, 68, 68, 0.15);
+  padding: 2px 4px;
+  border-radius: var(--radius-xs);
+  transition: all var(--anim-speed-fast) ease;
 }
 
-.card-location {
-  font-size: var(--font-size-xs, 11px);
-  color: var(--text-muted);
+.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error, #ef4444);
+}
+
+.promise-timeline {
   display: flex;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  padding: 8px;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
   gap: 4px;
 }
 
-.location-chapter {
-  color: var(--accent-light, #c4b5fd);
+.step-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
 }
 
-.location-sep {
-  opacity: 0.5;
+.step-icon {
+  font-size: 12px;
+}
+
+.step-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.step-location {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.step-connector {
+  color: var(--text-muted);
+  font-family: monospace;
 }
 
 .badge-current-chapter {
-  font-size: 9px;
-  padding: 1px 4px;
   background: rgba(16, 185, 129, 0.15);
   color: var(--success, #10b981);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  font-size: 9px;
+  padding: 1px 4px;
   border-radius: 3px;
+  font-weight: 600;
+}
+
+.btn-delete-step {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0 4px;
+}
+.btn-delete-step:hover {
+  color: var(--error, #ef4444);
 }
 
 .card-quote {
   margin: 0;
-  padding: 6px 8px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: var(--radius-xs, 4px);
+  padding: 4px 8px;
+  font-size: 11px;
   font-style: italic;
-  font-size: var(--font-size-sm, 13px);
   color: var(--text-main);
+  background: var(--bg-card);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
   line-height: 1.4;
-  border-left: 2px solid var(--border-hover, rgba(255, 255, 255, 0.2));
+  word-break: break-word;
+}
+
+.quote-small {
+  font-size: 10.5px;
+  border-left-color: var(--info, #3b82f6);
+}
+
+.quote-resolution {
+  border-left-color: var(--success, #10b981);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.step-actions {
+  display: flex;
+}
+
+.btn-locate-step {
+  background: none;
+  border: none;
+  color: var(--accent-light);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  transition: all var(--anim-speed-fast) ease;
+}
+
+.btn-locate-step:hover {
+  background: var(--bg-hover);
+  text-decoration: underline;
+}
+
+.timeline-group-progressions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 6px;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--warning, #f59e0b);
+}
+
+.step-resolution {
+  border-top: 1px solid var(--border-color);
+  padding-top: 6px;
+}
+
+.card-quick-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-quick {
+  flex: 1;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast) ease;
+  font-family: inherit;
+}
+
+.btn-quick-progress {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning, #f59e0b);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.btn-quick-progress:hover {
+  background: var(--warning, #f59e0b);
+  color: #000;
+}
+
+.btn-quick-resolve {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success, #10b981);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.btn-quick-resolve:hover {
+  background: var(--success, #10b981);
+  color: #fff;
 }
 
 .card-note-section {
@@ -481,157 +713,129 @@ defineExpose({
   flex-direction: column;
 }
 
+.note-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  background: var(--bg-hover);
+  padding: 4px 6px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.note-display:hover {
+  color: var(--text-main);
+}
+
 .btn-add-note {
   background: none;
   border: 1px dashed var(--border-color);
   color: var(--text-muted);
-  font-size: var(--font-size-xs, 11px);
-  padding: 4px 8px;
-  border-radius: var(--radius-xs, 4px);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   text-align: left;
-  transition: all var(--anim-speed, 0.2s) ease;
-}
-.btn-add-note:hover {
-  border-color: var(--accent);
-  color: var(--text-main);
-  background: var(--bg-hover);
+  transition: all var(--anim-speed-fast) ease;
+  font-family: inherit;
 }
 
-.note-display {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 4px 6px;
-  background: var(--bg-hover);
-  border-radius: var(--radius-xs, 4px);
-  cursor: pointer;
-  font-size: var(--font-size-xs, 12px);
-  color: var(--text-muted);
-  transition: background var(--anim-speed, 0.2s) ease;
-}
-.note-display:hover {
-  background: var(--bg-active);
+.btn-add-note:hover {
+  border-color: var(--border-active);
   color: var(--text-main);
 }
 
 .note-edit-box {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .note-textarea {
   width: 100%;
-  box-sizing: border-box;
-  background: var(--bg-base);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
+  padding: 4px;
+  font-size: 11px;
   color: var(--text-main);
-  padding: 6px;
-  font-size: var(--font-size-xs, 12px);
   font-family: inherit;
   resize: vertical;
-}
-.note-textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
-  outline: none;
 }
 
 .note-actions {
   display: flex;
-  gap: 6px;
-  justify-content: flex-end;
+  gap: 4px;
 }
 
 .btn-xs {
-  font-size: var(--font-size-xs, 11px);
-  padding: 2px 8px;
-  border-radius: var(--radius-xs, 4px);
-  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
   border: none;
+  cursor: pointer;
   font-family: inherit;
-  transition: background var(--anim-speed, 0.2s) ease;
 }
+
 .btn-primary {
   background: var(--accent);
   color: #fff;
 }
-.btn-primary:hover {
-  background: var(--accent-hover);
-}
+
 .btn-ghost {
   background: none;
   color: var(--text-muted);
 }
-.btn-ghost:hover {
-  background: var(--bg-hover);
-  color: var(--text-main);
-}
 
 .card-status-section {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.status-title {
-  font-size: var(--font-size-xs, 11px);
-  font-weight: var(--font-weight-bold, 600);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-color);
 }
 
 .status-options {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  gap: 8px;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .status-radio-label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: var(--font-size-xs, 12px);
-  cursor: pointer;
+  gap: 4px;
+  font-size: 10px;
   color: var(--text-muted);
+  cursor: pointer;
   user-select: none;
-  transition: color var(--anim-speed, 0.2s) ease;
 }
-.status-radio-label:hover {
-  color: var(--text-main);
+
+.status-radio-label input[type="radio"] {
+  display: none;
 }
+
+.radio-custom {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: all var(--anim-speed-fast) ease;
+}
+
 .status-radio-label.active {
   color: var(--text-main);
-  font-weight: var(--font-weight-medium, 500);
+  font-weight: 500;
 }
 
-.status-radio-label input {
-  cursor: pointer;
-  accent-color: var(--accent);
-}
-
-.btn-locate {
-  background: var(--bg-selected);
-  border: 1px solid var(--border-active);
-  color: var(--accent-light);
-  font-size: var(--font-size-xs, 12px);
-  font-weight: var(--font-weight-medium, 500);
-  padding: 5px 8px;
-  border-radius: var(--radius-xs, 4px);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  transition: all var(--anim-speed, 0.2s) ease;
-}
-.btn-locate:hover {
-  background: var(--accent);
+.status-radio-label.active .radio-custom {
   border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 10px var(--accent-glow);
+  background: var(--accent);
+  box-shadow: 0 0 4px var(--accent-glow);
 }
 </style>

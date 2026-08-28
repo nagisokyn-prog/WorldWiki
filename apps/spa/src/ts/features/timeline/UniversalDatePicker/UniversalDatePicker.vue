@@ -113,7 +113,7 @@ import type { DatePickerModelValue } from './useUniversalDatePicker';
 
 const props = withDefaults(defineProps<{
   project: string;
-  modelValue?: DatePickerModelValue | null;
+  modelValue?: DatePickerModelValue | string | null;
   showTime?: boolean;
 }>(), {
   modelValue: null,

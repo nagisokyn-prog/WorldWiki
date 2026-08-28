@@ -13,12 +13,12 @@ export type PlotPromise = {
     id: string | null;
     project_id: string | null;
     chapter_id: string;
-    kind: string; // 'gun' | 'foreshadowing' | 'mystery' | 'question'
+    kind: string;
     quote: string;
     paragraph_index: number;
     block_id: string | null;
     note: string | null;
-    status: string; // 'planted' | 'developed' | 'resolved'
+    status: string;
     progressions?: PromiseMilestone[];
     resolution?: PromiseMilestone | null;
     resolved_in_volume: string | null;

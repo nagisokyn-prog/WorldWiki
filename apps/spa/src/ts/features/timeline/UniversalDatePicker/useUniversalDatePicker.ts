@@ -26,7 +26,7 @@ export interface DatePickerModelValue {
 
 export interface UniversalDatePickerProps {
   project: string;
-  modelValue?: DatePickerModelValue | null;
+  modelValue?: DatePickerModelValue | string | null;
   showTime?: boolean;
   [key: string]: unknown;
 }
@@ -252,7 +252,7 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
   });
 
   watch(() => props.modelValue, (newVal) => {
-    if (!newVal) return;
+    if (!newVal || typeof newVal !== 'object') return;
     if (newVal.calendar_id && newVal.original_input) {
       if (
         newVal.calendar_id !== currentCalendarId.value ||

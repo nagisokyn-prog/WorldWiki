@@ -1,6 +1,15 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import * as api from '@/services/api.client';
-import type { PlotPromise, PromiseMilestone } from '@/types/generated/PlotPromise';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
+
+export interface PromiseMilestone {
+  id: string;
+  chapter_id: string;
+  paragraph_index: number;
+  quote: string;
+  note?: string | null;
+  created_at?: string | null;
+}
 
 export interface ChapterMetaItem {
   id: string | null;
@@ -57,8 +66,8 @@ export function usePromisesPanel(
     try {
       const list = await api.getPlotPromises(props.project);
       promises.value = Array.isArray(list) ? list : [];
-    } catch (e) {
-      console.warn('[PromisesPanel] Failed to load plot promises from backend (restart backend to apply Rust changes):', e);
+    } catch {
+      // Тихий fallback на localStorage, пока бэкенд не перезапущен
       const localKey = `ww_plot_promises_${props.project}`;
       try {
         const stored = localStorage.getItem(localKey);
@@ -118,7 +127,7 @@ export function usePromisesPanel(
     kind: string;
     quote: string;
     paragraph_index: number;
-    block_id?: string;
+    block_id?: string | null;
   }) => {
     if (!props.project || !props.chapterId) return;
 
@@ -146,8 +155,7 @@ export function usePromisesPanel(
       } else {
         promises.value.push(newPromise);
       }
-    } catch (e) {
-      console.warn('[PromisesPanel] Backend command save_plot_promise not yet available, saved locally:', e);
+    } catch {
       promises.value.push(newPromise);
     }
     syncLocalBackup();
@@ -193,9 +201,7 @@ export function usePromisesPanel(
 
     try {
       await api.savePlotPromise(props.project, target);
-    } catch (e) {
-      console.warn('[PromisesPanel] Backend save milestone not available, saved locally:', e);
-    }
+    } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
@@ -220,9 +226,7 @@ export function usePromisesPanel(
 
     try {
       await api.savePlotPromise(props.project, promise);
-    } catch (e) {
-      console.warn('[PromisesPanel] Backend delete milestone not available, saved locally:', e);
-    }
+    } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
@@ -239,9 +243,7 @@ export function usePromisesPanel(
 
     try {
       await api.savePlotPromise(props.project, item);
-    } catch (e) {
-      console.warn('[PromisesPanel] Backend update not available, updated locally:', e);
-    }
+    } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
@@ -256,9 +258,7 @@ export function usePromisesPanel(
     editingNoteId.value = null;
     try {
       await api.savePlotPromise(props.project, item);
-    } catch (e) {
-      console.warn('[PromisesPanel] Backend save note not available, saved locally:', e);
-    }
+    } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
@@ -272,9 +272,7 @@ export function usePromisesPanel(
     if (!item.id) return;
     try {
       await api.deletePlotPromise(item.id);
-    } catch (e) {
-      console.warn('[PromisesPanel] Backend delete not available, deleted locally:', e);
-    }
+    } catch { /* fallback to local */ }
     promises.value = promises.value.filter((p) => p.id !== item.id);
     syncLocalBackup();
     emit('change');

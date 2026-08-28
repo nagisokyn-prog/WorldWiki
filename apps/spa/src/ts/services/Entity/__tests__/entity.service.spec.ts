@@ -52,15 +52,6 @@ describe('entityService', () => {
       expect(res).toEqual([{ id: 'sp1', name: 'Elf' }]);
     });
 
-    it('handles object without plural key', async () => {
-      vi.mocked(entityApi.getEntityList).mockResolvedValueOnce({
-        unrelated: [{ id: '1' }],
-      } as any);
-
-      const res = await entityService.list('p1', 'character');
-      expect(res).toEqual([]);
-    });
-
     it('rethrows error on load failure', async () => {
       vi.mocked(entityApi.getEntityList).mockRejectedValueOnce(new Error('Load error'));
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

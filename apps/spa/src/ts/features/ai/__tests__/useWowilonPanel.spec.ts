@@ -282,7 +282,7 @@ describe('useWowilonPanel', () => {
           id: 'a2',
           role: 'assistant',
           content: '<think>Unfinished thoughts',
-          parent_id: null,
+          parent_id: 'a1',
           is_active: true,
         },
       ];

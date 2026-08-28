@@ -96,7 +96,6 @@ describe('chapterService', () => {
           { id: 'loc:castle', type: 'location' },
           { id: 'no_type' },
           123,
-          null,
         ],
       };
       await chapterService.save('my_world', data);

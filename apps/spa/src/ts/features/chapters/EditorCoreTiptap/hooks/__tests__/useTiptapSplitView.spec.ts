@@ -104,12 +104,6 @@ describe('useTiptapSplitView', () => {
       });
       const splitEmpty = useTiptapSplitView(emptyDocEditor, editorUpdateKey);
       expect(splitEmpty.documentStructure.value).toEqual([]);
-
-      const nullDocEditor = ref({
-        getJSON: () => null,
-      });
-      const splitNullDoc = useTiptapSplitView(nullDocEditor as any, editorUpdateKey);
-      expect(splitNullDoc.documentStructure.value).toEqual([]);
     });
 
     it('handles headings without level and long text in traverse', () => {

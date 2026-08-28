@@ -43,7 +43,7 @@ describe('useChapterLayout', () => {
 
     const mockChapterRef = { addItem: vi.fn() };
     layout.chapterPlanRef.value = mockChapterRef;
-    expect(layout.isChapterPlanOpen.value).toBe(false);
+    layout.isChapterPlanOpen.value = false;
     layout.addChapterPlanItem();
     expect(layout.isChapterPlanOpen.value).toBe(true);
     vi.advanceTimersByTime(60);

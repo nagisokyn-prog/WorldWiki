@@ -1,11 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useModuleReferenceData } from '../useModuleReferenceData';
-import * as api from '../../../../services/api.client';
-import { useShellStore } from '../../../../stores/shell';
+import * as api from '@/services/api.client';
+import { useShellStore } from '@/stores/shell';
+
+vi.mock('@/services/api.client', () => ({
+  getEntitySchemas: vi.fn(),
+}));
 
 vi.mock('../../../../services/api.client', () => ({
   getEntitySchemas: vi.fn(),
+}));
+
+vi.mock('@/stores/shell', () => ({
+  useShellStore: () => ({
+    projectName: 'my_proj',
+  }),
+}));
+
+vi.mock('../../../../stores/shell', () => ({
+  useShellStore: () => ({
+    projectName: 'my_proj',
+  }),
 }));
 
 describe('useModuleReferenceData', () => {
@@ -22,8 +38,8 @@ describe('useModuleReferenceData', () => {
       {
         type_name: 'character',
         full_schema: {
-          name: 'Персонаж',
-          entityType: 'character',
+          name: 'Уникальный Персонаж',
+          entityType: 'unique_character',
           iconEmoji: '👤',
           sections: [
             {
@@ -32,6 +48,7 @@ describe('useModuleReferenceData', () => {
               dynamicContainers: [
                 {
                   id: 'dc_rel',
+                  title: 'Уникальные Связи',
                   template: 'relationship',
                   isBidirectional: true,
                   fields: [
@@ -57,7 +74,7 @@ describe('useModuleReferenceData', () => {
       },
     ];
 
-    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce(mockDbSchemas as any);
+    vi.mocked(api.getEntitySchemas).mockResolvedValue(mockDbSchemas as any);
 
     const helper = useModuleReferenceData();
     await helper.loadDbSchemas();
@@ -65,8 +82,9 @@ describe('useModuleReferenceData', () => {
     const info = helper.getModuleUsageInfo('Двунаправленная связь');
     expect(info.templateKey).toBe('Двунаправленная связь');
     expect(info.examples.length).toBeGreaterThan(0);
-    const ex = info.examples[0];
-    expect(ex.entityName).toBe('Персонаж');
+    const ex = info.examples.find(e => e.entityName === 'Уникальный Персонаж');
+    expect(ex).toBeDefined();
+    if (!ex) return;
     expect(ex.isBidirectional).toBe(true);
 
     // Verify protected field was preserved despite hidden: true
@@ -99,7 +117,7 @@ describe('useModuleReferenceData', () => {
         },
       },
     ];
-    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce(mockDbSchemas as any);
+    vi.mocked(api.getEntitySchemas).mockResolvedValue(mockDbSchemas as any);
 
     const helper = useModuleReferenceData();
     await helper.loadDbSchemas();

@@ -237,13 +237,14 @@ describe('entityApi', () => {
       expect(res).toEqual({ success: true });
     });
 
-    it('flattenEntity handles data object and getSchemas handles fetch errors', async () => {
-      const flattened = entityApi.flattenEntity({
+    it('handles data object and getSchemas handles fetch errors', async () => {
+      vi.mocked(components.invoke).mockResolvedValueOnce({
         id: 'e1',
         data: { customField: 'value1' },
       });
-      expect(flattened.customField).toBe('value1');
-      expect(flattened.data).toBeUndefined();
+      const resEnt = await entityApi.getEntity('proj_1', 'character', 'e1');
+      expect(resEnt?.customField).toBe('value1');
+      expect(resEnt?.data).toBeUndefined();
 
       // getSchemas catch error when fetch fails
       vi.mocked(components.invoke).mockResolvedValueOnce([]); // empty DB schemas

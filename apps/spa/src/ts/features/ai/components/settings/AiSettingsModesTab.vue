@@ -14,18 +14,21 @@
 
       <div class="mode-selector-bar">
         <label class="form-label">Выбранный режим</label>
-        <div class="selector-actions">
-          <select v-model="activeModeSlug" class="input-base" style="flex: 1;" @change="onModeChange">
-            <option v-for="mode in modes" :key="mode.slug" :value="mode.slug">
-              {{ mode.name }} ({{ mode.slug }})
-            </option>
-          </select>
-          <button class="btn-secondary-outline" title="Создать новый режим" @click="createNewMode">
+        <div class="flex gap-2 items-center">
+          <div class="flex-1">
+            <XboxWheel 
+              :model-value="activeModeSlug" 
+              :options="modes.map(m => ({ value: m.slug, label: `${m.name} (${m.slug})` }))" 
+              placeholder="Выберите режим..." 
+              @update:model-value="val => { activeModeSlug = String(val); onModeChange(); }" 
+            />
+          </div>
+          <button class="btn-secondary-outline interactive-el" title="Создать новый режим" @click="createNewMode">
             <i class="fas fa-plus"></i> Новый
           </button>
           <button 
             v-if="activeMode && !activeMode.is_global && !isNewMode" 
-            class="btn-danger-outline" 
+            class="btn-danger-outline interactive-el" 
             title="Удалить режим" 
             @click="deleteMode"
           >
@@ -41,7 +44,7 @@
             <input 
               v-model="activeMode.slug" 
               type="text" 
-              class="input-base" 
+              class="input-base interactive-el" 
               :disabled="!isNewMode" 
               placeholder="например: writer, editor, analyst"
             />
@@ -52,7 +55,7 @@
             <input 
               v-model="activeMode.name" 
               type="text" 
-              class="input-base" 
+              class="input-base interactive-el" 
               placeholder="например: Художественный редактор"
             />
           </div>
@@ -60,10 +63,12 @@
         
         <div class="form-group">
           <label>Профиль подключения (Опционально)</label>
-          <select v-model="activeMode.api_profile_id" class="input-base">
-            <option :value="null">-- Использовать глобальное активное подключение --</option>
-            <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
-          </select>
+          <XboxWheel 
+            :model-value="activeMode.api_profile_id || ''" 
+            :options="[{ value: '', label: '-- Использовать глобальное активное подключение --' }, ...profiles.map(p => ({ value: p.id || '', label: p.name }))] " 
+            placeholder="-- Использовать глобальное активное подключение --" 
+            @update:model-value="val => activeMode.api_profile_id = (val ? String(val) : null)" 
+          />
           <span class="field-hint">Позволяет закрепить за конкретным режимом отдельную модель (например, Claude для Редактора).</span>
         </div>
 
@@ -71,7 +76,7 @@
           <label>Роль и характер ассистента (Системная инструкция)</label>
           <textarea 
             v-model="activeMode.role_definition" 
-            class="input-base" 
+            class="input-base interactive-el" 
             rows="5" 
             placeholder="Ты — опытный редактор и литературный критик. Твоя задача — находить стилистические шероховатости, анализировать темп повествования..."
           ></textarea>
@@ -81,14 +86,14 @@
           <label>Дополнительные правила и ограничения</label>
           <textarea 
             v-model="activeMode.custom_instructions" 
-            class="input-base" 
+            class="input-base interactive-el" 
             rows="3" 
             placeholder="Всегда сохраняй мрачный тон вселенной; не предлагай прямых реплик за главного героя без запроса..."
           ></textarea>
         </div>
 
         <div class="form-actions" style="margin-top: 14px;">
-          <button class="btn-primary" @click="saveMode">
+          <button class="btn-primary interactive-el" @click="saveMode">
             <i class="fas fa-check"></i> Сохранить режим
           </button>
         </div>
@@ -99,6 +104,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { XboxWheel } from '@worldwiki/components';
 import type { AiProfile } from '../../types/ai.types';
 import { aiProfilesApi } from '../../api/aiProfiles.api';
 

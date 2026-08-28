@@ -95,6 +95,7 @@ export function useTiptapEditor(
       StarterKit.configure({
         paragraph: false,
         codeBlock: false,
+        link: false,
       }),
       Link.configure({
         openOnClick: false,

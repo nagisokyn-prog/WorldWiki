@@ -51,7 +51,7 @@ export function useSchemaFieldEditor(props: { item: SchemaFieldItem }) {
 
     const addOption = () => {
         if (!props.item.options) props.item.options = [];
-        props.item.options.push({ value: 'new_val', label: 'Новая опция' });
+        props.item.options.push({ value: 'Новый вариант', label: 'Новый вариант' });
     };
 
     const removeOption = (idx: number) => {

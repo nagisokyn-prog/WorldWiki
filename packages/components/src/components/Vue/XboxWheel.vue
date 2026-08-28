@@ -177,7 +177,7 @@ const updatePosition = (force = false) => {
 
 onMounted(() => {
   document.addEventListener('click', closeOnOutsideClick);
-  window.addEventListener('scroll', updatePosition, true);
+  window.addEventListener('scroll', updatePosition, { passive: true, capture: true });
   window.addEventListener('resize', updatePosition);
 });
 

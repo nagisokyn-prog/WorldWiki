@@ -86,7 +86,9 @@ export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx
     const handleItemDrop = (targetIdx: number) => {
         draggedOverIdx.value = -1;
         if (!draggedItemInfo) return;
-        if (targetIdx === 0 && activeSectionIdx.value === 0) return;
+        if (targetIdx === 0 && activeSectionIdx.value === 0) {
+            targetIdx = 1;
+        }
         if (!activeSection.value.items) activeSection.value.items = [];
 
         if (draggedItemInfo.source === 'canvas') {

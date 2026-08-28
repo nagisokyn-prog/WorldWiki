@@ -44,21 +44,30 @@
           </div>
         </div>
         <!-- Вкладки (страницы) -->
-        <div class="editor-tabs-new schema-tabs-bar">
-          <div v-for="(sec, idx) in schema.sections" :key="idx" class="editor-tab-new interactive-el text-xs" :class="{ active: activeSectionIdx === Number(idx) }" @click="activeSectionIdx = Number(idx)">
-            {{ sec.icon || '📄' }} {{ sec.title || 'Страница ' + (Number(idx) + 1) }}
-            <span v-if="Number(idx) > 0" class="ml-2 text-xs text-muted cursor-pointer" @mousedown.stop="deleteSection(Number(idx))">✕</span>
-          </div>
-          <button class="btn-new btn-outline-new text-xs text-accent ml-2" @click="addNewPage">+ СТРАНИЦА</button>
+        <div class="sections-nav schema-tabs-bar flex gap-2 border-b overflow-x-auto flex-shrink-0 p-2">
+          <button
+            v-for="(sec, idx) in schema.sections" 
+            :key="idx" 
+            class="section-tab-btn interactive-el" 
+            :class="{ active: activeSectionIdx === Number(idx) }" 
+            @click="activeSectionIdx = Number(idx)"
+          >
+            <span>{{ sec.icon || '📄' }}</span>
+            <span>{{ sec.title || 'Страница ' + (Number(idx) + 1) }}</span>
+            <span v-if="Number(idx) > 0" class="ml-2 text-xs text-muted cursor-pointer hover:text-error" @mousedown.stop="deleteSection(Number(idx))">✕</span>
+          </button>
+          <button class="section-tab-btn interactive-el" style="border-style: dashed; color: var(--accent);" @click="addNewPage">
+            <i class="fas fa-plus"></i> <span>СТРАНИЦА</span>
+          </button>
         </div>
 
         <div ref="scrollContainer" class="schema-canvas" @dragenter.prevent @dragover.prevent="handleDragOverCanvas" @drop="handleDropNew" @scroll="handleScroll">
           <div v-if="activeSection" class="schema-canvas-inner">
             <div class="schema-page-title-row">
-              <input v-model="activeSection.title" class="input-base schema-page-title-input" placeholder="ИМЯ СТРАНИЦЫ" :style="{ opacity: activeSection.hidden ? 0.4 : 1 }">
+              <input v-model="activeSection.title" class="input-base interactive-el schema-page-title-input" placeholder="ИМЯ СТРАНИЦЫ" :style="{ opacity: activeSection.hidden ? 0.4 : 1 }">
               <button
                 v-if="activeSectionIdx > 0"
-                class="schema-btn-icon text-lg flex-shrink-0" 
+                class="schema-btn-icon interactive-el text-lg flex-shrink-0" 
                 :title="activeSection.hidden ? 'Показать страницу' : 'Скрыть страницу'"
                 @click="activeSection.hidden = !activeSection.hidden">
                 {{ activeSection.hidden ? '👁️‍🗨️' : '👁️' }}
@@ -70,7 +79,7 @@
             </div>
 
             <!-- ЭЛЕМЕНТЫ -->
-            <div v-for="(item, iIdx) in activeSection.items" :key="iIdx" class="schema-item-card" draggable="true" :class="{ 'is-dragging-over': draggedOverIdx === Number(iIdx) }" @dragstart="handleItemDragStart($event, Number(iIdx))" @dragenter.prevent="draggedOverIdx = Number(iIdx)" @dragover.prevent @drop.stop="handleItemDrop(Number(iIdx))">
+            <div v-for="(item, iIdx) in activeSection.items" :key="iIdx" class="schema-item-card" :draggable="!(activeSectionIdx === 0 && Number(iIdx) === 0)" :class="{ 'is-dragging-over': draggedOverIdx === Number(iIdx), 'is-pinned-first': activeSectionIdx === 0 && Number(iIdx) === 0 }" @dragstart="handleItemDragStart($event, Number(iIdx))" @dragenter.prevent="draggedOverIdx = Number(iIdx)" @dragover.prevent @drop.stop="handleItemDrop(Number(iIdx))">
               <SchemaFieldEditor
                 v-if="isAtomicField(item)"
                 :item="item"

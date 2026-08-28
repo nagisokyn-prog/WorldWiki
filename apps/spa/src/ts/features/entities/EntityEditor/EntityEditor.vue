@@ -136,7 +136,7 @@
                     <div
                       v-if="!container.hidden" 
                       :class="{ 'history-changed': isFieldChanged(container.dataPath || container.id || '') }"
-                      class="mb-4 relative" 
+                      class="dynamic-container-card mb-4 relative" 
                       :style="{ zIndex: 100 - cIdx }">
                     <div class="flex justify-between items-center mb-2">
                       <h4 class="text-xs font-bold text-muted uppercase tracking-wide">

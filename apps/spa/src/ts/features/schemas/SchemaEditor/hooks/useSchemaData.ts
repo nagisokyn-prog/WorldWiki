@@ -36,12 +36,32 @@ export function useSchemaData(
     const showJsonPreview = ref(false);
     const previewKey = ref(0);
     
-    const jsonPreviewContent = computed(() => {
+    const buildCleanSchema = () => {
         const previewSchema = JSON.parse(JSON.stringify(schema.value));
         previewSchema.type_key = localEntityType.value;
         previewSchema.entityType = localEntityType.value;
         previewSchema.name = localEntityType.value;
-        return JSON.stringify(previewSchema, null, 2);
+        if (previewSchema.sections) {
+            previewSchema.sections.forEach((sec: Record<string, unknown>) => {
+                const items = (sec.items as Array<Record<string, unknown>>) || [];
+                const fields: Array<Record<string, unknown>> = [];
+                const dynamicContainers: Array<Record<string, unknown>> = [];
+                items.forEach(it => {
+                    if (it.template || it.dataPath || it.type === 'dynamic' || it.type === 'timeline') {
+                        dynamicContainers.push(it);
+                    } else {
+                        fields.push(it);
+                    }
+                });
+                sec.fields = fields;
+                sec.dynamicContainers = dynamicContainers;
+            });
+        }
+        return previewSchema;
+    };
+
+    const jsonPreviewContent = computed(() => {
+        return JSON.stringify(buildCleanSchema(), null, 2);
     });
 
     const openPreview = () => {
@@ -119,10 +139,30 @@ export function useSchemaData(
                         title: 'Главное',
                         icon: '📄',
                         items: [
-                            { type: 'text', class: 'name', label: 'НАЗВАНИЕ', placeholder: '...', _isSystemName: true }
+                            { type: 'text', class: 'name', label: 'ИМЯ СУЩНОСТИ', placeholder: 'Введите имя...', _isSystemName: true }
                         ]
                     }
                 ];
+            }
+
+            // Гарантируем, что в первой секции поле Имя всегда на 0-й позиции
+            if (schema.value.sections && schema.value.sections.length > 0) {
+                const mainSec = schema.value.sections[0];
+                if (!mainSec.items) mainSec.items = [];
+                const nameIdx = mainSec.items.findIndex((it: Record<string, unknown>) => it.class === 'name' || it._isSystemName);
+                if (nameIdx === -1) {
+                    mainSec.items.unshift({
+                        type: 'text',
+                        class: 'name',
+                        label: 'ИМЯ СУЩНОСТИ',
+                        placeholder: 'Введите имя...',
+                        _isSystemName: true
+                    });
+                } else if (nameIdx > 0) {
+                    const nameItem = mainSec.items.splice(nameIdx, 1)[0];
+                    mainSec.items.unshift(nameItem);
+                }
+                (mainSec.items[0] as Record<string, unknown>)._isSystemName = true;
             }
             if (props.initialSection) {
                 const idx = schema.value.sections.findIndex((s: SchemaDataSection) => s.id === props.initialSection);

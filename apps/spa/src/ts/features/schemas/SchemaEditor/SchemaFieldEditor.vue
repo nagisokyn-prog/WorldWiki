@@ -5,7 +5,7 @@
         <span v-if="!isFirst" class="schema-drag-dots">⠿</span>
         <span v-else class="text-accent" style="opacity: 0.5;">🔒</span>
         
-        <input :value="item.label" class="form-label schema-field-title-input" placeholder="НАЗВАНИЕ ПОЛЯ" :disabled="isFirst" @input="updateLabel(($event.target as HTMLInputElement).value)" />
+        <input :value="item.label" class="form-label schema-field-title-input" placeholder="НАЗВАНИЕ ПОЛЯ" @input="updateLabel(($event.target as HTMLInputElement).value)" />
       </div>
       
       <div v-if="!isFirst" class="flex items-center gap-2">
@@ -36,26 +36,35 @@
        <XboxWheel v-else-if="item.type === 'select'" :model-value="''" :options="item.options || []" :placeholder="item.placeholder || 'Выберите...'" />
 
        <!-- 3D WHEEL DATE -->
-       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" class="flex gap-3 items-end">
-          <div class="flex-1"><label class="form-label-micro">ГОД</label><input type="number" class="input-base text-center text-sm" placeholder="2026" /></div>
-          <div style="flex: 2;"><label class="form-label-micro">МЕСЯЦ</label><XboxWheel :options="monthsList" /></div>
-          <div class="flex-1"><label class="form-label-micro">ДЕНЬ</label><input type="number" class="input-base text-center text-sm" placeholder="1" /></div>
+       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color);">
+          <div class="date-wheel-group" style="flex: 1; min-width: 80px;">
+             <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Год</div>
+             <XboxWheel :options="[{ value: '2026', label: '2026' }, { value: '2025', label: '2025' }, { value: '2024', label: '2024' }]" placeholder="Год" />
+          </div>
+          <div class="date-wheel-group" style="flex: 1.5; min-width: 120px;">
+             <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Месяц</div>
+             <XboxWheel :options="monthsList" placeholder="Месяц" />
+          </div>
+          <div class="date-wheel-group" style="flex: 0.8; min-width: 65px;">
+             <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">День</div>
+             <XboxWheel :options="Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))" placeholder="День" />
+          </div>
        </div>
 
        <!-- RANGE -->
        <div v-else-if="item.type === 'range'" class="flex items-center gap-4">
-          <input :value="item._val || 0" type="range" :min="Number(item.min) || 0" :max="Number(item.max) || 100" class="flex-1" style="accent-color: var(--accent);" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
+          <input :value="item._val || 0" type="range" :min="Number(item.min) || 0" :max="Number(item.max) || 100" class="flex-1 interactive-el" style="accent-color: var(--accent);" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
           <div class="range-badge">{{ item._val || (item.value || 0) }}</div>
        </div>
 
        <!-- PHOTO -->
-       <div v-else-if="item.type === 'photo'" class="photo-placeholder-ui">
+       <div v-else-if="item.type === 'photo'" class="photo-placeholder-ui interactive-el">
           <span class="text-2xl">🖼️</span>
           <span class="text-xs font-bold" style="letter-spacing: 2px;">ЗАГРУЗИТЬ ФОТО</span>
        </div>
 
-       <textarea v-else-if="item.type === 'textarea'" class="input-base text-sm" style="min-height: 80px;" :placeholder="item.placeholder || 'Введите текст...'"></textarea>
-       <input v-else :value="item._val || ''" class="input-base text-sm p-2" :placeholder="item.placeholder || 'Введите значение...'" :type="item.type === 'number' ? 'number' : 'text'" @input="updateVal(($event.target as HTMLInputElement).value)" />
+       <textarea v-else-if="item.type === 'textarea'" class="input-base interactive-el" style="min-height: 80px;" :placeholder="item.placeholder || 'Введите текст...'"></textarea>
+       <input v-else :value="item._val || ''" class="input-base interactive-el" :placeholder="item.placeholder || 'Введите значение...'" :type="item.type === 'number' ? 'number' : 'text'" @input="updateVal(($event.target as HTMLInputElement).value)" />
     </div>
 
     <!-- SETTINGS AREA -->
@@ -64,26 +73,25 @@
           <div class="flex-1">
              <label class="form-label-micro">ТИП КИРПИЧА</label>
              <div class="flex gap-1 flex-wrap">
-                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini" :disabled="isFirst" :style="{ opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer' }" @click="!isFirst && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
+                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini interactive-el" :disabled="isFirst" :style="{ opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer' }" @click="!isFirst && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
              </div>
           </div>
           <div class="flex-1">
-             <label class="form-label-micro">ПОДСКАЗКА (PLACEHOLDER)</label>
-             <input :value="item.placeholder" class="input-base text-xs p-2" placeholder="Подсказка..." :disabled="isFirst" @input="updatePlaceholder(($event.target as HTMLInputElement).value)" />
+             <label class="form-label-micro">ПОДСКАЗКА</label>
+             <input :value="item.placeholder" class="input-base interactive-el" placeholder="Подсказка..." @input="updatePlaceholder(($event.target as HTMLInputElement).value)" />
           </div>
        </div>
 
-       <!-- OPTIONS EDITOR (Требование 2) -->
+       <!-- OPTIONS EDITOR -->
        <div v-if="item.type === 'select' || item.type === 'multiselect'" class="border-t pt-3 mt-3">
-          <label class="form-label-micro">ВАРИАНТЫ ВЫБОРА (OPTIONS)</label>
+          <label class="form-label-micro">ВАРИАНТЫ ВЫБОРА</label>
           <div class="multiselect-grid mb-2">
              <div v-for="(opt, oIdx) in (item.options || [])" :key="oIdx" class="option-item-row">
-                <input v-model="opt.value" class="input-base text-xs flex-1 font-mono p-1" placeholder="value" />
-                <input v-model="opt.label" class="input-base text-xs flex-auto p-1" placeholder="Отображаемый текст" />
-                <button class="text-error cursor-pointer text-xs" @click="removeOption(Number(oIdx))">✕</button>
+                <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label" />
+                <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="removeOption(Number(oIdx))">✕</button>
              </div>
           </div>
-          <button class="btn-new btn-outline-new text-xs" @click="addOption">+ ДОБАВИТЬ ВАРИАНТ</button>
+          <button class="btn-new btn-outline-new interactive-el text-xs" @click="addOption">+ ДОБАВИТЬ ВАРИАНТ</button>
        </div>
     </div>
   </div>
@@ -115,3 +123,5 @@ const {
   removeOption
 } = useSchemaFieldEditor(props);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/schemas/SchemaFieldEditor.css"></style>

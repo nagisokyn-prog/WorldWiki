@@ -10,13 +10,32 @@ export function useEntityHelpers(
   
   const getPhotoUrl = (path: string) => {
     if (!path) return '';
-    if (path.startsWith('data:') || path.startsWith('blob:') || path.startsWith('http')) return path;
+    if (path.startsWith('data:') || path.startsWith('blob:') || path.startsWith('http') || path.startsWith('asset:') || path.startsWith('tauri:')) return path;
     if (photoUrlCache.value[path]) return photoUrlCache.value[path];
     
+    try {
+      const w = typeof window !== 'undefined' ? (window as unknown as { __TAURI__?: { core?: { convertFileSrc?: (p: string) => string }; convertFileSrc?: (p: string) => string }; __TAURI_INTERNALS__?: { convertFileSrc?: (p: string) => string } }) : null;
+      if (w?.__TAURI__?.core?.convertFileSrc) {
+        const converted = w.__TAURI__.core.convertFileSrc(path);
+        photoUrlCache.value[path] = converted;
+        return converted;
+      } else if (w?.__TAURI__?.convertFileSrc) {
+        const converted = w.__TAURI__.convertFileSrc(path);
+        photoUrlCache.value[path] = converted;
+        return converted;
+      } else if (w?.__TAURI_INTERNALS__?.convertFileSrc) {
+        const converted = w.__TAURI_INTERNALS__.convertFileSrc(path);
+        photoUrlCache.value[path] = converted;
+        return converted;
+      }
+    } catch (e) {
+      console.warn('[useEntityHelpers] convertFileSrc error:', e);
+    }
+
     Promise.resolve(path).then(url => {
       photoUrlCache.value[path] = url;
     });
-    return '';
+    return path;
   };
 
   const getProp = (objOrPath: unknown, maybePath?: string): unknown => {

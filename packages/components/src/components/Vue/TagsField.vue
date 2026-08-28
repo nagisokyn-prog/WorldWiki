@@ -127,7 +127,7 @@ onMounted(async () => {
   await loadAllTags();
   document.addEventListener('click', handleClickOutside);
   window.addEventListener('resize', updateDropdownPosition);
-  window.addEventListener('scroll', updateDropdownPosition, true);
+  window.addEventListener('scroll', updateDropdownPosition, { passive: true, capture: true });
 });
 
 onUnmounted(() => {

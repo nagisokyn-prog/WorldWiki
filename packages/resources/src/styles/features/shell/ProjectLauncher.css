@@ -1206,10 +1206,11 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 .radio-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-text);
-    box-shadow: 0 0 20px var(--accent-glow);
+    background: var(--accent) !important;
+    border-color: var(--accent) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 0 16px var(--accent-glow);
 }
 
 .toggle-switch {

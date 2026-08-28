@@ -285,4 +285,59 @@ defineExpose({
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 8px;
 }
+
+:deep(.control-row) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+:deep(.val-badge) {
+  background: var(--accent-glow, rgba(139, 92, 246, 0.15));
+  border: 1px solid var(--accent, #8b5cf6);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--text-main, #ffffff);
+  font-weight: 600;
+}
+
+:deep(.radio-group) {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+:deep(.radio-btn) {
+  padding: 8px 16px;
+  background: var(--bg-input, rgba(0, 0, 0, 0.4));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--anim-speed, 0.2s) ease;
+  user-select: none;
+}
+
+:deep(.radio-btn:hover) {
+  border-color: var(--accent, #8b5cf6);
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:deep(.radio-btn.active) {
+  background: var(--accent, #8b5cf6) !important;
+  border-color: var(--accent, #8b5cf6) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 0 16px var(--accent-glow, rgba(139, 92, 246, 0.5));
+}
 </style>

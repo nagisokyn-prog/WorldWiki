@@ -66,11 +66,11 @@
              </div>
           </div>
 
-          <div v-if="!sect.nodes?.length && !creating" class="tree-empty-small">Empty</div>
+          <div v-if="!sect.nodes?.length && !creating" class="tree-empty-small">Пусто</div>
 
           <!-- Section Add Button -->
           <div v-if="sect.canAddInline" class="tree-add-inline" @click.stop="$emit('create-inline', { sectionId: sect.id })">
-            <i class="fas fa-plus"></i> <span>Add {{ sect.itemLabel || 'Item' }}</span>
+            <i class="fas fa-plus"></i> <span>{{ sect.itemLabel || 'Элемент' }}</span>
           </div>
         </div>
       </div>
@@ -78,7 +78,7 @@
       <!-- Empty State -->
       <div v-if="!sections.length" class="tree-empty">
         <i class="fas fa-folder-open" style="font-size: 28px; opacity: 0.2; margin-bottom: 10px;"></i>
-        <div>No structure</div>
+        <div>Нет структуры</div>
         <slot name="empty-hint"></slot>
       </div>
     </div>

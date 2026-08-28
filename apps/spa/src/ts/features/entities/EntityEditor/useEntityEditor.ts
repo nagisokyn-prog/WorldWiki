@@ -127,7 +127,20 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     try {
       const patchConfig = (cfg: SchemaConfig) => {
         if (cfg?.sections) {
-          cfg.sections.forEach((sec: SchemaSection) => {
+          cfg.sections.forEach((sec: SchemaSection & { items?: Array<Record<string, unknown>> }) => {
+            if (sec.items && (!sec.fields || sec.fields.length === 0) && (!sec.dynamicContainers || sec.dynamicContainers.length === 0)) {
+              const fields: Array<SchemaField> = [];
+              const dynamicContainers: Array<DynamicContainer> = [];
+              sec.items.forEach((it: Record<string, unknown>) => {
+                if (it.template || it.dataPath || it.type === 'dynamic' || it.type === 'timeline') {
+                  dynamicContainers.push(it as unknown as DynamicContainer);
+                } else {
+                  fields.push(it as unknown as SchemaField);
+                }
+              });
+              sec.fields = fields;
+              sec.dynamicContainers = dynamicContainers;
+            }
             if (sec.dynamicContainers) {
               sec.dynamicContainers.forEach((dc: DynamicContainer, idx: number) => {
                 if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;

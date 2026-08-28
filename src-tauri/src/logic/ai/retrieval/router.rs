@@ -1,4 +1,4 @@
-use serde_json::Value;
+﻿use serde_json::Value;
 use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
 use surrealdb::Surreal;
@@ -93,7 +93,7 @@ impl RetrievalRouter {
 
         // 1. Lexical Search (BM25 / FTS)
         // Entities BM25
-        let ent_query = "SELECT id, name, description FROM entities WHERE project_id = $proj AND (name @1@ $q OR description @2@ $q) LIMIT 6";
+        let ent_query = "SELECT id, name, description FROM entities WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) LIMIT 6";
         if let Ok(mut resp) = db.query(ent_query).bind(("proj", proj_rec.clone())).bind(("q", query)).await {
             if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
@@ -136,7 +136,7 @@ impl RetrievalRouter {
         }
 
         // Chapters BM25
-        let chap_query = "SELECT id, title, content FROM chapters WHERE project_id = $proj AND (title @1@ $q OR content @2@ $q) LIMIT 4";
+        let chap_query = "SELECT id, title, content FROM chapters WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) LIMIT 4";
         if let Ok(mut resp) = db.query(chap_query).bind(("proj", proj_rec.clone())).bind(("q", query)).await {
             if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
@@ -223,7 +223,15 @@ impl RetrievalRouter {
         // 3. Graph Expansion (Fetch relationships for seed entities)
         let mut relations_xml = String::new();
         if !entity_ids.is_empty() {
-            let seed_list: Vec<String> = entity_ids.into_iter().collect();
+            // in/out в entity_rel — record<entities>, поэтому биндим RecordId,
+            // иначе сравнение строк с записями всегда ложно.
+            let seed_list: Vec<RecordId> = entity_ids
+                .into_iter()
+                .filter_map(|s| {
+                    let raw = s.strip_prefix("entities:").unwrap_or(&s).trim_matches('`');
+                    if raw.is_empty() { None } else { Some(RecordId::new("entities", raw)) }
+                })
+                .collect();
             let rel_sql = "SELECT in, out, rel_type, description, strength FROM entity_rel WHERE in IN $seeds OR out IN $seeds LIMIT 10";
             if let Ok(mut resp) = db.query(rel_sql).bind(("seeds", seed_list)).await {
                 if let Ok(rows) = resp.take::<Vec<Value>>(0) {

@@ -68,11 +68,15 @@
 
 .option-item-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   align-items: center;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
+  width: 100%;
+}
+
+.multiselect-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .range-badge {

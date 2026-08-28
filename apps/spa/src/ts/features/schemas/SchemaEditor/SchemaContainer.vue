@@ -37,26 +37,22 @@
             <XboxWheel v-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
             <input v-else class="input-base text-sm pointer-events-none" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'">
             <div class="side-override-box">
-              <div class="flex gap-2 mb-1">
-                <div class="flex-1"><label class="form-label-micro">Название</label><input v-model="ensureFieldOverride(item, bField.class).label" class="input-base text-xs" :placeholder="bField.label || bField.class"></div>
-                <div class="flex-1"><label class="form-label-micro">Подсказка</label><input v-model="ensureFieldOverride(item, bField.class).placeholder" class="input-base text-xs" :placeholder="bField.placeholder || '...'"></div>
+              <div class="flex gap-2 mb-2">
+                <div class="flex-1"><label class="form-label-micro">Название</label><input v-model="ensureFieldOverride(item, bField.class).label" class="input-base interactive-el" :placeholder="bField.label || bField.class"></div>
+                <div class="flex-1"><label class="form-label-micro">Подсказка</label><input v-model="ensureFieldOverride(item, bField.class).placeholder" class="input-base interactive-el" :placeholder="bField.placeholder || '...'"></div>
               </div>
               <template v-if="bField.entityType !== undefined">
                 <label class="form-label-micro">ТИП СУЩНОСТИ А</label>
-                <select v-model="ensureFieldOverride(item, bField.class).entityType" class="input-base text-xs w-full">
-                  <option value="">— любая —</option>
-                  <option v-for="t in availableEntityTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
-                </select>
+                <XboxWheel :model-value="String(ensureFieldOverride(item, bField.class).entityType || '')" :options="[{ value: '', label: '— любая —' }, ...availableEntityTypes]" placeholder="— любая —" @update:model-value="val => ensureFieldOverride(item, bField.class).entityType = val" />
               </template>
               <template v-else-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'">
-                <label class="form-label-micro">Варианты</label>
+                <label class="form-label-micro">Варианты выбора</label>
                 <div class="flex-col gap-1 mt-1">
-                  <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" class="flex gap-1 items-center">
-                    <input v-model="opt.value" class="input-base text-xs flex-1 font-mono" placeholder="value">
-                    <input v-model="opt.label" class="input-base text-xs flex-auto" placeholder="Label">
-                    <button class="text-error text-xs cursor-pointer" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx),1)">✕</button>
+                  <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" class="option-item-row">
+                    <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label">
+                    <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx),1)">✕</button>
                   </div>
-                  <button class="btn-new btn-outline-new text-xs" @click="addFieldOption(item, bField.class)">+ вариант</button>
+                  <button class="btn-new btn-outline-new interactive-el text-xs" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
                 </div>
               </template>
             </div>
@@ -68,7 +64,7 @@
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'lnf-'+nIdx" class="card-secondary">
                 <label class="form-label-micro text-accent-light mb-1">{{ nField.label || nField.class }}</label>
                 <XboxWheel v-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" />
-                <input v-else class="input-base text-xs pointer-events-none" :placeholder="nField.placeholder || '...'">
+                <input v-else class="input-base interactive-el text-xs pointer-events-none" :placeholder="nField.placeholder || '...'">
               </div>
               <div class="dynamic-empty-box">{{ subConf.emptyMessage || 'Пусто' }}</div>
             </div>
@@ -83,16 +79,17 @@
               <span class="text-xs text-muted" style="opacity:0.4;">зеркало</span>
             </div>
             <XboxWheel v-if="bField.type === 'select'" :model-value="''" :options="bField.options || []" :placeholder="bField.placeholder || '...'" :disabled="true" />
-            <input v-else class="input-base text-sm pointer-events-none" style="opacity:0.5;" :placeholder="bField.placeholder || '...'">
-            <template v-if="bField.entityType !== undefined">
-              <div class="side-override-box">
-                <label class="form-label-micro">ТИП СУЩНОСТИ Б</label>
-                <select v-model="ensureFieldOverride(item, bField.class + '__b').entityType" class="input-base text-xs w-full">
-                  <option value="">— любая —</option>
-                  <option v-for="t in availableEntityTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
-                </select>
+            <input v-else class="input-base interactive-el text-sm pointer-events-none" style="opacity:0.5;" :placeholder="bField.placeholder || '...'">
+            <div class="side-override-box">
+              <div class="flex gap-2 mb-2">
+                <div class="flex-1"><label class="form-label-micro">Название</label><input v-model="ensureFieldOverride(item, bField.class + '__b').label" class="input-base interactive-el" :placeholder="bField.label || bField.class"></div>
+                <div class="flex-1"><label class="form-label-micro">Подсказка</label><input v-model="ensureFieldOverride(item, bField.class + '__b').placeholder" class="input-base interactive-el" :placeholder="bField.placeholder || '...'"></div>
               </div>
-            </template>
+              <template v-if="bField.entityType !== undefined">
+                <label class="form-label-micro">ТИП СУЩНОСТИ Б</label>
+                <XboxWheel :model-value="String(ensureFieldOverride(item, bField.class + '__b').entityType || '')" :options="[{ value: '', label: '— любая —' }, ...availableEntityTypes]" placeholder="— любая —" @update:model-value="val => ensureFieldOverride(item, bField.class + '__b').entityType = val" />
+              </template>
+            </div>
           </div>
           <!-- dynamicContainers RIGHT mirror -->
           <div v-for="subConf in (item.template ? fullConfig.templates?.[item.template]?.dynamicContainers || [] : [])" :key="'rdc-'+subConf.id" class="side-dynamic-container-b">
@@ -101,7 +98,7 @@
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'rnf-'+nIdx" class="card-secondary">
                 <label class="form-label-micro mb-1" style="color:rgba(96,165,250,0.8);">{{ nField.label || nField.class }}</label>
                 <XboxWheel v-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" :disabled="true" />
-                <input v-else class="input-base text-xs pointer-events-none" style="opacity:0.5;" :placeholder="nField.placeholder || '...'">
+                <input v-else class="input-base interactive-el pointer-events-none" style="opacity:0.5;" :placeholder="nField.placeholder || '...'">
               </div>
               <div class="dynamic-empty-box">{{ subConf.emptyMessage || 'Пусто' }}</div>
             </div>
@@ -121,18 +118,18 @@
           </div>
 
           <XboxWheel v-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
-          <input v-else class="input-base text-sm pointer-events-none" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'">
+          <input v-else class="input-base interactive-el pointer-events-none" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'">
 
           <!-- INLINE SETTINGS -->
           <div class="side-override-box mt-2">
             <div class="flex gap-2">
               <div class="flex-1">
-                <label class="form-label-micro">Название (Label)</label>
-                <input v-model="ensureFieldOverride(item, bField.class).label" class="input-base text-xs" :placeholder="bField.label || bField.class">
+                <label class="form-label-micro">Название</label>
+                <input v-model="ensureFieldOverride(item, bField.class).label" class="input-base interactive-el" :placeholder="bField.label || bField.class">
               </div>
               <div class="flex-1">
                 <label class="form-label-micro">Подсказка</label>
-                <input v-model="ensureFieldOverride(item, bField.class).placeholder" class="input-base text-xs" :placeholder="bField.placeholder || '...'">
+                <input v-model="ensureFieldOverride(item, bField.class).placeholder" class="input-base interactive-el" :placeholder="bField.placeholder || '...'">
               </div>
             </div>
             
@@ -142,14 +139,13 @@
             </div>
             
             <div v-if="(ensureFieldOverride(item, bField.class).type || bField.type) === 'select' || (ensureFieldOverride(item, bField.class).type || bField.type) === 'multiselect'" class="mt-2 border-t pt-2">
-              <label class="form-label-micro">Варианты (Options)</label>
+              <label class="form-label-micro">Варианты выбора</label>
               <div class="flex-col gap-1 mt-1">
-                <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" class="flex gap-2 items-center">
-                  <input v-model="opt.value" class="input-base text-xs flex-1 font-mono" placeholder="value">
-                  <input v-model="opt.label" class="input-base text-xs flex-auto" placeholder="Label">
-                  <button class="text-error text-xs cursor-pointer" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx), 1)">✕</button>
+                <div v-for="(opt, oIdx) in (ensureFieldOverride(item, bField.class).options || [])" :key="oIdx" class="option-item-row">
+                  <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label">
+                  <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="ensureFieldOverride(item, bField.class).options?.splice(Number(oIdx), 1)">✕</button>
                 </div>
-                <button class="btn-new btn-outline-new text-xs" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
+                <button class="btn-new btn-outline-new interactive-el text-xs" @click="addFieldOption(item, bField.class)">+ ДОБАВИТЬ ВАРИАНТ</button>
               </div>
             </div>
           </div>
@@ -167,14 +163,14 @@
       </div>
 
       <XboxWheel v-if="cField.type === 'select'" :model-value="''" :options="cField.options || []" :placeholder="cField.placeholder || '...'" />
-      <input v-else class="input-base text-sm pointer-events-none" :placeholder="cField.placeholder || '...'">
+      <input v-else class="input-base interactive-el pointer-events-none" :placeholder="cField.placeholder || '...'">
 
       <!-- INLINE SETTINGS -->
       <div class="side-override-box mt-2">
         <div class="flex gap-2">
           <div class="flex-1">
-            <label class="form-label-micro">Название (Label)</label>
-            <input v-model="cField.label" class="input-base text-xs" placeholder="Название поля">
+            <label class="form-label-micro">Название</label>
+            <input v-model="cField.label" class="input-base interactive-el" placeholder="Название поля">
           </div>
           <div class="flex-1">
             <label class="form-label-micro">Тип</label>
@@ -186,28 +182,23 @@
             <template v-if="item.template && fullConfig.templates?.[item.template]?.isBidirectional">
               <div class="flex gap-2 justify-between">
                   <div class="flex-1">
-                    <label class="form-label-micro">ИСТОЧНИК (SOURCE)</label>
-                    <select v-model="cField.sourceType" class="input-base text-xs w-full">
-                      <option v-for="t in availableEntityTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
-                    </select>
+                    <label class="form-label-micro">ИСТОЧНИК</label>
+                    <XboxWheel :model-value="String(cField.sourceType || '')" :options="availableEntityTypes" placeholder="Выберите источник..." @update:model-value="(val: any) => cField.sourceType = val" />
                   </div>
                   <div class="flex-1">
-                    <label class="form-label-micro">ЦЕЛЬ (TARGET)</label>
-                    <select v-model="cField.targetType" class="input-base text-xs w-full">
-                      <option v-for="t in availableEntityTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
-                    </select>
+                    <label class="form-label-micro">ЦЕЛЬ</label>
+                    <XboxWheel :model-value="String(cField.targetType || '')" :options="availableEntityTypes" placeholder="Выберите цель..." @update:model-value="(val: any) => cField.targetType = val" />
                   </div>
               </div>
             </template>
             <template v-else>
-              <label class="form-label-micro">Варианты (Options)</label>
+              <label class="form-label-micro">Варианты выбора</label>
               <div class="flex-col gap-1 mt-1">
-                  <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" class="flex gap-2 items-center">
-                    <input v-model="opt.value" class="input-base text-xs flex-1 font-mono" placeholder="value" />
-                    <input v-model="opt.label" class="input-base text-xs flex-auto" placeholder="Label" />
-                    <button class="text-error text-xs cursor-pointer" @click="cField.options?.splice(Number(oIdx), 1)">✕</button>
+                  <div v-for="(opt, oIdx) in (cField.options || [])" :key="oIdx" class="option-item-row">
+                    <input v-model="opt.label" class="input-base interactive-el flex-1" placeholder="Название варианта..." @input="opt.value = opt.label" />
+                    <button class="btn-icon-danger-sm interactive-el" title="Удалить" @click="cField.options?.splice(Number(oIdx), 1)">✕</button>
                   </div>
-                  <button class="btn-new btn-outline-new text-xs" @click="() => { if(!cField.options) cField.options=[]; cField.options.push({label:'', value:''}) }">+ ДОБАВИТЬ ВАРИАНТ</button>
+                  <button class="btn-new btn-outline-new interactive-el text-xs" @click="() => { if(!cField.options) cField.options=[]; cField.options.push({label:'Новый вариант', value:'Новый вариант'}) }">+ ДОБАВИТЬ ВАРИАНТ</button>
               </div>
             </template>
         </div>

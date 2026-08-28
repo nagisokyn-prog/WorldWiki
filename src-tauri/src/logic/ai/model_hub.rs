@@ -60,8 +60,20 @@ pub struct DownloadProgressEvent {
 
 /// Fetch popular or searched GGUF models from Hugging Face
 #[tauri::command]
-pub async fn fetch_hf_models(query: Option<String>, token: Option<String>) -> Result<Vec<HfModelCard>, String> {
-    let search_part = if let Some(ref q) = query {
+pub async fn fetch_hf_models(
+    query: Option<String>,
+    token: Option<String>,
+) -> Result<Vec<HfModelCard>, String> {
+    fetch_hf_models_inner(query.as_deref(), token.as_deref(), None).await
+}
+
+/// Тестируемое ядро каталога HF (base_override — для мок-сервера).
+pub async fn fetch_hf_models_inner(
+    query: Option<&str>,
+    token: Option<&str>,
+    base_override: Option<&str>,
+) -> Result<Vec<HfModelCard>, String> {
+    let search_part = if let Some(q) = query {
         if !q.trim().is_empty() {
             let encoded: String = q
                 .trim()
@@ -76,7 +88,8 @@ pub async fn fetch_hf_models(query: Option<String>, token: Option<String>) -> Re
         String::new()
     };
 
-    let url = format!("https://huggingface.co/api/models?filter=gguf&sort=downloads&direction=-1&limit=40&full=true{search_part}");
+    let hf_base = base_override.unwrap_or("https://huggingface.co");
+    let url = format!("{hf_base}/api/models?filter=gguf&sort=downloads&direction=-1&limit=40&full=true{search_part}");
 
     let client = Client::new();
     let mut req = client
@@ -229,6 +242,162 @@ mod tests {
         let back: HfModelCard = serde_json::from_str(&json).expect("deserialize");
         assert_eq!(back.id, "author/model");
         assert_eq!(back.gguf_files[0].quantization, "Q4_K_M");
+    }
+
+    // ------------------------------------------------------------------
+    // HTTP-ветка fetch_hf_models_inner через mock-сервер
+    // ------------------------------------------------------------------
+
+    type SharedBuf = std::sync::Arc<tokio::sync::Mutex<Vec<u8>>>;
+
+    fn captured_str_impl(captured: &SharedBuf) -> String {
+        String::from_utf8_lossy(&captured.try_lock().unwrap()).into_owned()
+    }
+
+    /// Mock-сервер: один JSON-ответ на все запросы, захват байтов запроса.
+    async fn spawn_mock(body: &'static str, captured: SharedBuf) -> String {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = listener.local_addr().unwrap().port();
+        tokio::spawn(async move {
+            for _ in 0..8 {
+                let mut s = match listener.accept().await {
+                    Ok((s, _)) => s,
+                    Err(_) => break,
+                };
+                use tokio::io::{AsyncReadExt, AsyncWriteExt};
+                let mut buf = vec![0u8; 32768];
+                let mut total = 0;
+                loop {
+                    let n = match s.read(&mut buf[total..]).await {
+                        Ok(0) | Err(_) => break,
+                        Ok(n) => n,
+                    };
+                    total += n;
+                    if buf[..total].windows(4).any(|w| w == b"\r\n\r\n") {
+                        break;
+                    }
+                }
+                if total > 0 {
+                    captured.lock().await.extend_from_slice(&buf[..total]);
+                }
+                let resp = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                let _ = s.write_all(resp.as_bytes()).await;
+                drop(s);
+            }
+        });
+        format!("http://127.0.0.1:{port}")
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn hf_catalog_parsed_gguf_only() {
+        let captured: SharedBuf = Default::default();
+        let base = spawn_mock(
+            r#"[{
+                "id": "author/nemotron-embed",
+                "author": "author",
+                "downloads": 1000,
+                "likes": 50,
+                "tags": ["gguf", "text-generation"],
+                "siblings": [
+                    {"rfilename": "model-Q4_K_M.gguf"},
+                    {"rfilename": "model.Q8_0.gguf"},
+                    {"rfilename": "README.md"},
+                    {"rfilename": "config.json"}
+                ]
+            }]"#,
+            captured.clone(),
+        )
+        .await;
+
+        let cards = fetch_hf_models_inner(None, None, Some(&base))
+            .await
+            .expect("каталог должен распарситься");
+
+        assert_eq!(cards.len(), 1);
+        let card = &cards[0];
+        assert_eq!(card.id, "author/nemotron-embed");
+        assert_eq!(card.name, "nemotron-embed", "name = последний сегмент id");
+        assert_eq!(card.downloads, 1000);
+        assert_eq!(card.likes, 50);
+        // только .gguf-файлы попадают в карточку
+        assert_eq!(card.gguf_files.len(), 2, "{:?}", card.gguf_files);
+        assert_eq!(card.gguf_files[0].quantization, "Q4_K_M");
+        assert_eq!(card.gguf_files[1].quantization, "Q8_0");
+        assert_eq!(card.gguf_files[0].size_bytes, 0);
+
+        let req = captured_str_impl(&captured);
+        assert!(
+            req.to_ascii_lowercase().contains("user-agent: worldwiki/1.0"),
+            "{req}"
+        );
+        assert!(
+            req.contains("/api/models?filter=gguf&sort=downloads&direction=-1&limit=40&full=true"),
+            "{req}"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn hf_search_query_percent_encoded() {
+        let captured: SharedBuf = Default::default();
+        let base = spawn_mock("[]", captured.clone()).await;
+
+        fetch_hf_models_inner(Some("qwen 2.5"), None, Some(&base))
+            .await
+            .unwrap();
+
+        let req = captured_str_impl(&captured);
+        assert!(
+            req.contains("&search=qwen%202.5"),
+            "пробел кодируется %20: {req}"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn hf_bearer_token_sent_when_present() {
+        let captured: SharedBuf = Default::default();
+        let base = spawn_mock("[]", captured.clone()).await;
+
+        fetch_hf_models_inner(None, Some("hf-token"), Some(&base))
+            .await
+            .unwrap();
+        assert!(
+            captured_str_impl(&captured)
+                .to_ascii_lowercase()
+                .contains("authorization: bearer hf-token"),
+            "bearer из токена"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn hf_blank_token_not_sent_and_network_error_surfaced() {
+        // Пустой токен на живом моке — заголовка быть не должно
+        let captured: SharedBuf = Default::default();
+        let base = spawn_mock("[]", captured.clone()).await;
+        fetch_hf_models_inner(None, Some("   "), Some(&base)).await.unwrap();
+        assert!(
+            !captured_str_impl(&captured).to_ascii_lowercase().contains("authorization:"),
+            "пустой токен не отправляется"
+        );
+
+        // Недоступный хост → сетевая ошибка с человеческим текстом
+        let err = fetch_hf_models_inner(None, None, Some("http://127.0.0.1:1"))
+            .await
+            .expect_err("недоступный хост → Err");
+        assert!(err.contains("Ошибка подключения к Hugging Face"), "{err}");
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn hf_invalid_json_is_parse_err() {
+        let captured: SharedBuf = Default::default();
+        let base = spawn_mock("not-a-json-array{{", captured).await;
+
+        let err = fetch_hf_models_inner(None, None, Some(&base))
+            .await
+            .expect_err("битый JSON → Err");
+        assert!(err.contains("Ошибка парсинга ответа Hugging Face"), "{err}");
     }
 }
 

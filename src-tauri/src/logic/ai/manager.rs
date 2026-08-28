@@ -27,14 +27,21 @@ pub fn get_models_dir(app: &AppHandle) -> PathBuf {
 #[tauri::command]
 pub async fn list_installed_models(app: AppHandle) -> Result<Vec<InstalledModelInfo>, String> {
     let models_dir = get_models_dir(&app);
+    list_installed_models_inner(&models_dir).await
+}
+
+/// Тестируемое ядро сканирования папки моделей (без `AppHandle`).
+pub async fn list_installed_models_inner(
+    models_dir: &std::path::Path,
+) -> Result<Vec<InstalledModelInfo>, String> {
     if !models_dir.exists() {
-        tokio::fs::create_dir_all(&models_dir)
+        tokio::fs::create_dir_all(models_dir)
             .await
             .map_err(|e| format!("Не удалось создать папку моделей: {e}"))?;
         return Ok(Vec::new());
     }
 
-    let mut dir = tokio::fs::read_dir(&models_dir)
+    let mut dir = tokio::fs::read_dir(models_dir)
         .await
         .map_err(|e| format!("Не удалось прочитать директорию моделей: {e}"))?;
 
@@ -389,5 +396,93 @@ mod tests {
 
         // Убираем за собой, чтобы не влиять на другие тесты
         get_states_map().lock().unwrap().remove(name);
+    }
+
+    // ---------- list_installed_models_inner (dir-scan) ----------
+
+    async fn make_models_dir(tag: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!(
+            "wwiki_mgr_test_{}_{}",
+            tag,
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+        tokio::fs::create_dir_all(&dir).await.unwrap();
+        dir
+    }
+
+    #[tokio::test]
+    async fn missing_dir_is_created_and_empty() {
+        let dir = std::env::temp_dir().join(format!(
+            "wwiki_mgr_missing_{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&dir);
+
+        let models = list_installed_models_inner(&dir).await.expect("Ok");
+        assert!(models.is_empty(), "новая папка → пустой список");
+        assert!(dir.exists(), "папка создана на месте");
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[tokio::test]
+    async fn scan_lists_only_gguf_with_kind_and_size() {
+        let dir = make_models_dir("scan").await;
+        // generation-модель
+        std::fs::write(dir.join("Qwen2.5-7B-Instruct-Q4_K_M.gguf"), vec![0u8; 2048]).unwrap();
+        // embedding-модель (по маркеру nomic)
+        std::fs::write(dir.join("nomic-embed-text.gguf"), vec![0u8; 1024]).unwrap();
+        // не-gguf игнорируется
+        std::fs::write(dir.join("notes.txt"), b"hi").unwrap();
+
+        let models = list_installed_models_inner(&dir).await.expect("Ok");
+        assert_eq!(models.len(), 2, "только .gguf: {models:?}");
+
+        let qwen = models.iter().find(|m| m.filename.contains("Qwen")).unwrap();
+        assert_eq!(qwen.kind, ModelKind::Generation);
+        assert_eq!(qwen.size_bytes, 2048);
+        assert_eq!(qwen.state, ModelLifecycleState::Installed, "без слотов — Installed");
+        assert!(!qwen.name.is_empty(), "friendly name сгенерирован");
+
+        let emb = models.iter().find(|m| m.filename.contains("nomic")).unwrap();
+        assert_eq!(emb.kind, ModelKind::Embedding, "маркер nomic → Embedding");
+
+        // size_gb: 2048 байт ≈ 0.0 GB
+        assert_eq!(qwen.size_gb, 0.0);
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[tokio::test]
+    async fn embed_markers_bge_and_embed_word() {
+        let dir = make_models_dir("markers").await;
+        std::fs::write(dir.join("bge-m3-Q8_0.gguf"), vec![0u8; 8]).unwrap();
+        std::fs::write(dir.join("my-Embed-model.gguf"), vec![0u8; 8]).unwrap();
+
+        let models = list_installed_models_inner(&dir).await.unwrap();
+        assert_eq!(models.len(), 2);
+        assert!(
+            models
+                .iter()
+                .all(|m| m.kind == ModelKind::Embedding),
+            "оба маркера (bge, Embed) дают Embedding: {models:?}"
+        );
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[tokio::test]
+    async fn subdirectories_are_skipped() {
+        let dir = make_models_dir("subdirs").await;
+        std::fs::create_dir_all(dir.join("nested")).unwrap();
+        std::fs::write(dir.join("nested").join("inner.gguf"), b"x").unwrap();
+        std::fs::write(dir.join("top.gguf"), b"x").unwrap();
+
+        let models = list_installed_models_inner(&dir).await.unwrap();
+        assert_eq!(models.len(), 1, "поддиректории не сканируются");
+        assert_eq!(models[0].filename, "top.gguf");
+
+        let _ = std::fs::remove_dir_all(&dir);
     }
 }

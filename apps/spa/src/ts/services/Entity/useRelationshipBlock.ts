@@ -104,17 +104,17 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     }
     const tpl = props.templateConf;
     if (tpl.fields) {
-      const linkField = tpl.fields.find((f) => f.type === 'select' && (f.entityType || f.class === 'character' || f.class === 'персонаж'));
+      const linkField = tpl.fields.find((f) => f.type === 'select' && f.entityType);
       if (linkField && linkField.class) return linkField.class;
       const anySelect = tpl.fields.find((f) => f.type === 'select');
       if (anySelect && anySelect.class) return anySelect.class;
-      return 'character';
+      return tpl.fields[0]?.class || '';
     }
-    return 'character';
+    return '';
   });
 
   const getTargetForeignId = () => {
-    return props.item[linkClass.value] || props.item['персонаж'] || props.item['character'] || props.item['target_char'];
+    return linkClass.value ? props.item[linkClass.value] : undefined;
   };
 
   const getDynamicContainerFields = (subConf: SubConf) => {
@@ -153,8 +153,9 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     const foreignId = getTargetForeignId();
     if (!foreignId) return 'Не выбрано';
     const rawForeignId = String(foreignId).replace(/^[^:]+:/, '');
-    const targetType = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType || (props.templateConf.foreign_type as string | undefined) || 'character';
-    const refList = props.referenceData[`${targetType}_list`] || props.referenceData[targetType] || props.referenceData['character_list'] || props.referenceData['character'];
+    const targetType = props.templateConf.fields?.find((f) => f.class === linkClass.value)?.entityType || (props.templateConf.foreign_type as string | undefined);
+    if (!targetType) return String(foreignId);
+    const refList = props.referenceData[`${targetType}_list`] || props.referenceData[targetType];
     if (refList) {
       const found = refList.find((e) => {
         const item = e as Record<string, unknown>;

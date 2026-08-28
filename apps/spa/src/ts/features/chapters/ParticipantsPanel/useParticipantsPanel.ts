@@ -1,8 +1,8 @@
 import { ref, computed, onMounted } from 'vue';
-import * as api from '../../../services/api.client';
-import { entityApi } from '../../../services/Entity/entity.api';
-import { getCached, setCache } from '../../../utils/requestCache';
-import type { SchemaInfo } from '../../../services/Entity/entity.types';
+import * as api from '@/services/api.client';
+import { entityApi } from '@/services/Entity/entity.api';
+import { getCached, setCache } from '@/utils/requestCache';
+import type { SchemaInfo } from '@/services/Entity/entity.types';
 
 export interface ParticipantItem {
     id: string;
@@ -20,10 +20,12 @@ export function useParticipantsPanel(
     props: ParticipantsPanelProps,
     emit: (event: 'update:participants' | 'change', ...args: unknown[]) => void
 ) {
-    const newType = ref('character');
+    const newType = ref('');
     const newId = ref('');
     const entities = ref<Record<string, unknown>[]>([]);
     const entityCache = ref<Record<string, Record<string, unknown>[]>>({});
+    const schemaIcons = ref<Record<string, string>>({});
+    const schemaNames = ref<Record<string, string>>({});
     const titleFields = ref<Record<string, string>>({});
 
     const loadEntitiesForType = async () => {
@@ -52,24 +54,32 @@ export function useParticipantsPanel(
             }
 
             titleFields.value = {};
+            schemaIcons.value = {};
+            schemaNames.value = {};
             const types = Object.keys(schemas || {});
             if (schemas) {
                 for (const [key, schema] of Object.entries(schemas)) {
+                    if (schema.icon) {
+                        schemaIcons.value[key] = schema.icon;
+                    }
+                    if (schema.name) {
+                        schemaNames.value[key] = schema.name;
+                    }
                     if (schema.titleField) {
                         titleFields.value[key] = String(schema.titleField);
                     }
                 }
             }
 
-            if (!types.includes('character')) types.push('character');
-            if (!types.includes('organization')) types.push('organization');
-            if (!types.includes('location')) types.push('location');
-            if (!types.includes('state')) types.push('state');
-            if (!types.includes('item')) types.push('item');
+            if (!newType.value && types.length > 0) {
+                newType.value = types[0];
+            }
 
-            const batch = await api.getEntitiesBatch(props.project, types);
-            if (batch) {
-                entityCache.value = { ...entityCache.value, ...batch };
+            if (types.length > 0) {
+                const batch = await api.getEntitiesBatch(props.project, types);
+                if (batch) {
+                    entityCache.value = { ...entityCache.value, ...batch };
+                }
             }
         } catch (e) {
             console.warn('[ParticipantsPanel] Failed to load all entities:', e);
@@ -82,13 +92,7 @@ export function useParticipantsPanel(
     });
 
     const getIcon = (type: string) => {
-        if (type === 'character' || type === 'персонаж') return '👤';
-        if (type === 'organization' || type === 'организация') return '🛡️';
-        if (type === 'location' || type === 'локация') return '🌍';
-        if (type === 'state' || type === 'государство') return '🏛️';
-        if (type === 'item' || type === 'предмет') return '📦';
-        if (type === 'event' || type === 'событие') return '⚡';
-        return '📌';
+        return schemaIcons.value[type] || '📄';
     };
 
     const getValueByPath = (obj: Record<string, unknown> | null | undefined, path: string): unknown => {
@@ -96,9 +100,11 @@ export function useParticipantsPanel(
         return path.split('.').reduce((cur: unknown, k: string) => (cur != null && typeof cur === 'object' ? (cur as Record<string, unknown>)[k] : undefined), obj as unknown);
     };
 
-    const searchByNameKey = (obj: unknown): string | null => {
+    const searchByNameKey = (obj: unknown, seen = new WeakSet<object>(), depth = 0): string | null => {
+        if (depth > 3 || !obj || typeof obj !== 'object') return null;
+        if (seen.has(obj as object)) return null;
+        seen.add(obj as object);
         const nameKeywords = ['name', 'title', 'fio', 'display', 'short', 'full', 'имя', 'название', 'фио', 'first_name', 'label'];
-        if (!obj || typeof obj !== 'object') return null;
         const record = obj as Record<string, unknown>;
         for (const key of Object.keys(record)) {
             if (nameKeywords.some((keyword) => key.toLowerCase().includes(keyword))) {
@@ -107,7 +113,7 @@ export function useParticipantsPanel(
         }
         for (const key of Object.keys(record)) {
             if (typeof record[key] === 'object' && record[key] !== null) {
-                const nested = searchByNameKey(record[key]);
+                const nested = searchByNameKey(record[key], seen, depth + 1);
                 if (nested) return nested;
             }
         }
@@ -134,7 +140,11 @@ export function useParticipantsPanel(
 
     const normId = (val: string) => {
         if (!val) return '';
-        try { val = decodeURIComponent(val); } catch {}
+        try {
+            val = decodeURIComponent(val);
+        } catch {
+            // Игнорируем ошибки некорректного URI
+        }
         return val.trim();
     };
 
@@ -143,7 +153,7 @@ export function useParticipantsPanel(
         return decoded.includes(':') ? decoded.split(':').slice(1).join(':') : decoded;
     };
 
-    const resolveEntityName = (id: string, type: string, fallbackName?: string) => {
+    const findEntityInfo = (id: string, explicitType?: string, fallbackName?: string): { name: string; type: string } => {
         const targetNormId = normId(id);
         const targetRawId = rawIdOf(id);
 
@@ -154,13 +164,14 @@ export function useParticipantsPanel(
         };
 
         let ent: Record<string, unknown> | undefined;
-        let matchedType = type;
+        let matchedType = explicitType || '';
 
-        // 1. Поиск по конкретному типу
-        const list = entityCache.value[type] || [];
-        ent = list.find(isMatch);
+        // 1. Поиск по конкретному типу (если указан)
+        if (explicitType && entityCache.value[explicitType]) {
+            ent = entityCache.value[explicitType].find(isMatch);
+        }
 
-        // 2. Поиск по всем закешированным типам
+        // 2. Поиск по всем закешированным динамическим типам схем
         if (!ent) {
             for (const t of Object.keys(entityCache.value)) {
                 const found = (entityCache.value[t] || []).find(isMatch);
@@ -172,7 +183,7 @@ export function useParticipantsPanel(
             }
         }
 
-        // 3. Fallback: поиск по совпадению имени если ID не нашел
+        // 3. Fallback: поиск по совпадению имени если ID не найден в кеше
         if (!ent && fallbackName) {
             for (const t of Object.keys(entityCache.value)) {
                 const found = (entityCache.value[t] || []).find((e) => {
@@ -186,27 +197,38 @@ export function useParticipantsPanel(
             }
         }
 
-        if (ent) {
-            return getEntityNameFromRecord(ent, matchedType);
-        }
+        const resolvedName = ent
+            ? getEntityNameFromRecord(ent, matchedType)
+            : (fallbackName || (targetRawId || targetNormId ? `ID: ${targetRawId || targetNormId}` : 'Без названия'));
 
-        if (fallbackName) return fallbackName;
-        if (targetRawId || targetNormId) return `ID: ${targetRawId || targetNormId}`;
-        return 'Без названия';
+        const fallbackType = Object.keys(schemaIcons.value)[0] || 'entity';
+
+        return {
+            name: resolvedName,
+            type: matchedType || fallbackType
+        };
+    };
+
+    const resolveEntityName = (id: string, type: string, fallbackName?: string): string => {
+        return findEntityInfo(id, type, fallbackName).name;
     };
 
     const getNormalizedParticipants = (): ParticipantItem[] => {
         if (!props.participants) return [];
         return props.participants.map((p) => {
             if (typeof p === 'string') {
+                const hasTypePrefix = p.includes(':') && !p.startsWith('entities:');
                 const parts = p.split(':');
-                const type = parts.length > 1 ? parts[0] : 'character';
-                const id = parts.length > 1 ? parts.slice(1).join(':') : p;
-                return { id, type, name: resolveEntityName(id, type) };
+                const explicitType = hasTypePrefix ? parts[0] : undefined;
+                const id = hasTypePrefix ? parts.slice(1).join(':') : p;
+                const info = findEntityInfo(id, explicitType);
+                return { id, type: info.type, name: info.name };
             }
+            const info = findEntityInfo(p.id, p.type, p.name);
             return {
                 ...p,
-                name: resolveEntityName(p.id, p.type, p.name)
+                type: p.type || info.type,
+                name: info.name
             };
         });
     };

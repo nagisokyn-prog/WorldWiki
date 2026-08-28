@@ -1,5 +1,5 @@
 import { ref, computed, watch, nextTick } from 'vue';
-import * as api from '../../../services/api.client';
+import * as api from '@/services/api.client';
 
 export interface PlanItem {
     id: string;

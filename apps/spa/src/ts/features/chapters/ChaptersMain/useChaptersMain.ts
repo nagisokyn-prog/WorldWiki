@@ -128,8 +128,15 @@ export function useChaptersMain(
         combined.push(ap);
       }
     });
-    
-    currentChapter.value.participants = combined as unknown as string[];
+    const prevIds = ((currentChapter.value.participants || []) as unknown as Array<{ id?: string; type?: string } | string>)
+      .map(p => typeof p === 'string' ? p : p.id)
+      .filter(Boolean)
+      .join('|');
+    const newIds = combined.map(p => p.id).filter(Boolean).join('|');
+
+    if (prevIds !== newIds) {
+      currentChapter.value.participants = combined as unknown as string[];
+    }
   };
 
   const handleAddParticipant = (p: { type: string; id: string; name?: string }) => {

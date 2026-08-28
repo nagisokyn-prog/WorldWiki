@@ -25,6 +25,21 @@ class ChapterService {
       data.id = `chapters:${data.id}`;
     }
     data.project_id = project.startsWith('projects:') ? project : `projects:${project}`;
+
+    // Rust бэкенд строго ожидает Option<Vec<String>> для participants
+    if (Array.isArray(data.participants)) {
+      data.participants = data.participants.map(p => {
+        if (typeof p === 'string') return p;
+        if (p && typeof p === 'object') {
+          const item = p as { id?: string; type?: string };
+          if (item.id) {
+            return (item.type && !item.id.includes(':')) ? `${item.type}:${item.id}` : item.id;
+          }
+        }
+        return String(p);
+      }).filter(Boolean);
+    }
+
     await api.saveChapter(project, data as unknown as Chapter);
     return data.id;
   }

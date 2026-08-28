@@ -132,11 +132,6 @@
       <div v-if="changedFields.includes('footnotes')" class="changed-indicator" style="position: absolute; right: 0; top: -10px; z-index: 5;" title="Сноски были изменены">
           <span class="badge badge-accent">Изменено</span>
       </div>
-      <div v-for="(fn, id) in footnotes" :key="id" class="flex gap-2 mb-1 text-sm">
-        <span class="text-accent">[{{ id }}]</span>
-        <span class="flex-1">{{ fn.text }}</span>
-        <button class="bg-transparent border-none text-error cursor-pointer" @click="deleteFootnote(id as string)">✕</button>
-      </div>
     </div>
 
     <!-- Quick Entity Selector -->
@@ -266,7 +261,6 @@ const {
     insertLink,
     insertTable,
     clearFormatting,
-    deleteFootnote,
     switchEditorMode,
     toggleLinkLock,
     analyzeText,

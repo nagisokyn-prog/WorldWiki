@@ -44,8 +44,6 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     if (props.entityType) {
       entityTypesToLoad.add(props.entityType);
     }
-    // Always ensure character is loaded since bidirectional relations heavily use character
-    entityTypesToLoad.add('character');
 
     if (config.value?.sections) {
       config.value.sections.forEach((sec: SchemaSection) => {

@@ -70,16 +70,16 @@ describe('useRelationshipBlock', () => {
     }, emit);
     expect(relSelect.linkClass.value).toBe('custom_link');
 
-    // b. No bidirectionalLinkClass, fields has no select with entityType
+    // b. No bidirectionalLinkClass, fields has no select with entityType -> first field class
     const relNoLink = useRelationshipBlock({
       ...props,
       templateConf: { fields: [{ class: 'other_field', type: 'text' }] },
     }, emit);
-    expect(relNoLink.linkClass.value).toBe('character');
+    expect(relNoLink.linkClass.value).toBe('other_field');
 
-    // c. No fields at all
+    // c. No fields at all -> empty string
     const relEmptyConf = useRelationshipBlock({ ...props, templateConf: {} }, emit);
-    expect(relEmptyConf.linkClass.value).toBe('character');
+    expect(relEmptyConf.linkClass.value).toBe('');
 
     // 2. myLabel fallbacks: missing referenceData, unknown ID, empty entityId
     const relUnknownMy = useRelationshipBlock({ ...props, entityId: 'unknown_id', referenceData: {} }, emit);

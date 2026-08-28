@@ -96,8 +96,8 @@ export const useTimelineStore = defineStore('timeline', () => {
       let type = match[2]?.trim() || 'entity';
       let id = match[3]?.trim() || rawName;
 
-      try { type = decodeURIComponent(type); } catch {}
-      try { id = decodeURIComponent(id); } catch {}
+      try { type = decodeURIComponent(type); } catch { /* ignore */ }
+      try { id = decodeURIComponent(id); } catch { /* ignore */ }
 
       if (!id && !rawName) continue;
       if (!id) id = rawName;
@@ -137,8 +137,8 @@ export const useTimelineStore = defineStore('timeline', () => {
       if (!id && !rawName) continue;
       if (!id) id = rawName;
 
-      try { type = decodeURIComponent(type); } catch {}
-      try { id = decodeURIComponent(id); } catch {}
+      try { type = decodeURIComponent(type); } catch { /* ignore */ }
+      try { id = decodeURIComponent(id); } catch { /* ignore */ }
 
       const rawId = id.includes(':') ? id.split(':').slice(1).join(':') : id;
 
@@ -175,8 +175,8 @@ export const useTimelineStore = defineStore('timeline', () => {
       if (!id && !rawName) continue;
       if (!id) id = rawName;
 
-      try { type = decodeURIComponent(type); } catch {}
-      try { id = decodeURIComponent(id); } catch {}
+      try { type = decodeURIComponent(type); } catch { /* ignore */ }
+      try { id = decodeURIComponent(id); } catch { /* ignore */ }
 
       const rawId = id.includes(':') ? id.split(':').slice(1).join(':') : id;
 

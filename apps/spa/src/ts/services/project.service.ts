@@ -7,11 +7,9 @@
 import * as api from './api.client';
 import { getCached, setCache, invalidateCache } from '../utils/requestCache';
 
-interface ProjectStats {
-  characters: number;
-  organizations: number;
-  states: number;
-  chapters: number;
+export interface ProjectStats {
+  chapters?: number;
+  [entityType: string]: number | undefined;
 }
 
 interface ProjectConfig {
@@ -53,7 +51,7 @@ export const projectService = {
       name: String(p.name || ''),
       ...p,
       icon: (p.icon as string) || '📁',
-      stats: ((p.data as Record<string, unknown>)?.stats as ProjectStats) || (p.stats as ProjectStats) || { characters: 0, organizations: 0, states: 0, chapters: 0 }
+      stats: ((p.data as Record<string, unknown>)?.stats as ProjectStats) || (p.stats as ProjectStats) || { chapters: 0 }
     })) as ProjectData[];
     setCache(cacheKey, projects);
     return projects;
@@ -128,7 +126,7 @@ export const projectService = {
       genres: config.genres || [],
       created: config.created || new Date().toISOString(),
       updated: config.updated || new Date().toISOString(),
-      stats: projectData.stats || { characters: 0, organizations: 0, states: 0, chapters: 0 }
+      stats: projectData.stats || { chapters: 0 }
     };
   }
 };

@@ -21,7 +21,6 @@
         <button class="btn btn-icon interactive-el toolbar-btn" title="Вставить таблицу" @click="commands.insertTable?.()">📊</button>
         <button class="btn btn-icon interactive-el toolbar-btn" title="Вставить ссылку" @click="commands.insertLink?.()">🔗</button>
         <button class="btn btn-icon interactive-el toolbar-btn" title="Очистить форматирование" @click="commands.clearFormatting?.()">🧹</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Добавить сноску" @click="commands.insertFootnote?.()">📝 [^1]</button>
       </div>
     </div>
 
@@ -75,7 +74,6 @@ export interface EditorCommands {
   insertTable?: () => void;
   insertLink?: () => void;
   clearFormatting?: () => void;
-  insertFootnote?: () => void;
   toggleLinkLock?: () => void;
   analyzeText?: () => void;
   [key: string]: unknown;

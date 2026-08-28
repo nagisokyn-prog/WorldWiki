@@ -4,7 +4,7 @@
     
     <div class="participants-list" style="display: flex; flex-direction: column; gap: 8px;">
       <div v-if="normalizedParticipants.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
-        Упомяните сущность в тексте (через @ или [Имя]), чтобы она появилась здесь.
+        Упомяните сущность в тексте через Ctrl+Q чтобы она появилась здесь.
       </div>
       
       <div v-for="(p, idx) in normalizedParticipants" :key="idx" class="participant-item" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">

@@ -386,12 +386,14 @@ describe('useTimelineStore', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('ignores malformed new format', () => {
-      const text = '((Name))[character] and ((Name2))[type:]';
+    it('supports ((name))[] without explicit id', () => {
+      const text = '((Arthur))[] and ((Merlin))[org:m1]';
       
       const result = store.parseParticipants(text);
 
-      expect(result).toHaveLength(0);
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ type: 'entity', id: 'Arthur', name: 'Arthur' });
+      expect(result[1]).toEqual({ type: 'org', id: 'm1', name: 'Merlin' });
     });
 
     it('deduplicates participants in legacy format', () => {

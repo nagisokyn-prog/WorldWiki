@@ -11,7 +11,7 @@
       :commands="{
         toggleBold, toggleItalic, toggleStrike, setHeading, toggleBlockquote, 
         toggleBulletList, toggleOrderedList, insertImage, insertTable, insertLink, 
-        clearFormatting, insertFootnote, toggleLinkLock, analyzeText
+        clearFormatting, toggleLinkLock, analyzeText
       }"
       @update:editor-mode="switchEditorMode"
       @save="$emit('save')"
@@ -242,7 +242,6 @@ const {
     insertLink,
     insertTable,
     clearFormatting,
-    insertFootnote,
     deleteFootnote,
     switchEditorMode,
     toggleLinkLock,

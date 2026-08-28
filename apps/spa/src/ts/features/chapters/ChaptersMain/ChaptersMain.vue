@@ -36,25 +36,29 @@
           />
         </div>
 
-        <!-- Глава открыта: таймлайн → участники → план -->
-        <div v-else-if="currentChapter" class="flex-1 overflow-y-auto flex-col p-4">
-          <TimelinePanel
-            v-model:events="currentChapter.timeline_events"
-            :project="project"
-            @change="markUnsaved"
-          />
-          <ParticipantsPanel
-            v-model:participants="currentChapter.participants"
-            :project="project"
-            @change="markUnsaved"
-          />
+        <!-- Глава открыта: таймлайн → участники (скролл) + зафиксированные планы внизу -->
+        <div v-else-if="currentChapter" class="flex-1 flex-col overflow-hidden">
+          <div class="chapter-panels-scroll flex-1 overflow-y-auto p-3 flex-col gap-3">
+            <TimelinePanel
+              v-model:events="currentChapter.timeline_events"
+              :project="project"
+              @change="markUnsaved"
+            />
+            <ParticipantsPanel
+              v-model:participants="currentChapter.participants"
+              :project="project"
+              @change="markUnsaved"
+            />
+          </div>
+
+          <!-- Зафиксированный внизу блок планов тома / арки / главы -->
           <div class="parent-plans-container">
             <!-- План тома -->
             <div v-if="currentVolume" class="parent-plan-accordion">
               <div class="accordion-header" @click="isVolumePlanOpen = !isVolumePlanOpen">
                 <span class="accordion-title"><i class="fas fa-book text-accent"></i> План тома: {{ currentVolume.title }}</span>
                 <div class="flex items-center gap-2">
-                  <button class="add-from-header-btn" @click.stop="addVolumePlanItem">+</button>
+                  <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addVolumePlanItem">+</button>
                   <span class="text-xs text-muted" :style="{ transform: isVolumePlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
                 </div>
               </div>
@@ -74,7 +78,7 @@
               <div class="accordion-header" @click="isArcPlanOpen = !isArcPlanOpen">
                 <span class="accordion-title"><i class="fas fa-bookmark text-accent"></i> План арки: {{ currentArc.title }}</span>
                 <div class="flex items-center gap-2">
-                  <button class="add-from-header-btn" @click.stop="addArcPlanItem">+</button>
+                  <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addArcPlanItem">+</button>
                   <span class="text-xs text-muted" :style="{ transform: isArcPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
                 </div>
               </div>
@@ -89,17 +93,24 @@
               </div>
             </div>
 
-            <!-- План главы -->
-            <div v-if="currentChapterId" class="parent-plan-accordion mb-4" style="height: 300px; min-height: 150px; max-height: 800px; resize: vertical; display: flex; flex-direction: column;">
-              <div class="accordion-header">
+            <!-- План главы (сворачиваемый) -->
+            <div v-if="currentChapterId" class="parent-plan-accordion">
+              <div class="accordion-header" @click="isChapterPlanOpen = !isChapterPlanOpen">
                 <span class="accordion-title"><i class="fas fa-file-alt text-accent"></i> План главы</span>
+                <div class="flex items-center gap-2">
+                  <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addChapterPlanItem">+</button>
+                  <span class="text-xs text-muted" :style="{ transform: isChapterPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+                </div>
               </div>
-              <PlanningPanel
-                :project="project"
-                parent-type="chapter"
-                :parent-id="currentChapterId"
-                :parent-title="currentChapter?.title"
-              />
+              <div v-show="isChapterPlanOpen" class="accordion-body">
+                <PlanningPanel
+                  ref="chapterPlanRef"
+                  :project="project"
+                  parent-type="chapter"
+                  :parent-id="currentChapterId"
+                  :parent-title="currentChapter?.title"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -247,7 +258,8 @@ const emit = defineEmits<{
 const {
   chapters, currentChapterId, currentChapter,
   currentArc, currentVolume, isVolumePlanOpen,
-  isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
+  isArcPlanOpen, isChapterPlanOpen, volumePlanRef, arcPlanRef, chapterPlanRef,
+  addVolumePlanItem, addArcPlanItem, addChapterPlanItem,
   hasUnsavedChanges, localActiveTreeNode, debugError,
   isExportModalOpen, showQuickLinkHint, isZenMode, floatingEditors, showHistory,
   isLoadingHistory, revisions, previewingRevId, maxSaves, toggleHistory,

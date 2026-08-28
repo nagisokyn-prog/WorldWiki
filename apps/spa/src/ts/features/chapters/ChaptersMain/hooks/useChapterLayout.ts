@@ -3,8 +3,10 @@ import { ref, watch, onMounted, onUnmounted } from 'vue';
 export function useChapterLayout() {
   const isVolumePlanOpen = ref(false);
   const isArcPlanOpen = ref(false);
+  const isChapterPlanOpen = ref(true);
   const volumePlanRef = ref<{ addItem: () => void } | null>(null);
   const arcPlanRef = ref<{ addItem: () => void } | null>(null);
+  const chapterPlanRef = ref<{ addItem: () => void } | null>(null);
   
   const addVolumePlanItem = async () => {
     if (!isVolumePlanOpen.value) {
@@ -24,6 +26,17 @@ export function useChapterLayout() {
     setTimeout(() => {
       if (arcPlanRef.value) {
         arcPlanRef.value.addItem();
+      }
+    }, 50);
+  };
+
+  const addChapterPlanItem = async () => {
+    if (!isChapterPlanOpen.value) {
+      isChapterPlanOpen.value = true;
+    }
+    setTimeout(() => {
+      if (chapterPlanRef.value) {
+        chapterPlanRef.value.addItem();
       }
     }, 50);
   };
@@ -152,7 +165,8 @@ export function useChapterLayout() {
   });
 
   return {
-    isVolumePlanOpen, isArcPlanOpen, volumePlanRef, arcPlanRef, addVolumePlanItem, addArcPlanItem,
+    isVolumePlanOpen, isArcPlanOpen, isChapterPlanOpen, volumePlanRef, arcPlanRef, chapterPlanRef,
+    addVolumePlanItem, addArcPlanItem, addChapterPlanItem,
     chaptersSidebarWidth, startChaptersSidebarResize,
     isExportModalOpen, showQuickLinkHint,
     isZenMode,

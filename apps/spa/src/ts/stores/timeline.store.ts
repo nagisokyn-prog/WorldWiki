@@ -101,14 +101,33 @@ export const useTimelineStore = defineStore('timeline', () => {
       }
     }
 
-    // New format: ((name))[type:id]
-    const newRegex = /\(\((.*?)\)\)\[([^:\]]+):([^\]]+)\]/g;
+    // Конструкция ((...))[...]: извлекаем имя из (()) и метаданные сущности из [...]
+    const newRegex = /\(\((.*?)\)\)\[(.*?)\]/g;
     while ((match = newRegex.exec(text)) !== null) {
-      const name = match[1];
-      const type = match[2];
-      const id = match[3];
+      const name = match[1]?.trim();
+      if (!name) continue;
 
-      if (!participants.some(p => p.type === type && p.id === id)) {
+      const inner = match[2]?.trim() || '';
+      let type = 'entity';
+      let id = name;
+
+      // 1. Проверяем URL параметры (type=...&id=...)
+      const typeUrlMatch = inner.match(/type=([^&]+)/);
+      const idUrlMatch = inner.match(/id=([^&]+)/);
+      if (typeUrlMatch && idUrlMatch) {
+        type = decodeURIComponent(typeUrlMatch[1]);
+        id = decodeURIComponent(idUrlMatch[1]);
+      } else if (inner.includes(':')) {
+        // 2. Формат type:id
+        const parts = inner.split(':');
+        type = parts[0]?.trim() || 'entity';
+        id = parts.slice(1).join(':').trim() || name;
+      } else if (inner.length > 0) {
+        // 3. Просто id
+        id = inner;
+      }
+
+      if (!participants.some(p => (p.id === id && p.type === type) || (p.name === name && p.type === type))) {
         participants.push({ type, id, name });
       }
     }

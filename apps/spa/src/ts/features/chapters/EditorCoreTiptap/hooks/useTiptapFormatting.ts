@@ -43,24 +43,6 @@ export function useTiptapFormatting(
     editor.value.chain().focus().clearNodes().unsetLink().run();
   };
 
-  const insertFootnote = () => {
-    const text = prompt('Введите текст сноски:');
-    if (!text || !editor.value) return;
-    const id = `fn${Object.keys(footnotes.value).length + 1}`;
-    footnotes.value[id] = { id, text };
-    editor.value.chain().focus().insertContent(`[^${id}]`).run();
-    emit('update:footnotesData', footnotes.value);
-    emit('change');
-  };
-
-  const deleteFootnote = async (id: string) => {
-    const { appConfirm } = await import('@worldwiki/components');
-    if (await appConfirm('Удалить сноску?')) {
-      delete footnotes.value[id];
-      emit('update:footnotesData', footnotes.value);
-      emit('change');
-    }
-  };
 
   const cycleGlobalTag = (pIndex: number) => {
     if (!editor.value) return;
@@ -108,8 +90,6 @@ export function useTiptapFormatting(
     insertLink,
     insertTable,
     clearFormatting,
-    insertFootnote,
-    deleteFootnote,
     cycleGlobalTag
   };
 }

@@ -21,7 +21,10 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 10px;
+  padding: 10px 14px 14px;
+  background: var(--bg-panel, rgba(16, 16, 20, 0.95));
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .parent-plan-accordion {
@@ -29,7 +32,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  margin: 0 14px;
+  margin: 0;
 }
 
 .accordion-header {

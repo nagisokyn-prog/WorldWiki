@@ -68,12 +68,7 @@ describe('useTiptapFormatting', () => {
   });
 
   it('handles footnotes and global semantic tags', async () => {
-    globalThis.prompt = vi.fn().mockReturnValue('Сноска 1');
-
     const formatting = useTiptapFormatting(editor, emit, editorUpdateKey);
-
-    formatting.insertFootnote();
-    expect(emit).toHaveBeenCalledWith('update:footnotesData', expect.any(Object));
 
     await formatting.deleteFootnote('fn1');
     expect(emit).toHaveBeenCalledWith('update:footnotesData', expect.any(Object));
@@ -94,14 +89,12 @@ describe('useTiptapFormatting', () => {
       formattingNull.insertLink();
       formattingNull.insertTable();
       formattingNull.clearFormatting();
-      formattingNull.insertFootnote();
       formattingNull.cycleGlobalTag(0);
 
       // Prompt cancellations with valid editor
       const formatting = useTiptapFormatting(editor, emit, editorUpdateKey);
       formatting.insertImage();
       formatting.insertLink();
-      formatting.insertFootnote();
 
       // First prompt ok, second prompt null for link
       globalThis.prompt = vi.fn()

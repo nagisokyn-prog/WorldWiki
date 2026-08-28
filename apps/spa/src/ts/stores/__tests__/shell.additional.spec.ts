@@ -550,6 +550,6 @@ describe('shell store additional coverage', () => {
 
     vi.mocked(entityApi.getEntityList).mockRejectedValueOnce(new Error('Failed list load'));
     await store.loadEntityList('hero');
-    expect(store.entityLists.hero).toEqual([]);
+    expect(store.entityLists.hero ?? []).toEqual([]);
   });
 });

@@ -15,6 +15,7 @@ vi.mock('../../../../stores/chapter.store', () => ({
 vi.mock('../../../../stores/timeline.store', () => ({
   useTimelineStore: () => ({
     init: mockTimelineInit,
+    parseParticipants: vi.fn().mockReturnValue([]),
   }),
 }));
 

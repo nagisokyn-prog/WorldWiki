@@ -30,7 +30,7 @@ describe('projectService (Contract & Integration)', () => {
       expect(res1[0].icon).toBe('📁');
       expect(res1[0].stats!.characters).toBe(5);
       expect(res1[1].icon).toBe('🌍');
-      expect(res1[1].stats!).toEqual({ characters: 0, organizations: 0, states: 0, chapters: 0 });
+      expect(res1[1].stats!).toEqual({ chapters: 0 });
 
       // Second call should return cached data
       const res2 = await projectService.getProjects();
@@ -138,7 +138,7 @@ describe('projectService (Contract & Integration)', () => {
       expect(meta.genres).toEqual([]);
       expect(meta.created).toBeDefined();
       expect(meta.updated).toBeDefined();
-      expect(meta.stats).toEqual({ characters: 0, organizations: 0, states: 0, chapters: 0 });
+      expect(meta.stats).toEqual({ chapters: 0 });
     });
   });
 });

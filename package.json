@@ -15,8 +15,8 @@
     "lint:css": "npx stylelint \"packages/resources/src/styles/**/*.css\"",
     "format": "oxfmt --write src/ts",
     "test": "turbo test",
-    "test:run": "vp test run",
-    "test:coverage": "vp test run --coverage",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "generate:api": "node scripts/codegen.js"
   },
   "dependencies": {

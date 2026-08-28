@@ -316,8 +316,8 @@ describe('useTimelineStore', () => {
       const result = store.parseParticipants(text);
 
       expect(result).toHaveLength(2);
-      expect(result[0]).toEqual({ type: 'character', id: 'char1', name: 'Hero' });
-      expect(result[1]).toEqual({ type: 'character', id: 'char2', name: 'Villain' });
+      expect(result[0]).toEqual({ type: 'character', id: 'character:char1', name: 'Hero' });
+      expect(result[1]).toEqual({ type: 'character', id: 'character:char2', name: 'Villain' });
     });
 
     it('handles mixed formats', () => {
@@ -327,7 +327,7 @@ describe('useTimelineStore', () => {
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({ type: 'character', id: '1', name: 'John' });
-      expect(result[1]).toEqual({ type: 'character', id: '2', name: 'Jane' });
+      expect(result[1]).toEqual({ type: 'character', id: 'character:2', name: 'Jane' });
     });
 
     it('deduplicates participants by type and id', () => {
@@ -336,7 +336,7 @@ describe('useTimelineStore', () => {
       const result = store.parseParticipants(text);
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toEqual({ type: 'character', id: '1', name: 'Hero' });
+      expect(result[0]).toEqual({ type: 'character', id: 'character:1', name: 'Hero' });
     });
 
     it('returns empty array for empty text', () => {
@@ -393,7 +393,7 @@ describe('useTimelineStore', () => {
 
       expect(result).toHaveLength(2);
       expect(result[0]).toEqual({ type: 'entity', id: 'Arthur', name: 'Arthur' });
-      expect(result[1]).toEqual({ type: 'org', id: 'm1', name: 'Merlin' });
+      expect(result[1]).toEqual({ type: 'org', id: 'org:m1', name: 'Merlin' });
     });
 
     it('supports empty (()) with id parameter or url', () => {

@@ -74,9 +74,24 @@ export const useSchemaStore = defineStore('schema', () => {
     return `[${String(entity.id || 'Unknown').substring(0, 8)}]`;
   };
 
+  const invalidateSchema = (entityType?: string) => {
+    if (entityType) {
+      delete schemaCache.value[entityType];
+    } else {
+      schemaCache.value = {};
+    }
+  };
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('ww:schema-updated', ((e: CustomEvent<{ entityType?: string }>) => {
+      invalidateSchema(e.detail?.entityType);
+    }) as EventListener);
+  }
+
   return {
     schemaCache,
     loadSchema,
     getEntityDisplayName,
+    invalidateSchema,
   };
 });

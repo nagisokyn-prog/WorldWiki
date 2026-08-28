@@ -1,5 +1,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import * as api from '../../../services/api.client';;
+import * as api from '../../../services/api.client';
+import { invalidateCache } from '../../../utils/requestCache';
+import { useSchemaStore } from '../../../stores/schema';
 import { useSchemaData } from './hooks/useSchemaData';
 import { useSchemaHistory } from './hooks/useSchemaHistory';
 import { useSchemaDnD } from './hooks/useSchemaDnD';
@@ -26,6 +28,8 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
     const historyHook = useSchemaHistory(props, dataHook.schema, dataHook.loadSchema);
     const dndHook = useSchemaDnD(dataHook.activeSection, dataHook.activeSectionIdx);
     const templatesHook = useSchemaTemplates();
+
+    const schemaStore = useSchemaStore();
 
     watch([dataHook.schema, localEntityType], () => {
         emit('modified');
@@ -86,7 +90,7 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
             });
 
             const dataToSave: EntitySchema = {
-                id: `entity_schemas:${localEntityType.value}`,
+                id: (dataHook.schemaRecordId.value as string) || null,
                 project_id: props.project ? `projects:${props.project}` : null,
                 type_key: localEntityType.value,
                 type_name: schemaCopy.name || localEntityType.value,
@@ -97,7 +101,18 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
                 created_at: null
             };
             
-            await api.saveEntitySchema(props.project, dataToSave, historyHook.maxSaves.value);
+            const saved = await api.saveEntitySchema(props.project, dataToSave, historyHook.maxSaves.value);
+            if (saved && saved.id) {
+                dataHook.schemaRecordId.value = saved.id;
+            }
+
+            invalidateCache('schemas');
+            if (typeof schemaStore.invalidateSchema === 'function') {
+                schemaStore.invalidateSchema(localEntityType.value);
+            } else if (schemaStore.schemaCache?.value) {
+                delete schemaStore.schemaCache.value[localEntityType.value];
+            }
+            window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
             document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
 
             if (historyHook.isHistoryPreviewMode.value) {

@@ -67,11 +67,8 @@ describe('useTiptapFormatting', () => {
     expect(editor.value.chain).toHaveBeenCalled();
   });
 
-  it('handles footnotes and global semantic tags', async () => {
+  it('handles global semantic tags', async () => {
     const formatting = useTiptapFormatting(editor, emit, editorUpdateKey);
-
-    await formatting.deleteFootnote('fn1');
-    expect(emit).toHaveBeenCalledWith('update:footnotesData', expect.any(Object));
 
     formatting.cycleGlobalTag(0);
     expect(editor.value.view.dispatch).toHaveBeenCalled();
@@ -101,11 +98,6 @@ describe('useTiptapFormatting', () => {
         .mockReturnValueOnce('Link text')
         .mockReturnValueOnce(null);
       formatting.insertLink();
-
-      // Delete footnote cancelled by user
-      const { appConfirm } = await import('@worldwiki/components');
-      vi.mocked(appConfirm).mockResolvedValueOnce(false);
-      await formatting.deleteFootnote('fn_cancel');
     });
 
     it('cycles global semantic tags correctly for dialog and thought', () => {

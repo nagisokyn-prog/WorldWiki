@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
 import { useSchemaEditorMain } from '../useSchemaEditorMain';
 import * as api from '../../../../services/api.client';
 import { appAlert } from '@worldwiki/components';
@@ -21,6 +22,7 @@ describe('useSchemaEditorMain', () => {
   let emit: any;
 
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.clearAllMocks();
     props = {
       project: 'p1',
@@ -51,8 +53,11 @@ describe('useSchemaEditorMain', () => {
     document.dispatchEvent(new MouseEvent('mouseup'));
 
     // Scroll
+    vi.useFakeTimers();
     vm.handleScroll({ target: { scrollTop: 80 } });
+    vi.advanceTimersByTime(200);
     expect(wrapper.emitted('scroll-change')).toBeDefined();
+    vi.useRealTimers();
 
     // Keydown toggle catalog (covers line 53 true and false)
     document.dispatchEvent(new KeyboardEvent('keydown', {

@@ -29,6 +29,7 @@ export function useSchemaData(
     scrollContainer: Ref<HTMLElement | null>
 ) {
     const schema = ref<SchemaDataModel>({ sections: [] });
+    const schemaRecordId = ref<string | null>(null);
     const activeSectionIdx = ref(0);
     const activeSection = computed(() => schema.value.sections[activeSectionIdx.value] || { id: '', title: '', icon: '', items: [] });
 
@@ -102,6 +103,12 @@ export function useSchemaData(
             });
 
             const currentType = props.entityType || 'universal';
+            if (foundSchema) {
+                schemaRecordId.value = foundSchema.id || null;
+            } else {
+                schemaRecordId.value = null;
+            }
+
             if (foundSchema && foundSchema.full_schema) {
                 schema.value = JSON.parse(JSON.stringify(foundSchema.full_schema));
             } else if (props.entityType && BUILTIN_SCHEMAS.includes(props.entityType)) {
@@ -211,6 +218,7 @@ export function useSchemaData(
 
     return {
         schema,
+        schemaRecordId,
         activeSectionIdx,
         activeSection,
         isPreviewMode,

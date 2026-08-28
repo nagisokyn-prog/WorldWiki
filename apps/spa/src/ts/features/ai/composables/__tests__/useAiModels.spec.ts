@@ -58,17 +58,13 @@ describe('useAiModels', () => {
     expect(composable.availableModels.value).toEqual([]);
   });
 
-  it('handles local provider with and without baseUrl', async () => {
+  it('handles local provider', async () => {
     const composable = useAiModels();
 
-    // Without baseUrl -> returns early
+    vi.mocked(aiModelsApi.fetchModels).mockResolvedValueOnce([{ value: 'llama3', label: 'Llama 3' }] as any);
     await composable.fetchModels('local', 'key123');
-    expect(aiModelsApi.fetchModels).not.toHaveBeenCalled();
-
-    // With baseUrl
-    vi.mocked(aiModelsApi.fetchModels).mockResolvedValueOnce([]);
-    await composable.fetchModels('local', 'key123', 'http://localhost:11434');
-    expect(aiModelsApi.fetchModels).toHaveBeenCalledWith('local', 'key123');
+    expect(aiModelsApi.fetchModels).toHaveBeenCalledWith('local', '');
+    expect(composable.availableModels.value).toEqual([{ value: 'llama3', label: 'Llama 3' }]);
   });
 
   it('handles unforced network errors without setting fetchError', async () => {

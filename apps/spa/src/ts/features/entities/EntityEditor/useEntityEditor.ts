@@ -232,6 +232,21 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     }
   };
 
+  const onSchemaUpdated = (e: Event) => {
+    const customEvent = e as CustomEvent<{ entityType?: string }>;
+    if (!customEvent.detail || customEvent.detail.entityType === props.entityType) {
+      loadConfigAndData();
+    }
+  };
+
+  onMounted(() => {
+    window.addEventListener('ww:schema-updated', onSchemaUpdated);
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('ww:schema-updated', onSchemaUpdated);
+  });
+
   watch(() => config.value, (newConfig) => {
     if (newConfig && newConfig.sections && newConfig.sections.length > 0 && !activeSection.value) {
       if (props.initialSection && newConfig.sections.some((s: SchemaSection) => s.id === props.initialSection)) {

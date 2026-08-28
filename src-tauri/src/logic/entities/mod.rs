@@ -374,12 +374,17 @@ pub async fn save_entity_schema_inner(
         obj.remove("project_id");
     }
 
+    let pid_val = safe_pid(project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
+
     // FIND EXISTING SCHEMA ID
+    let query_find = format!(
+        "SELECT id FROM entity_schemas WHERE (project_id = '{}' OR project_id = {}) AND type_key = $t_key LIMIT 1",
+        pid_val, pid_literal
+    );
     let mut res = db
-        .query(
-            "SELECT id FROM entity_schemas WHERE project_id = $pid AND type_key = $t_key LIMIT 1",
-        )
-        .bind(("pid", proj_id.clone()))
+        .query(query_find)
         .bind(("t_key", schema.type_key.clone()))
         .await
         .map_err(|e| e.to_string())?;
@@ -404,13 +409,18 @@ pub async fn save_entity_schema_inner(
         }
     } else if let Some(id_str) = &schema.id {
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        if parts.len() == 2 {
+        let raw = if parts.len() == 2 {
             parts[1].to_string()
         } else {
             id_str.clone()
+        };
+        if raw.contains(&pid_raw) {
+            raw
+        } else {
+            format!("{}_{}", pid_raw, raw)
         }
     } else {
-        "".to_string()
+        format!("{}_{}", pid_raw, schema.type_key)
     };
 
     let result: Option<Value> = if !actual_id_str.is_empty() {

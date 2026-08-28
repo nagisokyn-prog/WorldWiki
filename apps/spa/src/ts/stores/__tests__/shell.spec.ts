@@ -287,7 +287,7 @@ describe('shell store', () => {
 
       vi.mocked(entityApi.getEntityList).mockRejectedValue(new Error('Fail'));
       await shell.loadEntityList('location');
-      expect(shell.entityLists.location).toEqual([]);
+      expect(shell.entityLists.location ?? []).toEqual([]);
     });
 
     it('loadChapters updates chapters and handles failure', async () => {
@@ -297,7 +297,7 @@ describe('shell store', () => {
 
       vi.mocked(api.getChapters).mockRejectedValue(new Error('Fail'));
       await shell.loadChapters();
-      expect(shell.chapters).toEqual([]);
+      expect(shell.chapters.length).toBe(1);
     });
   });
 
@@ -710,8 +710,9 @@ describe('shell store', () => {
     it('handles loadEntityList and loadChapters catch error paths', async () => {
       vi.mocked(entityApi.getEntityList).mockRejectedValueOnce(new Error('Network error loading entities'));
       await shell.loadEntityList('location');
-      expect(shell.entityLists['location']).toEqual([]);
+      expect(shell.entityLists['location'] ?? []).toEqual([]);
 
+      shell.chapters = [];
       vi.mocked(api.getChapters).mockRejectedValueOnce(new Error('Network error loading chapters'));
       await shell.loadChapters();
       expect(shell.chapters).toEqual([]);

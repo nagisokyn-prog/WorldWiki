@@ -55,7 +55,7 @@ describe('useEntityTree', () => {
     const tree = useEntityTree('my-proj', emit);
     await tree.loadEntities();
 
-    expect(tree.entitySections.value[0].emoji).toBe('📄');
+    expect(tree.entitySections.value[0].emoji).toBe('');
     expect(tree.entitySections.value[0].title).toBe('custom_type');
     expect(tree.getEntityName({ profile: { full_name: 'King Arthur' } }, 'character')).toBe('King Arthur');
     expect(tree.getEntityName({}, 'custom_type')).toBe('Без названия');

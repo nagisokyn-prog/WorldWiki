@@ -4,8 +4,8 @@
       <div class="flex items-center gap-2">
         <span class="collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
         <span class="font-bold text-sm">🎯 Сюжетные обещания</span>
-        <span v-if="chapterPromises.length > 0" class="badge badge-subtle">
-          {{ chapterPromises.length }}
+        <span v-if="promises.length > 0" class="badge badge-subtle">
+          {{ promises.length }}
         </span>
       </div>
       <button 
@@ -18,19 +18,62 @@
     </div>
 
     <div v-show="!isCollapsed" class="section-content">
+      
+      <!-- Фильтры: Область видимости (Все / Текущая глава) -->
+      <div class="promise-filters-bar">
+        <div class="scope-tabs">
+          <button 
+            class="tab-pill" 
+            :class="{ active: scopeFilter === 'all' }"
+            @click="scopeFilter = 'all'"
+          >
+            Все ({{ promises.length }})
+          </button>
+          <button 
+            class="tab-pill" 
+            :class="{ active: scopeFilter === 'current' }"
+            @click="scopeFilter = 'current'"
+          >
+            В этой главе ({{ chapterPromises.length }})
+          </button>
+        </div>
+
+        <!-- Фильтр по статусу -->
+        <div class="status-pills">
+          <button 
+            class="status-pill-btn" 
+            :class="{ active: statusFilter === 'all' }"
+            @click="statusFilter = 'all'"
+          >
+            Все
+          </button>
+          <button 
+            v-for="st in PROMISE_STATUSES"
+            :key="st.id"
+            class="status-pill-btn" 
+            :class="{ active: statusFilter === st.id }"
+            @click="statusFilter = st.id as any"
+          >
+            {{ st.icon }} {{ st.label }}
+          </button>
+        </div>
+      </div>
+
       <div v-if="loading" class="text-xs text-muted p-2 text-center">
         Загрузка обещаний...
       </div>
 
-      <div v-else-if="chapterPromises.length === 0" class="empty-state">
+      <div v-else-if="filteredPromises.length === 0" class="empty-state">
         <div class="text-xs text-muted">
-          Выделите текст в редакторе и нажмите <kbd class="kbd-hint">ПКМ</kbd>, чтобы создать чеховское ружьё или тайну.
+          {{ scopeFilter === 'current' ? 'В текущей главе нет сюжетных обещаний.' : 'В проекте пока нет сюжетных обещаний.' }}
+          <br />
+          Выделите текст и нажмите <kbd class="kbd-hint">ПКМ</kbd>, чтобы добавить.
         </div>
       </div>
 
       <div v-else class="promises-list">
         <div 
-          v-for="item in chapterPromises" 
+          v-for="item in filteredPromises" 
           :key="item.id || item.quote"
           class="promise-card"
           :class="`status-${item.status}`"
@@ -51,7 +94,10 @@
           </div>
 
           <div class="card-location">
-            {{ chapterTitle ? `${chapterTitle} · ` : '' }}абзац {{ item.paragraph_index }}
+            <span class="location-chapter font-medium">{{ getChapterTitle(item.chapter_id) }}</span>
+            <span class="location-sep">·</span>
+            <span>абзац {{ item.paragraph_index }}</span>
+            <span v-if="isCurrentChapterPromise(item.chapter_id)" class="badge-current-chapter">текущая</span>
           </div>
 
           <!-- Цитата -->
@@ -123,7 +169,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { usePromisesPanel, PROMISE_STATUSES } from './usePromisesPanel';
+import { usePromisesPanel, PROMISE_STATUSES, type ChapterMetaItem } from './usePromisesPanel';
 
 const props = defineProps<{
   project: string;
@@ -131,20 +177,25 @@ const props = defineProps<{
   chapterTitle?: string | null;
   currentVolumeId?: string | null;
   currentArcId?: string | null;
+  allChapters?: ChapterMetaItem[];
 }>();
 
 const emit = defineEmits<{
-  (e: 'locate', payload: { paragraphIndex: number; quote: string; blockId?: string }): void;
+  (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
   (e: 'change'): void;
 }>();
 
 const isCollapsed = ref(false);
 
 const {
+  promises,
   chapterPromises,
+  filteredPromises,
   loading,
   editingNoteId,
   noteDraft,
+  scopeFilter,
+  statusFilter,
   loadPromises,
   addPromise,
   updateStatus,
@@ -153,7 +204,9 @@ const {
   cancelEditNote,
   removePromise,
   locateSource,
-  getKindInfo
+  getKindInfo,
+  getChapterTitle,
+  isCurrentChapterPromise
 } = usePromisesPanel(props, emit);
 
 defineExpose({
@@ -216,7 +269,7 @@ defineExpose({
 
 .section-content {
   padding: 10px;
-  max-height: 320px;
+  max-height: 380px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -238,9 +291,83 @@ defineExpose({
   background: var(--border-hover, rgba(255, 255, 255, 0.2));
 }
 
+.promise-filters-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.scope-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-input);
+  padding: 2px;
+  border-radius: var(--radius-xs, 6px);
+  border: 1px solid var(--border-color);
+}
+
+.tab-pill {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: var(--font-size-xs, 11px);
+  padding: 4px 6px;
+  border-radius: var(--radius-xs, 4px);
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.12s) ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.tab-pill:hover {
+  color: var(--text-main);
+}
+
+.tab-pill.active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.status-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.status-pill-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs, 4px);
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.12s) ease;
+  font-family: inherit;
+}
+
+.status-pill-btn:hover {
+  color: var(--text-main);
+  border-color: var(--border-hover);
+}
+
+.status-pill-btn.active {
+  background: var(--bg-selected);
+  border-color: var(--border-active);
+  color: var(--accent-light);
+  font-weight: 500;
+}
+
 .empty-state {
-  padding: 12px 8px;
+  padding: 14px 8px;
   text-align: center;
+  line-height: 1.5;
 }
 
 .kbd-hint {
@@ -314,6 +441,27 @@ defineExpose({
 .card-location {
   font-size: var(--font-size-xs, 11px);
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.location-chapter {
+  color: var(--accent-light, #c4b5fd);
+}
+
+.location-sep {
+  opacity: 0.5;
+}
+
+.badge-current-chapter {
+  font-size: 9px;
+  padding: 1px 4px;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success, #10b981);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
 }
 
 .card-quote {

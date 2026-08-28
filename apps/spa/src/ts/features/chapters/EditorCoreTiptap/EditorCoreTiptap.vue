@@ -194,14 +194,17 @@ const handleContextMenu = (e: MouseEvent) => {
       const { selection, doc } = editor.value.state;
       if (!selection.empty) {
         selectedText = doc.textBetween(selection.from, selection.to, ' ').trim();
-        // Count paragraph blocks before selection
-        let count = 0;
-        doc.nodesBetween(0, selection.from, (node, pos) => {
-          if (node.isBlock && node.type.name === 'paragraph') {
-            count++;
+        
+        // Точный подсчет номера блока верхнего уровня (1-based)
+        let blockCount = 0;
+        let foundIdx = 1;
+        doc.forEach((node, offset) => {
+          blockCount++;
+          if (selection.from >= offset && selection.from <= offset + node.nodeSize) {
+            foundIdx = blockCount;
           }
         });
-        paragraphIndex = Math.max(1, count);
+        paragraphIndex = Math.max(1, foundIdx);
       }
     }
   }
@@ -213,8 +216,8 @@ const handleContextMenu = (e: MouseEvent) => {
     if (start !== end) {
       selectedText = ta.value.substring(start, end).trim();
       const beforeText = ta.value.substring(0, start);
-      const paragraphs = beforeText.split(/\n\s*\n/);
-      paragraphIndex = Math.max(1, paragraphs.length);
+      const lines = beforeText.split('\n');
+      paragraphIndex = Math.max(1, lines.length);
     }
   }
 
@@ -250,14 +253,52 @@ const scrollToParagraph = (paragraphIndex: number, quote?: string) => {
   if (editorMode.value === 'wysiwyg' || editorMode.value === 'split') {
     if (editor.value) {
       const editorDom = editor.value.view.dom;
-      const paragraphs = editorDom.querySelectorAll('p, h1, h2, h3, blockquote');
-      const targetEl = paragraphs[paragraphIndex - 1] as HTMLElement || paragraphs[0] as HTMLElement;
+      const allNodes = Array.from(
+        editorDom.querySelectorAll('.semantic-paragraph-node, .ProseMirror > *, p, h1, h2, h3, h4, h5, h6, blockquote, li, tr')
+      ) as HTMLElement[];
+      let targetEl: HTMLElement | null = null;
+
+      // 1. Поиск по нормализованному тексту цитаты
+      if (quote && quote.trim()) {
+        const cleanQuote = quote.replace(/\s+/g, ' ').trim().toLowerCase();
+        for (const el of allNodes) {
+          const elText = (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+          if (elText.includes(cleanQuote)) {
+            targetEl = el;
+            break;
+          }
+        }
+      }
+
+      // 2. Если по цитате не нашли, берем по порядковому номеру блока верхнего уровня
+      if (!targetEl) {
+        const topBlocks = Array.from(editorDom.children) as HTMLElement[];
+        if (topBlocks.length > 0) {
+          const idx = Math.max(0, Math.min(topBlocks.length - 1, paragraphIndex - 1));
+          targetEl = topBlocks[idx] || null;
+        }
+      }
+
       if (targetEl) {
-        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const wrapper = (editorDom.closest('.editor-wrapper') || editorDom.parentElement) as HTMLElement | null;
+        if (wrapper && wrapper.scrollHeight > wrapper.clientHeight) {
+          const wrapperRect = wrapper.getBoundingClientRect();
+          const targetRect = targetEl.getBoundingClientRect();
+          const offsetTop = targetRect.top - wrapperRect.top + wrapper.scrollTop;
+          wrapper.scrollTo({
+            top: Math.max(0, offsetTop - wrapper.clientHeight / 2 + targetRect.height / 2),
+            behavior: 'smooth'
+          });
+        } else {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        targetEl.classList.remove('promise-highlight-target');
+        void targetEl.offsetWidth; // trigger reflow
         targetEl.classList.add('promise-highlight-target');
         setTimeout(() => {
-          targetEl.classList.remove('promise-highlight-target');
-        }, 2200);
+          targetEl?.classList.remove('promise-highlight-target');
+        }, 2500);
         return;
       }
     }
@@ -405,6 +446,12 @@ const handleOpenEntityWindow = (e: Event) => {
   openEntityEditorWindow(props.project, type, id, id.split(':').pop() || 'Сущность');
 };
 
+const handleLocatePromiseEvent = (e: Event) => {
+  const detail = (e as CustomEvent<{ chapterId?: string; paragraphIndex: number; quote?: string }>).detail;
+  if (!detail) return;
+  scrollToParagraph(detail.paragraphIndex, detail.quote);
+};
+
 defineExpose({
   scrollToParagraph
 });
@@ -412,11 +459,13 @@ defineExpose({
 onMounted(() => {
   document.addEventListener('ww:open-entity-selector', handleOpenEntitySelector);
   document.addEventListener('ww:open-entity-window', handleOpenEntityWindow);
+  document.addEventListener('ww:locate-promise', handleLocatePromiseEvent);
 });
 
 onUnmounted(() => {
   document.removeEventListener('ww:open-entity-selector', handleOpenEntitySelector);
   document.removeEventListener('ww:open-entity-window', handleOpenEntityWindow);
+  document.removeEventListener('ww:locate-promise', handleLocatePromiseEvent);
 });
 </script>
 

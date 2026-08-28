@@ -31,12 +31,12 @@
       <div v-if="isRightPanelVisible" class="chapter-right-panel flex-shrink-0" :style="{ width: rightPanelWidth + 'px', minWidth: '200px', maxWidth: '600px' }">
 
         <!-- Том или Арка выбрана: показываем только план -->
-        <div v-if="localActiveTreeNode && localActiveTreeNode.type !== 'chapter'" class="flex-1 flex-col overflow-hidden">
+        <div v-if="localActiveTreeNode?.node && localActiveTreeNode?.type !== 'chapter'" class="flex-1 flex-col overflow-hidden">
           <PlanningPanel
             :project="project"
-            :parent-type="localActiveTreeNode.type"
-            :parent-id="localActiveTreeNode.node.id"
-            :parent-title="localActiveTreeNode.node.title"
+            :parent-type="localActiveTreeNode.type || 'volume'"
+            :parent-id="localActiveTreeNode.node?.id || ''"
+            :parent-title="localActiveTreeNode.node?.title || ''"
           />
         </div>
 
@@ -86,6 +86,7 @@
               :chapter-title="currentChapter.title"
               :current-volume-id="currentVolume?.id"
               :current-arc-id="currentArc?.id"
+              :all-chapters="chapters"
               @locate="handleLocatePromise"
               @change="markUnsaved"
             />
@@ -303,16 +304,8 @@ const promisesPanelRef = ref<{ addPromise: (p: { kind: string; quote: string; pa
 const isTimelineOpen = ref(true);
 const isParticipantsOpen = ref(true);
 
-const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
-  promisesPanelRef.value?.addPromise(payload);
-};
-
-const handleLocatePromise = (payload: { paragraphIndex: number; quote: string; blockId?: string }) => {
-  editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote);
-};
-
 const {
-  chapters, currentChapterId, currentChapter,
+  chapters, hierarchy, currentChapterId, currentChapter,
   currentArc, currentVolume, isVolumePlanOpen,
   isArcPlanOpen, isChapterPlanOpen, volumePlanRef, arcPlanRef, chapterPlanRef,
   addVolumePlanItem, addArcPlanItem, addChapterPlanItem,
@@ -324,12 +317,54 @@ const {
   closeFloatingEditor, startResize,
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
   markUnsaved, handleOpenEntity,
-  handleExport, handleScrollChange, handleAddParticipant
+  handleExport, handleScrollChange, handleAddParticipant,
+  openChapterFromTree
 } = useChaptersMain({
   project: props.project,
   controlledChapterId: props.controlledChapterId || undefined,
   activeTreeNode: props.activeTreeNode || undefined
 }, emit as (event: string, ...args: unknown[]) => void);
+
+const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
+  promisesPanelRef.value?.addPromise(payload);
+};
+
+const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }) => {
+  const cleanTarget = (payload.chapterId || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
+  const currentClean = (currentChapter.value?.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
+
+  // Если целевая глава отличается от текущей — открываем её таб
+  if (currentClean && cleanTarget && cleanTarget !== currentClean) {
+    const allList = chapters.value.length > 0 ? chapters.value : (hierarchy.value?.chapters || []);
+    const targetChapter = allList.find((c: { id?: string | null }) => {
+      const cClean = (c.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
+      return cClean === cleanTarget;
+    });
+
+    if (targetChapter) {
+      const targetId = targetChapter.id 
+        ? (String(targetChapter.id).startsWith('chapters:') ? String(targetChapter.id) : `chapters:${String(targetChapter.id)}`) 
+        : `chapters:${cleanTarget}`;
+
+      const chNode = {
+        ...targetChapter,
+        id: targetId,
+        title: targetChapter.title || 'Глава'
+      } as unknown as ChapterTreeNode;
+
+      openChapterFromTree(chNode);
+      setTimeout(() => {
+        document.dispatchEvent(new CustomEvent('ww:locate-promise', {
+          detail: payload
+        }));
+      }, 450);
+      return;
+    }
+  }
+
+  // Если уже открыта текущая глава
+  editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote);
+};
 </script>
 
 <style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css" scoped></style>

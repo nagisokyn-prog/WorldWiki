@@ -2,12 +2,19 @@ import { ref, computed, watch, onMounted } from 'vue';
 import * as api from '@/services/api.client';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 
+export interface ChapterMetaItem {
+  id: string | null;
+  title: string;
+  [key: string]: unknown;
+}
+
 export interface PromisesPanelProps {
   project: string;
   chapterId?: string | null;
   chapterTitle?: string | null;
   currentVolumeId?: string | null;
   currentArcId?: string | null;
+  allChapters?: ChapterMetaItem[];
 }
 
 export const PROMISE_KINDS: Record<string, { label: string; icon: string }> = {
@@ -26,7 +33,7 @@ export const PROMISE_STATUSES: Array<{ id: string; label: string; icon: string }
 export function usePromisesPanel(
   props: PromisesPanelProps,
   emit: {
-    (e: 'locate', payload: { paragraphIndex: number; quote: string; blockId?: string }): void;
+    (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
     (e: 'change'): void;
   }
 ) {
@@ -34,6 +41,15 @@ export function usePromisesPanel(
   const loading = ref(false);
   const editingNoteId = ref<string | null>(null);
   const noteDraft = ref('');
+  const scopeFilter = ref<'all' | 'current'>('all');
+  const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
+
+  const cleanId = (id: unknown): string => {
+    if (!id) return '';
+    const s = typeof id === 'string' ? id : ((id as { id?: { String?: string } | string }).id || JSON.stringify(id));
+    const parts = String(s).split(':');
+    return (parts[parts.length - 1] || String(s)).replace(/["'`]/g, '').trim();
+  };
 
   const loadPromises = async () => {
     if (!props.project) return;
@@ -62,14 +78,41 @@ export function usePromisesPanel(
     } catch { /* ignore */ }
   };
 
+  const isCurrentChapterPromise = (promiseChapterId: string) => {
+    if (!props.chapterId) return false;
+    return cleanId(props.chapterId) === cleanId(promiseChapterId);
+  };
+
   const chapterPromises = computed(() => {
     if (!props.chapterId) return [];
-    const rawTarget = props.chapterId.replace(/^chapters:/, '');
-    return promises.value.filter((p) => {
-      const pChap = (p.chapter_id || '').replace(/^chapters:/, '');
-      return pChap === rawTarget || p.chapter_id === props.chapterId;
-    });
+    return promises.value.filter((p) => isCurrentChapterPromise(p.chapter_id));
   });
+
+  const filteredPromises = computed(() => {
+    let list = promises.value;
+
+    if (scopeFilter.value === 'current') {
+      list = chapterPromises.value;
+    }
+
+    if (statusFilter.value !== 'all') {
+      list = list.filter((p) => p.status === statusFilter.value);
+    }
+
+    return list;
+  });
+
+  const getChapterTitle = (chapterId: string) => {
+    if (!chapterId) return 'Глава';
+    if (props.chapterId && isCurrentChapterPromise(chapterId) && props.chapterTitle) {
+      return props.chapterTitle;
+    }
+    const targetClean = cleanId(chapterId);
+    const found = props.allChapters?.find((c) => {
+      return cleanId(c.id) === targetClean;
+    });
+    return found?.title || `Глава ${targetClean}`;
+  };
 
   const addPromise = async (payload: {
     kind: string;
@@ -111,7 +154,6 @@ export function usePromisesPanel(
 
   const updateStatus = async (item: PlotPromise, newStatus: string) => {
     if (!item.id || item.status === newStatus) return;
-    const oldStatus = item.status;
     item.status = newStatus;
 
     if (newStatus === 'resolved' && props.chapterId) {
@@ -165,6 +207,7 @@ export function usePromisesPanel(
 
   const locateSource = (item: PlotPromise) => {
     emit('locate', {
+      chapterId: item.chapter_id,
       paragraphIndex: item.paragraph_index,
       quote: item.quote,
       blockId: item.block_id || undefined
@@ -181,9 +224,12 @@ export function usePromisesPanel(
   return {
     promises,
     chapterPromises,
+    filteredPromises,
     loading,
     editingNoteId,
     noteDraft,
+    scopeFilter,
+    statusFilter,
     loadPromises,
     addPromise,
     updateStatus,
@@ -192,6 +238,8 @@ export function usePromisesPanel(
     cancelEditNote,
     removePromise,
     locateSource,
-    getKindInfo
+    getKindInfo,
+    getChapterTitle,
+    isCurrentChapterPromise
   };
 }

@@ -69,6 +69,7 @@ export const useChapterStore = defineStore('chapter', () => {
       console.log('📚 chapterStore.loadChapters: загружаю иерархию для проекта', project);
       loading.value = true;
       hierarchy.value = (await api.getChapterHierarchy(project)) as unknown as ChapterHierarchy;
+      chapters.value = hierarchy.value.chapters || [];
       console.log('✅ chapterStore.loadChapters: иерархия загружена', hierarchy.value);
       debugError.value = null;
       loading.value = false;

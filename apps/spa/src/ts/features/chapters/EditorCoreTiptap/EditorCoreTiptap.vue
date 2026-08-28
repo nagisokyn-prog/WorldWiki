@@ -27,7 +27,11 @@
     </div>
 
     <!-- Editor Container -->
-    <div class="editor-container" :class="{ 'history-changed': changedFields.includes('content') }">
+    <div 
+      class="editor-container" 
+      :class="{ 'history-changed': changedFields.includes('content') }"
+      @contextmenu="handleContextMenu"
+    >
       <div v-if="changedFields.includes('content')" class="changed-indicator" style="position: absolute; right: 10px; top: 10px; z-index: 5;" title="Текст был изменен">
           <span class="badge badge-accent">Изменено</span>
       </div>
@@ -46,6 +50,7 @@
           class="markdown-editor-textarea"
           @input="onMarkdownInput"
           @keydown="onMarkdownKeydown"
+          @contextmenu="handleContextMenu"
         ></textarea>
       </div>
 
@@ -64,6 +69,7 @@
             @keydown.exact="onMarkdownKeydown"
             @keydown.exact.ctrl.meta.shift.q.prevent="$emit('open-entity-selector')"
             @keydown.exact.ctrl.meta.prevent.enter="$emit('open-entity-selector')"
+            @contextmenu="handleContextMenu"
           ></textarea>
         </div>
 
@@ -141,6 +147,14 @@
       @close="isEntitySelectorOpen = false"
       @insert="handleEntityInsert"
     />
+
+    <!-- Promise Context Menu -->
+    <PromiseContextMenu
+      :is-open="isPromiseMenuOpen"
+      :position="promiseMenuPos"
+      @close="isPromiseMenuOpen = false"
+      @select="handlePromiseSelect"
+    />
   </div>
 </template>
 
@@ -150,9 +164,18 @@ import { EditorContent } from '@tiptap/vue-3';
 import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
 import EntityLinkSelector from './EntityLinkSelector.vue';
+import PromiseContextMenu, { type PromiseTypeOption } from './PromiseContextMenu.vue';
 
 const isEntitySelectorOpen = ref(false);
 const activeEditorTarget = ref<'wysiwyg'|'markdown'>('markdown');
+
+const isPromiseMenuOpen = ref(false);
+const promiseMenuPos = ref({ x: 0, y: 0 });
+const selectedPromiseData = ref<{ quote: string; paragraph_index: number; block_id?: string | null }>({
+  quote: '',
+  paragraph_index: 1,
+  block_id: null
+});
 
 const handleOpenEntitySelector = (e: Event) => {
   const detail = (e as CustomEvent<{ target?: 'wysiwyg' | 'markdown' }>).detail;
@@ -161,6 +184,97 @@ const handleOpenEntitySelector = (e: Event) => {
 };
 
 const markdownTextareaRef = ref<HTMLTextAreaElement | null>(null);
+
+const handleContextMenu = (e: MouseEvent) => {
+  let selectedText = '';
+  let paragraphIndex = 1;
+
+  if (editorMode.value === 'wysiwyg' || editorMode.value === 'split') {
+    if (editor.value) {
+      const { selection, doc } = editor.value.state;
+      if (!selection.empty) {
+        selectedText = doc.textBetween(selection.from, selection.to, ' ').trim();
+        // Count paragraph blocks before selection
+        let count = 0;
+        doc.nodesBetween(0, selection.from, (node, pos) => {
+          if (node.isBlock && node.type.name === 'paragraph') {
+            count++;
+          }
+        });
+        paragraphIndex = Math.max(1, count);
+      }
+    }
+  }
+
+  if (!selectedText && markdownTextareaRef.value) {
+    const ta = markdownTextareaRef.value;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    if (start !== end) {
+      selectedText = ta.value.substring(start, end).trim();
+      const beforeText = ta.value.substring(0, start);
+      const paragraphs = beforeText.split(/\n\s*\n/);
+      paragraphIndex = Math.max(1, paragraphs.length);
+    }
+  }
+
+  if (!selectedText) {
+    const winSel = window.getSelection()?.toString().trim();
+    if (winSel) {
+      selectedText = winSel;
+    }
+  }
+
+  if (selectedText) {
+    e.preventDefault();
+    selectedPromiseData.value = {
+      quote: selectedText,
+      paragraph_index: paragraphIndex,
+      block_id: null
+    };
+    promiseMenuPos.value = { x: e.clientX, y: e.clientY };
+    isPromiseMenuOpen.value = true;
+  }
+};
+
+const handlePromiseSelect = (item: PromiseTypeOption) => {
+  emit('create-promise', {
+    kind: item.kind,
+    quote: selectedPromiseData.value.quote,
+    paragraph_index: selectedPromiseData.value.paragraph_index,
+    block_id: selectedPromiseData.value.block_id
+  });
+};
+
+const scrollToParagraph = (paragraphIndex: number, quote?: string) => {
+  if (editorMode.value === 'wysiwyg' || editorMode.value === 'split') {
+    if (editor.value) {
+      const editorDom = editor.value.view.dom;
+      const paragraphs = editorDom.querySelectorAll('p, h1, h2, h3, blockquote');
+      const targetEl = paragraphs[paragraphIndex - 1] as HTMLElement || paragraphs[0] as HTMLElement;
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetEl.classList.add('promise-highlight-target');
+        setTimeout(() => {
+          targetEl.classList.remove('promise-highlight-target');
+        }, 2200);
+        return;
+      }
+    }
+  }
+
+  if (markdownTextareaRef.value) {
+    const ta = markdownTextareaRef.value;
+    if (quote && ta.value.includes(quote)) {
+      const idx = ta.value.indexOf(quote);
+      ta.focus();
+      ta.setSelectionRange(idx, idx + quote.length);
+      const lineCount = ta.value.substring(0, idx).split('\n').length;
+      const lineHeight = 20;
+      ta.scrollTop = Math.max(0, (lineCount - 3) * lineHeight);
+    }
+  }
+};
 
 const handleEntityInsert = (payload: { type: string; id: string; name?: string }) => {
   const url = `ui_editor.html?project=${encodeURIComponent(props.project)}&type=${encodeURIComponent(payload.type)}&id=${encodeURIComponent(payload.id)}`;
@@ -231,7 +345,19 @@ const props = withDefaults(defineProps<{
   changedFields: () => []
 });
 
-const emit = defineEmits(['update:title', 'update:content', 'update:footnotesData', 'change', 'save', 'openEntity', 'scroll-change', 'toggle-history', 'open-entity-selector', 'add-participant']);
+const emit = defineEmits([
+  'update:title',
+  'update:content',
+  'update:footnotesData',
+  'change',
+  'save',
+  'openEntity',
+  'scroll-change',
+  'toggle-history',
+  'open-entity-selector',
+  'add-participant',
+  'create-promise'
+]);
 
 const {
     modeOptions,
@@ -279,6 +405,10 @@ const handleOpenEntityWindow = (e: Event) => {
   openEntityEditorWindow(props.project, type, id, id.split(':').pop() || 'Сущность');
 };
 
+defineExpose({
+  scrollToParagraph
+});
+
 onMounted(() => {
   document.addEventListener('ww:open-entity-selector', handleOpenEntitySelector);
   document.addEventListener('ww:open-entity-window', handleOpenEntityWindow);
@@ -291,3 +421,25 @@ onUnmounted(() => {
 </script>
 
 <style src="@worldwiki/resources/styles/features/chapters/EditorCoreTiptap.css"></style>
+
+<style>
+@keyframes promisePulse {
+  0% {
+    background-color: var(--accent-glow, rgba(139, 92, 246, 0.4));
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  70% {
+    background-color: var(--bg-selected, rgba(139, 92, 246, 0.15));
+    box-shadow: 0 0 0 4px var(--accent-glow);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.promise-highlight-target {
+  animation: promisePulse 2.2s ease-out forwards;
+  border-radius: var(--radius-xs, 4px);
+}
+</style>

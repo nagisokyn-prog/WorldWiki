@@ -40,6 +40,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE FROM entity_chunks WHERE project_id = $pid;
     DELETE FROM artifacts WHERE project_id = $pid;
     DELETE FROM ai_skills WHERE project_id = $pid;
+    DELETE FROM plot_promises WHERE project_id = $pid;
 };
 
 -- ===============================================
@@ -50,36 +51,36 @@ DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs | cha
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
-DEFINE FIELD OVERWRITE title      ON volumes TYPE string;
+DEFINE FIELD OVERWRITE title      ON volumes TYPE string;
 DEFINE FIELD OVERWRITE project_id ON volumes TYPE record<projects>;
 
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
-    -- При удалении тома удаляем все вложенные арки и главы через граф
-    DELETE ->contains->arcs;
-    DELETE ->contains->chapters;
-    DELETE plans WHERE parent_ref = $before.id;
+    -- При удалении тома удаляем все вложенные арки и главы через граф
+    DELETE ->contains->arcs;
+    DELETE ->contains->chapters;
+    DELETE plans WHERE parent_ref = $before.id;
 };
 
 DEFINE TABLE OVERWRITE arcs SCHEMAFULL;
-DEFINE FIELD OVERWRITE title      ON arcs TYPE string;
+DEFINE FIELD OVERWRITE title      ON arcs TYPE string;
 DEFINE FIELD OVERWRITE project_id ON arcs TYPE record<projects>;
 
 DEFINE EVENT OVERWRITE cascade_arc_delete ON TABLE arcs WHEN $event = "DELETE" THEN {
-    DELETE ->contains->chapters;
-    DELETE plans WHERE parent_ref = $before.id;
+    DELETE ->contains->chapters;
+    DELETE plans WHERE parent_ref = $before.id;
 };
 
 DEFINE TABLE OVERWRITE chapters SCHEMAFULL CHANGEFEED 30d;
-DEFINE FIELD OVERWRITE project_id      ON chapters TYPE record<projects>;
-DEFINE FIELD OVERWRITE title          ON chapters TYPE string;
-DEFINE FIELD OVERWRITE content        ON chapters TYPE string;
+DEFINE FIELD OVERWRITE project_id      ON chapters TYPE record<projects>;
+DEFINE FIELD OVERWRITE title          ON chapters TYPE string;
+DEFINE FIELD OVERWRITE content        ON chapters TYPE string;
 DEFINE FIELD OVERWRITE summary        ON chapters TYPE option<string | null>;
-DEFINE FIELD OVERWRITE word_count      ON chapters TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
-DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
-DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE word_count      ON chapters TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
+DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE participants    ON chapters TYPE array<string> DEFAULT [];
 
 -- Исправление ошибки timeline_events
 DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array DEFAULT [];
@@ -96,6 +97,7 @@ DEFINE INDEX OVERWRITE idx_chapter_emb_nemotron ON chapters COLUMNS embeddings.n
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
     DELETE text_blocks WHERE chapter_id = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
+    DELETE plot_promises WHERE chapter_id = $before.id;
 };
 
 -- ===============================================
@@ -252,8 +254,29 @@ DEFINE FIELD OVERWRITE created_at  ON plans TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at  ON plans TYPE datetime DEFAULT time::now();
 
 DEFINE EVENT OVERWRITE cascade_plan_delete ON TABLE plans WHEN $event = "DELETE" THEN {
-    DELETE plans WHERE parent_ref = $before.id;
+    DELETE plans WHERE parent_ref = $before.id;
 };
+
+-- ===============================================
+-- СЮЖЕТНЫЕ ОБЕЩАНИЯ (Чеховские ружья, тайны, предзнаменования)
+-- ===============================================
+DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id           ON plot_promises TYPE record<projects>;
+DEFINE FIELD OVERWRITE chapter_id           ON plot_promises TYPE record<chapters>;
+DEFINE FIELD OVERWRITE kind                 ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question'
+DEFINE FIELD OVERWRITE quote                ON plot_promises TYPE string;
+DEFINE FIELD OVERWRITE paragraph_index      ON plot_promises TYPE int DEFAULT 1;
+DEFINE FIELD OVERWRITE block_id             ON plot_promises TYPE option<string | null>;
+DEFINE FIELD OVERWRITE note                 ON plot_promises TYPE option<string | null>;
+DEFINE FIELD OVERWRITE status               ON plot_promises TYPE string DEFAULT 'planted'; -- 'planted' | 'developed' | 'resolved'
+DEFINE FIELD OVERWRITE resolved_in_volume   ON plot_promises TYPE option<record<volumes> | null>;
+DEFINE FIELD OVERWRITE resolved_in_arc      ON plot_promises TYPE option<record<arcs> | null>;
+DEFINE FIELD OVERWRITE resolved_in_chapter  ON plot_promises TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE created_at           ON plot_promises TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at           ON plot_promises TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_promise_project ON plot_promises FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_promise_chapter ON plot_promises FIELDS chapter_id;
 
 -- ===============================================
 -- AI АГЕНТЫ И ЧАТ (WORLDWIKI 1.0.0)

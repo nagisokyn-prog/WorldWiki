@@ -4,22 +4,24 @@
     <!-- MAIN AREA -->
     <div v-if="currentChapter" class="flex-1 flex overflow-hidden min-w-0">
       
-      <!-- Editor -->
+      <!-- Editor Core -->
       <EditorCore
+        ref="editorCoreRef"
         v-model:title="currentChapter.title"
         v-model:content="currentChapter.content"
-        v-model:footnotes-data="currentChapter.footnotes"
         :project="project"
         :has-unsaved-changes="hasUnsavedChanges"
-        :initial-scroll-pos="typeof currentChapter.scrollPos === 'number' ? currentChapter.scrollPos : 0"
+        :footnotes-data="currentChapter.footnotes"
         :changed-fields="changedFields"
-        class="flex-1 min-w-0"
+        @update:title="markUnsaved"
+        @update:content="markUnsaved"
         @change="markUnsaved"
         @save="triggerSave"
         @open-entity="handleOpenEntity"
         @scroll-change="handleScrollChange"
         @toggle-history="toggleHistory"
         @add-participant="handleAddParticipant"
+        @create-promise="handleCreatePromise"
       />
 
       <!-- Right Panel Resizer -->
@@ -38,17 +40,53 @@
           />
         </div>
 
-        <!-- Глава открыта: таймлайн → участники (скролл) + зафиксированные планы внизу -->
+        <!-- Глава открыта: таймлайн → участники → обещания (скролл) + зафиксированные планы внизу -->
         <div v-else-if="currentChapter" class="flex-1 flex-col overflow-hidden">
           <div class="chapter-panels-scroll flex-1 overflow-y-auto p-3 flex-col gap-3">
-            <TimelinePanel
-              v-model:events="currentChapter.timeline_events"
+            
+            <!-- Аккордеон: Таймлайн -->
+            <div class="panel-collapsible-wrapper">
+              <div class="panel-header-bar" @click="isTimelineOpen = !isTimelineOpen">
+                <span class="panel-header-title">
+                  <i class="fas fa-calendar-alt text-accent mr-1"></i> Таймлайн главы
+                </span>
+                <span class="panel-header-arrow" :style="{ transform: isTimelineOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+              </div>
+              <div v-show="isTimelineOpen" class="panel-body-box">
+                <TimelinePanel
+                  v-model:events="currentChapter.timeline_events"
+                  :project="project"
+                  @change="markUnsaved"
+                />
+              </div>
+            </div>
+
+            <!-- Аккордеон: Участники -->
+            <div class="panel-collapsible-wrapper">
+              <div class="panel-header-bar" @click="isParticipantsOpen = !isParticipantsOpen">
+                <span class="panel-header-title">
+                  <i class="fas fa-users text-accent mr-1"></i> Участники
+                </span>
+                <span class="panel-header-arrow" :style="{ transform: isParticipantsOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+              </div>
+              <div v-show="isParticipantsOpen" class="panel-body-box">
+                <ParticipantsPanel
+                  v-model:participants="currentChapter.participants"
+                  :project="project"
+                  @change="markUnsaved"
+                />
+              </div>
+            </div>
+
+            <!-- Сюжетные обещания -->
+            <PromisesPanel
+              ref="promisesPanelRef"
               :project="project"
-              @change="markUnsaved"
-            />
-            <ParticipantsPanel
-              v-model:participants="currentChapter.participants"
-              :project="project"
+              :chapter-id="currentChapter.id"
+              :chapter-title="currentChapter.title"
+              :current-volume-id="currentVolume?.id"
+              :current-arc-id="currentArc?.id"
+              @locate="handleLocatePromise"
               @change="markUnsaved"
             />
           </div>
@@ -231,9 +269,11 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
+import PromisesPanel from '../PromisesPanel/PromisesPanel.vue';
 import ExportModal from '../Export/ExportModal.vue';
 import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
 import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
@@ -257,6 +297,20 @@ const emit = defineEmits<{
   'scroll-change': [scroll: number];
 }>();
 
+const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string) => void } | null>(null);
+const promisesPanelRef = ref<{ addPromise: (p: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => Promise<void>; loadPromises: () => Promise<void> } | null>(null);
+
+const isTimelineOpen = ref(true);
+const isParticipantsOpen = ref(true);
+
+const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
+  promisesPanelRef.value?.addPromise(payload);
+};
+
+const handleLocatePromise = (payload: { paragraphIndex: number; quote: string; blockId?: string }) => {
+  editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote);
+};
+
 const {
   chapters, currentChapterId, currentChapter,
   currentArc, currentVolume, isVolumePlanOpen,
@@ -279,3 +333,63 @@ const {
 </script>
 
 <style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css" scoped></style>
+
+<style scoped>
+.panel-collapsible-wrapper {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.panel-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: rgba(255, 255, 255, 0.02);
+  transition: background var(--anim-speed, 0.2s) ease;
+}
+
+.panel-header-bar:hover {
+  background: var(--bg-hover);
+}
+
+.panel-header-title {
+  font-size: var(--font-size-sm, 13px);
+  font-weight: var(--font-weight-bold, 600);
+  color: var(--text-main);
+}
+
+.panel-header-arrow {
+  font-size: var(--font-size-xs, 11px);
+  color: var(--text-muted);
+  transition: transform var(--anim-speed, 0.2s) ease;
+}
+
+.panel-body-box {
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.panel-body-box::-webkit-scrollbar {
+  width: 5px;
+}
+
+.panel-body-box::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-body-box::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-round, 9999px);
+}
+
+.panel-body-box::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover, rgba(255, 255, 255, 0.2));
+}
+</style>

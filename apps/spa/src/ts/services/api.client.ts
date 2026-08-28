@@ -13,6 +13,7 @@ import type { Chapter } from '../types/generated/Chapter';
 import type { Volume } from '../types/generated/Volume';
 import type { Arc } from '../types/generated/Arc';
 import type { Plan } from '../types/generated/Plan';
+import type { PlotPromise } from '../types/generated/PlotPromise';
 import type { Tag } from '../types/generated/Tag';
 import type { Calendar } from '../types/generated/Calendar';
 import type { TextBlock } from '../types/generated/TextBlock';
@@ -329,6 +330,22 @@ export async function savePlan(project: string, data: Plan): Promise<Plan> {
 
 export async function deletePlan(id: string): Promise<void> {
     return await invoke('delete_plan', { id });
+}
+
+export async function getPlotPromises(project: string): Promise<PlotPromise[]> {
+    return await invoke('get_plot_promises', { project });
+}
+
+export async function getPlotPromise(id: string): Promise<PlotPromise | null> {
+    return await invoke('get_plot_promise', { id });
+}
+
+export async function savePlotPromise(project: string, data: PlotPromise): Promise<PlotPromise> {
+    return await invoke('save_plot_promise', { project, data });
+}
+
+export async function deletePlotPromise(id: string): Promise<void> {
+    return await invoke('delete_plot_promise', { id });
 }
 
 export async function getTags(project: string): Promise<Tag[]> {

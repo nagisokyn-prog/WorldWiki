@@ -151,4 +151,122 @@
 .semantic-badge.other {
   background: rgba(192, 132, 252, 0.1);
   color: #c084fc;
+}
+
+/* ==========================================================================
+   HYPERLINK & ENTITY HIGHLIGHTING
+   ========================================================================== */
+
+/* 1. Общие стили для всех ссылок в ProseMirror */
+.ProseMirror a {
+  cursor: pointer !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 2. Кастомные ссылки на сущности (UI Editor / Entity) */
+.ProseMirror a[href*="ui_editor"],
+.ProseMirror a[href^="entity:"],
+.ProseMirror a[href*="project="],
+.ProseMirror a.entity-link {
+  color: var(--accent-light, #c4b5fd) !important;
+  background: var(--bg-selected, rgba(139, 92, 246, 0.18));
+  border: 1px solid var(--border-active, rgba(139, 92, 246, 0.4));
+  border-radius: var(--radius-xs, 5px);
+  padding: 1px 7px;
+  margin: 0 2px;
+  text-decoration: none !important;
+  font-size: 0.95em;
+  line-height: 1.35;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  vertical-align: baseline;
+}
+
+.ProseMirror a[href*="ui_editor"]::before,
+.ProseMirror a[href^="entity:"]::before,
+.ProseMirror a[href*="project="]::before,
+.ProseMirror a.entity-link::before {
+  content: "🔗";
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+.ProseMirror a[href*="ui_editor"]:hover,
+.ProseMirror a[href^="entity:"]:hover,
+.ProseMirror a[href*="project="]:hover,
+.ProseMirror a.entity-link:hover {
+  background: var(--accent, #8b5cf6) !important;
+  color: #ffffff !important;
+  border-color: var(--accent, #8b5cf6);
+  box-shadow: 0 0 12px var(--accent-glow, rgba(139, 92, 246, 0.45));
+  transform: translateY(-1px);
+}
+
+/* 3. Внешние веб-ссылки (HTTP / HTTPS) */
+.ProseMirror a[href^="http://"],
+.ProseMirror a[href^="https://"],
+.ProseMirror a.web-link {
+  color: var(--info, #38bdf8) !important;
+  text-decoration-color: rgba(56, 189, 248, 0.4);
+  padding: 0 3px;
+  border-radius: 3px;
+}
+
+.ProseMirror a[href^="http://"]::after,
+.ProseMirror a[href^="https://"]::after,
+.ProseMirror a.web-link::after {
+  content: " ↗";
+  font-size: 0.75em;
+  opacity: 0.7;
+}
+
+.ProseMirror a[href^="http://"]:hover,
+.ProseMirror a[href^="https://"]:hover,
+.ProseMirror a.web-link:hover {
+  color: #7dd3fc !important;
+  text-decoration-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+}
+
+/* 4. Сноски */
+.ProseMirror a[href^="#fn"],
+.ProseMirror a.footnote-ref {
+  color: var(--warning, #f59e0b) !important;
+  font-weight: 700;
+  font-size: 0.8em;
+  vertical-align: super;
+  text-decoration: none !important;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 3px;
+  padding: 0 4px;
+  margin: 0 1px;
+}
+
+.ProseMirror a[href^="#fn"]:hover,
+.ProseMirror a.footnote-ref:hover {
+  background: var(--warning, #f59e0b) !important;
+  color: #000000 !important;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+}
+
+/* 5. Режим Link Lock (Ctrl нажат или замок активен) */
+.link-lock-active .ProseMirror a {
+  cursor: pointer !important;
+  animation: linkLockPulse 2s infinite ease-in-out;
+}
+
+@keyframes linkLockPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 8px 2px var(--accent-glow);
+  }
 }

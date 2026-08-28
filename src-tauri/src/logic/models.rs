@@ -226,6 +226,24 @@ surreal_entity! {
     }
 }
 
+surreal_entity! {
+    #[table = "plot_promises"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct PlotPromise {
+        pub chapter_id: String,
+        pub kind: String,
+        pub quote: String,
+        #[ts(type = "number")] pub paragraph_index: i64,
+        pub block_id: Option<String>,
+        pub note: Option<String>,
+        pub status: String,
+        pub resolved_in_volume: Option<String>,
+        pub resolved_in_arc: Option<String>,
+        pub resolved_in_chapter: Option<String>,
+    }
+}
+
 // =====================================================
 // ПОЛЬЗОВАТЕЛЬСКИЕ СУЩНОСТИ (универсальная таблица)
 // =====================================================

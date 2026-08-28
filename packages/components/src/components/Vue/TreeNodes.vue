@@ -27,8 +27,9 @@
           <span v-else class="tree-expand-btn spacer"></span>
 
           <span v-if="node.emoji || node.icon" class="tree-node-icon">
-            <template v-if="node.emoji">{{ node.emoji }}</template>
-            <i v-else :class="node.icon"></i>
+            <i v-if="isFaIcon(node.emoji || node.icon)" :class="formatFaIcon(node.icon || node.emoji)"></i>
+            <template v-else-if="node.emoji">{{ node.emoji }}</template>
+            <i v-else-if="node.icon" :class="formatFaIcon(node.icon)"></i>
           </span>
           
           <template v-if="renamingId === node.id">
@@ -102,6 +103,17 @@ defineEmits([
 
 const vFocus = {
   mounted: (el: HTMLInputElement) => el.focus()
+};
+
+const isFaIcon = (val?: string) => {
+  if (!val) return false;
+  return val.startsWith('fa-') || val.startsWith('fas ') || val.startsWith('far ') || val.startsWith('fab ') || val.includes(' fa-');
+};
+
+const formatFaIcon = (val?: string) => {
+  if (!val) return '';
+  if (val.startsWith('fa-')) return `fas ${val}`;
+  return val;
 };
 </script>
 

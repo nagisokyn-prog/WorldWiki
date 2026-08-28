@@ -117,11 +117,17 @@ export function useEntityTree(project: string, emit: (event: string, ...args: un
       }
       console.log('[TREE DEBUG] ← getSchemas returned:', Object.keys(schemas));
 
-      entitySections.value = Object.keys(schemas).map(key => ({
-        type: key,
-        title: (schemas?.[key]?.name as string) || key,
-        emoji: (schemas?.[key]?.icon as string) || (schemas?.[key]?.iconEmoji as string) || '📄'
-      }));
+      entitySections.value = Object.keys(schemas).map(key => {
+        const s = schemas?.[key];
+        const iconVal = (s?.icon as string) || '';
+        const emojiVal = (s?.iconEmoji as string) || '';
+        return {
+          type: key,
+          title: (s?.name as string) || key,
+          emoji: emojiVal || (!iconVal.startsWith('fa') ? iconVal : ''),
+          icon: iconVal ? (iconVal.startsWith('fa-') ? `fas ${iconVal}` : iconVal) : ''
+        };
+      });
       console.log('[TREE DEBUG] entitySections set to:', entitySections.value.map(s => s.type));
 
       titleFields.value = {};

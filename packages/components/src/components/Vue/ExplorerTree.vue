@@ -54,7 +54,10 @@
           <!-- Inline creation field -->
           <div v-if="creating?.sectionId === sect.id" class="tree-item creating">
              <div class="tree-item-row">
-                <span class="tree-node-icon">{{ sect.icon || '📄' }}</span>
+                <span class="tree-node-icon">
+                  <i v-if="isFaIcon(sect.icon)" :class="formatFaIcon(sect.icon)"></i>
+                  <template v-else>{{ sect.icon || '📄' }}</template>
+                </span>
                 <input
                   v-model="creating.name"
                   v-focus
@@ -341,6 +344,17 @@ const handleCtxMenu = (e: MouseEvent, node: TreeNodeData, sectionId: string) => 
 
 const expandNode = (id: string) => {
   expanded.value.add(id);
+};
+
+const isFaIcon = (val?: string) => {
+  if (!val) return false;
+  return val.startsWith('fa-') || val.startsWith('fas ') || val.startsWith('far ') || val.startsWith('fab ') || val.includes(' fa-');
+};
+
+const formatFaIcon = (val?: string) => {
+  if (!val) return '';
+  if (val.startsWith('fa-')) return `fas ${val}`;
+  return val;
 };
 
 // Expose methods for parent

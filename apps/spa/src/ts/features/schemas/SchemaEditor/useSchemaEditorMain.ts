@@ -45,9 +45,18 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
         document.addEventListener('mouseup', onMouseUp);
     };
 
+    let scrollTimer: ReturnType<typeof setTimeout> | null = null;
     const handleScroll = (e: Event) => {
-        emit('scroll-change', (e.target as HTMLElement).scrollTop);
+        const top = (e.target as HTMLElement).scrollTop;
+        if (scrollTimer) clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+            emit('scroll-change', top);
+        }, 150);
     };
+
+    onUnmounted(() => {
+        if (scrollTimer) clearTimeout(scrollTimer);
+    });
 
     const handleGlobalKeydown = (e: KeyboardEvent) => {
         if (e.ctrlKey && e.shiftKey && e.code === 'KeyB') {

@@ -176,6 +176,7 @@ export function useChapterTree(
                     id: entityKey(sect.type, String(ent.id)),
                     label: getEntityName(ent, sect.type),
                     emoji: sect.emoji,
+                    icon: (sect as { icon?: string }).icon,
                     data: { isEntity: true, type: sect.type, original: ent as Record<string, unknown>, section: sect as unknown as Record<string, unknown> }
                 });
             }
@@ -184,9 +185,10 @@ export function useChapterTree(
                 id: sect.type,
                 title: sect.title,
                 icon: (sect as { icon?: string }).icon || sect.emoji,
+                canAdd: true,
                 canAddInline: true,
                 canEdit: true,
-                itemLabel: sect.title.charAt(0) + sect.title.slice(1).toLowerCase(),
+                itemLabel: sect.title,
                 nodes: entNodes
             });
         }

@@ -210,15 +210,16 @@ export function useModuleReferenceData() {
             const ov = overrides[fKey] || {};
             handledClasses.add(fKey);
 
-            if (ov.hidden) continue;
+            const isProtected = ['начальная_глава', 'конечная_глава'].includes(fKey.replace(/__b$/, ''));
+            if (ov.hidden && !isProtected) continue;
 
             result.push({
                 ...f,
                 ...ov,
                 label: ov.label || f.label || fKey,
                 placeholder: ov.placeholder !== undefined ? ov.placeholder : (f.placeholder || ''),
-                type: ov.type || f.type || 'text',
-                options: ov.options || f.options || []
+                type: isProtected ? (f.type || 'select') : (ov.type || f.type || 'text'),
+                options: isProtected ? (f.options || []) : (ov.options || f.options || [])
             });
         }
 

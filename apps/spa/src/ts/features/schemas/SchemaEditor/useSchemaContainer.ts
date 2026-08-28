@@ -110,9 +110,26 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         return item.fieldOverrides?.[fieldClass] || {};
     };
 
+    const isProtectedField = (fieldClass?: string): boolean => {
+        if (!fieldClass) return false;
+        const normalized = fieldClass.replace(/__b$/, '');
+        return ['начальная_глава', 'конечная_глава'].includes(normalized);
+    };
+
     const toggleFieldOverride = (item: SchemaContainerItem, fieldClass: string) => {
-        const override = ensureFieldOverride(item, fieldClass);
-        override.hidden = !override.hidden;
+        if (isProtectedField(fieldClass)) return;
+        if (!item.fieldOverrides) {
+            item.fieldOverrides = {};
+        }
+        const current = item.fieldOverrides[fieldClass] || {};
+        const isHidden = !current.hidden;
+        item.fieldOverrides = {
+            ...item.fieldOverrides,
+            [fieldClass]: {
+                ...current,
+                hidden: isHidden
+            }
+        };
     };
 
     const addFieldOption = (item: SchemaContainerItem, fieldClass: string) => {
@@ -152,6 +169,7 @@ export function useSchemaContainer(props: { item: SchemaContainerItem }) {
         ensureFieldOverride,
         getFieldOverride,
         toggleFieldOverride,
+        isProtectedField,
         addFieldOption,
         isTimeline,
         updateTitle,

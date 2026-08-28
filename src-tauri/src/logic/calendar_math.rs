@@ -58,12 +58,30 @@ pub struct MoonConfig {
     pub phase_names: Option<MoonPhaseNames>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct SyncAnchorDate {
+    #[serde(default)]
+    pub era_index: usize,
+    pub year: i32,
+    pub month: i32,
+    pub day: i32,
+    #[serde(default)]
+    pub hour: i32,
+    #[serde(default)]
+    pub minute: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct SyncAnchor {
     pub master_calendar_id: Option<String>,
+    #[serde(default)]
     pub local_absolute_minute: i64,
+    #[serde(default)]
     pub master_absolute_minute: i64,
+    #[serde(default)]
     pub linked_to_master: bool,
+    pub local_anchor_date: Option<SyncAnchorDate>,
+    pub master_anchor_date: Option<SyncAnchorDate>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -229,6 +247,98 @@ impl CalendarMath {
 
         (year, month, day, hour as i32, minute as i32)
     }
+
+    pub fn get_anchor_offset(local_cal: &CalendarData, master_cal: Option<&CalendarData>) -> i64 {
+        if local_cal.is_master.unwrap_or(false) {
+            return 0;
+        }
+        if let Some(anchor) = &local_cal.sync_anchor {
+            if !anchor.linked_to_master {
+                return 0;
+            }
+            if let (Some(loc_date), Some(mst_date), Some(mst_cal)) = (
+                &anchor.local_anchor_date,
+                &anchor.master_anchor_date,
+                master_cal,
+            ) {
+                let local_min = Self::get_absolute_minute(
+                    local_cal,
+                    loc_date.era_index,
+                    loc_date.year,
+                    loc_date.month,
+                    loc_date.day,
+                    loc_date.hour,
+                    loc_date.minute,
+                );
+                let master_min = Self::get_absolute_minute(
+                    mst_cal,
+                    mst_date.era_index,
+                    mst_date.year,
+                    mst_date.month,
+                    mst_date.day,
+                    mst_date.hour,
+                    mst_date.minute,
+                );
+                return master_min - local_min;
+            }
+            if anchor.master_absolute_minute != 0 || anchor.local_absolute_minute != 0 {
+                return anchor.master_absolute_minute - anchor.local_absolute_minute;
+            }
+        }
+        0
+    }
+
+    pub fn local_to_master_minute(
+        local_cal: &CalendarData,
+        master_cal: Option<&CalendarData>,
+        era_index: usize,
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: i32,
+    ) -> i64 {
+        let local_min =
+            Self::get_absolute_minute(local_cal, era_index, year, month, day, hour, minute);
+        let offset = Self::get_anchor_offset(local_cal, master_cal);
+        local_min + offset
+    }
+
+    pub fn master_minute_to_local(
+        master_minute: i64,
+        local_cal: &CalendarData,
+        master_cal: Option<&CalendarData>,
+        era_index: usize,
+    ) -> (i32, i32, i32, i32, i32) {
+        let offset = Self::get_anchor_offset(local_cal, master_cal);
+        let local_min = master_minute - offset;
+        Self::get_date_from_absolute(local_min, local_cal, era_index)
+    }
+
+    pub fn convert_between_calendars(
+        from_cal: &CalendarData,
+        to_cal: &CalendarData,
+        master_cal: Option<&CalendarData>,
+        from_era: usize,
+        year: i32,
+        month: i32,
+        day: i32,
+        hour: i32,
+        minute: i32,
+        to_era: usize,
+    ) -> (i32, i32, i32, i32, i32) {
+        let master_min = Self::local_to_master_minute(
+            from_cal,
+            master_cal,
+            from_era,
+            year,
+            month,
+            day,
+            hour,
+            minute,
+        );
+        Self::master_minute_to_local(master_min, to_cal, master_cal, to_era)
+    }
 }
 
 #[tauri::command]
@@ -246,6 +356,42 @@ pub fn convert_absolute_to_local(
         "day": day,
         "hour": hour,
         "minute": minute
+    })
+}
+
+#[tauri::command]
+pub fn convert_calendar_date(
+    from_calendar: CalendarData,
+    to_calendar: CalendarData,
+    master_calendar: Option<CalendarData>,
+    era_index: usize,
+    year: i32,
+    month: i32,
+    day: i32,
+    hour: i32,
+    minute: i32,
+    target_era_index: Option<usize>,
+) -> serde_json::Value {
+    let (res_year, res_month, res_day, res_hour, res_minute) =
+        CalendarMath::convert_between_calendars(
+            &from_calendar,
+            &to_calendar,
+            master_calendar.as_ref(),
+            era_index,
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            target_era_index.unwrap_or(0),
+        );
+
+    serde_json::json!({
+        "year": res_year,
+        "month": res_month,
+        "day": res_day,
+        "hour": res_hour,
+        "minute": res_minute
     })
 }
 
@@ -556,6 +702,113 @@ mod tests {
         assert_eq!(CalendarMath::get_days_in_year(&cal, 1900), 365);
         // А 2000 — високосный (делится на 400)
         assert_eq!(CalendarMath::get_days_in_year(&cal, 2000), 366);
+    }
+
+    #[test]
+    fn sync_anchor_offset_and_cross_calendar_conversion() {
+        // Мастер-календарь (Григорианский)
+        let mut master_cal = gregorian_calendar();
+        master_cal.is_master = Some(true);
+
+        // Календарь аборигенов (10 месяцев по 30 дней = 300 дней в году)
+        let tribal_cal = CalendarData {
+            название: "Племя Огня".to_string(),
+            calendar_type: Some("local".into()),
+            is_master: Some(false),
+            months: (1..=10)
+                .map(|i| CalendarMonth {
+                    название: format!("Луна {i}"),
+                    дней: 30,
+                })
+                .collect(),
+            eras: vec![CalendarEra {
+                название: "Эпоха Пепла".into(),
+                год_начала: 1,
+                год_конца: 500,
+                обратный_отсчет: false,
+            }],
+            leap_year_rule: "нет".into(),
+            custom_leap_rule: None,
+            time_settings: None,
+            moons: None,
+            sync_anchor: Some(SyncAnchor {
+                master_calendar_id: Some("master_1".into()),
+                linked_to_master: true,
+                local_anchor_date: Some(SyncAnchorDate {
+                    era_index: 0,
+                    year: 1,
+                    month: 0,
+                    day: 1,
+                    hour: 0,
+                    minute: 0,
+                }),
+                // 1 день 1 года племени = 15 число 5-го месяца (Июнь) 1200 года Мастера
+                master_anchor_date: Some(SyncAnchorDate {
+                    era_index: 0,
+                    year: 1200,
+                    month: 5,
+                    day: 15,
+                    hour: 0,
+                    minute: 0,
+                }),
+                local_absolute_minute: 0,
+                master_absolute_minute: 0,
+            }),
+        };
+
+        // 1. Проверяем, что точка привязки племени дает в Мастере именно 1200 год, 5 месяц, 15 день
+        let master_min = CalendarMath::local_to_master_minute(
+            &tribal_cal,
+            Some(&master_cal),
+            0,
+            1,
+            0,
+            1,
+            0,
+            0,
+        );
+        let (my, mm, md, mh, mmi) =
+            CalendarMath::get_date_from_absolute(master_min, &master_cal, 0);
+        assert_eq!((my, mm, md, mh, mmi), (1200, 5, 15, 0, 0));
+
+        // 2. Обратная конвертация: берем эту мировую дату и переводим в племя
+        let (ty, tm, td, th, tmi) =
+            CalendarMath::master_minute_to_local(master_min, &tribal_cal, Some(&master_cal), 0);
+        assert_eq!((ty, tm, td, th, tmi), (1, 0, 1, 0, 0));
+
+        // 3. Через 10 дней по календарю племени
+        let tribal_day_11 = CalendarMath::local_to_master_minute(
+            &tribal_cal,
+            Some(&master_cal),
+            0,
+            1,
+            0,
+            11,
+            0,
+            0,
+        );
+        let (my2, mm2, md2, _, _) =
+            CalendarMath::get_date_from_absolute(tribal_day_11, &master_cal, 0);
+        assert_eq!((my2, mm2, md2), (1200, 5, 25));
+
+        // 4. Проверка команды convert_calendar_date
+        let res = convert_calendar_date(
+            tribal_cal.clone(),
+            master_cal.clone(),
+            Some(master_cal.clone()),
+            0,
+            1,
+            0,
+            1,
+            14,
+            30,
+            Some(0),
+        );
+        assert_eq!(res["year"], 1200);
+        assert_eq!(res["month"], 5);
+        assert_eq!(res["day"], 15);
+        assert_eq!(res["hour"], 14);
+        assert_eq!(res["minute"], 30);
     }
 }
 

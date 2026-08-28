@@ -82,6 +82,24 @@ export interface WeatherPattern {
   description: string;
 }
 
+export interface SyncAnchorDate {
+  era_index: number;
+  year: number;
+  month: number;
+  day: number;
+  hour?: number;
+  minute?: number;
+}
+
+export interface SyncAnchor {
+  master_calendar_id?: string;
+  linked_to_master: boolean;
+  local_anchor_date?: SyncAnchorDate;
+  master_anchor_date?: SyncAnchorDate;
+  local_absolute_minute?: number;
+  master_absolute_minute?: number;
+}
+
 export interface CalendarData {
   _id?: string;
   название: string;
@@ -99,12 +117,7 @@ export interface CalendarData {
   сезоны?: CalendarSeason[];
   праздники?: CalendarHoliday[];
   
-  sync_anchor?: {
-    master_calendar_id?: string;
-    local_absolute_minute: number;
-    master_absolute_minute: number;
-    linked_to_master: boolean;
-  };
+  sync_anchor?: SyncAnchor;
   timezone_regions?: Array<{
     id: string;
     name: string;

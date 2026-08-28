@@ -325,4 +325,106 @@ describe('CalendarMath', () => {
       expect(duration).toBeLessThan(200);
     });
   });
+
+  describe('SyncAnchor & Cross-Calendar Synchronization', () => {
+    const masterCal: CalendarData = {
+      ...defaultCal,
+      is_master: true,
+      пользовательское_високосное_правило: { месяц: 1, день_смещения: 1 },
+    };
+
+    const tribalCal: CalendarData = {
+      название: 'Племя Огня',
+      calendar_type: 'local',
+      is_master: false,
+      дней_в_неделе: 5,
+      названия_дней_недели: ['Д1', 'Д2', 'Д3', 'Д4', 'Д5'],
+      первый_месяц_года: 0,
+      месяцы: Array.from({ length: 10 }, (_, i) => ({
+        название: `Луна ${i + 1}`,
+        дней: 30,
+      })),
+      эпохи: [{ название: 'Эпоха Пепла', год_начала: 1, год_конца: 500 }],
+      правило_високосного_года: 'нет',
+      sync_anchor: {
+        master_calendar_id: 'master_1',
+        linked_to_master: true,
+        local_anchor_date: {
+          era_index: 0,
+          year: 1,
+          month: 0,
+          day: 1,
+          hour: 0,
+          minute: 0,
+        },
+        master_anchor_date: {
+          era_index: 0,
+          year: 1200,
+          month: 5,
+          day: 15,
+          hour: 0,
+          minute: 0,
+        },
+      },
+    };
+
+    it('calculates anchor offset correctly', () => {
+      const offset = CalendarMath.getAnchorOffset(tribalCal, masterCal);
+      expect(offset).toBeGreaterThan(0);
+
+      // Local 1.1.1 00:00 -> converts to Master 1200-05-15 00:00
+      const masterMin = CalendarMath.localDateToMasterMinute(
+        { era_index: 0, year: 1, month: 0, day: 1, hour: 0, minute: 0 },
+        tribalCal,
+        masterCal
+      );
+      const masterDate = CalendarMath.getDateFromAbsolute(masterMin, masterCal, 0);
+      expect(masterDate.year).toBe(1200);
+      expect(masterDate.month).toBe(5);
+      expect(masterDate.day).toBe(15);
+    });
+
+    it('converts master minute back to local date accurately', () => {
+      const masterMin = CalendarMath.localDateToMasterMinute(
+        { era_index: 0, year: 1, month: 0, day: 1, hour: 0, minute: 0 },
+        tribalCal,
+        masterCal
+      );
+      const localDate = CalendarMath.masterMinuteToLocalDate(masterMin, tribalCal, masterCal, 0);
+      expect(localDate.year).toBe(1);
+      expect(localDate.month).toBe(0);
+      expect(localDate.day).toBe(1);
+    });
+
+    it('cross-converts dates between two calendars via convertDateBetweenCalendars', () => {
+      // 10 days later in tribal calendar (day 11 of month 0)
+      const input = { era_index: 0, year: 1, month: 0, day: 11, hour: 10, minute: 30 };
+      const resInMaster = CalendarMath.convertDateBetweenCalendars(
+        input,
+        tribalCal,
+        masterCal,
+        masterCal,
+        0
+      );
+      expect(resInMaster.year).toBe(1200);
+      expect(resInMaster.month).toBe(5);
+      expect(resInMaster.day).toBe(25);
+      expect(resInMaster.hour).toBe(10);
+      expect(resInMaster.minute).toBe(30);
+
+      // Roundtrip back to tribal
+      const roundtrip = CalendarMath.convertDateBetweenCalendars(
+        resInMaster,
+        masterCal,
+        tribalCal,
+        masterCal,
+        0
+      );
+      expect(roundtrip.year).toBe(1);
+      expect(roundtrip.month).toBe(0);
+      expect(roundtrip.day).toBe(11);
+      expect(roundtrip.hour).toBe(10);
+      expect(roundtrip.minute).toBe(30);
+    });
+  });
 });

@@ -145,6 +145,7 @@ pub fn run() {
             get_chapter_revisions,
             get_entity_revisions,
             convert_absolute_to_local,
+            convert_calendar_date,
 
             // --- Текстовые блоки ---
             save_text_blocks,

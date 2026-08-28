@@ -1,4 +1,4 @@
-import type { CalendarData, CalendarDate, MoonConfig, MoonPhaseResult, DaylightResult } from '../Calendars/calendar.types';
+import type { CalendarData, CalendarDate, MoonConfig, MoonPhaseResult, DaylightResult, SyncAnchorDate } from '../Calendars/calendar.types';
 
 export class CalendarMath {
 
@@ -389,5 +389,73 @@ export class CalendarMath {
       }
     }
     return merged;
+  }
+
+  /**
+   * Вычислить смещение (в абсолютных минутах) между локальным и мастер-календарём.
+   * master_minute = local_minute + offset
+   */
+  public static getAnchorOffset(localCal: CalendarData, masterCal?: CalendarData | null): number {
+    if (!localCal || localCal.is_master || !localCal.sync_anchor?.linked_to_master) {
+      return 0;
+    }
+
+    const anchor = localCal.sync_anchor;
+
+    if (anchor.local_anchor_date && anchor.master_anchor_date && masterCal) {
+      const localMin = this.getAbsoluteMinute(anchor.local_anchor_date, localCal);
+      const masterMin = this.getAbsoluteMinute(anchor.master_anchor_date, masterCal);
+      return masterMin - localMin;
+    }
+
+    if (anchor.master_absolute_minute !== undefined && anchor.local_absolute_minute !== undefined) {
+      return anchor.master_absolute_minute - anchor.local_absolute_minute;
+    }
+
+    return 0;
+  }
+
+  /**
+   * Конвертировать локальную дату в мировую абсолютную минуту (Master Timeline)
+   */
+  public static localDateToMasterMinute(
+    date: CalendarDate['original_input'],
+    localCal: CalendarData,
+    masterCal?: CalendarData | null
+  ): number {
+    const localMin = this.getAbsoluteMinute(date, localCal);
+    const offset = this.getAnchorOffset(localCal, masterCal);
+    return localMin + offset;
+  }
+
+  /**
+   * Конвертировать мировую абсолютную минуту в дату локального календаря
+   */
+  public static masterMinuteToLocalDate(
+    masterMinute: number,
+    localCal: CalendarData,
+    masterCal?: CalendarData | null,
+    era_index: number = 0
+  ): CalendarDate['original_input'] {
+    const offset = this.getAnchorOffset(localCal, masterCal);
+    const localMin = masterMinute - offset;
+    return this.getDateFromAbsolute(localMin, localCal, era_index);
+  }
+
+  /**
+   * Сквозная конвертация даты между любыми двумя календарями через шкалу Мира
+   */
+  public static convertDateBetweenCalendars(
+    date: CalendarDate['original_input'],
+    fromCal: CalendarData,
+    toCal: CalendarData,
+    masterCal?: CalendarData | null,
+    to_era_index: number = 0
+  ): CalendarDate['original_input'] {
+    if (fromCal === toCal || fromCal._id && fromCal._id === toCal._id) {
+      return { ...date };
+    }
+    const masterMin = this.localDateToMasterMinute(date, fromCal, masterCal);
+    return this.masterMinuteToLocalDate(masterMin, toCal, masterCal, to_era_index);
   }
 }

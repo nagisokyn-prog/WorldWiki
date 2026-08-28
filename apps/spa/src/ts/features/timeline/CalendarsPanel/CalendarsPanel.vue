@@ -60,6 +60,10 @@
             <CalendarTimezones v-if="cal.is_master" v-model="cal.data" />
           </div>
 
+          <div v-if="!cal.is_master" class="calendar-full-row-grid">
+            <CalendarSyncAnchor v-model="cal.data" :master-calendar="masterCalendar" />
+          </div>
+
           <div class="calendar-full-row-grid">
             <CalendarHolidays v-model="cal.data" />
           </div>
@@ -86,6 +90,7 @@ import CalendarMoons from "../Calendars/CalendarMoons/CalendarMoons.vue";
 import CalendarTimezones from "../Calendars/CalendarTimezones/CalendarTimezones.vue";
 import CalendarHolidays from "../Calendars/CalendarHolidays/CalendarHolidays.vue";
 import CalendarPlayground from "../Calendars/CalendarPlayground/CalendarPlayground.vue";
+import CalendarSyncAnchor from "../Calendars/CalendarSyncAnchor/CalendarSyncAnchor.vue";
 import { useCalendarsPanel } from './useCalendarsPanel';
 
 const props = defineProps<{ project?: string }>();
@@ -93,6 +98,7 @@ const props = defineProps<{ project?: string }>();
 const {
   project,
   calendars,
+  masterCalendar,
   isExpanded,
   toggleExpand,
   addCalendar,

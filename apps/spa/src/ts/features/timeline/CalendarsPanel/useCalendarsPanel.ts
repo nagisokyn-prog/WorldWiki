@@ -139,9 +139,14 @@ export function useCalendarsPanel(props: { project?: string }) {
         }
     };
 
+    const masterCalendar = computed(() => {
+        return calendars.value.find(c => c.is_master)?.data || null;
+    });
+
     return {
         project,
         calendars,
+        masterCalendar,
         expandedCalendars,
         isExpanded,
         toggleExpand,

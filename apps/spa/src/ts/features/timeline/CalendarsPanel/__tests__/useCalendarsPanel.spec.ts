@@ -147,4 +147,27 @@ describe('useCalendarsPanel', () => {
 
     expect(appAlert).toHaveBeenCalledWith('Ошибка при удалении календаря.');
   });
+
+  it('covers cancel in removeCalendar, temp ID in delete and empty calendar name', async () => {
+    const { appConfirm } = await import('@worldwiki/components');
+    vi.mocked(appConfirm).mockResolvedValueOnce(false);
+
+    const panel = useCalendarsPanel(props);
+    await Promise.resolve();
+
+    // 1. removeCalendar cancelled
+    await panel.removeCalendar(0);
+    expect(mockDeleteCalendar).not.toHaveBeenCalled();
+
+    // 2. removeCalendar with temp id
+    panel.calendars.value = [{ id: 'temp_1', is_default: false, data: {} as any }];
+    await panel.removeCalendar(0);
+    expect(mockDeleteCalendar).not.toHaveBeenCalled();
+    expect(panel.calendars.value).toHaveLength(0);
+
+    // 3. saveCalendar with empty название fallback to 'Календарь'
+    panel.calendars.value = [{ id: 'c_noname', is_default: false, data: { название: '' } as any }];
+    await panel.saveCalendar(0);
+    expect(mockSaveCalendar).toHaveBeenCalledWith('p1', expect.objectContaining({ название: 'Календарь' }));
+  });
 });

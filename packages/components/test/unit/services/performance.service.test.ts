@@ -256,6 +256,28 @@ describe('PerformanceManager', () => {
       pm.upgradeProfile();
       expect(mockSettings.perf!.level).toBe('Automatic');
     });
+
+    it('stopTelemetry cancels RAF and clears interval (covers lines 73-74)', () => {
+      const pm = performanceManager as any;
+      pm.rafId = 123;
+      pm.aggregationInterval = 456;
+      const cancelSpy = vi.spyOn(window, 'cancelAnimationFrame');
+      const clearSpy = vi.spyOn(window, 'clearInterval');
+
+      performanceManager.stopTelemetry();
+      expect(cancelSpy).toHaveBeenCalledWith(123);
+      expect(clearSpy).toHaveBeenCalledWith(456);
+    });
+
+    it('checkHysteresis ignores status changes when profile is manual (covers lines 124-127)', () => {
+      const pm = performanceManager as any;
+      mockSettings.perf!.level = 'Eco';
+      pm.status.value = 'Poor';
+      pm.consecutivePoorAggregations = 5;
+
+      pm.checkHysteresis();
+      expect(mockSettings.perf!.level).toBe('Eco');
+    });
   });
 
   describe('Edge cases & Error Handling', () => {

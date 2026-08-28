@@ -412,4 +412,49 @@ describe('useEntityEditor', () => {
     expect(api.getEntities).toHaveBeenCalledWith('p1', 'dc_field_type');
     expect(api.getEntities).toHaveBeenCalledWith('p1', 'tpl_field_type');
   });
+
+  it('parses legacy sec.items into fields and dynamicContainers', async () => {
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+      {
+        type_key: 'character',
+        full_schema: {
+          sections: [
+            {
+              id: 'sec_legacy',
+              items: [
+                { class: 'bio', type: 'textarea' },
+                { template: 'traits', title: 'Черты' },
+                { dataPath: 'custom_path', title: 'Кастом' },
+                { type: 'timeline', title: 'Хроника' },
+                { type: 'dynamic', title: 'Инвентарь' },
+              ],
+            },
+          ],
+        },
+      },
+    ] as any);
+
+    const editor = useEntityEditor(props, emit);
+    await editor.loadConfigAndData();
+    const sec: any = editor.config.value?.sections[0];
+    expect(sec.fields).toHaveLength(1);
+    expect(sec.dynamicContainers).toHaveLength(4);
+  });
+
+  it('responds to ww:schema-updated window events', async () => {
+    const editor = useEntityEditor(props, emit);
+    const loadSpy = vi.spyOn(editor, 'loadConfigAndData').mockResolvedValue(undefined);
+
+    // Event with non-matching entityType -> does not reload
+    window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: 'other_type' } }));
+    expect(loadSpy).not.toHaveBeenCalled();
+
+    // Event with matching entityType -> reloads
+    window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: props.entityType } }));
+    expect(loadSpy).toHaveBeenCalledTimes(1);
+
+    // Event without detail -> reloads
+    window.dispatchEvent(new CustomEvent('ww:schema-updated'));
+    expect(loadSpy).toHaveBeenCalledTimes(2);
+  });
 });

@@ -552,4 +552,49 @@ describe('shell store additional coverage', () => {
     await store.loadEntityList('hero');
     expect(store.entityLists.hero ?? []).toEqual([]);
   });
+
+  it('covers toggleSettings forceState, startGroupResize with mouse events, and quickOpenDataSource', async () => {
+    // 1. toggleSettings forceState (lines 36-37)
+    store.toggleSettings(true);
+    store.toggleSettings(false);
+
+    // 2. startGroupResize mousemove & mouseup (lines 114, 121-135)
+    const container = document.createElement('div');
+    container.className = 'editor-groups-container';
+    container.getBoundingClientRect = () => ({ width: 1000 } as any);
+    document.body.appendChild(container);
+
+    const left = { flexBasis: 50 };
+    const right = { flexBasis: 50 };
+    store.editorGroups = [left, right] as any;
+
+    const fakeEv = {
+      clientX: 500,
+      currentTarget: container,
+    } as any;
+
+    store.startGroupResize(fakeEv, 0);
+    document.dispatchEvent(new MouseEvent('mousemove', { clientX: 600 }));
+    document.dispatchEvent(new MouseEvent('mouseup'));
+
+    // startGroupResize with missing left/right
+    store.startGroupResize(fakeEv, 99);
+
+    // 3. quickOpenDataSource (shell.quickopen lines 33-53)
+    const { getEntities, getChapters } = await import('../../services/api.client');
+    vi.mocked(getChapters).mockResolvedValueOnce([
+      { id: 'ch_qo_1', title: 'QO Chapter' },
+      { id: 'ch_qo_2' }, // no title fallback to Глава X
+    ] as any);
+    vi.mocked(getEntities).mockResolvedValueOnce([
+      { id: 'char_qo', name: 'QO Hero' },
+    ] as any);
+
+    store.sidebarItems = [
+      { id: 's1', type: 'entity', entityType: 'character', title: 'Персонажи' } as any,
+    ];
+
+    const qoItems = await store.quickOpenDataSource();
+    expect(qoItems.length).toBeGreaterThanOrEqual(2);
+  });
 });

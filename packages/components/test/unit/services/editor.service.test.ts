@@ -162,4 +162,20 @@ describe('packages/components editor.service', () => {
       editorService.cancelAutoSave();
     });
   });
+
+  describe('Window & Fallback bindings', () => {
+    it('handles setContent with editor.setMarkdown and window.editorService (covers lines 62, 67, 135)', () => {
+      const setMarkdown = vi.fn();
+      editorService.editor = { setMarkdown };
+      editorService.setContent('Hello Markdown');
+      expect(setMarkdown).toHaveBeenCalledWith('Hello Markdown');
+
+      // editor without getMarkdown
+      editorService.editor = {};
+      expect(editorService.getContent()).toBe('');
+
+      // window.editorService
+      expect((window as any).editorService).toBeDefined();
+    });
+  });
 });

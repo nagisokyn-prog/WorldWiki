@@ -114,6 +114,16 @@ describe('editorService', () => {
       expect(() => editorService.setContent('text')).not.toThrow();
       expect(() => editorService.insertText('text')).not.toThrow();
       expect(() => editorService.replaceSelection('text')).not.toThrow();
+
+      // editor without methods or undefined return (covers line 67, 107)
+      const setMarkdown = vi.fn();
+      editorService.editor = {
+        setMarkdown,
+        getSelectedText: vi.fn().mockReturnValue(undefined),
+      };
+      editorService.setContent('');
+      expect(setMarkdown).toHaveBeenCalledWith('');
+      expect(editorService.getSelectedText()).toBe('');
     });
   });
 

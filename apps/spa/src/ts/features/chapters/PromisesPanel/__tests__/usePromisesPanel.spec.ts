@@ -125,10 +125,15 @@ describe('usePromisesPanel', () => {
     await panel.addPromise({ kind: 'mystery', quote: 'Second quote', paragraph_index: 3 });
     expect(panel.promises.value).toHaveLength(2);
 
+    // Null returned from API (covers line 156)
+    vi.mocked(api.savePlotPromise).mockResolvedValueOnce(null as any);
+    await panel.addPromise({ kind: 'payoff', quote: 'Null return', paragraph_index: 4 });
+    expect(panel.promises.value).toHaveLength(3);
+
     // Guard on empty project or chapterId
     props.chapterId = null;
     await panel.addPromise({ kind: 'gun', quote: 'Ignored', paragraph_index: 1 });
-    expect(panel.promises.value).toHaveLength(2);
+    expect(panel.promises.value).toHaveLength(3);
   });
 
   it('adds milestone for progression and resolution', async () => {
@@ -174,6 +179,24 @@ describe('usePromisesPanel', () => {
       quote: 'Nothing',
       paragraph_index: 1,
     });
+
+    // Progression when progressions is undefined (covers line 188)
+    const noProg: any = {
+      id: 'p_no_prog',
+      chapter_id: 'ch_1',
+      status: 'planted',
+      kind: 'clue',
+      quote: 'Clue',
+      // progressions is undefined
+    };
+    panel.promises.value.push(noProg);
+    await panel.addMilestone({
+      promiseId: 'p_no_prog',
+      stage: 'progression',
+      quote: 'Found clue',
+      paragraph_index: 3,
+    });
+    expect(noProg.progressions).toHaveLength(1);
   });
 
   it('removes milestone for progression and resolution', async () => {

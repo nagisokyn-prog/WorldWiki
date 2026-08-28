@@ -277,6 +277,17 @@ describe('hotkeys store', () => {
 
       triggerKey('Tab', { ctrlKey: true, shiftKey: true });
     });
+
+    it('handles Ctrl+Alt+KeyB to toggle right panel (covers line 153)', () => {
+      const panelSpy = vi.fn();
+      document.addEventListener('ww:toggle-right-panel', panelSpy);
+      localStorage.setItem('chapters-right-panel-visible', 'false');
+
+      triggerKey('KeyB', { ctrlKey: true, altKey: true });
+
+      expect(panelSpy).toHaveBeenCalled();
+      expect(localStorage.getItem('chapters-right-panel-visible')).toBe('true');
+    });
   });
 });
 

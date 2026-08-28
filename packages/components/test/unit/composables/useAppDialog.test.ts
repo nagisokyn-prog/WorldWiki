@@ -51,6 +51,15 @@ describe('useAppDialog & dialogs', () => {
       confirm();
       expect(await alertPromise).toBe(true);
     });
+
+    it('handles confirm and cancel safely when state.resolve is null (covers lines 41, 48)', () => {
+      const { confirm, cancel, state } = useAppDialog();
+      state.value.resolve = null;
+      confirm();
+      expect(state.value.isOpen).toBe(false);
+      cancel();
+      expect(state.value.isOpen).toBe(false);
+    });
   });
 
   describe('DOM appConfirm dialog', () => {

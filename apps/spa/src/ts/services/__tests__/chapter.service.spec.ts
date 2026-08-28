@@ -95,6 +95,7 @@ describe('chapterService', () => {
           { id: 'hero', type: 'character' },
           { id: 'loc:castle', type: 'location' },
           { id: 'no_type' },
+          { no_id_prop: 'val' }, // covers line 35 false branch
           123,
         ],
       };
@@ -108,6 +109,7 @@ describe('chapterService', () => {
             'character:hero',
             'loc:castle',
             'no_type',
+            '[object Object]',
             '123',
           ],
         })

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { reactive, nextTick } from 'vue';
 import { useRelationshipBlock } from '../useRelationshipBlock';
 import { entityApi } from '../entity.api';
 
@@ -405,6 +406,29 @@ describe('useRelationshipBlock', () => {
       expect(rel.foreignItem.value).toBeNull();
       rel.onSelectChange('role', 'Leader');
       expect(props.item.role).toBe('Leader');
+    });
+
+    it('covers foreignItemLabel fallback and getTargetForeignId watcher', async () => {
+      const reactiveProps = reactive({
+        ...props,
+        item: { target_char: 'unknown_foreign_id' },
+        referenceData: { characters: [{ value: 'other_id', label: 'Other' }] },
+      });
+
+      const rel = useRelationshipBlock(reactiveProps as any, emit);
+      // Line 170: foreignItemLabel returns String(foreignId)
+      expect(rel.foreignItemLabel.value).toBe('unknown_foreign_id');
+
+      // Watcher lines 270-273: change target_char to newTargetId
+      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'char_watch', data: {} } as any);
+      reactiveProps.item.target_char = 'char_watch';
+      await nextTick();
+      expect(entityApi.getEntity).toHaveBeenCalledWith('p1', 'character', 'char_watch');
+
+      // Watcher: change target_char to empty
+      reactiveProps.item.target_char = '';
+      await nextTick();
+      expect(rel.foreignItem.value).toBeNull();
     });
   });
 });

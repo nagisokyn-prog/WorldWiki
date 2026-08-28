@@ -64,6 +64,28 @@ describe('calendar.store', () => {
       const result = await store.getCalendars('err_proj');
       expect(result).toEqual([]);
     });
+
+    it('renames single calendar without master to Календарь Мира (covers line 39)', async () => {
+      const mockList = [
+        { id: 'c_single', is_default: false, data: { название: 'Old Name' } },
+      ];
+      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
+      vi.mocked(api.saveCalendar).mockResolvedValue({} as any);
+
+      const result = await store.getCalendars('proj_single');
+      expect((result[0].data as any).название).toBe('Календарь Мира');
+    });
+
+    it('returns immediately if isCreatingMaster is already true (covers lines 31, 50)', async () => {
+      (store as any).isCreatingMaster = true;
+      vi.mocked(api.getCalendars).mockResolvedValueOnce([{ id: 'c1' }] as any);
+      const res1 = await store.getCalendars('proj_guard1');
+      expect(res1).toHaveLength(1);
+
+      vi.mocked(api.getCalendars).mockResolvedValueOnce([] as any);
+      const res2 = await store.getCalendars('proj_guard2');
+      expect(res2).toEqual([]);
+    });
   });
 
   describe('loadCalendar', () => {
@@ -77,6 +99,15 @@ describe('calendar.store', () => {
       expect(cal).toBeDefined();
       expect(cal?._id).toBe('cal_1');
       expect((cal as any).название).toBe('Календарь');
+    });
+
+    it('loads calendar without data property using cal directly (covers line 78)', async () => {
+      const mockList = [
+        { id: 'cal_nodata', is_default: true, is_master: true, название: 'Direct' },
+      ];
+      vi.mocked(api.getCalendars).mockResolvedValue(mockList as any);
+      const cal = await store.loadCalendar('proj_bare');
+      expect(cal?._id).toBe('cal_nodata');
     });
 
     it('returns null if list is empty', async () => {

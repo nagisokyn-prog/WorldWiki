@@ -93,4 +93,21 @@ describe('useGlobalCalendarWidget', () => {
     widget.selectedLocalCal.value = 'unknown_cal';
     expect(widget.formattedLocalDate.value).toBe('');
   });
+
+  it('handles master calendar and local calendar without id', () => {
+    const widget = useGlobalCalendarWidget(props);
+    widget.masterCalendar.value = {
+      id: '',
+      is_master: true,
+      data: { название: 'NoId Master', месяцы: [{ название: 'M', дней: 30 }], эпохи: [{ год_начала: 1, год_конца: 10 }] } as any,
+    };
+    expect(widget.formattedMasterDate.value).toBeTruthy();
+
+    widget.localCalendars.value = [
+      { id: '', is_master: false, data: { название: 'NoId Local', месяцы: [{ название: 'L', дней: 30 }], эпохи: [{ год_начала: 1, год_конца: 10 }] } as any },
+    ];
+    widget.selectedLocalCal.value = '';
+    // selectedLocalCal matches empty string id
+    expect(widget.formattedLocalDate.value).toBeTruthy();
+  });
 });

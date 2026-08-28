@@ -99,6 +99,26 @@ describe('chapter.store', () => {
       expect(store.currentVolume?.id).toBe('vol_1');
     });
 
+    it('merges auto-parsed participants into chapter participants on open', async () => {
+      const timeline = useTimelineStore();
+      vi.spyOn(timeline, 'parseParticipants').mockReturnValue([
+        { id: 'c1', name: 'Existing Hero', type: 'character' } as any,
+        { id: 'c2', name: 'New Hero', type: 'character' } as any,
+      ]);
+
+      const fullChapter = {
+        id: 'ch_with_parts',
+        title: 'With Parts',
+        content: 'Mentions Existing Hero and New Hero',
+        participants: [{ id: 'c1', type: 'character', name: 'Existing Hero' }],
+      };
+      vi.mocked(chapterService.get).mockResolvedValue(fullChapter as any);
+
+      await store.openChapter('project_1', 'ch_with_parts');
+      expect(store.currentChapter?.participants).toHaveLength(2);
+      expect((store.currentChapter?.participants[1] as any).autoParsed).toBe(true);
+    });
+
     it('saves unsaved changes prior to opening another chapter', async () => {
       store.hasUnsavedChanges = true;
       store.currentChapter = { id: 'ch_old', title: 'Old', content: '', participants: [] } as any;

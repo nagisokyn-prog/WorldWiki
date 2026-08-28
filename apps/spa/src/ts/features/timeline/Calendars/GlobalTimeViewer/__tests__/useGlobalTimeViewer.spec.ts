@@ -140,6 +140,18 @@ describe('useGlobalTimeViewer', () => {
 
     wrapper2.unmount();
   });
+
+  it('handles calendar without data property directly using cal', async () => {
+    const { useCalendarStore } = await import('../../../../../stores/calendar.store');
+    const store = useCalendarStore();
+    vi.mocked(store.getCalendars).mockResolvedValueOnce([
+      { id: 'cal_bare', name: 'Bare Cal' } as any,
+    ]);
+
+    const viewer = useGlobalTimeViewer();
+    await viewer.loadCalendars();
+    expect(viewer.localDates.value.length).toBe(1);
+  });
 });
 
 

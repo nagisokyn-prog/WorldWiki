@@ -35,6 +35,11 @@ describe('aiModelsApi', () => {
         max_completion_tokens: 4096,
       },
     ]);
+
+    // When installed is null (covers line 8 installed || [])
+    vi.mocked(invoke).mockResolvedValueOnce(null as any);
+    const emptyRes = await aiModelsApi.fetchModels('local', '');
+    expect(emptyRes).toEqual([]);
   });
 
   it('fetches models for openrouter via fetchModels delegation', async () => {

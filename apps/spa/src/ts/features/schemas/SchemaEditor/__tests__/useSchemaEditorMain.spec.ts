@@ -130,6 +130,17 @@ describe('useSchemaEditorMain', () => {
     vi.mocked(api.saveEntitySchema).mockRejectedValueOnce(new Error('Save failed'));
     await main.saveSchema();
     expect(appAlert).toHaveBeenCalledWith('Ошибка сохранения');
+
+    // Save with schemaCache delete fallback (covers lines 112-113)
+    const { useSchemaStore } = await import('@/stores/schema');
+    const schemaStore = useSchemaStore() as any;
+    schemaStore.invalidateSchema = undefined;
+    const cacheMap: Record<string, unknown> = { character: { some: 'cached' } };
+    schemaStore.schemaCache = { value: cacheMap };
+
+    vi.mocked(api.saveEntitySchema).mockResolvedValueOnce({ id: 'saved_schema_2' } as any);
+    await main.saveSchema();
+    expect(cacheMap.character).toBeUndefined();
   });
 
   it('covers fallback properties, empty project, section without items, and non-matching global save events', async () => {

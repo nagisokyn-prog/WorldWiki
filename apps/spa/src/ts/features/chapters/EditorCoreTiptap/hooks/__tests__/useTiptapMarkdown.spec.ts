@@ -45,6 +45,13 @@ describe('useTiptapMarkdown', () => {
     md.syncMarkdownFromEditor();
     expect(md.markdownContent.value).toContain('Hello world');
 
+    // Link without leading slash (covers line 26 href without slash)
+    editor.value = {
+      getHTML: vi.fn(() => '<p><a href="ui_editor.html?id=2">Hero 2</a></p>'),
+    };
+    md.syncMarkdownFromEditor();
+    expect(md.markdownContent.value).toContain('((Hero 2))[ui_editor.html?id=2]');
+
     // Null editor
     editor.value = null;
     md.syncMarkdownFromEditor();

@@ -180,5 +180,43 @@ describe('useSchemaData', () => {
     vi.mocked(appConfirm).mockResolvedValueOnce(true);
     await data.deleteSection(1);
     expect(data.activeSectionIdx.value).toBe(0);
+
+    // 8. loadSchemaPreview with legacy items (covers lines 51-54)
+    data.loadSchemaPreview({
+      full_schema: {
+        sections: [
+          {
+            id: 'sec_prev',
+            items: [
+              { template: 'rel_tpl', type: 'dynamic' },
+              { class: 'normal_field', type: 'text' },
+            ],
+          },
+        ],
+      },
+    } as any);
+    const prevSec: any = data.schema.value.sections[0];
+    expect(prevSec.fields).toHaveLength(1);
+    expect(prevSec.dynamicContainers).toHaveLength(1);
+
+    // 9. nameIdx > 0 moves name item to index 0 (covers lines 169-170)
+    vi.mocked(api.getEntitySchemas).mockResolvedValueOnce([
+      {
+        type_key: 'character',
+        full_schema: {
+          sections: [
+            {
+              id: 'page_main',
+              items: [
+                { class: 'other_field', label: 'Other' },
+                { class: 'name', label: 'Name' },
+              ],
+            },
+          ],
+        },
+      },
+    ] as any);
+    await data.loadSchema();
+    expect((data.schema.value.sections[0].items[0] as any).class).toBe('name');
   });
 });

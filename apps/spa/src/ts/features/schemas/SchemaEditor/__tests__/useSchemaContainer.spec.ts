@@ -88,4 +88,18 @@ describe('useSchemaContainer', () => {
     const bareContainer = useSchemaContainer({ item: {} });
     bareContainer.removeCustomField(0);
   });
+
+  it('ensures field override is initialized properly', () => {
+    const container = useSchemaContainer(props);
+    const itemWithOverrides: any = { fieldOverrides: {} };
+    const res = container.ensureFieldOverride(itemWithOverrides, 'test_field');
+    expect(res).toEqual({});
+    expect(itemWithOverrides.fieldOverrides.test_field).toBeDefined();
+
+    // With bare item without fieldOverrides property
+    const itemWithoutOverrides: any = {};
+    const res2 = container.ensureFieldOverride(itemWithoutOverrides, 'another_field');
+    expect(res2).toEqual({});
+    expect(itemWithoutOverrides.fieldOverrides.another_field).toBeDefined();
+  });
 });

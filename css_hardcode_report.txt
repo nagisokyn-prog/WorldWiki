@@ -4,38 +4,43 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     439 мест
-  • Fixed (Устранено): -629 мест 🎉
-  • New (Введено):    +12 мест
-  • Net Trend:        ↓ 620 (58.5% улучшение)
+  • Current Debt:     275 мест
+  • Fixed (Устранено): -791 мест 🎉
+  • New (Введено):    +10 мест
+  • Net Trend:        ↓ 784 (74.0% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
 ────────────────────────────────────────────────────────────────────────
   • [Оверлеи / Затемнения]   --modal-backdrop : 2 мест
-  • [Утопленные подложки]    --bg-sunken      : 25 мест
-  • [Системные рамки]        --border-color   : 27 мест
-  • [Цвета текста]           --text-main/muted: 82 мест
+  • [Утопленные подложки]    --bg-sunken      : 7 мест
+  • [Системные рамки]        --border-color   : 10 мест
+  • [Цвета текста]           --text-main/muted: 36 мест
 
 ────────────────────────────────────────────────────────────────────────
   2. РАЗБИВКА ПО ТИПАМ НАРУШЕНИЙ
 ────────────────────────────────────────────────────────────────────────
-  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):     51 [Критично для Light Theme]
-  • Hardcoded White Colors  (rgba(255,255,...), #fff):    95 [Критично для Light Theme]
-  • Arbitrary HEX Colors    (#aabbcc):                  75
-  • Inline Styles           (style="..."):             218
+  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):     18 [Критично для Light Theme]
+  • Hardcoded White Colors  (rgba(255,255,...), #fff):    45 [Критично для Light Theme]
+  • Arbitrary HEX Colors    (#aabbcc):                  27
+  • Inline Styles           (style="..."):             185
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────
-  3. ПРИОРИТЕТНЫЕ ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-10)
+  3. ПРИОРИТЕТНЫЕ CSS ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-15 CSS ONLY)
 ────────────────────────────────────────────────────────────────────────
-   1. [ 25 мест]  apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue
-   2. [ 16 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue
-   3. [ 15 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue
-   4. [ 14 мест]  apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue
-   5. [ 12 мест]  packages/resources/src/styles/features/timeline/TimeAtlasModal.css
-   6. [ 12 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue
-   7. [ 11 мест]  packages/components/src/components/Vue/Settings/SettingsNavRail.vue
-   8. [ 10 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue
-   9. [  9 мест]  packages/resources/src/styles/components/TagsField.css
-  10. [  9 мест]  packages/resources/src/styles/components/ThemeSwitcher.css
+   1. [  6 мест]  packages/resources/src/styles/features/shell/ProjectLauncher.css
+   2. [  4 мест]  packages/resources/src/styles/features/ai/AiActionButtons.css
+   3. [  4 мест]  packages/resources/src/styles/features/ai/AiSelect.css
+   4. [  4 мест]  packages/resources/src/styles/features/chapters/PromisesPanel.css
+   5. [  3 мест]  packages/resources/src/styles/features/ai/AiChatHistory.css
+   6. [  3 мест]  packages/resources/src/styles/features/ai/AiContextSelector.css
+   7. [  3 мест]  packages/resources/src/styles/features/chapters/EntityLinkSelector.css
+   8. [  3 мест]  packages/resources/src/styles/features/shell/CloudSyncModal.css
+   9. [  3 мест]  packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css
+  10. [  2 мест]  packages/resources/src/styles/base/layout.css
+  11. [  2 мест]  packages/resources/src/styles/base/reset.css
+  12. [  2 мест]  packages/resources/src/styles/components/AppDialog.css
+  13. [  2 мест]  packages/resources/src/styles/components/GlassComponents.css
+  14. [  2 мест]  packages/resources/src/styles/features/ai/AiChatInput.css
+  15. [  2 мест]  packages/resources/src/styles/features/ai/AiToolApproval.css

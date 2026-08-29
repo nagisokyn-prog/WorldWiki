@@ -248,8 +248,13 @@ const debtDiff = currentDebt - baselineDebt;
 const trendSign = debtDiff <= 0 ? '↓' : '↑';
 const trendPercent = baselineDebt > 0 ? ((Math.abs(debtDiff) / baselineDebt) * 100).toFixed(1) : '0.0';
 
-// Сортировка файлов
-const topFiles = [...currentAudit.fileDebts.entries()]
+// Сортировка файлов (только CSS файлы)
+const topCssFiles = [...currentAudit.fileDebts.entries()]
+  .map(([file, count]) => ({ file, count }))
+  .filter(f => f.count > 0 && f.file.endsWith('.css'))
+  .sort((a, b) => b.count - a.count);
+
+const allTopFiles = [...currentAudit.fileDebts.entries()]
   .map(([file, count]) => ({ file, count }))
   .filter(f => f.count > 0)
   .sort((a, b) => b.count - a.count);
@@ -285,9 +290,9 @@ out += `  • Inline Styles           (style="..."):            ${String(current
 out += `  • Hardcoded Radii         (border-radius: Xpx):       ${String(currentAudit.categories.radii).padStart(4)}\n\n`;
 
 out += '────────────────────────────────────────────────────────────────────────\n';
-out += '  3. ПРИОРИТЕТНЫЕ ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-10)\n';
+out += '  3. ПРИОРИТЕТНЫЕ CSS ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-15 CSS ONLY)\n';
 out += '────────────────────────────────────────────────────────────────────────\n';
-topFiles.slice(0, 10).forEach((f, i) => {
+topCssFiles.slice(0, 15).forEach((f, i) => {
   out += `  ${String(i + 1).padStart(2)}. [${String(f.count).padStart(3)} мест]  ${f.file}\n`;
 });
 
@@ -300,7 +305,9 @@ fs.writeFileSync(REPORT_JSON, JSON.stringify({
   trendPercent,
   categories: currentAudit.categories,
   semanticRoles: currentAudit.semanticRoles,
-  topFiles
+  topCssFiles: topCssFiles.slice(0, 15),
+  allTopFiles: allTopFiles.slice(0, 15),
+  violations: [...currentAudit.violationsMap.values()]
 }, null, 2), 'utf8');
 
 console.log(out);

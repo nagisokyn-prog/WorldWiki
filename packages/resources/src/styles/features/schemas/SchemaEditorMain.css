@@ -42,8 +42,8 @@
 }
 
 .schema-history-banner {
-    background: rgba(245, 166, 35, 0.1);
-    border-bottom: 1px solid rgba(245, 166, 35, 0.3);
+    background: rgba(245, 158, 11, 0.15);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
     padding: 8px 24px;
     display: flex;
     justify-content: space-between;
@@ -54,6 +54,28 @@
     font-size: var(--font-size-xs);
     color: var(--warning);
     font-weight: var(--font-weight-bold);
+}
+
+.json-preview-modal {
+    width: 90vw;
+    max-width: 1100px;
+    height: 85vh;
+}
+
+.json-preview-textarea {
+    background: var(--bg-sunken);
+    color: var(--success);
+    border: 1px solid var(--border-color);
+    resize: none;
+}
+
+.history-sidebar-drawer {
+    width: 280px;
+}
+
+.btn-warning-action {
+    background: var(--warning);
+    color: var(--accent-text);
 }
 
 .schema-tabs-bar {

@@ -283,10 +283,31 @@ textarea.input-base {
 .changed-indicator {
   font-size: 9px;
   background: var(--warning);
-  color: #000000;
+  color: var(--accent-text);
   padding: 2px 6px;
   border-radius: var(--radius-xs);
   margin-left: 8px;
   font-weight: bold;
   vertical-align: middle;
+}
+
+.history-drawer {
+  width: 280px;
+  box-shadow: var(--shadow-dropdown);
+  z-index: 10;
+}
+
+.checkbox-accent {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+
+.range-val-badge {
+  min-width: 36px;
+  text-align: right;
+}
+
+.preview-badge-warning {
+  color: var(--warning);
 }

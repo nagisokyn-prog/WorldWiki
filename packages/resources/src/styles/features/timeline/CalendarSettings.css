@@ -1,14 +1,14 @@
 .calendar-section {
   background: var(--glass-bg);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm, 8px);
   padding: 12px;
   margin-bottom: 12px;
 }
 .calendar-section h4 {
   margin-top: 0;
   margin-bottom: 12px;
-  color: var(--text-color);
+  color: var(--text-main);
   font-size: 14px;
 }
 .grid-2 {
@@ -25,11 +25,11 @@
   font-size: 12px;
 }
 .calendar-field input[type="number"], .calendar-field input[type="text"] {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  color: var(--text-color);
+  color: var(--text-main);
   padding: 6px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs, 6px);
   width: 100%;
 }
 .calendar-field small {
@@ -47,7 +47,7 @@
 }
 .help-icon {
   cursor: help;
-  color: #3498db;
+  color: var(--info);
   font-weight: bold;
   font-size: 0.9em;
   margin-left: 4px;
@@ -59,21 +59,20 @@
   margin-left: 4px;
 }
 .label-summer {
-  color: #f39c12;
+  color: var(--warning);
 }
 .label-winter {
-  color: #3498db;
+  color: var(--info);
 }
 .settings-checkbox-label {
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  color: var(--text-color);
+  color: var(--text-main);
 }
 .seasonal-box {
   margin-top: 16px;
-  border-top: 1px dashed rgba(255,255,255,0.1);
+  border-top: 1px dashed var(--border-color);
   padding-top: 16px;
 }
-

@@ -1,50 +1,88 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 439,
-  "fixedCount": 629,
-  "introducedCount": 12,
-  "trendPercent": "58.5",
+  "currentDebt": 275,
+  "fixedCount": 791,
+  "introducedCount": 10,
+  "trendPercent": "74.0",
   "categories": {
-    "blackColors": 51,
-    "whiteColors": 95,
-    "hexColors": 75,
+    "blackColors": 18,
+    "whiteColors": 45,
+    "hexColors": 27,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 218
+    "inlineStyles": 185
   },
   "semanticRoles": {
     "modalBackdrops": 2,
-    "sunkenBackgrounds": 25,
-    "borders": 27,
-    "text": 82
+    "sunkenBackgrounds": 7,
+    "borders": 10,
+    "text": 36
   },
-  "topFiles": [
+  "topCssFiles": [
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "count": 6
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "count": 4
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
+      "count": 4
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "count": 4
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/base/layout.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/base/reset.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/components/AppDialog.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/components/GlassComponents.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "count": 2
+    }
+  ],
+  "allTopFiles": [
     {
       "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 25
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "count": 16
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "count": 15
-    },
-    {
-      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "count": 14
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
-      "count": 12
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
-      "count": 12
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsNavRail.vue",
       "count": 11
     },
     {
@@ -52,20 +90,8 @@
       "count": 10
     },
     {
-      "file": "packages/resources/src/styles/components/TagsField.css",
-      "count": 9
-    },
-    {
-      "file": "packages/resources/src/styles/components/ThemeSwitcher.css",
-      "count": 9
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
-      "count": 9
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarSeasons.css",
-      "count": 9
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "count": 10
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
@@ -74,14 +100,6 @@
     {
       "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
       "count": 8
-    },
-    {
-      "file": "packages/resources/src/styles/components/FloatingWindow.css",
-      "count": 7
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/DateWheels.css",
-      "count": 7
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
@@ -112,23 +130,7 @@
       "count": 7
     },
     {
-      "file": "packages/resources/src/styles/features/chapters/SemanticParagraph.css",
-      "count": 6
-    },
-    {
       "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "count": 6
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarHolidays.css",
-      "count": 6
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarMoons.css",
-      "count": 6
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarTimezones.css",
       "count": 6
     },
     {
@@ -136,280 +138,1660 @@
       "count": 6
     },
     {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
       "count": 6
-    },
+    }
+  ],
+  "violations": [
     {
-      "file": "packages/resources/src/styles/features/ai/AiMessageList.css",
-      "count": 5
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/WowilonPanel.css",
-      "count": 5
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
-      "count": 5
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarSettings.css",
-      "count": 5
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarWeekdays.css",
-      "count": 5
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "count": 5
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "count": 5
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
-      "count": 5
-    },
-    {
-      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
-      "count": 5
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
-      "count": 5
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
-      "count": 5
-    },
-    {
-      "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "count": 5
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
-      "count": 4
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
-      "count": 4
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
-      "count": 4
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
-      "count": 4
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
-      "count": 4
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
-      "count": 4
-    },
-    {
-      "file": "packages/components/src/components/Vue/TagsField.vue",
-      "count": 4
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-      "count": 3
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
-      "count": 3
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
-      "count": 3
+      "file": "packages/resources/src/styles/base/layout.css",
+      "line": 48,
+      "match": "rgba(255, 255, 255, 0.22)",
+      "snippet": "background: rgba(255, 255, 255, 0.22);"
     },
     {
       "file": "packages/resources/src/styles/base/layout.css",
-      "count": 2
+      "line": 77,
+      "match": "rgba(255, 255, 255, 0.25)",
+      "snippet": "scrollbar-color: rgba(255, 255, 255, 0.25) transparent;"
     },
     {
       "file": "packages/resources/src/styles/base/reset.css",
-      "count": 2
+      "line": 44,
+      "match": "#121214",
+      "snippet": "background: var(--dropdown-bg, var(--bg-base, #121214));"
+    },
+    {
+      "file": "packages/resources/src/styles/base/reset.css",
+      "line": 45,
+      "match": "#ffffff",
+      "snippet": "color: var(--text-main, #ffffff);"
     },
     {
       "file": "packages/resources/src/styles/components/AppDialog.css",
-      "count": 2
+      "line": 7,
+      "match": "rgba(0, 0, 0, 0.6)",
+      "snippet": "background: rgba(0, 0, 0, 0.6);"
     },
     {
-      "file": "packages/resources/src/styles/components/GlassComponents.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/UniversalDatePicker.css",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/AiSettingsView.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMoons/CalendarMoons.vue",
-      "count": 2
-    },
-    {
-      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
-      "count": 2
+      "file": "packages/resources/src/styles/components/AppDialog.css",
+      "line": 23,
+      "match": "#aaa",
+      "snippet": "color: var(--text-muted, #aaa);"
     },
     {
       "file": "packages/resources/src/styles/components/BaseUI.css",
-      "count": 1
+      "line": 155,
+      "match": "#ef4444",
+      "snippet": "color: var(--error, #ef4444);"
     },
     {
       "file": "packages/resources/src/styles/components/EditorGroupPane.css",
-      "count": 1
+      "line": 7,
+      "match": "rgba(255,255,255,0.08)",
+      "snippet": "border-right: 1px solid var(--border-color, rgba(255,255,255,0.08));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/GlassComponents.css",
+      "line": 34,
+      "match": "rgba(255, 255, 255, 0.1)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/GlassComponents.css",
+      "line": 169,
+      "match": "rgba(0, 0, 0, 0.6)",
+      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.6));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 14,
+      "match": "rgba(255, 255, 255, 0.05)",
+      "snippet": "background: rgba(255, 255, 255, 0.05);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 25,
+      "match": "rgba(255, 255, 255, 0.1)",
+      "snippet": "background: rgba(255, 255, 255, 0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 29,
+      "match": "#ff4d4f",
+      "snippet": "color: var(--danger-color, #ff4d4f);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 43,
+      "match": "#52c41a",
+      "snippet": "color: var(--success-color, #52c41a);"
     },
     {
       "file": "packages/resources/src/styles/features/ai/AiApp.css",
-      "count": 1
+      "line": 80,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "line": 84,
+      "match": "rgba(255,255,255,0.1)",
+      "snippet": "background: rgba(255,255,255,0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "line": 94,
+      "match": "#ff5555",
+      "snippet": "color: #ff5555;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "line": 97,
+      "match": "#ff5555",
+      "snippet": "color: #ff5555;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
+      "line": 64,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
+      "line": 88,
+      "match": "#ff4d4f",
+      "snippet": "background: var(--danger-color, #ff4d4f);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "line": 33,
+      "match": "rgba(0,0,0,0.5)",
+      "snippet": "box-shadow: 0 4px 20px rgba(0,0,0,0.5);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "line": 135,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "line": 147,
+      "match": "white",
+      "snippet": "color: white;"
     },
     {
       "file": "packages/resources/src/styles/features/ai/AiHeader.css",
-      "count": 1
+      "line": 53,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiMessageList.css",
+      "line": 50,
+      "match": "rgba(255, 255, 255, 0.03)",
+      "snippet": "background: var(--bg-hover, rgba(255, 255, 255, 0.03));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
+      "line": 45,
+      "match": "#121214",
+      "snippet": "background: var(--dropdown-bg, var(--bg-base, #121214));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
+      "line": 50,
+      "match": "rgba(0,0,0,0.8)",
+      "snippet": "box-shadow: 0 8px 32px rgba(0,0,0,0.8);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
+      "line": 65,
+      "match": "rgba(255,255,255,0.02)",
+      "snippet": "border-bottom: 1px solid rgba(255,255,255,0.02);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
+      "line": 73,
+      "match": "rgba(255, 255, 255, 0.05)",
+      "snippet": "background: rgba(255, 255, 255, 0.05);"
     },
     {
       "file": "packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-      "count": 1
+      "line": 378,
+      "match": "#fff",
+      "snippet": "color: #fff;"
     },
     {
       "file": "packages/resources/src/styles/features/ai/AiSettingsView.css",
-      "count": 1
+      "line": 50,
+      "match": "rgba(255,255,255,0.05)",
+      "snippet": "background: rgba(255,255,255,0.05);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 61,
+      "match": "rgba(0, 0, 0, 0.2)",
+      "snippet": "background: rgba(0, 0, 0, 0.2);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 127,
+      "match": "white",
+      "snippet": "color: white;"
     },
     {
       "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-      "count": 1
+      "line": 255,
+      "match": "#000000",
+      "snippet": "color: #000000 !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
+      "line": 4,
+      "match": "rgba(0, 0, 0, 0.4)",
+      "snippet": "background: rgba(0, 0, 0, 0.4);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
+      "line": 17,
+      "match": "rgba(0, 0, 0, 0.3)",
+      "snippet": "box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
+      "line": 87,
+      "match": "#fff",
+      "snippet": "color: #fff;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
+      "line": 7,
+      "match": "rgba(0, 0, 0, 0.7)",
+      "snippet": "background: rgba(0, 0, 0, 0.7);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
+      "line": 146,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 20,
+      "match": "rgba(255, 255, 255, 0.02)",
+      "snippet": "background: var(--bg-card-header, rgba(255, 255, 255, 0.02));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 98,
+      "match": "#fff",
+      "snippet": "color: #fff;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 373,
+      "match": "#000",
+      "snippet": "color: #000;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 383,
+      "match": "#fff",
+      "snippet": "color: #fff;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
+      "line": 36,
+      "match": "rgba(255, 255, 255, 0.08)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
+      "line": 258,
+      "match": "#ffffff",
+      "snippet": "color: #ffffff;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
+      "line": 27,
+      "match": "rgba(255,255,255,0.1)",
+      "snippet": "border: 3px solid rgba(255,255,255,0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
+      "line": 39,
+      "match": "#ef4444",
+      "snippet": "color: #ef4444;"
     },
     {
       "file": "packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
-      "count": 1
+      "line": 177,
+      "match": "rgba(255, 255, 255, 0.05)",
+      "snippet": "border: 1px solid rgba(255, 255, 255, 0.05);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
+      "line": 87,
+      "match": "#FC3F1D",
+      "snippet": "background: #FC3F1D;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
+      "line": 111,
+      "match": "#FC3F1D",
+      "snippet": "background: #FC3F1D;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
+      "line": 117,
+      "match": "#E03517",
+      "snippet": "background: #E03517;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 53,
+      "match": "rgba(0, 0, 0, 0.5)",
+      "snippet": "background: rgba(0, 0, 0, 0.5) !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 62,
+      "match": "rgba(255, 255, 255, 0.15)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 184,
+      "match": "rgba(0, 0, 0, 0.65)",
+      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.65));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 1032,
+      "match": "#22c55e",
+      "snippet": "color: #22c55e;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 1037,
+      "match": "#eab308",
+      "snippet": "color: #eab308;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 1042,
+      "match": "#ef4444",
+      "snippet": "color: #ef4444;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 1232,
+      "match": "rgba(255,255,255,0.1)",
+      "snippet": "background-color: rgba(255,255,255,0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 1244,
+      "match": "white",
+      "snippet": "background-color: white;"
     },
     {
       "file": "packages/resources/src/styles/features/timeline/CalendarsPanel.css",
-      "count": 1
+      "line": 60,
+      "match": "#ffffff",
+      "snippet": "color: #ffffff;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+      "line": 104,
+      "match": "#fff",
+      "snippet": "color: #fff;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+      "line": 268,
+      "match": "#ef4444",
+      "snippet": "color: var(--error, #ef4444);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+      "line": 366,
+      "match": "rgba(0, 0, 0, 0.25)",
+      "snippet": "box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
+      "line": 9,
+      "match": "rgba(0,0,0,0.5)",
+      "snippet": "box-shadow: 0 10px 30px rgba(0,0,0,0.5);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
+      "line": 42,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 232,
+      "match": "rgba(255, 255, 255, 0.05)",
+      "snippet": "background: rgba(255, 255, 255, 0.05);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 318,
+      "match": "white",
+      "snippet": "color: white;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/UniversalDatePicker.css",
+      "line": 2,
+      "match": "rgba(0,0,0,0.1)",
+      "snippet": "box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/UniversalDatePicker.css",
+      "line": 6,
+      "match": "rgba(0,0,0,0.2)",
+      "snippet": "background: var(--bg-card, rgba(0,0,0,0.2));"
     },
     {
       "file": "packages/resources/src/styles/glass-animations.css",
-      "count": 1
+      "line": 65,
+      "match": "rgba(255, 255, 255, 0.3)",
+      "snippet": "background: rgba(255, 255, 255, 0.3);"
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
-      "count": 1
+      "line": 29,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 11px; text-align: center; margin-top: 10px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"margin-right: 12px; display: flex; align-items: center; cursor: pointer;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"--dsl-button-height: 34px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "line": 8,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: inherit;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "line": 14,
+      "match": "inline-style",
+      "snippet": "style=\"margin-right: 12px; display: flex; align-items: center; gap: 4px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "line": 32,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: progressPercent + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/AiSettingsView.vue",
+      "line": 48,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; justify-content: space-between; align-items: center;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/AiSettingsView.vue",
+      "line": 50,
+      "match": "inline-style",
+      "snippet": "style=\"padding: 6px 12px;\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
-      "count": 1
+      "line": 98,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 24px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "line": 20,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; gap: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "line": 21,
+      "match": "inline-style",
+      "snippet": "style=\"flex: 1;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "line": 128,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 10px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "line": 154,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 6px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "line": 210,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 10px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "line": 235,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 6px;\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
-      "count": 1
+      "line": 95,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 14px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 194,
+      "match": "rgba(255, 255, 255, 0.02)",
+      "snippet": "background: var(--bg-card, rgba(255, 255, 255, 0.02));"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 195,
+      "match": "rgba(255, 255, 255, 0.08)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 217,
+      "match": "#e6edf3",
+      "snippet": "color: var(--text-color, #e6edf3);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 223,
+      "match": "#3fb950",
+      "snippet": "color: #3fb950;"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 235,
+      "match": "#3fb950",
+      "snippet": "background: #3fb950;"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 250,
+      "match": "#8b949e",
+      "snippet": "color: var(--text-muted, #8b949e);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 266,
+      "match": "#58a6ff",
+      "snippet": "background: #58a6ff;"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "line": 270,
+      "match": "#bc8cff",
+      "snippet": "background: #bc8cff;"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "line": 15,
+      "match": "inline-style",
+      "snippet": "style=\"margin: 0;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "line": 16,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 12px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "line": 22,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 12px; padding: 6px 10px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "line": 59,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: downloadProgress[f.filename].percent + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "line": 71,
+      "match": "inline-style",
+      "snippet": "style=\"margin-left: 4px;\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
-      "count": 1
+      "line": 29,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: downloadProgress[card.filename].percent + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
+      "line": 9,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 14px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
+      "line": 33,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 14px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
+      "line": 46,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 20px;\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
-      "count": 1
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: panelWidth + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 33,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: rightPanelWidth + 'px', minWidth: '200px', maxWidth: '600px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 55,
+      "match": "inline-style",
+      "snippet": "style=\"{ transform: isTimelineOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 72,
+      "match": "inline-style",
+      "snippet": "style=\"{ transform: isParticipantsOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 105,
+      "match": "inline-style",
+      "snippet": "style=\"{ transform: isVolumePlanOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 125,
+      "match": "inline-style",
+      "snippet": "style=\"{ transform: isArcPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 145,
+      "match": "inline-style",
+      "snippet": "style=\"{ transform: isChapterPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 163,
+      "match": "inline-style",
+      "snippet": "style=\"opacity: 0.2;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 190,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 198,
+      "match": "inline-style",
+      "snippet": "style=\"line-height: 1.4;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 212,
+      "match": "inline-style",
+      "snippet": "style=\"opacity: 0.2;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "line": 267,
+      "match": "inline-style",
+      "snippet": "style=\"white-space: pre-wrap; word-break: break-all;\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/ChaptersView.vue",
-      "count": 1
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"width: 100%; height: 100%; background: var(--bg-main);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"height: 100%; display: flex; flex-direction: column; overflow: hidden;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
+      "line": 6,
+      "match": "inline-style",
+      "snippet": "style=\"{ height: calendarHeight + 'px', minHeight: '70px', maxHeight: '500px', flexShrink: 0, overflowY: 'auto' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
+      "line": 20,
+      "match": "inline-style",
+      "snippet": "style=\"flex: 1; min-height: 0; overflow-y: auto;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
+      "line": 39,
+      "match": "inline-style",
+      "snippet": "style=\"background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 23,
+      "match": "inline-style",
+      "snippet": "style=\"position: absolute; right: -8px; top: -8px; z-index: 5;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 35,
+      "match": "inline-style",
+      "snippet": "style=\"position: absolute; right: 10px; top: 10px; z-index: 5;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 61,
+      "match": "inline-style",
+      "snippet": "style=\"{ flex: `0 0 ${leftPanelWidth}%` }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 84,
+      "match": "inline-style",
+      "snippet": "style=\"{ flex: showStructure ? `0 0 ${rightPanelWidth}%` : '1' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 101,
+      "match": "inline-style",
+      "snippet": "style=\"background: rgba(255,255,255,0.1);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 101,
+      "match": "rgba(255,255,255,0.1)",
+      "snippet": "background: rgba(255,255,255,0.1);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "line": 138,
+      "match": "inline-style",
+      "snippet": "style=\"position: absolute; right: 0; top: -10px; z-index: 5;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; gap: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; align-items: center; gap: 8px; flex-wrap: wrap;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
+      "line": 11,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; gap: 4px; border-left: 1px solid var(--border-color); padding-left: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
+      "line": 28,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; align-items: center; gap: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
+      "line": 32,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 11px;\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/PromiseContextMenu.vue",
-      "count": 1
+      "line": 6,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: `${adjustedPos.y}px`, left: `${adjustedPos.x}px` }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; flex-direction: column; gap: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 6,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--text-muted); font-size: 12px; padding: 10px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 10,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 11,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; align-items: center; gap: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 14,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 13px; font-weight: 500;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 16,
+      "match": "inline-style",
+      "snippet": "style=\"background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 16,
+      "match": "#ef4444",
+      "snippet": "background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;"
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "line": 17,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 10px; color: var(--accent); opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
+      "line": 16,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: progressPct + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
+      "line": 25,
+      "match": "inline-style",
+      "snippet": "style=\"{ paddingLeft: (12 + item.indent * 20) + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
+      "line": 58,
+      "match": "inline-style",
+      "snippet": "style=\"display:block; margin-top:4px; font-size:11px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"position: relative; padding-left: 24px; min-height: 24px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
+      "line": 9,
+      "match": "inline-style",
+      "snippet": "style=\"badgeStyle\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "line": 17,
+      "match": "inline-style",
+      "snippet": "style=\"background: var(--bg-selected); border-color: var(--border-active); color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "line": 140,
+      "match": "inline-style",
+      "snippet": "style=\"{ zIndex: 100 - cIdx }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "line": 185,
+      "match": "inline-style",
+      "snippet": "style=\"{ zIndex: 50 - idx }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "line": 239,
+      "match": "inline-style",
+      "snippet": "style=\"accent-color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "line": 296,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "line": 304,
+      "match": "inline-style",
+      "snippet": "style=\"line-height: 1.4;\""
     },
     {
       "file": "apps/spa/src/ts/features/entities/TagsManagerModal.vue",
-      "count": 1
+      "line": 32,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: tag.color }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
+      "line": 20,
+      "match": "inline-style",
+      "snippet": "style=\"popoverStyle\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
+      "line": 245,
+      "match": "inline-style",
+      "snippet": "style=\"flex: 1.5;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
+      "line": 246,
+      "match": "inline-style",
+      "snippet": "style=\"flex: 0.8;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
+      "line": 257,
+      "match": "inline-style",
+      "snippet": "style=\"accent-color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 9,
+      "match": "inline-style",
+      "snippet": "style=\"opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 30,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 62,
+      "match": "inline-style",
+      "snippet": "style=\"top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 81,
+      "match": "inline-style",
+      "snippet": "style=\"border-style: dashed; border-color: var(--border-active); color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 97,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--info);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 106,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--info);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 137,
+      "match": "inline-style",
+      "snippet": "style=\"padding: 10px; display: flex; flex-direction: column; gap: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 139,
+      "match": "inline-style",
+      "snippet": "style=\"top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 143,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--info);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "line": 157,
+      "match": "inline-style",
+      "snippet": "style=\"border-style: dashed; border-color: var(--border-active); color: var(--info);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: item.hidden ? 0.4 : 1 }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+      "line": 32,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: (!isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden) ? 0.3 : 1 }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+      "line": 118,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: (!isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden) ? 0.3 : 1 }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+      "line": 124,
+      "match": "inline-style",
+      "snippet": "style=\"opacity: 0.6;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 12,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--warning); border-color: rgba(245,158,11,0.3);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 13,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--error); border-color: rgba(239,68,68,0.3);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 16,
+      "match": "inline-style",
+      "snippet": "style=\"background: var(--accent); color: var(--accent-text);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 41,
+      "match": "inline-style",
+      "snippet": "style=\"border-color: rgba(245,158,11,0.3); color: var(--warning);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 42,
+      "match": "inline-style",
+      "snippet": "style=\"border: none;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 58,
+      "match": "inline-style",
+      "snippet": "style=\"border-style: dashed; color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 66,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: activeSection.hidden ? 0.4 : 1 }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 101,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: catalogWidth + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 150,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: historyPreviewId === h.id ? 'var(--bg-selected)' : 'var(--bg-input)' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "line": 159,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--warning);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: item.hidden ? 0.4 : 1 }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"{ cursor: isFirst ? 'default' : 'move' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "line": 6,
+      "match": "inline-style",
+      "snippet": "style=\"opacity: 0.5;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "line": 32,
+      "match": "inline-style",
+      "snippet": "style=\"opacity: 0.3; border-style: dashed;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "line": 56,
+      "match": "inline-style",
+      "snippet": "style=\"accent-color: var(--accent);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "line": 76,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "line": 9,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: sidebarWidth + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "line": 53,
+      "match": "inline-style",
+      "snippet": "style=\"{ flexBasis: group.flexBasis + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "line": 109,
+      "match": "inline-style",
+      "snippet": "style=\"background: rgba(239, 68, 68, 0.4)\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "line": 117,
+      "match": "inline-style",
+      "snippet": "style=\"background: rgba(139, 92, 246, 0.2)\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "line": 191,
+      "match": "inline-style",
+      "snippet": "style=\"activePanelTab !== '' ? { height: panelHeight + 'px' } : { height: '36px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"margin: 0;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 8,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 12px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 10,
+      "match": "inline-style",
+      "snippet": "style=\"margin-bottom: 10px\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 54,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; align-items: center; margin-top: 5px\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "line": 56,
+      "match": "inline-style",
+      "snippet": "style=\"\n                font-size: 11px;\n                color: var(--text-muted);\n                display: flex;\n                align-items: center;\n                gap: 5px;\n                cursor: pointer;\n              \""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"margin: 0;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 8,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 12px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 37,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 10px; display: flex; align-items: center; gap: 8px\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 38,
+      "match": "inline-style",
+      "snippet": "style=\"margin: 0\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "line": 43,
+      "match": "inline-style",
+      "snippet": "style=\"width: 60px\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"margin: 0;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "line": 8,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 12px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "line": 11,
+      "match": "inline-style",
+      "snippet": "style=\"max-width: 120px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "line": 18,
+      "match": "inline-style",
+      "snippet": "style=\"max-width: 60px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMoons/CalendarMoons.vue",
+      "line": 14,
+      "match": "inline-style",
+      "snippet": "style=\"width: 80px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMoons/CalendarMoons.vue",
+      "line": 17,
+      "match": "inline-style",
+      "snippet": "style=\"width: 70px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"margin: 0;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
+      "line": 8,
+      "match": "inline-style",
+      "snippet": "style=\"margin-top: 12px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 21,
+      "match": "inline-style",
+      "snippet": "style=\"width: 70px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 27,
+      "match": "inline-style",
+      "snippet": "style=\"min-width: 120px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 36,
+      "match": "inline-style",
+      "snippet": "style=\"width: 50px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 57,
+      "match": "inline-style",
+      "snippet": "style=\"{ gridTemplateColumns: `repeat(${daysInWeek}, 1fr)` }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 71,
+      "match": "inline-style",
+      "snippet": "style=\"{ backgroundColor: filters.seasons ? day.seasonColor : 'transparent' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 92,
+      "match": "inline-style",
+      "snippet": "style=\"{ backgroundColor: '#fff' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "line": 92,
+      "match": "#fff",
+      "snippet": "{ backgroundColor: '#fff' }"
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarSettings/CalendarSettings.vue",
-      "count": 1
+      "line": 32,
+      "match": "inline-style",
+      "snippet": "style=\"max-width: 33.3%;\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue",
-      "count": 1
+      "line": 11,
+      "match": "inline-style",
+      "snippet": "style=\"isExplainerOpen ? 'background: var(--bg-selected); border-color: var(--accent);' : ''\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "line": 19,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 12px; color: var(--text-muted);\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "line": 25,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--text-muted); font-size: 12px; padding: 10px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "line": 30,
+      "match": "inline-style",
+      "snippet": "style=\"cursor: pointer;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "line": 50,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: getConvertedDateInfo(ev, calId)?.seasonColor }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "line": 56,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: getConvertedDateInfo(ev, calId)?.timeOfDayColor }\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/CalendarsPanel/CalendarsPanel.vue",
-      "count": 1
+      "line": 28,
+      "match": "inline-style",
+      "snippet": "style=\"{ opacity: cal.is_default ? 1 : 0.5 }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 26,
+      "match": "inline-style",
+      "snippet": "style=\"flex:1; display:flex; overflow:hidden;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 33,
+      "match": "inline-style",
+      "snippet": "style=\"flex:1; display:flex; overflow:hidden;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 41,
+      "match": "inline-style",
+      "snippet": "style=\"display:flex; flex-direction:column; flex:1; min-height:0;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 49,
+      "match": "inline-style",
+      "snippet": "style=\"display:flex; flex-direction:column; flex:1; min-height:0;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 56,
+      "match": "inline-style",
+      "snippet": "style=\"font-size:40px; opacity:0.15;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 57,
+      "match": "inline-style",
+      "snippet": "style=\"font-size:13px; margin-top:8px; opacity:0.4;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "line": 58,
+      "match": "inline-style",
+      "snippet": "style=\"font-size:11px; margin-top:4px; opacity:0.25;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"display: flex; align-items: center;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 12,
+      "match": "inline-style",
+      "snippet": "style=\"margin-left: auto; display: flex; gap: 4px;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 25,
+      "match": "inline-style",
+      "snippet": "style=\"margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 25,
+      "match": "#ff5555",
+      "snippet": "margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;"
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 26,
+      "match": "inline-style",
+      "snippet": "style=\"margin-right: 8px; opacity: 0.7; font-size: 10px;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 83,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 28px; opacity: 0.2; margin-bottom: 10px;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "line": 93,
+      "match": "inline-style",
+      "snippet": "style=\"ctxStyle\""
     },
     {
       "file": "packages/components/src/components/Vue/FloatingWindow.vue",
-      "count": 1
+      "line": 7,
+      "match": "inline-style",
+      "snippet": "style=\"windowStyle\""
     },
     {
       "file": "packages/components/src/components/Vue/Settings/SettingsInterface.vue",
-      "count": 1
+      "line": 70,
+      "match": "inline-style",
+      "snippet": "style=\"position: static; font-size: 10px;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"previewStyles\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
+      "line": 13,
+      "match": "inline-style",
+      "snippet": "style=\"{ fontFamily: settings.fonts.family, fontSize: '14px' }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
+      "line": 16,
+      "match": "inline-style",
+      "snippet": "style=\"{ padding: (16 * settings.spacing.density) + 'px' }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
+      "line": 19,
+      "match": "inline-style",
+      "snippet": "style=\"{ \n              borderRadius: settings.radii.card + 'px',\n              background: 'var(--bg-panel)',\n              backdropFilter: `blur(${settings.glass.blur}px)`,\n              boxShadow: `0 ${settings.shadows.islandY}px ${settings.shadows.islandBlur}px var(--shadow-color)`\n            }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
+      "line": 30,
+      "match": "inline-style",
+      "snippet": "style=\"{ borderRadius: settings.radii.btn + 'px' }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 148,
+      "match": "rgba(255,255,255,0.02)",
+      "snippet": "background: var(--bg-secondary, rgba(255,255,255,0.02));"
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 149,
+      "match": "rgba(255,255,255,0.05)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 186,
+      "match": "#4facfe",
+      "snippet": "color: var(--accent-color, #4facfe);"
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 206,
+      "match": "rgba(0,0,0,0.3)",
+      "snippet": "background: var(--bg-input, rgba(0,0,0,0.3));"
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 223,
+      "match": "rgba(255,255,255,0.05)",
+      "snippet": "background: rgba(255,255,255,0.05);"
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 226,
+      "match": "rgba(255,255,255,0.1)",
+      "snippet": "background: var(--bg-panel, rgba(255,255,255,0.1));"
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "line": 228,
+      "match": "rgba(0,0,0,0.2)",
+      "snippet": "box-shadow: 0 2px 8px rgba(0,0,0,0.2);"
     },
     {
       "file": "packages/components/src/components/Vue/Settings/SettingsTypography.vue",
-      "count": 1
+      "line": 20,
+      "match": "inline-style",
+      "snippet": "style=\"{ fontFamily: font.val }\""
     },
     {
       "file": "packages/components/src/components/Vue/Settings.vue",
-      "count": 1
+      "line": 162,
+      "match": "#111",
+      "snippet": "background: var(--bg-base, #111);"
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"{ zIndex: isDropdownOpen ? 10005 : 10 }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "line": 4,
+      "match": "inline-style",
+      "snippet": "style=\"{ borderColor: getTagColor(tag) }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "line": 27,
+      "match": "inline-style",
+      "snippet": "style=\"dropdownStyle\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "line": 36,
+      "match": "inline-style",
+      "snippet": "style=\"{ background: tag.color }\""
     },
     {
       "file": "packages/components/src/components/Vue/ThemeSwitcher.vue",
-      "count": 1
+      "line": 52,
+      "match": "inline-style",
+      "snippet": "style=\"width: 100%; margin-bottom: 16px; border-radius: 8px; padding: 10px;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: sidebarWidth + 'px' }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
+      "line": 15,
+      "match": "inline-style",
+      "snippet": "style=\"{ flex: group.flexBasis }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"{ zIndex: isOpen ? 10005 : 1000 }\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "line": 12,
+      "match": "inline-style",
+      "snippet": "style=\"font-weight: 500;\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "line": 25,
+      "match": "inline-style",
+      "snippet": "style=\"dropdownStyle\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "line": 35,
+      "match": "inline-style",
+      "snippet": "style=\"getItemStyle(i)\""
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "line": 41,
+      "match": "inline-style",
+      "snippet": "style=\"padding: 20px; text-align: center; color: var(--text-muted); padding-top: 100px;\""
     }
   ]
 }

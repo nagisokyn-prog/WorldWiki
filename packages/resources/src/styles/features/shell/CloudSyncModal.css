@@ -4,7 +4,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--modal-backdrop);
     backdrop-filter: blur(4px);
     z-index: 10000;
     display: flex;
@@ -16,8 +16,8 @@
     width: 500px;
     background: var(--bg-main);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-card, 12px);
+    box-shadow: var(--shadow-dropdown);
     display: flex;
     flex-direction: column;
 }
@@ -29,7 +29,7 @@
     padding: 16px 24px;
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-secondary);
-    border-radius: 12px 12px 0 0;
+    border-radius: var(--radius-card, 12px) var(--radius-card, 12px) 0 0;
 }
 
 .cloud-sync-header h3 {
@@ -61,7 +61,7 @@
     justify-content: space-between;
     padding: 16px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm, 8px);
     background: var(--bg-input);
 }
 
@@ -74,13 +74,13 @@
 .provider-icon {
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm, 8px);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 20px;
     font-weight: bold;
-    color: white;
+    color: var(--accent-text);
 }
 
 .yandex-icon {
@@ -99,17 +99,17 @@
 }
 
 .text-success {
-    color: #10B981 !important;
+    color: var(--success) !important;
 }
 
 .text-error {
-    color: #EF4444;
+    color: var(--error);
     font-size: 13px;
 }
 
 .btn-yandex {
     background: #FC3F1D;
-    color: white;
+    color: var(--accent-text);
     border: none;
 }
 
@@ -120,7 +120,7 @@
 .auth-code-section {
     margin-top: 16px;
     padding: 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm, 8px);
     background: rgba(252, 63, 29, 0.05);
     border: 1px dashed rgba(252, 63, 29, 0.3);
 }
@@ -134,7 +134,7 @@
 .code-input-group input {
     flex: 1;
     padding: 8px 12px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs, 6px);
     border: 1px solid var(--border-color);
     background: var(--bg-main);
     color: var(--text-main);
@@ -166,7 +166,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: var(--radius-sm, 8px);
 }
 
 .sync-loading-spinner {
@@ -182,5 +182,5 @@
     padding: 10px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-}
+    border-radius: var(--radius-xs, 6px);
+}

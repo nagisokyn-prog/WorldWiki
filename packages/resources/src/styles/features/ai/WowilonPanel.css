@@ -6,11 +6,11 @@
   height: 44px;
   border-radius: 50%;
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
   border: none;
   font-size: 20px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-glow);
   z-index: 999;
   display: flex;
   align-items: center;
@@ -32,7 +32,7 @@
   overflow: hidden;
   flex-shrink: 0;
   transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-dropdown);
 }
 
 .wowilon-panel:not(.is-open) {
@@ -92,7 +92,7 @@
   color: var(--text-muted);
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -101,7 +101,7 @@
 }
 
 .btn-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover);
   color: var(--text-main);
 }
 
@@ -141,18 +141,18 @@
 
 .chat-item {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs, 6px);
   cursor: pointer;
   font-size: 13px;
   color: var(--text-main);
 }
 
 .chat-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
 }
 
 .chat-item.active {
-  background: rgba(139, 92, 246, 0.2);
+  background: var(--bg-selected);
   color: var(--accent);
 }
 

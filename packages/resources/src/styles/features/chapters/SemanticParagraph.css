@@ -9,7 +9,7 @@
     top: 2px;
     width: 30px;
     height: 22px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs, 6px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -18,25 +18,25 @@
     cursor: pointer;
     user-select: none;
     transition: all 0.2s ease;
-    background: var(--bg-panel, #1a1a2e);
-    border: 1px solid var(--border-color, #333);
-    color: var(--text-muted, #888);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
 }
 
 .semantic-tag-badge.desc {
-    color: #94a3b8;
+    color: var(--text-muted);
 }
 
 .semantic-tag-badge.dialog {
-    color: #38bdf8;
-    border-color: rgba(56, 189, 248, 0.3);
-    background: rgba(56, 189, 248, 0.05);
+    color: var(--info);
+    border-color: var(--border-active);
+    background: var(--bg-selected);
 }
 
 .semantic-tag-badge.thought {
-    color: #c084fc;
-    border-color: rgba(192, 132, 252, 0.3);
-    background: rgba(192, 132, 252, 0.05);
+    color: var(--accent);
+    border-color: var(--border-active);
+    background: var(--bg-selected);
 }
 
 .semantic-tag-badge:hover {

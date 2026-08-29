@@ -194,3 +194,28 @@
     align-items: center;
     justify-content: space-between;
 }
+
+.empty-msg-label {
+    opacity: 0.5;
+}
+
+.protected-badge {
+    opacity: 0.6;
+}
+
+.form-label-info {
+    color: var(--info);
+}
+
+.mirror-badge {
+    opacity: 0.4;
+}
+
+.input-muted {
+    opacity: 0.5;
+}
+
+.dynamic-empty-box.is-drag-active {
+    border-color: var(--accent);
+    background: var(--bg-selected);
+}

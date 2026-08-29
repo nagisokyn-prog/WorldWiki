@@ -7,7 +7,7 @@
         <div class="flex-col gap-1 flex-1">
           <input :value="item.title" class="input-base schema-title-input" placeholder="НАЗВАНИЕ МОДУЛЯ" @input="updateTitle(($event.target as HTMLInputElement).value)">
           <div class="flex items-center gap-2">
-            <span class="text-xs text-muted" style="opacity: 0.5;">Текст при пустоте:</span>
+            <span class="text-xs text-muted empty-msg-label">Текст при пустоте:</span>
             <input :value="item.emptyMessage" class="input-base schema-empty-msg-input" placeholder="Пусто..." @input="updateEmptyMessage(($event.target as HTMLInputElement).value)">
           </div>
         </div>
@@ -35,7 +35,7 @@
                 <span v-if="isProtectedField(bField.class)" class="text-xs" title="Системное поле">🔒</span>
                 <label class="form-label-micro text-accent-light">{{ getFieldOverride(item, bField.class).label || bField.label || bField.class }}</label>
               </div>
-              <span v-if="isProtectedField(bField.class)" class="text-xs text-muted font-medium" style="opacity: 0.6;">Системное</span>
+              <span v-if="isProtectedField(bField.class)" class="text-xs text-muted font-medium protected-badge">Системное</span>
               <button v-else class="text-xs text-muted cursor-pointer" @click="toggleFieldOverride(item, bField.class)">{{ getFieldOverride(item, bField.class).hidden ? '👁️‍🗨️ скрыто' : '👁️ видимо' }}</button>
             </div>
             <div v-show="!getFieldOverride(item, bField.class).hidden">
@@ -81,11 +81,11 @@
           <div class="side-header-b">🔵 СТОРОНА Б (связанная сущность)</div>
           <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="'rb-'+fIdx" class="mb-3">
             <div class="flex justify-between items-center mb-1">
-              <label class="form-label-micro" style="color: var(--info);">{{ bField.label || bField.class }}</label>
-              <span class="text-xs text-muted" style="opacity:0.4;">зеркало</span>
+              <label class="form-label-micro form-label-info">{{ bField.label || bField.class }}</label>
+              <span class="text-xs text-muted mirror-badge">зеркало</span>
             </div>
             <XboxWheel v-if="bField.type === 'select'" :model-value="''" :options="bField.options || []" :placeholder="bField.placeholder || '...'" :disabled="true" />
-            <input v-else class="input-base interactive-el text-sm pointer-events-none" style="opacity:0.5;" :placeholder="bField.placeholder || '...'">
+            <input v-else class="input-base interactive-el text-sm pointer-events-none input-muted" :placeholder="bField.placeholder || '...'">
             <div class="side-override-box">
               <div class="flex gap-2 mb-2">
                 <div class="flex-1"><label class="form-label-micro">Название</label><input v-model="ensureFieldOverride(item, bField.class + '__b').label" class="input-base interactive-el" :placeholder="bField.label || bField.class"></div>
@@ -102,9 +102,9 @@
             <div class="side-dynamic-header-b">⏱️ {{ subConf.title }}</div>
             <div class="flex-col gap-2 p-2">
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'rnf-'+nIdx" class="card-secondary">
-                <label class="form-label-micro mb-1" style="color: var(--info);">{{ nField.label || nField.class }}</label>
+                <label class="form-label-micro mb-1 form-label-info">{{ nField.label || nField.class }}</label>
                 <XboxWheel v-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" :disabled="true" />
-                <input v-else class="input-base interactive-el pointer-events-none" style="opacity:0.5;" :placeholder="nField.placeholder || '...'">
+                <input v-else class="input-base interactive-el pointer-events-none input-muted" :placeholder="nField.placeholder || '...'">
               </div>
               <div class="dynamic-empty-box">{{ subConf.emptyMessage || 'Пусто' }}</div>
             </div>
@@ -223,7 +223,7 @@
     <div
       v-if="['dynamic', 'timeline'].includes(String(item.type))"
       class="dynamic-empty-box cursor-pointer mt-3 p-4"
-      :style="{ borderColor: isDraggedOver ? 'var(--accent)' : 'var(--border-color)', background: isDraggedOver ? 'var(--bg-selected)' : 'var(--bg-sunken)' }"
+      :class="{ 'is-drag-active': isDraggedOver }"
       @dragenter.prevent="isDraggedOver = true"
       @dragover.prevent="isDraggedOver = true"
       @dragleave="isDraggedOver = false"

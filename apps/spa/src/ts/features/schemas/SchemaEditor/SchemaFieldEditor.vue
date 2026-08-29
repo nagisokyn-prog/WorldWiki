@@ -36,17 +36,17 @@
        <XboxWheel v-else-if="item.type === 'select'" :model-value="''" :options="item.options || []" :placeholder="item.placeholder || 'Выберите...'" />
 
        <!-- 3D WHEEL DATE -->
-       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card); padding: 6px; border-radius: var(--radius-card); border: 1px solid var(--border-color);">
-          <div class="date-wheel-group" style="flex: 1; min-width: 80px;">
-             <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Год</div>
+       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" class="date-wheels-container">
+          <div class="date-wheel-group">
+             <div class="date-wheel-label">Год</div>
              <XboxWheel :options="[{ value: '2026', label: '2026' }, { value: '2025', label: '2025' }, { value: '2024', label: '2024' }]" placeholder="Год" />
           </div>
-          <div class="date-wheel-group" style="flex: 1.5; min-width: 120px;">
-             <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Месяц</div>
+          <div class="date-wheel-group month">
+             <div class="date-wheel-label">Месяц</div>
              <XboxWheel :options="monthsList" placeholder="Месяц" />
           </div>
-          <div class="date-wheel-group" style="flex: 0.8; min-width: 65px;">
-             <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">День</div>
+          <div class="date-wheel-group day">
+             <div class="date-wheel-label">День</div>
              <XboxWheel :options="Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: String(i + 1) }))" placeholder="День" />
           </div>
        </div>
@@ -60,10 +60,10 @@
        <!-- PHOTO -->
        <div v-else-if="item.type === 'photo'" class="photo-placeholder-ui interactive-el">
           <span class="text-2xl">🖼️</span>
-          <span class="text-xs font-bold" style="letter-spacing: 2px;">ЗАГРУЗИТЬ ФОТО</span>
+          <span class="photo-placeholder-title">ЗАГРУЗИТЬ ФОТО</span>
        </div>
 
-       <textarea v-else-if="item.type === 'textarea'" class="input-base interactive-el" style="min-height: 80px;" :placeholder="item.placeholder || 'Введите текст...'"></textarea>
+       <textarea v-else-if="item.type === 'textarea'" class="input-base interactive-el input-textarea-tall" :placeholder="item.placeholder || 'Введите текст...'"></textarea>
        <input v-else :value="item._val || ''" class="input-base interactive-el" :placeholder="item.placeholder || 'Введите значение...'" :type="item.type === 'number' ? 'number' : 'text'" @input="updateVal(($event.target as HTMLInputElement).value)" />
     </div>
 

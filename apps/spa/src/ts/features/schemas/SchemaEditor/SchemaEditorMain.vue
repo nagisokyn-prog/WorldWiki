@@ -25,7 +25,7 @@
       <div v-if="hook.isPreviewMode.value" class="flex-1 flex-col">
         <div class="schema-history-banner">
            <span class="schema-history-text">👁️ РЕЖИМ ПРЕДПРОСМОТРА</span>
-           <button class="btn-new text-xs" style="background: var(--warning); color: #000000;" @click="setIsPreviewMode(false)">ВЕРНУТЬСЯ В РЕДАКТОР</button>
+           <button class="btn-new text-xs btn-warning-action" @click="setIsPreviewMode(false)">ВЕРНУТЬСЯ В РЕДАКТОР</button>
         </div>
         <div class="flex-1 relative">
           <EntityEditorVue :key="previewKey" entity-id="preview" entity-type="sandbox_preview" project="sandbox" :initial-data="{}" :config="schema" />
@@ -39,7 +39,7 @@
           <span class="schema-history-text">⚠️ ВЫ ПРОСМАТРИВАЕТЕ СТАРУЮ ВЕРСИЮ СХЕМЫ</span>
           <div class="flex gap-2">
              <button class="btn-new btn-outline-new text-xs" style="border-color: rgba(245,158,11,0.3); color: var(--warning);" @click="exitPreviewMode">Отмена</button>
-             <button class="btn-new text-xs" style="background: var(--warning); color: #000000; border: none;" @click="saveSchema">Восстановить эту версию</button>
+             <button class="btn-new text-xs btn-warning-action" style="border: none;" @click="saveSchema">Восстановить эту версию</button>
           </div>
         </div>
         <!-- Вкладки (страницы) -->
@@ -131,7 +131,7 @@
       </aside>
 
       <!-- RIGHT SIDEBAR (HISTORY) -->
-      <aside v-if="showHistory" class="schema-catalog" style="width: 280px;">
+      <aside v-if="showHistory" class="schema-catalog history-sidebar-drawer">
         <div class="flex justify-between items-center p-3 border-b text-xs font-bold">
           <span>История изменений</span>
           <button class="cursor-pointer text-muted" @click="showHistory = false">✕</button>
@@ -164,13 +164,13 @@
     </div>
     <!-- JSON ПРЕВЬЮ -->
     <div v-if="hook.showJsonPreview.value" class="glass-modal-overlay visible" @click="setShowJsonPreview(false)">
-      <div class="glass-modal glass-panel flex-col" style="width: 1100px; height: 85vh;" @click.stop>
+      <div class="glass-modal glass-panel flex-col json-preview-modal" @click.stop>
          <div class="glass-title flex justify-between items-center p-3">
             <span>SCHEMA (JSON)</span>
             <button class="btn-new text-xs" @click="setShowJsonPreview(false)">ЗАКРЫТЬ</button>
          </div>
          <div class="flex-1 p-4 overflow-hidden">
-            <textarea :value="jsonPreviewContent" readonly class="input-base w-full h-full font-mono text-xs p-4" style="background: var(--bg-sunken); color: var(--success); border: 1px solid var(--border-color); resize: none;"></textarea>
+            <textarea :value="jsonPreviewContent" readonly class="input-base w-full h-full font-mono text-xs p-4 json-preview-textarea"></textarea>
          </div>
       </div>
     </div>

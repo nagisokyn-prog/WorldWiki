@@ -63,7 +63,7 @@
 
                           <!-- Photo upload field -->
                           <div v-else-if="field.type === 'photo'" class="photo-upload-zone" @click="triggerPhotoUpload(field.path || field.id || field.class || '')" @dragover.prevent @drop.prevent="e => handlePhotoDrop(e, field.path || field.id || field.class || '')">
-                            <input :ref="el => { if (el) photoInputs[field.path || field.id || field.class || ''] = el as HTMLInputElement; }" type="file" accept="image/*" class="hidden" style="display:none;" @change="e => handlePhotoFile(e, field.path || field.id || field.class || '')" />
+                            <input :ref="el => { if (el) photoInputs[field.path || field.id || field.class || ''] = el as HTMLInputElement; }" type="file" accept="image/*" class="hidden" @change="e => handlePhotoFile(e, field.path || field.id || field.class || '')" />
                             <div v-if="getProp(field.path || field.id || field.class || '')" class="photo-preview">
                               <img :src="getPhotoUrl(String(getProp(field.path || field.id || field.class || '') ?? ''))" alt="Фото" />
                               <button class="photo-remove-btn" title="Удалить фото" @click.stop="removePhoto(field.path || field.id || field.class || '')">✕</button>
@@ -87,7 +87,7 @@
                                 type="checkbox" 
                                 :value="opt.value" 
                                 :checked="((getProp(field.path || field.id || field.class || '') as string[]) || []).includes(opt.value)"
-                                style="accent-color: var(--accent); width: 16px; height: 16px;"
+                                class="checkbox-accent"
                                 @change="e => { 
                                   let arr = ((getProp(field.path || field.id || field.class || '') as string[]) || []); 
                                   if (!Array.isArray(arr)) arr = [];
@@ -208,14 +208,14 @@
                                 :options="getOptionsFor(tField)"
                                 :placeholder="tField.placeholder"
                                 @update:model-value="(val: unknown) => { setProp(item, tField.id || tField.class || '', val); markModified(); }" />
-                                      
+
                               <div v-else-if="tField.type === 'multiselect'" class="multiselect-grid">
                                 <label v-for="opt in getOptionsFor(tField)" :key="opt.value" class="checkbox-item interactive-el">
                                   <input
                                     type="checkbox" 
                                     :value="opt.value" 
                                     :checked="((getProp(item, tField.id || tField.class || '') as string[]) || []).includes(opt.value)"
-                                    style="accent-color: var(--accent); width: 16px; height: 16px;"
+                                    class="checkbox-accent"
                                     @change="e => { 
                                       let arr = ((getProp(item, tField.id || tField.class || '') as string[]) || []); 
                                       if (!Array.isArray(arr)) arr = [];
@@ -239,7 +239,7 @@
                                   style="accent-color: var(--accent);"
                                   @input="e => { setProp(item, tField.id || tField.class || '', Number((e.target as HTMLInputElement).value)); markModified(); }"
                                 >
-                                <span class="text-xs text-accent font-bold" style="min-width: 36px; text-align: right;">{{ getProp(item, tField.id || tField.class || '') ?? 0 }}</span>
+                                <span class="text-xs text-accent font-bold range-val-badge">{{ getProp(item, tField.id || tField.class || '') ?? 0 }}</span>
                               </div>
 
                               <UniversalDatePicker
@@ -273,7 +273,7 @@
       </div>
 
       <!-- RIGHT SIDEBAR (HISTORY) -->
-      <aside v-if="showHistory" class="schema-catalog" style="width: 280px; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 10;">
+      <aside v-if="showHistory" class="schema-catalog history-drawer">
           <div class="flex justify-between items-center p-3 border-b text-xs font-bold">
               <span>История изменений</span>
               <button class="cursor-pointer text-muted" @click="showHistory = false">✕</button>
@@ -292,8 +292,8 @@
               
               <div
                 v-for="(rev, idx) in revisions" :key="rev.id" 
-                class="catalog-item interactive-el"
-                :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
+                class="catalog-item interactive-el" 
+                :style="{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }"
                 @click="previewHistory(rev)">
                    <div class="flex justify-between items-center w-full">
                        <span class="text-xs font-bold">{{ rev.formattedDate }}</span>
@@ -307,7 +307,7 @@
                        <span v-else>Базовая версия</span>
                    </div>
                    <div v-if="previewingRevId === rev.id" class="mt-1">
-                       <span class="text-xs" style="color: #f5a623;">Режим предпросмотра</span>
+                       <span class="text-xs preview-badge-warning">Режим предпросмотра</span>
                    </div>
               </div>
           </div>

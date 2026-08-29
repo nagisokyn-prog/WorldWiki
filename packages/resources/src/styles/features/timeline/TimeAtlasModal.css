@@ -102,7 +102,7 @@
 
 .atlas-close-btn:hover {
   background: var(--bg-hover);
-  color: var(--error, #ef4444);
+  color: var(--error);
 }
 
 .atlas-body {
@@ -153,7 +153,7 @@
 .alignment-tag.holiday {
   background: rgba(239, 68, 68, 0.2);
   border-color: rgba(239, 68, 68, 0.4);
-  color: var(--error, #ef4444);
+  color: var(--error);
 }
 
 .alignment-tag.moon {
@@ -322,13 +322,13 @@
 
 .season-pill {
   background: rgba(16, 185, 129, 0.15);
-  color: var(--success, #10b981);
+  color: var(--success);
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .holiday-pill {
   background: rgba(239, 68, 68, 0.15);
-  color: var(--error, #ef4444);
+  color: var(--error);
   border: 1px solid rgba(239, 68, 68, 0.3);
   font-weight: 600;
 }
@@ -465,13 +465,13 @@
 
 .base-holiday {
   background: rgba(239, 68, 68, 0.2);
-  color: var(--error, #ef4444);
+  color: var(--error);
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .comp-holiday {
   background: rgba(245, 158, 11, 0.2);
-  color: var(--warning, #f59e0b);
+  color: var(--warning);
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
@@ -534,9 +534,9 @@
 }
 
 .copy-btn.copied {
-  background: var(--success, #10b981);
-  border-color: var(--success, #10b981);
-  color: #fff;
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--accent-text);
 }
 
 .snippet-text {
@@ -615,21 +615,21 @@
 }
 
 .phase-pill.day {
-  background: rgba(234, 179, 8, 0.2);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.4);
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
 .phase-pill.dusk {
-  background: rgba(236, 72, 153, 0.2);
-  color: #ec4899;
-  border: 1px solid rgba(236, 72, 153, 0.4);
+  background: var(--bg-selected);
+  color: var(--accent);
+  border: 1px solid var(--border-active);
 }
 
 .phase-pill.night {
-  background: rgba(99, 102, 241, 0.2);
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.4);
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--info);
+  border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
 .region-time-display {

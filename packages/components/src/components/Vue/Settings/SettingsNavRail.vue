@@ -52,8 +52,8 @@ const items = computed(() => [
   display: flex;
   flex-direction: column;
   padding: 16px 12px;
-  border-right: 1px solid var(--border-color, rgba(255,255,255,0.05));
-  background: var(--bg-secondary, rgba(0,0,0,0.2));
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-secondary);
   flex-shrink: 0;
 }
 
@@ -67,7 +67,7 @@ const items = computed(() => [
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--text-muted, #888);
+  color: var(--text-muted);
 }
 
 .nav-items-container {
@@ -82,21 +82,21 @@ const items = computed(() => [
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs, 8px);
   cursor: pointer;
-  color: var(--text-muted, #aaa);
+  color: var(--text-muted);
   transition: all 0.2s ease;
   overflow: hidden;
 }
 
 .nav-item:hover {
-  background: rgba(255,255,255,0.03);
-  color: var(--text-main, #eee);
+  background: var(--bg-hover);
+  color: var(--text-main);
 }
 
 .nav-item.is-active {
-  color: var(--text-main, #fff);
-  background: rgba(255,255,255,0.05);
+  color: var(--text-main);
+  background: var(--bg-selected);
 }
 
 .nav-item-icon {
@@ -117,9 +117,9 @@ const items = computed(() => [
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: var(--accent-color, #4facfe);
+  background: var(--accent);
   border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 8px var(--accent-color, #4facfe);
+  box-shadow: var(--shadow-glow);
 }
 
 .nav-item-glow {
@@ -128,7 +128,7 @@ const items = computed(() => [
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 10% 50%, var(--accent-color, #4facfe) 0%, transparent 70%);
+  background: radial-gradient(circle at 10% 50%, var(--accent) 0%, transparent 70%);
   opacity: 0.1;
   pointer-events: none;
 }

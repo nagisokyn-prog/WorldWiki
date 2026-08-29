@@ -71,7 +71,7 @@
   flex-shrink: 0;
   font-size: 15px;
   margin-top: 2px;
-  box-shadow: var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.2));
+  box-shadow: var(--shadow-sm);
 }
 
 .message-user .message-avatar {
@@ -119,11 +119,11 @@
 }
 
 .message-user .author-badge {
-  color: var(--accent-light, #c4b5fd);
+  color: var(--accent-light);
 }
 
 .message-assistant .author-badge {
-  color: var(--info, #60a5fa);
+  color: var(--info);
 }
 
 /* Облако сообщения (Message Bubble) — на всю ширину */
@@ -243,7 +243,7 @@
 
 .icon-btn.danger:hover {
   background: rgba(239, 68, 68, 0.15);
-  color: var(--error, #ef4444);
+  color: var(--error);
 }
 
 /* Аккордеон рассуждений / мыслей ИИ */

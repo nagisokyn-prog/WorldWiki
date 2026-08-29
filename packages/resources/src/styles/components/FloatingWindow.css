@@ -3,10 +3,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  background: var(--bg-panel, #1e1e2f);
+  border-radius: var(--radius-card, 12px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-dropdown);
+  background: var(--bg-panel);
   backdrop-filter: blur(20px);
   /* Убираем задержку при перетаскивании */
   will-change: left, top, width, height;
@@ -19,13 +19,13 @@
 .window-header {
   height: 42px;
   padding: 0 16px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-sunken);
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: move;
   user-select: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .header-left {
@@ -58,7 +58,7 @@
 }
 
 .close-btn:hover {
-  color: #ef4444;
+  color: var(--error);
   transform: scale(1.1);
   transition: all 0.2s;
 }
@@ -78,7 +78,7 @@
   width: 16px;
   height: 16px;
   cursor: se-resize;
-  background: linear-gradient(135deg, transparent 50%, rgba(255,255,255,0.1) 50%);
+  background: linear-gradient(135deg, transparent 50%, var(--border-color) 50%);
   z-index: 10;
 }
 

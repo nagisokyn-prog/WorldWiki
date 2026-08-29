@@ -1,14 +1,14 @@
 .calendar-settings-section {
   background: var(--glass-bg);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm, 8px);
   padding: 12px;
   margin-bottom: 12px;
 }
 .calendar-settings-section h4 {
   margin-top: 0;
   margin-bottom: 8px;
-  color: var(--text-color);
+  color: var(--text-main);
   font-size: 14px;
 }
 .timezone-help-text {
@@ -35,8 +35,8 @@
 .tz-item-card {
   margin-bottom: 8px;
   padding: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-xs, 6px);
   border: 1px solid var(--border-color);
 }
 .grid-2 {
@@ -65,17 +65,17 @@
 }
 .calendar-field input,
 .calendar-field select {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  color: var(--text-color);
+  color: var(--text-main);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   font-size: 12px;
   outline: none;
 }
 .calendar-field select option {
-  background: var(--bg-panel, #1e1e2f);
-  color: var(--text-main, #fff);
+  background: var(--bg-panel);
+  color: var(--text-main);
 }
 .calendar-field input:focus,
 .calendar-field select:focus {
@@ -85,23 +85,24 @@
   margin-top: 8px;
   width: 100%;
   padding: 4px;
-  background: rgba(231, 76, 60, 0.15);
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  color: #e74c3c;
-  border-radius: 4px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--error);
+  border-radius: var(--radius-xs, 4px);
   cursor: pointer;
   font-size: 11px;
   transition: all var(--anim-speed) var(--anim-ease);
 }
 .btn-delete-tz:hover {
-  background: rgba(231, 76, 60, 0.25);
+  background: var(--bg-active);
+  border-color: var(--error);
 }
 .tz-empty-hint {
   font-size: 11px;
   color: var(--text-muted);
   font-style: italic;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 4px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-xs, 4px);
   margin-bottom: 8px;
 }

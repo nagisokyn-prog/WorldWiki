@@ -32,8 +32,8 @@
           
           <template v-if="cf.class === linkClass">
             <XboxWheel 
-              :model-value="(item[cf.class] as string | number) || ''"
-              :options="getOptions(cf).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
+              :model-value="String(item[cf.class] || '').replace(/^entities:/, '')"
+              :options="getOptions(cf).map((o) => ({ value: String(o.value || '').replace(/^entities:/, ''), label: o.label || String(o.value || '') }))"
               placeholder="-- Выберите сущность --"
               @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
@@ -121,11 +121,11 @@
                 :model-value="foreignItem ? String(foreignItem[cf.class] || '') : ''"
                 :options="(cf.options || []).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                 placeholder="-- Не указано --"
-                @update:model-value="(val) => { if (foreignItem) { foreignItem[cf.class] = val; } }"
+                @update:model-value="(val) => updateForeignField(cf.class, val)"
               />
-              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" class="input-base interactive-el w-full" rows="2" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }"></textarea>
-              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? (Number(foreignItem[cf.class]) || 0) : 0" :type="cf.type" class="input-base interactive-el w-full" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputNumber(e) }">
-              <input v-else :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" type="text" class="input-base interactive-el w-full" @input="(e) => { if (foreignItem) foreignItem[cf.class] = getInputValue(e) }">
+              <textarea v-else-if="cf.type === 'textarea'" :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" class="input-base interactive-el w-full" rows="2" @input="(e) => updateForeignField(cf.class, getInputValue(e))"></textarea>
+              <input v-else-if="cf.type === 'number' || cf.type === 'range'" :value="foreignItem ? (Number(foreignItem[cf.class]) || 0) : 0" :type="cf.type" class="input-base interactive-el w-full" @input="(e) => updateForeignField(cf.class, getInputNumber(e))">
+              <input v-else :value="foreignItem ? (String(foreignItem[cf.class] || '')) : ''" type="text" class="input-base interactive-el w-full" @input="(e) => updateForeignField(cf.class, getInputValue(e))">
             </template>
           </div>
 
@@ -146,11 +146,11 @@
                     :model-value="(nItem[nField.class] as string | number) || ''"
                     :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                     placeholder="-- Не указано --"
-                    @update:model-value="(val: unknown) => { nItem[nField.class] = val; }"
+                    @update:model-value="(val: unknown) => updateForeignNestedField(nItem, nField.class, val)"
                   />
-                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e) }"></textarea>
-                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e) }">
-                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e) }">
+                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))"></textarea>
+                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputNumber(e))">
+                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))">
                 </div>
               </div>
               
@@ -205,7 +205,9 @@ const {
   getDynamicContainerFields,
   addNestedItem,
   removeNestedItem,
-  updateItemField
+  updateItemField,
+  updateForeignField,
+  updateForeignNestedField
 } = useRelationshipBlock(props, emit as (event: string, ...args: unknown[]) => void);
 </script>
 

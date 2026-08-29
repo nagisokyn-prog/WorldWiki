@@ -7,7 +7,7 @@
 
     <!-- PREVIEW HEADER NOTIFICATION -->
     <div v-if="isPreviewingHistory" class="history-preview-banner">
-      <span>👁️ Вы просматриваете сохраненную версию от <strong>{{ revisions.find(r => r.id === previewingRevId)?.formattedDate }}</strong></span>
+      <span>👁️ Вы просматриваете сохраненную версию от <strong>{{ revisions.find((r: any) => r.id === previewingRevId)?.formattedDate }}</strong></span>
       <div class="flex gap-2">
         <button class="btn btn-small btn-primary" @click="restoreHistory">Восстановить эту версию</button>
         <button class="btn btn-small btn-outline" @click="exitHistoryPreview">Выйти</button>

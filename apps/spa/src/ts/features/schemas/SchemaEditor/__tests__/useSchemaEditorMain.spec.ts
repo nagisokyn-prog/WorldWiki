@@ -110,6 +110,7 @@ describe('useSchemaEditorMain', () => {
     } as any;
     main.isHistoryPreviewMode.value = true;
     main.showHistory.value = true;
+    main.localEntityType.value = 'Custom Character';
 
     // Success save
     vi.mocked(api.saveEntitySchema).mockResolvedValueOnce({ id: 'saved_schema_id' } as any);
@@ -121,7 +122,8 @@ describe('useSchemaEditorMain', () => {
       expect.objectContaining({
         icon: '🛡️',
         color: '#ff0000',
-        type_name: 'character',
+        type_key: 'character',
+        type_name: 'Custom Character',
       }),
       expect.anything()
     );

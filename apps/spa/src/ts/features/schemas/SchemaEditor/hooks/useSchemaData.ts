@@ -126,6 +126,10 @@ export function useSchemaData(
                 schema.value = createDefaultSchema(currentType);
             }
 
+            const displayName = foundSchema?.type_name || schema.value.name || foundSchema?.type_key || currentType;
+            schema.value.name = displayName;
+            localEntityType.value = displayName;
+
             // Заполняем items и восстанавливаем id/dataPath для dynamicContainers
             if (schema.value && schema.value.sections) {
                 schema.value.sections.forEach((sec: SchemaDataSection) => {

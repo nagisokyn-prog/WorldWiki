@@ -104,7 +104,13 @@ export function useEntityHelpers(
         return f;
       }).filter((f): f is SchemaField => f !== null);
     }
-    return { ...baseTpl, fields: resolvedFields };
+    return {
+      ...container,
+      ...baseTpl,
+      dataPath: container.dataPath || (baseTpl as { dataPath?: string }).dataPath,
+      id: container.id || (baseTpl as { id?: string }).id,
+      fields: resolvedFields
+    };
   };
 
   const atomicBricks = [

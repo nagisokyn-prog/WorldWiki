@@ -357,12 +357,14 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
         current = current[parts[i]] as Record<string, unknown>;
       }
       current[parts[parts.length - 1]] = e.value;
+      markModified();
     } else if (e.entityType && e.entityId) {
       const updateKey = `${e.entityType}:${e.entityId}`;
       foreignUpdates.value = {
         ...foreignUpdates.value,
         [updateKey]: e
       };
+      markModified();
     }
   };
 

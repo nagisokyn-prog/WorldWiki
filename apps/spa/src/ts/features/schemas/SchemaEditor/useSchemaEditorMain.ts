@@ -72,8 +72,14 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
     const saveSchema = async () => {
         try {
             const schemaCopy = JSON.parse(JSON.stringify(dataHook.schema.value));
-            schemaCopy.name = localEntityType.value;
-            schemaCopy.entityType = localEntityType.value;
+            const targetTypeKey = (props.entityType || props.schemaType || localEntityType.value) as string;
+            const targetTypeName = localEntityType.value || schemaCopy.name || targetTypeKey;
+
+            schemaCopy.name = targetTypeName;
+            schemaCopy.type_name = targetTypeName;
+            schemaCopy.type_key = targetTypeKey;
+            schemaCopy.entityType = targetTypeKey;
+
             schemaCopy.sections.forEach((sec: { fields?: unknown[]; dynamicContainers?: unknown[]; items?: unknown[] }) => {
                 sec.fields = [];
                 sec.dynamicContainers = [];
@@ -92,8 +98,8 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
             const dataToSave: EntitySchema = {
                 id: (dataHook.schemaRecordId.value as string) || null,
                 project_id: props.project ? `projects:${props.project}` : null,
-                type_key: localEntityType.value,
-                type_name: schemaCopy.name || localEntityType.value,
+                type_key: targetTypeKey,
+                type_name: targetTypeName,
                 icon: schemaCopy.icon || '📄',
                 color: schemaCopy.color || '#333333',
                 fields_schema: [],
@@ -108,12 +114,12 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
 
             invalidateCache('schemas');
             if (typeof schemaStore.invalidateSchema === 'function') {
-                schemaStore.invalidateSchema(localEntityType.value);
+                schemaStore.invalidateSchema(targetTypeKey);
             } else if (schemaStore.schemaCache?.value) {
-                delete schemaStore.schemaCache.value[localEntityType.value];
+                delete schemaStore.schemaCache.value[targetTypeKey];
             }
-            window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
-            document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: localEntityType.value } }));
+            window.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: targetTypeKey, typeName: targetTypeName } }));
+            document.dispatchEvent(new CustomEvent('ww:schema-updated', { detail: { entityType: targetTypeKey, typeName: targetTypeName } }));
 
             if (historyHook.isHistoryPreviewMode.value) {
                 historyHook.exitPreviewMode();

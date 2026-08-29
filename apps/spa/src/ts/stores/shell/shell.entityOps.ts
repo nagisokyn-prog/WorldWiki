@@ -190,6 +190,107 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
         }
 
         const modifiedForeignEntities: Entity[] = [];
+        const rawMyId = (editor.rawId || '').replace(/^entities:/, '');
+        const myFullId = rawMyId ? `entities:${rawMyId}` : '';
+
+        // Подготовка сущностей стороны Б для сохранения в транзакции
+        const updatesByTarget: Record<string, typeof foreignUpdatesFinal[string]> = {};
+        for (const update of Object.values(foreignUpdatesFinal)) {
+          if (!update || typeof update !== 'object') continue;
+          const u = update as {
+            entityType?: string;
+            entityId?: string;
+            dataPath?: string;
+            linkClass?: string;
+            backLinkValue?: string;
+            item?: Record<string, unknown>;
+            data?: Record<string, unknown>;
+            __deleted?: boolean;
+          };
+          if (!u.entityType || !u.entityId) continue;
+          const cleanTargetId = String(u.entityId).replace(/^entities:/, '');
+          const groupKey = `${u.entityType}:${cleanTargetId}`;
+          updatesByTarget[groupKey] = u;
+        }
+
+        for (const [groupKey, update] of Object.entries(updatesByTarget)) {
+          const u = update as {
+            entityType: string;
+            entityId: string;
+            dataPath?: string;
+            linkClass?: string;
+            backLinkValue?: string;
+            item?: Record<string, unknown>;
+            data?: Record<string, unknown>;
+            __deleted?: boolean;
+          };
+          const cleanTargetId = String(u.entityId).replace(/^entities:/, '');
+          try {
+            const targetDataRaw = await entityApi.getEntity(deps.projectName.value, u.entityType, cleanTargetId);
+            if (!targetDataRaw) continue;
+            const targetData = JSON.parse(JSON.stringify(targetDataRaw));
+
+            const dataPath = u.dataPath;
+            if (!dataPath) continue;
+
+            let targetArr: Array<Record<string, unknown>> = [];
+            if (Array.isArray(targetData[dataPath])) {
+              targetArr = targetData[dataPath];
+            } else {
+              targetData[dataPath] = [];
+              targetArr = targetData[dataPath];
+            }
+
+            const linkClass = u.linkClass;
+            if (!linkClass) continue;
+
+            if (u.__deleted) {
+              targetData[dataPath] = targetArr.filter((item) => {
+                const val = String(item[linkClass] || '');
+                return val !== myFullId && val !== rawMyId && !val.endsWith(`:${rawMyId}`);
+              });
+            } else {
+              const mirrorItem = u.item || u.data || {};
+              const existingIdx = targetArr.findIndex((item) => {
+                const val = String(item[linkClass] || '');
+                return val === myFullId || val === rawMyId || val.endsWith(`:${rawMyId}`);
+              });
+
+              const completeMirror = {
+                ...mirrorItem,
+                [linkClass]: myFullId || rawMyId
+              };
+
+              if (existingIdx >= 0) {
+                targetArr[existingIdx] = {
+                  ...targetArr[existingIdx],
+                  ...completeMirror
+                };
+              } else {
+                targetArr.push(completeMirror);
+              }
+            }
+
+            const foreignPayload = entityApi.formatEntityPayload(
+              deps.projectName.value,
+              u.entityType,
+              targetData,
+              `entities:${cleanTargetId}`,
+              (targetData.name as string) || 'Связанная сущность'
+            );
+            modifiedForeignEntities.push(foreignPayload as unknown as Entity);
+
+            for (const openTab of deps.openEditors.value) {
+              if (openTab.entityType === u.entityType && (openTab.rawId === cleanTargetId || openTab.rawId === `entities:${cleanTargetId}`)) {
+                if (openTab.data && typeof openTab.data === 'object') {
+                  (openTab.data as Record<string, unknown>)[dataPath] = targetData[dataPath];
+                }
+              }
+            }
+          } catch (err) {
+            console.error(`[saveAll] Error preparing foreign entity ${groupKey}:`, err);
+          }
+        }
         const entityId = editor.rawId ? (editor.rawId.startsWith('entities:') ? editor.rawId : `entities:${editor.rawId}`) : `entities:${editor.entityType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const mainPayload = entityApi.formatEntityPayload(deps.projectName.value, editor.entityType, dataToSave, entityId, editor.title || 'Новая сущность');
 
@@ -210,6 +311,9 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
         try {
           const { emit } = await import('@tauri-apps/api/event');
           await emit('ww-entity-saved', { type: editor.entityType, id: `entities:${editor.rawId}` });
+          for (const f of modifiedForeignEntities) {
+            await emit('ww-entity-saved', { type: f.entity_type, id: f.id });
+          }
         } catch (e) {
           console.warn('Tauri emit ww-entity-saved failed', e);
         }

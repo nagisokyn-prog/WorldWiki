@@ -62,7 +62,26 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     foreignItem,
     (newVal) => {
       if (newVal) {
-        emit('foreign-update', newVal);
+        const targetId = getTargetForeignId();
+        const tpl = props.templateConf;
+        const linkField = tpl.fields?.find((f) => f.class === linkClass.value);
+        const targetEntityType = linkField?.entityType || (tpl.foreign_type as string | undefined);
+        const parentDataPath = tpl.dataPath || tpl.id || tpl.template;
+        const backLinkClass = tpl.bidirectionalLinkClass || linkClass.value;
+
+        if (targetId && targetEntityType && parentDataPath) {
+          emit('foreign-update', {
+            entityType: targetEntityType,
+            entityId: String(targetId).replace(/^[^:]+:/, ''),
+            dataPath: parentDataPath,
+            linkClass: backLinkClass,
+            backLinkValue: props.entityId,
+            item: newVal,
+            data: newVal
+          });
+        } else {
+          emit('foreign-update', newVal);
+        }
       }
     },
     { deep: true }
@@ -181,7 +200,7 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
     const tpl = props.templateConf;
     const linkField = tpl.fields?.find((f) => f.class === linkClass.value);
-    const targetEntityType = linkField?.entityType || (tpl.foreign_type as string | undefined) || 'character';
+    const targetEntityType = linkField?.entityType || (tpl.foreign_type as string | undefined);
     if (!targetEntityType) return;
 
     foreignLoading.value = true;
@@ -194,7 +213,7 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
         throw new Error(`Entity ${targetId} not found or returned null`);
       }
 
-      const parentDataPath = tpl.dataPath || tpl.id || tpl.template || 'characterRelationships';
+      const parentDataPath = tpl.dataPath || tpl.id || tpl.template;
       let matched: Record<string, unknown> | null = null;
 
       const rootObj = (targetData.data && typeof targetData.data === 'object') ? targetData.data as Record<string, unknown> : targetData;
@@ -210,12 +229,13 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
       const backLinkClass = tpl.bidirectionalLinkClass || linkClass.value;
 
       if (Array.isArray(targetArr)) {
-        const rawMyId = props.entityId.replace(/^[^:]+:/, '');
+        const rawMyId = String(props.entityId || '').replace(/^[^:]+:/, '');
         matched = (targetArr.find((it) => {
           if (!it || typeof it !== 'object') return false;
           const rec = it as Record<string, unknown>;
-          const val = rec[backLinkClass] || rec['персонаж'] || rec['target_char'] || rec['character'];
-          return val === props.entityId || val === rawMyId || String(val).endsWith(`:${rawMyId}`) || (typeof val === 'string' && val.includes(rawMyId));
+          const val = rec[backLinkClass] || (linkClass.value ? rec[linkClass.value] : undefined);
+          const cleanVal = String(val || '').replace(/^[^:]+:/, '');
+          return cleanVal === rawMyId || val === props.entityId || val === rawMyId || String(val).endsWith(`:${rawMyId}`);
         }) as Record<string, unknown>) || null;
       }
 
@@ -266,13 +286,14 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
   watch(
     () => getTargetForeignId(),
-    (newTargetId, oldTargetId) => {
-      if (newTargetId && newTargetId !== oldTargetId) {
+    (newTargetId) => {
+      if (newTargetId) {
         loadForeignItem(newTargetId);
-      } else if (!newTargetId) {
+      } else {
         foreignItem.value = null;
       }
-    }
+    },
+    { immediate: true }
   );
 
   const onLinkChange = (fieldClass: string) => async (e: Event): Promise<void> => {
@@ -284,7 +305,7 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
 
   const getOptions = (field: TemplateField) => {
     if (field?.options && field.options.length > 0) return field.options;
-    const type = field?.entityType || (props.templateConf.foreign_type as string | undefined) || (field.class === linkClass.value || field.class === 'персонаж' || field.class === 'character' ? 'character' : undefined);
+    const type = field?.entityType || (props.templateConf.foreign_type as string | undefined);
     if (type) {
       if (props.referenceData[`${type}_list`]) return props.referenceData[`${type}_list`];
       if (props.referenceData[type]) return props.referenceData[type];
@@ -317,7 +338,11 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     });
 
     (item[path] as Array<Record<string, unknown>>).push(newItem);
-    emit('item-updated', { item: props.item, idx: props.idx });
+    if (sourceItem && foreignItem.value) {
+      foreignItem.value = { ...foreignItem.value };
+    } else {
+      emit('item-updated', { item: props.item, idx: props.idx });
+    }
     emit('modified');
   };
 
@@ -328,7 +353,11 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     if (!path) return;
     if (!item[path]) return;
     (item[path] as Array<Record<string, unknown>>).splice(idx, 1);
-    emit('item-updated', { item: props.item, idx: props.idx });
+    if (sourceItem && foreignItem.value) {
+      foreignItem.value = { ...foreignItem.value };
+    } else {
+      emit('item-updated', { item: props.item, idx: props.idx });
+    }
     emit('modified');
   };
 
@@ -336,7 +365,7 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     props.item[fieldClass] = val;
     emit('modified');
     emit('item-updated', { item: props.item, idx: props.idx });
-    if (fieldClass === linkClass.value || fieldClass === 'персонаж' || fieldClass === 'character') {
+    if (fieldClass === linkClass.value) {
       if (val) {
         loadForeignItem(val);
       } else {
@@ -369,6 +398,22 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     emit('modified');
   };
 
+  const updateForeignField = (fieldClass: string, val: unknown) => {
+    if (foreignItem.value) {
+      foreignItem.value[fieldClass] = val;
+      foreignItem.value = { ...foreignItem.value };
+      emit('modified');
+    }
+  };
+
+  const updateForeignNestedField = (nestedItem: Record<string, unknown>, fieldClass: string, val: unknown) => {
+    nestedItem[fieldClass] = val;
+    if (foreignItem.value) {
+      foreignItem.value = { ...foreignItem.value };
+    }
+    emit('modified');
+  };
+
   return {
     wheelHorizontal,
     foreignItem,
@@ -388,6 +433,8 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     removeNestedItem,
     getDynamicContainerFields,
     updateItemField,
+    updateForeignField,
+    updateForeignNestedField,
     onSelectChange,
     makeSelectHandler,
     notifyNestedItemUpdate

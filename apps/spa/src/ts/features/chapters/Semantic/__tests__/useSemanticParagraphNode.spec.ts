@@ -2,40 +2,40 @@ import { describe, it, expect, vi } from 'vitest';
 import { useSemanticParagraphNode } from '../useSemanticParagraphNode';
 
 describe('useSemanticParagraphNode', () => {
-  it('handles all tag types (desc, dialog, thought, unknown, empty) for label, tooltip, and badgeStyle', () => {
+  it('handles all tag types (desc, dialog, thought, unknown, empty) for label, tooltip, and tagClass', () => {
     // desc
     const descNode = useSemanticParagraphNode({ node: { attrs: { semanticTag: 'desc' } } });
     expect(descNode.tagLabel.value).toBe('!о');
     expect(descNode.tagTooltip.value).toContain('Описание');
-    expect(descNode.badgeStyle.value.color).toBe('#94a3b8');
+    expect(descNode.tagClass.value).toBe('tag-desc');
 
     // dialog
     const dialogNode = useSemanticParagraphNode({ node: { attrs: { semanticTag: 'dialog' } } });
     expect(dialogNode.tagLabel.value).toBe('!д');
     expect(dialogNode.tagTooltip.value).toContain('Диалог');
-    expect(dialogNode.badgeStyle.value.color).toBe('#38bdf8');
+    expect(dialogNode.tagClass.value).toBe('tag-dialog');
 
     // thought
     const thoughtNode = useSemanticParagraphNode({ node: { attrs: { semanticTag: 'thought' } } });
     expect(thoughtNode.tagLabel.value).toBe('!м');
     expect(thoughtNode.tagTooltip.value).toContain('Мысль');
-    expect(thoughtNode.badgeStyle.value.color).toBe('#c084fc');
+    expect(thoughtNode.tagClass.value).toBe('tag-thought');
 
     // unknown / empty
     const unknownNode = useSemanticParagraphNode({ node: { attrs: { semanticTag: 'custom' } } });
     expect(unknownNode.tagLabel.value).toBe('!о');
     expect(unknownNode.tagTooltip.value).toBe('Тег');
-    expect(unknownNode.badgeStyle.value.color).toBe('#94a3b8');
+    expect(unknownNode.tagClass.value).toBe('tag-custom');
 
     const emptyNode = useSemanticParagraphNode({});
     expect(emptyNode.tagLabel.value).toBe('!о');
     expect(emptyNode.tagTooltip.value).toContain('Описание');
-    expect(emptyNode.badgeStyle.value.color).toBe('#94a3b8');
+    expect(emptyNode.tagClass.value).toBe('tag-desc');
 
     const noAttrsNode = useSemanticParagraphNode({ node: {} });
     expect(noAttrsNode.tagLabel.value).toBe('!о');
     expect(noAttrsNode.tagTooltip.value).toContain('Описание');
-    expect(noAttrsNode.badgeStyle.value.color).toBe('#94a3b8');
+    expect(noAttrsNode.tagClass.value).toBe('tag-desc');
   });
 
   it('cycles tags through desc -> dialog -> thought -> desc and handles missing updateAttributes', () => {

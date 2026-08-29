@@ -1,36 +1,18 @@
-.calendar-section {
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 8px);
-  padding: 12px;
-  margin-bottom: 12px;
-}
-.holidays-section-header {
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  user-select: none;
-}
-.item-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+@import "./CalendarCommon.css";
+
 .item-row {
-  display: flex;
-  gap: 8px;
   background: var(--bg-sunken);
   padding: 10px;
   border-radius: var(--radius-xs, 6px);
 }
+
 .holiday-row-wrap {
   display: flex;
   gap: 12px;
   align-items: center;
   width: 100%;
 }
+
 .holiday-name-input {
   flex: 1;
   background: transparent;
@@ -40,21 +22,25 @@
   border-radius: var(--radius-xs, 4px);
   transition: all var(--anim-speed) var(--anim-ease);
 }
+
 .holiday-name-input:hover,
 .holiday-name-input:focus {
   border-color: var(--accent);
   background: var(--bg-input);
 }
+
 .holiday-dates-wrap {
   display: flex;
   gap: 12px;
   align-items: center;
   flex: 2;
 }
+
 .holiday-wheel-select {
   flex: 1;
   min-width: 0;
 }
+
 .holiday-day-input {
   width: 60px;
   background: var(--bg-input);
@@ -63,34 +49,4 @@
   padding: 4px 8px;
   border-radius: var(--radius-xs, 4px);
   text-align: center;
-}
-.btn-icon {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-xs, 4px);
-}
-.btn-icon:hover:not(:disabled) {
-  color: var(--text-main);
-  background: var(--bg-hover);
-}
-.btn-icon:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-.btn-add {
-  width: 100%;
-  padding: 8px;
-  background: var(--bg-hover);
-  border: 1px dashed var(--border-color);
-  color: var(--text-main);
-  border-radius: var(--radius-xs, 6px);
-  cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
-}
-.btn-add:hover {
-  background: var(--bg-active);
-  border-color: var(--accent);
 }

@@ -228,7 +228,7 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
   const deleteEntity = async (tabId: string, entityType: string, silent = false) => {
     if (!silent) {
       const { appConfirm } = await import('@worldwiki/components');
-      const confirmed = await appConfirm('Вы уверены, что хотите безвозвратно удалить эту запись?');
+      const confirmed = await appConfirm('Вы уверены, что хотите безвозвратно удалить эту запись?', 'Удаление записи');
       if (!confirmed) return;
     }
     const colonIdx = tabId.indexOf(':');

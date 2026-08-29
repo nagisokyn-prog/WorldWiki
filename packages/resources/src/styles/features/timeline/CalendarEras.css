@@ -1,40 +1,7 @@
-.calendar-section {
-  background: var(--glass-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 8px);
-  padding: 12px;
-  margin-bottom: 12px;
-}
-
-.eras-section-header {
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  user-select: none;
-}
-
-.eras-section-header h4 {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 14px;
-}
-
-.eras-collapse-icon {
-  font-size: 10px;
-  color: var(--text-muted);
-  opacity: 0.7;
-}
+@import "./CalendarCommon.css";
 
 .eras-content {
   margin-top: 12px;
-}
-
-.item-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
 }
 
 .era-card {
@@ -42,54 +9,6 @@
   background: var(--bg-sunken);
   padding: 10px;
   border-radius: var(--radius-xs, 6px);
-}
-
-.item-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.item-name {
-  flex: 2;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 4px 8px;
-  border-radius: var(--radius-xs, 4px);
-}
-
-.item-duration {
-  flex: 1;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  padding: 4px 8px;
-  border-radius: var(--radius-xs, 4px);
-}
-
-.item-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.btn-icon {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-xs, 4px);
-}
-
-.btn-icon:hover:not(:disabled) {
-  color: var(--text-main);
-  background: var(--bg-hover);
-}
-
-.btn-icon:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 .era-reverse-row {
@@ -105,20 +24,4 @@
   align-items: center;
   gap: 5px;
   cursor: pointer;
-}
-
-.btn-add {
-  width: 100%;
-  padding: 8px;
-  background: var(--bg-hover);
-  border: 1px dashed var(--border-color);
-  color: var(--text-main);
-  border-radius: var(--radius-xs, 6px);
-  cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
-}
-
-.btn-add:hover {
-  background: var(--bg-active);
-  border-color: var(--accent);
 }

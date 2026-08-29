@@ -23,6 +23,7 @@ vi.mock('../../../../services/api.client', () => ({
 
 vi.mock('@worldwiki/components', () => ({
   appAlert: vi.fn(),
+  appConfirm: vi.fn().mockResolvedValue(true),
 }));
 
 let mockHierarchy: any;
@@ -128,13 +129,12 @@ describe('useChapterTree', () => {
   });
 
   it('handles handleDeleteSection with cancel and confirm modal buttons', async () => {
+    const { appConfirm } = await import('@worldwiki/components');
     const tree = useChapterTree(props, emit);
 
     // Cancel deletion
-    const promise1 = tree.handleDeleteSection('char_type');
-    const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
-    cancelBtn.click();
-    await promise1;
+    vi.mocked(appConfirm).mockResolvedValueOnce(false);
+    await tree.handleDeleteSection('char_type');
     expect(api.deleteEntitySchema).not.toHaveBeenCalled();
 
     // Confirm deletion
@@ -145,9 +145,8 @@ describe('useChapterTree', () => {
       configurable: true,
     });
     vi.useFakeTimers();
+    vi.mocked(appConfirm).mockResolvedValueOnce(true);
     const promise2 = tree.handleDeleteSection('char_type');
-    const confirmBtn = document.getElementById('confirm-btn') as HTMLButtonElement;
-    confirmBtn.click();
     await promise2;
     expect(api.deleteEntitySchema).toHaveBeenCalledWith('my-proj', 'char_type');
     vi.advanceTimersByTime(600);
@@ -155,11 +154,9 @@ describe('useChapterTree', () => {
     vi.useRealTimers();
 
     // Confirm deletion error
+    vi.mocked(appConfirm).mockResolvedValueOnce(true);
     vi.mocked(api.deleteEntitySchema).mockRejectedValueOnce(new Error('Delete schema error'));
-    const promise3 = tree.handleDeleteSection('char_type');
-    const confirmBtn3 = document.getElementById('confirm-btn') as HTMLButtonElement;
-    confirmBtn3.click();
-    await promise3;
+    await tree.handleDeleteSection('char_type');
     expect(appAlert).toHaveBeenCalled();
   });
 

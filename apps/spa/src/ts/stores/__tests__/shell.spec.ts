@@ -592,19 +592,15 @@ describe('shell store', () => {
     });
 
     it('deleteEntity interactive modal confirmation and cancellation', async () => {
+      const { appConfirm } = await import('@worldwiki/components');
+      
       // Test Cancel
-      setTimeout(() => {
-        const cancelBtn = document.getElementById('cancel-btn');
-        cancelBtn?.click();
-      }, 10);
+      vi.mocked(appConfirm).mockResolvedValueOnce(false);
       await shell.deleteEntity('entity:character:c1', 'character', false);
       expect(api.deleteEntity).not.toHaveBeenCalledWith('character:c1');
 
       // Test Confirm
-      setTimeout(() => {
-        const confirmBtn = document.getElementById('confirm-btn');
-        confirmBtn?.click();
-      }, 10);
+      vi.mocked(appConfirm).mockResolvedValueOnce(true);
       vi.mocked(api.deleteEntity).mockResolvedValue(undefined as any);
       await shell.deleteEntity('entity:character:c1', 'character', false);
       expect(api.deleteEntity).toHaveBeenCalledWith('character:c1');

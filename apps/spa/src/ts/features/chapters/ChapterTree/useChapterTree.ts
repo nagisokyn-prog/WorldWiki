@@ -272,8 +272,8 @@ export function useChapterTree(
     };
 
     const handleDeleteSection = async (sectionId: string) => {
-        const { appConfirm } = await import('@worldwiki/components');
-        const confirmed = await appConfirm('Вы уверены, что хотите полностью удалить этот тип сущностей (и все связанные данные)? Это действие необратимо!');
+        const { appConfirm, appAlert } = await import('@worldwiki/components');
+        const confirmed = await appConfirm('Вы уверены, что хотите полностью удалить этот тип сущностей (и все связанные данные)? Это действие необратимо!', 'Удаление схемы');
         
         if (confirmed) {
             try {

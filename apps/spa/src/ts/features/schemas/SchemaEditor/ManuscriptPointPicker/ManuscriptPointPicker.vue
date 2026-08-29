@@ -63,7 +63,7 @@ import { useManuscriptPointPicker } from './useManuscriptPointPicker';
 const props = withDefaults(defineProps<ManuscriptPointPickerProps>(), {
   modelValue: null,
   label: '',
-  allowAutoExtend: false,
+  allowAutoExtend: true,
   disabled: false,
   project: ''
 });

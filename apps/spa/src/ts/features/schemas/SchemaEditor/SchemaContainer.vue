@@ -39,7 +39,8 @@
               <button v-else class="text-xs text-muted cursor-pointer" @click="toggleFieldOverride(item, bField.class)">{{ getFieldOverride(item, bField.class).hidden ? '👁️‍🗨️ скрыто' : '👁️ видимо' }}</button>
             </div>
             <div v-show="!getFieldOverride(item, bField.class).hidden">
-              <XboxWheel v-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
+              <ManuscriptPointPicker v-if="isChapterField(bField)" :model-value="null" :disabled="true" />
+              <XboxWheel v-else-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
               <input v-else class="input-base text-sm pointer-events-none" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'">
               <div v-if="!isProtectedField(bField.class)" class="side-override-box">
                 <div class="flex gap-2 mb-2">
@@ -69,7 +70,8 @@
             <div class="flex-col gap-2 p-2">
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'lnf-'+nIdx" class="card-secondary">
                 <label class="form-label-micro text-accent-light mb-1">{{ nField.label || nField.class }}</label>
-                <XboxWheel v-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" />
+                <ManuscriptPointPicker v-if="isChapterField(nField)" :model-value="null" :disabled="true" />
+                <XboxWheel v-else-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" />
                 <input v-else class="input-base interactive-el text-xs pointer-events-none" :placeholder="nField.placeholder || '...'">
               </div>
               <div class="dynamic-empty-box">{{ subConf.emptyMessage || 'Пусто' }}</div>
@@ -84,7 +86,8 @@
               <label class="form-label-micro form-label-info">{{ bField.label || bField.class }}</label>
               <span class="text-xs text-muted mirror-badge">зеркало</span>
             </div>
-            <XboxWheel v-if="bField.type === 'select'" :model-value="''" :options="bField.options || []" :placeholder="bField.placeholder || '...'" :disabled="true" />
+            <ManuscriptPointPicker v-if="isChapterField(bField)" :model-value="null" :disabled="true" />
+            <XboxWheel v-else-if="bField.type === 'select'" :model-value="''" :options="bField.options || []" :placeholder="bField.placeholder || '...'" :disabled="true" />
             <input v-else class="input-base interactive-el text-sm pointer-events-none input-muted" :placeholder="bField.placeholder || '...'">
             <div class="side-override-box">
               <div class="flex gap-2 mb-2">
@@ -103,7 +106,8 @@
             <div class="flex-col gap-2 p-2">
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'rnf-'+nIdx" class="card-secondary">
                 <label class="form-label-micro mb-1 form-label-info">{{ nField.label || nField.class }}</label>
-                <XboxWheel v-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" :disabled="true" />
+                <ManuscriptPointPicker v-if="isChapterField(nField)" :model-value="null" :disabled="true" />
+                <XboxWheel v-else-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" :disabled="true" />
                 <input v-else class="input-base interactive-el pointer-events-none input-muted" :placeholder="nField.placeholder || '...'">
               </div>
               <div class="dynamic-empty-box">{{ subConf.emptyMessage || 'Пусто' }}</div>
@@ -130,7 +134,8 @@
           </div>
 
           <div v-show="!getFieldOverride(item, bField.class).hidden">
-            <XboxWheel v-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
+            <ManuscriptPointPicker v-if="isChapterField(bField)" :model-value="null" :disabled="true" />
+            <XboxWheel v-else-if="(getFieldOverride(item, bField.class).type || bField.type) === 'select'" :model-value="''" :options="getFieldOverride(item, bField.class).options || bField.options || []" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'" />
             <input v-else class="input-base interactive-el pointer-events-none" :placeholder="getFieldOverride(item, bField.class).placeholder || bField.placeholder || '...'">
 
             <!-- INLINE SETTINGS (для незащищенных полей) -->
@@ -236,8 +241,16 @@
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
+import ManuscriptPointPicker from './ManuscriptPointPicker/ManuscriptPointPicker.vue';
 import { useSchemaContainer } from './useSchemaContainer';
 import type { SchemaContainerItem } from './useSchemaContainer';
+
+const isChapterField = (field: { class?: string; id?: string; type?: string; entityType?: string }): boolean => {
+  if (field.entityType === 'chapter') return true;
+  if (field.type === 'manuscript_point' || field.type === 'chapter') return true;
+  const cls = (field.class || field.id || '').toLowerCase();
+  return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
+};
 
 const props = defineProps<{
   item: SchemaContainerItem;

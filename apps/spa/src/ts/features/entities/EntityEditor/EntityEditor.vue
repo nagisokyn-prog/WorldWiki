@@ -74,6 +74,13 @@
                             </div>
                           </div>
 
+                          <ManuscriptPointPicker
+                            v-else-if="isChapterField(field)"
+                            :model-value="getProp(field.path || field.id || field.class || '') as any"
+                            :allow-auto-extend="!((field.class || field.id || '').toLowerCase().includes('начальная'))"
+                            :project="props.project"
+                            @update:model-value="(val: ManuscriptPoint) => { setProp(field.path || field.id || field.class || '', val); markModified(); }" />
+
                           <XboxWheel
                             v-else-if="field.type === 'select'"
                             :horizontal="wheelHorizontal"
@@ -201,6 +208,13 @@
                                 :placeholder="tField.placeholder" 
                                 @input="e => { setProp(item, tField.id || tField.class || '', (e.target as HTMLTextAreaElement).value); markModified(); }"></textarea>
                                     
+                              <ManuscriptPointPicker
+                                v-else-if="isChapterField(tField)"
+                                :model-value="getProp(item, tField.id || tField.class || '') as any"
+                                :allow-auto-extend="!((tField.class || tField.id || '').toLowerCase().includes('начальная'))"
+                                :project="props.project"
+                                @update:model-value="(val: ManuscriptPoint) => { setProp(item, tField.id || tField.class || '', val); markModified(); }" />
+
                               <XboxWheel
                                 v-else-if="tField.type === 'select'"
                                 :horizontal="wheelHorizontal"
@@ -319,8 +333,17 @@
 import { XboxWheel, TagsField } from '@worldwiki/components';
 import UniversalDatePicker from '../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
 import RelationshipBlock from '../../../features/schemas/SchemaEditor/RelationshipBlock.vue';
+import ManuscriptPointPicker from '../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.vue';
+import type { ManuscriptPoint } from '../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.model';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
+
+const isChapterField = (field: { class?: string; id?: string; type?: string; entityType?: string }): boolean => {
+  if (field.entityType === 'chapter') return true;
+  if (field.type === 'manuscript_point' || field.type === 'chapter') return true;
+  const cls = (field.class || field.id || '').toLowerCase();
+  return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
+};
 
 const props = defineProps<EntityEditorProps>();
 const emit = defineEmits(['update-data', 'modified', 'section-change', 'scroll-change', 'update:modelValue']);

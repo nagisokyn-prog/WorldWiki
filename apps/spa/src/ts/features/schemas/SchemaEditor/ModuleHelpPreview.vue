@@ -93,10 +93,10 @@
                           <div class="mock-side-header text-accent">🟣 СТОРОНА А ({{ example.entityName }})</div>
                           <div v-for="field in example.fields" :key="'fa_' + (field.class || field.id)" class="form-group mb-2">
                             <label v-if="field.label" class="form-label text-xs text-accent-light">{{ field.label }}</label>
-                            
+                            <ManuscriptPointPicker v-if="isChapterField(field)" :model-value="null" :disabled="true" />
                             <!-- Dropdown: кликабелен только если не ссылается на главы и сущности -->
                             <XboxWheel 
-                              v-if="field.type === 'select'" 
+                              v-else-if="field.type === 'select'" 
                               :options="getSelectOptions(field)" 
                               :placeholder="field.placeholder || 'Выберите...'" 
                               :disabled="isEntityOrChapterSelect(field)" 
@@ -118,7 +118,7 @@
                               class="input-base text-xs pointer-events-none" 
                               :placeholder="field.placeholder || ''" 
                               value="" 
-                              tabindex="-1"
+                              tabindex="-1" 
                               readonly 
                             />
                             <div v-if="field.hint" class="form-hint text-micro text-muted">{{ field.hint }}</div>
@@ -132,8 +132,9 @@
                             <div class="nested-item card-secondary p-2 mb-1">
                               <div v-for="subField in (sub.fields || [])" :key="'sfa_' + subField.class" class="form-group mb-2">
                                 <label v-if="subField.label" class="form-label text-xs">{{ subField.label }}</label>
+                                <ManuscriptPointPicker v-if="isChapterField(subField)" :model-value="null" :disabled="true" />
                                 <XboxWheel 
-                                  v-if="subField.type === 'select'" 
+                                  v-else-if="subField.type === 'select'" 
                                   :options="getSelectOptions(subField)" 
                                   :placeholder="subField.placeholder || 'Выберите...'" 
                                   :disabled="isEntityOrChapterSelect(subField)" 
@@ -151,10 +152,10 @@
                           <div class="mock-side-header mock-side-header-b">🔵 СТОРОНА Б (Зеркало)</div>
                           <div v-for="field in example.fields" :key="'fb_' + (field.class || field.id)" class="form-group mb-2">
                             <label v-if="field.label" class="form-label form-label-b text-xs">{{ field.label }}</label>
-                            
+                            <ManuscriptPointPicker v-if="isChapterField(field)" :model-value="null" :disabled="true" />
                             <!-- Dropdown: кликабелен только если не ссылается на главы и сущности -->
                             <XboxWheel 
-                              v-if="field.type === 'select'" 
+                              v-else-if="field.type === 'select'" 
                               :options="getSelectOptions(field)" 
                               :placeholder="field.placeholder || 'Выберите...'" 
                               :disabled="isEntityOrChapterSelect(field)" 
@@ -176,7 +177,7 @@
                               class="input-base text-xs pointer-events-none" 
                               :placeholder="field.placeholder || ''" 
                               value="" 
-                              tabindex="-1"
+                              tabindex="-1" 
                               readonly 
                             />
                             <div v-if="field.hint" class="form-hint text-micro text-muted">{{ field.hint }}</div>
@@ -190,8 +191,9 @@
                             <div class="nested-item card-secondary p-2 mb-1">
                               <div v-for="subField in (sub.fields || [])" :key="'sfb_' + subField.class" class="form-group mb-2">
                                 <label v-if="subField.label" class="form-label text-xs">{{ subField.label }}</label>
+                                <ManuscriptPointPicker v-if="isChapterField(subField)" :model-value="null" :disabled="true" />
                                 <XboxWheel 
-                                  v-if="subField.type === 'select'" 
+                                  v-else-if="subField.type === 'select'" 
                                   :options="getSelectOptions(subField)" 
                                   :placeholder="subField.placeholder || 'Выберите...'" 
                                   :disabled="isEntityOrChapterSelect(subField)" 
@@ -220,9 +222,10 @@
                         <div v-for="field in example.fields" :key="field.id || field.class" class="form-group mb-2">
                           <label v-if="field.label" class="form-label text-xs">{{ field.label }}</label>
                           
+                          <ManuscriptPointPicker v-if="isChapterField(field)" :model-value="null" :disabled="true" />
                           <!-- Select: кликабелен только если не ссылается на главы и сущности -->
                           <XboxWheel 
-                            v-if="field.type === 'select'" 
+                            v-else-if="field.type === 'select'" 
                             :options="getSelectOptions(field)" 
                             :placeholder="field.placeholder || 'Выберите...'" 
                             :disabled="isEntityOrChapterSelect(field)" 
@@ -309,7 +312,15 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue';
 import { XboxWheel } from '@worldwiki/components';
+import ManuscriptPointPicker from './ManuscriptPointPicker/ManuscriptPointPicker.vue';
 import { useModuleReferenceData, type SchemaFieldDef } from './useModuleReferenceData';
+
+const isChapterField = (field: SchemaFieldDef): boolean => {
+  if (field.entityType === 'chapter') return true;
+  if (field.type === 'manuscript_point' || field.type === 'chapter') return true;
+  const cls = (field.class || field.id || field.label || '').toLowerCase();
+  return cls.includes('глава') || cls.includes('chapter') || cls === 'начальная_глава' || cls === 'конечная_глава';
+};
 
 const props = defineProps<{
   templateKey: string;

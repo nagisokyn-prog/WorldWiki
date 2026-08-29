@@ -9,18 +9,27 @@
       />
 
       <div v-if="editorMode === 'wysiwyg' || editorMode === 'split'" class="toolbar-actions">
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Жирный (Ctrl+B)" @click="commands.toggleBold?.()"><b>B</b></button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Курсив (Ctrl+I)" @click="commands.toggleItalic?.()"><i>I</i></button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Зачеркнутый" @click="commands.toggleStrike?.()"><s>S</s></button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Заголовок 1" @click="commands.setHeading?.(1)">H1</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Заголовок 2" @click="commands.setHeading?.(2)">H2</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Цитата" @click="commands.toggleBlockquote?.()">”</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Маркированный список" @click="commands.toggleBulletList?.()">• List</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Нумерованный список" @click="commands.toggleOrderedList?.()">1. List</button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('bold') }" title="Жирный (Ctrl+B)" @click="commands.toggleBold?.()"><b>B</b></button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('italic') }" title="Курсив (Ctrl+I)" @click="commands.toggleItalic?.()"><i>I</i></button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('strike') }" title="Зачеркнутый" @click="commands.toggleStrike?.()"><s>S</s></button>
+
+        <span class="toolbar-divider"></span>
+
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('heading', { level: 1 }) }" title="Заголовок 1" @click="commands.setHeading?.(1)">H1</button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('heading', { level: 2 }) }" title="Заголовок 2" @click="commands.setHeading?.(2)">H2</button>
+
+        <span class="toolbar-divider"></span>
+
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('blockquote') }" title="Цитата" @click="commands.toggleBlockquote?.()">”</button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('bulletList') }" title="Маркированный список" @click="commands.toggleBulletList?.()">• List</button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('orderedList') }" title="Нумерованный список" @click="commands.toggleOrderedList?.()">1. List</button>
+
+        <span class="toolbar-divider"></span>
+
         <button class="btn btn-icon interactive-el toolbar-btn" title="Вставить изображение" @click="commands.insertImage?.()">🖼️</button>
         <button class="btn btn-icon interactive-el toolbar-btn" title="Вставить таблицу" @click="commands.insertTable?.()">📊</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Вставить ссылку" @click="commands.insertLink?.()">🔗</button>
-        <button class="btn btn-icon interactive-el toolbar-btn" title="Очистить форматирование" @click="commands.clearFormatting?.()">🧹</button>
+        <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('link') }" title="Вставить ссылку" @click="commands.insertLink?.()">🔗</button>
+        <button class="btn btn-icon interactive-el toolbar-btn toolbar-btn-danger" title="Очистить форматирование" @click="commands.clearFormatting?.()">🧹</button>
       </div>
     </div>
 

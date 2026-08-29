@@ -183,6 +183,39 @@ describe('useEntityEditor', () => {
     expect((editor.formData.value.items as any[]).length).toBe(0);
   });
 
+  it('handles timeline inheritance in addDynamicItem', () => {
+    const editor = useEntityEditor(props, emit);
+    editor.config.value = {
+      templates: {
+        timeline_tpl: {
+          fields: [
+            { class: 'начальная_глава' } as any,
+            { class: 'конечная_глава' } as any,
+            { class: 'название', default: 'Этап' } as any
+          ],
+        },
+      },
+    } as any;
+    editor.formData.value = {
+      chronology: [
+        {
+          начальная_глава: { chapter_id: 'chapters:c1', is_auto_extend: false },
+          конечная_глава: { chapter_id: 'chapters:c2', is_auto_extend: true },
+          название: 'Первый этап'
+        }
+      ]
+    };
+
+    editor.addDynamicItem('chronology', 'timeline_tpl');
+    const items = editor.formData.value.chronology as any[];
+    expect(items.length).toBe(2);
+    expect(items[0].конечная_глава.is_auto_extend).toBe(false);
+    expect(items[1].начальная_глава.chapter_id).toBe('chapters:c2');
+    expect(items[1].начальная_глава.is_auto_extend).toBe(false);
+    expect(items[1].конечная_глава.chapter_id).toBe('chapters:c2');
+    expect(items[1].конечная_глава.is_auto_extend).toBe(true);
+  });
+
   it('handles foreign and local dynamic updates', () => {
     const editor = useEntityEditor(props, emit);
     editor.formData.value = {};

@@ -1,5 +1,6 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
 import * as api from '../../../services/api.client';
+import { useChapterStore } from '../../../stores/chapter.store';
 import type { EntitySchema } from '../../../types/generated/EntitySchema';
 import { settingsService } from '@worldwiki/components';
 import { useEntityHistory } from './hooks/useEntityHistory';
@@ -381,7 +382,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
         console.warn('addDynamicItem: path is undefined, container lacks dataPath and id in schema');
         return;
     }
-    const arr = (helpers.getProp(formData.value, path) as unknown[]) || [];
+    const arr = (helpers.getProp(formData.value, path) as Array<Record<string, unknown>>) || [];
     const tpl = typeof templateNameOrObj === 'string' ? config.value?.templates?.[templateNameOrObj] : templateNameOrObj;
     if (!tpl) return;
     const newItem: Record<string, unknown> = {};
@@ -392,6 +393,41 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
         }
       });
     }
+
+    // Эстафета этапов для timeline-модулей (начальная_глава / конечная_глава)
+    const lastItem = arr.length > 0 ? arr[arr.length - 1] : null;
+    if (lastItem && lastItem['конечная_глава']) {
+      const prevEnd = typeof lastItem['конечная_глава'] === 'object' && lastItem['конечная_глава'] !== null
+        ? JSON.parse(JSON.stringify(lastItem['конечная_глава']))
+        : { chapter_id: String(lastItem['конечная_глава']) };
+
+      newItem['начальная_глава'] = { ...prevEnd, is_auto_extend: false };
+      const hadAutoExtend = Boolean(prevEnd.is_auto_extend);
+      newItem['конечная_глава'] = { ...prevEnd, is_auto_extend: hadAutoExtend };
+
+      if (typeof lastItem['конечная_глава'] === 'object' && lastItem['конечная_глава'] !== null) {
+        (lastItem['конечная_глава'] as Record<string, unknown>).is_auto_extend = false;
+      }
+    } else if (newItem['начальная_глава'] !== undefined || newItem['конечная_глава'] !== undefined) {
+      try {
+        const chapterStore = useChapterStore();
+        const hier = chapterStore.hierarchy;
+        if (hier?.chapters && hier.chapters.length > 0) {
+          const lastCh = hier.chapters[hier.chapters.length - 1];
+          const initialPoint = {
+            chapter_id: lastCh.id,
+            arc_id: lastCh.arc_id || null,
+            volume_id: lastCh.volume_id || null,
+            is_auto_extend: true
+          };
+          if (newItem['начальная_глава'] !== undefined) newItem['начальная_глава'] = { ...initialPoint, is_auto_extend: false };
+          if (newItem['конечная_глава'] !== undefined) newItem['конечная_глава'] = { ...initialPoint, is_auto_extend: true };
+        }
+      } catch {
+        // Игнорируем вне контекста Pinia
+      }
+    }
+
     helpers.setProp(formData.value, path, [...arr, newItem]);
     markModified();
   };

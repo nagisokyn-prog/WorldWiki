@@ -119,6 +119,27 @@
   transform: scale(var(--scale-push, 0.98));
 }
 
+.btn-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--radius-xs, 4px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+}
+.btn-icon:hover:not(:disabled) {
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+.btn-icon:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 /* 2. ФОРМЫ (FORMS & INPUTS) */
 .form-group {
   display: flex;
@@ -288,4 +309,19 @@
   font-size: 36px;
   opacity: 0.4;
   color: var(--accent);
+}
+
+/* 6. СЕКЦИИ ИНСТРУМЕНТАЛЬНЫХ ПАНЕЛЕЙ (TOOL SECTIONS) */
+.tool-section {
+  margin-bottom: 24px;
+}
+
+.tool-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

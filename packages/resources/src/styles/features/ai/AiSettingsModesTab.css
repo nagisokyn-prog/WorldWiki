@@ -3,11 +3,6 @@
   flex-direction: column;
   gap: 18px;
 }
-.tab-intro h3 {
-  margin: 0 0 6px 0;
-  font-size: 18px;
-  color: var(--text-main);
-}
 .mode-selector-bar {
   background: var(--bg-card);
   border: 1px solid var(--border-color);

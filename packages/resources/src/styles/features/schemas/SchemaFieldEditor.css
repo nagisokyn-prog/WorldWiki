@@ -1,4 +1,5 @@
 /* SchemaFieldEditor.css - Стили редактора полей схем */
+@import "../timeline/DateWheels.css";
 
 .schema-field-editor {
   transition: all var(--anim-speed) var(--anim-ease);
@@ -94,21 +95,6 @@
   box-shadow: var(--shadow-glow);
 }
 
-.date-wheels-container {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: var(--bg-card);
-  padding: 6px;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border-color);
-}
-
-.date-wheel-group {
-  flex: 1;
-  min-width: 80px;
-}
-
 .date-wheel-group.month {
   flex: 1.5;
   min-width: 120px;
@@ -117,14 +103,6 @@
 .date-wheel-group.day {
   flex: 0.8;
   min-width: 65px;
-}
-
-.date-wheel-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-bottom: 4px;
-  text-transform: uppercase;
 }
 
 .photo-placeholder-title {

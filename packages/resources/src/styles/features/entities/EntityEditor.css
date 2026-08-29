@@ -128,31 +128,6 @@
   color: var(--text-muted);
 }
 
-/* Inputs, Textareas and Dropdowns */
-.input-base {
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-input);
-  color: var(--text-main);
-  font-family: inherit;
-  font-size: 13px;
-  outline: none;
-  transition: border-color var(--anim-speed, 0.2s) ease, box-shadow var(--anim-speed, 0.2s) ease;
-  box-sizing: border-box;
-}
-
-.input-base:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-
-textarea.input-base {
-  resize: vertical;
-  min-height: 72px;
-  line-height: 1.5;
-}
 
 /* Multiselect Grid */
 .multiselect-grid {

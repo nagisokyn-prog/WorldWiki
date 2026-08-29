@@ -1,50 +1,12 @@
+@import "./DateWheels.css";
+
 .date-wheels-container {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  background: var(--bg-card);
-  padding: 4px;
-  border-radius: var(--radius-card, 12px);
-  border: 1px solid var(--border-color);
   flex-wrap: wrap;
 }
-.date-wheel-group {
-  display: flex;
-  flex-direction: column;
-}
-.date-wheel-group.grow-md {
-  flex: 1.5;
-  min-width: 140px;
-}
-.date-wheel-group.grow-sm {
-  flex: 1;
-  min-width: 120px;
-}
-.date-wheel-group.grow-xs {
-  flex: 1;
-  min-width: 90px;
-}
-.date-wheel-group.grow-mini {
-  flex: 0.8;
-  min-width: 70px;
-}
-.date-wheel-label {
-  font-size: 10px;
-  color: var(--text-muted);
-  text-align: center;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-}
+
 .time-separator {
   display: flex;
   align-items: flex-end;
   padding-bottom: 12px;
   font-weight: bold;
 }
-.year-input-wheel {
-  text-align: center;
-  height: 44px;
-  padding: 0;
-  box-sizing: border-box;
-}
-

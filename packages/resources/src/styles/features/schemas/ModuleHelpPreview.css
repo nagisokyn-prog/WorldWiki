@@ -310,10 +310,6 @@
   flex: 0.8;
 }
 
-.range-accent {
-  accent-color: var(--accent);
-}
-
 .date-wheel-preview-label {
   font-size: 9px;
   color: var(--text-muted);

@@ -132,9 +132,6 @@
   border-style: dashed;
 }
 
-.range-accent {
-  accent-color: var(--accent);
-}
 
 .type-btn-mini.is-disabled-type {
   opacity: 0.2;

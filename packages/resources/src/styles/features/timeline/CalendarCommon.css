@@ -99,26 +99,8 @@
 }
 
 /* 5. Иконки действий в строках */
-.btn-icon {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
+.item-actions .btn-icon {
   padding: 4px;
-  border-radius: var(--radius-xs, 4px);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon:hover:not(:disabled) {
-  color: var(--text-main);
-  background: var(--bg-hover);
-}
-
-.btn-icon:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
 }
 
 /* 6. Кнопка добавления новой записи */

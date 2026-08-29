@@ -8,12 +8,6 @@
   flex-direction: column;
   gap: 18px;
 }
-.text-primary {
-  color: var(--accent);
-}
-.text-accent {
-  color: var(--accent-light);
-}
 .execution-policies {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

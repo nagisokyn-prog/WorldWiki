@@ -155,8 +155,3 @@
   color: var(--text-main);
   border-radius: var(--radius-xs);
 }
-.text-primary { color: var(--accent); }
-.text-accent { color: var(--accent-light); }
-.text-warning { color: var(--warning); }
-.text-danger { color: var(--error); }
-.text-success { color: var(--success); }

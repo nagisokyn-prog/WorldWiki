@@ -209,7 +209,3 @@
 .schema-page-title-input.is-hidden-page {
     opacity: 0.4;
 }
-
-.text-warning {
-    color: var(--warning);
-}

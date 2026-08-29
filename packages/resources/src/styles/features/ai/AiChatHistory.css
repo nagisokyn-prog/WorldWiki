@@ -85,14 +85,6 @@
   padding: 2px 4px;
   border-radius: var(--radius-xs, 4px);
 }
-.ctx-sep {
-  height: 1px;
-  background: var(--border-color);
-  margin: 4px 0;
-}
-.ctx-danger {
-  color: var(--error);
-}
 .ctx-danger .ctx-icon {
   color: var(--error);
 }

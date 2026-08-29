@@ -3,9 +3,9 @@
 .text-main { color: var(--text-main); }
 .text-muted { color: var(--text-muted); }
 .text-disabled { color: var(--text-disabled); }
-.text-accent { color: var(--accent); }
+.text-accent, .text-primary { color: var(--accent); }
 .text-accent-light { color: var(--accent-light); }
-.text-error { color: var(--error); }
+.text-error, .text-danger { color: var(--error); }
 .text-warning { color: var(--warning); }
 .text-success { color: var(--success); }
 

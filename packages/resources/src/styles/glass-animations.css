@@ -72,9 +72,12 @@ input[type="range"].interactive-el:active {
     to { transform: scale(4); opacity: 0; }
 }
 
-.hidden { display: none !important; }
-.text-center { text-align: center; }
-.mt-10 { margin-top: 10px; }
-.mb-10 { margin-bottom: 10px; }
-.mt-20 { margin-top: 20px; }
-.mb-20 { margin-bottom: 20px; }
+/* Vue Modal Transitions */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+    opacity: 0;
+}

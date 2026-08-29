@@ -171,6 +171,10 @@
   line-height: 1.4;
 }
 
+.range-accent {
+  accent-color: var(--accent);
+}
+
 .error-text {
   font-size: 12px;
   color: var(--error);
@@ -324,4 +328,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* 7. КОНТЕКСТНОЕ МЕНЮ (CONTEXT MENU) */
+.ctx-sep {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
+.ctx-danger {
+  color: var(--error);
+}
+
+.ctx-danger:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: var(--error);
 }

@@ -297,9 +297,6 @@
   z-index: var(--z-item, 1);
 }
 
-.range-accent {
-  accent-color: var(--accent);
-}
 
 .catalog-item.is-previewing {
   background: var(--bg-selected);

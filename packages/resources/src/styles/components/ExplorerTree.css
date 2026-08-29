@@ -263,11 +263,6 @@
     color: var(--text-main);
 }
 
-.ctx-sep {
-    height: 1px;
-    background: var(--border-color);
-    margin: 4px 0;
-}
 
 /* --- Inline Add Buttons --- */
 .tree-add-inline {

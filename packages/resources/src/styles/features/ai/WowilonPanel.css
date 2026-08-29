@@ -24,6 +24,7 @@
 
 .wowilon-panel {
   position: relative;
+  width: var(--panel-w, 400px);
   height: 100%;
   background: var(--bg-panel);
   border-left: 1px solid var(--border-color);

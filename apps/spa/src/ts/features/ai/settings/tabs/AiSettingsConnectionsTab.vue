@@ -95,7 +95,7 @@
         <span class="field-hint">Оставьте пустым для использования стандартного официального адреса API.</span>
       </div>
 
-      <div class="form-actions" style="margin-top: 24px;">
+      <div class="form-actions mt-6">
         <button class="btn-primary" @click="handleSave">
           <i class="fas fa-check"></i> Сохранить подключение
         </button>

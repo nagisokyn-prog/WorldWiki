@@ -264,7 +264,7 @@
         <strong>⚠️ Ошибка</strong>
         <button class="cursor-pointer text-main" @click="debugError = null">✕</button>
       </div>
-      <div style="white-space: pre-wrap; word-break: break-all;">{{ debugError }}</div>
+      <div class="debug-error-message">{{ debugError }}</div>
       <div class="mt-2 text-muted">Проект: {{ project }}</div>
     </div>
 

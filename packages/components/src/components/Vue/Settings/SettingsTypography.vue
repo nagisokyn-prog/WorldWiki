@@ -17,7 +17,7 @@
             :key="font.val" 
             class="radio-btn" 
             :class="{ active: settings.fonts.family === font.val }" 
-            :style="{ fontFamily: font.val }" 
+            :style="{ '--font-family': font.val }" 
             @click="settings.fonts.family = font.val; save()"
           >
             {{ t(font.titleKey) }}

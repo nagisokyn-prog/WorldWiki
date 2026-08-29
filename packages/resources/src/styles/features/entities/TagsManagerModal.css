@@ -112,6 +112,7 @@
     height: 12px;
     border-radius: 50%;
     flex-shrink: 0;
+    background: var(--tag-bg, var(--accent));
 }
 
 .tag-name-input {

@@ -67,7 +67,7 @@
       <div class="settings-group">
         <h3 class="form-label settings-group-title">
           {{ t('settings.groupTitles.shadows', 'Тени и объем') }}
-          <span class="impact-badge cost-high ml-2" style="position: static; font-size: 10px;">Cost: Medium</span>
+          <span class="impact-badge cost-high ml-2 impact-badge-static">Cost: Medium</span>
         </h3>
         <div class="control-row"><label>{{ t('settings.fields.shadowOffsetY', 'Смещение Y') }}</label><span class="val-badge">{{ settings.shadows.islandY }}px</span></div>
         <input v-model.number="settings.shadows.islandY" type="range" min="0" max="50" class="interactive-el" @input="save()">

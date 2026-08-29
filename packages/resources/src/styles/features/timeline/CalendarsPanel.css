@@ -287,3 +287,11 @@
     opacity: 0.3;
     cursor: not-allowed;
 }
+
+.btn-icon.is-default {
+    opacity: 1;
+}
+
+.btn-icon.is-dimmed {
+    opacity: 0.5;
+}

@@ -92,7 +92,7 @@
           ></textarea>
         </div>
 
-        <div class="form-actions" style="margin-top: 14px;">
+        <div class="form-actions mt-3">
           <button class="btn-primary interactive-el" @click="saveMode">
             <i class="fas fa-check"></i> Сохранить режим
           </button>

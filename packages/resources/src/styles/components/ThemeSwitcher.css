@@ -135,15 +135,22 @@
 }
 
 .theme-message.success {
-  background: rgba(34, 197, 94, 0.1);
+  background: var(--bg-selected);
   color: var(--success);
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  border: 1px solid var(--success);
 }
 
 .theme-message.error {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--bg-hover);
   color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid var(--error);
+}
+
+.save-theme-btn {
+  width: 100%;
+  margin-bottom: 16px;
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px;
 }
 
 @keyframes fadeIn {

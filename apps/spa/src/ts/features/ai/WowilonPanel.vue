@@ -1,5 +1,5 @@
 <template>
-  <div class="wowilon-panel" :class="{ 'is-open': isOpen }" :style="{ width: panelWidth + 'px' }">
+  <div class="wowilon-panel" :class="{ 'is-open': isOpen }" :style="{ '--panel-w': panelWidth + 'px' }">
     <div class="wowilon-resize-handle" @mousedown.prevent="startResize"></div>
     
     <!-- SETTINGS VIEW -->

@@ -29,7 +29,7 @@
                Широта (0 = экватор, 90 = полюс)
               <span title="Точка обзора (где находятся герои). Служит подсказкой для ИИ о климате региона: 0 - тропики (нет зимы), 45 - средняя полоса (4 сезона), 90 - полюс (полярная ночь)." class="help-icon">[?]</span>
             </label>
-            <input v-model.number="settings.широта" type="number" min="-90" max="90" class="interactive-el" style="max-width: 33.3%;">
+            <input v-model.number="settings.широта" type="number" min="-90" max="90" class="interactive-el latitude-input">
             <small class="glass-label">Влияет на лор. Реальный расчет физики идет по часам ниже.</small>
           </div>
           

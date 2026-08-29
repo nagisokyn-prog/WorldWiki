@@ -186,6 +186,7 @@
 }
 .progress-fill {
   height: 100%;
+  width: var(--rec-progress, 0%);
   background: var(--accent);
   transition: width var(--anim-speed) ease;
 }

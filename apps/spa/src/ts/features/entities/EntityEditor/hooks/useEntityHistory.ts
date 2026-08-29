@@ -103,16 +103,16 @@ export function useEntityHistory(
       const pVal = JSON.stringify(prevData[key]);
       if (cVal !== pVal) {
         if (!prevData[key] && currData[key]) {
-          changes.push(`<span style="color: #10b981;">+ ${key}</span>`);
+          changes.push(`<span class="text-success">+ ${key}</span>`);
         } else {
-          changes.push(`<span style="color: #f5a623;">~ ${key}</span>`);
+          changes.push(`<span class="text-warning">~ ${key}</span>`);
         }
       }
     }
     
     for (const key of Object.keys(prevData)) {
       if (!(key in currData)) {
-        changes.push(`<span style="color: #ef4444;">- ${key}</span>`);
+        changes.push(`<span class="text-error">- ${key}</span>`);
       }
     }
     

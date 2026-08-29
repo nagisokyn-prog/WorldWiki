@@ -159,7 +159,7 @@ defineExpose({
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: var(--bg-base, #111);
+  background: var(--bg-base, var(--bg-main));
 }
 
 .cinematic-settings .settings-content-area {

@@ -1,16 +1,16 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 44,
-  "fixedCount": 1015,
+  "currentDebt": 34,
+  "fixedCount": 1025,
   "introducedCount": 3,
-  "trendPercent": "95.8",
+  "trendPercent": "96.8",
   "categories": {
     "blackColors": 0,
     "whiteColors": 0,
-    "hexColors": 1,
+    "hexColors": 0,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 43
+    "inlineStyles": 34
   },
   "semanticRoles": {
     "modalBackdrops": 0,
@@ -18,68 +18,7 @@
     "borders": 0,
     "text": 0
   },
-  "topVueFiles": [
-    {
-      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
-      "count": 3
-    },
-    {
-      "file": "packages/components/src/components/Vue/TagsField.vue",
-      "count": 3
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
-      "count": 2
-    },
-    {
-      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
-      "count": 2
-    },
-    {
-      "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
-      "count": 1
-    }
-  ],
+  "topCssFiles": [],
   "allTopFiles": [
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
@@ -90,10 +29,6 @@
       "count": 3
     },
     {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 2
-    },
-    {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
       "count": 2
     },
@@ -126,19 +61,23 @@
       "count": 1
     },
     {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
-      "count": 1
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
       "count": 1
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
       "count": 1
     }
   ],
@@ -150,18 +89,6 @@
       "snippet": "style=\"{ '--progress-w': progressPercent + '%' }\""
     },
     {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
-      "line": 98,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 24px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
-      "line": 95,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 14px;\""
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
       "line": 58,
       "match": "inline-style",
@@ -171,31 +98,19 @@
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
       "line": 29,
       "match": "inline-style",
-      "snippet": "style=\"{ width: downloadProgress[card.filename].percent + '%' }\""
+      "snippet": "style=\"{ '--rec-progress': downloadProgress[card.filename].percent + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
       "line": 2,
       "match": "inline-style",
-      "snippet": "style=\"{ width: panelWidth + 'px' }\""
+      "snippet": "style=\"{ '--panel-w': panelWidth + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
       "line": 33,
       "match": "inline-style",
       "snippet": "style=\"{ '--panel-w': rightPanelWidth + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 267,
-      "match": "inline-style",
-      "snippet": "style=\"white-space: pre-wrap; word-break: break-all;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersView.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"width: 100%; height: 100%; background: var(--bg-main);\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
@@ -249,7 +164,7 @@
       "file": "apps/spa/src/ts/features/entities/TagsManagerModal.vue",
       "line": 32,
       "match": "inline-style",
-      "snippet": "style=\"{ background: tag.color }\""
+      "snippet": "style=\"{ '--tag-bg': tag.color }\""
     },
     {
       "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
@@ -294,18 +209,6 @@
       "snippet": "style=\"{ '--season-color': filters.seasons ? day.seasonColor : 'transparent' }\""
     },
     {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarSettings/CalendarSettings.vue",
-      "line": 32,
-      "match": "inline-style",
-      "snippet": "style=\"max-width: 33.3%;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue",
-      "line": 11,
-      "match": "inline-style",
-      "snippet": "style=\"isExplainerOpen ? 'background: var(--bg-selected); border-color: var(--accent);' : ''\""
-    },
-    {
       "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
       "line": 50,
       "match": "inline-style",
@@ -316,12 +219,6 @@
       "line": 56,
       "match": "inline-style",
       "snippet": "style=\"{ '--time-bg': getConvertedDateInfo(ev, calId)?.timeOfDayColor }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/CalendarsPanel/CalendarsPanel.vue",
-      "line": 28,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: cal.is_default ? 1 : 0.5 }\""
     },
     {
       "file": "packages/components/src/components/Vue/ExplorerTree.vue",
@@ -336,12 +233,6 @@
       "snippet": "style=\"windowStyle\""
     },
     {
-      "file": "packages/components/src/components/Vue/Settings/SettingsInterface.vue",
-      "line": 70,
-      "match": "inline-style",
-      "snippet": "style=\"position: static; font-size: 10px;\""
-    },
-    {
       "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
       "line": 2,
       "match": "inline-style",
@@ -351,13 +242,7 @@
       "file": "packages/components/src/components/Vue/Settings/SettingsTypography.vue",
       "line": 20,
       "match": "inline-style",
-      "snippet": "style=\"{ fontFamily: font.val }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings.vue",
-      "line": 162,
-      "match": "#111",
-      "snippet": "background: var(--bg-base, #111);"
+      "snippet": "style=\"{ '--font-family': font.val }\""
     },
     {
       "file": "packages/components/src/components/Vue/TagsField.vue",
@@ -376,12 +261,6 @@
       "line": 36,
       "match": "inline-style",
       "snippet": "style=\"{ '--tag-dot-color': tag.color }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/ThemeSwitcher.vue",
-      "line": 52,
-      "match": "inline-style",
-      "snippet": "style=\"width: 100%; margin-bottom: 16px; border-radius: 8px; padding: 10px;\""
     },
     {
       "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",

@@ -25,7 +25,7 @@
             <span v-else-if="cal.is_default" class="badge-default-accent">По умолчанию</span>
           </div>
           <div class="flex gap-2">
-            <button type="button" class="btn-icon interactive-el" title="Сделать основным" :style="{ opacity: cal.is_default ? 1 : 0.5 }" @click.stop="setDefault(idx)">🌟</button>
+            <button type="button" class="btn-icon interactive-el" :class="cal.is_default ? 'is-default' : 'is-dimmed'" title="Сделать основным" @click.stop="setDefault(idx)">🌟</button>
             <button type="button" class="btn-icon interactive-el" title="Сохранить" @click.stop="saveCalendar(idx)">💾</button>
             <button v-if="!cal.is_master" type="button" class="delete-btn" @click.stop="removeCalendar(idx)">🗑️</button>
           </div>

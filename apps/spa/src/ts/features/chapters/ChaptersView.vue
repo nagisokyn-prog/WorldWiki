@@ -1,5 +1,5 @@
 <template>
-  <div class="chapters-view" style="width: 100%; height: 100%; background: var(--bg-main);">
+  <div class="chapters-view">
     <ChaptersMain :project="project" :controlled-chapter-id="controlledChapterId" />
   </div>
 </template>
@@ -14,3 +14,5 @@ withDefaults(defineProps<{
   controlledChapterId: null
 });
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css"></style>

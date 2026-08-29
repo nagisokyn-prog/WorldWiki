@@ -1,5 +1,11 @@
 /* ChaptersMain.css - Стили основного экрана глав и редактора */
 
+.chapters-view {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-main);
+}
+
 .chapters-view-container {
   display: flex;
   height: 100%;
@@ -218,6 +224,11 @@
   margin: 0 auto;
   border: none !important;
   background: transparent !important;
+}
+
+.debug-error-message {
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .zen-mode-active :deep(.toastui-editor-defaultUI) {

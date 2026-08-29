@@ -49,7 +49,7 @@
     </div>
 
     <div class="theme-actions">
-      <button class="glass-btn" style="width: 100%; margin-bottom: 16px; border-radius: 8px; padding: 10px;" @click="saveCurrentAsTheme">
+      <button class="glass-btn save-theme-btn" @click="saveCurrentAsTheme">
         💾 {{ t('settings.saveTheme') }}
       </button>
     </div>

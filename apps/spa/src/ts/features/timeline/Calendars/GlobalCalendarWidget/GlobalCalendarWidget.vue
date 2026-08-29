@@ -8,7 +8,7 @@
       <div class="gc-header-actions">
         <button class="gc-step-btn interactive-el" title="Предыдущий день" @click="prevDay">◀</button>
         <button class="gc-step-btn interactive-el" title="Следующий день" @click="nextDay">▶</button>
-        <button class="gc-step-btn interactive-el" :style="isExplainerOpen ? 'background: var(--bg-selected); border-color: var(--accent);' : ''" title="🔮 Объяснить дату (сводка для рукописи)" @click="toggleExplainer">🔮</button>
+        <button class="gc-step-btn interactive-el" :class="{ 'is-active': isExplainerOpen }" title="🔮 Объяснить дату (сводка для рукописи)" @click="toggleExplainer">🔮</button>
         <button class="gc-atlas-btn interactive-el" title="Открыть Атлас Времени (Синхронизатор)" @click="openAtlas">
           <i class="fas fa-expand-alt"></i>
         </button>

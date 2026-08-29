@@ -109,7 +109,7 @@ export function useChapterHistory(
     if (JSON.stringify(currSnap.footnotes) !== JSON.stringify(prevSnap.footnotes)) changes.push('Сноски');
 
     if (changes.length > 0) {
-      return `<span style="color:var(--accent)">Изменено:</span> ${changes.join(', ')}`;
+      return `<span class="text-accent">Изменено:</span> ${changes.join(', ')}`;
     }
     return 'Нет визуальных изменений';
   };

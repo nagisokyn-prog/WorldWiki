@@ -354,6 +354,7 @@ input[type="text"].color-text-input {
     border-radius: 8px;
     font-size: 13px;
     font-weight: 500;
+    font-family: var(--font-family, inherit);
     cursor: pointer;
     transition: all var(--anim-speed);
 }
@@ -447,4 +448,9 @@ input:checked+.slider:before {
 
 .perf-option input[type="radio"] {
     display: none;
+}
+
+.impact-badge-static {
+    position: static;
+    font-size: 10px;
 }

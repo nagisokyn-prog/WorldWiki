@@ -26,7 +26,7 @@
         <div class="rec-footer">
           <div v-if="downloadProgress[card.filename]" class="progress-box">
             <div class="progress-bar-bg">
-              <div class="progress-fill" :style="{ width: downloadProgress[card.filename].percent + '%' }"></div>
+              <div class="progress-fill" :style="{ '--rec-progress': downloadProgress[card.filename].percent + '%' }"></div>
             </div>
             <span class="progress-text">Загрузка: {{ (downloadProgress[card.filename].percent || 0).toFixed(1) }}%</span>
           </div>

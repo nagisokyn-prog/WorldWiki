@@ -76,6 +76,11 @@
   transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
+.gc-step-btn.is-active {
+  background: var(--bg-selected);
+  border-color: var(--accent);
+}
+
 .gc-step-btn:hover {
   background: var(--bg-active);
   color: var(--text-main);

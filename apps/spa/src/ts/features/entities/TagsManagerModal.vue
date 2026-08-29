@@ -29,7 +29,7 @@
               <div v-else-if="tags.length === 0" class="empty-state">Тегов пока нет</div>
               <div v-else v-auto-animate class="tags-grid-manage">
                 <div v-for="(tag, tIdx) in tags" :key="tag.id || tIdx" class="tag-manage-card interactive-el">
-                  <div class="tag-color-preview" :style="{ background: tag.color }"></div>
+                  <div class="tag-color-preview" :style="{ '--tag-bg': tag.color }"></div>
                   <input 
                     v-model="tag.name" 
                     class="tag-name-input" 

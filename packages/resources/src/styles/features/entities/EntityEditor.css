@@ -298,9 +298,6 @@
 }
 
 
-.catalog-item.is-previewing {
-  background: var(--bg-selected);
-}
 
 .diff-summary-text {
   line-height: 1.4;

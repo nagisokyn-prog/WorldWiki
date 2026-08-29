@@ -151,7 +151,7 @@ defineExpose({
 </script>
 
 <style scoped>
-@import '@worldwiki/resources/styles/components/Vue_Settings.css';
+@import '@worldwiki/resources/styles/components/Settings.css';
 
 /* Переопределение компоновки для нового Cinematic Settings */
 .cinematic-settings .settings-layout {

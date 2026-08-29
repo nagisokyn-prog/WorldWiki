@@ -210,13 +210,6 @@
     }
 }
 
-.modal-header {
-    padding: calc(20px * var(--density-mult));
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
 
 .close-btn {
     background: none;

@@ -225,48 +225,6 @@
   display: none;
 }
 
-.editor-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  background: transparent;
-  border-right: 1px solid var(--border-color);
-  border-top: 2px solid transparent;
-  cursor: pointer;
-  font-size: 13px;
-  transition: all var(--anim-speed);
-  white-space: nowrap;
-  color: var(--text-muted);
-}
-
-.editor-tab:hover {
-  background: var(--bg-hover);
-  color: var(--text-main);
-  transform: scale(var(--scale-pull));
-}
-
-.editor-tab.active {
-  background: var(--bg-card);
-  border-top-color: var(--accent);
-  color: var(--text-main);
-}
-
-.editor-tab span { display: inline; }
-
-.tab-close {
-  margin-left: 8px;
-  opacity: 0.5;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all var(--anim-speed);
-}
-
-.tab-close:hover {
-  opacity: 1;
-  color: var(--error);
-}
-
 /* Content Area */
 .editor-body {
   flex: 1;
@@ -710,22 +668,6 @@ select.form-control { cursor: pointer; }
   box-shadow: var(--shadow-lg);
 }
 
-/* Interactive Engine */
-.interactive-el {
-  transition: all var(--anim-speed) var(--anim-ease);
-  transform-origin: center center;
-  position: relative;
-  z-index: 10;
-}
-
-.interactive-el:hover {
-  transform: scale(var(--scale-pull));
-  z-index: 20;
-}
-
-.interactive-el:active {
-  transform: scale(var(--scale-push));
-}
 
 /* GPU Optimization: only create layers on hover to save VRAM but keep animations smooth */
 .activity-icon:hover, .btn:hover, .btn-primary:hover, .btn-secondary:hover, .btn-danger:hover, .sidebar-item:hover, .panel-tab:hover, .interactive-el:hover {

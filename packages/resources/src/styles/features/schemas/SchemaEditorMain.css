@@ -187,9 +187,6 @@
     border-color: var(--border-active) !important;
 }
 
-.catalog-item.is-previewing {
-    background: var(--bg-selected);
-}
 
 .btn-warning-outline {
     color: var(--warning);

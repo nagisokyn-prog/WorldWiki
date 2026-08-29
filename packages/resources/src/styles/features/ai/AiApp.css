@@ -12,11 +12,6 @@
   height: 100%;
 }
 
-.wowilon-body {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-}
 
 .wowilon-chat-area {
   flex: 1;

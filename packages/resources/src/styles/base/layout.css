@@ -76,3 +76,9 @@ body.no-glass-blur *::after {
     scrollbar-width: thin;
     scrollbar-color: var(--border-color) transparent;
 }
+
+.wowilon-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}

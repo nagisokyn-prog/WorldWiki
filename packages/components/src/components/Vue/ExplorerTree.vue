@@ -367,4 +367,4 @@ defineExpose({
 });
 </script>
 
-<style scoped src="@worldwiki/resources/styles/components/Vue_ExplorerTree.css"></style>
+<style scoped src="@worldwiki/resources/styles/components/ExplorerTree.css"></style>

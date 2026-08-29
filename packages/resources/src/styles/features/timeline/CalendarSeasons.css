@@ -1,10 +1,5 @@
 @import "./CalendarCommon.css";
 
-.item-row {
-  background: var(--bg-sunken);
-  padding: 10px;
-  border-radius: var(--radius-xs, 6px);
-}
 
 .season-row-wrap {
   flex-direction: column;

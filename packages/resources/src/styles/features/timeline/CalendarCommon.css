@@ -73,6 +73,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  background: var(--bg-sunken);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs, 6px);
 }
 
 .item-name {

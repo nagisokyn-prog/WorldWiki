@@ -65,11 +65,6 @@
   min-width: 300px; /* Minimum width so content doesn't crush while animating */
 }
 
-.wowilon-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
 
 .wowilon-chat-area {
   flex: 1;

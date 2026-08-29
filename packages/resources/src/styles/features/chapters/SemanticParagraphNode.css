@@ -33,10 +33,6 @@
     color: var(--accent);
 }
 
-.semantic-tag-badge:hover {
-    filter: brightness(1.2);
-    transform: scale(1.05);
-}
 
 .content-wrapper {
     display: block;

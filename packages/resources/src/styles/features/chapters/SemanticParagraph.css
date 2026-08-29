@@ -39,10 +39,6 @@
     background: var(--bg-selected);
 }
 
-.semantic-tag-badge:hover {
-    filter: brightness(1.2);
-    transform: scale(1.05);
-}
 
 .semantic-content {
     flex: 1;

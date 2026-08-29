@@ -64,6 +64,9 @@ export interface AiProfileSettings {
   model: string;
   temperature: number;
   use_custom_temperature?: boolean;
+  top_p?: number;
+  frequency_penalty?: number;
+  enable_streaming?: boolean;
   max_tokens?: number;
   context_window?: number;
   thinking_budget?: number;

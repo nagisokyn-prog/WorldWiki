@@ -42,81 +42,26 @@
             @restart-session="cancelGeneration"
           />
           
-          <div ref="messagesContainer" class="messages-container" @scroll="saveScroll">
-            <!-- Empty state: no chat selected OR chat selected but no messages -->
-            <div v-if="messages.length === 0" class="empty-chat-state">
-              <i class="fas fa-comment-dots"></i>
-              <p v-if="activeChatId">
-                <span class="chat-title-label">Чат: </span>{{ getChatTitle(activeChatId) }}
-              </p>
-              <p v-else>Выберите чат слева или создайте новый</p>
-            </div>
-            
-            <div 
-              v-for="(group, idx) in renderedMessages"
-              v-else 
-              :key="group.activeMessage.id || idx" 
-              class="message-wrapper" 
-              :class="'message-' + group.activeMessage.role"
-            >
-              <div class="message-avatar">
-                <i :class="group.activeMessage.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
-              </div>
-              <div class="message-content-wrapper" style="flex: 1; min-width: 0;">
-                <details v-if="group.activeMessage.reasoning" class="thinking-accordion">
-                  <summary>Мысли (Thinking...)</summary>
-                  <!-- eslint-disable-next-line vue/no-v-html -->
-                  <div class="thinking-content" v-html="renderMarkdown(group.activeMessage.reasoning)"></div>
-                </details>
-                
-                <div v-if="group.activeMessage.toolLogs && group.activeMessage.toolLogs.length > 0" class="tool-logs-container">
-                  <div v-for="(log, lIdx) in group.activeMessage.toolLogs" :key="lIdx" class="tool-log-item" :class="{ 'subagent-log': log.includes('spawn_subagent') }">
-                    <i :class="log.includes('spawn_subagent') ? 'fas fa-robot subagent-icon' : 'fas fa-wrench'"></i> {{ log }}
-                  </div>
-                </div>
-
-                <div v-if="editingMessageId === group.activeMessage.id" class="inline-editor">
-                  <textarea v-model="editDraft" class="inline-editor-textarea"></textarea>
-                  <div class="inline-editor-actions">
-                    <button class="btn-cancel" @click="cancelEdit">Отмена</button>
-                    <button class="btn-save" @click="saveEdit(group.activeMessage.id)">Отправить</button>
-                  </div>
-                </div>
-
-                <!-- eslint-disable-next-line vue/no-v-html -->
-                <div v-else class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
-                
-                <div v-if="group.variants.length > 1" class="variant-switcher">
-                  <button :disabled="group.activeIndex === 0" @click="switchVariant(group.variants[group.activeIndex - 1].id as string)"><i class="fas fa-chevron-left"></i></button>
-                  <span>{{ group.activeIndex + 1 }} / {{ group.variants.length }}</span>
-                  <button :disabled="group.activeIndex === group.variants.length - 1" @click="switchVariant(group.variants[group.activeIndex + 1].id as string)"><i class="fas fa-chevron-right"></i></button>
-                </div>
-              </div>
-              
-              <div class="message-actions-hover">
-                <button v-if="group.activeMessage.role === 'user'" class="icon-btn" title="Редактировать" @click="startEdit(group.activeMessage)">
-                  <i class="fas fa-pencil-alt"></i>
-                </button>
-                <button v-if="group.activeMessage.role === 'assistant'" class="icon-btn" title="Перегенерировать ответ" @click="regenerateMessage(group.activeMessage.parent_id as string)">
-                  <i class="fas fa-sync-alt"></i>
-                </button>
-                <button class="icon-btn" title="Создать ветку отсюда (Fork)" @click="handleBranch(group.activeMessage.id)">
-                  <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="14" width="14" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
-                </button>
-                <button class="icon-btn danger" title="Удалить" @click="deleteMessage(group.activeMessage.id as string)">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </div>
-              
-              <!-- Tool Approval Card -->
-              <AiToolApproval 
-                v-if="group.activeMessage.toolCallWaiting" 
-                :tool-call="group.activeMessage.toolCallWaiting"
-                @approve="handleToolApproval"
-                @reject="handleToolRejection"
-              />
-            </div>
-          </div>
+          <AiMessageList 
+            ref="messagesListRef"
+            :messages="messages"
+            :rendered-messages="renderedMessages"
+            :active-chat-id="activeChatId"
+            :chat-title="getChatTitle(activeChatId)"
+            v-model:edit-draft="editDraft"
+            :editing-message-id="editingMessageId"
+            :render-markdown="renderMarkdown"
+            @scroll="saveScroll"
+            @switch-variant="switchVariant"
+            @start-edit="startEdit"
+            @cancel-edit="cancelEdit"
+            @save-edit="saveEdit"
+            @regenerate="regenerateMessage"
+            @branch="handleBranch"
+            @delete="deleteMessage"
+            @tool-approve="handleToolApproval"
+            @tool-reject="handleToolRejection"
+          />
 
           <div class="chat-input-container">
             <AiActionButtons 
@@ -147,15 +92,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import MarkdownIt from 'markdown-it';
-import AiChatInput from './AiChatInput.vue';
+import AiChatInput from './components/AiChatInput.vue';
 import AiHeader from './components/AiHeader.vue';
 import AiChatHistory from './components/AiChatHistory.vue';
 import AiChatTopBar from './components/AiChatTopBar.vue';
 import AiActionButtons from './components/AiActionButtons.vue';
 import AiContextSelector from './components/AiContextSelector.vue';
-import AiToolApproval from './components/AiToolApproval.vue';
+import AiMessageList from './components/AiMessageList.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
 import { useWowilonPanel, type ChatMessage } from './useWowilonPanel';
 import { useAiChats } from './composables/useAiChats';
@@ -317,7 +262,8 @@ watch(() => props.isOpen, (newVal) => {
   }
 });
 
-const messagesContainer = ref<HTMLElement | null>(null);
+const messagesListRef = ref<{ containerRef: HTMLElement | null } | null>(null);
+const messagesContainer = computed(() => messagesListRef.value?.containerRef || null);
 const chatInputRef = ref<{ unlock: () => void } | null>(null);
 
 const renderMarkdown = (text: string) => {
@@ -469,61 +415,6 @@ const detachWindow = async () => {
     console.error('Failed to create AI window:', e);
   }
 };
-
-// ===== GLOBAL CLICK LOGGING FOR MAIN CHAT PANEL =====
-const logPanelClick = (event: Event) => {
-  const mouseEvent = event as MouseEvent;
-  const target = event.target as HTMLElement;
-  const tagName = target.tagName.toLowerCase();
-  const className = target.className || '(no class)';
-  const id = target.id || '(no id)';
-  const textContent = target.textContent?.trim().slice(0, 100) || '(empty)';
-  const x = mouseEvent.clientX;
-  const y = mouseEvent.clientY;
-  const chatId = activeChatId.value;
-  const project = currentProject;
-  
-  console.log(`[PANEL-CLICK] chatId=${chatId} project=${project} | (${x}, ${y}) | <${tagName}>.#${id}.${className} | "${textContent}"`, {
-    target,
-    tagName,
-    className,
-    id,
-    textContent,
-    x,
-    y,
-    chatId,
-    project,
-    timestamp: Date.now(),
-    path: event.composedPath().map((el) => {
-      const elem = el as HTMLElement;
-      return elem.tagName?.toLowerCase() + (elem.id ? '#' + elem.id : '') + (elem.className && typeof elem.className === 'string' ? '.' + elem.className : '');
-    }).filter(Boolean).join(' > ')
-  });
-};
-
-onMounted(() => {
-  const container = document.querySelector('.wowilon-panel');
-   
-  const listener = logPanelClick;
-  if (container) {
-    container.addEventListener('click', listener, true);
-    console.log('[PANEL-CLICK] Global click listener attached to .wowilon-panel');
-  } else {
-    console.warn('[PANEL-CLICK] .wowilon-panel not found, attaching to document');
-    document.addEventListener('click', listener, true);
-  }
-  (window as unknown as { __panelClickListener?: { container: Element | null; listener: (e: Event) => void } }).__panelClickListener = { container, listener };
-});
-
-onUnmounted(() => {
-  const stored = (window as unknown as { __panelClickListener?: { container: Element | null; listener: (e: Event) => void } }).__panelClickListener;
-  if (stored?.container) {
-    stored.container.removeEventListener('click', stored.listener, true);
-  } else if (stored?.listener) {
-    document.removeEventListener('click', stored.listener, true);
-  }
-  console.log('[PANEL-CLICK] Global click listener removed');
-});
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/WowilonPanel.css"></style>

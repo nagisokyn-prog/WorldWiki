@@ -99,39 +99,41 @@ const initChart = () => {
       },
       y: {
         auto: false,
-        range: [0, Math.ceil(maxVal * 1.05)],
+        range: [0, maxVal + 2],
       }
     },
     axes: [
       {
         stroke: '#8b949e',
-        grid: { stroke: 'rgba(255, 255, 255, 0.05)' },
-        ticks: { stroke: 'rgba(255, 255, 255, 0.1)' },
-        space: 50,
-        values: (_self, ticks) => ticks.map(t => {
-          const d = new Date(t * 1000);
+        grid: { stroke: 'rgba(255, 255, 255, 0.05)', width: 1 },
+        ticks: { stroke: 'rgba(255, 255, 255, 0.1)', width: 1 },
+        values: (_self, ticks) => ticks.map(rawValue => {
+          const d = new Date(rawValue * 1000);
           return `${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
-        })
+        }),
+        space: 50,
+        size: 20
       },
       {
         stroke: '#8b949e',
-        grid: { stroke: 'rgba(255, 255, 255, 0.05)' },
-        ticks: { stroke: 'rgba(255, 255, 255, 0.1)' },
-        size: 40,
-        values: (_self, ticks) => ticks.map(v => `${v} ГБ`)
+        grid: { stroke: 'rgba(255, 255, 255, 0.05)', width: 1 },
+        ticks: { stroke: 'rgba(255, 255, 255, 0.1)', width: 1 },
+        values: (_self, ticks) => ticks.map(rawValue => `${Math.round(rawValue)} ГБ`),
+        space: 30,
+        size: 45
       }
     ],
     series: [
       {},
       {
-        label: 'ОЗУ (RAM)',
+        label: 'RAM (ОЗУ)',
         stroke: '#58a6ff',
         width: 2,
         fill: 'rgba(88, 166, 255, 0.15)',
         points: { show: false }
       },
       {
-        label: 'Видеопамять (VRAM)',
+        label: 'VRAM (Видео)',
         stroke: '#bc8cff',
         width: 2,
         fill: 'rgba(188, 140, 255, 0.15)',
@@ -140,26 +142,17 @@ const initChart = () => {
     ]
   };
 
-  const data: [number[], number[], number[]] = [
-    timestamps.value,
-    ramUsedData.value,
-    vramUsedData.value
-  ];
-
-  if (uplotInstance) {
-    uplotInstance.destroy();
-  }
-
-  uplotInstance = new uPlot(opts, data, chartContainer.value);
+  uplotInstance = new uPlot(opts, [timestamps.value, ramUsedData.value, vramUsedData.value], chartContainer.value);
 };
 
-const updateDataPoint = () => {
+let pushTimer: ReturnType<typeof setInterval> | null = null;
+const updateData = () => {
   if (!uplotInstance) return;
 
   const now = Math.floor(Date.now() / 1000);
   timestamps.value.push(now);
-  ramUsedData.value.push(Number(currentRamUsed.value.toFixed(2)));
-  vramUsedData.value.push(Number(currentVramUsed.value.toFixed(2)));
+  ramUsedData.value.push(currentRamUsed.value);
+  vramUsedData.value.push(currentVramUsed.value);
 
   if (timestamps.value.length > maxPoints) {
     timestamps.value.shift();
@@ -167,36 +160,27 @@ const updateDataPoint = () => {
     vramUsedData.value.shift();
   }
 
-  uplotInstance.setData([
-    timestamps.value,
-    ramUsedData.value,
-    vramUsedData.value
-  ]);
+  uplotInstance.setData([timestamps.value, ramUsedData.value, vramUsedData.value]);
 };
-
-let pollInterval: ReturnType<typeof setInterval> | null = null;
 
 const handleResize = () => {
   if (uplotInstance && chartContainer.value) {
     uplotInstance.setSize({
-      width: chartContainer.value.clientWidth || 600,
+      width: chartContainer.value.clientWidth,
       height: 140
     });
   }
 };
 
-onMounted(() => {
-  nextTick(() => {
-    initChart();
-    window.addEventListener('resize', handleResize);
-    pollInterval = setInterval(() => {
-      updateDataPoint();
-    }, 2000);
-  });
+onMounted(async () => {
+  await nextTick();
+  initChart();
+  pushTimer = setInterval(updateData, 2000);
+  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
-  if (pollInterval) clearInterval(pollInterval);
+  if (pushTimer) clearInterval(pushTimer);
   window.removeEventListener('resize', handleResize);
   if (uplotInstance) {
     uplotInstance.destroy();
@@ -207,14 +191,13 @@ onUnmounted(() => {
 
 <style scoped>
 .hardware-chart-card {
-  background: var(--bg-card, rgba(255, 255, 255, 0.03));
+  background: var(--bg-card, rgba(255, 255, 255, 0.02));
   border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
+  border-radius: 8px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .chart-header {
@@ -231,18 +214,18 @@ onUnmounted(() => {
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-color, #fff);
+  color: var(--text-color, #e6edf3);
 }
 
 .live-badge {
+  font-size: 10px;
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+  padding: 2px 6px;
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
-  background: rgba(35, 134, 54, 0.2);
-  color: #3fb950;
-  padding: 2px 6px;
-  border-radius: 10px;
   font-weight: 500;
 }
 

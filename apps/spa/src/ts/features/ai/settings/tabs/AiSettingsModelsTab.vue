@@ -151,71 +151,98 @@
             v-model="customEmbedInput" 
             type="text" 
             class="input-base" 
-            style="margin-top: 8px;"
-            placeholder="Введите путь к .gguf файлу или имя модели"
-            @input="onCustomEmbedInput"
+            style="margin-top: 6px;" 
+            placeholder="Путь к локальному .gguf или имя модели в API" 
+            @input="onCustomEmbedInput" 
           />
-          <span class="field-hint">Для локального поиска выберите скачанный файл (например, <code>nemotron-3-embed-1b-q4_k_m.gguf</code>).</span>
         </div>
       </div>
 
       <!-- Блок 3: Параметры генерации -->
       <div class="config-card">
         <div class="card-header">
-          <i class="fas fa-sliders-h"></i>
-          <h4>Параметры генерации</h4>
-        </div>
-
-        <div class="form-group">
-          <div class="slider-header">
-            <label>Температура (Креативность)</label>
-            <span class="slider-value">{{ localSettings.temperature }}</span>
-          </div>
-          <input 
-            v-model.number="localSettings.temperature" 
-            type="range" 
-            min="0" 
-            max="1.5" 
-            step="0.05" 
-            class="range-slider" 
-          />
-          <div class="slider-marks">
-            <span>0.0 (Строгий лор)</span>
-            <span>0.7 (Баланс)</span>
-            <span>1.5 (Свободное творчество)</span>
-          </div>
+          <i class="fas fa-sliders-h text-primary"></i>
+          <h4>Параметры инференса и креативности</h4>
         </div>
 
         <div class="form-row-2">
           <div class="form-group">
-            <label>Максимум токенов вывода</label>
+            <div class="slider-header">
+              <label>Температура (Креативность)</label>
+              <span class="slider-value">{{ localSettings.temperature }}</span>
+            </div>
+            <input 
+              v-model.number="localSettings.temperature" 
+              type="range" 
+              min="0" 
+              max="2" 
+              step="0.05" 
+              class="range-slider" 
+            />
+            <div class="slider-marks">
+              <span>0.0 (Факты)</span>
+              <span>0.7 (Баланс)</span>
+              <span>1.5+ (Фантазия)</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="slider-header">
+              <label>Top-P (Ядерная выборка)</label>
+              <span class="slider-value">{{ localSettings.top_p }}</span>
+            </div>
+            <input 
+              v-model.number="localSettings.top_p" 
+              type="range" 
+              min="0" 
+              max="1" 
+              step="0.05" 
+              class="range-slider" 
+            />
+            <div class="slider-marks">
+              <span>0.1 (Строго)</span>
+              <span>0.9 (Обычно)</span>
+              <span>1.0 (Все токены)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row-2" style="margin-top: 10px;">
+          <div class="form-group">
+            <label>Максимум токенов ответа (Max Output Tokens)</label>
             <input 
               v-model.number="localSettings.max_tokens" 
               type="number" 
               class="input-base" 
-              placeholder="4096" 
+              placeholder="Например: 4096 (Оставьте пустым для авто)" 
             />
           </div>
 
           <div class="form-group">
-            <label>Уровень рассуждений (CoT)</label>
-            <select v-model="localSettings.reasoning_effort" class="input-base">
-              <option value="none">Отключено</option>
-              <option value="low">Низкий (Быстро)</option>
-              <option value="medium">Средний (Сбалансировано)</option>
-              <option value="high">Высокий (Глубокий анализ)</option>
-            </select>
+            <label>Штраф за повторы (Presence / Frequency Penalty)</label>
+            <input 
+              v-model.number="localSettings.frequency_penalty" 
+              type="number" 
+              step="0.1" 
+              min="-2" 
+              max="2" 
+              class="input-base" 
+              placeholder="0.0" 
+            />
           </div>
         </div>
 
-        <div class="form-group">
-          <label>Таймаут выполнения (минуты)</label>
-          <input 
-            v-model.number="localSettings.timeout_mins" 
-            type="number" 
-            class="input-base" 
-            placeholder="30" 
-          />
+        <div class="form-group" style="margin-top: 6px;">
+          <label class="toggle-row">
+            <input 
+              v-model="localSettings.enable_streaming" 
+              type="checkbox" 
+            />
+            <div class="toggle-text">
+              <span class="toggle-title">Потоковая генерация ответов (Streaming)</span>
+              <span class="toggle-desc">Показывает текст по буквам в реальном времени по мере создания нейросетью.</span>
+            </div>
+          </label>
         </div>
       </div>
 
@@ -232,7 +259,7 @@
 import { ref, computed, watch, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { AiModelInfo, AiProfile, AiProfileSettings, InstalledModelInfo } from '../../types/ai.types';
-import AiSelect from '../AiSelect.vue';
+import AiSelect from '../../components/AiSelect.vue';
 
 const props = defineProps<{
   activeProfile: AiProfile | null;
@@ -257,7 +284,7 @@ const standardEmbedOptions = [
 const isCustomEmbedPath = computed(() => {
   if (!localSettings.value?.embed_model_path) return false;
   if (localSettings.value.embed_model_path === 'custom') return true;
-  const inInstalled = installedModels.value.some(m => m.filename === localSettings.value?.embed_model_path);
+  const inInstalled = installedModels.value.some((m: InstalledModelInfo) => m.filename === localSettings.value?.embed_model_path);
   const inStandard = standardEmbedOptions.includes(localSettings.value.embed_model_path);
   return !inInstalled && !inStandard;
 });
@@ -302,7 +329,7 @@ const handleSave = () => {
 };
 
 const availableModelOptions = computed(() => {
-  return props.availableModels.map(m => ({
+  return props.availableModels.map((m: AiModelInfo) => ({
     value: m.value,
     label: m.label,
     description: m.description,
@@ -310,165 +337,4 @@ const availableModelOptions = computed(() => {
 });
 </script>
 
-<style scoped>
-.models-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.tab-intro h3 {
-  margin: 0 0 6px 0;
-  font-size: 18px;
-  color: var(--text-color, #fff);
-}
-.text-muted {
-  color: var(--text-muted, #8b949e);
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 0;
-}
-.models-config-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.config-card {
-  background: var(--bg-card, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 8px;
-}
-.card-header h4 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-color, #e6edf3);
-}
-.text-primary {
-  color: #58a6ff;
-}
-.text-accent {
-  color: #bc8cff;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.form-group label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-color, #e6edf3);
-}
-.form-row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.field-hint {
-  font-size: 12px;
-  color: var(--text-muted, #8b949e);
-}
-.error-text {
-  font-size: 12px;
-  color: #f85149;
-}
-.execution-policies {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 4px;
-}
-.policy-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.policy-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-.policy-card.active {
-  background: rgba(88, 166, 255, 0.1);
-  border-color: #58a6ff;
-}
-.policy-card input[type="radio"] {
-  margin-top: 3px;
-}
-.policy-info {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.policy-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-color, #fff);
-}
-.policy-desc {
-  font-size: 11px;
-  color: var(--text-muted, #8b949e);
-  line-height: 1.3;
-}
-.toggle-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  cursor: pointer;
-}
-.toggle-row input[type="checkbox"] {
-  margin-top: 3px;
-  transform: scale(1.15);
-}
-.toggle-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.toggle-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-color, #e6edf3);
-}
-.toggle-desc {
-  font-size: 12px;
-  color: var(--text-muted, #8b949e);
-}
-.slider-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.slider-value {
-  font-family: monospace;
-  font-size: 13px;
-  font-weight: bold;
-  color: #58a6ff;
-}
-.range-slider {
-  width: 100%;
-  accent-color: #58a6ff;
-}
-.slider-marks {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text-muted, #8b949e);
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsModelsTab.css"></style>

@@ -65,7 +65,7 @@
           <label>Профиль подключения (Опционально)</label>
           <XboxWheel 
             :model-value="activeMode.api_profile_id || ''" 
-            :options="[{ value: '', label: '-- Использовать глобальное активное подключение --' }, ...profiles.map(p => ({ value: p.id || '', label: p.name }))] " 
+            :options="[{ value: '', label: '-- Использовать глобальное активное подключение --' }, ...profiles.map((p: AiProfile) => ({ value: p.id || '', label: p.name }))] " 
             placeholder="-- Использовать глобальное активное подключение --" 
             @update:model-value="val => { if (activeMode) activeMode.api_profile_id = (val ? String(val) : null); }" 
           />
@@ -148,45 +148,45 @@ const loadProfiles = async () => {
   }
 };
 
+const defaultSystemModes: AiMode[] = [
+  {
+    slug: 'chat',
+    name: 'Свободный чат',
+    role_definition: 'Ты — дружелюбный творческий собеседник и помощник писателя. Отвечай подробно, по делу, помогай развивать идеи.',
+    is_global: true
+  },
+  {
+    slug: 'writer',
+    name: 'Соавтор (Генерация прозы)',
+    role_definition: 'Ты — опытный писатель художественной литературы. Пиши выразительно, кинематографично, соблюдай принцип "показывай, а не рассказывай".',
+    is_global: true
+  },
+  {
+    slug: 'editor',
+    name: 'Литературный редактор',
+    role_definition: 'Ты — строгий литературный редактор. Находи повторы, канцелярит, стилистические сбои и логические дыры в тексте.',
+    is_global: true
+  },
+  {
+    slug: 'lore_master',
+    name: 'Хранитель лора (Архивариус)',
+    role_definition: 'Ты — Хранитель Энциклопедии Мира. Твоя задача — строго следить за каноном, проверять хронологию и родственные связи персонажей.',
+    is_global: true
+  }
+];
+
 const loadModes = async () => {
   isLoading.value = true;
   try {
-    const saved = localStorage.getItem(`worldwiki_modes_${props.currentProject || 'default'}`);
-    if (saved) {
-      modes.value = JSON.parse(saved);
-    } else {
-      modes.value = [
-        {
-          slug: 'chat',
-          name: 'Собеседник',
-          role_definition: 'Ты — верный помощник писателя. Отвечай дружелюбно, помогай генерировать идеи и обсуждать сюжетные повороты.',
-          custom_instructions: '',
-          is_global: true,
-        },
-        {
-          slug: 'editor',
-          name: 'Художественный редактор',
-          role_definition: 'Ты — строгий литературный редактор. Анализируй стиль, улучшай ритмику фраз, исправляй тавтологии и подчеркивай атмосферу.',
-          custom_instructions: '',
-          is_global: true,
-        },
-        {
-          slug: 'analyst',
-          name: 'Хранитель лора (Аналитик)',
-          role_definition: 'Ты — главный архивариус и хранитель канона вселенной. Проверяй хронологию, связи персонажей и не допускай сюжетных дыр.',
-          custom_instructions: '',
-          is_global: true,
-        },
-      ];
-    }
-
-    const current = modes.value.find(m => m.slug === activeModeSlug.value) || modes.value[0];
-    if (current) {
-      activeModeSlug.value = current.slug;
-      activeMode.value = { ...current };
-    }
+    const { invoke } = await import('@tauri-apps/api/core');
+    const custom = await invoke<AiMode[]>('get_ai_modes', { projectId: props.currentProject || null }).catch(() => []);
+    modes.value = [...defaultSystemModes, ...(custom || [])];
+    
+    onModeChange();
   } catch (e) {
     console.error('Ошибка загрузки режимов:', e);
+    modes.value = [...defaultSystemModes];
+    onModeChange();
   } finally {
     isLoading.value = false;
   }
@@ -197,119 +197,55 @@ const onModeChange = () => {
   const found = modes.value.find(m => m.slug === activeModeSlug.value);
   if (found) {
     activeMode.value = { ...found };
+  } else if (modes.value.length > 0) {
+    activeMode.value = { ...modes.value[0] };
+    activeModeSlug.value = modes.value[0].slug;
   }
 };
 
 const createNewMode = () => {
   isNewMode.value = true;
-  activeModeSlug.value = 'new_mode';
   activeMode.value = {
-    slug: `mode_${Date.now()}`,
+    slug: 'custom_' + Date.now().toString().slice(-4),
     name: 'Новый режим',
-    role_definition: 'Ты — специализированный ассистент...',
+    role_definition: '',
     custom_instructions: '',
-    api_profile_id: null,
     is_global: false,
-    project_id: props.currentProject,
+    project_id: props.currentProject
   };
+  activeModeSlug.value = activeMode.value.slug;
 };
 
 const saveMode = async () => {
   if (!activeMode.value) return;
   try {
-    const idx = modes.value.findIndex(m => m.slug === activeMode.value?.slug);
-    if (idx >= 0) {
-      modes.value[idx] = { ...activeMode.value };
-    } else {
-      modes.value.push({ ...activeMode.value });
-    }
-    localStorage.setItem(`worldwiki_modes_${props.currentProject || 'default'}`, JSON.stringify(modes.value));
+    const { invoke } = await import('@tauri-apps/api/core');
+    await invoke('save_ai_mode', { mode: activeMode.value, projectId: props.currentProject || null });
     isNewMode.value = false;
-    emit('mode-saved');
+    await loadModes();
+    emit('mode-saved', activeMode.value.slug);
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert('Режим успешно сохранён!');
   } catch (e) {
     console.error('Ошибка сохранения режима:', e);
+    const { appAlert } = await import('@worldwiki/components');
+    appAlert('Не удалось сохранить режим: ' + e);
   }
 };
 
 const deleteMode = async () => {
-  if (!activeMode.value) return;
-  if (!confirm(`Удалить режим "${activeMode.value.name}"?`)) return;
+  if (!activeMode.value || activeMode.value.is_global) return;
+  const { appConfirm } = await import('@worldwiki/components');
+  if (!await appConfirm(`Удалить режим "${activeMode.value.name}"?`)) return;
   try {
-    modes.value = modes.value.filter(m => m.slug !== activeMode.value?.slug);
-    localStorage.setItem(`worldwiki_modes_${props.currentProject || 'default'}`, JSON.stringify(modes.value));
+    const { invoke } = await import('@tauri-apps/api/core');
+    await invoke('delete_ai_mode', { slug: activeMode.value.slug, projectId: props.currentProject || null });
     activeModeSlug.value = 'chat';
-    onModeChange();
+    await loadModes();
   } catch (e) {
     console.error('Ошибка удаления режима:', e);
   }
 };
 </script>
 
-<style scoped>
-.modes-tab {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.tab-intro h3 {
-  margin: 0 0 6px 0;
-  font-size: 18px;
-  color: var(--text-color, #fff);
-}
-.text-muted {
-  color: var(--text-muted, #8b949e);
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 0;
-}
-.mode-selector-bar {
-  background: var(--bg-card, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.selector-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.mode-editor-card {
-  background: var(--bg-card, rgba(255, 255, 255, 0.03));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.form-row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.form-group label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-color, #e6edf3);
-}
-.field-hint {
-  font-size: 12px;
-  color: var(--text-muted, #8b949e);
-}
-.loading-state {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 40px;
-  justify-content: center;
-  color: var(--text-muted, #8b949e);
-}
-</style>
+<style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsModesTab.css"></style>

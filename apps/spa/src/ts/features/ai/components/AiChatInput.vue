@@ -9,7 +9,7 @@
       </div>
       
       <button
-v-if="loading"
+        v-if="loading"
         class="btn-send btn-cancel" 
         title="Отменить генерацию"
         @click="$emit('cancel')"
@@ -17,7 +17,7 @@ v-if="loading"
         <i class="fas fa-stop-circle"></i>
       </button>
       <button
-v-else
+        v-else
         class="btn-send" 
         :disabled="isEmpty" 
         title="Отправить запрос"
@@ -58,7 +58,7 @@ const editor = useEditor({
       class: 'prose prose-sm focus:outline-none ai-editor-content',
       placeholder: 'Задайте вопрос ИИ...'
     },
-    handleKeyDown: (view, event) => {
+    handleKeyDown: (_view, event) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         submitMessage();
@@ -77,8 +77,6 @@ const editor = useEditor({
     isFocused.value = false;
   }
 });
-
-// Убрали блокировку редактора при загрузке, чтобы юзер мог писать заранее
 
 // Promise-based lock — не позволяет отправить второй запрос пока первый не завершился
 let sendLock: Promise<void> | null = null;

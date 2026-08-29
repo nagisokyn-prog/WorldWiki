@@ -108,11 +108,11 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import type { AiProfile } from '../types/ai.types';
-import AiSettingsConnectionsTab from '../components/settings/AiSettingsConnectionsTab.vue';
-import AiSettingsModelsTab from '../components/settings/AiSettingsModelsTab.vue';
-import AiSettingsLocalTab from '../components/settings/AiSettingsLocalTab.vue';
-import AiSettingsModesTab from '../components/settings/AiSettingsModesTab.vue';
-import AiSettingsPermissionsTab from '../components/settings/AiSettingsPermissionsTab.vue';
+import AiSettingsConnectionsTab from './tabs/AiSettingsConnectionsTab.vue';
+import AiSettingsModelsTab from './tabs/AiSettingsModelsTab.vue';
+import AiSettingsLocalTab from './tabs/AiSettingsLocalTab.vue';
+import AiSettingsModesTab from './tabs/AiSettingsModesTab.vue';
+import AiSettingsPermissionsTab from './tabs/AiSettingsPermissionsTab.vue';
 
 import { useAiProfiles } from '../composables/useAiProfiles';
 import { useAiModels } from '../composables/useAiModels';

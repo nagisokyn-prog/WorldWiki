@@ -49,7 +49,7 @@
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import MarkdownIt from 'markdown-it';
 import { AppDialog } from '@worldwiki/components';
-import AiChatInput from '../AiChatInput.vue';
+import AiChatInput from '../components/AiChatInput.vue';
 import AiHeader from '../components/AiHeader.vue';
 import AiSettingsView from '../settings/AiSettingsView.vue';
 import { useWowilonPanel } from '../useWowilonPanel';

@@ -42,12 +42,12 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: var(--dropdown-bg, var(--bg-base, #121214));
+  background: var(--dropdown-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-dropdown, 8px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+  box-shadow: var(--shadow-dropdown);
   z-index: 1000;
   max-height: 250px;
   overflow-y: auto;
@@ -62,7 +62,7 @@
   padding: 8px 12px;
   cursor: pointer;
   transition: background 0.15s;
-  border-bottom: 1px solid rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .option-item:last-child {
@@ -70,11 +70,11 @@
 }
 
 .option-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
 }
 
 .option-item.selected {
-  background: rgba(139, 92, 246, 0.1);
+  background: var(--bg-selected);
 }
 
 .option-label {

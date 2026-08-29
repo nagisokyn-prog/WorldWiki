@@ -61,11 +61,11 @@
 
 .btn-send {
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs, 6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,9 +85,9 @@
 }
 
 .btn-cancel {
-  background: var(--danger-color, #ff4d4f);
+  background: var(--error);
 }
 
 .btn-cancel:hover {
-  background: rgba(255, 77, 79, 0.8);
+  filter: brightness(0.9);
 }

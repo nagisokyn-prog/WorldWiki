@@ -30,7 +30,7 @@
       <div v-if="isRightPanelVisible" class="panel-resize-handle" @mousedown="startResize"></div>
 
       <!-- Right Panel -->
-      <div v-if="isRightPanelVisible" class="chapter-right-panel flex-shrink-0" :style="{ width: rightPanelWidth + 'px', minWidth: '200px', maxWidth: '600px' }">
+      <div v-if="isRightPanelVisible" class="chapter-right-panel flex-shrink-0" :style="{ '--panel-w': rightPanelWidth + 'px' }">
 
         <!-- Том или Арка выбрана: показываем только план -->
         <div v-if="localActiveTreeNode?.node && localActiveTreeNode?.type !== 'chapter'" class="flex-1 flex-col overflow-hidden">
@@ -52,7 +52,7 @@
                 <span class="panel-header-title">
                   <i class="fas fa-calendar-alt text-accent mr-1"></i> Таймлайн главы
                 </span>
-                <span class="panel-header-arrow" :style="{ transform: isTimelineOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+                <span class="panel-header-arrow" :class="{ 'is-open': isTimelineOpen }">▼</span>
               </div>
               <div v-show="isTimelineOpen" class="panel-body-box">
                 <TimelinePanel

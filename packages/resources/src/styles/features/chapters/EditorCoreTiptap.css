@@ -252,7 +252,7 @@
 .ProseMirror a[href^="#fn"]:hover,
 .ProseMirror a.footnote-ref:hover {
   background: var(--warning) !important;
-  color: #000000 !important;
+  color: var(--accent-text) !important;
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
 }
 

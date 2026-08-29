@@ -84,7 +84,7 @@
 }
 
 .yandex-icon {
-    background: #FC3F1D;
+    background: var(--brand-yandex, hsl(10, 98%, 55%));
 }
 
 .provider-details h4 {
@@ -108,13 +108,13 @@
 }
 
 .btn-yandex {
-    background: #FC3F1D;
+    background: var(--brand-yandex, hsl(10, 98%, 55%));
     color: var(--accent-text);
     border: none;
 }
 
 .btn-yandex:hover {
-    background: #E03517;
+    background: var(--brand-yandex-hover, hsl(10, 81%, 49%));
 }
 
 .auth-code-section {

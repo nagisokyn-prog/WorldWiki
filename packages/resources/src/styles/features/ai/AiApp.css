@@ -77,7 +77,7 @@
 
 .message-user .message-avatar {
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
   border: none;
 }
 

@@ -58,7 +58,7 @@
   font-size: 11px;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-color);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-sunken);
 }
 
 .args-content {
@@ -124,7 +124,7 @@
 
 .btn-approve {
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
 }
 
 .btn-approve:hover {

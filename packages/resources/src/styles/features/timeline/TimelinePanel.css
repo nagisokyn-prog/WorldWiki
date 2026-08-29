@@ -83,8 +83,8 @@
   gap: 8px;
   margin-bottom: 10px;
   padding: 6px 8px;
-  background: rgba(139, 92, 246, 0.05);
-  border-radius: 6px;
+  background: var(--bg-selected);
+  border-radius: var(--radius-xs, 6px);
 }
 
 .season-badge {
@@ -229,7 +229,7 @@
 }
 
 .add-timeline-btn:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -315,8 +315,8 @@
 .calendar-pill.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: white;
-  box-shadow: 0 0 10px var(--accent-glow);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-glow);
 }
 
 .date-display-column {

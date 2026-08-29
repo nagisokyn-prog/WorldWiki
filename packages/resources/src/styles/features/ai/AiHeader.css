@@ -50,7 +50,7 @@
 
 .mode-switcher button.active {
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
 }
 
 .wowilon-actions {

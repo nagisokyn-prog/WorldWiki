@@ -1,83 +1,83 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 275,
-  "fixedCount": 791,
-  "introducedCount": 10,
-  "trendPercent": "74.0",
+  "currentDebt": 205,
+  "fixedCount": 851,
+  "introducedCount": 0,
+  "trendPercent": "80.6",
   "categories": {
-    "blackColors": 18,
-    "whiteColors": 45,
-    "hexColors": 27,
+    "blackColors": 2,
+    "whiteColors": 8,
+    "hexColors": 10,
     "namedColors": 0,
     "radii": 0,
     "inlineStyles": 185
   },
   "semanticRoles": {
-    "modalBackdrops": 2,
-    "sunkenBackgrounds": 7,
-    "borders": 10,
-    "text": 36
+    "modalBackdrops": 0,
+    "sunkenBackgrounds": 1,
+    "borders": 3,
+    "text": 5
   },
-  "topCssFiles": [
+  "topVueFiles": [
     {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "count": 11
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "count": 10
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "count": 10
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "count": 8
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "count": 8
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
       "count": 6
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
-      "count": 4
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "count": 6
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
-      "count": 4
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
-      "count": 4
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/base/layout.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/base/reset.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/components/AppDialog.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/components/GlassComponents.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
-      "count": 2
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "count": 6
     }
   ],
   "allTopFiles": [
@@ -130,439 +130,19 @@
       "count": 7
     },
     {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "count": 6
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
       "count": 6
     },
     {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
       "count": 6
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "count": 6
     }
   ],
   "violations": [
-    {
-      "file": "packages/resources/src/styles/base/layout.css",
-      "line": 48,
-      "match": "rgba(255, 255, 255, 0.22)",
-      "snippet": "background: rgba(255, 255, 255, 0.22);"
-    },
-    {
-      "file": "packages/resources/src/styles/base/layout.css",
-      "line": 77,
-      "match": "rgba(255, 255, 255, 0.25)",
-      "snippet": "scrollbar-color: rgba(255, 255, 255, 0.25) transparent;"
-    },
-    {
-      "file": "packages/resources/src/styles/base/reset.css",
-      "line": 44,
-      "match": "#121214",
-      "snippet": "background: var(--dropdown-bg, var(--bg-base, #121214));"
-    },
-    {
-      "file": "packages/resources/src/styles/base/reset.css",
-      "line": 45,
-      "match": "#ffffff",
-      "snippet": "color: var(--text-main, #ffffff);"
-    },
-    {
-      "file": "packages/resources/src/styles/components/AppDialog.css",
-      "line": 7,
-      "match": "rgba(0, 0, 0, 0.6)",
-      "snippet": "background: rgba(0, 0, 0, 0.6);"
-    },
-    {
-      "file": "packages/resources/src/styles/components/AppDialog.css",
-      "line": 23,
-      "match": "#aaa",
-      "snippet": "color: var(--text-muted, #aaa);"
-    },
-    {
-      "file": "packages/resources/src/styles/components/BaseUI.css",
-      "line": 155,
-      "match": "#ef4444",
-      "snippet": "color: var(--error, #ef4444);"
-    },
-    {
-      "file": "packages/resources/src/styles/components/EditorGroupPane.css",
-      "line": 7,
-      "match": "rgba(255,255,255,0.08)",
-      "snippet": "border-right: 1px solid var(--border-color, rgba(255,255,255,0.08));"
-    },
-    {
-      "file": "packages/resources/src/styles/components/GlassComponents.css",
-      "line": 34,
-      "match": "rgba(255, 255, 255, 0.1)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));"
-    },
-    {
-      "file": "packages/resources/src/styles/components/GlassComponents.css",
-      "line": 169,
-      "match": "rgba(0, 0, 0, 0.6)",
-      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.6));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
-      "line": 14,
-      "match": "rgba(255, 255, 255, 0.05)",
-      "snippet": "background: rgba(255, 255, 255, 0.05);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
-      "line": 25,
-      "match": "rgba(255, 255, 255, 0.1)",
-      "snippet": "background: rgba(255, 255, 255, 0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
-      "line": 29,
-      "match": "#ff4d4f",
-      "snippet": "color: var(--danger-color, #ff4d4f);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
-      "line": 43,
-      "match": "#52c41a",
-      "snippet": "color: var(--success-color, #52c41a);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiApp.css",
-      "line": 80,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
-      "line": 84,
-      "match": "rgba(255,255,255,0.1)",
-      "snippet": "background: rgba(255,255,255,0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
-      "line": 94,
-      "match": "#ff5555",
-      "snippet": "color: #ff5555;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
-      "line": 97,
-      "match": "#ff5555",
-      "snippet": "color: #ff5555;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
-      "line": 64,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
-      "line": 88,
-      "match": "#ff4d4f",
-      "snippet": "background: var(--danger-color, #ff4d4f);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
-      "line": 33,
-      "match": "rgba(0,0,0,0.5)",
-      "snippet": "box-shadow: 0 4px 20px rgba(0,0,0,0.5);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
-      "line": 135,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
-      "line": 147,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiHeader.css",
-      "line": 53,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiMessageList.css",
-      "line": 50,
-      "match": "rgba(255, 255, 255, 0.03)",
-      "snippet": "background: var(--bg-hover, rgba(255, 255, 255, 0.03));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
-      "line": 45,
-      "match": "#121214",
-      "snippet": "background: var(--dropdown-bg, var(--bg-base, #121214));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
-      "line": 50,
-      "match": "rgba(0,0,0,0.8)",
-      "snippet": "box-shadow: 0 8px 32px rgba(0,0,0,0.8);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
-      "line": 65,
-      "match": "rgba(255,255,255,0.02)",
-      "snippet": "border-bottom: 1px solid rgba(255,255,255,0.02);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
-      "line": 73,
-      "match": "rgba(255, 255, 255, 0.05)",
-      "snippet": "background: rgba(255, 255, 255, 0.05);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-      "line": 378,
-      "match": "#fff",
-      "snippet": "color: #fff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsView.css",
-      "line": 50,
-      "match": "rgba(255,255,255,0.05)",
-      "snippet": "background: rgba(255,255,255,0.05);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
-      "line": 61,
-      "match": "rgba(0, 0, 0, 0.2)",
-      "snippet": "background: rgba(0, 0, 0, 0.2);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
-      "line": 127,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-      "line": 255,
-      "match": "#000000",
-      "snippet": "color: #000000 !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
-      "line": 4,
-      "match": "rgba(0, 0, 0, 0.4)",
-      "snippet": "background: rgba(0, 0, 0, 0.4);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
-      "line": 17,
-      "match": "rgba(0, 0, 0, 0.3)",
-      "snippet": "box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
-      "line": 87,
-      "match": "#fff",
-      "snippet": "color: #fff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
-      "line": 7,
-      "match": "rgba(0, 0, 0, 0.7)",
-      "snippet": "background: rgba(0, 0, 0, 0.7);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
-      "line": 146,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
-      "line": 20,
-      "match": "rgba(255, 255, 255, 0.02)",
-      "snippet": "background: var(--bg-card-header, rgba(255, 255, 255, 0.02));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
-      "line": 98,
-      "match": "#fff",
-      "snippet": "color: #fff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
-      "line": 373,
-      "match": "#000",
-      "snippet": "color: #000;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
-      "line": 383,
-      "match": "#fff",
-      "snippet": "color: #fff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
-      "line": 36,
-      "match": "rgba(255, 255, 255, 0.08)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
-      "line": 258,
-      "match": "#ffffff",
-      "snippet": "color: #ffffff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
-      "line": 27,
-      "match": "rgba(255,255,255,0.1)",
-      "snippet": "border: 3px solid rgba(255,255,255,0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
-      "line": 39,
-      "match": "#ef4444",
-      "snippet": "color: #ef4444;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
-      "line": 177,
-      "match": "rgba(255, 255, 255, 0.05)",
-      "snippet": "border: 1px solid rgba(255, 255, 255, 0.05);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
-      "line": 87,
-      "match": "#FC3F1D",
-      "snippet": "background: #FC3F1D;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
-      "line": 111,
-      "match": "#FC3F1D",
-      "snippet": "background: #FC3F1D;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
-      "line": 117,
-      "match": "#E03517",
-      "snippet": "background: #E03517;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
-      "line": 53,
-      "match": "rgba(0, 0, 0, 0.5)",
-      "snippet": "background: rgba(0, 0, 0, 0.5) !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
-      "line": 62,
-      "match": "rgba(255, 255, 255, 0.15)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "line": 184,
-      "match": "rgba(0, 0, 0, 0.65)",
-      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.65));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "line": 1032,
-      "match": "#22c55e",
-      "snippet": "color: #22c55e;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "line": 1037,
-      "match": "#eab308",
-      "snippet": "color: #eab308;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "line": 1042,
-      "match": "#ef4444",
-      "snippet": "color: #ef4444;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "line": 1232,
-      "match": "rgba(255,255,255,0.1)",
-      "snippet": "background-color: rgba(255,255,255,0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      "line": 1244,
-      "match": "white",
-      "snippet": "background-color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/CalendarsPanel.css",
-      "line": 60,
-      "match": "#ffffff",
-      "snippet": "color: #ffffff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-      "line": 104,
-      "match": "#fff",
-      "snippet": "color: #fff;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-      "line": 268,
-      "match": "#ef4444",
-      "snippet": "color: var(--error, #ef4444);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-      "line": 366,
-      "match": "rgba(0, 0, 0, 0.25)",
-      "snippet": "box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
-      "line": 9,
-      "match": "rgba(0,0,0,0.5)",
-      "snippet": "box-shadow: 0 10px 30px rgba(0,0,0,0.5);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
-      "line": 42,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
-      "line": 232,
-      "match": "rgba(255, 255, 255, 0.05)",
-      "snippet": "background: rgba(255, 255, 255, 0.05);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
-      "line": 318,
-      "match": "white",
-      "snippet": "color: white;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/UniversalDatePicker.css",
-      "line": 2,
-      "match": "rgba(0,0,0,0.1)",
-      "snippet": "box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/timeline/UniversalDatePicker.css",
-      "line": 6,
-      "match": "rgba(0,0,0,0.2)",
-      "snippet": "background: var(--bg-card, rgba(0,0,0,0.2));"
-    },
-    {
-      "file": "packages/resources/src/styles/glass-animations.css",
-      "line": 65,
-      "match": "rgba(255, 255, 255, 0.3)",
-      "snippet": "background: rgba(255, 255, 255, 0.3);"
-    },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
       "line": 29,

@@ -47,7 +47,7 @@
 }
 
 .message-wrapper:hover {
-  background: var(--bg-hover, rgba(255, 255, 255, 0.03));
+  background: var(--bg-hover);
 }
 
 /* 1. СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯ — справа, на всю ширину */

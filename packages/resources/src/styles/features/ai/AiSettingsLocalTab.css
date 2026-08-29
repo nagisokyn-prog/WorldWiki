@@ -375,7 +375,7 @@
 }
 .chip-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   border: none;
   border-radius: var(--radius-xs);
   padding: 3px 7px;

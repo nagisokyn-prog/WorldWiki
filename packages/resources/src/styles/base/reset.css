@@ -41,8 +41,8 @@ input, textarea, select {
 }
 
 select option {
-    background: var(--dropdown-bg, var(--bg-base, #121214));
-    color: var(--text-main, #ffffff);
+    background: var(--dropdown-bg);
+    color: var(--text-main);
 }
 
 img, svg, video, canvas {

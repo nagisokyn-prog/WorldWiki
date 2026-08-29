@@ -50,7 +50,7 @@ body[data-input-style="filled"] select:focus,
 body[data-input-style="filled"] .input-base:focus,
 body[data-input-style="filled"] .input-control:focus {
   border-color: var(--accent) !important;
-  background: rgba(0, 0, 0, 0.5) !important;
+  background: var(--bg-hover) !important;
 }
 
 body[data-input-style="outline"] input,
@@ -59,7 +59,7 @@ body[data-input-style="outline"] select,
 body[data-input-style="outline"] .input-base,
 body[data-input-style="outline"] .input-control {
   background: transparent !important;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15)) !important;
+  border: 1px solid var(--border-color) !important;
 }
 
 body[data-input-style="outline"] input:focus,

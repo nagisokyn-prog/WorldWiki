@@ -19,7 +19,7 @@
 .add-context-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(139, 92, 246, 0.1);
+  background: var(--bg-selected);
 }
 
 .context-menu {
@@ -29,8 +29,8 @@
   width: 250px;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  border-radius: var(--radius-sm, 8px);
+  box-shadow: var(--shadow-dropdown);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -132,7 +132,7 @@
 }
 
 .menu-item.selected .checkbox i {
-  color: white;
+  color: var(--accent-text);
   font-size: 10px;
 }
 
@@ -144,10 +144,10 @@
 .btn-primary.full-width {
   width: 100%;
   background: var(--accent);
-  color: white;
+  color: var(--accent-text);
   border: none;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs, 6px);
   font-weight: 500;
   cursor: pointer;
 }

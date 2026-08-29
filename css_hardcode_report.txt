@@ -4,43 +4,43 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     275 мест
-  • Fixed (Устранено): -791 мест 🎉
-  • New (Введено):    +10 мест
-  • Net Trend:        ↓ 784 (74.0% улучшение)
+  • Current Debt:     205 мест
+  • Fixed (Устранено): -851 мест 🎉
+  • New (Введено):    +0 мест
+  • Net Trend:        ↓ 854 (80.6% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
 ────────────────────────────────────────────────────────────────────────
-  • [Оверлеи / Затемнения]   --modal-backdrop : 2 мест
-  • [Утопленные подложки]    --bg-sunken      : 7 мест
-  • [Системные рамки]        --border-color   : 10 мест
-  • [Цвета текста]           --text-main/muted: 36 мест
+  • [Оверлеи / Затемнения]   --modal-backdrop : 0 мест
+  • [Утопленные подложки]    --bg-sunken      : 1 мест
+  • [Системные рамки]        --border-color   : 3 мест
+  • [Цвета текста]           --text-main/muted: 5 мест
 
 ────────────────────────────────────────────────────────────────────────
   2. РАЗБИВКА ПО ТИПАМ НАРУШЕНИЙ
 ────────────────────────────────────────────────────────────────────────
-  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):     18 [Критично для Light Theme]
-  • Hardcoded White Colors  (rgba(255,255,...), #fff):    45 [Критично для Light Theme]
-  • Arbitrary HEX Colors    (#aabbcc):                  27
+  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      2 [Критично для Light Theme]
+  • Hardcoded White Colors  (rgba(255,255,...), #fff):     8 [Критично для Light Theme]
+  • Arbitrary HEX Colors    (#aabbcc):                  10
   • Inline Styles           (style="..."):             185
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────
-  3. ПРИОРИТЕТНЫЕ CSS ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-15 CSS ONLY)
+  3. ПРИОРИТЕТНЫЕ VUE ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-15 VUE ONLY)
 ────────────────────────────────────────────────────────────────────────
-   1. [  6 мест]  packages/resources/src/styles/features/shell/ProjectLauncher.css
-   2. [  4 мест]  packages/resources/src/styles/features/ai/AiActionButtons.css
-   3. [  4 мест]  packages/resources/src/styles/features/ai/AiSelect.css
-   4. [  4 мест]  packages/resources/src/styles/features/chapters/PromisesPanel.css
-   5. [  3 мест]  packages/resources/src/styles/features/ai/AiChatHistory.css
-   6. [  3 мест]  packages/resources/src/styles/features/ai/AiContextSelector.css
-   7. [  3 мест]  packages/resources/src/styles/features/chapters/EntityLinkSelector.css
-   8. [  3 мест]  packages/resources/src/styles/features/shell/CloudSyncModal.css
-   9. [  3 мест]  packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css
-  10. [  2 мест]  packages/resources/src/styles/base/layout.css
-  11. [  2 мест]  packages/resources/src/styles/base/reset.css
-  12. [  2 мест]  packages/resources/src/styles/components/AppDialog.css
-  13. [  2 мест]  packages/resources/src/styles/components/GlassComponents.css
-  14. [  2 мест]  packages/resources/src/styles/features/ai/AiChatInput.css
-  15. [  2 мест]  packages/resources/src/styles/features/ai/AiToolApproval.css
+   1. [ 11 мест]  apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue
+   2. [ 10 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue
+   3. [ 10 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue
+   4. [  8 мест]  apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue
+   5. [  8 мест]  apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue
+   6. [  7 мест]  apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue
+   7. [  7 мест]  apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue
+   8. [  7 мест]  apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue
+   9. [  7 мест]  apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue
+  10. [  7 мест]  packages/components/src/components/Vue/EditorGroupPane.vue
+  11. [  7 мест]  packages/components/src/components/Vue/ExplorerTree.vue
+  12. [  7 мест]  packages/components/src/components/Vue/Settings/SettingsPerformance.vue
+  13. [  6 мест]  apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue
+  14. [  6 мест]  apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue
+  15. [  6 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue

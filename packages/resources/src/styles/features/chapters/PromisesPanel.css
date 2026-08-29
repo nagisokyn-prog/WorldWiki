@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: var(--bg-card-header, rgba(255, 255, 255, 0.02));
+  background: var(--bg-header);
   cursor: pointer;
   user-select: none;
   border-bottom: 1px solid var(--border-color);
@@ -95,7 +95,7 @@
 
 .tab-pill.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -370,7 +370,7 @@
 }
 .btn-quick-progress:hover {
   background: var(--warning);
-  color: #000;
+  color: var(--accent-text);
 }
 
 .btn-quick-resolve {
@@ -380,7 +380,7 @@
 }
 .btn-quick-resolve:hover {
   background: var(--success);
-  color: #fff;
+  color: var(--accent-text);
 }
 
 .card-note-section {

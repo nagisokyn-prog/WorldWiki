@@ -1,6 +1,7 @@
 //! IPC layer for module `volumes`: #[tauri::command] wrappers only.
 //! All business logic lives in mod.rs (*_inner).
 
+use tauri::{AppHandle, Emitter};
 use super::*;
 
 #[tauri::command]
@@ -53,13 +54,16 @@ pub async fn update_arc(
 
 #[tauri::command]
 pub async fn assign_chapter(
+    app: AppHandle,
     project: String,
     chapter_id: String,
     arc_id: Option<String>,
     volume_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    assign_chapter_inner(&state.db, &project, &chapter_id, arc_id, volume_id).await
+) -> Result<AutoExtendResult, String> {
+    let res = assign_chapter_inner(&state.db, &project, &chapter_id, arc_id, volume_id).await?;
+    let _ = app.emit("ww:timeline-auto-extended", &res);
+    Ok(res)
 }
 
 #[tauri::command]
@@ -71,5 +75,45 @@ pub async fn reorder_node(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
     reorder_node_inner(&state.db, &project, &node_type, &id, sort_order).await
+}
+
+#[tauri::command]
+pub async fn auto_extend_timeline(
+    app: AppHandle,
+    project: String,
+    chapter_id: String,
+    arc_id: Option<String>,
+    volume_id: Option<String>,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<AutoExtendResult, String> {
+    let updated_count = auto_extend_entities_inner(&state.db, &project, &chapter_id, arc_id.clone(), volume_id.clone()).await?;
+    let res = AutoExtendResult {
+        chapter_id,
+        arc_id,
+        volume_id,
+        updated_count,
+    };
+    let _ = app.emit("ww:timeline-auto-extended", &res);
+    Ok(res)
+}
+
+#[tauri::command]
+pub async fn heal_deleted_chapter(
+    app: AppHandle,
+    project: String,
+    deleted_chapter_id: String,
+    fallback_point: Option<AutoExtendResult>,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<u64, String> {
+    let updated_count = heal_deleted_chapter_inner(&state.db, &project, &deleted_chapter_id, fallback_point.clone()).await?;
+    if let Some(ref fb) = fallback_point {
+        let _ = app.emit("ww:timeline-auto-extended", fb);
+    }
+    let _ = app.emit("ww:timeline-healed", serde_json::json!({
+        "deleted_chapter_id": deleted_chapter_id,
+        "fallback_point": fallback_point,
+        "updated_count": updated_count
+    }));
+    Ok(updated_count)
 }
 

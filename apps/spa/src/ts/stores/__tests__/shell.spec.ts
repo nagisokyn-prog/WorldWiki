@@ -15,6 +15,7 @@ vi.mock('../../services/api.client', () => ({
   deleteChapter: vi.fn(),
   getChapterHierarchy: vi.fn(),
   assignChapter: vi.fn(),
+  healDeletedChapter: vi.fn(),
   deleteVolume: vi.fn(),
   deleteArc: vi.fn(),
   getEntities: vi.fn(),

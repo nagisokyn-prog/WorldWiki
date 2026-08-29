@@ -142,6 +142,10 @@ const selectedLabel = computed(() => {
   if (opt && (opt.value === props.modelValue || String(opt.value).replace(/^[^:]+:/, '') === rawVal)) {
     return opt.label;
   }
+  const strVal = String(props.modelValue);
+  if (strVal.includes(':') || strVal.startsWith('chapter_') || strVal.startsWith('arc_') || strVal.startsWith('volume_')) {
+    return placeholderText.value;
+  }
   return props.modelValue;
 });
 

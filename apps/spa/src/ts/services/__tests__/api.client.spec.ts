@@ -266,7 +266,7 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(res).toEqual({ id: 'vol_1' });
 
       await api.updateVolume('proj_1', 'vol_1', 'Volume 1 Updated');
-      expect(invoke).toHaveBeenCalledWith('update_volume', { Project: 'proj_1', id: 'vol_1', title: 'Volume 1 Updated' });
+      expect(invoke).toHaveBeenCalledWith('update_volume', { project: 'proj_1', id: 'vol_1', title: 'Volume 1 Updated' });
     });
 
     it('createArc and updateArc invoke correctly', async () => {
@@ -276,7 +276,7 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(res).toEqual({ id: 'arc_1' });
 
       await api.updateArc('proj_1', 'arc_1', 'Arc 1 Updated', 'vol_2');
-      expect(invoke).toHaveBeenCalledWith('update_arc', { Project: 'proj_1', id: 'arc_1', title: 'Arc 1 Updated', VolumeId: 'vol_2' });
+      expect(invoke).toHaveBeenCalledWith('update_arc', { project: 'proj_1', id: 'arc_1', title: 'Arc 1 Updated', volumeId: 'vol_2' });
     });
 
     it('assignChapter invokes assign_chapter', async () => {
@@ -292,6 +292,15 @@ describe('api.client (Tauri invoke contract tests)', () => {
     it('reorderNode invokes reorder_node', async () => {
       await api.reorderNode('proj_1', 'chapter', 'ch_1', 2);
       expect(invoke).toHaveBeenCalledWith('reorder_node', { project: 'proj_1', nodeType: 'chapter', id: 'ch_1', sortOrder: 2 });
+    });
+
+    it('healDeletedChapter invokes heal_deleted_chapter', async () => {
+      await api.healDeletedChapter('proj_1', 'ch_1', null);
+      expect(invoke).toHaveBeenCalledWith('heal_deleted_chapter', {
+        project: 'proj_1',
+        deletedChapterId: 'ch_1',
+        fallbackPoint: null,
+      });
     });
   });
 

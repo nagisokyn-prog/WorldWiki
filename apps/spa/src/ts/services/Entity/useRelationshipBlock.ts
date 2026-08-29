@@ -327,8 +327,9 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0] || props.templateConf;
     const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
     if (!path) return;
-    if (!item[path]) item[path] = [];
-    
+    const existingList = item[path] as Array<Record<string, unknown>>;
+    const lastItem = existingList && existingList.length > 0 ? existingList[existingList.length - 1] : null;
+
     const newItem: Record<string, unknown> = {};
     const fields = getResolvedFields(targetSubConf);
     fields.forEach((f) => {
@@ -336,6 +337,25 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
         newItem[f.class] = f.value !== undefined ? f.value : (f.type === 'number' ? 0 : '');
       }
     });
+
+    // Наследование хронологии: старт нового этапа равен финишу предыдущего
+    if (lastItem && lastItem['конечная_глава']) {
+      const prevEnd = typeof lastItem['конечная_глава'] === 'object' && lastItem['конечная_глава'] !== null
+        ? JSON.parse(JSON.stringify(lastItem['конечная_глава']))
+        : { chapter_id: String(lastItem['конечная_глава']) };
+
+      // Старт нового блока начинается в точке финиша предыдущего (но не имеет автопродления)
+      newItem['начальная_глава'] = { ...prevEnd, is_auto_extend: false };
+
+      // Финиш нового блока копирует ту же точку и перехватывает автопродление
+      const hadAutoExtend = Boolean(prevEnd.is_auto_extend);
+      newItem['конечная_глава'] = { ...prevEnd, is_auto_extend: hadAutoExtend };
+
+      // У предыдущего этапа автопродление завершается
+      if (typeof lastItem['конечная_глава'] === 'object' && lastItem['конечная_глава'] !== null) {
+        (lastItem['конечная_глава'] as Record<string, unknown>).is_auto_extend = false;
+      }
+    }
 
     (item[path] as Array<Record<string, unknown>>).push(newItem);
     if (sourceItem && foreignItem.value) {

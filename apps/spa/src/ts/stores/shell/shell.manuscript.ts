@@ -116,6 +116,47 @@ export function useShellManuscript(deps: ManuscriptDeps) {
   const deleteChapter = async (chapter: { id?: string | null; title?: string }, _silent = false) => {
     if (!chapter.id) return;
     try {
+      // 1. Вычисляем предшествующую главу перед удалением для автоотката таймлайна
+      const chaps = deps.chapters.value || [];
+      const cleanTargetId = String(chapter.id).replace(/^[^:]+:/, '');
+      const idx = chaps.findIndex(c => String(c.id).replace(/^[^:]+:/, '') === cleanTargetId);
+      let fallbackPoint: api.AutoExtendResult | null = null;
+
+      if (idx !== -1) {
+        // Если перед удаляемой есть глава — берём её (Глава N-1)
+        if (idx > 0) {
+          const prev = chaps[idx - 1] as unknown as Record<string, unknown>;
+          const prevId = String(prev.id || '');
+          if (prevId) {
+            fallbackPoint = {
+              chapter_id: prevId,
+              arc_id: (prev.arc_id as string) || (prev.arcId as string) || null,
+              volume_id: (prev.volume_id as string) || (prev.volumeId as string) || null,
+              updated_count: 0
+            };
+          }
+        } else if (chaps.length > 1) {
+          // Если удалили первую главу, берем следующую оставшуюся
+          const next = chaps[1] as unknown as Record<string, unknown>;
+          const nextId = String(next.id || '');
+          if (nextId) {
+            fallbackPoint = {
+              chapter_id: nextId,
+              arc_id: (next.arc_id as string) || (next.arcId as string) || null,
+              volume_id: (next.volume_id as string) || (next.volumeId as string) || null,
+              updated_count: 0
+            };
+          }
+        }
+      }
+
+      // 2. Исцеляем точки сущностей в SurrealDB до физического удаления главы
+      try {
+        await api.healDeletedChapter(deps.projectName.value, chapter.id, fallbackPoint);
+      } catch (healErr) {
+        console.warn('[Timeline AutoHeal] Failed to heal points on backend:', healErr);
+      }
+
       await api.deleteChapter(chapter.id);
       deps.addLog(`Manuscript -> Deleted chapter ${chapter.title || chapter.id}`, 'success');
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));

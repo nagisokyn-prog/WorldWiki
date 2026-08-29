@@ -365,6 +365,10 @@ export function useChapterTree(
                 const chId = String(data.original.id);
                 const ch = hierarchy.value.chapters.find((c) => String(c.id) === chId);
                 if (ch) ch.title = newName;
+                hierarchy.value = {
+                    ...hierarchy.value,
+                    chapters: [...hierarchy.value.chapters]
+                };
                 document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: data.original.id, title: newName } }));
                 emit('rename-chapter', data.original, newName);
             } else if (data?.isEntity && data.original) {

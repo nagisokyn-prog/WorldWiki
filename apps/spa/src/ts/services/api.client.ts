@@ -176,24 +176,39 @@ export async function createVolume(project: string, title: string): Promise<Reco
     return await invoke('create_volume', { project, title });
 }
 
-export async function updateVolume(Project: string, id: string, title: string): Promise<void> {
-    return await invoke('update_volume', { Project, id, title });
+export async function updateVolume(project: string, id: string, title: string): Promise<void> {
+    return await invoke('update_volume', { project, id, title });
 }
 
 export async function createArc(project: string, title: string, volumeId: string | null): Promise<Record<string, unknown>> {
     return await invoke('create_arc', { project, title, volumeId });
 }
 
-export async function updateArc(Project: string, id: string, title: string, VolumeId: string | null): Promise<void> {
-    return await invoke('update_arc', { Project, id, title, VolumeId });
+export async function updateArc(project: string, id: string, title: string, volumeId: string | null): Promise<void> {
+    return await invoke('update_arc', { project, id, title, volumeId });
 }
 
-export async function assignChapter(project: string, chapterId: string, arcId: string | null, volumeId: string | null): Promise<void> {
+export interface AutoExtendResult {
+    chapter_id: string;
+    arc_id: string | null;
+    volume_id: string | null;
+    updated_count: number;
+}
+
+export async function assignChapter(project: string, chapterId: string, arcId: string | null, volumeId: string | null): Promise<AutoExtendResult> {
     return await invoke('assign_chapter', { project, chapterId, arcId, volumeId });
 }
 
 export async function reorderNode(project: string, nodeType: string, id: string, sortOrder: number): Promise<void> {
     return await invoke('reorder_node', { project, nodeType, id, sortOrder });
+}
+
+export async function autoExtendTimeline(project: string, chapterId: string, arcId: string | null, volumeId: string | null): Promise<AutoExtendResult> {
+    return await invoke('auto_extend_timeline', { project, chapterId, arcId, volumeId });
+}
+
+export async function healDeletedChapter(project: string, deletedChapterId: string, fallbackPoint: AutoExtendResult | null): Promise<number> {
+    return await invoke('heal_deleted_chapter', { project, deletedChapterId, fallbackPoint });
 }
 
 export async function getConnections(project: string, chapter: string | null): Promise<Record<string, unknown>[]> {

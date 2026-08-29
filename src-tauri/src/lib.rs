@@ -126,6 +126,8 @@ pub fn run() {
             update_arc,
             assign_chapter,
             reorder_node,
+            auto_extend_timeline,
+            heal_deleted_chapter,
             // --- Связи / Таймлайн ---
             get_connections,
             save_connections,

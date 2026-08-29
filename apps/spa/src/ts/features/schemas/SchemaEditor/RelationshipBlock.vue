@@ -64,17 +64,28 @@
               </button>
               
               <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
-                <label class="nested-field-label">{{ nField.label || formatLabel(nField.class || '') }}</label>
-                <XboxWheel 
-                  v-if="nField.type === 'select'" 
-                  :model-value="(nItem[nField.class] as string | number) || ''" 
-                  :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
-                  placeholder="-- Не указано --" 
-                  @update:model-value="(val: unknown) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }" 
-                />
-                <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"></textarea>
-                <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
-                <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
+                <template v-if="nField.class === 'начальная_глава' || nField.class === 'конечная_глава'">
+                  <ManuscriptPointPicker
+                    :model-value="(nItem[nField.class] as any)"
+                    :label="nField.label || formatLabel(nField.class || '')"
+                    :allow-auto-extend="nField.class === 'конечная_глава'"
+                    :project="props.project"
+                    @update:model-value="(val) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
+                  />
+                </template>
+                <template v-else>
+                  <label class="nested-field-label">{{ nField.label || formatLabel(nField.class || '') }}</label>
+                  <XboxWheel 
+                    v-if="nField.type === 'select'" 
+                    :model-value="(nItem[nField.class] as string | number) || ''" 
+                    :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
+                    placeholder="-- Не указано --" 
+                    @update:model-value="(val: unknown) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }" 
+                  />
+                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"></textarea>
+                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputNumber(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
+                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
+                </template>
               </div>
             </div>
             
@@ -140,17 +151,28 @@
                   <i class="fas fa-times"></i>
                 </button>
                 <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
-                  <label class="nested-field-label text-info">{{ nField.label || formatLabel(nField.class || '') }}</label>
-                  <XboxWheel 
-                    v-if="nField.type === 'select'" 
-                    :model-value="(nItem[nField.class] as string | number) || ''"
-                    :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
-                    placeholder="-- Не указано --"
-                    @update:model-value="(val: unknown) => updateForeignNestedField(nItem, nField.class, val)"
-                  />
-                  <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))"></textarea>
-                  <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputNumber(e))">
-                  <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))">
+                  <template v-if="nField.class === 'начальная_глава' || nField.class === 'конечная_глава'">
+                    <ManuscriptPointPicker
+                      :model-value="(nItem[nField.class] as any)"
+                      :label="nField.label || formatLabel(nField.class || '')"
+                      :allow-auto-extend="nField.class === 'конечная_глава'"
+                      :project="props.project"
+                      @update:model-value="(val) => updateForeignNestedField(nItem, nField.class, val)"
+                    />
+                  </template>
+                  <template v-else>
+                    <label class="nested-field-label text-info">{{ nField.label || formatLabel(nField.class || '') }}</label>
+                    <XboxWheel 
+                      v-if="nField.type === 'select'" 
+                      :model-value="(nItem[nField.class] as string | number) || ''"
+                      :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
+                      placeholder="-- Не указано --"
+                      @update:model-value="(val: unknown) => updateForeignNestedField(nItem, nField.class, val)"
+                    />
+                    <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))"></textarea>
+                    <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputNumber(e))">
+                    <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))">
+                  </template>
                 </div>
               </div>
               
@@ -175,6 +197,7 @@
 import { useRelationshipBlock } from '../../../services/Entity/useRelationshipBlock';
 import type { RelationshipBlockProps } from '../../../services/Entity/useRelationshipBlock';
 import { XboxWheel } from '@worldwiki/components';
+import ManuscriptPointPicker from './ManuscriptPointPicker/ManuscriptPointPicker.vue';
 
 const props = withDefaults(defineProps<RelationshipBlockProps>(), {
     sandboxMode: false

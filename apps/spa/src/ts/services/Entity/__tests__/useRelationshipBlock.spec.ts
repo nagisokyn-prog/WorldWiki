@@ -338,6 +338,27 @@ describe('useRelationshipBlock', () => {
       expect(emit).toHaveBeenCalledWith('modified');
     });
 
+    it('inherits end chapter of previous block into start and end of new block', () => {
+      const rel = useRelationshipBlock(props, emit);
+      props.item.dynamics = [
+        {
+          начальная_глава: { volume_id: 'v1', arc_id: 'a1', chapter_id: 'c1' },
+          конечная_глава: { volume_id: 'v1', arc_id: 'a2', chapter_id: 'c5', is_auto_extend: true }
+        }
+      ];
+
+      rel.addNestedItem(undefined, { id: 'dynamics' });
+
+      expect(props.item.dynamics.length).toBe(2);
+      expect(props.item.dynamics[0].конечная_глава.is_auto_extend).toBe(false);
+      expect(props.item.dynamics[1].начальная_глава).toEqual({
+        volume_id: 'v1', arc_id: 'a2', chapter_id: 'c5', is_auto_extend: false
+      });
+      expect(props.item.dynamics[1].конечная_глава).toEqual({
+        volume_id: 'v1', arc_id: 'a2', chapter_id: 'c5', is_auto_extend: true
+      });
+    });
+
     it('covers makeSelectHandler, notifyNestedItemUpdate, getDynamicContainerFields, and hidden fieldOverrides', () => {
       props.allTemplates = {
         tpl_dyn: { fields: [{ class: 'field_dyn', label: 'Field Dyn' }] },

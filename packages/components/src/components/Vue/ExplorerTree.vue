@@ -300,8 +300,10 @@ const startRename = (node: TreeNodeData) => {
 };
 const commitRename = () => {
   if (renaming.value) {
-    if (renaming.value.value.trim() !== renaming.value.node.label || renaming.value.node.id.toString().startsWith('__new_')) {
-      emit('rename', renaming.value.node, renaming.value.value.trim());
+    const trimmed = renaming.value.value.trim();
+    if (trimmed && (trimmed !== renaming.value.node.label || renaming.value.node.id.toString().startsWith('__new_'))) {
+      renaming.value.node.label = trimmed;
+      emit('rename', renaming.value.node, trimmed);
     } else {
       emit('cancel-rename', renaming.value.node);
     }

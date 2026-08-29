@@ -67,7 +67,7 @@
             :model-value="activeMode.api_profile_id || ''" 
             :options="[{ value: '', label: '-- Использовать глобальное активное подключение --' }, ...profiles.map(p => ({ value: p.id || '', label: p.name }))] " 
             placeholder="-- Использовать глобальное активное подключение --" 
-            @update:model-value="val => activeMode.api_profile_id = (val ? String(val) : null)" 
+            @update:model-value="val => { if (activeMode) activeMode.api_profile_id = (val ? String(val) : null); }" 
           />
           <span class="field-hint">Позволяет закрепить за конкретным режимом отдельную модель (например, Claude для Редактора).</span>
         </div>

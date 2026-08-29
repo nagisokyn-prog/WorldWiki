@@ -15,6 +15,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "vite build",
+    "typecheck": "echo ok",
     "dev": "vite build --watch"
   },
   "devDependencies": {

@@ -19,9 +19,11 @@ export interface CalendarMonth {
 
 export interface CalendarEra {
   название: string;
+  name?: string;
   год_начала: number;
   год_конца: number;
   обратный_отсчет?: boolean;
+  [key: string]: unknown;
 }
 
 export interface CalendarSeason {

@@ -101,7 +101,7 @@ export function useCalendarsPanel(props: { project?: string }) {
         const idStr = String(cal.id || '').replace(/["'⟨⟩]/g, '').trim();
         let rawData = cal.data;
         if (rawData && typeof rawData === 'object' && 'data' in rawData && typeof (rawData as Record<string, unknown>).data === 'object') {
-            rawData = (rawData as Record<string, unknown>).data as any;
+            rawData = (rawData as Record<string, unknown>).data as CalendarData;
         }
 
         const payload: CalendarData & { [key: string]: unknown } = {
@@ -126,7 +126,7 @@ export function useCalendarsPanel(props: { project?: string }) {
     };
 
     const removeCalendar = async (idx: number) => {
-        let confirmed = false;
+        let confirmed: boolean;
         try {
             const { appConfirm } = await import('@worldwiki/components');
             confirmed = await Promise.race([

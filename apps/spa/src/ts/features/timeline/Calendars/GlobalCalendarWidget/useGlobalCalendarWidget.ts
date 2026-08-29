@@ -3,6 +3,7 @@ import { useCalendarStore } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 
 import type { CalendarRecord } from '../../../../stores/calendar.store';
+import type { CalendarData } from '../../../../services/Calendars/calendar.types';
 
 export function useGlobalCalendarWidget(props: { project: string }) {
   const masterCalendar = ref<CalendarRecord | null>(null);
@@ -158,7 +159,7 @@ export function useGlobalCalendarWidget(props: { project: string }) {
     if (!masterCalendar.value?.data) return null;
     const allCals = [
       masterCalendar.value.data,
-      ...(localCalendars.value.map(c => c.data).filter(Boolean) as any[])
+      ...(localCalendars.value.map(c => c.data).filter(Boolean) as CalendarData[])
     ];
     const activeLocal = localCalendars.value.find(c => c.id === selectedLocalCal.value)?.data;
     return CalendarMath.explainDate(

@@ -14,7 +14,7 @@ import '@worldwiki/resources/styles/features/shell/ProjectLauncher.css';
 import '@worldwiki/resources/styles/components/Settings.css';
 
 import { createApp, ref, computed, onMounted, shallowRef } from 'vue';
-import { projectService } from '../services/project.service';
+import { projectService, type ProjectStats } from '../services/project.service';
 
 import { settingsService, XboxWheel } from '@worldwiki/components';
 import CalendarsPanel from '../features/timeline/CalendarsPanel/CalendarsPanel.vue';
@@ -30,7 +30,7 @@ if (typeof window !== 'undefined') {
 const app = createApp({
   setup() {
     // ✅ ОПТИМИЗАЦИЯ: shallowRef для больших массивов проектов
-    const projects = shallowRef<Array<{ name: string; icon: string; stats: Record<string, number> }>>([]);
+    const projects = shallowRef<Array<{ name: string; icon: string; stats: ProjectStats | Record<string, unknown> }>>([]);
     const modalVisible = ref(false);
     const isEditing = ref(false);
     const editingProjectName = ref('');

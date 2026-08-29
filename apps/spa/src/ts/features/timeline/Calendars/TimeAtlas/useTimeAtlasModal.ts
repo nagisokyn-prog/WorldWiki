@@ -1,4 +1,4 @@
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useCalendarStore } from '../../../../stores/calendar.store';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 import type { CalendarRecord } from '../../../../stores/calendar.store';
@@ -9,7 +9,7 @@ export interface CalendarColumnState {
   input: CalendarDate['original_input'];
 }
 
-export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, emit: (e: 'close') => void) {
+export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _emit?: (e: 'close') => void) {
   const activeTab = ref<'converter' | 'matrix' | 'world_time' | 'snippets'>('converter');
   const allCalendars = ref<CalendarRecord[]>([]);
   const loading = ref(false);

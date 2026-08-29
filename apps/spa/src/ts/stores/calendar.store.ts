@@ -20,7 +20,7 @@ export function normalizeCalendarId(id: unknown): string {
   if (typeof id === 'string') {
     let s = id;
     if (s.includes('{String:')) {
-      s = s.replace(/.*String:\"?([^\"]+)\"?.*/, '$1');
+      s = s.replace(/.*String:"?([^"]+)"?.*/, '$1');
     }
     return s.replace(/["'⟨⟩]/g, '').trim();
   }
@@ -55,7 +55,7 @@ export const useCalendarStore = defineStore('calendar', () => {
       const list = (rawList || []).map((c) => {
         let calData = c.data;
         if (calData && typeof calData === 'object' && 'data' in calData && typeof (calData as Record<string, unknown>).data === 'object' && !Array.isArray((calData as Record<string, unknown>).data)) {
-          calData = (calData as Record<string, unknown>).data as any;
+          calData = (calData as Record<string, unknown>).data as CalendarData;
         }
         return {
           ...c,

@@ -37,7 +37,7 @@ export function useCalendarEras(props: CalendarErasProps, _emit?: (event: string
   const onNameInput = (era: CalendarEra, e: Event) => {
     const val = (e.target as HTMLInputElement).value;
     era.название = val;
-    (era as Record<string, unknown>).name = val;
+    era.name = val;
   };
 
   watch(
@@ -45,11 +45,11 @@ export function useCalendarEras(props: CalendarErasProps, _emit?: (event: string
     (eras) => {
       if (eras && Array.isArray(eras)) {
         eras.forEach((e) => {
-          if (!e.название && (e as Record<string, unknown>).name) {
-            e.название = (e as Record<string, unknown>).name as string;
+          if (!e.название && e.name) {
+            e.название = e.name;
           }
-          if (!(e as Record<string, unknown>).name && e.название) {
-            (e as Record<string, unknown>).name = e.название;
+          if (!e.name && e.название) {
+            e.name = e.название;
           }
         });
       }

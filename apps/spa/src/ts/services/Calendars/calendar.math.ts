@@ -4,7 +4,6 @@ import type {
   MoonConfig,
   MoonPhaseResult,
   DaylightResult,
-  SyncAnchorDate,
   LoreDateExplanation,
   WorldMoment,
   WorldTimezone,
@@ -495,7 +494,7 @@ export class CalendarMath {
     const years = Math.floor(absDays / daysInYear);
     const remDays = absDays % daysInYear;
 
-    let timeSpan = '';
+    let timeSpan: string;
     if (years > 0 && remDays > 0) {
       timeSpan = `${years} г. и ${remDays} дн.`;
     } else if (years > 0) {
@@ -842,8 +841,8 @@ export class CalendarMath {
       return time >= start || time <= end;
     };
 
-    let phase: 'dawn' | 'day' | 'dusk' | 'night' = 'night';
-    let phase_label = '🌙 Глубокая ночь';
+    let phase: 'dawn' | 'day' | 'dusk' | 'night';
+    let phase_label: string;
 
     if (isBetween(currentLocalHours, sunriseHours - 0.75, sunriseHours + 0.75)) {
       phase = 'dawn';

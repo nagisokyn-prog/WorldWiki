@@ -187,7 +187,6 @@ const {
   maxDaysInCurrentMonth,
   maxHoursInDay,
   maxMinutesInHour,
-  formattedMasterDate,
   formattedLocalDate,
   activeMoons,
   activeHoliday,

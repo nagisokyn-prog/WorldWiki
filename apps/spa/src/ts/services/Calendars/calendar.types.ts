@@ -128,9 +128,55 @@ export interface CalendarData {
     summer_solstice_hours: number;
     winter_solstice_hours: number;
   };
-  weather_patterns?: WeatherPattern[];
+  timezones?: WorldTimezone[];
+  regions?: WorldRegion[];
+  default_region_id?: string;
+  default_timezone_id?: string;
   
   [key: string]: unknown;
+}
+
+/** Физический инвариант момента времени планеты (Мировые сутки + Доля дня) */
+export interface WorldMoment {
+  day_index: number;
+  day_fraction: number; // [0.0, 1.0)
+}
+
+/** Историческое правило часового пояса на шкале мировых суток */
+export interface HistoricalTimezoneRule {
+  start_world_day?: number | null;
+  end_world_day?: number | null;
+  offset_hours: number;
+  description?: string;
+}
+
+/** Часовой пояс мира (долготный сдвиг относительно нулевого меридиана) */
+export interface WorldTimezone {
+  id: string;
+  name: string;
+  code?: string;
+  base_offset_hours: number;
+  historical_rules?: HistoricalTimezoneRule[];
+}
+
+/** Географический регион планеты */
+export interface WorldRegion {
+  id: string;
+  name: string;
+  timezone_id: string;
+  latitude: number;  // Широта (-90 .. +90): управляет сезонами и длиной дня
+  longitude: number; // Долгота (-180 .. +180): управляет солнечным полуднем
+}
+
+/** Астрономическое состояние солнца в регионе для писателя */
+export interface RegionSunStatus {
+  phase: 'dawn' | 'day' | 'dusk' | 'night';
+  phase_label: string;
+  daylight_text: string;
+  sunrise_time: string;
+  sunset_time: string;
+  zenith_time: string;
+  note?: string;
 }
 
 export interface LoreDateExplanation {

@@ -67,4 +67,34 @@ describe('useTimeAtlasModal', () => {
     // Snippets
     expect(atlas.snippetFormats.value.length).toBeGreaterThan(0);
   });
+
+  it('computes world time snapshot and literary snippet for configured regions', async () => {
+    const emit = vi.fn();
+    const atlas = useTimeAtlasModal({ project: 'test-proj', isOpen: true }, emit);
+
+    await new Promise((r) => setTimeout(r, 10));
+
+    // Настраиваем пояса и регионы в мастер-календаре
+    if (atlas.masterCalendar.value) {
+      atlas.masterCalendar.value.timezones = [
+        { id: 'tz_cap', name: 'Столичный', base_offset_hours: 3.0 },
+        { id: 'tz_wst', name: 'Западный', base_offset_hours: -5.0 }
+      ];
+      atlas.masterCalendar.value.regions = [
+        { id: 'reg_1', name: 'Столица', timezone_id: 'tz_cap', latitude: 45, longitude: 45 },
+        { id: 'reg_2', name: 'Западный Порт', timezone_id: 'tz_wst', latitude: 30, longitude: -75 }
+      ];
+    }
+
+    atlas.activeTab.value = 'world_time';
+    expect(atlas.worldTimeSnapshot.value.length).toBe(2);
+
+    const capSnapshot = atlas.worldTimeSnapshot.value.find(s => s.region.name === 'Столица');
+    expect(capSnapshot).toBeDefined();
+    expect(capSnapshot?.offsetHours).toBe(3.0);
+    expect(capSnapshot?.sunStatus.phase).toBeDefined();
+
+    expect(atlas.worldTimeSnippet.value).toContain('Столица');
+    expect(atlas.worldTimeSnippet.value).toContain('Западный Порт');
+  });
 });

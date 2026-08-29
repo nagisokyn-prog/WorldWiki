@@ -26,6 +26,13 @@
               </button>
               <button
                 class="atlas-tab-btn"
+                :class="{ active: activeTab === 'world_time' }"
+                @click="activeTab = 'world_time'"
+              >
+                <i class="fas fa-globe-americas"></i> Срез Мира
+              </button>
+              <button
+                class="atlas-tab-btn"
                 :class="{ active: activeTab === 'snippets' }"
                 @click="activeTab = 'snippets'"
               >
@@ -322,6 +329,72 @@
             </div>
           </div>
 
+          <!-- ВКЛАДКА: Срез Мира и Часовые Пояса -->
+          <div v-if="activeTab === 'world_time'" class="tab-pane">
+            <div class="world-time-intro">
+              <p>Синхронный срез физического времени и астрономического солнца по всем регионам планеты в этот момент:</p>
+            </div>
+
+            <!-- Сетка регионов мира -->
+            <div class="world-regions-grid">
+              <div
+                v-for="item in worldTimeSnapshot"
+                :key="item.region.id"
+                class="region-card glass-panel"
+              >
+                <div class="region-card-header">
+                  <div class="region-info">
+                    <span class="region-name">{{ item.region.name }}</span>
+                    <span class="region-tz-badge">
+                      {{ item.timezone?.name || 'Пояс' }} ({{ item.offsetHours >= 0 ? '+' : '' }}{{ item.offsetHours }} ч)
+                    </span>
+                  </div>
+                  <span class="phase-pill" :class="item.sunStatus.phase">
+                    {{ item.sunStatus.phase_label }}
+                  </span>
+                </div>
+
+                <div class="region-time-display">
+                  <span class="time-value">{{ item.localTimeStr }}</span>
+                  <span class="date-value">{{ item.localDateFormatted }}</span>
+                </div>
+
+                <div class="region-card-footer">
+                  <div class="sun-detail-row">
+                    <span>☀️ Восход: <strong>{{ item.sunStatus.sunrise_time }}</strong></span>
+                    <span>Закат: <strong>{{ item.sunStatus.sunset_time }}</strong></span>
+                  </div>
+                  <div class="sun-detail-row text-muted">
+                    <span>Свет: {{ item.sunStatus.daylight_text }}</span>
+                    <span>{{ item.sunStatus.note }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div v-if="worldTimeSnapshot.length === 0" class="empty-world-panel glass-panel">
+                <i class="fas fa-compass fa-2x mb-2 text-muted"></i>
+                <p>В мире ещё не настроены регионы и часовые пояса.</p>
+                <p class="text-sm text-muted">Перейдите в настройки Календаря Мира, чтобы добавить города, пояса, широту и долготу.</p>
+              </div>
+            </div>
+
+            <!-- Художественная лор-панорама -->
+            <div class="world-panorama-card glass-panel mt-4">
+              <div class="panorama-header">
+                <span class="panorama-title"><i class="fas fa-feather-alt"></i> Литературная панорама для рукописи:</span>
+                <button
+                  class="copy-btn interactive-el"
+                  :class="{ copied: isWorldTimeCopied }"
+                  @click="copyWorldTimeSnippet"
+                >
+                  <i :class="isWorldTimeCopied ? 'fas fa-check' : 'fas fa-copy'"></i>
+                  {{ isWorldTimeCopied ? 'Скопировано!' : 'Скопировать сводку' }}
+                </button>
+              </div>
+              <div class="panorama-quote">«{{ worldTimeSnippet }}»</div>
+            </div>
+          </div>
+
           <!-- ВКЛАДКА 3: Датировки для Рукописи -->
           <div v-if="activeTab === 'snippets'" class="tab-pane">
             <div class="snippets-intro">
@@ -373,6 +446,10 @@ const {
   masterCalendarRecord,
   localCalendarRecords,
   currentWorldMinute,
+  worldTimeSnapshot,
+  worldTimeSnippet,
+  isWorldTimeCopied,
+  copyWorldTimeSnippet,
   matrixBaseCalId,
   matrixCompareCalId,
   matrixYear,
@@ -939,5 +1016,173 @@ const {
   color: var(--text-main);
   font-family: Georgia, serif;
   font-style: italic;
+}
+
+/* Стили вкладки «Срез Мира» */
+.world-time-intro {
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.world-regions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.region-card {
+  padding: 16px;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg-panel, rgba(30, 30, 47, 0.6));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform var(--anim-speed-fast) ease, box-shadow var(--anim-speed-fast) ease;
+}
+
+.region-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
+  border-color: var(--accent, #6366f1);
+}
+
+.region-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.region-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.region-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main, #fff);
+}
+
+.region-tz-badge {
+  font-size: 11px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.phase-pill {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.phase-pill.dawn {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.phase-pill.day {
+  background: rgba(234, 179, 8, 0.2);
+  color: #eab308;
+  border: 1px solid rgba(234, 179, 8, 0.4);
+}
+
+.phase-pill.dusk {
+  background: rgba(236, 72, 153, 0.2);
+  color: #ec4899;
+  border: 1px solid rgba(236, 72, 153, 0.4);
+}
+
+.phase-pill.night {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+.region-time-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.time-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-main, #fff);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+
+.date-value {
+  font-size: 12px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.region-card-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.sun-detail-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-main, #e2e8f0);
+}
+
+.sun-detail-row.text-muted {
+  color: var(--text-muted, #94a3b8);
+}
+
+.empty-world-panel {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  border-radius: var(--radius-sm, 8px);
+}
+
+.world-panorama-card {
+  padding: 16px 20px;
+  border-radius: var(--radius-sm, 8px);
+  background: var(--bg-panel, rgba(30, 30, 47, 0.6));
+  border: 1px solid var(--border-color);
+}
+
+.panorama-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.panorama-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent, #6366f1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panorama-quote {
+  font-size: 14px;
+  line-height: 1.6;
+  font-style: italic;
+  font-family: Georgia, serif;
+  color: var(--text-main, #fff);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px 16px;
+  border-left: 3px solid var(--accent, #6366f1);
+  border-radius: 0 6px 6px 0;
 }
 </style>

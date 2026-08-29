@@ -37,4 +37,28 @@ describe('useCalendarTimezones', () => {
       timezone_regions: [],
     }));
   });
+
+  it('manages world timezones and regions with coordinates', () => {
+    const hook = useCalendarTimezones(props, emit);
+
+    hook.addTimezone();
+    expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({
+      timezones: expect.arrayContaining([expect.objectContaining({ name: 'Часовой пояс 2' })]),
+    }));
+
+    hook.addRegion();
+    expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({
+      regions: expect.arrayContaining([expect.objectContaining({ name: 'Регион 1', latitude: 45 })]),
+    }));
+
+    hook.removeRegion(0);
+    expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({
+      regions: [],
+    }));
+
+    hook.removeTimezone(0);
+    expect(emit).toHaveBeenCalledWith('update:modelValue', expect.objectContaining({
+      timezones: [],
+    }));
+  });
 });

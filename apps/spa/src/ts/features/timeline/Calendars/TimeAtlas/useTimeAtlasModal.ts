@@ -10,7 +10,7 @@ export interface CalendarColumnState {
 }
 
 export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, emit: (e: 'close') => void) {
-  const activeTab = ref<'converter' | 'matrix' | 'snippets'>('converter');
+  const activeTab = ref<'converter' | 'matrix' | 'world_time' | 'snippets'>('converter');
   const allCalendars = ref<CalendarRecord[]>([]);
   const loading = ref(false);
 
@@ -263,6 +263,94 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, e
     }, 2000);
   };
 
+  // Часовые пояса и регионы мира из мастер-календаря
+  const worldTimezones = computed(() => {
+    return masterCalendar.value?.timezones || [];
+  });
+
+  const worldRegions = computed(() => {
+    return masterCalendar.value?.regions || [];
+  });
+
+  // Физический WorldMoment из текущей мировой минуты
+  const currentWorldMoment = computed(() => {
+    const master = masterCalendar.value;
+    if (!master) return { day_index: 0, day_fraction: 0 };
+    const settings = master.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const dayMins = (settings.часов_в_сутках || 24) * (settings.минут_в_часе || 60);
+    const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
+    const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
+    return {
+      day_index: dayIndex,
+      day_fraction: dayMins > 0 ? remMins / dayMins : 0
+    };
+  });
+
+  // Синхронный срез времени по всем настроенным регионам мира
+  const worldTimeSnapshot = computed(() => {
+    const master = masterCalendar.value;
+    if (!master) return [];
+
+    const moment = currentWorldMoment.value;
+    const tzs = worldTimezones.value;
+
+    return worldRegions.value.map((region) => {
+      const tz = tzs.find(t => t.id === region.timezone_id);
+      const offsetHours = tz ? CalendarMath.getTimezoneOffsetForDay(tz, moment.day_index) : 0;
+
+      // Локальная дата и время региона
+      const localInput = CalendarMath.worldMomentToDate(moment, master, offsetHours);
+      const localDateFormatted = CalendarMath.formatDate(master, {
+        absolute_minute: currentWorldMinute.value,
+        calendar_id: master._id || '',
+        original_input: localInput
+      });
+
+      const hh = String(localInput.hour ?? 0).padStart(2, '0');
+      const mm = String(localInput.minute ?? 0).padStart(2, '0');
+      const localTimeStr = `${hh}:${mm}`;
+
+      // Солнце и фаза дня
+      const sunStatus = CalendarMath.calculateSunForRegion(region, moment, master, tzs);
+
+      return {
+        region,
+        timezone: tz,
+        offsetHours,
+        localTimeStr,
+        localDateFormatted,
+        sunStatus
+      };
+    });
+  });
+
+  // Художественная лор-сводка для книги
+  const worldTimeSnippet = computed(() => {
+    const snapshot = worldTimeSnapshot.value;
+    if (snapshot.length === 0) {
+      return 'В мире ещё не настроены географические регионы. Добавьте их в Настройках Календаря Мира.';
+    }
+
+    const parts = snapshot.map((item) => {
+      return `${item.region.name} (${item.localTimeStr}, ${item.sunStatus.phase_label})`;
+    });
+
+    const master = masterCalendar.value;
+    const masterDate = master ? getLocalDateForCal(master) : null;
+    const masterDateStr = master && masterDate ? `${masterDate.day} ${master.месяцы?.[masterDate.month]?.название || ''} ${masterDate.year} г.` : '';
+
+    return `В то время как шёл ${masterDateStr}, мир жил в разных ритмах: ${parts.join('; ')}.`;
+  });
+
+  const isWorldTimeCopied = ref(false);
+  const copyWorldTimeSnippet = async () => {
+    if (worldTimeSnippet.value && navigator?.clipboard) {
+      await navigator.clipboard.writeText(worldTimeSnippet.value);
+      isWorldTimeCopied.value = true;
+      setTimeout(() => { isWorldTimeCopied.value = false; }, 2000);
+    }
+  };
+
   return {
     activeTab,
     allCalendars,
@@ -271,6 +359,13 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, e
     masterCalendarRecord,
     localCalendarRecords,
     currentWorldMinute,
+    currentWorldMoment,
+    worldTimezones,
+    worldRegions,
+    worldTimeSnapshot,
+    worldTimeSnippet,
+    isWorldTimeCopied,
+    copyWorldTimeSnippet,
     selectedCalIds,
     matrixBaseCalId,
     matrixCompareCalId,

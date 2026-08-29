@@ -1,4 +1,16 @@
-import type { CalendarData, CalendarDate, MoonConfig, MoonPhaseResult, DaylightResult, SyncAnchorDate, LoreDateExplanation } from '../Calendars/calendar.types';
+import type {
+  CalendarData,
+  CalendarDate,
+  MoonConfig,
+  MoonPhaseResult,
+  DaylightResult,
+  SyncAnchorDate,
+  LoreDateExplanation,
+  WorldMoment,
+  WorldTimezone,
+  WorldRegion,
+  RegionSunStatus
+} from '../Calendars/calendar.types';
 
 export class CalendarMath {
 
@@ -581,6 +593,289 @@ export class CalendarMath {
       sunsetText: daylightInfo?.sunset,
       holidays: Array.from(new Set(holidays)),
       snippet,
+    };
+  }
+
+  /**
+   * Вычисляет порядковый номер суток от точки отсчёта календаря
+   */
+  public static getTotalDays(input: CalendarDate['original_input'], calendar: CalendarData): number {
+    const { era_index = 0, year = 1, month = 0, day = 1 } = input;
+    let totalDays = 0;
+    const era = calendar.эпохи?.[era_index];
+    const isReverse = era?.обратный_отсчет;
+    const actualYear = isReverse ? -year : year;
+
+    if (actualYear > 1) {
+      for (let y = 1; y < actualYear; y++) {
+        totalDays += this.getDaysInYear(calendar, y);
+      }
+    } else if (actualYear < 1) {
+      for (let y = 0; y >= actualYear; y--) {
+        totalDays -= this.getDaysInYear(calendar, y);
+      }
+    }
+
+    if (calendar.месяцы) {
+      for (let m = 0; m < month && m < calendar.месяцы.length; m++) {
+        let mDays = calendar.месяцы[m].дней;
+        const leapRule = calendar.пользовательское_високосное_правило;
+        if (leapRule && leapRule.месяц === m && this.isLeapYear(calendar, actualYear)) {
+          mDays += leapRule.день_смещения;
+        }
+        totalDays += mDays;
+      }
+    }
+
+    totalDays += (day - 1);
+    return totalDays;
+  }
+
+  /**
+   * Восстанавливает (era_index, year, month, day) из порядкового номера суток календаря
+   */
+  public static getDateFromTotalDays(
+    totalDays: number,
+    calendar: CalendarData,
+    era_index: number = 0
+  ): { era_index: number; year: number; month: number; day: number } {
+    let remDays = totalDays;
+    let year = 1;
+
+    if (remDays >= 0) {
+      while (true) {
+        const dInY = this.getDaysInYear(calendar, year);
+        if (remDays < dInY) break;
+        remDays -= dInY;
+        year++;
+      }
+    } else {
+      year = 0;
+      while (true) {
+        const dInY = this.getDaysInYear(calendar, year);
+        if (remDays >= -dInY) {
+          remDays += dInY;
+          break;
+        }
+        remDays += dInY;
+        year--;
+      }
+    }
+
+    let month = 0;
+    const months = calendar.месяцы || [];
+    for (let m = 0; m < months.length; m++) {
+      let mDays = months[m].дней;
+      const leapRule = calendar.пользовательское_високосное_правило;
+      if (leapRule && leapRule.месяц === m && this.isLeapYear(calendar, year)) {
+        mDays += leapRule.день_смещения;
+      }
+      if (remDays < mDays) {
+        month = m;
+        break;
+      }
+      remDays -= mDays;
+      if (m === months.length - 1) {
+        month = m;
+      }
+    }
+
+    const day = remDays + 1;
+    const era = calendar.эпохи?.[era_index];
+    const isReverse = era?.обратный_отсчет;
+    const displayYear = isReverse ? -year : year;
+
+    return {
+      era_index,
+      year: displayYear <= 0 ? Math.abs(displayYear) || 1 : displayYear,
+      month,
+      day
+    };
+  }
+
+  /**
+   * Перевод календарной даты культуры в физический WorldMoment (Мировые сутки + Доля суток)
+   */
+  public static dateToWorldMoment(
+    date: CalendarDate['original_input'],
+    calendar: CalendarData,
+    offsetHours: number = 0,
+    masterCal?: CalendarData | null
+  ): WorldMoment {
+    const settings = calendar.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const hInDay = settings.часов_в_сутках || 24;
+    const mInHour = settings.минут_в_часе || 60;
+    const dayMinutes = hInDay * mInHour;
+
+    const hour = date.hour ?? 0;
+    const minute = date.minute ?? 0;
+    const localMinutes = hour * mInHour + minute;
+    const localFraction = dayMinutes > 0 ? localMinutes / dayMinutes : 0;
+
+    const localTotalDays = this.getTotalDays(date, calendar);
+    let worldDayIndex = localTotalDays;
+
+    if (!calendar.is_master && calendar.sync_anchor?.linked_to_master) {
+      const anchorOffsetMinutes = this.getAnchorOffset(calendar, masterCal);
+      const daysOffset = Math.round(anchorOffsetMinutes / dayMinutes);
+      worldDayIndex = localTotalDays + daysOffset;
+    }
+
+    let worldFraction = localFraction - (offsetHours / 24);
+    while (worldFraction < 0) {
+      worldFraction += 1.0;
+      worldDayIndex -= 1;
+    }
+    while (worldFraction >= 1.0) {
+      worldFraction -= 1.0;
+      worldDayIndex += 1;
+    }
+
+    return {
+      day_index: worldDayIndex,
+      day_fraction: worldFraction
+    };
+  }
+
+  /**
+   * Проекция физического WorldMoment в часы и дату конкретной культуры с учётом пояса региона
+   */
+  public static worldMomentToDate(
+    moment: WorldMoment,
+    calendar: CalendarData,
+    offsetHours: number = 0,
+    masterCal?: CalendarData | null,
+    era_index: number = 0
+  ): CalendarDate['original_input'] {
+    const settings = calendar.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const hInDay = settings.часов_в_сутках || 24;
+    const mInHour = settings.минут_в_часе || 60;
+    const dayMinutes = hInDay * mInHour;
+
+    let localFraction = moment.day_fraction + (offsetHours / 24);
+    let localDayIndex = moment.day_index;
+
+    while (localFraction < 0) {
+      localFraction += 1.0;
+      localDayIndex -= 1;
+    }
+    while (localFraction >= 1.0) {
+      localFraction -= 1.0;
+      localDayIndex += 1;
+    }
+
+    if (!calendar.is_master && calendar.sync_anchor?.linked_to_master) {
+      const anchorOffsetMinutes = this.getAnchorOffset(calendar, masterCal);
+      const daysOffset = Math.round(anchorOffsetMinutes / dayMinutes);
+      localDayIndex = localDayIndex - daysOffset;
+    }
+
+    const dateWithoutTime = this.getDateFromTotalDays(localDayIndex, calendar, era_index);
+    const totalLocalMinutes = Math.round(localFraction * dayMinutes) % dayMinutes;
+    const hour = Math.floor(totalLocalMinutes / mInHour);
+    const minute = totalLocalMinutes % mInHour;
+
+    return {
+      ...dateWithoutTime,
+      hour,
+      minute
+    };
+  }
+
+  /**
+   * Получить смещение часового пояса в часах для конкретного мирового дня (с историческими правилами)
+   */
+  public static getTimezoneOffsetForDay(timezone: WorldTimezone, worldDay: number): number {
+    if (!timezone) return 0;
+    if (timezone.historical_rules && timezone.historical_rules.length > 0) {
+      for (const rule of timezone.historical_rules) {
+        const start = rule.start_world_day ?? -Infinity;
+        const end = rule.end_world_day ?? Infinity;
+        if (worldDay >= start && worldDay <= end) {
+          return rule.offset_hours;
+        }
+      }
+    }
+    return timezone.base_offset_hours || 0;
+  }
+
+  /**
+   * Астрономический расчет положения солнца и фазы дня в регионе (по широте и долготе)
+   */
+  public static calculateSunForRegion(
+    region: WorldRegion,
+    moment: WorldMoment,
+    calendar: CalendarData,
+    timezones: WorldTimezone[] = []
+  ): RegionSunStatus {
+    const tz = timezones.find(t => t.id === region.timezone_id);
+    const offsetHours = tz ? this.getTimezoneOffsetForDay(tz, moment.day_index) : 0;
+
+    const daysInYear = this.getDaysInYear(calendar, 1) || 365;
+    const lat = region.latitude || 0;
+    const lon = region.longitude || 0;
+
+    // Сезонный прогресс планеты
+    const dayInYear = ((moment.day_index % daysInYear) + daysInYear) % daysInYear;
+    const theta = (dayInYear / daysInYear) * 2 * Math.PI;
+
+    // Длина дня в часах (от 12ч на экваторе до сезонной амплитуды по широте)
+    const latRad = (lat * Math.PI) / 180;
+    const seasonAmp = 8.0 * Math.sin(latRad);
+    const durationHours = Math.max(2, Math.min(22, 12.0 + seasonAmp * (-Math.cos(theta))));
+
+    // Истинный солнечный полдень по местному поясному времени:
+    // 12.0 - (lon / 15) + offsetHours
+    const solarNoonLocalHours = 12.0 - (lon / 15) + offsetHours;
+    const normalizedNoon = ((solarNoonLocalHours % 24) + 24) % 24;
+
+    const halfDay = durationHours / 2;
+    const sunriseHours = ((normalizedNoon - halfDay + 24) % 24);
+    const sunsetHours = ((normalizedNoon + halfDay + 24) % 24);
+
+    // Текущее местное поясное время в часах [0..24)
+    const localFraction = (((moment.day_fraction + (offsetHours / 24)) % 1) + 1) % 1;
+    const currentLocalHours = localFraction * 24;
+
+    const isBetween = (time: number, start: number, end: number) => {
+      if (start <= end) return time >= start && time <= end;
+      return time >= start || time <= end;
+    };
+
+    let phase: 'dawn' | 'day' | 'dusk' | 'night' = 'night';
+    let phase_label = '🌙 Глубокая ночь';
+
+    if (isBetween(currentLocalHours, sunriseHours - 0.75, sunriseHours + 0.75)) {
+      phase = 'dawn';
+      phase_label = '🌅 Рассвет';
+    } else if (isBetween(currentLocalHours, sunsetHours - 0.75, sunsetHours + 0.75)) {
+      phase = 'dusk';
+      phase_label = '🌆 Сумерки';
+    } else if (isBetween(currentLocalHours, sunriseHours + 0.75, sunsetHours - 0.75)) {
+      phase = 'day';
+      phase_label = '☀️ День';
+    } else {
+      phase = 'night';
+      phase_label = '🌙 Ночь';
+    }
+
+    const fmt = (h: number) => {
+      const hh = Math.floor(h) % 24;
+      const mm = Math.floor((h - Math.floor(h)) * 60);
+      return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+    };
+
+    const totalDurH = Math.floor(durationHours);
+    const totalDurM = Math.round((durationHours - totalDurH) * 60);
+
+    return {
+      phase,
+      phase_label,
+      daylight_text: `${totalDurH} ч ${totalDurM} мин`,
+      sunrise_time: fmt(sunriseHours),
+      sunset_time: fmt(sunsetHours),
+      zenith_time: fmt(normalizedNoon),
+      note: `Солнечный полдень: ${fmt(normalizedNoon)}`
     };
   }
 }

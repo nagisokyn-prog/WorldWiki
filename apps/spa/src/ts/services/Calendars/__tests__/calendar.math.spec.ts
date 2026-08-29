@@ -492,4 +492,99 @@ describe('CalendarMath', () => {
       expect(explanation.snippet).toContain('по Календарю Мира');
     });
   });
+
+  describe('WorldMoment and Geography (World Time, Regions, Timezones)', () => {
+    it('converts date to WorldMoment and back without loss', () => {
+      const cal = CalendarMath.getDefaultCalendar();
+      const input = { era_index: 0, year: 1200, month: 5, day: 15, hour: 14, minute: 30 };
+
+      const moment = CalendarMath.dateToWorldMoment(input, cal, 0);
+      expect(moment.day_index).toBeGreaterThan(0);
+      // 14:30 in 24h = (14*60 + 30) / 1440 = 870 / 1440 ≈ 0.60416667
+      expect(moment.day_fraction).toBeCloseTo(870 / 1440, 4);
+
+      const restored = CalendarMath.worldMomentToDate(moment, cal, 0);
+      expect(restored.year).toBe(1200);
+      expect(restored.month).toBe(5);
+      expect(restored.day).toBe(15);
+      expect(restored.hour).toBe(14);
+      expect(restored.minute).toBe(30);
+    });
+
+    it('correctly maps between 1440-minute and 1000-minute cultures via WorldMoment', () => {
+      const empireCal = CalendarMath.getDefaultCalendar(); // 24 * 60 = 1440
+      const tumbaCal: CalendarData = {
+        ...CalendarMath.getDefaultCalendar(),
+        название: 'Тумба-Юмб',
+        настройки_времени: {
+          часов_в_сутках: 10,
+          минут_в_часе: 100,
+          секунд_в_минуте: 100,
+          широта: 0,
+          учитывать_сезонную_длительность_дня: false
+        }
+      };
+
+      // 06:00 in Empire is 0.25 (25%) of physical day
+      const empireDate = { era_index: 0, year: 1, month: 0, day: 1, hour: 6, minute: 0 };
+      const moment = CalendarMath.dateToWorldMoment(empireDate, empireCal, 0);
+      expect(moment.day_fraction).toBe(0.25);
+
+      // In Tumba-Yumb (10 hours x 100 mins): 0.25 of day is 2 hours and 50 mins
+      const tumbaDate = CalendarMath.worldMomentToDate(moment, tumbaCal, 0);
+      expect(tumbaDate.hour).toBe(2);
+      expect(tumbaDate.minute).toBe(50);
+    });
+
+    it('handles timezone offsets and midnight rollover in WorldMoment', () => {
+      const cal = CalendarMath.getDefaultCalendar();
+      // 02:00 in region with timezone +3:00 means physical world time on prime meridian is 23:00 previous day (-1 day)
+      const input = { era_index: 0, year: 100, month: 0, day: 10, hour: 2, minute: 0 };
+      const moment = CalendarMath.dateToWorldMoment(input, cal, 3);
+
+      const localDate = CalendarMath.worldMomentToDate(moment, cal, 3);
+      expect(localDate.year).toBe(100);
+      expect(localDate.month).toBe(0);
+      expect(localDate.day).toBe(10);
+      expect(localDate.hour).toBe(2);
+    });
+
+    it('evaluates historical timezone rules correctly', () => {
+      const tz: WorldTimezone = {
+        id: 'cap_tz',
+        name: 'Столичный',
+        base_offset_hours: 4.0,
+        historical_rules: [
+          { start_world_day: 0, end_world_day: 1000, offset_hours: 2.0, description: 'Древняя эпоха' },
+          { start_world_day: 1001, end_world_day: 5000, offset_hours: 3.0, description: 'Имперская реформа' }
+        ]
+      };
+
+      expect(CalendarMath.getTimezoneOffsetForDay(tz, 500)).toBe(2.0);
+      expect(CalendarMath.getTimezoneOffsetForDay(tz, 2000)).toBe(3.0);
+      expect(CalendarMath.getTimezoneOffsetForDay(tz, 9000)).toBe(4.0); // fallback to base
+    });
+
+    it('calculates sun position, zenith, and daylight phases for a region', () => {
+      const cal = CalendarMath.getDefaultCalendar();
+      const tz: WorldTimezone = { id: 'tz_1', name: 'Zone +3', base_offset_hours: 3.0 };
+      const region: WorldRegion = {
+        id: 'reg_capital',
+        name: 'Столица',
+        timezone_id: 'tz_1',
+        latitude: 45.0,
+        longitude: 45.0
+      };
+
+      // Noon moment: day_fraction = 0.5 - 3/24 = 0.375 (12:00 local time)
+      const noonMoment: WorldMoment = { day_index: 100, day_fraction: 0.375 };
+      const sunStatus = CalendarMath.calculateSunForRegion(region, noonMoment, cal, [tz]);
+
+      expect(sunStatus.phase).toBe('day');
+      expect(sunStatus.phase_label).toBe('☀️ День');
+      expect(sunStatus.sunrise_time).toBeDefined();
+      expect(sunStatus.sunset_time).toBeDefined();
+      expect(sunStatus.daylight_text).toContain('ч');
+    });
+  });
 });

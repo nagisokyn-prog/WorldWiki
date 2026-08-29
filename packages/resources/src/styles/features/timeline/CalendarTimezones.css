@@ -14,18 +14,44 @@
 .timezone-help-text {
   font-size: 11px;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   line-height: 1.4;
+}
+.tz-sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.tz-sub-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.btn-sm {
+  padding: 2px 8px;
+  font-size: 11px;
 }
 .tz-item-card {
   margin-bottom: 8px;
   padding: 8px;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 6px;
+  border: 1px solid var(--border-color);
 }
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 8px;
+}
+.grid-4 {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1.2fr;
   gap: 8px;
 }
 .calendar-field {
@@ -37,12 +63,23 @@
   font-size: 11px;
   color: var(--text-muted);
 }
-.calendar-field input {
+.calendar-field input,
+.calendar-field select {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-color);
   color: var(--text-color);
   padding: 4px 8px;
   border-radius: 4px;
+  font-size: 12px;
+  outline: none;
+}
+.calendar-field select option {
+  background: var(--bg-panel, #1e1e2f);
+  color: var(--text-main, #fff);
+}
+.calendar-field input:focus,
+.calendar-field select:focus {
+  border-color: var(--accent);
 }
 .btn-delete-tz {
   margin-top: 8px;
@@ -59,7 +96,12 @@
 .btn-delete-tz:hover {
   background: rgba(231, 76, 60, 0.25);
 }
-.btn-add-tz {
-  width: 100%;
-  justify-content: center;
+.tz-empty-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 4px;
+  margin-bottom: 8px;
 }

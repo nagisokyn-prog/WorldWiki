@@ -1,0 +1,503 @@
+{
+  "baselineDebt": 1059,
+  "currentDebt": 1059,
+  "fixedCount": 0,
+  "introducedCount": 0,
+  "trendPercent": "0.0",
+  "categories": {
+    "blackColors": 131,
+    "whiteColors": 378,
+    "hexColors": 302,
+    "namedColors": 0,
+    "radii": 0,
+    "inlineStyles": 248
+  },
+  "semanticRoles": {
+    "modalBackdrops": 0,
+    "sunkenBackgrounds": 77,
+    "borders": 203,
+    "text": 272
+  },
+  "topFiles": [
+    {
+      "file": "packages/resources/src/styles/app.css",
+      "count": 39
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "count": 35
+    },
+    {
+      "file": "packages/resources/src/styles/components/ExplorerTree.css",
+      "count": 32
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+      "count": 32
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
+      "count": 31
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/EditorView.css",
+      "count": 31
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+      "count": 31
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
+      "count": 30
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiMessageList.css",
+      "count": 29
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "count": 27
+    },
+    {
+      "file": "packages/resources/src/styles/components/HistorySidebar.css",
+      "count": 26
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
+      "count": 26
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+      "count": 24
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarsPanel.css",
+      "count": 22
+    },
+    {
+      "file": "packages/resources/src/styles/components/WorkspaceLayout.css",
+      "count": 21
+    },
+    {
+      "file": "packages/resources/src/styles/components/CommandPalette.css",
+      "count": 19
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "count": 18
+    },
+    {
+      "file": "packages/resources/src/styles/components/QuickOpen.css",
+      "count": 17
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarPlayground.css",
+      "count": 17
+    },
+    {
+      "file": "packages/resources/src/styles/components/EditorTabBar.css",
+      "count": 16
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
+      "count": 16
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarSyncAnchor/CalendarSyncAnchor.vue",
+      "count": 16
+    },
+    {
+      "file": "packages/resources/src/styles/components/XboxWheel.css",
+      "count": 15
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PlanningPanel.css",
+      "count": 15
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+      "count": 15
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings.vue",
+      "count": 15
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/TagsManagerModal.css",
+      "count": 14
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/Splash.css",
+      "count": 14
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+      "count": 14
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "count": 13
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ChapterTree.css",
+      "count": 13
+    },
+    {
+      "file": "packages/resources/src/styles/components/GlassComponents.css",
+      "count": 12
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "count": 12
+    },
+    {
+      "file": "packages/resources/src/styles/components/BaseUI.css",
+      "count": 11
+    },
+    {
+      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
+      "count": 11
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
+      "count": 11
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsNavRail.vue",
+      "count": 11
+    },
+    {
+      "file": "packages/resources/src/styles/components/TagsField.css",
+      "count": 9
+    },
+    {
+      "file": "packages/resources/src/styles/components/ThemeSwitcher.css",
+      "count": 9
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
+      "count": 9
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarSeasons.css",
+      "count": 9
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/SchemaContainer.css",
+      "count": 8
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
+      "count": 8
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
+      "count": 8
+    },
+    {
+      "file": "packages/resources/src/styles/components/FloatingWindow.css",
+      "count": 7
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/DateWheels.css",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
+      "count": 7
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
+      "count": 7
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "count": 6
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/SemanticParagraph.css",
+      "count": 6
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarHolidays.css",
+      "count": 6
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarMoons.css",
+      "count": 6
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarTimezones.css",
+      "count": 6
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+      "count": 6
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
+      "count": 6
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/WowilonPanel.css",
+      "count": 5
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "count": 5
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarSettings.css",
+      "count": 5
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarWeekdays.css",
+      "count": 5
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "count": 5
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
+      "count": 5
+    },
+    {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "count": 5
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "count": 5
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "count": 5
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "count": 4
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSelect.css",
+      "count": 4
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "count": 4
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
+      "count": 4
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
+      "count": 4
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "count": 4
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatTopBar.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+      "count": 3
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
+      "count": 3
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/base/layout.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/base/reset.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/components/AppDialog.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/UniversalDatePicker.css",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/AiSettingsView.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMoons/CalendarMoons.vue",
+      "count": 2
+    },
+    {
+      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
+      "count": 2
+    },
+    {
+      "file": "packages/resources/src/styles/components/EditorGroupPane.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiApp.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiHeader.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSettingsView.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/SchemaFieldEditor.css",
+      "count": 1
+    },
+    {
+      "file": "packages/resources/src/styles/glass-animations.css",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersView.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/PromiseContextMenu.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/entities/TagsManagerModal.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarSettings/CalendarSettings.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/CalendarsPanel/CalendarsPanel.vue",
+      "count": 1
+    },
+    {
+      "file": "packages/components/src/components/Vue/FloatingWindow.vue",
+      "count": 1
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsInterface.vue",
+      "count": 1
+    },
+    {
+      "file": "packages/components/src/components/Vue/Settings/SettingsTypography.vue",
+      "count": 1
+    },
+    {
+      "file": "packages/components/src/components/Vue/ThemeSwitcher.vue",
+      "count": 1
+    }
+  ]
+}

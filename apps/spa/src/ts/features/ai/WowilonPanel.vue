@@ -44,11 +44,11 @@
           
           <AiMessageList 
             ref="messagesListRef"
+            v-model:edit-draft="editDraft"
             :messages="messages"
             :rendered-messages="renderedMessages"
             :active-chat-id="activeChatId"
             :chat-title="getChatTitle(activeChatId)"
-            v-model:edit-draft="editDraft"
             :editing-message-id="editingMessageId"
             :render-markdown="renderMarkdown"
             @scroll="saveScroll"

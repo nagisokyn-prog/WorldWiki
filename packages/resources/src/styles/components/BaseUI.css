@@ -1,0 +1,291 @@
+/* ==========================================================================
+   BaseUI.css - Единый слой базовых UI-примитивов дизайн-системы WorldWiki
+   Устраняет дублирование кнопок, форм, карточек и бейджей во всех модулях
+   ========================================================================== */
+
+/* 1. КНОПКИ (BUTTONS) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #ffffff;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs, 6px);
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  box-shadow: 0 0 16px var(--accent-glow);
+  transform: translateY(-1px);
+}
+.btn-primary:active:not(:disabled) {
+  transform: scale(var(--scale-push, 0.98));
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--bg-hover, rgba(255, 255, 255, 0.06));
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs, 6px);
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-active, rgba(255, 255, 255, 0.12));
+  border-color: var(--border-hover);
+}
+.btn-secondary:active:not(:disabled) {
+  transform: scale(var(--scale-push, 0.98));
+}
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-secondary-outline,
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs, 6px);
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.btn-secondary-outline:hover:not(:disabled),
+.btn-outline:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--bg-selected, rgba(139, 92, 246, 0.1));
+}
+.btn-secondary-outline:active:not(:disabled),
+.btn-outline:active:not(:disabled) {
+  transform: scale(var(--scale-push, 0.98));
+}
+
+.btn-danger-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--error, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: var(--radius-xs, 6px);
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+}
+.btn-danger-outline:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--error, #ef4444);
+}
+.btn-danger-outline:active:not(:disabled) {
+  transform: scale(var(--scale-push, 0.98));
+}
+
+/* 2. ФОРМЫ (FORMS & INPUTS) */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 640px) {
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.error-text {
+  font-size: 12px;
+  color: var(--error, #ef4444);
+  line-height: 1.4;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-row input[type="checkbox"] {
+  margin-top: 3px;
+  transform: scale(1.15);
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toggle-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.toggle-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* 3. КАРТОЧКИ (CARDS) */
+.ui-card,
+.config-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(var(--glass-blur-sm, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm, 12px));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 8px);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.card-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* 4. БЕЙДЖИ И ПИЛЮЛИ (BADGES & PILLS) */
+.badge,
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs, 4px);
+  width: fit-content;
+}
+
+.badge-primary {
+  background: var(--bg-selected, rgba(139, 92, 246, 0.15));
+  color: var(--accent);
+  border: 1px solid var(--border-active, rgba(139, 92, 246, 0.4));
+}
+
+.badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success, #10b981);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning, #f59e0b);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error, #ef4444);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-muted {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+
+/* 5. СОСТОЯНИЯ ЗАГРУЗКИ И ПУСТОТЫ (STATES) */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  gap: 14px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.empty-state i {
+  font-size: 36px;
+  opacity: 0.4;
+  color: var(--accent);
+}

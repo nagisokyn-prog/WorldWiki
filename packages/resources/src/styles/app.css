@@ -11,6 +11,7 @@
 @import "./utilities/text.css";
 @import "./utilities/position.css";
 @import "./components/GlassComponents.css";
+@import "./components/BaseUI.css";
 @import "./components/ExplorerTree.css";
 @import "./features/shell/EditorView.css";
 

@@ -7,15 +7,20 @@
     --bg-panel: rgba(15, 15, 18, 0.7);
     --bg-card: rgba(22, 22, 26, 0.6);
     --bg-input: rgba(22, 22, 26, 0.6);
+    --bg-sunken: rgba(0, 0, 0, 0.25);
     --bg-hover: rgba(255, 255, 255, 0.05);
     --bg-active: rgba(255, 255, 255, 0.1);
     --bg-selected: rgba(139, 92, 246, 0.15);
+    --modal-backdrop: rgba(0, 0, 0, 0.65);
 
     /* Цвета текста */
     --text-main: #ffffff;
     --text-heading: #ffffff;
     --text-muted: rgba(255, 255, 255, 0.65);
     --text-disabled: rgba(255, 255, 255, 0.35);
+    --accent-text: #ffffff;
+    --link-color: var(--accent);
+    --link-hover: var(--accent-hover);
 
     /* Акцентные цвета (Purple Palette) */
     --accent: #8b5cf6;

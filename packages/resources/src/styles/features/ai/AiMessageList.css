@@ -1,0 +1,400 @@
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-chat-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  gap: 14px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.empty-chat-state i {
+  font-size: 38px;
+  opacity: 0.4;
+  color: var(--accent);
+}
+
+.chat-title-label {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* Базовый враппер сообщения — занимает ВСЮ доступную ширину */
+.message-wrapper {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  transition: background-color var(--anim-speed, 0.2s) ease;
+  border-radius: var(--radius-sm, 8px);
+  padding: 4px;
+}
+
+.message-wrapper:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.03));
+}
+
+/* 1. СООБЩЕНИЯ ПОЛЬЗОВАТЕЛЯ — справа, на всю ширину */
+.message-user {
+  flex-direction: row-reverse;
+}
+
+/* 2. СООБЩЕНИЯ ИИ — слева, на всю ширину */
+.message-assistant {
+  flex-direction: row;
+}
+
+/* Аватар */
+.message-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+  margin-top: 2px;
+  box-shadow: var(--shadow-sm, 0 2px 6px rgba(0, 0, 0, 0.2));
+}
+
+.message-user .message-avatar {
+  background: linear-gradient(135deg, var(--accent-hover, #7c3aed) 0%, var(--accent, #8b5cf6) 100%);
+  color: #ffffff;
+  border: 1px solid var(--accent-glow, rgba(139, 92, 246, 0.4));
+}
+
+.message-assistant .message-avatar {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.4) 100%);
+  color: #ffffff;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+/* Основной контейнер контента — растягивается на 100% оставшейся ширины */
+.message-content-wrapper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: calc(100% - 46px);
+}
+
+/* Шапка сообщения с именем автора */
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.message-user .message-header {
+  justify-content: flex-end;
+}
+
+.message-assistant .message-header {
+  justify-content: flex-start;
+}
+
+.author-badge {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.message-user .author-badge {
+  color: var(--accent-light, #c4b5fd);
+}
+
+.message-assistant .author-badge {
+  color: var(--info, #60a5fa);
+}
+
+/* Облако сообщения (Message Bubble) — на всю ширину */
+.message-bubble {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main, #ffffff);
+  position: relative;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.message-user .message-bubble {
+  background: var(--bg-selected, rgba(139, 92, 246, 0.15));
+  border: 1px solid var(--border-active, rgba(139, 92, 246, 0.4));
+  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.08);
+}
+
+.message-assistant .message-bubble {
+  background: var(--bg-card, rgba(22, 22, 26, 0.6));
+  backdrop-filter: blur(var(--glass-blur-sm, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-sm, 12px));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* Рендеринг Markdown внутри сообщения */
+.message-content :deep(p) {
+  margin: 0 0 10px 0;
+}
+.message-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.message-content :deep(pre) {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-xs, 6px);
+  padding: 12px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.message-content :deep(code) {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.message-content :deep(pre code) {
+  background: transparent;
+  padding: 0;
+}
+.message-content :deep(ul), .message-content :deep(ol) {
+  margin: 6px 0 10px 20px;
+  padding: 0;
+}
+.message-content :deep(blockquote) {
+  margin: 8px 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+}
+
+/* Панель действий при наведении (Action Toolbar) */
+.message-actions-hover {
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-secondary, #121214);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  backdrop-filter: blur(var(--glass-blur-sm, 12px));
+  padding: 3px 6px;
+  border-radius: var(--radius-xs, 6px);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.3));
+  margin-top: 4px;
+  width: fit-content;
+}
+
+.message-user .message-actions-hover {
+  align-self: flex-end;
+}
+
+.message-assistant .message-actions-hover {
+  align-self: flex-start;
+}
+
+.message-wrapper:hover .message-actions-hover {
+  opacity: 1;
+  visibility: visible;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px 7px;
+  border-radius: var(--radius-xs, 4px);
+  font-size: 12px;
+  transition: all var(--anim-speed-fast, 0.15s) ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.08));
+  color: var(--text-main);
+}
+
+.icon-btn.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error, #ef4444);
+}
+
+/* Аккордеон рассуждений / мыслей ИИ */
+.thinking-accordion {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: var(--radius-xs, 6px);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.thinking-accordion summary {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-light, #c4b5fd);
+  cursor: pointer;
+  user-select: none;
+  background: rgba(139, 92, 246, 0.06);
+  transition: background var(--anim-speed-fast, 0.15s) ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thinking-accordion summary:hover {
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.thinking-content {
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-top: 1px solid rgba(139, 92, 246, 0.15);
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* Логи инструментов */
+.tool-logs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.tool-log-item {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 3px solid var(--accent);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs, 4px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-log-item.subagent-log {
+  border-left-color: var(--accent-light);
+}
+
+.subagent-icon {
+  color: var(--accent-light);
+}
+
+/* Инлайн-редактор сообщения пользователя */
+.inline-editor {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inline-editor-textarea {
+  min-height: 80px;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg-input, rgba(22, 22, 26, 0.8));
+  color: var(--text-main, #ffffff);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-xs, 6px);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+}
+
+.inline-editor-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-cancel {
+  background: var(--bg-hover, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: var(--radius-xs, 4px);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all var(--anim-speed-fast) ease;
+}
+
+.btn-cancel:hover {
+  background: var(--bg-active, rgba(255, 255, 255, 0.1));
+  color: var(--text-main);
+}
+
+.btn-save {
+  background: var(--accent);
+  border: none;
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-xs, 4px);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all var(--anim-speed-fast) ease;
+}
+
+.btn-save:hover {
+  background: var(--accent-hover);
+}
+
+/* Переключатель вариантов ответа (Ветвление) */
+.variant-switcher {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs, 4px);
+  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  width: fit-content;
+}
+
+.variant-switcher button {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.variant-switcher button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}

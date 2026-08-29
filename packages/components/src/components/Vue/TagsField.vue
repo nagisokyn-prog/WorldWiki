@@ -1,7 +1,7 @@
 <template>
-  <div ref="wrapperRef" class="tags-field-vue" :style="{ zIndex: isDropdownOpen ? 10005 : 10 }">
+  <div ref="wrapperRef" class="tags-field-vue" :class="{ 'is-open': isDropdownOpen }">
     <div ref="inputContainerRef" class="tags-input-container interactive-el" @click="focusInput">
-      <div v-for="tag in selectedTags" :key="tag" class="tag-pill" :style="{ borderColor: getTagColor(tag) }">
+      <div v-for="tag in selectedTags" :key="tag" class="tag-pill" :style="{ '--tag-color': getTagColor(tag) }">
         <span class="tag-text">{{ tag }}</span>
         <button class="tag-remove" @click.stop="removeTag(tag)">&times;</button>
       </div>
@@ -33,7 +33,7 @@
             :class="{ selected: selectedTags.includes(tag.name) }"
             @mousedown.prevent="toggleTag(tag.name)"
           >
-            <div class="tag-color-dot" :style="{ background: tag.color }"></div>
+            <div class="tag-color-dot" :style="{ '--tag-dot-color': tag.color }"></div>
             <span class="tag-name">{{ tag.name }}</span>
             <i v-if="selectedTags.includes(tag.name)" class="fas fa-check tag-check"></i>
           </div>

@@ -17,7 +17,7 @@
           v-if="isVisible" 
           ref="popoverEl"
           class="module-help-popover glass-card"
-          :style="popoverStyle"
+          :style="{ '--popover-top': popoverStyle.top, '--popover-left': popoverStyle.left }"
           @mouseenter="showPopup"
           @mouseleave="hidePopup"
         >
@@ -242,19 +242,18 @@
                           <!-- Date / Time (некликабельно, чистый показ) -->
                           <div v-else-if="field.type === 'calendar_date' || field.type === 'date' || field.type === 'calendar_datetime'" class="date-wheels-preview pointer-events-none">
                             <div class="date-wheel-preview-col"><div class="date-wheel-preview-label">ГОД</div><XboxWheel :options="[{value: '2026', label: '2026'}]" model-value="2026" :disabled="true" /></div>
-                            <div class="date-wheel-preview-col" style="flex: 1.5;"><div class="date-wheel-preview-label">МЕСЯЦ</div><XboxWheel :options="[{value: 'Май', label: 'Май'}]" model-value="Май" :disabled="true" /></div>
-                            <div class="date-wheel-preview-col" style="flex: 0.8;"><div class="date-wheel-preview-label">ДЕНЬ</div><XboxWheel :options="[{value: '14', label: '14'}]" model-value="14" :disabled="true" /></div>
+                            <div class="date-wheel-preview-col flex-1-5"><div class="date-wheel-preview-label">МЕСЯЦ</div><XboxWheel :options="[{value: 'Май', label: 'Май'}]" model-value="Май" :disabled="true" /></div>
+                            <div class="date-wheel-preview-col flex-0-8"><div class="date-wheel-preview-label">ДЕНЬ</div><XboxWheel :options="[{value: '14', label: '14'}]" model-value="14" :disabled="true" /></div>
                           </div>
 
                           <!-- Range (некликабельно, чистый показ) -->
                           <div v-else-if="field.type === 'range'" class="range-wrap flex items-center gap-3 pointer-events-none">
                             <input 
                               type="range" 
-                              class="flex-1" 
+                              class="flex-1 range-accent" 
                               :min="field.min ?? 0" 
                               :max="field.max ?? 100" 
                               :value="field.min ? field.min + (field.max ? (field.max - field.min) / 2 : 50) : 50" 
-                              style="accent-color: var(--accent);" 
                               tabindex="-1"
                               readonly
                             />

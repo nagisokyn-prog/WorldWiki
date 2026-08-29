@@ -26,7 +26,7 @@
         @delete="handleDeleteMultiple"
       >
         <template #empty-hint>
-          <div style="font-size: 11px; text-align: center; margin-top: 10px;">
+          <div class="empty-chat-hint">
             Создайте первый чат, чтобы начать
           </div>
         </template>

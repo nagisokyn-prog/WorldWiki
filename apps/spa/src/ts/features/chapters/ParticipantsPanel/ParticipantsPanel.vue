@@ -2,19 +2,19 @@
   <div class="tool-section participants-section">
     <h4><i class="fas fa-users"></i> Участники</h4>
     
-    <div class="participants-list" style="display: flex; flex-direction: column; gap: 8px;">
-      <div v-if="normalizedParticipants.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
+    <div class="participants-list">
+      <div v-if="normalizedParticipants.length === 0" class="participants-empty">
         Упомяните сущность в тексте через Ctrl+Q чтобы она появилась здесь.
       </div>
       
-      <div v-for="(p, idx) in normalizedParticipants" :key="idx" class="participant-item" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);">
-        <div style="display: flex; align-items: center; gap: 8px;">
+      <div v-for="(p, idx) in normalizedParticipants" :key="idx" class="participant-item">
+        <div class="participant-info">
           <i v-if="isFaIcon(getIcon(p.type))" :class="formatFaIcon(getIcon(p.type))"></i>
           <span v-else>{{ getIcon(p.type) }}</span>
-          <span style="font-size: 13px; font-weight: 500;">{{ resolveEntityName(p.id, p.type, p.name) }}</span>
+          <span class="participant-name">{{ resolveEntityName(p.id, p.type, p.name) }}</span>
         </div>
-        <button v-if="!p.autoParsed" style="background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;" @click="removeParticipant(idx)">✕</button>
-        <span v-else style="font-size: 10px; color: var(--accent); opacity: 0.7;" title="Автоматически найдено в тексте">Авто</span>
+        <button v-if="!p.autoParsed" class="participant-remove-btn" @click="removeParticipant(idx)">✕</button>
+        <span v-else class="participant-auto-badge" title="Автоматически найдено в тексте">Авто</span>
       </div>
     </div>
   </div>

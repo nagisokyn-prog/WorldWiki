@@ -1,6 +1,11 @@
 .tags-field-vue {
   position: relative;
   width: 100%;
+  z-index: 10;
+}
+
+.tags-field-vue.is-open {
+  z-index: 10005;
 }
 
 .tags-input-container {
@@ -28,7 +33,7 @@
   gap: 6px;
   padding: 2px 10px;
   background: var(--bg-selected);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--tag-color, var(--accent));
   border-radius: var(--radius-xs, 6px);
   animation: tagIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -92,6 +97,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
+  background: var(--tag-dot-color, var(--accent));
 }
 
 .tag-name {

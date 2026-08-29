@@ -311,3 +311,25 @@ textarea.input-base {
 .preview-badge-warning {
   color: var(--warning);
 }
+
+.banner-sandbox-preview {
+  background: var(--bg-selected);
+  border-color: var(--border-active);
+  color: var(--accent);
+}
+
+.glass-card-stack {
+  z-index: var(--z-item, 1);
+}
+
+.range-accent {
+  accent-color: var(--accent);
+}
+
+.catalog-item.is-previewing {
+  background: var(--bg-selected);
+}
+
+.diff-summary-text {
+  line-height: 1.4;
+}

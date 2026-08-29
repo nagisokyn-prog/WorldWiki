@@ -1,21 +1,20 @@
 <template>
   <div class="calendar-section">
-    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
-      <h4 style="margin: 0;">📆 Месяцы</h4>
-      <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
+    <div class="months-section-header" @click="isCollapsed = !isCollapsed">
+      <h4>📆 Месяцы</h4>
+      <span class="months-collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" style="margin-top: 12px;">
+    <div v-show="!isCollapsed" class="months-content">
       <div v-auto-animate class="item-list">
         <div v-for="(month, mIdx) in modelValue.месяцы" :key="mIdx" class="item-row">
-          <input v-model="month.название" type="text" class="item-name interactive-el" style="max-width: 120px;" />
+          <input v-model="month.название" type="text" class="item-name interactive-el month-name-input" />
           <input
             v-model.number="month.дней"
             type="number"
             min="1"
             max="100"
-            class="item-duration interactive-el"
-            style="max-width: 60px;"
+            class="item-duration interactive-el month-days-input"
           />
           <div class="item-actions">
             <button
@@ -54,3 +53,5 @@ const props = defineProps<CalendarMonthsProps>();
 
 const { isCollapsed, moveItem, addMonth, removeMonth } = useCalendarMonths(props);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarMonths.css"></style>

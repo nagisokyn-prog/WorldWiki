@@ -16,18 +16,18 @@
           {{ cal.data?.название || 'Календарь' }}
         </button>
       </div>
-      <div v-else style="font-size: 12px; color: var(--text-muted);">
+      <div v-else class="empty-calendars-hint">
         Нет доступных календарей
       </div>
     </div>
     
     <div v-auto-animate class="timeline-events-list">
-      <div v-if="events.length === 0" style="color: var(--text-muted); font-size: 12px; padding: 10px;">
+      <div v-if="events.length === 0" class="empty-events-hint">
         Нет событий в таймлайне.
       </div>
       
       <div v-for="(ev, idx) in events" :key="idx" class="timeline-event-item">
-        <div class="event-header" style="cursor: pointer;" @click="toggleExpand(idx)">
+        <div class="event-header" @click="toggleExpand(idx)">
           <div class="header-left">
             <span class="expand-icon">{{ isExpanded(idx) ? '▼' : '▶' }}</span>
             <span class="event-title">Событие {{ idx + 1 }}</span>
@@ -47,13 +47,13 @@
               <div class="cal-badge-name" :class="{ 'native-cal': getConvertedDateInfo(ev, calId)?.isNative }" :title="getConvertedDateInfo(ev, calId)?.isNative ? 'Родной календарь события' : ''">
                 {{ getConvertedDateInfo(ev, calId)?.calName }}
               </div>
-              <div class="season-badge" :style="{ background: getConvertedDateInfo(ev, calId)?.seasonColor }">
+              <div class="season-badge" :style="{ '--season-bg': getConvertedDateInfo(ev, calId)?.seasonColor }">
                 {{ getConvertedDateInfo(ev, calId)?.seasonName }}
               </div>
               <div class="date-text">
                 {{ getConvertedDateInfo(ev, calId)?.dateStr }}
               </div>
-              <div class="time-of-day-badge" :style="{ background: getConvertedDateInfo(ev, calId)?.timeOfDayColor }">
+              <div class="time-of-day-badge" :style="{ '--time-bg': getConvertedDateInfo(ev, calId)?.timeOfDayColor }">
                 {{ getConvertedDateInfo(ev, calId)?.timeOfDayName }}
               </div>
             </template>

@@ -1,11 +1,11 @@
 <template>
   <div class="calendar-section">
-    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
-      <h4 style="margin: 0;">🎯 Точка отсчёта</h4>
-      <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
+    <div class="origin-section-header" @click="isCollapsed = !isCollapsed">
+      <h4>🎯 Точка отсчёта</h4>
+      <span class="origin-collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" style="margin-top: 12px;">
+    <div v-show="!isCollapsed" class="origin-content">
       <div v-if="modelValue.точка_отсчета" class="grid-3">
         <div class="calendar-field">
           <label>Год</label>
@@ -75,3 +75,5 @@ const props = defineProps<{
 
 const { isCollapsed, wheelHorizontal, getDaysInMonth, updateOriginField } = useCalendarOrigin(props);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarOrigin.css"></style>

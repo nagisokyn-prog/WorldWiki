@@ -1,0 +1,58 @@
+.calendar-section {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 8px);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.origin-section-header {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.origin-section-header h4 {
+  margin: 0;
+  color: var(--text-main);
+  font-size: 14px;
+}
+
+.origin-collapse-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.origin-content {
+  margin-top: 12px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.calendar-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.calendar-field label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.calendar-field input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: var(--radius-xs, 6px);
+}

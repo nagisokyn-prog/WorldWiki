@@ -1,9 +1,9 @@
 <template>
-  <div class="schema-field-editor" :style="{ opacity: item.hidden ? 0.4 : 1 }">
-    <div class="schema-field-header" :style="{ cursor: isFirst ? 'default' : 'move' }">
+  <div class="schema-field-editor" :class="{ 'is-hidden-field': item.hidden }">
+    <div class="schema-field-header" :class="{ 'is-first-item': isFirst }">
       <div class="flex items-center gap-2 flex-1">
         <span v-if="!isFirst" class="schema-drag-dots">⠿</span>
-        <span v-else class="text-accent" style="opacity: 0.5;">🔒</span>
+        <span v-else class="text-accent icon-dim-50">🔒</span>
         
         <input :value="item.label" class="form-label schema-field-title-input" placeholder="НАЗВАНИЕ ПОЛЯ" @input="updateLabel(($event.target as HTMLInputElement).value)" />
       </div>
@@ -29,7 +29,7 @@
        <!-- Multiselect / Tags -->
        <div v-if="item.type === 'multiselect' || item.type === 'tags'" class="tags-grid flex flex-wrap gap-2">
           <div v-for="(opt, oIdx) in (item.options || [{label: 'Опция 1'}])" :key="oIdx" class="glass-pill interactive-el text-xs p-2">{{ opt.label }}</div>
-          <div v-if="item.type === 'tags'" class="glass-pill" style="opacity: 0.3; border-style: dashed;">+ ТЕГ</div>
+          <div v-if="item.type === 'tags'" class="glass-pill glass-pill-add-tag">+ ТЕГ</div>
        </div>
 
        <!-- 3D WHEEL SELECT -->
@@ -53,7 +53,7 @@
 
        <!-- RANGE -->
        <div v-else-if="item.type === 'range'" class="flex items-center gap-4">
-          <input :value="item._val || 0" type="range" :min="Number(item.min) || 0" :max="Number(item.max) || 100" class="flex-1 interactive-el" style="accent-color: var(--accent);" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
+          <input :value="item._val || 0" type="range" :min="Number(item.min) || 0" :max="Number(item.max) || 100" class="flex-1 interactive-el range-accent" @input="updateVal(Number(($event.target as HTMLInputElement).value))" />
           <div class="range-badge">{{ item._val || (item.value || 0) }}</div>
        </div>
 
@@ -73,7 +73,7 @@
           <div class="flex-1">
              <label class="form-label-micro">ТИП КИРПИЧА</label>
              <div class="flex gap-1 flex-wrap">
-                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val }" class="type-btn-mini interactive-el" :disabled="isFirst" :style="{ opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer' }" @click="!isFirst && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
+                <button v-for="t in typeOptions" :key="t.val" :class="{ active: item.type === t.val, 'is-disabled-type': isFirst && item.type !== t.val }" class="type-btn-mini interactive-el" :disabled="isFirst" @click="!isFirst && setType(t.val)">{{ t.icon }} {{ t.label }}</button>
              </div>
           </div>
           <div class="flex-1">

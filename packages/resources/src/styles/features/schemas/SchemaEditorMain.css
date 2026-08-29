@@ -186,3 +186,30 @@
     background: var(--bg-selected) !important;
     border-color: var(--border-active) !important;
 }
+
+.catalog-item.is-previewing {
+    background: var(--bg-selected);
+}
+
+.btn-warning-outline {
+    color: var(--warning);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.btn-danger-outline {
+    color: var(--error);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-add-page {
+    border-style: dashed;
+    color: var(--accent);
+}
+
+.schema-page-title-input.is-hidden-page {
+    opacity: 0.4;
+}
+
+.text-warning {
+    color: var(--warning);
+}

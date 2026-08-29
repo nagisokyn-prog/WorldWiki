@@ -14,6 +14,28 @@
   gap: 12px;
 }
 
+.sidebar-toggle-btn {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sidebar-toggle-button {
+  --dsl-button-height: 34px;
+}
+
+.sidebar-toggle-icon {
+  font-size: inherit;
+}
+
+.mode-switcher-group {
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .model-name {
   display: flex;
   align-items: center;
@@ -46,6 +68,7 @@
 
 .token-progress {
   height: 100%;
+  width: var(--progress-w, 0%);
   background: var(--accent);
   transition: width 0.3s ease;
 }
@@ -68,7 +91,43 @@
   cursor: pointer;
   padding: 2px 4px;
 }
+
 .mode-select option {
   background: var(--dropdown-bg);
   color: var(--text-main);
+}
+
+.action-pill-btn {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+
+.action-pill-btn:hover:not(:disabled) {
+  background: var(--bg-selected);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.action-pill-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.restart-btn {
+  padding: 4px 8px;
+}
+
+.restart-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--error);
+  color: var(--error);
 }

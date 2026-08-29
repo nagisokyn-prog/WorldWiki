@@ -23,14 +23,14 @@
     <!-- Content area -->
     <div class="editor-group-content">
       <!-- Sandbox -->
-      <div v-if="isSandbox" style="flex:1; display:flex; overflow:hidden;">
+      <div v-if="isSandbox" class="pane-slot-container">
         <slot name="sandbox" />
       </div>
 
       <!-- Chapter editor -->
       <div
         v-else-if="activeTab?.tabType === 'chapter'"
-        style="flex:1; display:flex; overflow:hidden;"
+        class="pane-slot-container"
       >
         <slot name="chapter" :tab="activeTab" :group-id="group.id" />
       </div>
@@ -38,7 +38,7 @@
       <!-- Entity editor -->
       <div
         v-else-if="activeTab?.tabType === 'entity'"
-        style="display:flex; flex-direction:column; flex:1; min-height:0;"
+        class="pane-slot-column"
       >
         <slot name="entity" :tab="activeTab" :group-id="group.id" />
       </div>
@@ -46,16 +46,16 @@
       <!-- Schema editor -->
       <div
         v-else-if="activeTab?.tabType === 'schema-editor'"
-        style="display:flex; flex-direction:column; flex:1; min-height:0;"
+        class="pane-slot-column"
       >
         <slot name="schema-editor" :tab="activeTab" :group-id="group.id" />
       </div>
 
       <!-- Empty state -->
       <div v-else class="editor-group-empty">
-        <div style="font-size:40px; opacity:0.15;">📋</div>
-        <div style="font-size:13px; margin-top:8px; opacity:0.4;">{{ t('common.dropTabOrOpenElement') }}</div>
-        <div style="font-size:11px; margin-top:4px; opacity:0.25;">{{ t('common.splitPaneHint') }}</div>
+        <div class="empty-icon">📋</div>
+        <div class="empty-primary-text">{{ t('common.dropTabOrOpenElement') }}</div>
+        <div class="empty-sub-text">{{ t('common.splitPaneHint') }}</div>
       </div>
     </div>
   </div>

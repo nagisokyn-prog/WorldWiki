@@ -29,7 +29,7 @@
 .sidebar-universal {
   height: 100%;
   flex-shrink: 0;
-  width: var(--sidebar-width, 280px);
+  width: var(--sidebar-w, var(--sidebar-width, 280px));
   background: var(--bg-panel);
   backdrop-filter: blur(var(--glass-blur, 16px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
@@ -167,6 +167,7 @@ body.focus-mode .sidebar-universal:hover {
 
 /* Bottom Panel */
 .panel-new {
+  height: var(--panel-h, 36px);
   flex-shrink: 0;
   background: var(--bg-panel);
   backdrop-filter: blur(var(--glass-blur, 16px));
@@ -294,4 +295,16 @@ body.focus-mode .sidebar-universal:hover {
 .wowilon-toggle-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.btn-danger-action {
+  background: rgba(239, 68, 68, 0.4);
+}
+
+.btn-split-action {
+  background: var(--accent-glow);
+}
+
+.editor-group-pane-basis {
+  flex-basis: var(--group-basis, auto);
 }

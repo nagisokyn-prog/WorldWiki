@@ -1,195 +1,153 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 205,
-  "fixedCount": 851,
-  "introducedCount": 0,
-  "trendPercent": "80.6",
+  "currentDebt": 44,
+  "fixedCount": 1015,
+  "introducedCount": 3,
+  "trendPercent": "95.8",
   "categories": {
-    "blackColors": 2,
-    "whiteColors": 8,
-    "hexColors": 10,
+    "blackColors": 0,
+    "whiteColors": 0,
+    "hexColors": 1,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 185
+    "inlineStyles": 43
   },
   "semanticRoles": {
     "modalBackdrops": 0,
-    "sunkenBackgrounds": 1,
-    "borders": 3,
-    "text": 5
+    "sunkenBackgrounds": 0,
+    "borders": 0,
+    "text": 0
   },
   "topVueFiles": [
     {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "count": 3
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "count": 3
+    },
+    {
       "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 11
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "count": 10
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "count": 10
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "count": 8
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "count": 8
+      "count": 2
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "count": 7
+      "count": 2
     },
     {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "count": 7
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "count": 7
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "count": 7
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "count": 7
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "count": 7
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "count": 7
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "count": 6
+      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
+      "count": 2
     },
     {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "count": 6
+      "count": 2
     },
     {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "count": 6
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "count": 2
+    },
+    {
+      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
+      "count": 2
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
+      "count": 1
     }
   ],
   "allTopFiles": [
     {
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "count": 3
+    },
+    {
+      "file": "packages/components/src/components/Vue/TagsField.vue",
+      "count": 3
+    },
+    {
       "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 11
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "count": 10
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "count": 10
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "count": 8
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "count": 8
+      "count": 2
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "count": 7
+      "count": 2
     },
     {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "count": 7
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "count": 7
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "count": 7
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "count": 7
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "count": 7
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "count": 7
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "count": 6
+      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
+      "count": 2
     },
     {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "count": 6
+      "count": 2
     },
     {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "count": 6
+      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "count": 2
+    },
+    {
+      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
+      "count": 2
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
+      "count": 1
     }
   ],
   "violations": [
     {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
-      "line": 29,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 11px; text-align: center; margin-top: 10px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"margin-right: 12px; display: flex; align-items: center; cursor: pointer;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "line": 5,
-      "match": "inline-style",
-      "snippet": "style=\"--dsl-button-height: 34px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "line": 8,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: inherit;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "line": 14,
-      "match": "inline-style",
-      "snippet": "style=\"margin-right: 12px; display: flex; align-items: center; gap: 4px;\""
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
       "line": 32,
       "match": "inline-style",
-      "snippet": "style=\"{ width: progressPercent + '%' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/AiSettingsView.vue",
-      "line": 48,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; justify-content: space-between; align-items: center;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/AiSettingsView.vue",
-      "line": 50,
-      "match": "inline-style",
-      "snippet": "style=\"padding: 6px 12px;\""
+      "snippet": "style=\"{ '--progress-w': progressPercent + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue",
@@ -198,148 +156,22 @@
       "snippet": "style=\"margin-top: 24px;\""
     },
     {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "line": 20,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; gap: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "line": 21,
-      "match": "inline-style",
-      "snippet": "style=\"flex: 1;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "line": 128,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 10px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "line": 154,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 6px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "line": 210,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 10px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
-      "line": 235,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 6px;\""
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue",
       "line": 95,
       "match": "inline-style",
       "snippet": "style=\"margin-top: 14px;\""
     },
     {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 194,
-      "match": "rgba(255, 255, 255, 0.02)",
-      "snippet": "background: var(--bg-card, rgba(255, 255, 255, 0.02));"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 195,
-      "match": "rgba(255, 255, 255, 0.08)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 217,
-      "match": "#e6edf3",
-      "snippet": "color: var(--text-color, #e6edf3);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 223,
-      "match": "#3fb950",
-      "snippet": "color: #3fb950;"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 235,
-      "match": "#3fb950",
-      "snippet": "background: #3fb950;"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 250,
-      "match": "#8b949e",
-      "snippet": "color: var(--text-muted, #8b949e);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 266,
-      "match": "#58a6ff",
-      "snippet": "background: #58a6ff;"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue",
-      "line": 270,
-      "match": "#bc8cff",
-      "snippet": "background: #bc8cff;"
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "line": 15,
+      "line": 58,
       "match": "inline-style",
-      "snippet": "style=\"margin: 0;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "line": 16,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 12px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "line": 22,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 12px; padding: 6px 10px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "line": 59,
-      "match": "inline-style",
-      "snippet": "style=\"{ width: downloadProgress[f.filename].percent + '%' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "line": 71,
-      "match": "inline-style",
-      "snippet": "style=\"margin-left: 4px;\""
+      "snippet": "style=\"{ '--dl-progress': downloadProgress[f.filename].percent + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
       "line": 29,
       "match": "inline-style",
       "snippet": "style=\"{ width: downloadProgress[card.filename].percent + '%' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
-      "line": 9,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 14px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
-      "line": 33,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 14px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue",
-      "line": 46,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 20px;\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
@@ -351,61 +183,7 @@
       "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
       "line": 33,
       "match": "inline-style",
-      "snippet": "style=\"{ width: rightPanelWidth + 'px', minWidth: '200px', maxWidth: '600px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 55,
-      "match": "inline-style",
-      "snippet": "style=\"{ transform: isTimelineOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 72,
-      "match": "inline-style",
-      "snippet": "style=\"{ transform: isParticipantsOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 105,
-      "match": "inline-style",
-      "snippet": "style=\"{ transform: isVolumePlanOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 125,
-      "match": "inline-style",
-      "snippet": "style=\"{ transform: isArcPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 145,
-      "match": "inline-style",
-      "snippet": "style=\"{ transform: isChapterPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 163,
-      "match": "inline-style",
-      "snippet": "style=\"opacity: 0.2;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 190,
-      "match": "inline-style",
-      "snippet": "style=\"{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 198,
-      "match": "inline-style",
-      "snippet": "style=\"line-height: 1.4;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "line": 212,
-      "match": "inline-style",
-      "snippet": "style=\"opacity: 0.2;\""
+      "snippet": "style=\"{ '--panel-w': rightPanelWidth + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
@@ -421,99 +199,21 @@
     },
     {
       "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"height: 100%; display: flex; flex-direction: column; overflow: hidden;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
       "line": 6,
       "match": "inline-style",
-      "snippet": "style=\"{ height: calendarHeight + 'px', minHeight: '70px', maxHeight: '500px', flexShrink: 0, overflowY: 'auto' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
-      "line": 20,
-      "match": "inline-style",
-      "snippet": "style=\"flex: 1; min-height: 0; overflow-y: auto;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
-      "line": 39,
-      "match": "inline-style",
-      "snippet": "style=\"background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 23,
-      "match": "inline-style",
-      "snippet": "style=\"position: absolute; right: -8px; top: -8px; z-index: 5;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 35,
-      "match": "inline-style",
-      "snippet": "style=\"position: absolute; right: 10px; top: 10px; z-index: 5;\""
+      "snippet": "style=\"{ '--calendar-h': calendarHeight + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
       "line": 61,
       "match": "inline-style",
-      "snippet": "style=\"{ flex: `0 0 ${leftPanelWidth}%` }\""
+      "snippet": "style=\"{ '--split-left': leftPanelWidth + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
       "line": 84,
       "match": "inline-style",
-      "snippet": "style=\"{ flex: showStructure ? `0 0 ${rightPanelWidth}%` : '1' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 101,
-      "match": "inline-style",
-      "snippet": "style=\"background: rgba(255,255,255,0.1);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 101,
-      "match": "rgba(255,255,255,0.1)",
-      "snippet": "background: rgba(255,255,255,0.1);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 138,
-      "match": "inline-style",
-      "snippet": "style=\"position: absolute; right: 0; top: -10px; z-index: 5;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; gap: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; align-items: center; gap: 8px; flex-wrap: wrap;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
-      "line": 11,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; gap: 4px; border-left: 1px solid var(--border-color); padding-left: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
-      "line": 28,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; align-items: center; gap: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorToolbar.vue",
-      "line": 32,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 11px;\""
+      "snippet": "style=\"{ '--split-right': rightPanelWidth + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/PromiseContextMenu.vue",
@@ -522,118 +222,28 @@
       "snippet": "style=\"{ top: `${adjustedPos.y}px`, left: `${adjustedPos.x}px` }\""
     },
     {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 5,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; flex-direction: column; gap: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 6,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--text-muted); font-size: 12px; padding: 10px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 10,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; justify-content: space-between; align-items: center; background: var(--bg-input); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 11,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; align-items: center; gap: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 14,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 13px; font-weight: 500;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 16,
-      "match": "inline-style",
-      "snippet": "style=\"background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 16,
-      "match": "#ef4444",
-      "snippet": "background: transparent; border: none; color: #ef4444; cursor: pointer; opacity: 0.7;"
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue",
-      "line": 17,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 10px; color: var(--accent); opacity: 0.7;\""
-    },
-    {
       "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
       "line": 16,
       "match": "inline-style",
-      "snippet": "style=\"{ width: progressPct + '%' }\""
+      "snippet": "style=\"{ '--plan-progress': progressPct + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
       "line": 25,
       "match": "inline-style",
-      "snippet": "style=\"{ paddingLeft: (12 + item.indent * 20) + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
-      "line": 58,
-      "match": "inline-style",
-      "snippet": "style=\"display:block; margin-top:4px; font-size:11px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"position: relative; padding-left: 24px; min-height: 24px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
-      "line": 9,
-      "match": "inline-style",
-      "snippet": "style=\"badgeStyle\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "line": 17,
-      "match": "inline-style",
-      "snippet": "style=\"background: var(--bg-selected); border-color: var(--border-active); color: var(--accent);\""
+      "snippet": "style=\"{ '--indent-pl': (12 + item.indent * 20) + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
       "line": 140,
       "match": "inline-style",
-      "snippet": "style=\"{ zIndex: 100 - cIdx }\""
+      "snippet": "style=\"{ '--z-stack': 100 - cIdx }\""
     },
     {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
       "line": 185,
       "match": "inline-style",
-      "snippet": "style=\"{ zIndex: 50 - idx }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "line": 239,
-      "match": "inline-style",
-      "snippet": "style=\"accent-color: var(--accent);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "line": 296,
-      "match": "inline-style",
-      "snippet": "style=\"{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "line": 304,
-      "match": "inline-style",
-      "snippet": "style=\"line-height: 1.4;\""
+      "snippet": "style=\"{ '--z-item': 50 - idx }\""
     },
     {
       "file": "apps/spa/src/ts/features/entities/TagsManagerModal.vue",
@@ -645,433 +255,43 @@
       "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
       "line": 20,
       "match": "inline-style",
-      "snippet": "style=\"popoverStyle\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
-      "line": 245,
-      "match": "inline-style",
-      "snippet": "style=\"flex: 1.5;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
-      "line": 246,
-      "match": "inline-style",
-      "snippet": "style=\"flex: 0.8;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
-      "line": 257,
-      "match": "inline-style",
-      "snippet": "style=\"accent-color: var(--accent);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 9,
-      "match": "inline-style",
-      "snippet": "style=\"opacity: 0.7;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 30,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--accent);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 62,
-      "match": "inline-style",
-      "snippet": "style=\"top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 81,
-      "match": "inline-style",
-      "snippet": "style=\"border-style: dashed; border-color: var(--border-active); color: var(--accent);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 97,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--info);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 106,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--info);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 137,
-      "match": "inline-style",
-      "snippet": "style=\"padding: 10px; display: flex; flex-direction: column; gap: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 139,
-      "match": "inline-style",
-      "snippet": "style=\"top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 143,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--info);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-      "line": 157,
-      "match": "inline-style",
-      "snippet": "style=\"border-style: dashed; border-color: var(--border-active); color: var(--info);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: item.hidden ? 0.4 : 1 }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
-      "line": 32,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: (!isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden) ? 0.3 : 1 }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
-      "line": 118,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: (!isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden) ? 0.3 : 1 }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
-      "line": 124,
-      "match": "inline-style",
-      "snippet": "style=\"opacity: 0.6;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 12,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--warning); border-color: rgba(245,158,11,0.3);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 13,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--error); border-color: rgba(239,68,68,0.3);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 16,
-      "match": "inline-style",
-      "snippet": "style=\"background: var(--accent); color: var(--accent-text);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 41,
-      "match": "inline-style",
-      "snippet": "style=\"border-color: rgba(245,158,11,0.3); color: var(--warning);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 42,
-      "match": "inline-style",
-      "snippet": "style=\"border: none;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 58,
-      "match": "inline-style",
-      "snippet": "style=\"border-style: dashed; color: var(--accent);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 66,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: activeSection.hidden ? 0.4 : 1 }\""
+      "snippet": "style=\"{ '--popover-top': popoverStyle.top, '--popover-left': popoverStyle.left }\""
     },
     {
       "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
       "line": 101,
       "match": "inline-style",
-      "snippet": "style=\"{ width: catalogWidth + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 150,
-      "match": "inline-style",
-      "snippet": "style=\"{ background: historyPreviewId === h.id ? 'var(--bg-selected)' : 'var(--bg-input)' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-      "line": 159,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--warning);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: item.hidden ? 0.4 : 1 }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "line": 3,
-      "match": "inline-style",
-      "snippet": "style=\"{ cursor: isFirst ? 'default' : 'move' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "line": 6,
-      "match": "inline-style",
-      "snippet": "style=\"opacity: 0.5;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "line": 32,
-      "match": "inline-style",
-      "snippet": "style=\"opacity: 0.3; border-style: dashed;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "line": 56,
-      "match": "inline-style",
-      "snippet": "style=\"accent-color: var(--accent);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue",
-      "line": 76,
-      "match": "inline-style",
-      "snippet": "style=\"{ opacity: isFirst && item.type !== t.val ? 0.2 : 1, cursor: isFirst ? 'not-allowed' : 'pointer' }\""
+      "snippet": "style=\"{ '--catalog-w': catalogWidth + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
       "line": 9,
       "match": "inline-style",
-      "snippet": "style=\"{ width: sidebarWidth + 'px' }\""
+      "snippet": "style=\"{ '--sidebar-w': sidebarWidth + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
-      "line": 53,
-      "match": "inline-style",
-      "snippet": "style=\"{ flexBasis: group.flexBasis + '%' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
-      "line": 109,
-      "match": "inline-style",
-      "snippet": "style=\"background: rgba(239, 68, 68, 0.4)\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
-      "line": 117,
-      "match": "inline-style",
-      "snippet": "style=\"background: rgba(139, 92, 246, 0.2)\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
-      "line": 191,
-      "match": "inline-style",
-      "snippet": "style=\"activePanelTab !== '' ? { height: panelHeight + 'px' } : { height: '36px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "line": 3,
-      "match": "inline-style",
-      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"margin: 0;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "line": 5,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "line": 8,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 12px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "line": 10,
-      "match": "inline-style",
-      "snippet": "style=\"margin-bottom: 10px\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
       "line": 54,
       "match": "inline-style",
-      "snippet": "style=\"display: flex; align-items: center; margin-top: 5px\""
+      "snippet": "style=\"{ '--group-basis': group.flexBasis + '%' }\""
     },
     {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarEras/CalendarEras.vue",
-      "line": 56,
+      "file": "apps/spa/src/ts/features/shell/EditorView.vue",
+      "line": 190,
       "match": "inline-style",
-      "snippet": "style=\"\n                font-size: 11px;\n                color: var(--text-muted);\n                display: flex;\n                align-items: center;\n                gap: 5px;\n                cursor: pointer;\n              \""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 3,
-      "match": "inline-style",
-      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"margin: 0;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 5,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 8,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 12px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 37,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 10px; display: flex; align-items: center; gap: 8px\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 38,
-      "match": "inline-style",
-      "snippet": "style=\"margin: 0\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarLeapYear/CalendarLeapYear.vue",
-      "line": 43,
-      "match": "inline-style",
-      "snippet": "style=\"width: 60px\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
-      "line": 3,
-      "match": "inline-style",
-      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"margin: 0;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
-      "line": 5,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
-      "line": 8,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 12px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
-      "line": 11,
-      "match": "inline-style",
-      "snippet": "style=\"max-width: 120px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMonths/CalendarMonths.vue",
-      "line": 18,
-      "match": "inline-style",
-      "snippet": "style=\"max-width: 60px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMoons/CalendarMoons.vue",
-      "line": 14,
-      "match": "inline-style",
-      "snippet": "style=\"width: 80px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarMoons/CalendarMoons.vue",
-      "line": 17,
-      "match": "inline-style",
-      "snippet": "style=\"width: 70px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
-      "line": 3,
-      "match": "inline-style",
-      "snippet": "style=\"cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"margin: 0;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
-      "line": 5,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 10px; color: var(--text-muted); opacity: 0.7;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarOrigin/CalendarOrigin.vue",
-      "line": 8,
-      "match": "inline-style",
-      "snippet": "style=\"margin-top: 12px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "line": 21,
-      "match": "inline-style",
-      "snippet": "style=\"width: 70px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "line": 27,
-      "match": "inline-style",
-      "snippet": "style=\"min-width: 120px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "line": 36,
-      "match": "inline-style",
-      "snippet": "style=\"width: 50px;\""
+      "snippet": "style=\"{ '--panel-h': activePanelTab !== '' ? panelHeight + 'px' : '36px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
       "line": 57,
       "match": "inline-style",
-      "snippet": "style=\"{ gridTemplateColumns: `repeat(${daysInWeek}, 1fr)` }\""
+      "snippet": "style=\"{ '--days-in-week': daysInWeek }\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
       "line": 71,
       "match": "inline-style",
-      "snippet": "style=\"{ backgroundColor: filters.seasons ? day.seasonColor : 'transparent' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "line": 92,
-      "match": "inline-style",
-      "snippet": "style=\"{ backgroundColor: '#fff' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
-      "line": 92,
-      "match": "#fff",
-      "snippet": "{ backgroundColor: '#fff' }"
+      "snippet": "style=\"{ '--season-color': filters.seasons ? day.seasonColor : 'transparent' }\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarSettings/CalendarSettings.vue",
@@ -1087,33 +307,15 @@
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
-      "line": 19,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 12px; color: var(--text-muted);\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
-      "line": 25,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--text-muted); font-size: 12px; padding: 10px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
-      "line": 30,
-      "match": "inline-style",
-      "snippet": "style=\"cursor: pointer;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
       "line": 50,
       "match": "inline-style",
-      "snippet": "style=\"{ background: getConvertedDateInfo(ev, calId)?.seasonColor }\""
+      "snippet": "style=\"{ '--season-bg': getConvertedDateInfo(ev, calId)?.seasonColor }\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
       "line": 56,
       "match": "inline-style",
-      "snippet": "style=\"{ background: getConvertedDateInfo(ev, calId)?.timeOfDayColor }\""
+      "snippet": "style=\"{ '--time-bg': getConvertedDateInfo(ev, calId)?.timeOfDayColor }\""
     },
     {
       "file": "apps/spa/src/ts/features/timeline/CalendarsPanel/CalendarsPanel.vue",
@@ -1122,88 +324,10 @@
       "snippet": "style=\"{ opacity: cal.is_default ? 1 : 0.5 }\""
     },
     {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 26,
-      "match": "inline-style",
-      "snippet": "style=\"flex:1; display:flex; overflow:hidden;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 33,
-      "match": "inline-style",
-      "snippet": "style=\"flex:1; display:flex; overflow:hidden;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 41,
-      "match": "inline-style",
-      "snippet": "style=\"display:flex; flex-direction:column; flex:1; min-height:0;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 49,
-      "match": "inline-style",
-      "snippet": "style=\"display:flex; flex-direction:column; flex:1; min-height:0;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 56,
-      "match": "inline-style",
-      "snippet": "style=\"font-size:40px; opacity:0.15;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 57,
-      "match": "inline-style",
-      "snippet": "style=\"font-size:13px; margin-top:8px; opacity:0.4;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/EditorGroupPane.vue",
-      "line": 58,
-      "match": "inline-style",
-      "snippet": "style=\"font-size:11px; margin-top:4px; opacity:0.25;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "line": 4,
-      "match": "inline-style",
-      "snippet": "style=\"display: flex; align-items: center;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "line": 12,
-      "match": "inline-style",
-      "snippet": "style=\"margin-left: auto; display: flex; gap: 4px;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "line": 25,
-      "match": "inline-style",
-      "snippet": "style=\"margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "line": 25,
-      "match": "#ff5555",
-      "snippet": "margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;"
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "line": 26,
-      "match": "inline-style",
-      "snippet": "style=\"margin-right: 8px; opacity: 0.7; font-size: 10px;\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/ExplorerTree.vue",
-      "line": 83,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 28px; opacity: 0.2; margin-bottom: 10px;\""
-    },
-    {
       "file": "packages/components/src/components/Vue/ExplorerTree.vue",
       "line": 93,
       "match": "inline-style",
-      "snippet": "style=\"ctxStyle\""
+      "snippet": "style=\"{ '--ctx-top': ctxStyle.top, '--ctx-left': ctxStyle.left }\""
     },
     {
       "file": "packages/components/src/components/Vue/FloatingWindow.vue",
@@ -1224,72 +348,6 @@
       "snippet": "style=\"previewStyles\""
     },
     {
-      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
-      "line": 13,
-      "match": "inline-style",
-      "snippet": "style=\"{ fontFamily: settings.fonts.family, fontSize: '14px' }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
-      "line": 16,
-      "match": "inline-style",
-      "snippet": "style=\"{ padding: (16 * settings.spacing.density) + 'px' }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
-      "line": 19,
-      "match": "inline-style",
-      "snippet": "style=\"{ \n              borderRadius: settings.radii.card + 'px',\n              background: 'var(--bg-panel)',\n              backdropFilter: `blur(${settings.glass.blur}px)`,\n              boxShadow: `0 ${settings.shadows.islandY}px ${settings.shadows.islandBlur}px var(--shadow-color)`\n            }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsLivePreview.vue",
-      "line": 30,
-      "match": "inline-style",
-      "snippet": "style=\"{ borderRadius: settings.radii.btn + 'px' }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 148,
-      "match": "rgba(255,255,255,0.02)",
-      "snippet": "background: var(--bg-secondary, rgba(255,255,255,0.02));"
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 149,
-      "match": "rgba(255,255,255,0.05)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255,255,255,0.05));"
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 186,
-      "match": "#4facfe",
-      "snippet": "color: var(--accent-color, #4facfe);"
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 206,
-      "match": "rgba(0,0,0,0.3)",
-      "snippet": "background: var(--bg-input, rgba(0,0,0,0.3));"
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 223,
-      "match": "rgba(255,255,255,0.05)",
-      "snippet": "background: rgba(255,255,255,0.05);"
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 226,
-      "match": "rgba(255,255,255,0.1)",
-      "snippet": "background: var(--bg-panel, rgba(255,255,255,0.1));"
-    },
-    {
-      "file": "packages/components/src/components/Vue/Settings/SettingsPerformance.vue",
-      "line": 228,
-      "match": "rgba(0,0,0,0.2)",
-      "snippet": "box-shadow: 0 2px 8px rgba(0,0,0,0.2);"
-    },
-    {
       "file": "packages/components/src/components/Vue/Settings/SettingsTypography.vue",
       "line": 20,
       "match": "inline-style",
@@ -1303,15 +361,9 @@
     },
     {
       "file": "packages/components/src/components/Vue/TagsField.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"{ zIndex: isDropdownOpen ? 10005 : 10 }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/TagsField.vue",
       "line": 4,
       "match": "inline-style",
-      "snippet": "style=\"{ borderColor: getTagColor(tag) }\""
+      "snippet": "style=\"{ '--tag-color': getTagColor(tag) }\""
     },
     {
       "file": "packages/components/src/components/Vue/TagsField.vue",
@@ -1323,7 +375,7 @@
       "file": "packages/components/src/components/Vue/TagsField.vue",
       "line": 36,
       "match": "inline-style",
-      "snippet": "style=\"{ background: tag.color }\""
+      "snippet": "style=\"{ '--tag-dot-color': tag.color }\""
     },
     {
       "file": "packages/components/src/components/Vue/ThemeSwitcher.vue",
@@ -1335,25 +387,13 @@
       "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
       "line": 3,
       "match": "inline-style",
-      "snippet": "style=\"{ width: sidebarWidth + 'px' }\""
+      "snippet": "style=\"{ '--sidebar-w': sidebarWidth + 'px' }\""
     },
     {
       "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
       "line": 15,
       "match": "inline-style",
-      "snippet": "style=\"{ flex: group.flexBasis }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "line": 2,
-      "match": "inline-style",
-      "snippet": "style=\"{ zIndex: isOpen ? 10005 : 1000 }\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "line": 12,
-      "match": "inline-style",
-      "snippet": "style=\"font-weight: 500;\""
+      "snippet": "style=\"{ '--group-flex': group.flexBasis }\""
     },
     {
       "file": "packages/components/src/components/Vue/XboxWheel.vue",
@@ -1366,12 +406,6 @@
       "line": 35,
       "match": "inline-style",
       "snippet": "style=\"getItemStyle(i)\""
-    },
-    {
-      "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "line": 41,
-      "match": "inline-style",
-      "snippet": "style=\"padding: 20px; text-align: center; color: var(--text-muted); padding-top: 100px;\""
     }
   ]
 }

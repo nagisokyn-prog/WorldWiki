@@ -191,9 +191,9 @@ onUnmounted(() => {
 
 <style scoped>
 .hardware-chart-card {
-  background: var(--bg-card, rgba(255, 255, 255, 0.02));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 8px);
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
@@ -214,15 +214,15 @@ onUnmounted(() => {
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-color, #e6edf3);
+  color: var(--text-main);
 }
 
 .live-badge {
   font-size: 10px;
-  background: rgba(63, 185, 80, 0.15);
-  color: #3fb950;
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs, 4px);
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -232,7 +232,7 @@ onUnmounted(() => {
 .live-dot {
   width: 6px;
   height: 6px;
-  background: #3fb950;
+  background: var(--success);
   border-radius: 50%;
   animation: pulse-dot 1.5s infinite;
 }
@@ -247,7 +247,7 @@ onUnmounted(() => {
   display: flex;
   gap: 16px;
   font-size: 12px;
-  color: var(--text-muted, #8b949e);
+  color: var(--text-muted);
 }
 
 .legend-item {
@@ -263,11 +263,11 @@ onUnmounted(() => {
 }
 
 .ram-dot {
-  background: #58a6ff;
+  background: var(--info);
 }
 
 .vram-dot {
-  background: #bc8cff;
+  background: var(--accent);
 }
 
 .chart-container {

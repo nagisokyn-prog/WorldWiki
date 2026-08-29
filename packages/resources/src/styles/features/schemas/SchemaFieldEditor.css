@@ -9,6 +9,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  cursor: move;
 }
 
 .schema-field-title-input {
@@ -134,4 +135,30 @@
 
 .input-textarea-tall {
   min-height: 80px;
+}
+
+.schema-field-editor.is-hidden-field {
+  opacity: 0.4;
+}
+
+.schema-field-header.is-first-item {
+  cursor: default;
+}
+
+.icon-dim-50 {
+  opacity: 0.5;
+}
+
+.glass-pill-add-tag {
+  opacity: 0.3;
+  border-style: dashed;
+}
+
+.range-accent {
+  accent-color: var(--accent);
+}
+
+.type-btn-mini.is-disabled-type {
+  opacity: 0.2;
+  cursor: not-allowed;
 }

@@ -12,14 +12,13 @@
     </div>
 
     <div class="hf-token-box">
-      <div class="form-group" style="margin: 0;">
-        <label style="font-size: 12px;">Токен Hugging Face (опционально, для моделей с ограниченным доступом):</label>
+      <div class="form-group m-0">
+        <label class="text-xs">Токен Hugging Face (опционально, для моделей с ограниченным доступом):</label>
         <input 
           :value="hfToken" 
           type="password" 
-          class="input-base" 
+          class="input-base hf-token-input" 
           placeholder="hf_..." 
-          style="font-size: 12px; padding: 6px 10px;"
           @input="$emit('update:hfToken', ($event.target as HTMLInputElement).value)"
           @change="$emit('save-hf-token')" 
         />
@@ -56,7 +55,7 @@
 
               <div v-if="downloadProgress[f.filename]" class="chip-progress">
                 <div class="chip-progress-bar">
-                  <div class="chip-progress-fill" :style="{ width: downloadProgress[f.filename].percent + '%' }"></div>
+                  <div class="chip-progress-fill" :style="{ '--dl-progress': downloadProgress[f.filename].percent + '%' }"></div>
                 </div>
                 <span class="chip-progress-text">{{ (downloadProgress[f.filename].percent || 0).toFixed(1) }}%</span>
               </div>
@@ -68,7 +67,7 @@
                 @click="$emit('download', hf.id, f.filename)"
               >
                 <i class="fas" :class="isModelInstalled(f.filename) ? 'fa-check' : 'fa-download'"></i>
-                <span style="margin-left: 4px;">{{ isModelInstalled(f.filename) ? 'Установлено' : 'Скачать' }}</span>
+                <span class="ml-1">{{ isModelInstalled(f.filename) ? 'Установлено' : 'Скачать' }}</span>
               </button>
             </div>
           </div>

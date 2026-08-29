@@ -1,9 +1,9 @@
 <template>
-  <div class="chapter-tree-wrapper" style="height: 100%; display: flex; flex-direction: column; overflow: hidden;">
+  <div class="chapter-tree-wrapper">
     <div
       v-if="project"
       class="calendar-widget-container"
-      :style="{ height: calendarHeight + 'px', minHeight: '70px', maxHeight: '500px', flexShrink: 0, overflowY: 'auto' }"
+      :style="{ '--calendar-h': calendarHeight + 'px' }"
     >
       <GlobalCalendarWidget :project="project" />
     </div>
@@ -17,7 +17,7 @@
 
     <ExplorerTree
       ref="explorerTreeRef"
-      style="flex: 1; min-height: 0; overflow-y: auto;"
+      class="explorer-tree-flex"
       title="Структура"
       icon="fas fa-book-open"
       :show-back="true"
@@ -36,7 +36,7 @@
       @delete-section="handleDeleteSection"
     >
       <template #header-actions>
-        <button class="tree-action-btn" title="Редактор сущностей (Sandbox)" style="background: transparent; border: none; color: var(--text-main); cursor: pointer; opacity: 0.5; font-size: 14px; transition: 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5" @click="$emit('open-sandbox')">
+        <button class="tree-action-btn" title="Редактор сущностей (Sandbox)" @click="$emit('open-sandbox')">
           <i class="fas fa-puzzle-piece"></i>
         </button>
       </template>

@@ -72,6 +72,13 @@
 .tab-header {
   padding: 20px 30px;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn-close-settings {
+  padding: 6px 12px;
 }
 
 .tab-header h2 {

@@ -100,3 +100,11 @@
   align-items: center;
   user-select: none;
 }
+
+.moon-period-input {
+  width: 80px;
+}
+
+.moon-phase-input {
+  width: 70px;
+}

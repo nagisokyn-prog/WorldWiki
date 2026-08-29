@@ -6,7 +6,7 @@
       <div
         v-show="sidebarVisible"
         class="sidebar-universal"
-        :style="{ width: sidebarWidth + 'px' }"
+        :style="{ '--sidebar-w': sidebarWidth + 'px' }"
       >
         <chapter-tree-vue
           ref="chapterTreeRef"
@@ -50,7 +50,8 @@
               :is-active="activeGroupId === group.id"
               :can-close="editorGroups.length > 1"
               :is-sandbox="false"
-              :style="{ flexBasis: group.flexBasis + '%' }"
+              class="editor-group-pane-basis"
+              :style="{ '--group-basis': group.flexBasis + '%' }"
               @focus="focusGroup(group.id)"
               @activate-tab="activateTabInGroup"
               @close-tab="onGroupCloseTab"
@@ -105,16 +106,14 @@
                             💾 Сохранить
                           </button>
                           <button
-                            class="btn-new interactive-el"
-                            style="background: rgba(239, 68, 68, 0.4)"
+                            class="btn-new btn-danger-action interactive-el"
                             @click="deleteEntity(tab.id, tab.entityType)"
                           >
                             🗑️
                           </button>
                           <button
-                            class="btn-new interactive-el"
+                            class="btn-new btn-split-action interactive-el"
                             title="Открыть в новой панели (Ctrl+\)"
-                            style="background: rgba(139, 92, 246, 0.2)"
                             @click="splitRight()"
                           >
                             ⬜⬜
@@ -188,7 +187,7 @@
 
     <div
       class="panel-new"
-      :style="activePanelTab !== '' ? { height: panelHeight + 'px' } : { height: '36px' }"
+      :style="{ '--panel-h': activePanelTab !== '' ? panelHeight + 'px' : '36px' }"
     >
       <div
         v-if="activePanelTab !== ''"

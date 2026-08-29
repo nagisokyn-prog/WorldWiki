@@ -219,3 +219,15 @@
     border-color: var(--accent);
     background: var(--bg-selected);
 }
+
+.schema-container.is-hidden-container {
+    opacity: 0.4;
+}
+
+.is-hidden-field {
+    opacity: 0.3;
+}
+
+.icon-dim-60 {
+    opacity: 0.6;
+}

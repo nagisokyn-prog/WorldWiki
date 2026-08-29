@@ -20,7 +20,7 @@
 
     <!-- Title -->
     <div class="chapter-header">
-      <div v-if="changedFields.includes('title')" class="changed-indicator" style="position: absolute; right: -8px; top: -8px; z-index: 5;" title="Поле было изменено">
+      <div v-if="changedFields.includes('title')" class="changed-indicator changed-indicator-title" title="Поле было изменено">
           <span class="badge badge-accent">Изменено</span>
       </div>
       <input type="text" :value="title" placeholder="Название главы..." class="chapter-title-input" @input="updateTitle">
@@ -32,7 +32,7 @@
       :class="{ 'history-changed': changedFields.includes('content') }"
       @contextmenu="handleContextMenu"
     >
-      <div v-if="changedFields.includes('content')" class="changed-indicator" style="position: absolute; right: 10px; top: 10px; z-index: 5;" title="Текст был изменен">
+      <div v-if="changedFields.includes('content')" class="changed-indicator changed-indicator-content" title="Текст был изменен">
           <span class="badge badge-accent">Изменено</span>
       </div>
       
@@ -58,7 +58,7 @@
       <div v-else-if="editorMode === 'split'" class="split-editor-box">
         
         <!-- Left: Markdown Editor -->
-        <div :style="{ flex: `0 0 ${leftPanelWidth}%` }" class="flex-col overflow-hidden border-r">
+        <div :style="{ '--split-left': leftPanelWidth + '%' }" class="split-left-panel flex-col overflow-hidden border-r">
           <div class="split-panel-header">✏️ Markdown</div>
           <textarea 
             ref="markdownTextareaRef"
@@ -81,7 +81,7 @@
         ></div>
 
         <!-- Middle: WYSIWYG Preview (растягивается если структура скрыта) -->
-        <div :style="{ flex: showStructure ? `0 0 ${rightPanelWidth}%` : '1' }" class="flex-col overflow-hidden" :class="{ 'border-r': showStructure }">
+        <div :style="{ '--split-right': rightPanelWidth + '%' }" class="split-middle-panel flex-col overflow-hidden" :class="{ 'border-r': showStructure, 'is-full-width': !showStructure }">
           <div class="split-panel-header">👁️ Preview</div>
           <div class="flex-1 overflow-auto relative">
             <EditorContent :editor="editor" class="editor-content-split" />
@@ -98,7 +98,7 @@
 
         <!-- Right: Block Structure (скрывается по Ctrl+R) -->
         <div v-if="showStructure" class="flex-1 flex-col overflow-hidden bg-input">
-          <div class="split-panel-header" style="background: rgba(255,255,255,0.1);">🧩 Структура (Ctrl+R)</div>
+          <div class="split-panel-header split-panel-header-structure">🧩 Структура (Ctrl+R)</div>
           <div class="flex-1 overflow-y-auto p-2 border-l">
             <div v-for="(block, idx) in documentStructure" :key="idx" class="structure-block-item" :class="{ 'block-selected': selectedBlockIdx === idx }" @click="scrollToBlock(idx)">
               <div v-if="block.semanticTag" class="interactive-el semantic-badge" :class="block.semanticTag === 'desc' ? 'desc' : block.semanticTag === 'dialog' ? 'dialog' : 'other'" @click.stop="cycleGlobalTag(block.pIndex!)">{{ block.semanticTag === 'desc' ? '!о' : block.semanticTag === 'dialog' ? '!д' : '!м' }}</div>
@@ -135,7 +135,7 @@
 
     <!-- Footnotes Panel -->
     <div v-if="Object.keys(footnotes).length > 0" class="footnotes-panel" :class="{ 'history-changed': changedFields.includes('footnotes') }">
-      <div v-if="changedFields.includes('footnotes')" class="changed-indicator" style="position: absolute; right: 0; top: -10px; z-index: 5;" title="Сноски были изменены">
+      <div v-if="changedFields.includes('footnotes')" class="changed-indicator changed-indicator-footnotes" title="Сноски были изменены">
           <span class="badge badge-accent">Изменено</span>
       </div>
     </div>
@@ -489,13 +489,50 @@ onUnmounted(() => {
 <style src="@worldwiki/resources/styles/features/chapters/EditorCoreTiptap.css"></style>
 
 <style>
+.changed-indicator-title {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  z-index: 5;
+}
+
+.changed-indicator-content {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 5;
+}
+
+.changed-indicator-footnotes {
+  position: absolute;
+  right: 0;
+  top: -10px;
+  z-index: 5;
+}
+
+.split-left-panel {
+  flex: 0 0 var(--split-left, 50%);
+}
+
+.split-middle-panel {
+  flex: 0 0 var(--split-right, 50%);
+}
+
+.split-middle-panel.is-full-width {
+  flex: 1;
+}
+
+.split-panel-header-structure {
+  background: var(--bg-hover);
+}
+
 @keyframes promisePulse {
   0% {
-    background-color: var(--accent-glow, rgba(139, 92, 246, 0.4));
+    background-color: var(--accent-glow);
     box-shadow: 0 0 0 2px var(--accent);
   }
   70% {
-    background-color: var(--bg-selected, rgba(139, 92, 246, 0.15));
+    background-color: var(--bg-selected);
     box-shadow: 0 0 0 4px var(--accent-glow);
   }
   100% {

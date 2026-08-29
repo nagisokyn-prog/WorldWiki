@@ -3,6 +3,11 @@
 .dropdown-container {
   position: relative;
   width: 100%;
+  z-index: 1000;
+}
+
+.dropdown-container.is-open {
+  z-index: 10005;
 }
 
 .status-trigger {
@@ -134,4 +139,11 @@
 }
 .is-horizontal .wheel-container {
   height: 100% !important;
+}
+
+.wheel-empty-state {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  padding-top: 100px;
 }

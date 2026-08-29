@@ -17,8 +17,8 @@
         
         <div class="form-group">
           <label>Модель</label>
-          <div style="display: flex; gap: 8px;">
-            <div style="flex: 1;">
+          <div class="flex gap-2">
+            <div class="flex-1">
               <AiSelect
                 :model-value="localSettings.model"
                 :options="availableModelOptions"
@@ -125,7 +125,7 @@
           </label>
         </div>
 
-        <div class="form-group" style="margin-top: 10px;">
+        <div class="form-group mt-2">
           <label>Модель эмбеддингов для лора</label>
           <select 
             v-model="localSettings.embed_model_path" 
@@ -150,8 +150,7 @@
             v-if="isCustomEmbedPath" 
             v-model="customEmbedInput" 
             type="text" 
-            class="input-base" 
-            style="margin-top: 6px;" 
+            class="input-base mt-1" 
             placeholder="Путь к локальному .gguf или имя модели в API" 
             @input="onCustomEmbedInput" 
           />
@@ -207,7 +206,7 @@
           </div>
         </div>
 
-        <div class="form-row-2" style="margin-top: 10px;">
+        <div class="form-row-2 mt-2">
           <div class="form-group">
             <label>Максимум токенов ответа (Max Output Tokens)</label>
             <input 
@@ -232,7 +231,7 @@
           </div>
         </div>
 
-        <div class="form-group" style="margin-top: 6px;">
+        <div class="form-group mt-1">
           <label class="toggle-row">
             <input 
               v-model="localSettings.enable_streaming" 

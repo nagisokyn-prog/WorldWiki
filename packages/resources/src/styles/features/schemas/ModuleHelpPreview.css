@@ -34,6 +34,9 @@
 
 .module-help-popover {
   position: fixed !important;
+  top: var(--popover-top, 0);
+  left: var(--popover-left, 0);
+  right: auto;
   width: 640px;
   max-width: min(640px, calc(100vw - 32px));
   max-height: 85vh;
@@ -297,6 +300,18 @@
 
 .date-wheel-preview-col {
   flex: 1;
+}
+
+.date-wheel-preview-col.flex-1-5 {
+  flex: 1.5;
+}
+
+.date-wheel-preview-col.flex-0-8 {
+  flex: 0.8;
+}
+
+.range-accent {
+  accent-color: var(--accent);
 }
 
 .date-wheel-preview-label {

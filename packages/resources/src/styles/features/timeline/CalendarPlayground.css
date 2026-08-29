@@ -72,6 +72,7 @@
 }
 .calendar-grid {
   display: grid;
+  grid-template-columns: repeat(var(--days-in-week, 7), 1fr);
   border-top: 1px solid var(--border-color);
   border-left: 1px solid var(--border-color);
 }
@@ -90,6 +91,7 @@
   position: relative;
   min-height: 80px;
   padding: 8px;
+  background-color: var(--season-color, transparent);
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   transition: all 0.2s ease;
@@ -142,4 +144,16 @@
   height: 6px;
   border-radius: 50%;
   box-shadow: var(--shadow-sm);
+}
+.moon-dot-white {
+  background-color: var(--accent-text);
+}
+.origin-year-input {
+  width: 70px;
+}
+.origin-month-select {
+  min-width: 120px;
+}
+.origin-day-input {
+  width: 50px;
 }

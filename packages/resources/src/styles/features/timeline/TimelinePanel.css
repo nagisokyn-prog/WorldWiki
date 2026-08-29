@@ -37,6 +37,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 8px;
+  cursor: pointer;
 }
 
 .event-title {
@@ -95,6 +96,7 @@
   text-transform: uppercase;
   color: var(--text-main);
   min-width: max-content;
+  background: var(--season-bg, var(--bg-sunken));
 }
 
 .date-text {
@@ -194,6 +196,7 @@
   color: var(--text-main);
   text-align: center;
   align-self: flex-start;
+  background: var(--time-bg, var(--bg-sunken));
 }
 
 .event-description {
@@ -358,6 +361,16 @@
 }
 
 .multi-date-display:has(.native-cal) {
-  background: rgba(139, 92, 246, 0.05);
+  background: var(--bg-selected);
   border-left-color: var(--accent);
+}
+
+.empty-calendars-hint,
+.empty-events-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.empty-events-hint {
+  padding: 10px;
 }

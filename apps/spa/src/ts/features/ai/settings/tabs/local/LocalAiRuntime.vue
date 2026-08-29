@@ -6,7 +6,7 @@
         Тонкая настройка аппаратного ускорения и распределения памяти для локальных моделей.
       </p>
 
-      <div class="form-row-2" style="margin-top: 14px;">
+      <div class="form-row-2 mt-3">
         <div class="form-group">
           <label>Размер контекста (Токены)</label>
           <input 
@@ -30,7 +30,7 @@
         </div>
       </div>
 
-      <div class="form-group" style="margin-top: 14px;">
+      <div class="form-group mt-3">
         <label class="toggle-row">
           <input 
             v-model="runtimeSettings.enable_tcq" 
@@ -43,7 +43,7 @@
         </label>
       </div>
 
-      <div class="form-actions" style="margin-top: 20px;">
+      <div class="form-actions mt-5">
         <button class="btn-primary" @click="handleSave">
           <i class="fas fa-check"></i> Сохранить параметры среды
         </button>

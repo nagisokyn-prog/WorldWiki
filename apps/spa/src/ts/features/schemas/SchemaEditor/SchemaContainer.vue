@@ -1,5 +1,5 @@
 <template>
-  <div class="schema-container schema-container-card card-panel" :style="{ opacity: item.hidden ? 0.4 : 1 }">
+  <div class="schema-container schema-container-card card-panel" :class="{ 'is-hidden-container': item.hidden }">
     <div class="schema-header-row">
       <div class="schema-title-group">
         <span class="schema-drag-dots">⠿</span>
@@ -29,7 +29,7 @@
         <!-- СТОРОНА А -->
         <div class="side-panel-a">
           <div class="side-header-a">🟣 СТОРОНА А (эта сущность)</div>
-          <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="'la-'+fIdx" class="mb-3" :style="{ opacity: (!isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden) ? 0.3 : 1 }">
+          <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="'la-'+fIdx" class="mb-3" :class="{ 'is-hidden-field': !isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden }">
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5">
                 <span v-if="isProtectedField(bField.class)" class="text-xs" title="Системное поле">🔒</span>
@@ -115,13 +115,13 @@
     <template v-else>
       <!-- NON-BIDIRECTIONAL UNIFIED MODULE CONFIGURATOR -->
       <div class="card-secondary mt-3">
-        <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="fIdx" :style="{ opacity: (!isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden) ? 0.3 : 1 }">
+        <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="fIdx" :class="{ 'is-hidden-field': !isProtectedField(bField.class) && getFieldOverride(item, bField.class).hidden }">
           <div class="flex justify-between items-center mb-2">
             <div class="flex items-center gap-1.5">
               <span v-if="isProtectedField(bField.class)" class="text-xs" title="Системное поле хронологии — защищено от изменений">🔒</span>
               <label class="form-label-micro text-accent">{{ getFieldOverride(item, bField.class).label || bField.label || bField.class }}</label>
             </div>
-            <span v-if="isProtectedField(bField.class)" class="text-xs text-muted font-medium" style="opacity: 0.6;">
+            <span v-if="isProtectedField(bField.class)" class="text-xs text-muted font-medium icon-dim-60">
               Системное
             </span>
             <button v-else class="text-xs cursor-pointer" @click="toggleFieldOverride(item, bField.class)">

@@ -45,9 +45,9 @@
     </div>
 
     <div class="settings-content">
-      <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <div class="tab-header">
         <h2>{{ tabTitles[activeTab] || 'Настройки' }}</h2>
-        <button class="btn-secondary-outline" title="Закрыть настройки" style="padding: 6px 12px;" @click="$emit('close')">
+        <button class="btn-secondary-outline btn-close-settings" title="Закрыть настройки" @click="$emit('close')">
           <i class="fas fa-times"></i> Закрыть
         </button>
       </div>

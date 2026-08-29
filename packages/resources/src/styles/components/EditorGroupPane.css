@@ -34,3 +34,33 @@
   color: var(--text-muted);
   padding: 24px;
 }
+
+.pane-slot-container {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.pane-slot-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.empty-icon {
+  font-size: 40px;
+  opacity: 0.15;
+}
+
+.empty-primary-text {
+  font-size: 13px;
+  margin-top: 8px;
+  opacity: 0.4;
+}
+
+.empty-sub-text {
+  font-size: 11px;
+  margin-top: 4px;
+  opacity: 0.25;
+}

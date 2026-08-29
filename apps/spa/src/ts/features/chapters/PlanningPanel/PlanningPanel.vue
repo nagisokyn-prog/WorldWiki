@@ -13,7 +13,7 @@
 
     <!-- Прогресс бар -->
     <div v-if="items.length" class="plan-progress-bar">
-      <div class="plan-progress-fill" :style="{ width: progressPct + '%' }"></div>
+      <div class="plan-progress-fill" :style="{ '--plan-progress': progressPct + '%' }"></div>
     </div>
 
     <!-- Список пунктов -->
@@ -22,7 +22,7 @@
         v-for="(item, idx) in items"
         :key="item.id"
         class="plan-item"
-        :style="{ paddingLeft: (12 + item.indent * 20) + 'px' }"
+        :style="{ '--indent-pl': (12 + item.indent * 20) + 'px' }"
       >
         <!-- Кружок статуса -->
         <button
@@ -55,7 +55,7 @@
       <!-- Пусто -->
       <div v-if="!items.length" class="plan-empty">
         <span>Нет пунктов плана.</span>
-        <span style="display:block; margin-top:4px; font-size:11px;">Нажмите "+" чтобы добавить</span>
+        <span class="plan-empty-sub">Нажмите "+" чтобы добавить</span>
       </div>
     </div>
 

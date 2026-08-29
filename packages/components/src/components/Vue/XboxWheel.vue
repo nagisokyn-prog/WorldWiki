@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrapper" class="dropdown-container" :style="{ zIndex: isOpen ? 10005 : 1000 }">
+  <div ref="wrapper" class="dropdown-container" :class="{ 'is-open': isOpen }">
     <div 
       ref="trigger" 
       class="status-trigger interactive-el"
@@ -9,7 +9,7 @@
       @mouseleave="$emit('hover-end')"
       @wheel.prevent="onWheelClosed"
     >
-      <span style="font-weight: 500;">{{ selectedLabel }}</span>
+      <span class="font-medium">{{ selectedLabel }}</span>
       <span class="arrow-icon" :class="{ rotated: isOpen }">▼</span>
     </div>
 
@@ -38,7 +38,7 @@
               {{ opt.label }}
             </div>
           </div>
-          <div v-else style="padding: 20px; text-align: center; color: var(--text-muted); padding-top: 100px;">
+          <div v-else class="wheel-empty-state">
             {{ t('common.noData') }}
           </div>
         </div>

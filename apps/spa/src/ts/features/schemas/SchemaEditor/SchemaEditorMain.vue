@@ -9,11 +9,11 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button v-if="isHistoryPreviewMode" class="btn-new btn-outline-new text-xs" style="color: var(--warning); border-color: rgba(245,158,11,0.3);" @click="exitPreviewMode">Вернуться к текущей</button>
-        <button class="btn-new btn-outline-new text-xs" style="color: var(--error); border-color: rgba(239,68,68,0.3);" @click="loadSchema(true)">Сбросить изменения</button>
+        <button v-if="isHistoryPreviewMode" class="btn-new btn-warning-outline text-xs" @click="exitPreviewMode">Вернуться к текущей</button>
+        <button class="btn-new btn-danger-outline text-xs" @click="loadSchema(true)">Сбросить изменения</button>
         <button class="btn-new btn-outline-new text-xs" @click="openPreview">ПРЕДПРОСМОТР</button>
         <button class="btn-new btn-outline-new text-xs" @click="setShowJsonPreview(true)">Схема</button>
-        <button class="btn-new text-xs" style="background: var(--accent); color: var(--accent-text);" @click="saveSchema">Сохранить</button>
+        <button class="btn-new btn-primary text-xs" @click="saveSchema">Сохранить</button>
         <button class="btn-new btn-outline-new p-1" title="История изменений" @click="toggleHistoryPanel">
           <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
         </button>
@@ -38,8 +38,8 @@
         <div v-if="isHistoryPreviewMode" class="schema-history-banner">
           <span class="schema-history-text">⚠️ ВЫ ПРОСМАТРИВАЕТЕ СТАРУЮ ВЕРСИЮ СХЕМЫ</span>
           <div class="flex gap-2">
-             <button class="btn-new btn-outline-new text-xs" style="border-color: rgba(245,158,11,0.3); color: var(--warning);" @click="exitPreviewMode">Отмена</button>
-             <button class="btn-new text-xs btn-warning-action" style="border: none;" @click="saveSchema">Восстановить эту версию</button>
+             <button class="btn-new btn-warning-outline text-xs" @click="exitPreviewMode">Отмена</button>
+             <button class="btn-new text-xs btn-warning-action" @click="saveSchema">Восстановить эту версию</button>
           </div>
         </div>
         <!-- Вкладки (страницы) -->
@@ -55,7 +55,7 @@
             <span>{{ sec.title || 'Страница ' + (Number(idx) + 1) }}</span>
             <span v-if="Number(idx) > 0" class="ml-2 text-xs text-muted cursor-pointer hover:text-error" @mousedown.stop="deleteSection(Number(idx))">✕</span>
           </button>
-          <button class="section-tab-btn interactive-el" style="border-style: dashed; color: var(--accent);" @click="addNewPage">
+          <button class="section-tab-btn interactive-el btn-add-page" @click="addNewPage">
             <i class="fas fa-plus"></i> <span>СТРАНИЦА</span>
           </button>
         </div>
@@ -63,7 +63,7 @@
         <div ref="scrollContainer" class="schema-canvas" @dragenter.prevent @dragover.prevent="handleDragOverCanvas" @drop="handleDropNew" @scroll="handleScroll">
           <div v-if="activeSection" class="schema-canvas-inner">
             <div class="schema-page-title-row">
-              <input v-model="activeSection.title" class="input-base interactive-el schema-page-title-input" placeholder="ИМЯ СТРАНИЦЫ" :style="{ opacity: activeSection.hidden ? 0.4 : 1 }">
+              <input v-model="activeSection.title" class="input-base interactive-el schema-page-title-input" placeholder="ИМЯ СТРАНИЦЫ" :class="{ 'is-hidden-page': activeSection.hidden }">
               <button
                 v-if="activeSectionIdx > 0"
                 class="schema-btn-icon interactive-el text-lg flex-shrink-0" 
@@ -98,7 +98,7 @@
 
       <!-- SIDEBAR (Catalog) -->
       <div v-if="showCatalog" class="schema-resizer" @mousedown="startResize"></div>
-      <aside v-show="showCatalog" class="schema-catalog" :style="{ width: catalogWidth + 'px' }">
+      <aside v-show="showCatalog" class="schema-catalog" :style="{ '--catalog-w': catalogWidth + 'px' }">
         <div class="catalog-section-title">БАЗОВЫЕ ПОЛЯ</div>
         <div class="flex-col gap-2 p-2">
           <div v-for="brick in atomicBricks" :key="brick.val" class="catalog-item interactive-el" draggable="true" @dragstart="handleDragStartPalette($event, 'atomic', brick.val, brick.label)">
@@ -147,7 +147,7 @@
           <div
             v-for="h in schemaHistory" :key="h.id" 
             class="catalog-item interactive-el" 
-            :style="{ background: historyPreviewId === h.id ? 'var(--bg-selected)' : 'var(--bg-input)' }"
+            :class="{ 'is-previewing': historyPreviewId === h.id }"
             @click="previewHistory(h)">
             <div class="flex justify-between items-center w-full">
               <span class="text-xs font-bold">{{ h.formattedDate }}</span>
@@ -156,7 +156,7 @@
               </button>
             </div>
             <div v-if="historyPreviewId === h.id" class="mt-1">
-              <span class="text-xs" style="color: var(--warning);">Режим предпросмотра</span>
+              <span class="text-xs text-warning">Режим предпросмотра</span>
             </div>
           </div>
         </div>

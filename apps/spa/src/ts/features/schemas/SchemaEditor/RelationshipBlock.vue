@@ -6,7 +6,7 @@
         <span class="text-xl">🔗</span>
         <div class="flex-col">
           <strong class="text-main text-sm">{{ templateConf.headerTitle || 'Связь' }}</strong>
-          <span class="text-xs text-muted" style="opacity: 0.7;">
+          <span class="text-xs text-muted text-muted-70">
             с сущностью типа «{{ templateConf.foreign_type || (templateConf.fields?.find((f) => f.class === linkClass)?.entityType) || '?' }}»
           </span>
         </div>
@@ -27,7 +27,7 @@
 
         <div v-for="cf in templateConf.fields || []" :key="'a-' + cf.class" class="mb-3">
           <div class="field-label-row">
-            <label class="form-label-micro" style="color: var(--accent);">{{ cf.label || formatLabel(cf.class || '') }}</label>
+            <label class="form-label-micro text-accent">{{ cf.label || formatLabel(cf.class || '') }}</label>
           </div>
           
           <template v-if="cf.class === linkClass">
@@ -59,7 +59,7 @@
           </div>
           <div v-auto-animate class="p-2 flex-col gap-2">
             <div v-for="(nItem, nIdx) in getNestedList(item, subConf)" :key="nIdx" class="nested-item card-secondary relative">
-              <button class="btn-icon danger interactive-el absolute" style="top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;" title="Удалить" @click="removeNestedItem(nIdx, item, subConf)">
+              <button class="btn-icon danger interactive-el absolute nested-remove-btn" title="Удалить" @click="removeNestedItem(nIdx, item, subConf)">
                 <i class="fas fa-times"></i>
               </button>
               
@@ -78,7 +78,7 @@
               </div>
             </div>
             
-            <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: var(--border-active); color: var(--accent);" @click="addNestedItem(item, subConf)">
+            <button class="btn-new btn-outline-new interactive-el w-full text-xs btn-add-nested" @click="addNestedItem(item, subConf)">
               ➕ Добавить
             </button>
             <div v-if="getNestedList(item, subConf).length === 0" class="sub-empty">
@@ -94,7 +94,7 @@
           🔵 СТОРОНА Б ({{ foreignLabel }})
         </div>
 
-        <div v-if="foreignLoading" class="text-xs text-center p-4" style="color: var(--info);">
+        <div v-if="foreignLoading" class="text-xs text-center p-4 text-info">
           Загрузка...
         </div>
         <div v-else-if="!foreignItem || !item[linkClass]" class="rel-side-empty">
@@ -103,7 +103,7 @@
         <div v-else>
           <div v-for="cf in templateConf.fields || []" :key="'b-' + cf.class" class="mb-3">
             <div class="field-label-row">
-              <label class="form-label-micro" style="color: var(--info);">{{ cf.label || formatLabel(cf.class || '') }}</label>
+              <label class="form-label-micro text-info">{{ cf.label || formatLabel(cf.class || '') }}</label>
             </div>
             
             <template v-if="cf.class === linkClass">
@@ -134,13 +134,13 @@
             <div class="sub-header">
               <span>⏱️ {{ subConf.title }}</span>
             </div>
-            <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <div class="p-2 flex-col gap-2">
               <div v-for="(nItem, nIdx) in getNestedList(foreignItem, subConf)" :key="nIdx" class="nested-item card-secondary relative">
-                <button class="btn-icon danger interactive-el absolute" style="top: 4px; right: 4px; padding: 2px; font-size: 10px; z-index: 10;" title="Удалить" @click="removeNestedItem(nIdx, foreignItem, subConf)">
+                <button class="btn-icon danger interactive-el absolute nested-remove-btn" title="Удалить" @click="removeNestedItem(nIdx, foreignItem, subConf)">
                   <i class="fas fa-times"></i>
                 </button>
                 <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
-                  <label class="nested-field-label" style="color: var(--info);">{{ nField.label || formatLabel(nField.class || '') }}</label>
+                  <label class="nested-field-label text-info">{{ nField.label || formatLabel(nField.class || '') }}</label>
                   <XboxWheel 
                     v-if="nField.type === 'select'" 
                     :model-value="(nItem[nField.class] as string | number) || ''"
@@ -154,7 +154,7 @@
                 </div>
               </div>
               
-              <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: var(--border-active); color: var(--info);" @click="addNestedItem(foreignItem, subConf)">
+              <button class="btn-new btn-outline-new interactive-el w-full text-xs btn-add-nested-info" @click="addNestedItem(foreignItem, subConf)">
                 ➕ Добавить
               </button>
               

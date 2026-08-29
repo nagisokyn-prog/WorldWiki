@@ -96,3 +96,10 @@
 .ctx-danger .ctx-icon {
   color: var(--error);
 }
+
+.empty-chat-hint {
+  font-size: 11px;
+  text-align: center;
+  margin-top: 10px;
+  color: var(--text-muted);
+}

@@ -1,6 +1,6 @@
 <template>
   <div class="workspace-root">
-    <aside v-if="sidebarVisible" class="workspace-sidebar" :style="{ width: sidebarWidth + 'px' }">
+    <aside v-if="sidebarVisible" class="workspace-sidebar" :style="{ '--sidebar-w': sidebarWidth + 'px' }">
       <slot name="explorer" />
     </aside>
 
@@ -12,7 +12,7 @@
         :key="group.id"
         class="workspace-group"
         :class="{ 'workspace-group--active': group.id === activeGroupId }"
-        :style="{ flex: group.flexBasis }"
+        :style="{ '--group-flex': group.flexBasis }"
         @click.capture="setActiveGroup(group.id)"
       >
         <div class="workspace-tabbar">

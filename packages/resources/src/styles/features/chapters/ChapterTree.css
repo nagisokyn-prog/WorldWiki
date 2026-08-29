@@ -1,6 +1,9 @@
-/* ChapterTree styles moved from scoped block */
 .chapter-tree-wrapper {
   background: transparent;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .ctx-item {
   display: flex;
@@ -71,6 +74,16 @@
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
+  height: var(--calendar-h, 170px);
+  min-height: 70px;
+  max-height: 500px;
+  flex-shrink: 0;
+}
+
+.explorer-tree-flex {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .calendar-widget-container::-webkit-scrollbar {

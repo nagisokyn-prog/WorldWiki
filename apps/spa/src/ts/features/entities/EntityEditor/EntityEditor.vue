@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <div v-else-if="props.entityId === 'preview'" class="history-preview-banner" style="background: var(--bg-selected); border-color: var(--border-active); color: var(--accent);">
+    <div v-else-if="props.entityId === 'preview'" class="history-preview-banner banner-sandbox-preview">
       <span>🧪 <strong>Песочница:</strong> Предпросмотр кастомной схемы</span>
     </div>
 
@@ -137,7 +137,7 @@
                       v-if="!container.hidden" 
                       :class="{ 'history-changed': isFieldChanged(container.dataPath || container.id || '') }"
                       class="dynamic-container-card mb-4 relative" 
-                      :style="{ zIndex: 100 - cIdx }">
+                      :style="{ '--z-stack': 100 - cIdx }">
                     <div class="flex justify-between items-center mb-2">
                       <h4 class="text-xs font-bold text-muted uppercase tracking-wide">
                         {{ container.title || 'Дополнительно' }}
@@ -182,7 +182,7 @@
 
                       <!-- Обычные динамические элементы -->
                       <template v-else>
-                        <div v-for="(item, idx) in ((getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>) || [])" :key="idx" class="glass-card mb-3 p-3 relative" :style="{ zIndex: 50 - idx }">
+                        <div v-for="(item, idx) in ((getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>) || [])" :key="idx" class="glass-card mb-3 p-3 relative glass-card-stack" :style="{ '--z-item': 50 - idx }">
                           <div class="flex justify-between mb-2 pb-2 border-b">
                             <strong class="text-accent">Элемент #{{ idx + 1 }}</strong>
                             <button class="btn-danger-icon interactive-el text-error cursor-pointer bg-transparent border-none" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id || '', idx)">🗑️</button>
@@ -235,8 +235,7 @@
                                   :min="tField.min ?? -100"
                                   :max="tField.max ?? 100"
                                   :value="Number(getProp(item, tField.id || tField.class || '') ?? 0)"
-                                  class="flex-1"
-                                  style="accent-color: var(--accent);"
+                                  class="flex-1 range-accent"
                                   @input="e => { setProp(item, tField.id || tField.class || '', Number((e.target as HTMLInputElement).value)); markModified(); }"
                                 >
                                 <span class="text-xs text-accent font-bold range-val-badge">{{ getProp(item, tField.id || tField.class || '') ?? 0 }}</span>
@@ -293,7 +292,7 @@
               <div
                 v-for="(rev, idx) in revisions" :key="rev.id" 
                 class="catalog-item interactive-el" 
-                :style="{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }"
+                :class="{ 'is-previewing': previewingRevId === rev.id }"
                 @click="previewHistory(rev)">
                    <div class="flex justify-between items-center w-full">
                        <span class="text-xs font-bold">{{ rev.formattedDate }}</span>
@@ -301,7 +300,7 @@
                          {{ rev.is_pinned ? '📍' : '📌' }}
                        </button>
                    </div>
-                   <div class="text-xs text-muted mt-1" style="line-height: 1.4;">
+                   <div class="text-xs text-muted mt-1 diff-summary-text">
                        <!-- eslint-disable-next-line vue/no-v-html -->
                        <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
                        <span v-else>Базовая версия</span>

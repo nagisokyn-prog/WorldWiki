@@ -69,7 +69,7 @@
                 <span class="panel-header-title">
                   <i class="fas fa-users text-accent mr-1"></i> Участники
                 </span>
-                <span class="panel-header-arrow" :style="{ transform: isParticipantsOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+                <span class="panel-header-arrow" :class="{ 'is-open': isParticipantsOpen }">▼</span>
               </div>
               <div v-show="isParticipantsOpen" class="panel-body-box">
                 <ParticipantsPanel
@@ -102,7 +102,7 @@
                 <span class="accordion-title"><i class="fas fa-book text-accent"></i> План тома: {{ currentVolume.title }}</span>
                 <div class="flex items-center gap-2">
                   <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addVolumePlanItem">+</button>
-                  <span class="text-xs text-muted" :style="{ transform: isVolumePlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+                  <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isVolumePlanOpen }">▼</span>
                 </div>
               </div>
               <div v-show="isVolumePlanOpen" class="accordion-body">
@@ -122,7 +122,7 @@
                 <span class="accordion-title"><i class="fas fa-bookmark text-accent"></i> План арки: {{ currentArc.title }}</span>
                 <div class="flex items-center gap-2">
                   <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addArcPlanItem">+</button>
-                  <span class="text-xs text-muted" :style="{ transform: isArcPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+                  <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isArcPlanOpen }">▼</span>
                 </div>
               </div>
               <div v-show="isArcPlanOpen" class="accordion-body">
@@ -142,7 +142,7 @@
                 <span class="accordion-title"><i class="fas fa-file-alt text-accent"></i> План главы</span>
                 <div class="flex items-center gap-2">
                   <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addChapterPlanItem">+</button>
-                  <span class="text-xs text-muted" :style="{ transform: isChapterPlanOpen ? 'rotate(180deg)' : 'rotate(0)' }">▼</span>
+                  <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isChapterPlanOpen }">▼</span>
                 </div>
               </div>
               <div v-show="isChapterPlanOpen" class="accordion-body">
@@ -160,7 +160,7 @@
 
         <!-- Ничего не выбрано -->
         <div v-else class="flex-1 flex-col flex-center text-muted text-sm p-4 text-center gap-2">
-          <i class="fas fa-hand-pointer text-2xl" style="opacity: 0.2;"></i>
+          <i class="fas fa-hand-pointer text-2xl icon-dim"></i>
           Выберите главу, арку или том
         </div>
 
@@ -187,7 +187,7 @@
               <div
                 v-for="(rev, idx) in revisions" :key="rev.id" 
                 class="catalog-item interactive-el"
-                :style="{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }"
+                :class="{ 'is-previewing': previewingRevId === rev.id }"
                 @click="previewHistory(rev)">
                   <div class="flex justify-between items-center w-full">
                       <span class="text-xs font-bold">{{ rev.formattedDate }}</span>
@@ -195,7 +195,7 @@
                         {{ rev.is_pinned ? '📍' : '📌' }}
                       </button>
                   </div>
-                  <div class="text-xs text-muted mt-1" style="line-height: 1.4;">
+                  <div class="text-xs text-muted mt-1 diff-summary-text">
                       <!-- eslint-disable-next-line vue/no-v-html -->
                       <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
                       <span v-else>Базовая версия</span>
@@ -209,7 +209,7 @@
     </div>
     
     <div v-else class="flex-1 flex-col flex-center text-muted">
-      <div class="text-2xl mb-3" style="opacity: 0.2;">📖</div>
+      <div class="text-2xl mb-3 icon-dim">📖</div>
       <div class="text-base">Выберите главу для редактирования</div>
     </div>
 
@@ -476,6 +476,35 @@ const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: numbe
   align-items: center;
   justify-content: center;
   z-index: 998;
+}
+
+.chapter-right-panel {
+  width: var(--panel-w, 320px);
+  min-width: 200px;
+  max-width: 600px;
+}
+
+.panel-header-arrow,
+.accordion-arrow {
+  display: inline-block;
+  transition: transform var(--anim-speed-fast) ease;
+}
+
+.panel-header-arrow.is-open,
+.accordion-arrow.is-open {
+  transform: rotate(180deg);
+}
+
+.icon-dim {
+  opacity: 0.2;
+}
+
+.catalog-item.is-previewing {
+  background: var(--bg-selected);
+}
+
+.diff-summary-text {
+  line-height: 1.4;
 }
 
 .debug-error-panel {

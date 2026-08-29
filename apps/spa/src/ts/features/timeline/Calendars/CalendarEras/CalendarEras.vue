@@ -1,13 +1,13 @@
 <template>
   <div class="calendar-section">
-    <div class="section-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;" @click="isCollapsed = !isCollapsed">
-      <h4 style="margin: 0;">🏛️ Эпохи</h4>
-      <span style="font-size: 10px; color: var(--text-muted); opacity: 0.7;">{{ isCollapsed ? '▶' : '▼' }}</span>
+    <div class="eras-section-header" @click="isCollapsed = !isCollapsed">
+      <h4>🏛️ Эпохи</h4>
+      <span class="eras-collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" style="margin-top: 12px;">
+    <div v-show="!isCollapsed" class="eras-content">
       <div v-auto-animate class="item-list">
-        <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" style="margin-bottom: 10px" class="item-row">
+        <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" class="era-card">
           <div class="item-row">
             <input
               v-model="era.название"
@@ -51,17 +51,8 @@
               </button>
             </div>
           </div>
-          <div style="display: flex; align-items: center; margin-top: 5px">
-            <label
-              style="
-                font-size: 11px;
-                color: var(--text-muted);
-                display: flex;
-                align-items: center;
-                gap: 5px;
-                cursor: pointer;
-              "
-            >
+          <div class="era-reverse-row">
+            <label class="era-checkbox-label">
               <input v-model="era.обратный_отсчет" type="checkbox" />
               Считать назад (До нашей эры)
             </label>
@@ -81,3 +72,5 @@ const props = defineProps<CalendarErasProps>();
 
 const { isCollapsed, moveItem, addEra, removeEra, onNameInput } = useCalendarEras(props);
 </script>
+
+<style scoped src="@worldwiki/resources/styles/features/timeline/CalendarEras.css"></style>

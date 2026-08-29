@@ -26,7 +26,7 @@
             <span class="status-icon">⚡</span>
             <div class="status-info">
               <div class="status-label">{{ t('settings.perf.powerMode') }}</div>
-              <div class="status-value text-green-500">{{ t(performanceManager.batteryStatus.value) }}</div>
+              <div class="status-value text-success">{{ t(performanceManager.batteryStatus.value) }}</div>
             </div>
           </div>
         </div>
@@ -121,10 +121,10 @@ const showAdvanced = ref(false);
 
 const statusColorClass = computed(() => {
   const status = performanceManager.status.value;
-  if (status === 'Good') return 'text-green-500';
-  if (status === 'Limited') return 'text-yellow-500';
-  if (status === 'Poor') return 'text-red-500';
-  return 'text-green-500';
+  if (status === 'Good') return 'text-success';
+  if (status === 'Limited') return 'text-warning';
+  if (status === 'Poor') return 'text-error';
+  return 'text-success';
 });
 
 const recommendedProfile = computed<'Eco' | 'Balanced' | 'Quality' | 'Max'>(() => {
@@ -145,8 +145,8 @@ const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
 .system-status-box {
   display: flex;
   gap: 16px;
-  background: var(--bg-secondary, rgba(255,255,255,0.02));
-  border: 1px solid var(--border-color, rgba(255,255,255,0.05));
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 16px;
 }
@@ -173,8 +173,8 @@ const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
 }
 
 .recommended-card {
-  background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.05) 100%);
-  border: 1px solid rgba(79, 172, 254, 0.2);
+  background: var(--accent-glow);
+  border: 1px solid var(--border-active);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
@@ -183,7 +183,7 @@ const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  color: var(--accent-color, #4facfe);
+  color: var(--accent);
 }
 .rec-subtitle {
   font-size: 13px;
@@ -203,7 +203,7 @@ const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
 
 .profile-tabs {
   display: flex;
-  background: var(--bg-input, rgba(0,0,0,0.3));
+  background: var(--bg-input);
   border-radius: 8px;
   padding: 4px;
   gap: 4px;
@@ -220,12 +220,12 @@ const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
   transition: all 0.2s;
 }
 .profile-tab:hover {
-  background: rgba(255,255,255,0.05);
+  background: var(--bg-hover);
 }
 .profile-tab.active {
-  background: var(--bg-panel, rgba(255,255,255,0.1));
+  background: var(--bg-panel);
   color: var(--text-main);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .advanced-header {

@@ -10,24 +10,16 @@
       
       <div class="preview-main">
         <div class="preview-header">
-          <div class="preview-title" :style="{ fontFamily: settings.fonts.family, fontSize: '14px' }">{{ t('settings.preview.title') }}</div>
+          <div class="preview-title">{{ t('settings.preview.title') }}</div>
         </div>
         
-        <div class="preview-content" :style="{ padding: (16 * settings.spacing.density) + 'px' }">
-          <div 
-            class="preview-card" 
-            :style="{ 
-              borderRadius: settings.radii.card + 'px',
-              background: 'var(--bg-panel)',
-              backdropFilter: `blur(${settings.glass.blur}px)`,
-              boxShadow: `0 ${settings.shadows.islandY}px ${settings.shadows.islandBlur}px var(--shadow-color)`
-            }"
-          >
+        <div class="preview-content">
+          <div class="preview-card">
             <div class="preview-text-line title"></div>
             <div class="preview-text-line"></div>
             <div class="preview-text-line short"></div>
             
-            <div class="preview-button" :style="{ borderRadius: settings.radii.btn + 'px' }">{{ t('settings.preview.button') }}</div>
+            <div class="preview-button">{{ t('settings.preview.button') }}</div>
           </div>
         </div>
       </div>
@@ -50,6 +42,7 @@ const props = defineProps<{
 
 const previewStyles = computed(() => {
   const c = props.settings.colors;
+  const s = props.settings;
   return {
     '--bg-base': c.bgBase,
     '--bg-secondary': c.bgSecondary,
@@ -59,7 +52,13 @@ const previewStyles = computed(() => {
     '--border-color': c.borderColor,
     '--shadow-color': c.shadowColor,
     '--accent-color': c.accent,
-    '--accent-text': c.accentText
+    '--accent-text': c.accentText,
+    '--preview-font': s.fonts?.family || 'inherit',
+    '--preview-padding': ((s.spacing?.density || 1) * 16) + 'px',
+    '--preview-card-radius': (s.radii?.card || 8) + 'px',
+    '--preview-glass-blur': (s.glass?.blur || 0) + 'px',
+    '--preview-card-shadow': `0 ${s.shadows?.islandY || 4}px ${s.shadows?.islandBlur || 12}px var(--shadow-color)`,
+    '--preview-btn-radius': (s.radii?.btn || 4) + 'px'
   } as Record<string, string>;
 });
 </script>
@@ -138,17 +137,24 @@ const previewStyles = computed(() => {
 .preview-title {
   color: var(--text-main);
   font-weight: 600;
+  font-family: var(--preview-font, inherit);
+  font-size: 14px;
 }
 
 .preview-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding: var(--preview-padding, 16px);
 }
 
 .preview-card {
   padding: 16px;
   border: 1px solid var(--border-color);
+  border-radius: var(--preview-card-radius, 8px);
+  background: var(--bg-panel);
+  backdrop-filter: blur(var(--preview-glass-blur, 0px));
+  box-shadow: var(--preview-card-shadow, none);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -178,6 +184,7 @@ const previewStyles = computed(() => {
   font-size: 10px;
   font-weight: bold;
   margin-top: 4px;
+  border-radius: var(--preview-btn-radius, 4px);
 }
 
 .preview-label {

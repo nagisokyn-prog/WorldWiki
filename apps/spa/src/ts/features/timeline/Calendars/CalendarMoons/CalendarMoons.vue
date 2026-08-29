@@ -11,10 +11,10 @@
           <div class="flex gap-2 items-center">
             <input v-model="moon.name" type="text" class="item-name interactive-el" placeholder="Название луны">
             <label class="glass-label text-xs">Период (дней):</label>
-            <input v-model.number="moon.period_days" type="number" min="1" step="0.1" class="item-duration interactive-el" style="width: 80px;">
+            <input v-model.number="moon.period_days" type="number" min="1" step="0.1" class="item-duration interactive-el moon-period-input">
             
             <label class="glass-label text-xs">Старт. фаза (0-1):</label>
-            <input v-model.number="moon.initial_phase" type="number" min="0" max="1" step="0.05" class="item-duration interactive-el" style="width: 70px;" title="0 = Новолуние, 0.5 = Полнолуние">
+            <input v-model.number="moon.initial_phase" type="number" min="0" max="1" step="0.05" class="item-duration interactive-el moon-phase-input" title="0 = Новолуние, 0.5 = Полнолуние">
             
             <div class="item-actions">
               <button class="btn-icon interactive-el" :disabled="Number(mIdx)===0" @click.prevent="moveItem(calendar.moons, Number(mIdx), -1)">↑</button>

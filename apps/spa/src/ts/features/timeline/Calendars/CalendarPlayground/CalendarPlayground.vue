@@ -18,13 +18,13 @@
           <!-- Year -->
           <div class="flex items-center gap-1">
             <label class="text-xs text-muted">Год:</label>
-            <input v-model.number="origin.год" type="number" class="interactive-el glass-input" style="width: 70px;">
+            <input v-model.number="origin.год" type="number" class="interactive-el glass-input origin-year-input">
           </div>
           
           <!-- Month Nav -->
           <div class="month-nav-box">
             <button class="btn-icon interactive-el" title="Предыдущий месяц" @click="prevMonth">◀</button>
-            <select v-model.number="origin.месяц" class="interactive-el glass-select" style="min-width: 120px;">
+            <select v-model.number="origin.месяц" class="interactive-el glass-select origin-month-select">
               <option v-for="(m, idx) in calendar.месяцы" :key="idx" :value="idx">{{ m.название || `Месяц ${idx+1}` }}</option>
             </select>
             <button class="btn-icon interactive-el" title="Следующий месяц" @click="nextMonth">▶</button>
@@ -33,7 +33,7 @@
           <!-- Day -->
           <div class="flex items-center gap-1">
             <label class="text-xs text-muted">День:</label>
-            <input v-model.number="origin.день" type="number" class="interactive-el glass-input" style="width: 50px;" min="1" :max="currentDaysCount">
+            <input v-model.number="origin.день" type="number" class="interactive-el glass-input origin-day-input" min="1" :max="currentDaysCount">
           </div>
           
           <!-- Weekday -->
@@ -54,7 +54,7 @@
 
       <!-- Calendar Grid -->
       <div class="calendar-wrapper">
-        <div class="calendar-grid" :style="{ gridTemplateColumns: `repeat(${daysInWeek}, 1fr)` }">
+        <div class="calendar-grid" :style="{ '--days-in-week': daysInWeek }">
           <!-- Weekdays Header -->
           <div v-for="(dayName, idx) in weekdayNames" :key="'w'+idx" class="weekday-header">
             {{ dayName.slice(0, 3) }}
@@ -68,7 +68,7 @@
                v-for="day in gridDays" :key="'d'+day.day" 
                class="day-cell" 
                :class="{ 'is-holiday': day.holidayText, 'is-origin': day.isOrigin }"
-               :style="{ backgroundColor: filters.seasons ? day.seasonColor : 'transparent' }"
+               :style="{ '--season-color': filters.seasons ? day.seasonColor : 'transparent' }"
                :title="getDayTooltip(day)">
             
             <div class="day-number">{{ day.day }}</div>
@@ -88,8 +88,7 @@
               <template v-for="(m, mIdx) in day.moons" :key="mIdx">
                 <div
                      v-if="m && isSignificantPhase(Number(m.phase))" 
-                     class="moon-dot" 
-                     :style="{ backgroundColor: '#fff' }"
+                     class="moon-dot moon-dot-white" 
                      :title="`${m.emoji || ''} ${m.moon?.name || ''}: ${m.name || ''}`">
                 </div>
               </template>

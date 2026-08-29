@@ -1,7 +1,7 @@
 <template>
   <div class="explorer-tree" tabindex="0" @keydown="onTreeKeydown" @click.self="clearSelection()">
     <!-- Header -->
-    <div v-if="title" class="tree-header" style="display: flex; align-items: center;">
+    <div v-if="title" class="tree-header flex items-center">
       <button v-if="showBack" class="tree-back-btn" title="Back" @click="$emit('back')">
         <i class="fas fa-arrow-left"></i>
       </button>
@@ -9,7 +9,7 @@
         <i v-if="icon" :class="icon"></i>
         {{ title }}
       </span>
-      <div class="tree-header-actions" style="margin-left: auto; display: flex; gap: 4px;">
+      <div class="tree-header-actions tree-header-actions-end">
         <slot name="header-actions"></slot>
       </div>
     </div>
@@ -22,8 +22,8 @@
           <i :class="expandedSections.has(sect.id) ? 'fas fa-chevron-down' : 'fas fa-chevron-right'"></i>
           <span>{{ sect.title.toUpperCase() }}</span>
           <div class="section-actions">
-            <i v-if="sect.canEdit" class="fas fa-trash" style="margin-right: 8px; opacity: 0.7; font-size: 10px; color: #ff5555;" title="Удалить схему" @click.stop="$emit('delete-section', sect.id)"></i>
-            <i v-if="sect.canEdit" class="fas fa-pen" style="margin-right: 8px; opacity: 0.7; font-size: 10px;" title="Настроить сущности" @click.stop="$emit('edit-section', sect.id)"></i>
+            <i v-if="sect.canEdit" class="fas fa-trash btn-action-danger" title="Удалить схему" @click.stop="$emit('delete-section', sect.id)"></i>
+            <i v-if="sect.canEdit" class="fas fa-pen btn-action-dim" title="Настроить сущности" @click.stop="$emit('edit-section', sect.id)"></i>
             <i v-if="sect.canAdd" class="fas fa-plus" title="Добавить" @click.stop="$emit('create', { sectionId: sect.id })"></i>
           </div>
         </div>
@@ -80,7 +80,7 @@
 
       <!-- Empty State -->
       <div v-if="!sections.length" class="tree-empty">
-        <i class="fas fa-folder-open" style="font-size: 28px; opacity: 0.2; margin-bottom: 10px;"></i>
+        <i class="fas fa-folder-open empty-tree-icon"></i>
         <div>Нет структуры</div>
         <slot name="empty-hint"></slot>
       </div>
@@ -90,7 +90,7 @@
     <Teleport to="body">
       <div v-if="ctx" class="tree-ctx-overlay" @click="ctx = null"></div>
       <transition name="ctx-pop">
-        <div v-if="ctx" class="tree-ctx-menu" :style="ctxStyle">
+        <div v-if="ctx" class="tree-ctx-menu" :style="{ '--ctx-top': ctxStyle.top, '--ctx-left': ctxStyle.left }">
           <!-- Inject context menu items via slot, passing the active node context -->
           <slot name="context-menu" :node="ctx.node" :section-id="ctx.sectionId" :close="() => ctx = null"></slot>
         </div>

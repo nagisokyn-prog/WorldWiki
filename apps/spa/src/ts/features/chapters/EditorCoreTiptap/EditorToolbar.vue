@@ -1,14 +1,14 @@
 <template>
-  <div class="editor-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; gap: 8px;">
+  <div class="editor-header">
     <!-- LEFT: Switch Mode & Formatting Actions -->
-    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <div class="toolbar-left-group">
       <XboxWheel 
         :model-value="editorMode" 
         :options="modeOptions"
         @update:model-value="$emit('update:editorMode', $event)" 
       />
 
-      <div v-if="editorMode === 'wysiwyg' || editorMode === 'split'" class="toolbar-actions" style="display: flex; gap: 4px; border-left: 1px solid var(--border-color); padding-left: 8px;">
+      <div v-if="editorMode === 'wysiwyg' || editorMode === 'split'" class="toolbar-actions">
         <button class="btn btn-icon interactive-el toolbar-btn" title="Жирный (Ctrl+B)" @click="commands.toggleBold?.()"><b>B</b></button>
         <button class="btn btn-icon interactive-el toolbar-btn" title="Курсив (Ctrl+I)" @click="commands.toggleItalic?.()"><i>I</i></button>
         <button class="btn btn-icon interactive-el toolbar-btn" title="Зачеркнутый" @click="commands.toggleStrike?.()"><s>S</s></button>
@@ -25,11 +25,10 @@
     </div>
 
     <!-- RIGHT: Save / Actions -->
-    <div style="display: flex; align-items: center; gap: 8px;">
+    <div class="toolbar-right-group">
       <button 
         v-if="settings?.editor?.requireCtrlForLinks" 
-        class="btn btn-small btn-outline interactive-el" 
-        style="font-size: 11px;"
+        class="btn btn-small btn-outline interactive-el btn-link-lock" 
         title="Требовать Ctrl для перехода по ссылкам (включено в настройках)"
         @click="commands.toggleLinkLock?.()"
       >

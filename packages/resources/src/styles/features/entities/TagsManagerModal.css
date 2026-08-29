@@ -1,7 +1,7 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--modal-backdrop);
     backdrop-filter: blur(8px);
     z-index: 20000;
     display: flex;
@@ -16,10 +16,10 @@
     max-height: 85vh;
     display: flex;
     flex-direction: column;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
-    background: var(--bg-panel, #1a1a2e);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    background: var(--bg-panel);
 }
 
 .modal-header {
@@ -27,7 +27,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
@@ -53,7 +53,7 @@
 }
 
 .close-btn:hover {
-    color: #fff;
+    color: var(--text-main);
 }
 
 .modal-body {
@@ -67,9 +67,9 @@
     gap: 12px;
     margin-bottom: 30px;
     padding: 16px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 12px;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
+    background: var(--bg-sunken);
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-color);
 }
 
 .color-input {
@@ -96,15 +96,15 @@
     align-items: center;
     gap: 10px;
     padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xs);
     transition: all 0.2s;
 }
 
 .tag-manage-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
 }
 
 .tag-color-preview {
@@ -148,7 +148,7 @@
 }
 
 .delete-tag-btn:hover {
-    color: #ef4444;
+    color: var(--error);
 }
 
 .modal-footer {
@@ -156,7 +156,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border-color);
 }
 
 .tags-count {

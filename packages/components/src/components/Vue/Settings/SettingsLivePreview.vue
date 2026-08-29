@@ -86,7 +86,7 @@ const previewStyles = computed(() => {
 
 .preview-sidebar {
   width: 60px;
-  background: var(--bg-secondary, rgba(0,0,0,0.4));
+  background: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -122,7 +122,7 @@ const previewStyles = computed(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--bg-base, #111);
+  background: var(--bg-base);
   position: relative;
 }
 
@@ -132,7 +132,7 @@ const previewStyles = computed(() => {
   display: flex;
   align-items: center;
   padding: 0 16px;
-  background: var(--bg-panel, rgba(0,0,0,0.2));
+  background: var(--bg-panel);
 }
 
 .preview-title {
@@ -174,7 +174,7 @@ const previewStyles = computed(() => {
   align-self: flex-start;
   padding: 6px 12px;
   background: var(--accent-color);
-  color: var(--accent-text, #fff);
+  color: var(--accent-text);
   font-size: 10px;
   font-weight: bold;
   margin-top: 4px;
@@ -184,8 +184,8 @@ const previewStyles = computed(() => {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(0,0,0,0.5);
-  color: #fff;
+  background: var(--modal-backdrop);
+  color: var(--accent-text);
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 10px;

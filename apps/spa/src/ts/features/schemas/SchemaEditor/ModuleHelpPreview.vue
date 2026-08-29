@@ -125,11 +125,11 @@
                           </div>
 
                           <!-- Вложенные таймлайн-контейнеры Стороны А -->
-                          <div v-for="sub in (example.dynamicContainers || [])" :key="'sub_a_' + sub.id" class="sub-container-wrap mt-2 p-2" style="background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border-color);">
+                          <div v-for="sub in (example.dynamicContainers || [])" :key="'sub_a_' + sub.id" class="sub-container-wrap mt-2 p-2">
                             <div class="flex justify-between items-center mb-1">
                               <span class="text-micro font-bold text-muted">⏱️ {{ sub.title }}</span>
                             </div>
-                            <div class="nested-item card-secondary p-2 mb-1" style="background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--border-color);">
+                            <div class="nested-item card-secondary p-2 mb-1">
                               <div v-for="subField in (sub.fields || [])" :key="'sfa_' + subField.class" class="form-group mb-2">
                                 <label v-if="subField.label" class="form-label text-xs">{{ subField.label }}</label>
                                 <XboxWheel 
@@ -148,9 +148,9 @@
 
                         <!-- СТОРОНА Б -->
                         <div class="mock-rel-side mock-side-right">
-                          <div class="mock-side-header" style="color: #60a5fa;">🔵 СТОРОНА Б (Зеркало)</div>
+                          <div class="mock-side-header mock-side-header-b">🔵 СТОРОНА Б (Зеркало)</div>
                           <div v-for="field in example.fields" :key="'fb_' + (field.class || field.id)" class="form-group mb-2">
-                            <label v-if="field.label" class="form-label text-xs" style="color: #60a5fa;">{{ field.label }}</label>
+                            <label v-if="field.label" class="form-label form-label-b text-xs">{{ field.label }}</label>
                             
                             <!-- Dropdown: кликабелен только если не ссылается на главы и сущности -->
                             <XboxWheel 
@@ -183,11 +183,11 @@
                           </div>
 
                           <!-- Вложенные таймлайн-контейнеры Стороны Б -->
-                          <div v-for="sub in (example.dynamicContainers || [])" :key="'sub_b_' + sub.id" class="sub-container-wrap mt-2 p-2" style="background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border-color);">
+                          <div v-for="sub in (example.dynamicContainers || [])" :key="'sub_b_' + sub.id" class="sub-container-wrap mt-2 p-2">
                             <div class="flex justify-between items-center mb-1">
                               <span class="text-micro font-bold text-muted">⏱️ {{ sub.title }}</span>
                             </div>
-                            <div class="nested-item card-secondary p-2 mb-1" style="background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--border-color);">
+                            <div class="nested-item card-secondary p-2 mb-1">
                               <div v-for="subField in (sub.fields || [])" :key="'sfb_' + subField.class" class="form-group mb-2">
                                 <label v-if="subField.label" class="form-label text-xs">{{ subField.label }}</label>
                                 <XboxWheel 
@@ -240,10 +240,10 @@
                           ></textarea>
 
                           <!-- Date / Time (некликабельно, чистый показ) -->
-                          <div v-else-if="field.type === 'calendar_date' || field.type === 'date' || field.type === 'calendar_datetime'" class="date-wheels-container pointer-events-none" style="display: flex; gap: 6px; padding: 4px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border-color);">
-                            <div style="flex: 1;"><div style="font-size: 9px; color: var(--text-muted); text-align: center;">ГОД</div><XboxWheel :options="[{value: '2026', label: '2026'}]" model-value="2026" :disabled="true" /></div>
-                            <div style="flex: 1.5;"><div style="font-size: 9px; color: var(--text-muted); text-align: center;">МЕСЯЦ</div><XboxWheel :options="[{value: 'Май', label: 'Май'}]" model-value="Май" :disabled="true" /></div>
-                            <div style="flex: 0.8;"><div style="font-size: 9px; color: var(--text-muted); text-align: center;">ДЕНЬ</div><XboxWheel :options="[{value: '14', label: '14'}]" model-value="14" :disabled="true" /></div>
+                          <div v-else-if="field.type === 'calendar_date' || field.type === 'date' || field.type === 'calendar_datetime'" class="date-wheels-preview pointer-events-none">
+                            <div class="date-wheel-preview-col"><div class="date-wheel-preview-label">ГОД</div><XboxWheel :options="[{value: '2026', label: '2026'}]" model-value="2026" :disabled="true" /></div>
+                            <div class="date-wheel-preview-col" style="flex: 1.5;"><div class="date-wheel-preview-label">МЕСЯЦ</div><XboxWheel :options="[{value: 'Май', label: 'Май'}]" model-value="Май" :disabled="true" /></div>
+                            <div class="date-wheel-preview-col" style="flex: 0.8;"><div class="date-wheel-preview-label">ДЕНЬ</div><XboxWheel :options="[{value: '14', label: '14'}]" model-value="14" :disabled="true" /></div>
                           </div>
 
                           <!-- Range (некликабельно, чистый показ) -->
@@ -276,9 +276,9 @@
                         </div>
 
                         <!-- Вложенные динамические контейнеры -->
-                        <div v-for="sub in (example.dynamicContainers || [])" :key="'sub_dyn_' + sub.id" class="sub-container-wrap mt-3 p-2" style="background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px dashed var(--border-color);">
+                        <div v-for="sub in (example.dynamicContainers || [])" :key="'sub_dyn_' + sub.id" class="sub-container-wrap dashed mt-3 p-2">
                           <div class="text-xs font-bold text-muted mb-2">⏱️ {{ sub.title }}</div>
-                          <div class="nested-item card-secondary p-2 mb-1" style="background: rgba(0,0,0,0.3); border-radius: 6px; border: 1px solid var(--border-color);">
+                          <div class="nested-item card-secondary p-2 mb-1">
                             <div v-for="subField in (sub.fields || [])" :key="'sf_dyn_' + subField.class" class="form-group mb-2">
                               <label v-if="subField.label" class="form-label text-xs">{{ subField.label }}</label>
                               <XboxWheel 

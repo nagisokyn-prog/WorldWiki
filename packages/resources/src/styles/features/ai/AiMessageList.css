@@ -75,15 +75,15 @@
 }
 
 .message-user .message-avatar {
-  background: linear-gradient(135deg, var(--accent-hover, #7c3aed) 0%, var(--accent, #8b5cf6) 100%);
-  color: #ffffff;
-  border: 1px solid var(--accent-glow, rgba(139, 92, 246, 0.4));
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-glow);
 }
 
 .message-assistant .message-avatar {
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(59, 130, 246, 0.4) 100%);
-  color: #ffffff;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  background: linear-gradient(135deg, var(--accent-glow) 0%, var(--bg-selected) 100%);
+  color: var(--accent-text);
+  border: 1px solid var(--border-color);
 }
 
 /* Основной контейнер контента — растягивается на 100% оставшейся ширины */
@@ -134,24 +134,24 @@
   border-radius: var(--radius-sm, 8px);
   font-size: 14px;
   line-height: 1.6;
-  color: var(--text-main, #ffffff);
+  color: var(--text-main);
   position: relative;
   overflow-wrap: break-word;
   word-break: break-word;
 }
 
 .message-user .message-bubble {
-  background: var(--bg-selected, rgba(139, 92, 246, 0.15));
-  border: 1px solid var(--border-active, rgba(139, 92, 246, 0.4));
-  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.08);
+  background: var(--bg-selected);
+  border: 1px solid var(--border-active);
+  box-shadow: 0 2px 12px var(--accent-glow);
 }
 
 .message-assistant .message-bubble {
-  background: var(--bg-card, rgba(22, 22, 26, 0.6));
+  background: var(--bg-card);
   backdrop-filter: blur(var(--glass-blur-sm, 12px));
   -webkit-backdrop-filter: blur(var(--glass-blur-sm, 12px));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Рендеринг Markdown внутри сообщения */
@@ -162,8 +162,8 @@
   margin-bottom: 0;
 }
 .message-content :deep(pre) {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-xs, 6px);
   padding: 12px;
   overflow-x: auto;
@@ -172,7 +172,7 @@
 .message-content :deep(code) {
   font-family: var(--font-mono, monospace);
   font-size: 13px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-sunken);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -199,12 +199,12 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: var(--bg-secondary, #121214);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
   backdrop-filter: blur(var(--glass-blur-sm, 12px));
   padding: 3px 6px;
   border-radius: var(--radius-xs, 6px);
-  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.3));
+  box-shadow: var(--shadow-md);
   margin-top: 4px;
   width: fit-content;
 }
@@ -237,7 +237,7 @@
 }
 
 .icon-btn:hover {
-  background: var(--bg-hover, rgba(255, 255, 255, 0.08));
+  background: var(--bg-hover);
   color: var(--text-main);
 }
 
@@ -248,8 +248,8 @@
 
 /* Аккордеон рассуждений / мыслей ИИ */
 .thinking-accordion {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-active);
   border-radius: var(--radius-xs, 6px);
   overflow: hidden;
   margin-bottom: 10px;
@@ -259,10 +259,10 @@
   padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--accent-light, #c4b5fd);
+  color: var(--accent);
   cursor: pointer;
   user-select: none;
-  background: rgba(139, 92, 246, 0.06);
+  background: var(--bg-selected);
   transition: background var(--anim-speed-fast, 0.15s) ease;
   display: flex;
   align-items: center;
@@ -270,7 +270,7 @@
 }
 
 .thinking-accordion summary:hover {
-  background: rgba(139, 92, 246, 0.12);
+  background: var(--bg-hover);
 }
 
 .thinking-content {
@@ -278,7 +278,7 @@
   font-size: 12px;
   line-height: 1.5;
   color: var(--text-muted);
-  border-top: 1px solid rgba(139, 92, 246, 0.15);
+  border-top: 1px solid var(--border-color);
   max-height: 250px;
   overflow-y: auto;
 }
@@ -294,7 +294,7 @@
 .tool-log-item {
   font-size: 12px;
   color: var(--text-muted);
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--bg-sunken);
   border-left: 3px solid var(--accent);
   padding: 6px 10px;
   border-radius: var(--radius-xs, 4px);
@@ -323,8 +323,8 @@
   min-height: 80px;
   width: 100%;
   box-sizing: border-box;
-  background: var(--bg-input, rgba(22, 22, 26, 0.8));
-  color: var(--text-main, #ffffff);
+  background: var(--bg-input);
+  color: var(--text-main);
   border: 1px solid var(--accent);
   border-radius: var(--radius-xs, 6px);
   padding: 10px 12px;
@@ -341,8 +341,8 @@
 }
 
 .btn-cancel {
-  background: var(--bg-hover, rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
   color: var(--text-muted);
   padding: 6px 12px;
   border-radius: var(--radius-xs, 4px);
@@ -352,14 +352,14 @@
 }
 
 .btn-cancel:hover {
-  background: var(--bg-active, rgba(255, 255, 255, 0.1));
+  background: var(--bg-active);
   color: var(--text-main);
 }
 
 .btn-save {
   background: var(--accent);
   border: none;
-  color: #ffffff;
+  color: var(--accent-text);
   padding: 6px 14px;
   border-radius: var(--radius-xs, 4px);
   cursor: pointer;
@@ -382,7 +382,7 @@
   margin-top: 6px;
   padding: 2px 8px;
   border-radius: var(--radius-xs, 4px);
-  background: var(--bg-hover, rgba(255, 255, 255, 0.04));
+  background: var(--bg-hover);
   width: fit-content;
 }
 

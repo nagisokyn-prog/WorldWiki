@@ -39,7 +39,7 @@
 .token-progress-wrapper {
   width: 100px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--border-color);
   border-radius: 2px;
   overflow: hidden;
 }
@@ -51,12 +51,12 @@
 }
 
 .cost-badge {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-sunken);
   padding: 2px 6px;
   border-radius: 10px;
-  font-family: monospace;
+  font-family: var(--font-mono, monospace);
   font-size: 10px;
-  color: var(--text-color);
+  color: var(--text-main);
 }
 
 .mode-select {
@@ -69,6 +69,6 @@
   padding: 2px 4px;
 }
 .mode-select option {
-  background: var(--dropdown-bg, var(--bg-base, #121214));
+  background: var(--dropdown-bg);
   color: var(--text-main);
 }

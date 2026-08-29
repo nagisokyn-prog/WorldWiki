@@ -81,7 +81,7 @@
           <div class="side-header-b">🔵 СТОРОНА Б (связанная сущность)</div>
           <div v-for="(bField, fIdx) in getRawTemplateFields(item.template)" :key="'rb-'+fIdx" class="mb-3">
             <div class="flex justify-between items-center mb-1">
-              <label class="form-label-micro" style="color:#60a5fa;">{{ bField.label || bField.class }}</label>
+              <label class="form-label-micro" style="color: var(--info);">{{ bField.label || bField.class }}</label>
               <span class="text-xs text-muted" style="opacity:0.4;">зеркало</span>
             </div>
             <XboxWheel v-if="bField.type === 'select'" :model-value="''" :options="bField.options || []" :placeholder="bField.placeholder || '...'" :disabled="true" />
@@ -102,7 +102,7 @@
             <div class="side-dynamic-header-b">⏱️ {{ subConf.title }}</div>
             <div class="flex-col gap-2 p-2">
               <div v-for="(nField, nIdx) in (subConf.fields || [])" :key="'rnf-'+nIdx" class="card-secondary">
-                <label class="form-label-micro mb-1" style="color:rgba(96,165,250,0.8);">{{ nField.label || nField.class }}</label>
+                <label class="form-label-micro mb-1" style="color: var(--info);">{{ nField.label || nField.class }}</label>
                 <XboxWheel v-if="nField.type === 'select'" :model-value="''" :options="nField.options || []" :placeholder="nField.placeholder || '...'" :disabled="true" />
                 <input v-else class="input-base interactive-el pointer-events-none" style="opacity:0.5;" :placeholder="nField.placeholder || '...'">
               </div>
@@ -223,12 +223,12 @@
     <div
       v-if="['dynamic', 'timeline'].includes(String(item.type))"
       class="dynamic-empty-box cursor-pointer mt-3 p-4"
-      :style="{ borderColor: isDraggedOver ? 'var(--accent)' : 'rgba(255,165,0,0.3)', background: isDraggedOver ? 'rgba(255,165,0,0.1)' : 'rgba(255,165,0,0.05)' }"
+      :style="{ borderColor: isDraggedOver ? 'var(--accent)' : 'var(--border-color)', background: isDraggedOver ? 'var(--bg-selected)' : 'var(--bg-sunken)' }"
       @dragenter.prevent="isDraggedOver = true"
       @dragover.prevent="isDraggedOver = true"
       @dragleave="isDraggedOver = false"
       @drop.stop="isDraggedOver = false; $emit('drop-custom')">
-      <div class="text-sm font-bold" style="color: rgba(255,165,0,0.8);">🎯 СЮДА КИДАЙ ПОЛЯ</div>
+      <div class="text-sm font-bold text-accent">🎯 СЮДА КИДАЙ ПОЛЯ</div>
       <div class="text-xs text-muted mt-1">Захвати поле из левой панели</div>
     </div>
   </div>

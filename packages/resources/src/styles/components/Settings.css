@@ -52,7 +52,7 @@
 }
 
 .settings-nav-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover);
     color: var(--text-main);
 }
 
@@ -108,7 +108,7 @@
 
 /* Settings Group Gap Fix */
 .settings-group {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     border-radius: var(--radius-card);
     padding: 16px;
     border: 1px solid var(--border-color);
@@ -199,7 +199,7 @@ input.color-text-input {
     padding: 8px 16px;
     border-radius: var(--radius-round);
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-text);
     border: none;
     cursor: pointer;
     transition: background var(--anim-speed) var(--anim-ease);
@@ -210,7 +210,7 @@ input.color-text-input {
 }
 
 .val-badge {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-selected);
     padding: 4px 10px;
     border-radius: 12px;
     font-family: 'Fira Code', monospace;
@@ -226,7 +226,7 @@ input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     height: 5px;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--border-color);
     border-radius: 5px;
     outline: none;
     margin-bottom: 24px;
@@ -261,7 +261,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     border-radius: 8px;
     border: 2px solid var(--border-color);
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-sm);
 }
 
 .color-value {
@@ -349,7 +349,7 @@ input[type="text"].color-text-input {
 
 .radio-btn {
     padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 13px;
@@ -359,15 +359,15 @@ input[type="text"].color-text-input {
 }
 
 .radio-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border-hover);
 }
 
 .radio-btn.active {
     background: var(--accent) !important;
     border-color: var(--accent) !important;
-    color: #ffffff !important;
+    color: var(--accent-text) !important;
     font-weight: 700;
-    box-shadow: 0 0 16px var(--accent-glow);
+    box-shadow: var(--shadow-glow);
 }
 
 .toggle-switch {
@@ -391,7 +391,7 @@ input[type="text"].color-text-input {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--border-color);
     transition: .4s;
     border-radius: 1.5em;
 }
@@ -403,7 +403,7 @@ input[type="text"].color-text-input {
     width: 1.125em;
     left: 0.1875em;
     bottom: 0.1875em;
-    background-color: white;
+    background-color: var(--accent-text);
     transition: .4s;
     border-radius: 50%;
 }
@@ -434,15 +434,15 @@ input:checked+.slider:before {
 }
 
 .perf-option:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-hover);
+    background: var(--bg-hover);
 }
 
 .perf-option.active {
     border-color: var(--accent);
-    background: rgba(139, 92, 246, 0.15);
+    background: var(--bg-selected);
     color: var(--text-main);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+    box-shadow: var(--shadow-glow);
 }
 
 .perf-option input[type="radio"] {

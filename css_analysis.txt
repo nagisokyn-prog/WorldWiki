@@ -1,12 +1,12 @@
 === CSS Анализ Проекта ===
 
-Всего .css файлов: 89 (14712 строк)
+Всего .css файлов: 89 (14590 строк)
 Всего .vue файлов со <style> тегами: 74 (889 строк CSS внутри)
 Всего .vue файлов с inline стилями (style="..."): 48 (248 вхождений)
 
 --- Топ 10 самых больших .css файлов ---
-1309 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
-859 строк - packages\resources\src\styles\app.css
+1308 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
+734 строк - packages\resources\src\styles\app.css
 716 строк - packages\resources\src\styles\features\timeline\TimeAtlasModal.css
 506 строк - packages\resources\src\styles\features\chapters\PromisesPanel.css
 467 строк - packages\resources\src\styles\features\timeline\GlobalCalendarWidget.css
@@ -52,8 +52,8 @@
 
 
 Детальный список всех .css файлов:
-1309 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
-859 строк - packages\resources\src\styles\app.css
+1308 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
+734 строк - packages\resources\src\styles\app.css
 716 строк - packages\resources\src\styles\features\timeline\TimeAtlasModal.css
 506 строк - packages\resources\src\styles\features\chapters\PromisesPanel.css
 467 строк - packages\resources\src\styles\features\timeline\GlobalCalendarWidget.css
@@ -66,7 +66,7 @@
 292 строк - packages\resources\src\styles\components\BaseUI.css
 292 строк - packages\resources\src\styles\features\entities\EntityEditor.css
 289 строк - packages\resources\src\styles\features\timeline\CalendarsPanel.css
-281 строк - packages\resources\src\styles\components\GlassComponents.css
+280 строк - packages\resources\src\styles\components\GlassComponents.css
 276 строк - packages\resources\src\styles\features\schemas\ModuleHelpPreview.css
 272 строк - packages\resources\src\styles\features\chapters\EditorCoreTiptap.css
 243 строк - packages\resources\src\styles\features\schemas\RelationshipBlock.css
@@ -112,10 +112,10 @@
 79 строк - packages\resources\src\styles\base\layout.css
 75 строк - packages\resources\src\styles\features\ai\AiChatTopBar.css
 73 строк - packages\resources\src\styles\features\timeline\CalendarWeekdays.css
+72 строк - packages\resources\src\styles\tokens\theme-dark.css
 71 строк - packages\resources\src\styles\features\ai\AiModelInfoCard.css
 71 строк - packages\resources\src\styles\fonts.css
 67 строк - packages\resources\src\styles\features\timeline\GlobalTimeViewer.css
-67 строк - packages\resources\src\styles\tokens\theme-dark.css
 66 строк - packages\resources\src\styles\tokens\theme-glass.css
 57 строк - packages\resources\src\styles\utilities\flex.css
 56 строк - packages\resources\src\styles\features\ai\AiSettingsConnectionsTab.css

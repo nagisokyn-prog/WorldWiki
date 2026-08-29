@@ -6,18 +6,18 @@
   align-items: center;
   gap: 8px;
   padding: 5px 8px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--radius-xs);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
 }
 .hk-item kbd {
   font-family: 'Fira Code', monospace;
   font-size: 11px;
   padding: 2px 6px;
-  background: rgba(139,92,246,0.12);
-  border: 1px solid rgba(139,92,246,0.25);
-  border-radius: 4px;
-  color: #a78bfa;
+  background: var(--bg-selected);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--radius-xs);
+  color: var(--accent);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -181,7 +181,7 @@
 .glass-modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--modal-backdrop, rgba(0, 0, 0, 0.65));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     z-index: 10000;
@@ -311,7 +311,7 @@
 }
 
 .status-trigger:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border-hover);
 }
 
 .status-trigger.active {
@@ -338,13 +338,12 @@
     opacity: 0;
     overflow: hidden;
     pointer-events: none;
-    background: var(--bg-panel, rgba(15, 15, 20, 0.98));
+    background: var(--bg-panel);
     backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(30px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-dropdown);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8); /* fallback for var(--shadow-dropdown) */
-    box-shadow: var(--shadow-dropdown, 0 25px 50px rgba(0, 0, 0, 0.8));
+    box-shadow: var(--shadow-lg);
     transition: height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 9999;
     outline: none;
@@ -364,12 +363,12 @@
     right: 15px;
     height: 44px;
     margin-top: -22px;
-    border-top: 1px solid var(--glass-highlight);
-    border-bottom: 1px solid var(--glass-highlight);
-    background: var(--accent-glow, rgba(139, 92, 246, 0.1));
-    border-radius: 12px;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--accent-glow);
+    border-radius: var(--radius-md);
     pointer-events: none;
-    box-shadow: 0 0 20px var(--accent-glow, rgba(139, 92, 246, 0.2));
+    box-shadow: 0 0 20px var(--accent-glow);
     z-index: 5;
 }
 
@@ -547,7 +546,7 @@
 .calendar-settings-section {
     margin-bottom: calc(20px * var(--density-mult));
     padding: calc(16px * var(--density-mult));
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     border-radius: var(--radius-card);
     border: 1px solid var(--border-color);
 }
@@ -562,7 +561,7 @@
 .calendar-section {
     margin-bottom: calc(20px * var(--density-mult));
     padding: calc(16px * var(--density-mult));
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     border-radius: var(--radius-card);
     border: 1px solid var(--border-color);
     transform-origin: center center;
@@ -570,9 +569,9 @@
 }
 
 .calendar-section.interactive-el:hover {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-glow);
     transform: scale(1.02) !important;
 }
 
@@ -636,8 +635,8 @@
 
 .calendar-field input:hover,
 .calendar-field select:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.1);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-sm);
 }
 
 .calendar-field input:focus,
@@ -680,8 +679,8 @@
 }
 
 .item-row .item-name:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.1);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-sm);
 }
 
 .item-row .item-name:focus-within {
@@ -703,8 +702,8 @@
 }
 
 .item-row .item-duration:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.1);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-sm);
 }
 
 .item-row .item-duration:focus-within {
@@ -815,7 +814,7 @@
 .preview-panel {
     margin-top: calc(20px * var(--density-mult));
     padding: calc(12px * var(--density-mult));
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-card);
     overflow-x: auto;
@@ -857,7 +856,7 @@
     justify-content: center;
     font-size: 12px;
     border-radius: var(--radius-xs);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--border-color);
 }
 
 .preview-weekday {
@@ -876,7 +875,7 @@
 
 .preview-day.holiday {
     background: var(--accent);
-    color: white;
+    color: var(--accent-text);
 }
 
 .preview-day.epoch-day {
@@ -946,7 +945,7 @@
     -webkit-backdrop-filter: blur(var(--glass-blur));
     border: 1px solid var(--border-color);
     border-radius: var(--radius-card);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-md);
     z-index: 9000;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -957,7 +956,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 16px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--bg-sunken);
     border-bottom: 1px solid var(--border-color);
     cursor: pointer;
     user-select: none;
@@ -1000,7 +999,7 @@
 .sound-bar-track {
     flex: 1;
     height: 6px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-sunken);
     border-radius: 3px;
     overflow: hidden;
 }
@@ -1056,7 +1055,7 @@
 
 .settings-sidebar {
     width: 260px;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--bg-sunken);
     border-right: 1px solid var(--border-color);
     overflow-y: auto;
     padding: 16px;
@@ -1065,7 +1064,7 @@
 
 .settings-nav-item {
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 13px;
     font-weight: 500;
@@ -1078,7 +1077,7 @@
 }
 
 .settings-nav-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover);
     color: var(--text-main);
 }
 
@@ -1102,7 +1101,7 @@
 }
 
 .settings-group {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     border-radius: var(--radius-card);
     padding: 24px;
     border: 1px solid var(--border-color);
@@ -1118,9 +1117,9 @@
 }
 
 .val-badge {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-selected);
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     font-family: 'Fira Code', monospace;
     font-size: 11px;
     color: var(--accent);
@@ -1131,7 +1130,7 @@ input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
     height: 5px;
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--border-color);
     border-radius: 5px;
     outline: none;
     margin-bottom: 24px;
@@ -1162,7 +1161,7 @@ input[type="color"] {
     appearance: none;
     width: 40px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     background: transparent;
     padding: 0;
@@ -1180,7 +1179,7 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 
 input[type="color"]::-webkit-color-swatch {
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .radio-group {
@@ -1192,9 +1191,9 @@ input[type="color"]::-webkit-color-swatch {
 
 .radio-btn {
     padding: 8px 16px;
-    background: rgba(0, 0, 0, 0.4);
+    background: var(--bg-sunken);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
@@ -1202,13 +1201,13 @@ input[type="color"]::-webkit-color-swatch {
 }
 
 .radio-btn:hover {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border-hover);
 }
 
 .radio-btn.active {
     background: var(--accent) !important;
     border-color: var(--accent) !important;
-    color: #ffffff !important;
+    color: var(--accent-text) !important;
     font-weight: 700;
     box-shadow: 0 0 16px var(--accent-glow);
 }
@@ -1273,15 +1272,15 @@ input:checked + .slider:before {
 }
 
 .perf-option:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-hover);
+    background: var(--bg-hover);
 }
 
 .perf-option.active {
     border-color: var(--accent);
-    background: rgba(139, 92, 246, 0.15);
+    background: var(--bg-selected);
     color: var(--text-main);
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.2);
+    box-shadow: 0 0 15px var(--accent-glow);
 }
 
 .perf-option input[type="radio"] {

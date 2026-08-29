@@ -28,7 +28,7 @@
 .plan-name {
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-main, #e5e7eb);
+    color: var(--text-main);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -36,7 +36,7 @@
 
 .plan-stats {
     font-size: 11px;
-    color: var(--accent, #8b5cf6);
+    color: var(--accent);
     font-weight: 700;
     flex-shrink: 0;
     margin-left: 8px;
@@ -44,7 +44,7 @@
 
 .plan-progress-bar {
     height: 2px;
-    background: rgba(255, 255, 255, 0.07);
+    background: var(--border-color);
     margin: 0 14px 10px;
     border-radius: 1px;
     overflow: hidden;
@@ -53,7 +53,7 @@
 
 .plan-progress-fill {
     height: 100%;
-    background: var(--accent, #8b5cf6);
+    background: var(--accent);
     transition: width 0.4s ease;
 }
 
@@ -68,7 +68,7 @@
     align-items: center;
     gap: 6px;
     margin: 2px 0;
-    border-radius: 6px;
+    border-radius: var(--radius-xs, 6px);
     padding-top: 3px;
     padding-bottom: 3px;
     padding-right: 6px;
@@ -76,7 +76,7 @@
 }
 
 .plan-item:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bg-hover);
 }
 
 .plan-item:hover .plan-delete {
@@ -87,7 +87,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    border: 2px solid var(--accent, #8b5cf6);
+    border: 2px solid var(--accent);
     background: transparent;
     cursor: pointer;
     display: flex;
@@ -95,15 +95,15 @@
     justify-content: center;
     flex-shrink: 0;
     transition: all 0.2s;
-    color: white;
+    color: var(--accent-text);
     font-size: 12px;
     font-weight: 700;
     padding: 0;
 }
 
 .plan-toggle.done {
-    background: var(--accent, #8b5cf6);
-    border-color: var(--accent, #8b5cf6);
+    background: var(--accent);
+    border-color: var(--accent);
 }
 
 .plan-toggle:hover {
@@ -124,7 +124,7 @@
     background: transparent;
     border: none;
     outline: none;
-    color: var(--text-main, #e5e7eb);
+    color: var(--text-main);
     font-size: 13px;
     font-family: inherit;
     padding: 0;
@@ -134,11 +134,11 @@
 
 .plan-text.done {
     text-decoration: line-through;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
 }
 
 .plan-text::placeholder {
-    color: rgba(255, 255, 255, 0.2);
+    color: var(--text-muted);
 }
 
 .plan-delete {
@@ -147,7 +147,7 @@
     border-radius: 50%;
     border: none;
     background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
+    color: var(--error);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -168,7 +168,7 @@
     padding: 24px 14px;
     text-align: center;
     font-size: 12px;
-    color: var(--text-muted, #888);
+    color: var(--text-muted);
 }
 
 .plan-footer {
@@ -178,10 +178,10 @@
 
 .plan-add-btn {
     width: 100%;
-    background: rgba(139, 92, 246, 0.1);
-    border: 1px dashed rgba(139, 92, 246, 0.3);
-    color: var(--accent, #8b5cf6);
-    border-radius: 8px;
+    background: var(--bg-selected);
+    border: 1px dashed var(--border-active);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
     padding: 8px;
     font-size: 13px;
     cursor: pointer;
@@ -193,6 +193,6 @@
 }
 
 .plan-add-btn:hover {
-    background: rgba(139, 92, 246, 0.2);
-    border-color: rgba(139, 92, 246, 0.6);
+    background: var(--bg-hover);
+    border-color: var(--accent);
 }

@@ -253,24 +253,24 @@ defineExpose({
 }
 :deep(.impact-badge.cost-high) {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--error);
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 :deep(.impact-badge.cost-low) {
   background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  color: var(--success);
   border: 1px solid rgba(34, 197, 94, 0.2);
 }
 :deep(.impact-badge.visual-high) {
-  background: rgba(79, 172, 254, 0.1);
-  color: #4facfe;
-  border: 1px solid rgba(79, 172, 254, 0.2);
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--info);
+  border: 1px solid rgba(56, 189, 248, 0.2);
 }
 
 :deep(.settings-group) {
-  background: var(--bg-panel, rgba(255,255,255,0.02));
-  border: 1px solid var(--border-color, rgba(255,255,255,0.05));
-  border-radius: 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 12px);
   padding: 20px;
   margin-bottom: 16px;
 }
@@ -297,13 +297,13 @@ defineExpose({
 }
 
 :deep(.val-badge) {
-  background: var(--accent-glow, rgba(139, 92, 246, 0.15));
-  border: 1px solid var(--accent, #8b5cf6);
+  background: var(--bg-selected);
+  border: 1px solid var(--accent);
   padding: 4px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-card, 12px);
   font-family: var(--font-mono, monospace);
   font-size: 11px;
-  color: var(--text-main, #ffffff);
+  color: var(--text-main);
   font-weight: 600;
 }
 
@@ -316,8 +316,8 @@ defineExpose({
 
 :deep(.radio-btn) {
   padding: 8px 16px;
-  background: var(--bg-input, rgba(0, 0, 0, 0.4));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm, 8px);
   font-size: 13px;
   font-weight: 500;
@@ -328,16 +328,16 @@ defineExpose({
 }
 
 :deep(.radio-btn:hover) {
-  border-color: var(--accent, #8b5cf6);
+  border-color: var(--accent);
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-hover);
 }
 
 :deep(.radio-btn.active) {
-  background: var(--accent, #8b5cf6) !important;
-  border-color: var(--accent, #8b5cf6) !important;
-  color: #ffffff !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-text) !important;
   font-weight: 700;
-  box-shadow: 0 0 16px var(--accent-glow, rgba(139, 92, 246, 0.5));
+  box-shadow: var(--shadow-glow);
 }
 </style>

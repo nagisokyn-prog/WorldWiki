@@ -19,9 +19,9 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
-  background: rgba(255,255,255,0.02);
+  background: var(--bg-sunken);
 }
 .tree-title {
   display: flex;
@@ -31,7 +31,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted, #888);
+  color: var(--text-muted);
 }
 .tree-back-btn {
   display: flex;
@@ -39,10 +39,10 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  background: rgba(139,92,246,0.08);
-  border: 1px solid rgba(139,92,246,0.2);
-  color: rgba(139,92,246,0.9);
-  border-radius: 6px;
+  background: var(--accent-glow);
+  border: 1px solid var(--border-active);
+  color: var(--accent);
+  border-radius: var(--radius-xs);
   cursor: pointer;
   font-size: 13px;
   transition: all 0.2s;
@@ -51,10 +51,10 @@
   backdrop-filter: blur(4px);
 }
 .tree-back-btn:hover {
-  background: rgba(139,92,246,0.18);
-  border-color: rgba(139,92,246,0.45);
-  color: #a78bfa;
-  box-shadow: 0 0 12px rgba(139,92,246,0.15);
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .tree-section-header {
@@ -63,18 +63,18 @@
     padding: 8px 12px;
     font-size: 11px;
     font-weight: 700;
-    color: var(--text-muted, #858585);
-    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-muted);
+    background: var(--bg-sunken);
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border-color);
     transition: background 0.2s, color 0.2s;
 }
 
 .tree-section-header:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: #ffffff;
+    background: var(--bg-hover);
+    color: var(--text-main);
 }
 
 .tree-section-header i {
@@ -96,7 +96,7 @@
 }
 
 .section-actions i:hover {
-    color: var(--accent, #7c3aed);
+    color: var(--accent);
 }
 
 /* --- Tree Items --- */
@@ -109,22 +109,22 @@
     height: 24px;
     transition: background 0.1s;
     position: relative;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
     margin: 1px 4px;
 }
 
 .tree-item-row:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bg-hover);
 }
 
 .tree-item.active > .tree-item-row {
-    background: rgba(124, 58, 237, 0.15);
-    color: #ffffff;
+    background: var(--bg-selected);
+    color: var(--text-main);
 }
 
 .tree-item.selected > .tree-item-row {
-    background: rgba(59, 130, 246, 0.2);
-    color: #ffffff;
+    background: var(--bg-selected);
+    color: var(--text-main);
 }
 
 .tree-item.active > .tree-item-row::after {
@@ -134,7 +134,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: var(--accent, #7c3aed);
+    background: var(--accent);
 }
 
 /* --- Vertical Branch Lines --- */
@@ -150,7 +150,7 @@
     top: 0;
     bottom: 0;
     width: 1px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--border-color);
 }
 
 /* --- Icons & Expand Buttons --- */
@@ -159,7 +159,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-muted, #858585);
+    color: var(--text-muted);
     font-size: 9px;
     transition: transform 0.1s;
 }
@@ -176,7 +176,7 @@
 
 .tree-node-icon {
     font-size: 12px;
-    color: #61afef;
+    color: var(--accent);
 }
 
 .tree-item-label {
@@ -188,21 +188,21 @@
 
 /* --- Inputs --- */
 .tree-rename-input {
-    background: #2a2d2e;
-    border: 1px solid var(--accent, #7c3aed);
-    color: #ffffff;
+    background: var(--bg-input);
+    border: 1px solid var(--accent);
+    color: var(--text-main);
     font-size: 12px;
     padding: 1px 4px;
     width: 100%;
     outline: none;
-    border-radius: 2px;
+    border-radius: var(--radius-xs);
 }
 
 /* --- Empty States --- */
 .tree-empty-small {
     padding: 8px 24px;
     font-size: 11px;
-    color: var(--text-muted, #858585);
+    color: var(--text-muted);
     font-style: italic;
     opacity: 0.5;
 }
@@ -219,11 +219,11 @@
 }
 
 .tree-body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--border-color);
 }
 
 .tree-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--border-hover);
 }
 
 /* --- Context Menu --- */
@@ -239,10 +239,10 @@
 .tree-ctx-menu {
     position: fixed;
     z-index: 10000;
-    background: #1e1e1e;
-    border: 1px solid #454545;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    border-radius: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-xs);
     padding: 4px 0;
     min-width: 160px;
 }
@@ -253,17 +253,17 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #cccccc;
+    color: var(--text-main);
 }
 
 .ctx-item:hover {
-    background: #094771;
-    color: #ffffff;
+    background: var(--bg-selected);
+    color: var(--text-main);
 }
 
 .ctx-sep {
     height: 1px;
-    background: #454545;
+    background: var(--border-color);
     margin: 4px 0;
 }
 
@@ -274,7 +274,7 @@
     gap: 6px;
     padding: 4px 12px 4px 32px;
     font-size: 11px;
-    color: var(--text-muted, #858585);
+    color: var(--text-muted);
     cursor: pointer;
     transition: color 0.1s;
     margin: 2px 4px;
@@ -282,7 +282,7 @@
 }
 
 .tree-add-inline:hover {
-    color: var(--accent, #7c3aed);
+    color: var(--accent);
     opacity: 1;
 }
 

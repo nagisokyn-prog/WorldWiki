@@ -12,7 +12,7 @@
 }
 
 .chapter-right-panel {
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--bg-sunken);
   border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -27,7 +27,7 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px 14px 14px;
-  background: var(--bg-panel, rgba(16, 16, 20, 0.95));
+  background: var(--bg-panel);
   border-top: 1px solid var(--border-color);
   flex-shrink: 0;
 }
@@ -46,12 +46,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-sunken);
   transition: background var(--anim-speed) var(--anim-ease);
 }
 
 .accordion-header:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-hover);
 }
 
 .accordion-title {
@@ -91,7 +91,7 @@
 }
 
 .chapter-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-hover);
 }
 
 .chapter-item.active {
@@ -128,21 +128,21 @@
   width: 2px;
   height: 48px;
   border-radius: 2px;
-  background: rgba(139, 92, 246, 0);
+  background: transparent;
   transition: background 0.15s, height 0.15s;
 }
 
 .chapters-sidebar-resize:hover {
-  background: rgba(139, 92, 246, 0.08);
+  background: var(--bg-hover);
 }
 
 .chapters-sidebar-resize:hover::after {
-  background: rgba(139, 92, 246, 0.7);
+  background: var(--accent);
   height: 64px;
 }
 
 .chapters-sidebar-resize:active {
-  background: rgba(139, 92, 246, 0.18);
+  background: var(--bg-selected);
 }
 
 /* Правая панель — вертикальный ресайзер */
@@ -160,26 +160,26 @@
   width: 2px;
   height: 48px;
   border-radius: 2px;
-  background: rgba(139, 92, 246, 0);
+  background: transparent;
   transition: background 0.15s, height 0.15s;
 }
 
 .panel-resize-handle:hover {
-  background: rgba(139, 92, 246, 0.08);
+  background: var(--bg-hover);
 }
 
 .panel-resize-handle:hover::after {
-  background: rgba(139, 92, 246, 0.7);
+  background: var(--accent);
   height: 64px;
 }
 
 .panel-resize-handle:active {
-  background: rgba(139, 92, 246, 0.18);
+  background: var(--bg-selected);
 }
 
 /* ZEN MODE STYLES */
 .zen-mode-active {
-  background: #000000 !important;
+  background: var(--bg-base) !important;
 }
 
 .zen-mode-active .chapters-sidebar-resize,
@@ -195,7 +195,7 @@
   width: 60px !important;
   opacity: 0.3;
   transition: width 0.5s ease, opacity 0.5s ease;
-  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-right: 1px solid var(--border-color) !important;
 }
 
 .zen-mode-active .chapters-sidebar:hover {

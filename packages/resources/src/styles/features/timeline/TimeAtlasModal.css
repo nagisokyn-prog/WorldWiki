@@ -1,7 +1,7 @@
 .time-atlas-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background: var(--modal-backdrop);
   backdrop-filter: blur(var(--glass-blur-sm, 8px));
   -webkit-backdrop-filter: blur(var(--glass-blur-sm, 8px));
   z-index: 10000;
@@ -81,7 +81,7 @@
 
 .atlas-tab-btn.active {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   box-shadow: var(--shadow-glow);
 }
 
@@ -529,7 +529,7 @@
 .copy-btn:hover {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   box-shadow: var(--shadow-glow);
 }
 
@@ -562,8 +562,8 @@
 .region-card {
   padding: 16px;
   border-radius: var(--radius-sm, 8px);
-  background: var(--bg-panel, rgba(30, 30, 47, 0.6));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -572,8 +572,8 @@
 
 .region-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.3));
-  border-color: var(--accent, #6366f1);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
 }
 
 .region-card-header {
@@ -592,12 +592,12 @@
 .region-name {
   font-size: 15px;
   font-weight: 600;
-  color: var(--text-main, #fff);
+  color: var(--text-main);
 }
 
 .region-tz-badge {
   font-size: 11px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
 }
 
 .phase-pill {
@@ -610,7 +610,7 @@
 
 .phase-pill.dawn {
   background: rgba(245, 158, 11, 0.2);
-  color: #f59e0b;
+  color: var(--warning);
   border: 1px solid rgba(245, 158, 11, 0.4);
 }
 
@@ -637,22 +637,22 @@
   align-items: baseline;
   justify-content: space-between;
   padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-sunken);
+  border-radius: var(--radius-xs, 6px);
+  border: 1px solid var(--border-color);
 }
 
 .time-value {
   font-size: 26px;
   font-weight: 700;
-  color: var(--text-main, #fff);
+  color: var(--text-main);
   font-variant-numeric: tabular-nums;
   letter-spacing: 1px;
 }
 
 .date-value {
   font-size: 12px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
 }
 
 .region-card-footer {
@@ -665,11 +665,11 @@
 .sun-detail-row {
   display: flex;
   justify-content: space-between;
-  color: var(--text-main, #e2e8f0);
+  color: var(--text-main);
 }
 
 .sun-detail-row.text-muted {
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
 }
 
 .empty-world-panel {
@@ -682,7 +682,7 @@
 .world-panorama-card {
   padding: 16px 20px;
   border-radius: var(--radius-sm, 8px);
-  background: var(--bg-panel, rgba(30, 30, 47, 0.6));
+  background: var(--bg-panel);
   border: 1px solid var(--border-color);
 }
 
@@ -696,7 +696,7 @@
 .panorama-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--accent, #6366f1);
+  color: var(--accent);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -707,9 +707,9 @@
   line-height: 1.6;
   font-style: italic;
   font-family: Georgia, serif;
-  color: var(--text-main, #fff);
-  background: rgba(0, 0, 0, 0.2);
+  color: var(--text-main);
+  background: var(--bg-sunken);
   padding: 12px 16px;
-  border-left: 3px solid var(--accent, #6366f1);
+  border-left: 3px solid var(--accent);
   border-radius: 0 6px 6px 0;
 }

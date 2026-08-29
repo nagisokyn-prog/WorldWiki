@@ -4,38 +4,38 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     1059 мест
-  • Fixed (Устранено): -0 мест 🎉
-  • New (Введено):    +0 мест
-  • Net Trend:        ↓ 0 (0.0% улучшение)
+  • Current Debt:     439 мест
+  • Fixed (Устранено): -629 мест 🎉
+  • New (Введено):    +12 мест
+  • Net Trend:        ↓ 620 (58.5% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
 ────────────────────────────────────────────────────────────────────────
-  • [Оверлеи / Затемнения]   --modal-backdrop : 0 мест
-  • [Утопленные подложки]    --bg-sunken      : 77 мест
-  • [Системные рамки]        --border-color   : 203 мест
-  • [Цвета текста]           --text-main/muted: 272 мест
+  • [Оверлеи / Затемнения]   --modal-backdrop : 2 мест
+  • [Утопленные подложки]    --bg-sunken      : 25 мест
+  • [Системные рамки]        --border-color   : 27 мест
+  • [Цвета текста]           --text-main/muted: 82 мест
 
 ────────────────────────────────────────────────────────────────────────
   2. РАЗБИВКА ПО ТИПАМ НАРУШЕНИЙ
 ────────────────────────────────────────────────────────────────────────
-  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):    131 [Критично для Light Theme]
-  • Hardcoded White Colors  (rgba(255,255,...), #fff):   378 [Критично для Light Theme]
-  • Arbitrary HEX Colors    (#aabbcc):                 302
-  • Inline Styles           (style="..."):             248
+  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):     51 [Критично для Light Theme]
+  • Hardcoded White Colors  (rgba(255,255,...), #fff):    95 [Критично для Light Theme]
+  • Arbitrary HEX Colors    (#aabbcc):                  75
+  • Inline Styles           (style="..."):             218
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────
   3. ПРИОРИТЕТНЫЕ ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-10)
 ────────────────────────────────────────────────────────────────────────
-   1. [ 39 мест]  packages/resources/src/styles/app.css
-   2. [ 35 мест]  packages/resources/src/styles/features/shell/ProjectLauncher.css
-   3. [ 32 мест]  packages/resources/src/styles/components/ExplorerTree.css
-   4. [ 32 мест]  packages/resources/src/styles/features/schemas/RelationshipBlock.css
-   5. [ 31 мест]  packages/resources/src/styles/features/schemas/ModuleHelpPreview.css
-   6. [ 31 мест]  packages/resources/src/styles/features/shell/EditorView.css
-   7. [ 31 мест]  packages/resources/src/styles/features/timeline/TimeAtlasModal.css
-   8. [ 30 мест]  packages/resources/src/styles/features/entities/EntityEditor.css
-   9. [ 29 мест]  packages/resources/src/styles/features/ai/AiMessageList.css
-  10. [ 27 мест]  apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue
+   1. [ 25 мест]  apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue
+   2. [ 16 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue
+   3. [ 15 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue
+   4. [ 14 мест]  apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue
+   5. [ 12 мест]  packages/resources/src/styles/features/timeline/TimeAtlasModal.css
+   6. [ 12 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue
+   7. [ 11 мест]  packages/components/src/components/Vue/Settings/SettingsNavRail.vue
+   8. [ 10 мест]  apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue
+   9. [  9 мест]  packages/resources/src/styles/components/TagsField.css
+  10. [  9 мест]  packages/resources/src/styles/components/ThemeSwitcher.css

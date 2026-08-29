@@ -56,28 +56,28 @@
 .badge-master {
     margin-left: 8px;
     font-size: 10px;
-    background: #e67e22;
-    color: white;
+    background: var(--warning);
+    color: #ffffff;
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .badge-default-accent {
     margin-left: 8px;
     font-size: 10px;
     background: var(--accent);
-    color: white;
+    color: var(--accent-text);
     padding: 2px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .calendar-warning-box {
-    color: #e74c3c;
+    color: var(--error);
     font-size: 12px;
     padding: 10px;
     text-align: center;
     border: 1px dashed var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 .calendar-empty-box {
@@ -94,9 +94,9 @@
 
 .calendar-settings-section {
     margin-bottom: 15px;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     padding: 12px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
 }
 
 
@@ -120,11 +120,11 @@
 }
 
 .calendar-field input {
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
-    color: var(--text-color);
+    color: var(--text-main);
     padding: 6px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
 }
 
 .btn-icon {
@@ -133,12 +133,12 @@
     color: var(--text-muted);
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .btn-icon:hover {
-    color: var(--text-color);
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    background: var(--bg-hover);
 }
 
 .delete-btn {
@@ -204,9 +204,9 @@
 
 /* Unscoped styles for child Calendar components */
 .calendar-section {
-    background: var(--glass-bg, rgba(20, 20, 20, 0.4));
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-    border-radius: 8px;
+    background: var(--bg-sunken);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
     padding: 12px;
     margin-bottom: 12px;
 }
@@ -214,7 +214,7 @@
 .calendar-section h4 {
     margin-top: 0;
     margin-bottom: 12px;
-    color: var(--text-color, #e0e0e0);
+    color: var(--text-heading);
     font-size: 14px;
 }
 
@@ -228,21 +228,21 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-sunken);
     padding: 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-color);
 }
 
 .calendar-section .item-name,
 .calendar-section .item-duration,
 .calendar-section input[type="text"],
 .calendar-section input[type="number"] {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-    color: var(--text-color, #e0e0e0);
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
     padding: 6px 10px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .calendar-section .item-actions {
@@ -254,33 +254,33 @@
 .calendar-section .btn-add {
     margin-top: 10px;
     background: transparent;
-    border: 1px dashed var(--border-color, rgba(255, 255, 255, 0.2));
-    color: var(--text-muted, #aaa);
+    border: 1px dashed var(--border-color);
+    color: var(--text-muted);
     padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     cursor: pointer;
     width: 100%;
     text-align: left;
 }
 
 .calendar-section .btn-add:hover {
-    border-color: var(--accent, #3498db);
-    color: var(--text-color, #fff);
-    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--bg-hover);
 }
 
 .calendar-section .btn-icon {
     background: transparent;
     border: none;
-    color: var(--text-muted, #aaa);
+    color: var(--text-muted);
     cursor: pointer;
     padding: 4px 6px;
-    border-radius: 4px;
+    border-radius: var(--radius-xs);
 }
 
 .calendar-section .btn-icon:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-color, #fff);
+    background: var(--bg-hover);
+    color: var(--text-main);
 }
 
 .calendar-section .btn-icon:disabled {

@@ -167,7 +167,7 @@
       </div>
       
       <!-- HISTORY PANEL -->
-      <aside v-if="showHistory" class="schema-catalog" style="width: 280px; box-shadow: -5px 0 20px rgba(0,0,0,0.2); z-index: 10;">
+      <aside v-if="showHistory" class="schema-catalog history-drawer">
           <div class="flex justify-between items-center p-3 border-b text-xs font-bold">
               <span>История изменений</span>
               <button class="cursor-pointer text-muted" @click="showHistory = false">✕</button>
@@ -187,7 +187,7 @@
               <div
                 v-for="(rev, idx) in revisions" :key="rev.id" 
                 class="catalog-item interactive-el"
-                :style="{ background: previewingRevId === rev.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
+                :style="{ background: previewingRevId === rev.id ? 'var(--bg-selected)' : 'var(--bg-input)' }"
                 @click="previewHistory(rev)">
                   <div class="flex justify-between items-center w-full">
                       <span class="text-xs font-bold">{{ rev.formattedDate }}</span>
@@ -201,7 +201,7 @@
                       <span v-else>Базовая версия</span>
                   </div>
                   <div v-if="previewingRevId === rev.id" class="mt-1">
-                      <span class="text-xs" style="color: #f5a623;">Режим предпросмотра</span>
+                      <span class="text-xs preview-badge-warning">Режим предпросмотра</span>
                   </div>
               </div>
           </div>
@@ -215,7 +215,7 @@
 
     <!-- Floating UI Elements -->
 
-    <div v-if="showQuickLinkHint" class="quick-link-info-panel fixed card-glass z-modal p-4" style="bottom: 80px; right: 20px; width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+    <div v-if="showQuickLinkHint" class="quick-link-info-panel fixed card-glass z-modal p-4 quick-link-popup">
       <div class="flex justify-between mb-2">
         <strong class="text-accent"><i class="fas fa-bolt"></i> Быстрые ссылки Ctrl+Q</strong>
         <div>
@@ -231,7 +231,7 @@
     </div>
 
     <!-- Кнопка-кружок для показа подсказки -->
-    <button v-if="!showQuickLinkHint && !hideQuickLinkHintForever" class="quick-link-hint-circle fixed cursor-pointer" title="Показать подсказку Ctrl+Q" style="bottom: 75px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: #667eea; color: white; font-size: 26px; font-weight: bold; border: none; box-shadow: 0 4px 16px rgba(102,126,234,0.18); display: flex; align-items: center; justify-content: center; z-index: 998;" @click="showQuickLinkHint = true">
+    <button v-if="!showQuickLinkHint && !hideQuickLinkHintForever" class="quick-link-hint-circle fixed cursor-pointer quick-link-trigger-btn" title="Показать подсказку Ctrl+Q" @click="showQuickLinkHint = true">
       ?
     </button>
 
@@ -259,10 +259,10 @@
     />
 
     <!-- Debug Panel -->
-    <div v-if="debugError" class="fixed card-secondary z-tooltip p-3 font-mono text-xs" style="top: 20px; right: 20px; width: 300px; background: #ff6b6b; color: white;">
+    <div v-if="debugError" class="fixed card-secondary z-tooltip p-3 font-mono text-xs debug-error-panel">
       <div class="flex justify-between mb-2">
         <strong>⚠️ Ошибка</strong>
-        <button class="cursor-pointer" style="color: white;" @click="debugError = null">✕</button>
+        <button class="cursor-pointer text-main" @click="debugError = null">✕</button>
       </div>
       <div style="white-space: pre-wrap; word-break: break-all;">{{ debugError }}</div>
       <div class="mt-2 text-muted">Проект: {{ project }}</div>
@@ -399,7 +399,7 @@ const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: numbe
   padding: 8px 12px;
   cursor: pointer;
   user-select: none;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-sunken);
   transition: background var(--anim-speed, 0.2s) ease;
 }
 
@@ -440,6 +440,49 @@ const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: numbe
 }
 
 .panel-body-box::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover, rgba(255, 255, 255, 0.2));
+  background: var(--border-hover);
+}
+
+.history-drawer {
+  width: 280px;
+  box-shadow: var(--shadow-dropdown);
+  z-index: 10;
+}
+
+.preview-badge-warning {
+  color: var(--warning);
+}
+
+.quick-link-popup {
+  bottom: 80px;
+  right: 20px;
+  width: 320px;
+  box-shadow: var(--shadow-dropdown);
+}
+
+.quick-link-trigger-btn {
+  bottom: 75px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-text);
+  font-size: 26px;
+  font-weight: bold;
+  border: none;
+  box-shadow: var(--shadow-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 998;
+}
+
+.debug-error-panel {
+  top: 20px;
+  right: 20px;
+  width: 300px;
+  background: var(--error);
+  color: var(--accent-text);
 }
 </style>

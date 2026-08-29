@@ -5,8 +5,8 @@
 }
 
 .splash-wrapper {
-    background: #000;
-    color: #fff;
+    background: var(--bg-base);
+    color: var(--text-main);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -26,10 +26,10 @@
 
 /* ASCII Art Container */
 .ascii-art {
-    font-family: 'Courier New', monospace;
+    font-family: var(--font-mono, monospace);
     font-size: 8px;
     line-height: 10px;
-    color: #8b5cf6;
+    color: var(--accent);
     white-space: pre;
     margin-bottom: 20px;
     text-align: left;
@@ -54,7 +54,7 @@
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 8px;
-    background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -62,13 +62,13 @@
 
 .subtitle {
     font-size: 14px;
-    color: #666;
+    color: var(--text-muted);
     margin-bottom: 30px;
 }
 
 .progress-container {
-    background: #1a1a1a;
-    border-radius: 8px;
+    background: var(--bg-sunken);
+    border-radius: var(--radius-sm);
     height: 8px;
     overflow: hidden;
     margin-bottom: 16px;
@@ -76,15 +76,15 @@
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, #8b5cf6, #06b6d4);
-    border-radius: 8px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
     transition: width 0.3s ease;
     width: 0%;
 }
 
 .status-text {
     font-size: 13px;
-    color: #888;
+    color: var(--text-muted);
     min-height: 20px;
 }
 
@@ -101,17 +101,17 @@
 
 .perf-badge.high {
     background: rgba(34, 197, 94, 0.2);
-    color: #22c55e;
+    color: var(--success);
 }
 
 .perf-badge.medium {
     background: rgba(234, 179, 8, 0.2);
-    color: #eab308;
+    color: var(--warning);
 }
 
 .perf-badge.low {
     background: rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    color: var(--error);
 }
 
 .perf-badge.visible {
@@ -120,6 +120,6 @@
 
 .perf-details {
     font-size: 11px;
-    color: #555;
+    color: var(--text-muted);
     margin-top: 5px;
 }

@@ -45,8 +45,8 @@
   overflow-x: hidden;
   border-radius: var(--radius-card, 8px);
   border: 1px solid var(--border-color);
-  background: var(--bg-card, rgba(22, 22, 26, 0.6));
-  color: var(--text-main, #ffffff);
+  background: var(--bg-card);
+  color: var(--text-main);
   min-height: 0;
 }
 .editor-content .ProseMirror,
@@ -54,7 +54,7 @@
   min-height: 100%;
   padding: 20px;
   outline: none;
-  color: var(--text-main, #ffffff);
+  color: var(--text-main);
 }
 .status-bar {
   display: flex;
@@ -73,8 +73,8 @@
   flex: 1;
   width: 100%;
   height: 100%;
-  background: var(--bg-card, rgba(22, 22, 26, 0.6));
-  color: var(--text-main, #ffffff);
+  background: var(--bg-card);
+  color: var(--text-main);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm, 6px);
   padding: 16px;
@@ -97,11 +97,11 @@
   overflow: hidden;
   border-radius: var(--radius-sm, 6px);
   border: 1px solid var(--border-color);
-  background: var(--bg-card, rgba(22, 22, 26, 0.6));
+  background: var(--bg-card);
   min-height: 0;
 }
 .split-panel-header {
-  background: var(--bg-input, rgba(255, 255, 255, 0.05));
+  background: var(--bg-sunken);
   border-bottom: 1px solid var(--border-color);
   padding: 8px 12px;
   font-size: var(--font-size-xs, 12px);
@@ -123,7 +123,7 @@
   margin-bottom: 4px;
   padding: 6px 8px;
   border-left: 2px solid var(--accent);
-  background: rgba(139, 92, 246, 0.1);
+  background: var(--bg-selected);
   border-radius: var(--radius-xs);
   font-size: var(--font-size-xs);
   cursor: pointer;
@@ -141,16 +141,16 @@
   cursor: pointer;
 }
 .semantic-badge.desc {
-  background: rgba(148, 163, 184, 0.1);
-  color: #94a3b8;
+  background: var(--bg-sunken);
+  color: var(--text-muted);
 }
 .semantic-badge.dialog {
-  background: rgba(56, 189, 248, 0.1);
-  color: #38bdf8;
+  background: var(--bg-selected);
+  color: var(--accent);
 }
 .semantic-badge.other {
-  background: rgba(192, 132, 252, 0.1);
-  color: #c084fc;
+  background: var(--bg-selected);
+  color: var(--accent);
 }
 
 /* ==========================================================================
@@ -175,16 +175,16 @@
 .ProseMirror a[href^="entity:"],
 .ProseMirror a[href*="project="],
 .ProseMirror a.entity-link {
-  color: var(--accent-light, #c4b5fd) !important;
-  background: var(--bg-selected, rgba(139, 92, 246, 0.18));
-  border: 1px solid var(--border-active, rgba(139, 92, 246, 0.4));
-  border-radius: var(--radius-xs, 5px);
+  color: var(--accent) !important;
+  background: var(--bg-selected);
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-xs);
   padding: 1px 7px;
   margin: 0 2px;
   text-decoration: none !important;
   font-size: 0.95em;
   line-height: 1.35;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
   vertical-align: baseline;
 }
 
@@ -201,10 +201,10 @@
 .ProseMirror a[href^="entity:"]:hover,
 .ProseMirror a[href*="project="]:hover,
 .ProseMirror a.entity-link:hover {
-  background: var(--accent, #8b5cf6) !important;
-  color: #ffffff !important;
-  border-color: var(--accent, #8b5cf6);
-  box-shadow: 0 0 12px var(--accent-glow, rgba(139, 92, 246, 0.45));
+  background: var(--accent) !important;
+  color: var(--accent-text) !important;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
   transform: translateY(-1px);
 }
 
@@ -212,8 +212,8 @@
 .ProseMirror a[href^="http://"],
 .ProseMirror a[href^="https://"],
 .ProseMirror a.web-link {
-  color: var(--info, #38bdf8) !important;
-  text-decoration-color: rgba(56, 189, 248, 0.4);
+  color: var(--info) !important;
+  text-decoration-color: var(--info);
   padding: 0 3px;
   border-radius: 3px;
 }
@@ -229,15 +229,15 @@
 .ProseMirror a[href^="http://"]:hover,
 .ProseMirror a[href^="https://"]:hover,
 .ProseMirror a.web-link:hover {
-  color: #7dd3fc !important;
-  text-decoration-color: #38bdf8;
-  background: rgba(56, 189, 248, 0.12);
+  color: var(--info) !important;
+  text-decoration-color: var(--info);
+  background: var(--bg-selected);
 }
 
 /* 4. Сноски */
 .ProseMirror a[href^="#fn"],
 .ProseMirror a.footnote-ref {
-  color: var(--warning, #f59e0b) !important;
+  color: var(--warning) !important;
   font-weight: 700;
   font-size: 0.8em;
   vertical-align: super;
@@ -251,7 +251,7 @@
 
 .ProseMirror a[href^="#fn"]:hover,
 .ProseMirror a.footnote-ref:hover {
-  background: var(--warning, #f59e0b) !important;
+  background: var(--warning) !important;
   color: #000000 !important;
   box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
 }

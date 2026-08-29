@@ -343,6 +343,7 @@ class SettingsService {
     const withAlpha = (colorStr: string, alpha: number): string => {
       const clampedAlpha = Math.max(0, Math.min(1, alpha));
       if (!colorStr) return `rgba(255, 255, 255, ${clampedAlpha})`;
+
       if (colorStr.startsWith('#')) {
         let hex = colorStr.slice(1);
         if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
@@ -365,8 +366,17 @@ class SettingsService {
 
     const panelBgWithAlpha = withAlpha(s.colors.bgPanel, islandOpacity);
     const cardBgWithAlpha = withAlpha(s.colors.bgInput || s.colors.bgSecondary, cardOpacity);
-    const inputBgWithAlpha = withAlpha(s.colors.bgInput, cardOpacity);
+    // Если пользователь явно указал rgba для инпута/панели, уважать его значение
+    const inputBgWithAlpha = (s.colors.bgInput && s.colors.bgInput.startsWith('rgba'))
+      ? s.colors.bgInput
+      : withAlpha(s.colors.bgInput, cardOpacity);
     const borderWithAlpha = withAlpha(s.colors.borderColor || '#ffffff', borderOpacity);
+
+    // Определяем семантические токены оверлея и подложек
+    const bgBaseStr = (s.colors.bgBase || '').toLowerCase();
+    const isLightTheme = bgBaseStr.startsWith('#f') || bgBaseStr.startsWith('#e') || bgBaseStr === 'white';
+    const modalBackdrop = isLightTheme ? 'rgba(15, 23, 42, 0.45)' : 'rgba(0, 0, 0, 0.65)';
+    const bgSunken = isLightTheme ? 'rgba(0, 0, 0, 0.04)' : 'rgba(0, 0, 0, 0.25)';
 
     // Colors
     root.style.setProperty('--bg-base', s.colors.bgBase);
@@ -374,6 +384,8 @@ class SettingsService {
     root.style.setProperty('--bg-panel', panelBgWithAlpha);
     root.style.setProperty('--bg-card', cardBgWithAlpha);
     root.style.setProperty('--bg-input', inputBgWithAlpha);
+    root.style.setProperty('--bg-sunken', bgSunken);
+    root.style.setProperty('--modal-backdrop', modalBackdrop);
     root.style.setProperty('--text-main', s.colors.textMain);
     root.style.setProperty('--text-muted', s.colors.textMuted);
     root.style.setProperty('--text-heading', s.colors.textHeading);
@@ -382,7 +394,7 @@ class SettingsService {
     root.style.setProperty('--accent-active', s.colors.accentActive);
     root.style.setProperty('--accent-disabled', s.colors.accentDisabled);
     root.style.setProperty('--accent-glow', s.colors.accentGlow);
-    root.style.setProperty('--accent-text', s.colors.accentText);
+    root.style.setProperty('--accent-text', s.colors.accentText || '#ffffff');
     root.style.setProperty('--border-color', borderWithAlpha);
     root.style.setProperty('--border-active', s.colors.borderActive);
     root.style.setProperty('--shadow-color', s.colors.shadowColor);

@@ -9,11 +9,11 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <button v-if="isHistoryPreviewMode" class="btn-new btn-outline-new text-xs" style="color: #f5a623; border-color: rgba(245,166,35,0.3);" @click="exitPreviewMode">Вернуться к текущей</button>
-        <button class="btn-new btn-outline-new text-xs" style="color: #f55; border-color: rgba(255,85,85,0.3);" @click="loadSchema(true)">Сбросить изменения</button>
+        <button v-if="isHistoryPreviewMode" class="btn-new btn-outline-new text-xs" style="color: var(--warning); border-color: rgba(245,158,11,0.3);" @click="exitPreviewMode">Вернуться к текущей</button>
+        <button class="btn-new btn-outline-new text-xs" style="color: var(--error); border-color: rgba(239,68,68,0.3);" @click="loadSchema(true)">Сбросить изменения</button>
         <button class="btn-new btn-outline-new text-xs" @click="openPreview">ПРЕДПРОСМОТР</button>
         <button class="btn-new btn-outline-new text-xs" @click="setShowJsonPreview(true)">Схема</button>
-        <button class="btn-new text-xs" style="background: var(--accent);" @click="saveSchema">Сохранить</button>
+        <button class="btn-new text-xs" style="background: var(--accent); color: var(--accent-text);" @click="saveSchema">Сохранить</button>
         <button class="btn-new btn-outline-new p-1" title="История изменений" @click="toggleHistoryPanel">
           <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
         </button>
@@ -25,7 +25,7 @@
       <div v-if="hook.isPreviewMode.value" class="flex-1 flex-col">
         <div class="schema-history-banner">
            <span class="schema-history-text">👁️ РЕЖИМ ПРЕДПРОСМОТРА</span>
-           <button class="btn-new text-xs" style="background: #f5a623; color: #000;" @click="setIsPreviewMode(false)">ВЕРНУТЬСЯ В РЕДАКТОР</button>
+           <button class="btn-new text-xs" style="background: var(--warning); color: #000000;" @click="setIsPreviewMode(false)">ВЕРНУТЬСЯ В РЕДАКТОР</button>
         </div>
         <div class="flex-1 relative">
           <EntityEditorVue :key="previewKey" entity-id="preview" entity-type="sandbox_preview" project="sandbox" :initial-data="{}" :config="schema" />
@@ -38,8 +38,8 @@
         <div v-if="isHistoryPreviewMode" class="schema-history-banner">
           <span class="schema-history-text">⚠️ ВЫ ПРОСМАТРИВАЕТЕ СТАРУЮ ВЕРСИЮ СХЕМЫ</span>
           <div class="flex gap-2">
-             <button class="btn-new btn-outline-new text-xs" style="border-color: rgba(245,166,35,0.3); color: #f5a623;" @click="exitPreviewMode">Отмена</button>
-             <button class="btn-new text-xs" style="background: #f5a623; color: #000; border: none;" @click="saveSchema">Восстановить эту версию</button>
+             <button class="btn-new btn-outline-new text-xs" style="border-color: rgba(245,158,11,0.3); color: var(--warning);" @click="exitPreviewMode">Отмена</button>
+             <button class="btn-new text-xs" style="background: var(--warning); color: #000000; border: none;" @click="saveSchema">Восстановить эту версию</button>
           </div>
         </div>
         <!-- Вкладки (страницы) -->
@@ -147,7 +147,7 @@
           <div
             v-for="h in schemaHistory" :key="h.id" 
             class="catalog-item interactive-el" 
-            :style="{ background: historyPreviewId === h.id ? 'rgba(139,92,246,0.1)' : 'var(--bg-input)' }"
+            :style="{ background: historyPreviewId === h.id ? 'var(--bg-selected)' : 'var(--bg-input)' }"
             @click="previewHistory(h)">
             <div class="flex justify-between items-center w-full">
               <span class="text-xs font-bold">{{ h.formattedDate }}</span>
@@ -156,7 +156,7 @@
               </button>
             </div>
             <div v-if="historyPreviewId === h.id" class="mt-1">
-              <span class="text-xs" style="color: #f5a623;">Режим предпросмотра</span>
+              <span class="text-xs" style="color: var(--warning);">Режим предпросмотра</span>
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@
             <button class="btn-new text-xs" @click="setShowJsonPreview(false)">ЗАКРЫТЬ</button>
          </div>
          <div class="flex-1 p-4 overflow-hidden">
-            <textarea :value="jsonPreviewContent" readonly class="input-base w-full h-full font-mono text-xs p-4" style="background: #000; color: #0f0; border: 1px solid var(--border-color); resize: none;"></textarea>
+            <textarea :value="jsonPreviewContent" readonly class="input-base w-full h-full font-mono text-xs p-4" style="background: var(--bg-sunken); color: var(--success); border: 1px solid var(--border-color); resize: none;"></textarea>
          </div>
       </div>
     </div>

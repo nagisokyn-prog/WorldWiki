@@ -36,7 +36,7 @@
        <XboxWheel v-else-if="item.type === 'select'" :model-value="''" :options="item.options || []" :placeholder="item.placeholder || 'Выберите...'" />
 
        <!-- 3D WHEEL DATE -->
-       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card, rgba(0,0,0,0.2)); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color);">
+       <div v-else-if="item.type === 'calendar_date' || item.type === 'calendar_datetime' || item.type === 'date'" class="date-wheels-container" style="display: flex; gap: 8px; align-items: center; background: var(--bg-card); padding: 6px; border-radius: var(--radius-card); border: 1px solid var(--border-color);">
           <div class="date-wheel-group" style="flex: 1; min-width: 80px;">
              <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-bottom: 4px; text-transform: uppercase;">Год</div>
              <XboxWheel :options="[{ value: '2026', label: '2026' }, { value: '2025', label: '2025' }, { value: '2024', label: '2024' }]" placeholder="Год" />

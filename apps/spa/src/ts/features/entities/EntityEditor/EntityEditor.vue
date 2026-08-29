@@ -14,7 +14,7 @@
       </div>
     </div>
 
-    <div v-else-if="props.entityId === 'preview'" class="history-preview-banner" style="background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: #c4b5fd;">
+    <div v-else-if="props.entityId === 'preview'" class="history-preview-banner" style="background: var(--bg-selected); border-color: var(--border-active); color: var(--accent);">
       <span>🧪 <strong>Песочница:</strong> Предпросмотр кастомной схемы</span>
     </div>
 

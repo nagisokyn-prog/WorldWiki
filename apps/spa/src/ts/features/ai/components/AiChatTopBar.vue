@@ -168,9 +168,9 @@ const formatTokens = (val: number = 0) => {
 
 <style scoped>
 .action-pill-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--text-color, #e6edf3);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
   padding: 4px 10px;
   border-radius: 14px;
   font-size: 12px;
@@ -181,9 +181,9 @@ const formatTokens = (val: number = 0) => {
   transition: all 0.2s ease;
 }
 .action-pill-btn:hover:not(:disabled) {
-  background: rgba(88, 166, 255, 0.15);
-  border-color: #58a6ff;
-  color: #fff;
+  background: var(--bg-selected);
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 .action-pill-btn:disabled {
   opacity: 0.6;
@@ -193,8 +193,8 @@ const formatTokens = (val: number = 0) => {
   padding: 4px 8px;
 }
 .restart-btn:hover {
-  background: rgba(248, 81, 73, 0.15);
-  border-color: #f85149;
-  color: #f85149;
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--error);
+  color: var(--error);
 }
 </style>

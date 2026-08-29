@@ -27,7 +27,7 @@
 
         <div v-for="cf in templateConf.fields || []" :key="'a-' + cf.class" class="mb-3">
           <div class="field-label-row">
-            <label class="form-label-micro" style="color: rgb(167, 139, 250);">{{ cf.label || formatLabel(cf.class || '') }}</label>
+            <label class="form-label-micro" style="color: var(--accent);">{{ cf.label || formatLabel(cf.class || '') }}</label>
           </div>
           
           <template v-if="cf.class === linkClass">
@@ -78,7 +78,7 @@
               </div>
             </div>
             
-            <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: rgba(167, 139, 250, 0.4); color: rgb(167, 139, 250);" @click="addNestedItem(item, subConf)">
+            <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: var(--border-active); color: var(--accent);" @click="addNestedItem(item, subConf)">
               ➕ Добавить
             </button>
             <div v-if="getNestedList(item, subConf).length === 0" class="sub-empty">
@@ -94,7 +94,7 @@
           🔵 СТОРОНА Б ({{ foreignLabel }})
         </div>
 
-        <div v-if="foreignLoading" class="text-xs text-center p-4" style="color: #60a5fa;">
+        <div v-if="foreignLoading" class="text-xs text-center p-4" style="color: var(--info);">
           Загрузка...
         </div>
         <div v-else-if="!foreignItem || !item[linkClass]" class="rel-side-empty">
@@ -103,7 +103,7 @@
         <div v-else>
           <div v-for="cf in templateConf.fields || []" :key="'b-' + cf.class" class="mb-3">
             <div class="field-label-row">
-              <label class="form-label-micro" style="color: rgb(96, 165, 250);">{{ cf.label || formatLabel(cf.class || '') }}</label>
+              <label class="form-label-micro" style="color: var(--info);">{{ cf.label || formatLabel(cf.class || '') }}</label>
             </div>
             
             <template v-if="cf.class === linkClass">
@@ -140,7 +140,7 @@
                   <i class="fas fa-times"></i>
                 </button>
                 <div v-for="nField in getDynamicContainerFields(subConf)" :key="nField.class" class="nested-field-group">
-                  <label class="nested-field-label" style="color: rgba(96, 165, 250, 0.8);">{{ nField.label || formatLabel(nField.class || '') }}</label>
+                  <label class="nested-field-label" style="color: var(--info);">{{ nField.label || formatLabel(nField.class || '') }}</label>
                   <XboxWheel 
                     v-if="nField.type === 'select'" 
                     :model-value="(nItem[nField.class] as string | number) || ''"
@@ -154,7 +154,7 @@
                 </div>
               </div>
               
-              <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: rgba(96, 165, 250, 0.4); color: rgb(96, 165, 250);" @click="addNestedItem(foreignItem, subConf)">
+              <button class="btn-new btn-outline-new interactive-el w-full text-xs" style="border-style: dashed; border-color: var(--border-active); color: var(--info);" @click="addNestedItem(foreignItem, subConf)">
                 ➕ Добавить
               </button>
               

@@ -1,8 +1,8 @@
 .playground-section {
-  background: rgba(0, 0, 0, 0.2) !important;
+  background: var(--bg-sunken) !important;
   border: 1px solid var(--border-color);
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   width: 100%;
 }
 .playground-section-header {
@@ -21,35 +21,35 @@
   margin-bottom: 16px;
   background: var(--bg-input);
   padding: 10px 16px;
-  border-radius: 8px;
-  border: 1px inset rgba(255,255,255,0.05);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
 }
 .glass-select, .glass-input {
-  background: rgba(0,0,0,0.4);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  color: var(--text-color);
+  color: var(--text-main);
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 .month-nav-box {
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(0,0,0,0.2);
-  border-radius: 6px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-xs);
   padding: 4px;
 }
 
 .btn-icon {
   background: transparent;
   border: none;
-  color: var(--text-color);
+  color: var(--text-main);
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 .btn-icon:hover {
-  background: rgba(255,255,255,0.1);
+  background: var(--bg-hover);
 }
 .filters {
   display: flex;
@@ -65,15 +65,15 @@
   user-select: none;
 }
 .calendar-wrapper {
-  background: var(--glass-bg);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 .calendar-grid {
   display: grid;
-  border-top: 1px solid rgba(255,255,255,0.05);
-  border-left: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--border-color);
+  border-left: 1px solid var(--border-color);
 }
 .weekday-header {
   padding: 8px;
@@ -82,25 +82,25 @@
   font-weight: bold;
   color: var(--text-muted);
   text-transform: uppercase;
-  background: rgba(0,0,0,0.3);
-  border-right: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg-sunken);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 .day-cell {
   position: relative;
   min-height: 80px;
   padding: 8px;
-  border-right: 1px solid rgba(255,255,255,0.05);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
 }
 .day-cell:hover:not(.empty-cell) {
-  background: rgba(255,255,255,0.05) !important;
+  background: var(--bg-hover) !important;
 }
 .empty-cell {
-  background: rgba(0,0,0,0.1);
+  background: var(--bg-sunken);
 }
 .day-number {
   font-size: 14px;
@@ -109,7 +109,7 @@
   margin-bottom: 4px;
 }
 .is-holiday {
-  box-shadow: inset 0 0 0 1px rgba(241, 196, 15, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.4);
 }
 .is-origin {
   box-shadow: inset 0 0 0 1px var(--accent-glow);
@@ -118,12 +118,12 @@
   font-size: 16px;
   align-self: flex-start;
   line-height: 1;
-  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 .holiday-text {
   font-size: 10px;
-  color: #f1c40f;
-  background: rgba(241, 196, 15, 0.1);
+  color: var(--warning);
+  background: rgba(245, 158, 11, 0.15);
   padding: 2px 4px;
   border-radius: 3px;
   margin-top: auto;
@@ -141,5 +141,5 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  box-shadow: 0 0 4px rgba(0,0,0,0.5);
+  box-shadow: var(--shadow-sm);
 }

@@ -413,19 +413,19 @@ flowchart TD
 
 ### Phase 1: Интерактивный Tiptap-адаптер
 * [x] Реализация адаптера `Semantic AST ↔ Tiptap JSON`.
-* [ ] Подключение `@tiptap/extension-mathematics` + `katex` (inline и block).
-* [ ] Создание кастомных NodeViews: `FigureNodeView` (ресайз + `figcaption`) и `FootnoteNodeView`.
-* [ ] Подключение типографики: выравнивание по ширине (`justify`), межстрочный интервал, отступы.
+* [x] Подключение `@tiptap/extension-mathematics` + `katex` (inline и block).
+* [x] Создание кастомных NodeViews: `FigureNodeView` (ресайз + `figcaption`), `FootnoteNodeView` и `CrossReferenceNodeView`.
+* [x] Подключение типографики: выравнивание по ширине (`justify`), межстрочный интервал, отступы.
 
 ### Phase 2: Страничный Layout и Линейка
-* [ ] Интеграция `tiptap-pagination-plus` с переключением Write / Page Mode.
-* [ ] Подключение `@devslab/editor-ruler-tiptap` для визуального управления полями и красной строкой (1.25 см).
-* [ ] Настройка колонтитулов и автоматической нумерации страниц.
+* [x] Интеграция `tiptap-pagination-plus` с переключением Write / Page Mode.
+* [x] Подключение `@devslab/editor-ruler-tiptap` для визуального управления полями и красной строкой (1.25 см).
+* [x] Настройка колонтитулов и автоматической нумерации страниц.
 
 ### Phase 3: Академические модули и UI режимов
-* [ ] Боковая панель `AcademicInspector.vue` с перечнем объектов и быстрой вставкой ссылок.
-* [ ] Автоматическое оглавление (`@tiptap/extension-table-of-contents`).
-* [ ] Переключатель профилей оформления (ГОСТ / Книга / Рукопись).
+* [x] Боковая панель `AcademicInspector.vue` с перечнем объектов и быстрой вставкой ссылок.
+* [x] Автоматическое оглавление (`TOC` на базе семантического AST и `NumberingEngine`).
+* [x] Переключатель профилей оформления (ГОСТ / Книга / Рукопись).
 
 ### Phase 4: Мультиформатный экспорт в папку Загрузки
 * [ ] Модуль `DocxExporter` (стили Word, сноски, таблицы) с сохранением в `Downloads`.

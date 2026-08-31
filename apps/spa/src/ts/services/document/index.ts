@@ -14,3 +14,10 @@ export * from './crossref/CrossReferenceResolver';
 // Profiles
 export * from './profiles/types';
 export * from './profiles/defaults';
+
+// Layout Engine
+export * from './layout/types';
+export * from './layout/LayoutEngineService';
+
+// Export Service
+export * from './export/DocumentExportService';

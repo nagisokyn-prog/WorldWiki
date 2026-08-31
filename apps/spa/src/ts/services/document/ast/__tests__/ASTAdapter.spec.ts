@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { normalizeSemanticDocument } from '../ASTNormalizer';
 import { NumberingEngine } from '../../numbering/NumberingEngine';
 import { AcademicGOSTProfile } from '../../profiles/defaults';
 import { ASTAdapter, type TiptapDocJson } from '../ASTAdapter';
@@ -88,7 +89,7 @@ describe('ASTAdapter', () => {
       ]
     };
 
-    const doc = ASTAdapter.tiptapToSemanticAST({ type: 'doc', content: [] }, rawDoc);
+    const doc = normalizeSemanticDocument(rawDoc);
     const ctx = NumberingEngine.compute(doc, AcademicGOSTProfile.numbering);
     const tiptapJson = ASTAdapter.semanticASTToTiptap(doc, ctx, AcademicGOSTProfile.numbering);
 

@@ -189,6 +189,9 @@ importers:
 
   apps/spa:
     dependencies:
+      '@devslab/editor-ruler-tiptap':
+        specifier: ^1.1.0
+        version: 1.1.0(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
       '@formkit/auto-animate':
         specifier: ^0.10.0
         version: 0.10.0
@@ -258,6 +261,9 @@ importers:
       pinia:
         specifier: 4.0.3
         version: 4.0.3(@vue/devtools-api@8.1.5)(typescript@6.0.3)(vue@3.5.39(typescript@6.0.3))
+      tiptap-pagination-plus:
+        specifier: ^3.1.0
+        version: 3.1.0(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))(@tiptap/pm@3.27.4)
       turndown:
         specifier: ^7.2.0
         version: 7.2.4
@@ -599,6 +605,14 @@ packages:
   '@csstools/css-tokenizer@4.0.0':
     resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
     engines: {node: '>=20.19.0'}
+
+  '@devslab/editor-ruler-tiptap@1.1.0':
+    resolution: {integrity: sha512-itmf4vdgFD1dG4dXGvYnVkNuhxQge8SfJzNLYLTSShBeZ7cnyuQ4ggv/MbGckNGgK0CxEbyVjgkzBYikkH0N6A==}
+    peerDependencies:
+      '@tiptap/core': '>=2.0.0'
+
+  '@devslab/editor-ruler@1.1.0':
+    resolution: {integrity: sha512-Y/91c9cFHtGvMHyI6o8ng8hQgso12MBFR3G6gUEGN95FPP5JFpM7qLv7G+jKqlZiCwKameRDRWEwFq1IqFGJFQ==}
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -3627,6 +3641,12 @@ packages:
     resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
     engines: {node: '>=14.0.0'}
 
+  tiptap-pagination-plus@3.1.0:
+    resolution: {integrity: sha512-AGefIt06TsRREG+fF0A8Uhhichz8MHiTt2mgk+hKIKaCqDH5TSTEdqBQmGgXUti1d/R00KSB4X/aAQByzQEFLQ==}
+    peerDependencies:
+      '@tiptap/core': ^2.0.0 || ^3.0.0
+      '@tiptap/pm': ^2.0.0 || ^3.0.0
+
   tldts-core@7.4.8:
     resolution: {integrity: sha512-c1P7u0EhACHj7lPy4MJm8iTFEU8+nB0LCtddH0fhP7noaVoXAqafMtOOeX+ulpuPBqnrRgRhw494RICT3mbhnw==}
 
@@ -4539,6 +4559,13 @@ snapshots:
       css-tree: 3.2.1
 
   '@csstools/css-tokenizer@4.0.0': {}
+
+  '@devslab/editor-ruler-tiptap@1.1.0(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))':
+    dependencies:
+      '@devslab/editor-ruler': 1.1.0
+      '@tiptap/core': 3.27.4(@tiptap/pm@3.27.4)
+
+  '@devslab/editor-ruler@1.1.0': {}
 
   '@emnapi/core@1.11.1':
     dependencies:
@@ -7527,6 +7554,11 @@ snapshots:
       picomatch: 4.0.5
 
   tinyrainbow@3.1.0: {}
+
+  tiptap-pagination-plus@3.1.0(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))(@tiptap/pm@3.27.4):
+    dependencies:
+      '@tiptap/core': 3.27.4(@tiptap/pm@3.27.4)
+      '@tiptap/pm': 3.27.4
 
   tldts-core@7.4.8: {}
 

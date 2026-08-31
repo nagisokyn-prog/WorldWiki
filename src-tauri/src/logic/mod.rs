@@ -3,6 +3,7 @@ pub mod batch;
 pub mod calendar_math;
 pub mod chapters;
 pub mod connections;
+pub mod documents;
 pub mod entities;
 pub mod export;
 pub mod models;

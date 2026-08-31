@@ -68,6 +68,7 @@ pub fn run() {
     use logic::batch::*;
     use logic::chapters::*;
     use logic::connections::*;
+    use logic::documents::commands::*;
     use logic::entities::*;
     use logic::export::*;
     use logic::models::*;
@@ -137,6 +138,10 @@ pub fn run() {
             save_global_timeline,
             // --- Экспорт и История ---
             export_chapters,
+            export_document_docx,
+            export_document_epub,
+            export_document_fb2,
+            export_document_pdf_save,
             create_cloud_backup,
             exchange_yandex_token,
             upload_to_yandex_disk,

@@ -1,0 +1,71 @@
+.ww-footnote-node {
+  display: inline-flex;
+  align-items: baseline;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ww-footnote-badge {
+  font-size: 0.75em;
+  line-height: 1;
+  vertical-align: super;
+  font-weight: 700;
+  color: var(--accent-primary, #6366f1);
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  transition: all 0.2s ease;
+}
+
+.ww-footnote-node:hover .ww-footnote-badge,
+.ww-footnote-node.is-active .ww-footnote-badge {
+  background: var(--accent-primary, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+
+.ww-footnote-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 50;
+  width: 280px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: var(--bg-surface, #1e293b);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+  border-radius: var(--radius-sm, 6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+}
+
+.ww-footnote-popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+}
+
+.ww-footnote-textarea {
+  width: 100%;
+  background: var(--bg-canvas, #0f172a);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 4px;
+  color: var(--text-primary, #f1f5f9);
+  font-size: 12px;
+  padding: 6px 8px;
+  resize: vertical;
+  min-height: 60px;
+  outline: none;
+  font-family: inherit;
+}
+
+.ww-footnote-textarea:focus {
+  border-color: var(--accent-primary, #6366f1);
+}

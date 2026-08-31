@@ -10,6 +10,11 @@
   justify-content: space-between;
   align-items: center;
   min-height: 22px;
+  margin-bottom: 2px;
+}
+
+.mpp-header-no-label {
+  justify-content: flex-end;
 }
 
 .mpp-label {

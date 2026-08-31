@@ -1,0 +1,35 @@
+.ww-crossref-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--accent-primary, #6366f1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.ww-crossref-node:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--accent-primary, #6366f1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+}
+
+.ww-crossref-node.is-broken {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  text-decoration: line-through;
+}
+
+.ww-crossref-icon {
+  font-size: 0.85em;
+  opacity: 0.8;
+}

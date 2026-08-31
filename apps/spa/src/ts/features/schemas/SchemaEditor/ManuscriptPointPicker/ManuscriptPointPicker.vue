@@ -1,6 +1,6 @@
 <template>
   <div class="manuscript-point-picker" :class="{ 'mpp-disabled': props.disabled }">
-    <div v-if="props.label || props.allowAutoExtend" class="mpp-header">
+    <div v-if="props.label || props.allowAutoExtend" class="mpp-header" :class="{ 'mpp-header-no-label': !props.label }">
       <span v-if="props.label" class="mpp-label">{{ props.label }}</span>
       <button
         v-if="props.allowAutoExtend"

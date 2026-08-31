@@ -112,6 +112,30 @@ figcaption { font-size: 0.9em; color: #555; }
                 }
                 html.push_str("  </blockquote>\n");
             }
+            "table" => {
+                html.push_str("  <table class=\"doc-table\">\n");
+                if let Some(rows) = block.get("rows").and_then(|v| v.as_array()) {
+                    for row in rows {
+                        html.push_str("    <tr>\n");
+                        if let Some(cells) = row.get("cells").and_then(|v| v.as_array()) {
+                            for cell in cells {
+                                let text = if let Some(cell_content) = cell.get("content").and_then(|v| v.as_array()) {
+                                    cell_content
+                                        .iter()
+                                        .map(|item| extract_inline_text(item.get("content")))
+                                        .collect::<Vec<_>>()
+                                        .join(" ")
+                                } else {
+                                    extract_inline_text(cell.get("content"))
+                                };
+                                html.push_str(&format!("      <td>{}</td>\n", escape_html(&text)));
+                            }
+                        }
+                        html.push_str("    </tr>\n");
+                    }
+                }
+                html.push_str("  </table>\n");
+            }
             _ => {}
         }
     }
@@ -248,7 +272,20 @@ fn extract_inline_text_with_footnotes(
             let node_type = node.get("type").and_then(|t| t.as_str()).unwrap_or("");
             if node_type == "text" {
                 if let Some(text) = node.get("text").and_then(|t| t.as_str()) {
-                    out.push_str(&escape_html(text));
+                    let mut formatted = escape_html(text);
+                    if let Some(marks) = node.get("marks").and_then(|m| m.as_array()) {
+                        for m in marks {
+                            if let Some(mt) = m.get("type").and_then(|t| t.as_str()) {
+                                match mt {
+                                    "bold" => formatted = format!("<strong>{}</strong>", formatted),
+                                    "italic" => formatted = format!("<em>{}</em>", formatted),
+                                    "code" => formatted = format!("<code>{}</code>", formatted),
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                    out.push_str(&formatted);
                 }
             } else if node_type == "footnote_reference" {
                 let note_idx = footnotes.len() + 1;

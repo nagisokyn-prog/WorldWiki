@@ -13,6 +13,8 @@ export interface TiptapStateProps {
   [key: string]: unknown;
 }
 
+export type EditorMode = 'wysiwyg' | 'markdown' | 'split' | 'word';
+
 export function useTiptapState(
   props: TiptapStateProps,
   emit: (event: string, ...args: unknown[]) => void,
@@ -23,27 +25,28 @@ export function useTiptapState(
   const modeOptions = [
     { value: 'wysiwyg', label: '📝 WYSIWYG' },
     { value: 'markdown', label: '✏️ Markdown' },
-    { value: 'split', label: '📑 Split View' }
+    { value: 'split', label: '📑 Split View' },
+    { value: 'word', label: '📄 Word (А4)' }
   ];
 
   const getStateKey = () => `editor-state-${props.project}-${props.title}`.replace(/[^a-zA-Z0-9_-]/g, '_');
 
-  const loadInitialMode = (): 'wysiwyg' | 'markdown' | 'split' => {
+  const loadInitialMode = (): EditorMode => {
     const saved = localStorage.getItem(getStateKey());
     if (saved) {
       try {
         const { mode } = JSON.parse(saved);
-        if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split') {
+        if (mode === 'wysiwyg' || mode === 'markdown' || mode === 'split' || mode === 'word') {
           return mode;
         }
       } catch {
         // ignore
       }
     }
-    return (localStorage.getItem('default-editor-mode') as 'wysiwyg' | 'markdown' | 'split') || 'wysiwyg';
+    return (localStorage.getItem('default-editor-mode') as EditorMode) || 'wysiwyg';
   };
 
-  const editorMode = ref<'wysiwyg' | 'markdown' | 'split'>(loadInitialMode());
+  const editorMode = ref<EditorMode>(loadInitialMode());
   const settings = ref<AppSettings | null>(settingsService.getSettings());
   const ctrlPressed = ref(false);
 

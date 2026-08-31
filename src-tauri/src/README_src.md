@@ -63,6 +63,13 @@ src-tauri/src/
 │   ├── export/          # Бэкапы .wwiki, Yandex Disk, восстановление (резня)
 │   │   ├── mod.rs       # create_cloud_backup_inner, restore_from_backup_inner
 │   │   └── commands.rs  # + Yandex OAuth/Disk команды
+│   ├── documents/       # Академический процессор и мультиформатный экспорт
+│   │   ├── mod.rs       # Re-экспорт подмодулей
+│   │   ├── commands.rs  # Tauri IPC команды (export_document_docx/epub/fb2/pdf_save)
+│   │   ├── docx.rs      # Генератор Word OpenXML (ГОСТ 7.32, TNR 14pt, 1.5 интервал, 1.25 см отступ, таблицы, сноски)
+│   │   ├── epub.rs      # Генератор EPUB 3.3 (mimetype STORED, container.xml, content.opf, toc.xhtml, XHTML5, CSS)
+│   │   ├── fb2.rs       # Генератор FictionBook 2.0 XML (title-info, секции, цитаты, примечания в body notes)
+│   │   └── models.rs    # DTO запросов и ответов (ExportDocumentRequest, ExportDocumentResponse)
 │   ├── batch/           # Пакетные операции, транзакции (резня)
 │   │   ├── mod.rs
 │   │   └── commands.rs
@@ -251,6 +258,25 @@ pub mod volumes;
 | `get_launch_args` | Аргументы запуска (файл `.wwiki` для ассоциации) |
 
 **Зависимости**: `reqwest`, `zip`, `chrono`, Tauri `AppHandle` для путей.
+
+---
+
+### `logic/documents/`
+**Назначение**: Семантический текстовый процессор и мультиформатный экспорт академических документов (курсовых, дипломных работ, отчетов НИР) и художественных книг напрямую в системную папку пользователя `Downloads`.
+
+**Команды**:
+| Команда | Описание |
+|---------|----------|
+| `export_document_docx` | Экспорт в Microsoft Word (.docx OpenXML) со строгим соблюдением ГОСТ 7.32 (TNR 14pt, полуторный интервал, абзацный отступ 1.25 см, поля 30/10/20/20 мм, таблицы, рисунки, сноски) |
+| `export_document_epub` | Экспорт в электронную книгу EPUB 3.3 по спецификации IDPF (STORED mimetype, OEBPS-манифест, навигация toc.xhtml, сноски epub:type="footnote") |
+| `export_document_fb2` | Экспорт в FictionBook 2.0 (.fb2 XML) с валидной схемой, метаданными title-info, секциями и телом примечаний `<body name="notes">` |
+| `export_document_pdf_save` | Хук сохранения векторного PDF с подтверждением пути в Downloads |
+
+**Особенности**:
+- Автономная генерация без внешних сторонних утилит (pandoc, libreoffice).
+- Сборка валидных ZIP-пакетов через `zip::ZipWriter` со сжатием `CompressionMethod::Deflated` и сохранением первого файла `mimetype` в режиме `CompressionMethod::Stored`.
+- Санитизация опасных символов ОС (`/ \ : * ? " < > |`) и защита от Path Traversal.
+- Интеграционные тесты вынесены в `tests/document_export_integration.rs`.
 
 ---
 
@@ -502,6 +528,7 @@ flowchart TD
     logic_mod --> volumes[volumes.rs]
     logic_mod --> connections[connections.rs]
     logic_mod --> export[export.rs]
+    logic_mod --> documents[documents/mod.rs]
     logic_mod --> batch[batch.rs]
     logic_mod --> models[models.rs]
     logic_mod --> schema[schema.rs]
@@ -522,6 +549,7 @@ flowchart TD
     volumes --> models
     connections --> models
     export --> models
+    documents --> models
     batch --> models
     calendar --> models
     
@@ -586,6 +614,7 @@ flowchart TD
     Commands --> Volumes
     Commands --> Connections
     Commands --> Export
+    Commands --> Documents
     Commands --> Batch
     Commands --> AI
     
@@ -595,6 +624,7 @@ flowchart TD
     Volumes --> Models
     Connections --> Models
     Export --> Models
+    Documents --> Models
     Batch --> Models
     AI --> Models
     
@@ -654,6 +684,7 @@ classDiagram
         +volumes::*
         +connections::*
         +export::*
+        +documents::*
         +batch::*
         +tauri_shell::system::*
     }

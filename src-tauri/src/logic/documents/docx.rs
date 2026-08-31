@@ -107,6 +107,8 @@ pub fn generate_docx(
         escape_xml(&request.title)
     ));
 
+    let mut footnotes: Vec<(usize, String)> = Vec::new();
+
     for block in &request.blocks {
         let block_type = block.get("type").and_then(|v| v.as_str()).unwrap_or("");
         match block_type {
@@ -129,26 +131,30 @@ pub fn generate_docx(
                 ));
             }
             "paragraph" => {
-                let runs = extract_docx_runs(block.get("content"));
+                let runs = extract_docx_runs(block.get("content"), &mut footnotes);
                 doc_xml.push_str("    <w:p>\n");
                 doc_xml.push_str(
                     "      <w:pPr><w:ind w:firstLine=\"709\"/><w:jc w:val=\"both\"/></w:pPr>\n",
                 );
-                for (is_bold, is_italic, text) in runs {
+                for run in runs {
                     doc_xml.push_str("      <w:r>\n");
-                    if is_bold || is_italic {
+                    let has_rpr = run.is_bold || run.is_italic || run.is_superscript;
+                    if has_rpr {
                         doc_xml.push_str("        <w:rPr>");
-                        if is_bold {
+                        if run.is_bold {
                             doc_xml.push_str("<w:b/>");
                         }
-                        if is_italic {
+                        if run.is_italic {
                             doc_xml.push_str("<w:i/>");
+                        }
+                        if run.is_superscript {
+                            doc_xml.push_str("<w:vertAlign w:val=\"superscript\"/>");
                         }
                         doc_xml.push_str("</w:rPr>\n");
                     }
                     doc_xml.push_str(&format!(
                         "        <w:t xml:space=\"preserve\">{}</w:t>\n",
-                        escape_xml(&text)
+                        escape_xml(&run.text)
                     ));
                     doc_xml.push_str("      </w:r>\n");
                 }
@@ -168,7 +174,82 @@ pub fn generate_docx(
                     escape_xml(&caption)
                 ));
             }
+            "quote" => {
+                let text = if let Some(items) = block.get("content").and_then(|v| v.as_array()) {
+                    items
+                        .iter()
+                        .map(|item| {
+                            if item.get("type").and_then(|v| v.as_str()) == Some("paragraph") {
+                                extract_inline_text(item.get("content"))
+                            } else {
+                                extract_inline_text(Some(item))
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                } else {
+                    extract_inline_text(block.get("content"))
+                };
+                doc_xml.push_str(&format!(
+                    r#"    <w:p>
+      <w:pPr>
+        <w:pBdr><w:left w:val="single" w:sz="12" w:space="4" w:color="888888"/></w:pBdr>
+        <w:ind w:left="709" w:firstLine="0"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr><w:i/></w:rPr>
+        <w:t>{}</w:t>
+      </w:r>
+    </w:p>
+"#,
+                    escape_xml(&text)
+                ));
+            }
+            "table" => {
+                doc_xml.push_str("    <w:tbl>\n");
+                doc_xml.push_str("      <w:tblPr><w:tblBorders><w:top w:val=\"single\" w:sz=\"4\"/><w:bottom w:val=\"single\" w:sz=\"4\"/><w:insideH w:val=\"single\" w:sz=\"4\"/><w:insideV w:val=\"single\" w:sz=\"4\"/></w:tblBorders></w:tblPr>\n");
+                if let Some(rows) = block.get("rows").and_then(|v| v.as_array()) {
+                    for row in rows {
+                        doc_xml.push_str("      <w:tr>\n");
+                        if let Some(cells) = row.get("cells").and_then(|v| v.as_array()) {
+                            for cell in cells {
+                                let text = if let Some(cell_content) = cell.get("content").and_then(|v| v.as_array()) {
+                                    cell_content
+                                        .iter()
+                                        .map(|item| extract_inline_text(item.get("content")))
+                                        .collect::<Vec<_>>()
+                                        .join(" ")
+                                } else {
+                                    extract_inline_text(cell.get("content"))
+                                };
+                                doc_xml.push_str(&format!(
+                                    "        <w:tc><w:p><w:r><w:t>{}</w:t></w:r></w:p></w:tc>\n",
+                                    escape_xml(&text)
+                                ));
+                            }
+                        }
+                        doc_xml.push_str("      </w:tr>\n");
+                    }
+                }
+                doc_xml.push_str("    </w:tbl>\n");
+            }
             _ => {}
+        }
+    }
+
+    if !footnotes.is_empty() {
+        doc_xml.push_str("    <w:p><w:pPr><w:pBdr><w:top w:val=\"single\" w:sz=\"6\" w:space=\"1\" w:color=\"auto\"/></w:pBdr></w:pPr></w:p>\n");
+        for (idx, fn_text) in &footnotes {
+            doc_xml.push_str(&format!(
+                r#"    <w:p>
+      <w:pPr><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="20"/></w:rPr></w:pPr>
+      <w:r><w:rPr><w:vertAlign w:val="superscript"/><w:sz w:val="20"/></w:rPr><w:t>[{}] </w:t></w:r>
+      <w:r><w:rPr><w:sz w:val="20"/></w:rPr><w:t>{}</w:t></w:r>
+    </w:p>
+"#,
+                idx,
+                escape_xml(fn_text)
+            ));
         }
     }
 
@@ -230,14 +311,43 @@ fn extract_inline_text(val: Option<&serde_json::Value>) -> String {
     out
 }
 
-fn extract_docx_runs(val: Option<&serde_json::Value>) -> Vec<(bool, bool, String)> {
+struct DocxRun {
+    is_bold: bool,
+    is_italic: bool,
+    is_superscript: bool,
+    text: String,
+}
+
+fn extract_docx_runs(
+    val: Option<&serde_json::Value>,
+    footnotes: &mut Vec<(usize, String)>,
+) -> Vec<DocxRun> {
     let mut runs = Vec::new();
     if let Some(arr) = val.and_then(|v| v.as_array()) {
         for node in arr {
+            let node_type = node.get("type").and_then(|t| t.as_str()).unwrap_or("");
+            if node_type == "footnote_reference" {
+                let note_idx = footnotes.len() + 1;
+                let note_content = extract_inline_text(node.get("content"));
+                footnotes.push((note_idx, note_content));
+                runs.push(DocxRun {
+                    is_bold: false,
+                    is_italic: false,
+                    is_superscript: true,
+                    text: format!("[{}]", note_idx),
+                });
+                continue;
+            }
+
             let text = node.get("text").and_then(|t| t.as_str()).unwrap_or("");
             if text.is_empty() {
                 if let Some(label) = node.get("resolvedLabel").and_then(|l| l.as_str()) {
-                    runs.push((false, false, label.to_string()));
+                    runs.push(DocxRun {
+                        is_bold: false,
+                        is_italic: false,
+                        is_superscript: false,
+                        text: label.to_string(),
+                    });
                 }
                 continue;
             }
@@ -258,7 +368,12 @@ fn extract_docx_runs(val: Option<&serde_json::Value>) -> Vec<(bool, bool, String
                 }
             }
 
-            runs.push((is_bold, is_italic, text.to_string()));
+            runs.push(DocxRun {
+                is_bold,
+                is_italic,
+                is_superscript: false,
+                text: text.to_string(),
+            });
         }
     }
     runs

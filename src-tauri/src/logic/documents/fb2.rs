@@ -156,11 +156,23 @@ fn extract_inline_text_with_footnotes(
             let node_type = node.get("type").and_then(|t| t.as_str()).unwrap_or("");
             if node_type == "text" {
                 if let Some(text) = node.get("text").and_then(|t| t.as_str()) {
-                    out.push_str(&escape_xml(text));
+                    let mut formatted = escape_xml(text);
+                    if let Some(marks) = node.get("marks").and_then(|m| m.as_array()) {
+                        for m in marks {
+                            if let Some(mt) = m.get("type").and_then(|t| t.as_str()) {
+                                if mt == "bold" {
+                                    formatted = format!("<strong>{}</strong>", formatted);
+                                } else if mt == "italic" {
+                                    formatted = format!("<emphasis>{}</emphasis>", formatted);
+                                }
+                            }
+                        }
+                    }
+                    out.push_str(&formatted);
                 }
             } else if node_type == "footnote_reference" {
                 let note_idx = footnotes.len() + 1;
-                let note_id = format!("n{}", note_idx);
+                let note_id = format!("fn-{}", note_idx);
                 let note_content = extract_inline_text(node.get("content"));
                 footnotes.push((note_id.clone(), note_content));
                 out.push_str(&format!("<a type=\"note\" l:href=\"#{}\">[{}]</a>", note_id, note_idx));

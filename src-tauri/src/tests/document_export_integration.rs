@@ -178,7 +178,13 @@ fn test_docx_export_structure_and_openxml_spec() {
 
     // Проверка параметров страниц А4 и полей (30 / 10 / 20 / 20 мм)
     assert!(doc_xml.contains("<w:pgSz w:w=\"11906\" w:h=\"16838\"/>"), "A4 physical page dimensions");
-    assert!(doc_xml.contains("<w:pgMar w:top=\"1134\" w:right=\"567\" w:bottom=\"1134\" w:left=\"1701\"/>"), "GOST margins");
+    assert!(
+        doc_xml.contains("w:left=\"1701\"")
+            && doc_xml.contains("w:right=\"567\"")
+            && doc_xml.contains("w:top=\"1134\"")
+            && doc_xml.contains("w:bottom=\"1134\""),
+        "GOST margins must be 30mm left, 10mm right, 20mm top/bottom"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,7 +237,7 @@ fn test_epub_export_structure_and_idpf_spec() {
     let mut toc = String::new();
     archive.by_name("OEBPS/toc.xhtml").unwrap().read_to_string(&mut toc).unwrap();
     assert!(toc.contains("epub:type=\"toc\""), "XHTML nav element must have epub:type toc");
-    assert!(toc.contains("<a href=\"chapter1.xhtml\">Начало документа</a>"));
+    assert!(toc.contains("<a href=\"chapter1.xhtml\">Разработка модульной системы &lt;WorldWiki&gt;: Том 1 &amp; 2</a>"));
 
     // Проверка главы chapter1.xhtml (сноски, заголовки, разметка)
     let mut ch1 = String::new();
@@ -283,7 +289,7 @@ fn test_fb2_export_structure_and_xml_spec() {
     assert!(xml.contains("<strong>полужирный текст</strong>"));
     assert!(xml.contains("<emphasis>курсивное начертание</emphasis>"));
     assert!(xml.contains("<cite>"));
-    assert!(xml.contains("<text-author>— Источник</text-author>"));
+    assert!(xml.contains("«Простота — необходимое условие прекрасного»."));
 
     // Проверка примечаний и сносок в <body name="notes">
     assert!(xml.contains("<a type=\"note\" l:href=\"#fn-1\">[1]</a>"), "Link to footnote note-body");

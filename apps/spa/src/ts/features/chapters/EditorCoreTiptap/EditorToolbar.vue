@@ -8,7 +8,7 @@
         @update:model-value="$emit('update:editorMode', $event)" 
       />
 
-      <div v-if="editorMode === 'wysiwyg' || editorMode === 'split'" class="toolbar-actions">
+      <div v-if="editorMode === 'wysiwyg' || editorMode === 'split' || editorMode === 'word'" class="toolbar-actions">
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('bold') }" title="Жирный (Ctrl+B)" @click="commands.toggleBold?.()"><b>B</b></button>
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('italic') }" title="Курсив (Ctrl+I)" @click="commands.toggleItalic?.()"><i>I</i></button>
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('strike') }" title="Зачеркнутый" @click="commands.toggleStrike?.()"><s>S</s></button>
@@ -35,6 +35,13 @@
 
     <!-- RIGHT: Save / Actions -->
     <div class="toolbar-right-group">
+      <button 
+        class="btn btn-small btn-outline interactive-el btn-export-doc" 
+        title="Экспорт главы (Word DOCX, PDF, EPUB, FB2)" 
+        @click="$emit('export')"
+      >
+        <i class="fas fa-file-export"></i> Экспорт
+      </button>
       <button 
         v-if="settings?.editor?.requireCtrlForLinks" 
         class="btn btn-small btn-outline interactive-el btn-link-lock" 
@@ -96,7 +103,7 @@ defineProps<{
   commands: EditorCommands;
 }>();
 
-defineEmits(['update:editorMode', 'save', 'toggle-history']);
+defineEmits(['update:editorMode', 'save', 'toggle-history', 'export']);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/EditorToolbar.css"></style>

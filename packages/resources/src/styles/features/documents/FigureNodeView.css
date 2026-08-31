@@ -22,14 +22,14 @@
   position: relative;
   display: inline-block;
   max-width: 100%;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow var(--anim-speed) ease;
 }
 
 .ww-figure-wrapper.is-selected {
-  outline: 2px solid var(--accent-primary, #6366f1);
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.35);
+  outline: 2px solid var(--accent);
+  box-shadow: var(--shadow-glow);
 }
 
 .ww-figure-image {
@@ -45,12 +45,12 @@
   gap: 6px;
   margin-top: 8px;
   font-size: 12px;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-muted);
 }
 
 .ww-figure-prefix {
   font-weight: 700;
-  color: var(--text-primary, #f1f5f9);
+  color: var(--text-heading);
   white-space: nowrap;
 }
 
@@ -64,12 +64,12 @@
   outline: none;
   padding: 2px 4px;
   min-width: 140px;
-  transition: border-color 0.2s ease;
+  transition: border-color var(--anim-speed) ease;
 }
 
 .ww-figure-caption-input:focus {
-  border-bottom-color: var(--accent-primary, #6366f1);
-  color: var(--text-primary, #f1f5f9);
+  border-bottom-color: var(--accent);
+  color: var(--text-main);
 }
 
 .ww-figure-resizer {
@@ -78,12 +78,12 @@
   bottom: 4px;
   width: 14px;
   height: 14px;
-  background: var(--accent-primary, #6366f1);
-  border: 2px solid #ffffff;
-  border-radius: 3px;
+  background: var(--accent);
+  border: 2px solid var(--accent-text);
+  border-radius: var(--radius-xs);
   cursor: se-resize;
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--anim-speed) ease;
 }
 
 .ww-figure-wrapper:hover .ww-figure-resizer,

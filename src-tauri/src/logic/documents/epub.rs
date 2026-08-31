@@ -1,9 +1,9 @@
+use super::models::{ExportDocumentRequest, ExportDocumentResponse};
 use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
 use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
-use super::models::{ExportDocumentRequest, ExportDocumentResponse};
 
 pub fn generate_epub(
     request: &ExportDocumentRequest,
@@ -20,7 +20,7 @@ pub fn generate_epub(
 
     // 1. mimetype (Must be first, uncompressed)
     let stored_options = SimpleFileOptions::default()
-        .compression_method(CompressionMethod::STORED)
+        .compression_method(CompressionMethod::Stored)
         .unix_permissions(0o644);
     zip.start_file("mimetype", stored_options)
         .map_err(|e| e.to_string())?;
@@ -28,7 +28,7 @@ pub fn generate_epub(
         .map_err(|e| e.to_string())?;
 
     let deflated_options = SimpleFileOptions::default()
-        .compression_method(CompressionMethod::DEFLATED)
+        .compression_method(CompressionMethod::Deflated)
         .unix_permissions(0o644);
 
     // 2. META-INF/container.xml
@@ -65,7 +65,10 @@ figcaption { font-size: 0.9em; color: #555; }
     html.push_str("<!DOCTYPE html>\n");
     html.push_str("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:epub=\"http://www.idpf.org/2007/ops\">\n");
     html.push_str("<head>\n");
-    html.push_str(&format!("  <title>{}</title>\n", escape_html(&request.title)));
+    html.push_str(&format!(
+        "  <title>{}</title>\n",
+        escape_html(&request.title)
+    ));
     html.push_str("  <link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\"/>\n");
     html.push_str("</head>\n<body>\n");
     html.push_str(&format!("  <h1>{}</h1>\n", escape_html(&request.title)));
@@ -78,16 +81,25 @@ figcaption { font-size: 0.9em; color: #555; }
             "heading" => {
                 let level = block.get("level").and_then(|l| l.as_u64()).unwrap_or(2);
                 let title_text = extract_inline_text(block.get("content"));
-                html.push_str(&format!("  <h{}>{}</h{}>\n", level, escape_html(&title_text), level));
+                html.push_str(&format!(
+                    "  <h{}>{}</h{}>\n",
+                    level,
+                    escape_html(&title_text),
+                    level
+                ));
             }
             "paragraph" => {
-                let p_text = extract_inline_text_with_footnotes(block.get("content"), &mut footnotes);
+                let p_text =
+                    extract_inline_text_with_footnotes(block.get("content"), &mut footnotes);
                 html.push_str(&format!("  <p>{}</p>\n", p_text));
             }
             "figure" => {
                 let caption = extract_inline_text(block.get("captionContent"));
                 html.push_str("  <figure>\n");
-                html.push_str(&format!("    <figcaption>{}</figcaption>\n", escape_html(&caption)));
+                html.push_str(&format!(
+                    "    <figcaption>{}</figcaption>\n",
+                    escape_html(&caption)
+                ));
                 html.push_str("  </figure>\n");
             }
             "quote" => {
@@ -108,7 +120,12 @@ figcaption { font-size: 0.9em; color: #555; }
         html.push_str("  <section class=\"footnote\" epub:type=\"footnotes\">\n");
         html.push_str("    <h3>Примечания</h3>\n");
         for (note_id, note_text) in footnotes {
-            html.push_str(&format!("    <aside id=\"{}\" epub:type=\"footnote\"><p><b>[{}]</b> {}</p></aside>\n", note_id, note_id, escape_html(&note_text)));
+            html.push_str(&format!(
+                "    <aside id=\"{}\" epub:type=\"footnote\"><p><b>[{}]</b> {}</p></aside>\n",
+                note_id,
+                note_id,
+                escape_html(&note_text)
+            ));
         }
         html.push_str("  </section>\n");
     }
@@ -135,7 +152,8 @@ figcaption { font-size: 0.9em; color: #555; }
 </html>"#,
         escape_html(&request.title)
     );
-    zip.write_all(toc_xhtml.as_bytes()).map_err(|e| e.to_string())?;
+    zip.write_all(toc_xhtml.as_bytes())
+        .map_err(|e| e.to_string())?;
 
     // 6. OEBPS/content.opf
     zip.start_file("OEBPS/content.opf", deflated_options)
@@ -237,9 +255,15 @@ fn extract_inline_text_with_footnotes(
                 let note_id = format!("fn{}", note_idx);
                 let note_content = extract_inline_text(node.get("content"));
                 footnotes.push((note_id.clone(), note_content));
-                out.push_str(&format!("<a epub:type=\"noteref\" href=\"#{}\">[{}]</a>", note_id, note_idx));
+                out.push_str(&format!(
+                    "<a epub:type=\"noteref\" href=\"#{}\">[{}]</a>",
+                    note_id, note_idx
+                ));
             } else if node_type == "cross_reference" {
-                let label = node.get("resolvedLabel").and_then(|l| l.as_str()).unwrap_or("ссылка");
+                let label = node
+                    .get("resolvedLabel")
+                    .and_then(|l| l.as_str())
+                    .unwrap_or("ссылка");
                 out.push_str(&escape_html(label));
             }
         }

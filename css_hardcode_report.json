@@ -1,25 +1,42 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 34,
-  "fixedCount": 1025,
-  "introducedCount": 3,
-  "trendPercent": "96.8",
+  "currentDebt": 63,
+  "fixedCount": 1027,
+  "introducedCount": 34,
+  "trendPercent": "94.1",
   "categories": {
-    "blackColors": 0,
-    "whiteColors": 0,
-    "hexColors": 0,
+    "blackColors": 5,
+    "whiteColors": 11,
+    "hexColors": 11,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 34
+    "inlineStyles": 36
   },
   "semanticRoles": {
     "modalBackdrops": 0,
     "sunkenBackgrounds": 0,
-    "borders": 0,
-    "text": 0
+    "borders": 8,
+    "text": 9
   },
-  "topCssFiles": [],
+  "topCssFiles": [
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "count": 18
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "count": 9
+    }
+  ],
   "allTopFiles": [
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "count": 18
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "count": 9
+    },
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
       "count": 3
@@ -71,17 +88,171 @@
     {
       "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
       "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue",
-      "count": 1
     }
   ],
   "violations": [
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 23,
+      "match": "rgba(255, 255, 255, 0.035)",
+      "snippet": "background: var(--bg-surface, rgba(255, 255, 255, 0.035));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 24,
+      "match": "rgba(255, 255, 255, 0.08)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 27,
+      "match": "rgba(0, 0, 0, 0.2)",
+      "snippet": "box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 27,
+      "match": "rgba(0, 0, 0, 0.1)",
+      "snippet": "box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 36,
+      "match": "rgba(255, 255, 255, 0.1)",
+      "snippet": "background: var(--border-color, rgba(255, 255, 255, 0.1));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 59,
+      "match": "rgba(255, 255, 255, 0.03)",
+      "snippet": "background: rgba(255, 255, 255, 0.03);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 60,
+      "match": "rgba(255, 255, 255, 0.06)",
+      "snippet": "border: 1px solid rgba(255, 255, 255, 0.06);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 61,
+      "match": "#cbd5e1",
+      "snippet": "color: var(--text-secondary, #cbd5e1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 67,
+      "match": "rgba(0, 0, 0, 0.12)",
+      "snippet": "box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 71,
+      "match": "rgba(255, 255, 255, 0.1)",
+      "snippet": "background: var(--bg-hover, rgba(255, 255, 255, 0.1));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 72,
+      "match": "rgba(255, 255, 255, 0.2)",
+      "snippet": "border-color: rgba(255, 255, 255, 0.2);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 73,
+      "match": "#ffffff",
+      "snippet": "color: var(--text-main, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 75,
+      "match": "rgba(0, 0, 0, 0.25)",
+      "snippet": "box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 80,
+      "match": "rgba(0, 0, 0, 0.3)",
+      "snippet": "box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 85,
+      "match": "#6366f1",
+      "snippet": "background: var(--accent, #6366f1) !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 86,
+      "match": "#6366f1",
+      "snippet": "border-color: var(--accent, #6366f1) !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 87,
+      "match": "#ffffff",
+      "snippet": "color: #ffffff !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "line": 95,
+      "match": "#f87171",
+      "snippet": "color: #f87171 !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 25,
+      "match": "#94a3b8",
+      "snippet": "color: var(--text-muted, #94a3b8);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 36,
+      "match": "rgba(255, 255, 255, 0.12)",
+      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 37,
+      "match": "rgba(255, 255, 255, 0.04)",
+      "snippet": "background: var(--bg-surface, rgba(255, 255, 255, 0.04));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 38,
+      "match": "#cbd5e1",
+      "snippet": "color: var(--text-secondary, #cbd5e1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 45,
+      "match": "#6366f1",
+      "snippet": "border-color: var(--accent-primary, #6366f1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 46,
+      "match": "#6366f1",
+      "snippet": "color: var(--accent-primary, #6366f1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 52,
+      "match": "#6366f1",
+      "snippet": "border-color: var(--accent-primary, #6366f1);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 53,
+      "match": "#a5b4fc",
+      "snippet": "color: #a5b4fc;"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+      "line": 79,
+      "match": "#64748b",
+      "snippet": "color: var(--text-muted, #64748b);"
+    },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
       "line": 32,
@@ -149,14 +320,26 @@
       "snippet": "style=\"{ '--indent-pl': (12 + item.indent * 20) + 'px' }\""
     },
     {
+      "file": "apps/spa/src/ts/features/documents/AcademicInspector/AcademicInspector.vue",
+      "line": 68,
+      "match": "inline-style",
+      "snippet": "style=\"{ paddingLeft: `${((h.level || 1) - 1) * 12 + 8}px` }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/documents/nodes/FigureNode/FigureNodeView.vue",
+      "line": 10,
+      "match": "inline-style",
+      "snippet": "style=\"{ width }\""
+    },
+    {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "line": 140,
+      "line": 147,
       "match": "inline-style",
       "snippet": "style=\"{ '--z-stack': 100 - cIdx }\""
     },
     {
       "file": "apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-      "line": 185,
+      "line": 192,
       "match": "inline-style",
       "snippet": "style=\"{ '--z-item': 50 - idx }\""
     },

@@ -12,8 +12,8 @@ export class LayoutEngineService {
    * Computes physical page dimensions and margins in pixels.
    */
   public static computeDimensions(page: PageProfile): ComputedPageDimensions {
-    let widthMm = 210;
-    let heightMm = 297;
+    let widthMm: number;
+    let heightMm: number;
 
     switch (page.format) {
       case 'A4':
@@ -72,7 +72,7 @@ export class LayoutEngineService {
     let headerRight = '';
     let headerLeft = '';
     let footerRight = '';
-    let footerLeft = '';
+    const footerLeft = '';
 
     if (hf.showPageNumber) {
       switch (hf.pageNumberPosition) {

@@ -3,8 +3,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 14px;
-  background: var(--bg-surface-secondary, rgba(15, 23, 42, 0.85));
-  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
   backdrop-filter: blur(8px);
   user-select: none;
 }
@@ -17,9 +17,9 @@
 
 .ww-layout-segmented-control {
   display: inline-flex;
-  background: var(--bg-canvas, #090d16);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   padding: 2px;
   gap: 2px;
 }
@@ -31,22 +31,23 @@
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--text-secondary, #94a3b8);
-  border-radius: 4px;
+  color: var(--text-muted);
+  border-radius: var(--radius-xs);
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-layout-segmented-btn:hover {
-  color: var(--text-primary, #f1f5f9);
+  color: var(--text-main);
+  background: var(--bg-hover);
 }
 
 .ww-layout-segmented-btn.is-active {
-  background: var(--accent-primary, #6366f1);
-  color: #ffffff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-sm);
 }
 
 .ww-layout-ruler-btn {
@@ -55,22 +56,22 @@
   gap: 5px;
   padding: 4px 8px;
   font-size: 12px;
-  border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
   background: transparent;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-layout-ruler-btn:hover,
 .ww-layout-ruler-btn.is-active {
-  color: var(--text-primary, #f1f5f9);
-  border-color: var(--accent-primary, #6366f1);
-  background: rgba(99, 102, 241, 0.1);
+  color: var(--text-main);
+  border-color: var(--border-active);
+  background: var(--bg-selected);
 }
 
 .ww-layout-page-info {
   font-size: 12px;
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
 }

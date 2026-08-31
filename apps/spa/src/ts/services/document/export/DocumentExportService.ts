@@ -59,7 +59,7 @@ export class DocumentExportService {
       };
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
-      throw new Error(`Ошибка экспорта в ${format.toUpperCase()}: ${errorMsg}`);
+      throw new Error(`Ошибка экспорта в ${format.toUpperCase()}: ${errorMsg}`, { cause: err });
     }
   }
 }

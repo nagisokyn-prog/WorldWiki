@@ -1,4 +1,4 @@
-import type { HeaderFooterProfile, PageMargins, PageProfile } from '../profiles/types';
+import type { HeaderFooterProfile, PageProfile } from '../profiles/types';
 
 /**
  * Layout configuration contracts for physical A4 page rendering.

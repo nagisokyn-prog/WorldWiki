@@ -11,19 +11,19 @@
   line-height: 1;
   vertical-align: super;
   font-weight: 700;
-  color: var(--accent-primary, #6366f1);
+  color: var(--accent);
   padding: 1px 3px;
-  border-radius: 3px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.25);
-  transition: all 0.2s ease;
+  border-radius: var(--radius-xs);
+  background: var(--bg-selected);
+  border: 1px solid var(--border-color);
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-footnote-node:hover .ww-footnote-badge,
 .ww-footnote-node.is-active .ww-footnote-badge {
-  background: var(--accent-primary, #6366f1);
-  color: #ffffff;
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-sm);
 }
 
 .ww-footnote-popover {
@@ -34,10 +34,10 @@
   width: 280px;
   margin-top: 6px;
   padding: 10px 12px;
-  background: var(--bg-surface, #1e293b);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
-  border-radius: var(--radius-sm, 6px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
   backdrop-filter: blur(12px);
 }
 
@@ -48,16 +48,16 @@
   margin-bottom: 6px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .ww-footnote-textarea {
   width: 100%;
-  background: var(--bg-canvas, #0f172a);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  border-radius: 4px;
-  color: var(--text-primary, #f1f5f9);
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  color: var(--text-main);
   font-size: 12px;
   padding: 6px 8px;
   resize: vertical;
@@ -67,5 +67,5 @@
 }
 
 .ww-footnote-textarea:focus {
-  border-color: var(--accent-primary, #6366f1);
+  border-color: var(--border-active);
 }

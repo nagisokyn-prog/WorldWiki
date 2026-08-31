@@ -2,16 +2,16 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--bg-surface, #1e293b);
-  border-left: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
   user-select: none;
   font-size: 13px;
 }
 
 .ww-inspector-tabs {
   display: flex;
-  background: var(--bg-canvas, #090d16);
-  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-color);
   padding: 4px;
   gap: 2px;
 }
@@ -22,23 +22,24 @@
   align-items: center;
   justify-content: center;
   padding: 6px 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   border: none;
   background: transparent;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 11px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-inspector-tab-btn:hover {
-  color: var(--text-primary, #f1f5f9);
+  color: var(--text-main);
+  background: var(--bg-hover);
 }
 
 .ww-inspector-tab-btn.is-active {
-  background: var(--accent-primary, #6366f1);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--accent-text);
 }
 
 .ww-inspector-body {
@@ -51,7 +52,7 @@
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
   margin-bottom: 8px;
   font-weight: 700;
 }
@@ -70,15 +71,15 @@
   align-items: center;
   justify-content: space-between;
   padding: 6px 8px;
-  border-radius: var(--radius-sm, 6px);
-  background: var(--bg-surface-secondary, rgba(255, 255, 255, 0.03));
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
   border: 1px solid transparent;
-  transition: all 0.2s ease;
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-inspector-item:hover {
-  background: var(--bg-surface-hover, rgba(255, 255, 255, 0.06));
-  border-color: var(--border-color, rgba(255, 255, 255, 0.12));
+  background: var(--bg-hover);
+  border-color: var(--border-color);
 }
 
 .ww-inspector-item-content {
@@ -92,13 +93,13 @@
 
 .ww-inspector-num {
   font-weight: 700;
-  color: var(--accent-primary, #6366f1);
+  color: var(--accent);
   white-space: nowrap;
   font-size: 12px;
 }
 
 .ww-inspector-label {
-  color: var(--text-primary, #f1f5f9);
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -114,54 +115,55 @@
   padding: 2px 6px;
   font-size: 10px;
   font-weight: 600;
-  border-radius: 3px;
-  border: 1px solid var(--accent-primary, #6366f1);
-  background: rgba(99, 102, 241, 0.15);
-  color: var(--accent-primary, #6366f1);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--accent);
+  background: var(--bg-selected);
+  color: var(--accent);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-inspector-insert-btn:hover {
-  background: var(--accent-primary, #6366f1);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--accent-text);
 }
 
 .ww-inspector-empty {
   padding: 16px 8px;
   text-align: center;
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
   font-size: 12px;
 }
 
 /* Profile Selector styling */
 .ww-inspector-profile-card {
   padding: 10px;
-  border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
-  background: var(--bg-surface-secondary, rgba(255, 255, 255, 0.02));
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: var(--bg-sunken);
   margin-bottom: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--anim-speed-fast) ease;
 }
 
 .ww-inspector-profile-card:hover {
-  border-color: var(--accent-primary, #6366f1);
+  border-color: var(--accent);
+  background: var(--bg-hover);
 }
 
 .ww-inspector-profile-card.is-active {
-  border-color: var(--accent-primary, #6366f1);
-  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--border-active);
+  background: var(--bg-selected);
 }
 
 .ww-inspector-profile-title {
   font-weight: 600;
-  color: var(--text-primary, #f1f5f9);
+  color: var(--text-heading);
   margin-bottom: 4px;
 }
 
 .ww-inspector-profile-desc {
   font-size: 11px;
-  color: var(--text-secondary, #94a3b8);
+  color: var(--text-muted);
   line-height: 1.4;
 }

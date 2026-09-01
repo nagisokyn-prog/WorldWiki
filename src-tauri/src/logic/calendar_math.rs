@@ -328,14 +328,7 @@ impl CalendarMath {
         to_era: usize,
     ) -> (i32, i32, i32, i32, i32) {
         let master_min = Self::local_to_master_minute(
-            from_cal,
-            master_cal,
-            from_era,
-            year,
-            month,
-            day,
-            hour,
-            minute,
+            from_cal, master_cal, from_era, year, month, day, hour, minute,
         );
         Self::master_minute_to_local(master_min, to_cal, master_cal, to_era)
     }
@@ -406,18 +399,54 @@ mod tests {
             calendar_type: None,
             is_master: None,
             months: vec![
-                CalendarMonth { название: "Янв".into(), дней: 31 },
-                CalendarMonth { название: "Фев".into(), дней: 28 },
-                CalendarMonth { название: "Мар".into(), дней: 31 },
-                CalendarMonth { название: "Апр".into(), дней: 30 },
-                CalendarMonth { название: "Май".into(), дней: 31 },
-                CalendarMonth { название: "Июн".into(), дней: 30 },
-                CalendarMonth { название: "Июл".into(), дней: 31 },
-                CalendarMonth { название: "Авг".into(), дней: 31 },
-                CalendarMonth { название: "Сен".into(), дней: 30 },
-                CalendarMonth { название: "Окт".into(), дней: 31 },
-                CalendarMonth { название: "Ноя".into(), дней: 30 },
-                CalendarMonth { название: "Дек".into(), дней: 31 },
+                CalendarMonth {
+                    название: "Янв".into(),
+                    дней: 31,
+                },
+                CalendarMonth {
+                    название: "Фев".into(),
+                    дней: 28,
+                },
+                CalendarMonth {
+                    название: "Мар".into(),
+                    дней: 31,
+                },
+                CalendarMonth {
+                    название: "Апр".into(),
+                    дней: 30,
+                },
+                CalendarMonth {
+                    название: "Май".into(),
+                    дней: 31,
+                },
+                CalendarMonth {
+                    название: "Июн".into(),
+                    дней: 30,
+                },
+                CalendarMonth {
+                    название: "Июл".into(),
+                    дней: 31,
+                },
+                CalendarMonth {
+                    название: "Авг".into(),
+                    дней: 31,
+                },
+                CalendarMonth {
+                    название: "Сен".into(),
+                    дней: 30,
+                },
+                CalendarMonth {
+                    название: "Окт".into(),
+                    дней: 31,
+                },
+                CalendarMonth {
+                    название: "Ноя".into(),
+                    дней: 30,
+                },
+                CalendarMonth {
+                    название: "Дек".into(),
+                    дней: 31,
+                },
             ],
             eras: vec![CalendarEra {
                 название: "CE".into(),
@@ -432,7 +461,7 @@ mod tests {
             sync_anchor: None,
         }
     }
-#[test]
+    #[test]
     fn gregorian_leap_years() {
         let cal = gregorian_calendar();
         assert!(CalendarMath::is_leap_year(&cal, 2000)); // %400 → високосный
@@ -471,11 +500,14 @@ mod tests {
     #[test]
     fn days_in_year_with_custom_leap_rule() {
         let mut cal = gregorian_calendar();
-        cal.custom_leap_rule = Some(CustomLeapRule { месяц: 1, день_смещения: 1 });
+        cal.custom_leap_rule = Some(CustomLeapRule {
+            месяц: 1,
+            день_смещения: 1,
+        });
         assert_eq!(CalendarMath::get_days_in_year(&cal, 2024), 366);
         assert_eq!(CalendarMath::get_days_in_year(&cal, 2023), 365);
     }
-#[test]
+    #[test]
     fn absolute_minute_epoch() {
         // 1 января, 1 год, 00:00 → минута 0.
         let cal = gregorian_calendar();
@@ -505,8 +537,7 @@ mod tests {
         // 31.12.1 23:59 → +1 минута = начало 2-го года.
         let last = CalendarMath::get_absolute_minute(&cal, 0, 1, 11, 31, 23, 59);
         let next = last + 1;
-        let (year, month, day, hour, minute) =
-            CalendarMath::get_date_from_absolute(next, &cal, 0);
+        let (year, month, day, hour, minute) = CalendarMath::get_date_from_absolute(next, &cal, 0);
         assert_eq!(year, 2);
         assert_eq!(month, 0);
         assert_eq!(day, 1);
@@ -526,7 +557,11 @@ mod tests {
         for (y, m, d, h, mi) in cases {
             let abs = CalendarMath::get_absolute_minute(&cal, 0, y, m, d, h, mi);
             let (ry, rm, rd, rh, rmi) = CalendarMath::get_date_from_absolute(abs, &cal, 0);
-            assert_eq!((ry, rm, rd, rh, rmi), (y, m, d, h, mi), "roundtrip failed for {y}-{m}-{d}");
+            assert_eq!(
+                (ry, rm, rd, rh, rmi),
+                (y, m, d, h, mi),
+                "roundtrip failed for {y}-{m}-{d}"
+            );
         }
     }
 
@@ -662,7 +697,10 @@ mod tests {
 
             let (y, m, d, h, mi) = CalendarMath::get_date_from_absolute(abs, &cal, 0);
             let back = CalendarMath::get_absolute_minute(&cal, 0, y, m, d, h, mi);
-            assert_eq!(back, abs, "roundtrip сломался на abs={abs} → {y}-{m}-{d} {h}:{mi}");
+            assert_eq!(
+                back, abs,
+                "roundtrip сломался на abs={abs} → {y}-{m}-{d} {h}:{mi}"
+            );
         }
     }
 
@@ -675,7 +713,11 @@ mod tests {
         let cal = gregorian_calendar();
         let feb28 = CalendarMath::get_absolute_minute(&cal, 0, 2024, 1, 28, 23, 59);
         let (y, m, d, _, _) = CalendarMath::get_date_from_absolute(feb28 + 1, &cal, 0);
-        assert_eq!((y, m, d), (2024, 2, 1), "без leap-rule за 28.02 идёт месяц с индексом 2");
+        assert_eq!(
+            (y, m, d),
+            (2024, 2, 1),
+            "без leap-rule за 28.02 идёт месяц с индексом 2"
+        );
 
         // Симметрия: полученная дата конвертируется обратно в ту же минуту
         let back = CalendarMath::get_absolute_minute(&cal, 0, y, m, d, 0, 0);
@@ -691,7 +733,7 @@ mod tests {
     fn custom_leap_rule_extends_target_month_only_in_leap_years() {
         let mut cal = gregorian_calendar();
         cal.custom_leap_rule = Some(CustomLeapRule {
-            месяц: 1,               // второй месяц
+            месяц: 1, // второй месяц
             день_смещения: 1,
         });
 
@@ -757,16 +799,8 @@ mod tests {
         };
 
         // 1. Проверяем, что точка привязки племени дает в Мастере именно 1200 год, 5 месяц, 15 день
-        let master_min = CalendarMath::local_to_master_minute(
-            &tribal_cal,
-            Some(&master_cal),
-            0,
-            1,
-            0,
-            1,
-            0,
-            0,
-        );
+        let master_min =
+            CalendarMath::local_to_master_minute(&tribal_cal, Some(&master_cal), 0, 1, 0, 1, 0, 0);
         let (my, mm, md, mh, mmi) =
             CalendarMath::get_date_from_absolute(master_min, &master_cal, 0);
         assert_eq!((my, mm, md, mh, mmi), (1200, 5, 15, 0, 0));
@@ -777,16 +811,8 @@ mod tests {
         assert_eq!((ty, tm, td, th, tmi), (1, 0, 1, 0, 0));
 
         // 3. Через 10 дней по календарю племени
-        let tribal_day_11 = CalendarMath::local_to_master_minute(
-            &tribal_cal,
-            Some(&master_cal),
-            0,
-            1,
-            0,
-            11,
-            0,
-            0,
-        );
+        let tribal_day_11 =
+            CalendarMath::local_to_master_minute(&tribal_cal, Some(&master_cal), 0, 1, 0, 11, 0, 0);
         let (my2, mm2, md2, _, _) =
             CalendarMath::get_date_from_absolute(tribal_day_11, &master_cal, 0);
         assert_eq!((my2, mm2, md2), (1200, 5, 25));
@@ -811,4 +837,3 @@ mod tests {
         assert_eq!(res["minute"], 30);
     }
 }
-

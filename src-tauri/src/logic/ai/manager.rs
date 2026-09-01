@@ -51,12 +51,14 @@ pub async fn list_installed_models_inner(
     #[cfg(feature = "ai-local")]
     let (loaded_gen_fn, loaded_emb_fn) = {
         use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot};
-        let gen_fn = get_loaded_model_slot().try_lock().ok().and_then(|slot| {
-            slot.as_ref().map(|s| s.model_path.clone())
-        });
-        let emb_fn = get_loaded_embed_slot().try_lock().ok().and_then(|slot| {
-            slot.as_ref().map(|s| s.model_path.clone())
-        });
+        let gen_fn = get_loaded_model_slot()
+            .try_lock()
+            .ok()
+            .and_then(|slot| slot.as_ref().map(|s| s.model_path.clone()));
+        let emb_fn = get_loaded_embed_slot()
+            .try_lock()
+            .ok()
+            .and_then(|slot| slot.as_ref().map(|s| s.model_path.clone()));
         (gen_fn, emb_fn)
     };
 
@@ -91,25 +93,40 @@ pub async fn list_installed_models_inner(
                         if efn == &filename || efn.ends_with(&filename) {
                             ModelLifecycleState::Ready
                         } else {
-                            states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                            states
+                                .get(&filename)
+                                .cloned()
+                                .unwrap_or(ModelLifecycleState::Installed)
                         }
                     } else {
-                        states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                        states
+                            .get(&filename)
+                            .cloned()
+                            .unwrap_or(ModelLifecycleState::Installed)
                     }
                 } else {
                     if let Some(ref gfn) = loaded_gen_fn {
                         if gfn == &filename || gfn.ends_with(&filename) {
                             ModelLifecycleState::Ready
                         } else {
-                            states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                            states
+                                .get(&filename)
+                                .cloned()
+                                .unwrap_or(ModelLifecycleState::Installed)
                         }
                     } else {
-                        states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed)
+                        states
+                            .get(&filename)
+                            .cloned()
+                            .unwrap_or(ModelLifecycleState::Installed)
                     }
                 };
 
                 #[cfg(not(feature = "ai-local"))]
-                let state = states.get(&filename).cloned().unwrap_or(ModelLifecycleState::Installed);
+                let state = states
+                    .get(&filename)
+                    .cloned()
+                    .unwrap_or(ModelLifecycleState::Installed);
 
                 let display_name = format_friendly_model_name(&filename);
 
@@ -161,7 +178,10 @@ pub async fn load_local_model(_app: AppHandle, filename: String) -> Result<(), S
 
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, resolve_model_path, LoadedModelSlot, LocalLlm, ModelParams};
+        use crate::logic::ai::local_llm::{
+            get_loaded_embed_slot, get_loaded_model_slot, resolve_model_path, LoadedModelSlot,
+            LocalLlm, ModelParams,
+        };
         let resolved = resolve_model_path(&filename);
         if !resolved.exists() {
             set_model_lifecycle_state(&filename, ModelLifecycleState::Error);
@@ -183,7 +203,9 @@ pub async fn load_local_model(_app: AppHandle, filename: String) -> Result<(), S
             } else {
                 LocalLlm::load_model(&path_str, params)
             }
-        }).await.map_err(|e| e.to_string())?;
+        })
+        .await
+        .map_err(|e| e.to_string())?;
 
         match load_res {
             Ok(llm) => {
@@ -225,7 +247,9 @@ pub async fn unload_local_model(_app: AppHandle, filename: String) -> Result<(),
 
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen};
+        use crate::logic::ai::local_llm::{
+            get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen,
+        };
         trigger_cancel_local_gen();
         tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
 
@@ -248,7 +272,9 @@ pub async fn unload_local_model(_app: AppHandle, filename: String) -> Result<(),
 pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), String> {
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen};
+        use crate::logic::ai::local_llm::{
+            get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen,
+        };
         trigger_cancel_local_gen();
         if let Ok(mut slot) = get_loaded_model_slot().lock() {
             if let Some(ref loaded) = *slot {
@@ -286,7 +312,9 @@ pub async fn delete_local_model(app: AppHandle, filename: String) -> Result<(), 
 pub async fn unload_all_local_models(_app: AppHandle) -> Result<(), String> {
     #[cfg(feature = "ai-local")]
     {
-        use crate::logic::ai::local_llm::{get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen};
+        use crate::logic::ai::local_llm::{
+            get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen,
+        };
         trigger_cancel_local_gen();
         tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
 
@@ -376,7 +404,10 @@ mod tests {
         set_model_lifecycle_state(name, ModelLifecycleState::Loading);
         {
             let states = get_states_map().lock().unwrap();
-            assert!(matches!(states.get(name), Some(ModelLifecycleState::Loading)));
+            assert!(matches!(
+                states.get(name),
+                Some(ModelLifecycleState::Loading)
+            ));
         }
 
         // Переход loading → ready
@@ -391,7 +422,10 @@ mod tests {
         set_model_lifecycle_state(name, ModelLifecycleState::Installed);
         {
             let states = get_states_map().lock().unwrap();
-            assert!(matches!(states.get(name), Some(ModelLifecycleState::Installed)));
+            assert!(matches!(
+                states.get(name),
+                Some(ModelLifecycleState::Installed)
+            ));
         }
 
         // Убираем за собой, чтобы не влиять на другие тесты
@@ -401,11 +435,8 @@ mod tests {
     // ---------- list_installed_models_inner (dir-scan) ----------
 
     async fn make_models_dir(tag: &str) -> PathBuf {
-        let dir = std::env::temp_dir().join(format!(
-            "wwiki_mgr_test_{}_{}",
-            tag,
-            std::process::id()
-        ));
+        let dir =
+            std::env::temp_dir().join(format!("wwiki_mgr_test_{}_{}", tag, std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         tokio::fs::create_dir_all(&dir).await.unwrap();
         dir
@@ -413,10 +444,7 @@ mod tests {
 
     #[tokio::test]
     async fn missing_dir_is_created_and_empty() {
-        let dir = std::env::temp_dir().join(format!(
-            "wwiki_mgr_missing_{}",
-            std::process::id()
-        ));
+        let dir = std::env::temp_dir().join(format!("wwiki_mgr_missing_{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
 
         let models = list_installed_models_inner(&dir).await.expect("Ok");
@@ -442,10 +470,17 @@ mod tests {
         let qwen = models.iter().find(|m| m.filename.contains("Qwen")).unwrap();
         assert_eq!(qwen.kind, ModelKind::Generation);
         assert_eq!(qwen.size_bytes, 2048);
-        assert_eq!(qwen.state, ModelLifecycleState::Installed, "без слотов — Installed");
+        assert_eq!(
+            qwen.state,
+            ModelLifecycleState::Installed,
+            "без слотов — Installed"
+        );
         assert!(!qwen.name.is_empty(), "friendly name сгенерирован");
 
-        let emb = models.iter().find(|m| m.filename.contains("nomic")).unwrap();
+        let emb = models
+            .iter()
+            .find(|m| m.filename.contains("nomic"))
+            .unwrap();
         assert_eq!(emb.kind, ModelKind::Embedding, "маркер nomic → Embedding");
 
         // size_gb: 2048 байт ≈ 0.0 GB
@@ -463,9 +498,7 @@ mod tests {
         let models = list_installed_models_inner(&dir).await.unwrap();
         assert_eq!(models.len(), 2);
         assert!(
-            models
-                .iter()
-                .all(|m| m.kind == ModelKind::Embedding),
+            models.iter().all(|m| m.kind == ModelKind::Embedding),
             "оба маркера (bge, Embed) дают Embedding: {models:?}"
         );
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="rk-word-editor-container">
+  <div class="rk-word-editor rk-word-editor-container">
     <!-- 1. Наша фирменная лента Word (Microsoft Ribbon Authenticity) -->
     <WordRibbonBar
       :editor="tiptapEditor"
@@ -18,7 +18,7 @@
     </div>
 
     <!-- 3. Скроллируемая область виртуальных страниц RK Word Editor -->
-    <div class="rk-editor-scroll-area">
+    <div class="rk-editor-scroll-area" @click="handleScrollAreaClick">
       <div ref="editorHostRef" class="rk-editor-mount"></div>
     </div>
 
@@ -62,21 +62,22 @@
     </div>
 
     <!-- Модальное окно параметров абзаца по ГОСТ -->
-    <WordParagraphModal
-      v-if="isParagraphModalOpen"
-      :editor="tiptapEditor"
+    <ParagraphFormatModal
+      :is-open="isParagraphModalOpen"
       @close="isParagraphModalOpen = false"
+      @apply="handleParagraphFormatApply"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import '@raazkhnl/rk-editor-ui/styles.css';
 import { useRkWordEditor } from './useRkWordEditor';
 import type { RkWordEditorProps, RkWordEditorEmits } from './RkWordEditor.model';
 import WordRibbonBar from '../WordRibbonBar/WordRibbonBar.vue';
 import WordRuler from '../WordRuler/WordRuler.vue';
-import WordParagraphModal from '../ParagraphFormatModal/WordParagraphModal.vue';
+import ParagraphFormatModal, { type ParagraphFormatData } from '../ParagraphFormatModal/ParagraphFormatModal.vue';
 
 const props = defineProps<RkWordEditorProps>();
 const emit = defineEmits<RkWordEditorEmits>();
@@ -96,10 +97,27 @@ const {
   ribbonCommands,
 } = useRkWordEditor(editorHostRef, props, emit);
 
-const handleFirstLineIndent = (_cm: number) => {
-  if (wordEditor.value) {
-    wordEditor.value.commands.indent();
+const handleScrollAreaClick = (e: MouseEvent) => {
+  if (e.target === e.currentTarget) {
+    wordEditor.value?.focus();
   }
+};
+
+const handleFirstLineIndent = (_cm: number) => {
+  if (tiptapEditor.value) {
+    tiptapEditor.value.chain().focus().run();
+  }
+};
+
+const handleParagraphFormatApply = (data: ParagraphFormatData) => {
+  if (wordEditor.value) {
+    wordEditor.value.commands.align(data.alignment);
+    wordEditor.value.commands.lineHeight(data.lineHeight);
+    if (data.firstLineType === 'indent') {
+      wordEditor.value.commands.indent();
+    }
+  }
+  isParagraphModalOpen.value = false;
 };
 </script>
 

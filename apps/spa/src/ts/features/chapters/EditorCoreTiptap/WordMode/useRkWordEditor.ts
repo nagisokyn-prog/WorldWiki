@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onBeforeUnmount, shallowRef, type Ref } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount, shallowRef, type Ref } from 'vue';
 import { WordEditor } from '@raazkhnl/rk-editor-core';
 import type { 
   RkWordEditorProps, 
@@ -159,7 +159,7 @@ export function useRkWordEditor(
     const editor = new WordEditor({
       element: editorHostRef.value,
       initialContent: props.content || '<p></p>',
-      editable: props.editable !== false,
+      editable: props.isReadOnly !== true,
       pageLayout: {
         pageSize: toRkPageSize(pageSize.value),
         orientation: orientation.value,
@@ -188,6 +188,13 @@ export function useRkWordEditor(
     wordEditor.value = editor;
     tiptapEditor.value = editor.instance;
   };
+
+  watch(() => props.content, (newContent) => {
+    if (!wordEditor.value || newContent === undefined) return;
+    if (wordEditor.value.getHTML() !== newContent) {
+      wordEditor.value.setDocument(newContent || '<p></p>');
+    }
+  });
 
   onMounted(initEditor);
 

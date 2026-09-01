@@ -208,10 +208,12 @@ const activeDrag = ref<'firstLine' | 'leftIndent' | 'rightIndent' | null>(null);
 const guidelineX = ref<number | null>(null);
 
 const startDrag = (type: 'firstLine' | 'leftIndent' | 'rightIndent', e: MouseEvent) => {
+  e.preventDefault();
   activeDrag.value = type;
   guidelineX.value = e.clientX;
 
   const onMouseMove = (moveEvt: MouseEvent) => {
+    moveEvt.preventDefault();
     if (!rulerRef.value || !activeDrag.value) return;
     const rect = rulerRef.value.getBoundingClientRect();
     const printableLeft = rect.left + marginLeftPx.value;
@@ -273,20 +275,14 @@ watch(() => props.editor, (ed) => {
           const rawIndent = node.attrs.textIndent;
           if (rawIndent && typeof rawIndent === 'string' && rawIndent.endsWith('cm')) {
             firstLineCm.value = parseFloat(rawIndent);
-          } else {
-            firstLineCm.value = 1.25;
           }
           const rawLeft = node.attrs.leftIndent;
           if (rawLeft && typeof rawLeft === 'string' && rawLeft.endsWith('cm')) {
             leftIndentCm.value = parseFloat(rawLeft);
-          } else {
-            leftIndentCm.value = 0;
           }
           const rawRight = node.attrs.rightIndent;
           if (rawRight && typeof rawRight === 'string' && rawRight.endsWith('cm')) {
             rightIndentCm.value = printableCmMax.value - parseFloat(rawRight);
-          } else {
-            rightIndentCm.value = printableCmMax.value;
           }
           break;
         }
@@ -297,7 +293,6 @@ watch(() => props.editor, (ed) => {
   };
 
   ed.on('selectionUpdate', updateFromSelection);
-  ed.on('transaction', updateFromSelection);
 }, { immediate: true });
 </script>
 

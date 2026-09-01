@@ -5,7 +5,7 @@ cd /d C:\Users\Kuzma\Desktop\WorldWiki
 cargo sweep --help >nul 2>nul
 if %errorlevel% equ 0 (
     echo [Cargo] Cleaning old build artifacts across workspace...
-    cargo sweep -r --maxsize 5GB
+    cargo sweep -r --maxsize 20GB
     cargo sweep -r --time 3
 )
 

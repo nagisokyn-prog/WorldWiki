@@ -78,7 +78,13 @@ pub async fn fetch_hf_models_inner(
             let encoded: String = q
                 .trim()
                 .chars()
-                .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' || c == '.' { c.to_string() } else { format!("%{:02X}", c as u32) })
+                .map(|c| {
+                    if c.is_alphanumeric() || c == '-' || c == '_' || c == '.' {
+                        c.to_string()
+                    } else {
+                        format!("%{:02X}", c as u32)
+                    }
+                })
                 .collect();
             format!("&search={encoded}")
         } else {
@@ -92,9 +98,7 @@ pub async fn fetch_hf_models_inner(
     let url = format!("{hf_base}/api/models?filter=gguf&sort=downloads&direction=-1&limit=40&full=true{search_part}");
 
     let client = Client::new();
-    let mut req = client
-        .get(&url)
-        .header("User-Agent", "WorldWiki/1.0");
+    let mut req = client.get(&url).header("User-Agent", "WorldWiki/1.0");
 
     if let Some(tok) = token {
         let t = tok.trim();
@@ -111,7 +115,10 @@ pub async fn fetch_hf_models_inner(
         return Err(format!("Hugging Face вернул ошибку: {}", resp.status()));
     }
 
-    let items: Vec<HfApiResponseItem> = resp.json().await.map_err(|e| format!("Ошибка парсинга ответа Hugging Face: {e}"))?;
+    let items: Vec<HfApiResponseItem> = resp
+        .json()
+        .await
+        .map_err(|e| format!("Ошибка парсинга ответа Hugging Face: {e}"))?;
 
     let mut result = Vec::new();
     for item in items {
@@ -130,7 +137,12 @@ pub async fn fetch_hf_models_inner(
             }
         }
 
-        let name = item.id.split('/').next_back().unwrap_or(&item.id).to_string();
+        let name = item
+            .id
+            .split('/')
+            .next_back()
+            .unwrap_or(&item.id)
+            .to_string();
         result.push(HfModelCard {
             id: item.id,
             author: item.author,
@@ -185,18 +197,39 @@ mod tests {
     #[test]
     fn case_insensitive() {
         assert_eq!(detect_quant_from_filename("MODEL-q4_k_m.GGUF"), "Q4_K_M");
-        assert_eq!(detect_quant_from_filename("QwEn-Q8_0-Instruct.gguf"), "Q8_0");
+        assert_eq!(
+            detect_quant_from_filename("QwEn-Q8_0-Instruct.gguf"),
+            "Q8_0"
+        );
     }
 
     #[test]
     fn detects_turboquant_family() {
-        assert_eq!(detect_quant_from_filename("nemotron-TURBO3_TCQ.gguf"), "TCQ (2.25-bit)");
+        assert_eq!(
+            detect_quant_from_filename("nemotron-TURBO3_TCQ.gguf"),
+            "TCQ (2.25-bit)"
+        );
         assert_eq!(detect_quant_from_filename("x_TCQ_y.gguf"), "TCQ (2.25-bit)");
-        assert_eq!(detect_quant_from_filename("qwen-TURBO2.gguf"), "TurboQuant 2-bit");
-        assert_eq!(detect_quant_from_filename("qwen-TQ1.gguf"), "TurboQuant 2-bit");
-        assert_eq!(detect_quant_from_filename("qwen-TURBO3.gguf"), "TurboQuant 3-bit");
-        assert_eq!(detect_quant_from_filename("qwen-TURBO4.gguf"), "TurboQuant 4-bit");
-        assert_eq!(detect_quant_from_filename("qwen-TQ2.gguf"), "TurboQuant 4-bit");
+        assert_eq!(
+            detect_quant_from_filename("qwen-TURBO2.gguf"),
+            "TurboQuant 2-bit"
+        );
+        assert_eq!(
+            detect_quant_from_filename("qwen-TQ1.gguf"),
+            "TurboQuant 2-bit"
+        );
+        assert_eq!(
+            detect_quant_from_filename("qwen-TURBO3.gguf"),
+            "TurboQuant 3-bit"
+        );
+        assert_eq!(
+            detect_quant_from_filename("qwen-TURBO4.gguf"),
+            "TurboQuant 4-bit"
+        );
+        assert_eq!(
+            detect_quant_from_filename("qwen-TQ2.gguf"),
+            "TurboQuant 4-bit"
+        );
     }
 
     #[test]
@@ -218,7 +251,11 @@ mod tests {
     fn unknown_quant_defaults_to_gguf() {
         assert_eq!(detect_quant_from_filename("plain-model.gguf"), "GGUF");
         assert_eq!(detect_quant_from_filename(""), "GGUF");
-        assert_eq!(detect_quant_from_filename("IQ2_XS.gguf"), "GGUF", "несписочный квант → default");
+        assert_eq!(
+            detect_quant_from_filename("IQ2_XS.gguf"),
+            "GGUF",
+            "несписочный квант → default"
+        );
     }
 
     #[test]
@@ -330,7 +367,8 @@ mod tests {
 
         let req = captured_str_impl(&captured);
         assert!(
-            req.to_ascii_lowercase().contains("user-agent: worldwiki/1.0"),
+            req.to_ascii_lowercase()
+                .contains("user-agent: worldwiki/1.0"),
             "{req}"
         );
         assert!(
@@ -376,9 +414,13 @@ mod tests {
         // Пустой токен на живом моке — заголовка быть не должно
         let captured: SharedBuf = Default::default();
         let base = spawn_mock("[]", captured.clone()).await;
-        fetch_hf_models_inner(None, Some("   "), Some(&base)).await.unwrap();
+        fetch_hf_models_inner(None, Some("   "), Some(&base))
+            .await
+            .unwrap();
         assert!(
-            !captured_str_impl(&captured).to_ascii_lowercase().contains("authorization:"),
+            !captured_str_impl(&captured)
+                .to_ascii_lowercase()
+                .contains("authorization:"),
             "пустой токен не отправляется"
         );
 
@@ -444,7 +486,10 @@ pub async fn download_hf_model(
     } else if resp.status().as_u16() == 404 {
         return Err("Ошибка 404: Файл модели не найден на сервере Hugging Face.".to_string());
     } else if !resp.status().is_success() {
-        return Err(format!("Загрузка завершилась со статусом: {}", resp.status()));
+        return Err(format!(
+            "Загрузка завершилась со статусом: {}",
+            resp.status()
+        ));
     }
 
     let total_bytes = resp.content_length().unwrap_or(0);

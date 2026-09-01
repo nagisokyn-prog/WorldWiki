@@ -1,6 +1,6 @@
-use std::path::PathBuf;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Serialize, ts_rs::TS)]
 #[ts(export)]
@@ -78,7 +78,8 @@ pub(crate) async fn fetch_ai_models_inner(
 
     match provider {
         "openrouter" => {
-            let url = base_override.unwrap_or_else(|| "https://openrouter.ai/api/v1/models".to_string());
+            let url =
+                base_override.unwrap_or_else(|| "https://openrouter.ai/api/v1/models".to_string());
             let mut req = client.get(url);
             if let Some(key) = &api_key {
                 if !key.is_empty() {
@@ -116,7 +117,10 @@ pub(crate) async fn fetch_ai_models_inner(
                     return Ok(vec![]);
                 }
                 let res = client
-                    .get(base_override.unwrap_or_else(|| "https://api.openai.com/v1/models".to_string()))
+                    .get(
+                        base_override
+                            .unwrap_or_else(|| "https://api.openai.com/v1/models".to_string()),
+                    )
                     .bearer_auth(key)
                     .send()
                     .await
@@ -149,12 +153,10 @@ pub(crate) async fn fetch_ai_models_inner(
                 if key.is_empty() {
                     return Ok(vec![]);
                 }
-                let base = base_override.unwrap_or_else(|| "https://generativelanguage.googleapis.com/v1beta/models".to_string());
-                let url = format!(
-                    "{}?key={}",
-                    base,
-                    key
-                );
+                let base = base_override.unwrap_or_else(|| {
+                    "https://generativelanguage.googleapis.com/v1beta/models".to_string()
+                });
+                let url = format!("{}?key={}", base, key);
                 let res = client.get(&url).send().await.map_err(|e| e.to_string())?;
 
                 if res.status().is_success() {
@@ -165,7 +167,9 @@ pub(crate) async fn fetch_ai_models_inner(
                         .map(|m| AiModelInfo {
                             value: m.name.replace("models/", ""), // Gemini returns "models/gemini-1.5-pro"
                             label: m.name.clone(),
-                            description: m.description.unwrap_or_else(|| m.display_name.unwrap_or_else(|| m.name.clone())),
+                            description: m.description.unwrap_or_else(|| {
+                                m.display_name.unwrap_or_else(|| m.name.clone())
+                            }),
                             context_length: None,
                             max_completion_tokens: None,
                         })
@@ -185,7 +189,10 @@ pub(crate) async fn fetch_ai_models_inner(
                     return Ok(vec![]);
                 }
                 let res = client
-                    .get(base_override.unwrap_or_else(|| "https://api.anthropic.com/v1/models".to_string()))
+                    .get(
+                        base_override
+                            .unwrap_or_else(|| "https://api.anthropic.com/v1/models".to_string()),
+                    )
                     .header("x-api-key", key)
                     .header("anthropic-version", "2023-06-01")
                     .send()
@@ -220,8 +227,16 @@ pub(crate) async fn fetch_ai_models_inner(
             // Scan AppData/WorldWiki/models and ./models directories
             let mut candidate_dirs = Vec::new();
             if let Ok(local_app_data) = std::env::var("LOCALAPPDATA") {
-                candidate_dirs.push(PathBuf::from(&local_app_data).join("WorldWiki").join("models"));
-                candidate_dirs.push(PathBuf::from(&local_app_data).join("world-wiki").join("models"));
+                candidate_dirs.push(
+                    PathBuf::from(&local_app_data)
+                        .join("WorldWiki")
+                        .join("models"),
+                );
+                candidate_dirs.push(
+                    PathBuf::from(&local_app_data)
+                        .join("world-wiki")
+                        .join("models"),
+                );
             }
             if let Ok(app_data) = std::env::var("APPDATA") {
                 candidate_dirs.push(PathBuf::from(&app_data).join("WorldWiki").join("models"));
@@ -235,14 +250,23 @@ pub(crate) async fn fetch_ai_models_inner(
                     if let Ok(entries) = std::fs::read_dir(dir) {
                         for entry in entries.flatten() {
                             let path = entry.path();
-                            if path.extension().and_then(|s| s.to_str()).map(|s| s.to_lowercase()) == Some("gguf".to_string()) {
-                                let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("model.gguf");
+                            if path
+                                .extension()
+                                .and_then(|s| s.to_str())
+                                .map(|s| s.to_lowercase())
+                                == Some("gguf".to_string())
+                            {
+                                let filename = path
+                                    .file_name()
+                                    .and_then(|s| s.to_str())
+                                    .unwrap_or("model.gguf");
                                 let path_str = path.to_string_lossy().to_string();
                                 if !models.iter().any(|m| m.value == path_str) {
                                     models.push(AiModelInfo {
                                         value: path_str,
                                         label: filename.to_string(),
-                                        description: "Local GGUF Model (llama-turboquant-cpp)".to_string(),
+                                        description: "Local GGUF Model (llama-turboquant-cpp)"
+                                            .to_string(),
                                         context_length: Some(8192),
                                         max_completion_tokens: None,
                                     });
@@ -362,8 +386,14 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(models.len(), 1);
-        assert_eq!(models[0].value, "gemini-1.5-pro", "префикс models/ снимается");
-        assert_eq!(models[0].description, "desc", "description приоритетнее displayName");
+        assert_eq!(
+            models[0].value, "gemini-1.5-pro",
+            "префикс models/ снимается"
+        );
+        assert_eq!(
+            models[0].description, "desc",
+            "description приоритетнее displayName"
+        );
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -391,7 +421,9 @@ mod tests {
 
     #[tokio::test]
     async fn unknown_provider_returns_empty_ok() {
-        let models = fetch_ai_models_inner("hal9000", Some("k"), None).await.unwrap();
+        let models = fetch_ai_models_inner("hal9000", Some("k"), None)
+            .await
+            .unwrap();
         assert!(models.is_empty());
     }
 
@@ -412,7 +444,11 @@ mod tests {
         let _ = std::fs::remove_dir_all(&tmp);
 
         let labels: Vec<&str> = models.iter().map(|m| m.label.as_str()).collect();
-        assert_eq!(labels.len(), 2, "только .gguf (любой регистр), txt игнорится: {labels:?}");
+        assert_eq!(
+            labels.len(),
+            2,
+            "только .gguf (любой регистр), txt игнорится: {labels:?}"
+        );
         assert!(labels.contains(&"a-model.GGUF"));
         assert!(labels.contains(&"b-model.gguf"));
         // сортировка по label

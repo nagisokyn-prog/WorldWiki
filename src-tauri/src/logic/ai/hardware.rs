@@ -83,13 +83,12 @@ mod win_gpu {
         pub fn FreeLibrary(hLibModule: *mut c_void) -> i32;
     }
 
-    type CreateDXGIFactoryFn = unsafe extern "system" fn(
-        riid: *const [u8; 16],
-        pp_factory: *mut *mut c_void,
-    ) -> i32;
+    type CreateDXGIFactoryFn =
+        unsafe extern "system" fn(riid: *const [u8; 16], pp_factory: *mut *mut c_void) -> i32;
 
     const IID_IDXGI_FACTORY: [u8; 16] = [
-        0xec, 0x66, 0x71, 0x7b, 0xc7, 0x21, 0xae, 0x44, 0xb2, 0x1a, 0xc9, 0xae, 0x32, 0x1a, 0xe3, 0x69,
+        0xec, 0x66, 0x71, 0x7b, 0xc7, 0x21, 0xae, 0x44, 0xb2, 0x1a, 0xc9, 0xae, 0x32, 0x1a, 0xe3,
+        0x69,
     ];
 
     pub fn query_dxgi_gpu() -> Option<(String, f32)> {
@@ -111,31 +110,45 @@ mod win_gpu {
             }
 
             let vtable = *(factory_ptr as *mut *mut usize);
-            let enum_adapters: unsafe extern "system" fn(*mut c_void, u32, *mut *mut c_void) -> i32 =
-                std::mem::transmute(*vtable.add(7));
+            let enum_adapters: unsafe extern "system" fn(
+                *mut c_void,
+                u32,
+                *mut *mut c_void,
+            ) -> i32 = std::mem::transmute(*vtable.add(7));
 
             let mut adapter_ptr: *mut c_void = std::ptr::null_mut();
             let mut result = None;
 
             if enum_adapters(factory_ptr, 0, &mut adapter_ptr) == 0 && !adapter_ptr.is_null() {
                 let adapter_vtable = *(adapter_ptr as *mut *mut usize);
-                let get_desc: unsafe extern "system" fn(*mut c_void, *mut DXGI_ADAPTER_DESC) -> i32 =
-                    std::mem::transmute(*adapter_vtable.add(8));
+                let get_desc: unsafe extern "system" fn(
+                    *mut c_void,
+                    *mut DXGI_ADAPTER_DESC,
+                ) -> i32 = std::mem::transmute(*adapter_vtable.add(8));
 
                 let mut desc: DXGI_ADAPTER_DESC = std::mem::zeroed();
                 if get_desc(adapter_ptr, &mut desc) == 0 {
-                    let len = desc.description.iter().position(|&c| c == 0).unwrap_or(desc.description.len());
-                    let name = String::from_utf16_lossy(&desc.description[..len]).trim().to_string();
-                    let vram_gb = (desc.dedicated_video_memory as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
+                    let len = desc
+                        .description
+                        .iter()
+                        .position(|&c| c == 0)
+                        .unwrap_or(desc.description.len());
+                    let name = String::from_utf16_lossy(&desc.description[..len])
+                        .trim()
+                        .to_string();
+                    let vram_gb =
+                        (desc.dedicated_video_memory as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
                     if !name.is_empty() {
                         result = Some((name, vram_gb));
                     }
                 }
-                let release_adapter: unsafe extern "system" fn(*mut c_void) -> u32 = std::mem::transmute(*adapter_vtable.add(2));
+                let release_adapter: unsafe extern "system" fn(*mut c_void) -> u32 =
+                    std::mem::transmute(*adapter_vtable.add(2));
                 release_adapter(adapter_ptr);
             }
 
-            let release_factory: unsafe extern "system" fn(*mut c_void) -> u32 = std::mem::transmute(*vtable.add(2));
+            let release_factory: unsafe extern "system" fn(*mut c_void) -> u32 =
+                std::mem::transmute(*vtable.add(2));
             release_factory(factory_ptr);
             FreeLibrary(h_dxgi);
 
@@ -304,8 +317,14 @@ mod tests {
         let with_none = calculate_quantization_estimates(7.0, None);
         let explicit = calculate_quantization_estimates(7.0, Some(8192));
         assert_eq!(
-            with_none.iter().map(|e| e.estimated_vram_gb).collect::<Vec<_>>(),
-            explicit.iter().map(|e| e.estimated_vram_gb).collect::<Vec<_>>(),
+            with_none
+                .iter()
+                .map(|e| e.estimated_vram_gb)
+                .collect::<Vec<_>>(),
+            explicit
+                .iter()
+                .map(|e| e.estimated_vram_gb)
+                .collect::<Vec<_>>(),
             "None должен быть эквивалентен 8192 токенов контекста"
         );
     }
@@ -332,7 +351,8 @@ mod tests {
         for (s, l) in small.iter().zip(large.iter()) {
             assert!(
                 l.estimated_vram_gb >= s.estimated_vram_gb,
-                "больший контекст → не меньше VRAM ({})", s.quant_name
+                "больший контекст → не меньше VRAM ({})",
+                s.quant_name
             );
         }
     }
@@ -343,7 +363,8 @@ mod tests {
         for e in &est {
             assert!(
                 matches!(e.status.as_str(), "ok" | "warning" | "exceeds"),
-                "невалидный статус: {}", e.status
+                "невалидный статус: {}",
+                e.status
             );
             assert!(e.estimated_vram_gb > 0.0);
             assert!(e.size_gb > 0.0);
@@ -356,7 +377,10 @@ mod tests {
     fn tiny_model_gets_recommended_top_quality() {
         // 0.1B параметров помещается в любую VRAM → самый качественный квант рекомендован
         let est = calculate_quantization_estimates(0.1, Some(512));
-        assert!(est[0].is_recommended, "Q8_0 для крошечной модели должен быть ok+recommended");
+        assert!(
+            est[0].is_recommended,
+            "Q8_0 для крошечной модели должен быть ok+recommended"
+        );
         assert_eq!(est[0].status, "ok");
     }
 
@@ -365,7 +389,10 @@ mod tests {
     #[test]
     fn hardware_info_smoke_no_panic_sane_values() {
         let hw = get_hardware_info();
-        assert!(hw.total_ram_gb > 0.0, "RAM должна определяться положительной");
+        assert!(
+            hw.total_ram_gb > 0.0,
+            "RAM должна определяться положительной"
+        );
         assert!(hw.free_ram_gb >= 0.0 && hw.free_ram_gb <= hw.total_ram_gb);
         if hw.is_gpu_available {
             assert!(hw.total_vram_gb >= 0.0);
@@ -384,18 +411,27 @@ mod tests {
         assert_eq!(ids.len(), models.len(), "id уникальны");
 
         for m in &models {
-            assert!(m.filename.to_lowercase().ends_with(".gguf"), "файл модели .gguf: {}", m.filename);
+            assert!(
+                m.filename.to_lowercase().ends_with(".gguf"),
+                "файл модели .gguf: {}",
+                m.filename
+            );
             assert!(m.size_gb > 0.0);
             assert!(!m.name.is_empty());
             assert!(!m.repo_id.is_empty());
             assert!(!m.recommended_quant.is_empty());
-            assert!(m.is_commercial_allowed, "в каталоге только commercial-ok модели");
+            assert!(
+                m.is_commercial_allowed,
+                "в каталоге только commercial-ok модели"
+            );
             assert!(!m.tags.is_empty());
         }
 
         // Есть эмбеддер для Auto-RAG
         assert!(
-            models.iter().any(|m| m.id.contains("embed") || m.filename.contains("embed")),
+            models
+                .iter()
+                .any(|m| m.id.contains("embed") || m.filename.contains("embed")),
             "в каталоге должен быть embedding-модели"
         );
     }

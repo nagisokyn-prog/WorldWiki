@@ -3,8 +3,6 @@
    Strictly using WorldWiki CSS design tokens without any hardcoded colors
    ========================================================================= */
 
-@import '@raazkhnl/rk-editor-ui/styles.css';
-
 .rk-word-editor-container {
   display: flex;
   flex-direction: column;

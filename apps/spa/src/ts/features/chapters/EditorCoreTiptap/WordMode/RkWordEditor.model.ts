@@ -4,6 +4,7 @@ export type Orientation = 'portrait' | 'landscape';
 export interface RkWordEditorProps {
   content: string;
   editable?: boolean;
+  isReadOnly?: boolean;
   chapterTitle?: string;
   initialOrientation?: Orientation;
   initialPageSize?: PageSize;

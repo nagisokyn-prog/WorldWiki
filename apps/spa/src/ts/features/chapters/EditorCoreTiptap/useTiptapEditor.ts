@@ -167,6 +167,8 @@ export function useTiptapEditor(
     ],
     content: props.content || '',
     onUpdate: () => {
+      // В режиме Word редактированием управляет независимый инстанс RkWordEditor
+      if (stateHook.editorMode.value === 'word') return;
       if (editor.value) {
         emit('update:content', editor.value.getHTML());
         emit('change');
@@ -192,6 +194,8 @@ export function useTiptapEditor(
   };
 
   watch(() => props.content, (newContent) => {
+    // Не дергаем скрытый редактор в режиме Word во избежание конфликтов контента
+    if (stateHook.editorMode.value === 'word') return;
     if (editor.value && editor.value.getHTML() !== newContent) {
       editor.value.commands.setContent(newContent || '');
       stateHook.updateStats();
@@ -375,8 +379,14 @@ export function useTiptapEditor(
     ...stateHook,
     ...mdHook,
     ...formatHook,
-    switchEditorMode: (newMode: 'wysiwyg' | 'markdown' | 'split') => {
-      stateHook.switchEditorMode(newMode, mdHook.syncMarkdownFromEditor);
+    switchEditorMode: (newMode: 'wysiwyg' | 'markdown' | 'split' | 'word') => {
+      const prevMode = stateHook.editorMode.value;
+      stateHook.switchEditorMode(newMode as any, mdHook.syncMarkdownFromEditor);
+      if (prevMode === 'word' && newMode !== 'word' && editor.value && props.content) {
+        editor.value.commands.setContent(props.content);
+        stateHook.updateStats();
+        mdHook.syncMarkdownFromEditor();
+      }
     }
   };
 }

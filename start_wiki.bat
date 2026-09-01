@@ -1,16 +1,13 @@
 @echo off
 cd /d C:\Users\Kuzma\Desktop\WorldWiki
 
-:: Удаляем артефакты от старых сборок, если установлен cargo-sweep
-cd src-tauri
-if exist target (
-    where cargo-sweep >nul 2>nul
-    if %errorlevel% equ 0 (
-        echo Removing old build artifacts...
-        cargo sweep --time 14
-    )
+:: Очистка устаревших артефактов Cargo рекурсивно по всем подпроектам (лимит 5GB и старше 3 дней)
+cargo sweep --help >nul 2>nul
+if %errorlevel% equ 0 (
+    echo [Cargo] Cleaning old build artifacts across workspace...
+    cargo sweep -r --maxsize 5GB
+    cargo sweep -r --time 3
 )
-cd ..
 
 rem Install pnpm dependencies silently
 call pnpm install

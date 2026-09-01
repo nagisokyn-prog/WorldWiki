@@ -13,6 +13,42 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+  flex: 1;
+}
+
+.chapter-header-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  min-width: 180px;
+  max-width: 360px;
+  flex: 1;
+}
+
+.chapter-title-input-inline {
+  width: 100%;
+  height: 28px;
+  padding: 2px 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.chapter-title-input-inline:focus {
+  border-color: var(--accent);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+.chapter-title-input-inline::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 /* Выраженная подложка-остров для блока инструментов */
@@ -20,12 +56,11 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: var(--bg-surface, rgba(255, 255, 255, 0.035));
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
-  border-radius: var(--radius-sm, 6px);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
   padding: 3px 5px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Разделители между смысловыми группами кнопок */
@@ -33,7 +68,7 @@
   width: 1px;
   height: 16px;
   margin: 0 3px;
-  background: var(--border-color, rgba(255, 255, 255, 0.1));
+  background: var(--border-color);
   flex-shrink: 0;
 }
 
@@ -55,42 +90,42 @@
   height: 28px;
   min-width: 28px;
   padding: 0 7px;
-  border-radius: var(--radius-xs, 4px);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary, #cbd5e1);
+  border-radius: var(--radius-xs);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
   font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
   user-select: none;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-sm);
 }
 
 .toolbar-btn:hover {
-  background: var(--bg-hover, rgba(255, 255, 255, 0.1));
-  border-color: rgba(255, 255, 255, 0.2);
-  color: var(--text-main, #ffffff);
+  background: var(--bg-hover);
+  border-color: var(--border-focus);
+  color: var(--text-main);
   transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
 }
 
 .toolbar-btn:active {
   transform: translateY(0) scale(0.96);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 1px 2px var(--shadow-sm);
 }
 
 /* Активное состояние кнопки (когда стиль включен в тексте) */
 .toolbar-btn.is-active {
-  background: var(--accent, #6366f1) !important;
-  border-color: var(--accent, #6366f1) !important;
-  color: #ffffff !important;
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.45) !important;
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-text) !important;
+  box-shadow: 0 0 10px var(--accent-glow) !important;
 }
 
 /* Акцент для кнопки сброса форматирования */
 .toolbar-btn-danger:hover {
-  background: rgba(239, 68, 68, 0.15) !important;
-  border-color: rgba(239, 68, 68, 0.35) !important;
-  color: #f87171 !important;
+  background: var(--bg-hover) !important;
+  border-color: var(--danger) !important;
+  color: var(--danger) !important;
 }

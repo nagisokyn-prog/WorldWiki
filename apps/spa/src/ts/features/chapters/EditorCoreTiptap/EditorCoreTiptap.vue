@@ -1,30 +1,27 @@
 <template>
-  <div class="editor-core">
+  <div class="editor-core" :class="{ 'word-mode-active': editorMode === 'word' }">
     
-    <!-- Toolbar -->
+    <!-- Toolbar with inline chapter title -->
     <EditorToolbar 
       :editor="editor"
       :editor-mode="editorMode"
       :mode-options="modeOptions"
       :has-unsaved-changes="hasUnsavedChanges"
       :settings="settings"
+      :title="title"
+      :changed-fields="changedFields"
       :commands="{
         toggleBold, toggleItalic, toggleStrike, setHeading, toggleBlockquote, 
         toggleBulletList, toggleOrderedList, insertImage, insertTable, insertLink, 
         clearFormatting, toggleLinkLock, analyzeText
       }"
       @update:editor-mode="switchEditorMode"
+      @update:title="$emit('update:title', $event); $emit('change')"
       @save="$emit('save')"
       @toggle-history="$emit('toggle-history')"
+      @export="openExportModal"
     />
 
-    <!-- Title -->
-    <div class="chapter-header">
-      <div v-if="changedFields.includes('title')" class="changed-indicator changed-indicator-title" title="Поле было изменено">
-          <span class="badge badge-accent">Изменено</span>
-      </div>
-      <input type="text" :value="title" placeholder="Название главы..." class="chapter-title-input" @input="updateTitle">
-    </div>
 
     <!-- Editor Container -->
     <div 
@@ -112,10 +109,22 @@
         </div>
 
       </div>
+
+      <!-- Word Mode (А4 / Книга на базе ядра RK Word Editor) -->
+      <RkWordEditor
+        v-else-if="editorMode === 'word'"
+        :content="content"
+        :chapter-title="title"
+        :initial-orientation="isCurrentPageLandscape ? 'landscape' : 'portrait'"
+        :initial-page-size="currentPageSize"
+        @update:content="$emit('update:content', $event)"
+        @change="$emit('change')"
+        @save="$emit('save')"
+      />
     </div>
     
-    <!-- Status Bar -->
-    <div class="status-bar">
+    <!-- Status Bar for WYSIWYG, Markdown, and Split modes -->
+    <div v-if="editorMode !== 'word'" class="status-bar">
       <div class="flex gap-4">
         <span>Слов: {{ wordCount }}</span>
         <span>Символов: {{ charCount }}</span>
@@ -157,18 +166,41 @@
       @select="handlePromiseSelect"
       @link-milestone="handleMilestoneSelect"
     />
+
+    <!-- Document Export Modal -->
+    <DocumentExportModal
+      :is-open="isExportModalOpen"
+      :document="currentSemanticDocument"
+      :project-name="project"
+      @close="isExportModalOpen = false"
+    />
+
+    <!-- Paragraph Format Modal (Screenshot 3) -->
+    <ParagraphFormatModal
+      :is-open="isParagraphModalOpen"
+      @close="isParagraphModalOpen = false"
+      @apply="handleParagraphFormatApply"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { EditorContent } from '@tiptap/vue-3';
 import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
+import RkWordEditor from './WordMode/RkWordEditor.vue';
+import type { PageSize } from './WordMode/RkWordEditor.model';
+import ParagraphFormatModal, { type ParagraphFormatData } from './ParagraphFormatModal/ParagraphFormatModal.vue';
 import EntityLinkSelector from './EntityLinkSelector.vue';
 import PromiseContextMenu, { type PromiseTypeOption } from './PromiseContextMenu.vue';
+import { DocumentExportModal } from '../../documents';
+import { ASTAdapter, type TiptapDocJson } from '../../../services/document/ast/ASTAdapter';
+import { normalizeSemanticDocument } from '../../../services/document/ast/ASTNormalizer';
+import type { SemanticDocument } from '../../../services/document/ast/types';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 
+const isExportModalOpen = ref(false);
 const isEntitySelectorOpen = ref(false);
 const activeEditorTarget = ref<'wysiwyg'|'markdown'>('markdown');
 
@@ -431,7 +463,6 @@ const {
     rightPanelWidth,
     documentStructure,
     editor,
-    updateTitle,
     onMarkdownInput,
     onMarkdownKeydown,
     toggleBold,
@@ -455,6 +486,85 @@ const {
     startResizeRight
 } = useTiptapEditor(props, emit as (event: string, ...args: unknown[]) => void);
 
+const currentSemanticDocument = computed<SemanticDocument>(() => {
+  if (editor.value) {
+    const json = editor.value.getJSON() as unknown as TiptapDocJson;
+    return ASTAdapter.tiptapToSemanticAST(json, {
+      id: 'chapter-doc',
+      profileId: 'gost_academic',
+      metadata: {
+        title: props.title || 'Глава',
+        authors: ['Автор'],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      },
+      blocks: []
+    });
+  }
+  return normalizeSemanticDocument({
+    metadata: {
+      title: props.title || 'Глава',
+      authors: ['Автор'],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+  });
+});
+
+function openExportModal() {
+  isExportModalOpen.value = true;
+}
+
+const isParagraphModalOpen = ref(false);
+const isCurrentPageLandscape = ref(false);
+const currentPageSize = ref<PageSize>('A4');
+
+const applyTextAlign = (align: 'left' | 'center' | 'right' | 'justify') => {
+  if (editor.value) {
+    editor.value.chain().focus().setTextAlign(align).run();
+  }
+};
+
+const applyLineHeight = (lh: string) => {
+  if (editor.value) {
+    editor.value.chain().focus().setParagraphLineHeight(lh).run();
+  }
+};
+
+const insertEquation = () => {
+  if (editor.value) {
+    editor.value.chain().focus().insertContent('$$f(x) = \\int_{-\\infty}^{\\infty} e^{-x^2} dx$$').run();
+  }
+};
+
+const handleFirstLineIndentChange = (cm: number) => {
+  if (editor.value) {
+    editor.value.chain().focus().setParagraphIndent(cm).run();
+  }
+};
+
+const handleParagraphFormatApply = (data: ParagraphFormatData) => {
+  if (editor.value) {
+    applyTextAlign(data.alignment);
+    applyLineHeight(data.lineHeight);
+    if (data.firstLineType === 'indent') {
+      handleFirstLineIndentChange(data.firstLineCm);
+    }
+  }
+};
+
+const handleGlobalKeyDown = (e: KeyboardEvent) => {
+  if (e.altKey && (e.key === '=' || e.key === '+')) {
+    e.preventDefault();
+    insertEquation();
+  } else if (e.ctrlKey && e.key === 'Enter') {
+    e.preventDefault();
+    if (editor.value) {
+      editor.value.chain().focus().insertContent('<hr class="page-break" />').run();
+    }
+  }
+};
+
 import { openEntityEditorWindow } from '../../../utils/windowManager';
 
 const handleOpenEntityWindow = (e: Event) => {
@@ -477,12 +587,14 @@ onMounted(() => {
   document.addEventListener('ww:open-entity-selector', handleOpenEntitySelector);
   document.addEventListener('ww:open-entity-window', handleOpenEntityWindow);
   document.addEventListener('ww:locate-promise', handleLocatePromiseEvent);
+  window.addEventListener('keydown', handleGlobalKeyDown);
 });
 
 onUnmounted(() => {
   document.removeEventListener('ww:open-entity-selector', handleOpenEntitySelector);
   document.removeEventListener('ww:open-entity-window', handleOpenEntityWindow);
   document.removeEventListener('ww:locate-promise', handleLocatePromiseEvent);
+  window.removeEventListener('keydown', handleGlobalKeyDown);
 });
 </script>
 

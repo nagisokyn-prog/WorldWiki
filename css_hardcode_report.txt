@@ -4,30 +4,29 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     63 мест
-  • Fixed (Устранено): -1027 мест 🎉
-  • New (Введено):    +34 мест
-  • Net Trend:        ↓ 996 (94.1% улучшение)
+  • Current Debt:     55 мест
+  • Fixed (Устранено): -1029 мест 🎉
+  • New (Введено):    +28 мест
+  • Net Trend:        ↓ 1004 (94.8% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
 ────────────────────────────────────────────────────────────────────────
   • [Оверлеи / Затемнения]   --modal-backdrop : 0 мест
   • [Утопленные подложки]    --bg-sunken      : 0 мест
-  • [Системные рамки]        --border-color   : 8 мест
-  • [Цвета текста]           --text-main/muted: 9 мест
+  • [Системные рамки]        --border-color   : 0 мест
+  • [Цвета текста]           --text-main/muted: 0 мест
 
 ────────────────────────────────────────────────────────────────────────
   2. РАЗБИВКА ПО ТИПАМ НАРУШЕНИЙ
 ────────────────────────────────────────────────────────────────────────
-  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      5 [Критично для Light Theme]
-  • Hardcoded White Colors  (rgba(255,255,...), #fff):    11 [Критично для Light Theme]
-  • Arbitrary HEX Colors    (#aabbcc):                  11
-  • Inline Styles           (style="..."):              36
+  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      0 [Критично для Light Theme]
+  • Hardcoded White Colors  (rgba(255,255,...), #fff):     0 [Критично для Light Theme]
+  • Arbitrary HEX Colors    (#aabbcc):                   0
+  • Inline Styles           (style="..."):              55
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────
   3. ПРИОРИТЕТНЫЕ CSS ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-15 CSS ONLY)
 ────────────────────────────────────────────────────────────────────────
-   1. [ 18 мест]  packages/resources/src/styles/features/chapters/EditorToolbar.css
-   2. [  9 мест]  packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css
+  🎉 ИДЕАЛЬНО! В CSS файлах 0 нарушений дизайн-системы!

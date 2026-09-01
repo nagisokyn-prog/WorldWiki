@@ -3,6 +3,9 @@ import { useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import TextAlign from '@tiptap/extension-text-align';
+import { Mathematics } from '@tiptap/extension-mathematics';
+import 'katex/dist/katex.min.css';
 import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableHeader } from '@tiptap/extension-table-header';
@@ -13,6 +16,16 @@ import Paragraph from '@tiptap/extension-paragraph';
 import SemanticParagraphNode from '../Semantic/SemanticParagraphNode.vue';
 import * as api from '../../../services/api.client';
 import { AiGhostTextExtension } from './AiGhostTextExtension';
+import { 
+  CustomFontFamily, 
+  CustomFontSize, 
+  CustomUnderline,
+  CustomSubscript,
+  CustomSuperscript,
+  CustomHighlight,
+  PageBreakNode, 
+  WordParagraphCommands 
+} from './extensions/WordFormatExtensions';
 import { settingsService } from '@worldwiki/components';
 import type { AppSettings } from '@worldwiki/components';
 import { useTiptapState } from './hooks/useTiptapState';
@@ -60,13 +73,36 @@ const SemanticParagraph = Paragraph.extend({
       semanticTag: {
         default: 'desc',
         parseHTML: element => element.getAttribute('data-semantic-tag'),
-        renderHTML: attributes => {
-          return {
-            'data-semantic-tag': attributes.semanticTag,
-          }
-        },
+        renderHTML: attributes => ({
+          'data-semantic-tag': attributes.semanticTag,
+        }),
       },
-    }
+      textIndent: {
+        default: null,
+        parseHTML: element => element.style.textIndent || null,
+        renderHTML: attributes => attributes.textIndent ? { style: `text-indent: ${attributes.textIndent}` } : {},
+      },
+      leftIndent: {
+        default: null,
+        parseHTML: element => element.style.paddingLeft || null,
+        renderHTML: attributes => attributes.leftIndent ? { style: `padding-left: ${attributes.leftIndent}` } : {},
+      },
+      rightIndent: {
+        default: null,
+        parseHTML: element => element.style.paddingRight || null,
+        renderHTML: attributes => attributes.rightIndent ? { style: `padding-right: ${attributes.rightIndent}` } : {},
+      },
+      lineHeight: {
+        default: null,
+        parseHTML: element => element.style.lineHeight || null,
+        renderHTML: attributes => attributes.lineHeight ? { style: `line-height: ${attributes.lineHeight}` } : {},
+      },
+      textAlign: {
+        default: null,
+        parseHTML: element => element.style.textAlign || null,
+        renderHTML: attributes => attributes.textAlign ? { style: `text-align: ${attributes.textAlign}` } : {},
+      },
+    };
   },
   addNodeView() {
     return VueNodeViewRenderer(SemanticParagraphNode);
@@ -103,6 +139,18 @@ export function useTiptapEditor(
         protocols: ['entity', 'http', 'https', 'ftp', 'mailto']
       }),
       SemanticParagraph,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      Mathematics,
+      CustomFontFamily,
+      CustomFontSize,
+      CustomUnderline,
+      CustomSubscript,
+      CustomSuperscript,
+      CustomHighlight,
+      PageBreakNode,
+      WordParagraphCommands,
       Image.configure({
         allowBase64: true,
       }),

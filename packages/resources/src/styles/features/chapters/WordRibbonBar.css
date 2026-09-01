@@ -1,0 +1,218 @@
+/* =========================================================================
+   WORD RIBBON TOOLBAR DESIGN SYSTEM (Microsoft Word Authenticity)
+   Strictly using WorldWiki CSS design tokens without any hardcoded colors
+   ========================================================================= */
+
+.word-ribbon {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
+  user-select: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  margin-bottom: 8px;
+}
+
+/* 1. Верхние вкладки Ribbon (Главная, Вставка, Макет) */
+.ribbon-tabs-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 8px 0;
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ribbon-tab-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ribbon-tab-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+
+.ribbon-tab-btn.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* 2. Лента с функциональными группами инструментов */
+.ribbon-content-strip {
+  display: flex;
+  align-items: stretch;
+  padding: 6px 12px;
+  gap: 8px;
+  background: var(--bg-panel);
+  min-height: 96px;
+  overflow-x: auto;
+}
+
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid var(--border-color);
+  padding-right: 8px;
+  margin-right: 4px;
+}
+
+.ribbon-group:last-child {
+  border-right: none;
+  padding-right: 0;
+  margin-right: 0;
+}
+
+.ribbon-group-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.ribbon-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Подпись группы снизу с кнопкой вызова диалога */
+.ribbon-group-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-top: 4px;
+  padding-top: 2px;
+}
+
+.ribbon-group-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: capitalize;
+}
+
+.ribbon-dialog-launcher {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  color: var(--text-muted);
+  font-size: 9px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.ribbon-dialog-launcher:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-color);
+  color: var(--accent);
+}
+
+/* Элементы управления ленты (кнопки, селекторы, дропдауны) */
+.ribbon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  min-width: 24px;
+  padding: 0 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.ribbon-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-color);
+}
+
+.ribbon-btn:active {
+  transform: scale(0.96);
+}
+
+.ribbon-btn.is-active {
+  background: var(--bg-selected);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ribbon-btn-large {
+  flex-direction: column;
+  height: 60px;
+  min-width: 48px;
+  padding: 6px 8px;
+  gap: 4px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.ribbon-btn-large i {
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.ribbon-select {
+  height: 24px;
+  padding: 0 4px;
+  font-size: 11px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  outline: none;
+  cursor: pointer;
+}
+
+.ribbon-select:focus {
+  border-color: var(--accent);
+}
+
+.ribbon-select-font {
+  width: 140px;
+}
+
+.ribbon-select-size {
+  width: 52px;
+}
+
+.ribbon-separator {
+  width: 1px;
+  height: 20px;
+  background: var(--border-color);
+  margin: 0 4px;
+}
+
+.ribbon-icon-underline {
+  text-decoration: underline;
+}
+
+.ribbon-color-bar {
+  display: block;
+  width: 12px;
+  height: 3px;
+  margin-top: 1px;
+  border-radius: 1px;
+}

@@ -1,5 +1,15 @@
 <template>
-  <node-view-wrapper class="semantic-paragraph-node" :class="node.attrs.semanticTag || 'desc'">
+  <node-view-wrapper 
+    class="semantic-paragraph-node" 
+    :class="node?.attrs?.semanticTag || 'desc'"
+    :style="{
+      textIndent: node?.attrs?.textIndent || undefined,
+      paddingLeft: node?.attrs?.leftIndent || undefined,
+      paddingRight: node?.attrs?.rightIndent || undefined,
+      lineHeight: node?.attrs?.lineHeight || undefined,
+      textAlign: node?.attrs?.textAlign || undefined,
+    }"
+  >
     <!-- Tag Badge -->
     <div 
       contenteditable="false" 

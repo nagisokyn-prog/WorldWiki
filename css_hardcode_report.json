@@ -1,41 +1,28 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 63,
-  "fixedCount": 1027,
-  "introducedCount": 34,
-  "trendPercent": "94.1",
+  "currentDebt": 55,
+  "fixedCount": 1029,
+  "introducedCount": 28,
+  "trendPercent": "94.8",
   "categories": {
-    "blackColors": 5,
-    "whiteColors": 11,
-    "hexColors": 11,
+    "blackColors": 0,
+    "whiteColors": 0,
+    "hexColors": 0,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 36
+    "inlineStyles": 55
   },
   "semanticRoles": {
     "modalBackdrops": 0,
     "sunkenBackgrounds": 0,
-    "borders": 8,
-    "text": 9
+    "borders": 0,
+    "text": 0
   },
-  "topCssFiles": [
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "count": 18
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "count": 9
-    }
-  ],
+  "topCssFiles": [],
   "allTopFiles": [
     {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "count": 18
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "count": 9
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "count": 17
     },
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
@@ -88,171 +75,13 @@
     {
       "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
       "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+      "count": 1
     }
   ],
   "violations": [
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 23,
-      "match": "rgba(255, 255, 255, 0.035)",
-      "snippet": "background: var(--bg-surface, rgba(255, 255, 255, 0.035));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 24,
-      "match": "rgba(255, 255, 255, 0.08)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 27,
-      "match": "rgba(0, 0, 0, 0.2)",
-      "snippet": "box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 27,
-      "match": "rgba(0, 0, 0, 0.1)",
-      "snippet": "box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 36,
-      "match": "rgba(255, 255, 255, 0.1)",
-      "snippet": "background: var(--border-color, rgba(255, 255, 255, 0.1));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 59,
-      "match": "rgba(255, 255, 255, 0.03)",
-      "snippet": "background: rgba(255, 255, 255, 0.03);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 60,
-      "match": "rgba(255, 255, 255, 0.06)",
-      "snippet": "border: 1px solid rgba(255, 255, 255, 0.06);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 61,
-      "match": "#cbd5e1",
-      "snippet": "color: var(--text-secondary, #cbd5e1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 67,
-      "match": "rgba(0, 0, 0, 0.12)",
-      "snippet": "box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 71,
-      "match": "rgba(255, 255, 255, 0.1)",
-      "snippet": "background: var(--bg-hover, rgba(255, 255, 255, 0.1));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 72,
-      "match": "rgba(255, 255, 255, 0.2)",
-      "snippet": "border-color: rgba(255, 255, 255, 0.2);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 73,
-      "match": "#ffffff",
-      "snippet": "color: var(--text-main, #ffffff);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 75,
-      "match": "rgba(0, 0, 0, 0.25)",
-      "snippet": "box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 80,
-      "match": "rgba(0, 0, 0, 0.3)",
-      "snippet": "box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 85,
-      "match": "#6366f1",
-      "snippet": "background: var(--accent, #6366f1) !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 86,
-      "match": "#6366f1",
-      "snippet": "border-color: var(--accent, #6366f1) !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 87,
-      "match": "#ffffff",
-      "snippet": "color: #ffffff !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
-      "line": 95,
-      "match": "#f87171",
-      "snippet": "color: #f87171 !important;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 25,
-      "match": "#94a3b8",
-      "snippet": "color: var(--text-muted, #94a3b8);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 36,
-      "match": "rgba(255, 255, 255, 0.12)",
-      "snippet": "border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 37,
-      "match": "rgba(255, 255, 255, 0.04)",
-      "snippet": "background: var(--bg-surface, rgba(255, 255, 255, 0.04));"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 38,
-      "match": "#cbd5e1",
-      "snippet": "color: var(--text-secondary, #cbd5e1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 45,
-      "match": "#6366f1",
-      "snippet": "border-color: var(--accent-primary, #6366f1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 46,
-      "match": "#6366f1",
-      "snippet": "color: var(--accent-primary, #6366f1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 52,
-      "match": "#6366f1",
-      "snippet": "border-color: var(--accent-primary, #6366f1);"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 53,
-      "match": "#a5b4fc",
-      "snippet": "color: #a5b4fc;"
-    },
-    {
-      "file": "packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
-      "line": 79,
-      "match": "#64748b",
-      "snippet": "color: var(--text-muted, #64748b);"
-    },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
       "line": 32,
@@ -291,21 +120,129 @@
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 61,
+      "line": 58,
       "match": "inline-style",
       "snippet": "style=\"{ '--split-left': leftPanelWidth + '%' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
-      "line": 84,
+      "line": 81,
       "match": "inline-style",
       "snippet": "style=\"{ '--split-right': rightPanelWidth + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/ParagraphFormatModal/ParagraphFormatModal.vue",
+      "line": 97,
+      "match": "inline-style",
+      "snippet": "style=\"{\n                textAlign: form.alignment,\n                textIndent: form.firstLineType === 'indent' ? form.firstLineCm + 'cm' : '0cm',\n                lineHeight: form.lineHeight,\n                paddingLeft: form.leftIndentCm + 'cm',\n                paddingRight: form.rightIndentCm + 'cm',\n                marginTop: form.spaceBeforePt + 'px',\n                marginBottom: form.spaceAfterPt + 'px'\n              }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/PromiseContextMenu.vue",
       "line": 6,
       "match": "inline-style",
       "snippet": "style=\"{ top: `${adjustedPos.y}px`, left: `${adjustedPos.x}px` }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: sheetWidthPx + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 7,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: marginLeftPx + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 13,
+      "match": "inline-style",
+      "snippet": "style=\"{ right: mCm * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 17,
+      "match": "inline-style",
+      "snippet": "style=\"{ right: (mCm * pxPerCm - 4) + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 23,
+      "match": "inline-style",
+      "snippet": "style=\"{ right: (mCm - 0.5) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 34,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: (cm - 1) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 39,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: (cm - 1) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 48,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: ((cm - 1) + 0.5) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 55,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: 1.25 * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 60,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: 1.25 * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 68,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: firstLinePx + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 82,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: leftIndentPx + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 96,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: rightIndentPx + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 110,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: marginRightPx + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 116,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: rCm * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 120,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: (rCm * pxPerCm) + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "line": 132,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: guidelineX + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
@@ -318,6 +255,12 @@
       "line": 25,
       "match": "inline-style",
       "snippet": "style=\"{ '--indent-pl': (12 + item.indent * 20) + 'px' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/Semantic/SemanticParagraphNode.vue",
+      "line": 5,
+      "match": "inline-style",
+      "snippet": "style=\"{\n      textIndent: node?.attrs?.textIndent || undefined,\n      paddingLeft: node?.attrs?.leftIndent || undefined,\n      paddingRight: node?.attrs?.rightIndent || undefined,\n      lineHeight: node?.attrs?.lineHeight || undefined,\n      textAlign: node?.attrs?.textAlign || undefined,\n    }\""
     },
     {
       "file": "apps/spa/src/ts/features/documents/AcademicInspector/AcademicInspector.vue",

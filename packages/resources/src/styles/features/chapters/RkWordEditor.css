@@ -1,0 +1,135 @@
+/* =========================================================================
+   RK WORD EDITOR INTEGRATION STYLES FOR WORLDWIKI
+   Strictly using WorldWiki CSS design tokens without any hardcoded colors
+   ========================================================================= */
+
+@import '@raazkhnl/rk-editor-ui/styles.css';
+
+.rk-word-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-sunken);
+  color: var(--text-main);
+}
+
+/* 1. Верхняя полоса фиксированной линейки */
+.rk-ruler-sticky-bar {
+  flex-shrink: 0;
+  height: 20px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+
+/* 2. Область скролла листов документа */
+.rk-editor-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 24px 64px 24px;
+}
+
+/* 3. Хост редактора RK Word */
+.rk-editor-mount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Настройки ProseMirror листа под дизайн-систему WorldWiki */
+.rk-editor-mount .ProseMirror {
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-xl);
+  outline: none;
+  box-sizing: border-box;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14pt;
+  line-height: 1.5;
+  transition: width 0.2s ease, min-height 0.2s ease;
+}
+
+/* Стили виртуальных разделителей страниц от плагина Pagination */
+.rk-editor-mount .rk-page-boundary,
+.rk-editor-mount [data-rk-page-boundary] {
+  display: block;
+  width: 100%;
+  height: 32px;
+  background: var(--bg-sunken);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: inset 0 2px 6px var(--shadow-sm), inset 0 -2px 6px var(--shadow-sm);
+  margin: 32px 0;
+  position: relative;
+  user-select: none;
+  cursor: default;
+}
+
+/* 4. Нижняя строка состояния (Status Bar) */
+.rk-editor-status-bar {
+  flex-shrink: 0;
+  height: 28px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--text-muted);
+  user-select: none;
+  z-index: 10;
+}
+
+.rk-status-left,
+.rk-status-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rk-status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rk-status-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.rk-status-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.rk-status-btn.is-active {
+  color: var(--accent);
+  font-weight: 600;
+}

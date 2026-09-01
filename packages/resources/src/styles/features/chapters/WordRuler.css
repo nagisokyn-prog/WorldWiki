@@ -1,0 +1,201 @@
+/* =========================================================================
+   WORD SMART RULER DESIGN SYSTEM (Microsoft Word Authenticity)
+   Strictly using WorldWiki CSS design tokens without any hardcoded colors
+   ========================================================================= */
+
+.word-ruler-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 20px;
+  background: var(--bg-panel);
+  user-select: none;
+}
+
+/* 1. Горизонтальная линейка */
+.ruler-horizontal {
+  position: relative;
+  width: 794px; /* Ширина страницы А4 при 96 DPI */
+  height: 20px;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  overflow: visible;
+}
+
+/* Серая зона левого поля (30 мм по ГОСТ ~113px) */
+.ruler-margin-left-zone {
+  width: 113px;
+  height: 100%;
+  background: var(--bg-sunken);
+  border-right: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* Белая рабочая печатная зона (17 см ~643px) */
+.ruler-printable-zone {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  background: var(--bg-card);
+}
+
+/* Серая зона правого поля (10 мм по ГОСТ ~38px) */
+.ruler-margin-right-zone {
+  width: 38px;
+  height: 100%;
+  background: var(--bg-sunken);
+  border-left: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+/* Сантиметровые деления и риски */
+.ruler-tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-color);
+}
+
+.ruler-tick.tick-cm {
+  height: 10px;
+  background: var(--text-muted);
+}
+
+.ruler-tick.tick-half {
+  height: 6px;
+}
+
+.ruler-tick.tick-mm {
+  height: 3px;
+  opacity: 0.5;
+}
+
+.ruler-number {
+  position: absolute;
+  top: 2px;
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* 2. Маркеры линейки с увеличенным хитбоксом (24x24px) */
+.ruler-marker-handle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: ew-resize;
+  z-index: 5;
+}
+
+/* Верхний треугольник: Отступ первой строки (красная строка) */
+.marker-first-line {
+  top: 0px;
+}
+
+.marker-triangle-down {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--text-main);
+  transition: transform 0.1s ease;
+}
+
+.ruler-marker-handle:hover .marker-triangle-down {
+  border-top-color: var(--accent);
+  transform: scale(1.2);
+}
+
+/* Нижний маркер: Треугольник + Прямоугольник (Левый отступ) */
+.marker-left-indent {
+  bottom: 0px;
+  flex-direction: column;
+}
+
+.marker-triangle-up {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 7px solid var(--text-main);
+  transition: transform 0.1s ease;
+}
+
+.marker-rectangle-base {
+  width: 10px;
+  height: 4px;
+  background: var(--text-main);
+  margin-top: 1px;
+}
+
+.ruler-marker-handle:hover .marker-triangle-up {
+  border-bottom-color: var(--accent);
+  transform: scale(1.15);
+}
+.ruler-marker-handle:hover .marker-rectangle-base {
+  background: var(--accent);
+}
+
+/* Правый треугольник: Правый отступ */
+.marker-right-indent {
+  bottom: 0px;
+}
+
+/* Золотистая риска магнитной привязки к ГОСТ (1.25 см) */
+.ruler-gost-magnet-mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--warning);
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.ruler-gost-magnet-label {
+  position: absolute;
+  bottom: -16px;
+  transform: translateX(-50%);
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--warning);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Всплывающий тултип с точным значением в миллиметрах */
+.ruler-tooltip {
+  position: absolute;
+  top: -20px;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* Тонкая направляющая линия через всю страницу */
+.ruler-guideline {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px dashed var(--accent);
+  z-index: 100;
+  pointer-events: none;
+}

@@ -269,4 +269,165 @@
   50% {
     box-shadow: 0 0 8px 2px var(--accent-glow);
   }
-}
+}
+
+/* 6. Режим Word (А4 Лист ГОСТ 7.32) */
+.editor-wrapper-word-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-base);
+  padding: 16px;
+}
+
+/* Word Layout Pane: фиксированная линейка и скроллируемый холст страниц */
+.word-layout-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-sunken);
+}
+
+.word-ruler-sticky-bar {
+  flex-shrink: 0;
+  height: 20px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: var(--shadow-xs);
+}
+
+.word-pages-scroll-area {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 24px 64px 24px;
+}
+
+.word-ruler-bar {
+  max-width: 816px;
+  width: 100%;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.word-page-sheet {
+  width: 816px;
+  min-height: 1123px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  padding: 75px 38px 75px 113px;
+  box-sizing: border-box;
+}
+
+.editor-content-word-sheet .ProseMirror {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14pt;
+  line-height: 1.5;
+  outline: none;
+  text-align: justify;
+}
+
+.editor-content-word-sheet .ProseMirror p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.editor-content-word-sheet .ProseMirror p:not([style*="text-indent"]) {
+  text-indent: 1.25cm;
+}
+
+/* ГОСТ-подписи к таблицам и рисункам */
+.editor-content-word-sheet .ProseMirror .word-table-caption {
+  font-size: 12pt;
+  font-style: italic;
+  text-align: left;
+  margin-top: 16px;
+  margin-bottom: 6px;
+  text-indent: 0 !important;
+  color: var(--text-main);
+}
+
+.editor-content-word-sheet .ProseMirror .word-figure-caption {
+  font-size: 12pt;
+  font-style: italic;
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  text-indent: 0 !important;
+  color: var(--text-main);
+}
+
+/* Настоящее физическое разделение на страницы (Page Break) */
+.editor-content-word-sheet .ProseMirror hr.page-break,
+.editor-content-word-sheet .ProseMirror [data-page-break] {
+  display: block;
+  border: none;
+  height: 84px;
+  margin: 36px -38px 36px -113px;
+  background: var(--bg-sunken);
+  box-shadow: 0 4px 14px var(--shadow-sm), inset 0 2px 4px var(--shadow-sm);
+  position: relative;
+  cursor: default;
+  user-select: none;
+  page-break-after: always;
+  break-after: page;
+}
+
+.editor-content-word-sheet .ProseMirror hr.page-break::before,
+.editor-content-word-sheet .ProseMirror [data-page-break]::before {
+  content: "─── Конец страницы (ГОСТ 7.32) ───";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 4px 18px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-xs);
+}
+
+/* Отображение непечатаемых знаков пилькроу (¶) */
+.show-invisibles .editor-content-word-sheet .ProseMirror p::after {
+  content: " ¶";
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.word-mode-active .semantic-tag-badge,
+.editor-wrapper-word-page .semantic-tag-badge {
+  display: none !important;
+}
+
+.word-mode-active .semantic-paragraph-node,
+.editor-wrapper-word-page .semantic-paragraph-node {
+  padding-left: 0 !important;
+}

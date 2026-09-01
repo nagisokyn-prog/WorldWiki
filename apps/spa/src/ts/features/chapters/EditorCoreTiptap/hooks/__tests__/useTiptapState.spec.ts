@@ -50,6 +50,11 @@ describe('useTiptapState', () => {
     state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
     expect(state.editorMode.value).toBe('markdown');
 
+    // Valid saved word mode
+    localStorage.setItem(key, JSON.stringify({ mode: 'word' }));
+    state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
+    expect(state.editorMode.value).toBe('word');
+
     // Nothing in storage
     localStorage.clear();
     state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);

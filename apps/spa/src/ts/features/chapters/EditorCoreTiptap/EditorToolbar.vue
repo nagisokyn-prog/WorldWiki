@@ -1,6 +1,6 @@
 <template>
   <div class="editor-header">
-    <!-- LEFT: Switch Mode & Formatting Actions -->
+    <!-- LEFT: Switch Mode & Title & Formatting Actions -->
     <div class="toolbar-left-group">
       <XboxWheel 
         :model-value="editorMode" 
@@ -8,7 +8,22 @@
         @update:model-value="$emit('update:editorMode', $event)" 
       />
 
-      <div v-if="editorMode === 'wysiwyg' || editorMode === 'split' || editorMode === 'word'" class="toolbar-actions">
+      <!-- Title inside editor-header to the right of dropdown-container -->
+      <div class="chapter-header-inline">
+        <div v-if="changedFields?.includes('title')" class="changed-indicator changed-indicator-title" title="Поле было изменено">
+          <span class="badge badge-accent">Изменено</span>
+        </div>
+        <input 
+          type="text" 
+          :value="title" 
+          placeholder="Название главы..." 
+          class="chapter-title-input-inline" 
+          @input="$emit('update:title', ($event.target as HTMLInputElement).value)"
+        >
+      </div>
+
+      <!-- Formatting Actions ONLY for wysiwyg and split (Word has its own Ribbon) -->
+      <div v-if="editorMode === 'wysiwyg' || editorMode === 'split'" class="toolbar-actions">
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('bold') }" title="Жирный (Ctrl+B)" @click="commands.toggleBold?.()"><b>B</b></button>
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('italic') }" title="Курсив (Ctrl+I)" @click="commands.toggleItalic?.()"><i>I</i></button>
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('strike') }" title="Зачеркнутый" @click="commands.toggleStrike?.()"><s>S</s></button>
@@ -101,9 +116,11 @@ defineProps<{
   hasUnsavedChanges: boolean;
   settings: AppSettings | null;
   commands: EditorCommands;
+  title?: string;
+  changedFields?: string[];
 }>();
 
-defineEmits(['update:editorMode', 'save', 'toggle-history', 'export']);
+defineEmits(['update:editorMode', 'update:title', 'save', 'toggle-history', 'export']);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/EditorToolbar.css"></style>

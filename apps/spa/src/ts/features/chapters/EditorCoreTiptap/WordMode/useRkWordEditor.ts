@@ -7,7 +7,7 @@ import type {
   Orientation,
   EditorInstance 
 } from './RkWordEditor.model';
-import type { RibbonCommands } from '../WordRibbonBar/WordRibbonBar.vue';
+import type { RibbonCommands } from '../WordRibbonBar/useWordRibbonBar';
 import {
   attachPaginationPlus,
   updatePaginationLayout,
@@ -247,53 +247,56 @@ export function useRkWordEditor(
 
   // Команды для нашей кастомной ленты WordRibbonBar
   const ribbonCommands = computed<RibbonCommands>(() => {
-    const cmd = wordEditor.value?.commands;
+    // ВАЖНО: резолвим CommandManager в МОМЕНТ ВЫЗОВА, а не в момент вычисления computed.
+    // Иначе после подмены редактора в attachPaginationPlus лента могла бы держать
+    // устаревший/мертвый CommandManager и все кнопки молча превращались в no-op.
+    const cmd = () => wordEditor.value?.commands;
     return {
-      toggleBold: () => cmd?.bold(),
-      toggleItalic: () => cmd?.italic(),
-      toggleUnderline: () => cmd?.underline(),
-      toggleStrike: () => cmd?.strike(),
-      toggleSubscript: () => cmd?.subscript(),
-      toggleSuperscript: () => cmd?.superscript(),
-      toggleHighlight: () => cmd?.setHighlight('#ffff00'),
-      setHeading: (lvl: number) => cmd?.heading(lvl as 1 | 2 | 3 | 4 | 5 | 6),
-      toggleBlockquote: () => cmd?.blockquote(),
-      toggleBulletList: () => cmd?.bulletList(),
-      toggleOrderedList: () => cmd?.orderedList(),
-      setTextAlign: (align: 'left' | 'center' | 'right' | 'justify') => cmd?.align(align),
-      setFontFamily: (font: string) => cmd?.fontFamily(font),
-      setFontSize: (size: string) => cmd?.fontSize(size),
-      setLineHeight: (height: string) => cmd?.lineHeight(height),
-      decreaseIndent: () => cmd?.outdent(),
-      increaseIndent: () => cmd?.indent(),
-      insertPageBreak: () => cmd?.pageBreak(),
+      toggleBold: () => cmd()?.bold(),
+      toggleItalic: () => cmd()?.italic(),
+      toggleUnderline: () => cmd()?.underline(),
+      toggleStrike: () => cmd()?.strike(),
+      toggleSubscript: () => cmd()?.subscript(),
+      toggleSuperscript: () => cmd()?.superscript(),
+      toggleHighlight: () => cmd()?.setHighlight('#ffff00'),
+      setHeading: (lvl: number) => cmd()?.heading(lvl as 1 | 2 | 3 | 4 | 5 | 6),
+      toggleBlockquote: () => cmd()?.blockquote(),
+      toggleBulletList: () => cmd()?.bulletList(),
+      toggleOrderedList: () => cmd()?.orderedList(),
+      setTextAlign: (align: 'left' | 'center' | 'right' | 'justify') => cmd()?.align(align),
+      setFontFamily: (font: string) => cmd()?.fontFamily(font),
+      setFontSize: (size: string) => cmd()?.fontSize(size),
+      setLineHeight: (height: string) => cmd()?.lineHeight(height),
+      decreaseIndent: () => cmd()?.outdent(),
+      increaseIndent: () => cmd()?.indent(),
+      insertPageBreak: () => cmd()?.pageBreak(),
       /** Рисунок: открывает диалог загрузки (вместо prompt) */
       insertImage: () => emit('open-image-dialog'),
       /** Вставка изображения с ГОСТ-автоподписью (вызывается из диалога) */
       insertImageWithCaption: (src: string, caption?: string) => {
-        cmd?.insertImage(src);
+        cmd()?.insertImage(src);
         insertGostFigureCaption(tiptapEditor.value, caption);
       },
       /** Таблица: открывает hover-grid пикер (вместо prompt) */
       insertTable: () => emit('open-table-picker'),
       /** Вставка таблицы с ГОСТ-автоподписью (вызывается из пикера) */
       insertTableWithCaption: (rows: number, cols: number, title?: string) => {
-        cmd?.insertTable({ rows, cols, withHeaderRow: true });
+        cmd()?.insertTable({ rows, cols, withHeaderRow: true });
         insertGostTableCaption(tiptapEditor.value, title);
       },
       /** Ссылка: открывает диалог (вместо prompt) */
       insertLink: () => emit('open-link-dialog'),
-      insertLinkUrl: (url: string) => cmd?.insertLink(url),
-      insertFootnote: () => cmd?.footnote(),
+      insertLinkUrl: (url: string) => cmd()?.insertLink(url),
+      insertFootnote: () => cmd()?.footnote(),
       /** Уравнение: открывает диалог (вместо prompt) */
       insertEquation: () => emit('open-equation-dialog'),
-      insertEquationLatex: (latex: string) => cmd?.insertMathBlock(latex),
+      insertEquationLatex: (latex: string) => cmd()?.insertMathBlock(latex),
       /** Оглавление (TableOfContents extension из rk-editor-core) */
-      insertTableOfContents: () => cmd?.insertTableOfContents({ minLevel: 1, maxLevel: 3, title: 'Содержание', showPageNumbers: true }),
+      insertTableOfContents: () => cmd()?.insertTableOfContents({ minLevel: 1, maxLevel: 3, title: 'Содержание', showPageNumbers: true }),
       /** Текстовый блок (TextBox extension из rk-editor-core) */
-      insertTextBox: () => cmd?.insertTextBox(),
+      insertTextBox: () => cmd()?.insertTextBox(),
       /** Разрыв раздела (Section extension из rk-editor-core) */
-      insertSectionBreak: () => cmd?.sectionBreak?.(),
+      insertSectionBreak: () => cmd()?.sectionBreak?.(),
       /** Разрыв раздела → альбомный лист (ключевая ГОСТ-фича) */
       insertSectionLandscape: () => {
         insertSectionLandscape(tiptapEditor.value, (o) => setOrientation(o));
@@ -302,7 +305,7 @@ export function useRkWordEditor(
       insertSectionPortrait: () => {
         insertSectionPortrait(tiptapEditor.value, (o) => setOrientation(o));
       },
-      clearFormatting: () => cmd?.clearFormatting(),
+      clearFormatting: () => cmd()?.clearFormatting(),
       togglePageOrientation: () => toggleOrientation(),
       setPageSize: (size: string) => setPageSize(size as PageSize),
       // ── Макет: поля ──
@@ -312,7 +315,7 @@ export function useRkWordEditor(
         setCustomMargins(top, bottom, left, right),
       // ── Макет: абзац ──
       setParagraphSpacing: (beforePt: number, afterPt: number) =>
-        cmd?.spacing(`${beforePt}pt`, `${afterPt}pt`),
+        cmd()?.spacing(`${beforePt}pt`, `${afterPt}pt`),
       setLeftIndentCm: (cm: number) => {
         const level = Math.max(0, Math.min(8, Math.round((cm * PX_PER_CM) / INDENT_STEP_PX)));
         tiptapEditor.value?.chain().focus().updateAttributes('paragraph', { indent: level }).run();

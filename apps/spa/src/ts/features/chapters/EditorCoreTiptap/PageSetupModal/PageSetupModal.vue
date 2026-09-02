@@ -1,72 +1,3 @@
-<script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { PageSize, Orientation } from '../WordMode/RkWordEditor.model';
-import type { MarginsMm } from '../WordMode/useRkWordEditor';
-
-/**
- * Диалог «Параметры страницы» (как в Word): 3 вкладки — Поля / Бумага / Макет.
- */
-const props = defineProps<{
-  isOpen: boolean;
-  margins?: MarginsMm;
-  pageSize?: PageSize;
-  orientation?: Orientation;
-}>();
-
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'apply', payload: { margins: MarginsMm; pageSize: PageSize; orientation: Orientation }): void;
-}>();
-
-const activeTab = ref<'margins' | 'paper' | 'layout'>('margins');
-
-const topMm = ref(20);
-const bottomMm = ref(20);
-const leftMm = ref(30);
-const rightMm = ref(15);
-const size = ref<PageSize>('A4');
-const orient = ref<Orientation>('portrait');
-
-const SIZES: Array<{ value: PageSize; label: string }> = [
-  { value: 'A4', label: 'A4 (210 × 297 мм)' },
-  { value: 'A5', label: 'A5 (148 × 210 мм)' },
-  { value: 'A3', label: 'A3 (297 × 420 мм)' },
-  { value: 'Letter', label: 'Letter (216 × 279 мм)' },
-  { value: 'B5', label: 'B5 (176 × 250 мм)' },
-];
-
-watch(
-  () => props.isOpen,
-  (open) => {
-    if (open) {
-      topMm.value = props.margins?.top ?? 20;
-      bottomMm.value = props.margins?.bottom ?? 20;
-      leftMm.value = props.margins?.left ?? 30;
-      rightMm.value = props.margins?.right ?? 15;
-      size.value = props.pageSize || 'A4';
-      orient.value = props.orientation || 'portrait';
-      activeTab.value = 'margins';
-    }
-  }
-);
-
-const applyGost = () => {
-  topMm.value = 20;
-  bottomMm.value = 20;
-  leftMm.value = 30;
-  rightMm.value = 15;
-};
-
-const handleApply = () => {
-  emit('apply', {
-    margins: { top: topMm.value, bottom: bottomMm.value, left: leftMm.value, right: rightMm.value },
-    pageSize: size.value,
-    orientation: orient.value,
-  });
-  emit('close');
-};
-</script>
-
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="wmodal-overlay" @click.self="emit('close')">
@@ -122,5 +53,19 @@ const handleApply = () => {
     </div>
   </Teleport>
 </template>
+
+<script setup lang="ts">
+import { usePageSetupModal } from './usePageSetupModal';
+
+const props = defineProps<{
+  isOpen: boolean;
+  margins?: { top: number; bottom: number; left: number; right: number };
+  pageSize?: import('../WordMode/RkWordEditor.model').PageSize;
+  orientation?: import('../WordMode/RkWordEditor.model').Orientation;
+}>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { margins: { top: number; bottom: number; left: number; right: number }; pageSize: import('../WordMode/RkWordEditor.model').PageSize; orientation: import('../WordMode/RkWordEditor.model').Orientation }): void }>();
+const { activeTab, topMm, bottomMm, leftMm, rightMm, size, orient, applyGost, handleApply, SIZES } =
+  usePageSetupModal(props, emit);
+</script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/WordDialogs.css"></style>

@@ -1,54 +1,3 @@
-<script setup lang="ts">
-import { ref, watch } from 'vue';
-
-/**
- * Диалог загрузки рисунка (замена prompt): файл с компьютера → base64,
- * либо URL; необязательная подпись (ГОСТ «Рисунок N — ...»); выравнивание.
- */
-const props = defineProps<{ isOpen: boolean }>();
-
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'insert', payload: { src: string; caption: string; align: 'block' | 'left' | 'right' }): void;
-}>();
-
-const url = ref('');
-const caption = ref('');
-const align = ref<'block' | 'left' | 'right'>('block');
-const fileInput = ref<HTMLInputElement | null>(null);
-
-watch(
-  () => props.isOpen,
-  (open) => {
-    if (open) {
-      url.value = '';
-      caption.value = '';
-      align.value = 'block';
-    }
-  }
-);
-
-const pickFile = () => fileInput.value?.click();
-
-const onFileChange = (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    url.value = String(reader.result);
-  };
-  reader.readAsDataURL(file);
-  input.value = '';
-};
-
-const handleInsert = () => {
-  if (!url.value.trim()) return;
-  emit('insert', { src: url.value.trim(), caption: caption.value.trim(), align: align.value });
-  emit('close');
-};
-</script>
-
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="wmodal-overlay" @click.self="emit('close')">
@@ -84,5 +33,12 @@ const handleInsert = () => {
     </div>
   </Teleport>
 </template>
+<script setup lang="ts">
+import { useImageInsertDialog } from './useImageInsertDialog';
 
+const props = defineProps<{ isOpen: boolean }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { src: string; caption: string; align: 'block' | 'left' | 'right' }): void }>();
+const { url, caption, align, fileInput, pickFile, onFileChange, handleInsert } =
+  useImageInsertDialog(props, emit);
+</script>
 <style scoped src="@worldwiki/resources/styles/features/chapters/WordDialogs.css"></style>

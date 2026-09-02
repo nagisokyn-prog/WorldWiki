@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="word-ribbon">
     <!-- Верхние вкладки Ribbon -->
     <div class="ribbon-tabs-bar">
@@ -114,7 +114,7 @@
                 type="button" 
                 class="ribbon-btn" 
                 title="Очистить всё форматирование"
-                @click="commands.clearFormatting?.()"
+                @click="call('clearFormatting', commands.clearFormatting)"
               >
                 <i class="fas fa-eraser"></i>
               </button>
@@ -127,7 +127,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('bold') }" 
                 title="Полужирный (Ctrl+B)"
-                @click="commands.toggleBold?.()"
+                @click="call('toggleBold', commands.toggleBold)"
               >
                 <b>Ж</b>
               </button>
@@ -136,7 +136,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('italic') }" 
                 title="Курсив (Ctrl+I)"
-                @click="commands.toggleItalic?.()"
+                @click="call('toggleItalic', commands.toggleItalic)"
               >
                 <i>К</i>
               </button>
@@ -145,7 +145,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('underline') }" 
                 title="Подчеркнутый (Ctrl+U)"
-                @click="commands.toggleUnderline?.()"
+                @click="call('toggleUnderline', commands.toggleUnderline)"
               >
                 <u class="ribbon-icon-underline">Ч</u>
               </button>
@@ -154,7 +154,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('strike') }" 
                 title="Зачеркнутый"
-                @click="commands.toggleStrike?.()"
+                @click="call('toggleStrike', commands.toggleStrike)"
               >
                 <s>ab</s>
               </button>
@@ -166,7 +166,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('subscript') }" 
                 title="Подстрочный знак (Ctrl+=)"
-                @click="commands.toggleSubscript?.()"
+                @click="call('toggleSubscript', commands.toggleSubscript)"
               >
                 x<sub>2</sub>
               </button>
@@ -175,7 +175,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('superscript') }" 
                 title="Надстрочный знак (Ctrl+Shift++)"
-                @click="commands.toggleSuperscript?.()"
+                @click="call('toggleSuperscript', commands.toggleSuperscript)"
               >
                 x<sup>2</sup>
               </button>
@@ -187,7 +187,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('highlight') }" 
                 title="Цвет выделения текста (маркер)"
-                @click="commands.toggleHighlight?.()"
+                @click="call('toggleHighlight', commands.toggleHighlight)"
               >
                 <i class="fas fa-highlighter"></i>
               </button>
@@ -217,7 +217,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('bulletList') }" 
                 title="Маркеры (список)"
-                @click="commands.toggleBulletList?.()"
+                @click="call('toggleBulletList', commands.toggleBulletList)"
               >
                 <i class="fas fa-list-ul"></i>
               </button>
@@ -226,7 +226,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('orderedList') }" 
                 title="Нумерация"
-                @click="commands.toggleOrderedList?.()"
+                @click="call('toggleOrderedList', commands.toggleOrderedList)"
               >
                 <i class="fas fa-list-ol"></i>
               </button>
@@ -270,7 +270,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.({ textAlign: 'left' }) }" 
                 title="По левому краю (Ctrl+L)"
-                @click="commands.setTextAlign?.('left')"
+                @click="call('setTextAlign', () => commands.setTextAlign?.('left'))"
               >
                 <i class="fas fa-align-left"></i>
               </button>
@@ -279,7 +279,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.({ textAlign: 'center' }) }" 
                 title="По центру (Ctrl+E)"
-                @click="commands.setTextAlign?.('center')"
+                @click="call('setTextAlign', () => commands.setTextAlign?.('center'))"
               >
                 <i class="fas fa-align-center"></i>
               </button>
@@ -322,7 +322,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('blockquote') }" 
                 title="Цитата"
-                @click="commands.toggleBlockquote?.()"
+                @click="call('toggleBlockquote', commands.toggleBlockquote)"
               >
                 <i class="fas fa-quote-right"></i>
               </button>
@@ -351,7 +351,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('heading', { level: 1 }) }" 
                 title="Заголовок 1 (Ctrl+Alt+1)"
-                @click="commands.setHeading?.(1)"
+                @click="call('setHeading', () => commands.setHeading?.(1))"
               >
                 H1
               </button>
@@ -360,7 +360,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('heading', { level: 2 }) }" 
                 title="Заголовок 2 (Ctrl+Alt+2)"
-                @click="commands.setHeading?.(2)"
+                @click="call('setHeading', () => commands.setHeading?.(2))"
               >
                 H2
               </button>
@@ -369,7 +369,7 @@
                 class="ribbon-btn" 
                 :class="{ 'is-active': editor?.isActive?.('heading', { level: 3 }) }" 
                 title="Заголовок 3 (Ctrl+Alt+3)"
-                @click="commands.setHeading?.(3)"
+                @click="call('setHeading', () => commands.setHeading?.(3))"
               >
                 H3
               </button>
@@ -765,188 +765,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import type { EditorInstance } from '../WordMode/RkWordEditor.model';
+import { useWordRibbonBar } from './useWordRibbonBar';
+import type { RibbonProps as WordRibbonProps } from './useWordRibbonBar';
 
-export type PaperSize = 'A4' | 'A5' | 'A3' | 'Letter' | 'B5';
+const props = defineProps<WordRibbonProps>();
 
-export interface RibbonCommands {
-  toggleBold?: () => boolean | undefined;
-  toggleItalic?: () => boolean | undefined;
-  toggleUnderline?: () => boolean | undefined;
-  toggleStrike?: () => boolean | undefined;
-  toggleSubscript?: () => boolean | undefined;
-  toggleSuperscript?: () => boolean | undefined;
-  toggleHighlight?: () => boolean | undefined;
-  setHeading?: (level: number) => boolean | undefined;
-  toggleBlockquote?: () => boolean | undefined;
-  toggleBulletList?: () => boolean | undefined;
-  toggleOrderedList?: () => boolean | undefined;
-  setTextAlign?: (align: 'left' | 'center' | 'right' | 'justify') => void | boolean | undefined;
-  setFontFamily?: (font: string) => void | boolean | undefined;
-  setFontSize?: (size: string) => void | boolean | undefined;
-  setLineHeight?: (height: string) => void | boolean | undefined;
-  decreaseIndent?: () => void | boolean | undefined;
-  increaseIndent?: () => void | boolean | undefined;
-  insertPageBreak?: () => void;
-  insertImage?: () => void;
-  insertImageWithCaption?: (src: string, caption?: string) => void;
-  insertTable?: () => void;
-  insertTableWithCaption?: (rows: number, cols: number, title?: string) => void;
-  insertLink?: () => void;
-  insertLinkUrl?: (url: string) => void;
-  insertFootnote?: () => void;
-  insertEquation?: () => void;
-  insertEquationLatex?: (latex: string) => void;
-  clearFormatting?: () => void;
-  // Макет — поля
-  setGostMargins?: () => void;
-  setMarginPreset?: (preset: 'gost' | 'normal' | 'narrow' | 'wide') => void;
-  setCustomMargins?: (top: number, bottom: number, left: number, right: number) => void;
-  // Макет — абзац
-  setParagraphSpacing?: (beforePt: number, afterPt: number) => void;
-  setLeftIndentCm?: (cm: number) => void;
-  setRightIndentCm?: (cm: number) => void;
-  // Разрывы разделов
-  insertSectionBreak?: () => void;
-  insertSectionPortrait?: () => void;
-  insertSectionLandscape?: () => void;
-  // Колонтитулы
-  updateHeaderText?: (left: string, right: string) => void;
-  updateFooterText?: (left: string, right: string) => void;
-  openHeaderFooterDialog?: (tab?: 'header' | 'footer') => void;
-  openPageSetup?: () => void;
-  // Вставка (новые)
-  insertTextBox?: () => void;
-  insertTableOfContents?: () => void;
-  togglePageOrientation?: () => void;
-  setPageSize?: (size: PaperSize) => void;
-  [key: string]: unknown;
-}
-
-const props = defineProps<{
-  editor: EditorInstance | null | undefined;
-  commands: RibbonCommands;
-  isInsideTable?: boolean;
+const emit = defineEmits<{
+  (e: 'open-paragraph-dialog'): void;
+  (e: 'open-font-dialog'): void;
+  (e: 'open-page-setup'): void;
+  (e: 'open-header-footer-dialog', tab?: 'header' | 'footer'): void;
 }>();
 
-const emit = defineEmits(['open-paragraph-dialog', 'open-font-dialog', 'open-page-setup', 'open-header-footer-dialog']);
-
-const activeTab = ref<'home' | 'insert' | 'layout' | 'table-design'>('home');
-const currentPageSize = ref<PaperSize>('A4');
-const currentFontFamily = ref("'Times New Roman', Times, serif");
-const currentFontSize = ref('14pt');
-const currentLineHeight = ref('1.5');
-const showInvisibles = ref(false);
-
-/** Какой кастомный dropdown открыт (Поля / Ориентация / Разрывы / Колонтитулы...) */
-const openDropdown = ref<string | null>(null);
-
-/** Координаты открытого меню (position: fixed — не кликается overflow ленты) */
-const dropdownPos = ref({ top: 0, left: 0 });
-
-const toggleDropdown = (event: MouseEvent, name: string) => {
-  if (openDropdown.value === name) {
-    openDropdown.value = null;
-    return;
-  }
-  const btn = (event.currentTarget as HTMLElement | null)?.getBoundingClientRect();
-  if (btn) {
-    const MENU_WIDTH = 280;
-    // Не даём меню вылезти за правый край окна
-    const left = Math.min(btn.left, Math.max(8, window.innerWidth - MENU_WIDTH - 8));
-    dropdownPos.value = { top: btn.bottom + 4, left };
-  }
-  openDropdown.value = name;
-};
-
-const closeDropdown = () => {
-  openDropdown.value = null;
-};
-
-/** Числовые поля группы «Абзац» (Макет) */
-const indentLeftCm = ref(0);
-const indentRightCm = ref(0);
-const spacingBeforePt = ref(0);
-const spacingAfterPt = ref(0);
-
-const applyLeftIndent = () => props.commands.setLeftIndentCm?.(Number(indentLeftCm.value) || 0);
-const applyRightIndent = () => props.commands.setRightIndentCm?.(Number(indentRightCm.value) || 0);
-const applySpacing = () =>
-  props.commands.setParagraphSpacing?.(Number(spacingBeforePt.value) || 0, Number(spacingAfterPt.value) || 0);
-
-// ── Пресеты колонтитулов (dropdown «Вставка») ──
-const applyHeaderPreset = (preset: 'empty' | 'chapter-left' | 'chapter-center') => {
-  if (preset === 'empty') {
-    props.commands.updateHeaderText?.('', '');
-  } else if (preset === 'chapter-left') {
-    props.commands.updateHeaderText?.('Название главы', '');
-  } else {
-    props.commands.updateHeaderText?.('', 'Название главы');
-  }
-  closeDropdown();
-};
-
-const applyFooterPreset = (preset: 'empty' | 'page-right' | 'page-center' | 'page-only-right') => {
-  if (preset === 'empty') {
-    props.commands.updateFooterText?.('', '');
-  } else if (preset === 'page-right') {
-    props.commands.updateFooterText?.('', 'Стр. {page} из {total}');
-  } else if (preset === 'page-center') {
-    props.commands.updateFooterText?.('Стр. {page} из {total}', '');
-  } else {
-    props.commands.updateFooterText?.('', '{page}');
-  }
-  closeDropdown();
-};
-
-const applyPageNumberPosition = (position: 'header-left' | 'header-right' | 'header-center' | 'footer-left' | 'footer-right' | 'footer-center') => {
-  // Сначала очищаем номер из обоих колонтитулов, затем ставим на новое место
-  props.commands.updateHeaderText?.('', '');
-  props.commands.updateFooterText?.('', '');
-  if (position === 'header-left') props.commands.updateHeaderText?.('{page}', '');
-  else if (position === 'header-center') props.commands.updateHeaderText?.('', '{page}');
-  else if (position === 'header-right') props.commands.updateHeaderText?.('', '{page}');
-  else if (position === 'footer-left') props.commands.updateFooterText?.('{page}', '');
-  else if (position === 'footer-center') props.commands.updateFooterText?.('{page}', '');
-  else props.commands.updateFooterText?.('', '{page}');
-  closeDropdown();
-};
-
-// Меню позиционируется fixed: при скролле/ресайзе координаты устаревают — закрываем
-const handleViewportChange = () => closeDropdown();
-onMounted(() => {
-  window.addEventListener('scroll', handleViewportChange, true);
-  window.addEventListener('resize', handleViewportChange);
-});
-onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleViewportChange, true);
-  window.removeEventListener('resize', handleViewportChange);
-});
-
-const applyFontFamily = () => {
-  props.commands.setFontFamily?.(currentFontFamily.value);
-};
-
-const applyFontSize = () => {
-  props.commands.setFontSize?.(currentFontSize.value);
-};
-
-const applyLineHeight = () => {
-  props.commands.setLineHeight?.(currentLineHeight.value);
-};
-
-const stepFontSize = (delta: number) => {
-  const currentNum = parseInt(currentFontSize.value, 10) || 14;
-  const newNum = Math.max(8, Math.min(72, currentNum + delta * 2));
-  currentFontSize.value = `${newNum}pt`;
-  applyFontSize();
-};
-
-const toggleInvisibles = () => {
-  showInvisibles.value = !showInvisibles.value;
-  document.body.classList.toggle('show-invisibles', showInvisibles.value);
-};
+const {
+  activeTab, currentPageSize, currentFontFamily, currentFontSize, currentLineHeight,
+  showInvisibles, openDropdown, dropdownPos, indentLeftCm, indentRightCm,
+  spacingBeforePt, spacingAfterPt, toggleDropdown, closeDropdown,
+  applyLeftIndent, applyRightIndent, applySpacing, applyHeaderPreset,
+  applyFooterPreset, applyPageNumberPosition, applyFontFamily, applyFontSize,
+  applyLineHeight, stepFontSize, toggleInvisibles, call,
+} = useWordRibbonBar(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/WordRibbonBar.css"></style>

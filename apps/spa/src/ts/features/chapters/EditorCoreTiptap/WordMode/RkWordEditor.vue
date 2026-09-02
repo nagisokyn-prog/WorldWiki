@@ -1,5 +1,11 @@
 <template>
-  <div class="rk-word-editor rk-word-editor-container">
+  <div
+    class="rk-word-editor rk-word-editor-container"
+    @open-image-dialog="isImageDialogOpen = true"
+    @open-table-picker="isTablePickerOpen = true"
+    @open-link-dialog="isLinkDialogOpen = true"
+    @open-equation-dialog="isEquationDialogOpen = true"
+  >
     <!-- 1. Наша фирменная лента Word (Microsoft Ribbon Authenticity) -->
     <WordRibbonBar
       :editor="tiptapEditor"

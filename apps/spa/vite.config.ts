@@ -47,17 +47,24 @@ export default defineConfig({
   root: '.',
   base: './',
   resolve: {
-    alias: {
-      'vue': 'vue/dist/vue.esm-bundler.js',
-      'vue-i18n': 'vue-i18n/dist/vue-i18n.esm-bundler.js',
-      '@worldwiki/components': resolve(__dirname, '../../packages/components/src'),
-      '@worldwiki/resources': resolve(__dirname, '../../packages/resources/src'),
-      '@': resolve(__dirname, 'src/ts'),
-      '@services': resolve(__dirname, 'src/ts/services'),
-      '@components': resolve(__dirname, 'src/ts/components'),
-      '@utils': resolve(__dirname, 'src/ts/utils'),
-      '@types': resolve(__dirname, 'src/ts/types')
-    }
+    alias: [
+      { find: 'vue', replacement: 'vue/dist/vue.esm-bundler.js' },
+      { find: 'vue-i18n', replacement: 'vue-i18n/dist/vue-i18n.esm-bundler.js' },
+      { find: '@worldwiki/components', replacement: resolve(__dirname, '../../packages/components/src') },
+      { find: '@worldwiki/resources', replacement: resolve(__dirname, '../../packages/resources/src') },
+      { find: '@services', replacement: resolve(__dirname, 'src/ts/services') },
+      { find: '@components', replacement: resolve(__dirname, 'src/ts/components') },
+      { find: '@utils', replacement: resolve(__dirname, 'src/ts/utils') },
+      { find: '@types', replacement: resolve(__dirname, 'src/ts/types') },
+      // v2-копии tiptap-ядра для tiptap-pagination-plus (см. paginationV2Resolver).
+      // Строковые алиасы: в vitest импорт переписывается в "/@id/@tiptap/core-v2"
+      { find: '/@id/@tiptap/core-v2', replacement: resolve(__dirname, 'node_modules/@tiptap/core-v2/dist/index.js') },
+      { find: '/@id/@tiptap/pm-v2/', replacement: resolve(__dirname, 'node_modules/@tiptap/pm-v2/') },
+      { find: '@tiptap/core-v2', replacement: resolve(__dirname, 'node_modules/@tiptap/core-v2/dist/index.js') },
+      { find: '@tiptap/pm-v2/', replacement: resolve(__dirname, 'node_modules/@tiptap/pm-v2/') },
+      // "@" — последним: он префиксный и перебивает более длинные алиасы
+      { find: '@', replacement: resolve(__dirname, 'src/ts') }
+    ]
   },
   build: {
     outDir: '../../dist',

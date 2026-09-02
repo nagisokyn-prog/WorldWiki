@@ -1,30 +1,3 @@
-<script setup lang="ts">
-import { ref, watch } from 'vue';
-
-/** Диалог вставки уравнения (LaTeX → MathBlock, замена prompt). */
-const props = defineProps<{ isOpen: boolean }>();
-
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'insert', payload: { latex: string }): void;
-}>();
-
-const latex = ref('f(x) = \\int_{-\\infty}^{\\infty} e^{-x^2} dx');
-
-watch(
-  () => props.isOpen,
-  (open) => {
-    if (open) latex.value = 'f(x) = \\int_{-\\infty}^{\\infty} e^{-x^2} dx';
-  }
-);
-
-const handleInsert = () => {
-  if (!latex.value.trim()) return;
-  emit('insert', { latex: latex.value.trim() });
-  emit('close');
-};
-</script>
-
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="wmodal-overlay" @click.self="emit('close')">
@@ -47,5 +20,13 @@ const handleInsert = () => {
     </div>
   </Teleport>
 </template>
+
+<script setup lang="ts">
+import { useEquationInsertDialog } from './useEquationInsertDialog';
+
+const props = defineProps<{ isOpen: boolean }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { latex: string }): void }>();
+const { latex, handleInsert } = useEquationInsertDialog(props, emit);
+</script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/WordDialogs.css"></style>

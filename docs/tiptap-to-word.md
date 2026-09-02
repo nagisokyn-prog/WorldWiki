@@ -2,6 +2,61 @@
 
 > Статус: черновик ТЗ · Дата: 2026-09-02
 > Связанные документы: docs/implementation_plan_word.md, TECHNICAL_SPECIFICATION.md
+---
+
+## Журнал выполнения
+
+### Фаза 0 — быстрые победы ✅ (выполнено)
+
+**Focus theft:**
+- `WordRibbonBar.vue`: добавлен корневой обработчик `@mousedown="onRibbonMousedown"` с `preventDefault()` для всех элементов, кроме `select/input/textarea`. Кнопки ленты больше не уводят DOM-focus с редактора → ProseMirror применяет команду к живому выделению, подсветка сохраняется.
+
+**Верификация подмены в мосте:**
+- `rkPaginationBridge.ts`: добавлена детальная диагностика — мост теперь логирует имена реально переподменённых сервисов (`swappedServiceNames`), пропущенных (`missedServiceNames`) и проверяет `commands.editor === next`. Если CommandManager не указывает на живой редактор — публикуется `console.error` (ранее это было молчанием → `result: false`).
+
+**Страховка команд ленты:**
+- `useRkWordEditor.ts` → `ribbonCommands`: функция `cmd()` теперь резолвит CommandManager в момент вызова и проверяет синхронизацию обёртки (`wrapper.instance === tiptapEditor.value`). Если обёртка не синхронизирована с живым редактором (мост не смог переподменить сервисы) — команды идут напрямую в живой tiptap-инстанс. Исключает «stale editor ref» как причину `result: false`.
+
+### Фаза 1 — каркас пакета ✅ (выполнено)
+
+**Создан workspace-пакет `packages/word-vibe`:**
+- `package.json`: собственные зависимости `@raazkhnl/rk-editor-core@4.6.0`, `@tiptap/core@2.27.2`, `@tiptap/pm@2.27.2`, `tiptap-pagination-plus@2.1.0`, `@raazkhnl/rk-editor-ui@^4.6.0`. Vue — peer + devDependency закреплён на `3.5.39` (версия приложения) для совместимости ref-типов.
+- `tsconfig.json`: расширяет `../../tsconfig.base.json`, `noEmit`, таргет ES2022.
+- `src/index.ts`: публичный реэкспорт всего API пакета.
+- `src/styles.ts`: реэкспорт CSS rk-editor-ui через `@worldwiki/word-vibe/styles`.
+- `src/ribbon/commands.ts`: единый источник контракта `PaperSize` + `RibbonCommands` (раньше дублировался).
+
+**Перенесено из `WordMode/*` в `packages/word-vibe/src/editor/`:**
+- `useRkWordEditor.ts`, `rkPaginationBridge.ts`, `geometryHelper.ts`, `RkWordEditor.model.ts`
+- `extensions/GostFigureCaption.ts`, `extensions/GostTableCaption.ts`, `extensions/SectionOrientation.ts`
+
+**Переключены импорты в `apps/spa` (все потребители теперь через `@worldwiki/word-vibe`):**
+- `PageSetupModal/usePageSetupModal.ts`, `PageSetupModal/PageSetupModal.vue` — типы `PageSize`, `Orientation`, `MarginsMm`
+- `WordRibbonBar/useWordRibbonBar.ts` — `EditorInstance`, `PaperSize`, `RibbonCommands` (+ реэкспорт для шаблона)
+- `WordRuler/useWordRuler.ts` — `PageSize`, `EditorInstance`
+- `EditorCoreTiptap.vue` — `PageSize`
+- `__tests__/rkWordEditor.spec.ts`, `__tests__/wordFormatting.spec.ts` — `useRkWordEditor`, GOST-extension
+- `WordMode/RkWordEditor.vue` — `useRkWordEditor`, типы, стили (`@worldwiki/word-vibe/styles`)
+
+**Удалено из `apps/spa/package.json`:**
+- `@raazkhnl/rk-editor-core`, `@raazkhnl/rk-editor-ui` (теперь только в word-vibe)
+- Добавлен `@worldwiki/word-vibe: workspace:*`
+
+**Убраны хаки из `vite.config.ts`:**
+- Vite-плагин `pagination-plus-tiptap-v2` (перенаправлял импорты pagination-plus на v2-копии)
+- resolve-алиасы `@tiptap/core-v2`, `@tiptap/pm-v2`
+- Причина: pnpm теперь резолвит v2-копии внутри пакета самостоятельно (у word-vibe собственные v2-депсы)
+
+**Обнаружен второй потребитель `tiptap-pagination-plus`:**
+- Фича `documents` (`DocumentProcessor`, `DocumentLayoutBar`) использует PaginationPlus напрямую с tiptap v3. Депс возвращён в `apps/spa/package.json` с пометкой. Миграция documents — задача Фазы 4.
+
+**Изоляция проверена:**
+- `pnpm why @tiptap/core --filter @worldwiki/word-vibe` → пакет использует свой `@tiptap/core@2.27.2` (не корневой v3).
+- `pnpm typecheck` → чист по всем 4 проектам (word-vibe, resources, components, spa).
+- `eslint` → чист по затронутым файлам.
+
+
+
 
 ## 1. Проблема (что сломано сейчас)
 

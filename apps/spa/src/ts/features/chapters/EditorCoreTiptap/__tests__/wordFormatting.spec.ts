@@ -12,6 +12,17 @@ import {
   PageBreakNode, 
   WordParagraphCommands 
 } from '../extensions/WordFormatExtensions';
+import {
+  countTableCaptions,
+  nextTableCaptionNumber,
+  buildTableCaptionText,
+  TABLE_CAPTION_RE,
+} from '../WordMode/extensions/GostTableCaption';
+import {
+  countFigureCaptions,
+  nextFigureCaptionNumber,
+  buildFigureCaptionText,
+} from '../WordMode/extensions/GostFigureCaption';
 
 const createTestEditor = (content = '<p>Первый абзац документа</p><p>Второй абзац документа</p>') => {
   const CustomParagraph = Paragraph.extend({
@@ -144,6 +155,73 @@ describe('Word Formatting Engine - Isolation and Extensions', () => {
     const html = editor.getHTML();
     expect(html).toContain('word-page-break-node');
     expect(html).toContain('data-page-break="true"');
+    editor.destroy();
+  });
+});
+
+describe('ГОСТ-автоподписи (Numbering Engine, www.md §1.2.3)', () => {
+  it('7. Нумерация таблиц считается как чистая функция от документа', () => {
+    const editor = createTestEditor(
+      '<p>Таблица 1 — Показатели</p><p>Обычный текст</p><p>Таблица 2 — Расходы</p><p>Таблица 3 — Итоги</p>'
+    );
+
+    expect(countTableCaptions(editor.state.doc)).toBe(3);
+    expect(nextTableCaptionNumber(editor.state.doc)).toBe(4);
+    editor.destroy();
+  });
+
+  it('8. Обычные абзацы не считаются подписями таблиц (regex строгий)', () => {
+    const editor = createTestEditor(
+      '<p>В таблице 1 показаны данные</p><p>таблица 5 — строчными не считается</p>'
+    );
+
+    expect(countTableCaptions(editor.state.doc)).toBe(0);
+    expect(TABLE_CAPTION_RE.test('Таблица 12 — Данные')).toBe(true);
+    expect(TABLE_CAPTION_RE.test('таблица 12 — Данные')).toBe(false);
+    editor.destroy();
+  });
+
+  it('9. Нумерация рисунков считается независимо от таблиц', () => {
+    const editor = createTestEditor(
+      '<p>Рисунок 1 — Схема</p><p>Таблица 1 — Данные</p><p>Рисунок 2 — График</p>'
+    );
+
+    expect(countFigureCaptions(editor.state.doc)).toBe(2);
+    expect(nextFigureCaptionNumber(editor.state.doc)).toBe(3);
+    expect(nextTableCaptionNumber(editor.state.doc)).toBe(2);
+    editor.destroy();
+  });
+
+  it('10. Текст подписи соответствует формату ГОСТ 7.32 (тире, а не дефис)', () => {
+    expect(buildTableCaptionText(1)).toBe('Таблица 1 — (название таблицы)');
+    expect(buildTableCaptionText(2, 'Структура')).toBe('Таблица 2 — Структура');
+    expect(buildFigureCaptionText(1)).toBe('Рисунок 1 — (описание рисунка)');
+    expect(buildFigureCaptionText(5, 'Схема БД')).toBe('Рисунок 5 — Схема БД');
+  });
+
+  it('11. Вставка подписи таблицы через реальный редактор добавляет абзац с классом gost-table-caption', () => {
+    const editor = createTestEditor('<p>Первый абзац</p><p>Второй абзац</p>');
+
+    // Каретка в начале второго абзаца — вставляем подпись перед ним
+    editor.commands.setTextSelection(18);
+
+    const number = nextTableCaptionNumber(editor.state.doc);
+    const text = buildTableCaptionText(number, 'Тестовая таблица');
+
+    editor
+      .chain()
+      .insertContentAt(18, {
+        type: 'paragraph',
+        attrs: { class: 'gost-table-caption' },
+        content: [{ type: 'text', text }],
+      })
+      .run();
+
+    const html = editor.getHTML();
+    expect(html).toContain('Таблица 1 — Тестовая таблица');
+
+    // Повторная вставка получает следующий номер (динамическая нумерация)
+    expect(nextTableCaptionNumber(editor.state.doc)).toBe(2);
     editor.destroy();
   });
 });

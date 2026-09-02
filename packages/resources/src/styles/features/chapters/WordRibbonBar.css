@@ -216,3 +216,98 @@
   margin-top: 1px;
   border-radius: 1px;
 }
+
+/* =========================================================================
+   CUSTOM RIBBON DROPDOWN MENUS (margins / orientation / breaks / headers)
+   ========================================================================= */
+.ribbon-dropdown {
+  position: relative;
+}
+
+.ribbon-dropdown-menu {
+  position: fixed;
+  min-width: 260px;
+  /* Непрозрачный фон: меню парит над документом, glass-панель просвечивала бы */
+  background: var(--bg-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 4px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.ribbon-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 12px;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ribbon-dropdown-item:hover {
+  background: var(--bg-hover);
+}
+
+.ribbon-dropdown-item.is-key {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ribbon-dropdown-item small {
+  color: var(--text-muted);
+  margin-left: auto;
+  font-size: 10px;
+}
+
+.ribbon-dropdown-item i {
+  width: 14px;
+  color: var(--text-muted);
+}
+
+.ribbon-dropdown-sep {
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 6px;
+}
+
+.ribbon-dropdown-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 4px 10px 2px;
+}
+
+.ribbon-btn.is-open {
+  background: var(--bg-hover);
+  color: var(--accent);
+}
+
+.ribbon-tab-btn-context {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.ribbon-input-number {
+  width: 64px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  padding: 4px 6px;
+  outline: none;
+}
+
+.ribbon-input-number:focus {
+  border-color: var(--accent);
+}

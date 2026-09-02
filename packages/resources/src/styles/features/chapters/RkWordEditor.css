@@ -66,6 +66,21 @@
 /* Пагинация tiptap-pagination-plus инжектит собственные стили листов
    (.rm-page-break, .rm-pagination-gap, .rm-page-header/-footer и т.д.).
    Здесь — только подгонка под дизайн-систему WorldWiki. */
+
+/* Зазор между листами — нейтральная подложка из токенов (Word-like page gap) */
+.rk-editor-mount .rm-pagination-gap {
+  background: var(--border-color);
+}
+
+/* Колонтитулы: тонкая линия-отделитель, как в Word */
+.rk-editor-mount .rm-page-header {
+  border-bottom: 0.75pt solid var(--border-color);
+}
+
+.rk-editor-mount .rm-page-footer {
+  border-top: 0.75pt solid var(--border-color);
+}
+
 .rk-editor-mount .rm-page-header,
 .rk-editor-mount .rm-page-footer,
 .rk-editor-mount .rm-first-page-header .rm-page-header-left,

@@ -1,24 +1,29 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 55,
+  "currentDebt": 58,
   "fixedCount": 1029,
-  "introducedCount": 28,
-  "trendPercent": "94.8",
+  "introducedCount": 31,
+  "trendPercent": "94.5",
   "categories": {
     "blackColors": 0,
     "whiteColors": 0,
-    "hexColors": 0,
+    "hexColors": 2,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 55
+    "inlineStyles": 56
   },
   "semanticRoles": {
     "modalBackdrops": 0,
     "sunkenBackgrounds": 0,
     "borders": 0,
-    "text": 0
+    "text": 2
   },
-  "topCssFiles": [],
+  "topCssFiles": [
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "count": 2
+    }
+  ],
   "allTopFiles": [
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
@@ -31,6 +36,10 @@
     {
       "file": "packages/components/src/components/Vue/TagsField.vue",
       "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "count": 2
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
@@ -75,13 +84,21 @@
     {
       "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
       "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
-      "count": 1
     }
   ],
   "violations": [
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "line": 448,
+      "match": "#1a1a1a",
+      "snippet": "color: var(--text-main, #1a1a1a);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "line": 482,
+      "match": "#999",
+      "snippet": "color: var(--text-muted, #999);"
+    },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
       "line": 32,
@@ -129,6 +146,12 @@
       "line": 81,
       "match": "inline-style",
       "snippet": "style=\"{ '--split-right': rightPanelWidth + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/ImageInsertDialog/ImageInsertDialog.vue",
+      "line": 63,
+      "match": "inline-style",
+      "snippet": "style=\"display: none\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/ParagraphFormatModal/ParagraphFormatModal.vue",

@@ -4,7 +4,10 @@
     <WordRibbonBar
       :editor="tiptapEditor"
       :commands="ribbonCommands"
+      :is-inside-table="isInsideTable"
       @open-paragraph-dialog="isParagraphModalOpen = true"
+      @open-page-setup="isPageSetupOpen = true"
+      @open-header-footer-dialog="openHeaderFooterDialog"
     />
 
     <!-- 2. Фиксированная верхняя линейка Word с динамической шириной -->
@@ -69,6 +72,49 @@
       @close="isParagraphModalOpen = false"
       @apply="handleParagraphFormatApply"
     />
+
+    <!-- Диалоги Word-режима -->
+    <PageSetupModal
+      :is-open="isPageSetupOpen"
+      :margins="currentMarginsMm"
+      :page-size="pageSize"
+      :orientation="orientation"
+      @close="isPageSetupOpen = false"
+      @apply="handlePageSetupApply"
+    />
+
+    <HeaderFooterDialog
+      :is-open="isHeaderFooterOpen"
+      :initial-tab="headerFooterTab"
+      :header="dialogHeader"
+      :footer="dialogFooter"
+      @close="isHeaderFooterOpen = false"
+      @apply="handleHeaderFooterApply"
+    />
+
+    <ImageInsertDialog
+      :is-open="isImageDialogOpen"
+      @close="isImageDialogOpen = false"
+      @insert="handleImageInsert"
+    />
+
+    <TablePickerPopup
+      :is-open="isTablePickerOpen"
+      @close="isTablePickerOpen = false"
+      @insert="handleTableInsert"
+    />
+
+    <LinkInsertDialog
+      :is-open="isLinkDialogOpen"
+      @close="isLinkDialogOpen = false"
+      @insert="handleLinkInsert"
+    />
+
+    <EquationInsertDialog
+      :is-open="isEquationDialogOpen"
+      @close="isEquationDialogOpen = false"
+      @insert="handleEquationInsert"
+    />
   </div>
 </template>
 
@@ -80,6 +126,12 @@ import type { RkWordEditorProps, RkWordEditorEmits } from './RkWordEditor.model'
 import WordRibbonBar from '../WordRibbonBar/WordRibbonBar.vue';
 import WordRuler from '../WordRuler/WordRuler.vue';
 import ParagraphFormatModal, { type ParagraphFormatData } from '../ParagraphFormatModal/ParagraphFormatModal.vue';
+import PageSetupModal from '../PageSetupModal/PageSetupModal.vue';
+import HeaderFooterDialog from '../HeaderFooterDialog/HeaderFooterDialog.vue';
+import ImageInsertDialog from '../ImageInsertDialog/ImageInsertDialog.vue';
+import TablePickerPopup from '../TablePickerPopup/TablePickerPopup.vue';
+import LinkInsertDialog from '../LinkInsertDialog/LinkInsertDialog.vue';
+import EquationInsertDialog from '../EquationInsertDialog/EquationInsertDialog.vue';
 
 const props = defineProps<RkWordEditorProps>();
 const emit = defineEmits<RkWordEditorEmits>();
@@ -87,15 +139,29 @@ const emit = defineEmits<RkWordEditorEmits>();
 const editorHostRef = ref<HTMLElement | null>(null);
 const isParagraphModalOpen = ref(false);
 
+// Диалоги Word-режима
+const isPageSetupOpen = ref(false);
+const isHeaderFooterOpen = ref(false);
+const headerFooterTab = ref<'header' | 'footer'>('header');
+const isImageDialogOpen = ref(false);
+const isTablePickerOpen = ref(false);
+const isLinkDialogOpen = ref(false);
+const isEquationDialogOpen = ref(false);
+
 const {
   wordEditor,
   tiptapEditor,
+  orientation,
   pageSize,
   pageCount,
   wordCount,
   characterCount,
   isLandscape,
+  isInsideTable,
+  currentMarginsMm,
   toggleOrientation,
+  setOrientation,
+  setPageSize,
   ribbonCommands,
 } = useRkWordEditor(editorHostRef, props, emit);
 
@@ -143,6 +209,58 @@ const handleParagraphFormatApply = (data: ParagraphFormatData) => {
     }
   }
   isParagraphModalOpen.value = false;
+};
+
+/* ── Диалоги Word-режима ── */
+
+const openHeaderFooterDialog = (tab?: 'header' | 'footer') => {
+  headerFooterTab.value = tab || 'header';
+  isHeaderFooterOpen.value = true;
+};
+
+/** Значения полей колонтитулов для повторного открытия диалога (plain text) */
+const dialogHeader = ref({ left: props.chapterTitle || '', center: '', right: '' });
+const dialogFooter = ref({ left: '', center: '', right: 'Стр. {page} из {total}' });
+
+const handleHeaderFooterApply = (payload: {
+  header: { left: string; center: string; right: string };
+  footer: { left: string; center: string; right: string };
+}) => {
+  const cell = (text: string, align: string) => `<td align='${align}'>${text}</td>`;
+  const wrap = (left: string, center: string, right: string) =>
+    `<table style='width:100%'><tr>${cell(left, 'left')}${cell(center, 'center')}${cell(right, 'right')}</tr></table>`;
+  ribbonCommands.value.updateHeaderText?.(wrap(payload.header.left, payload.header.center, payload.header.right), '');
+  ribbonCommands.value.updateFooterText?.(wrap(payload.footer.left, payload.footer.center, payload.footer.right), '');
+  dialogHeader.value = { ...payload.header };
+  dialogFooter.value = { ...payload.footer };
+};
+
+const handlePageSetupApply = (payload: { margins: { top: number; bottom: number; left: number; right: number }; pageSize: 'A4' | 'A5' | 'A3' | 'Letter' | 'B5' | 'Legal' | 'Tabloid' | 'Custom'; orientation: 'portrait' | 'landscape' }) => {
+  ribbonCommands.value.setCustomMargins?.(payload.margins.top, payload.margins.bottom, payload.margins.left, payload.margins.right);
+  if (payload.pageSize !== pageSize.value) setPageSize(payload.pageSize);
+  if (payload.orientation !== orientation.value) setOrientation(payload.orientation);
+};
+
+const handleImageInsert = (payload: { src: string; caption: string; align: 'block' | 'left' | 'right' }) => {
+  ribbonCommands.value.insertImageWithCaption?.(payload.src, payload.caption);
+  // Выравнивание применяется к последнему вставленному изображению атрибутом textAlign
+  if (payload.align !== 'block' && tiptapEditor.value) {
+    tiptapEditor.value.chain().focus().updateAttributes('image', { textAlign: payload.align }).run();
+  }
+};
+
+const handleTableInsert = (payload: { rows: number; cols: number }) => {
+  ribbonCommands.value.insertTableWithCaption?.(payload.rows, payload.cols);
+};
+
+const handleLinkInsert = (payload: { url: string; text: string }) => {
+  // Подпись ссылки (text) не поддерживается CommandManager.insertLink — вставляем URL
+  void payload.text;
+  ribbonCommands.value.insertLinkUrl?.(payload.url);
+};
+
+const handleEquationInsert = (payload: { latex: string }) => {
+  ribbonCommands.value.insertEquationLatex?.(payload.latex);
 };
 </script>
 

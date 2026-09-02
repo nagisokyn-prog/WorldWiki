@@ -29,9 +29,15 @@ vi.mock('@raazkhnl/rk-editor-core', () => {
           focus: () => ({
             run: () => true,
             setParagraphIndent: () => ({ run: () => true }),
+            updateAttributes: () => ({ run: () => true }),
+            insertContentAt: () => ({ run: () => true }),
           }),
         }),
         isActive: vi.fn(() => false),
+        state: { selection: { $from: { depth: 0 }, from: 0 } },
+        commands: {
+          insertSectionBreak: vi.fn(),
+        },
       };
       this.commands = {
         bold: vi.fn(),
@@ -231,5 +237,89 @@ describe('RK Word Editor Composable & First-Class Orientation', () => {
 
     setOrientation('landscape');
     expect(pageWidthPx.value).toBe(945);
+  });
+
+  it('7. Пресет полей ГОСТ 7.32 применяется к движку (Л:30 П:15 В:20 Н:20 мм)', () => {
+    const hostRef = ref<HTMLElement | null>(document.createElement('div'));
+    const emit = vi.fn();
+    const props = { content: '<p>Поля ГОСТ</p>' };
+
+    const { ribbonCommands, currentMarginsMm, wordEditor } = useRkWordEditor(hostRef, props, emit);
+
+    ribbonCommands.value.setGostMargins?.();
+
+    expect(currentMarginsMm.value).toEqual({ top: 20, bottom: 20, left: 30, right: 15 });
+    expect(wordEditor.value?.setPageLayout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        margins: { top: '20mm', bottom: '20mm', left: '30mm', right: '15mm' },
+      })
+    );
+  });
+
+  it('8. Пресеты полей normal / narrow / wide меняют поля документа', () => {
+    const hostRef = ref<HTMLElement | null>(document.createElement('div'));
+    const emit = vi.fn();
+    const props = { content: '<p>Пресеты полей</p>' };
+
+    const { ribbonCommands, currentMarginsMm } = useRkWordEditor(hostRef, props, emit);
+
+    ribbonCommands.value.setMarginPreset?.('narrow');
+    expect(currentMarginsMm.value).toEqual({ top: 12, bottom: 12, left: 12, right: 12 });
+
+    ribbonCommands.value.setMarginPreset?.('wide');
+    expect(currentMarginsMm.value).toEqual({ top: 20, bottom: 20, left: 50, right: 50 });
+
+    ribbonCommands.value.setCustomMargins?.(10, 15, 25, 35);
+    expect(currentMarginsMm.value).toEqual({ top: 10, bottom: 15, left: 25, right: 35 });
+  });
+
+  it('9. Разрыв раздела «Следующая страница (Альбомная)» переключает геометрию листа', () => {
+    const hostRef = ref<HTMLElement | null>(document.createElement('div'));
+    const emit = vi.fn();
+    const props = { content: '<p>Секционная ориентация</p>' };
+
+    const { ribbonCommands, orientation, pageWidthPx, setOrientation } = useRkWordEditor(hostRef, props, emit);
+    setOrientation('portrait');
+
+    ribbonCommands.value.insertSectionLandscape?.();
+
+    expect(orientation.value).toBe('landscape');
+    expect(pageWidthPx.value).toBe(1123);
+
+    ribbonCommands.value.insertSectionPortrait?.();
+    expect(orientation.value).toBe('portrait');
+    expect(pageWidthPx.value).toBe(794);
+  });
+
+  it('10. Команды колонтитулов обновляют реактивные значения и лента получает новые команды', () => {
+    const hostRef = ref<HTMLElement | null>(document.createElement('div'));
+    const emit = vi.fn();
+    const props = { content: '<p>Колонтитулы</p>' };
+
+    const { ribbonCommands } = useRkWordEditor(hostRef, props, emit);
+
+    expect(ribbonCommands.value.updateHeaderText).toBeDefined();
+    expect(ribbonCommands.value.updateFooterText).toBeDefined();
+    expect(ribbonCommands.value.insertSectionLandscape).toBeDefined();
+    expect(ribbonCommands.value.insertSectionPortrait).toBeDefined();
+    expect(ribbonCommands.value.setParagraphSpacing).toBeDefined();
+    expect(ribbonCommands.value.insertTextBox).toBeDefined();
+    expect(ribbonCommands.value.insertTableOfContents).toBeDefined();
+    expect(ribbonCommands.value.openPageSetup).toBeDefined();
+
+    ribbonCommands.value.insertImage?.();
+    expect(emit).toHaveBeenCalledWith('open-image-dialog');
+
+    ribbonCommands.value.insertTable?.();
+    expect(emit).toHaveBeenCalledWith('open-table-picker');
+
+    ribbonCommands.value.insertLink?.();
+    expect(emit).toHaveBeenCalledWith('open-link-dialog');
+
+    ribbonCommands.value.insertEquation?.();
+    expect(emit).toHaveBeenCalledWith('open-equation-dialog');
+
+    ribbonCommands.value.openPageSetup?.();
+    expect(emit).toHaveBeenCalledWith('open-page-setup');
   });
 });

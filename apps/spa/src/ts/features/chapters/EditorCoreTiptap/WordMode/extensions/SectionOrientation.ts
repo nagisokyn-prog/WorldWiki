@@ -1,0 +1,73 @@
+import type { Orientation } from '../RkWordEditor.model';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+/**
+ * Секционная смена ориентации отдельных страниц (www.md §3.2.2, §1.2.4).
+ *
+ * Ключевая ГОСТ-фича: лист с широкой таблицей/схемой делается альбомным,
+ * следующий разрыв раздела возвращает книжную ориентацию.
+ *
+ * Архитектура:
+ * - Базируется на встроенном `Section` extension из rk-editor-core
+ *   (команда `insertSectionBreak`).
+ * - Ориентация раздела маркируется атрибутом `data-orientation` на узле
+ *   раздела (если узел присутствует в схеме) — по нему ExportEngine
+ *   генерирует `<w:sectPr><w:pgSz w:orient="landscape"/></w:sectPr>` в DOCX.
+ * - Геометрия PaginationPlus (tiptap-pagination-plus) не поддерживает
+ *   страницы разных ориентаций в одном документе, поэтому одновременно
+ *   переключается глобальная геометрия через `onOrientationChange`.
+ */
+
+/**
+ * Вставляет разрыв раздела и помечает новый раздел выбранной ориентацией.
+ * @param onOrientationChange — колбэк переключения геометрии (глобальный layout)
+ */
+export function insertSectionWithOrientation(
+  editor: any,
+  orientation: Orientation,
+  onOrientationChange?: (orientation: Orientation) => void
+): boolean {
+  if (!editor) return false;
+
+  try {
+    // Разрыв раздела (Section extension из rk-editor-core)
+    if (typeof editor.commands.insertSectionBreak === 'function') {
+      editor.commands.insertSectionBreak();
+    } else {
+      console.warn('[SectionOrientation] insertSectionBreak command is unavailable — вставлен page break');
+      editor.commands.pageBreak?.();
+    }
+
+    // Помечаем узел раздела атрибутом ориентации (для DOCX-экспорта)
+    try {
+      const { $from } = editor.state.selection;
+      for (let depth = $from.depth; depth > 0; depth -= 1) {
+        const node = $from.node(depth);
+        if (node.type.name === 'section') {
+          editor.chain().focus().updateAttributes('section', { 'data-orientation': orientation }).run();
+          break;
+        }
+      }
+    } catch {
+      // Узел section отсутствует в схеме — ориентация остаётся только в layout
+    }
+
+    // Переключаем геометрию листа (глобально: PaginationPlus + rk pageLayout)
+    onOrientationChange?.(orientation);
+    return true;
+  } catch (error) {
+    console.warn('[SectionOrientation] insertSectionWithOrientation failed', error);
+    return false;
+  }
+}
+
+/** Разрыв раздела → следующий лист альбомный */
+export function insertSectionLandscape(editor: any, onOrientationChange?: (o: Orientation) => void): boolean {
+  return insertSectionWithOrientation(editor, 'landscape', onOrientationChange);
+}
+
+/** Разрыв раздела → следующий лист книжный */
+export function insertSectionPortrait(editor: any, onOrientationChange?: (o: Orientation) => void): boolean {
+  return insertSectionWithOrientation(editor, 'portrait', onOrientationChange);
+}

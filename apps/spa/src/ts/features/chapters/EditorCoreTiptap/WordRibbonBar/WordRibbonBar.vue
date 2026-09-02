@@ -26,6 +26,15 @@
       >
         Макет
       </button>
+      <button 
+        v-if="isInsideTable"
+        type="button" 
+        class="ribbon-tab-btn ribbon-tab-btn-context" 
+        :class="{ 'is-active': activeTab === 'table-design' }" 
+        @click="activeTab = 'table-design'"
+      >
+        Конструктор таблицы
+      </button>
     </div>
 
     <!-- Полоса инструментов активной вкладки -->
@@ -394,6 +403,87 @@
           </div>
         </div>
 
+        <!-- Колонтитулы -->
+        <div class="ribbon-group">
+          <div class="ribbon-row">
+            <!-- Верхний колонтитул -->
+            <div class="ribbon-dropdown">
+              <button type="button" class="ribbon-btn ribbon-btn-large" :class="{ 'is-open': openDropdown === 'header' }" title="Верхний колонтитул" @click="toggleDropdown($event, 'header')">
+                <i class="fas fa-grip-lines"></i>
+                <span>Верхний ▾</span>
+              </button>
+              <div v-if="openDropdown === 'header'" class="ribbon-dropdown-menu" :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }">
+                <button type="button" class="ribbon-dropdown-item" @click="applyHeaderPreset('empty')">Пусто</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyHeaderPreset('chapter-left')">Название главы (слева)</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyHeaderPreset('chapter-center')">Название главы (по центру)</button>
+                <div class="ribbon-dropdown-sep"></div>
+                <button type="button" class="ribbon-dropdown-item" @click="closeDropdown(); commands.openHeaderFooterDialog?.('header')">
+                  <i class="fas fa-edit"></i> Изменить верхний колонтитул...
+                </button>
+              </div>
+            </div>
+
+            <!-- Нижний колонтитул -->
+            <div class="ribbon-dropdown">
+              <button type="button" class="ribbon-btn ribbon-btn-large" :class="{ 'is-open': openDropdown === 'footer' }" title="Нижний колонтитул" @click="toggleDropdown($event, 'footer')">
+                <i class="fas fa-grip-lines"></i>
+                <span>Нижний ▾</span>
+              </button>
+              <div v-if="openDropdown === 'footer'" class="ribbon-dropdown-menu" :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }">
+                <button type="button" class="ribbon-dropdown-item" @click="applyFooterPreset('empty')">Пусто</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyFooterPreset('page-right')">Стр. {page} из {total} (справа)</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyFooterPreset('page-center')">Стр. {page} из {total} (центр)</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyFooterPreset('page-only-right')">{page} (справа)</button>
+                <div class="ribbon-dropdown-sep"></div>
+                <button type="button" class="ribbon-dropdown-item" @click="closeDropdown(); commands.openHeaderFooterDialog?.('footer')">
+                  <i class="fas fa-edit"></i> Изменить нижний колонтитул...
+                </button>
+              </div>
+            </div>
+
+            <!-- Номер страницы -->
+            <div class="ribbon-dropdown">
+              <button type="button" class="ribbon-btn ribbon-btn-large" :class="{ 'is-open': openDropdown === 'pagenum' }" title="Номер страницы" @click="toggleDropdown($event, 'pagenum')">
+                <i class="fas fa-hashtag"></i>
+                <span>Номер страницы ▾</span>
+              </button>
+              <div v-if="openDropdown === 'pagenum'" class="ribbon-dropdown-menu" :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }">
+                <div class="ribbon-dropdown-title">Вверху страницы:</div>
+                <button type="button" class="ribbon-dropdown-item" @click="applyPageNumberPosition('header-left')">Слева</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyPageNumberPosition('header-center')">Центр</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyPageNumberPosition('header-right')">Справа</button>
+                <div class="ribbon-dropdown-sep"></div>
+                <div class="ribbon-dropdown-title">Внизу страницы:</div>
+                <button type="button" class="ribbon-dropdown-item" @click="applyPageNumberPosition('footer-left')">Слева</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyPageNumberPosition('footer-center')">Центр</button>
+                <button type="button" class="ribbon-dropdown-item" @click="applyPageNumberPosition('footer-right')">Справа</button>
+                <div class="ribbon-dropdown-sep"></div>
+                <button type="button" class="ribbon-dropdown-item" @click="applyHeaderPreset('empty'); applyFooterPreset('empty')">Убрать номера страниц</button>
+              </div>
+            </div>
+          </div>
+          <div class="ribbon-group-footer">
+            <span class="ribbon-group-label">Колонтитулы</span>
+          </div>
+        </div>
+
+        <!-- Текст: оглавление и текстовый блок -->
+        <div class="ribbon-group">
+          <div class="ribbon-row">
+            <button type="button" class="ribbon-btn ribbon-btn-large" title="Вставить оглавление (Содержание)" @click="commands.insertTableOfContents?.()">
+              <i class="fas fa-list-ol"></i>
+              <span>Оглавление</span>
+            </button>
+            <button type="button" class="ribbon-btn ribbon-btn-large" title="Вставить текстовый блок" @click="commands.insertTextBox?.()">
+              <i class="fas fa-text-width"></i>
+              <span>Текстовый блок</span>
+            </button>
+          </div>
+          <div class="ribbon-group-footer">
+            <span class="ribbon-group-label">Текст</span>
+          </div>
+        </div>
+
         <!-- Таблицы -->
         <div class="ribbon-group">
           <div class="ribbon-row">
@@ -482,27 +572,59 @@
       <template v-else-if="activeTab === 'layout'">
         <div class="ribbon-group">
           <div class="ribbon-row">
-            <!-- Поля листа -->
-            <button 
-              type="button" 
-              class="ribbon-btn ribbon-btn-large" 
-              title="Поля по ГОСТ 7.32 (30/10/20/20 мм)"
-              @click="commands.setGostMargins?.()"
-            >
-              <i class="fas fa-border-all"></i>
-              <span>Поля ГОСТ</span>
-            </button>
+            <!-- Поля: dropdown пресетов -->
+            <div class="ribbon-dropdown">
+              <button
+                type="button"
+                class="ribbon-btn ribbon-btn-large"
+                :class="{ 'is-open': openDropdown === 'margins' }"
+                title="Поля страницы"
+                @click="toggleDropdown($event, 'margins')"
+              >
+                <i class="fas fa-border-all"></i>
+                <span>Поля ▾</span>
+              </button>
+              <div v-if="openDropdown === 'margins'" class="ribbon-dropdown-menu" :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }">
+                <button type="button" class="ribbon-dropdown-item" @click="commands.setMarginPreset?.('gost'); closeDropdown()">
+                  <i class="fas fa-check"></i> ГОСТ 7.32 <small>(Л:30 П:15 В:20 Н:20 мм)</small>
+                </button>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.setMarginPreset?.('normal'); closeDropdown()">
+                  <i class="fas fa-circle"></i> Нормальные <small>(все по 20 мм)</small>
+                </button>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.setMarginPreset?.('narrow'); closeDropdown()">
+                  <i class="fas fa-circle"></i> Узкие <small>(все по 12 мм)</small>
+                </button>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.setMarginPreset?.('wide'); closeDropdown()">
+                  <i class="fas fa-circle"></i> Широкие <small>(Л:50 П:50 В:20 Н:20 мм)</small>
+                </button>
+                <div class="ribbon-dropdown-sep"></div>
+                <button type="button" class="ribbon-dropdown-item" @click="closeDropdown(); emit('open-page-setup')">
+                  <i class="fas fa-sliders-h"></i> Произвольные поля...
+                </button>
+              </div>
+            </div>
 
-            <!-- Ориентация листа -->
-            <button 
-              type="button" 
-              class="ribbon-btn ribbon-btn-large" 
-              title="Сменить ориентацию страницы (Книжная / Альбомная)"
-              @click="commands.togglePageOrientation?.()"
-            >
-              <i class="fas fa-sync-alt"></i>
-              <span>Ориентация</span>
-            </button>
+            <!-- Ориентация: dropdown -->
+            <div class="ribbon-dropdown">
+              <button
+                type="button"
+                class="ribbon-btn ribbon-btn-large"
+                :class="{ 'is-open': openDropdown === 'orientation' }"
+                title="Ориентация страницы"
+                @click="toggleDropdown($event, 'orientation')"
+              >
+                <i class="fas fa-sync-alt"></i>
+                <span>Ориентация ▾</span>
+              </button>
+              <div v-if="openDropdown === 'orientation'" class="ribbon-dropdown-menu" :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }">
+                <button type="button" class="ribbon-dropdown-item" @click="commands.togglePageOrientation?.(); closeDropdown()">
+                  <i class="fas fa-file"></i> Книжная
+                </button>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.togglePageOrientation?.(); closeDropdown()">
+                  <i class="fas fa-file"></i> Альбомная
+                </button>
+              </div>
+            </div>
 
             <!-- Размер листа (А4, А5, А3, Letter, B5) -->
             <div class="ribbon-field-column">
@@ -520,9 +642,120 @@
                 <option value="B5">B5 (176 × 250 мм) · Монография</option>
               </select>
             </div>
+
+            <!-- Разрывы: dropdown -->
+            <div class="ribbon-dropdown">
+              <button
+                type="button"
+                class="ribbon-btn ribbon-btn-large"
+                :class="{ 'is-open': openDropdown === 'breaks' }"
+                title="Разрывы страниц и разделов"
+                @click="toggleDropdown($event, 'breaks')"
+              >
+                <i class="fas fa-scissors"></i>
+                <span>Разрывы ▾</span>
+              </button>
+              <div v-if="openDropdown === 'breaks'" class="ribbon-dropdown-menu" :style="{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }">
+                <div class="ribbon-dropdown-title">Разрывы страниц:</div>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.insertPageBreak?.(); closeDropdown()">
+                  <i class="fas fa-file"></i> Страница
+                </button>
+                <div class="ribbon-dropdown-sep"></div>
+                <div class="ribbon-dropdown-title">Разрывы разделов:</div>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.insertSectionBreak?.(); closeDropdown()">
+                  <i class="fas fa-file-alt"></i> Следующая страница (Книжная)
+                </button>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.insertSectionLandscape?.(); closeDropdown()">
+                  <i class="fas fa-file-alt"></i> Следующая страница (Альбомная) ★
+                </button>
+                <button type="button" class="ribbon-dropdown-item" @click="commands.insertSectionPortrait?.(); closeDropdown()">
+                  <i class="fas fa-file-alt"></i> Вернуть книжную
+                </button>
+              </div>
+            </div>
+
+            <!-- Лаунчер Параметров страницы -->
+            <button
+              type="button"
+              class="ribbon-btn"
+              title="Параметры страницы"
+              @click="emit('open-page-setup')"
+            >
+              <i class="fas fa-external-link-alt"></i>
+            </button>
           </div>
           <div class="ribbon-group-footer">
             <span class="ribbon-group-label">Параметры страницы</span>
+          </div>
+        </div>
+
+        <!-- Группа: Абзац (отступы и интервалы) -->
+        <div class="ribbon-group">
+          <div class="ribbon-row">
+            <div class="ribbon-field-column">
+              <label class="ribbon-mini-label">Отступ: Слева (см)</label>
+              <input v-model.number="indentLeftCm" type="number" class="ribbon-input-number" step="0.5" min="0" title="Отступ слева (выделенному абзацу)" @change="applyLeftIndent" />
+            </div>
+            <div class="ribbon-field-column">
+              <label class="ribbon-mini-label">Отступ: Справа (см)</label>
+              <input v-model.number="indentRightCm" type="number" class="ribbon-input-number" step="0.5" min="0" title="Отступ справа (выделенному абзацу)" @change="applyRightIndent" />
+            </div>
+            <span class="ribbon-separator"></span>
+            <div class="ribbon-field-column">
+              <label class="ribbon-mini-label">Интервал: До (пт)</label>
+              <input v-model.number="spacingBeforePt" type="number" class="ribbon-input-number" step="6" min="0" title="Интервал до абзаца" @change="applySpacing" />
+            </div>
+            <div class="ribbon-field-column">
+              <label class="ribbon-mini-label">Интервал: После (пт)</label>
+              <input v-model.number="spacingAfterPt" type="number" class="ribbon-input-number" step="6" min="0" title="Интервал после абзаца" @change="applySpacing" />
+            </div>
+          </div>
+          <div class="ribbon-group-footer">
+            <span class="ribbon-group-label">Абзац</span>
+          </div>
+        </div>
+      </template>
+
+      <!-- ВКЛАДКА: КОНСТРУКТОР ТАБЛИЦЫ (контекстная) -->
+      <template v-else-if="activeTab === 'table-design'">
+        <div class="ribbon-group">
+          <div class="ribbon-row">
+            <button type="button" class="ribbon-btn" title="Вставить строку выше" @click="(commands as any).addRowBefore?.()"><i class="fas fa-arrow-up"></i> Строка выше</button>
+            <button type="button" class="ribbon-btn" title="Вставить строку ниже" @click="(commands as any).addRowAfter?.()"><i class="fas fa-arrow-down"></i> Строка ниже</button>
+            <button type="button" class="ribbon-btn" title="Вставить столбец слева" @click="(commands as any).addColumnBefore?.()"><i class="fas fa-arrow-left"></i> Столбец слева</button>
+            <button type="button" class="ribbon-btn" title="Вставить столбец справа" @click="(commands as any).addColumnAfter?.()"><i class="fas fa-arrow-right"></i> Столбец справа</button>
+          </div>
+          <div class="ribbon-group-footer">
+            <span class="ribbon-group-label">Строки и столбцы</span>
+          </div>
+        </div>
+
+        <div class="ribbon-group">
+          <div class="ribbon-row">
+            <button type="button" class="ribbon-btn" title="Объединить ячейки" @click="(commands as any).mergeCells?.()"><i class="fas fa-compress-arrows-alt"></i> Объединить</button>
+            <button type="button" class="ribbon-btn" title="Разбить ячейки" @click="(commands as any).splitCell?.()"><i class="fas fa-expand-arrows-alt"></i> Разбить</button>
+            <button type="button" class="ribbon-btn" title="Удалить строку" @click="(commands as any).deleteRow?.()"><i class="fas fa-trash"></i> Удалить строку</button>
+            <button type="button" class="ribbon-btn" title="Удалить столбец" @click="(commands as any).deleteColumn?.()"><i class="fas fa-trash"></i> Удалить столбец</button>
+            <button type="button" class="ribbon-btn" title="Удалить таблицу" @click="(commands as any).deleteTable?.()"><i class="fas fa-trash-alt"></i> Удалить таблицу</button>
+          </div>
+          <div class="ribbon-group-footer">
+            <span class="ribbon-group-label">Объединение и удаление</span>
+          </div>
+        </div>
+
+        <div class="ribbon-group">
+          <div class="ribbon-row">
+            <button type="button" class="ribbon-btn ribbon-btn-large" title="Таблица сетка — ГОСТ-стиль" @click="(commands as any).setTableStyle?.('grid')">
+              <i class="fas fa-table"></i>
+              <span>Таблица сетка</span>
+            </button>
+            <button type="button" class="ribbon-btn ribbon-btn-large" title="Без стиля" @click="(commands as any).setTableStyle?.('plain')">
+              <i class="fas fa-table"></i>
+              <span>Без стиля</span>
+            </button>
+          </div>
+          <div class="ribbon-group-footer">
+            <span class="ribbon-group-label">Стили таблиц</span>
           </div>
         </div>
       </template>
@@ -532,7 +765,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import type { EditorInstance } from '../WordMode/RkWordEditor.model';
 
 export type PaperSize = 'A4' | 'A5' | 'A3' | 'Letter' | 'B5';
@@ -557,12 +790,35 @@ export interface RibbonCommands {
   increaseIndent?: () => void | boolean | undefined;
   insertPageBreak?: () => void;
   insertImage?: () => void;
+  insertImageWithCaption?: (src: string, caption?: string) => void;
   insertTable?: () => void;
+  insertTableWithCaption?: (rows: number, cols: number, title?: string) => void;
   insertLink?: () => void;
+  insertLinkUrl?: (url: string) => void;
   insertFootnote?: () => void;
   insertEquation?: () => void;
+  insertEquationLatex?: (latex: string) => void;
   clearFormatting?: () => void;
+  // Макет — поля
   setGostMargins?: () => void;
+  setMarginPreset?: (preset: 'gost' | 'normal' | 'narrow' | 'wide') => void;
+  setCustomMargins?: (top: number, bottom: number, left: number, right: number) => void;
+  // Макет — абзац
+  setParagraphSpacing?: (beforePt: number, afterPt: number) => void;
+  setLeftIndentCm?: (cm: number) => void;
+  setRightIndentCm?: (cm: number) => void;
+  // Разрывы разделов
+  insertSectionBreak?: () => void;
+  insertSectionPortrait?: () => void;
+  insertSectionLandscape?: () => void;
+  // Колонтитулы
+  updateHeaderText?: (left: string, right: string) => void;
+  updateFooterText?: (left: string, right: string) => void;
+  openHeaderFooterDialog?: (tab?: 'header' | 'footer') => void;
+  openPageSetup?: () => void;
+  // Вставка (новые)
+  insertTextBox?: () => void;
+  insertTableOfContents?: () => void;
   togglePageOrientation?: () => void;
   setPageSize?: (size: PaperSize) => void;
   [key: string]: unknown;
@@ -571,16 +827,102 @@ export interface RibbonCommands {
 const props = defineProps<{
   editor: EditorInstance | null | undefined;
   commands: RibbonCommands;
+  isInsideTable?: boolean;
 }>();
 
-defineEmits(['open-paragraph-dialog', 'open-font-dialog']);
+const emit = defineEmits(['open-paragraph-dialog', 'open-font-dialog', 'open-page-setup', 'open-header-footer-dialog']);
 
-const activeTab = ref<'home' | 'insert' | 'layout'>('home');
+const activeTab = ref<'home' | 'insert' | 'layout' | 'table-design'>('home');
 const currentPageSize = ref<PaperSize>('A4');
 const currentFontFamily = ref("'Times New Roman', Times, serif");
 const currentFontSize = ref('14pt');
 const currentLineHeight = ref('1.5');
 const showInvisibles = ref(false);
+
+/** Какой кастомный dropdown открыт (Поля / Ориентация / Разрывы / Колонтитулы...) */
+const openDropdown = ref<string | null>(null);
+
+/** Координаты открытого меню (position: fixed — не кликается overflow ленты) */
+const dropdownPos = ref({ top: 0, left: 0 });
+
+const toggleDropdown = (event: MouseEvent, name: string) => {
+  if (openDropdown.value === name) {
+    openDropdown.value = null;
+    return;
+  }
+  const btn = (event.currentTarget as HTMLElement | null)?.getBoundingClientRect();
+  if (btn) {
+    const MENU_WIDTH = 280;
+    // Не даём меню вылезти за правый край окна
+    const left = Math.min(btn.left, Math.max(8, window.innerWidth - MENU_WIDTH - 8));
+    dropdownPos.value = { top: btn.bottom + 4, left };
+  }
+  openDropdown.value = name;
+};
+
+const closeDropdown = () => {
+  openDropdown.value = null;
+};
+
+/** Числовые поля группы «Абзац» (Макет) */
+const indentLeftCm = ref(0);
+const indentRightCm = ref(0);
+const spacingBeforePt = ref(0);
+const spacingAfterPt = ref(0);
+
+const applyLeftIndent = () => props.commands.setLeftIndentCm?.(Number(indentLeftCm.value) || 0);
+const applyRightIndent = () => props.commands.setRightIndentCm?.(Number(indentRightCm.value) || 0);
+const applySpacing = () =>
+  props.commands.setParagraphSpacing?.(Number(spacingBeforePt.value) || 0, Number(spacingAfterPt.value) || 0);
+
+// ── Пресеты колонтитулов (dropdown «Вставка») ──
+const applyHeaderPreset = (preset: 'empty' | 'chapter-left' | 'chapter-center') => {
+  if (preset === 'empty') {
+    props.commands.updateHeaderText?.('', '');
+  } else if (preset === 'chapter-left') {
+    props.commands.updateHeaderText?.('Название главы', '');
+  } else {
+    props.commands.updateHeaderText?.('', 'Название главы');
+  }
+  closeDropdown();
+};
+
+const applyFooterPreset = (preset: 'empty' | 'page-right' | 'page-center' | 'page-only-right') => {
+  if (preset === 'empty') {
+    props.commands.updateFooterText?.('', '');
+  } else if (preset === 'page-right') {
+    props.commands.updateFooterText?.('', 'Стр. {page} из {total}');
+  } else if (preset === 'page-center') {
+    props.commands.updateFooterText?.('Стр. {page} из {total}', '');
+  } else {
+    props.commands.updateFooterText?.('', '{page}');
+  }
+  closeDropdown();
+};
+
+const applyPageNumberPosition = (position: 'header-left' | 'header-right' | 'header-center' | 'footer-left' | 'footer-right' | 'footer-center') => {
+  // Сначала очищаем номер из обоих колонтитулов, затем ставим на новое место
+  props.commands.updateHeaderText?.('', '');
+  props.commands.updateFooterText?.('', '');
+  if (position === 'header-left') props.commands.updateHeaderText?.('{page}', '');
+  else if (position === 'header-center') props.commands.updateHeaderText?.('', '{page}');
+  else if (position === 'header-right') props.commands.updateHeaderText?.('', '{page}');
+  else if (position === 'footer-left') props.commands.updateFooterText?.('{page}', '');
+  else if (position === 'footer-center') props.commands.updateFooterText?.('{page}', '');
+  else props.commands.updateFooterText?.('', '{page}');
+  closeDropdown();
+};
+
+// Меню позиционируется fixed: при скролле/ресайзе координаты устаревают — закрываем
+const handleViewportChange = () => closeDropdown();
+onMounted(() => {
+  window.addEventListener('scroll', handleViewportChange, true);
+  window.addEventListener('resize', handleViewportChange);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleViewportChange, true);
+  window.removeEventListener('resize', handleViewportChange);
+});
 
 const applyFontFamily = () => {
   props.commands.setFontFamily?.(currentFontFamily.value);

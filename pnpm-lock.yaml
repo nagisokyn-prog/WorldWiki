@@ -195,12 +195,6 @@ importers:
       '@formkit/auto-animate':
         specifier: ^0.10.0
         version: 0.10.0
-      '@raazkhnl/rk-editor-core':
-        specifier: ^4.6.0
-        version: 4.6.0
-      '@raazkhnl/rk-editor-ui':
-        specifier: ^4.6.0
-        version: 4.6.0(@raazkhnl/rk-editor-core@4.6.0)
       '@tanstack/vue-query':
         specifier: 5.28.0
         version: 5.28.0(vue@3.5.39(typescript@6.0.3))
@@ -216,9 +210,6 @@ importers:
       '@tiptap/core':
         specifier: ^3.27.3
         version: 3.27.4(@tiptap/pm@3.27.4)
-      '@tiptap/core-v2':
-        specifier: npm:@tiptap/core@2.27.2
-        version: '@tiptap/core@2.27.2(@tiptap/pm@3.27.4)'
       '@tiptap/extension-image':
         specifier: ^3.27.3
         version: 3.27.4(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
@@ -246,9 +237,6 @@ importers:
       '@tiptap/extension-text-align':
         specifier: ^3.30.6
         version: 3.30.6(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
-      '@tiptap/pm-v2':
-        specifier: npm:@tiptap/pm@2.27.2
-        version: '@tiptap/pm@2.27.2'
       '@tiptap/starter-kit':
         specifier: ^3.27.3
         version: 3.27.4
@@ -264,6 +252,9 @@ importers:
       '@worldwiki/resources':
         specifier: workspace:*
         version: link:../../packages/resources
+      '@worldwiki/word-vibe':
+        specifier: workspace:*
+        version: link:../../packages/word-vibe
       katex:
         specifier: ^0.18.5
         version: 0.18.5
@@ -392,6 +383,28 @@ importers:
       vite-plugin-dts:
         specifier: ^5.0.3
         version: 5.0.3(@vue/language-core@3.3.10)(esbuild@0.28.1)(rolldown@1.2.5)(typescript@7.0.2)(vite@8.1.4(@types/node@26.2.0)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
+
+  packages/word-vibe:
+    dependencies:
+      '@raazkhnl/rk-editor-core':
+        specifier: 4.6.0
+        version: 4.6.0
+      '@raazkhnl/rk-editor-ui':
+        specifier: ^4.6.0
+        version: 4.6.0(@raazkhnl/rk-editor-core@4.6.0)
+      '@tiptap/core':
+        specifier: 2.27.2
+        version: 2.27.2(@tiptap/pm@2.27.2)
+      '@tiptap/pm':
+        specifier: 2.27.2
+        version: 2.27.2
+      tiptap-pagination-plus:
+        specifier: 2.1.0
+        version: 2.1.0(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/pm@2.27.2)
+    devDependencies:
+      vue:
+        specifier: ^3.5.0
+        version: 3.5.41(typescript@7.0.2)
 
 packages:
 
@@ -5391,7 +5404,7 @@ snapshots:
       '@tiptap/extension-task-item': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/pm@2.27.2)
       '@tiptap/extension-task-list': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))
       '@tiptap/extension-text-align': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))
-      '@tiptap/extension-text-style': 2.27.2(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
+      '@tiptap/extension-text-style': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))
       '@tiptap/extension-underline': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))
       '@tiptap/pm': 2.27.2
       '@tiptap/starter-kit': 2.27.2
@@ -5605,10 +5618,6 @@ snapshots:
     dependencies:
       '@tiptap/pm': 2.27.2
 
-  '@tiptap/core@2.27.2(@tiptap/pm@3.27.4)':
-    dependencies:
-      '@tiptap/pm': 3.27.4
-
   '@tiptap/core@3.27.4(@tiptap/pm@3.27.4)':
     dependencies:
       '@tiptap/pm': 3.27.4
@@ -5707,7 +5716,7 @@ snapshots:
   '@tiptap/extension-color@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/extension-text-style@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2)))':
     dependencies:
       '@tiptap/core': 2.27.2(@tiptap/pm@2.27.2)
-      '@tiptap/extension-text-style': 2.27.2(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
+      '@tiptap/extension-text-style': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))
 
   '@tiptap/extension-document@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))':
     dependencies:
@@ -5751,7 +5760,7 @@ snapshots:
   '@tiptap/extension-font-family@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/extension-text-style@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2)))':
     dependencies:
       '@tiptap/core': 2.27.2(@tiptap/pm@2.27.2)
-      '@tiptap/extension-text-style': 2.27.2(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))
+      '@tiptap/extension-text-style': 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))
 
   '@tiptap/extension-gapcursor@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/pm@2.27.2)':
     dependencies:
@@ -6006,10 +6015,6 @@ snapshots:
   '@tiptap/extension-text-style@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))':
     dependencies:
       '@tiptap/core': 2.27.2(@tiptap/pm@2.27.2)
-
-  '@tiptap/extension-text-style@2.27.2(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))':
-    dependencies:
-      '@tiptap/core': 3.27.4(@tiptap/pm@3.27.4)
 
   '@tiptap/extension-text@2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))':
     dependencies:
@@ -8331,6 +8336,11 @@ snapshots:
 
   tinyrainbow@3.1.0: {}
 
+  tiptap-pagination-plus@2.1.0(@tiptap/core@2.27.2(@tiptap/pm@2.27.2))(@tiptap/pm@2.27.2):
+    dependencies:
+      '@tiptap/core': 2.27.2(@tiptap/pm@2.27.2)
+      '@tiptap/pm': 2.27.2
+
   tiptap-pagination-plus@2.1.0(@tiptap/core@3.27.4(@tiptap/pm@3.27.4))(@tiptap/pm@3.27.4):
     dependencies:
       '@tiptap/core': 3.27.4(@tiptap/pm@3.27.4)
@@ -9021,6 +9031,16 @@ snapshots:
       '@vue/shared': 3.5.41
     optionalDependencies:
       typescript: 6.0.3
+
+  vue@3.5.41(typescript@7.0.2):
+    dependencies:
+      '@vue/compiler-dom': 3.5.41
+      '@vue/compiler-sfc': 3.5.41
+      '@vue/runtime-dom': 3.5.41
+      '@vue/server-renderer': 3.5.41
+      '@vue/shared': 3.5.41
+    optionalDependencies:
+      typescript: 7.0.2
 
   w3c-keyname@2.2.8: {}
 

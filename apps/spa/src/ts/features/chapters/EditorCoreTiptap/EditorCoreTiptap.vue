@@ -190,7 +190,7 @@ import { EditorContent } from '@tiptap/vue-3';
 import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
 import RkWordEditor from './WordMode/RkWordEditor.vue';
-import type { PageSize } from './WordMode/RkWordEditor.model';
+import type { PageSize } from '@worldwiki/word-vibe';
 import ParagraphFormatModal, { type ParagraphFormatData } from './ParagraphFormatModal/ParagraphFormatModal.vue';
 import EntityLinkSelector from './EntityLinkSelector.vue';
 import PromiseContextMenu, { type PromiseTypeOption } from './PromiseContextMenu.vue';

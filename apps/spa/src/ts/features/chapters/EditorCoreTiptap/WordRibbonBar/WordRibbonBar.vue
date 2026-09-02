@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="word-ribbon">
+  <div class="word-ribbon" @mousedown="onRibbonMousedown">
     <!-- Верхние вкладки Ribbon -->
     <div class="ribbon-tabs-bar">
       <button 
@@ -767,6 +767,20 @@
 <script setup lang="ts">
 import { useWordRibbonBar } from './useWordRibbonBar';
 import type { RibbonProps as WordRibbonProps } from './useWordRibbonBar';
+
+/**
+ * Focus theft fix: клик по кнопке ленты по умолчанию уводит DOM-focus
+ * с редактора → ProseMirror применяет команду «вслепую», подсветка
+ * выделения пропадает. preventDefault на mousedown оставляет фокус
+ * в редакторе, @click при этом срабатывает как обычно.
+ * select/input/textarea не трогаем — им фокус нужен для работы.
+ */
+const onRibbonMousedown = (e: MouseEvent): void => {
+  const target = e.target;
+  if (!(target instanceof HTMLElement)) return;
+  if (target.closest('select, input, textarea')) return;
+  e.preventDefault();
+};
 
 const props = defineProps<WordRibbonProps>();
 

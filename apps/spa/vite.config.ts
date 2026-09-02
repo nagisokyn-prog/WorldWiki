@@ -7,32 +7,15 @@ import Components from 'unplugin-vue-components/vite';
 import VueDevTools from 'vite-plugin-vue-devtools';
 
 /**
- * tiptap-pagination-plus работает на tiptap v2 (как и rk-editor-core),
- * а приложение — на v3. Плагин перенаправляет его импорты @tiptap/core
- * и @tiptap/pm/* на v2-копии (алиасы @tiptap/core-v2 / @tiptap/pm-v2),
- * чтобы extension жил в том же ядре, что и внутренний редактор WordEditor.
+ * Word-редактор (rk-editor-core + tiptap-pagination-plus на tiptap v2)
+ * изолирован в workspace-пакете @worldwiki/word-vibe, у которого СВОИ
+ * v2-депсы. Vite-хак с перенаправлением импортов (paginationV2Resolver)
+ * больше не нужен: pnpm резолвит v2-копии внутри пакета.
  */
-function paginationV2Resolver() {
-  return {
-    name: 'pagination-plus-tiptap-v2',
-    enforce: 'pre' as const,
-    resolveId(id: string, importer?: string) {
-      if (!importer) return null;
-      const isPagination = importer.includes('tiptap-pagination-plus');
-      // v2-копия ядра (@tiptap/core-v2) должна жить на том же @tiptap/pm@2.27,
-      // что и rk-editor-core (у pnpm она слинкована с pm 3.x — перенаправляем)
-      const isV2Core = importer.includes('@tiptap+core@2.27.2') || importer.includes('@tiptap/core-v2');
-      if (!isPagination && !isV2Core) return null;
-      if (isPagination && id === '@tiptap/core') return '@tiptap/core-v2';
-      if (id.startsWith('@tiptap/pm/')) return '@tiptap/pm-v2/' + id.slice('@tiptap/pm/'.length);
-      return null;
-    }
-  };
-}
 export default defineConfig({
   plugins: [
-    paginationV2Resolver(),
     vue(),
+
     VueDevTools(),
     AutoImport({
       imports: ['vue', 'vue-router', 'pinia'],
@@ -56,13 +39,8 @@ export default defineConfig({
       { find: '@components', replacement: resolve(__dirname, 'src/ts/components') },
       { find: '@utils', replacement: resolve(__dirname, 'src/ts/utils') },
       { find: '@types', replacement: resolve(__dirname, 'src/ts/types') },
-      // v2-копии tiptap-ядра для tiptap-pagination-plus (см. paginationV2Resolver).
-      // Строковые алиасы: в vitest импорт переписывается в "/@id/@tiptap/core-v2"
-      { find: '/@id/@tiptap/core-v2', replacement: resolve(__dirname, 'node_modules/@tiptap/core-v2/dist/index.js') },
-      { find: '/@id/@tiptap/pm-v2/', replacement: resolve(__dirname, 'node_modules/@tiptap/pm-v2/') },
-      { find: '@tiptap/core-v2', replacement: resolve(__dirname, 'node_modules/@tiptap/core-v2/dist/index.js') },
-      { find: '@tiptap/pm-v2/', replacement: resolve(__dirname, 'node_modules/@tiptap/pm-v2/') },
-      // "@" — последним: он префиксный и перебивает более длинные алиасы
+      // "@worldwiki/word-vibe" — workspace-пакет, резолвится через node_modules
+      // "@\" — последним: он префиксный и перебивает более длинные алиасы
       { find: '@', replacement: resolve(__dirname, 'src/ts') }
     ]
   },

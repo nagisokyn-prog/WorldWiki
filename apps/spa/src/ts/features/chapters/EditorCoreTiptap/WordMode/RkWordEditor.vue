@@ -126,9 +126,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import '@raazkhnl/rk-editor-ui/styles.css';
-import { useRkWordEditor } from './useRkWordEditor';
-import type { RkWordEditorProps, RkWordEditorEmits } from './RkWordEditor.model';
+import '@worldwiki/word-vibe/styles';
+import { useRkWordEditor } from '@worldwiki/word-vibe';
+import type { RkWordEditorProps, RkWordEditorEmits } from '@worldwiki/word-vibe';
 import WordRibbonBar from '../WordRibbonBar/WordRibbonBar.vue';
 import WordRuler from '../WordRuler/WordRuler.vue';
 import ParagraphFormatModal, { type ParagraphFormatData } from '../ParagraphFormatModal/ParagraphFormatModal.vue';

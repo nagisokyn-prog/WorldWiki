@@ -7,7 +7,7 @@ import type {
   Orientation,
   EditorInstance 
 } from './RkWordEditor.model';
-import type { RibbonCommands } from '../WordRibbonBar/useWordRibbonBar';
+import type { RibbonCommands } from '../ribbon/commands';
 import {
   attachPaginationPlus,
   updatePaginationLayout,
@@ -250,7 +250,19 @@ export function useRkWordEditor(
     // ВАЖНО: резолвим CommandManager в МОМЕНТ ВЫЗОВА, а не в момент вычисления computed.
     // Иначе после подмены редактора в attachPaginationPlus лента могла бы держать
     // устаревший/мертвый CommandManager и все кнопки молча превращались в no-op.
-    const cmd = () => wordEditor.value?.commands;
+    //
+    // Дополнительная защита (Phase 0): если обёртка rk НЕ синхронизирована с живым
+    // редактором (мост не смог переподменить внутренние сервисы), командуем напрямую
+    // живым tiptap-инстансом — расширения у него те же, простые команды эквивалентны.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rk CommandManager / tiptap v2 commands не типизированы на границе
+    const cmd = (): any => {
+      const wrapper = wordEditor.value as unknown as { instance?: unknown } | null;
+      if (wrapper && wrapper.instance === tiptapEditor.value && wordEditor.value) {
+        return wordEditor.value.commands;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return (tiptapEditor.value as unknown as { commands: any })?.commands;
+    };
     return {
       toggleBold: () => cmd()?.bold(),
       toggleItalic: () => cmd()?.italic(),

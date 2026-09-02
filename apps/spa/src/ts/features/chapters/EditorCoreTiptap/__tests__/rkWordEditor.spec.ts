@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { ref } from 'vue';
-import { useRkWordEditor } from '../WordMode/useRkWordEditor';
+import { useRkWordEditor } from '@worldwiki/word-vibe';
 
 // Мокируем @raazkhnl/rk-editor-core для модульного тестирования логики композабла
 // tiptap-pagination-plus — CJS-пакет, в тестовой среде мокируем его API

@@ -60,10 +60,10 @@ import { usePageSetupModal } from './usePageSetupModal';
 const props = defineProps<{
   isOpen: boolean;
   margins?: { top: number; bottom: number; left: number; right: number };
-  pageSize?: import('../WordMode/RkWordEditor.model').PageSize;
-  orientation?: import('../WordMode/RkWordEditor.model').Orientation;
+  pageSize?: import('@worldwiki/word-vibe').PageSize;
+  orientation?: import('@worldwiki/word-vibe').Orientation;
 }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { margins: { top: number; bottom: number; left: number; right: number }; pageSize: import('../WordMode/RkWordEditor.model').PageSize; orientation: import('../WordMode/RkWordEditor.model').Orientation }): void }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { margins: { top: number; bottom: number; left: number; right: number }; pageSize: import('@worldwiki/word-vibe').PageSize; orientation: import('@worldwiki/word-vibe').Orientation }): void }>();
 const { activeTab, topMm, bottomMm, leftMm, rightMm, size, orient, applyGost, handleApply, SIZES } =
   usePageSetupModal(props, emit);
 </script>

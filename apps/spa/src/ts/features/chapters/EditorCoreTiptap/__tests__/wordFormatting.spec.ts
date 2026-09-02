@@ -17,12 +17,12 @@ import {
   nextTableCaptionNumber,
   buildTableCaptionText,
   TABLE_CAPTION_RE,
-} from '../WordMode/extensions/GostTableCaption';
+} from '@worldwiki/word-vibe';
 import {
   countFigureCaptions,
   nextFigureCaptionNumber,
   buildFigureCaptionText,
-} from '../WordMode/extensions/GostFigureCaption';
+} from '@worldwiki/word-vibe';
 
 const createTestEditor = (content = '<p>Первый абзац документа</p><p>Второй абзац документа</p>') => {
   const CustomParagraph = Paragraph.extend({

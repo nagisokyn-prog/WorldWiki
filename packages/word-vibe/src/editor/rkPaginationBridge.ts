@@ -164,12 +164,28 @@ export function attachPaginationPlus(
     // Внутренние сервисы обёртки (CommandManager, ExportEngine и др.) захватили
     // ссылку на исходный редактор в конструкторе — подменяем и у них,
     // иначе команды/экспорт будут вызывать уничтоженный редактор.
-    let swappedServices = 0;
+    const swappedServiceNames: string[] = [];
+    const missedServiceNames: string[] = [];
     for (const serviceName of ['commands', 'exporter', 'importer', 'printer', '_styleManager']) {
       const service = (wrapper as Record<string, unknown>)[serviceName] as Record<string, unknown> | undefined;
       if (service && typeof service === 'object' && 'editor' in service) {
-        if (setSlot(service, 'editor', next)) swappedServices += 1;
+        if (setSlot(service, 'editor', next)) {
+          swappedServiceNames.push(serviceName);
+        } else {
+          missedServiceNames.push(serviceName);
+        }
       }
+    }
+
+    // КРИТИЧНО: CommandManager обязан указывать на живой редактор, иначе все
+    // кнопки ленты молча командуют уничтоженным экземпляром (result: false).
+    const commandsService = (wrapper as Record<string, unknown>)['commands'] as Record<string, unknown> | undefined;
+    const commandsOk = Boolean(commandsService && commandsService.editor === next);
+    if (!commandsOk) {
+      console.error(
+        '[rkPaginationBridge] commands service does NOT point to the new editor! ' +
+        'Ribbon commands will operate on a destroyed editor (silent no-op).'
+      );
     }
 
     if (!swappedEditor && !swappedInstance) {
@@ -178,7 +194,10 @@ export function attachPaginationPlus(
       console.info('[rkPaginationBridge] attach: original destroyed, editor reference swapped', {
         swappedEditor,
         swappedInstance,
-        swappedServices,
+        swappedServices: swappedServiceNames.length,
+        swappedServiceNames,
+        missedServiceNames,
+        commandsOk,
       });
     }
     wrapper.applyPageLayoutToDOM?.(host);

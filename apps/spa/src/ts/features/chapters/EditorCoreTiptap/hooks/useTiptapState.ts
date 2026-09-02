@@ -130,7 +130,7 @@ export function useTiptapState(
     }
   };
 
-  const switchEditorMode = (newMode: 'wysiwyg' | 'markdown' | 'split', syncMarkdownFromEditor: () => void) => {
+  const switchEditorMode = (newMode: EditorMode, syncMarkdownFromEditor: () => void) => {
     if (editorMode.value === 'markdown' || editorMode.value === 'split') {
       syncMarkdownFromEditor();
     }

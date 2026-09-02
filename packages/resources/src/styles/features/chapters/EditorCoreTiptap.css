@@ -431,3 +431,69 @@
 .editor-wrapper-word-page .semantic-paragraph-node {
   padding-left: 0 !important;
 }
+
+/* ==========================================================================
+   RK Word Editor — глобальные переопределения стилей ProseMirror
+   Эти правила должны быть ГЛОБАЛЬНЫМИ (не scoped), так как .ProseMirror
+   и его потомки создаются библиотекой rk-editor-core, а не Vue-шаблоном,
+   и не получают атрибут data-v-xxx от scoped стилей компонента.
+   ========================================================================== */
+
+/*
+  ГОСТ 7.32 — форматирование текста научного документа:
+  - Шрифт: Times New Roman 14pt, межстрочник 1.5
+  - Межабзацный интервал: 0 (только межстрочник)
+  - Красная строка: 1.25 см (задаётся линейкой через firstLineIndent attr)
+
+  ВАЖНО: эти стили ОБЯЗАНЫ быть здесь (в глобальном CSS), а не в scoped-блоке
+  компонента. Плагин Pagination из rk-editor-core измеряет РЕАЛЬНУЮ высоту
+  DOM-элементов для расчёта, где вставлять разделители страниц. Если font-size
+  и line-height не доходят до .ProseMirror (из-за scoped data-v-xxx),
+  контент рендерится в browser-default 16px/normal, pagination считает
+  неправильную высоту строки → вставляет spacer через каждые 2-3 абзаца.
+
+  Переопределяем rk-editor-ui: .ProseMirror p { margin: 0 0 .6em }
+*/
+.rk-editor-mount .ProseMirror {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 14pt;
+  line-height: 1.5;
+  color: var(--text-main, #1a1a1a);
+}
+
+.rk-editor-mount .ProseMirror p {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  text-indent: 1.25cm;
+}
+
+/* Заголовки — без красной строки и без межабзацных отступов */
+.rk-editor-mount .ProseMirror h1,
+.rk-editor-mount .ProseMirror h2,
+.rk-editor-mount .ProseMirror h3,
+.rk-editor-mount .ProseMirror h4,
+.rk-editor-mount .ProseMirror h5,
+.rk-editor-mount .ProseMirror h6 {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  text-indent: 0;
+}
+
+/* Блоки кода, цитаты, списки — без красной строки */
+.rk-editor-mount .ProseMirror blockquote p,
+.rk-editor-mount .ProseMirror li p,
+.rk-editor-mount .ProseMirror li {
+  text-indent: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Пустая строка — минимальная высота для кликабельности */
+.rk-editor-mount .ProseMirror p:empty::before,
+.rk-editor-mount .ProseMirror p.is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: var(--text-muted, #999);
+  pointer-events: none;
+  float: left;
+  height: 0;
+}

@@ -381,7 +381,7 @@ export function useTiptapEditor(
     ...formatHook,
     switchEditorMode: (newMode: 'wysiwyg' | 'markdown' | 'split' | 'word') => {
       const prevMode = stateHook.editorMode.value;
-      stateHook.switchEditorMode(newMode as any, mdHook.syncMarkdownFromEditor);
+      stateHook.switchEditorMode(newMode, mdHook.syncMarkdownFromEditor);
       if (prevMode === 'word' && newMode !== 'word' && editor.value && props.content) {
         editor.value.commands.setContent(props.content);
         stateHook.updateStats();

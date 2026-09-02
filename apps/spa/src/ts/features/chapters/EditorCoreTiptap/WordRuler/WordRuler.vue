@@ -265,34 +265,55 @@ const resetToGost = () => {
 
 watch(() => props.editor, (ed) => {
   if (!ed) return;
+
+  // pxPerCm = 37.82, rk-editor-core indent step = 40px, so 1 indent = 40/37.82 ≈ 1.058 cm
+  const INDENT_STEP_PX = 40;
+
   const updateFromSelection = () => {
-    if (activeDrag.value) return; // Не перебивать при активном перетаскивании
+    if (activeDrag.value) return;
     try {
       const { $from } = ed.state.selection;
-      for (let d = $from.depth; d > 0; d--) {
+
+      for (let d = $from.depth; d >= 0; d--) {
         const node = $from.node(d);
         if (node.type.name === 'paragraph') {
-          const rawIndent = node.attrs.textIndent;
-          if (rawIndent && typeof rawIndent === 'string' && rawIndent.endsWith('cm')) {
-            firstLineCm.value = parseFloat(rawIndent);
+          // Left indent: rk-editor-core `indent` attr (integer), 40px steps
+          const indentLevel = typeof node.attrs.indent === 'number' ? node.attrs.indent : 0;
+          leftIndentCm.value = (indentLevel * INDENT_STEP_PX) / pxPerCm;
+
+          // First-line indent: `paragraphSystem` extension attr `firstLineIndent`
+          // parseHTML читает t.style.textIndent, renderHTML: `text-indent: ${val}`
+          const rawFirstLine = node.attrs.firstLineIndent;
+          if (rawFirstLine && typeof rawFirstLine === 'string') {
+            // '1.25cm' → 1.25, '12.5mm' → convert, '0' → 0
+            const parsed = parseFloat(rawFirstLine);
+            if (!isNaN(parsed)) {
+              // Handle 'cm' vs 'mm' vs 'pt'
+              if (rawFirstLine.endsWith('mm')) {
+                firstLineCm.value = parsed / 10;
+              } else if (rawFirstLine.endsWith('pt')) {
+                firstLineCm.value = parsed * 0.0352778;
+              } else {
+                firstLineCm.value = parsed; // already cm
+              }
+            }
+          } else {
+            // Null attr → CSS default 1.25cm
+            firstLineCm.value = 1.25;
           }
-          const rawLeft = node.attrs.leftIndent;
-          if (rawLeft && typeof rawLeft === 'string' && rawLeft.endsWith('cm')) {
-            leftIndentCm.value = parseFloat(rawLeft);
-          }
-          const rawRight = node.attrs.rightIndent;
-          if (rawRight && typeof rawRight === 'string' && rawRight.endsWith('cm')) {
-            rightIndentCm.value = printableCmMax.value - parseFloat(rawRight);
-          }
+
+          // Right indent: no schema support in rk-editor-core → show at printable end
+          rightIndentCm.value = printableCmMax.value;
           break;
         }
       }
     } catch {
-      // Игнорируем исключения при проверке пустой выборки
+      // Игнорируем исключения при пустой выборке
     }
   };
 
   ed.on('selectionUpdate', updateFromSelection);
+  updateFromSelection();
 }, { immediate: true });
 </script>
 

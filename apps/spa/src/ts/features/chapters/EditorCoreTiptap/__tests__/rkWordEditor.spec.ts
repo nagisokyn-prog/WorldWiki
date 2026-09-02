@@ -3,6 +3,13 @@ import { ref } from 'vue';
 import { useRkWordEditor } from '../WordMode/useRkWordEditor';
 
 // Мокируем @raazkhnl/rk-editor-core для модульного тестирования логики композабла
+// tiptap-pagination-plus — CJS-пакет, в тестовой среде мокируем его API
+vi.mock('tiptap-pagination-plus', () => ({
+  PaginationPlus: {
+    configure: () => ({ name: 'PaginationPlus', options: {}, storage: {} }),
+  },
+}));
+
 vi.mock('@raazkhnl/rk-editor-core', () => {
   class MockWordEditor {
     layout: Record<string, unknown>;

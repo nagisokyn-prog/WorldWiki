@@ -49,6 +49,9 @@
 }
 
 /* Настройки ProseMirror листа под дизайн-систему WorldWiki */
+/* ВАЖНО: только визуальные стили, которые применяются к самому контейнеру (.rk-editor-mount),
+   НЕ к внутренним ProseMirror-элементам — они не получают scoped data-v-xxx атрибут.
+   Шрифты, line-height, отступы абзацев — в глобальном EditorCoreTiptap.css */
 .rk-editor-mount .ProseMirror {
   background: var(--bg-card);
   color: var(--text-main);
@@ -57,27 +60,25 @@
   box-shadow: var(--shadow-xl);
   outline: none;
   box-sizing: border-box;
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 14pt;
-  line-height: 1.5;
   transition: width 0.2s ease, min-height 0.2s ease;
 }
 
-/* Стили виртуальных разделителей страниц от плагина Pagination */
-.rk-editor-mount .rk-page-boundary,
-.rk-editor-mount [data-rk-page-boundary] {
-  display: block;
-  width: 100%;
-  height: 32px;
-  background: var(--bg-sunken);
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: inset 0 2px 6px var(--shadow-sm), inset 0 -2px 6px var(--shadow-sm);
-  margin: 32px 0;
-  position: relative;
-  user-select: none;
-  cursor: default;
+/* Пагинация tiptap-pagination-plus инжектит собственные стили листов
+   (.rm-page-break, .rm-pagination-gap, .rm-page-header/-footer и т.д.).
+   Здесь — только подгонка под дизайн-систему WorldWiki. */
+.rk-editor-mount .rm-page-header,
+.rk-editor-mount .rm-page-footer,
+.rk-editor-mount .rm-first-page-header .rm-page-header-left,
+.rk-editor-mount .rm-first-page-header .rm-page-header-right {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.2;
 }
+
+.rk-editor-mount .rm-page-break .page {
+  box-shadow: var(--shadow-lg);
+}
+
 
 /* 4. Нижняя строка состояния (Status Bar) */
 .rk-editor-status-bar {

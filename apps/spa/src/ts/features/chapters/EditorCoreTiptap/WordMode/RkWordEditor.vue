@@ -14,6 +14,8 @@
         :is-landscape="isLandscape"
         :editor="tiptapEditor"
         @update:first-line-indent="handleFirstLineIndent"
+        @update:left-indent="handleLeftIndent"
+        @update:right-indent="handleRightIndent"
       />
     </div>
 
@@ -97,16 +99,39 @@ const {
   ribbonCommands,
 } = useRkWordEditor(editorHostRef, props, emit);
 
+/**
+ * rk-editor-core поддерживает только `indent` attr для абзацев:
+ * margin-left = indent * 40px, step ≈ 1.058 см.
+ * Конвертируем см → уровень и вызываем updateAttributes.
+ */
+const PX_PER_CM = 37.82;
+const INDENT_STEP_PX = 40;
+
 const handleScrollAreaClick = (e: MouseEvent) => {
   if (e.target === e.currentTarget) {
     wordEditor.value?.focus();
   }
 };
 
-const handleFirstLineIndent = (_cm: number) => {
-  if (tiptapEditor.value) {
-    tiptapEditor.value.chain().focus().run();
-  }
+// Красная строка: используем `firstLineIndent` attr из `paragraphSystem` extension.
+// Если 0 — ставим '0' явно, чтобы перебить CSS-дефолт 1.25cm.
+const handleFirstLineIndent = (cm: number) => {
+  if (!tiptapEditor.value) return;
+  const val = cm <= 0 ? '0' : `${cm.toFixed(3)}cm`;
+  tiptapEditor.value.chain().focus().updateAttributes('paragraph', { firstLineIndent: val }).run();
+};
+
+// Левый отступ абзаца через `indent` attr (единственный в схеме rk-editor-core)
+const handleLeftIndent = (cm: number) => {
+  if (!tiptapEditor.value) return;
+  const level = Math.round((cm * PX_PER_CM) / INDENT_STEP_PX);
+  const clamped = Math.max(0, Math.min(8, level));
+  tiptapEditor.value.chain().focus().updateAttributes('paragraph', { indent: clamped }).run();
+};
+
+// Правый отступ не поддерживается схемой rk-editor-core — no-op
+const handleRightIndent = (_cm: number) => {
+  // no-op
 };
 
 const handleParagraphFormatApply = (data: ParagraphFormatData) => {

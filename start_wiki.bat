@@ -1,12 +1,11 @@
 @echo off
 cd /d C:\Users\Kuzma\Desktop\WorldWiki
 
-:: Очистка устаревших артефактов Cargo рекурсивно по всем подпроектам (лимит 5GB и старше 3 дней)
+:: Очистка устаревших артефактов Cargo рекурсивно по всем подпроектам (лимит 20 GB и старше 3 дней)
 cargo sweep --help >nul 2>nul
 if %errorlevel% equ 0 (
     echo [Cargo] Cleaning old build artifacts across workspace...
-    cargo sweep -r --maxsize 20GB
-    cargo sweep -r --time 3
+    cargo sweep -r --maxsize 20.0GB
 )
 
 rem Install pnpm dependencies silently

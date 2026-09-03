@@ -78,32 +78,37 @@ apps/spa/src/ts/features/ai/
 
 ## 🧠 Архитектурная модель данных и компонентов
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                              WorldWiki Core Context                             │
-│       (Главы рукописи / База сущностей / Календари / Глобальный проект)         │
-└────────────────────────────────────────┬────────────────────────────────────────┘
-                                         │  Контекстные сниппеты
-                                         ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                        useWowilonPanel (Оркестратор)                            │
-│  ├── allMessages: ref<ChatMessage[]>        ───► Линейный массив сообщений       │
-│  ├── renderedMessages: ComputedRef<Group[]> ───► Дерево активных веток          │
-│  ├── activeChatId, activeModeSlug, profile  ───► Состояние сессии               │
-│  └── eventListener('chat_stream_chunk')     ───► Реактивный стриминг токенов    │
-└───────────────────┬─────────────────────────────────────────┬───────────────────┘
-                    │                                         │
-        (Tauri IPC / Events)                     (UI Представление)
-                    ▼                                         ▼
-┌───────────────────────────────────────┐   ┌─────────────────────────────────────┐
-│             Rust Backend              │   │            WowilonPanel             │
-│  ├── send_chat_message                │   │  ├── AiChatTopBar (Режимы, Профили) │
-│  ├── chat_stream_chunk (SSE/Event)    │   │  ├── AiContextSelector (Сниппеты)   │
-│  ├── edit_chat_message                │   │  ├── AiMessageList (Markdown, Think)│
-│  ├── switch_message_variant           │   │  ├── AiToolApproval (Модалки прав)  │
-│  ├── generate_chat_title              │   │  └── AiChatInput (Ввод, Блокировка) │
-│  └── Llama.cpp / Ollama / Cloud HTTP  │   └─────────────────────────────────────┘
-└───────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Core_Context ["WorldWiki Core Context"]
+        Chapters["Главы рукописи"]
+        Entities["База сущностей и отношений"]
+        Calendars["Календари и таймлайны"]
+    end
+
+    subgraph Orchestrator ["useWowilonPanel (Оркестратор AI)"]
+        State["allMessages, activeChatId, activeModeSlug"]
+        TreeGen["Дерево веток (Variant Tree Engine)"]
+        StreamHandler["Обработчик стрима (chat_stream_chunk)"]
+        ThinkParser["Парсер рассуждений (<think> reasoning)"]
+    end
+
+    subgraph UI_Panel ["WowilonPanel (UI Слой)"]
+        TopBar["AiChatTopBar (Режимы, Профили)"]
+        MsgList["AiMessageList (Markdown, Think Spoilers, Variants)"]
+        InputBox["AiChatInput (Ввод, Автовысота, Hotkeys)"]
+        ToolApprove["AiToolApproval (Подтверждение тулов)"]
+    end
+
+    subgraph Backend_Engine ["Rust Backend / LLM Providers"]
+        IPC["Tauri IPC (send_chat_message)"]
+        Llama["Встроенный Llama.cpp / Ollama"]
+        Cloud["OpenRouter / Anthropic / OpenAI / DeepSeek"]
+    end
+
+    Core_Context -->|"Контекстные сниппеты"| Orchestrator
+    Orchestrator <--> UI_Panel
+    Orchestrator <-->|"IPC Events & SSE Stream"| Backend_Engine
 ```
 
 ---

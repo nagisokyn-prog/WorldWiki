@@ -11,7 +11,7 @@
 
 ```
 packages/word-vibe/
-├── README.md                           # Всеобъемлющая документация архитектуры, геометрии и DTO
+├── README_WordVibe.md                  # Всеобъемлющая документация архитектуры, геометрии и DTO
 ├── package.json                        # Изолированные зависимости: rk-editor-core, tiptap-pagination-plus, vue
 ├── tsconfig.json                       # Конфигурация TypeScript (strict mode, JSX/Vue preserve)
 ├── __tests__/                          # Набор интеграционных и модульных тестов

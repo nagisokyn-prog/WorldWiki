@@ -396,5 +396,3 @@ export const i18n = createI18n({
 export function setLocale(locale: 'ru' | 'en') {
   i18n.global.locale.value = locale;
 }
-
-export default i18n;

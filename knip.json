@@ -1,0 +1,86 @@
+{
+  "$schema": "https://unpkg.com/knip@5/overview/configuration-schema.json",
+  "ignore": [
+    "vendor/**"
+  ],
+  "workspaces": {
+    ".": {
+      "ignoreDependencies": [
+        "@types/dompurify",
+        "@types/markdown-it",
+        "@typescript/typescript6",
+        "@vue/server-renderer",
+        "@vue/test-utils",
+        "markdown-coverage-reporter",
+        "prettier",
+        "vc-api-coverage",
+        "vite-plugin-checker",
+        "vite-plugin-dts",
+        "vite-plugin-vue-devtools",
+        "@fontsource/fira-code",
+        "@formkit/auto-animate",
+        "@tanstack/vue-query",
+        "@tauri-apps/plugin-dialog",
+        "@tauri-apps/plugin-fs",
+        "@tauri-apps/plugin-opener",
+        "@tauri-apps/plugin-shell",
+        "@tiptap/core",
+        "@tiptap/extension-code-block-lowlight",
+        "@tiptap/extension-heading",
+        "@tiptap/extension-image",
+        "@tiptap/extension-link",
+        "@tiptap/extension-paragraph",
+        "@tiptap/extension-table",
+        "@tiptap/extension-table-cell",
+        "@tiptap/extension-table-header",
+        "@tiptap/extension-table-row",
+        "@tiptap/starter-kit",
+        "@tiptap/vue-3",
+        "@vueuse/motion",
+        "lowlight",
+        "markdown-it",
+        "pinia",
+        "turndown",
+        "vue-i18n",
+        "vue-router"
+      ],
+      "ignoreBinaries": [
+        "vp",
+        "oxfmt"
+      ]
+    },
+    "apps/spa": {
+      "entry": [
+        "*.html",
+        "src/ts/app/*.ts",
+        "src/ts/features/ai/FloatingWindowAI/ai.ts"
+      ],
+      "project": [
+        "src/**/*.{ts,vue}"
+      ],
+      "ignore": [
+        "src/ts/types/generated/**"
+      ]
+    },
+    "packages/components": {
+      "entry": [
+        "src/index.ts",
+        "src/components/Vue/*.vue",
+        "src/components/Vue/Settings/*.vue"
+      ],
+      "project": [
+        "src/**/*.{ts,vue}"
+      ]
+    },
+    "packages/word-vibe": {
+      "project": [
+        "src/**/*.{ts,vue}"
+      ]
+    },
+    "packages/resources": {
+      "project": [
+        "src/**/*.{ts,vue,css}"
+      ]
+    }
+  }
+}

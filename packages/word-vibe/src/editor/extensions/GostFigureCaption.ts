@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * ГОСТ-автоподписи рисунков («Рисунок {N} — {название}» под рисунком).

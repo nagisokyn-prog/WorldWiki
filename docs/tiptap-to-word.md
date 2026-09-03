@@ -72,6 +72,31 @@
 - Удалены 10 устаревших папок компонентов Word-режима из `apps/spa/src/ts/features/chapters/EditorCoreTiptap/`.
 - Написаны модульные тесты `packages/word-vibe/__tests__/wordVibeAdapter.spec.ts`.
 
+### Фаза 3 — Semantic AST как центральный формат обмена данными (Zero Data Loss) ✅ (выполнено)
+
+**DTO и чистые типы Semantic AST (`packages/word-vibe/src/types/dto.ts`):**
+- Полное дерево `WordDocumentDTO`: блоки `Paragraph`, `Heading`, `Figure`, `Table`, `Equation`, `Quote`, `List`, `PageBreak`, `SceneBreak`, `UnsupportedBlockDTO` и инлайны `Text`, `MathInline`, `CrossReference`, `FootnoteReference`, `EntityReference`.
+- Никаких ProseMirror / Tiptap типов в публичном контракте.
+
+**Двусторонние конвертеры AST ↔ Tiptap v2 JSON (`src/converter/`):**
+- `ASTToV2Converter.ts`: `semanticASTToV2Doc` преобразует AST во внутренний JSON Tiptap v2 с сохранением всех атрибутов стилей (отступы, красная строка, выравнивание, марки, заголовки, таблицы).
+- `V2ToASTConverter.ts`: `v2DocToSemanticAST` восстанавливает AST из Tiptap v2 JSON.
+
+**Кастомные v2-расширения (`src/editor/extensions/`):**
+- `SceneBreakExtension`: разделители сцен `* * *`.
+- `EntityReferenceExtension`: сущности WorldWiki `((Персонаж))`.
+- `CrossReferenceExtension`: перекрестные ссылки на таблицы/рисунки/разделы.
+- `UnsupportedBlockExtension`: визуальный placeholder для неизвестных блоков.
+
+**Гарантия Zero Data Loss (§4.5):**
+- Неподдерживаемые узлы безопасно консервируются в `WordUnsupportedBlockDTO` и при `getDocument()` восстанавливаются 1-в-1.
+- Написаны тесты инварианта `astConverters.spec.ts` (`V2ToAST(ASTToV2(doc)) == doc`).
+
+**Обновление WordVibeAdapter & WordVibeEditor:**
+- Добавлены методы `loadDocument(doc: WordDocumentDTO)` и `getDocument(): WordDocumentDTO`.
+- Событие `'change'` передает `{ html, document }`.
+- Поддержка реактивного пропа `document` в `<WordVibeEditor :document="..." />`.
+
 ## 1. Проблема (что сломано сейчас)
 
 ### 1.1. Симптомы

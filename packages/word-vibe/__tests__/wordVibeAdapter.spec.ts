@@ -189,4 +189,30 @@ describe('WordVibeAdapter Public Boundary', () => {
     expect(adapter.isReady()).toBe(false);
     expect(onDestroyed).toHaveBeenCalledTimes(1);
   });
+
+  it('7. Загружает и возвращает Semantic AST через loadDocument и getDocument', () => {
+    const adapter = createWordVibeAdapter();
+    const host = document.createElement('div');
+    adapter.mount({ host });
+
+    const doc = {
+      id: 'doc-ast-test',
+      metadata: { title: 'Документ AST' },
+      profileId: 'gost',
+      blocks: [
+        {
+          type: 'paragraph' as const,
+          id: 'p-1',
+          content: [{ type: 'text' as const, text: 'Тестовый текст AST' }],
+        },
+      ],
+    };
+
+    adapter.loadDocument(doc);
+    const retrieved = adapter.getDocument();
+
+    expect(retrieved.id).toBe('doc-ast-test');
+    expect(retrieved.metadata.title).toBe('Документ AST');
+    expect(retrieved.blocks).toBeDefined();
+  });
 });

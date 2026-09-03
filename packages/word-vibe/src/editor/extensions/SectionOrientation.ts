@@ -1,6 +1,5 @@
 import type { Orientation } from '../RkWordEditor.model';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * Секционная смена ориентации отдельных страниц (www.md §3.2.2, §1.2.4).

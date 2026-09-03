@@ -1,14 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { WordEditor } from '@raazkhnl/rk-editor-core';
-import type { WordHeaderFooterDTO, WordLayoutDTO, WordSelectionDTO, WordStatsDTO, PageSize } from '../types/dto';
+import type {
+  WordDocumentDTO,
+  WordHeaderFooterDTO,
+  WordLayoutDTO,
+  WordSelectionDTO,
+  WordStatsDTO,
+  PageSize,
+} from '../types/dto';
 import type { WordVibeAdapter, WordVibeOptions } from './WordVibeAdapter';
 import type { WordVibeEventMap } from './events';
-import { attachPaginationPlus, updatePaginationLayout, updatePaginationText, readPageCount, type PaginationTextOptions } from '../editor/rkPaginationBridge';
+import {
+  attachPaginationPlus,
+  updatePaginationLayout,
+  updatePaginationText,
+  readPageCount,
+  type PaginationTextOptions,
+} from '../editor/rkPaginationBridge';
 import { GOST_MARGINS_MM, type PaginationGeometry } from '../editor/geometryHelper';
 import { normalizeWordContent, MARGIN_PRESETS_MM } from '../editor/useRkWordEditor';
 import { insertGostFigureCaption } from '../editor/extensions/GostFigureCaption';
 import { insertGostTableCaption } from '../editor/extensions/GostTableCaption';
 import { insertSectionLandscape, insertSectionPortrait } from '../editor/extensions/SectionOrientation';
+import { SceneBreakExtension } from '../editor/extensions/SceneBreakExtension';
+import { EntityReferenceExtension } from '../editor/extensions/EntityReferenceExtension';
+import { CrossReferenceExtension } from '../editor/extensions/CrossReferenceExtension';
+import { UnsupportedBlockExtension } from '../editor/extensions/UnsupportedBlockExtension';
+import { semanticASTToV2Doc, type V2NodeJson } from '../converter/ASTToV2Converter';
+import { v2DocToSemanticAST } from '../converter/V2ToASTConverter';
 
 export function createWordVibeAdapter(): WordVibeAdapter {
   type Listener<T> = (payload: T) => void;
@@ -30,6 +48,9 @@ export function createWordVibeAdapter(): WordVibeAdapter {
   let wordEditor: WordEditor | null = null;
   let activeTiptapEditor: any = null;
   let ready = false;
+  let currentDocumentMeta: WordDocumentDTO['metadata'] | undefined;
+  let currentProfileId: string | undefined = 'gost';
+  let currentDocId: string | undefined;
 
   let currentLayout: WordLayoutDTO = {
     pageSize: 'A4',
@@ -74,6 +95,12 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       headerLeft: wrap(currentHeaderFooter.headerLeft, currentHeaderFooter.headerCenter, currentHeaderFooter.headerRight),
       footerLeft: wrap(currentHeaderFooter.footerLeft, currentHeaderFooter.footerCenter, currentHeaderFooter.footerRight),
     };
+  };
+
+  const buildCurrentDocumentAST = (): WordDocumentDTO => {
+    const ed = activeTiptapEditor || (wordEditor as any)?.instance;
+    const json: V2NodeJson = ed?.getJSON ? ed.getJSON() : { type: 'doc', content: [] };
+    return v2DocToSemanticAST(json, currentDocumentMeta, currentProfileId, currentDocId);
   };
 
   const buildSelectionDTO = (): WordSelectionDTO => {
@@ -168,11 +195,19 @@ export function createWordVibeAdapter(): WordVibeAdapter {
         };
       }
 
-      const initialHtml = normalizeWordContent(options.initialContent || '') || '<p></p>';
+      let initialDocOrHtml: string | Record<string, unknown> = '<p></p>';
+      if (options.initialDocument) {
+        currentDocumentMeta = options.initialDocument.metadata;
+        currentProfileId = options.initialDocument.profileId;
+        currentDocId = options.initialDocument.id;
+        initialDocOrHtml = semanticASTToV2Doc(options.initialDocument);
+      } else if (options.initialContent) {
+        initialDocOrHtml = normalizeWordContent(options.initialContent) || '<p></p>';
+      }
 
       wordEditor = new WordEditor({
         element: options.host,
-        initialContent: initialHtml,
+        initialContent: initialDocOrHtml as any,
         editable: options.editable !== false,
         pageLayout: {
           pageSize: toRkPageSize(currentLayout.pageSize),
@@ -186,7 +221,8 @@ export function createWordVibeAdapter(): WordVibeAdapter {
         },
         onUpdate: (_json, rawEditor) => {
           const html = rawEditor.getHTML();
-          emit('change', { html });
+          const document = buildCurrentDocumentAST();
+          emit('change', { html, document });
         },
         onWordCount: (stats) => {
           currentStats = {
@@ -213,8 +249,16 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       const paginated = attachPaginationPlus(wordEditor, {
         geometry: getPaginationGeometry(),
         text: getHeaderFooterHtml(),
+        extraExtensions: [
+          SceneBreakExtension,
+          EntityReferenceExtension,
+          CrossReferenceExtension,
+          UnsupportedBlockExtension,
+        ],
         onUpdate: (updated) => {
-          emit('change', { html: updated.getHTML() });
+          const html = updated.getHTML();
+          const document = buildCurrentDocumentAST();
+          emit('change', { html, document });
           currentStats.pageCount = readPageCount(updated);
           emit('stats-change', { ...currentStats });
         },
@@ -251,10 +295,32 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       }
     },
 
+    loadDocument(doc: WordDocumentDTO): void {
+      if (!wordEditor) return;
+      currentDocumentMeta = doc.metadata;
+      currentProfileId = doc.profileId;
+      currentDocId = doc.id;
+
+      const v2Doc = semanticASTToV2Doc(doc);
+      if (activeTiptapEditor?.commands?.setContent) {
+        activeTiptapEditor.commands.setContent(v2Doc);
+      } else if (typeof (wordEditor as any).setDocument === 'function') {
+        (wordEditor as any).setDocument(v2Doc);
+      }
+    },
+
+    getDocument(): WordDocumentDTO {
+      return buildCurrentDocumentAST();
+    },
+
     setContent(content: string): void {
       if (!wordEditor) return;
       const normalized = normalizeWordContent(content) || '<p></p>';
-      wordEditor.setDocument(normalized);
+      if (activeTiptapEditor?.commands?.setContent) {
+        activeTiptapEditor.commands.setContent(normalized);
+      } else if (typeof wordEditor.setDocument === 'function') {
+        wordEditor.setDocument(normalized);
+      }
     },
 
     getContent(): string {
@@ -291,7 +357,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
         'togglePageOrientation', 'setPageSize', 'setMarginPreset', 'setCustomMargins',
         'setParagraphSpacing', 'setTableStyle', 'addRowBefore', 'addRowAfter',
         'addColumnBefore', 'addColumnAfter', 'deleteRow', 'deleteColumn', 'deleteTable',
-        'mergeCells', 'splitCell',
+        'mergeCells', 'splitCell', 'insertSceneBreak', 'insertEntityReference', 'insertCrossReference',
       ];
     },
 
@@ -343,6 +409,30 @@ export function createWordVibeAdapter(): WordVibeAdapter {
           return true;
         }
         case 'insertPageBreak': commands?.pageBreak?.(); return true;
+        case 'insertSceneBreak':
+          ed?.chain()?.focus()?.insertContent({ type: 'sceneBreak', attrs: { variant: args[0] || 'asterisms' } })?.run();
+          return true;
+        case 'insertEntityReference':
+          ed?.chain()?.focus()?.insertContent({
+            type: 'entityReference',
+            attrs: {
+              id: args[0],
+              entityType: args[1] || 'character',
+              name: args[2] || 'Сущность',
+              url: args[3],
+            },
+          })?.run();
+          return true;
+        case 'insertCrossReference':
+          ed?.chain()?.focus()?.insertContent({
+            type: 'crossReference',
+            attrs: {
+              targetId: args[0],
+              kind: args[1] || 'heading',
+              displayMode: args[2] || 'full',
+            },
+          })?.run();
+          return true;
         case 'insertImage': emit('open-image-dialog'); return true;
         case 'insertImageWithCaption': {
           const src = String(args[0]);

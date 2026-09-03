@@ -1,5 +1,3 @@
-<!-- eslint-disable vue/no-mutating-props -->
-<!-- eslint-disable @typescript-eslint/no-unused-vars -->
 <template>
   <div class="settings-scene">
     <div class="scene-header">

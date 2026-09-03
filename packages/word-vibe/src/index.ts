@@ -1,8 +1,9 @@
 /**
  * @worldwiki/word-vibe — изолированный Word-редактор WorldWiki.
  *
- * Публичный контракт: чистый Vue 3 компонент WordVibeEditor, фабрика адаптера
- * и DTO-типы. Никаких живых ProseMirror / Tiptap / rk-editor-core объектов наружу.
+ * Публичный контракт: чистый Vue 3 компонент WordVibeEditor, фабрика адаптера,
+ * Semantic AST DTO-типы и двусторонние конвертеры.
+ * Никаких живых ProseMirror / Tiptap / rk-editor-core объектов наружу.
  */
 
 // ── Главный компонент и композабл ────────────────────────────────────────────
@@ -24,7 +25,36 @@ export type {
   WordLayoutDTO,
   WordHeaderFooterDTO,
   WordStatsDTO,
+  // Semantic AST
+  WordDocumentDTO,
+  WordDocumentMetadataDTO,
+  WordBlockDTO,
+  WordInlineDTO,
+  WordParagraphBlockDTO,
+  WordHeadingBlockDTO,
+  WordFigureBlockDTO,
+  WordTableBlockDTO,
+  WordTableRowDTO,
+  WordTableCellDTO,
+  WordEquationBlockDTO,
+  WordQuoteBlockDTO,
+  WordListBlockDTO,
+  WordListItemDTO,
+  WordPageBreakBlockDTO,
+  WordSceneBreakBlockDTO,
+  WordUnsupportedBlockDTO,
+  WordTextInlineDTO,
+  WordMathInlineDTO,
+  WordFootnoteReferenceInlineDTO,
+  WordCrossReferenceInlineDTO,
+  WordEntityReferenceInlineDTO,
+  WordTextMarkDTO,
 } from './types/dto';
+
+// ── AST ↔ Tiptap v2 Конвертеры ───────────────────────────────────────────────
+export { semanticASTToV2Doc, convertBlockToV2, convertInlineToV2, convertMarksToV2 } from './converter/ASTToV2Converter';
+export type { V2NodeJson, V2MarkJson } from './converter/ASTToV2Converter';
+export { v2DocToSemanticAST, convertBlockFromV2, convertInlineFromV2, convertMarksFromV2 } from './converter/V2ToASTConverter';
 
 // ── Геометрия и утилиты ─────────────────────────────────────────────────────
 export { MARGIN_PRESETS_MM, normalizeWordContent } from './editor/useRkWordEditor';

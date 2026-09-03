@@ -80,6 +80,9 @@ export function useWordVibeEditor(
     decreaseIndent: () => adapter.execCommand('decreaseIndent'),
     increaseIndent: () => adapter.execCommand('increaseIndent'),
     insertPageBreak: () => adapter.execCommand('insertPageBreak'),
+    insertSceneBreak: (variant?: 'asterisms' | 'line' | 'space') => adapter.execCommand('insertSceneBreak', variant),
+    insertEntityReference: (id: string, type?: string, name?: string, url?: string) => adapter.execCommand('insertEntityReference', id, type, name, url),
+    insertCrossReference: (targetId: string, kind?: string, displayMode?: string) => adapter.execCommand('insertCrossReference', targetId, kind, displayMode),
     insertImage: () => adapter.execCommand('insertImage'),
     insertImageWithCaption: (src: string, caption?: string) => adapter.execCommand('insertImageWithCaption', src, caption),
     insertTable: () => adapter.execCommand('insertTable'),
@@ -196,6 +199,7 @@ export function useWordVibeEditor(
       host: editorHostRef.value,
       editable: !props.isReadOnly,
       initialContent: props.content,
+      initialDocument: props.document,
       initialLayout: {
         pageSize: props.pageSize || 'A4',
         orientation: props.orientation || 'portrait',
@@ -210,7 +214,10 @@ export function useWordVibeEditor(
 
     adapter.on('change', (e) => {
       emit('update:content', e.html);
-      emit('change');
+      if (e.document) {
+        emit('update:document', e.document);
+      }
+      emit('change', e);
     });
 
     adapter.on('selection-change', (dto) => {
@@ -235,8 +242,14 @@ export function useWordVibeEditor(
     adapter.on('open-entity', (p) => { emit('open-entity', p); });
   });
 
+  watch(() => props.document, (newDoc) => {
+    if (newDoc) {
+      adapter.loadDocument(newDoc);
+    }
+  }, { deep: true });
+
   watch(() => props.content, (newVal) => {
-    if (newVal !== undefined && adapter.getContent() !== newVal) {
+    if (newVal !== undefined && !props.document && adapter.getContent() !== newVal) {
       adapter.setContent(newVal);
     }
   });

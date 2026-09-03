@@ -21,7 +21,6 @@ export type { PaginationGeometry };
  * `pagination-plus-tiptap-v2` (см. vite.config.ts).
  */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /** Конфиг колонтитулов (значения — HTML; поддерживаются {page} и {total}) */
 export interface PaginationTextOptions {
@@ -56,6 +55,7 @@ export function attachPaginationPlus(
   options: {
     geometry: PaginationGeometry;
     text?: PaginationTextOptions;
+    extraExtensions?: any[];
     onHeaderClick?: (pageNumber: number) => void;
     onFooterClick?: (pageNumber: number) => void;
     onUpdate: (editor: any) => void;
@@ -95,6 +95,7 @@ export function attachPaginationPlus(
       element: host,
       extensions: [
         ...extensions,
+        ...(options.extraExtensions || []),
         PaginationPlus.configure({
           enabled: true,
           pageWidth: geo.pageWidth,

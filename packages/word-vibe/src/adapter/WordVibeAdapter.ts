@@ -1,10 +1,17 @@
-import type { WordHeaderFooterDTO, WordLayoutDTO, WordSelectionDTO, WordStatsDTO } from '../types/dto';
+import type {
+  WordDocumentDTO,
+  WordHeaderFooterDTO,
+  WordLayoutDTO,
+  WordSelectionDTO,
+  WordStatsDTO,
+} from '../types/dto';
 import type { WordVibeEventMap } from './events';
 
 export interface WordVibeOptions {
   host: HTMLElement;
   editable?: boolean;
   initialContent?: string;
+  initialDocument?: WordDocumentDTO;
   initialLayout?: Partial<WordLayoutDTO>;
   initialHeaderFooter?: WordHeaderFooterDTO;
   chapterTitle?: string;
@@ -17,7 +24,11 @@ export interface WordVibeAdapter {
   isReady(): boolean;
   unmount(): void;
 
-  /* Content */
+  /* Semantic Document (AST) */
+  loadDocument(doc: WordDocumentDTO): void;
+  getDocument(): WordDocumentDTO;
+
+  /* HTML Content (Backwards compatibility) */
   setContent(content: string): void;
   getContent(): string;
 

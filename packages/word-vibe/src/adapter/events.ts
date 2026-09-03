@@ -1,4 +1,4 @@
-import type { WordLayoutDTO, WordSelectionDTO, WordStatsDTO } from '../types/dto';
+import type { WordDocumentDTO, WordLayoutDTO, WordSelectionDTO, WordStatsDTO } from '../types/dto';
 
 export type WordVibeEventMap = {
   /* lifecycle */
@@ -6,7 +6,7 @@ export type WordVibeEventMap = {
   'ready': void;
   'destroyed': void;
   /* data */
-  'change': { html: string };
+  'change': { html: string; document?: WordDocumentDTO };
   'selection-change': WordSelectionDTO;
   'stats-change': WordStatsDTO;
   'layout-change': WordLayoutDTO;

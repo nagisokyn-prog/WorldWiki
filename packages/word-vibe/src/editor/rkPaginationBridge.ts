@@ -88,11 +88,22 @@ export function attachPaginationPlus(
     const geo = getPageGeometry(options.geometry);
     const text = options.text || {};
 
+    const seenNames = new Set<string>();
+    const allExts = [...extensions, ...(options.extraExtensions || [])];
+    const uniqueExtensions: unknown[] = [];
+    for (const ext of allExts) {
+      const name = (ext as { name?: string })?.name;
+      if (name) {
+        if (seenNames.has(name)) continue;
+        seenNames.add(name);
+      }
+      uniqueExtensions.push(ext);
+    }
+
     const next = new V2Editor({
       element: host,
       extensions: [
-        ...extensions,
-        ...(options.extraExtensions || []),
+        ...uniqueExtensions,
         PaginationPlus.configure({
           enabled: true,
           pageWidth: geo.pageWidth,
@@ -231,16 +242,56 @@ export function updatePaginationText(editor: Editor | null | undefined, text: Pa
   }
 }
 
+/**
+ * Считывает реальное количество страниц из DOM и синхронизирует колонтитулы ({total})
+ */
+export function syncDocumentPageCount(editor: Editor | null | undefined): number {
+  if (typeof document === 'undefined') return 1;
+
+  const root =
+    (editor?.options?.element as HTMLElement | undefined) ??
+    (editor?.view?.dom as HTMLElement | undefined) ??
+    (document.querySelector('.rk-editor-mount') as HTMLElement | null);
+
+  if (!root) return 1;
+
+  // 1. Ищем все разрывы/страницы в DOM
+  let pageBreaks = root.querySelectorAll('#pages > .rm-page-break, .rm-with-pagination .rm-page-break, .rm-page-break');
+  if (pageBreaks.length === 0) {
+    pageBreaks = document.querySelectorAll('.rk-editor-mount .rm-page-break, [data-rm-pagination="true"] > .rm-page-break');
+  }
+
+  const total = Math.max(1, pageBreaks.length);
+
+  // 2. Обновляем все колонтитулы в DOM, заменяя «из X» или «/ X» на актуальное число страниц
+  const host = root.closest('.rk-editor-mount') || root.parentElement || root;
+  const footers = host.querySelectorAll('.rm-page-footer, .rm-page-header');
+  footers.forEach((footer) => {
+    const totalSpan = footer.querySelector('.rk-page-total');
+    if (totalSpan) {
+      if (totalSpan.textContent !== String(total)) {
+        totalSpan.textContent = String(total);
+      }
+    } else {
+      const walker = document.createTreeWalker(footer, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        if (!node.nodeValue) continue;
+        if (/из\s+(\d+|\{total\})/i.test(node.nodeValue)) {
+          node.nodeValue = node.nodeValue.replace(/из\s+(\d+|\{total\})/gi, `из ${total}`);
+        } else if (/of\s+(\d+|\{total\})/i.test(node.nodeValue)) {
+          node.nodeValue = node.nodeValue.replace(/of\s+(\d+|\{total\})/gi, `of ${total}`);
+        } else if (/\/\s*(\d+|\{total\})/i.test(node.nodeValue)) {
+          node.nodeValue = node.nodeValue.replace(/\/\s*(\d+|\{total\})/gi, `/ ${total}`);
+        }
+      }
+    }
+  });
+
+  return total;
+}
+
 /** Читает измеренное количество страниц (листы создаются в DOM асинхронно) */
 export function readPageCount(editor: Editor | null | undefined): number {
-  try {
-    const el = (editor?.options?.element as HTMLElement | undefined) ?? undefined;
-    if (el) {
-      const pages = el.querySelectorAll('.rm-page-break').length;
-      if (pages > 0) return pages;
-    }
-  } catch {
-    // ignore
-  }
-  return 1;
+  return syncDocumentPageCount(editor);
 }

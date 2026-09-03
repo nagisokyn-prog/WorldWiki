@@ -9,6 +9,7 @@
 // ── Главный компонент и композабл ────────────────────────────────────────────
 export { default as WordVibeEditor } from './components/WordVibeEditor.vue';
 export { useWordVibeEditor } from './components/useWordVibeEditor';
+export { useRkWordEditor } from './editor/useRkWordEditor';
 export type { WordVibeEditorProps, WordVibeEditorEmits } from './components/WordVibeEditor.model';
 
 // ── Адаптер и контракты ──────────────────────────────────────────────────────
@@ -61,6 +62,20 @@ export { MARGIN_PRESETS_MM, normalizeWordContent } from './editor/useRkWordEdito
 export type { MarginPresetName } from './editor/useRkWordEditor';
 export { getPageGeometry, GOST_MARGINS_MM, PX_PER_MM } from './editor/geometryHelper';
 export type { PaginationGeometry } from './editor/geometryHelper';
+export {
+  countTableCaptions,
+  nextTableCaptionNumber,
+  buildTableCaptionText,
+  TABLE_CAPTION_RE,
+  insertGostTableCaption
+} from './editor/extensions/GostTableCaption';
+export {
+  countFigureCaptions,
+  nextFigureCaptionNumber,
+  buildFigureCaptionText,
+  FIGURE_CAPTION_RE,
+  insertGostFigureCaption
+} from './editor/extensions/GostFigureCaption';
 
 // ── Дочерние UI-компоненты и модалки ───────────────────────────────────────
 export { default as WordRibbonBar } from './components/ribbon/WordRibbonBar.vue';

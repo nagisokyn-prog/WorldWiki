@@ -91,7 +91,7 @@ const { t } = useI18n();
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
-defineProps<{
+const props = defineProps<{
   save: () => Promise<void>;
 }>();
 
@@ -99,7 +99,7 @@ defineEmits<{
   (e: 'pick-background-file'): void;
 }>();
 
-const { toHex, updateColorAlpha } = useSettingsAppearance(() => settings.value);
+const { toHex, updateColorAlpha } = useSettingsAppearance(() => settings.value, props.save);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/SettingsAppearance.css"></style>

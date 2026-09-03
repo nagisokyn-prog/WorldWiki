@@ -311,9 +311,11 @@ export function useManuscriptPointPicker(
     }
   }, { deep: true });
 
-  onMounted(async () => {
+  if (typeof document !== 'undefined') {
     document.addEventListener('ww:timeline-auto-extended', handleCustomEvent);
+  }
 
+  onMounted(async () => {
     try {
       unlistenTauri = await listen<{ chapter_id?: string; arc_id?: string; volume_id?: string }>(
         'ww:timeline-auto-extended',

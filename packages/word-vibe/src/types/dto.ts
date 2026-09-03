@@ -72,13 +72,32 @@ export interface WordDocumentDTO {
   blocks: WordBlockDTO[];
 }
 
+export interface AcademicMetadataDTO {
+  faculty?: string;
+  department?: string;
+  discipline?: string;
+  studentGroup?: string;
+  supervisor?: string;
+  year?: number;
+  city?: string;
+}
+
+export interface BookMetadataDTO {
+  volumeNumber?: number;
+  isbn?: string;
+  publisher?: string;
+  genres?: string[];
+  annotation?: string;
+}
+
 export interface WordDocumentMetadataDTO {
   title: string;
   subtitle?: string;
   authors?: string[];
   createdAt?: number;
   updatedAt?: number;
-  [key: string]: unknown;
+  academic?: AcademicMetadataDTO;
+  book?: BookMetadataDTO;
 }
 
 export type WordBlockDTO =

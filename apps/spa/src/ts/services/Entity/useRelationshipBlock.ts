@@ -318,15 +318,21 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0] || props.templateConf;
     const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
     if (!path) return [];
-    if (!item[path]) item[path] = [];
+    if (!item[path] || !Array.isArray(item[path])) {
+      item[path] = [];
+    }
     return item[path] as Array<Record<string, unknown>>;
   };
 
-  const addNestedItem = (sourceItem?: Record<string, unknown> | null, subConf?: SubConf) => {
-    const item = sourceItem || props.item;
+  const addNestedItem = (sourceItem?: Record<string, unknown> | null | Event, subConf?: SubConf) => {
+    const isEvent = Boolean(sourceItem && (sourceItem instanceof Event || (typeof sourceItem === 'object' && 'type' in sourceItem && 'target' in sourceItem)));
+    const item = (!isEvent && sourceItem && typeof sourceItem === 'object') ? (sourceItem as Record<string, unknown>) : props.item;
     const targetSubConf = subConf || props.templateConf.dynamicContainers?.[0] || props.templateConf;
     const path = targetSubConf?.dataPath || targetSubConf?.id || 'custom_dynamics';
     if (!path) return;
+    if (!item[path] || !Array.isArray(item[path])) {
+      item[path] = [];
+    }
     const existingList = item[path] as Array<Record<string, unknown>>;
     const lastItem = existingList && existingList.length > 0 ? existingList[existingList.length - 1] : null;
 

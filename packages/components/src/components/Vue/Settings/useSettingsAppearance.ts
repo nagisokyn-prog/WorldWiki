@@ -1,6 +1,6 @@
 import type { AppSettings } from '../../../ts/types/settings.js';
 
-export function useSettingsAppearance(getSettings: () => AppSettings) {
+export function useSettingsAppearance(getSettings: () => AppSettings, save?: () => Promise<void> | void) {
   const toHex = (colorStr: string) => {
     if (!colorStr) return '#000000';
     if (colorStr.startsWith('#')) return colorStr.substring(0, 7);
@@ -30,6 +30,7 @@ export function useSettingsAppearance(getSettings: () => AppSettings) {
     const g = parseInt(hexCode.slice(3, 5), 16);
     const b = parseInt(hexCode.slice(5, 7), 16);
     settings.colors[colorKey] = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    void save?.();
   };
 
   return {

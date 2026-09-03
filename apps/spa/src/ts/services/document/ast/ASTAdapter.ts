@@ -302,13 +302,31 @@ export class ASTAdapter {
 
   public static semanticASTToTiptap(
     doc: SemanticDocument,
-    ctx: NumberingContext,
-    profile: NumberingProfile
+    ctx?: NumberingContext,
+    profile?: NumberingProfile
   ): TiptapDocJson {
+    const effectiveCtx: NumberingContext = ctx || {
+      headings: new Map<string, string>(),
+      figures: new Map<string, string>(),
+      tables: new Map<string, string>(),
+      equations: new Map<string, string>(),
+      footnotes: new Map<string, number>()
+    };
+    const effectiveProfile: NumberingProfile = profile || {
+      figureMode: 'by_chapter',
+      tableMode: 'by_chapter',
+      equationMode: 'by_chapter',
+      footnoteRestartPerPage: false,
+      headingNumberingEnabled: true,
+      figurePrefix: 'Рисунок',
+      tablePrefix: 'Таблица',
+      equationFormat: 'parens'
+    };
+
     const content: TiptapNodeJson[] = [];
 
     for (const block of doc.blocks) {
-      const node = this.convertASTBlockToTiptap(block, doc, ctx, profile);
+      const node = this.convertASTBlockToTiptap(block, doc, effectiveCtx, effectiveProfile);
       if (node) {
         content.push(node);
       }
@@ -489,13 +507,18 @@ export class ASTAdapter {
             case 'underline':
             case 'strike':
             case 'code':
+            case 'subscript':
+            case 'superscript':
               marks.push({ type: m.type });
               break;
-            case 'color':
-              marks.push({ type: 'textStyle', attrs: { color: m.color } });
+            case 'fontFamily':
+              marks.push({ type: 'fontFamily', attrs: { fontFamily: m.font } });
               break;
             case 'fontSize':
-              marks.push({ type: 'textStyle', attrs: { fontSize: `${m.sizePt}pt` } });
+              marks.push({ type: 'fontSize', attrs: { fontSize: typeof m.sizePt === 'number' ? `${m.sizePt}pt` : m.sizePt } });
+              break;
+            case 'color':
+              marks.push({ type: 'highlight', attrs: { color: m.color } });
               break;
             case 'link':
               marks.push({ type: 'link', attrs: { href: m.href, title: m.title } });

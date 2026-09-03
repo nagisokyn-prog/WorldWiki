@@ -27,7 +27,7 @@ describe('useRelationshipBlock', () => {
       entityType: 'character',
       entityId: 'char_1',
       item: {
-        target_char: 'char_2',
+        target_char: '',
         role: 'Friend',
         custom_dynamics: [{ foreign_id: 'dyn_1' }],
       },
@@ -54,6 +54,7 @@ describe('useRelationshipBlock', () => {
   });
 
   it('computes labels and resolved fields with all fallbacks', () => {
+    props.item.target_char = 'char_2';
     const rel = useRelationshipBlock(props, emit);
 
     expect(rel.linkClass.value).toBe('target_char');

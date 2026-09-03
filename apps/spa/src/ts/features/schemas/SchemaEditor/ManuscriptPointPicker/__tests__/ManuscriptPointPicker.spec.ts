@@ -6,7 +6,7 @@ vi.mock('@tauri-apps/api/event', () => ({
   listen: vi.fn().mockResolvedValue(() => {})
 }));
 
-import { useChapterStore } from '../../../../stores/chapter.store';
+import { useChapterStore } from '../../../../../stores/chapter.store';
 import { useManuscriptPointPicker } from '../useManuscriptPointPicker';
 
 describe('useManuscriptPointPicker', () => {

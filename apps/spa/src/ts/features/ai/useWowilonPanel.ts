@@ -135,13 +135,15 @@ export function useWowilonPanel(
   const cancelGeneration = async () => {
     try {
       await invoke('cancel_generation', { chatId: activeChatId.value });
-      isGenerating.value = false;
     } catch (err) {
       console.error('Failed to cancel generation:', err);
+    } finally {
+      isGenerating.value = false;
     }
   };
 
   const deleteMessage = async (msgId: string) => {
+    if (!msgId || msgId.startsWith('temp_')) return;
     try {
       await invoke('delete_chat_message', { messageId: msgId });
       allMessages.value = allMessages.value.filter(m => m.id !== msgId);
@@ -151,6 +153,7 @@ export function useWowilonPanel(
   };
 
   const editMessage = async (msgId: string, newContent: string) => {
+    if (!msgId || msgId.startsWith('temp_') || !newContent.trim()) return;
     try {
       await invoke('edit_chat_message', { messageId: msgId, newContent });
       const msg = allMessages.value.find(m => m.id === msgId);
@@ -206,15 +209,52 @@ export function useWowilonPanel(
   };
 
   const renderedMessages = computed<MessageVariantGroup[]>(() => {
-    const groups: MessageVariantGroup[] = [];
-    for (const msg of allMessages.value) {
-      groups.push({
-        variants: [msg],
-        activeIndex: 0,
-        activeMessage: msg
-      });
+    const raw = allMessages.value;
+    if (!raw.length) return [];
+
+    const parentMap = new Map<string | null, ChatMessage[]>();
+    for (const msg of raw) {
+      const pid = msg.parent_id !== undefined ? msg.parent_id : null;
+      if (!parentMap.has(pid)) parentMap.set(pid, []);
+      parentMap.get(pid)!.push(msg);
     }
-    return groups;
+
+    const groups: MessageVariantGroup[] = [];
+    let currentParent: string | null = null;
+
+    while (currentParent !== undefined && parentMap.has(currentParent)) {
+      const children: ChatMessage[] = parentMap.get(currentParent) || [];
+      if (!children.length) break;
+
+      const activeIdx = children.findIndex((c: ChatMessage) => c.is_active !== false);
+      const chosenIdx = activeIdx >= 0 ? activeIdx : children.length - 1;
+      const activeMsg: ChatMessage = { ...children[chosenIdx] };
+
+      if (activeMsg.content && activeMsg.content.includes('<think>')) {
+        const thinkMatch = activeMsg.content.match(/^<think>([\s\S]*?)<\/think>([\s\S]*)$/);
+        if (thinkMatch) {
+          activeMsg.reasoning = thinkMatch[1].trim();
+          activeMsg.content = thinkMatch[2].trim();
+        } else {
+          const openThinkMatch = activeMsg.content.match(/^<think>([\s\S]*)$/);
+          if (openThinkMatch) {
+            activeMsg.reasoning = openThinkMatch[1].trim();
+            activeMsg.content = '';
+          }
+        }
+      }
+
+      groups.push({
+        variants: children,
+        activeIndex: chosenIdx,
+        activeMessage: activeMsg
+      });
+
+      currentParent = activeMsg.id ?? null;
+      if (!currentParent) break;
+    }
+
+    return groups.length > 0 ? groups : raw.map(msg => ({ variants: [msg], activeIndex: 0, activeMessage: msg }));
   });
 
   const startEdit = (msg: ChatMessage) => {
@@ -480,6 +520,7 @@ export function useWowilonPanel(
     isChatsLoading,
     currentProject,
     tokenUsage,
+    allMessages,
     messages: allMessages,
     renderedMessages,
     isGenerating,
@@ -502,6 +543,7 @@ export function useWowilonPanel(
     startEdit,
     cancelEdit,
     saveEdit,
+    editMessage,
     regenerateMessage,
     handleBranch,
     deleteMessage,

@@ -15,6 +15,7 @@ import {
   updatePaginationLayout,
   updatePaginationText,
   readPageCount,
+  syncDocumentPageCount,
   type PaginationTextOptions,
 } from '../editor/rkPaginationBridge';
 import { GOST_MARGINS_MM, type PaginationGeometry } from '../editor/geometryHelper';
@@ -109,6 +110,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
 
   let wordEditor: WordEditor | null = null;
   let activeTiptapEditor: Editor | null = null;
+  let pageObserver: MutationObserver | null = null;
   let ready = false;
   let currentDocumentMeta: WordDocumentDTO['metadata'] | undefined;
   let currentProfileId: string | undefined = 'gost';
@@ -149,7 +151,10 @@ export function createWordVibeAdapter(): WordVibeAdapter {
   });
 
   const getHeaderFooterHtml = (): PaginationTextOptions => {
-    const cell = (text: string, align: string) => `<td align='${align}'>${text}</td>`;
+    const total = String(currentStats.pageCount || 1);
+    const replaceTotal = (s?: string) => (s ? s.replace(/\{total\}/gi, total) : '');
+
+    const cell = (text: string, align: string) => `<td align='${align}'>${replaceTotal(text)}</td>`;
     const wrap = (left = '', center = '', right = '') =>
       `<table style='width:100%'><tr>${cell(left, 'left')}${cell(center, 'center')}${cell(right, 'right')}</tr></table>`;
 
@@ -321,7 +326,11 @@ export function createWordVibeAdapter(): WordVibeAdapter {
           const html = updated.getHTML();
           const document = buildCurrentDocumentAST();
           emit('change', { html, document });
-          currentStats.pageCount = readPageCount(updated);
+          const newPages = readPageCount(updated);
+          if (newPages !== currentStats.pageCount) {
+            currentStats.pageCount = newPages;
+            updatePaginationText(updated, getHeaderFooterHtml());
+          }
           emit('stats-change', { ...currentStats });
         },
         onSelectionChange: () => {
@@ -334,6 +343,31 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       if (paginated) {
         activeTiptapEditor = paginated;
       }
+
+      let syncScheduled = false;
+      const syncNow = () => {
+        syncScheduled = false;
+        const total = syncDocumentPageCount(activeTiptapEditor);
+        if (total !== currentStats.pageCount) {
+          currentStats.pageCount = total;
+          emit('stats-change', { ...currentStats });
+        }
+      };
+
+      if (typeof MutationObserver !== 'undefined' && options.host) {
+        pageObserver = new MutationObserver(() => {
+          if (!syncScheduled) {
+            syncScheduled = true;
+            requestAnimationFrame(syncNow);
+          }
+        });
+        pageObserver.observe(options.host, { childList: true, subtree: true });
+      }
+
+      setTimeout(syncNow, 50);
+      setTimeout(syncNow, 200);
+      setTimeout(syncNow, 500);
+      setTimeout(syncNow, 1200);
 
       ready = true;
       emit('mounted');
@@ -348,6 +382,10 @@ export function createWordVibeAdapter(): WordVibeAdapter {
     },
 
     unmount(): void {
+      if (pageObserver) {
+        pageObserver.disconnect();
+        pageObserver = null;
+      }
       if (wordEditor) {
         wordEditor.destroy();
         wordEditor = null;

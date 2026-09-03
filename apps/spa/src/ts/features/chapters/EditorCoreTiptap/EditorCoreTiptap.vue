@@ -113,12 +113,14 @@
       <!-- Word Mode (А4 / Книга на базе ядра RK Word Editor) -->
       <WordVibeEditor
         v-else-if="editorMode === 'word'"
+        :document="currentSemanticDocument"
         :content="content"
         :chapter-title="title"
         :orientation="isCurrentPageLandscape ? 'landscape' : 'portrait'"
         :page-size="currentPageSize"
-        @update:content="$emit('update:content', $event)"
-        @change="$emit('change')"
+        @update:content="onWordContentUpdate"
+        @update:document="onWordDocumentUpdate"
+        @change="onWordChange"
       />
     </div>
     
@@ -249,6 +251,9 @@ const {
   isCurrentPageLandscape,
   currentPageSize,
   currentSemanticDocument,
+  onWordDocumentUpdate,
+  onWordContentUpdate,
+  onWordChange,
   handleContextMenu,
   handlePromiseSelect,
   handleMilestoneSelect,

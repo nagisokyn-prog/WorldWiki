@@ -19,9 +19,9 @@ export interface SemanticDocument {
 export interface DocumentMetadata {
   title: string;
   subtitle?: string;
-  authors: string[];
-  createdAt: number;
-  updatedAt: number;
+  authors?: string[];
+  createdAt?: number;
+  updatedAt?: number;
   academic?: AcademicMetadata;
   book?: BookMetadata;
 }
@@ -160,7 +160,16 @@ export type InlineNode =
   | TextNode
   | MathInlineNode
   | CrossReferenceNode
-  | FootnoteReferenceNode;
+  | FootnoteReferenceNode
+  | EntityReferenceNode;
+
+export interface EntityReferenceNode {
+  type: 'entity_reference';
+  id: string;
+  entityType: string;
+  name: string;
+  url?: string;
+}
 
 export interface TextNode {
   type: 'text';
@@ -174,8 +183,11 @@ export type TextMark =
   | { type: 'underline' }
   | { type: 'strike' }
   | { type: 'code' }
+  | { type: 'subscript' }
+  | { type: 'superscript' }
   | { type: 'color'; color: string }
   | { type: 'highlight'; color: string }
+  | { type: 'fontFamily'; font: string }
   | { type: 'fontSize'; sizePt: number }
   | { type: 'link'; href: string; title?: string };
 

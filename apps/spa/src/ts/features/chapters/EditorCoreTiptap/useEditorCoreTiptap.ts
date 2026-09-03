@@ -2,7 +2,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useTiptapEditor } from './useTiptapEditor';
 import type { EditorCoreTiptapProps, EditorCoreTiptapEmits } from './EditorCoreTiptap.model';
 import type { PromiseTypeOption } from './usePromiseContextMenu';
-import type { ParagraphFormatData, PageSize } from '@worldwiki/word-vibe';
+import type { ParagraphFormatData, PageSize, WordDocumentDTO } from '@worldwiki/word-vibe';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
 import { ASTAdapter, type TiptapDocJson } from '../../../services/document/ast/ASTAdapter';
 import { normalizeSemanticDocument } from '../../../services/document/ast/ASTNormalizer';
@@ -330,6 +330,21 @@ export function useEditorCoreTiptap(
     window.removeEventListener('keydown', handleGlobalKeyDown);
   });
 
+  const onWordDocumentUpdate = (_doc: WordDocumentDTO) => {
+    // Реактивное обновление документа в Word-режиме
+  };
+
+  const onWordContentUpdate = (html: string) => {
+    emit('update:content', html);
+  };
+
+  const onWordChange = (payload?: { html: string; document?: WordDocumentDTO }) => {
+    if (payload?.html) {
+      emit('update:content', payload.html);
+    }
+    emit('change');
+  };
+
   return {
     ...tiptap,
     isExportModalOpen,
@@ -343,6 +358,9 @@ export function useEditorCoreTiptap(
     isCurrentPageLandscape,
     currentPageSize,
     currentSemanticDocument,
+    onWordDocumentUpdate,
+    onWordContentUpdate,
+    onWordChange,
     handleOpenEntitySelector,
     handleContextMenu,
     handlePromiseSelect,

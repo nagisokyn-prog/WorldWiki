@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, onBeforeUnmount, computed, type Ref } from 'vue';
-import type { PageSize, Orientation, MarginsMm, WordLayoutDTO, WordSelectionDTO, WordStatsDTO } from '../types/dto';
+import type { PageSize, Orientation, MarginsMm, WordLayoutDTO, WordSelectionDTO, WordStatsDTO, WordDocumentDTO } from '../types/dto';
 import type { RibbonCommands } from '../ribbon/commands';
 import type { ParagraphFormatData } from './modals/ParagraphFormatModal/ParagraphFormatModal.vue';
 import { createWordVibeAdapter } from '../adapter/createWordVibeAdapter';
@@ -199,7 +199,7 @@ export function useWordVibeEditor(
       host: editorHostRef.value,
       editable: !props.isReadOnly,
       initialContent: props.content,
-      initialDocument: props.document,
+      initialDocument: props.document as WordDocumentDTO | undefined,
       initialLayout: {
         pageSize: props.pageSize || 'A4',
         orientation: props.orientation || 'portrait',
@@ -244,7 +244,7 @@ export function useWordVibeEditor(
 
   watch(() => props.document, (newDoc) => {
     if (newDoc) {
-      adapter.loadDocument(newDoc);
+      adapter.loadDocument(newDoc as WordDocumentDTO);
     }
   }, { deep: true });
 

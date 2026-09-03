@@ -116,6 +116,17 @@ export function useRkWordEditor(
     marginsMm: { ...currentMarginsMm.value },
   });
 
+  const paginationText = (): PaginationTextOptions => {
+    const total = String(pageCount.value || 1);
+    const replaceTotal = (s?: string) => (s ? s.replace(/\{total\}/gi, total) : '');
+    return {
+      headerLeft: replaceTotal(headerLeft.value),
+      headerRight: replaceTotal(headerRight.value),
+      footerLeft: replaceTotal(footerLeft.value),
+      footerRight: replaceTotal(footerRight.value),
+    };
+  };
+
   /** Синхронизация счётчика страниц через официальный API WordEditor */
   let pageCountSyncTimer: ReturnType<typeof setTimeout> | null = null;
   const schedulePageCountSync = () => {
@@ -124,7 +135,13 @@ export function useRkWordEditor(
       pageCountSyncTimer = null;
       try {
         const official = wordEditor.value?.getPageCount?.();
-        pageCount.value = typeof official === 'number' && official > 0 ? official : readPageCount(tiptapEditor.value);
+        const newCount = typeof official === 'number' && official > 0 ? official : readPageCount(tiptapEditor.value);
+        if (newCount !== pageCount.value) {
+          pageCount.value = newCount;
+          if (tiptapEditor.value) {
+            updatePaginationText(tiptapEditor.value, paginationText());
+          }
+        }
       } catch {
         pageCount.value = readPageCount(tiptapEditor.value);
       }
@@ -395,14 +412,6 @@ export function useRkWordEditor(
     wordEditor.value = editor;
     tiptapEditor.value = editor.instance;
 
-    // Подключаем настоящий постраничный layout (tiptap-pagination-plus):
-    // листы с зазорами, поля страницы, колонтитулы как в Word
-    const paginationText = (): PaginationTextOptions => ({
-      headerLeft: headerLeft.value,
-      headerRight: headerRight.value,
-      footerLeft: footerLeft.value,
-      footerRight: footerRight.value,
-    });
     const paginated = attachPaginationPlus(editor, {
       geometry: paginationGeometry(),
       text: paginationText(),

@@ -43,51 +43,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { 
+  useAiToolApproval, 
+  type AiToolApprovalProps, 
+  type AiToolApprovalEmits,
+  type ToolCallPayload 
+} from './useAiToolApproval';
 
-export interface ToolCallPayload {
-  tool_call_id?: string;
-  tool_name?: string;
-  arguments?: unknown;
-  [key: string]: unknown;
-}
+export type { ToolCallPayload };
 
-const props = defineProps<{
-  toolCall: ToolCallPayload;
-}>();
+const props = defineProps<AiToolApprovalProps>();
+const emit = defineEmits<AiToolApprovalEmits>();
 
-const emit = defineEmits<{
-  (e: 'approve', payload: { toolCallId: string; approved: boolean }): void;
-  (e: 'reject', payload: { toolCallId: string; approved: boolean; feedback: string }): void;
-}>();
-
-const feedbackText = ref('');
-const hasResponded = ref(false);
-const isApproved = ref(false);
-
-const formatArgs = (args: unknown) => {
-  try {
-    return JSON.stringify(args, null, 2);
-  } catch {
-    return String(args);
-  }
-};
-
-const approveTool = () => {
-  hasResponded.value = true;
-  isApproved.value = true;
-  emit('approve', { toolCallId: props.toolCall.tool_call_id || '', approved: true });
-};
-
-const rejectWithFeedback = () => {
-  hasResponded.value = true;
-  isApproved.value = false;
-  emit('reject', { 
-    toolCallId: props.toolCall.tool_call_id || '', 
-    approved: false, 
-    feedback: feedbackText.value 
-  });
-};
+const {
+  feedbackText,
+  hasResponded,
+  isApproved,
+  formatArgs,
+  approveTool,
+  rejectWithFeedback
+} = useAiToolApproval(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiToolApproval.css"></style>

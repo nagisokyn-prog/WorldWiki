@@ -4,8 +4,8 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import MarkdownIt from 'markdown-it';
 import type { ToolCallPayload } from './components/AiToolApproval.vue';
-import { useAiChats } from './hooks/useAiChats';
-import { useAiProfiles } from './hooks/useAiProfiles';
+import { useAiChats } from './composables/useAiChats';
+import { useAiProfiles } from './composables/useAiProfiles';
 import type { ContextItem } from './components/AiContextSelector.vue';
 import type { AiTopBarMode } from './components/AiChatTopBar.vue';
 
@@ -508,6 +508,7 @@ export function useWowilonPanel(
     handleToolApproval,
     handleToolRejection,
     sendMessage,
+    loadMessages,
     handleContextSelected,
     removeContext,
     startResize,

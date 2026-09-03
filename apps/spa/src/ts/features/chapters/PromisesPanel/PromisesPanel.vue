@@ -259,27 +259,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { usePromisesPanel, PROMISE_STATUSES, type ChapterMetaItem } from './usePromisesPanel';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
+import { usePromisesPanel, PROMISE_STATUSES, type ChapterMetaItem, type PromisesPanelProps } from './usePromisesPanel';
 
-const props = defineProps<{
-  project: string;
-  chapterId?: string | null;
-  chapterTitle?: string | null;
-  currentVolumeId?: string | null;
-  currentArcId?: string | null;
-  allChapters?: ChapterMetaItem[];
-}>();
+export type { ChapterMetaItem };
+
+const props = defineProps<PromisesPanelProps>();
 
 const emit = defineEmits<{
   (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
   (e: 'change'): void;
 }>();
 
-const isCollapsed = ref(false);
-
 const {
+  isCollapsed,
   promises,
   chapterPromises,
   filteredPromises,
@@ -300,23 +292,9 @@ const {
   locateSource,
   getKindInfo,
   getChapterTitle,
-  isCurrentChapterPromise
+  isCurrentChapterPromise,
+  promptAttachMilestone
 } = usePromisesPanel(props, emit);
-
-const promptAttachMilestone = (item: PlotPromise, stage: 'progression' | 'resolution') => {
-  if (!item.id) return;
-  const sel = window.getSelection()?.toString().trim();
-  const quote = sel || prompt(stage === 'progression' ? 'Введите цитату/текст упоминания:' : 'Введите цитату кульминации/выстрела:');
-  if (!quote) return;
-
-  addMilestone({
-    promiseId: item.id,
-    stage,
-    quote,
-    paragraph_index: 1,
-    chapterId: props.chapterId || undefined
-  });
-};
 
 defineExpose({
   promises,

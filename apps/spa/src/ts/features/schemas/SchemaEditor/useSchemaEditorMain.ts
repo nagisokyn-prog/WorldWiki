@@ -156,6 +156,18 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
         document.removeEventListener('ww:trigger-schema-save', handleGlobalSchemaSave);
     });
 
+    const setLocalEntityType = (val: string) => {
+        localEntityType.value = val;
+    };
+
+    const setShowJsonPreview = (val: boolean) => {
+        dataHook.showJsonPreview.value = val;
+    };
+
+    const setIsPreviewMode = (val: boolean) => {
+        dataHook.isPreviewMode.value = val;
+    };
+
     return {
         localEntityType,
         catalogWidth,
@@ -164,6 +176,9 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
         startResize,
         handleScroll,
         saveSchema,
+        setLocalEntityType,
+        setShowJsonPreview,
+        setIsPreviewMode,
         ...dataHook,
         ...historyHook,
         ...dndHook,

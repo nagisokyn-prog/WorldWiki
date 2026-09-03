@@ -7,6 +7,8 @@ import { useFloatingEntities } from './hooks/useFloatingEntities';
 import { useTimelineStore } from '../../../stores/timeline.store';
 import type { ExportPayload } from '../Export/useExportModal';
 import type { Chapter } from '../../../types/generated/Chapter';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type PromisesPanel from '../PromisesPanel/PromisesPanel.vue';
 
 export interface ChapterTreeNode {
   id?: string;
@@ -47,6 +49,11 @@ export function useChaptersMain(
 
   const localActiveTreeNode = ref<ActiveTreeNode | undefined>(undefined);
   const chapterTreeRef = ref<{ load: () => Promise<void> } | null>(null);
+
+  const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string) => void } | null>(null);
+  const promisesPanelRef = ref<InstanceType<typeof PromisesPanel> | null>(null);
+  const isTimelineOpen = ref(true);
+  const isParticipantsOpen = ref(true);
   
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -73,7 +80,6 @@ export function useChaptersMain(
   };
 
   onMounted(async () => {
-    console.log('🚀 ChaptersMain onMounted');
     await loadChapters(props.project);
     await useTimelineStore().init(props.project);
 
@@ -200,15 +206,69 @@ export function useChaptersMain(
     emit('scroll-change', scroll);
   };
 
+  const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
+    promisesPanelRef.value?.addPromise(payload);
+  };
+
+  const handleLinkMilestone = (payload: {
+    promiseId: string;
+    stage: 'progression' | 'resolution';
+    quote: string;
+    paragraph_index: number;
+    block_id?: string | null;
+  }) => {
+    promisesPanelRef.value?.addMilestone({
+      ...payload,
+      chapterId: currentChapter.value?.id || undefined
+    });
+  };
+
+  const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }) => {
+    const cleanTarget = (payload.chapterId || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
+    const currentClean = (currentChapter.value?.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
+
+    if (currentClean && cleanTarget && cleanTarget !== currentClean) {
+      const allList = chapters.value.length > 0 ? chapters.value : (hierarchy.value?.chapters || []);
+      const targetChapter = allList.find((c: { id?: string | null }) => {
+        const cClean = (c.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
+        return cClean === cleanTarget;
+      });
+
+      if (targetChapter) {
+        const targetId = targetChapter.id 
+          ? (String(targetChapter.id).startsWith('chapters:') ? String(targetChapter.id) : `chapters:${String(targetChapter.id)}`) 
+          : `chapters:${cleanTarget}`;
+
+        const chNode = {
+          ...targetChapter,
+          id: targetId,
+          title: targetChapter.title || 'Глава'
+        } as unknown as ChapterTreeNode;
+
+        void openChapterFromTree(chNode);
+        setTimeout(() => {
+          document.dispatchEvent(new CustomEvent('ww:locate-promise', {
+            detail: payload
+          }));
+        }, 450);
+        return;
+      }
+    }
+
+    editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote);
+  };
+
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving, localActiveTreeNode, chapterTreeRef,
     currentChapterNode, currentArc, currentVolume,
+    editorCoreRef, promisesPanelRef, isTimelineOpen, isParticipantsOpen,
     ...historyHook,
     ...layoutHook,
     ...floatingHook,
     triggerSave, markUnsaved, onTreeNodeSelect, openChapterFromTree,
     createChapterIn, handleRenameChapter, handleDeleteChapter, handleExport,
-    handleScrollChange, handleAddParticipant
+    handleScrollChange, handleAddParticipant, handleCreatePromise,
+    handleLinkMilestone, handleLocatePromise
   };
 }

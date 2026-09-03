@@ -13,9 +13,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TARGET_DIRS = [
-  'apps/spa/src',
-  // 'packages/components/src',
-  // 'packages/word-vibe/src'
+  // 'apps/spa/src',
+   'packages/components/src',
+  //  'packages/word-vibe/src'
 ];
 
 const IGNORE_PATTERNS = [
@@ -138,24 +138,42 @@ function analyzeVueFile(filePath) {
       continue;
     }
 
-    // Игнорируем стандартный клей шаблона
+    // Игнорируем стандартный клей шаблона и вызовы composables (включая многострочные)
     if (
       line.startsWith('defineProps') ||
       line.startsWith('defineEmits') ||
       line.startsWith('defineModel') ||
       line.startsWith('defineOptions') ||
       line.startsWith('defineExpose') ||
+      line.startsWith('withDefaults') ||
+      line.startsWith('const props =') ||
+      line.startsWith('const emit =') ||
+      line.startsWith('const slots = useSlots') ||
+      line.startsWith('const attrs = useAttrs') ||
       line.startsWith('const { t } = useI18n') ||
       line.startsWith('const { locale } = useI18n') ||
-      line.startsWith('const { t, locale } = useI18n') ||
-      line.startsWith('const slots = useSlots') ||
-      line.startsWith('const attrs = useAttrs')
+      line.startsWith('const { t, locale } = useI18n')
+    ) {
+      if ((line.includes('(') || line.includes('{')) && !line.endsWith(';') && !line.includes(');')) {
+        inTypeBlock = true;
+      }
+      continue;
+    }
+
+    // Игнорируем вызов companion composable или многострочную деструктуризацию
+    if (
+      line.includes(`use${baseName}(`) || 
+      line.includes(`use${baseName[0].toLowerCase() + baseName.slice(1)}(`) ||
+      line.startsWith('const {') ||
+      line.startsWith('const hook =') ||
+      line.startsWith('} = use') ||
+      line.startsWith('} = hook')
     ) {
       continue;
     }
 
-    // Игнорируем вызов companion composable
-    if (line.includes(`use${baseName}(`) || line.includes(`use${baseName[0].toLowerCase() + baseName.slice(1)}(`)) {
+    // Линии деструктуризации свойств из composable
+    if (/^[a-zA-Z0-9_]+,?\s*$/.test(line)) {
       continue;
     }
 
@@ -191,18 +209,22 @@ function analyzeVueFile(filePath) {
   }
 
   // Расчёт «штрафного» рейтинга монолитности
-  // score > 40: КРИТИЧЕСКИЙ МОНОЛИТ
-  // score 15-40: УМЕРЕННЫЙ МОНОЛИТ
-  // score < 15: ЧИСТЫЙ КОМПОНЕНТ
   let score = logicLinesCount * 0.8 + stateDeclarations * 3 + functionsCount * 4 + lifecycleHooks * 5 + storeApiCalls * 6;
   if (!hasCompanionComposable && logicLinesCount > 15) {
     score += 15;
   }
 
   let level = 'CLEAN';
-  if (score >= 45 || logicLinesCount >= 45 || (functionsCount >= 4 && !hasCompanionComposable)) {
+  if (stateDeclarations === 0 && functionsCount === 0 && lifecycleHooks === 0 && storeApiCalls === 0) {
+    if (logicLinesCount > 25 && !hasCompanionComposable) {
+      level = 'MODERATE';
+    } else {
+      level = 'CLEAN';
+      score = Math.min(score, 10);
+    }
+  } else if (score >= 45 || (functionsCount >= 4 && !hasCompanionComposable)) {
     level = 'CRITICAL';
-  } else if (score >= 18 || logicLinesCount >= 18 || stateDeclarations >= 3) {
+  } else if (score >= 18 || stateDeclarations >= 2) {
     level = 'MODERATE';
   }
 

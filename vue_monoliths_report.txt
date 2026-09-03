@@ -1,458 +1,267 @@
 === VUE SCRIPT ARCHITECTURE AUDIT REPORT ===
 
-Всего компонентов: 79
-Критические монолиты (🔴): 25
-Умеренные монолиты (🟡): 18
-Чистые компоненты (🟢): 36
+Всего компонентов: 22
+Критические монолиты (🔴): 12
+Умеренные монолиты (🟡): 2
+Чистые компоненты (🟢): 8
 
 =========================================
 1. КРИТИЧЕСКИЕ МОНОЛИТЫ (ТРЕБУЮТ ВЫНОСА В use*.ts)
 =========================================
 
-1. [Score: 356 | Строк логики: 247] apps/spa/src/ts/features/ai/WowilonPanel.vue
-   Композабл: apps/spa/src/ts/features/ai/useWowilonPanel.ts
-   Статистика: Стейт=19, Функции=24, Хуки=1, API=0
+1. [Score: 289 | Строк логики: 208] packages/components/src/components/Vue/XboxWheel.vue
+   Композабл: ОТСУТСТВУЕТ -> useXboxWheel.ts
+   Статистика: Стейт=14, Функции=14, Хуки=2, API=0
    Нарушения:
-     - Строка 27: Локальный стейт/эффект: const panelWidth = ref(Number.isNaN(savedWidth) ? 400 : Math.max(300, 
-     - Строка 28: Локальный стейт/эффект: const showSidebar = ref(localStorage.getItem('worldwiki_ai_show_sideba
-     - Строка 29: Локальный стейт/эффект: const isSettingsOpen = ref(localStorage.getItem('worldwiki_ai_settings
-     - Строка 30: Локальный стейт/эффект: const selectedContext = ref<ContextItem[]>([]);
-     - Строка 32: Локальный стейт/эффект: watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_widt
-     - Строка 33: Локальный стейт/эффект: watch(showSidebar, (v) => localStorage.setItem('worldwiki_ai_show_side
-     - Строка 34: Локальный стейт/эффект: watch(isSettingsOpen, (v) => localStorage.setItem('worldwiki_ai_settin
-     - Строка 65: Локальный стейт/эффект: const activeModeSlug = ref(localStorage.getItem(`worldwiki_ai_active_m
-     - Строка 66: Локальный стейт/эффект: const modes = ref<AiTopBarMode[]>([]);
-     - Строка 68: Функция-обработчик: const handleModeChange = (mode: string) => {
-     - Строка 72: Функция-обработчик: const toggleSidebar = () => {
-     - Строка 76: Функция-обработчик: const handleRetry = () => {};
-     - Строка 77: Функция-обработчик: const handleResume = () => {};
-     - Строка 79: Локальный стейт/эффект: watch(activeModeSlug, (m) => localStorage.setItem(`worldwiki_ai_active
-     - Строка 81: Хук жизненного цикла: onMounted(async () => {
-     - Строка 112: Локальный стейт/эффект: const editingMessageId = ref<string | null>(null);
-     - Строка 113: Локальный стейт/эффект: const editDraft = ref('');
-     - Строка 115: Функция-обработчик: const startEdit = (msg: ChatMessage) => {
-     - Строка 120: Функция-обработчик: const cancelEdit = () => {
-     - Строка 125: Функция-обработчик: const saveEdit = (id: string) => {
-     - Строка 132: Локальный стейт/эффект: const isSending = ref(false);
-     - Строка 134: Функция-обработчик: const saveScroll = () => {
-     - Строка 140: Функция-обработчик: const restoreScroll = () => {
-     - Строка 153: Локальный стейт/эффект: watch(activeChatId, (newId) => {
-     - Строка 166: Локальный стейт/эффект: watch(() => props.isOpen, (newVal) => {
-     - Строка 172: Локальный стейт/эффект: const messagesListRef = ref<{ containerRef: HTMLElement | null } | nul
-     - Строка 173: Локальный стейт/эффект: const messagesContainer = computed(() => messagesListRef.value?.contai
-     - Строка 174: Локальный стейт/эффект: const chatInputRef = ref<{ unlock: () => void } | null>(null);
-     - Строка 176: Функция-обработчик: const renderMarkdown = (text: string) => {
-     - Строка 186: Функция-обработчик: const handleEmergencyUnload = async () => {
-     - Строка 195: Функция-обработчик: const closePanel = () => {
-     - Строка 199: Функция-обработчик: const sendMessage = async (text: string) => {
-     - Строка 214: Функция-обработчик: const scrollToBottom = () => {
-     - Строка 222: Функция-обработчик: const selectChat = (id: string) => activeChatId.value = id;
-     - Строка 224: Функция-обработчик: const handleBranch = async (messageId: string | undefined) => {
-     - Строка 259: Функция-обработчик: const handleContextSelected = (contexts: ContextItem[]) => {
-     - Строка 263: Функция-обработчик: const removeContext = (ctx: ContextItem) => {
-     - Строка 267: Функция-обработчик: const handleToolApproval = (data: unknown) => {
-     - Строка 271: Функция-обработчик: const handleToolRejection = (data: unknown) => {
-     - Строка 275: Локальный стейт/эффект: watch(() => messages.value.length, () => {
-     - Строка 279: Функция-обработчик: const startResize = (e: MouseEvent) => {
-     - Строка 283: Функция-обработчик: const onMouseMove = (moveEvent: MouseEvent) => {
-     - Строка 289: Функция-обработчик: const onMouseUp = () => {
-     - Строка 298: Функция-обработчик: const detachWindow = async () => {
+     - Строка 35: Локальный стейт/эффект: const placeholderText = computed(() => props.placeholder || t('common.
+     - Строка 39: Локальный стейт/эффект: const trigger = ref(null);
+     - Строка 40: Локальный стейт/эффект: const wrapper = ref(null);
+     - Строка 41: Локальный стейт/эффект: const dropdownRef = ref(null);
+     - Строка 42: Локальный стейт/эффект: const isOpen = ref(false);
+     - Строка 44: Локальный стейт/эффект: const dropdownStyle = ref({
+     - Строка 52: Локальный стейт/эффект: const normalizedOptions = computed(() => {
+     - Строка 61: Функция-обработчик: const getIndex = (val) => {
+     - Строка 72: Локальный стейт/эффект: const currentIndex = ref(getIndex(props.modelValue));
+     - Строка 73: Локальный стейт/эффект: const wheelAcc = ref(0);
+     - Строка 75: Локальный стейт/эффект: const LEN = computed(() => normalizedOptions.value.length);
+     - Строка 77: Локальный стейт/эффект: watch(normalizedOptions, () => {
+     - Строка 81: Локальный стейт/эффект: const selectedLabel = computed(() => {
+     - Строка 103: Функция-обработчик: const toggle = () => {
+     - Строка 108: Функция-обработчик: const open = () => {
+     - Строка 113: Функция-обработчик: const close = () => {
+     - Строка 117: Функция-обработчик: const updatePosition = (force = false) => {
+     - Строка 133: Хук жизненного цикла: onMounted(() => {
+     - Строка 139: Хук жизненного цикла: onUnmounted(() => {
+     - Строка 145: Локальный стейт/эффект: watch(isOpen, (val) => {
+     - Строка 154: Функция-обработчик: const onWheel = (e) => {
+     - Строка 164: Функция-обработчик: const onWheelClosed = (e) => {
+     - Строка 174: Функция-обработчик: const onKeydown = (e) => {
+     - Строка 181: Функция-обработчик: const next = () => {
+     - Строка 187: Функция-обработчик: const prev = () => {
+     - Строка 192: Функция-обработчик: const select = (index) => {
+     - Строка 198: Функция-обработчик: const emitUpdate = () => {
+     - Строка 205: Функция-обработчик: const closeOnOutsideClick = (e) => {
+     - Строка 215: Локальный стейт/эффект: watch(() => props.modelValue, (newVal) => {
+     - Строка 220: Функция-обработчик: const getItemStyle = (i) => {
 
-2. [Score: 315 | Строк логики: 290] apps/spa/src/ts/features/shell/ProjectLauncher.vue
-   Композабл: ОТСУТСТВУЕТ -> useProjectLauncher.ts
-   Статистика: Стейт=9, Функции=9, Хуки=1, API=0
+2. [Score: 259 | Строк логики: 175] packages/components/src/components/Vue/ExplorerTree.vue
+   Композабл: ОТСУТСТВУЕТ -> useExplorerTree.ts
+   Статистика: Стейт=9, Функции=18, Хуки=1, API=0
    Нарушения:
-     - Строка 15: Локальный стейт/эффект: const projects = shallowRef<Array<{ name: string; icon: string; stats:
-     - Строка 16: Локальный стейт/эффект: const modalVisible = ref(false);
-     - Строка 17: Локальный стейт/эффект: const isEditing = ref(false);
-     - Строка 18: Локальный стейт/эффект: const editingProjectName = ref('');
-     - Строка 19: Локальный стейт/эффект: const calendarsPanelRef = ref<{ saveAll?: () => Promise<void> } | null
-     - Строка 191: Локальный стейт/эффект: const sortedProjects = computed(() => {
-     - Строка 195: Локальный стейт/эффект: const modalTitle = computed(() => {
-     - Строка 199: Локальный стейт/эффект: const submitButtonText = computed(() => {
-     - Строка 203: Функция-обработчик: async function loadProjects() {
-     - Строка 217: Функция-обработчик: function openCreateModal() {
-     - Строка 229: Функция-обработчик: async function openProject(name: string) {
-     - Строка 234: Функция-обработчик: async function editProject(name: string) {
-     - Строка 251: Функция-обработчик: async function confirmDelete(name: string) {
-     - Строка 263: Функция-обработчик: async function submitForm() {
-     - Строка 296: Функция-обработчик: function closeModal() {
-     - Строка 300: Хук жизненного цикла: onMounted(async () => {
-     - Строка 313: Локальный стейт/эффект: const cloudSyncMode = ref<'import' | 'export'>('export');
-     - Строка 315: Функция-обработчик: function openCloudSync(mode: 'import' | 'export') {
-     - Строка 321: Функция-обработчик: function showToast(toast: { text?: string; type?: string; [key: string
+     - Строка 58: Локальный стейт/эффект: const expandedSections = ref<Set<string>>(new Set(props.sections.map(s
+     - Строка 61: Локальный стейт/эффект: const draggedNode = ref<TreeNodeData | null>(null);
+     - Строка 63: Функция-обработчик: const handleDragStart = (e: DragEvent, node: TreeNodeData) => {
+     - Строка 71: Функция-обработчик: const handleDragOver = (e: DragEvent, node: TreeNodeData) => {
+     - Строка 80: Функция-обработчик: const handleDrop = (e: DragEvent, targetNode: TreeNodeData) => {
+     - Строка 90: Локальный стейт/эффект: const expanded = ref<Set<string>>(new Set());
+     - Строка 93: Локальный стейт/эффект: watch(() => props.sections, (newSections) => {
+     - Строка 100: Хук жизненного цикла: onMounted(() => {
+     - Строка 112: Функция-обработчик: const saveState = () => {
+     - Строка 120: Функция-обработчик: const toggleSection = (id: string) => {
+     - Строка 125: Функция-обработчик: const toggleExpand = (id: string) => {
+     - Строка 142: Локальный стейт/эффект: const flatItems = computed(() => {
+     - Строка 162: Функция-обработчик: const onTreeKeydown = (e: KeyboardEvent) => {
+     - Строка 179: Функция-обработчик: const handleNodeClick = (e: MouseEvent, node: TreeNodeData, _sectionId
+     - Строка 189: Функция-обработчик: const handleNodeDblClick = (node: TreeNodeData) => {
+     - Строка 194: Локальный стейт/эффект: const renaming = ref<{ id: string; value: string; node: TreeNodeData }
+     - Строка 195: Локальный стейт/эффект: const creating = ref<{ sectionId: string; name: string } | null>(null)
+     - Строка 197: Функция-обработчик: const startRename = (node: TreeNodeData) => {
+     - Строка 200: Функция-обработчик: const commitRename = () => {
+     - Строка 213: Функция-обработчик: const cancelRename = () => {
+     - Строка 220: Функция-обработчик: const startCreate = (sectionId: string) => {
+     - Строка 223: Функция-обработчик: const commitCreate = () => {
+     - Строка 231: Локальный стейт/эффект: const ctx = ref<{ x: number; y: number; node: TreeNodeData; sectionId:
+     - Строка 232: Локальный стейт/эффект: const ctxStyle = computed(() => {
+     - Строка 239: Функция-обработчик: const handleCtxMenu = (e: MouseEvent, node: TreeNodeData, sectionId: s
+     - Строка 246: Функция-обработчик: const expandNode = (id: string) => {
+     - Строка 250: Функция-обработчик: const isFaIcon = (val?: string) => {
+     - Строка 255: Функция-обработчик: const formatFaIcon = (val?: string) => {
 
-3. [Score: 176 | Строк логики: 136] apps/spa/src/ts/features/ai/settings/tabs/HardwareMonitorChart.vue
-   Композабл: ОТСУТСТВУЕТ -> useHardwareMonitorChart.ts
-   Статистика: Стейт=10, Функции=3, Хуки=2, API=0
+3. [Score: 221 | Строк логики: 144] packages/components/src/components/Vue/TagsField.vue
+   Композабл: ОТСУТСТВУЕТ -> useTagsField.ts
+   Статистика: Стейт=11, Функции=12, Хуки=2, API=0
    Нарушения:
-     - Строка 11: Локальный стейт/эффект: const chartContainer = ref<HTMLDivElement | null>(null);
-     - Строка 14: Локальный стейт/эффект: const timestamps = ref<number[]>([]);
-     - Строка 15: Локальный стейт/эффект: const ramUsedData = ref<number[]>([]);
-     - Строка 16: Локальный стейт/эффект: const vramUsedData = ref<number[]>([]);
-     - Строка 18: Локальный стейт/эффект: const totalRam = computed(() => props.hardware?.total_ram_gb || 16);
-     - Строка 19: Локальный стейт/эффект: const totalVram = computed(() => props.hardware?.total_vram_gb || 8);
-     - Строка 21: Локальный стейт/эффект: const currentRamUsed = computed(() => {
-     - Строка 27: Локальный стейт/эффект: const currentVramUsed = computed(() => {
-     - Строка 33: Локальный стейт/эффект: const ramPercent = computed(() => {
-     - Строка 37: Локальный стейт/эффект: const vramPercent = computed(() => {
-     - Строка 43: Функция-обработчик: const initChart = () => {
-     - Строка 123: Функция-обработчик: const updateData = () => {
-     - Строка 140: Функция-обработчик: const handleResize = () => {
-     - Строка 149: Хук жизненного цикла: onMounted(async () => {
-     - Строка 156: Хук жизненного цикла: onUnmounted(() => {
+     - Строка 40: Локальный стейт/эффект: const wrapperRef = ref<HTMLElement | null>(null);
+     - Строка 41: Локальный стейт/эффект: const inputContainerRef = ref<HTMLElement | null>(null);
+     - Строка 42: Локальный стейт/эффект: const inputRef = ref<HTMLInputElement | null>(null);
+     - Строка 43: Локальный стейт/эффект: const query = ref('');
+     - Строка 44: Локальный стейт/эффект: const isDropdownOpen = ref(false);
+     - Строка 45: Локальный стейт/эффект: const allTags = ref<TagItem[]>([]);
+     - Строка 46: Локальный стейт/эффект: const dropdownStyle = ref({
+     - Строка 55: Локальный стейт/эффект: const selectedTags = computed(() => {
+     - Строка 66: Локальный стейт/эффект: const filteredTags = computed(() => {
+     - Строка 72: Локальный стейт/эффект: const exactMatch = computed(() => {
+     - Строка 77: Хук жизненного цикла: onMounted(async () => {
+     - Строка 84: Хук жизненного цикла: onUnmounted(() => {
+     - Строка 90: Функция-обработчик: const loadAllTags = async () => {
+     - Строка 98: Функция-обработчик: const getTagColor = (name: string) => {
+     - Строка 103: Функция-обработчик: const focusInput = () => {
+     - Строка 107: Функция-обработчик: const openDropdown = () => {
+     - Строка 112: Локальный стейт/эффект: watch(isDropdownOpen, (val) => {
+     - Строка 116: Функция-обработчик: const updateDropdownPosition = () => {
+     - Строка 129: Функция-обработчик: const toggleTag = (name: string) => {
+     - Строка 142: Функция-обработчик: const addCurrentTag = async () => {
+     - Строка 163: Функция-обработчик: const removeTag = (name: string) => {
+     - Строка 169: Функция-обработчик: const handleBackspace = () => {
+     - Строка 175: Функция-обработчик: const updateModel = (tags: string[]) => {
+     - Строка 180: Функция-обработчик: const handleBlur = () => {
+     - Строка 186: Функция-обработчик: const handleClickOutside = (e: MouseEvent) => {
 
-4. [Score: 154 | Строк логики: 115] apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModesTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSettingsModesTab.ts
-   Статистика: Стейт=6, Функции=6, Хуки=1, API=0
+4. [Score: 171 | Строк логики: 121] packages/components/src/components/Vue/CommandPalette.vue
+   Композабл: ОТСУТСТВУЕТ -> useCommandPalette.ts
+   Статистика: Стейт=9, Функции=8, Хуки=0, API=0
    Нарушения:
-     - Строка 25: Локальный стейт/эффект: const isLoading = ref(true);
-     - Строка 26: Локальный стейт/эффект: const modes = ref<AiMode[]>([]);
-     - Строка 27: Локальный стейт/эффект: const activeModeSlug = ref<string>('chat');
-     - Строка 28: Локальный стейт/эффект: const activeMode = ref<AiMode | null>(null);
-     - Строка 29: Локальный стейт/эффект: const isNewMode = ref(false);
-     - Строка 30: Локальный стейт/эффект: const profiles = ref<AiProfile[]>([]);
-     - Строка 32: Хук жизненного цикла: onMounted(async () => {
-     - Строка 37: Функция-обработчик: const loadProfiles = async () => {
-     - Строка 74: Функция-обработчик: const loadModes = async () => {
-     - Строка 91: Функция-обработчик: const onModeChange = () => {
-     - Строка 102: Функция-обработчик: const createNewMode = () => {
-     - Строка 115: Функция-обработчик: const saveMode = async () => {
-     - Строка 132: Функция-обработчик: const deleteMode = async () => {
+     - Строка 56: Локальный стейт/эффект: const isOpen   = ref(false);
+     - Строка 57: Локальный стейт/эффект: const query    = ref('');
+     - Строка 58: Локальный стейт/эффект: const activeIdx = ref(0);
+     - Строка 59: Локальный стейт/эффект: const inputRef  = ref<HTMLInputElement | null>(null);
+     - Строка 60: Локальный стейт/эффект: const resultsRef = ref<HTMLElement | null>(null);
+     - Строка 62: Локальный стейт/эффект: const builtinCommands = computed<PaletteCommand[]>(() => [
+     - Строка 137: Локальный стейт/эффект: const allCommands = computed<PaletteCommand[]>(() => [
+     - Строка 142: Локальный стейт/эффект: const filtered = computed(() => {
+     - Строка 152: Функция-обработчик: const highlight = (title: string) => {
+     - Строка 158: Функция-обработчик: const open = async () => {
+     - Строка 166: Функция-обработчик: const close = () => { isOpen.value = false; };
+     - Строка 168: Функция-обработчик: const moveDown = () => {
+     - Строка 172: Функция-обработчик: const moveUp = () => {
+     - Строка 176: Функция-обработчик: const scrollToActive = () => {
+     - Строка 181: Функция-обработчик: const runCmd = (cmd: PaletteCommand) => { close(); cmd.action(); };
+     - Строка 182: Функция-обработчик: const runActive = () => { const cmd = filtered.value[activeIdx.value];
+     - Строка 184: Локальный стейт/эффект: watch(query, () => { activeIdx.value = 0; });
 
-5. [Score: 136 | Строк логики: 81] apps/spa/src/ts/features/ai/components/AiContextSelector.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiContextSelector.ts
-   Статистика: Стейт=8, Функции=8, Хуки=0, API=0
+5. [Score: 129 | Строк логики: 60] packages/components/src/components/Vue/QuickOpen.vue
+   Композабл: ОТСУТСТВУЕТ -> useQuickOpen.ts
+   Статистика: Стейт=10, Функции=9, Хуки=0, API=0
    Нарушения:
-     - Строка 6: Локальный стейт/эффект: const isOpen = ref(false);
-     - Строка 7: Локальный стейт/эффект: const level = ref(0);
-     - Строка 8: Локальный стейт/эффект: const currentCategory = ref('');
-     - Строка 9: Локальный стейт/эффект: const currentEntityType = ref('');
-     - Строка 10: Локальный стейт/эффект: const searchQuery = ref('');
-     - Строка 20: Локальный стейт/эффект: const selectedContexts = ref<ContextItem[]>([]);
-     - Строка 22: Функция-обработчик: const toggleMenu = () => {
-     - Строка 31: Функция-обработчик: const goBack = () => {
-     - Строка 38: Функция-обработчик: const getMenuTitle = () => {
-     - Строка 50: Функция-обработчик: const selectCategory = (cat: string) => {
-     - Строка 55: Функция-обработчик: const selectEntityType = (type: string) => {
-     - Строка 74: Локальный стейт/эффект: const filteredEntityTypes = computed(() => {
-     - Строка 78: Локальный стейт/эффект: const filteredItems = computed(() => {
-     - Строка 93: Функция-обработчик: const isSelected = (item: ContextItem) => {
-     - Строка 97: Функция-обработчик: const toggleItem = (item: ContextItem) => {
-     - Строка 105: Функция-обработчик: const applySelection = () => {
+     - Строка 40: Локальный стейт/эффект: const isOpen   = ref(false);
+     - Строка 41: Локальный стейт/эффект: const query    = ref('');
+     - Строка 42: Локальный стейт/эффект: const loading  = ref(false);
+     - Строка 43: Локальный стейт/эффект: const activeIdx = ref(0);
+     - Строка 44: Локальный стейт/эффект: const inputRef  = ref<HTMLInputElement | null>(null);
+     - Строка 45: Локальный стейт/эффект: const resultsRef = ref<HTMLElement | null>(null);
+     - Строка 46: Локальный стейт/эффект: const allItems  = ref<QOItem[]>([]);
+     - Строка 49: Локальный стейт/эффект: const filtered = computed(() => {
+     - Строка 55: Функция-обработчик: const highlight = (title: string) => {
+     - Строка 61: Функция-обработчик: const loadAll = async () => {
+     - Строка 73: Локальный стейт/эффект: watch(() => props.dataSource, () => { allItems.value = []; });
+     - Строка 75: Функция-обработчик: const open = async () => {
+     - Строка 84: Функция-обработчик: const close = () => { isOpen.value = false; };
+     - Строка 86: Функция-обработчик: const moveDown = () => {
+     - Строка 90: Функция-обработчик: const moveUp = () => {
+     - Строка 94: Функция-обработчик: const scrollToActive = () => {
+     - Строка 100: Функция-обработчик: const select = (item: QOItem) => {
+     - Строка 104: Функция-обработчик: const selectActive = () => {
+     - Строка 109: Локальный стейт/эффект: watch(query, () => { activeIdx.value = 0; });
 
-6. [Score: 126 | Строк логики: 88] apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue
-   Композабл: ОТСУТСТВУЕТ -> useModuleHelpPreview.ts
-   Статистика: Стейт=7, Функции=5, Хуки=0, API=0
-   Нарушения:
-     - Строка 18: Локальный стейт/эффект: const triggerEl = ref<HTMLElement | null>(null);
-     - Строка 19: Локальный стейт/эффект: const popoverEl = ref<HTMLElement | null>(null);
-     - Строка 20: Локальный стейт/эффект: const popoverStyle = ref<{ top: string; left: string; right: string }>
-     - Строка 23: Локальный стейт/эффект: const usageInfo = computed(() => getModuleUsageInfo(props.templateKey)
-     - Строка 25: Локальный стейт/эффект: const isBidiType = computed(() => props.templateKey === 'Двунаправленн
-     - Строка 26: Локальный стейт/эффект: const isTimelineType = computed(() => props.templateKey === 'Базовая х
-     - Строка 28: Локальный стейт/эффект: const isVisible = ref(false);
-     - Строка 51: Функция-обработчик: const scrollToExample = (idx: number) => {
-     - Строка 58: Функция-обработчик: const updatePosition = () => {
-     - Строка 88: Функция-обработчик: const showPopup = () => {
-     - Строка 100: Функция-обработчик: const hidePopup = () => {
-     - Строка 106: Функция-обработчик: const togglePopup = () => {
-
-7. [Score: 125 | Строк логики: 86] apps/spa/src/ts/features/ai/components/AiChatHistory.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiChatHistory.ts
-   Статистика: Стейт=3, Функции=8, Хуки=0, API=0
-   Нарушения:
-     - Строка 31: Локальный стейт/эффект: const searchQuery = ref('');
-     - Строка 33: Локальный стейт/эффект: const explorerTreeRef = ref<{ startRename: (node: { id: string }) => v
-     - Строка 48: Локальный стейт/эффект: const treeSections = computed(() => {
-     - Строка 57: Функция-обработчик: const searchDeep = (nodes: AiChatTreeNode[]) => {
-     - Строка 82: Функция-обработчик: const handleNodeClick = (nodes: Array<{ id: string }>) => {
-     - Строка 88: Функция-обработчик: const createNewChat = () => {
-     - Строка 92: Функция-обработчик: const handleMoveNode = (payload: { nodeId: string, newParentId: string
-     - Строка 97: Функция-обработчик: const startRename = (node: { id: string }, closeCtx: () => void) => {
-     - Строка 102: Функция-обработчик: const handleRename = (node: { id: string }, newName: string) => {
-     - Строка 106: Функция-обработчик: const handleDelete = async (id: string, closeCtx: () => void) => {
-     - Строка 114: Функция-обработчик: const handleDeleteMultiple = async (ids: string[]) => {
-
-8. [Score: 122 | Строк логики: 74] apps/spa/src/ts/features/ai/FloatingWindowAI/AiApp.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiApp.ts
-   Статистика: Стейт=6, Функции=5, Хуки=2, API=0
-   Нарушения:
-     - Строка 15: Локальный стейт/эффект: const isSettingsOpen = ref(false);
-     - Строка 18: Локальный стейт/эффект: const messagesContainer = ref<HTMLElement | null>(null);
-     - Строка 21: Локальный стейт/эффект: const activeChatId = ref(urlChatId);
-     - Строка 22: Локальный стейт/эффект: const currentProject = ref(urlProject);
-     - Строка 26: Функция-обработчик: const renderMarkdown = (text: string) => md.render(text);
-     - Строка 28: Функция-обработчик: const handleSend = async (text: string) => {
-     - Строка 33: Функция-обработчик: const scrollToBottom = () => {
-     - Строка 42: Локальный стейт/эффект: watch(activeChatId, (newId) => {
-     - Строка 46: Локальный стейт/эффект: watch(() => renderedMessages.value.length, scrollToBottom);
-     - Строка 49: Функция-обработчик: const logClick = (event: Event) => {
-     - Строка 79: Хук жизненного цикла: onMounted(() => {
-     - Строка 96: Хук жизненного цикла: onUnmounted(() => {
-     - Строка 97: Функция-обработчик: const stored = (window as unknown as { __chatClickListener?: { contain
-
-9. [Score: 114 | Строк логики: 77] apps/spa/src/ts/features/ai/settings/tabs/AiSettingsPermissionsTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSettingsPermissionsTab.ts
+6. [Score: 126 | Строк логики: 93] packages/components/src/components/Vue/ThemeSwitcher.vue
+   Композабл: ОТСУТСТВУЕТ -> useThemeSwitcher.ts
    Статистика: Стейт=4, Функции=5, Хуки=1, API=0
    Нарушения:
-     - Строка 8: Локальный стейт/эффект: const isLoading = ref(true);
-     - Строка 9: Локальный стейт/эффект: const tools = ref<ToolPermissionConfig[]>([]);
-     - Строка 10: Локальный стейт/эффект: const permissionsMap = ref<Record<string, PermissionLevel>>({});
-     - Строка 19: Хук жизненного цикла: onMounted(async () => {
-     - Строка 23: Функция-обработчик: const loadToolsCatalog = async () => {
-     - Строка 42: Функция-обработчик: const getToolsByCategory = (cat: ToolCategory) => {
-     - Строка 46: Функция-обработчик: const getRiskLabel = (risk: RiskLevel) => {
-     - Строка 56: Локальный стейт/эффект: const currentPreset = ref<string | null>('balanced');
-     - Строка 58: Функция-обработчик: const applyPreset = async (preset: 'strict' | 'balanced' | 'full_auto'
-     - Строка 86: Функция-обработчик: const handlePermissionChange = async (toolId: string, level: Permissio
+     - Строка 7: Локальный стейт/эффект: const currentTheme = ref<string>('dark');
+     - Строка 8: Локальный стейт/эффект: const isSaving = ref(false);
+     - Строка 9: Локальный стейт/эффект: const saveMessage = ref<{ type: string; text: string } | null>(null);
+     - Строка 10: Локальный стейт/эффект: const customThemes = ref<string[]>([]);
+     - Строка 12: Функция-обработчик: const loadCustomThemes = async () => {
+     - Строка 22: Хук жизненного цикла: onMounted(async () => {
+     - Строка 27: Функция-обработчик: const switchToDark = async () => {
+     - Строка 43: Функция-обработчик: const switchToLight = async () => {
+     - Строка 59: Функция-обработчик: const switchToCustom = async (themeName: string) => {
+     - Строка 83: Функция-обработчик: const saveCurrentAsTheme = async () => {
 
-10. [Score: 107 | Строк логики: 59] apps/spa/src/ts/features/ai/components/AiSelect.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSelect.ts
-   Статистика: Стейт=5, Функции=5, Хуки=2, API=0
+7. [Score: 113 | Строк логики: 80] packages/components/src/components/Vue/Settings.vue
+   Композабл: ОТСУТСТВУЕТ -> useSettings.ts
+   Статистика: Стейт=3, Функции=5, Хуки=1, API=0
    Нарушения:
-     - Строка 19: Локальный стейт/эффект: const isOpen = ref(false);
-     - Строка 20: Локальный стейт/эффект: const searchQuery = ref(props.modelValue || '');
-     - Строка 21: Локальный стейт/эффект: const containerRef = ref<HTMLElement | null>(null);
-     - Строка 24: Локальный стейт/эффект: watch(() => props.modelValue, (newVal) => {
-     - Строка 30: Функция-обработчик: const openDropdown = () => {
-     - Строка 34: Функция-обработчик: const toggleOpen = () => {
-     - Строка 38: Функция-обработчик: const selectOption = (opt: Option) => {
-     - Строка 44: Функция-обработчик: const handleEnter = () => {
-     - Строка 53: Локальный стейт/эффект: const filteredOptions = computed(() => {
-     - Строка 65: Функция-обработчик: const handleClickOutside = (e: MouseEvent) => {
-     - Строка 74: Хук жизненного цикла: onMounted(() => {
-     - Строка 78: Хук жизненного цикла: onUnmounted(() => {
+     - Строка 24: Локальный стейт/эффект: const activeTab = ref('appearance');
+     - Строка 25: Локальный стейт/эффект: const settings = ref<AppSettings>(settingsService.getSettings());
+     - Строка 36: Локальный стейт/эффект: const activeComponent = computed(() => componentsMap[activeTab.value] 
+     - Строка 38: Функция-обработчик: const changeLocale = async (lang: 'ru' | 'en') => {
+     - Строка 48: Функция-обработчик: const save = async () => {
+     - Строка 59: Функция-обработчик: const pickBackgroundFile = async () => {
+     - Строка 74: Функция-обработчик: const applyPath = (rawPath: string) => {
+     - Строка 100: Функция-обработчик: const resetSettings = () => {
+     - Строка 107: Хук жизненного цикла: onMounted(async () => {
 
-11. [Score: 102 | Строк логики: 57] apps/spa/src/ts/features/entities/FloatingEntityEditor.vue
-   Композабл: ОТСУТСТВУЕТ -> useFloatingEntityEditor.ts
-   Статистика: Стейт=6, Функции=3, Хуки=1, API=1
+8. [Score: 112 | Строк логики: 61] packages/components/src/components/Vue/FloatingWindow.vue
+   Композабл: ОТСУТСТВУЕТ -> useFloatingWindow.ts
+   Статистика: Стейт=4, Функции=9, Хуки=0, API=0
    Нарушения:
-     - Строка 19: Локальный стейт/эффект: const loading = ref(true);
-     - Строка 20: Локальный стейт/эффект: const config = ref<Record<string, unknown> | null>(null);
-     - Строка 21: Локальный стейт/эффект: const entityData = ref<Record<string, unknown> | null>(null);
-     - Строка 23: Локальный стейт/эффект: const windowTitle = computed(() => {
-     - Строка 27: Локальный стейт/эффект: const entityIcon = computed(() => {
-     - Строка 36: Хук жизненного цикла: onMounted(async () => {
-     - Строка 41: Локальный стейт/эффект: watch(
-     - Строка 60: Функция-обработчик: const loadData = async () => {
-     - Строка 64: Прямой вызов API/Store/DB: const schemas = await api.getEntitySchemas(props.project);
-     - Строка 77: Функция-обработчик: const handleSave = () => {
-     - Строка 81: Функция-обработчик: const close = () => {
+     - Строка 19: Локальный стейт/эффект: const windowRef = ref<HTMLElement | null>(null);
+     - Строка 20: Локальный стейт/эффект: const pos = reactive({
+     - Строка 27: Локальный стейт/эффект: const zIndex = ref(props.zIndexBase ?? 10000);
+     - Строка 29: Локальный стейт/эффект: const windowStyle = computed(() => ({
+     - Строка 41: Функция-обработчик: const startDrag = (e: MouseEvent) => {
+     - Строка 50: Функция-обработчик: const handleDrag = (e: MouseEvent) => {
+     - Строка 56: Функция-обработчик: const stopDrag = () => {
+     - Строка 65: Функция-обработчик: const startResize = (e: MouseEvent) => {
+     - Строка 74: Функция-обработчик: const handleResize = (e: MouseEvent) => {
+     - Строка 80: Функция-обработчик: const stopResize = () => {
+     - Строка 86: Функция-обработчик: const bringToFront = () => {
+     - Строка 92: Функция-обработчик: const close = () => {
+     - Строка 96: Функция-обработчик: const updateZIndex = (val: number) => {
 
-12. [Score: 101 | Строк логики: 64] apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSettingsModelsTab.ts
-   Статистика: Стейт=6, Функции=3, Хуки=1, API=0
+9. [Score: 102 | Строк логики: 48] packages/components/src/components/Vue/WorkspaceLayout.vue
+   Композабл: ОТСУТСТВУЕТ -> useWorkspaceLayout.ts
+   Статистика: Стейт=1, Функции=9, Хуки=2, API=0
    Нарушения:
-     - Строка 16: Локальный стейт/эффект: const localSettings = ref<AiProfileSettings | null>(null);
-     - Строка 17: Локальный стейт/эффект: const installedModels = ref<InstalledModelInfo[]>([]);
-     - Строка 18: Локальный стейт/эффект: const customEmbedInput = ref('');
-     - Строка 27: Локальный стейт/эффект: const isCustomEmbedPath = computed(() => {
-     - Строка 35: Хук жизненного цикла: onMounted(async () => {
-     - Строка 39: Функция-обработчик: const loadInstalledModels = async () => {
-     - Строка 48: Локальный стейт/эффект: watch(() => props.activeProfile?.settings, (newSettings) => {
-     - Строка 59: Функция-обработчик: const onCustomEmbedInput = () => {
-     - Строка 65: Функция-обработчик: const handleSave = () => {
-     - Строка 74: Локальный стейт/эффект: const availableModelOptions = computed(() => {
+     - Строка 24: Локальный стейт/эффект: const sidebarWidth = ref(props.defaultSidebarWidth);
+     - Строка 26: Функция-обработчик: function activeTab(groupId: string) {
+     - Строка 31: Функция-обработчик: function splitGroup(groupId: string) {
+     - Строка 35: Функция-обработчик: function onKeydown(e: KeyboardEvent) {
+     - Строка 41: Хук жизненного цикла: onMounted(() => window.addEventListener('keydown', onKeydown));
+     - Строка 42: Хук жизненного цикла: onUnmounted(() => window.removeEventListener('keydown', onKeydown));
+     - Строка 44: Функция-обработчик: function startSidebarResize(e: MouseEvent) {
+     - Строка 48: Функция-обработчик: const onMove = (ev: MouseEvent) => {
+     - Строка 51: Функция-обработчик: const onUp = () => {
+     - Строка 59: Функция-обработчик: function startGroupResize(gIdx: number) {
+     - Строка 60: Функция-обработчик: const onMove = (ev: MouseEvent) => {
+     - Строка 67: Функция-обработчик: const onUp = () => {
 
-13. [Score: 100 | Строк логики: 68] apps/spa/src/ts/features/ai/settings/AiSettingsView.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSettingsView.ts
-   Статистика: Стейт=2, Функции=5, Хуки=1, API=0
+10. [Score: 100 | Строк логики: 60] packages/components/src/components/Vue/EditorTabBar.vue
+   Композабл: ОТСУТСТВУЕТ -> useEditorTabBar.ts
+   Статистика: Стейт=3, Функции=7, Хуки=0, API=0
    Нарушения:
-     - Строка 17: Локальный стейт/эффект: const activeTab = ref<TabType>(savedTab && ['connections', 'models', '
-     - Строка 19: Локальный стейт/эффект: watch(activeTab, (val) => {
-     - Строка 57: Хук жизненного цикла: onMounted(async () => {
-     - Строка 62: Функция-обработчик: const handleProfileSelect = (id: string) => {
-     - Строка 67: Функция-обработчик: const handleProviderChange = () => {
-     - Строка 71: Функция-обработчик: const handleFetchModels = async (forceNetwork = false) => {
-     - Строка 82: Функция-обработчик: const handleSaveProfile = async (updatedData?: Partial<AiProfile>) => 
-     - Строка 92: Функция-обработчик: const handleSavePermissions = async () => {
+     - Строка 38: Локальный стейт/эффект: const draggingTabId = ref<string | null>(null);
+     - Строка 39: Локальный стейт/эффект: const dragOverIdx = ref<number | null>(null);
+     - Строка 40: Локальный стейт/эффект: const dropSide = ref<'left' | 'right'>('right');
+     - Строка 42: Функция-обработчик: const onDragStart = (e: DragEvent, tabId: string, _idx: number) => {
+     - Строка 49: Функция-обработчик: const onDragEnd = () => {
+     - Строка 62: Функция-обработчик: const onTabDragOver = (e: DragEvent, idx: number) => {
+     - Строка 69: Функция-обработчик: const onTabDragLeave = (idx: number) => {
+     - Строка 73: Функция-обработчик: const onTabDrop = (e: DragEvent, idx: number) => {
+     - Строка 96: Функция-обработчик: const onBarDragOver = (e: DragEvent) => {
+     - Строка 100: Функция-обработчик: const onBarDrop = (e: DragEvent) => {
 
-14. [Score: 99 | Строк логики: 71] apps/spa/src/ts/features/ai/components/AiChatTopBar.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiChatTopBar.ts
-   Статистика: Стейт=5, Функции=3, Хуки=0, API=0
+11. [Score: 91 | Строк логики: 52] packages/components/src/components/Vue/HistorySidebar.vue
+   Композабл: ОТСУТСТВУЕТ -> useHistorySidebar.ts
+   Статистика: Стейт=3, Функции=5, Хуки=1, API=0
    Нарушения:
-     - Строка 30: Локальный стейт/эффект: const isIndexing = ref(false);
-     - Строка 33: Функция-обработчик: const handleReindexLore = async () => {
-     - Строка 52: Локальный стейт/эффект: watch(() => props.activeProfile, (profile) => {
-     - Строка 58: Локальный стейт/эффект: const maxTokens = computed(() => {
-     - Строка 71: Локальный стейт/эффект: const progressPercent = computed(() => {
-     - Строка 76: Локальный стейт/эффект: const isUnloading = ref(false);
-     - Строка 78: Функция-обработчик: const handleUnloadAll = async () => {
-     - Строка 91: Функция-обработчик: const formatTokens = (val: number = 0) => {
+     - Строка 23: Локальный стейт/эффект: const entries = ref<HistoryEntry[]>([]);
+     - Строка 24: Локальный стейт/эффект: const loading = ref(false);
+     - Строка 26: Функция-обработчик: async function loadHistory() {
+     - Строка 44: Функция-обработчик: async function restore(entry: HistoryEntry) {
+     - Строка 50: Функция-обработчик: async function togglePin(entry: HistoryEntry) {
+     - Строка 59: Функция-обработчик: async function deleteEntry(entry: HistoryEntry) {
+     - Строка 69: Функция-обработчик: function formatDate(iso: string) {
+     - Строка 79: Локальный стейт/эффект: watch(() => [props.project, props.typeKey], loadHistory);
+     - Строка 80: Хук жизненного цикла: onMounted(loadHistory);
 
-15. [Score: 93 | Строк логики: 41] apps/spa/src/ts/features/ai/settings/tabs/AiSettingsConnectionsTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSettingsConnectionsTab.ts
-   Статистика: Стейт=3, Функции=3, Хуки=0, API=4
+12. [Score: 46 | Строк логики: 29] packages/components/src/components/Vue/Settings/SettingsAppearance.vue
+   Композабл: ОТСУТСТВУЕТ -> useSettingsAppearance.ts
+   Статистика: Стейт=0, Функции=2, Хуки=0, API=0
    Нарушения:
-     - Строка 12: Локальный стейт/эффект: const showApiKey = ref(false);
-     - Строка 13: Локальный стейт/эффект: const localProfile = ref<AiProfile | null>(null);
-     - Строка 15: Локальный стейт/эффект: watch(() => props.activeProfile, (newVal) => {
-     - Строка 23: Функция-обработчик: const handleSave = () => {
-     - Строка 27: Функция-обработчик: const getProviderLabel = (provider: string) => {
-     - Строка 40: Функция-обработчик: const getDefaultUrl = (provider: string) => {
-     - Строка 43: Прямой вызов API/Store/DB: anthropic: 'https://api.anthropic.com',
-     - Строка 44: Прямой вызов API/Store/DB: openai: 'https://api.openai.com/v1',
-     - Строка 46: Прямой вызов API/Store/DB: deepseek: 'https://api.deepseek.com/v1',
-     - Строка 50: Прямой вызов API/Store/DB: return map[provider] || 'https://api.openai.com/v1';
-
-16. [Score: 86 | Строк логики: 82] apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue
-   Композабл: apps/spa/src/ts/features/chapters/ChaptersMain/useChaptersMain.ts
-   Статистика: Стейт=4, Функции=2, Хуки=0, API=0
-   Нарушения:
-     - Строка 30: Локальный стейт/эффект: const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: s
-     - Строка 31: Локальный стейт/эффект: const promisesPanelRef = ref<InstanceType<typeof PromisesPanel> | null
-     - Строка 33: Локальный стейт/эффект: const isTimelineOpen = ref(true);
-     - Строка 34: Локальный стейт/эффект: const isParticipantsOpen = ref(true);
-     - Строка 57: Функция-обработчик: const handleCreatePromise = (payload: { kind: string; quote: string; p
-     - Строка 74: Функция-обработчик: const handleLocatePromise = (payload: { chapterId: string; paragraphIn
-
-17. [Score: 85 | Строк логики: 64] apps/spa/src/ts/features/ai/components/AiChatInput.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiChatInput.ts
-   Статистика: Стейт=2, Функции=2, Хуки=1, API=0
-   Нарушения:
-     - Строка 12: Локальный стейт/эффект: const isFocused = ref(false);
-     - Строка 13: Локальный стейт/эффект: const isEmpty = ref(true);
-     - Строка 53: Функция-обработчик: const submitMessage = () => {
-     - Строка 76: Функция-обработчик: const unlock = () => {
-     - Строка 82: Хук жизненного цикла: onBeforeUnmount(() => {
-
-18. [Score: 65 | Строк логики: 53] apps/spa/src/ts/features/chapters/ChapterTree/ChapterTree.vue
-   Композабл: apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts
-   Статистика: Стейт=1, Функции=5, Хуки=0, API=0
-   Нарушения:
-     - Строка 8: Локальный стейт/эффект: const calendarHeight = ref(
-     - Строка 14: Функция-обработчик: const startResizeCalendar = (e: MouseEvent) => {
-     - Строка 19: Функция-обработчик: const onMouseMove = (moveEvent: MouseEvent) => {
-     - Строка 25: Функция-обработчик: const onMouseUp = () => {
-     - Строка 64: Функция-обработчик: const isNodeType = (node: { data?: unknown }, type: string) => {
-     - Строка 68: Функция-обработчик: const isEntityNode = (node: { data?: unknown }) => {
-
-19. [Score: 63 | Строк логики: 59] apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue
-   Композабл: apps/spa/src/ts/features/schemas/SchemaEditor/useSchemaEditorMain.ts
-   Статистика: Стейт=0, Функции=4, Хуки=0, API=0
-   Нарушения:
-     - Строка 60: Функция-обработчик: const setLocalEntityType = (val: string) => {
-     - Строка 64: Функция-обработчик: const setShowJsonPreview = (val: boolean) => {
-     - Строка 68: Функция-обработчик: const setIsPreviewMode = (val: boolean) => {
-     - Строка 72: Функция-обработчик: const isAtomicField = (item: { type?: string }) => {
-
-20. [Score: 63 | Строк логики: 38] apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/TimeAtlasBridgeTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useTimeAtlasBridgeTab.ts
-   Статистика: Стейт=2, Функции=3, Хуки=0, API=0
-   Нарушения:
-     - Строка 18: Локальный стейт/эффект: const masterCalData = computed<CalendarData | null>(() => {
-     - Строка 22: Локальный стейт/эффект: const localCalsWithData = computed<Array<{ id: string; name: string; d
-     - Строка 32: Функция-обработчик: const onYearChange = (cal: CalendarData, e: Event) => {
-     - Строка 38: Функция-обработчик: const onMonthChange = (cal: CalendarData, e: Event) => {
-     - Строка 44: Функция-обработчик: const onDayChange = (cal: CalendarData, e: Event) => {
-
-21. [Score: 61 | Строк логики: 31] apps/spa/src/ts/features/ai/components/AiToolApproval.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiToolApproval.ts
-   Статистика: Стейт=3, Функции=3, Хуки=0, API=0
-   Нарушения:
-     - Строка 20: Локальный стейт/эффект: const feedbackText = ref('');
-     - Строка 21: Локальный стейт/эффект: const hasResponded = ref(false);
-     - Строка 22: Локальный стейт/эффект: const isApproved = ref(false);
-     - Строка 24: Функция-обработчик: const formatArgs = (args: unknown) => {
-     - Строка 32: Функция-обработчик: const approveTool = () => {
-     - Строка 38: Функция-обработчик: const rejectWithFeedback = () => {
-
-22. [Score: 50 | Строк логики: 63] apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue
-   Композабл: apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEditorCoreTiptap.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-23. [Score: 49 | Строк логики: 53] apps/spa/src/ts/features/chapters/PromisesPanel/PromisesPanel.vue
-   Композабл: apps/spa/src/ts/features/chapters/PromisesPanel/usePromisesPanel.ts
-   Статистика: Стейт=1, Функции=1, Хуки=0, API=0
-   Нарушения:
-     - Строка 20: Локальный стейт/эффект: const isCollapsed = ref(false);
-     - Строка 46: Функция-обработчик: const promptAttachMilestone = (item: PlotPromise, stage: 'progression'
-
-24. [Score: 46 | Строк логики: 30] apps/spa/src/ts/features/ai/components/AiMessageList.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiMessageList.ts
-   Статистика: Стейт=1, Функции=1, Хуки=0, API=0
-   Нарушения:
-     - Строка 31: Локальный стейт/эффект: const containerRef = ref<HTMLElement | null>(null);
-     - Строка 33: Функция-обработчик: const copyText = async (text: string) => {
-
-25. [Score: 38 | Строк логики: 48] apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue
-   Композабл: apps/spa/src/ts/features/entities/EntityEditor/useEntityEditor.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
+     - Строка 20: Функция-обработчик: const toHex = (colorStr: string) => {
+     - Строка 35: Функция-обработчик: const updateColorAlpha = (colorKey: keyof AppSettings['colors'], hexCo
 
 
 =========================================
 2. УМЕРЕННЫЕ МОНОЛИТЫ
 =========================================
 
-1. [Score: 41 | Строк логики: 27] apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue
-   Композабл: ОТСУТСТВУЕТ -> useRelationshipBlock.ts
-   Статистика: Стейт=0, Функции=1, Хуки=0, API=0
+1. [Score: 44 | Строк логики: 20] packages/components/src/components/Vue/Settings/SettingsPerformance.vue
+   Композабл: ОТСУТСТВУЕТ -> useSettingsPerformance.ts
+   Статистика: Стейт=3, Функции=1, Хуки=0, API=0
 
-2. [Score: 40 | Строк логики: 19] apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRuntime.vue
-   Композабл: ОТСУТСТВУЕТ -> useLocalAiRuntime.ts
-   Статистика: Стейт=2, Функции=1, Хуки=0, API=0
-
-3. [Score: 39 | Строк логики: 30] apps/spa/src/ts/features/ai/settings/tabs/AiSettingsLocalTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiSettingsLocalTab.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-4. [Score: 32 | Строк логики: 17] apps/spa/src/ts/features/ai/components/AiActionButtons.vue
-   Композабл: ОТСУТСТВУЕТ -> useAiActionButtons.ts
+2. [Score: 35 | Строк логики: 21] packages/components/src/components/Vue/Settings/SettingsLivePreview.vue
+   Композабл: ОТСУТСТВУЕТ -> useSettingsLivePreview.ts
    Статистика: Стейт=1, Функции=0, Хуки=0, API=0
-
-5. [Score: 32 | Строк логики: 21] apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/TimeAtlasMatrixTab.vue
-   Композабл: ОТСУТСТВУЕТ -> useTimeAtlasMatrixTab.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-6. [Score: 29 | Строк логики: 36] apps/spa/src/ts/features/timeline/UniversalDatePicker/UniversalDatePicker.vue
-   Композабл: apps/spa/src/ts/features/timeline/UniversalDatePicker/useUniversalDatePicker.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-7. [Score: 28 | Строк логики: 16] apps/spa/src/ts/features/schemas/SchemaEditor/SchemaFieldEditor.vue
-   Композабл: ОТСУТСТВУЕТ -> useSchemaFieldEditor.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-8. [Score: 25 | Строк логики: 31] apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/TimeAtlasModal.vue
-   Композабл: apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/useTimeAtlasModal.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-9. [Score: 22 | Строк логики: 28] apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue
-   Композабл: apps/spa/src/ts/features/schemas/SchemaEditor/useSchemaContainer.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-10. [Score: 21 | Строк логики: 26] apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue
-   Композабл: apps/spa/src/ts/features/chapters/PlanningPanel/usePlanningPanel.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-11. [Score: 19 | Строк логики: 24] apps/spa/src/ts/features/chapters/ParticipantsPanel/ParticipantsPanel.vue
-   Композабл: apps/spa/src/ts/features/chapters/ParticipantsPanel/useParticipantsPanel.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-12. [Score: 19 | Строк логики: 24] apps/spa/src/ts/features/timeline/CalendarsPanel/DateWheels.vue
-   Композабл: apps/spa/src/ts/features/timeline/CalendarsPanel/useDateWheels.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-13. [Score: 18 | Строк логики: 23] apps/spa/src/ts/features/chapters/Export/ExportModal.vue
-   Композабл: apps/spa/src/ts/features/chapters/Export/useExportModal.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-14. [Score: 18 | Строк логики: 23] apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue
-   Композабл: apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/useGlobalCalendarWidget.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-15. [Score: 17 | Строк логики: 21] apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue
-   Композабл: apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-16. [Score: 16 | Строк логики: 20] apps/spa/src/ts/features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.vue
-   Композабл: apps/spa/src/ts/features/schemas/SchemaEditor/ManuscriptPointPicker/useManuscriptPointPicker.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-17. [Score: 16 | Строк логики: 20] apps/spa/src/ts/features/sync/CloudSyncModal.vue
-   Композабл: apps/spa/src/ts/features/sync/useCloudSyncModal.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0
-
-18. [Score: 15 | Строк логики: 19] apps/spa/src/ts/features/chapters/EditorCoreTiptap/EntityLinkSelector.vue
-   Композабл: apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEntityLinkSelector.ts
-   Статистика: Стейт=0, Функции=0, Хуки=0, API=0

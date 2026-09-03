@@ -98,40 +98,10 @@
 
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import { ExplorerTree } from '@worldwiki/components';
 import GlobalCalendarWidget from '../../timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue';
 import { useChapterTree } from './useChapterTree';
 import type { ChapterTreeProps } from './ChapterTree.model';
-
-const calendarHeight = ref(
-  typeof window !== 'undefined'
-    ? Number(localStorage.getItem('worldwiki-calendar-widget-height')) || 170
-    : 170
-);
-
-const startResizeCalendar = (e: MouseEvent) => {
-  e.preventDefault();
-  const startY = e.clientY;
-  const startHeight = calendarHeight.value;
-
-  const onMouseMove = (moveEvent: MouseEvent) => {
-    const deltaY = moveEvent.clientY - startY;
-    const newHeight = Math.max(70, Math.min(500, startHeight + deltaY));
-    calendarHeight.value = newHeight;
-  };
-
-  const onMouseUp = () => {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('worldwiki-calendar-widget-height', String(calendarHeight.value));
-    }
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
-  };
-
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
-};
 
 const props = withDefaults(defineProps<ChapterTreeProps>(), {
   activeNode: null,
@@ -144,6 +114,10 @@ const emit = defineEmits([
 ]);
 
 const {
+  calendarHeight,
+  startResizeCalendar,
+  isNodeType,
+  isEntityNode,
   explorerSections,
   activeId,
   explorerTreeRef,
@@ -159,14 +133,6 @@ const {
   handleDeleteSection,
   load
 } = useChapterTree(props, emit as (event: string, ...args: unknown[]) => void);
-
-const isNodeType = (node: { data?: unknown }, type: string) => {
-  return (node.data as { type?: string } | undefined)?.type === type;
-};
-
-const isEntityNode = (node: { data?: unknown }) => {
-  return Boolean((node.data as { isEntity?: boolean } | undefined)?.isEntity);
-};
 
 defineExpose({ load });
 </script>

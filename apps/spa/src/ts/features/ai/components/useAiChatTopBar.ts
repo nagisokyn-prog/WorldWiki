@@ -1,7 +1,7 @@
 import { ref, computed, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { AiProfile } from '../types/ai.types';
-import { useAiModels } from '../hooks/useAiModels';
+import type { AiProfile, AiModelInfo } from '../types/ai.types';
+import { useAiModels } from '../composables/useAiModels';
 
 export interface AiTopBarMode {
   slug: string;
@@ -52,7 +52,7 @@ export function useAiChatTopBar(props: AiChatTopBarProps) {
       return props.activeProfile.settings.context_window;
     }
     if (props.activeProfile?.settings?.model) {
-      const modelInfo = availableModels.value.find(m => m.value === props.activeProfile?.settings?.model);
+      const modelInfo = availableModels.value.find((m: AiModelInfo) => m.value === props.activeProfile?.settings?.model);
       if (modelInfo && modelInfo.context_length) {
         return modelInfo.context_length;
       }

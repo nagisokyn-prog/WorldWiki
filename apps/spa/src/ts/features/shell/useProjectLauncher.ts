@@ -1,7 +1,7 @@
 import { ref, shallowRef, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
-import { projectService } from '../../../services/project.service';
+import { projectService, type ProjectConfig } from '../../services/project.service';
 import { settingsService } from '@worldwiki/components';
 
 export interface ProjectData {
@@ -207,7 +207,7 @@ export function useProjectLauncher() {
   async function loadProjects() {
     try {
       const list = await projectService.getProjects();
-      projects.value = list.map((p) => ({
+      projects.value = list.map((p: { name: string; icon?: unknown; stats?: unknown }) => ({
         name: p.name,
         icon: String(p.icon || '📁'),
         stats: (p.stats as unknown as Record<string, number>) || {}

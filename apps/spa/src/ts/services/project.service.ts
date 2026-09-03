@@ -12,7 +12,7 @@ export interface ProjectStats {
   [entityType: string]: number | undefined;
 }
 
-interface ProjectConfig {
+export interface ProjectConfig {
   type: string;
   genres: string[];
   created?: string;
@@ -20,7 +20,7 @@ interface ProjectConfig {
   [key: string]: unknown;
 }
 
-interface ProjectMetadata {
+export interface ProjectMetadata {
   name: string;
   type: string;
   genres: string[];
@@ -29,7 +29,7 @@ interface ProjectMetadata {
   stats: ProjectStats;
 }
 
-interface ProjectData {
+export interface ProjectData {
   name: string;
   stats?: ProjectStats;
   [key: string]: unknown;

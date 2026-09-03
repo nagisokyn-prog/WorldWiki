@@ -169,6 +169,7 @@ import GlobalTimeViewer from '../../features/timeline/Calendars/GlobalTimeViewer
 import { useProjectLauncher } from './useProjectLauncher';
 
 const {
+  projects,
   sortedProjects,
   modalVisible,
   isEditing,

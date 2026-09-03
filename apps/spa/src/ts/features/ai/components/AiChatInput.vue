@@ -30,91 +30,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue';
-import { useEditor, EditorContent } from '@tiptap/vue-3';
-import StarterKit from '@tiptap/starter-kit';
+import { EditorContent } from '@tiptap/vue-3';
+import { 
+  useAiChatInput, 
+  type AiChatInputProps, 
+  type AiChatInputEmits 
+} from './useAiChatInput';
 
-const props = defineProps<{
-  loading?: boolean;
-}>();
+const props = defineProps<AiChatInputProps>();
+const emit = defineEmits<AiChatInputEmits>();
 
-const emit = defineEmits(['submit', 'cancel']);
-
-const isFocused = ref(false);
-const isEmpty = ref(true);
-
-const editor = useEditor({
-  content: '',
-  extensions: [
-    StarterKit.configure({
-      heading: false,
-      codeBlock: false,
-      horizontalRule: false,
-      blockquote: false
-    })
-  ],
-  editorProps: {
-    attributes: {
-      class: 'prose prose-sm focus:outline-none ai-editor-content',
-      placeholder: 'Задайте вопрос ИИ...'
-    },
-    handleKeyDown: (_view, event) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        submitMessage();
-        return true;
-      }
-      return false;
-    }
-  },
-  onUpdate: ({ editor }) => {
-    isEmpty.value = editor.isEmpty;
-  },
-  onFocus: () => {
-    isFocused.value = true;
-  },
-  onBlur: () => {
-    isFocused.value = false;
-  }
-});
-
-// Promise-based lock — не позволяет отправить второй запрос пока первый не завершился
-let sendLock: Promise<void> | null = null;
-
-const submitMessage = () => {
-  if (props.loading || !editor.value) return;
-  if (sendLock) return; // уже идёт отправка
-  
-  const text = editor.value.getText().trim();
-  if (!text) return;
-  
-  // Захватываем блокировку сразу, синхронно, до любого await
-  let resolveLock!: () => void;
-  sendLock = new Promise(res => { resolveLock = res; });
-  
-  emit('submit', text);
-  editor.value.commands.clearContent();
-  isEmpty.value = true;
-  
-  // Снимаем блокировку через 1 секунду на случай если emit не вернёт управление
-  setTimeout(() => {
-    sendLock = null;
-    resolveLock();
-  }, 1000);
-};
-
-// Позволяет родительскому компоненту снять блокировку после обработки
-const unlock = () => {
-  sendLock = null;
-};
+const {
+  editor,
+  isFocused,
+  isEmpty,
+  submitMessage,
+  unlock
+} = useAiChatInput(props, emit);
 
 defineExpose({ unlock });
-
-onBeforeUnmount(() => {
-  if (editor.value) {
-    editor.value.destroy();
-  }
-});
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiChatInput.css"></style>

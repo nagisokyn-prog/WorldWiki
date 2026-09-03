@@ -5,7 +5,7 @@
       <div class="flex items-center gap-6">
         <div class="schema-header-title">
           ⚙️ СХЕМА:
-          <input :value="hook.localEntityType.value" class="input-base schema-header-input" placeholder="ИМЯ СХЕМЫ" @input="setLocalEntityType(($event.target as HTMLInputElement).value)" />
+          <input :value="localEntityType" class="input-base schema-header-input" placeholder="ИМЯ СХЕМЫ" @input="setLocalEntityType(($event.target as HTMLInputElement).value)" />
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -22,7 +22,7 @@
 
     <div class="flex-1 flex overflow-hidden">
       <!-- ПРЕДПРОСМОТР -->
-      <div v-if="hook.isPreviewMode.value" class="flex-1 flex-col">
+      <div v-if="isPreviewMode" class="flex-1 flex-col">
         <div class="schema-history-banner">
            <span class="schema-history-text">👁️ РЕЖИМ ПРЕДПРОСМОТРА</span>
            <button class="btn-new text-xs btn-warning-action" @click="setIsPreviewMode(false)">ВЕРНУТЬСЯ В РЕДАКТОР</button>
@@ -163,7 +163,7 @@
       </aside>
     </div>
     <!-- JSON ПРЕВЬЮ -->
-    <div v-if="hook.showJsonPreview.value" class="glass-modal-overlay visible" @click="setShowJsonPreview(false)">
+    <div v-if="showJsonPreview" class="glass-modal-overlay visible" @click="setShowJsonPreview(false)">
       <div class="glass-modal glass-panel flex-col json-preview-modal" @click.stop>
          <div class="glass-title flex justify-between items-center p-3">
             <span>SCHEMA (JSON)</span>
@@ -199,6 +199,9 @@ const emit = defineEmits(['scroll-change', 'section-change', 'modified']);
 const hook = useSchemaEditorMain(props, emit as (event: string, ...args: unknown[]) => void);
 
 const {
+  localEntityType,
+  showJsonPreview,
+  isPreviewMode,
   catalogWidth,
   schema,
   scrollContainer,
@@ -233,24 +236,12 @@ const {
   handleDragOverCanvas,
   handleDropNew,
   handleItemDrop,
-  handleDropIntoModule
+  handleDropIntoModule,
+  setLocalEntityType,
+  setShowJsonPreview,
+  setIsPreviewMode,
+  isAtomicField
 } = hook;
-
-const setLocalEntityType = (val: string) => {
-  hook.localEntityType.value = val;
-};
-
-const setShowJsonPreview = (val: boolean) => {
-  hook.showJsonPreview.value = val;
-};
-
-const setIsPreviewMode = (val: boolean) => {
-  hook.isPreviewMode.value = val;
-};
-
-const isAtomicField = (item: { type?: string }) => {
-  return atomicBricks.some((b: { val: string }) => b.val === item.type) || item.type === 'tags' || item.type === 'range';
-};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/schemas/SchemaEditorMain.css"></style>

@@ -1,7 +1,7 @@
 import { ref, onMounted, watch } from 'vue';
-import type { AiProfile } from '../types/ai.types';
-import { useAiProfiles } from '../hooks/useAiProfiles';
-import { useAiModels } from '../hooks/useAiModels';
+import type { AiProfile, AiProfileSettings } from '../types/ai.types';
+import { useAiProfiles } from '../composables/useAiProfiles';
+import { useAiModels } from '../composables/useAiModels';
 
 export type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions';
 
@@ -66,9 +66,9 @@ export function useAiSettingsView() {
     void handleFetchModels();
   };
 
-  const handleSaveProfile = async (updatedData?: Partial<AiProfile>) => {
+  const handleSaveProfile = async (updatedData?: Partial<AiProfile> | { settings: AiProfileSettings } | null) => {
     if (updatedData && activeProfile.value) {
-      if (updatedData.settings && activeProfile.value.settings) {
+      if ('settings' in updatedData && updatedData.settings && activeProfile.value.settings) {
         Object.assign(activeProfile.value.settings, updatedData.settings);
       }
       Object.assign(activeProfile.value, updatedData);

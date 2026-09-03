@@ -300,12 +300,6 @@ const emit = defineEmits<{
   'scroll-change': [scroll: number];
 }>();
 
-const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string) => void } | null>(null);
-const promisesPanelRef = ref<InstanceType<typeof PromisesPanel> | null>(null);
-
-const isTimelineOpen = ref(true);
-const isParticipantsOpen = ref(true);
-
 const {
   chapters, hierarchy, currentChapterId, currentChapter,
   currentArc, currentVolume, isVolumePlanOpen,
@@ -320,66 +314,14 @@ const {
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
   markUnsaved, handleOpenEntity,
   handleExport, handleScrollChange, handleAddParticipant,
-  openChapterFromTree
+  openChapterFromTree,
+  editorCoreRef, promisesPanelRef, isTimelineOpen, isParticipantsOpen,
+  handleCreatePromise, handleLinkMilestone, handleLocatePromise
 } = useChaptersMain({
   project: props.project,
   controlledChapterId: props.controlledChapterId || undefined,
   activeTreeNode: props.activeTreeNode || undefined
 }, emit as (event: string, ...args: unknown[]) => void);
-
-const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
-  promisesPanelRef.value?.addPromise(payload);
-};
-
-const handleLinkMilestone = (payload: {
-  promiseId: string;
-  stage: 'progression' | 'resolution';
-  quote: string;
-  paragraph_index: number;
-  block_id?: string | null;
-}) => {
-  promisesPanelRef.value?.addMilestone({
-    ...payload,
-    chapterId: currentChapter.value?.id || undefined
-  });
-};
-
-const handleLocatePromise = (payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }) => {
-  const cleanTarget = (payload.chapterId || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
-  const currentClean = (currentChapter.value?.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
-
-  // Если целевая глава отличается от текущей — открываем её таб
-  if (currentClean && cleanTarget && cleanTarget !== currentClean) {
-    const allList = chapters.value.length > 0 ? chapters.value : (hierarchy.value?.chapters || []);
-    const targetChapter = allList.find((c: { id?: string | null }) => {
-      const cClean = (c.id || '').split(':').pop()?.replace(/["'`]/g, '').trim() || '';
-      return cClean === cleanTarget;
-    });
-
-    if (targetChapter) {
-      const targetId = targetChapter.id 
-        ? (String(targetChapter.id).startsWith('chapters:') ? String(targetChapter.id) : `chapters:${String(targetChapter.id)}`) 
-        : `chapters:${cleanTarget}`;
-
-      const chNode = {
-        ...targetChapter,
-        id: targetId,
-        title: targetChapter.title || 'Глава'
-      } as unknown as ChapterTreeNode;
-
-      openChapterFromTree(chNode);
-      setTimeout(() => {
-        document.dispatchEvent(new CustomEvent('ww:locate-promise', {
-          detail: payload
-        }));
-      }, 450);
-      return;
-    }
-  }
-
-  // Если уже открыта текущая глава
-  editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote);
-};
 </script>
 
 <style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css" scoped></style>

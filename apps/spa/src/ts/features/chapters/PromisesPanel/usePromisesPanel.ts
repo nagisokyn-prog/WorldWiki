@@ -293,8 +293,25 @@ export function usePromisesPanel(
 
   watch(() => props.project, loadPromises);
   onMounted(loadPromises);
+  const isCollapsed = ref(false);
+
+  const promptAttachMilestone = (item: PlotPromise, stage: 'progression' | 'resolution') => {
+    if (!item.id) return;
+    const sel = window.getSelection()?.toString().trim();
+    const quote = sel || prompt(stage === 'progression' ? 'Введите цитату/текст упоминания:' : 'Введите цитату кульминации/выстрела:');
+    if (!quote) return;
+
+    void addMilestone({
+      promiseId: item.id,
+      stage,
+      quote,
+      paragraph_index: 1,
+      chapterId: props.chapterId || undefined
+    });
+  };
 
   return {
+    isCollapsed,
     promises,
     chapterPromises,
     filteredPromises,
@@ -315,6 +332,7 @@ export function usePromisesPanel(
     locateSource,
     getKindInfo,
     getChapterTitle,
-    isCurrentChapterPromise
+    isCurrentChapterPromise,
+    promptAttachMilestone
   };
 }

@@ -53,30 +53,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { AiProfileSettings } from '../../../types/ai.types';
+import { 
+  useLocalAiRuntime, 
+  type LocalAiRuntimeProps, 
+  type LocalAiRuntimeEmits 
+} from './useLocalAiRuntime';
 
-const props = defineProps<{
-  localSettings: AiProfileSettings | null;
-}>();
+const props = defineProps<LocalAiRuntimeProps>();
+const emit = defineEmits<LocalAiRuntimeEmits>();
 
-const emit = defineEmits<{
-  (e: 'save-runtime', settings: AiProfileSettings): void;
-}>();
-
-const runtimeSettings = ref<AiProfileSettings | null>(null);
-
-watch(() => props.localSettings, (val) => {
-  if (val) {
-    runtimeSettings.value = { ...val };
-  } else {
-    runtimeSettings.value = null;
-  }
-}, { immediate: true, deep: true });
-
-const handleSave = () => {
-  if (runtimeSettings.value) {
-    emit('save-runtime', runtimeSettings.value);
-  }
-};
+const { runtimeSettings, handleSave } = useLocalAiRuntime(props, emit);
 </script>

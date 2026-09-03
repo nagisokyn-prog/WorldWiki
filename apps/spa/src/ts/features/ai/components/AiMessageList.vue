@@ -138,12 +138,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import type { ChatMessage, MessageVariantGroup } from '../useWowilonPanel';
 import type { ToolCallPayload } from './AiToolApproval.vue';
 import AiToolApproval from './AiToolApproval.vue';
+import { useAiMessageList } from './useAiMessageList';
 
-defineProps<{
+export interface AiMessageListProps {
   messages: ChatMessage[];
   renderedMessages: MessageVariantGroup[];
   activeChatId: string;
@@ -151,9 +151,9 @@ defineProps<{
   editingMessageId: string | null;
   editDraft: string;
   renderMarkdown: (text: string) => string;
-}>();
+}
 
-defineEmits<{
+export interface AiMessageListEmits {
   (e: 'scroll', event: Event): void;
   (e: 'update:editDraft', val: string): void;
   (e: 'switch-variant', msgId: string): void;
@@ -165,17 +165,12 @@ defineEmits<{
   (e: 'delete', messageId: string): void;
   (e: 'tool-approve', payload: ToolCallPayload): void;
   (e: 'tool-reject', payload: ToolCallPayload): void;
-}>();
+}
 
-const containerRef = ref<HTMLElement | null>(null);
+defineProps<AiMessageListProps>();
+defineEmits<AiMessageListEmits>();
 
-const copyText = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch (e) {
-    console.error('Ошибка копирования:', e);
-  }
-};
+const { containerRef, copyText } = useAiMessageList();
 
 defineExpose({
   containerRef

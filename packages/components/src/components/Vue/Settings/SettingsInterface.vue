@@ -155,8 +155,9 @@ import SettingsLivePreview from './SettingsLivePreview.vue';
 
 const { t } = useI18n();
 
+const settings = defineModel<AppSettings>('settings', { required: true });
+
 defineProps<{
-  settings: AppSettings;
   save: () => Promise<void>;
 }>();
 </script>

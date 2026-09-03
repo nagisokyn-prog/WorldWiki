@@ -12,7 +12,8 @@ const REPORT_JSON = path.join(__dirname, 'css_hardcode_report.json');
 const TARGET_DIRS = [
   'packages/resources/src/styles',
   'apps/spa/src',
-  'packages/components/src'
+  'packages/components/src',
+  'packages/word-vibe/src'
 ];
 
 const IGNORE_PATHS = [

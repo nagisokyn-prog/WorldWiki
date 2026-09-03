@@ -21,6 +21,7 @@ const STYLES_DIR = path.join(__dirname, 'packages/resources/src/styles');
 const SCAN_DIRS = [
   path.join(__dirname, 'apps/spa/src'),
   path.join(__dirname, 'packages/components/src'),
+  path.join(__dirname, 'packages/word-vibe/src'),
   path.join(__dirname, 'packages/resources/src/styles')
 ];
 

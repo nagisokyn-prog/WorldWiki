@@ -1,143 +1,148 @@
 === CSS Анализ Проекта ===
 
-Всего .css файлов: 89 (14590 строк)
-Всего .vue файлов со <style> тегами: 74 (889 строк CSS внутри)
-Всего .vue файлов с inline стилями (style="..."): 48 (248 вхождений)
+Всего .css файлов: 109 (17315 строк)
+Всего .vue файлов со <style> тегами: 0 (0 строк CSS внутри)
+Всего .vue файлов с inline стилями (style="..."): 30 (62 вхождений)
 
 --- Топ 10 самых больших .css файлов ---
-1308 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
-734 строк - packages\resources\src\styles\app.css
 716 строк - packages\resources\src\styles\features\timeline\TimeAtlasModal.css
+676 строк - packages\resources\src\styles\app.css
+644 строк - packages\resources\src\styles\components\Settings.css
+551 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
+543 строк - packages\resources\src\styles\features\chapters\EditorCoreTiptap.css
 506 строк - packages\resources\src\styles\features\chapters\PromisesPanel.css
-467 строк - packages\resources\src\styles\features\timeline\GlobalCalendarWidget.css
-450 строк - packages\resources\src\styles\components\Settings.css
-432 строк - packages\resources\src\styles\features\ai\AiSettingsLocalTab.css
+472 строк - packages\resources\src\styles\features\timeline\GlobalCalendarWidget.css
+438 строк - packages\resources\src\styles\features\ai\AiSettingsLocalTab.css
 401 строк - packages\resources\src\styles\features\ai\AiMessageList.css
-364 строк - packages\resources\src\styles\features\timeline\TimelinePanel.css
-301 строк - packages\resources\src\styles\components\ExplorerTree.css
+385 строк - packages\resources\src\styles\components\BaseUI.css
 
 --- Топ 15 .vue файлов с самым большим объемом CSS в <style> ---
-191 строк - packages\components\src\components\Vue\Settings.vue
-130 строк - packages\components\src\components\Vue\Settings\SettingsLivePreview.vue
-108 строк - packages\components\src\components\Vue\Settings\SettingsPerformance.vue
-98 строк - apps\spa\src\ts\features\timeline\Calendars\CalendarSyncAnchor\CalendarSyncAnchor.vue
-95 строк - apps\spa\src\ts\features\ai\settings\tabs\HardwareMonitorChart.vue
-87 строк - packages\components\src\components\Vue\Settings\SettingsNavRail.vue
-60 строк - apps\spa\src\ts\features\chapters\ChaptersMain\ChaptersMain.vue
-33 строк - apps\spa\src\ts\features\ai\components\AiChatTopBar.vue
-22 строк - apps\spa\src\ts\features\chapters\EditorCoreTiptap\EditorCoreTiptap.vue
-1 строк - apps\spa\src\ts\features\ai\components\AiActionButtons.vue
-1 строк - apps\spa\src\ts\features\ai\components\AiChatHistory.vue
-1 строк - apps\spa\src\ts\features\ai\components\AiChatInput.vue
-1 строк - apps\spa\src\ts\features\ai\components\AiContextSelector.vue
-1 строк - apps\spa\src\ts\features\ai\components\AiHeader.vue
-1 строк - apps\spa\src\ts\features\ai\components\AiMessageList.vue
 
 --- Топ 15 .vue файлов с наибольшим количеством inline-стилей ---
-17 вхождений style="..." - apps\spa\src\ts\features\chapters\ChaptersMain\ChaptersMain.vue
-17 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\ModuleHelpPreview.vue
-16 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarSyncAnchor\CalendarSyncAnchor.vue
-15 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\SchemaFieldEditor.vue
-14 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\SchemaEditorMain.vue
-13 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\SchemaContainer.vue
-12 вхождений style="..." - apps\spa\src\ts\features\entities\EntityEditor\EntityEditor.vue
-10 вхождений style="..." - apps\spa\src\ts\features\schemas\SchemaEditor\RelationshipBlock.vue
-7 вхождений style="..." - apps\spa\src\ts\features\chapters\ParticipantsPanel\ParticipantsPanel.vue
-7 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarEras\CalendarEras.vue
-7 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarLeapYear\CalendarLeapYear.vue
-7 вхождений style="..." - packages\components\src\components\Vue\EditorGroupPane.vue
-6 вхождений style="..." - apps\spa\src\ts\features\ai\settings\tabs\AiSettingsModelsTab.vue
-6 вхождений style="..." - apps\spa\src\ts\features\chapters\EditorCoreTiptap\EditorCoreTiptap.vue
-6 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarMonths\CalendarMonths.vue
+17 вхождений style="..." - packages\word-vibe\src\components\ruler\WordRuler.vue
+6 вхождений style="..." - packages\word-vibe\src\components\ribbon\WordRibbonBar.vue
+3 вхождений style="..." - apps\spa\src\ts\features\shell\EditorView.vue
+3 вхождений style="..." - packages\components\src\components\Vue\TagsField.vue
+2 вхождений style="..." - apps\spa\src\ts\features\chapters\EditorCoreTiptap\EditorCoreTiptap.vue
+2 вхождений style="..." - apps\spa\src\ts\features\chapters\PlanningPanel\PlanningPanel.vue
+2 вхождений style="..." - apps\spa\src\ts\features\entities\EntityEditor\EntityEditor.vue
+2 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\CalendarPlayground\CalendarPlayground.vue
+2 вхождений style="..." - apps\spa\src\ts\features\timeline\Calendars\TimelinePanel\TimelinePanel.vue
+2 вхождений style="..." - packages\components\src\components\Vue\WorkspaceLayout.vue
+2 вхождений style="..." - packages\components\src\components\Vue\XboxWheel.vue
+1 вхождений style="..." - apps\spa\src\ts\features\ai\components\AiChatTopBar.vue
+1 вхождений style="..." - apps\spa\src\ts\features\ai\settings\tabs\local\LocalAiExplore.vue
+1 вхождений style="..." - apps\spa\src\ts\features\ai\settings\tabs\local\LocalAiRecommended.vue
+1 вхождений style="..." - apps\spa\src\ts\features\ai\WowilonPanel.vue
 
 
 Детальный список всех .css файлов:
-1308 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
-734 строк - packages\resources\src\styles\app.css
 716 строк - packages\resources\src\styles\features\timeline\TimeAtlasModal.css
+676 строк - packages\resources\src\styles\app.css
+644 строк - packages\resources\src\styles\components\Settings.css
+551 строк - packages\resources\src\styles\features\shell\ProjectLauncher.css
+543 строк - packages\resources\src\styles\features\chapters\EditorCoreTiptap.css
 506 строк - packages\resources\src\styles\features\chapters\PromisesPanel.css
-467 строк - packages\resources\src\styles\features\timeline\GlobalCalendarWidget.css
-450 строк - packages\resources\src\styles\components\Settings.css
-432 строк - packages\resources\src\styles\features\ai\AiSettingsLocalTab.css
+472 строк - packages\resources\src\styles\features\timeline\GlobalCalendarWidget.css
+438 строк - packages\resources\src\styles\features\ai\AiSettingsLocalTab.css
 401 строк - packages\resources\src\styles\features\ai\AiMessageList.css
-364 строк - packages\resources\src\styles\features\timeline\TimelinePanel.css
-301 строк - packages\resources\src\styles\components\ExplorerTree.css
-298 строк - packages\resources\src\styles\features\shell\EditorView.css
-292 строк - packages\resources\src\styles\components\BaseUI.css
-292 строк - packages\resources\src\styles\features\entities\EntityEditor.css
-289 строк - packages\resources\src\styles\features\timeline\CalendarsPanel.css
+385 строк - packages\resources\src\styles\components\BaseUI.css
+366 строк - packages\resources\src\styles\features\chapters\ChaptersMain.css
+330 строк - packages\resources\src\styles\features\schemas\ModuleHelpPreview.css
+329 строк - packages\resources\src\styles\features\timeline\TimelinePanel.css
+323 строк - packages\resources\src\styles\components\ExplorerTree.css
+314 строк - packages\resources\src\styles\features\chapters\WordRibbonBar.css
+311 строк - packages\resources\src\styles\features\shell\EditorView.css
+304 строк - packages\resources\src\styles\features\entities\EntityEditor.css
 280 строк - packages\resources\src\styles\components\GlassComponents.css
-276 строк - packages\resources\src\styles\features\schemas\ModuleHelpPreview.css
-272 строк - packages\resources\src\styles\features\chapters\EditorCoreTiptap.css
-243 строк - packages\resources\src\styles\features\schemas\RelationshipBlock.css
-225 строк - packages\resources\src\styles\features\chapters\ChaptersMain.css
+271 строк - packages\resources\src\styles\features\schemas\RelationshipBlock.css
+250 строк - packages\resources\src\styles\features\timeline\CalendarsPanel.css
+248 строк - packages\resources\src\styles\features\chapters\WordDialogs.css
+233 строк - packages\resources\src\styles\features\schemas\SchemaContainer.css
 224 строк - packages\resources\src\styles\features\chapters\PromiseContextMenu.css
-199 строк - packages\resources\src\styles\features\ai\WowilonPanel.css
-198 строк - packages\resources\src\styles\features\chapters\PlanningPanel.css
-196 строк - packages\resources\src\styles\features\schemas\SchemaContainer.css
+208 строк - packages\resources\src\styles\features\schemas\SchemaEditorMain.css
+206 строк - packages\resources\src\styles\features\chapters\PlanningPanel.css
+202 строк - packages\resources\src\styles\features\chapters\WordRuler.css
 190 строк - packages\resources\src\styles\features\shell\DynamicSettings.css
+187 строк - packages\resources\src\styles\features\chapters\ParagraphFormatModal.css
 186 строк - packages\resources\src\styles\features\shell\CloudSyncModal.css
-183 строк - packages\resources\src\styles\features\entities\TagsManagerModal.css
-168 строк - packages\resources\src\styles\features\ai\AiSettingsPermissionsTab.css
-166 строк - packages\resources\src\styles\features\schemas\SchemaEditorMain.css
+182 строк - packages\resources\src\styles\features\timeline\CalendarSyncAnchor.css
+170 строк - packages\resources\src\styles\features\documents\AcademicInspector.css
+168 строк - packages\resources\src\styles\features\entities\TagsManagerModal.css
+166 строк - packages\resources\src\styles\components\ThemeSwitcher.css
 165 строк - packages\resources\src\styles\features\ai\AiContextSelector.css
-159 строк - packages\resources\src\styles\components\ThemeSwitcher.css
+162 строк - packages\resources\src\styles\features\timeline\CalendarCommon.css
+160 строк - packages\resources\src\styles\features\timeline\CalendarPlayground.css
+158 строк - packages\resources\src\styles\features\ai\AiSettingsPermissionsTab.css
 156 строк - packages\resources\src\styles\features\ai\AiToolApproval.css
-152 строк - packages\resources\src\styles\features\chapters\ExportModal.css
-146 строк - packages\resources\src\styles\features\timeline\CalendarPlayground.css
+150 строк - packages\resources\src\styles\components\XboxWheel.css
+150 строк - packages\resources\src\styles\features\chapters\RkWordEditor.css
+147 строк - packages\resources\src\styles\features\documents\DocumentExportModal.css
 141 строк - packages\resources\src\styles\components\EditorTabBar.css
-138 строк - packages\resources\src\styles\components\XboxWheel.css
-132 строк - packages\resources\src\styles\components\TagsField.css
+140 строк - packages\resources\src\styles\features\schemas\SchemaFieldEditor.css
+138 строк - packages\resources\src\styles\components\TagsField.css
+138 строк - packages\resources\src\styles\features\chapters\ExportModal.css
+137 строк - packages\resources\src\styles\components\SettingsLivePreview.css
+134 строк - packages\resources\src\styles\features\ai\AiChatTopBar.css
+132 строк - packages\resources\src\styles\features\chapters\EditorToolbar.css
 131 строк - packages\resources\src\styles\components\HistorySidebar.css
+129 строк - packages\resources\src\styles\features\ai\AiSettingsView.css
+126 строк - packages\resources\src\styles\features\chapters\ChapterTree.css
 125 строк - packages\resources\src\styles\features\chapters\EntityLinkSelector.css
 125 строк - packages\resources\src\styles\features\shell\Splash.css
-123 строк - packages\resources\src\styles\components\WorkspaceLayout.css
-120 строк - packages\resources\src\styles\features\chapters\ChapterTree.css
-116 строк - packages\resources\src\styles\features\ai\AiSettingsView.css
-109 строк - packages\resources\src\styles\features\timeline\CalendarSeasons.css
-108 строк - packages\resources\src\styles\features\timeline\CalendarTimezones.css
-105 строк - packages\resources\src\styles\features\ai\AiApp.css
-104 строк - packages\resources\src\styles\features\timeline\CalendarMoons.css
-99 строк - packages\resources\src\styles\features\ai\AiChatHistory.css
+124 строк - packages\resources\src\styles\components\WorkspaceLayout.css
+109 строк - packages\resources\src\styles\features\timeline\CalendarTimezones.css
+107 строк - packages\resources\src\styles\components\SettingsPerformance.css
+102 строк - packages\resources\src\styles\features\documents\DocumentProcessorView.css
+100 строк - packages\resources\src\styles\features\ai\AiApp.css
 99 строк - packages\resources\src\styles\features\ai\AiSelect.css
-97 строк - packages\resources\src\styles\features\timeline\CalendarHolidays.css
+98 строк - packages\resources\src\styles\features\ai\AiChatHistory.css
 94 строк - packages\resources\src\styles\features\ai\AiChatInput.css
-94 строк - packages\resources\src\styles\features\schemas\SchemaFieldEditor.css
+94 строк - packages\resources\src\styles\features\ai\HardwareMonitorChart.css
+93 строк - packages\resources\src\styles\features\documents\FigureNodeView.css
 91 строк - packages\resources\src\styles\tokens\typography.css
 88 строк - packages\resources\src\styles\components\FloatingWindow.css
-87 строк - packages\resources\src\styles\features\ai\AiSettingsModelsTab.css
+87 строк - packages\resources\src\styles\features\schemas\ManuscriptPointPicker.css
+86 строк - packages\resources\src\styles\components\SettingsNavRail.css
+85 строк - packages\resources\src\styles\base\layout.css
 84 строк - packages\resources\src\styles\features\ai\AiHeader.css
-80 строк - packages\resources\src\styles\features\timeline\CalendarSettings.css
-80 строк - packages\resources\src\styles\glass-animations.css
-79 строк - packages\resources\src\styles\base\layout.css
-75 строк - packages\resources\src\styles\features\ai\AiChatTopBar.css
-73 строк - packages\resources\src\styles\features\timeline\CalendarWeekdays.css
+83 строк - packages\resources\src\styles\glass-animations.css
+78 строк - packages\resources\src\styles\features\documents\DocumentLayoutBar.css
+77 строк - packages\resources\src\styles\features\ai\WowilonPanel.css
+76 строк - packages\resources\src\styles\features\ai\AiSettingsModelsTab.css
+75 строк - packages\resources\src\styles\features\timeline\CalendarSettings.css
+72 строк - packages\resources\src\styles\features\documents\FootnoteNodeView.css
 72 строк - packages\resources\src\styles\tokens\theme-dark.css
-71 строк - packages\resources\src\styles\features\ai\AiModelInfoCard.css
 71 строк - packages\resources\src\styles\fonts.css
+67 строк - packages\resources\src\styles\components\EditorGroupPane.css
 67 строк - packages\resources\src\styles\features\timeline\GlobalTimeViewer.css
 66 строк - packages\resources\src\styles\tokens\theme-glass.css
+62 строк - packages\resources\src\styles\features\timeline\CalendarSeasons.css
 57 строк - packages\resources\src\styles\utilities\flex.css
-56 строк - packages\resources\src\styles\features\ai\AiSettingsConnectionsTab.css
-56 строк - packages\resources\src\styles\features\chapters\SemanticParagraph.css
-55 строк - packages\resources\src\styles\features\timeline\DateWheels.css
+54 строк - packages\resources\src\styles\features\timeline\DateWheels.css
 52 строк - packages\resources\src\styles\base\reset.css
-52 строк - packages\resources\src\styles\features\timeline\UniversalDatePicker.css
-50 строк - packages\resources\src\styles\components\AppDialog.css
+52 строк - packages\resources\src\styles\features\chapters\ParticipantsPanel.css
+52 строк - packages\resources\src\styles\features\chapters\SemanticParagraph.css
+51 строк - packages\resources\src\styles\features\ai\AiSettingsConnectionsTab.css
 49 строк - packages\resources\src\styles\components\QuickOpen.css
+48 строк - packages\resources\src\styles\features\timeline\CalendarHolidays.css
+47 строк - packages\resources\src\styles\components\SettingsAppearance.css
+47 строк - packages\resources\src\styles\features\timeline\CalendarLeapYear.css
 47 строк - packages\resources\src\styles\utilities\cards.css
 46 строк - packages\resources\src\styles\features\ai\AiActionButtons.css
 46 строк - packages\resources\src\styles\utilities\position.css
-41 строк - packages\resources\src\styles\features\entities\FloatingEntityEditor.css
+42 строк - packages\resources\src\styles\features\entities\FloatingEntityEditor.css
+41 строк - packages\resources\src\styles\components\AppDialog.css
+41 строк - packages\resources\src\styles\features\timeline\CalendarOrigin.css
 39 строк - packages\resources\src\styles\components\CommandPalette.css
+39 строк - packages\resources\src\styles\features\chapters\SemanticParagraphNode.css
 38 строк - packages\resources\src\styles\utilities\text.css
-37 строк - packages\resources\src\styles\components\EditorGroupPane.css
-34 строк - packages\resources\src\styles\features\ai\AiSettingsModesTab.css
-14 строк - packages\resources\src\styles\features\chapters\EditorToolbar.css
-13 строк - packages\resources\src\styles\features\chapters\ParticipantsPanel.css
-13 строк - packages\resources\src\styles\features\chapters\SemanticParagraphNode.css
+36 строк - packages\resources\src\styles\features\documents\CrossReferenceNodeView.css
+36 строк - packages\resources\src\styles\features\timeline\CalendarMoons.css
+29 строк - packages\resources\src\styles\features\ai\AiSettingsModesTab.css
+28 строк - packages\resources\src\styles\features\timeline\CalendarEras.css
+24 строк - packages\resources\src\styles\features\timeline\CalendarMonths.css
+19 строк - packages\resources\src\styles\features\timeline\CalendarWeekdays.css
+13 строк - packages\resources\src\styles\features\timeline\UniversalDatePicker.css
 6 строк - packages\resources\src\styles\font-awesome.min.css
 5 строк - packages\resources\src\styles\components\TreeNodes.css
-2 строк - packages\resources\src\styles\components\Vue_ExplorerTree.css
-2 строк - packages\resources\src\styles\components\Vue_Settings.css
-2 строк - packages\resources\src\styles\features\shell\shell_ProjectLauncher.css

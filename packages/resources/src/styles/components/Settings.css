@@ -454,3 +454,191 @@ input:checked+.slider:before {
     position: static;
     font-size: 10px;
 }
+
+/* Переопределение компоновки для нового Cinematic Settings */
+.cinematic-settings .settings-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-base, var(--bg-main));
+}
+
+.cinematic-settings .settings-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.cinematic-settings .glass-card-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 0;
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+
+.cinematic-settings .glass-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 32px 40px;
+}
+
+/* Анимации перехода (Смена сцен) */
+.scene-enter-active,
+.scene-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.scene-enter-from {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.scene-leave-to {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* Общие стили для сцен */
+.settings-scene {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.scene-header, .settings-live-preview {
+  flex-shrink: 0;
+}
+
+.settings-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 16px;
+  margin-right: -16px;
+}
+
+.scene-header {
+  margin-bottom: 8px;
+}
+.scene-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+.scene-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.impact-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.impact-badge.cost-high {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.impact-badge.cost-low {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.impact-badge.visual-high {
+  background: rgba(56, 189, 248, 0.1);
+  color: var(--info);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+.settings-group {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-card, 12px);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.settings-group-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
+}
+
+.control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.val-badge {
+  background: var(--bg-selected);
+  border: 1px solid var(--accent);
+  padding: 4px 10px;
+  border-radius: var(--radius-card, 12px);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.radio-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.radio-btn {
+  padding: 8px 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 8px);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--anim-speed, 0.2s) ease;
+  user-select: none;
+}
+
+.radio-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+
+.radio-btn.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent-text) !important;
+  font-weight: 700;
+  box-shadow: var(--shadow-glow);
+}

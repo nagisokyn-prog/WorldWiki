@@ -4,10 +4,10 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     58 мест
-  • Fixed (Устранено): -1029 мест 🎉
-  • New (Введено):    +31 мест
-  • Net Trend:        ↓ 1001 (94.5% улучшение)
+  • Current Debt:     64 мест
+  • Fixed (Устранено): -1030 мест 🎉
+  • New (Введено):    +38 мест
+  • Net Trend:        ↓ 995 (94.0% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
@@ -23,7 +23,7 @@
   • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      0 [Критично для Light Theme]
   • Hardcoded White Colors  (rgba(255,255,...), #fff):     0 [Критично для Light Theme]
   • Arbitrary HEX Colors    (#aabbcc):                   2
-  • Inline Styles           (style="..."):              56
+  • Inline Styles           (style="..."):              62
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────

@@ -8,7 +8,8 @@ const __dirname = path.dirname(__filename);
 const dirsToScan = [
   'apps/spa/src',
   'packages/components/src',
-  'packages/resources/src'
+  'packages/resources/src',
+  'packages/word-vibe/src'
 ];
 
 let cssFiles = [];
@@ -37,16 +38,19 @@ function scanDir(dir) {
       } else if (file.endsWith('.vue')) {
         const content = fs.readFileSync(fullPath, 'utf8');
         
-        // Поиск <style> тегов
+        // Поиск встроенных (inline) <style> тегов с CSS кодом внутри
         const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/g;
         let match;
-        let hasStyleTag = false;
+        let hasInlineStyleTag = false;
         let linesInStyle = 0;
         while ((match = styleRegex.exec(content)) !== null) {
-          hasStyleTag = true;
-          linesInStyle += match[1].split('\n').length;
+          const innerCss = match[1].trim();
+          if (innerCss.length > 0) {
+            hasInlineStyleTag = true;
+            linesInStyle += innerCss.split('\n').length;
+          }
         }
-        if (hasStyleTag) {
+        if (hasInlineStyleTag) {
           vueFilesWithStyleTags.push({ path: fullPath, lines: linesInStyle });
           totalVueStyleLines += linesInStyle;
         }

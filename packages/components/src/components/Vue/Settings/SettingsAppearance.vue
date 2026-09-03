@@ -88,8 +88,9 @@ import SettingsLivePreview from './SettingsLivePreview.vue';
 
 const { t } = useI18n();
 
-const props = defineProps<{
-  settings: AppSettings;
+const settings = defineModel<AppSettings>('settings', { required: true });
+
+defineProps<{
   save: () => Promise<void>;
 }>();
 
@@ -114,7 +115,7 @@ const toHex = (colorStr: string) => {
 };
 
 const updateColorAlpha = (colorKey: keyof AppSettings['colors'], hexCode: string) => {
-  const current = props.settings.colors[colorKey];
+  const current = settings.value.colors[colorKey];
   let alpha = '1';
   if (current.startsWith('rgba')) {
     const parts = current.match(/[\d.]+/g);
@@ -125,8 +126,8 @@ const updateColorAlpha = (colorKey: keyof AppSettings['colors'], hexCode: string
   const r = parseInt(hexCode.slice(1, 3), 16);
   const g = parseInt(hexCode.slice(3, 5), 16);
   const b = parseInt(hexCode.slice(5, 7), 16);
-  // eslint-disable-next-line vue/no-mutating-props
-  props.settings.colors[colorKey] = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  props.save();
+  settings.value.colors[colorKey] = `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 </script>
+
+<style scoped src="@worldwiki/resources/styles/components/SettingsAppearance.css"></style>

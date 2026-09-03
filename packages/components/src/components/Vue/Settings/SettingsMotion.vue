@@ -65,8 +65,9 @@ import type { AppSettings } from '../../../ts/types/settings.js';
 
 const { t } = useI18n();
 
+const settings = defineModel<AppSettings>('settings', { required: true });
+
 defineProps<{
-  settings: AppSettings;
   save: () => Promise<void>;
 }>();
 </script>

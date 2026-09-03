@@ -1,3 +1,6 @@
+import type { Editor } from '@tiptap/core';
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
+
 /**
  * ГОСТ-автоподписи таблиц («Таблица {N} — {название}» над таблицей).
  *
@@ -14,9 +17,9 @@
 export const TABLE_CAPTION_RE = /^Таблица (\d+) — /;
 
 /** Подсчитывает количество ГОСТ-подписей таблиц в документе */
-export function countTableCaptions(doc: any): number {
+export function countTableCaptions(doc: ProseMirrorNode): number {
   let count = 0;
-  doc.descendants((node: any) => {
+  doc.descendants((node: ProseMirrorNode) => {
     if (node.type.name === 'paragraph' && TABLE_CAPTION_RE.test((node.textContent || '').trim())) {
       count += 1;
     }
@@ -25,7 +28,7 @@ export function countTableCaptions(doc: any): number {
 }
 
 /** Следующий номер подписи таблицы (нумерация сквозная по документу) */
-export function nextTableCaptionNumber(doc: any): number {
+export function nextTableCaptionNumber(doc: ProseMirrorNode): number {
   return countTableCaptions(doc) + 1;
 }
 
@@ -38,7 +41,7 @@ export function buildTableCaptionText(number: number, title?: string): string {
  * Находит позицию начала внешней таблицы относительно текущей каретки.
  * Возвращает позицию до таблицы или null, если каретка вне таблицы.
  */
-export function findTableStartBefore(editor: any): number | null {
+export function findTableStartBefore(editor: Editor): number | null {
   const { $from } = editor.state.selection;
   for (let depth = $from.depth; depth > 0; depth -= 1) {
     const node = $from.node(depth);
@@ -54,7 +57,7 @@ export function findTableStartBefore(editor: any): number | null {
  * Если пользователь передал название — используется оно, иначе плейсхолдер,
  * который можно отредактировать кликом.
  */
-export function insertGostTableCaption(editor: any, title?: string): boolean {
+export function insertGostTableCaption(editor: Editor | null | undefined, title?: string): boolean {
   if (!editor) return false;
   const tableStart = findTableStartBefore(editor);
   if (tableStart === null) return false;

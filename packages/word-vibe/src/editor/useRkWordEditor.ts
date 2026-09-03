@@ -254,14 +254,13 @@ export function useRkWordEditor(
     // Дополнительная защита (Phase 0): если обёртка rk НЕ синхронизирована с живым
     // редактором (мост не смог переподменить внутренние сервисы), командуем напрямую
     // живым tiptap-инстансом — расширения у него те же, простые команды эквивалентны.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- rk CommandManager / tiptap v2 commands не типизированы на границе
-    const cmd = (): any => {
+    type CommandFn = (...args: unknown[]) => boolean | void;
+    const cmd = (): Record<string, CommandFn> | undefined => {
       const wrapper = wordEditor.value as unknown as { instance?: unknown } | null;
       if (wrapper && wrapper.instance === tiptapEditor.value && wordEditor.value) {
-        return wordEditor.value.commands;
+        return wordEditor.value.commands as unknown as Record<string, CommandFn>;
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (tiptapEditor.value as unknown as { commands: any })?.commands;
+      return (tiptapEditor.value as unknown as { commands?: Record<string, CommandFn> })?.commands;
     };
     return {
       toggleBold: () => cmd()?.bold(),

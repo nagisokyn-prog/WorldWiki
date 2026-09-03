@@ -1,16 +1,16 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 58,
-  "fixedCount": 1029,
-  "introducedCount": 31,
-  "trendPercent": "94.5",
+  "currentDebt": 64,
+  "fixedCount": 1030,
+  "introducedCount": 38,
+  "trendPercent": "94.0",
   "categories": {
     "blackColors": 0,
     "whiteColors": 0,
     "hexColors": 2,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 56
+    "inlineStyles": 62
   },
   "semanticRoles": {
     "modalBackdrops": 0,
@@ -26,8 +26,12 @@
   ],
   "allTopFiles": [
     {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
       "count": 17
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "count": 6
     },
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
@@ -79,10 +83,6 @@
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/WowilonPanel.vue",
       "count": 1
     }
   ],
@@ -148,124 +148,10 @@
       "snippet": "style=\"{ '--split-right': rightPanelWidth + '%' }\""
     },
     {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/ImageInsertDialog/ImageInsertDialog.vue",
-      "line": 63,
-      "match": "inline-style",
-      "snippet": "style=\"display: none\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/ParagraphFormatModal/ParagraphFormatModal.vue",
-      "line": 97,
-      "match": "inline-style",
-      "snippet": "style=\"{\n                textAlign: form.alignment,\n                textIndent: form.firstLineType === 'indent' ? form.firstLineCm + 'cm' : '0cm',\n                lineHeight: form.lineHeight,\n                paddingLeft: form.leftIndentCm + 'cm',\n                paddingRight: form.rightIndentCm + 'cm',\n                marginTop: form.spaceBeforePt + 'px',\n                marginBottom: form.spaceAfterPt + 'px'\n              }\""
-    },
-    {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/PromiseContextMenu.vue",
       "line": 6,
       "match": "inline-style",
       "snippet": "style=\"{ top: `${adjustedPos.y}px`, left: `${adjustedPos.x}px` }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 3,
-      "match": "inline-style",
-      "snippet": "style=\"{ width: sheetWidthPx + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 7,
-      "match": "inline-style",
-      "snippet": "style=\"{ width: marginLeftPx + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 13,
-      "match": "inline-style",
-      "snippet": "style=\"{ right: mCm * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 17,
-      "match": "inline-style",
-      "snippet": "style=\"{ right: (mCm * pxPerCm - 4) + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 23,
-      "match": "inline-style",
-      "snippet": "style=\"{ right: (mCm - 0.5) * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 34,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: (cm - 1) * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 39,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: (cm - 1) * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 48,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: ((cm - 1) + 0.5) * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 55,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: 1.25 * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 60,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: 1.25 * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 68,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: firstLinePx + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 82,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: leftIndentPx + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 96,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: rightIndentPx + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 110,
-      "match": "inline-style",
-      "snippet": "style=\"{ width: marginRightPx + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 116,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: rCm * pxPerCm + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 120,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: (rCm * pxPerCm) + 'px' }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/WordRuler/WordRuler.vue",
-      "line": 132,
-      "match": "inline-style",
-      "snippet": "style=\"{ left: guidelineX + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/chapters/PlanningPanel/PlanningPanel.vue",
@@ -389,7 +275,7 @@
     },
     {
       "file": "packages/components/src/components/Vue/Settings/SettingsTypography.vue",
-      "line": 20,
+      "line": 19,
       "match": "inline-style",
       "snippet": "style=\"{ '--font-family': font.val }\""
     },
@@ -434,6 +320,156 @@
       "line": 35,
       "match": "inline-style",
       "snippet": "style=\"getItemStyle(i)\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/modals/ImageInsertDialog/ImageInsertDialog.vue",
+      "line": 12,
+      "match": "inline-style",
+      "snippet": "style=\"display: none\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/modals/ParagraphFormatModal/ParagraphFormatModal.vue",
+      "line": 97,
+      "match": "inline-style",
+      "snippet": "style=\"{\n                textAlign: form.alignment,\n                textIndent: form.firstLineType === 'indent' ? form.firstLineCm + 'cm' : '0cm',\n                lineHeight: form.lineHeight,\n                paddingLeft: form.leftIndentCm + 'cm',\n                paddingRight: form.rightIndentCm + 'cm',\n                marginTop: form.spaceBeforePt + 'px',\n                marginBottom: form.spaceAfterPt + 'px'\n              }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "line": 398,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "line": 415,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "line": 433,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "line": 570,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "line": 602,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+      "line": 641,
+      "match": "inline-style",
+      "snippet": "style=\"{ top: dropdownPos.top + 'px', left: dropdownPos.left + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 3,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: sheetWidthPx + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 7,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: marginLeftPx + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 13,
+      "match": "inline-style",
+      "snippet": "style=\"{ right: mCm * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 17,
+      "match": "inline-style",
+      "snippet": "style=\"{ right: (mCm * pxPerCm - 4) + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 23,
+      "match": "inline-style",
+      "snippet": "style=\"{ right: (mCm - 0.5) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 34,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: (cm - 1) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 39,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: (cm - 1) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 48,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: ((cm - 1) + 0.5) * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 55,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: 1.25 * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 60,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: 1.25 * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 68,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: firstLinePx + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 82,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: leftIndentPx + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 96,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: rightIndentPx + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 110,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: marginRightPx + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 116,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: rCm * pxPerCm + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 120,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: (rCm * pxPerCm) + 'px' }\""
+    },
+    {
+      "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
+      "line": 132,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: guidelineX + 'px' }\""
     }
   ]
 }

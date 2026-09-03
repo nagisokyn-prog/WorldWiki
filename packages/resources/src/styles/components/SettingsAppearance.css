@@ -1,0 +1,46 @@
+.btn-pick-bg {
+  padding: 6px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-main);
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-pick-bg:hover {
+  background: var(--bg-hover);
+}
+.color-control {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.color-label {
+  font-size: 13px;
+  color: var(--text-main);
+}
+.color-control-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.color-picker-input {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+}
+.color-text-input {
+  width: 90px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: monospace;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-main);
+}

@@ -1,4 +1,5 @@
 import { WordEditor } from '@raazkhnl/rk-editor-core';
+import type { Editor } from '@tiptap/core';
 import type {
   WordDocumentDTO,
   WordHeaderFooterDTO,
@@ -28,16 +29,77 @@ import { UnsupportedBlockExtension } from '../editor/extensions/UnsupportedBlock
 import { semanticASTToV2Doc, type V2NodeJson } from '../converter/ASTToV2Converter';
 import { v2DocToSemanticAST } from '../converter/V2ToASTConverter';
 
-export function createWordVibeAdapter(): WordVibeAdapter {
-  type Listener<T> = (payload: T) => void;
-  const listeners: { [K in keyof WordVibeEventMap]?: Set<Listener<any>> } = {};
+declare module '@tiptap/core' {
+  interface Commands<ReturnType> {
+    rkExtraCommands: {
+      bold: () => ReturnType;
+      italic: () => ReturnType;
+      underline: () => ReturnType;
+      strike: () => ReturnType;
+      subscript: () => ReturnType;
+      superscript: () => ReturnType;
+      setHighlight: (color: string) => ReturnType;
+      heading: (level: number) => ReturnType;
+      blockquote: () => ReturnType;
+      bulletList: () => ReturnType;
+      orderedList: () => ReturnType;
+      align: (align: 'left' | 'center' | 'right' | 'justify') => ReturnType;
+      fontFamily: (font: string) => ReturnType;
+      fontSize: (size: string) => ReturnType;
+      lineHeight: (height: string) => ReturnType;
+      outdent: () => ReturnType;
+      indent: () => ReturnType;
+      pageBreak: () => ReturnType;
+      insertImage: (src: string) => ReturnType;
+      insertTable: (opts: { rows: number; cols: number; withHeaderRow?: boolean }) => ReturnType;
+      insertLink: (url: string) => ReturnType;
+      footnote: () => ReturnType;
+      insertMathBlock: (latex: string) => ReturnType;
+      insertTableOfContents: (opts: Record<string, unknown>) => ReturnType;
+      insertTextBox: () => ReturnType;
+      sectionBreak: () => ReturnType;
+      clearFormatting: () => ReturnType;
+      spacing: (before: string, after: string) => ReturnType;
+      setTableStyle: (style: string) => ReturnType;
+      addRowBefore: () => ReturnType;
+      addRowAfter: () => ReturnType;
+      addColumnBefore: () => ReturnType;
+      addColumnAfter: () => ReturnType;
+      deleteRow: () => ReturnType;
+      deleteColumn: () => ReturnType;
+      deleteTable: () => ReturnType;
+      mergeCells: () => ReturnType;
+      splitCell: () => ReturnType;
+    };
+  }
+}
 
-  function emit<K extends keyof WordVibeEventMap>(event: K, payload?: WordVibeEventMap[K]): void {
+interface WordEditorHost {
+  instance?: Editor;
+  commands?: Editor['commands'];
+  destroy?: () => void;
+  setDocument?: (doc: unknown) => void;
+  getHTML?: () => string;
+  focus?: () => void;
+  setPageLayout?: (layout: unknown) => void;
+  exportDocx?: (filename: string) => Promise<void>;
+  printPdf?: (opts: { title: string }) => void;
+  [key: string]: unknown;
+}
+
+export function createWordVibeAdapter(): WordVibeAdapter {
+  type AnyListener = (payload?: unknown) => void;
+  const listeners: { [K in keyof WordVibeEventMap]?: Set<AnyListener> } = {};
+
+  function emit<K extends keyof WordVibeEventMap>(
+    event: K,
+    ...args: WordVibeEventMap[K] extends void ? [] : [WordVibeEventMap[K]]
+  ): void {
     const set = listeners[event];
     if (set) {
       for (const cb of Array.from(set)) {
         try {
-          cb(payload as any);
+          cb(args[0]);
         } catch (err) {
           console.error(`[WordVibeAdapter] Error in event listener for '${String(event)}':`, err);
         }
@@ -46,7 +108,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
   }
 
   let wordEditor: WordEditor | null = null;
-  let activeTiptapEditor: any = null;
+  let activeTiptapEditor: Editor | null = null;
   let ready = false;
   let currentDocumentMeta: WordDocumentDTO['metadata'] | undefined;
   let currentProfileId: string | undefined = 'gost';
@@ -98,13 +160,13 @@ export function createWordVibeAdapter(): WordVibeAdapter {
   };
 
   const buildCurrentDocumentAST = (): WordDocumentDTO => {
-    const ed = activeTiptapEditor || (wordEditor as any)?.instance;
-    const json: V2NodeJson = ed?.getJSON ? ed.getJSON() : { type: 'doc', content: [] };
+    const ed = activeTiptapEditor || ((wordEditor as unknown as WordEditorHost)?.instance);
+    const json: V2NodeJson = ed?.getJSON ? (ed.getJSON() as V2NodeJson) : { type: 'doc', content: [] };
     return v2DocToSemanticAST(json, currentDocumentMeta, currentProfileId, currentDocId);
   };
 
   const buildSelectionDTO = (): WordSelectionDTO => {
-    const ed = activeTiptapEditor || (wordEditor as any)?.instance;
+    const ed = activeTiptapEditor || ((wordEditor as unknown as WordEditorHost)?.instance);
     if (!ed || !ed.state) {
       return {
         empty: true,
@@ -207,7 +269,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
 
       wordEditor = new WordEditor({
         element: options.host,
-        initialContent: initialDocOrHtml as any,
+        initialContent: initialDocOrHtml as string,
         editable: options.editable !== false,
         pageLayout: {
           pageSize: toRkPageSize(currentLayout.pageSize),
@@ -244,7 +306,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
           })),
       });
 
-      activeTiptapEditor = (wordEditor as any).instance;
+      activeTiptapEditor = (wordEditor as unknown as WordEditorHost).instance ?? null;
 
       const paginated = attachPaginationPlus(wordEditor, {
         geometry: getPaginationGeometry(),
@@ -304,8 +366,8 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       const v2Doc = semanticASTToV2Doc(doc);
       if (activeTiptapEditor?.commands?.setContent) {
         activeTiptapEditor.commands.setContent(v2Doc);
-      } else if (typeof (wordEditor as any).setDocument === 'function') {
-        (wordEditor as any).setDocument(v2Doc);
+      } else if (typeof (wordEditor as unknown as WordEditorHost).setDocument === 'function') {
+        (wordEditor as unknown as WordEditorHost).setDocument?.(v2Doc);
       }
     },
 
@@ -362,12 +424,11 @@ export function createWordVibeAdapter(): WordVibeAdapter {
     },
 
     execCommand(name: string, ...args: unknown[]): boolean {
-      const ed = activeTiptapEditor || (wordEditor as any)?.instance;
-      const commands = (wordEditor as any)?.commands || ed?.commands;
+      const ed = activeTiptapEditor || ((wordEditor as unknown as WordEditorHost)?.instance);
+      const commands = ((wordEditor as unknown as WordEditorHost)?.commands) || ed?.commands;
 
       if (!ed && !commands) return false;
 
-      // Восстанавливаем фокус перед командой, если есть выделение
       try {
         if (ed && !ed.isFocused && !ed.state?.selection?.empty) {
           ed.commands?.focus?.();
@@ -384,11 +445,11 @@ export function createWordVibeAdapter(): WordVibeAdapter {
         case 'toggleSubscript': commands?.subscript?.(); return true;
         case 'toggleSuperscript': commands?.superscript?.(); return true;
         case 'toggleHighlight': commands?.setHighlight?.(String(args[0] || '#ffff00')); return true;
-        case 'setHeading': commands?.heading?.(Number(args[0]) as any); return true;
+        case 'setHeading': commands?.heading?.(Number(args[0])); return true;
         case 'toggleBlockquote': commands?.blockquote?.(); return true;
         case 'toggleBulletList': commands?.bulletList?.(); return true;
         case 'toggleOrderedList': commands?.orderedList?.(); return true;
-        case 'setTextAlign': commands?.align?.(args[0] as any); return true;
+        case 'setTextAlign': commands?.align?.(args[0] as 'left' | 'center' | 'right' | 'justify'); return true;
         case 'setFontFamily': commands?.fontFamily?.(String(args[0])); return true;
         case 'setFontSize': commands?.fontSize?.(String(args[0])); return true;
         case 'setLineHeight': commands?.lineHeight?.(String(args[0])); return true;
@@ -489,7 +550,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
           });
           return true;
         case 'setParagraphSpacing':
-          commands?.spacing?.(`${args[0]}pt`, `${args[1]}pt`);
+          commands?.spacing?.(`${String(args[0])}pt`, `${String(args[1])}pt`);
           return true;
         // Табличные команды
         case 'addRowBefore': ed?.chain()?.focus()?.addRowBefore?.()?.run(); return true;
@@ -574,9 +635,10 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       if (!listeners[event]) {
         listeners[event] = new Set();
       }
-      listeners[event]!.add(cb);
+      const handler = cb as AnyListener;
+      listeners[event]!.add(handler);
       return () => {
-        listeners[event]?.delete(cb);
+        listeners[event]?.delete(handler);
       };
     },
   };

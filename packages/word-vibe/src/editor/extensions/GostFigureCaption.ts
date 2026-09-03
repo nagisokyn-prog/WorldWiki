@@ -1,3 +1,5 @@
+import type { Editor } from '@tiptap/core';
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
 
 /**
  * ГОСТ-автоподписи рисунков («Рисунок {N} — {название}» под рисунком).
@@ -14,9 +16,9 @@
 export const FIGURE_CAPTION_RE = /^Рисунок (\d+) — /;
 
 /** Подсчитывает количество ГОСТ-подписей рисунков в документе */
-export function countFigureCaptions(doc: any): number {
+export function countFigureCaptions(doc: ProseMirrorNode): number {
   let count = 0;
-  doc.descendants((node: any) => {
+  doc.descendants((node: ProseMirrorNode) => {
     if (node.type.name === 'paragraph' && FIGURE_CAPTION_RE.test((node.textContent || '').trim())) {
       count += 1;
     }
@@ -25,7 +27,7 @@ export function countFigureCaptions(doc: any): number {
 }
 
 /** Следующий номер подписи рисунка */
-export function nextFigureCaptionNumber(doc: any): number {
+export function nextFigureCaptionNumber(doc: ProseMirrorNode): number {
   return countFigureCaptions(doc) + 1;
 }
 
@@ -37,7 +39,7 @@ export function buildFigureCaptionText(number: number, title?: string): string {
 /**
  * Находит узел изображения у каретки и возвращает { pos, size } или null.
  */
-export function findImageAtSelection(editor: any): { pos: number; size: number } | null {
+export function findImageAtSelection(editor: Editor): { pos: number; size: number } | null {
   const { from } = editor.state.selection;
   const resolved = editor.state.doc.resolve(from);
   for (let depth = resolved.depth; depth >= 0; depth -= 1) {
@@ -53,7 +55,7 @@ export function findImageAtSelection(editor: any): { pos: number; size: number }
  * Вставляет ГОСТ-подпись под изображением у каретки.
  * Если пользователь ввёл подпись в диалоге — используется она.
  */
-export function insertGostFigureCaption(editor: any, title?: string): boolean {
+export function insertGostFigureCaption(editor: Editor | null | undefined, title?: string): boolean {
   if (!editor) return false;
   const image = findImageAtSelection(editor);
   if (!image) return false;

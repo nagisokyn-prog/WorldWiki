@@ -35,7 +35,6 @@
   </Teleport>
 </template>
 
-
 <script setup lang="ts">
 import { useHeaderFooterDialog } from './useHeaderFooterDialog';
 

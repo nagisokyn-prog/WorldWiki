@@ -32,34 +32,24 @@ export function useHeaderFooterDialog(
   watch(
     () => props.isOpen,
     (open) => {
-      try {
-        if (open) {
-          activeTab.value = props.initialTab || 'header';
-          headerLeft.value = props.header?.left || '';
-          headerCenter.value = props.header?.center || '';
-          headerRight.value = props.header?.right || '';
-          footerLeft.value = props.footer?.left || '';
-          footerCenter.value = props.footer?.center || '';
-          footerRight.value = props.footer?.right || '';
-        }
-      } catch (error) {
-        console.error('[HeaderFooterDialog] watch failed:', error);
-        throw error;
+      if (open) {
+        activeTab.value = props.initialTab || 'header';
+        headerLeft.value = props.header?.left || '';
+        headerCenter.value = props.header?.center || '';
+        headerRight.value = props.header?.right || '';
+        footerLeft.value = props.footer?.left || '';
+        footerCenter.value = props.footer?.center || '';
+        footerRight.value = props.footer?.right || '';
       }
     },
   );
 
   const handleApply = () => {
-    try {
-      emit('apply', {
-        header: { left: headerLeft.value, center: headerCenter.value, right: headerRight.value },
-        footer: { left: footerLeft.value, center: footerCenter.value, right: footerRight.value },
-      });
-      emit('close');
-    } catch (error) {
-      console.error('[HeaderFooterDialog] handleApply failed:', error);
-      throw error;
-    }
+    emit('apply', {
+      header: { left: headerLeft.value, center: headerCenter.value, right: headerRight.value },
+      footer: { left: footerLeft.value, center: footerCenter.value, right: footerRight.value },
+    });
+    emit('close');
   };
 
   return { activeTab, headerLeft, headerCenter, headerRight, footerLeft, footerCenter, footerRight, handleApply };

@@ -32,17 +32,9 @@ export function useTablePickerPopup(
   });
 
   const insert = (r: number, c: number) => {
-    try {
-      if (r < 1 || c < 1) {
-        console.error('[TablePickerPopup] insert: invalid dimensions', { r, c });
-        return;
-      }
-      emit('insert', { rows: r, cols: c });
-      emit('close');
-    } catch (error) {
-      console.error('[TablePickerPopup] insert failed:', error);
-      throw error;
-    }
+    if (r < 1 || c < 1) return;
+    emit('insert', { rows: r, cols: c });
+    emit('close');
   };
 
   return { hover, rows, cols, label, insert };

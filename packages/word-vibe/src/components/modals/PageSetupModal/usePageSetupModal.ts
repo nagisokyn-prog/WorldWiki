@@ -1,6 +1,5 @@
 import { ref, watch } from 'vue';
-import type { PageSize, Orientation } from '@worldwiki/word-vibe';
-import type { MarginsMm } from '@worldwiki/word-vibe';
+import type { PageSize, Orientation, MarginsMm } from '../../../types/dto';
 
 export interface PageSetupModalProps {
   isOpen: boolean;
@@ -43,47 +42,32 @@ export function usePageSetupModal(
   watch(
     () => props.isOpen,
     (open) => {
-      try {
-        if (open) {
-          topMm.value = props.margins?.top ?? 20;
-          bottomMm.value = props.margins?.bottom ?? 20;
-          leftMm.value = props.margins?.left ?? 30;
-          rightMm.value = props.margins?.right ?? 15;
-          size.value = props.pageSize || 'A4';
-          orient.value = props.orientation || 'portrait';
-          activeTab.value = 'margins';
-        }
-      } catch (error) {
-        console.error('[PageSetupModal] watch failed:', error);
-        throw error;
+      if (open) {
+        topMm.value = props.margins?.top ?? 20;
+        bottomMm.value = props.margins?.bottom ?? 20;
+        leftMm.value = props.margins?.left ?? 30;
+        rightMm.value = props.margins?.right ?? 15;
+        size.value = props.pageSize || 'A4';
+        orient.value = props.orientation || 'portrait';
+        activeTab.value = 'margins';
       }
     },
   );
 
   const applyGost = () => {
-    try {
-      topMm.value = 20;
-      bottomMm.value = 20;
-      leftMm.value = 30;
-      rightMm.value = 15;
-    } catch (error) {
-      console.error('[PageSetupModal] applyGost failed:', error);
-      throw error;
-    }
+    topMm.value = 20;
+    bottomMm.value = 20;
+    leftMm.value = 30;
+    rightMm.value = 15;
   };
 
   const handleApply = () => {
-    try {
-      emit('apply', {
-        margins: { top: topMm.value, bottom: bottomMm.value, left: leftMm.value, right: rightMm.value },
-        pageSize: size.value,
-        orientation: orient.value,
-      });
-      emit('close');
-    } catch (error) {
-      console.error('[PageSetupModal] handleApply failed:', error);
-      throw error;
-    }
+    emit('apply', {
+      margins: { top: topMm.value, bottom: bottomMm.value, left: leftMm.value, right: rightMm.value },
+      pageSize: size.value,
+      orientation: orient.value,
+    });
+    emit('close');
   };
 
   return { activeTab, topMm, bottomMm, leftMm, rightMm, size, orient, applyGost, handleApply, SIZES };

@@ -141,7 +141,6 @@ import type { WordRulerProps } from './useWordRuler';
 const props = withDefaults(defineProps<WordRulerProps>(), {
   pageSize: 'A4',
   isLandscape: false,
-  editor: null,
 });
 
 const emit = defineEmits<{

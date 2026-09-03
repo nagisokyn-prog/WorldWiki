@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import WordRuler from '../WordRuler/WordRuler.vue';
+import { WordRuler } from '@worldwiki/word-vibe';
 
 describe('WordRuler Component - Physical Word Ruler Fidelity', () => {
   it('1. Рендерит линейку А4 в книжной ориентации с шириной 794px и рабочим полем 17.0 см', () => {

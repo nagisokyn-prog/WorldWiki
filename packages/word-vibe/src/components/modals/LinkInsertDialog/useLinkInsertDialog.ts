@@ -24,30 +24,17 @@ export function useLinkInsertDialog(
   watch(
     () => props.isOpen,
     (open) => {
-      try {
-        if (open) {
-          url.value = 'https://';
-          text.value = '';
-        }
-      } catch (error) {
-        console.error('[LinkInsertDialog] watch failed:', error);
-        throw error;
+      if (open) {
+        url.value = 'https://';
+        text.value = '';
       }
     },
   );
 
   const handleInsert = () => {
-    try {
-      if (!url.value.trim()) {
-        console.error('[LinkInsertDialog] handleInsert: url is empty');
-        return;
-      }
-      emit('insert', { url: url.value.trim(), text: text.value.trim() });
-      emit('close');
-    } catch (error) {
-      console.error('[LinkInsertDialog] handleInsert failed:', error);
-      throw error;
-    }
+    if (!url.value.trim()) return;
+    emit('insert', { url: url.value.trim(), text: text.value.trim() });
+    emit('close');
   };
 
   return { url, text, handleInsert };

@@ -55,8 +55,22 @@
 - `pnpm typecheck` → чист по всем 4 проектам (word-vibe, resources, components, spa).
 - `eslint` → чист по затронутым файлам.
 
+### Фаза 2 — публичная граница адаптера и автономия пакета ✅ (выполнено)
 
+**Реализован `WordVibeAdapter` и типизированная шина событий:**
+- `WordVibeAdapter.ts` / `createWordVibeAdapter.ts`: полностью инкапсулирует внутренние пересоздания редактора мостом пагинации (`attachPaginationPlus`), предоставляет методы `mount`, `unmount`, `isReady`, `setContent`, `getContent`, `execCommand`, `getSelection`, `setLayout`, `getLayout`, `setHeaderFooter`, `getStats`, `exportDocx`, `printPdf`, `on`.
+- `types/dto.ts`: чистые контракты `WordSelectionDTO`, `WordLayoutDTO`, `WordHeaderFooterDTO`, `WordStatsDTO`. Никаких утечек ProseMirror/Tiptap объектов наружу.
+- `adapter/events.ts`: типизированные события `WordVibeEventMap` (`mounted`, `ready`, `destroyed`, `change`, `selection-change`, `stats-change`, `layout-change`, `open-*`).
 
+**Полный перенос UI в `packages/word-vibe` (автономный пакет):**
+- Создан корневой компонент `WordVibeEditor.vue`, объединяющий ленту, линейку, холст пагинации, статус-бар и все модалки.
+- Перенесены компоненты `WordRibbonBar.vue`, `useWordRibbonBar.ts`, `WordRuler.vue`, `useWordRuler.ts`.
+- Перенесены все модальные окна: `PageSetupModal`, `HeaderFooterDialog`, `ImageInsertDialog`, `TablePickerPopup`, `LinkInsertDialog`, `EquationInsertDialog`, `ParagraphFormatModal`.
+
+**Очистка `apps/spa`:**
+- `EditorCoreTiptap.vue` переведён на `<WordVibeEditor />` и `ParagraphFormatModal` из `@worldwiki/word-vibe`.
+- Удалены 10 устаревших папок компонентов Word-режима из `apps/spa/src/ts/features/chapters/EditorCoreTiptap/`.
+- Написаны модульные тесты `packages/word-vibe/__tests__/wordVibeAdapter.spec.ts`.
 
 ## 1. Проблема (что сломано сейчас)
 

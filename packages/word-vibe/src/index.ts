@@ -1,40 +1,40 @@
 /**
  * @worldwiki/word-vibe — изолированный Word-редактор WorldWiki.
  *
- * Публичный контракт: только функции/типы, никаких живых ProseMirror /
- * rk-editor-core объектов наружу. Vue-компоненты (RibbonBar, Ruler)
- * на переходный период живут в apps/spa и импортируют отсюда логику.
+ * Публичный контракт: чистый Vue 3 компонент WordVibeEditor, фабрика адаптера
+ * и DTO-типы. Никаких живых ProseMirror / Tiptap / rk-editor-core объектов наружу.
  */
 
-// ── Editor core ─────────────────────────────────────────────────────────────
-export { useRkWordEditor, normalizeWordContent, MARGIN_PRESETS_MM } from './editor/useRkWordEditor';
-export type { MarginsMm, MarginPresetName } from './editor/useRkWordEditor';
+// ── Главный компонент и композабл ────────────────────────────────────────────
+export { default as WordVibeEditor } from './components/WordVibeEditor.vue';
+export { useWordVibeEditor } from './components/useWordVibeEditor';
+export type { WordVibeEditorProps, WordVibeEditorEmits } from './components/WordVibeEditor.model';
 
-export {
-  attachPaginationPlus,
-  updatePaginationLayout,
-  updatePaginationText,
-  readPageCount,
-  disableRkBuiltinPagination,
-} from './editor/rkPaginationBridge';
-export type { PaginationTextOptions } from './editor/rkPaginationBridge';
+// ── Адаптер и контракты ──────────────────────────────────────────────────────
+export { createWordVibeAdapter } from './adapter/createWordVibeAdapter';
+export type { WordVibeAdapter, WordVibeOptions } from './adapter/WordVibeAdapter';
+export type { WordVibeEventMap } from './adapter/events';
 
-export { getPageGeometry, GOST_MARGINS_MM, PX_PER_MM } from './editor/geometryHelper';
-export type { PaginationGeometry } from './editor/geometryHelper';
-
+// ── DTO и типы ───────────────────────────────────────────────────────────────
 export type {
   PageSize,
   Orientation,
-  RkWordEditorProps,
-  RkWordEditorEmits,
-  RkWordEditorState,
-  EditorInstance,
-} from './editor/RkWordEditor.model';
+  MarginsMm,
+  WordSelectionDTO,
+  WordLayoutDTO,
+  WordHeaderFooterDTO,
+  WordStatsDTO,
+} from './types/dto';
 
-// ── ГОСТ extensions ─────────────────────────────────────────────────────────
-export { insertGostFigureCaption } from './editor/extensions/GostFigureCaption';
-export { insertGostTableCaption } from './editor/extensions/GostTableCaption';
-export { insertSectionLandscape, insertSectionPortrait } from './editor/extensions/SectionOrientation';
+// ── Геометрия и утилиты ─────────────────────────────────────────────────────
+export { MARGIN_PRESETS_MM, normalizeWordContent } from './editor/useRkWordEditor';
+export type { MarginPresetName } from './editor/useRkWordEditor';
+export { getPageGeometry, GOST_MARGINS_MM, PX_PER_MM } from './editor/geometryHelper';
+export type { PaginationGeometry } from './editor/geometryHelper';
 
-// ── Ribbon commands contract ────────────────────────────────────────────────
+// ── Дочерние UI-компоненты и модалки ───────────────────────────────────────
+export { default as WordRibbonBar } from './components/ribbon/WordRibbonBar.vue';
+export { default as WordRuler } from './components/ruler/WordRuler.vue';
+export { default as ParagraphFormatModal } from './components/modals/ParagraphFormatModal/ParagraphFormatModal.vue';
+export type { ParagraphFormatData } from './components/modals/ParagraphFormatModal/ParagraphFormatModal.vue';
 export type { PaperSize, RibbonCommands } from './ribbon/commands';

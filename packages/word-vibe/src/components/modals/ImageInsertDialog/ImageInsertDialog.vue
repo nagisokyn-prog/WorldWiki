@@ -33,6 +33,7 @@
     </div>
   </Teleport>
 </template>
+
 <script setup lang="ts">
 import { useImageInsertDialog } from './useImageInsertDialog';
 
@@ -41,4 +42,5 @@ const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { src: str
 const { url, caption, align, fileInput, pickFile, onFileChange, handleInsert } =
   useImageInsertDialog(props, emit);
 </script>
+
 <style scoped src="@worldwiki/resources/styles/features/chapters/WordDialogs.css"></style>

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="word-ribbon" @mousedown="onRibbonMousedown">
     <!-- Верхние вкладки Ribbon -->
     <div class="ribbon-tabs-bar">
@@ -125,7 +125,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('bold') }" 
                 title="Полужирный (Ctrl+B)"
                 @click="call('toggleBold', commands.toggleBold)"
               >
@@ -134,7 +133,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('italic') }" 
                 title="Курсив (Ctrl+I)"
                 @click="call('toggleItalic', commands.toggleItalic)"
               >
@@ -143,7 +141,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('underline') }" 
                 title="Подчеркнутый (Ctrl+U)"
                 @click="call('toggleUnderline', commands.toggleUnderline)"
               >
@@ -152,7 +149,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('strike') }" 
                 title="Зачеркнутый"
                 @click="call('toggleStrike', commands.toggleStrike)"
               >
@@ -164,7 +160,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('subscript') }" 
                 title="Подстрочный знак (Ctrl+=)"
                 @click="call('toggleSubscript', commands.toggleSubscript)"
               >
@@ -173,7 +168,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('superscript') }" 
                 title="Надстрочный знак (Ctrl+Shift++)"
                 @click="call('toggleSuperscript', commands.toggleSuperscript)"
               >
@@ -185,7 +179,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('highlight') }" 
                 title="Цвет выделения текста (маркер)"
                 @click="call('toggleHighlight', commands.toggleHighlight)"
               >
@@ -215,7 +208,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('bulletList') }" 
                 title="Маркеры (список)"
                 @click="call('toggleBulletList', commands.toggleBulletList)"
               >
@@ -224,7 +216,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('orderedList') }" 
                 title="Нумерация"
                 @click="call('toggleOrderedList', commands.toggleOrderedList)"
               >
@@ -268,7 +259,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.({ textAlign: 'left' }) }" 
                 title="По левому краю (Ctrl+L)"
                 @click="call('setTextAlign', () => commands.setTextAlign?.('left'))"
               >
@@ -277,7 +267,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.({ textAlign: 'center' }) }" 
                 title="По центру (Ctrl+E)"
                 @click="call('setTextAlign', () => commands.setTextAlign?.('center'))"
               >
@@ -286,7 +275,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.({ textAlign: 'right' }) }" 
                 title="По правому краю (Ctrl+R)"
                 @click="commands.setTextAlign?.('right')"
               >
@@ -295,7 +283,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.({ textAlign: 'justify' }) }" 
                 title="По ширине (Ctrl+J)"
                 @click="commands.setTextAlign?.('justify')"
               >
@@ -320,7 +307,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('blockquote') }" 
                 title="Цитата"
                 @click="call('toggleBlockquote', commands.toggleBlockquote)"
               >
@@ -334,7 +320,7 @@
             <button 
               type="button" 
               class="ribbon-dialog-launcher" 
-              title="Параметры абзаца (Скриншот 3)"
+              title="Параметры абзаца"
               @click="$emit('open-paragraph-dialog')"
             >
               <i class="fas fa-external-link-alt"></i>
@@ -349,7 +335,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('heading', { level: 1 }) }" 
                 title="Заголовок 1 (Ctrl+Alt+1)"
                 @click="call('setHeading', () => commands.setHeading?.(1))"
               >
@@ -358,7 +343,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('heading', { level: 2 }) }" 
                 title="Заголовок 2 (Ctrl+Alt+2)"
                 @click="call('setHeading', () => commands.setHeading?.(2))"
               >
@@ -367,7 +351,6 @@
               <button 
                 type="button" 
                 class="ribbon-btn" 
-                :class="{ 'is-active': editor?.isActive?.('heading', { level: 3 }) }" 
                 title="Заголовок 3 (Ctrl+Alt+3)"
                 @click="call('setHeading', () => commands.setHeading?.(3))"
               >
@@ -770,10 +753,8 @@ import type { RibbonProps as WordRibbonProps } from './useWordRibbonBar';
 
 /**
  * Focus theft fix: клик по кнопке ленты по умолчанию уводит DOM-focus
- * с редактора → ProseMirror применяет команду «вслепую», подсветка
- * выделения пропадает. preventDefault на mousedown оставляет фокус
- * в редакторе, @click при этом срабатывает как обычно.
- * select/input/textarea не трогаем — им фокус нужен для работы.
+ * с редактора → preventDefault на mousedown оставляет фокус в редакторе,
+ * @click при этом срабатывает как обычно.
  */
 const onRibbonMousedown = (e: MouseEvent): void => {
   const target = e.target;
@@ -797,7 +778,7 @@ const {
   spacingBeforePt, spacingAfterPt, toggleDropdown, closeDropdown,
   applyLeftIndent, applyRightIndent, applySpacing, applyHeaderPreset,
   applyFooterPreset, applyPageNumberPosition, applyFontFamily, applyFontSize,
-  applyLineHeight, stepFontSize, toggleInvisibles, call,
+  applyLineHeight, stepFontSize, toggleInvisibles, call, commands,
 } = useWordRibbonBar(props, emit);
 </script>
 

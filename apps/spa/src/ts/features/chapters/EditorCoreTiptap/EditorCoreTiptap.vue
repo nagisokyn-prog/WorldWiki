@@ -111,15 +111,14 @@
       </div>
 
       <!-- Word Mode (А4 / Книга на базе ядра RK Word Editor) -->
-      <RkWordEditor
+      <WordVibeEditor
         v-else-if="editorMode === 'word'"
         :content="content"
         :chapter-title="title"
-        :initial-orientation="isCurrentPageLandscape ? 'landscape' : 'portrait'"
-        :initial-page-size="currentPageSize"
+        :orientation="isCurrentPageLandscape ? 'landscape' : 'portrait'"
+        :page-size="currentPageSize"
         @update:content="$emit('update:content', $event)"
         @change="$emit('change')"
-        @save="$emit('save')"
       />
     </div>
     
@@ -189,9 +188,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { EditorContent } from '@tiptap/vue-3';
 import { useTiptapEditor } from './useTiptapEditor';
 import EditorToolbar from './EditorToolbar.vue';
-import RkWordEditor from './WordMode/RkWordEditor.vue';
-import type { PageSize } from '@worldwiki/word-vibe';
-import ParagraphFormatModal, { type ParagraphFormatData } from './ParagraphFormatModal/ParagraphFormatModal.vue';
+import { WordVibeEditor, ParagraphFormatModal, type ParagraphFormatData, type PageSize } from '@worldwiki/word-vibe';
 import EntityLinkSelector from './EntityLinkSelector.vue';
 import PromiseContextMenu, { type PromiseTypeOption } from './PromiseContextMenu.vue';
 import { DocumentExportModal } from '../../documents';

@@ -56,14 +56,15 @@
 
 <script setup lang="ts">
 import { usePageSetupModal } from './usePageSetupModal';
+import type { PageSize, Orientation, MarginsMm } from '../../../types/dto';
 
 const props = defineProps<{
   isOpen: boolean;
-  margins?: { top: number; bottom: number; left: number; right: number };
-  pageSize?: import('@worldwiki/word-vibe').PageSize;
-  orientation?: import('@worldwiki/word-vibe').Orientation;
+  margins?: MarginsMm;
+  pageSize?: PageSize;
+  orientation?: Orientation;
 }>();
-const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { margins: { top: number; bottom: number; left: number; right: number }; pageSize: import('@worldwiki/word-vibe').PageSize; orientation: import('@worldwiki/word-vibe').Orientation }): void }>();
+const emit = defineEmits<{ (e: 'close'): void; (e: 'apply', payload: { margins: MarginsMm; pageSize: PageSize; orientation: Orientation }): void }>();
 const { activeTab, topMm, bottomMm, leftMm, rightMm, size, orient, applyGost, handleApply, SIZES } =
   usePageSetupModal(props, emit);
 </script>

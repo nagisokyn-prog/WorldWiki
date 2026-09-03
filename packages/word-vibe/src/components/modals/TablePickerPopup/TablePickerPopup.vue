@@ -33,6 +33,4 @@ const emit = defineEmits<{ (e: 'close'): void; (e: 'insert', payload: { rows: nu
 const { hover, rows, cols, label, insert } = useTablePickerPopup(props, emit);
 </script>
 
-
-
 <style scoped src="@worldwiki/resources/styles/features/chapters/WordDialogs.css"></style>

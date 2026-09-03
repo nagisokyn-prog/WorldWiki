@@ -315,8 +315,7 @@
                        </button>
                    </div>
                    <div class="text-xs text-muted mt-1 diff-summary-text">
-                       <!-- eslint-disable-next-line vue/no-v-html -->
-                       <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
+                       <SafeHtml v-if="getDiffSummary(rev, revisions[idx + 1])" as="span" :content="getDiffSummary(rev, revisions[idx + 1])" />
                        <span v-else>Базовая версия</span>
                    </div>
                    <div v-if="previewingRevId === rev.id" class="mt-1">
@@ -330,7 +329,7 @@
 </template>
 
 <script setup lang="ts">
-import { XboxWheel, TagsField } from '@worldwiki/components';
+import { XboxWheel, TagsField, SafeHtml } from '@worldwiki/components';
 import UniversalDatePicker from '../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
 import RelationshipBlock from '../../../features/schemas/SchemaEditor/RelationshipBlock.vue';
 import ManuscriptPointPicker from '../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.vue';

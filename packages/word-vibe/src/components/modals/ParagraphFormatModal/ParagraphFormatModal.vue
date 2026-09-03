@@ -128,57 +128,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { 
+  useParagraphFormatModal, 
+  type ParagraphFormatModalProps, 
+  type ParagraphFormatModalEmits, 
+  type ParagraphFormatData 
+} from './useParagraphFormatModal';
 
-export interface ParagraphFormatData {
-  alignment: 'left' | 'center' | 'right' | 'justify';
-  firstLineType: 'none' | 'indent';
-  firstLineCm: number;
-  leftIndentCm: number;
-  rightIndentCm: number;
-  spaceBeforePt: number;
-  spaceAfterPt: number;
-  lineHeight: string;
-}
+export type { ParagraphFormatData };
 
-const props = defineProps<{
-  isOpen: boolean;
-  initialData?: Partial<ParagraphFormatData>;
-}>();
+const props = defineProps<ParagraphFormatModalProps>();
+const emit = defineEmits<ParagraphFormatModalEmits>();
 
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'apply', data: ParagraphFormatData): void;
-}>();
-
-const activeTab = ref<'indents'>('indents');
-
-const form = reactive<ParagraphFormatData>({
-  alignment: props.initialData?.alignment || 'justify',
-  firstLineType: props.initialData?.firstLineType || 'indent',
-  firstLineCm: props.initialData?.firstLineCm ?? 1.25,
-  leftIndentCm: props.initialData?.leftIndentCm ?? 0.0,
-  rightIndentCm: props.initialData?.rightIndentCm ?? 0.0,
-  spaceBeforePt: props.initialData?.spaceBeforePt ?? 0,
-  spaceAfterPt: props.initialData?.spaceAfterPt ?? 0,
-  lineHeight: props.initialData?.lineHeight || '1.5'
-});
-
-const resetToGost = () => {
-  form.alignment = 'justify';
-  form.firstLineType = 'indent';
-  form.firstLineCm = 1.25;
-  form.leftIndentCm = 0.0;
-  form.rightIndentCm = 0.0;
-  form.spaceBeforePt = 0;
-  form.spaceAfterPt = 0;
-  form.lineHeight = '1.5';
-};
-
-const apply = () => {
-  emit('apply', { ...form });
-  emit('close');
-};
+const {
+  activeTab,
+  form,
+  resetToGost,
+  apply
+} = useParagraphFormatModal(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/ParagraphFormatModal.css"></style>

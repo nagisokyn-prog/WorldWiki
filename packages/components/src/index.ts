@@ -13,6 +13,8 @@ export { default as TreeNodes } from './components/Vue/TreeNodes.vue';
 export { default as WorkspaceLayout } from './components/Vue/WorkspaceLayout.vue';
 export { default as XboxWheel } from './components/Vue/XboxWheel.vue';
 export { default as AppDialog } from './components/Vue/AppDialog.vue';
+export { default as SafeHtml } from './components/Vue/SafeHtml.vue';
+export { default as HighlightText } from './components/Vue/HighlightText.vue';
 
 // Types
 export type { TreeNodeData, TreeSectionData } from './types';

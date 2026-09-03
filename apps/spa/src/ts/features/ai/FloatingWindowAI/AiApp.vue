@@ -31,7 +31,7 @@
               <div class="message-avatar">
                 <i :class="group.activeMessage.role === 'user' ? 'fas fa-user' : 'fas fa-robot'"></i>
               </div>
-              <div class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
+              <SafeHtml class="message-content" :content="renderMarkdown(group.activeMessage.content)" />
             </div>
           </div>
 
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { AppDialog } from '@worldwiki/components';
+import { AppDialog, SafeHtml } from '@worldwiki/components';
 import AiChatInput from '../components/AiChatInput.vue';
 import AiHeader from '../components/AiHeader.vue';
 import AiSettingsView from '../settings/AiSettingsView.vue';

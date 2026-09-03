@@ -30,103 +30,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { 
+  useFloatingWindow, 
+  type FloatingWindowProps, 
+  type FloatingWindowEmits 
+} from './useFloatingWindow';
 
-const props = defineProps<{
-  title: string;
-  isOpen: boolean;
-  initialWidth?: number;
-  initialHeight?: number;
-  initialX?: number;
-  initialY?: number;
-  zIndexBase?: number;
-}>();
+const props = defineProps<FloatingWindowProps>();
+const emit = defineEmits<FloatingWindowEmits>();
 
-const { t } = useI18n();
-
-const emit = defineEmits(['close', 'focus']);
-
-const windowRef = ref<HTMLElement | null>(null);
-const pos = reactive({
-  x: props.initialX ?? 100,
-  y: props.initialY ?? 100,
-  w: props.initialWidth ?? 850,
-  h: props.initialHeight ?? 650
-});
-
-const zIndex = ref(props.zIndexBase ?? 10000);
-
-const windowStyle = computed(() => ({
-  left: `${pos.x}px`,
-  top: `${pos.y}px`,
-  width: `${pos.w}px`,
-  height: `${pos.h}px`,
-  zIndex: zIndex.value
-}));
-
-// Drag logic
-let isDragging = false;
-let dragOffset = { x: 0, y: 0 };
-
-const startDrag = (e: MouseEvent) => {
-  isDragging = true;
-  dragOffset = { x: e.clientX - pos.x, y: e.clientY - pos.y };
-  bringToFront();
-  
-  document.addEventListener('mousemove', handleDrag);
-  document.addEventListener('mouseup', stopDrag);
-};
-
-const handleDrag = (e: MouseEvent) => {
-  if (!isDragging) return;
-  pos.x = e.clientX - dragOffset.x;
-  pos.y = e.clientY - dragOffset.y;
-};
-
-const stopDrag = () => {
-  isDragging = false;
-  document.removeEventListener('mousemove', handleDrag);
-  document.removeEventListener('mouseup', stopDrag);
-};
-
-// Resize logic
-let isResizing = false;
-
-const startResize = (e: MouseEvent) => {
-  isResizing = true;
-  bringToFront();
-  
-  document.addEventListener('mousemove', handleResize);
-  document.addEventListener('mouseup', stopResize);
-  e.preventDefault();
-};
-
-const handleResize = (e: MouseEvent) => {
-  if (!isResizing) return;
-  pos.w = Math.max(300, e.clientX - pos.x);
-  pos.h = Math.max(200, e.clientY - pos.y);
-};
-
-const stopResize = () => {
-  isResizing = false;
-  document.removeEventListener('mousemove', handleResize);
-  document.removeEventListener('mouseup', stopResize);
-};
-
-const bringToFront = () => {
-  emit('focus');
-  // Z-index management should be handled by parent or by global state
-  // For now we just emit focus
-};
-
-const close = () => {
-  emit('close');
-};
-
-const updateZIndex = (val: number) => {
-  zIndex.value = val;
-};
+const {
+  t,
+  windowRef,
+  windowStyle,
+  startDrag,
+  startResize,
+  bringToFront,
+  close,
+  updateZIndex
+} = useFloatingWindow(props, emit);
 
 defineExpose({ updateZIndex });
 </script>

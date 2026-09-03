@@ -13,9 +13,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TARGET_DIRS = [
-  // 'apps/spa/src',
-   'packages/components/src',
-  //  'packages/word-vibe/src'
+  'apps/spa/src',
+  'packages/components/src',
+  'packages/word-vibe/src'
 ];
 
 const IGNORE_PATTERNS = [

@@ -174,7 +174,6 @@ const {
   modalVisible,
   isEditing,
   calendarsPanelRef,
-  cloudSyncMode,
   formData,
   projectTypes,
   genres,

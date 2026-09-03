@@ -1,23 +1,22 @@
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, type CSSProperties } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 export interface XboxWheelOptionObject {
-  value: string | number;
+  value?: string | number | null;
   label?: string;
-  [key: string]: unknown;
 }
 
 export type XboxWheelOption = string | number | XboxWheelOptionObject;
 
 export interface XboxWheelProps {
-  modelValue?: string | number;
-  options: XboxWheelOption[];
+  modelValue?: string | number | null;
+  options: XboxWheelOption[] | readonly XboxWheelOption[];
   placeholder?: string;
   horizontal?: boolean;
 }
 
 export interface XboxWheelEmits {
-  (e: 'update:modelValue', value: string | number): void;
+  (e: 'update:modelValue', value: string): void;
   (e: 'hover-start'): void;
   (e: 'hover-end'): void;
 }
@@ -44,7 +43,7 @@ export function useXboxWheel(
   const dropdownRef = ref<HTMLElement | null>(null);
   const isOpen = ref(false);
 
-  const dropdownStyle = ref<Record<string, unknown>>({
+  const dropdownStyle = ref<CSSProperties>({
     position: 'fixed',
     top: '0',
     left: '0',
@@ -53,11 +52,12 @@ export function useXboxWheel(
   });
 
   const normalizedOptions = computed(() => {
-    return props.options.map(opt => {
+    return props.options.map((opt) => {
       if (typeof opt === 'object' && opt !== null) {
-        return { value: opt.value, label: opt.label || String(opt.value) };
+        const obj = opt as XboxWheelOptionObject;
+        return { value: String(obj.value ?? ''), label: obj.label || String(obj.value ?? '') };
       }
-      return { value: opt, label: String(opt) };
+      return { value: String(opt ?? ''), label: String(opt ?? '') };
     });
   });
 
@@ -116,7 +116,7 @@ export function useXboxWheel(
       width: `${rect.width / zoom}px`,
       '--local-zoom': zoom,
       zIndex: 99999
-    };
+    } as CSSProperties;
   };
 
   const open = () => {

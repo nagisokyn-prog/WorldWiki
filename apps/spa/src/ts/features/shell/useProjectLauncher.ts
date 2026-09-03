@@ -1,7 +1,7 @@
 import { ref, shallowRef, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
-import { projectService, type ProjectConfig } from '../../services/project.service';
+import { projectService } from '../../services/project.service';
 import { settingsService } from '@worldwiki/components';
 
 export interface ProjectData {

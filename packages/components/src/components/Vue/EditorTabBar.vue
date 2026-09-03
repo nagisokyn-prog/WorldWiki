@@ -69,115 +69,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { 
+  useEditorTabBar, 
+  type EditorTabBarProps, 
+  type EditorTabBarEmits, 
+  type EditorTab 
+} from './useEditorTabBar';
 
-interface EditorTab {
-  id: string;
-  rawId: string;
-  title: string;
-  entityType: string;
-  tabType: 'entity' | 'chapter' | 'schema-editor';
-  data: Record<string, unknown>;
-  unsaved: boolean;
-}
+export type { EditorTab };
 
-const props = defineProps<{
-  groupId: string;
-  tabs: EditorTab[];
-  activeTabId: string | null;
-  isActiveGroup: boolean;
-  canClose: boolean;
-}>();
+const props = defineProps<EditorTabBarProps>();
+const emit = defineEmits<EditorTabBarEmits>();
 
-const emit = defineEmits<{
-  activate: [tabId: string];
-  close: [tabId: string];
-  split: [];
-  'close-group': [];
-  'move-tab': [payload: { tabId: string; fromGroupId: string; toGroupId: string; toIndex: number }];
-  'reorder-tab': [payload: { groupId: string; fromIdx: number; toIdx: number }];
-}>();
-
-const { t } = useI18n();
-
-// ─── Drag state ────────────────────────────────────────────────────────────
-const DRAG_TAB_KEY = 'ww-drag-tab-id';
-const DRAG_GROUP_KEY = 'ww-drag-group-id';
-
-const draggingTabId = ref<string | null>(null);
-const dragOverIdx = ref<number | null>(null);
-const dropSide = ref<'left' | 'right'>('right');
-
-const onDragStart = (e: DragEvent, tabId: string, _idx: number) => {
-  draggingTabId.value = tabId;
-  e.dataTransfer!.effectAllowed = 'move';
-  e.dataTransfer!.setData(DRAG_TAB_KEY, tabId);
-  e.dataTransfer!.setData(DRAG_GROUP_KEY, props.groupId);
-};
-
-const onDragEnd = () => {
-  draggingTabId.value = null;
-  dragOverIdx.value = null;
-};
-
-const getDropIndex = (e: DragEvent, idx: number): { idx: number; side: 'left' | 'right' } => {
-  const el = (e.currentTarget as HTMLElement);
-  const rect = el.getBoundingClientRect();
-  const mid = rect.left + rect.width / 2;
-  if (e.clientX < mid) return { idx, side: 'left' };
-  return { idx, side: 'right' };
-};
-
-const onTabDragOver = (e: DragEvent, idx: number) => {
-  const { idx: di, side } = getDropIndex(e, idx);
-  dragOverIdx.value = di;
-  dropSide.value = side;
-  e.dataTransfer!.dropEffect = 'move';
-};
-
-const onTabDragLeave = (idx: number) => {
-  if (dragOverIdx.value === idx) dragOverIdx.value = null;
-};
-
-const onTabDrop = (e: DragEvent, idx: number) => {
-  const tabId = e.dataTransfer!.getData(DRAG_TAB_KEY);
-  const fromGroupId = e.dataTransfer!.getData(DRAG_GROUP_KEY);
-  if (!tabId) return;
-
-  const { idx: di, side } = getDropIndex(e, idx);
-  const toIndex = side === 'right' ? di + 1 : di;
-
-  if (fromGroupId === props.groupId) {
-    // Reorder within same group
-    const fromIdx = props.tabs.findIndex(t => t.id === tabId);
-    if (fromIdx >= 0 && fromIdx !== toIndex) {
-      emit('reorder-tab', { groupId: props.groupId, fromIdx, toIdx: toIndex });
-    }
-  } else {
-    // Move between groups
-    emit('move-tab', { tabId, fromGroupId, toGroupId: props.groupId, toIndex });
-  }
-
-  dragOverIdx.value = null;
-  draggingTabId.value = null;
-};
-
-const onBarDragOver = (e: DragEvent) => {
-  e.dataTransfer!.dropEffect = 'move';
-};
-
-const onBarDrop = (e: DragEvent) => {
-  const tabId = e.dataTransfer!.getData(DRAG_TAB_KEY);
-  const fromGroupId = e.dataTransfer!.getData(DRAG_GROUP_KEY);
-  if (!tabId) return;
-
-  if (fromGroupId !== props.groupId) {
-    // Drop to end of this group
-    emit('move-tab', { tabId, fromGroupId, toGroupId: props.groupId, toIndex: props.tabs.length });
-  }
-  dragOverIdx.value = null;
-};
+const {
+  t,
+  draggingTabId,
+  dragOverIdx,
+  dropSide,
+  onDragStart,
+  onDragEnd,
+  onTabDragOver,
+  onTabDragLeave,
+  onTabDrop,
+  onBarDragOver,
+  onBarDrop
+} = useEditorTabBar(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/EditorTabBar.css"></style>

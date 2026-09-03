@@ -255,7 +255,6 @@
 </template>
 
 <script setup lang="ts">
-import type { AiProfile, AiModelInfo } from '../../types/ai.types';
 import AiSelect from '../../components/AiSelect.vue';
 import { 
   useAiSettingsModelsTab, 

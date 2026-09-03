@@ -103,12 +103,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import type { AppSettings } from '../../../ts/types/settings.js';
-import { performanceManager } from '../../../ts/services/performance.service.js';
-
-const { t } = useI18n();
+import { useSettingsPerformance } from './useSettingsPerformance';
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
@@ -116,29 +112,14 @@ const props = defineProps<{
   save: () => Promise<void>;
 }>();
 
-const showAdvanced = ref(false);
-
-const statusColorClass = computed(() => {
-  const status = performanceManager.status.value;
-  if (status === 'Good') return 'text-success';
-  if (status === 'Limited') return 'text-warning';
-  if (status === 'Poor') return 'text-error';
-  return 'text-success';
-});
-
-const recommendedProfile = computed<'Eco' | 'Balanced' | 'Quality' | 'Max'>(() => {
-  const status = performanceManager.status.value;
-  if (status === 'Poor') return 'Eco';
-  if (status === 'Limited') return 'Balanced';
-  return 'Quality';
-});
-
-const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
-  performanceManager.applyProfile(level);
-  settings.value.perf!.level = level;
-  props.save();
-};
+const {
+  t,
+  performanceManager,
+  showAdvanced,
+  statusColorClass,
+  recommendedProfile,
+  setProfile
+} = useSettingsPerformance(() => settings.value, props.save);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/SettingsPerformance.css"></style>
-

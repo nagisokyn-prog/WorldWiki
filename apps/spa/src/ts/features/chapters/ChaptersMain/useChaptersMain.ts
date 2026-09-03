@@ -7,7 +7,6 @@ import { useFloatingEntities } from './hooks/useFloatingEntities';
 import { useTimelineStore } from '../../../stores/timeline.store';
 import type { ExportPayload } from '../Export/useExportModal';
 import type { Chapter } from '../../../types/generated/Chapter';
-import type { PlotPromise } from '@/types/generated/PlotPromise';
 import type PromisesPanel from '../PromisesPanel/PromisesPanel.vue';
 
 export interface ChapterTreeNode {

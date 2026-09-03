@@ -63,7 +63,8 @@ export default ts.config(
       'vue/valid-v-for': 'error',
       'vue/require-v-for-key': 'error',
       'vue/no-use-v-if-with-v-for': 'error',
-      'vue/define-props-declaration': 'error'
+      'vue/define-props-declaration': 'error',
+      'vue/no-v-html': 'error'
     }
   },
   {

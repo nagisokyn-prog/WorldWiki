@@ -196,8 +196,7 @@
                       </button>
                   </div>
                   <div class="text-xs text-muted mt-1 diff-summary-text">
-                      <!-- eslint-disable-next-line vue/no-v-html -->
-                      <span v-if="getDiffSummary(rev, revisions[idx + 1])" v-html="getDiffSummary(rev, revisions[idx + 1])"></span>
+                      <SafeHtml v-if="getDiffSummary(rev, revisions[idx + 1])" as="span" :content="getDiffSummary(rev, revisions[idx + 1])" />
                       <span v-else>Базовая версия</span>
                   </div>
                   <div v-if="previewingRevId === rev.id" class="mt-1">
@@ -272,7 +271,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { SafeHtml } from '@worldwiki/components';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
 import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
@@ -301,7 +300,7 @@ const emit = defineEmits<{
 }>();
 
 const {
-  chapters, hierarchy, currentChapterId, currentChapter,
+  chapters, currentChapterId, currentChapter,
   currentArc, currentVolume, isVolumePlanOpen,
   isArcPlanOpen, isChapterPlanOpen, volumePlanRef, arcPlanRef, chapterPlanRef,
   addVolumePlanItem, addArcPlanItem, addChapterPlanItem,
@@ -314,7 +313,6 @@ const {
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
   markUnsaved, handleOpenEntity,
   handleExport, handleScrollChange, handleAddParticipant,
-  openChapterFromTree,
   editorCoreRef, promisesPanelRef, isTimelineOpen, isParticipantsOpen,
   handleCreatePromise, handleLinkMilestone, handleLocatePromise
 } = useChaptersMain({

@@ -34,8 +34,7 @@
         <!-- Мысли ИИ (рассуждения / Chain of Thought) -->
         <details v-if="group.activeMessage.reasoning" class="thinking-accordion">
           <summary><i class="fas fa-brain"></i> Ход мыслей (Thinking...)</summary>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="thinking-content" v-html="renderMarkdown(group.activeMessage.reasoning)"></div>
+          <SafeHtml class="thinking-content" :content="renderMarkdown(group.activeMessage.reasoning)" />
         </details>
         
         <!-- Логи вызова инструментов -->
@@ -66,8 +65,7 @@
           </div>
 
           <!-- Отрендеренный текст сообщения -->
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div v-else class="message-content" v-html="renderMarkdown(group.activeMessage.content)"></div>
+          <SafeHtml v-else class="message-content" :content="renderMarkdown(group.activeMessage.content)" />
         </div>
         
         <!-- Переключатель вариантов ответа (Ветвление) -->
@@ -138,6 +136,7 @@
 </template>
 
 <script setup lang="ts">
+import { SafeHtml } from '@worldwiki/components';
 import type { ChatMessage, MessageVariantGroup } from '../useWowilonPanel';
 import type { ToolCallPayload } from './AiToolApproval.vue';
 import AiToolApproval from './AiToolApproval.vue';

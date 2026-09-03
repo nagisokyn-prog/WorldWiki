@@ -32,6 +32,7 @@ import { useTiptapState } from './hooks/useTiptapState';
 import { useTiptapMarkdown } from './hooks/useTiptapMarkdown';
 import { useTiptapSplitView } from './hooks/useTiptapSplitView';
 import { useTiptapFormatting } from './hooks/useTiptapFormatting';
+import type { PlotPromise } from '@/types/generated/PlotPromise';
 
 const EnterHandler = Extension.create({
   name: 'enterHandler',
@@ -117,7 +118,8 @@ export interface TiptapEditorProps {
   title?: string;
   initialScrollPos?: number;
   isLocked?: boolean;
-  [key: string]: unknown;
+  changedFields?: string[];
+  existingPromises?: PlotPromise[];
 }
 
 export function useTiptapEditor(

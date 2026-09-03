@@ -10,7 +10,6 @@ export interface TiptapStateProps {
   title?: string;
   initialScrollPos?: number;
   hasUnsavedChanges?: boolean;
-  [key: string]: unknown;
 }
 
 export type EditorMode = 'wysiwyg' | 'markdown' | 'split' | 'word';

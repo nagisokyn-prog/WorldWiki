@@ -105,56 +105,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { AiProfile } from '../../types/ai.types';
+import { 
+  useAiSettingsConnectionsTab, 
+  type AiSettingsConnectionsTabProps, 
+  type AiSettingsConnectionsTabEmits 
+} from './useAiSettingsConnectionsTab';
 
-const props = defineProps<{
-  profiles: AiProfile[];
-  activeProfile: AiProfile | null;
-}>();
+const props = defineProps<AiSettingsConnectionsTabProps>();
+const emit = defineEmits<AiSettingsConnectionsTabEmits>();
 
-const emit = defineEmits(['select-profile', 'create-profile', 'delete-profile', 'save-profile', 'provider-changed']);
-
-const showApiKey = ref(false);
-const localProfile = ref<AiProfile | null>(null);
-
-watch(() => props.activeProfile, (newVal) => {
-  if (newVal) {
-    localProfile.value = { ...newVal };
-  } else {
-    localProfile.value = null;
-  }
-}, { immediate: true, deep: true });
-
-const handleSave = () => {
-  emit('save-profile', localProfile.value);
-};
-
-const getProviderLabel = (provider: string) => {
-  const map: Record<string, string> = {
-    openrouter: 'OpenRouter',
-    anthropic: 'Anthropic',
-    openai: 'OpenAI',
-    gemini: 'Google Gemini',
-    deepseek: 'DeepSeek',
-    local: 'Локальный инференс',
-    ollama: 'Ollama',
-  };
-  return map[provider] || provider;
-};
-
-const getDefaultUrl = (provider: string) => {
-  const map: Record<string, string> = {
-    openrouter: 'https://openrouter.ai/api/v1',
-    anthropic: 'https://api.anthropic.com',
-    openai: 'https://api.openai.com/v1',
-    gemini: 'https://generativelanguage.googleapis.com/v1beta/openai',
-    deepseek: 'https://api.deepseek.com/v1',
-    local: 'http://localhost:8080/v1',
-    ollama: 'http://localhost:11434/v1',
-  };
-  return map[provider] || 'https://api.openai.com/v1';
-};
+const {
+  showApiKey,
+  localProfile,
+  handleSave,
+  getProviderLabel,
+  getDefaultUrl
+} = useAiSettingsConnectionsTab(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsConnectionsTab.css"></style>

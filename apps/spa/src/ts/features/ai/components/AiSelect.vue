@@ -37,85 +37,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { 
+  useAiSelect, 
+  type AiSelectProps, 
+  type AiSelectEmits,
+  type AiSelectOption 
+} from './useAiSelect';
 
-interface Option {
-  value: string;
-  label: string;
-  description?: string;
-}
+export type { AiSelectOption };
 
-const props = defineProps<{
-  modelValue: string;
-  options: Option[];
-  placeholder?: string;
-  allowCustom?: boolean;
-}>();
+const props = defineProps<AiSelectProps>();
+const emit = defineEmits<AiSelectEmits>();
 
-const emit = defineEmits(['update:modelValue']);
-
-const isOpen = ref(false);
-const searchQuery = ref(props.modelValue || '');
-const containerRef = ref<HTMLElement | null>(null);
-
-// Sync external changes to internal search query
-watch(() => props.modelValue, (newVal) => {
-  if (newVal !== searchQuery.value) {
-    searchQuery.value = newVal || '';
-  }
-});
-
-const openDropdown = () => {
-  isOpen.value = true;
-};
-
-const toggleOpen = () => {
-  isOpen.value = !isOpen.value;
-};
-
-const selectOption = (opt: Option) => {
-  searchQuery.value = opt.value;
-  emit('update:modelValue', opt.value);
-  isOpen.value = false;
-};
-
-const handleEnter = () => {
-  if (props.allowCustom && searchQuery.value) {
-    emit('update:modelValue', searchQuery.value);
-    isOpen.value = false;
-  } else if (filteredOptions.value.length > 0) {
-    selectOption(filteredOptions.value[0]);
-  }
-};
-
-const filteredOptions = computed(() => {
-  if (!searchQuery.value || searchQuery.value === props.modelValue) {
-    return props.options;
-  }
-  const q = searchQuery.value.toLowerCase();
-  return props.options.filter(o => 
-    o.label.toLowerCase().includes(q) || 
-    (o.description && o.description.toLowerCase().includes(q)) ||
-    o.value.toLowerCase().includes(q)
-  );
-});
-
-const handleClickOutside = (e: MouseEvent) => {
-  if (containerRef.value && !containerRef.value.contains(e.target as Node)) {
-    if (isOpen.value && props.allowCustom && searchQuery.value && searchQuery.value !== props.modelValue) {
-      emit('update:modelValue', searchQuery.value);
-    }
-    isOpen.value = false;
-  }
-};
-
-onMounted(() => {
-  document.addEventListener('mousedown', handleClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('mousedown', handleClickOutside);
-});
+const {
+  isOpen,
+  searchQuery,
+  containerRef,
+  filteredOptions,
+  openDropdown,
+  toggleOpen,
+  selectOption,
+  handleEnter
+} = useAiSelect(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSelect.css"></style>

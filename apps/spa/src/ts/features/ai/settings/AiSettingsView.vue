@@ -106,100 +106,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import type { AiProfile } from '../types/ai.types';
 import AiSettingsConnectionsTab from './tabs/AiSettingsConnectionsTab.vue';
 import AiSettingsModelsTab from './tabs/AiSettingsModelsTab.vue';
 import AiSettingsLocalTab from './tabs/AiSettingsLocalTab.vue';
 import AiSettingsModesTab from './tabs/AiSettingsModesTab.vue';
 import AiSettingsPermissionsTab from './tabs/AiSettingsPermissionsTab.vue';
-
-import { useAiProfiles } from '../composables/useAiProfiles';
-import { useAiModels } from '../composables/useAiModels';
+import { useAiSettingsView } from './useAiSettingsView';
 
 defineEmits(['close']);
 
-type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions';
-const savedTab = localStorage.getItem('worldwiki_ai_settings_active_tab') as TabType;
-const activeTab = ref<TabType>(savedTab && ['connections', 'models', 'local_ai', 'modes', 'permissions'].includes(savedTab) ? savedTab : 'connections');
-
-watch(activeTab, (val) => {
-  localStorage.setItem('worldwiki_ai_settings_active_tab', val);
-});
-
-const tabTitles: Record<string, string> = {
-  connections: 'Подключения и API-ключи',
-  models: 'Модели и логика генерации',
-  local_ai: 'Центр локальных моделей',
-  modes: 'Режимы и роли ИИ-помощника',
-  permissions: 'Инструменты и безопасность',
-};
-
-// Project ID
-let currentProject = 'global';
-const hash = window.location.hash;
-if (hash.includes('?')) {
-  const hashParams = new URLSearchParams(hash.split('?')[1]);
-  const p = hashParams.get('project');
-  if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
-} else {
-  const searchParams = new URLSearchParams(window.location.search);
-  const p = searchParams.get('project');
-  if (p) currentProject = p.includes(':') ? p : `projects:${p}`;
-}
-
-const { 
-  profiles, 
-  activeProfileId, 
-  activeProfile, 
-  isLoading, 
-  loadProfiles, 
-  createNewProfile, 
-  deleteActiveProfile, 
-  saveActiveProfile 
-} = useAiProfiles(currentProject);
-
-const { availableModels, isFetchingModels, fetchError, fetchModels } = useAiModels();
-
-onMounted(async () => {
-  await loadProfiles();
-  handleFetchModels();
-});
-
-const handleProfileSelect = (id: string) => {
-  activeProfileId.value = id;
-  handleFetchModels();
-};
-
-const handleProviderChange = () => {
-  handleFetchModels();
-};
-
-const handleFetchModels = async (forceNetwork = false) => {
-  if (activeProfile.value) {
-    await fetchModels(
-      activeProfile.value.provider, 
-      activeProfile.value.api_key, 
-      activeProfile.value.base_url, 
-      forceNetwork
-    );
-  }
-};
-
-const handleSaveProfile = async (updatedData?: Partial<AiProfile>) => {
-  if (updatedData && activeProfile.value) {
-    if (updatedData.settings && activeProfile.value.settings) {
-      Object.assign(activeProfile.value.settings, updatedData.settings);
-    }
-    Object.assign(activeProfile.value, updatedData);
-  }
-  await saveActiveProfile();
-};
-
-const handleSavePermissions = async () => {
-  const { appAlert } = await import('@worldwiki/components');
-  appAlert('Права доступа успешно сохранены');
-};
+const {
+  activeTab,
+  tabTitles,
+  currentProject,
+  profiles,
+  activeProfile,
+  isLoading,
+  availableModels,
+  isFetchingModels,
+  fetchError,
+  handleProfileSelect,
+  createNewProfile,
+  deleteActiveProfile,
+  handleSaveProfile,
+  handleProviderChange,
+  handleFetchModels,
+  handleSavePermissions
+} = useAiSettingsView();
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsView.css"></style>

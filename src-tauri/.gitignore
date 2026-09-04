@@ -8,3 +8,5 @@
 
 # Игнорируем базы данных SQLite
 /data
+/src/.logic_legacy
+.logic_legacy

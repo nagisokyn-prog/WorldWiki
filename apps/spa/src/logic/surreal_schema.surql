@@ -47,7 +47,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 -- ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
 -- ===============================================
 
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs | chats | chat_messages OUT volumes | arcs | chapters | chats | chat_messages SCHEMAFULL;
+DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs OUT volumes | arcs | chapters SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
@@ -471,19 +471,21 @@ DEFINE FUNCTION OVERWRITE fn::get_rag_context($proj: record<projects>, $emb: arr
 -- ===============================================
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id          ON plot_promises TYPE record<projects>;
-DEFINE FIELD OVERWRITE chapter_id          ON plot_promises TYPE string;
+DEFINE FIELD OVERWRITE chapter_id          ON plot_promises TYPE record<chapters>;
 DEFINE FIELD OVERWRITE kind                ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question'
 DEFINE FIELD OVERWRITE quote               ON plot_promises TYPE string;
-DEFINE FIELD OVERWRITE paragraph_index     ON plot_promises TYPE number DEFAULT 1;
+DEFINE FIELD OVERWRITE paragraph_index     ON plot_promises TYPE int DEFAULT 1;
 DEFINE FIELD OVERWRITE block_id            ON plot_promises TYPE option<string>;
 DEFINE FIELD OVERWRITE note                ON plot_promises TYPE option<string>;
 DEFINE FIELD OVERWRITE status              ON plot_promises TYPE string DEFAULT 'planted'; -- 'planted' | 'developed' | 'resolved'
 DEFINE FIELD OVERWRITE progressions        ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [];
 DEFINE FIELD OVERWRITE resolution          ON plot_promises TYPE option<object> FLEXIBLE;
-DEFINE FIELD OVERWRITE resolved_in_volume  ON plot_promises TYPE option<string>;
-DEFINE FIELD OVERWRITE resolved_in_arc     ON plot_promises TYPE option<string>;
-DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<string>;
+DEFINE FIELD OVERWRITE resolved_in_volume  ON plot_promises TYPE option<record<volumes>>;
+DEFINE FIELD OVERWRITE resolved_in_arc     ON plot_promises TYPE option<record<arcs>>;
+DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<record<chapters>>;
 DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at          ON plot_promises TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_promise_project ON plot_promises FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_promise_chapter ON plot_promises FIELDS chapter_id;
+DEFINE INDEX OVERWRITE idx_promise_status  ON plot_promises FIELDS project_id, status;

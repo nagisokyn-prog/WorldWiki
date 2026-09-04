@@ -8396,7 +8396,81 @@ dependencies = [
  "tokio",
  "ts-rs",
  "uuid",
+ "worldwiki-application",
+ "worldwiki-domain",
+ "worldwiki-infrastructure",
+ "worldwiki-ports",
+ "worldwiki-tauri",
  "zip",
+]
+
+[[package]]
+name = "worldwiki-application"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "uuid",
+ "worldwiki-domain",
+ "worldwiki-infrastructure",
+ "worldwiki-ports",
+]
+
+[[package]]
+name = "worldwiki-domain"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "uuid",
+]
+
+[[package]]
+name = "worldwiki-infrastructure"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "dashmap",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "uuid",
+ "worldwiki-domain",
+ "worldwiki-ports",
+]
+
+[[package]]
+name = "worldwiki-ports"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "worldwiki-domain",
+]
+
+[[package]]
+name = "worldwiki-tauri"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "serde",
+ "serde_json",
+ "tauri",
+ "thiserror 2.0.18",
+ "worldwiki-application",
+ "worldwiki-domain",
+ "worldwiki-infrastructure",
+ "worldwiki-ports",
 ]
 
 [[package]]

@@ -1,0 +1,20 @@
+[package]
+name = "worldwiki-application"
+version = "0.1.0"
+edition = "2021"
+description = "CQRS Commands, Queries, Atomic Workflows, and 8 AI Facades for WorldWiki"
+
+[dependencies]
+worldwiki-domain = { path = "../worldwiki-domain" }
+worldwiki-ports = { path = "../worldwiki-ports" }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+tokio = { version = "1", features = ["sync", "time", "rt"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+worldwiki-infrastructure = { path = "../worldwiki-infrastructure" }

@@ -45,3 +45,8 @@ build/
 target/
 coverage/
 **/coverage/
+
+# Legacy and local-only backup directories
+.logic_legacy/
+src/.logic_legacy/
+src-tauri/src/.logic_legacy/

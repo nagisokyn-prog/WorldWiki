@@ -5,6 +5,13 @@ description = "A Tauri App"
 authors = ["Danila"]
 edition = "2021"
 
+[workspace]
+members = [
+    "crates/*",
+    "."
+]
+resolver = "2"
+
 [lib]
 name = "world_wiki_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
@@ -17,12 +24,15 @@ default = ["ai-cloud", "ai-local"]
 ai-cloud = ["dep:claw_runtime", "dep:claw_api"]
 ai-local = ["ai-cloud", "dep:llama-sys"]
 # Интеграционный тест AI-пайплайна (run_agent_loop + mock OpenAI SSE + реальная БД).
-# Тянет tauri/mock-runtime: на части Windows-машен меняет native linking тестового
-# бинаря (0xc0000139 при загрузке). Поэтому НЕ входит в default.
-# Запуск: cargo test --lib --features agent-pipeline
 agent-pipeline = ["tauri/test"]
 
 [dependencies]
+worldwiki-domain = { path = "crates/worldwiki-domain" }
+worldwiki-ports = { path = "crates/worldwiki-ports" }
+worldwiki-application = { path = "crates/worldwiki-application" }
+worldwiki-infrastructure = { path = "crates/worldwiki-infrastructure" }
+worldwiki-tauri = { path = "crates/worldwiki-tauri" }
+
 tauri = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-opener = "2"
 serde = { version = "1.0.229", features = ["derive"] }

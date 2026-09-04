@@ -8,7 +8,10 @@ use surrealdb::Surreal;
 use tauri::Manager;
 use tokio::sync::Mutex;
 
+#[allow(clippy::all, warnings, unused, dead_code)]
+#[path = ".logic_legacy/mod.rs"]
 pub mod logic;
+pub mod bootstrap;
 
 pub struct AppState {
     pub db: Surreal<Db>,

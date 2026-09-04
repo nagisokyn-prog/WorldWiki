@@ -1,0 +1,37 @@
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct EntityRelation {
+    pub id: String,
+    pub project_id: String,
+    pub from_entity_id: String,
+    pub to_entity_id: String,
+    pub rel_type: String, // "ally", "enemy", "parent_of", "located_in", "member_of", etc.
+    pub strength: Option<i32>, // -100..100
+    pub start_chapter_id: Option<String>,
+    pub end_chapter_id: Option<String>,
+    #[serde(default)]
+    pub attributes: Value,
+}
+
+impl EntityRelation {
+    pub fn new(
+        project_id: impl Into<String>,
+        from: impl Into<String>,
+        to: impl Into<String>,
+        rel_type: impl Into<String>,
+    ) -> Self {
+        Self {
+            id: uuid::Uuid::new_v4().to_string(),
+            project_id: project_id.into(),
+            from_entity_id: from.into(),
+            to_entity_id: to.into(),
+            rel_type: rel_type.into(),
+            strength: None,
+            start_chapter_id: None,
+            end_chapter_id: None,
+            attributes: Value::Object(serde_json::Map::new()),
+        }
+    }
+}

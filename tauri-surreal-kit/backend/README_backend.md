@@ -171,14 +171,16 @@ surreal_schema! {
 
 ```rust
 entity_commands![
-    // Обычные команды (функции)
-    cmd1, cmd2, cmd3,
+    // Обычные и модульные команды (поддерживаются полные пути `path::to::cmd`)
+    cmd1, 
+    my_module::cmd2,
+    worldwiki_tauri::commands::ai_query_world,
 
     // Автогенерация для сущностей (CRUD)
-    @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar],
+    @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, PlotPromise],
 
     // Автогенерация для поисковых сущностей (CRUD + search)
-    @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache],
+    @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
 
     // Автогенерация для релей (get, create, delete)
     @relations: [Cites]
@@ -187,12 +189,12 @@ entity_commands![
 
 **Парсинг**:
 
-- Идентификаторы без `@` → `normal_commands`
-- `@entities: [...]` → генерирует 4 команды на тип (get_all, get_one, save, delete)
-- `@searchable: [...]` → 5 команд (4 CRUD + search)
-- `@relations: [...]` → 3 команды (get_all, create, delete)
+- Идентификаторы и пути модулей (`syn::Path`) без `@` → `normal_commands`
+- `@entities: [...]` → генерирует 4 команды на тип (`get_<plural>`, `get_<item>`, `save_<item>`, `delete_<item>`)
+- `@searchable: [...]` → 5 команд (4 CRUD + `search_<plural>`)
+- `@relations: [...]` → 3 команды (`get_<plural>`, `create_<singular>`, `delete_<singular>`)
 
-**Результат**: `tauri::generate_handler![...]` со всеми функциями.
+**Результат**: `tauri::generate_handler![...]` со всеми функциями и путями.
 
 ---
 
@@ -312,44 +314,38 @@ struct PerformanceInfo {
 ## 🔗 Mermaid: Crate Dependency Graph
 
 ```mermaid
-graph TD
-    subgraph SurrealDomain[surreal_domain workspace]
-        Core[surreal_domain_core]
-        Macros[surreal_domain_macros]
-        Facade[surreal_domain_facade]
+flowchart TD
+    subgraph SurrealDomain["surreal_domain workspace"]
+        Core["surreal_domain_core"]
+        Macros["surreal_domain_macros"]
+        Facade["surreal_domain_facade"]
     end
 
-    subgraph TauriShell[tauri_shell]
-        ShellMain[main.rs]
-        ShellLogic[logic/system.rs, performance.rs]
+    subgraph TauriShell["tauri_shell"]
+        ShellMain["main.rs"]
+        ShellLogic["logic/system.rs, performance.rs"]
     end
 
-    subgraph UserApp[User Application<br/>(например, src-tauri)]
-        UserMain[main.rs]
-        UserModels[models.rs]
-        UserLogic[logic/*.rs]
+    subgraph UserApp["User Application (например, src-tauri)"]
+        UserMain["main.rs"]
+        UserModels["models.rs"]
+        UserLogic["logic/*.rs"]
     end
 
-    Core --> Macros : trait SurrealRepository<br/>DTO types
-    Macros --> Core : uses SurrealDb, SurrealRepository
-    Facade --> Core : re-export
-    Facade --> Macros : re-export
+    Core -->|"trait SurrealRepository / DTO types"| Macros
+    Macros -->|"uses SurrealDb, SurrealRepository"| Core
+    Facade -->|"re-export"| Core
+    Facade -->|"re-export"| Macros
 
-    ShellMain --> Facade : use surreal_domain::*
-    ShellLogic --> Facade : use surreal_domain::SurrealDb
+    ShellMain -->|"use surreal_domain::*"| Facade
+    ShellLogic -->|"use surreal_domain::SurrealDb"| Facade
 
-    UserMain --> Facade : use surreal_domain::*
-    UserModels --> Facade : surreal_entity!, surreal_relation!
-    UserLogic --> Facade : uses SurrealDb trait
+    UserMain -->|"use surreal_domain::*"| Facade
+    UserModels -->|"surreal_entity!, surreal_relation!"| Facade
+    UserLogic -->|"uses SurrealDb trait"| Facade
 
-    Macros -.-> UserModels : proc-macro expansion<br/>at compile time
-    Macros -.-> UserMain : entity_commands!<br/>at compile time
-
-    style Core fill:#d0d0d0,stroke:#333,stroke-width:2px
-    style Macros fill:#c0c0c0,stroke:#333,stroke-width:2px
-    style Facade fill:#b0b0b0,stroke:#333,stroke-width:2px
-    style ShellMain fill:#e0e0e0,stroke:#333
-    style UserMain fill:#f0f0f0,stroke:#333,stroke-width:2px
+    Macros -.->|"proc-macro expansion at compile time"| UserModels
+    Macros -.->|"entity_commands! at compile time"| UserMain
 ```
 
 ---
@@ -358,26 +354,26 @@ graph TD
 
 ```mermaid
 flowchart TD
-    subgraph CompileTime[Compile Time - Proc Macros]
-        UserCode[User Code<br/>models.rs]
-        EntityMacro[surreal_entity!]
-        RelationMacro[surreal_relation!]
-        SchemaMacro[surreal_schema!]
-        CommandsMacro[entity_commands!]
+    subgraph CompileTime["Compile Time - Proc Macros"]
+        UserCode["User Code / models.rs"]
+        EntityMacro["surreal_entity!"]
+        RelationMacro["surreal_relation!"]
+        SchemaMacro["surreal_schema!"]
+        CommandsMacro["entity_commands!"]
     end
 
-    subgraph Generated[Generated Code]
-        Structs[Struct Definitions<br/>+ serde/TS derives]
-        RepoImpl[SurrealRepository Impl<br/>CRUD methods]
-        SearchMethods[search_fulltext<br/>search_similar]
-        CommandMods[Command Modules<br/>get_*, save_*, delete_*]
-        Handler[tauri::generate_handler!]
+    subgraph Generated["Generated Code"]
+        Structs["Struct Definitions (+ serde/TS derives)"]
+        RepoImpl["SurrealRepository Impl (CRUD methods)"]
+        SearchMethods["search_fulltext / search_similar"]
+        CommandMods["Command Modules (get_*, save_*, delete_*)"]
+        Handler["tauri::generate_handler!"]
     end
 
-    subgraph Runtime[Runtime]
-        TauriApp[Tauri App]
-        SurrealDB[(SurrealDB)]
-        Frontend[Frontend TS]
+    subgraph Runtime["Runtime"]
+        TauriApp["Tauri App"]
+        SurrealDB[("SurrealDB")]
+        Frontend["Frontend TS"]
     end
 
     UserCode --> EntityMacro
@@ -394,20 +390,16 @@ flowchart TD
     RelationMacro --> RepoImpl
     RelationMacro --> CommandMods
 
-    SchemaMacro --> Structs : registers for TS export
+    SchemaMacro -->|"registers for TS export"| Structs
 
-    CommandsMacro --> CommandMods : collects
-    CommandsMacro --> Handler : generates
+    CommandsMacro -->|"collects"| CommandMods
+    CommandsMacro -->|"generates"| Handler
 
-    Handler --> TauriApp : registered in main()
-    TauriApp --> SurrealDB : queries
-    TauriApp --> Frontend : invoke/response
+    Handler -->|"registered in main"| TauriApp
+    TauriApp -->|"queries"| SurrealDB
+    TauriApp -->|"invoke/response"| Frontend
 
-    Frontend -.-> Structs : TS types via ts_rs<br/>(generated at build)
-
-    style CompileTime fill:#f0f0f0,stroke:#333
-    style Generated fill:#e0e0e0,stroke:#333
-    style Runtime fill:#d0d0d0,stroke:#333
+    Frontend -.->|"TS types via ts_rs"| Structs
 ```
 
 ---

@@ -1,95 +1,94 @@
-# src-tauri/src — Документация папки
+# src-tauri — Документация Архитектуры Бэкенда (Hexagonal Modular Monolith)
 
-> **Назначение**: Основное приложение Tauri (Rust backend). Точка входа, инициализация SurrealDB, регистрация всех Tauri-команд, бизнес-логика приложения WorldWiki.
+> **Назначение**: Промышленное модульное ядро WorldWiki на базе **Гексагональной Архитектуры (Ports & Adapters / Modular Monolith)** с предметными контекстами (Bounded Contexts) и изоляцией фреймворка Tauri.
 
 ---
 
-## 📁 Структура папки
+## 🏛️ Архитектурная Топология (5 Крейтов Workspace)
+
+Бэкенд физически разделен на 5 изолированных Cargo-крейтов в `src-tauri/crates/` и центральную точку сборки `src/`:
 
 ```
-src-tauri/src/
-├── main.rs              # Точка входа, инициализация БД, регистрация команд
-├── lib.rs               # Базовый Tauri boilerplate
-├── logic/
-│   ├── mod.rs           # Реэкспорт всех модулей logic (включая ai)
-│   ├── ai/
-│   │   ├── mod.rs       # Re-экспорт всех публичных AI-функций
-│   │   ├── agent_runtime.rs # Локальный агент: Auto-RAG, бюджетирование токенов, стриминг (local)
-│   │   ├── local_llm.rs # C++ FFI обёртка над llama-sys/llama.cpp: инференс, эмбеддинги, KV-кэш
-│   │   ├── hardware.rs  # Детекция RAM/VRAM (DXGI/Windows API), оценка квантования, рекомендации
-│   │   ├── manager.rs   # Управление локальными моделями: загрузка, выгрузка, экстренный сброс GPU
-│   │   ├── model_hub.rs # Поиск и скачивание GGUF моделей с HuggingFace (stream download)
-│   │   ├── permissions.rs # Каталог прав доступа и уровней автоодобрения инструментов
-│   │   ├── chunker.rs   # Разбиение текста глав и сущностей на чанки для векторизации
-│   │   ├── types.rs     # DTO структуры (InstalledModelInfo, HardwareInfo, ModelLifecycleState)
-│   │   ├── agent/       # Агент: промпты, клиент провайдеров и цикл выполнения
-│   │   │   ├── mod.rs   # Объявление подмодулей (client, prompt, runner)
-│   │   │   ├── client.rs # build_provider_client: сборка Anthropic/OpenAI-compat клиентов (+юниты)
-│   │   │   ├── prompt.rs # Промпт соавтора, правила ролей (автор vs персонаж), контекст
-│   │   │   └── runner.rs # Цикл агента <R: Runtime>: стрим дельт, CoT reasoning, tool calls
-│   │   ├── chat/        # Дерево чатов и операции
-│   │   │   ├── mod.rs   # Хелперы parse_record_id / clean_surreal_id
-│   │   │   ├── tree.rs  # Дерево чатов и сообщений (get_chat_tree и др.)
-│   │   │   └── operations/ # IPC отделён от логики (архитектурная резня)
-│   │   │       ├── mod.rs     # Логика: *_db_core ядра send/edit/regenerate/fork/delete
-│   │   │       └── commands.rs # Тонкие #[tauri::command] обёртки
-│   │   ├── providers/   # Списки моделей провайдеров
-│   │   │   ├── mod.rs   # Объявление модуля
-│   │   │   └── fetch.rs # fetch_ai_models_inner (+base_override для тестов)
-│   │   ├── retrieval/   # Продвинутая подсистема RAG и индексации
-│   │   │   ├── mod.rs   # Экспорт query_analyzer, router, indexer
-│   │   │   ├── query_analyzer.rs # Парсер числительных (1–100), римских цифр, Chitchat/Greeting
-│   │   │   ├── router.rs # Query Planner: Exact Document Fetch vs Hybrid Semantic Vector RAG
-│   │   │   ├── embedder.rs # Сервис HTTP-клиента эмбеддингов (префиксы query:/passage:)
-│   │   │   └── indexer.rs # Фоновый векторизатор базы знаний (reindex_project_lore)
-│   │   └── tools/       # Инструменты агента (RAG + запись)
-│   │       └── mod.rs   # WorldWikiTools — 19 инструментов (чтение, запись, таймлайн)
-│   ├── models.rs        # Определение всех сущностей (surreal_entity! макросы)
-│   ├── projects/        # CRUD проектов (резня: логика + commands)
-│   │   ├── mod.rs
-│   │   └── commands.rs
-│   ├── entities/        # CRUD сущностей, схем, связей, ревизий (резня)
-│   │   ├── mod.rs       # Логика: *_inner над &Surreal<Db>
-│   │   └── commands.rs  # 18 тонких команд
-│   ├── chapters/        # Главы, текстовые блоки, ревизии (резня)
-│   │   ├── mod.rs
-│   │   └── commands.rs
-│   ├── volumes/         # Иерархия томов/арок/глав (резня)
-│   │   ├── mod.rs
-│   │   └── commands.rs
-│   ├── connections/     # Связи между сущностями (резня)
-│   │   ├── mod.rs
-│   │   └── commands.rs
-│   ├── export/          # Бэкапы .wwiki, Yandex Disk, восстановление (резня)
-│   │   ├── mod.rs       # create_cloud_backup_inner, restore_from_backup_inner
-│   │   └── commands.rs  # + Yandex OAuth/Disk команды
-│   ├── documents/       # Академический процессор и мультиформатный экспорт
-│   │   ├── mod.rs       # Re-экспорт подмодулей
-│   │   ├── commands.rs  # Tauri IPC команды (export_document_docx/epub/fb2/pdf_save)
-│   │   ├── docx.rs      # Генератор Word OpenXML (ГОСТ 7.32, TNR 14pt, 1.5 интервал, 1.25 см отступ, таблицы, сноски)
-│   │   ├── epub.rs      # Генератор EPUB 3.3 (mimetype STORED, container.xml, content.opf, toc.xhtml, XHTML5, CSS)
-│   │   ├── fb2.rs       # Генератор FictionBook 2.0 XML (title-info, секции, цитаты, примечания в body notes)
-│   │   └── models.rs    # DTO запросов и ответов (ExportDocumentRequest, ExportDocumentResponse)
-│   ├── batch/           # Пакетные операции, транзакции (резня)
-│   │   ├── mod.rs
-│   │   └── commands.rs
-│   ├── schema.rs        # Заглушка для совместимости
-│   └── calendar_math.rs # Календарная математика
+src-tauri/
+├── Cargo.toml                     # Workspace Root
+├── crates/
+│   ├── 🧠 worldwiki-domain/       # [Чистый Домен]: Сущности, Value Objects, DomainError (0 внешних SDK)
+│   │   ├── manuscript/            # Главы, сцены, тома, арки
+│   │   ├── knowledge/             # Сущности лора, схемы, связи
+│   │   ├── calendar/              # Абсолютная минута M_abs, астрономия, эпохи
+│   │   ├── plot/                  # Сюжетные обещания (Чеховские ружья), планы
+│   │   └── document/              # ГОСТ-модели документов
+│   │
+│   ├── 🔌 worldwiki-ports/        # [Интерфейсы и Контракты]: Secondary Ports
+│   │   ├── repositories.rs        # ChapterRepository, EntityRepository, RelationRepository, PlotPromiseRepository, PlanRepository, RAGPort
+│   │   ├── ai.rs                  # LlmInferencePort, EmbeddingPort
+│   │   ├── storage.rs             # FileSystemPort, BackupStoragePort
+│   │   ├── events.rs              # EventPublisherPort + типизированные ApplicationEvent
+│   │   └── unit_of_work.rs        # UnitOfWork для атомарных транзакций
+│   │
+│   ├── ⚙️ worldwiki-application/  # [Сценарии Использования & AI-Фасады]: CQRS + Workflows
+│   │   ├── manuscript/            # Commands/Queries: GetChapter, SaveChapter, ReorderNode, AutoExtend
+│   │   ├── knowledge/             # Commands/Queries: GetEntityCard, ManageEntity, RelateEntities
+│   │   ├── calendar/              # Commands/Queries: CalculateDate, ConvertEras, GenerateSummary
+│   │   ├── plot/                  # Commands/Queries: PlantPromise, CompletePlan, AuditVolumeConsistency
+│   │   ├── document/              # Commands/Queries: ExportDocx, ExportEpub, ExportFb2
+│   │   └── ai/                    # 8 AI-Фасадов + Workflows + SubagentOrchestrator
+│   │       ├── tools/             # 8 Consolidated AI Facades (query_world, inspect_entity, edit_manuscript, ...)
+│   │       ├── workflows/         # EditManuscriptAtomicWorkflow, HybridSemanticSearchWorkflow
+│   │       └── orchestration/     # JobManager (CancellationToken)
+│   │
+│   ├── 🧱 worldwiki-infrastructure/ # [Адаптеры Портов]: Driven Adapters
+│   │   ├── surrealdb/             # SurrealDB реализации репозиториев (SurrealChapterRepository, GraphRAG, ...)
+│   │   ├── ai/                    # llama.cpp FFI + HTTP провайдеры (OpenAI, Anthropic, Ollama)
+│   │   ├── documents/             # Компиляторы DOCX (OpenXML), EPUB 3.3, FB2 2.0
+│   │   └── filesystem/            # Работа с локальным диском, архивы .wwiki
+│   │
+│   └── 🚪 worldwiki-tauri/        # [Driving Adapter]: Единственный слой с доступом к Tauri
+│       ├── bridge_macro.rs        # bridge_command! — декларативный макрос-мост
+│       ├── state.rs               # AppState (обертка над AppServices)
+│       ├── error.rs               # IpcError (типизированный маппинг ApplicationError -> JSON)
+│       ├── events.rs              # TauriEventPublisher (реализация EventPublisherPort)
+│       └── commands/              # Модульные IPC-команды (карточки, ружья, планы, 8 AI-фасадов)
+│
+└── src/                           # 🚀 [Composition Root & Bootstrap]
+    ├── main.rs                    # Минимальная точка входа
+    ├── lib.rs                     # Запуск рантайма, entity_commands!, on_window_event
+    ├── bootstrap/
+    │   └── services.rs            # build_surreal_app_services — сборка графа зависимостей
+    └── tests/                     # 350+ модульных и интеграционных тестов
 ```
 
-### 🪓 Архитектурное соглашение «резни» (2026-08-26)
+---
 
-Каждый толстый модуль разделён на **IPC-слой** (`commands.rs`: только тонкие
-`#[tauri::command]`, распаковка `State` → вызов ядра) и **логику** (`mod.rs`:
-функции `*_inner` над `&Surreal<Db>`, полностью тестируемые без Tauri).
-Внешние пути не изменились (`mod commands; pub use commands::*;`) — lib.rs,
-invoke_handler и codegen.js не затронуты. Инструмент: `scripts/split-commands.cjs`
-(dry-run, классификация thin/glue/fat). Подробности и таблица статусов —
-`docs/backend_test_coverage_plan.md`, раздел «Архитектурная резня».
+## 🚫 Железные Архитектурные Инварианты (`ARCH-001` .. `ARCH-012`)
 
-> ⚠️ Подробные описания файлов ниже по документу могут ссылаться на старые
-> однофайловые пути (`entities.rs`, `export.rs`, ...). Актуальная структура —
-> в дереве выше; содержимое описаний по-прежнему верно.
+| Код Инварианта | Правило |
+|---|---|
+| **ARCH-001** | `worldwiki-domain` **НЕ ДОЛЖЕН** импортировать `tauri`, `surrealdb`, `reqwest`, `tokio` или другие внешние SDK. |
+| **ARCH-002** | `worldwiki-application` **НЕ ДОЛЖЕН** импортировать `tauri`. Зависит только от `domain` и `ports`. |
+| **ARCH-003** | `worldwiki-ports` **НЕ ДОЛЖЕН** зависеть от конкретных реализаций инфраструктуры (только чистые трейты). |
+| **ARCH-004** | `worldwiki-infrastructure` **ОБЯЗАН** реализовывать трейты из `ports`, а не диктовать доменные правила. |
+| **ARCH-005** | `worldwiki-tauri` — **ЕДИНСТВЕННЫЙ** слой/крейт, которому разрешено импортировать `tauri::*`. |
+| **ARCH-006** | `worldwiki-application` **НЕ ДОЛЖЕН** напрямую диспатчить события во фронтенд (только через `EventPublisherPort`). |
+| **ARCH-007** | Никакие типы `tauri::*` (`State`, `AppHandle`, `Window`) не могут проникать в сигнатуры `application` или `domain`. |
+| **ARCH-008** | Никакие конкретные типы `infrastructure` (например, `Surreal<Db>`) не могут появляться в публичных сигнатурах Use Cases. |
+| **ARCH-009** | Границы модулей Bounded Contexts изолированы: межмодульное общение только через публичные DTO. |
+| **ARCH-010** | Все тяжелые асинхронные задачи (AI, Export, Embeddings) обязаны принимать `CancellationToken`. |
+| **ARCH-011** | Мутирующие Use Cases обязаны быть идемпотентными по `operation_id`. |
+| **ARCH-012** | AI-инструменты имеют доступ к системе **СТРОГО** через Application Use Cases (не напрямую в БД). |
+
+---
+
+## 🤖 Спецификация 8 Консолидированных AI-Фасадов (Two-Tier Model)
+
+1. **`ai_query_world`**: Единая точка семантического поиска (Graph + BM25 + Vector HNSW).
+2. **`ai_inspect_entity`**: Полная карточка сущности с матрицей связей и схемами за 1 вызов.
+3. **`ai_manage_entity`**: Создание, обновление, связывание и удаление сущностей в лоре.
+4. **`ai_read_manuscript`**: Чтение текста глав, оглавления и аутлайна томов/арок.
+5. **`ai_edit_manuscript`**: Атомарная транзакция (`EditManuscriptAtomicWorkflow`): текст главы + Чеховские ружья + закрытие планов.
+6. **`ai_timeline_manager`**: Фасад континуума времени $M_{\text{abs}}$ и синхронизации событий.
+7. **`ai_audit_consistency`**: Валидация противоречий лора и аудит незакрытых ружей тома.
+8. **`ai_delegate_task`**: Оркестрация специализированных саб-агентов (`SubagentOrchestrator`).
 
 ---
 
@@ -1190,20 +1189,25 @@ sequenceDiagram
 
 ---
 
-## 📝 Примечания
+## 📝 Примечания и Архитектурные Решения
 
-1. **Все Tauri-команды** регистрируются в `main.rs` через макрос `entity_commands!` из `surreal_domain_macros`
-2. **Макросы в `models.rs`** генерируют структуры, трейты, команды и TypeScript типы автоматически
-3. **SurrealDB** используется в embedded режиме (SurrealKV), файлы в `data/surreal_db/`
-4. **DDL схема** применяется при старте из `apps/spa/src/logic/surreal_schema.surql`
-5. **Типизация RecordId**: везде используется формат `table:id`, хелперы `safe_id`/`flatten_thing` нормализуют
-6. **Транзакции**: критичные операции (удаление, батч) обёрнуты в `BEGIN`/`COMMIT`
-7. **Производительность**: `get_entities_batch`, `upsert_connections_batch` минимизируют round-trip'ы
-8. **AI-стек**:
+1. **Гексагональная Модульность**: Вся кодовая база бэкенда разделена на 5 изолированных крейтов (`worldwiki-domain`, `worldwiki-ports`, `worldwiki-application`, `worldwiki-infrastructure`, `worldwiki-tauri`).
+2. **Макросы**:
+   - `bridge_command!` (`worldwiki-tauri`) — механический мост, инжектирующий `AppState` и маппящий ошибки в `IpcError`.
+   - `entity_commands!` (`surreal_domain_macros`) — сборка команд с поддержкой путей модулей (`syn::Path`) и генерацией CRUD.
+3. **SurrealDB & GraphRAG**:
+   - Работает в embedded режиме (`SurrealKv`), файлы в `data/surreal_db/`.
+   - DDL схема вкомпилирована и применяется при старте из `apps/spa/src/logic/surreal_schema.surql`.
+   - Внедрена нативная функция графового обхода окрестности `fn::get_chapter_multi_hop_context`.
+   - Таймлайн индексирован по эталону абсолютной минуты $M_{\text{abs}}$ (`idx_event_m_abs`) со связями `participates_in`.
+4. **Типизация RecordId**: Формат `table:id`, хелперы `safe_id`/`flatten_thing` нормализуют идентификаторы.
+5. **Транзакции**: Критичные операции (удаление, батч, редактирование глав с ружьями и планами) обёрнуты в атомарные транзакции `EditManuscriptAtomicWorkflow`.
+6. **Производительность**: `get_entities_batch`, `upsert_connections_batch` минимизируют round-trip'ы.
+7. **AI-стек**:
    - Локальный инференс через прямой C++ FFI `llama-sys` / `llama.cpp` на GPU CUDA, сэмплеры со штрафами повторений, KV-кэш 16K, безопасный батчинг эмбеддеров (4096 токенов).
-   - Облачный инференс через `claw_api` (OpenRouter, Anthropic, OpenAI, DeepSeek, Gemini).
-   - Продвинутый **Query Planner** (`query_analyzer.rs` + `router.rs`), разделяющий **Document-Level Retrieval** (главы целиком) и **Hybrid Semantic Vector RAG** (BM25 + Cosine Similarity).
+   - Облачный инференс через провайдеров (OpenRouter, Anthropic, OpenAI, DeepSeek, Gemini).
+   - Двухуровневая модель ИИ: 8 высокоуровневых фасадов (`ai_query_world`, `ai_inspect_entity`, `ai_edit_manuscript` и т.д.) делегируют в типизированный Application Core.
    - Поддержка потокового **Reasoning / CoT (Thinking)** с отображением рассуждений в аккордеоне UI.
-   - История чатов хранится в `chat_messages` в виде направленного ациклического графа (DAG) с поддержкой форков, веток и вариантов `< 1/3 >`.
-9. **Стриминг ответа**: UI получает дельты через события `chat_stream_chunk` (payload `StreamChunk`) и `agent_tool` (payload `AgentToolEvent`); генерация запускается в `tokio::spawn` и регистрируется в `AgentTasks` для отмены через `cancel_generation` (включая мгновенный сброс GPU через атомик `CANCEL_LOCAL_GEN`).
-10. **Лимиты контекста**: `prompt.rs` задаёт `MAX_AGENT_ITERATIONS = 8`, `DEFAULT_MAX_TOKENS = 4096`, `HISTORY_CHAR_BUDGET = 120_000`, локальный бюджет лора `12_000` символов.
+   - История чатов хранится в `chat_messages` в виде направленного дерева с поддержкой форков и веток.
+8. **Стриминг ответа**: UI получает дельты через события `chat_stream_chunk` (payload `StreamChunk`) и `agent_tool` (payload `AgentToolEvent`); генерация запускается в `tokio::spawn` и регистрируется в `AgentTasks` для отмены через `cancel_generation` (включая мгновенный сброс GPU через атомик `CANCEL_LOCAL_GEN`).
+9. **Лимиты контекста**: `prompt.rs` задаёт `MAX_AGENT_ITERATIONS = 8`, `DEFAULT_MAX_TOKENS = 4096`, `HISTORY_CHAR_BUDGET = 120_000`, локальный бюджет лора `12_000` символов.

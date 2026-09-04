@@ -38,4 +38,10 @@ pub trait RAGContextPort: Send + Sync {
         scope: &str,
         top_k: usize,
     ) -> Result<Vec<Value>, DomainError>;
+
+    async fn retrieve_chapter_multi_hop_context(
+        &self,
+        project_id: &str,
+        chapter_id: &str,
+    ) -> Result<Value, DomainError>;
 }

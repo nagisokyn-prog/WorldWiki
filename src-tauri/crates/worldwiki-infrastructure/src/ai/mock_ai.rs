@@ -44,4 +44,19 @@ impl RAGContextPort for MockAiAdapter {
             })
         ])
     }
+
+    async fn retrieve_chapter_multi_hop_context(
+        &self,
+        project_id: &str,
+        chapter_id: &str,
+    ) -> Result<Value, DomainError> {
+        Ok(serde_json::json!({
+            "project_id": project_id,
+            "chapter_id": chapter_id,
+            "participants": [],
+            "relations": [],
+            "timeline": [],
+            "plot_promises": []
+        }))
+    }
 }

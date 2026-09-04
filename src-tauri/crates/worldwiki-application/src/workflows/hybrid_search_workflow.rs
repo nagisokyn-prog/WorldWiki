@@ -25,4 +25,16 @@ impl HybridSemanticSearchWorkflow {
             .await?;
         Ok(results)
     }
+
+    pub async fn get_chapter_multi_hop_context(
+        &self,
+        project_id: &str,
+        chapter_id: &str,
+    ) -> Result<Value, ApplicationError> {
+        let ctx = self
+            .rag_port
+            .retrieve_chapter_multi_hop_context(project_id, chapter_id)
+            .await?;
+        Ok(ctx)
+    }
 }

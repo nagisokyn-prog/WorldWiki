@@ -4,7 +4,7 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::{Ident, Token, punctuated::Punctuated};
 
 struct CommandList {
-    normal_commands: Vec<Ident>,
+    normal_commands: Vec<syn::Path>,
     entities: Vec<Ident>,
     searchable: Vec<Ident>,
     relations: Vec<Ident>,
@@ -35,7 +35,7 @@ impl Parse for CommandList {
                     relations.extend(idents);
                 }
             } else {
-                let cmd: Ident = input.parse()?;
+                let cmd: syn::Path = input.parse()?;
                 normal_commands.push(cmd);
             }
             if input.peek(Token![,]) {

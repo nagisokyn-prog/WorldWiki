@@ -47,7 +47,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 -- ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
 -- ===============================================
 
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs OUT volumes | arcs | chapters SCHEMAFULL;
+DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs | chats OUT volumes | arcs | chapters | chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
@@ -188,27 +188,6 @@ DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DE
 };
 
 -- ===============================================
--- ЧАНКИ СУЩНОСТЕЙ (Для детального семантического поиска Auto-RAG)
--- ===============================================
-DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects>;
-DEFINE FIELD OVERWRITE chapter_id          ON entity_chunks TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE entity_id           ON entity_chunks TYPE option<record<entities> | null>;
-DEFINE FIELD OVERWRITE title               ON entity_chunks TYPE option<string | null>;
-DEFINE FIELD OVERWRITE chunk_index         ON entity_chunks TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE content             ON entity_chunks TYPE string;
-DEFINE FIELD OVERWRITE embedding_nemotron  ON entity_chunks TYPE option<array<float, 2048> | null>;
-DEFINE FIELD OVERWRITE embedding_nomic     ON entity_chunks TYPE option<array<float, 768> | null>;
-DEFINE FIELD OVERWRITE created_at          ON entity_chunks TYPE option<datetime> DEFAULT time::now();
-
-DEFINE INDEX OVERWRITE idx_chunk_project ON entity_chunks FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_chunk_chapter ON entity_chunks FIELDS chapter_id;
-DEFINE INDEX OVERWRITE idx_chunk_entity  ON entity_chunks FIELDS entity_id;
-DEFINE INDEX OVERWRITE idx_chunk_content_ft ON entity_chunks COLUMNS content FULLTEXT ANALYZER like BM25;
-DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embedding_nemotron HNSW DIMENSION 2048 DIST COSINE;
-DEFINE INDEX OVERWRITE idx_chunk_emb_nomic ON entity_chunks COLUMNS embedding_nomic HNSW DIMENSION 768 DIST COSINE;
-
--- ===============================================
 -- ТИПЫ ГРАФ-РЁБЕР И СВЯЗИ
 -- ===============================================
 DEFINE TABLE OVERWRITE relation_schemas SCHEMAFULL;
@@ -258,25 +237,23 @@ DEFINE EVENT OVERWRITE cascade_plan_delete ON TABLE plans WHEN $event = "DELETE"
 };
 
 -- ===============================================
--- СЮЖЕТНЫЕ ОБЕЩАНИЯ (Чеховские ружья, тайны, предзнаменования)
+-- ТАЙМЛАЙН СОБЫТИЙ И УЧАСТИЕ СУЩНОСТЕЙ
 -- ===============================================
-DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id           ON plot_promises TYPE record<projects>;
-DEFINE FIELD OVERWRITE chapter_id           ON plot_promises TYPE record<chapters>;
-DEFINE FIELD OVERWRITE kind                 ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question'
-DEFINE FIELD OVERWRITE quote                ON plot_promises TYPE string;
-DEFINE FIELD OVERWRITE paragraph_index      ON plot_promises TYPE int DEFAULT 1;
-DEFINE FIELD OVERWRITE block_id             ON plot_promises TYPE option<string | null>;
-DEFINE FIELD OVERWRITE note                 ON plot_promises TYPE option<string | null>;
-DEFINE FIELD OVERWRITE status               ON plot_promises TYPE string DEFAULT 'planted'; -- 'planted' | 'developed' | 'resolved'
-DEFINE FIELD OVERWRITE resolved_in_volume   ON plot_promises TYPE option<record<volumes> | null>;
-DEFINE FIELD OVERWRITE resolved_in_arc      ON plot_promises TYPE option<record<arcs> | null>;
-DEFINE FIELD OVERWRITE resolved_in_chapter  ON plot_promises TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE created_at           ON plot_promises TYPE datetime DEFAULT time::now();
-DEFINE FIELD OVERWRITE updated_at           ON plot_promises TYPE datetime DEFAULT time::now();
+DEFINE TABLE OVERWRITE timeline_events SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id    ON timeline_events TYPE record<projects>;
+DEFINE FIELD OVERWRITE title         ON timeline_events TYPE string;
+DEFINE FIELD OVERWRITE description   ON timeline_events TYPE option<string>;
+DEFINE FIELD OVERWRITE m_abs         ON timeline_events TYPE int; -- Золотой эталон абсолютной минуты
+DEFINE FIELD OVERWRITE calendar_id   ON timeline_events TYPE record<calendars>;
+DEFINE FIELD OVERWRITE chapter_id    ON timeline_events TYPE option<record<chapters>>;
+DEFINE FIELD OVERWRITE block_id      ON timeline_events TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at    ON timeline_events TYPE datetime DEFAULT time::now();
 
-DEFINE INDEX OVERWRITE idx_promise_project ON plot_promises FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_promise_chapter ON plot_promises FIELDS chapter_id;
+DEFINE INDEX OVERWRITE idx_event_m_abs ON timeline_events FIELDS project_id, m_abs;
+
+DEFINE TABLE OVERWRITE participates_in TYPE RELATION IN entities OUT timeline_events SCHEMAFULL;
+DEFINE FIELD OVERWRITE role  ON participates_in TYPE option<string>;
+DEFINE FIELD OVERWRITE notes ON participates_in TYPE option<string>;
 
 -- ===============================================
 -- AI АГЕНТЫ И ЧАТ (WORLDWIKI 1.0.0)
@@ -464,6 +441,34 @@ DEFINE FUNCTION OVERWRITE fn::get_rag_context($proj: record<projects>, $emb: arr
         WHERE project_id = $proj AND embeddings.openai != NONE 
         ORDER BY vec_score ASC LIMIT $limit
     );
+};
+
+-- GraphRAG: 2-шаговый графовый обход контекста для главы (персонажи -> отношения -> таймлайн -> сюжетные ружья)
+DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<chapters>) {
+    LET $participants = (SELECT VALUE in FROM appears_in WHERE out = $chapter);
+    LET $relations = (
+        SELECT 
+            in.name AS source_entity,
+            rel_type,
+            strength,
+            out.name AS target_entity
+        FROM entity_rel 
+        WHERE in IN $participants AND out IN $participants
+    );
+    LET $timeline = (
+        SELECT * FROM timeline_events 
+        WHERE chapter_id = $chapter
+    );
+    LET $promises = (
+        SELECT * FROM plot_promises 
+        WHERE chapter_id = $chapter OR (project_id = $chapter.project_id AND status != 'resolved')
+    );
+    RETURN {
+        participants: $participants,
+        relations: $relations,
+        timeline: $timeline,
+        plot_promises: $promises
+    };
 };
 
 -- ===============================================

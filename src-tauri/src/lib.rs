@@ -8,10 +8,10 @@ use surrealdb::Surreal;
 use tauri::Manager;
 use tokio::sync::Mutex;
 
+pub mod bootstrap;
 #[allow(clippy::all, warnings, unused, dead_code)]
 #[path = ".logic_legacy/mod.rs"]
 pub mod logic;
-pub mod bootstrap;
 
 pub struct AppState {
     pub db: Surreal<Db>,
@@ -68,7 +68,9 @@ async fn init_database() -> Surreal<Db> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[allow(clippy::too_many_arguments)]
 pub fn run() {
+    use logic::ai::*;
     use logic::batch::*;
+    use logic::calendar_math::*;
     use logic::chapters::*;
     use logic::connections::*;
     use logic::documents::commands::*;
@@ -77,8 +79,6 @@ pub fn run() {
     use logic::models::*;
     use logic::projects::*;
     use logic::volumes::*;
-    use logic::ai::*;
-    use logic::calendar_math::*;
     use tauri_shell::logic::system::*;
 
     tauri::Builder::default()
@@ -189,8 +189,23 @@ pub fn run() {
             get_tool_permissions_catalog,
             reindex_project_lore,
 
+            // --- Новые модульные IPC-команды (worldwiki-tauri) ---
+            worldwiki_tauri::commands::get_entity_full_card,
+            worldwiki_tauri::commands::add_entity_relation,
+            worldwiki_tauri::commands::plant_plot_promise,
+            worldwiki_tauri::commands::complete_plan,
+            worldwiki_tauri::commands::audit_volume_consistency,
+            // 8 AI Facades
+            worldwiki_tauri::commands::ai_query_world,
+            worldwiki_tauri::commands::ai_inspect_entity,
+            worldwiki_tauri::commands::ai_manage_entity,
+            worldwiki_tauri::commands::ai_read_manuscript,
+            worldwiki_tauri::commands::ai_edit_manuscript,
+            worldwiki_tauri::commands::ai_timeline_manager,
+            worldwiki_tauri::commands::ai_audit_consistency,
+            worldwiki_tauri::commands::ai_delegate_task,
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
+            @entities: [Chapter, Volume, Arc, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites]
 ])
@@ -198,8 +213,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
-            let db = tauri::async_runtime::block_on(init_database());
-            app.manage(AppState { db });
+            let db = std::sync::Arc::new(tauri::async_runtime::block_on(init_database()));
+            let event_publisher = std::sync::Arc::new(worldwiki_tauri::TauriEventPublisher::new(app.handle().clone()));
+            let services = bootstrap::services::build_surreal_app_services(db.clone(), event_publisher);
+            app.manage(worldwiki_tauri::AppState::new(services));
+            app.manage(AppState { db: (*db).clone() });
             app.manage(AgentTasks::default());
             Ok(())
         })

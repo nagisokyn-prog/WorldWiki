@@ -8,10 +8,26 @@ const __dirname = path.dirname(__filename);
 const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const MAIN_RS_PATH = path.join(WORKSPACE_ROOT, 'src-tauri/src/main.rs');
 const LOGIC_DIRS = [
-    path.join(WORKSPACE_ROOT, 'src-tauri/src/logic'),
+    path.join(WORKSPACE_ROOT, 'src-tauri/crates/worldwiki-tauri/src/commands'),
+    path.join(WORKSPACE_ROOT, 'src-tauri/src/.logic_legacy'),
     path.join(WORKSPACE_ROOT, 'tauri-surreal-kit/backend/tauri_shell/src/logic')
 ];
 const OUTPUT_PATH = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/services/api.client.ts');
+
+function getRsFilesRecursively(dir) {
+    let results = [];
+    if (!fs.existsSync(dir)) return results;
+    const list = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of list) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+            results = results.concat(getRsFilesRecursively(fullPath));
+        } else if (entry.isFile() && entry.name.endsWith('.rs')) {
+            results.push(fullPath);
+        }
+    }
+    return results;
+}
 
 // --- Типы ---
 function rustTypeToTs(rustType) {
@@ -23,7 +39,7 @@ function rustTypeToTs(rustType) {
     if (t === 'String' || t === '&str' || t === 'char') return 'string';
     if (t === 'i32' || t === 'u32' || t === 'i64' || t === 'u64' || t === 'f32' || t === 'f64' || t === 'usize' || t === 'u8') return 'number';
     if (t === 'bool') return 'boolean';
-    if (t === 'serde_json::Value' || t === 'Value') return 'any';
+    if (t === 'serde_json::Value' || t === 'Value') return 'unknown';
     if (t === '()') return 'void';
     
     // Vec<T>
@@ -38,18 +54,24 @@ function rustTypeToTs(rustType) {
     const searchMatch = t.match(/^surreal_domain::SearchResult<(.*)>$/);
     if (searchMatch) return `SearchResult<${rustTypeToTs(searchMatch[1])}>`;
 
-    // Map/Dict (простая эвристика)
-    if (t.startsWith('HashMap') || t.startsWith('BTreeMap') || t.startsWith('Map<')) return 'Record<string, any>';
+    // Map/Dict (HashMap<K, V>, BTreeMap<K, V>)
+    const mapMatch = t.match(/^(?:HashMap|BTreeMap|Map)<(.*),\s*(.*)>$/);
+    if (mapMatch) {
+        return `Record<${rustTypeToTs(mapMatch[1])}, ${rustTypeToTs(mapMatch[2])}>`;
+    }
+    if (t.startsWith('HashMap') || t.startsWith('BTreeMap') || t.startsWith('Map<')) return 'Record<string, unknown>';
+    if (t === 'ChapterHierarchy' || t === 'HierarchyDto') return 'ChapterHierarchy';
+    if (t === 'Project' || t === 'ProjectData') return 'ProjectSummary';
     
     // Остальное (предполагаем, что это доменные структуры, сгенерированные ts-rs)
     // Убираем возможные пути модулей
     t = t.split('::').pop();
     
     // Проверяем, существует ли этот тип в generated/
-    // Если нет, то возвращаем any, чтобы не ломать TS
+    // Если нет, то возвращаем unknown, чтобы не ломать TS и не плодить any
     const typeFilePath = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/types/generated', `${t}.ts`);
     if (!fs.existsSync(typeFilePath)) {
-        return 'any';
+        return 'unknown';
     }
     
     return t;
@@ -69,7 +91,12 @@ function parseReturnType(rustRet) {
 }
 
 function camelCase(str) {
-    return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+    const s = str.replace(/_([a-z])/g, (_, g) => g.toUpperCase());
+    return s.charAt(0).toLowerCase() + s.slice(1);
+}
+
+function toSnakeCase(str) {
+    return str.replace(/([A-Z])/g, (g, c, i) => (i > 0 ? '_' : '') + c.toLowerCase());
 }
 
 // --- Парсинг .rs файлов ---
@@ -79,12 +106,12 @@ function scanLogicFiles() {
     for (const dir of LOGIC_DIRS) {
         if (!fs.existsSync(dir)) continue;
         
-        const files = fs.readdirSync(dir).filter(f => f.endsWith('.rs'));
-        for (const file of files) {
-            const content = fs.readFileSync(path.join(dir, file), 'utf-8');
+        const files = getRsFilesRecursively(dir);
+        for (const filePath of files) {
+            const content = fs.readFileSync(filePath, 'utf-8');
             
             // Ищем функции #[tauri::command]
-            const regex = /#\[tauri::command\]\s*(?:#\[.*?\]\s*)*pub\s+(?:async\s+)?fn\s+([a-zA-Z0-9_]+)\s*\((.*?)\)(?:\s*->\s*(.*?))?\s*\{/gs;
+            const regex = /#\[tauri::command\]\s*(?:#\[.*?\]\s*)*pub\s+(?:async\s+)?fn\s+([a-zA-Z0-9_]+)(?:<.*?>)?\s*\((.*?)\)(?:\s*->\s*(.*?))?\s*\{/gs;
             
             let match;
             while ((match = regex.exec(content)) !== null) {
@@ -121,8 +148,8 @@ function scanLogicFiles() {
                     const argName = part.substring(0, colonIdx).trim();
                     const argType = part.substring(colonIdx + 1).trim();
                     
-                    // Игнорируем Tauri стейты
-                    if (argType.includes('tauri::State') || argType.includes('tauri::AppHandle') || argType.includes('tauri::Window')) {
+                    // Игнорируем Tauri стейты и Window/AppHandle
+                    if (argType.includes('State') || argType.includes('AppHandle') || argType.includes('Window') || argType.includes('WebviewWindow')) {
                         continue;
                     }
                     
@@ -136,10 +163,23 @@ function scanLogicFiles() {
                     });
                 }
                 
+const COMMAND_RETURN_TYPE_OVERRIDES = {
+    'get_chapter_hierarchy': 'ChapterHierarchy',
+    'get_entities_batch': 'Record<string, Entity[]>',
+    'get_projects': 'ProjectSummary[]',
+    'get_schema_history': 'Record<string, unknown>[]',
+    'get_chapter_revisions': 'Record<string, unknown>[]',
+    'get_entity_revisions': 'Record<string, unknown>[]',
+    'get_custom_themes': 'Record<string, unknown>[]',
+    'load_theme': 'Record<string, unknown>',
+    'load_settings': 'Record<string, unknown>',
+    'get_performance_styles': 'Record<string, unknown>'
+};
+
                 commands.set(name, {
                     name,
                     args,
-                    ret: parseReturnType(retStr)
+                    ret: COMMAND_RETURN_TYPE_OVERRIDES[name] || parseReturnType(retStr)
                 });
             }
         }
@@ -147,11 +187,15 @@ function scanLogicFiles() {
     return commands;
 }
 
-// --- Парсинг main.rs ---
+const ENTRY_RS_PATH = fs.existsSync(path.join(WORKSPACE_ROOT, 'src-tauri/src/lib.rs'))
+    ? path.join(WORKSPACE_ROOT, 'src-tauri/src/lib.rs')
+    : path.join(WORKSPACE_ROOT, 'src-tauri/src/main.rs');
+
+// --- Парсинг lib.rs / main.rs ---
 function extractEntityCommandsBlock() {
-    const content = fs.readFileSync(MAIN_RS_PATH, 'utf-8');
+    const content = fs.readFileSync(ENTRY_RS_PATH, 'utf-8');
     const startIdx = content.indexOf('surreal_domain::entity_commands![');
-    if (startIdx === -1) throw new Error('entity_commands! not found in main.rs');
+    if (startIdx === -1) throw new Error('entity_commands! not found in lib.rs or main.rs');
     
     const blockStart = content.indexOf('[', startIdx) + 1;
     let openCount = 1;
@@ -194,7 +238,7 @@ function parseCommandsBlock(block) {
     }
     
     // Остатки - это normal commands
-    const normalItems = remaining.split(',').map(i => i.trim()).filter(i => i);
+    const normalItems = remaining.split(',').map(i => i.trim().split('::').pop()).filter(i => i);
     normalCommands.push(...normalItems);
     
     return { normalCommands, entities, searchable, relations };
@@ -207,6 +251,7 @@ function generate() {
     const { normalCommands, entities, searchable, relations } = parseCommandsBlock(block);
     
     const usedTypes = new Set();
+    const addedFunctions = new Set();
     const outputLines = [
         `/**`,
         ` * @file api.client.ts`,
@@ -215,12 +260,17 @@ function generate() {
         ` */`,
         `import { invoke } from '@tauri-apps/api/core';`,
         `export interface SearchResult<T> { entity: T; score: number; kind: string; }`,
+        `export interface AutoExtendResult { chapter_id?: string | null; arc_id?: string | null; volume_id?: string | null; updated_count?: number; }`,
+        `export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; arcs: (Arc & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { arc_id?: string | null; volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }`,
+        `export interface ProjectSummary { id?: string; name: string; created_at?: string; genres?: string[]; perfLevel?: string; data?: Record<string, unknown>; stats?: Record<string, unknown>; icon?: string; [key: string]: unknown; }`,
         `// TODO: импорты типов из \`../types/generated/... \` будут добавлены ниже.`,
         ``
     ];
     
     function addFunction(rustName, args, retType) {
         const tsName = camelCase(rustName);
+        if (addedFunctions.has(tsName)) return;
+        addedFunctions.add(tsName);
         
         // Защита от пустых аргументов и плохих типов
         const validArgs = args.filter(a => a.name && a.name.length > 0 && a.name !== 'undefined');
@@ -236,18 +286,24 @@ function generate() {
         outputLines.push(``);
         
         // Собираем типы для импортов
-        const types = [retType, ...validArgs.map(a => a.type)].flatMap(t => t.replace(/\[\]/g, '').split('|')).map(t => t.trim());
-        for (const t of types) {
-            if (/^[A-Z]/.test(t) && t !== 'String' && t !== 'Record<string, any>' && !t.startsWith('SearchResult')) {
-                const baseType = t.split('<')[0];
-                // Проверяем, существует ли такой тип в generated/
-                const typeFilePath = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/types/generated', `${baseType}.ts`);
+        const extractedTypes = [retType, ...validArgs.map(a => a.type)].flatMap(t => {
+            const matches = t.match(/[A-Z][a-zA-Z0-9_]*/g);
+            return matches || [];
+        });
+        for (const t of extractedTypes) {
+            if (t !== 'String' && t !== 'Record' && t !== 'SearchResult' && t !== 'Unknown' && t !== 'ChapterHierarchy' && t !== 'ProjectSummary' && t !== 'AutoExtendResult' && t !== 'Promise') {
+                const typeFilePath = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/types/generated', `${t}.ts`);
                 if (fs.existsSync(typeFilePath)) {
-                    usedTypes.add(baseType);
+                    usedTypes.add(t);
                 }
             }
         }
     }
+    
+    usedTypes.add('Volume');
+    usedTypes.add('Arc');
+    usedTypes.add('Chapter');
+    usedTypes.add('Entity');
     
     outputLines.push(`// --- Normal Commands ---`);
     for (const cmd of normalCommands) {
@@ -262,7 +318,7 @@ function generate() {
     outputLines.push(`// --- Entities CRUD ---`);
     for (const ent of [...entities, ...searchable]) {
         const structName = ent;
-        const nameLower = ent.toLowerCase();
+        const nameLower = toSnakeCase(ent);
         
         addFunction(`get_${nameLower}s`, [{ name: 'project', originalName: 'project', type: 'string' }], `${structName}[]`);
         addFunction(`get_${nameLower}`, [{ name: 'id', originalName: 'id', type: 'string' }], `${structName} | null`);
@@ -280,7 +336,7 @@ function generate() {
     outputLines.push(`// --- Relations CRUD ---`);
     for (const rel of relations) {
         const structName = rel;
-        const nameLower = rel.toLowerCase();
+        const nameLower = toSnakeCase(rel);
         const singular = nameLower.endsWith('s') ? nameLower.slice(0, -1) : nameLower;
         const plural = singular + 's';
         
@@ -297,7 +353,7 @@ function generate() {
     }
     
     // Добавляем импорты типов в начало
-    const imports = Array.from(usedTypes).filter(t => t !== 'Any' && t !== 'Void').map(t => {
+    const imports = Array.from(usedTypes).filter(t => t !== 'Any' && t !== 'Void' && t !== 'Unknown').map(t => {
         return `import type { ${t} } from '../types/generated/${t}';`;
     });
     

@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@9.4.0",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "pnpm --filter @worldwiki/spa dev",
     "build": "turbo build",
     "preview": "vp preview",
     "tauri": "tauri",

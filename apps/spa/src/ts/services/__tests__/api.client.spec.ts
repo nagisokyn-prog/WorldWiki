@@ -8,7 +8,7 @@ vi.mock('@tauri-apps/api/core', () => ({
 
 describe('api.client (Tauri invoke contract tests)', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe('Project endpoints', () => {
@@ -317,11 +317,11 @@ describe('api.client (Tauri invoke contract tests)', () => {
     it('upsertConnectionsBatch and removeConnectionsBySource invoke correctly', async () => {
       const conns: any = [{ from: '1', to: '2' }];
       await api.upsertConnectionsBatch('proj_1', 'chapter', 'src_1', conns);
-      expect(invoke).toHaveBeenCalledWith('upsert_connections_batch', { project: 'proj_1', SourceType: 'chapter', sourceId: 'src_1', connections: conns });
+      expect(invoke).toHaveBeenCalledWith('upsert_connections_batch', { project: 'proj_1', sourceType: 'chapter', sourceId: 'src_1', connections: conns });
 
       vi.mocked(invoke).mockResolvedValue(3);
       const count = await api.removeConnectionsBySource('proj_1', 'chapter', 'src_1');
-      expect(invoke).toHaveBeenCalledWith('remove_connections_by_source', { Project: 'proj_1', EType: 'chapter', eId: 'src_1' });
+      expect(invoke).toHaveBeenCalledWith('remove_connections_by_source', { project: 'proj_1', eType: 'chapter', eId: 'src_1' });
       expect(count).toBe(3);
     });
 
@@ -516,20 +516,20 @@ describe('api.client (Tauri invoke contract tests)', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce([{ entity: tb, score: 1, kind: 'tb' }]);
 
-      expect(await api.getTextblocks('proj_1')).toEqual([tb]);
-      expect(invoke).toHaveBeenCalledWith('get_textblocks', { project: 'proj_1' });
+      expect(await api.getTextBlocks('proj_1')).toEqual([tb]);
+      expect(invoke).toHaveBeenCalledWith('get_text_blocks', { project: 'proj_1' });
 
-      expect(await api.getTextblock('tb1')).toEqual(tb);
-      expect(invoke).toHaveBeenCalledWith('get_textblock', { id: 'tb1' });
+      expect(await api.getTextBlock('tb1')).toEqual(tb);
+      expect(invoke).toHaveBeenCalledWith('get_text_block', { id: 'tb1' });
 
-      expect(await api.saveTextblock('proj_1', tb)).toEqual(tb);
-      expect(invoke).toHaveBeenCalledWith('save_textblock', { project: 'proj_1', data: tb });
+      expect(await api.saveTextBlock('proj_1', tb)).toEqual(tb);
+      expect(invoke).toHaveBeenCalledWith('save_text_block', { project: 'proj_1', data: tb });
 
-      await api.deleteTextblock('tb1');
-      expect(invoke).toHaveBeenCalledWith('delete_textblock', { id: 'tb1' });
+      await api.deleteTextBlock('tb1');
+      expect(invoke).toHaveBeenCalledWith('delete_text_block', { id: 'tb1' });
 
-      const searchRes = await api.searchTextblocks('proj_1', 'findme');
-      expect(invoke).toHaveBeenCalledWith('search_textblocks', { project: 'proj_1', query: 'findme' });
+      const searchRes = await api.searchTextBlocks('proj_1', 'findme');
+      expect(invoke).toHaveBeenCalledWith('search_text_blocks', { project: 'proj_1', query: 'findme' });
       expect(searchRes).toHaveLength(1);
     });
 
@@ -542,20 +542,20 @@ describe('api.client (Tauri invoke contract tests)', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce([{ entity: msg, score: 1, kind: 'msg' }]);
 
-      expect(await api.getChatmessages('proj_1')).toEqual([msg]);
-      expect(invoke).toHaveBeenCalledWith('get_chatmessages', { project: 'proj_1' });
+      expect(await api.getChatMessages('c_1')).toEqual([msg]);
+      expect(invoke).toHaveBeenCalledWith('get_chat_messages', { chatId: 'c_1' });
 
-      expect(await api.getChatmessage('m1')).toEqual(msg);
-      expect(invoke).toHaveBeenCalledWith('get_chatmessage', { id: 'm1' });
+      expect(await api.getChatMessage('m1')).toEqual(msg);
+      expect(invoke).toHaveBeenCalledWith('get_chat_message', { id: 'm1' });
 
-      expect(await api.saveChatmessage('proj_1', msg)).toEqual(msg);
-      expect(invoke).toHaveBeenCalledWith('save_chatmessage', { project: 'proj_1', data: msg });
+      expect(await api.saveChatMessage('proj_1', msg)).toEqual(msg);
+      expect(invoke).toHaveBeenCalledWith('save_chat_message', { project: 'proj_1', data: msg });
 
-      await api.deleteChatmessage('m1');
-      expect(invoke).toHaveBeenCalledWith('delete_chatmessage', { id: 'm1' });
+      await api.deleteChatMessage('m1');
+      expect(invoke).toHaveBeenCalledWith('delete_chat_message', { msgId: 'm1' });
 
-      const searchRes = await api.searchChatmessages('proj_1', 'query');
-      expect(invoke).toHaveBeenCalledWith('search_chatmessages', { project: 'proj_1', query: 'query' });
+      const searchRes = await api.searchChatMessages('proj_1', 'query');
+      expect(invoke).toHaveBeenCalledWith('search_chat_messages', { project: 'proj_1', query: 'query' });
       expect(searchRes).toHaveLength(1);
     });
 
@@ -568,20 +568,20 @@ describe('api.client (Tauri invoke contract tests)', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce([{ entity: mem, score: 1, kind: 'mem' }]);
 
-      expect(await api.getAgentmemorys('proj_1')).toEqual([mem]);
-      expect(invoke).toHaveBeenCalledWith('get_agentmemorys', { project: 'proj_1' });
+      expect(await api.getAgentMemorys('proj_1')).toEqual([mem]);
+      expect(invoke).toHaveBeenCalledWith('get_agent_memorys', { project: 'proj_1' });
 
-      expect(await api.getAgentmemory('mem1')).toEqual(mem);
-      expect(invoke).toHaveBeenCalledWith('get_agentmemory', { id: 'mem1' });
+      expect(await api.getAgentMemory('mem1')).toEqual(mem);
+      expect(invoke).toHaveBeenCalledWith('get_agent_memory', { id: 'mem1' });
 
-      expect(await api.saveAgentmemory('proj_1', mem)).toEqual(mem);
-      expect(invoke).toHaveBeenCalledWith('save_agentmemory', { project: 'proj_1', data: mem });
+      expect(await api.saveAgentMemory('proj_1', mem)).toEqual(mem);
+      expect(invoke).toHaveBeenCalledWith('save_agent_memory', { project: 'proj_1', data: mem });
 
-      await api.deleteAgentmemory('mem1');
-      expect(invoke).toHaveBeenCalledWith('delete_agentmemory', { id: 'mem1' });
+      await api.deleteAgentMemory('mem1');
+      expect(invoke).toHaveBeenCalledWith('delete_agent_memory', { id: 'mem1' });
 
-      const searchRes = await api.searchAgentmemorys('proj_1', 'query');
-      expect(invoke).toHaveBeenCalledWith('search_agentmemorys', { project: 'proj_1', query: 'query' });
+      const searchRes = await api.searchAgentMemorys('proj_1', 'query');
+      expect(invoke).toHaveBeenCalledWith('search_agent_memorys', { project: 'proj_1', query: 'query' });
       expect(searchRes).toHaveLength(1);
     });
 
@@ -594,20 +594,20 @@ describe('api.client (Tauri invoke contract tests)', () => {
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce([{ entity: cache, score: 1, kind: 'cache' }]);
 
-      expect(await api.getWebcaches('proj_1')).toEqual([cache]);
-      expect(invoke).toHaveBeenCalledWith('get_webcaches', { project: 'proj_1' });
+      expect(await api.getWebCaches('proj_1')).toEqual([cache]);
+      expect(invoke).toHaveBeenCalledWith('get_web_caches', { project: 'proj_1' });
 
-      expect(await api.getWebcache('c1')).toEqual(cache);
-      expect(invoke).toHaveBeenCalledWith('get_webcache', { id: 'c1' });
+      expect(await api.getWebCache('c1')).toEqual(cache);
+      expect(invoke).toHaveBeenCalledWith('get_web_cache', { id: 'c1' });
 
-      expect(await api.saveWebcache('proj_1', cache)).toEqual(cache);
-      expect(invoke).toHaveBeenCalledWith('save_webcache', { project: 'proj_1', data: cache });
+      expect(await api.saveWebCache('proj_1', cache)).toEqual(cache);
+      expect(invoke).toHaveBeenCalledWith('save_web_cache', { project: 'proj_1', data: cache });
 
-      await api.deleteWebcache('c1');
-      expect(invoke).toHaveBeenCalledWith('delete_webcache', { id: 'c1' });
+      await api.deleteWebCache('c1');
+      expect(invoke).toHaveBeenCalledWith('delete_web_cache', { id: 'c1' });
 
-      const searchRes = await api.searchWebcaches('proj_1', 'query');
-      expect(invoke).toHaveBeenCalledWith('search_webcaches', { project: 'proj_1', query: 'query' });
+      const searchRes = await api.searchWebCaches('proj_1', 'query');
+      expect(invoke).toHaveBeenCalledWith('search_web_caches', { project: 'proj_1', query: 'query' });
       expect(searchRes).toHaveLength(1);
     });
 

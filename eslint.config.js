@@ -19,6 +19,7 @@ export default ts.config(
       '**/tauri-surreal-kit/**',
       '**/test/mocks/**',
       '**/generated/**',
+      '**/api.client.ts',
       '**/*.d.ts',
       'src/ts/libs/**',
       'src/ts/toastui/**',

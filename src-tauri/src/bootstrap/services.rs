@@ -7,7 +7,7 @@ use worldwiki_application::knowledge::KnowledgeServices;
 use worldwiki_application::calendar::CalendarServices;
 use worldwiki_application::plot::PlotServices;
 use worldwiki_application::workflows::{EditManuscriptAtomicWorkflow, HybridSemanticSearchWorkflow};
-use worldwiki_application::ai::AiToolFacades;
+use worldwiki_application::ai::{AiToolFacades, ChatServices};
 use worldwiki_application::common::JobManager;
 use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_infrastructure::surrealdb::memory_repos::{
@@ -17,6 +17,9 @@ use worldwiki_infrastructure::surrealdb::memory_repos::{
 use worldwiki_infrastructure::surrealdb::repos::{
     SurrealChapterRepository, SurrealEntityRepository, SurrealRelationRepository,
     SurrealPlotPromiseRepository, SurrealPlanRepository, SurrealRAGAdapter
+};
+use worldwiki_infrastructure::surrealdb::chat_repo::{
+    SurrealChatRepository, SurrealAiProfileRepository
 };
 use worldwiki_infrastructure::ai::mock_ai::MockAiAdapter;
 use worldwiki_infrastructure::events::InMemoryEventPublisher;
@@ -51,6 +54,13 @@ pub fn build_app_services() -> AppServices {
         job_manager.clone(),
     ));
 
+    // For in-memory, we can instantiate Surreal repos with mock or empty DB if needed
+    // In build_surreal_app_services, real repos are bound.
+    let dummy_db = Arc::new(Surreal::init());
+    let chat_repo = Arc::new(SurrealChatRepository::new(dummy_db.clone()));
+    let profile_repo = Arc::new(SurrealAiProfileRepository::new(dummy_db));
+    let chat = Arc::new(ChatServices::new(chat_repo, profile_repo));
+
     AppServices {
         manuscript,
         knowledge,
@@ -60,6 +70,7 @@ pub fn build_app_services() -> AppServices {
         search_workflow,
         job_manager,
         ai_tools,
+        chat,
     }
 }
 
@@ -73,6 +84,9 @@ pub fn build_surreal_app_services(
     let promise_repo = Arc::new(SurrealPlotPromiseRepository::new(db.clone()));
     let plan_repo = Arc::new(SurrealPlanRepository::new(db.clone()));
     let rag_adapter = Arc::new(SurrealRAGAdapter::new(db.clone()));
+
+    let chat_repo = Arc::new(SurrealChatRepository::new(db.clone()));
+    let profile_repo = Arc::new(SurrealAiProfileRepository::new(db.clone()));
 
     let manuscript = Arc::new(ManuscriptServices::new(chapter_repo.clone(), event_publisher.clone()));
     let knowledge = Arc::new(KnowledgeServices::new(entity_repo.clone(), relation_repo.clone(), event_publisher.clone()));
@@ -93,6 +107,8 @@ pub fn build_surreal_app_services(
         job_manager.clone(),
     ));
 
+    let chat = Arc::new(ChatServices::new(chat_repo, profile_repo));
+
     AppServices {
         manuscript,
         knowledge,
@@ -102,5 +118,6 @@ pub fn build_surreal_app_services(
         search_workflow,
         job_manager,
         ai_tools,
+        chat,
     }
 }

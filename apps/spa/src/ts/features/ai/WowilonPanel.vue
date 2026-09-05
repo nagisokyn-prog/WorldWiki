@@ -82,8 +82,8 @@
 
             <AiChatInput 
               ref="chatInputRef"
-              :is-generating="isGenerating"
-              @send="sendMessage"
+              :loading="isGenerating"
+              @submit="sendMessage"
             />
           </div>
         </div>

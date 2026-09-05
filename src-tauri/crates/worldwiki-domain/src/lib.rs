@@ -4,6 +4,7 @@ pub mod knowledge;
 pub mod calendar;
 pub mod plot;
 pub mod document;
+pub mod ai;
 
 pub use errors::DomainError;
 

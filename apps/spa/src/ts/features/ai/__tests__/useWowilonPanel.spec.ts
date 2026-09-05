@@ -57,7 +57,7 @@ describe('useWowilonPanel', () => {
   });
 
   describe('sendMessage', () => {
-    it('pushes temporary message, invokes send_chat_message and replaces temp IDs', async () => {
+    it('pushes user message, adds assistant placeholder, invokes send_chat_message with correct args', async () => {
       vi.mocked(invoke).mockResolvedValue({
         chat_id: 'chat_1',
         user_msg_id: 'real_user_msg_1',
@@ -68,14 +68,21 @@ describe('useWowilonPanel', () => {
 
       expect(invoke).toHaveBeenCalledWith('send_chat_message', expect.objectContaining({
         chatId: 'chat_1',
-        message: 'Tell me a story',
+        text: 'Tell me a story',
+        project: 'global',
         modeSlug: 'chat',
       }));
 
-      expect(panel.allMessages.value.length).toBeGreaterThanOrEqual(1);
+      // После ответа: user + assistant placeholder
+      expect(panel.allMessages.value).toHaveLength(2);
+      expect(panel.allMessages.value[0].role).toBe('user');
+      expect(panel.allMessages.value[0].id).toBe('real_user_msg_1');
+      expect(panel.allMessages.value[1].role).toBe('assistant');
+      expect(panel.allMessages.value[1].id).toBe('real_asst_msg_1');
+      expect(panel.allMessages.value[1].content).toBe('');
     });
 
-    it('triggers title generation when starting a new chat with empty activeChatId', async () => {
+    it('при новом чате (activeChatId=\'\') обновляет activeChatId из ответа', async () => {
       panel.activeChatId.value = '';
       vi.mocked(invoke).mockImplementation(async (cmd: string) => {
         if (cmd === 'send_chat_message') {
@@ -87,7 +94,9 @@ describe('useWowilonPanel', () => {
       });
 
       await panel.sendMessage('First prompt');
-      expect(panel.activeChatId.value).toBe('');
+      expect(panel.activeChatId.value).toBe('new_chat_100');
+      // Плацхолдер ассистента добавлен
+      expect(panel.allMessages.value.some(m => m.id === 'a1' && m.role === 'assistant')).toBe(true);
     });
 
     it('handles sendMessage error gracefully', async () => {
@@ -132,7 +141,7 @@ describe('useWowilonPanel', () => {
 
       await panel.deleteMessage('m1');
 
-      expect(invoke).toHaveBeenCalledWith('delete_chat_message', { messageId: 'm1' });
+      expect(invoke).toHaveBeenCalledWith('delete_chat_message', { msgId: 'm1' });
       expect(panel.allMessages.value).toHaveLength(1);
       expect(panel.allMessages.value[0].id).toBe('m2');
     });
@@ -160,8 +169,11 @@ describe('useWowilonPanel', () => {
       await panel.editMessage('m1', 'New text');
 
       expect(invoke).toHaveBeenCalledWith('edit_chat_message', {
-        messageId: 'm1',
-        newContent: 'New text',
+        msgId: 'm1',
+        newText: 'New text',
+        chatId: 'chat_1',
+        project: 'global',
+        modeSlug: 'chat',
       });
       expect(panel.allMessages.value[0].content).toBe('New text');
     });
@@ -174,6 +186,7 @@ describe('useWowilonPanel', () => {
     });
 
     it('handles editMessage error', async () => {
+      panel.allMessages.value = [{ id: 'm1', role: 'user', content: 'Old' }];
       vi.mocked(invoke).mockRejectedValue(new Error('Edit failed'));
       await panel.editMessage('m1', 'New text');
       expect(panel.isGenerating.value).toBe(false);
@@ -192,8 +205,9 @@ describe('useWowilonPanel', () => {
       await panel.regenerateMessage('user_1');
 
       expect(invoke).toHaveBeenCalledWith('regenerate_chat_message', expect.objectContaining({
-        messageId: 'user_1',
+        parentMsgId: 'user_1',
         chatId: 'chat_1',
+        project: 'global',
         modeSlug: 'chat',
       }));
     });
@@ -213,7 +227,7 @@ describe('useWowilonPanel', () => {
       });
 
       await panel.switchVariant('var_2');
-      expect(invoke).toHaveBeenCalledWith('switch_message_variant', { messageId: 'var_2' });
+      expect(invoke).toHaveBeenCalledWith('switch_message_variant', { msgId: 'var_2' });
       expect(panel.allMessages.value).toHaveLength(1);
     });
 

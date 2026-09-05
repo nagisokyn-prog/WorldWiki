@@ -8,6 +8,16 @@ import { useAiChats } from './composables/useAiChats';
 import { useAiProfiles } from './composables/useAiProfiles';
 import type { ContextItem } from './components/AiContextSelector.vue';
 import type { AiTopBarMode } from './components/AiChatTopBar.vue';
+import {
+  getChatMessages,
+  sendChatMessage,
+  cancelGeneration as cancelGenApi,
+  deleteChatMessage as deleteChatMsgApi,
+  editChatMessage as editChatMsgApi,
+  regenerateChatMessage as regenChatMsgApi,
+  switchMessageVariant as switchMsgVarApi,
+  forkChat as forkChatApi
+} from '../../services/api.client';
 
 export interface ChatMessage {
   id?: string;
@@ -107,7 +117,7 @@ export function useWowilonPanel(
         allMessages.value = [];
         return;
       }
-      const data = await invoke<Array<{
+      const data = (await getChatMessages(chatId)) as Array<{
         id: string;
         role: 'user' | 'assistant' | 'system';
         content?: string;
@@ -115,7 +125,7 @@ export function useWowilonPanel(
         tool_logs?: string[];
         parent_id?: string | null;
         is_active?: boolean;
-      }>>('get_chat_messages', { chatId });
+      }>;
       const loaded: ChatMessage[] = data.map(m => ({
         id: m.id,
         role: m.role || 'user',
@@ -134,7 +144,9 @@ export function useWowilonPanel(
 
   const cancelGeneration = async () => {
     try {
-      await invoke('cancel_generation', { chatId: activeChatId.value });
+      if (activeChatId.value) {
+        await cancelGenApi(activeChatId.value);
+      }
     } catch (err) {
       console.error('Failed to cancel generation:', err);
     } finally {
@@ -145,7 +157,7 @@ export function useWowilonPanel(
   const deleteMessage = async (msgId: string) => {
     if (!msgId || msgId.startsWith('temp_')) return;
     try {
-      await invoke('delete_chat_message', { messageId: msgId });
+      await deleteChatMsgApi(msgId);
       allMessages.value = allMessages.value.filter(m => m.id !== msgId);
     } catch (err) {
       console.error('Failed to delete message:', err);
@@ -153,9 +165,9 @@ export function useWowilonPanel(
   };
 
   const editMessage = async (msgId: string, newContent: string) => {
-    if (!msgId || msgId.startsWith('temp_') || !newContent.trim()) return;
+    if (!msgId || msgId.startsWith('temp_') || !newContent.trim() || !activeChatId.value) return;
     try {
-      await invoke('edit_chat_message', { messageId: msgId, newContent });
+      await editChatMsgApi(msgId, newContent, activeChatId.value, currentProject, activeModeSlug.value || null);
       const msg = allMessages.value.find(m => m.id === msgId);
       if (msg) msg.content = newContent;
     } catch (err) {
@@ -164,13 +176,10 @@ export function useWowilonPanel(
   };
 
   const regenerateMessage = async (msgId: string) => {
+    if (!activeChatId.value) return;
     try {
       isGenerating.value = true;
-      await invoke('regenerate_chat_message', {
-        chatId: activeChatId.value,
-        messageId: msgId,
-        modeSlug: activeModeSlug.value
-      });
+      await regenChatMsgApi(msgId, activeChatId.value, currentProject, activeModeSlug.value || null);
     } catch (err) {
       console.error('Failed to regenerate message:', err);
       isGenerating.value = false;
@@ -179,7 +188,7 @@ export function useWowilonPanel(
 
   const switchVariant = async (msgId: string) => {
     try {
-      await invoke('switch_message_variant', { messageId: msgId });
+      await switchMsgVarApi(msgId);
       if (activeChatId.value) {
         await loadMessages(activeChatId.value);
       }
@@ -189,19 +198,52 @@ export function useWowilonPanel(
   };
 
   const triggerSend = async (text: string) => {
-    if (!text.trim() || !activeChatId.value) return;
+    if (!text.trim()) return;
+    const currentChatId = activeChatId.value || 'new';
     isGenerating.value = true;
+
+    // Индекс только что добавленного user-сообщения — обновим id после ответа
+    const userMsgIdx = allMessages.value.length;
     allMessages.value.push({
       role: 'user',
       content: text
     });
+
     try {
-      await invoke('send_chat_message', {
-        chatId: activeChatId.value,
-        message: text,
-        modeSlug: activeModeSlug.value,
-        context: selectedContext.value
-      });
+      const res = (await sendChatMessage(
+        currentChatId,
+        text,
+        currentProject,
+        activeModeSlug.value || null
+      )) as {
+        chat_id?: string;
+        assistant_msg_id?: string;
+        user_msg_id?: string;
+      } | null;
+
+      if (res && res.chat_id) {
+        // 1. Устанавливаем activeChatId ДО добавления assistant-placeholder,
+        //    чтобы watch-guard (isGenerating && length > 0) не затёр allMessages.
+        activeChatId.value = res.chat_id;
+
+        // 2. Проставляем реальный id user-сообщению (для корректного дерева вариантов).
+        if (res.user_msg_id && allMessages.value[userMsgIdx]) {
+          allMessages.value[userMsgIdx] = {
+            ...allMessages.value[userMsgIdx],
+            id: res.user_msg_id
+          };
+        }
+
+        // 3. Добавляем placeholder ассистента с реальным id,
+        //    чтобы stream listener нашёл его по chunk.message_id.
+        if (res.assistant_msg_id) {
+          allMessages.value.push({
+            id: res.assistant_msg_id,
+            role: 'assistant',
+            content: ''
+          });
+        }
+      }
     } catch (err) {
       console.error('Failed to send message:', err);
       isGenerating.value = false;
@@ -361,11 +403,11 @@ export function useWowilonPanel(
       return;
     }
     try {
-      const newChat = await invoke<{ id: string }>('fork_chat', {
-        projectId: currentProject,
+      const newChat = (await forkChatApi(
+        currentProject,
         messageId,
-        newTitle: 'Новая ветка'
-      });
+        'Новая ветка'
+      )) as { id?: string } | null;
 
       if (newChat && newChat.id) {
         activeChatId.value = newChat.id;
@@ -472,31 +514,42 @@ export function useWowilonPanel(
       is_done?: boolean;
     }>('chat_stream_chunk', (event) => {
       const chunk = event.payload;
-      if (chunk.chat_id === activeChatId.value) {
-        const msg = allMessages.value.find(m => m.id === chunk.message_id);
-        if (!msg) {
-          return;
-        }
 
-        if (chunk.chunk_type === 'reasoning') {
-          msg.reasoning = (msg.reasoning || '') + chunk.text;
-        } else if (chunk.chunk_type === 'tool_log') {
-          if (!msg.toolLogs) msg.toolLogs = [];
-          msg.toolLogs.push(chunk.text);
-        } else if (chunk.chunk_type === 'usage') {
-          try {
-            const u = JSON.parse(chunk.text);
-            tokenUsage.value = u;
-          } catch {
-            // ignore
-          }
-        } else {
-          msg.content = (msg.content || '') + chunk.text;
-        }
+      // Ищем сообщение по message_id напрямую — это защищает от race condition,
+      // когда activeChatId ещё не обновился к моменту первого чанка.
+      const msg = allMessages.value.find(m => m.id === chunk.message_id);
 
-        if (chunk.is_done) {
-          isGenerating.value = false;
+      // Если сообщение не найдено — возможно, чанк для другого окна, игнорируем.
+      if (!msg) {
+        // Попутно: если chat_id не совпадает совсем — точно чужое окно, тихо выходим.
+        if (chunk.chat_id !== activeChatId.value) return;
+        // Иначе это наш чат, но placeholder ещё не добавился (крайний race) — 
+        // добавляем «на лету» и записываем в него.
+        const newMsg: ChatMessage = { id: chunk.message_id, role: 'assistant', content: '' };
+        allMessages.value.push(newMsg);
+        newMsg.content = chunk.text;
+        if (chunk.is_done) isGenerating.value = false;
+        return;
+      }
+
+      if (chunk.chunk_type === 'reasoning') {
+        msg.reasoning = (msg.reasoning || '') + chunk.text;
+      } else if (chunk.chunk_type === 'tool_log') {
+        if (!msg.toolLogs) msg.toolLogs = [];
+        msg.toolLogs.push(chunk.text);
+      } else if (chunk.chunk_type === 'usage') {
+        try {
+          const u = JSON.parse(chunk.text);
+          tokenUsage.value = u;
+        } catch {
+          // ignore
         }
+      } else {
+        msg.content = (msg.content || '') + chunk.text;
+      }
+
+      if (chunk.is_done) {
+        isGenerating.value = false;
       }
     });
   });

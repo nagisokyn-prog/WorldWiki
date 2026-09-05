@@ -68,7 +68,6 @@ async fn init_database() -> Surreal<Db> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[allow(clippy::too_many_arguments)]
 pub fn run() {
-    use logic::ai::*;
     use logic::batch::*;
     use logic::calendar_math::*;
     use logic::chapters::*;
@@ -160,34 +159,22 @@ pub fn run() {
             // --- Текстовые блоки ---
             save_text_blocks,
 
-            // --- AI Чат ---
-            get_chat_tree,
-            get_chat_messages,
-            get_message_branch,
-            fork_chat,
-            update_chat_parent,
-            send_chat_message,
-            cancel_generation,
-            delete_chat_message,
-            edit_chat_message,
-            regenerate_chat_message,
-            switch_message_variant,
-            fetch_ai_models,
-            get_ai_completion,
-            generate_chat_title,
-            delete_ai_chat,
-            fetch_hf_models,
-            download_hf_model,
-            get_hardware_info,
-            calculate_quantization_estimates,
-            get_recommended_local_models,
-            list_installed_models,
-            load_local_model,
-            unload_local_model,
-            unload_all_local_models,
-            delete_local_model,
-            get_tool_permissions_catalog,
-            reindex_project_lore,
+            // --- AI Чат (модульный worldwiki-tauri) ---
+            worldwiki_tauri::commands::get_chat_tree,
+            worldwiki_tauri::commands::get_chat_messages,
+            worldwiki_tauri::commands::get_message_branch,
+            worldwiki_tauri::commands::fork_chat,
+            worldwiki_tauri::commands::save_chat,
+            worldwiki_tauri::commands::update_chat_parent,
+            worldwiki_tauri::commands::send_chat_message,
+            worldwiki_tauri::commands::cancel_generation,
+            worldwiki_tauri::commands::delete_chat_message,
+            worldwiki_tauri::commands::switch_message_variant,
+            worldwiki_tauri::commands::fetch_ai_models,
+            worldwiki_tauri::commands::delete_ai_chat,
+            worldwiki_tauri::commands::get_aiprofiles,
+            worldwiki_tauri::commands::save_aiprofile,
+            worldwiki_tauri::commands::delete_aiprofile,
 
             // --- Новые модульные IPC-команды (worldwiki-tauri) ---
             worldwiki_tauri::commands::get_entity_full_card,
@@ -222,8 +209,7 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| if let tauri::WindowEvent::CloseRequested { .. } = event {
-            println!("[DEBUG] Emergency backup and model shutdown before close...");
-            logic::ai::manager::shutdown_local_models();
+            println!("[DEBUG] Emergency backup before close...");
             let state = window.state::<AppState>();
             let db = state.db.clone();
             let backup_path = std::env::current_dir().unwrap_or_default().join("data").join("backup_latest.surql");

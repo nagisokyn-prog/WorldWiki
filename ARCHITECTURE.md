@@ -1,116 +1,473 @@
-# WorldWiki Frontend Architecture
+# 🏛️ Архитектура Системы WorldWiki (WorldWiki Architecture)
 
-## Структура монорепозитория
+> **Статус документа**: Генеральный архитектурный документ (Master System Architecture).  
+> **Методология**: Построен на базе принципов **arc42** (Context, Drivers, Building Blocks, Runtime Views, Cross-Cutting Concepts) с фокусом на **доменную модель (Domain-Driven Architecture)**.
 
-```
-WorldWiki/
-├─ pnpm-workspace.yaml    # workspaces: apps/*, packages/*
-├─ turbo.json            # build/typecheck/lint/test pipeline
-├─ package.json          # корневые dependencies + scripts через turbo
-├─ tsconfig.base.json    # target: ES2025, module: ESNext, verbatimModuleSyntax
-├─ eslint.config.js      # ESLint 9 flat config
-├─ vitest.config.ts      # happy-dom + vue() + aliases
-│
-├─ apps/
-│  └─ spa/              # === WorldWiki SPA приложение ===
-│     ├─ package.json
-│     ├─ tsconfig.json  # extends tsconfig.base.json
-│     ├─ vite.config.ts # multi-entry, plugins: checker/devtools/auto-import/unocss
-│     └─ src/
-│        ├─ app.ts        # точка входа - init + createApp
-│        ├─ composables/  # useAppShell, useHotkeys, useResizers, useQuickOpen...
-│        ├─ services/   # api.service + api/*.api.ts
-│        ├─ features/   # Component-Behind фичи
-│        └─ types/      # domain-типы
-│
-├─ packages/
-│  ├─ components/      # === Generic UI Kit ===
-│  │  ├─ package.json   # library build ESM
-│  │  ├─ vite.config.ts # vite-plugin-dts
-│  │  └─ src/
-│  │     ├─ components/Vue/  # ExplorerTree, , EditorGroupPane...
-│  │     ├─ composables/     # useEditorGroups, useShellApp, useTreeSelection
-│  │     └─ services/        # generic API services
-│  │
-│  └─ resources/       # === Shared Resources ===
-│     ├─ package.json
-│     ├─ vite.config.ts
-│     └─ src/
-│        ├─ styles/     # glass-theme, new-ui-theme, fonts.css
-│        ├─ i18n/       # vue-i18n конфиг + locales
-│        └─ index.ts    # экспорт стилей и типов
-│
-├─ src-tauri/          # Tauri Rust backend
-└─ tauri-surreal-kit/  # generic infrastructure (не трогаем)
-```
+---
 
-## Правило "куда класть логику"
+## 1. Purpose and Scope (Назначение и Границы Документа)
 
-| Что | Где |
-|-----|-----|
-| Состояние/поведение экрана | `apps/spa/src/composables/` или `features/*/use*.ts` |
-| Работа с БД/API/связями | `apps/spa/src/services/` |
-| Чистые утилиты (path, формат) | `apps/spa/src/utils/` |
-| Визуальный кусок UI | `features/*/` (Component-Behind) |
-| Инфраструктура (вкладки, зум, toast/log) | `packages/components` |
-| Локали/темы/шрифты/общие типы | `packages/resources` |
+Данный документ определяет **фундаментальную архитектуру программного комплекса WorldWiki**. Он фиксирует:
 
-## Component-Behind паттерн
+- границы и контекст системы;
+- структуру и взаимосвязи центральной **доменной модели (Domain Architecture)**;
+- декомпозицию программных блоков (Building Blocks: Frontend, Application, Domain, Infrastructure, Editors, AI);
+- сценарии выполнения во время работы (Runtime Views);
+- сквозные архитектурные концепции и инварианты `ARCH-001` .. `ARCH-007`.
 
-Каждый "тяжелый" компонент → папка-фича:
+### Что НЕ входит в данный документ:
 
-```
-features/entities/EntityEditor/
-├─ EntityEditor.vue        # только <template> + биндинги
-├─ useEntityEditor.ts      # вся логика
-├─ EntityEditor.model.ts   # типы/интерфейсы
-└─ EntityEditor.style.css  # scoped-стили
+- низкоуровневый исходный код и технические руководства для разработчиков (вынесены в специализированные README);
+- списки тестовых утилит, конфигурации линтеров и инструкции по сборке;
+- планы релизов и календарные графики (ведутся в Issue Tracker).
+
+---
+
+## 2. System Context (Контекст Системы)
+
+**WorldWiki** — это специализированная Local-First десктопная среда для авторов литературных произведений и комплексных вымышленных вселенных. Система объединяет в едином пространстве процесс написания рукописи, построение базы знаний лора, моделирование временного континуума и управление сюжетными линиями.
+
+```mermaid
+flowchart TB
+    Author["👤 Автор / пользователь"]
+
+    subgraph WorldWiki_System ["🖥️ Граница Системы WorldWiki (Desktop Application)"]
+        UI_Shell["Десктопный Интерфейс (Vue 3 / Tauri)"]
+        Core_App["Ядро Системы (Hexagonal Rust Core)"]
+        Local_DB["Локальное Хранилище (SurrealDB / SurrealKV)"]
+
+        UI_Shell <--> Core_App
+        Core_App <--> Local_DB
+    end
+
+    subgraph External_Environment ["Внешнее Окружение"]
+        Local_FS["📁 Локальная Файловая Система\n(Файлы проектов .world / .wwiki, Экспорт в Downloads)"]
+        Ext_AI["🌐 Внешние Провайдеры ИИ (Опционально)\n(OpenAI, Anthropic, Ollama через API-ключи)"]
+        Backup_Storage["💾 Хранилище Резервных Копий\n(Локальные архивы, облачные диски)"]
+    end
+
+    Author <-->|"Интерактивная работа, редактирование текста, ведение лора"| UI_Shell
+    Core_App <-->|"Чтение и запись проектов, экспорт"| Local_FS
+    Core_App -.->|"Запросы инференса по инициативе автора"| Ext_AI
+    Core_App -.->|"Создание и восстановление бэкапов"| Backup_Storage
 ```
 
-Применяется к: EntityEditor, EditorCoreTiptap, ChapterTree
+### Внешние сущности и интерфейсы взаимодействия:
 
-## Команды разработки
+1. **Автор / пользователь**: взаимодействует с системой через многооконный графический интерфейс десктопного приложения.
+2. **Локальная файловая система**: чтение и сохранение файлов проектов, изображений, шрифтов и экспорт готовых рукописей.
+3. **Опциональные внешние LLM-провайдеры**: внешние сервисы генеративного интеллекта, подключаемые исключительно по желанию автора.
+4. **Хранилище резервных копий**: создание локальных и облачных архивных копий проекта для защиты от потери данных.
 
-```bash
-# Type-check
-pnpm run typecheck
+---
 
-# Dev server
-pnpm run dev
+## 3. Architectural Drivers (Архитектурные Драйверы)
 
-# Tests
-pnpm run test
+Архитектурные решения WorldWiki продиктованы шестью фундаментальными требованиями:
 
-# Build
-pnpm run build
+1. **Local-First & Data Ownership (Полная автономия данных)**:
+   Творческие материалы автора принадлежат исключительно ему. Все данные хранятся локально на диске в формате встроенной СУБД. Приложение не требует обязательной авторизации на сторонних серверах и полностью функционально оффлайн.
+2. **Semantic Model as Single Source of Truth (Семантическая модель как источник истины)**:
+   Основа системы — структурированное семантическое дерево документа и графовые связи, а не сырой HTML или неструктурированный текст.
+3. **Multiple Visual Projections (Множественность представлений)**:
+   Одна и та же семантическая модель проецируется в интерактивный редактор для быстрого письма, постраничный макет книги, форматы экспорта (DOCX, EPUB, FB2) и структурированный контекст для ИИ.
+4. **Domain Integrity & Rich Relational Topology (Целостность связей)**:
+   Глубокая связность между элементами мира: упоминания персонажей в сценах автоматически связываются с базой знаний, события позиционируются на шкале времени, а сюжетные обещания отслеживаются по всей рукописи.
+5. **Multi-Calendar Temporal Continuum (Мультикалендарный континуум)**:
+   Возможность моделирования вселенных с несколькими календарями без дублирования или рассинхронизации событий.
+6. **Subordinate & Safe AI (Подчиненный и безопасный ИИ)**:
+   ИИ является подключаемым инструментом-ассистентом. ИИ не определяет состояние системы и не имеет права модифицировать базу данных без явного подтверждения автора.
 
-# Lint
-pnpm run lint
+---
 
-# Install dependencies (сначала обновить lockfile)
-pnpm install
+## 4. Domain Architecture (Архитектура Предметной Области)
+
+Доменная архитектура является **смысловым ядром WorldWiki**. Она разделена на 5 взаимосвязанных моделей, образующих целостный граф проекта:
+
+```
+                          ┌───────────────────────┐
+                          │     PROJECT MODEL     │
+                          │   (Корневой Проект)   │
+                          └──────────┬────────────┘
+                                     │
+       ┌─────────────────────────────┼─────────────────────────────┐
+       │                             │                             │
+┌──────▼──────────────┐   ┌──────────▼──────────┐   ┌──────────────▼──────┐
+│  MANUSCRIPT MODEL   │   │   KNOWLEDGE MODEL   │   │   TEMPORAL MODEL    │
+│  (Текст и Сюжет)    │   │  (База Знаний Лора) │   │ (Континуум Времени) │
+└──────┬──────────────┘   └──────────┬──────────┘   └──────────────┬──────┘
+       │                             │                             │
+       │                   ┌─────────▼─────────┐                   │
+       └──────────────────►│    PLOT MODEL     │◄──────────────────┘
+                           │(Сюжетные Обещания)│
+                           └───────────────────┘
 ```
 
-## Multi-window модель Tauri
+### 4.1. Project Model (Модель Проекта)
 
-WorldWiki использует несколько HTML-файлов (multi-entry):
+Агрегат верхнего уровня, инкапсулирующий параметры вымышленного мира: жанры, глобальные настройки, профили оформления и реестр подключенных модулей.
 
-| HTML | Роль | ОКно? |
-|------|------|-------|
-| `splash.html` | заставка | ✅ |
-| `project_launcher.html` | выбор/создание проекта | ✅ |
-| `app.html` | главное окно редактора | ✅ |
-| `settings.html` | настройки | ✅ |
-| `ui_editor.html` | плавающее окно сущности | ✅ |
+### 4.2. Manuscript Model (Модель Рукописи)
 
-Vue-router НЕ используется — навигация между окнами через `window.location.href`.
+Иерархическая структура литературного произведения:
+$$\text{Project} \longrightarrow \text{Volumes (Тома)} \longrightarrow \text{Arcs (Арки)} \longrightarrow \text{Chapters (Главы)} \longrightarrow \text{Semantic Blocks (Блоки AST)}$$
+Каждый блок текста типизирован (параграф, диалог, мысль персонажа, сноска, эпиграф) и содержит метаданные о связанных сущностях.
 
-## Стек
+### 4.3. Knowledge Model (Модель Базы Знаний)
 
-- **Vue 3.5+** + `<script setup>`, `defineModel`, `useTemplateRef`
-- **Vite 8** + `vite-plugin-checker`, `vite-plugin-vue-devtools`, `unocss`
-- **unplugin-auto-import** + **unplugin-vue-components**
-- **Pinia** — централизованный store (будет внедрен)
-- **@tanstack/vue-query** — серверное состояние/кэш API
-- **Vitest 4** + `happy-dom` + `@vue/test-utils`
-- **ESLint 9** flat config + Prettier
+Структурированный граф сущностей вселенной (Персонажи, Локации, Фракции, Артефакты, Магические системы, События):
+
+- **Entity**: карточка сущности с системными и динамическими атрибутами;
+- **Schema**: динамическая схема пользовательских типов полей (текст, число, булево, ссылки, диапазоны);
+- **Relationship**: типизированное направленное ребро отношений между сущностями с весом и атрибутами периода действия.
+
+### 4.4. Temporal Model (Темпоральная Модель Времени)
+
+- **Физический континуум**: события вселенной привязаны к абсолютной временной шкале ($M_{\text{abs}}$ — непрерывный поток минут от условной точки отсчета мира).
+- **Календарные проекции**: пользовательские календари (длина года, месяцы, високосные циклы, названия дней) являются чисто вычислительными проекциями, переводящими абсолютную координату времени в локальную дату конкретной цивилизации.
+
+### 4.5. Plot Model (Сюжетная Модель)
+
+- **Plot Promises (Чеховские ружья и сюжетные обещания)**: элементы текста (ружье, предзнаменование, загадка, обещание читателю), имеющие жизненный цикл: _Planted (заложено)_ $\rightarrow$ _Progressed (развито)_ $\rightarrow$ _Resolved (разрешено)_.
+- **Plans & Outlines**: иерархические сюжетные чеклисты и задачи на уровне томов, арок и глав.
+
+### 4.6. Relations Between Models (Сквозные Междоменные Связи)
+
+| Связанные Модели                               | Механизм Связи                         | Назначение                                                                                                   |
+| ---------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Manuscript $\longleftrightarrow$ Knowledge** | Упоминания `((Сущность))` в AST        | Автоматический учет появления персонажей/локаций в главах, предиктивная навигация, инспекция лора из текста. |
+| **Manuscript $\longleftrightarrow$ Plot**      | Привязка обещаний к блокам AST         | Отслеживание в каких главах заложены и закрыты сюжетные ружья; аудит незакрытых ружей при завершении тома.   |
+| **Knowledge $\longleftrightarrow$ Temporal**   | Участие в событиях (`participates_in`) | Фиксация присутствия и роли персонажей/фракций в исторических событиях мира.                                 |
+| **Manuscript $\longleftrightarrow$ Temporal**  | Временной срез главы (`occurs_at`)     | Позиционирование событий сцены на глобальной хронологической шкале.                                          |
+| **Knowledge $\longleftrightarrow$ Knowledge**  | Матрица связей (`entity_rel`)          | Построение графа фракций, генеалогических древ и карты симпатий/конфликтов.                                  |
+
+---
+
+## 5. System Building Blocks (Архитектура Программных Компонентов)
+
+WorldWiki спроектирован по **Гексагональной Архитектуре (Ports & Adapters)** с жесткой изоляцией ответственности слоев.
+
+```mermaid
+flowchart TD
+    subgraph UI_Presentation ["1. Слой Представления (Frontend: apps/spa)"]
+        UI_Shell["Оконная Оболочка (Multi-Entry HTML)"]
+        UI_Modules["Функциональные Модули (Component-Behind)"]
+        UI_State["Управление Состоянием (Pinia + Query)"]
+        UI_Editors["Редакторские Проекции (Tiptap / Word-Vibe)"]
+    end
+
+    subgraph Transport_Gate ["2. Транспортный Барьер (Tauri IPC Gateway)"]
+        IPC_Bridge["Tauri 2.x Bridge (bridge_macro!, IpcError)"]
+    end
+
+    subgraph Application_Core ["3. Прикладной Слой (worldwiki-application)"]
+        UseCases["Сценарии Использования (Commands & Queries)"]
+        Workflows["Оркестраторы Процессов (Edit, Audit, Export, AI)"]
+        Ports_Def["Интерфейсы Портов (Repository, AI, Storage, Events)"]
+    end
+
+    subgraph Domain_Core ["4. Чистый Домен (worldwiki-domain)"]
+        Domain_Entities["Агрегаты и Сущности"]
+        Domain_Services["Доменные Инварианты и Сервисы"]
+    end
+
+    subgraph Infrastructure_Adapters ["5. Слой Инфраструктуры (worldwiki-infrastructure)"]
+        Surreal_Adapter["SurrealDB / SurrealKV Адаптер"]
+        AI_Adapter["Локальный llama.cpp + Внешние API"]
+        Doc_Adapter["Компиляторы Документов (DOCX, EPUB, FB2)"]
+        FS_Adapter["Адаптер Файловой Системы и Бэкапов"]
+    end
+
+    UI_Presentation <-->|"Асинхронные команды и события"| Transport_Gate
+    Transport_Gate <-->|"Вызов Use Cases"| Application_Core
+    Application_Core --> Domain_Core
+    Application_Core --> Ports_Def
+
+    Surreal_Adapter -.->|"Реализует"| Ports_Def
+    AI_Adapter -.->|"Реализует"| Ports_Def
+    Doc_Adapter -.->|"Реализует"| Ports_Def
+    FS_Adapter -.->|"Реализует"| Ports_Def
+```
+
+### Спецификация и ответственность слоев:
+
+| Слой                        | Ответственность                                                                                                 | Границы зависимостей                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **1. Frontend Layer**       | Рендеринг UI, пользовательские взаимодействия, локальный кэш, адаптация AST для редакторов.                     | `@worldwiki/components`, `@worldwiki/resources`. Не знает о деталях реализации Rust/DB. |
+| **2. Transport Gate**       | Десериализация IPC-запросов, проверка базовых форматов, маршрутизация в Use Cases, маппинг ошибок в `IpcError`. | Единственный слой с зависимостью от `tauri::*`.                                         |
+| **3. Application Layer**    | Оркестрация бизнес-сценариев (Use Cases), управление транзакциями (UnitOfWork), координация AI-фасадов.         | Зависит **только** от `domain` и абстрактных трейтов `ports`.                           |
+| **4. Domain Layer**         | Математика времени, правила семантического AST, инварианты целостности связей.                                  | **Не зависит от Tauri, конкретной СУБД и инфраструктурных адаптеров.**                  |
+| **5. Infrastructure Layer** | Драйверы хранилища (SurrealDB), движок локального инференса (llama.cpp FFI), экспорт OpenXML/EPUB.              | Реализует интерфейсы из `ports`. Не диктует бизнес-правила.                             |
+
+---
+
+## 6. Data Architecture (Архитектура Данных и Хранилища)
+
+```
+       ┌────────────────────────────────────────────────────────┐
+       │              Semantic Model (Memory & AST)             │
+       │       Единая модель данных предметной области          │
+       └───────────────────────────┬────────────────────────────┘
+                                   │
+              ┌────────────────────┴────────────────────┐
+              ▼                                         ▼
+┌───────────────────────────┐             ┌───────────────────────────┐
+│     Persistence Model     │             │     Search & Graph Model  │
+│   SurrealDB (SurrealKV)   │             │   SurrealQL Native Engine │
+│ ├─ Документное хранение   │             │ ├─ Графовые ребра         │
+│ ├─ Атомарные транзакции   │             │ ├─ Полнотекстовый поиск   │
+│ └─ Версионирование схем   │             │ └─ Векторный контекст     │
+└───────────────────────────┘             └───────────────────────────┘
+```
+
+1. **Семантическая Модель (Master Source of Truth)**:
+   Все операции в системе выполняются над структурированными объектами семантического дерева предметной области.
+2. **Модель Персистентности (Persistence Model)**:
+   Отображение семантической модели на локальное хранилище SurrealDB (движок SurrealKV), обеспечивающее ACID-транзакции в одном бинарном процессе без запуска сторонних служб.
+3. **Графовая и Поисковая Модель (Search & Graph Model)**:
+   Нативные графовые ребра связей для мгновенного обхода отношений без соединений `JOIN`, дополненные полнотекстовым и векторным индексами для семантического поиска и формирования контекста.
+
+---
+
+## 7. Representation & Editor Architecture (Архитектура Представлений)
+
+WorldWiki четко разграничивает **мастер-модель данных** и **редакторские проекции**:
+
+```mermaid
+flowchart LR
+    Master_AST["Master Source of Truth\nSemanticDocument (AST)"]
+
+    subgraph Projections ["Визуальные Проекции и Представления"]
+        P_Tiptap["Семантический Редактор\n(Tiptap v3 / Prosemirror)"]
+        P_WordVibe["Постраничный Макет Печати\n(Word-Vibe / Tiptap v2)"]
+        P_Export["Генераторы Документов\n(DOCX / EPUB / FB2)"]
+        P_AI_Context["Контекстный Вьювер ИИ\n(Markdown / Graph Slice)"]
+    end
+
+    Master_AST <-->|"ASTAdapter.ts"| P_Tiptap
+    Master_AST <-->|"VibeASTAdapter"| P_WordVibe
+    Master_AST -->|"Document Compiler"| P_Export
+    Master_AST -->|"GraphRAG Builder"| P_AI_Context
+```
+
+- **Семантический редактор (Tiptap v3)**: интерактивная рабочая среда для быстрого потокового письма, распознавания сущностей `((Имя))` на лету и навигации по миру.
+- **Издательский редактор Word-Vibe (Tiptap v2)**: специализированный постраничный движок (`packages/word-vibe`) для предпечатной подготовки с поддержкой сносок, колонтитулов и зеркальных полей.
+- **Компиляторы экспорта**: автономные Rust-модули компиляции AST в целевые бинарные форматы (Word OpenXML по ГОСТ 7.32, EPUB 3.3, FB2 2.0).
+
+---
+
+## 8. AI Architecture (Архитектура ИИ-Подсистемы)
+
+ИИ спроектирован как **подключаемый контекстный ассистент автора** (Two-Tier Architecture), функционирующий строго по правилу подчиненности:
+
+```
+                  ┌───────────────────────────────┐
+                  │   Semantic Knowledge Graph    │
+                  │       (Source of Truth)       │
+                  └───────────────┬───────────────┘
+                                  │
+                      read-only contextual slice
+                                  │
+                  ┌───────────────▼───────────────┐
+                  │    Context Builder (RAG)      │
+                  │ (Graph + Vector + Temporal)   │
+                  └───────────────┬───────────────┘
+                                  │
+                  ┌───────────────▼───────────────┐
+                  │    8 Consolidated Facades     │
+                  │  (Lore, Plot, Stylist, etc.)  │
+                  └───────────────┬───────────────┘
+                                  │
+                  ┌───────────────▼───────────────┐
+                  │      Inference Engine         │
+                  │ Local GGUF / Remote Provider  │
+                  └───────────────┬───────────────┘
+                                  │
+                             proposals
+                                  │
+                  ┌───────────────▼───────────────┐
+                  │  👤 Автор (Явный Акцепт)     │
+                  └───────────────┬───────────────┘
+                                  │ write action via Use Case
+                  ┌───────────────▼───────────────┐
+                  │   Application Mutation Unit   │
+                  └───────────────────────────────┘
+```
+
+### Ключевые архитектурные решения ИИ:
+
+1. **Изоляция прав записи**: ИИ не может напрямую модифицировать базу данных. Любые предложения (создание персонажа, правка текста, закрытие ружья) генерируются в виде DTO-предложений и применяются в хранилище **только после подтверждения автором**.
+2. **8 Консолидированных Фасадов**: специализированные сценарии для проверки фактов лора, развития сюжета, анализа стиля, структурирования текста и работы с таймлайном.
+3. **Локальный инференс**: поддержка выполнения квантованных моделей GGUF на локальном оборудовании через FFI-обвязку `llama.cpp` (`vendor/llama-turboquant-cpp`) с контролем расхода видеопамяти (VRAM).
+4. **GraphRAG Context Engine**: сборка контекста запроса не только по косинусному сходству текста, но и по 2-шаговой окрестности графа связей и хронологическому окну событий.
+
+---
+
+## 9. Runtime Views (Сценарии Выполнения)
+
+### 9.1. Сценарий: Редактирование и сохранение рукописи
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Writer as Писатель
+    participant Editor as Редактор (Tiptap)
+    participant Adapter as ASTAdapter
+    participant Service as ChapterService
+    participant IPC as Tauri IPC Gateway
+    participant UseCase as SaveChapterUseCase
+    participant Domain as Domain (SemanticDocument)
+    participant Repo as ChapterRepository
+    participant DB as SurrealDB (SurrealKV)
+
+    Writer->>Editor: Ввод текста / правка абзаца
+    Editor->>Adapter: Сериализация ProseMirror Node Tree
+    Adapter->>Service: Формирование SemanticDocument AST
+    Service->>IPC: invoke("save_chapter", { chapterId, ast })
+    IPC->>UseCase: Execute(SaveChapterCommand)
+    UseCase->>Domain: Валидация инвариантов и извлечение сущностей
+    UseCase->>Repo: Save(chapter_aggregate)
+    Repo->>DB: ACID транзакция (Обновление блоков и связей)
+    DB-->>Repo: Ok(Version)
+    Repo-->>UseCase: Ok()
+    UseCase-->>IPC: Ok(ChapterSavedDTO)
+    IPC-->>Service: Успешный ответ
+    Service-->>Editor: Синхронизация статуса сохранения
+```
+
+### 9.2. Сценарий: Запрос к ИИ-ассистенту и применение правок
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Writer as Писатель
+    participant UI as Панель Ассистента
+    participant AI_Orch as AI Orchestrator
+    participant RAG as GraphRAG Context Engine
+    participant LLM as Inference Engine (Local / Remote)
+    participant UseCase as ApplyAiProposalUseCase
+
+    Writer->>UI: Запрос проверки непротиворечивости сцены
+    UI->>AI_Orch: RunFacade("ai_audit_consistency", params)
+    AI_Orch->>RAG: Сборка контекста (Персонажи, Связи, События)
+    RAG-->>AI_Orch: Context Slice (Graph Neighborhood)
+    AI_Orch->>LLM: Промпт + Системные инварианты + Контекст
+    LLM-->>UI: Стриминг ответа и формирование ProposalDTO
+    UI->>Writer: Отображение предложенных правок (Diff View)
+    Writer->>UI: Клик «Принять изменения»
+    UI->>UseCase: Execute(ApplyProposalCommand)
+    UseCase->>UseCase: Атомарная транзакция изменения рукописи и базы знаний
+```
+
+### 9.3. Сценарий: Мультиформатный экспорт рукописи
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Writer as Писатель
+    participant UI as Диалог Экспорта
+    participant Service as ExportService
+    participant IPC as Tauri IPC
+    participant UseCase as ExportDocumentUseCase
+    participant Compiler as OpenXML / EPUB Engine
+    participant FS as Local FileSystem
+
+    Writer->>UI: Выбор формата (DOCX ГОСТ 7.32) и структуры глав
+    UI->>Service: ExportRequest(Profile, Options)
+    Service->>IPC: invoke("export_document_docx", payload)
+    IPC->>UseCase: Execute(ExportCommand)
+    UseCase->>UseCase: Загрузка полного дерева глав и AST из базы
+    UseCase->>Compiler: Компиляция AST в структуру OpenXML (Стили, отступы, сноски)
+    Compiler->>FS: Запись валидного .docx файла в папку Downloads
+    FS-->>IPC: Ok(FilePath)
+    IPC-->>UI: Оповещение об успешном экспорте с открытием проводника
+```
+
+---
+
+## 10. Cross-Cutting Concepts (Сквозные Архитектурные Концепции)
+
+### 10.1. State Ownership (Разделение Владения Состоянием)
+
+- **Master Data**: семантическая модель предметной области, персистируемая в локальном хранилище.
+- **Persistence**: SurrealDB / SurrealKV как встраиваемый адаптер долговременного хранения.
+- **Client UI State (Pinia)**: временное состояние пользовательского интерфейса (активная вкладка, размеры сплиттеров, фокус ввода).
+- **Server State Cache (TanStack Query)**: кэширование DTO сущностей на фронтенде с дебаунсом мутаций и автоматической инвалидацией.
+
+### 10.2. Error Handling (Иерархия Обработки Ошибок)
+
+$$\boxed{\text{DomainError}} \longrightarrow \boxed{\text{ApplicationError}} \longrightarrow \boxed{\text{IpcError (JSON Code + User Message)}} \longrightarrow \boxed{\text{UI Toast / Form Feedback}}$$
+Все ошибки строго типизированы. Доменные ошибки никогда не раскрывают внутренние детали реализации наружу.
+
+### 10.3. Transactions & Rollback (Транзакционность и Откат)
+
+Любая мутация данных, затрагивающая несколько агрегатов, выполняется в атомарной транзакции базы данных (`UnitOfWork`). Фронтенд поддерживает откат оптимистичного состояния (Optimistic UI Rollback) при возникновении ошибки бэкенда.
+
+### 10.4. Cancellation & Async Lifecycle (Управление Асинхронными Задачами)
+
+Все длительные операции (генерация токенов ИИ, индексация лора, экспорт больших книг) принимают токен отмены (`CancellationToken`) и прерываются мгновенно по команде пользователя без зависания фоновых потоков.
+
+### 10.5. Security & Local Sovereignty (Безопасность и Приватность)
+
+- Отсутствие скрытой фоновой телеметрии и недокументированных сетевых запросов.
+- Санитизация путей к файлам для защиты от Path Traversal.
+- Хранение API-ключей внешних провайдеров в локальном хранилище пользователя.
+
+---
+
+## 11. Architectural Invariants (Системные Архитектурные Инварианты)
+
+| Код          | Архитектурный Инвариант          | Обоснование                                                                                                                            |
+| ------------ | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **ARCH-001** | **Semantic Model Authority**     | Семантическая модель предметной области является единственным источником истины.                                                       |
+| **ARCH-002** | **Editor Projection Decoupling** | Редакторские представления не владеют постоянным состоянием документа и являются проекциями семантического дерева.                     |
+| **ARCH-003** | **Domain Independence**          | Доменная модель изолирована от UI-фреймворков, конкретных СУБД и внешних протоколов.                                                   |
+| **ARCH-004** | **Infrastructure Subordination** | Инфраструктурные компоненты подключаются строго через абстракции портов прикладного слоя.                                              |
+| **ARCH-005** | **AI Adaptability & Safety**     | Внешний и локальный ИИ является подключаемым инструментом и не изменяет состояние системы в обход контролируемых прикладных сценариев. |
+| **ARCH-006** | **Local Data Sovereignty**       | Все пользовательские проекты и мастер-данные хранятся и обрабатываются локально.                                                       |
+| **ARCH-007** | **Cancellation & Async Control** | Длительные и ресурсоемкие операции поддерживают явную отмену без блокировки системы.                                                   |
+
+---
+
+## 12. Technology Foundation (Технологический Базис)
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                          WORLDWIKI STACK                               │
+├───────────────────────┬────────────────────────────────────────────────┤
+│ Desktop Runtime       │ Tauri 2.x + Rust                               │
+│ Frontend Platform     │ Vue 3.5+ (Composition API) + TypeScript 5.8+  │
+│ UI & Design System    │ Vanilla Scoped CSS + CSS Custom Properties     │
+│ Client State & Cache  │ Pinia Stores + @tanstack/vue-query             │
+│ Local Persistence     │ SurrealDB v2+ (Встраиваемый движок SurrealKV)  │
+│ Semantic Editors      │ Tiptap v3 (SPA) / Tiptap v2 (Word-Vibe)        │
+│ AI Inference Engine   │ Local llama.cpp (GGUF FFI) / Remote REST APIs  │
+└───────────────────────┴────────────────────────────────────────────────┘
+```
+
+---
+
+## 13. Architecture Documentation Map (Карта Архитектурной Документации)
+
+Для углубленного изучения реализации конкретных слоев и модулей обращайтесь к специализированным инженерным документам:
+
+### 📱 Архитектура Клиентской Части (Frontend)
+
+- [Архитектура SPA, Multi-Page HTML и точки входа](./apps/spa/src/ts/README_Architecture.md)
+- [Каталог функциональных доменных модулей](./apps/spa/src/ts/features/README_Features.md)
+- [Слой реактивных запросов и кэширования](./apps/spa/src/ts/composables/README_Composables.md)
+- [Спецификация схемы данных SurrealDB и GraphRAG](./apps/spa/src/logic/README_Logic.md)
+- [Пакет базового UI-Kit `@worldwiki/components`](./packages/components/README.md)
+- [Постраничный издательский редактор `@worldwiki/word-vibe`](./packages/word-vibe/README_WordVibe.md)
+
+### 🦀 Архитектура Бэкенда и Ядра (Backend Core)
+
+- [Гексагональная архитектура Rust-монолита и Composition Root](./src-tauri/src/README_src.md)
+- [Инфраструктурный пакет интеграции SurrealDB](./tauri-surreal-kit/backend/README_backend.md)
+
+### 🤖 Архитектура ИИ-Подсистемы (AI Subsystem)
+
+- [Бэкенд-архитектура 8 фасадов и Two-Tier модель](./чатAI/06_Backend_Architecture.md)
+- [Интеграция локального движка `llama-turboquant-cpp`](./чатAI/07_Llama_TurboQuant_Integration_Plan.md)
+- [Схема данных контекстной памяти агента](./чатAI/02_Data_Schema_and_SurrealDB.md)
+- [Цикл выполнения агента и tool-calling](./чатAI/03_Agent_Loop_and_MCP_Tools.md)

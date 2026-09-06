@@ -4,7 +4,7 @@ use worldwiki_application::knowledge::KnowledgeServices;
 use worldwiki_application::calendar::CalendarServices;
 use worldwiki_application::plot::PlotServices;
 use worldwiki_application::workflows::{EditManuscriptAtomicWorkflow, HybridSemanticSearchWorkflow};
-use worldwiki_application::ai::{AiToolFacades, ChatServices};
+use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
 use worldwiki_application::common::JobManager;
 
 pub struct AppServices {
@@ -17,6 +17,8 @@ pub struct AppServices {
     pub job_manager: Arc<JobManager>,
     pub ai_tools: Arc<AiToolFacades>,
     pub chat: Arc<ChatServices>,
+    pub local_ai: Arc<LocalAiServices>,
+    pub db: Arc<surrealdb::Surreal<surrealdb::engine::local::Db>>,
 }
 
 pub struct AppState {

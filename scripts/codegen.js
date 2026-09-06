@@ -9,7 +9,7 @@ const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const MAIN_RS_PATH = path.join(WORKSPACE_ROOT, 'src-tauri/src/main.rs');
 const LOGIC_DIRS = [
     path.join(WORKSPACE_ROOT, 'src-tauri/crates/worldwiki-tauri/src/commands'),
-    path.join(WORKSPACE_ROOT, 'src-tauri/src/.logic_legacy'),
+    path.join(WORKSPACE_ROOT, 'src-tauri/src/logic'),
     path.join(WORKSPACE_ROOT, 'tauri-surreal-kit/backend/tauri_shell/src/logic')
 ];
 const OUTPUT_PATH = path.join(WORKSPACE_ROOT, 'apps/spa/src/ts/services/api.client.ts');

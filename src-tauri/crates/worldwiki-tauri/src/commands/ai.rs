@@ -114,3 +114,13 @@ pub async fn ai_delegate_task(
         .await
         .map_err(IpcError::from)
 }
+
+#[tauri::command]
+pub async fn reindex_project_lore(
+    state: State<'_, AppState>,
+    project_id: String,
+) -> Result<usize, String> {
+    let db = &state.services.db;
+    worldwiki_infrastructure::ai::reindex_project_lore_inner(db, &project_id).await
+}
+

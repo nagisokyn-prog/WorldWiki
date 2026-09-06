@@ -145,4 +145,34 @@ mod tests {
         let task_res = facades.delegate_task("task_001", "Проанализируй диалог").await.unwrap();
         assert_eq!(task_res["status"], "spawned");
     }
+
+    #[test]
+    fn test_local_ai_services_hardware_and_manager() {
+        use worldwiki_infrastructure::ai::hardware::WinApiHardwareDetector;
+        use worldwiki_infrastructure::ai::permissions::StaticPermissionsCatalog;
+        use worldwiki_infrastructure::ai::local_manager::FsLocalModelManager;
+        use crate::ai::LocalAiServices;
+
+        let temp_dir = std::env::temp_dir().join("worldwiki_test_models");
+        let hw = Arc::new(WinApiHardwareDetector::new());
+        let mgr = Arc::new(FsLocalModelManager::new(temp_dir));
+        let perms = Arc::new(StaticPermissionsCatalog::new());
+
+        let local_ai = LocalAiServices::new(hw, mgr, perms);
+
+        let info = local_ai.get_hardware_info();
+        assert!(info.total_ram_gb > 0.0);
+
+        let quants = local_ai.calculate_quantization_estimates(7.0, Some(4096));
+        assert!(!quants.is_empty());
+
+        let recommended = local_ai.get_recommended_local_models();
+        assert_eq!(recommended.len(), 3);
+
+        let catalog = local_ai.get_tool_permissions_catalog();
+        assert!(catalog.len() >= 5);
+
+        let installed = local_ai.list_installed_models().unwrap();
+        assert!(installed.is_empty());
+    }
 }

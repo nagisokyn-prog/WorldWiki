@@ -1,3 +1,7 @@
+pub mod docx;
+pub mod epub;
+pub mod fb2;
+
 use async_trait::async_trait;
 use worldwiki_domain::document::{ExportConfig, SemanticDocument};
 use worldwiki_domain::errors::DomainError;

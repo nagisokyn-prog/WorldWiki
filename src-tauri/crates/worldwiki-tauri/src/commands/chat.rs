@@ -215,3 +215,36 @@ pub async fn delete_aiprofile(
         .await
         .map_err(IpcError::from)
 }
+
+#[tauri::command]
+pub async fn edit_chat_message(
+    state: State<'_, AppState>,
+    msg_id: String,
+    new_text: String,
+    chat_id: String,
+    project: String,
+    _mode_slug: Option<String>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .chat
+        .edit_message(&project, &chat_id, &msg_id, &new_text)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn regenerate_chat_message(
+    state: State<'_, AppState>,
+    parent_msg_id: String,
+    chat_id: String,
+    project: String,
+    _mode_slug: Option<String>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .chat
+        .regenerate_message(&project, &chat_id, &parent_msg_id)
+        .await
+        .map_err(IpcError::from)
+}

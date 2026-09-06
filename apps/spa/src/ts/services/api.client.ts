@@ -15,18 +15,18 @@ import type { Entity } from '../types/generated/Entity';
 import type { EntitySchema } from '../types/generated/EntitySchema';
 import type { EntityRel } from '../types/generated/EntityRel';
 import type { RelationSchema } from '../types/generated/RelationSchema';
+import type { Chat } from '../types/generated/Chat';
+import type { ChatMessage } from '../types/generated/ChatMessage';
+import type { AiProfile } from '../types/generated/AiProfile';
 import type { PlotPromise } from '../types/generated/PlotPromise';
 import type { Plan } from '../types/generated/Plan';
 import type { Tag } from '../types/generated/Tag';
 import type { Calendar } from '../types/generated/Calendar';
-import type { Chat } from '../types/generated/Chat';
 import type { AutoApprovalSetting } from '../types/generated/AutoApprovalSetting';
-import type { AiProfile } from '../types/generated/AiProfile';
 import type { AiMode } from '../types/generated/AiMode';
 import type { Artifact } from '../types/generated/Artifact';
 import type { AiSkill } from '../types/generated/AiSkill';
 import type { TextBlock } from '../types/generated/TextBlock';
-import type { ChatMessage } from '../types/generated/ChatMessage';
 import type { AgentMemory } from '../types/generated/AgentMemory';
 import type { WebCache } from '../types/generated/WebCache';
 import type { DictionaryWord } from '../types/generated/DictionaryWord';
@@ -305,20 +305,24 @@ export async function saveTextBlocks(project: string, chapterId: string, html: s
     return await invoke('save_text_blocks', { project, chapterId, html });
 }
 
-export async function getChatTree(projectId: string): Promise<unknown[]> {
+export async function getChatTree(projectId: string): Promise<Chat[]> {
     return await invoke('get_chat_tree', { projectId });
 }
 
-export async function getChatMessages(chatId: string): Promise<unknown[]> {
+export async function getChatMessages(chatId: string): Promise<ChatMessage[]> {
     return await invoke('get_chat_messages', { chatId });
 }
 
-export async function getMessageBranch(chatId: string): Promise<unknown[]> {
+export async function getMessageBranch(chatId: string): Promise<ChatMessage[]> {
     return await invoke('get_message_branch', { chatId });
 }
 
-export async function forkChat(projectId: string, messageId: string, newTitle: string): Promise<unknown> {
+export async function forkChat(projectId: string, messageId: string, newTitle: string): Promise<Chat> {
     return await invoke('fork_chat', { projectId, messageId, newTitle });
+}
+
+export async function saveChat(data: Chat): Promise<Chat> {
+    return await invoke('save_chat', { data });
 }
 
 export async function updateChatParent(chatId: string, newParentId: string | null): Promise<void> {
@@ -337,14 +341,6 @@ export async function deleteChatMessage(msgId: string): Promise<void> {
     return await invoke('delete_chat_message', { msgId });
 }
 
-export async function editChatMessage(msgId: string, newText: string, chatId: string, project: string, modeSlug: string | null): Promise<unknown> {
-    return await invoke('edit_chat_message', { msgId, newText, chatId, project, modeSlug });
-}
-
-export async function regenerateChatMessage(parentMsgId: string, chatId: string, project: string, modeSlug: string | null): Promise<unknown> {
-    return await invoke('regenerate_chat_message', { parentMsgId, chatId, project, modeSlug });
-}
-
 export async function switchMessageVariant(msgId: string): Promise<void> {
     return await invoke('switch_message_variant', { msgId });
 }
@@ -353,24 +349,28 @@ export async function fetchAiModels(provider: string, apiKey: string | null): Pr
     return await invoke('fetch_ai_models', { provider, apiKey });
 }
 
-export async function getAiCompletion(textBefore: string, projectId: string): Promise<string> {
-    return await invoke('get_ai_completion', { textBefore, projectId });
+export async function deleteAiChat(project: string, id: string): Promise<void> {
+    return await invoke('delete_ai_chat', { project, id });
 }
 
-export async function generateChatTitle(chatId: string, promptText: string, projectId: string): Promise<void> {
-    return await invoke('generate_chat_title', { chatId, promptText, projectId });
+export async function getAiprofiles(project: string): Promise<AiProfile[]> {
+    return await invoke('get_aiprofiles', { project });
 }
 
-export async function deleteAiChat(id: string): Promise<void> {
-    return await invoke('delete_ai_chat', { id });
+export async function saveAiprofile(data: AiProfile): Promise<AiProfile> {
+    return await invoke('save_aiprofile', { data });
 }
 
-export async function fetchHfModels(query: string | null, token: string | null): Promise<unknown[]> {
-    return await invoke('fetch_hf_models', { query, token });
+export async function deleteAiprofile(project: string, id: string): Promise<void> {
+    return await invoke('delete_aiprofile', { project, id });
 }
 
-export async function downloadHfModel(repoId: string, filename: string, token: string | null): Promise<string> {
-    return await invoke('download_hf_model', { repoId, filename, token });
+export async function editChatMessage(msgId: string, newText: string, chatId: string, project: string, modeSlug: string | null): Promise<void> {
+    return await invoke('edit_chat_message', { msgId, newText, chatId, project, modeSlug });
+}
+
+export async function regenerateChatMessage(parentMsgId: string, chatId: string, project: string, modeSlug: string | null): Promise<void> {
+    return await invoke('regenerate_chat_message', { parentMsgId, chatId, project, modeSlug });
 }
 
 export async function getHardwareInfo(): Promise<unknown> {
@@ -389,24 +389,32 @@ export async function listInstalledModels(): Promise<unknown[]> {
     return await invoke('list_installed_models');
 }
 
-export async function loadLocalModel(filename: string): Promise<void> {
+export async function loadLocalModel(filename: string): Promise<string> {
     return await invoke('load_local_model', { filename });
 }
 
-export async function unloadLocalModel(filename: string): Promise<void> {
+export async function unloadLocalModel(filename: string): Promise<string> {
     return await invoke('unload_local_model', { filename });
 }
 
-export async function unloadAllLocalModels(): Promise<void> {
+export async function unloadAllLocalModels(): Promise<string> {
     return await invoke('unload_all_local_models');
 }
 
-export async function deleteLocalModel(filename: string): Promise<void> {
+export async function deleteLocalModel(filename: string): Promise<string> {
     return await invoke('delete_local_model', { filename });
 }
 
 export async function getToolPermissionsCatalog(): Promise<unknown[]> {
     return await invoke('get_tool_permissions_catalog');
+}
+
+export async function fetchHfModels(query: string | null, token: string | null): Promise<unknown[]> {
+    return await invoke('fetch_hf_models', { query, token });
+}
+
+export async function downloadHfModel(repoId: string, filename: string, token: string | null): Promise<string> {
+    return await invoke('download_hf_model', { repoId, filename, token });
 }
 
 export async function reindexProjectLore(projectId: string): Promise<number> {
@@ -584,10 +592,6 @@ export async function getChats(project: string): Promise<Chat[]> {
 
 export async function getChat(id: string): Promise<Chat | null> {
     return await invoke('get_chat', { id });
-}
-
-export async function saveChat(project: string, data: Chat): Promise<Chat> {
-    return await invoke('save_chat', { project, data });
 }
 
 export async function deleteChat(id: string): Promise<void> {

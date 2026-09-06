@@ -9,8 +9,6 @@ use tauri::Manager;
 use tokio::sync::Mutex;
 
 pub mod bootstrap;
-#[allow(clippy::all, warnings, unused, dead_code)]
-#[path = ".logic_legacy/mod.rs"]
 pub mod logic;
 
 pub struct AppState {
@@ -69,12 +67,9 @@ async fn init_database() -> Surreal<Db> {
 #[allow(clippy::too_many_arguments)]
 pub fn run() {
     use logic::batch::*;
-    use logic::calendar_math::*;
     use logic::chapters::*;
     use logic::connections::*;
-    use logic::documents::commands::*;
     use logic::entities::*;
-    use logic::export::*;
     use logic::models::*;
     use logic::projects::*;
     use logic::volumes::*;
@@ -139,22 +134,24 @@ pub fn run() {
                         get_global_timeline,
             save_global_timeline,
             // --- Экспорт и История ---
-            export_chapters,
-            export_document_docx,
-            export_document_epub,
-            export_document_fb2,
-            export_document_pdf_save,
-            create_cloud_backup,
-            exchange_yandex_token,
-            upload_to_yandex_disk,
-            list_yandex_disk_backups,
-            download_and_restore_yandex,
-            get_launch_args,
-            restore_from_backup,
+            worldwiki_tauri::commands::export_chapters,
+            worldwiki_tauri::commands::export_document_docx,
+            worldwiki_tauri::commands::export_document_epub,
+            worldwiki_tauri::commands::export_document_fb2,
+            worldwiki_tauri::commands::export_document_pdf_save,
+            worldwiki_tauri::commands::create_cloud_backup,
+            worldwiki_tauri::commands::exchange_yandex_token,
+            worldwiki_tauri::commands::upload_to_yandex_disk,
+            worldwiki_tauri::commands::list_yandex_disk_backups,
+            worldwiki_tauri::commands::download_and_restore_yandex,
+            worldwiki_tauri::commands::get_launch_args,
+            worldwiki_tauri::commands::restore_from_backup,
             get_chapter_revisions,
             get_entity_revisions,
-            convert_absolute_to_local,
-            convert_calendar_date,
+
+            // --- Календарь (worldwiki-tauri) ---
+            worldwiki_tauri::commands::convert_absolute_to_local,
+            worldwiki_tauri::commands::convert_calendar_date,
 
             // --- Текстовые блоки ---
             save_text_blocks,
@@ -175,6 +172,24 @@ pub fn run() {
             worldwiki_tauri::commands::get_aiprofiles,
             worldwiki_tauri::commands::save_aiprofile,
             worldwiki_tauri::commands::delete_aiprofile,
+            worldwiki_tauri::commands::edit_chat_message,
+            worldwiki_tauri::commands::regenerate_chat_message,
+
+            // --- AI Локальные модели, Оборудование и Разрешения (worldwiki-tauri) ---
+            worldwiki_tauri::commands::get_hardware_info,
+            worldwiki_tauri::commands::calculate_quantization_estimates,
+            worldwiki_tauri::commands::get_recommended_local_models,
+            worldwiki_tauri::commands::list_installed_models,
+            worldwiki_tauri::commands::load_local_model,
+            worldwiki_tauri::commands::unload_local_model,
+            worldwiki_tauri::commands::unload_all_local_models,
+            worldwiki_tauri::commands::delete_local_model,
+            worldwiki_tauri::commands::get_tool_permissions_catalog,
+
+            // --- AI Hub & Retrieval (worldwiki-tauri) ---
+            worldwiki_tauri::commands::fetch_hf_models,
+            worldwiki_tauri::commands::download_hf_model,
+            worldwiki_tauri::commands::reindex_project_lore,
 
             // --- Новые модульные IPC-команды (worldwiki-tauri) ---
             worldwiki_tauri::commands::get_entity_full_card,

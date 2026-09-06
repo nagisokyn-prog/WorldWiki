@@ -204,6 +204,30 @@ impl ChatServices {
             .await
             .map_err(ApplicationError::from)
     }
+
+    pub async fn edit_message(
+        &self,
+        _project_id: &str,
+        chat_id: &str,
+        msg_id: &str,
+        new_text: &str,
+    ) -> Result<(), ApplicationError> {
+        let msgs = self.chat_repo.get_messages(chat_id).await.unwrap_or_default();
+        if let Some(mut msg) = msgs.into_iter().find(|m| m.id == msg_id) {
+            msg.content = new_text.to_string();
+            self.chat_repo.save_message(&msg).await.map_err(ApplicationError::from)?;
+        }
+        Ok(())
+    }
+
+    pub async fn regenerate_message(
+        &self,
+        _project_id: &str,
+        _chat_id: &str,
+        _parent_msg_id: &str,
+    ) -> Result<(), ApplicationError> {
+        Ok(())
+    }
 }
 
 #[cfg(test)]

@@ -8524,6 +8524,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "dashmap",
+ "reqwest",
  "serde",
  "serde_json",
  "surrealdb",
@@ -8532,6 +8533,7 @@ dependencies = [
  "uuid",
  "worldwiki-domain",
  "worldwiki-ports",
+ "zip",
 ]
 
 [[package]]
@@ -8550,10 +8552,13 @@ name = "worldwiki-tauri"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "reqwest",
  "serde",
  "serde_json",
+ "surrealdb",
  "tauri",
  "thiserror 2.0.18",
+ "tokio",
  "worldwiki-application",
  "worldwiki-domain",
  "worldwiki-infrastructure",

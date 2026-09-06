@@ -153,3 +153,21 @@ pub struct DownloadProgressEvent {
     pub is_done: bool,
     pub error: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StreamChunk {
+    pub chat_id: String,
+    pub message_id: String,
+    pub text: String,
+    pub is_done: bool,
+    pub chunk_type: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentToolEvent {
+    pub chat_id: String,
+    pub message_id: String,
+    pub tool_name: String,
+    pub tool_args: serde_json::Value,
+}
+

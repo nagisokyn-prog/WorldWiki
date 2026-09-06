@@ -11,13 +11,12 @@
 //! нужно реальное железо и последовательное выполнение (общие VRAM-слоты).
 
 use world_wiki_lib::logic::ai::local_llm::{
-    get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen, LocalLlm,
-    ModelParams, TokenEvent,
+    get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen, LocalLlm, ModelParams,
+    TokenEvent,
 };
 
 fn gen_model() -> String {
-    std::env::var("WW_GEN_MODEL")
-        .unwrap_or_else(|_| "Qwen2.5-3B-Instruct-Q4_K_M.gguf".to_string())
+    std::env::var("WW_GEN_MODEL").unwrap_or_else(|_| "Qwen2.5-3B-Instruct-Q4_K_M.gguf".to_string())
 }
 
 fn emb_model() -> String {
@@ -73,8 +72,7 @@ async fn smoke_1_embedding_roundtrip() {
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "requires CUDA + installed generation model"]
 async fn smoke_2_generation_produces_tokens() {
-    let mut m =
-        LocalLlm::load_model(&gen_model(), light_params()).expect("модель загрузилась");
+    let mut m = LocalLlm::load_model(&gen_model(), light_params()).expect("модель загрузилась");
 
     let (std_tx, std_rx) = std::sync::mpsc::channel::<TokenEvent>();
     let mut rx = spawn_forwarder(std_rx);
@@ -125,8 +123,7 @@ async fn smoke_3_swap_embedder_then_generation() {
 
         let (std_tx, std_rx) = std::sync::mpsc::channel::<TokenEvent>();
         let mut rx = spawn_forwarder(std_rx);
-        let h =
-            tokio::task::spawn_blocking(move || g.generate_stream("Привет", std_tx).ok());
+        let h = tokio::task::spawn_blocking(move || g.generate_stream("Привет", std_tx).ok());
         let mut got_any = false;
         while let Some(ev) = rx.recv().await {
             if ev.is_done {
@@ -147,8 +144,7 @@ async fn smoke_3_swap_embedder_then_generation() {
 #[tokio::test(flavor = "multi_thread")]
 #[ignore = "requires CUDA + installed generation model"]
 async fn smoke_4_cancel_stops_generation() {
-    let mut m =
-        LocalLlm::load_model(&gen_model(), light_params()).expect("модель загрузилась");
+    let mut m = LocalLlm::load_model(&gen_model(), light_params()).expect("модель загрузилась");
 
     let (std_tx, std_rx) = std::sync::mpsc::channel::<TokenEvent>();
     let mut rx = spawn_forwarder(std_rx);

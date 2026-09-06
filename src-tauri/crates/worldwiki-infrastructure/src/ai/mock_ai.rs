@@ -17,6 +17,35 @@ impl LlmInferencePort for MockAiAdapter {
 }
 
 #[async_trait]
+impl LlmStreamPort for MockAiAdapter {
+    async fn stream_chat(
+        &self,
+        _request: StreamRequest,
+        sender: tokio::sync::mpsc::Sender<StreamEventDto>,
+    ) -> Result<(), DomainError> {
+        let _ = sender
+            .send(StreamEventDto {
+                text_delta: Some("Mock AI stream response".to_string()),
+                reasoning_delta: None,
+                tool_use: None,
+                usage: Some(serde_json::json!({ "total_tokens": 10 })),
+                is_done: false,
+            })
+            .await;
+        let _ = sender
+            .send(StreamEventDto {
+                text_delta: None,
+                reasoning_delta: None,
+                tool_use: None,
+                usage: None,
+                is_done: true,
+            })
+            .await;
+        Ok(())
+    }
+}
+
+#[async_trait]
 impl EmbeddingPort for MockAiAdapter {
     async fn embed(&self, _text: &str) -> Result<Vec<f32>, DomainError> {
         Ok(vec![0.0; 768])

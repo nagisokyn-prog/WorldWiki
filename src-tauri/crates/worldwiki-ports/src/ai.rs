@@ -22,6 +22,38 @@ pub struct InferenceResponse {
     pub usage: Option<Value>,
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct ToolUseCall {
+    pub id: String,
+    pub name: String,
+    pub input: Value,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct StreamEventDto {
+    pub text_delta: Option<String>,
+    pub reasoning_delta: Option<String>,
+    pub tool_use: Option<ToolUseCall>,
+    pub usage: Option<Value>,
+    pub is_done: bool,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct StreamRequest {
+    pub profile: AiProfile,
+    pub system_prompt: String,
+    pub messages: Vec<Value>,
+}
+
+#[async_trait]
+pub trait LlmStreamPort: Send + Sync {
+    async fn stream_chat(
+        &self,
+        request: StreamRequest,
+        sender: tokio::sync::mpsc::Sender<StreamEventDto>,
+    ) -> Result<(), DomainError>;
+}
+
 #[async_trait]
 pub trait LlmInferencePort: Send + Sync {
     async fn infer(&self, request: InferenceRequest) -> Result<InferenceResponse, DomainError>;

@@ -5,6 +5,9 @@ pub mod local_manager;
 pub mod hub;
 pub mod chunker;
 pub mod retrieval;
+pub mod client;
+pub mod claw_adapter;
+pub mod local_llm;
 
 pub use mock_ai::MockAiAdapter;
 pub use hardware::WinApiHardwareDetector;
@@ -13,5 +16,6 @@ pub use local_manager::FsLocalModelManager;
 pub use hub::*;
 pub use chunker::*;
 pub use retrieval::*;
-
-
+pub use client::*;
+pub use claw_adapter::ClawStreamAdapter;
+pub use local_llm::*;

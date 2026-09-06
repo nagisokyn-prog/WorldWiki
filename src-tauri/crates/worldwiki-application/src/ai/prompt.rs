@@ -14,10 +14,22 @@ pub struct InputMessage {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum InputContentBlock {
-    #[serde(rename = "text")]
-    Text { text: String },
+    Text {
+        text: String,
+    },
+    ToolUse {
+        id: String,
+        name: String,
+        input: Value,
+    },
+    ToolResult {
+        tool_use_id: String,
+        content: String,
+        #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+        is_error: bool,
+    },
 }
 
 impl InputMessage {
@@ -25,6 +37,21 @@ impl InputMessage {
         Self {
             role: "user".to_string(),
             content: vec![InputContentBlock::Text { text: text.into() }],
+        }
+    }
+
+    pub fn user_tool_result(
+        tool_use_id: impl Into<String>,
+        content: impl Into<String>,
+        is_error: bool,
+    ) -> Self {
+        Self {
+            role: "user".to_string(),
+            content: vec![InputContentBlock::ToolResult {
+                tool_use_id: tool_use_id.into(),
+                content: content.into(),
+                is_error,
+            }],
         }
     }
 }

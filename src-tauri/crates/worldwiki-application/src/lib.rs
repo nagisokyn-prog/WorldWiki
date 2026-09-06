@@ -172,7 +172,8 @@ mod tests {
         let catalog = local_ai.get_tool_permissions_catalog();
         assert!(catalog.len() >= 5);
 
-        let installed = local_ai.list_installed_models().unwrap();
-        assert!(installed.is_empty());
+        let installed = local_ai.list_installed_models().expect("list_installed_models must succeed");
+        // Не предполагаем, что у пользователя нет моделей на диске — проверяем работоспособность сканирования
+        let _ = installed;
     }
 }

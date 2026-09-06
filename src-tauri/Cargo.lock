@@ -8521,9 +8521,11 @@ dependencies = [
 name = "worldwiki-infrastructure"
 version = "0.1.0"
 dependencies = [
+ "api",
  "async-trait",
  "chrono",
  "dashmap",
+ "llama-sys",
  "reqwest",
  "serde",
  "serde_json",
@@ -8544,6 +8546,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
+ "tokio",
  "worldwiki-domain",
 ]
 

@@ -18,3 +18,12 @@ uuid = { version = "1", features = ["v4", "serde"] }
 surrealdb = { version = "3.2.4", default-features = false, features = ["kv-surrealkv", "kv-mem"] }
 zip = "8.6.0"
 reqwest = { version = "0.13.4", features = ["json", "form"] }
+
+claw_api = { package = "api", path = "../../../vendor/claw-code/rust/crates/api", optional = true }
+llama-sys = { path = "../../llama-sys", optional = true }
+
+[features]
+default = ["ai-cloud", "ai-local"]
+ai-cloud = ["dep:claw_api"]
+ai-local = ["ai-cloud", "dep:llama-sys"]
+

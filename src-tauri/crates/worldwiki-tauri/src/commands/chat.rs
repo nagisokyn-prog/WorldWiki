@@ -17,7 +17,7 @@ pub async fn send_chat_message(
     chat_id: String,
     text: String,
     project: String,
-    _mode_slug: Option<String>,
+    mode_slug: Option<String>,
 ) -> Result<SendChatResult, IpcError> {
     let res = state
         .services
@@ -25,6 +25,18 @@ pub async fn send_chat_message(
         .send_message(&project, &chat_id, &text)
         .await
         .map_err(IpcError::from)?;
+
+    let chat_svc = state.services.chat.clone();
+    let p_id = project.clone();
+    let c_id = res.chat_id.clone();
+    let a_id = res.assistant_msg_id.clone();
+    let u_text = text.clone();
+
+    tokio::spawn(async move {
+        chat_svc
+            .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
+            .await;
+    });
 
     Ok(SendChatResult {
         chat_id: res.chat_id,
@@ -223,14 +235,26 @@ pub async fn edit_chat_message(
     new_text: String,
     chat_id: String,
     project: String,
-    _mode_slug: Option<String>,
+    mode_slug: Option<String>,
 ) -> Result<(), IpcError> {
-    state
+    let (c_id, a_id) = state
         .services
         .chat
         .edit_message(&project, &chat_id, &msg_id, &new_text)
         .await
-        .map_err(IpcError::from)
+        .map_err(IpcError::from)?;
+
+    let chat_svc = state.services.chat.clone();
+    let p_id = project.clone();
+    let u_text = new_text.clone();
+
+    tokio::spawn(async move {
+        chat_svc
+            .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
+            .await;
+    });
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -239,12 +263,23 @@ pub async fn regenerate_chat_message(
     parent_msg_id: String,
     chat_id: String,
     project: String,
-    _mode_slug: Option<String>,
+    mode_slug: Option<String>,
 ) -> Result<(), IpcError> {
-    state
+    let (c_id, a_id) = state
         .services
         .chat
         .regenerate_message(&project, &chat_id, &parent_msg_id)
         .await
-        .map_err(IpcError::from)
+        .map_err(IpcError::from)?;
+
+    let chat_svc = state.services.chat.clone();
+    let p_id = project.clone();
+
+    tokio::spawn(async move {
+        chat_svc
+            .run_agent_loop(&p_id, &c_id, &a_id, "", mode_slug)
+            .await;
+    });
+
+    Ok(())
 }

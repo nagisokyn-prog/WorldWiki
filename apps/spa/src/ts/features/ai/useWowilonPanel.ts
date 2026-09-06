@@ -202,11 +202,16 @@ export function useWowilonPanel(
     const currentChatId = activeChatId.value || 'new';
     isGenerating.value = true;
 
+    // Определяем родителя: ID последнего активного сообщения в текущей ветке
+    const lastGroup = renderedMessages.value[renderedMessages.value.length - 1];
+    const parentId = lastGroup?.activeMessage?.id ?? (allMessages.value.length > 0 ? allMessages.value[allMessages.value.length - 1].id ?? null : null);
+
     // Индекс только что добавленного user-сообщения — обновим id после ответа
     const userMsgIdx = allMessages.value.length;
     allMessages.value.push({
       role: 'user',
-      content: text
+      content: text,
+      parent_id: parentId
     });
 
     try {
@@ -230,17 +235,19 @@ export function useWowilonPanel(
         if (res.user_msg_id && allMessages.value[userMsgIdx]) {
           allMessages.value[userMsgIdx] = {
             ...allMessages.value[userMsgIdx],
-            id: res.user_msg_id
+            id: res.user_msg_id,
+            parent_id: parentId
           };
         }
 
-        // 3. Добавляем placeholder ассистента с реальным id,
+        // 3. Добавляем placeholder ассистента с реальным id и parent_id = user_msg_id,
         //    чтобы stream listener нашёл его по chunk.message_id.
         if (res.assistant_msg_id) {
           allMessages.value.push({
             id: res.assistant_msg_id,
             role: 'assistant',
-            content: ''
+            content: '',
+            parent_id: res.user_msg_id ?? null
           });
         }
       }

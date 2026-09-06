@@ -1,19 +1,19 @@
 //! Интеграционные тесты хранилища чатов и ветвления диалогов (`ai/chat/`).
 //!
 //! Тестируют:
-//! - Сохранение и выборку сообщений чата (`get_chat_messages_impl`).
-//! - Форканье ветки диалога от конкретного сообщения (`fork_chat_impl`).
-//! - Иерархическое дерево чатов и родительские связи `contains` (`get_chat_tree_impl`).
+//! - Сохранение и выборку сообщений чата (`ChatServices::get_messages`).
+//! - Форканье ветки диалога от конкретного сообщения (`ChatServices::fork_chat`).
+//! - Иерархическое дерево чатов (`ChatServices::get_chat_tree`).
 
+use super::common::{create_test_db, create_test_services, seed_project};
 use serde_json::Value;
-use crate::logic::ai::chat::operations::fork_chat_impl;
-use crate::logic::ai::chat::tree::{get_chat_messages_impl, get_chat_tree_impl};
-use super::common::{create_test_db, seed_project};
+use std::sync::Arc;
 
 #[tokio::test]
 async fn test_chat_create_and_messages_roundtrip() {
     let db = create_test_db().await;
     seed_project(&db, "p_chat", "Chat Project").await;
+    let services = create_test_services(Arc::new(db.clone()));
 
     // 1. Создаём чат
     let mut chat_res = db
@@ -35,19 +35,22 @@ async fn test_chat_create_and_messages_roundtrip() {
         .unwrap();
     let _m2: Option<Value> = m2_res.take(0).unwrap();
 
-    // 3. Выборка через get_chat_messages_impl
-    let msgs = get_chat_messages_impl(&db, "main").await.expect("get_chat_messages should succeed");
+    // 3. Выборка через services.chat.get_messages
+    let msgs = services
+        .chat
+        .get_messages("main")
+        .await
+        .expect("get_messages should succeed");
     assert_eq!(msgs.len(), 2);
-    assert_eq!(msgs[0]["content"], "Привет, помоги придумать сюжет");
-    assert_eq!(msgs[0]["role"], "user");
-    assert_eq!(msgs[1]["content"], "Конечно! Какая тема?");
-    assert_eq!(msgs[1]["role"], "assistant");
+    assert_eq!(msgs[0].content, "Привет, помоги придумать сюжет");
+    assert_eq!(msgs[1].content, "Конечно! Какая тема?");
 }
 
 #[tokio::test]
 async fn test_fork_chat_copies_history_up_to_target_message() {
     let db = create_test_db().await;
     seed_project(&db, "p_fork", "Fork Project").await;
+    let services = create_test_services(Arc::new(db.clone()));
 
     // 1. Создаём исходный чат
     db.query("CREATE chats:original SET project_id = type::record('projects:p_fork'), title = 'Базовый чат', created_at = time::now()").await.unwrap();
@@ -58,35 +61,47 @@ async fn test_fork_chat_copies_history_up_to_target_message() {
     db.query("CREATE chat_messages:msg_3 SET chat_id = type::record('chats:original'), project_id = type::record('projects:p_fork'), role = 'user', content = 'Сообщение 3 (не должно попасть в форк)', parent_id = type::record('chat_messages:msg_2'), created_at = type::datetime('2026-08-01T10:02:00Z'), is_active = true").await.unwrap();
 
     // 3. Форкаем чат от msg_2
-    let forked_chat = fork_chat_impl(&db, "p_fork", "msg_2", "Альтернативная ветка")
+    let forked_chat = services
+        .chat
+        .fork_chat("p_fork", "msg_2", "Альтернативная ветка")
         .await
         .expect("fork_chat should succeed");
 
-    let forked_chat_id = forked_chat["id"].as_str().unwrap();
+    let forked_chat_id = &forked_chat.id;
 
     // 4. Проверяем сообщения в форкнутом чате
-    let forked_msgs = get_chat_messages_impl(&db, forked_chat_id).await.unwrap();
-    assert_eq!(forked_msgs.len(), 2, "в форкнутом чате должно быть ровно 2 первых сообщения");
-    assert_eq!(forked_msgs[0]["content"], "Сообщение 1");
-    assert_eq!(forked_msgs[1]["content"], "Сообщение 2 (точка форка)");
+    let forked_msgs = services.chat.get_messages(forked_chat_id).await.unwrap();
+    assert_eq!(
+        forked_msgs.len(),
+        2,
+        "в форкнутом чате должно быть ровно 2 первых сообщения"
+    );
+    assert_eq!(forked_msgs[0].content, "Сообщение 1");
+    assert_eq!(forked_msgs[1].content, "Сообщение 2 (точка форка)");
 }
 
 #[tokio::test]
 async fn test_get_chat_tree_hierarchical_relationships() {
     let db = create_test_db().await;
     seed_project(&db, "p_tree", "Tree Chat Project").await;
+    let services = create_test_services(Arc::new(db.clone()));
 
     // Создаём родительский и дочерний чат
     db.query("CREATE chats:root_chat SET project_id = type::record('projects:p_tree'), title = 'Корень', created_at = time::now()").await.unwrap();
     db.query("CREATE chats:sub_chat SET project_id = type::record('projects:p_tree'), title = 'Подчат', created_at = time::now()").await.unwrap();
 
     // Связываем через ребро contains
-    db.query("RELATE chats:root_chat -> contains -> chats:sub_chat SET sort_order = 1").await.unwrap();
+    db.query("RELATE chats:root_chat -> contains -> chats:sub_chat SET sort_order = 1")
+        .await
+        .unwrap();
 
-    let tree = get_chat_tree_impl(&db, "p_tree").await.expect("get_chat_tree should succeed");
+    let tree = services
+        .chat
+        .get_chat_tree("p_tree")
+        .await
+        .expect("get_chat_tree should succeed");
     assert_eq!(tree.len(), 2);
 
-    let sub = tree.iter().find(|c| c["title"] == "Подчат").unwrap();
-    assert_eq!(sub["parent_chat_id"], "chats:root_chat");
-    assert_eq!(sub["sort_order"], 1);
+    let sub = tree.iter().find(|c| c.title == "Подчат").unwrap();
+    assert_eq!(sub.parent_chat_id.as_deref(), Some("chats:root_chat"));
 }

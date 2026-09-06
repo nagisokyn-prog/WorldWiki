@@ -10,14 +10,21 @@ pub struct Chapter {
     pub volume_id: Option<String>,
     pub arc_id: Option<String>,
     pub title: String,
+    #[serde(default)]
     pub content: String,
     pub summary: Option<String>,
+    #[serde(default)]
     pub word_count: usize,
+    #[serde(default)]
     pub sort_order: i32,
+    #[serde(default)]
     pub status: ManuscriptStatus,
     pub timeline_minute: Option<i64>,
+    #[serde(default)]
     pub blocks: Vec<TextBlock>,
+    #[serde(default = "chrono::Utc::now")]
     pub created_at: DateTime<Utc>,
+    #[serde(default = "chrono::Utc::now")]
     pub updated_at: DateTime<Utc>,
 }
 

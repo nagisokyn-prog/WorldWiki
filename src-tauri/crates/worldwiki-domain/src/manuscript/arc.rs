@@ -9,9 +9,13 @@ pub struct Arc {
     pub volume_id: Option<String>,
     pub title: String,
     pub description: Option<String>,
+    #[serde(default)]
     pub sort_order: i32,
+    #[serde(default)]
     pub status: ManuscriptStatus,
+    #[serde(default = "chrono::Utc::now")]
     pub created_at: DateTime<Utc>,
+    #[serde(default = "chrono::Utc::now")]
     pub updated_at: DateTime<Utc>,
 }
 

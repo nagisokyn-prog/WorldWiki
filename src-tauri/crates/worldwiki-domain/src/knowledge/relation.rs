@@ -5,8 +5,11 @@ use serde_json::Value;
 pub struct EntityRelation {
     pub id: String,
     pub project_id: String,
+    #[serde(alias = "from", alias = "from_entity")]
     pub from_entity_id: String,
+    #[serde(alias = "to", alias = "to_entity")]
     pub to_entity_id: String,
+    #[serde(alias = "relation_type", alias = "type")]
     pub rel_type: String, // "ally", "enemy", "parent_of", "located_in", "member_of", etc.
     pub strength: Option<i32>, // -100..100
     pub start_chapter_id: Option<String>,

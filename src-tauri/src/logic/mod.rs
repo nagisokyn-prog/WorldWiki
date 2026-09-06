@@ -19,7 +19,4 @@ pub mod export {
     pub use worldwiki_infrastructure::storage::*;
 }
 
-pub mod ai {
-    pub use worldwiki_domain::ai::*;
-    pub use worldwiki_infrastructure::ai::*;
-}
+pub mod ai;

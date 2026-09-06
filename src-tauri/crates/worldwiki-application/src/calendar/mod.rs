@@ -18,12 +18,17 @@ impl CalendarServices {
         let (year, month, day, hour, minute) =
             CalendarMath::get_date_from_absolute(absolute_minute, calendar, era_index);
 
+        let month_name = calendar.months.get((month - 1).max(0) as usize).map(|m| m.название.as_str()).unwrap_or("");
+        let era_name = calendar.eras.get(era_index).map(|e| e.название.as_str()).unwrap_or("");
+        let formatted = format!("{day} {month_name} {year} г., {hour:02}:{minute:02} ({era_name})");
+
         Ok(serde_json::json!({
             "year": year,
             "month": month,
             "day": day,
             "hour": hour,
-            "minute": minute
+            "minute": minute,
+            "formatted": formatted.trim()
         }))
     }
 

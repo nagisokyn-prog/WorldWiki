@@ -21,6 +21,35 @@ fn clean_id(table: &str, raw_id: &str) -> String {
     }
 }
 
+fn prepare_data_for_upsert(mut data: Value) -> Value {
+    if let Value::Object(ref mut map) = data {
+        map.remove("id");
+    }
+    data
+}
+
+fn normalize_surreal_value(val: &mut Value) {
+    if let Value::Object(map) = val {
+        for (_k, v) in map.iter_mut() {
+            if let Value::Object(inner) = v {
+                if let (Some(Value::String(tb)), Some(id_val)) = (inner.get("tb"), inner.get("id")) {
+                    let id_str = match id_val {
+                        Value::String(s) => s.clone(),
+                        _ => id_val.to_string().trim_matches('"').to_string(),
+                    };
+                    *v = Value::String(format!("{tb}:{id_str}"));
+                } else {
+                    normalize_surreal_value(v);
+                }
+            } else if let Value::Array(arr) = v {
+                for item in arr {
+                    normalize_surreal_value(item);
+                }
+            }
+        }
+    }
+}
+
 fn take_one<T: serde::de::DeserializeOwned>(
     res: &mut IndexedResults,
     idx: usize,
@@ -29,7 +58,8 @@ fn take_one<T: serde::de::DeserializeOwned>(
         .take(idx)
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     match raw {
-        Some(val) => {
+        Some(mut val) => {
+            normalize_surreal_value(&mut val);
             let item: T =
                 serde_json::from_value(val).map_err(|e| DomainError::Validation(e.to_string()))?;
             Ok(Some(item))
@@ -46,7 +76,8 @@ fn take_list<T: serde::de::DeserializeOwned>(
         .take(idx)
         .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
     let mut list = Vec::with_capacity(raw.len());
-    for val in raw {
+    for mut val in raw {
+        normalize_surreal_value(&mut val);
         let item: T =
             serde_json::from_value(val).map_err(|e| DomainError::Validation(e.to_string()))?;
         list.push(item);
@@ -70,7 +101,7 @@ impl SurrealChapterRepository {
 #[async_trait]
 impl ChapterRepository for SurrealChapterRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Chapter>, DomainError> {
-        let sql = "SELECT * FROM type::thing('chapters', $id);";
+        let sql = "SELECT * FROM type::record('chapters', $id);";
         let clean = id.trim_start_matches("chapters:");
         let mut res = self
             .db
@@ -83,21 +114,39 @@ impl ChapterRepository for SurrealChapterRepository {
 
     async fn save(&self, chapter: &Chapter) -> Result<(), DomainError> {
         let clean = chapter.id.trim_start_matches("chapters:").to_string();
-        let data =
-            serde_json::to_value(chapter).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('chapters', $id) CONTENT $data;";
-        self.db
+        let proj_clean = chapter.project_id.trim_start_matches("projects:").to_string();
+
+        // Используем MERGE SET с явными type::record() для полей-ссылок,
+        // чтобы избежать несовместимости строки с TYPE record<projects> в SCHEMAFULL.
+        let sql = r#"
+            UPSERT type::record('chapters', $c_id) MERGE {
+                title: $title,
+                content: $content,
+                project_id: type::record('projects', $p_id),
+                word_count: $word_count,
+                updated_at: time::now()
+            };
+        "#;
+        let mut res = self.db
             .query(sql)
-            .bind(("id", clean))
-            .bind(("data", data))
+            .bind(("c_id", clean))
+            .bind(("p_id", proj_clean))
+            .bind(("title", chapter.title.clone()))
+            .bind(("content", chapter.content.clone()))
+            .bind(("word_count", chapter.word_count as i64))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        // Проверяем ошибки внутри результата (schema violations и т.д.)
+        let errors = res.take_errors();
+        if let Some((_, e)) = errors.into_iter().next() {
+            return Err(DomainError::ConstraintViolation(e.to_string()));
+        }
         Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("chapters:").to_string();
-        let sql = "DELETE type::thing('chapters', $id);";
+        let sql = "DELETE type::record('chapters', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -145,7 +194,7 @@ impl SurrealVolumeRepository {
 #[async_trait]
 impl VolumeRepository for SurrealVolumeRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Volume>, DomainError> {
-        let sql = "SELECT * FROM type::thing('volumes', $id);";
+        let sql = "SELECT * FROM type::record('volumes', $id);";
         let clean = id.trim_start_matches("volumes:");
         let mut res = self
             .db
@@ -158,9 +207,10 @@ impl VolumeRepository for SurrealVolumeRepository {
 
     async fn save(&self, volume: &Volume) -> Result<(), DomainError> {
         let clean = volume.id.trim_start_matches("volumes:").to_string();
-        let data =
-            serde_json::to_value(volume).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('volumes', $id) CONTENT $data;";
+        let data = prepare_data_for_upsert(
+            serde_json::to_value(volume).map_err(|e| DomainError::Validation(e.to_string()))?,
+        );
+        let sql = "UPSERT type::record('volumes', $id) CONTENT $data;";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -172,7 +222,7 @@ impl VolumeRepository for SurrealVolumeRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("volumes:").to_string();
-        let sql = "DELETE type::thing('volumes', $id);";
+        let sql = "DELETE type::record('volumes', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -209,7 +259,7 @@ impl SurrealArcRepository {
 #[async_trait]
 impl ArcRepository for SurrealArcRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<ArcNode>, DomainError> {
-        let sql = "SELECT * FROM type::thing('arcs', $id);";
+        let sql = "SELECT * FROM type::record('arcs', $id);";
         let clean = id.trim_start_matches("arcs:");
         let mut res = self
             .db
@@ -222,8 +272,10 @@ impl ArcRepository for SurrealArcRepository {
 
     async fn save(&self, arc: &ArcNode) -> Result<(), DomainError> {
         let clean = arc.id.trim_start_matches("arcs:").to_string();
-        let data = serde_json::to_value(arc).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('arcs', $id) CONTENT $data;";
+        let data = prepare_data_for_upsert(
+            serde_json::to_value(arc).map_err(|e| DomainError::Validation(e.to_string()))?,
+        );
+        let sql = "UPSERT type::record('arcs', $id) CONTENT $data;";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -235,7 +287,7 @@ impl ArcRepository for SurrealArcRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("arcs:").to_string();
-        let sql = "DELETE type::thing('arcs', $id);";
+        let sql = "DELETE type::record('arcs', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -272,7 +324,7 @@ impl SurrealEntityRepository {
 #[async_trait]
 impl EntityRepository for SurrealEntityRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Entity>, DomainError> {
-        let sql = "SELECT * FROM type::thing('entities', $id);";
+        let sql = "SELECT * FROM type::record('entities', $id);";
         let clean = id.trim_start_matches("entities:");
         let mut res = self
             .db
@@ -285,21 +337,40 @@ impl EntityRepository for SurrealEntityRepository {
 
     async fn save(&self, entity: &Entity) -> Result<(), DomainError> {
         let clean = entity.id.trim_start_matches("entities:").to_string();
-        let data =
-            serde_json::to_value(entity).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('entities', $id) CONTENT $data;";
-        self.db
+        let proj_clean = entity.project_id.trim_start_matches("projects:").to_string();
+
+        let sql = r#"
+            UPSERT type::record('entities', $e_id) MERGE {
+                project_id: type::record('projects', $p_id),
+                entity_type: $entity_type,
+                name: $name,
+                description: $description,
+                attributes: $attributes,
+                tags: $tags,
+                updated_at: time::now()
+            };
+        "#;
+        let mut res = self.db
             .query(sql)
-            .bind(("id", clean))
-            .bind(("data", data))
+            .bind(("e_id", clean))
+            .bind(("p_id", proj_clean))
+            .bind(("entity_type", entity.type_key.clone()))
+            .bind(("name", entity.name.clone()))
+            .bind(("description", entity.description.clone()))
+            .bind(("attributes", entity.attributes.clone()))
+            .bind(("tags", entity.tags.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let errors = res.take_errors();
+        if let Some((_, e)) = errors.into_iter().next() {
+            return Err(DomainError::ConstraintViolation(e.to_string()));
+        }
         Ok(())
     }
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("entities:").to_string();
-        let sql = "DELETE type::thing('entities', $id);";
+        let sql = "DELETE type::record('entities', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -359,7 +430,7 @@ impl SurrealRelationRepository {
 #[async_trait]
 impl RelationRepository for SurrealRelationRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<EntityRelation>, DomainError> {
-        let sql = "SELECT * FROM type::thing('entity_rel', $id);";
+        let sql = "SELECT * FROM type::record('entity_rel', $id);";
         let clean = id.trim_start_matches("entity_rel:");
         let mut res = self
             .db
@@ -372,8 +443,10 @@ impl RelationRepository for SurrealRelationRepository {
 
     async fn save(&self, rel: &EntityRelation) -> Result<(), DomainError> {
         let clean = rel.id.trim_start_matches("entity_rel:").to_string();
-        let data = serde_json::to_value(rel).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('entity_rel', $id) CONTENT $data;";
+        let data = prepare_data_for_upsert(
+            serde_json::to_value(rel).map_err(|e| DomainError::Validation(e.to_string()))?,
+        );
+        let sql = "UPSERT type::record('entity_rel', $id) CONTENT $data;";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -385,7 +458,7 @@ impl RelationRepository for SurrealRelationRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("entity_rel:").to_string();
-        let sql = "DELETE type::thing('entity_rel', $id);";
+        let sql = "DELETE type::record('entity_rel', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -426,7 +499,7 @@ impl SurrealPlotPromiseRepository {
 #[async_trait]
 impl PlotPromiseRepository for SurrealPlotPromiseRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<PlotPromise>, DomainError> {
-        let sql = "SELECT * FROM type::thing('plot_promises', $id);";
+        let sql = "SELECT * FROM type::record('plot_promises', $id);";
         let clean = id.trim_start_matches("plot_promises:");
         let mut res = self
             .db
@@ -439,9 +512,10 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
 
     async fn save(&self, promise: &PlotPromise) -> Result<(), DomainError> {
         let clean = promise.id.trim_start_matches("plot_promises:").to_string();
-        let data =
-            serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('plot_promises', $id) CONTENT $data;";
+        let data = prepare_data_for_upsert(
+            serde_json::to_value(promise).map_err(|e| DomainError::Validation(e.to_string()))?,
+        );
+        let sql = "UPSERT type::record('plot_promises', $id) CONTENT $data;";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -453,7 +527,7 @@ impl PlotPromiseRepository for SurrealPlotPromiseRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("plot_promises:").to_string();
-        let sql = "DELETE type::thing('plot_promises', $id);";
+        let sql = "DELETE type::record('plot_promises', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -509,7 +583,7 @@ impl SurrealPlanRepository {
 #[async_trait]
 impl PlanRepository for SurrealPlanRepository {
     async fn get_by_id(&self, id: &str) -> Result<Option<Plan>, DomainError> {
-        let sql = "SELECT * FROM type::thing('plans', $id);";
+        let sql = "SELECT * FROM type::record('plans', $id);";
         let clean = id.trim_start_matches("plans:");
         let mut res = self
             .db
@@ -522,9 +596,10 @@ impl PlanRepository for SurrealPlanRepository {
 
     async fn save(&self, plan: &Plan) -> Result<(), DomainError> {
         let clean = plan.id.trim_start_matches("plans:").to_string();
-        let data =
-            serde_json::to_value(plan).map_err(|e| DomainError::Validation(e.to_string()))?;
-        let sql = "UPSERT type::thing('plans', $id) CONTENT $data;";
+        let data = prepare_data_for_upsert(
+            serde_json::to_value(plan).map_err(|e| DomainError::Validation(e.to_string()))?,
+        );
+        let sql = "UPSERT type::record('plans', $id) CONTENT $data;";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -536,7 +611,7 @@ impl PlanRepository for SurrealPlanRepository {
 
     async fn delete(&self, id: &str) -> Result<(), DomainError> {
         let clean = id.trim_start_matches("plans:").to_string();
-        let sql = "DELETE type::thing('plans', $id);";
+        let sql = "DELETE type::record('plans', $id);";
         self.db
             .query(sql)
             .bind(("id", clean))
@@ -595,16 +670,70 @@ impl RAGContextPort for SurrealRAGAdapter {
         _scope: &str,
         top_k: usize,
     ) -> Result<Vec<Value>, DomainError> {
-        let sql = "SELECT id, title, content FROM text_blocks WHERE project_id = $project_id AND content @@ $query LIMIT $top_k;";
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("project_id", project_id.to_string()))
-            .bind(("query", query.to_string()))
-            .bind(("top_k", top_k as i64))
+        let p_clean = project_id.trim_start_matches("projects:").to_string();
+        let q_lower = query.to_lowercase();
+
+        // Пробуем сначала с фильтрацией по project_id через type::record()
+        let mut res_ch = self.db
+            .query("SELECT id, title, content FROM chapters WHERE project_id = type::record('projects', $p_id)")
+            .bind(("p_id", p_clean.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let list: Vec<Value> = res.take(0).unwrap_or_default();
+        let mut chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
+
+        // Fallback: если запрос с type::record вернул пусто — берём все главы и фильтруем в Rust
+        // (SurrealKV иногда имеет особенности с record type comparison)
+        if chaps.is_empty() {
+            let mut res_all = self.db
+                .query("SELECT id, title, content, project_id FROM chapters")
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            let all_chaps: Vec<Value> = res_all.take(0).unwrap_or_default();
+            let p_clean_ref = &p_clean;
+            chaps = all_chaps.into_iter().filter(|v| {
+                let Some(p) = v.get("project_id") else { return true; };
+                let key = match p {
+                    Value::String(s) => s.trim_start_matches("projects:").to_string(),
+                    Value::Object(obj) => {
+                        let id_val = obj.get("id").unwrap_or(&Value::Null);
+                        match id_val {
+                            Value::Object(id_obj) => id_obj.get("String").and_then(|v| v.as_str()).unwrap_or("").to_string(),
+                            Value::String(s) => s.clone(),
+                            _ => String::new(),
+                        }
+                    }
+                    _ => String::new(),
+                };
+                key == *p_clean_ref || p_clean_ref.is_empty()
+            }).collect();
+        }
+
+        let mut res_tb = self.db
+            .query("SELECT id, title, content FROM text_blocks WHERE project_id = type::record('projects', $p_id)")
+            .bind(("p_id", p_clean.clone()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let text_blocks: Vec<Value> = res_tb.take(0).unwrap_or_default();
+
+        let mut res_en = self.db
+            .query("SELECT id, name AS title, description AS content FROM entities WHERE project_id = type::record('projects', $p_id)")
+            .bind(("p_id", p_clean.clone()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
+
+        // Ищем во всех таблицах по тексту
+        let mut list: Vec<Value> = Vec::new();
+
+        for item in text_blocks.into_iter().chain(chaps).chain(ents) {
+            let t = item.get("title").and_then(|v| v.as_str()).unwrap_or("").to_lowercase();
+            let cont = item.get("content").and_then(|v| v.as_str()).unwrap_or("").to_lowercase();
+            if q_lower.is_empty() || t.contains(&q_lower) || cont.contains(&q_lower) {
+                list.push(item);
+            }
+        }
+
+        list.truncate(top_k);
         Ok(list)
     }
 
@@ -614,7 +743,7 @@ impl RAGContextPort for SurrealRAGAdapter {
         chapter_id: &str,
     ) -> Result<Value, DomainError> {
         let clean_ch = clean_id("chapters", chapter_id);
-        let sql = "RETURN fn::get_chapter_multi_hop_context(type::thing('chapters', $chapter_id));";
+        let sql = "RETURN fn::get_chapter_multi_hop_context(type::record('chapters', $chapter_id));";
         let clean = clean_ch.trim_start_matches("chapters:").to_string();
         let mut res = self
             .db

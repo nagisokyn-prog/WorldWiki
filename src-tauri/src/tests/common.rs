@@ -66,14 +66,32 @@ pub async fn seed_chapter(
     let proj_raw = project_key.strip_prefix("projects:").unwrap_or(project_key).trim_matches('`');
     let chap_raw = chapter_key.strip_prefix("chapters:").unwrap_or(chapter_key).trim_matches('`');
 
-    let sql = "CREATE type::record('chapters', $cid) SET project_id = type::record('projects', $pid), title = $title, content = $content";
-    db.query(sql)
+    let sql = "UPSERT type::record('chapters', $cid) SET project_id = type::record('projects', $pid), title = $title, content = $content, word_count = 0";
+    let mut res = db.query(sql)
         .bind(("cid", chap_raw))
         .bind(("pid", proj_raw))
         .bind(("title", title))
         .bind(("content", content))
         .await
-        .expect("create chapter should run");
+        .expect("create chapter query should run");
+
+    // Проверяем schema violations
+    let errors = res.take_errors();
+    if let Some((_, e)) = errors.into_iter().next() {
+        panic!("seed_chapter schema error for '{chapter_key}': {e}");
+    }
+
+    let records: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
+    if records.is_empty() {
+        panic!("seed_chapter failed to create record: result is empty");
+    }
 
     format!("chapters:{}", chap_raw)
+}
+
+/// Хелпер: создает полный граф AppServices, подключенный к тестовой SurrealDB.
+#[allow(dead_code)]
+pub fn create_test_services(db: std::sync::Arc<Surreal<Db>>) -> worldwiki_tauri::state::AppServices {
+    let events = std::sync::Arc::new(worldwiki_infrastructure::events::InMemoryEventPublisher);
+    crate::bootstrap::services::build_surreal_app_services(db, events)
 }

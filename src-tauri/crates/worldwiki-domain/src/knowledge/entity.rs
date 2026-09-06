@@ -6,14 +6,21 @@ use chrono::{DateTime, Utc};
 pub struct Entity {
     pub id: String,
     pub project_id: String,
-    pub type_key: String, // "character", "location", "faction", "item", etc.
+    /// Тип сущности: "character", "location", "faction", "item".
+    /// В схеме БД поле называется `entity_type`, но в Rust используем `type_key`.
+    /// При сериализации в JSON имя будет `type_key` — в запросах к БД используем
+    /// `$type_key` параметр и маппим в `entity_type` явно.
+    #[serde(alias = "entity_type")]
+    pub type_key: String,
     pub name: String,
     pub description: Option<String>,
     #[serde(default)]
     pub attributes: Value,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default = "chrono::Utc::now")]
     pub created_at: DateTime<Utc>,
+    #[serde(default = "chrono::Utc::now")]
     pub updated_at: DateTime<Utc>,
 }
 

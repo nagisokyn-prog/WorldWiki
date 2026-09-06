@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
+use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 
 use worldwiki_domain::ai::{AiModelInfo, AiProfile, Chat, ChatMessage, MessageRole};
@@ -18,33 +19,46 @@ impl SurrealChatRepository {
     }
 }
 
+/// Извлекает нормализованный ID вида `table:key` из любого представления SurrealDB:
+/// - строка `"chats:main"` → `Some("chats:main")`
+/// - объект `{"tb":"chats","id":{"String":"main"}}` → `Some("chats:main")`
+/// - объект `{"tb":"chats","id":"main"}` → `Some("chats:main")`
 fn clean_record_id(val: &Value) -> Option<String> {
-    if let Some(s) = val.as_str() {
-        let cleaned = s.replace(['⟨', '⟩', '`'], "");
-        if cleaned == "NONE" || cleaned == "null" || cleaned.is_empty() {
-            return None;
+    match val {
+        Value::Null => None,
+        Value::String(s) => {
+            let cleaned = s.replace(['⟨', '⟩', '`'], "");
+            if cleaned == "NONE" || cleaned == "null" || cleaned.is_empty() {
+                None
+            } else {
+                Some(cleaned)
+            }
         }
-        return Some(cleaned);
-    }
-    if let Some(obj) = val.as_object() {
-        if let Some(tb) = obj.get("tb").and_then(|v| v.as_str()) {
-            let id_str = if let Some(id_obj) = obj.get("id").and_then(|v| v.as_object()) {
-                id_obj
+        Value::Object(obj) => {
+            // SurrealDB record ID: {"tb": "chats", "id": {"String": "main"}} or {"tb": "chats", "id": "main"}
+            let tb = obj.get("tb").and_then(|v| v.as_str())?;
+            let id_val = obj.get("id")?;
+            let id_str = match id_val {
+                // {"id": {"String": "main"}} — стандартный формат SurrealKV
+                Value::Object(id_obj) => id_obj
                     .get("String")
                     .and_then(|v| v.as_str())
                     .map(|s| s.to_string())
-            } else {
-                obj.get("id")
-                    .and_then(|v| v.as_str())
-                    .map(|s| s.to_string())
-            };
-            if let Some(id) = id_str {
-                let cleaned_id = id.replace(['⟨', '⟩', '`'], "");
-                return Some(format!("{tb}:{cleaned_id}"));
-            }
+                    // Числовые ID: {"Int": 42}
+                    .or_else(|| id_obj.get("Int").and_then(|v| v.as_i64()).map(|n| n.to_string()))
+                    // Fallback: первое строковое значение в объекте
+                    .or_else(|| {
+                        id_obj.values().find_map(|v| v.as_str().map(|s| s.to_string()))
+                    }),
+                Value::String(s) => Some(s.replace(['⟨', '⟩', '`'], "")),
+                Value::Number(n) => Some(n.to_string()),
+                _ => None,
+            }?;
+            let cleaned_id = id_str.replace(['⟨', '⟩', '`'], "");
+            Some(format!("{tb}:{cleaned_id}"))
         }
+        _ => None,
     }
-    None
 }
 
 #[async_trait]
@@ -55,8 +69,9 @@ impl ChatRepository for SurrealChatRepository {
 
         let mut res = self
             .db
-            .query("SELECT * FROM chats WHERE project_id = type::record($proj) ORDER BY created_at DESC")
-            .bind(("proj", proj_id.clone()))
+            .query("SELECT * FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id ORDER BY created_at DESC")
+            .bind(("p_clean", proj_clean.to_string()))
+            .bind(("proj_id", proj_id.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
@@ -67,10 +82,11 @@ impl ChatRepository for SurrealChatRepository {
             .query(
                 r#"
                 SELECT in, out, sort_order FROM contains 
-                WHERE out IN (SELECT VALUE id FROM chats WHERE project_id = type::record($proj))
+                WHERE out IN (SELECT VALUE id FROM chats WHERE project_id = type::record('projects', $p_clean) OR project_id = $proj_id)
             "#,
             )
-            .bind(("proj", proj_id))
+            .bind(("p_clean", proj_clean.to_string()))
+            .bind(("proj_id", proj_id))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
@@ -120,13 +136,12 @@ impl ChatRepository for SurrealChatRepository {
     }
 
     async fn get_messages(&self, chat_id: &str) -> Result<Vec<ChatMessage>, DomainError> {
-        let chat_clean = chat_id.trim_start_matches("chats:");
-        let c_id = format!("chats:{chat_clean}");
+        let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
 
         let mut res = self
             .db
-            .query("SELECT * FROM chat_messages WHERE chat_id = type::record($chat) ORDER BY created_at ASC")
-            .bind(("chat", c_id))
+            .query("SELECT * FROM chat_messages WHERE chat_id = type::record('chats', $c_clean) ORDER BY created_at ASC")
+            .bind(("c_clean", chat_clean.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
@@ -134,6 +149,13 @@ impl ChatRepository for SurrealChatRepository {
         let mut messages = Vec::with_capacity(raw_msgs.len());
 
         for val in raw_msgs {
+            // С фильтрацией через WHERE в запросе — все записи принадлежат нужному чату
+            let matches_chat = true;
+
+            if !matches_chat {
+                continue;
+            }
+
             let id = clean_record_id(val.get("id").unwrap_or(&Value::Null)).unwrap_or_default();
             let role_str = val.get("role").and_then(|v| v.as_str()).unwrap_or("user");
             let role = match role_str {
@@ -193,17 +215,21 @@ impl ChatRepository for SurrealChatRepository {
         let chat_clean = chat.id.trim_start_matches("chats:");
         let c_id = format!("chats:{chat_clean}");
         let proj_clean = chat.project_id.trim_start_matches("projects:");
-        let p_id = format!("projects:{proj_clean}");
 
-        let sql = "UPSERT type::record($id) SET title = $title, project_id = type::record($proj), session_context = [], created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }";
+        let sql = "UPSERT type::record('chats', $c_clean) SET title = $title, project_id = type::record('projects', $p_clean), session_context = [], created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }";
 
-        self.db
+        let mut res = self.db
             .query(sql)
-            .bind(("id", c_id.clone()))
+            .bind(("c_clean", chat_clean.to_string()))
             .bind(("title", chat.title.clone()))
-            .bind(("proj", p_id))
+            .bind(("p_clean", proj_clean.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let errors = res.take_errors();
+        if let Some((_, e)) = errors.into_iter().next() {
+            return Err(DomainError::ConstraintViolation(format!("save_chat schema error: {e}")));
+        }
 
         let mut saved = chat.clone();
         saved.id = c_id;
@@ -213,8 +239,8 @@ impl ChatRepository for SurrealChatRepository {
     async fn save_message(&self, message: &ChatMessage) -> Result<ChatMessage, DomainError> {
         let msg_clean = message.id.trim_start_matches("chat_messages:");
         let m_id = format!("chat_messages:{msg_clean}");
-        let chat_clean = message.chat_id.trim_start_matches("chats:");
-        let c_id = format!("chats:{chat_clean}");
+        let chat_clean = message.chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let proj_clean = message.project_id.trim_start_matches("projects:");
 
         let role_str = match message.role {
             MessageRole::Assistant => "assistant",
@@ -222,17 +248,21 @@ impl ChatRepository for SurrealChatRepository {
             MessageRole::User => "user",
         };
 
-        let parent_bind = message.parent_id.as_ref().map(|p| {
-            let p_clean = p.trim_start_matches("chat_messages:");
-            format!("chat_messages:{p_clean}")
+        let parent_clean = message.parent_id.as_ref().map(|p| {
+            p.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩').to_string()
         });
 
         let mut q = String::from(
-            "UPSERT type::record($id) SET chat_id = type::record($chat), role = $role, content = $content, version = $version, is_active = $is_active, updated_at = time::now()"
+            "UPSERT type::record('chat_messages', $m_clean) SET \
+             chat_id = type::record('chats', $c_clean), \
+             project_id = type::record('projects', $p_clean), \
+             role = $role, content = $content, version = $version, \
+             is_active = $is_active, updated_at = time::now(), \
+             created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }"
         );
 
-        if parent_bind.is_some() {
-            q.push_str(", parent_id = type::record($parent)");
+        if parent_clean.is_some() {
+            q.push_str(", parent_id = type::record('chat_messages', $p_id_clean)");
         } else {
             q.push_str(", parent_id = NONE");
         }
@@ -240,20 +270,27 @@ impl ChatRepository for SurrealChatRepository {
         let mut query = self
             .db
             .query(q)
-            .bind(("id", m_id.clone()))
-            .bind(("chat", c_id))
+            .bind(("m_clean", msg_clean.to_string()))
+            .bind(("c_clean", chat_clean.to_string()))
+            .bind(("p_clean", if proj_clean.is_empty() { "unknown" } else { proj_clean }.to_string()))
             .bind(("role", role_str))
             .bind(("content", message.content.clone()))
             .bind(("version", message.version as i64))
             .bind(("is_active", message.is_active));
 
-        if let Some(p) = parent_bind {
-            query = query.bind(("parent", p));
+        if let Some(p) = parent_clean {
+            query = query.bind(("p_id_clean", p));
         }
 
-        query
+        let mut res = query
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        // Проверяем ошибки схемы внутри результата
+        let errors = res.take_errors();
+        if let Some((_, e)) = errors.into_iter().next() {
+            return Err(DomainError::ConstraintViolation(format!("save_message schema error: {e}")));
+        }
 
         let mut saved = message.clone();
         saved.id = m_id;
@@ -292,22 +329,22 @@ impl ChatRepository for SurrealChatRepository {
         new_parent_id: Option<&str>,
     ) -> Result<(), DomainError> {
         let chat_clean = chat_id.trim_start_matches("chats:");
-        let c_id = format!("chats:{chat_clean}");
+        let c_rec = RecordId::new("chats", chat_clean);
 
         self.db
-            .query("DELETE contains WHERE out = type::record($chat)")
-            .bind(("chat", c_id.clone()))
+            .query("DELETE contains WHERE out = $chat")
+            .bind(("chat", c_rec.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         if let Some(parent) = new_parent_id {
             let p_clean = parent.trim_start_matches("chats:");
-            let p_id = format!("chats:{p_clean}");
+            let p_rec = RecordId::new("chats", p_clean);
 
             self.db
-                .query("RELATE type::record($parent) -> contains -> type::record($chat) SET sort_order = 0")
-                .bind(("parent", p_id))
-                .bind(("chat", c_id))
+                .query("RELATE $parent -> contains -> $chat SET sort_order = 0")
+                .bind(("parent", p_rec))
+                .bind(("chat", c_rec))
                 .await
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         }

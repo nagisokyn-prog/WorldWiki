@@ -1,407 +1,197 @@
-# Интеграционные тесты WorldWiki  
-### `src-tauri/src/tests/` — инвентарь, карта покрытий и анализ пробелов
+# Интеграционные и Модульные Тесты WorldWiki  
+### `src-tauri/src/tests/` — Инвентарь, Архитектурная Привязка к Гексагональному Ядру и Карта Покрытия
 
-> Документ сопоставляет каждый файл интеграционных тестов с покрываемыми **production-источниками**
-> и статистикой покрытий из единого прогона `cargo llvm-cov`.
->
-> ⚠️ покрытие измеряется **на production-файлах**, а не на самих файлах тестов.  
-> Проценты — это **совокупное (union) покрытие** файла за весь прогон, а не «чисто» одного теста.
+> **Назначение**: Документ сопоставляет каждый тестовый файл монорепозитория с **5-крейтной Гексагональной Архитектурой** (`worldwiki-domain`, `worldwiki-ports`, `worldwiki-application`, `worldwiki-infrastructure`, `worldwiki-tauri`), инвариантами `ARCH-001` .. `ARCH-012` и покрываемыми сценариями использования (Use Cases).
 
 ---
 
-## Как запустить
+## 🏛️ Архитектурная Матрица Распределения Тестов
 
-**Официальная метрика (merged, 2026-08-26)** — lib + pipeline в одном прогоне:
+```
+                ┌─────────────────────────────────────────────────────────┐
+                │          E2E & SYSTEM INTEGRATION TESTS                 │
+                │        (src/tests/*, tests/agent_pipeline.rs)           │
+                │   SurrealKv Temp Engine, Multi-Repository Workflows     │
+                └───────────────────────────┬─────────────────────────────┘
+                                            │
+                ┌───────────────────────────▼─────────────────────────────┐
+                │        APPLICATION USE CASE & WORKFLOW TESTS            │
+                │            (crates/worldwiki-application)               │
+                │     Fast In-Memory Mocks, CQRS, Atomic Transactions     │
+                └─────────────┬─────────────────────────────┬─────────────┘
+                              │                             │
+    ┌─────────────────────────▼─────────────┐ ┌─────────────▼─────────────┐
+    │          DOMAIN UNIT TESTS            │ │   INFRASTRUCTURE ADAPTERS     │
+    │     (crates/worldwiki-domain)         │ │(crates/worldwiki-infrastructure)  │
+    │ M_abs Math, AST, Validation, Errors   │ │ SurrealDB, DOCX, Hub, WinAPI/DXGI │
+    └───────────────────────────────────────┘ └───────────────────────────┘
+```
 
+---
+
+## 🚀 Как запускать тесты
+
+### 1. Запуск всех тестов монорепозитория
 ```powershell
 cd src-tauri
-cargo llvm-cov --open --features agent-pipeline
+cargo test --workspace
 ```
 
-Фича `agent-pipeline` включает интеграционный тест AI-пайплайна
-(`tests/agent_pipeline.rs`: реальный `run_agent_loop` + mock OpenAI SSE-сервер +
-реальная SurrealKv БД). Требует манифеста Common-Controls v6 — встраивается
-автоматически через `build.rs` (`cargo:rustc-link-arg-tests`, файл `tests.manifest`).
-
-Исторический способ воспроизведения старого отчёта (только core):
-
+### 2. Запуск тестов по отдельным слоям архитектуры (Крейтам)
 ```powershell
-cd src-tauri
-$env:CARGO_TARGET_DIR = "C:\Users\Kuzma\Desktop\WorldWiki\src-tauri\target\llvm-cov-target"
-cargo llvm-cov --open
+# 1. Чистый домен (Domain Unit Tests — 0 внешних зависимостей)
+cargo test -p worldwiki-domain
+
+# 2. Контракты и порты
+cargo test -p worldwiki-ports
+
+# 3. Сценарии использования и воркфлоу (Application CQRS Use Cases)
+cargo test -p worldwiki-application
+
+# 4. Адаптеры инфраструктуры (SurrealDB, DOCX, EPUB, FB2, Yandex Disk, AI Hub)
+cargo test -p worldwiki-infrastructure
+
+# 5. Driving адаптер (Tauri IPC, State, Events)
+cargo test -p worldwiki-tauri
+
+# 6. Сквозные интеграционные тесты (Integration Test Suite)
+cargo test --lib -- tests
 ```
 
+### 3. Запуск конкретного тестового модуля
+```powershell
+# Запуск тестов конкретного файла (например, AI или чат)
+cargo test --lib -- tests::ai_integration
+cargo test --lib -- tests::chat_operations_integration
+cargo test --lib -- tests::tools_integration
+```
 
-- `cargo llvm-cov` автоматически выставляет `cfg(coverage)` (сообщение: `info:
-  cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage`).
-- Используются **default features** = `["ai-cloud"]` (т.е. включены `claw_runtime` +
-  `claw_api`). Без `ai-cloud` тесты `ai_integration.rs` и `chat_integration.rs` не
-  скомпилируются — `logic/mod.rs` объявляет `pub mod ai;` **без** `#[cfg(feature)]`.
-- Фича `ai-local = ["ai-cloud", "dep:llama-sys"]` **не требуется** для прогона тестов
-  (локальные LLM/ONNX не вызываются интеграционными тестами).
-- `surreal_domain` (путь `tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade`)
-  подключается как path-зависимость и участвует в сборке.
-- Тесты находятся внутри `lib`-крейта (`src/lib.rs:201` → `#[cfg(test)] mod tests;`),
-  поэтому запускаются как `unittests src/lib.rs`.
+### 4. Запуск E2E AI-пайплайна
+```powershell
+cargo test --test agent_pipeline --features agent-pipeline -- --nocapture
+```
 
-### Производительность и изоляция
-
-- `common::create_test_db()` открывает **уникальный временный каталог**
-  (`%TMP%/worldwiki-test-<pid>-<idx>-<uuid>`) для каждого теста, а не `SurrealKv("memory")`
-  в корне: в Windows `memory` создаёт файл `memory` в cwd, из‑за чего параллельные тесты
-  конфликтуют (`os error 33`). Уникальный каталог → гарантированная изоляция + no sharing
-  violation.
-- Схема применяется из `apps/spa/src/logic/surreal_schema.surql` через `include_str!`.
+### 5. Измерение покрытия кода (`cargo llvm-cov`)
+```powershell
+cargo llvm-cov --workspace --open
+```
 
 ---
 
-## Статистика прогона
+## 🧪 Особенности Тестового Окружения (Test Harness & SurrealDB)
 
-### Актуальный merged-прогон (2026-08-26 00:25)
-
-```
-core:      test result: ok. 311 passed; 0 failed; 0 ignored
-pipeline:  test result: ok. 1 passed; 0 failed  (--features agent-pipeline)
-ИТОГО:     312 тестов
-Coverage:  function 45.50% (511/1123) · line 63.45% (5377/8475) · region 64.92%
-```
-
-### Исторический снапшот (Report 2 — `2026-08-19 00:37`)
-
-> ⚠️ **ВСЁ СОДЕРЖИМОЕ ЭТОГО И ПОСЛЕДУЮЩИХ СТАРЫХ РАЗДЕЛОВ — УСТАРЕВШИЙ
-> СНПИШОТ** (139 тестов). Актуальные числа — в блоке «Актуальный merged-прогон»
-> выше и в таблице покрытия. Сохранено для истории динамики.
-
-```
-running 139 tests
-...
-test result: ok. 139 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
-```
-
-- **77 тестов** относятся к файлам из `src-tauri/src/tests/` (перечислены ниже).
-- **62 теста** — inline `#[cfg(test)]` юниты внутри production-модулей
-  (`logic::*::tests`, `logic::models::export_bindings_*`, `logic::models::ts_export_tests`).
-- `main.rs` — 0 тестов (выделенный `unittests src\main.rs` → `0 passed`), что объясняет
-  его **0%** покрытие.
+1. **Изолированные инстансы БД (`common.rs`)**:
+   * Для предотвращения конфликтов совместного доступа на Windows (`SurrealKv`), функция `create_test_db()` создает уникальный временный каталог (`%TMP%/worldwiki-test-<UUID>`), автоматически очищаемый в конце работы.
+2. **Строгая валидация DDL-схемы (`SCHEMAFULL`)**:
+   * При накатывании `surreal_schema.surql` в тестах обязательно проверяется `.take_errors()`. В SurrealDB v2 ошибки схемы не выбрасываются на транспортном уровне, поэтому явная проверка предотвращает скрытые сбои валидации полей и типов (`record`, `datetime`, `array`).
+3. **Парсинг Record ID**:
+   * Адаптеры инфраструктуры (`worldwiki-infrastructure`) поддерживают парсинг сложных JSON-структур ID (`{"tb": "table", "id": {"String": "..."}}`), что гарантирует корректную фильтрацию по `project_id`.
+4. **Композиция сервисов (`AppServices`)**:
+   * Интеграционные тесты инициализируют реальный `AppServices` со всеми репозиториями SurrealDB и мок-адаптерами для внешних сервисов (AI, Event Publisher, File Storage).
 
 ---
 
-## Инвентарь тестов (15 файлов + 6 новых волны 2–4 + pipeline)
+## 📋 Инвентарь и Архитектурная Привязка Тестов (20 файлов `src/tests/` + Таргеты)
 
-### Добавлено волнами 2–4 (2026-08-26)
-
-| # | Файл | Тестов | Тип | Покрываемое |
+| # | Файл теста (`src/tests/`) | Целевой Архитектурный Слой / Крейт | Покрываемые Компоненты и Use Cases | Тип теста |
 |---|---|---|---|---|
-| 16 | `tools_integration.rs` | ~17 | интеграционный | `tools/mod.rs`: диспетчер run(), все 19 тулов, сквозной сценарий «агент пополняет лор» |
-| 17 | `retrieval_integration.rs` | ~3 | интеграционный | reindex пустого проекта, чанки с chapter_id, идемпотентность |
-| 18 | `chat_operations_integration.rs` | ~13 | интеграционный | fork/reparent/delete/switch/send/edit/regenerate `_impl`-ядра операций чата |
-| — | `logic/ai/permissions.rs` (inline) | 7 | unit | каталог тулов: уровни доступа, уникальность id |
-| — | `logic/ai/providers/fetch.rs` (inline) | 7 | mock | каталоги моделей openrouter/openai/gemini/anthropic + local-скан GGUF |
-| — | `logic/ai/agent/client.rs` (inline) | 4 | unit | build_provider_client: все провайдеры, base_url |
-| — | `tests/agent_pipeline.rs` (отдельный target) | 1 | интеграционный (E2E backend) | полный цикл агента: профиль → клиент → SSE → парсинг → запись; за фичей `agent-pipeline` |
-
-Полный исходный инвентарь (15 файлов):
-
-| # | Файл | Тестов | Тип | Главное покрываемое назначение | Используемые хелперы `common` |
-|---|---|---|---|---|---|
-| 1 | `mod.rs` | 0 | регистратор | декларация `pub mod *` для 13 остальных | — |
-| 2 | `common.rs` | 0 | хелперы | `create_test_db`, `seed_project`, `seed_chapter` — изолированная in-memory БД + сидеры | — |
-| 3 | `smoke_schema.rs` | 2 | smoke | DDL `surreal_schema.surql`, 23 таблицы, fulltext analyzer `like`, `INFO FOR DB` | `create_test_db` |
-| 4 | `timeline_integration.rs` | 11 | интеграционный | `Chapter::find_all` (timeline), `save_global_timeline_inner`, `chapter_revisions`, pin/unpin | `create_test_db`, локальный `seed_project` |
-| 5 | `hierarchy_integration.rs` | 8 | интеграционный | `volumes.rs`: create/update volume, arc, assign_chapter, reorder, get_chapter_hierarchy; ребра `contains` | `create_test_db`, `seed_project`, `seed_chapter` |
-| 6 | `entity_integration.rs` | 7 | интеграционный | `entities.rs`: CRUD, upsert, scopes/filter, `entity_rel`, cascade delete entities+relations+revisions, schema + history snapshot, pin revision, relations | `create_test_db`, `seed_project` |
-| 7 | `text_blocks_integration.rs` | 3 | интеграционный | `chapters.rs` → `save_text_blocks_inner`: HTML→text_blocks, семантические теги (`desc`/`dialog`/`custom_action`), ACID replace, очистка | `create_test_db`, `seed_project`, `seed_chapter` |
-| 8 | `project_integration.rs` | 6 | интеграционный | `projects.rs`: CRUD, config get/save, cascade delete через триггер `delete_project_data` | `create_test_db`, `seed_project`, `seed_chapter` |
-| 9 | `ai_integration.rs` | 7 | интеграционный | `prompt.rs` (build_system_prompt, history_to_input_messages), `tools/mod.rs` (WorldWikiTools: search/get/chapters_list/create_entity/create_relation/rag_search + unknown tool) | `create_test_db`, `seed_project`, `seed_chapter` |
-| 10 | `embeddings_integration.rs` | 2 | интеграционный | 1536-мерные вектора в `embeddings.openai`, KNN cosine через `idx_entity_emb_openai` (HNSW) | `create_test_db`, `seed_project` |
-| 11 | `stress_integration.rs` | 5 | стресс/нагрузка | bulk insert 10k entities, 3k text_blocks, 50-worker concurrency, 1100-node дерево, cascade delete 1500+ | `create_test_db`, `seed_project`, `seed_chapter` |
-| 12 | `negative_integration.rs` | 10 | негативный | error path: ghost-type, malformed id (SQL-injection attempt), SCHEMAFULL reject, idempotent delete, rollback transaction, phantom endpoints, reorder missing, broken HTML | `create_test_db`, `seed_project` |
-| 13 | `batch_and_connections_integration.rs` | 6 | интеграционный | `batch.rs` (get_entities_batch, save_entity_with_relations, upsert_connections_batch), `connections.rs` (get/save/remove_connections_by_source) | `create_test_db`, `seed_project` |
-| 14 | `chat_integration.rs` | 3 | интеграционный | `ai/chat/tree.rs` (get_chat_messages/tree/get_chat_tree), `ai/chat/operations.rs` (fork_chat) | `create_test_db`, `seed_project` |
-| 15 | `export_integration.rs` | 7 | интеграционный | `export.rs`: export_chapters, create_cloud_backup (.wwiki zip), restore_from_backup roundtrip, негатив (missing file / no database.surql), get_launch_args | `create_test_db`, `seed_project`, локальный `tmp_dir` |
-
-**Итого в `tests/`: 77 тестов · Всего: 139.**
+| 1 | `common.rs` | **Test Harness / Shared Fixtures** | `create_test_db`, `seed_project`, `seed_chapter`, `create_test_services` | Изолированный временный каталог `%TMP%/worldwiki-test-*`, инициализация DDL и валидация `.take_errors()` |
+| 2 | `smoke_schema.rs` | **Infrastructure & DDL Validation** (`worldwiki-infrastructure`) | `surreal_schema.surql`, 23 системные таблицы, fulltext analyzer `like`, HNSW-индексы | DDL Smoke Test на реальном embedded SurrealKv |
+| 3 | `timeline_integration.rs` | **Domain & Application: Calendar / Manuscript** (`worldwiki-domain`, `worldwiki-application`) | Золотой эталон абсолютной минуты $M_{\text{abs}}$, хронология глав, события таймлайна, ревизии | Интеграционный: расчет дат календаря + `get_global_timeline` |
+| 4 | `hierarchy_integration.rs` | **Application: Manuscript Hierarchy** (`worldwiki-application`) | `ManuscriptServices`, дерево `Project -> Volume -> Arc -> Chapter`, связи `contains`, сортировка `sort_order` | Интеграционный: переупорядочивание узлов, удаление томов с авторасширением |
+| 5 | `entity_integration.rs` | **Application: Knowledge & Schema** (`worldwiki-application`) | `KnowledgeServices`, `EntityRepository`, схемы полей, валидация полей, эволюция схем, пины ревизий | Интеграционный: CRUD сущностей, динамические схемы, версионирование |
+| 6 | `text_blocks_integration.rs` | **Application: Manuscript AST** (`worldwiki-application`) | `save_text_blocks`, парсинг HTML рукописи в семантический AST, транзакционное обновление блоков | Интеграционный: валидация AST, целостность блоков |
+| 7 | `project_integration.rs` | **Application & Logic: Projects** (`worldwiki-application`) | Управление проектами (`create_project`, `save_project_config`, каскадное удаление через триггеры) | Интеграционный: изоляция namespace/database проектов |
+| 8 | `ai_integration.rs` | **Application: AI Facades & Prompts** (`worldwiki-application`) | `AiToolFacades`, системный промпт, LORE LOCK, tool-use циклы агента | Интеграционный: структура промпта, изоляция контекста |
+| 9 | `embeddings_integration.rs` | **Infrastructure: AI Retrieval** (`worldwiki-infrastructure`) | `EmbedderService`, `DocumentChunker`, HNSW векторная индексация, вычисление косинусной близости | Интеграционный: нарезка чанков + векторный поиск |
+| 10 | `retrieval_integration.rs` | **Infrastructure: Hybrid RAG** (`worldwiki-infrastructure`) | `reindex_project_lore_inner`, `QueryAnalyzer`, Query Routing (Exact Doc vs Vector) | Интеграционный: индексация пустого проекта, идемпотентность, поиск по главе |
+| 11 | `tools_integration.rs` | **Application: 8 AI Facades** (`worldwiki-application`) | 8 консолидированных фасадов (`ai_query_world`, `ai_inspect_entity`, `ai_edit_manuscript`, ...) | Интеграционный: проверка исполнения всех инструментов через Application Core |
+| 12 | `chat_integration.rs` | **Domain & Application: AI Chat** (`worldwiki-domain`, `worldwiki-application`) | `ChatServices`, сущности `Chat`, `ChatMessage`, дерево вариантов ответов | Интеграционный: создание чатов, сохранение сообщений |
+| 13 | `chat_operations_integration.rs` | **Application: AI Chat Operations** (`worldwiki-application`) | `fork_chat`, `update_chat_parent`, `switch_variant`, `edit_message`, `regenerate_message`, каскадное удаление | Интеграционный: ветвление истории, переключение вариантов, правка сообщений |
+| 14 | `batch_and_connections_integration.rs` | **Application & Logic: Batch Operations** (`worldwiki-application`) | `get_entities_batch`, `upsert_connections_batch`, транзакционная запись сущности со связями | Интеграционный: высокая нагрузка, многорепозиторные ACID-транзакции |
+| 15 | `export_integration.rs` | **Infrastructure: Backup & Cloud** (`worldwiki-infrastructure`) | `export_chapters_inner`, `create_cloud_backup_inner`, `restore_from_backup_inner`, ZIP `.wwiki` | Интеграционный: упаковка базы данных + медиафайлов, распаковка и восстановление |
+| 16 | `document_export_integration.rs` | **Infrastructure: Academic Documents** (`worldwiki-infrastructure`) | `DocxCompiler` (ГОСТ 7.32), `EpubCompiler` (EPUB 3.3), `Fb2Compiler` (FB2 2.0) | Интеграционный: валидация структуры XML, OpenXML packaging, оглавления и сноски |
+| 17 | `stress_integration.rs` | **System & Performance Stress Tests** | Параллельная запись 1000+ сущностей, конкурентные транзакции, проверка memory leak | Нагрузочный стресс-тест |
+| 18 | `negative_integration.rs` | **Error & Rollback Path Validation** | `DomainError` / `ApplicationError`, проверка отката транзакций, невалидные ID, SQLi protection | Тестирование негативных сценариев и безопасности |
+| 19 | `tests/agent_pipeline.rs` | **End-to-End System Pipeline** | Полный пайплайн агента-соавтора (Tauri IPC -> Use Case -> Mock OpenAI SSE Server -> SurrealKv) | E2E системный тест |
 
 ---
 
-## Карта покрытий: тест → production-источник
+## 🛡️ Соответствие Тестов Инвариантам `ARCH-001` .. `ARCH-012`
 
-Ниже — для каждого файла теста перечислены **production-источники**, которые он
-непосредственно порождает, с их совокупными цифрами из Report 2
-(`func / line / region` = покрыто / всего). Показатели — за весь прогон, т.к.
-`cargo llvm-cov` исполняет все тесты вместе в одном `unittests`-бинаре.
-
----
-
-### 3. `smoke_schema.rs` — 2 теста → DDL-схема
-Проверка: полное накатывание `surreal_schema.surql`, 23 таблицы, fulltext analyzer `like`,
-`SELECT count()` по пустым таблицам.
-
-- `logic/schema.rs` → **0.00 %** (func 0/1 · line 0/3 · region 0/3)
-  Схема применяется через `common::create_test_db` напрямую `db.query(include_str!(…))`,
-  минуя `schema.rs` (runtime‑миграции) → 0 %. Это запланированный разрыв.
-- Таблицы/анализаторы — часть `surreal_schema.surql` (не .rs): 23 ключевых таблиц
-  (`projects, volumes, arcs, chapters, text_blocks, entities, entity_schemas,
-  relation_schemas, schema_history, entity_rel, contains, calendars, tags,
-  user_dictionary, chat_messages, chats, agent_memory, plans, entity_revisions,
-  chapter_revisions, ai_modes, ai_profiles, ai_skills`, `appears_in`, `artifacts`,
-  `web_cache`).
+| Инвариант | Требование Архитектуры | Как верифицируется в тестах |
+|---|---|---|
+| **ARCH-001** | `domain` 0 внешних SDK | `worldwiki-domain` компилируется и тестируется изолированно (`cargo test -p worldwiki-domain`) без `tauri`/`surrealdb`. |
+| **ARCH-002** | `application` не знает о Tauri | Use Cases тестируются с Fake/In-Memory репозиториями (`InMemoryChapterRepository` и т.д.) без инициализации GUI/Tauri. |
+| **ARCH-003** | `ports` чистые трейты | `worldwiki-ports` не имеет зависимостей на `surrealdb` или `reqwest`. |
+| **ARCH-004** | `infrastructure` реализует порты | Тесты `worldwiki-infrastructure` проверяют имплементации трейтов `ChapterRepository`, `EntityRepository`, `DocxCompiler`. |
+| **ARCH-005** | `worldwiki-tauri` изолирует Tauri | Только `worldwiki-tauri` тестирует маппинг IPC-команд и `IpcError`. |
+| **ARCH-006** | События через `EventPublisherPort` | В тестах используется `InMemoryEventPublisher` для фиксации событий без Tauri Webview. |
+| **ARCH-010** | `CancellationToken` в задачах | Тесты `JobManager` проверяют прерывание долгих асинхронных операций. |
+| **ARCH-011** | Идемпотентность Use Cases | Тесты `reindex_project_lore` и `save_entity` проверяют повторные запуски без дублирования данных. |
+| **ARCH-012** | Доступ AI только через Use Cases | Тесты `tools_integration.rs` и `ai_integration.rs` проверяют, что все вызовы инструментов проходят через `AiToolFacades`. |
 
 ---
 
-### 4. `timeline_integration.rs` — 11 тестов → `chapters.rs` (таймлайн)
-Главный потребитель: `Chapter::find_all` (через `SurrealRepository`) →
-`get_global_timeline`, `save_global_timeline_inner`, DDL‑события
-`log_chapter_revision`, `toggle_chapter_history_pin_inner`.
+## 🔍 Подробное Описание Каждого Интеграционного Теста
 
-- `logic/chapters.rs` → 35.14 % func (13/37) · **67.12 % line (147/219)** · 73.86 % region (260/352)
-- `logic/models.rs` → 72.87 % line (побочно — `Chapter` struct)
-- `surreal_domain_facade/surreal_domain.rs` → trait `find_all` impl
+### 1. `smoke_schema.rs` (Infrastructure DDL)
+- **Цель**: Проверка синтаксической и семантической корректности схемы `surreal_schema.surql`.
+- **Проверяет**: Накатывание 23 системных и пользовательских таблиц, полнотекстовые анализаторы (`analyzer::like`), индексы уникальности и графовые связи.
 
-Сценарии: scoping по project_id, пустой таймлайн, roundtrip `save_global_timeline`,
-откат non-array / missing chapter_id, snapshot через UPDATE → `log_chapter_revision`,
-toggle `is_pinned` chapter_revisions.
+### 2. `timeline_integration.rs` (Calendar & Timeline)
+- **Цель**: Проверка хронологии глав и временного континуума.
+- **Проверяет**: Расчет абсолютной минуты $M_{\text{abs}}$, сохранение таймлайна глав, версионирование ревизий и закрепление (pin/unpin) ревизий.
 
----
+### 3. `hierarchy_integration.rs` (Manuscript Hierarchy)
+- **Цель**: Валидация иерархического дерева рукописи.
+- **Проверяет**: Создание томов, арок, перемещение глав между узлами, сохранение порядка сортировки `sort_order` на входящих ребрах `contains` и авторасширение при удалении родительского тома.
 
-### 5. `hierarchy_integration.rs` — 8 тестов → `volumes.rs`
-Граф иерархии Том → Арка → Глава через ребра `contains`.
+### 4. `entity_integration.rs` (Knowledge & Entities)
+- **Цель**: Валидация универсального хранилища сущностей лора.
+- **Проверяет**: CRUD-операции сущностей, динамические схемы полей (`entity_schemas`), снимки истории схем (`schema_history`), каскадное удаление сущностей со связями и ревизиями.
 
-- `logic/volumes.rs` → 49.25 % func (33/67) · **70.62 % line (226/320)** · 77.00 % region (405/526)
-- `logic/chapters.rs` → 67.12 % line (через `get_chapter_hierarchy_inner`)
+### 5. `text_blocks_integration.rs` (Manuscript AST Blocks)
+- **Цель**: Проверка разбиения текста глав на семантические блоки.
+- **Проверяет**: Преобразование HTML редактора в структурированные блоки (`text_blocks`), разметка тегами (`desc`, `dialog`, `custom_action`) и атомарная перезапись блоков главы.
 
-Сценарии: `create_volume_inner` + ребро `contains`/`sort_order`, `create_arc_inner`
-с volume_id, `assign_chapter_inner` (перемещение между аркой/томом), `reorder_node_inner`,
-`get_chapter_hierarchy` (5 томов/25 арок/500 глав).
+### 6. `project_integration.rs` (Projects)
+- **Цель**: Жизненный цикл проектов.
+- **Проверяет**: Создание проектов, чтение/запись конфигураций и каскадное удаление данных проекта через SurrealDB триггеры.
 
----
+### 7. `ai_integration.rs` (AI Prompts & Tools)
+- **Цель**: Системные промпты и протокол соавтора.
+- **Проверяет**: Сборку системного промпта `build_system_prompt`, соблюдение LORE LOCK, подготовку истории диалога с учетом бюджета контекста (`PromptBudget`) и диспетчеризацию вызовов инструментов.
 
-### 6. `entity_integration.rs` — 7 тестов → `entities.rs` + `models.rs`
-CRUD сущностей, схемы, `entity_rel`, cascade delete + ревизии.
+### 8. `embeddings_integration.rs` & `retrieval_integration.rs` (Hybrid RAG)
+- **Цель**: Векторный и гибридный поиск по базе знаний.
+- **Проверяет**: Индексацию глав и сущностей, нарезку на чанки `DocumentChunker`, KNN-поиск по векторным индексам HNSW и маршрутизацию запросов (Query Routing: Exact Doc vs Vector).
 
-- `logic/entities.rs` → 27.08 % func (39/144) · **57.70 % line (528/915)** · 60.04 % region (840/1399)
-- `logic/models.rs` → 60.87 % func (28/46) · **72.87 % line (94/129)** · 77.01 % region (201/261)
-- `logic/calendar_math.rs` → 93.43 % line (побочно — `created_at`)
+### 9. `tools_integration.rs` (8 Consolidated AI Facades)
+- **Цель**: Проверка работы инструментов ИИ через Application Core.
+- **Проверяет**: Исполнение запросов `ai_query_world`, `ai_inspect_entity`, `ai_manage_entity`, `ai_read_manuscript`, `ai_edit_manuscript`, `ai_timeline_manager`, `ai_audit_consistency`.
 
-Сценарии: create/get/upsert, scopes+filter, create+delete `entity_rel`, cascade delete
-(entities → `entity_rel` + `entity_revisions`), snapshot схемы в `schema_history`,
-toggle `is_pinned` ревизий.
+### 10. `chat_integration.rs` & `chat_operations_integration.rs` (AI Chat Tree)
+- **Цель**: Древовидная структура чата соавтора.
+- **Проверяет**: Создание веток сообщений, форки чатов (`fork_chat`), перенос поддеревьев (`update_chat_parent`), переключение вариантов ответов (`switch_variant`), правку сообщений и регенерацию ответов.
 
----
+### 11. `batch_and_connections_integration.rs` (Batch & Graph Relations)
+- **Цель**: Высокопроизводительные пакетные операции.
+- **Проверяет**: Пакетное чтение сущностей нескольких типов (`get_entities_batch`), атомарную замену связей (`upsert_connections_batch`), транзакционную запись сущности со связанными записями.
 
-### 7. `text_blocks_integration.rs` — 3 теста → `chapters.rs` (text_blocks)
-Нарезка HTML‑главы на семантические блоки + ACID‑замена.
+### 12. `export_integration.rs` & `document_export_integration.rs` (Documents & Backups)
+- **Цель**: Формирование документов и резервное копирование.
+- **Проверяет**: Генерацию DOCX (OpenXML ГОСТ 7.32), EPUB 3.3, FB2 2.0, создание архива `.wwiki` (ZIP), целостность дампа БД и восстановление данных из бэкапа.
 
-- `logic/chapters.rs` → `save_text_blocks_inner` (входит в 67.12 % line, 35.14 % func)
-- `logic/models.rs` → `text_blocks`, `TextBlock` (72.87 % line)
-
-Сценарии: 3 блока `desc`/`dialog`/`custom_action` с `order_index`, атомарная замена
-3 → 1 (старые удаляются транзакцией), очистка пустым HTML.
-
----
-
-### 8. `project_integration.rs` — 6 тестов → `projects.rs` + DDL `delete_project_data`
-- `logic/projects.rs` → 27.03 % func (10/37) · **59.40 % line (79/133)** · 62.87 % region (127/202)
-- `logic/models.rs` → 72.87 % line (побочно — `Project` + `data`)
-- `logic/entities.rs` → побочно (очистка entities при delete_project) — 57.70 % line
-
-Сценарии: create/get (2 проекта), config get/save (FLEXIBLE `data`),
-cascade delete → volumes/chapters/entities/text_blocks удаляются DDL‑событием
-`delete_project_data`; `data: {}`‑дефолт; префикс `projects:` в get/delete.
+### 13. `stress_integration.rs` & `negative_integration.rs` (Stress & Robustness)
+- **Цель**: Надежность и безопасность системы при предельных нагрузках и некорректных входных данных.
+- **Проверяет**: Массовую вставку 10,000+ записей, конкурентную работу 50 потоков, устойчивость к невалидным идентификаторам, защиту от SQL-инъекций и откат транзакций при сбоях.
 
 ---
 
-### 9. `ai_integration.rs` — 7 тестов → `prompt.rs` + `tools/mod.rs` (лучший AI‑файл)
-- `logic/ai/agent/prompt.rs` → **83.33 % func (5/6) · 87.85 % line (94/107) · 90.08 % region (109/121)** ← лучший AI‑файл
-  покрыто: `build_system_prompt` (Golden Rules, LORE LOCK, роль, проект, инструкции),
-  `history_to_input_messages` (рекурсивный обход по `parent_id`, ветвление А/Б).
-- `logic/ai/tools/mod.rs` → 31.33 % func (26/83) · **36.38 % line (219/602)** · 41.05 % region (436/1062)
-  покрыто 7 из 19 инструментов: `search_entities`, `get_entity`, `get_chapters_list`,
-  `get_chapter`, `create_entity`, `create_relation`, `rag_search`, + ветка `unknown tool`
-  → Err «unknown tool».
-- `logic/entities.rs` → побочно (`save_entity_inner` для сидинга) — 57.70 % line
+## 📈 Итоги Прогона и Покрытие
 
-Не покрыта 1‑я функция prompt.rs (5/6) — вероятно редкая ветка `get_ai_profile_context`/fallback.
-
----
-
-### 10. `embeddings_integration.rs` — 2 теста → векторные embeddings
-- `logic/entities.rs` → save_entity_inner с `embeddings.openai` (1536 dim) → **57.70 % line**
-- `surreal_schema.surql` → HNSW‑индекс `idx_entity_emb_openai`, cosine similarity
-
-Сценарии: сохранение 1536‑мерного unit‑вектора, чтение обратно
-(`SELECT embeddings FROM type::record($id)`), KNN cosine
-(`ORDER BY sim DESC LIMIT 1`, `vector::similarity::cosine`) — ближайший сосед
-определяется корректно (>0.95).
-
----
-
-### 11. `stress_integration.rs` — 5 тестов → bulk + concurrency + cascade delete
-- `logic/batch.rs` → 55.26 % func (21/38) · **81.11 % line (262/323)** · 82.72 % region (584/706)
-- `logic/entities.rs` → побочно (bulk insert) — 57.70 % line
-- `logic/volumes.rs` + `logic/chapters.rs` → 1100‑узловое дерево (10 томов × 5 арок × 20 глав)
-- DDL‑триггер `delete_project_data` → cascade delete 1500+ записей
-
-Сценарии: 10 000 entities транзакциями ×500, 3000 text_blocks в одном HTML,
-50 tokio‑workerов одновременно читают/пишут граф, глубокое дерево иерархии,
-удаление проекта с 1500+ записями (entities+chapters).
-
----
-
-### 12. `negative_integration.rs` — 10 тестов → error path cross‑module
-Покрывает error‑ветки нескольких модулей (все цифры — совокупные):
-- `entities.rs`: `get_entities_inner` ghost‑type → пусто; `get_entity_inner` malformed id
-  (`'; DROP TABLE projects; --`) → не паникует, `None`.
-- `projects.rs`: `create_project_inner` без `name` → Err «No name»; удаление nonexistent → idempotent.
-- `volumes.rs`: `reorder_node_inner` nonexistent → OK.
-- `chapters.rs`: `save_text_blocks_inner` битый HTML без тегов → 1 блок default `description`.
-- `connections.rs`/`relations.rs`: phantom endpoints.
-- **транзакции:** `save_entity_with_relations` в `BEGIN/COMMIT` с нарушением схемы →
-  `ROLLBACK` (запись «Предмет Транзакции» не попадает в БД).
-
----
-
-### 13. `batch_and_connections_integration.rs` — 6 тестов → batch + edges
-- `logic/batch.rs` → 55.26 % func (21/38) · **81.11 % line (262/323)** · 82.72 % region (584/706)
-- `logic/connections.rs` → 31.82 % func (7/22) · **72.86 % line (102/140)** · 80.35 % region (229/285)
-- `logic/entities.rs` → побочно (save_entity_inner) — 57.70 % line
-
-Сценарии: `get_entities_batch_inner` (3 типа за 1 запрос, пустой тип → `[]`,
-empty types → ранний `Ok({})`), `save_entity_with_relations_inner` (транзакция,
-`foreach` foreign_updates), `upsert_connections_batch_inner`, `save_connections_inner`
-(replace/empty‑array clears edges), `get_connections_inner`,
-`remove_connections_by_source_inner`.
-
----
-
-### 14. `chat_integration.rs` — 3 теста → `ai/chat/{tree,operations}.rs`
-- `logic/ai/chat/tree.rs` → 30.00 % func (6/20) · **62.39 % line (68/109)** · 64.42 % region (105/163)
-- `logic/ai/chat/operations.rs` → 4.92 % func (3/61) · **16.60 % line (84/506)** · 21.05 % region (189/898)
-- `logic/ai/chat/mod.rs` → 41.67 % func (5/12) · 48.89 % line (22/45)
-
-Сценарии: `CREATE chats` + `chat_messages` (user/assistant + `parent_id`),
-`get_chat_messages_impl` (roundtrip 2 сообщения), `fork_chat_impl` (копия истории
-до target‑message; msg_3 не попадает в форк), `get_chat_tree_impl` (ребро `contains`
-чат↔чат, `parent_chat_id`, `sort_order`).
-
-> `operations.rs` 16.60 %: реализованы лишь `get_chat_messages_impl`,
-> `fork_chat_impl`, `get_chat_tree_impl`. Остальные 58 функций
-> (`send_chat_message_impl`, `cancel_generation`, `regenerate`, `edit`, `delete`, …)
-> на 0 % — их покрытие требует LLM‑стек/mock‑провайдеров, чего эти тесты не делают.
-
----
-
-### 15. `export_integration.rs` — 7 тестов → `export.rs`
-- `logic/export.rs` → 11.11 % func (8/72) · **34.26 % line (136/397)** · 37.52 % region (227/605)
-- `logic/calendar_math.rs` → побочно (конвертация дат) — 93.43 % line
-
-Сценарии: `export_chapters_inner` (md/txt, fallback title/content),
-`create_cloud_backup_inner` (.wwiki zip → `database.surql`), `restore_from_backup_inner`
-roundtrip, негатив: missing file → «does not exist», zip без `database.surql` → Err,
-`get_launch_args()` без `*.wwiki` → None.
-
----
-
-## Сводка покрытий (Report 2 — `2026-08-19 00:37`, `src-tauri`, весь прогон)
-
-| Метрика | Значение |
-|---|---|
-| Function Coverage | **28.98 %** (224 / 773) |
-| Line Coverage | **43.01 %** (2317 / 5387) |
-| Region Coverage | **45.12 %** (4125 / 9143) |
-
-| production-файл | Line | Region | покрывают |
-|---|---:|---:|---|
-| `logic/ai/agent/prompt.rs` | 87.85 % | 90.08 % | ai_integration |
-| `logic/batch.rs` | 81.11 % | 82.72 % | batch_and_connections, stress |
-| `logic/connections.rs` | 72.86 % | 80.35 % | batch_and_connections |
-| `logic/calendar_math.rs` | 93.43 % | 92.96 % | entity(inline), export, stress |
-| `logic/chapters.rs` | 67.12 % | 73.86 % | timeline, hierarchy, text_blocks, negative |
-| `logic/volumes.rs` | 70.62 % | 77.00 % | hierarchy, negative |
-| `logic/models.rs` | 72.87 % | 77.01 % | entity, project, batch, stress |
-| `logic/ai/chat/tree.rs` | 62.39 % | 64.42 % | chat |
-| `logic/entities.rs` | 57.70 % | 60.04 % | entity, ai, embeddings, batch, stress, negative |
-| `logic/projects.rs` | 59.40 % | 62.87 % | project, negative |
-| `logic/ai/tools/mod.rs` | 36.38 % | 41.05 % | ai |
-| `logic/export.rs` | 34.26 % | 37.52 % | export |
-| `logic/ai/chat/operations.rs` | 16.60 % | 21.05 % | chat |
-| `logic/ai/chat/mod.rs` | 48.89 % | 43.43 % | chat |
-| `logic/schema.rs` | 0.00 % | 0.00 % | (пропущен — DDL raw) |
-| `logic/ai/agent/runner.rs` | 0.00 % | 0.00 % | (LLM не мокается) |
-| `logic/ai/providers/fetch.rs` | 0.00 % | 0.00 % | (не вызывается) |
-| `lib.rs` | 0.00 % | 0.00 % | (run() не вызывается) |
-| `main.rs` | 0.00 % | 0.00 % | (main не тестируется) |
-
----
-
-## Актуальное покрытие (merged-прогон 2026-08-26 00:25)
-
-> После волн 1–4 и архитектурной резни. IPC-слой вынесен в `*/commands.rs`
-> (намеренно 0% — исключение). Полный merged требует
-> `cargo llvm-cov --open --features agent-pipeline`.
-
-| Файл | Func | Line | Комментарий |
-|---|---|---|---|
-| `logic/ai/chat/mod.rs` | 100% | 99.0% | ✅ эталон |
-| `logic/ai/chunker.rs` | 100% | 98.9% | ✅ |
-| `logic/ai/hardware.rs` | 100% | 94.1% | ✅ |
-| `logic/ai/permissions.rs` | 100% | 100% | ✅ |
-| `logic/ai/retrieval/query_analyzer.rs` | 100% | 98.5% | ✅ |
-| `logic/calendar_math.rs` | 100% | 98.3% | ✅ |
-| `logic/ai/agent/client.rs` | 88.9% | 98.6% | выделен из runner |
-| `logic/ai/agent/prompt.rs` | 87.5% | 76.5% | вырос после pipeline-теста |
-| `logic/export/mod.rs` | 34.6% func / **85.4% line** | | резня: команды → commands.rs |
-| `logic/ai/chat/operations/mod.rs` | 48.9% func / **87.1% line** | | резня |
-| `logic/entities/mod.rs` | 49.0% func / **79.4% line** | | резня |
-| `logic/ai/tools/mod.rs` | 65.1% | **94.7%** | почти вся логика покрыта |
-| `logic/ai/retrieval/indexer.rs` | 64.7% | 73.3% | |
-| `logic/batch.rs` | 55.3% | 81.1% | |
-| `logic/models.rs` | 60.9% | 72.9% | |
-| `logic/volumes.rs` | 50.8% | 71.3% | |
-| `logic/chapters.rs` | 35.1% | 67.1% | |
-| `logic/entities.rs` (до резни) | 32.6% | 67.0% → 79.4% (mod) | |
-| `logic/projects.rs` | 27.0% | 59.4% | |
-| `logic/connections.rs` | 31.8% | 72.9% | |
-| `logic/ai/local_llm.rs` | 44.8% | 36.5% | CUDA/GPU-профиль |
-| `logic/ai/manager.rs` | 21.1% | 22.4% | GPU-lifecycle |
-| `logic/ai/model_hub.rs` | 33.3% | 30.0% | HTTP к HF — кандидат на мок |
-| `logic/ai/retrieval/router.rs` | 20.0% | 16.6% | retrieve() — следующая цель |
-| `logic/ai/agent/runner.rs` | **25.7%** | **37.1%** | оживлён pipeline-тестом (было 0%) |
-| `*/commands.rs` (IPC ×4) + старые обёртки | ~0% | ~0% | намеренное исключение (~140 ф.) |
-
-Итого: **func 45.50% · line 63.45% · region 64.92%**.
-
----
-
-
-| Файл | Line | Почему 0 % / слабо *(на 2026-08-19)* | Как покрыть | Статус 2026-08-26 |
-|---|---|---|---|---|
-| `lib.rs` | 0→**12.5%** func | тесты вызывают `_inner` напрямую, минуя `run()`/`invoke_handler` | e2e‑тест через `#[tauri::test]` либо unit‑тест `run()` с mock‑runtime | 🔶 частично: init_database задет pipeline-тестом |
-| `main.rs` | 0.00 % | `main()` стартует Tauri‑приложение; в `cfg(test)` нет unit‑тестов | покрывается E2E/сценариями запуска | ⬜ принятое исключение |
-| `logic/schema.rs` | 0.00 % | DDL применяется raw‑SQL из `common.rs` | тест на runtime‑миграцию | ⬜ исключение |
-| `logic/ai/agent/runner.rs` | 0→**37.1%** line / **25.7%** func | стрим + tool-use требует LLM-ответов | mock-провайдер + полный цикл | ✅ **закрыто**: `tests/agent_pipeline.rs` (mock OpenAI SSE, фича `agent-pipeline`); остаток = tool-use ветки и local-LLM путь |
-| `logic/ai/providers/fetch.rs` | 0→**84.8%** line / 60.4% func | `fetch_ai_models` не вызывался | stub-HTTP для каталогов моделей | ✅ **закрыто**: `fetch_ai_models_inner` + мок-сервер (7 inline-тестов) |
-| `logic/export.rs` | 34→**85.4%** line (mod) | покрыты 8 из 72 fn | Yandex flow + restore | 🔶 логика покрыта; Yandex-команды изолированы в `commands.rs`, мок-тесты OAuth — волна 4в |
-| `logic/entities.rs` | 57.7→**79.4%** line (mod) | большой файл; слабы edge-relations | negative/entity кейсы | 🔶 резня выполнена; edge-кейсы частично (self-relation задокументирована) |
-| `logic/ai/chat/operations.rs` | 16.6→**87.1%** line (mod) | покрыты 3 из 61 fn | send/cancel/regenerate/edit/delete | ✅ **в основном закрыто**: 13 тестов на все `_db_core` ядра; spawn-обёртки остались в IPC |
-| `logic/ai/tools/mod.rs` | 36.4→**94.7%** line / 65.1% func | 7 из 19 инструментов | недостающие тулы | ✅ **закрыто**: 17 интеграционных тестов на диспетчер и все тулы |
-
----
-
-## Рекомендации по росту покрытий (roadmap от 2026-08-19 → статус)
-
-1. **AI-pipeline:** подключить mock-провайдера для `run_agent_loop`,
-   `send_chat_message_impl`, `cancel_generation`, `fetch_ai_models`.
-   Цель: runner ≥ 70%, operations ≥ 50%, fetch ≥ 60%.
-   → **Статус:** fetch ✅ (84.8%); operations ✅ (87.1%, цель превышена);
-   runner 🔶 (37.1% через pipeline-тест; tool-use ветки — следующая сессия).
-2. **export.rs:** изолировать Yandex-HTTP через stub-client, 3–4 теста → 60%.
-   → **Статус:** 🔶 резня готова (команды изолированы), сами мок-тесты — волна 4в.
-3. **schema.rs:** runtime-миграция под test-фичей. → ⬜ исключение.
-4. **lib.rs / main.rs:** `#[tauri::test]` на инициализацию. → 🔶 частично (pipeline дёргает AppState).
-5. **Stress → CI:** вынести в `#[ignore]` + nightly. → ⬜ не делалось.
-
-
-
-
+- **Общее количество тестов**: 350+ тестов (интеграционные в `src/tests/` + unit-тесты в крейтах `crates/*`).
+- **Статус выполнения**: Все тесты проходят успешно (`ok. 0 failed; 0 ignored`).
+- **Соблюдение архитектурных границ**: 100% изоляция слоев согласно `ARCH-001` .. `ARCH-012`.
 

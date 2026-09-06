@@ -16,10 +16,8 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use serde_json::json;
 use zip::ZipArchive;
 
-use crate::logic::documents::docx::generate_docx;
-use crate::logic::documents::epub::generate_epub;
-use crate::logic::documents::fb2::generate_fb2;
-use crate::logic::documents::models::ExportDocumentRequest;
+use worldwiki_domain::document::ExportDocumentRequest;
+use worldwiki_infrastructure::documents::{generate_docx, generate_epub, generate_fb2};
 
 static __TMP_DOC_IDX: AtomicUsize = AtomicUsize::new(0);
 

@@ -864,6 +864,61 @@ impl SurrealRAGAdapter {
     }
 }
 
+fn format_entity_dossier_value(row: &Value) -> Value {
+    let mut obj = row.as_object().cloned().unwrap_or_default();
+    let name = obj.get("name").and_then(|v| v.as_str()).or_else(|| obj.get("title").and_then(|v| v.as_str())).unwrap_or("Сущность");
+    let type_key = obj.get("type_key").and_then(|v| v.as_str()).unwrap_or("entity");
+    let desc = obj.get("description").and_then(|v| v.as_str()).or_else(|| obj.get("content").and_then(|v| v.as_str())).unwrap_or("");
+    let tags = obj.get("tags").and_then(|v| v.as_array()).map(|arr| {
+        arr.iter().filter_map(|t| t.as_str()).collect::<Vec<_>>().join(", ")
+    }).unwrap_or_default();
+
+    let mut out = format!("[СУЩНОСТЬ: {name} (тип: {type_key})]\n");
+    if !tags.is_empty() {
+        out.push_str(&format!("Теги: {tags}\n"));
+    }
+    if !desc.trim().is_empty() {
+        out.push_str(&format!("Описание: {}\n", desc.trim()));
+    }
+    if let Some(attrs) = obj.get("attributes").and_then(|v| v.as_object()) {
+        for (k, v) in attrs {
+            if k == "embeddings" || k.starts_with('_') { continue; }
+            let val_str = match v {
+                Value::String(s) if !s.trim().is_empty() => s.clone(),
+                Value::Array(arr) if !arr.is_empty() => {
+                    let items: Vec<String> = arr.iter().filter_map(|item| match item {
+                        Value::String(s) => {
+                            let trimmed = s.trim();
+                            if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+                        }
+                        Value::Object(o) => {
+                            if let Some(n) = o.get("название").and_then(|x| x.as_str()) {
+                                let trimmed = n.trim();
+                                if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+                            } else {
+                                Some(item.to_string())
+                            }
+                        }
+                        Value::Null => None,
+                        _ => Some(item.to_string()),
+                    }).collect();
+                    items.join(", ")
+                }
+                Value::Number(n) => n.to_string(),
+                Value::Bool(b) => b.to_string(),
+                _ => String::new(),
+            };
+            if !val_str.is_empty() {
+                out.push_str(&format!("- {k}: {val_str}\n"));
+            }
+        }
+    }
+    obj.insert("title".to_string(), Value::String(name.to_string()));
+    obj.insert("content".to_string(), Value::String(out));
+    obj.insert("source_type".to_string(), Value::String("entity".to_string()));
+    Value::Object(obj)
+}
+
 #[async_trait]
 impl RAGContextPort for SurrealRAGAdapter {
     async fn retrieve_context(
@@ -903,7 +958,7 @@ impl RAGContextPort for SurrealRAGAdapter {
             if let Some(num) = num_opt {
                 let num_str = num.to_string();
                 let exact_sql = format!(
-                    "SELECT id, title, content FROM chapters WHERE {where_proj} AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1"
+                    "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE {where_proj} AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1"
                 );
                 if let Ok(mut resp) = self
                     .db
@@ -924,7 +979,7 @@ impl RAGContextPort for SurrealRAGAdapter {
 
         // 1. BM25 Lexical search on entities
         let ent_sql = format!(
-            "SELECT id, name AS title, description AS content, 'entity' AS source_type FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) LIMIT 6"
+            "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) LIMIT 6"
         );
         if let Ok(mut resp) = self
             .db
@@ -939,7 +994,7 @@ impl RAGContextPort for SurrealRAGAdapter {
                     if let Some(id) = r.get("id").and_then(clean_record_id) {
                         entity_ids.insert(id);
                     }
-                    list.push(r);
+                    list.push(format_entity_dossier_value(&r));
                 }
             }
         }
@@ -1001,7 +1056,7 @@ impl RAGContextPort for SurrealRAGAdapter {
             let mut res_en = self
                 .db
                 .query(format!(
-                    "SELECT id, name AS title, description AS content, tags, 'entity' AS source_type FROM entities WHERE {where_proj}"
+                    "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE {where_proj}"
                 ))
                 .bind(("p_raw", p_raw.clone()))
                 .bind(("p_clean", p_clean.clone()))
@@ -1009,7 +1064,15 @@ impl RAGContextPort for SurrealRAGAdapter {
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
 
-            for item in chaps.into_iter().chain(ents) {
+            for raw_item in chaps.into_iter().chain(ents) {
+                let is_entity = raw_item.get("source_type").and_then(|v| v.as_str()) == Some("entity")
+                    || raw_item.get("type_key").is_some();
+                let item = if is_entity {
+                    format_entity_dossier_value(&raw_item)
+                } else {
+                    raw_item
+                };
+
                 let id_str = item.get("id").and_then(clean_record_id).unwrap_or_default();
                 if list.iter().any(|existing| {
                     existing
@@ -1022,6 +1085,7 @@ impl RAGContextPort for SurrealRAGAdapter {
                 }
                 let t = item
                     .get("title")
+                    .or_else(|| item.get("name"))
                     .and_then(|v| v.as_str())
                     .unwrap_or("");
                 let cont = item

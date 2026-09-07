@@ -58,6 +58,7 @@ export function useWowilonPanel(
   watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_width', String(w)));
   watch(showSidebar, (v) => localStorage.setItem('worldwiki_ai_show_sidebar', String(v)));
   watch(isSettingsOpen, (v) => localStorage.setItem('worldwiki_ai_settings_open', String(v)));
+  watch(isToolInspectorOpen, (v) => console.log('🔥🔥🔥 [useWowilonPanel] isToolInspectorOpen changed to:', v));
 
   let currentProject = 'global';
   const hash = window.location.hash;

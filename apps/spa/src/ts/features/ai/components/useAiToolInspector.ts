@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 
 export interface AiToolInspectorProps {
@@ -23,6 +23,10 @@ export function useAiToolInspector(
   const executionTimeMs = ref<number | null>(null);
   const resultJson = ref<string | null>(null);
   const resultError = ref<string | null>(null);
+
+  watch(() => props.isOpen, (v) => {
+    console.log('🔥🔥🔥 [useAiToolInspector] isOpen prop is now:', v);
+  }, { immediate: true });
 
   const executeTool = async () => {
     if (!props.currentProject) return;
@@ -50,6 +54,7 @@ export function useAiToolInspector(
       };
     }
 
+    console.log(`🔥🔥🔥 [TOOL INSPECTOR] Executing tool='${selectedTool.value}' project='${props.currentProject}' input=`, toolInput);
     try {
       const res = await invoke<unknown>('execute_ai_tool_direct', {
         project: props.currentProject,
@@ -58,9 +63,11 @@ export function useAiToolInspector(
       });
       executionTimeMs.value = Math.round(performance.now() - start);
       resultJson.value = JSON.stringify(res, null, 2);
+      console.log(`🔥🔥🔥 [TOOL INSPECTOR] Success (${executionTimeMs.value}ms):`, res);
     } catch (err) {
       executionTimeMs.value = Math.round(performance.now() - start);
       resultError.value = String(err);
+      console.error(`🔥🔥🔥 [TOOL INSPECTOR] Execution Error (${executionTimeMs.value}ms):`, err);
     } finally {
       isLoading.value = false;
     }

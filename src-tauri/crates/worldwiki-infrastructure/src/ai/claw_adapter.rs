@@ -134,12 +134,16 @@ impl LlmStreamPort for ClawStreamAdapter {
                                 let tool_use_id = b.get("tool_use_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
                                 let is_error = b.get("is_error").and_then(|v| v.as_bool()).unwrap_or(false);
                                 let mut res_blocks = Vec::new();
-                                if let Some(res_arr) = b.get("content").and_then(|v| v.as_array()) {
+
+                                if let Some(txt) = b.get("content").and_then(|v| v.as_str()) {
+                                    res_blocks.push(ToolResultContentBlock::Text { text: txt.to_string() });
+                                } else if let Some(res_arr) = b.get("content").and_then(|v| v.as_array()) {
                                     for r in res_arr {
                                         let txt = r.get("text").and_then(|v| v.as_str()).unwrap_or("");
                                         res_blocks.push(ToolResultContentBlock::Text { text: txt.to_string() });
                                     }
                                 }
+
                                 blocks.push(InputContentBlock::ToolResult {
                                     tool_use_id,
                                     content: res_blocks,
@@ -175,6 +179,30 @@ impl LlmStreamPort for ClawStreamAdapter {
                     })
                 }).collect::<Vec<_>>()
             });
+
+            // OUTGOING LLM PAYLOAD VERIFICATION
+            let mut tool_results_summary = Vec::new();
+            for msg in &input_messages {
+                for block in &msg.content {
+                    if let InputContentBlock::ToolResult { tool_use_id, content, is_error } = block {
+                        let total_len: usize = content.iter().map(|c| match c {
+                            ToolResultContentBlock::Text { text } => text.len(),
+                            _ => 0,
+                        }).sum();
+                        tool_results_summary.push(format!("id='{tool_use_id}' len={total_len} is_err={is_error}"));
+                    }
+                }
+            }
+
+            let sys_len = request.system_prompt.len();
+            let has_context = request.system_prompt.contains("<context>");
+            println!(
+                "\n🔥🔥🔥 [OUTGOING LLM PAYLOAD VERIFICATION]\n├─ System Prompt: {} chars (contains <context>: {})\n├─ Messages Count: {}\n└─ Tool Results In Payload: {:?}",
+                sys_len,
+                has_context,
+                input_messages.len(),
+                if tool_results_summary.is_empty() { "None".to_string() } else { tool_results_summary.join(", ") }
+            );
 
             let message_req = MessageRequest {
                 model,

@@ -25,7 +25,7 @@ export interface AiChatTopBarEmits {
   (e: 'open-tools'): void;
 }
 
-export function useAiChatTopBar(props: AiChatTopBarProps) {
+export function useAiChatTopBar(props: AiChatTopBarProps, emit?: AiChatTopBarEmits) {
   const isIndexing = ref(false);
   const isUnloading = ref(false);
   const { availableModels, fetchModels } = useAiModels();
@@ -91,6 +91,13 @@ export function useAiChatTopBar(props: AiChatTopBarProps) {
     return (val || 0).toString();
   };
 
+  const handleOpenTools = () => {
+    console.log('🔥🔥🔥 [AiChatTopBar] Tools button clicked! Emitting open-tools');
+    if (emit) {
+      emit('open-tools');
+    }
+  };
+
   return {
     isIndexing,
     isUnloading,
@@ -98,6 +105,7 @@ export function useAiChatTopBar(props: AiChatTopBarProps) {
     progressPercent,
     handleReindexLore,
     handleUnloadAll,
+    handleOpenTools,
     formatTokens
   };
 }

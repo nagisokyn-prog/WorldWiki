@@ -59,7 +59,7 @@
       <button 
         class="action-pill-btn" 
         title="Диагностика и ручной тест инструментов (query_world, inspect_entity, read_manuscript)"
-        @click="$emit('open-tools')"
+        @click="handleOpenTools"
       >
         <i class="fas fa-terminal"></i>
         <span>Инструменты</span>
@@ -95,7 +95,7 @@ const props = withDefaults(defineProps<AiChatTopBarProps>(), {
   currentProject: 'global'
 });
 
-defineEmits<AiChatTopBarEmits>();
+const emit = defineEmits<AiChatTopBarEmits>();
 
 const {
   isIndexing,
@@ -104,8 +104,9 @@ const {
   progressPercent,
   handleReindexLore,
   handleUnloadAll,
+  handleOpenTools,
   formatTokens
-} = useAiChatTopBar(props);
+} = useAiChatTopBar(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiChatTopBar.css"></style>

@@ -490,7 +490,10 @@ impl ChatServices {
     }
 
     pub async fn execute_tool(&self, project_id: &str, name: &str, input: &Value) -> (String, bool) {
+        let start = std::time::Instant::now();
+        println!("\n🔥🔥🔥 [BACKEND TOOL EXECUTE] tool='{name}' project='{project_id}'\n├─ Input: {input}");
         let Some(ref tools) = self.ai_tools else {
+            println!("└─ Error: AI tools not available in current environment");
             return (
                 "AI tools are not available in current environment".to_string(),
                 true,
@@ -572,9 +575,18 @@ impl ChatServices {
             ))),
         };
 
+        let duration = start.elapsed().as_millis();
         match result {
-            Ok(v) => (v.to_string(), false),
-            Err(e) => (format!("Error executing {name}: {e}"), true),
+            Ok(v) => {
+                let s = v.to_string();
+                println!("└─ Success ({duration}ms): output_len={} chars", s.len());
+                (s, false)
+            }
+            Err(e) => {
+                let s = format!("Error executing {name}: {e}");
+                println!("└─ Error ({duration}ms): {s}");
+                (s, true)
+            }
         }
     }
 

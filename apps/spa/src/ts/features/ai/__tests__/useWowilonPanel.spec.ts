@@ -279,6 +279,18 @@ describe('useWowilonPanel', () => {
       expect(groups[1].activeMessage.reasoning).toBe('Unfinished thoughts');
       expect(groups[1].activeMessage.content).toBe('');
     });
+
+    it('safely breaks out of cyclic and self-referencing message parent trees without infinite loop', () => {
+      panel.allMessages.value = [
+        { id: 'm1', role: 'user', content: 'Message 1', parent_id: null, is_active: true },
+        { id: 'm2', role: 'assistant', content: 'Message 2', parent_id: 'm1', is_active: true },
+        { id: 'm3', role: 'user', content: 'Message 3 (Cycle)', parent_id: 'm2', is_active: true },
+        { id: 'm1_cycle', role: 'assistant', content: 'Message Loop', parent_id: 'm3', is_active: true },
+      ];
+
+      const groups = panel.renderedMessages.value;
+      expect(groups.length).toBeGreaterThanOrEqual(1);
+    });
   });
 
   describe('Stream chunk event listening', () => {

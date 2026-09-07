@@ -90,7 +90,22 @@ async function init() {
   app.use(autoAnimatePlugin as unknown as Plugin);
   app.use(MotionPlugin as unknown as Plugin);
   setupGlass(app);
-  app.use(i18n as unknown as Plugin).mount('#app');
+  app.use(i18n as unknown as Plugin);
+
+  app.config.errorHandler = (err, instance, info) => {
+    console.error('🔥 [Vue Global Error Handler]:', err, info);
+  };
+
+  await router.isReady();
+  app.mount('#app');
 }
+
+window.addEventListener('error', (e) => {
+  console.error('🔥 [Window Global Error]:', e.error || e.message);
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('🔥 [Unhandled Promise Rejection]:', e.reason);
+});
 
 init().catch(e => console.error('[app] init error:', e));

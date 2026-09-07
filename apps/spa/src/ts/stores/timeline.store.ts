@@ -90,8 +90,10 @@ export const useTimelineStore = defineStore('timeline', () => {
     
     // Legacy format: [name](...type=type&id=id...)
     const legacyRegex = /\[([^\]]*)\]\([^)]+type=([^&]+)&id=([^&]+?)\.\.\./g;
-    let match;
-    while ((match = legacyRegex.exec(text)) !== null) {
+    let match: RegExpExecArray | null;
+    let limit = 5000;
+    while ((match = legacyRegex.exec(text)) !== null && limit-- > 0) {
+      if (match.index === legacyRegex.lastIndex) legacyRegex.lastIndex++;
       const rawName = match[1]?.trim() || '';
       let type = match[2]?.trim() || 'entity';
       let id = match[3]?.trim() || rawName;
@@ -108,9 +110,10 @@ export const useTimelineStore = defineStore('timeline', () => {
     }
 
     // Конструкция ((...))[...]: извлекаем имя из (()) и метаданные сущности из [...]
-    // Поддерживает как непустые ((Имя)), так и пустые (())[id=...] / (())[ui_editor.html?...] / (())[entities:uuid]
     const newRegex = /\(\((.*?)\)\)\[(.*?)\]/g;
-    while ((match = newRegex.exec(text)) !== null) {
+    limit = 5000;
+    while ((match = newRegex.exec(text)) !== null && limit-- > 0) {
+      if (match.index === newRegex.lastIndex) newRegex.lastIndex++;
       const rawName = match[1]?.trim() || '';
       const inner = match[2]?.trim() || '';
       let type = 'entity';
@@ -152,7 +155,9 @@ export const useTimelineStore = defineStore('timeline', () => {
 
     // HTML link format: <a href="...type=type&id=id...">name</a> or <a href="entity://type/id">name</a>
     const htmlRegex = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
-    while ((match = htmlRegex.exec(text)) !== null) {
+    limit = 5000;
+    while ((match = htmlRegex.exec(text)) !== null && limit-- > 0) {
+      if (match.index === htmlRegex.lastIndex) htmlRegex.lastIndex++;
       const href = match[1];
       const rawName = match[2]?.replace(/<[^>]+>/g, '').trim() || '';
 

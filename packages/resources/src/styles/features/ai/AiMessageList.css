@@ -154,6 +154,20 @@
   box-shadow: var(--shadow-sm);
 }
 
+.message-bubble.is-error-bubble {
+  border: 1px solid var(--danger);
+  background: var(--bg-card);
+  box-shadow: 0 0 10px var(--badge-danger-bg);
+}
+
+.message-bubble.is-error-bubble .message-content :deep(blockquote) {
+  border-left-color: var(--danger);
+  background: var(--bg-hover);
+  padding: 8px 12px;
+  border-radius: var(--radius-xs, 4px);
+  color: var(--text-main);
+}
+
 /* Рендеринг Markdown внутри сообщения */
 .message-content :deep(p) {
   margin: 0 0 10px 0;

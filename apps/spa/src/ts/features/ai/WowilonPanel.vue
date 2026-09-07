@@ -68,10 +68,11 @@
           <div class="chat-input-container">
             <AiActionButtons 
               :is-generating="isGenerating"
-              :has-error="false"
+              :has-error="hasError"
               :can-resume="false"
               @cancel="cancelGeneration"
-              @retry="() => {}"
+              @retry="retryLastMessage"
+              @unload-models="unloadModels"
               @resume="() => {}"
             />
             
@@ -134,6 +135,7 @@ const {
   messages,
   renderedMessages,
   isGenerating,
+  hasError,
   editingMessageId,
   editDraft,
   messagesListRef,
@@ -154,6 +156,8 @@ const {
   cancelEdit,
   saveEdit,
   regenerateMessage,
+  retryLastMessage,
+  unloadModels,
   handleBranch,
   deleteMessage,
   handleToolApproval,

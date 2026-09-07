@@ -27,7 +27,7 @@
         <span>{{ activeProfile?.settings?.model || 'Модель не выбрана' }}</span>
       </div>
       <div class="token-usage">
-        <span class="token-count">{{ formatTokens(tokenUsage.total_tokens) }} <span v-if="maxTokens > 0">/ {{ formatTokens(maxTokens) }}</span></span>
+        <span class="token-count">{{ formatTokens(tokenUsage?.total_tokens || 0) }} <span v-if="maxTokens > 0">/ {{ formatTokens(maxTokens) }}</span></span>
         <div v-if="maxTokens > 0" class="token-progress-wrapper">
           <div class="token-progress" :style="{ '--progress-w': progressPercent + '%' }"></div>
         </div>

@@ -31,16 +31,19 @@ export class CalendarMath {
    * Get days in year
    */
   public static getDaysInYear(calendar: CalendarData, year: number): number {
+    if (!calendar || !calendar.месяцы || calendar.месяцы.length === 0) {
+      return 365;
+    }
     let days = 0;
     for (let i = 0; i < calendar.месяцы.length; i++) {
-      let mDays = calendar.месяцы[i].дней;
+      let mDays = calendar.месяцы[i]?.дней || 0;
       const leapRule = calendar.пользовательское_високосное_правило;
       if (leapRule && leapRule.месяц === i && this.isLeapYear(calendar, year)) {
-        mDays += leapRule.день_смещения;
+        mDays += leapRule.день_смещения || 0;
       }
       days += mDays;
     }
-    return days;
+    return days > 0 ? days : 365;
   }
 
   /**
@@ -48,32 +51,35 @@ export class CalendarMath {
    */
   public static getAbsoluteMinute(input: CalendarDate['original_input'], calendar: CalendarData): number {
     const { era_index, year, month, day, hour = 0, minute = 0 } = input;
-    const settings = calendar.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60, секунд_в_минуте: 60, широта: 0, учитывать_сезонную_длительность_дня: false };
+    const settings = calendar?.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60, секунд_в_минуте: 60, широта: 0, учитывать_сезонную_длительность_дня: false };
 
-    const minutesInDay = settings.часов_в_сутках * settings.минут_в_часе;
+    const hInDay = settings.часов_в_сутках || 24;
+    const mInHour = settings.минут_в_часе || 60;
+    const minutesInDay = Math.max(1, hInDay * mInHour);
 
     let totalDays = 0;
 
-    const era = calendar.эпохи[era_index];
+    const era = calendar?.эпохи ? calendar.эпохи[era_index] : undefined;
     const isReverse = era?.обратный_отсчет;
 
     const actualYear = isReverse ? -year : year;
 
     if (actualYear > 1) {
       for (let y = 1; y < actualYear; y++) {
-        totalDays += this.getDaysInYear(calendar, y);
+        totalDays += Math.max(1, this.getDaysInYear(calendar, y));
       }
     } else if (actualYear < 1) {
       for (let y = 0; y >= actualYear; y--) {
-        totalDays -= this.getDaysInYear(calendar, y);
+        totalDays -= Math.max(1, this.getDaysInYear(calendar, y));
       }
     }
 
-    for (let m = 0; m < month; m++) {
-      let mDays = calendar.месяцы[m].дней;
+    const months = calendar?.месяцы || [];
+    for (let m = 0; m < month && m < months.length; m++) {
+      let mDays = months[m]?.дней || 0;
       const leapRule = calendar.пользовательское_високосное_правило;
       if (leapRule && leapRule.месяц === m && this.isLeapYear(calendar, actualYear)) {
-        mDays += leapRule.день_смещения;
+        mDays += leapRule.день_смещения || 0;
       }
       totalDays += mDays;
     }
@@ -81,7 +87,7 @@ export class CalendarMath {
     totalDays += (day - 1);
 
     let absMinute = totalDays * minutesInDay;
-    absMinute += hour * settings.минут_в_часе;
+    absMinute += hour * mInHour;
     absMinute += minute;
 
     return absMinute;
@@ -91,8 +97,10 @@ export class CalendarMath {
    * Convert Absolute Minute to Date Object
    */
   public static getDateFromAbsolute(absoluteMinute: number, calendar: CalendarData, era_index: number = 1): CalendarDate['original_input'] {
-    const settings = calendar.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60, секунд_в_минуте: 60, широта: 0, учитывать_сезонную_длительность_дня: false };
-    const minutesInDay = settings.часов_в_сутках * settings.минут_в_часе;
+    const settings = calendar?.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 };
+    const hInDay = settings.часов_в_сутках || 24;
+    const mInHour = settings.минут_в_часе || 60;
+    const minutesInDay = Math.max(1, hInDay * mInHour);
 
     let totalDays = Math.floor(absoluteMinute / minutesInDay);
     let remainderMinutes = absoluteMinute % minutesInDay;
@@ -101,13 +109,14 @@ export class CalendarMath {
       totalDays -= 1;
     }
 
-    const hour = Math.floor(remainderMinutes / settings.минут_в_часе);
-    const minute = remainderMinutes % settings.минут_в_часе;
+    const hour = Math.floor(remainderMinutes / mInHour);
+    const minute = remainderMinutes % mInHour;
 
     let year = 1;
+    let safetyLimit = 500000;
     if (totalDays >= 0) {
-      while (true) {
-        const yDays = this.getDaysInYear(calendar, year);
+      while (safetyLimit-- > 0) {
+        const yDays = Math.max(1, this.getDaysInYear(calendar, year));
         if (totalDays >= yDays) {
           totalDays -= yDays;
           year++;
@@ -640,18 +649,19 @@ export class CalendarMath {
   ): { era_index: number; year: number; month: number; day: number } {
     let remDays = totalDays;
     let year = 1;
+    let safetyLimit = 500000;
 
     if (remDays >= 0) {
-      while (true) {
-        const dInY = this.getDaysInYear(calendar, year);
+      while (safetyLimit-- > 0) {
+        const dInY = Math.max(1, this.getDaysInYear(calendar, year));
         if (remDays < dInY) break;
         remDays -= dInY;
         year++;
       }
     } else {
       year = 0;
-      while (true) {
-        const dInY = this.getDaysInYear(calendar, year);
+      while (safetyLimit-- > 0) {
+        const dInY = Math.max(1, this.getDaysInYear(calendar, year));
         if (remDays >= -dInY) {
           remDays += dInY;
           break;
@@ -664,10 +674,10 @@ export class CalendarMath {
     let month = 0;
     const months = calendar.месяцы || [];
     for (let m = 0; m < months.length; m++) {
-      let mDays = months[m].дней;
+      let mDays = months[m]?.дней || 0;
       const leapRule = calendar.пользовательское_високосное_правило;
       if (leapRule && leapRule.месяц === m && this.isLeapYear(calendar, year)) {
-        mDays += leapRule.день_смещения;
+        mDays += leapRule.день_смещения || 0;
       }
       if (remDays < mDays) {
         month = m;
@@ -721,13 +731,12 @@ export class CalendarMath {
     }
 
     let worldFraction = localFraction - (offsetHours / 24);
-    while (worldFraction < 0) {
-      worldFraction += 1.0;
-      worldDayIndex -= 1;
-    }
-    while (worldFraction >= 1.0) {
-      worldFraction -= 1.0;
-      worldDayIndex += 1;
+    if (!Number.isFinite(worldFraction)) {
+      worldFraction = 0;
+    } else {
+      const floorDays = Math.floor(worldFraction);
+      worldFraction -= floorDays;
+      worldDayIndex += floorDays;
     }
 
     return {
@@ -751,16 +760,15 @@ export class CalendarMath {
     const mInHour = settings.минут_в_часе || 60;
     const dayMinutes = hInDay * mInHour;
 
-    let localFraction = moment.day_fraction + (offsetHours / 24);
-    let localDayIndex = moment.day_index;
+    let localFraction = (Number.isFinite(moment.day_fraction) ? moment.day_fraction : 0) + (offsetHours / 24);
+    let localDayIndex = Number.isFinite(moment.day_index) ? moment.day_index : 0;
 
-    while (localFraction < 0) {
-      localFraction += 1.0;
-      localDayIndex -= 1;
-    }
-    while (localFraction >= 1.0) {
-      localFraction -= 1.0;
-      localDayIndex += 1;
+    if (!Number.isFinite(localFraction)) {
+      localFraction = 0;
+    } else {
+      const floorDays = Math.floor(localFraction);
+      localFraction -= floorDays;
+      localDayIndex += floorDays;
     }
 
     if (!calendar.is_master && calendar.sync_anchor?.linked_to_master) {

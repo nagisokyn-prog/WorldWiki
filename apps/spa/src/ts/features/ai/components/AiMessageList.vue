@@ -50,7 +50,10 @@
         </div>
 
         <!-- Пузырь сообщения (Message Bubble) -->
-        <div class="message-bubble">
+        <div 
+          class="message-bubble" 
+          :class="{ 'is-error-bubble': group.activeMessage.is_error || isErrorMessage(group.activeMessage.content) }"
+        >
           <!-- Режим инлайн-редактирования -->
           <div v-if="editingMessageId === group.activeMessage.id" class="inline-editor">
             <textarea 
@@ -169,7 +172,7 @@ export interface AiMessageListEmits {
 defineProps<AiMessageListProps>();
 defineEmits<AiMessageListEmits>();
 
-const { containerRef, copyText } = useAiMessageList();
+const { containerRef, copyText, isErrorMessage } = useAiMessageList();
 
 defineExpose({
   containerRef

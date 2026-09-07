@@ -68,7 +68,7 @@ export function useAiChatHistory(
   };
 
   const treeSections = computed(() => {
-    let filteredNodes = props.chatTree;
+    let filteredNodes = props.chatTree || [];
 
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase();
@@ -83,7 +83,7 @@ export function useAiChatHistory(
           }
         }
       };
-      searchDeep(props.chatTree);
+      searchDeep(filteredNodes);
       filteredNodes = flatMatches;
     }
 

@@ -11,8 +11,22 @@ export function useAiMessageList() {
     }
   };
 
+  const isErrorMessage = (content?: string): boolean => {
+    if (!content) return false;
+    const trimmed = content.trim();
+    return (
+      trimmed.startsWith('🚫') ||
+      trimmed.startsWith('⚠️') ||
+      trimmed.startsWith('🔑') ||
+      trimmed.startsWith('💳') ||
+      trimmed.startsWith('🔍') ||
+      trimmed.startsWith('🌐')
+    );
+  };
+
   return {
     containerRef,
-    copyText
+    copyText,
+    isErrorMessage
   };
 }

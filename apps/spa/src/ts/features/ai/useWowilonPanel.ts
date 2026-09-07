@@ -28,6 +28,7 @@ export interface ChatMessage {
   toolCallWaiting?: ToolCallPayload | null;
   parent_id?: string | null;
   is_active?: boolean;
+  is_error?: boolean;
 }
 
 export interface MessageVariantGroup {
@@ -102,6 +103,7 @@ export function useWowilonPanel(
 
   const allMessages = ref<ChatMessage[]>([]);
   const isGenerating = ref(false);
+  const hasError = ref(false);
   const tokenUsage = ref({ input_tokens: 0, output_tokens: 0, total_tokens: 0 });
   let unlistenChunk: UnlistenFn | null = null;
 
@@ -117,6 +119,7 @@ export function useWowilonPanel(
     try {
       if (!chatId) {
         allMessages.value = [];
+        hasError.value = false;
         return;
       }
       const data = (await getChatMessages(chatId)) as Array<{
@@ -128,19 +131,33 @@ export function useWowilonPanel(
         parent_id?: string | null;
         is_active?: boolean;
       }>;
-      const loaded: ChatMessage[] = data.map(m => ({
-        id: m.id,
-        role: m.role || 'user',
-        content: m.content || '',
-        reasoning: m.reasoning,
-        toolLogs: m.tool_logs,
-        parent_id: m.parent_id,
-        is_active: m.is_active
-      }));
+      const loaded: ChatMessage[] = data.map(m => {
+        const isErr = m.role === 'assistant' && (
+          m.content?.startsWith('🚫') ||
+          m.content?.startsWith('⚠️') ||
+          m.content?.startsWith('🔑') ||
+          m.content?.startsWith('💳') ||
+          m.content?.startsWith('🔍') ||
+          m.content?.startsWith('🌐')
+        );
+        return {
+          id: m.id,
+          role: m.role || 'user',
+          content: m.content || '',
+          reasoning: m.reasoning,
+          toolLogs: m.tool_logs,
+          parent_id: m.parent_id,
+          is_active: m.is_active,
+          is_error: Boolean(isErr)
+        };
+      });
       allMessages.value = loaded;
+      const lastMsg = loaded[loaded.length - 1];
+      hasError.value = Boolean(lastMsg?.is_error);
     } catch (err) {
       console.error('Failed to load chat messages:', err);
       allMessages.value = [];
+      hasError.value = false;
     }
   };
 
@@ -272,8 +289,16 @@ export function useWowilonPanel(
 
     const groups: MessageVariantGroup[] = [];
     let currentParent: string | null = null;
+    const visited = new Set<string>();
+    let maxSteps = raw.length + 10;
 
-    while (currentParent !== undefined && parentMap.has(currentParent)) {
+    while (currentParent !== undefined && parentMap.has(currentParent) && maxSteps-- > 0) {
+      if (currentParent && visited.has(currentParent)) {
+        console.warn('[useWowilonPanel] Cycle detected in message parent_id tree:', currentParent);
+        break;
+      }
+      if (currentParent) visited.add(currentParent);
+
       const children: ChatMessage[] = parentMap.get(currentParent) || [];
       if (!children.length) break;
 
@@ -301,8 +326,9 @@ export function useWowilonPanel(
         activeMessage: activeMsg
       });
 
-      currentParent = activeMsg.id ?? null;
-      if (!currentParent) break;
+      const nextParent = activeMsg.id ?? null;
+      if (!nextParent || nextParent === currentParent) break;
+      currentParent = nextParent;
     }
 
     return groups.length > 0 ? groups : raw.map(msg => ({ variants: [msg], activeIndex: 0, activeMessage: msg }));
@@ -600,6 +626,10 @@ export function useWowilonPanel(
           newMsg.reasoning = chunk.text;
         } else if (chunk.chunk_type === 'tool_log') {
           newMsg.toolLogs = [chunk.text];
+        } else if (chunk.chunk_type === 'error') {
+          newMsg.is_error = true;
+          hasError.value = true;
+          newMsg.content = chunk.text;
         } else if (chunk.chunk_type === 'usage') {
           try {
             const u = JSON.parse(chunk.text);
@@ -614,6 +644,9 @@ export function useWowilonPanel(
         }
         if (chunk.is_done) {
           isGenerating.value = false;
+          if (newMsg.is_error || newMsg.content.startsWith('🚫') || newMsg.content.startsWith('⚠️') || newMsg.content.startsWith('🔑')) {
+            hasError.value = true;
+          }
           if (activeChatId.value) {
             void loadMessages(activeChatId.value);
             void loadChats();
@@ -627,6 +660,10 @@ export function useWowilonPanel(
       } else if (chunk.chunk_type === 'tool_log') {
         if (!msg.toolLogs) msg.toolLogs = [];
         msg.toolLogs.push(chunk.text);
+      } else if (chunk.chunk_type === 'error') {
+        msg.is_error = true;
+        hasError.value = true;
+        msg.content = (msg.content || '') + chunk.text;
       } else if (chunk.chunk_type === 'usage') {
         try {
           const u = JSON.parse(chunk.text);
@@ -642,6 +679,9 @@ export function useWowilonPanel(
 
       if (chunk.is_done) {
         isGenerating.value = false;
+        if (msg.is_error || msg.content.startsWith('🚫') || msg.content.startsWith('⚠️') || msg.content.startsWith('🔑')) {
+          hasError.value = true;
+        }
         if (activeChatId.value) {
           void loadMessages(activeChatId.value);
           void loadChats();
@@ -649,6 +689,26 @@ export function useWowilonPanel(
       }
     });
   });
+
+  const retryLastMessage = async () => {
+    if (isGenerating.value || isSending.value) return;
+    hasError.value = false;
+    const lastAssistant = [...allMessages.value].reverse().find(m => m.role === 'assistant');
+    if (lastAssistant && lastAssistant.parent_id) {
+      await regenerateMessage(lastAssistant.parent_id);
+    }
+  };
+
+  const unloadModels = async () => {
+    try {
+      await invoke('cancel_generation', { chatId: activeChatId.value || '' }).catch(() => {});
+      await invoke('unload_all_local_models');
+      const { appAlert } = await import('@worldwiki/components');
+      appAlert('Память GPU успешно очищена.');
+    } catch (e) {
+      console.error('Ошибка выгрузки моделей:', e);
+    }
+  };
 
   onUnmounted(() => {
     if (unlistenChunk) {
@@ -674,6 +734,7 @@ export function useWowilonPanel(
     messages: allMessages,
     renderedMessages,
     isGenerating,
+    hasError,
     editingMessageId,
     editDraft,
     messagesListRef,
@@ -695,6 +756,8 @@ export function useWowilonPanel(
     saveEdit,
     editMessage,
     regenerateMessage,
+    retryLastMessage,
+    unloadModels,
     handleBranch,
     deleteMessage,
     handleToolApproval,

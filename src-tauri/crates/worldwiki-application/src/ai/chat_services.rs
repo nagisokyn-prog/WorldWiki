@@ -398,12 +398,44 @@ impl ChatServices {
                 }
             }
 
+            let mut stream_failed = false;
             let stream_res = stream_handle.await;
-            if let Ok(Err(e)) = stream_res {
-                println!("[AGENT ERROR] Stream failed: {e}");
+            match stream_res {
+                Ok(Err(e)) => {
+                    let raw_err = e.to_string();
+                    println!("[AGENT ERROR] Stream failed: {raw_err}");
+                    let human_err = parse_llm_error_to_human(&raw_err);
+                    let err_display = if assistant_text.trim().is_empty() {
+                        human_err
+                    } else {
+                        format!("\n\n---\n{human_err}")
+                    };
+                    self.emit_chunk(chat_id, assistant_msg_id, err_display.clone(), false, "text").await;
+                    assistant_text.push_str(&err_display);
+                    stream_failed = true;
+                }
+                Err(join_err) => {
+                    let err_msg = format!("Критический сбой задачи стриминга: {join_err}");
+                    println!("[AGENT ERROR] Task join error: {err_msg}");
+                    let human_err = format!("⚠️ **Сбой фонового потока**\n\n> {err_msg}");
+                    let err_display = if assistant_text.trim().is_empty() {
+                        human_err
+                    } else {
+                        format!("\n\n---\n{human_err}")
+                    };
+                    self.emit_chunk(chat_id, assistant_msg_id, err_display.clone(), false, "text").await;
+                    assistant_text.push_str(&err_display);
+                    stream_failed = true;
+                }
+                _ => {}
             }
 
             last_text = assistant_text.clone();
+
+            if stream_failed {
+                final_answer = Some(assistant_text);
+                break;
+            }
 
             if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
                 println!("[AGENT] Generation cancelled for chat={}", chat_id);
@@ -875,6 +907,65 @@ impl ChatServices {
     }
 }
 
+pub fn parse_llm_error_to_human(raw_err: &str) -> String {
+    let mut extracted_msg: Option<String> = None;
+    let mut extracted_remedy: Option<String> = None;
+
+    if let Some(json_start) = raw_err.find('{') {
+        if let Ok(val) = serde_json::from_str::<Value>(&raw_err[json_start..]) {
+            if let Some(err_obj) = val.get("error") {
+                if let Some(msg) = err_obj.get("message").and_then(|m| m.as_str()) {
+                    extracted_msg = Some(msg.to_string());
+                }
+                if let Some(meta) = err_obj.get("metadata") {
+                    if let Some(remedy) = meta.get("remedy_hint").and_then(|r| r.as_str()) {
+                        extracted_remedy = Some(remedy.to_string());
+                    }
+                }
+            } else if let Some(msg) = val.get("message").and_then(|m| m.as_str()) {
+                extracted_msg = Some(msg.to_string());
+            }
+        }
+    }
+
+    let detail_msg = extracted_msg.unwrap_or_else(|| {
+        let clean = raw_err
+            .trim_start_matches("Constraint violation: ")
+            .trim_start_matches("Execution failed: ");
+        clean.to_string()
+    });
+
+    let lower = raw_err.to_lowercase();
+    if lower.contains("429") || lower.contains("rate limit") {
+        let remedy_hint = extracted_remedy
+            .map(|r| format!("\n\n> *Подсказка провайдера*: {r}"))
+            .unwrap_or_default();
+        format!(
+            "🚫 **Превышен лимит запросов (Rate Limit / 429)**\n\n> **Причина**: {detail_msg}{remedy_hint}\n\n💡 **Решение**: Переключитесь на другую модель или провайдера в **Настройках ИИ** (шестерёнка в верхнем правом углу), либо пополните баланс."
+        )
+    } else if lower.contains("401") || lower.contains("invalid api key") || lower.contains("unauthorized") {
+        format!(
+            "🔑 **Ошибка авторизации (401 Unauthorized)**\n\n> **Причина**: {detail_msg}\n\n💡 **Решение**: Проверьте и обновите ваш API-ключ в **Настройках ИИ** (шестерёнка в верхнем правом углу)."
+        )
+    } else if lower.contains("402") || lower.contains("payment required") || lower.contains("insufficient balance") {
+        format!(
+            "💳 **Недостаточно средств (402 Payment Required)**\n\n> **Причина**: {detail_msg}\n\n💡 **Решение**: Пополните баланс на стороне выбранного провайдера или выберите бесплатную модель."
+        )
+    } else if lower.contains("404") || lower.contains("model not found") || lower.contains("does not exist") {
+        format!(
+            "🔍 **Модель не найдена (404 Not Found)**\n\n> **Причина**: {detail_msg}\n\n💡 **Решение**: Выберите актуальную модель из выпадающего списка в **Настройках ИИ**."
+        )
+    } else if lower.contains("500") || lower.contains("502") || lower.contains("503") || lower.contains("504") || lower.contains("bad gateway") || lower.contains("server error") {
+        format!(
+            "🌐 **Сбой сервера провайдера (5xx Server Error)**\n\n> **Причина**: {detail_msg}\n\n💡 **Решение**: Сервер провайдера временно перегружен или недоступен. Попробуйте повторить запрос через минуту или сменить провайдера."
+        )
+    } else {
+        format!(
+            "⚠️ **Сбой обращения к ИИ**\n\n> **Причина**: {detail_msg}\n\n💡 **Решение**: Проверьте настройки модели и интернет-соединение."
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1152,5 +1243,14 @@ mod tests {
 
         assert!(chat.id.starts_with("chats:"));
         assert_eq!(chat.title, "Ветка 1");
+    }
+
+    #[test]
+    fn test_parse_llm_error_to_human_429() {
+        let raw = r#"Constraint violation: api failed after 9 attempts: api returned 429 Too Many Requests: {"error":{"message":"Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day","code":429,"metadata":{"remedy_hint":"Wait for the daily reset or purchase credits."}}}"#;
+        let human = parse_llm_error_to_human(raw);
+        assert!(human.contains("Rate Limit / 429"));
+        assert!(human.contains("Rate limit exceeded"));
+        assert!(human.contains("Подсказка провайдера"));
     }
 }

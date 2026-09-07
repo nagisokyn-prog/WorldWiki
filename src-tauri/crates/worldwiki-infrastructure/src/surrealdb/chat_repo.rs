@@ -261,7 +261,9 @@ impl ChatRepository for SurrealChatRepository {
             "UPSERT type::record('chat_messages', $m_clean) SET \
              chat_id = type::record('chats', $c_clean), \
              project_id = type::record('projects', $p_clean), \
-             role = $role, content = $content, version = $version, \
+             role = $role, content = $content, \
+             reasoning = $reasoning, tool_logs = $tool_logs, \
+             version = $version, \
              is_active = $is_active, updated_at = time::now(), \
              created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }"
         );
@@ -280,6 +282,8 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("p_clean", if proj_clean.is_empty() { "unknown" } else { proj_clean }.to_string()))
             .bind(("role", role_str))
             .bind(("content", message.content.clone()))
+            .bind(("reasoning", message.reasoning.clone()))
+            .bind(("tool_logs", message.tool_logs.clone().unwrap_or_default()))
             .bind(("version", message.version as i64))
             .bind(("is_active", message.is_active));
 
@@ -304,13 +308,63 @@ impl ChatRepository for SurrealChatRepository {
 
     async fn delete_chat(&self, chat_id: &str) -> Result<(), DomainError> {
         let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
-        let chat_rec = RecordId::new("chats", chat_clean);
+        let initial_rec = format!("chats:{chat_clean}");
 
-        self.db
-            .query("DELETE chat_messages WHERE chat_id = $chat; DELETE contains WHERE out = $chat OR in = $chat; DELETE $chat;")
-            .bind(("chat", chat_rec))
+        // 1. Fetch all chats and contains edges to find all recursive descendants
+        let mut res = self
+            .db
+            .query("SELECT id, parent_id FROM chats; SELECT in, out FROM contains;")
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let all_chats: Vec<Value> = res.take(0).unwrap_or_default();
+        let all_edges: Vec<Value> = res.take(1).unwrap_or_default();
+
+        let mut to_delete = std::collections::HashSet::new();
+        to_delete.insert(initial_rec.clone());
+        to_delete.insert(chat_clean.to_string());
+
+        let mut changed = true;
+        while changed {
+            changed = false;
+            // Check direct parent_id on chats
+            for c in &all_chats {
+                if let Some(id_str) = c.get("id").and_then(clean_record_id) {
+                    if !to_delete.contains(&id_str) {
+                        if let Some(parent_str) = c.get("parent_id").and_then(clean_record_id) {
+                            if to_delete.contains(&parent_str) {
+                                to_delete.insert(id_str.clone());
+                                to_delete.insert(id_str.trim_start_matches("chats:").to_string());
+                                changed = true;
+                            }
+                        }
+                    }
+                }
+            }
+            // Check contains edges (in = parent, out = child)
+            for edge in &all_edges {
+                let parent_opt = edge.get("in").and_then(clean_record_id);
+                let child_opt = edge.get("out").and_then(clean_record_id);
+                if let (Some(parent_str), Some(child_str)) = (parent_opt, child_opt) {
+                    if to_delete.contains(&parent_str) && !to_delete.contains(&child_str) {
+                        to_delete.insert(child_str.clone());
+                        to_delete.insert(child_str.trim_start_matches("chats:").to_string());
+                        changed = true;
+                    }
+                }
+            }
+        }
+
+        // 2. Delete all messages, relations, and chat records for every chat in to_delete
+        for cid in to_delete {
+            let clean = cid.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+            let rec = RecordId::new("chats", clean);
+            let _ = self.db
+                .query("DELETE chat_messages WHERE chat_id = $chat OR chat_id = $raw_id; DELETE contains WHERE out = $chat OR in = $chat; DELETE $chat;")
+                .bind(("chat", rec))
+                .bind(("raw_id", format!("chats:{clean}")))
+                .await;
+        }
 
         Ok(())
     }
@@ -401,13 +455,18 @@ impl ChatRepository for SurrealChatRepository {
     }
 
     async fn update_token_usage(&self, chat_id: &str, usage: &worldwiki_domain::ai::TokenUsage) -> Result<(), DomainError> {
+        if usage.total_tokens == 0 && usage.input_tokens == 0 && usage.output_tokens == 0 {
+            return Ok(());
+        }
         let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
         let chat_rec = RecordId::new("chats", chat_clean);
 
         let sql = "UPDATE $chat SET \
-                   token_usage.input_tokens = (IF token_usage.input_tokens != NONE AND token_usage.input_tokens != NULL { token_usage.input_tokens } ELSE { 0 }) + $in_tokens, \
-                   token_usage.output_tokens = (IF token_usage.output_tokens != NONE AND token_usage.output_tokens != NULL { token_usage.output_tokens } ELSE { 0 }) + $out_tokens, \
-                   token_usage.total_tokens = (IF token_usage.total_tokens != NONE AND token_usage.total_tokens != NULL { token_usage.total_tokens } ELSE { 0 }) + $tot_tokens;";
+                   token_usage = { \
+                       input_tokens: $in_tokens, \
+                       output_tokens: $out_tokens, \
+                       total_tokens: $tot_tokens \
+                   };";
 
         self.db
             .query(sql)

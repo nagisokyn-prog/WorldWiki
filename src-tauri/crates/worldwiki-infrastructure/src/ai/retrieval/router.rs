@@ -5,6 +5,7 @@ use surrealdb::Surreal;
 use std::collections::HashSet;
 
 use super::embedder::EmbedderService;
+use crate::surrealdb::repos::project_where_clause;
 
 pub struct RetrievalCandidate {
     pub source_type: String,
@@ -50,29 +51,46 @@ impl RetrievalRouter {
         query: &str,
         enable_semantic: bool,
     ) -> Option<String> {
+        self.route_and_retrieve(db, project_id, query, enable_semantic).await
+    }
+
+    pub async fn route_and_retrieve(
+        &self,
+        db: &Surreal<Db>,
+        project_id: &str,
+        query: &str,
+        enable_semantic: bool,
+    ) -> Option<String> {
         if Self::should_skip_retrieval(query) {
+            println!("[RetrievalRouter] Query is greeting/short, skipping retrieval.");
             return None;
         }
 
         let intent = super::query_analyzer::analyze_user_query(query);
         if intent.is_chitchat {
-            println!("[RetrievalRouter] Intent: chitchat_greeting -> Skip retrieval");
+            println!("[RetrievalRouter] Intent Classifier: Direct Chat / Chitchat, skipping retrieval.");
             return None;
         }
 
-        let clean_proj = project_id
+        let p_raw = project_id.to_string();
+        let p_clean = project_id
             .strip_prefix("projects:")
             .unwrap_or(project_id)
             .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim()
             .to_string();
-        let proj_rec = RecordId::new("projects", clean_proj.as_str());
+        let where_proj = project_where_clause("project_id");
 
         // 0. Exact Document Retrieval (if user specifically asked for Chapter/Volume)
         if let Some(ch_num) = intent.chapter_num {
             println!("[RetrievalRouter] Intent: Exact Document Retrieval for Chapter {}", ch_num);
             let num_str = ch_num.to_string();
-            let exact_q = "SELECT title, content, chunk_index FROM entity_chunks WHERE project_id = $proj AND (title CONTAINS $num_str OR title CONTAINS 'Глава' OR title CONTAINS 'Chapter' OR title CONTAINS 'глава') ORDER BY chunk_index ASC LIMIT 8";
-            if let Ok(mut resp) = db.query(exact_q).bind(("proj", proj_rec.clone())).bind(("num_str", num_str)).await {
+            let exact_q = format!(
+                "SELECT title, content, chunk_index FROM entity_chunks WHERE {where_proj} AND (title CONTAINS $num_str OR title CONTAINS 'Глава' OR title CONTAINS 'Chapter' OR title CONTAINS 'глава') ORDER BY chunk_index ASC LIMIT 8"
+            );
+            if let Ok(mut resp) = db.query(&exact_q).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).bind(("num_str", num_str)).await {
                 if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                     if !rows.is_empty() {
                         let mut doc_out = format!("### Документ: Глава {}\n", ch_num);
@@ -88,13 +106,54 @@ impl RetrievalRouter {
             }
         }
 
+        // 0.1 Exact & Fuzzy Entity Mention Retrieval (Auto Entity Dossier)
+        let all_ent_query = format!("SELECT id, name, description, tags, custom_fields FROM entities WHERE {where_proj}");
+        if let Ok(mut resp) = db.query(&all_ent_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
+            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                let mut matched_dossiers = Vec::new();
+                for row in rows {
+                    let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
+                    let tags: Vec<String> = row.get("tags").and_then(|v| v.as_array()).map(|arr| {
+                        arr.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect()
+                    }).unwrap_or_default();
+                    if !name.is_empty() && crate::surrealdb::repos::fuzzy_match_name(query, name, &tags) {
+                        let id = row.get("id").and_then(|v| v.as_str()).unwrap_or("");
+                        let desc = row.get("description").and_then(|v| v.as_str()).unwrap_or("");
+                        let fields = row.get("custom_fields").cloned().unwrap_or(Value::Null);
+                        
+                        let mut card = format!("### Досье сущности: {} (ID: {})\n", name, id);
+                        if !desc.is_empty() {
+                            card.push_str(&format!("- **Описание**: {}\n", desc));
+                        }
+                        if !tags.is_empty() {
+                            card.push_str(&format!("- **Теги**: {}\n", tags.join(", ")));
+                        }
+                        if let Value::Object(map) = fields {
+                            if !map.is_empty() {
+                                card.push_str("- **Свойства**:\n");
+                                for (k, v) in map {
+                                    card.push_str(&format!("  * {}: {}\n", k, v));
+                                }
+                            }
+                        }
+                        matched_dossiers.push(card);
+                    }
+                }
+                if !matched_dossiers.is_empty() {
+                    let entity_out = matched_dossiers.join("\n\n");
+                    println!("[RetrievalRouter] Auto Entity Matcher: found {} entity dossiers ({} chars)", matched_dossiers.len(), entity_out.len());
+                    return Some(entity_out);
+                }
+            }
+        }
+
         let mut candidates: Vec<RetrievalCandidate> = Vec::new();
         let mut entity_ids: HashSet<String> = HashSet::new();
 
         // 1. Lexical Search (BM25 / FTS)
         // Entities BM25
-        let ent_query = "SELECT id, name, description FROM entities WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) LIMIT 6";
-        if let Ok(mut resp) = db.query(ent_query).bind(("proj", proj_rec.clone())).bind(("q", query)).await {
+        let ent_query = format!("SELECT id, name, description FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) LIMIT 6");
+        if let Ok(mut resp) = db.query(&ent_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).bind(("q", query)).await {
             if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
                     let id = row.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
@@ -115,8 +174,8 @@ impl RetrievalRouter {
         }
 
         // Entity Chunks BM25
-        let chunk_query = "SELECT id, entity_id, content FROM entity_chunks WHERE project_id = $proj AND content @1@ $q LIMIT 6";
-        if let Ok(mut resp) = db.query(chunk_query).bind(("proj", proj_rec.clone())).bind(("q", query)).await {
+        let chunk_query = format!("SELECT id, entity_id, content FROM entity_chunks WHERE {where_proj} AND content @1@ $q LIMIT 6");
+        if let Ok(mut resp) = db.query(&chunk_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).bind(("q", query)).await {
             if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
                     let ent_id = row.get("entity_id").and_then(|v| v.as_str()).unwrap_or_default().to_string();
@@ -136,8 +195,8 @@ impl RetrievalRouter {
         }
 
         // Chapters BM25
-        let chap_query = "SELECT id, title, content FROM chapters WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) LIMIT 4";
-        if let Ok(mut resp) = db.query(chap_query).bind(("proj", proj_rec.clone())).bind(("q", query)).await {
+        let chap_query = format!("SELECT id, title, content FROM chapters WHERE {where_proj} AND (title @1@ $q OR content @1@ $q) LIMIT 4");
+        if let Ok(mut resp) = db.query(&chap_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).bind(("q", query)).await {
             if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                 for row in rows {
                     let title = row.get("title").and_then(|v| v.as_str()).unwrap_or_default().to_string();
@@ -158,10 +217,12 @@ impl RetrievalRouter {
         if enable_semantic {
             if let Ok(query_vec) = self.embedder.embed_query(query).await {
                 // Vector search on entity_chunks
-                let vec_chunk_sql = "SELECT entity_id, content, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim \
-                                     FROM entity_chunks WHERE project_id = $proj AND embeddings.nemotron != NONE \
-                                     ORDER BY sim DESC LIMIT 5";
-                if let Ok(mut resp) = db.query(vec_chunk_sql).bind(("proj", proj_rec.clone())).bind(("vec", query_vec.clone())).await {
+                let vec_chunk_sql = format!(
+                    "SELECT entity_id, content, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim \
+                     FROM entity_chunks WHERE {where_proj} AND embeddings.nemotron != NONE \
+                     ORDER BY sim DESC LIMIT 5"
+                );
+                if let Ok(mut resp) = db.query(&vec_chunk_sql).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).bind(("vec", query_vec.clone())).await {
                     if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                         for row in rows {
                             let sim = row.get("sim").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
@@ -184,10 +245,12 @@ impl RetrievalRouter {
                 }
 
                 // Vector search on entities
-                let vec_ent_sql = "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim \
-                                   FROM entities WHERE project_id = $proj AND embeddings.nemotron != NONE \
-                                   ORDER BY sim DESC LIMIT 5";
-                if let Ok(mut resp) = db.query(vec_ent_sql).bind(("proj", proj_rec.clone())).bind(("vec", query_vec)).await {
+                let vec_ent_sql = format!(
+                    "SELECT id, name, description, vector::similarity::cosine(embeddings.nemotron, $vec) AS sim \
+                     FROM entities WHERE {where_proj} AND embeddings.nemotron != NONE \
+                     ORDER BY sim DESC LIMIT 5"
+                );
+                if let Ok(mut resp) = db.query(&vec_ent_sql).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).bind(("vec", query_vec)).await {
                     if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                         for row in rows {
                             let sim = row.get("sim").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
@@ -210,7 +273,7 @@ impl RetrievalRouter {
                     }
                 }
             }
-        }
+        };
 
         if candidates.is_empty() {
             return None;

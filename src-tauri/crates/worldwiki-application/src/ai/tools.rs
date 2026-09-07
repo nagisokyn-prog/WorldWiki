@@ -269,13 +269,12 @@ impl AiToolFacades {
         vec![
             serde_json::json!({
                 "name": "query_world",
-                "description": "Гибридный семантический поиск (BM25 + HNSW + граф связей) по базе знаний мира, сущностям и главам рукописи.",
+                "description": "Гибридный семантический поиск (BM25 + HNSW + граф связей) по базе знаний мира, сущностям и главам рукописи текущего проекта.",
                 "input_schema": {
                     "type": "object",
                     "properties": {
-                        "project_id": { "type": "string", "description": "Идентификатор проекта (например, 'default')" },
-                        "query": { "type": "string", "description": "Поисковый запрос фактов или сущностей" },
-                        "scope": { "type": "string", "description": "Область поиска: 'all', 'entities', 'chapters'", "default": "all" },
+                        "query": { "type": "string", "description": "Поисковый запрос фактов, информации или сущностей" },
+                        "scope": { "type": "string", "description": "Область поиска: 'all' (всё), 'entities' (только энциклопедия), 'chapters' (только рукопись)", "default": "all" },
                         "top_k": { "type": "integer", "description": "Количество результатов", "default": 8 }
                     },
                     "required": ["query"]
@@ -283,13 +282,13 @@ impl AiToolFacades {
             }),
             serde_json::json!({
                 "name": "inspect_entity",
-                "description": "Получить полную анкету сущности по ID (с динамическими полями и графом связей).",
+                "description": "Получить полную анкету сущности по ID ('entities:hero') ИЛИ по имени/псевдониму персонажа/локации (например, 'Лёха', 'Замок'). Автоматически находит карточку, динамические поля и граф связей.",
                 "input_schema": {
                     "type": "object",
                     "properties": {
-                        "entity_id": { "type": "string", "description": "ID сущности (например, 'entities:hero')" }
-                    },
-                    "required": ["entity_id"]
+                        "entity_id_or_name": { "type": "string", "description": "ID сущности (например, 'entities:char_123') ИЛИ точное/примерное имя персонажа/локации (например, 'Лёха', 'Замок')." },
+                        "entity_id": { "type": "string", "description": "Алиас для entity_id_or_name (обратная совместимость)." }
+                    }
                 }
             }),
             serde_json::json!({

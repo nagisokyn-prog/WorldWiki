@@ -18,6 +18,13 @@ export interface AiChatTopBarProps {
   currentProject?: string;
 }
 
+export interface AiChatTopBarEmits {
+  (e: 'change-mode', mode: string): void;
+  (e: 'toggle-sidebar'): void;
+  (e: 'restart-session'): void;
+  (e: 'open-tools'): void;
+}
+
 export function useAiChatTopBar(props: AiChatTopBarProps) {
   const isIndexing = ref(false);
   const isUnloading = ref(false);

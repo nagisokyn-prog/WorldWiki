@@ -1,5 +1,5 @@
 <template>
-  <div v-if="activeProfile" class="ai-chat-top-bar">
+  <div class="ai-chat-top-bar">
     <div class="top-bar-content">
       <div class="sidebar-toggle sidebar-toggle-btn" title="Переключить боковую панель" @click="$emit('toggle-sidebar')">
         <div role="button" class="ds-button ds-button--iconLabelPrimary ds-button--icon ds-button--capsule ds-button--m ds-button--icon-relative-m sidebar-toggle-button" tabindex="0">
@@ -24,7 +24,7 @@
 
       <div class="model-name">
         <i class="fas fa-microchip"></i>
-        <span>{{ activeProfile.settings?.model || 'Модель не выбрана' }}</span>
+        <span>{{ activeProfile?.settings?.model || 'Модель не выбрана' }}</span>
       </div>
       <div class="token-usage">
         <span class="token-count">{{ formatTokens(tokenUsage.total_tokens) }} <span v-if="maxTokens > 0">/ {{ formatTokens(maxTokens) }}</span></span>
@@ -55,6 +55,16 @@
         <span>{{ isUnloading ? 'Выгрузка...' : 'Сброс GPU' }}</span>
       </button>
 
+      <!-- КНОПКА ДИАГНОСТИКИ ИНСТРУМЕНТОВ -->
+      <button 
+        class="action-pill-btn" 
+        title="Диагностика и ручной тест инструментов (query_world, inspect_entity, read_manuscript)"
+        @click="$emit('open-tools')"
+      >
+        <i class="fas fa-terminal"></i>
+        <span>Инструменты</span>
+      </button>
+
       <!-- КНОПКА ПЕРЕЗАПУСКА СЕССИИ / СБРОСА -->
       <button 
         class="action-pill-btn restart-btn" 
@@ -71,6 +81,7 @@
 import { 
   useAiChatTopBar, 
   type AiChatTopBarProps, 
+  type AiChatTopBarEmits,
   type AiTopBarMode 
 } from './useAiChatTopBar';
 
@@ -84,7 +95,7 @@ const props = withDefaults(defineProps<AiChatTopBarProps>(), {
   currentProject: 'global'
 });
 
-defineEmits(['change-mode', 'toggle-sidebar', 'restart-session']);
+defineEmits<AiChatTopBarEmits>();
 
 const {
   isIndexing,

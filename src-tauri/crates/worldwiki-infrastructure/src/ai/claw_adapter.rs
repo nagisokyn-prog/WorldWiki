@@ -79,10 +79,29 @@ impl LlmStreamPort for ClawStreamAdapter {
                 .and_then(|v| v.as_u64())
                 .map(|m| m as u32)
                 .unwrap_or(4096);
-            let reasoning_effort = settings
+            let raw_effort = settings
                 .get("reasoning_effort")
                 .and_then(|v| v.as_str())
-                .map(|s| s.to_string());
+                .unwrap_or("high");
+
+            let reasoning_effort = if raw_effort == "none" {
+                None
+            } else {
+                Some(raw_effort.to_string())
+            };
+
+            let mut extra_body = std::collections::BTreeMap::new();
+            if let Some(ref effort) = reasoning_effort {
+                if provider == "openrouter" {
+                    extra_body.insert(
+                        "reasoning".to_string(),
+                        serde_json::json!({
+                            "effort": effort,
+                            "exclude": false
+                        }),
+                    );
+                }
+            }
 
             let mut input_messages = Vec::new();
             for msg_val in request.messages {
@@ -169,6 +188,7 @@ impl LlmStreamPort for ClawStreamAdapter {
                 max_tokens,
                 tools: tools_def,
                 reasoning_effort,
+                extra_body,
                 ..Default::default()
             };
 

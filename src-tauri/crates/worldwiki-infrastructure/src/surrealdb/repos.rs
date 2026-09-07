@@ -23,6 +23,131 @@ fn clean_id(table: &str, raw_id: &str) -> String {
     }
 }
 
+/// Canonicalizes entity/character names for robust multi-variant matching:
+/// - lowercases and trims
+/// - strips quotes («», "", ''), brackets, punctuation
+/// - normalizes 'ё' -> 'е', 'й' -> 'и'
+/// - unifies all dash variations ('–', '—', '―') into '-'
+/// - collapses multiple spaces
+pub fn canonicalize_name(input: &str) -> String {
+    let mut s = input.trim().to_lowercase();
+    // Strip quotes and punctuation
+    s = s
+        .chars()
+        .filter(|c| !"'\"«»`()[]{}<>.,!?;:".contains(*c))
+        .collect();
+    // Normalize Cyrillic variants
+    s = s.replace('ё', "е").replace('й', "и");
+    // Unify dashes
+    s = s.replace(['–', '—', '―'], "-");
+    // Collapse whitespace
+    s.split_whitespace().collect::<Vec<_>>().join(" ")
+}
+
+/// Computes Levenshtein distance between two strings
+pub fn levenshtein_distance(a: &str, b: &str) -> usize {
+    let a_chars: Vec<char> = a.chars().collect();
+    let b_chars: Vec<char> = b.chars().collect();
+    let m = a_chars.len();
+    let n = b_chars.len();
+    if m == 0 {
+        return n;
+    }
+    if n == 0 {
+        return m;
+    }
+    let mut d = vec![vec![0; n + 1]; m + 1];
+    for (i, row) in d.iter_mut().enumerate().take(m + 1) {
+        row[0] = i;
+    }
+    for (j, item) in d[0].iter_mut().enumerate().take(n + 1) {
+        *item = j;
+    }
+    for i in 1..=m {
+        for j in 1..=n {
+            let cost = if a_chars[i - 1] == b_chars[j - 1] { 0 } else { 1 };
+            d[i][j] = std::cmp::min(
+                std::cmp::min(d[i - 1][j] + 1, d[i][j - 1] + 1),
+                d[i - 1][j - 1] + cost,
+            );
+        }
+    }
+    d[m][n]
+}
+
+/// Checks if query fuzzy-matches target name or any aliases:
+/// 1. Canonical equality
+/// 2. Substring / Root match (for grammatical declensions like "Лёхой" -> "лех")
+/// 3. Levenshtein distance <= 2 (for typos in long names)
+pub fn fuzzy_match_name(query: &str, target_name: &str, aliases: &[String]) -> bool {
+    let q_canon = canonicalize_name(query);
+    if q_canon.is_empty() {
+        return false;
+    }
+
+    let check_candidate = |candidate: &str| -> bool {
+        let c_canon = canonicalize_name(candidate);
+        if c_canon.is_empty() {
+            return false;
+        }
+        // 1. Exact canonical match
+        if q_canon == c_canon {
+            return true;
+        }
+        // 2. Substring contains (query inside candidate or candidate inside query)
+        if q_canon.contains(&c_canon) || c_canon.contains(&q_canon) {
+            return true;
+        }
+        // 3. Root match (strip 1-3 chars declension endings if length >= 4)
+        let q_root = if q_canon.chars().count() >= 4 {
+            q_canon
+                .chars()
+                .take(q_canon.chars().count() - 2)
+                .collect::<String>()
+        } else {
+            q_canon.clone()
+        };
+        let c_root = if c_canon.chars().count() >= 4 {
+            c_canon
+                .chars()
+                .take(c_canon.chars().count() - 2)
+                .collect::<String>()
+        } else {
+            c_canon.clone()
+        };
+        if c_canon.starts_with(&q_root) || q_canon.starts_with(&c_root) {
+            return true;
+        }
+        // 4. Fuzzy Levenshtein for typos (<= 2 edits if length >= 4)
+        if q_canon.chars().count() >= 4
+            && c_canon.chars().count() >= 4
+            && levenshtein_distance(&q_canon, &c_canon) <= 2
+        {
+            return true;
+        }
+        false
+    };
+
+    if check_candidate(target_name) {
+        return true;
+    }
+    for alias in aliases {
+        if check_candidate(alias) {
+            return true;
+        }
+    }
+    false
+}
+
+/// Universal helper to construct a project_id WHERE clause that matches
+/// RecordId, raw string, and cleaned string representations in SurrealDB.
+#[inline]
+pub fn project_where_clause(field: &str) -> String {
+    format!(
+        "({field} = type::record('projects', $p_clean) OR {field} = $p_raw OR {field} = $p_clean OR {field} = type::record('projects', $p_raw))"
+    )
+}
+
 fn prepare_data_for_upsert(mut data: Value) -> Value {
     if let Value::Object(ref mut map) = data {
         map.remove("id");
@@ -163,11 +288,22 @@ impl ChapterRepository for SurrealChapterRepository {
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Chapter>, DomainError> {
-        let sql = "SELECT * FROM chapters WHERE project_id = $project_id ORDER BY sort_order ASC;";
+        let p_raw = project_id.to_string();
+        let p_clean = project_id
+            .strip_prefix("projects:")
+            .unwrap_or(project_id)
+            .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim()
+            .to_string();
+        let where_clause = project_where_clause("project_id");
+        let sql = format!("SELECT * FROM chapters WHERE {where_clause} ORDER BY sort_order ASC;");
         let mut res = self
             .db
-            .query(sql)
-            .bind(("project_id", project_id.to_string()))
+            .query(&sql)
+            .bind(("p_raw", p_raw))
+            .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
@@ -239,11 +375,22 @@ impl VolumeRepository for SurrealVolumeRepository {
     }
 
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Volume>, DomainError> {
-        let sql = "SELECT * FROM volumes WHERE project_id = $project_id ORDER BY sort_order ASC;";
+        let p_raw = project_id.to_string();
+        let p_clean = project_id
+            .strip_prefix("projects:")
+            .unwrap_or(project_id)
+            .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim()
+            .to_string();
+        let where_clause = project_where_clause("project_id");
+        let sql = format!("SELECT * FROM volumes WHERE {where_clause} ORDER BY sort_order ASC;");
         let mut res = self
             .db
-            .query(sql)
-            .bind(("project_id", project_id.to_string()))
+            .query(&sql)
+            .bind(("p_raw", p_raw))
+            .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
@@ -396,16 +543,50 @@ impl EntityRepository for SurrealEntityRepository {
         query: &str,
         top_k: usize,
     ) -> Result<Vec<Entity>, DomainError> {
-        let sql = "SELECT * FROM entities WHERE project_id = $project_id AND (name @@ $query OR description @@ $query) LIMIT $top_k;";
+        let p_raw = project_id.to_string();
+        let p_clean = project_id
+            .strip_prefix("projects:")
+            .unwrap_or(project_id)
+            .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim()
+            .to_string();
+        let where_clause = project_where_clause("project_id");
+        let sql = format!("SELECT * FROM entities WHERE {where_clause};");
         let mut res = self
             .db
-            .query(sql)
-            .bind(("project_id", project_id.to_string()))
-            .bind(("query", query.to_string()))
-            .bind(("top_k", top_k as i64))
+            .query(&sql)
+            .bind(("p_raw", p_raw))
+            .bind(("p_clean", p_clean))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
+        let all_entities: Vec<Entity> = take_list(&mut res, 0)?;
+
+        let q_trimmed = query.trim();
+        if q_trimmed.is_empty() {
+            let mut list = all_entities;
+            list.truncate(top_k);
+            return Ok(list);
+        }
+
+        let mut matched = Vec::new();
+        for entity in all_entities {
+            if fuzzy_match_name(q_trimmed, &entity.name, &entity.tags)
+                || entity.name.to_lowercase().contains(&q_trimmed.to_lowercase())
+                || entity
+                    .description
+                    .as_ref()
+                    .map(|d| d.to_lowercase().contains(&q_trimmed.to_lowercase()))
+                    .unwrap_or(false)
+            {
+                matched.push(entity);
+            }
+            if matched.len() >= top_k {
+                break;
+            }
+        }
+        Ok(matched)
     }
 
     async fn list_by_type(
@@ -413,11 +594,22 @@ impl EntityRepository for SurrealEntityRepository {
         project_id: &str,
         type_key: &str,
     ) -> Result<Vec<Entity>, DomainError> {
-        let sql = "SELECT * FROM entities WHERE project_id = $project_id AND type_key = $type_key ORDER BY name ASC;";
+        let p_raw = project_id.to_string();
+        let p_clean = project_id
+            .strip_prefix("projects:")
+            .unwrap_or(project_id)
+            .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim()
+            .to_string();
+        let where_clause = project_where_clause("project_id");
+        let sql = format!("SELECT * FROM entities WHERE {where_clause} AND (entity_type = $type_key OR type_key = $type_key) ORDER BY name ASC;");
         let mut res = self
             .db
-            .query(sql)
-            .bind(("project_id", project_id.to_string()))
+            .query(&sql)
+            .bind(("p_raw", p_raw))
+            .bind(("p_clean", p_clean))
             .bind(("type_key", type_key.to_string()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
@@ -681,28 +873,26 @@ impl RAGContextPort for SurrealRAGAdapter {
         _scope: &str,
         top_k: usize,
     ) -> Result<Vec<Value>, DomainError> {
+        let p_raw = project_id.to_string();
         let p_clean = project_id
-            .trim_start_matches("projects:")
+            .strip_prefix("projects:")
+            .unwrap_or(project_id)
             .trim_matches('`')
             .trim_matches('⟨')
             .trim_matches('⟩')
+            .trim()
             .to_string();
-        let proj_rec = RecordId::new(
-            "projects",
-            if p_clean.is_empty() {
-                "default"
-            } else {
-                &p_clean
-            },
-        );
+        let where_proj = project_where_clause("project_id");
+
         let q_trimmed = query.trim();
+        let q_canon = canonicalize_name(q_trimmed);
         let q_lower = q_trimmed.to_lowercase();
 
         let mut list: Vec<Value> = Vec::new();
         let mut entity_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
 
         // 0. Exact Document Retrieval (detect chapter requests like "глава 1", "глава 2", "chapter 1")
-        let is_chapter_req = q_lower.contains("глав") || q_lower.contains("chapter");
+        let is_chapter_req = q_canon.contains("глав") || q_canon.contains("chapter");
         if is_chapter_req {
             let num_opt = q_lower.split_whitespace().find_map(|word| {
                 word.trim_matches(|c: char| !c.is_numeric())
@@ -712,11 +902,14 @@ impl RAGContextPort for SurrealRAGAdapter {
 
             if let Some(num) = num_opt {
                 let num_str = num.to_string();
-                let exact_sql = "SELECT id, title, content FROM chapters WHERE project_id = $proj AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1";
+                let exact_sql = format!(
+                    "SELECT id, title, content FROM chapters WHERE {where_proj} AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1"
+                );
                 if let Ok(mut resp) = self
                     .db
-                    .query(exact_sql)
-                    .bind(("proj", proj_rec.clone()))
+                    .query(&exact_sql)
+                    .bind(("p_raw", p_raw.clone()))
+                    .bind(("p_clean", p_clean.clone()))
                     .bind(("num_str", num_str))
                     .await
                 {
@@ -730,11 +923,14 @@ impl RAGContextPort for SurrealRAGAdapter {
         }
 
         // 1. BM25 Lexical search on entities
-        let ent_sql = "SELECT id, name AS title, description AS content, 'entity' AS source_type FROM entities WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) LIMIT 6";
+        let ent_sql = format!(
+            "SELECT id, name AS title, description AS content, 'entity' AS source_type FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) LIMIT 6"
+        );
         if let Ok(mut resp) = self
             .db
-            .query(ent_sql)
-            .bind(("proj", proj_rec.clone()))
+            .query(&ent_sql)
+            .bind(("p_raw", p_raw.clone()))
+            .bind(("p_clean", p_clean.clone()))
             .bind(("q", q_trimmed))
             .await
         {
@@ -749,11 +945,14 @@ impl RAGContextPort for SurrealRAGAdapter {
         }
 
         // 2. BM25 search on entity_chunks
-        let chunk_sql = "SELECT id, entity_id, content, 'lore_chunk' AS source_type FROM entity_chunks WHERE project_id = $proj AND content @1@ $q LIMIT 6";
+        let chunk_sql = format!(
+            "SELECT id, entity_id, content, 'lore_chunk' AS source_type FROM entity_chunks WHERE {where_proj} AND content @1@ $q LIMIT 6"
+        );
         if let Ok(mut resp) = self
             .db
-            .query(chunk_sql)
-            .bind(("proj", proj_rec.clone()))
+            .query(&chunk_sql)
+            .bind(("p_raw", p_raw.clone()))
+            .bind(("p_clean", p_clean.clone()))
             .bind(("q", q_trimmed))
             .await
         {
@@ -768,11 +967,14 @@ impl RAGContextPort for SurrealRAGAdapter {
         }
 
         // 3. BM25 search on chapters
-        let chap_sql = "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) LIMIT 4";
+        let chap_sql = format!(
+            "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE {where_proj} AND (title @1@ $q OR content @1@ $q) LIMIT 4"
+        );
         if let Ok(mut resp) = self
             .db
-            .query(chap_sql)
-            .bind(("proj", proj_rec.clone()))
+            .query(&chap_sql)
+            .bind(("p_raw", p_raw.clone()))
+            .bind(("p_clean", p_clean.clone()))
             .bind(("q", q_trimmed))
             .await
         {
@@ -783,18 +985,26 @@ impl RAGContextPort for SurrealRAGAdapter {
             }
         }
 
-        // 4. Fallback search (substring contains) if BM25 yielded few results
+        // 4. Fallback search (Fuzzy & Substring contains) if BM25 yielded few results
         if list.len() < top_k {
-            let mut res_ch = self.db
-                .query("SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE project_id = $proj")
-                .bind(("proj", proj_rec.clone()))
+            let mut res_ch = self
+                .db
+                .query(format!(
+                    "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE {where_proj}"
+                ))
+                .bind(("p_raw", p_raw.clone()))
+                .bind(("p_clean", p_clean.clone()))
                 .await
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             let chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
 
-            let mut res_en = self.db
-                .query("SELECT id, name AS title, description AS content, 'entity' AS source_type FROM entities WHERE project_id = $proj")
-                .bind(("proj", proj_rec.clone()))
+            let mut res_en = self
+                .db
+                .query(format!(
+                    "SELECT id, name AS title, description AS content, tags, 'entity' AS source_type FROM entities WHERE {where_proj}"
+                ))
+                .bind(("p_raw", p_raw.clone()))
+                .bind(("p_clean", p_clean.clone()))
                 .await
                 .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
@@ -813,14 +1023,24 @@ impl RAGContextPort for SurrealRAGAdapter {
                 let t = item
                     .get("title")
                     .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .to_lowercase();
+                    .unwrap_or("");
                 let cont = item
                     .get("content")
                     .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .to_lowercase();
-                if q_lower.is_empty() || t.contains(&q_lower) || cont.contains(&q_lower) {
+                    .unwrap_or("");
+                let tags: Vec<String> = item
+                    .get("tags")
+                    .and_then(|v| serde_json::from_value(v.clone()).ok())
+                    .unwrap_or_default();
+
+                if q_canon.is_empty()
+                    || fuzzy_match_name(q_trimmed, t, &tags)
+                    || canonicalize_name(t).contains(&q_canon)
+                    || canonicalize_name(cont).contains(&q_canon)
+                {
+                    if let Some(eid) = item.get("id").and_then(clean_record_id) {
+                        entity_ids.insert(eid);
+                    }
                     list.push(item);
                 }
                 if list.len() >= top_k {

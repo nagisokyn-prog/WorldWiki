@@ -231,6 +231,21 @@
           </div>
         </div>
 
+        <div class="form-group mt-2">
+          <label>Уровень размышлений (Reasoning Effort)</label>
+          <select 
+            v-model="localSettings.reasoning_effort" 
+            class="input-base"
+          >
+            <option value="none">Отключено (без мыслей)</option>
+            <option value="low">Минимальный (low)</option>
+            <option value="medium">Средний (medium)</option>
+            <option value="high">Высокий (high)</option>
+            <option value="max">Максимальный (max)</option>
+          </select>
+          <span class="field-hint">Для рассуждающих моделей (DeepSeek R1, Laguna, OpenAI o1/o3/o4, QwQ) через OpenRouter или OpenAI.</span>
+        </div>
+
         <div class="form-group mt-1">
           <label class="toggle-row">
             <input 

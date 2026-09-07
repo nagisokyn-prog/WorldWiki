@@ -8,8 +8,8 @@ pub struct DocumentChunker {
 impl Default for DocumentChunker {
     fn default() -> Self {
         Self {
-            chunk_size: 1800, // ~450-550 tokens
-            chunk_overlap: 200, // ~50-70 tokens
+            chunk_size: 900, // ~250-320 tokens (fits well within 512-token context windows)
+            chunk_overlap: 120, // ~30-45 tokens
         }
     }
 }
@@ -218,8 +218,8 @@ mod tests {
     #[test]
     fn default_params_are_reasonable() {
         let c = DocumentChunker::default();
-        assert_eq!(c.chunk_size, 1800);
-        assert_eq!(c.chunk_overlap, 200);
+        assert_eq!(c.chunk_size, 900);
+        assert_eq!(c.chunk_overlap, 120);
         assert!(c.chunk_overlap < c.chunk_size);
     }
 }

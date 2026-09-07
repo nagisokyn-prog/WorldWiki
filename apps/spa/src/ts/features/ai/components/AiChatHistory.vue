@@ -1,7 +1,12 @@
 <template>
-  <div class="chat-history-sidebar">
+  <div class="chat-history-sidebar" :style="{ width: sidebarWidth + 'px', minWidth: sidebarWidth + 'px' }">
     <div class="history-header">
-      <h3>История чатов</h3>
+      <div class="history-header-title">
+        <button class="history-toggle-btn" title="Свернуть панель истории" @click="$emit('toggle')">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <h3>История чатов</h3>
+      </div>
       <button class="new-chat-btn" title="Новый чат" @click="createNewChat">
         <i class="fas fa-edit"></i>
       </button>
@@ -46,6 +51,8 @@
         </template>
       </ExplorerTree>
     </div>
+
+    <div class="sidebar-resize-handle" @mousedown.prevent="startSidebarResize"></div>
   </div>
 </template>
 
@@ -70,7 +77,9 @@ const emit = defineEmits<AiChatHistoryEmits>();
 const {
   searchQuery,
   explorerTreeRef,
+  sidebarWidth,
   treeSections,
+  startSidebarResize,
   handleNodeClick,
   createNewChat,
   handleMoveNode,

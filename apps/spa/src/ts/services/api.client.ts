@@ -373,6 +373,10 @@ export async function regenerateChatMessage(parentMsgId: string, chatId: string,
     return await invoke('regenerate_chat_message', { parentMsgId, chatId, project, modeSlug });
 }
 
+export async function executeAiToolDirect(project: string, toolName: string, toolInput: unknown): Promise<unknown> {
+    return await invoke('execute_ai_tool_direct', { project, toolName, toolInput });
+}
+
 export async function getHardwareInfo(): Promise<unknown> {
     return await invoke('get_hardware_info');
 }

@@ -1,4 +1,5 @@
 .chat-history-sidebar {
+  position: relative;
   width: 250px;
   background: var(--bg-panel);
   border-right: 1px solid var(--border-color);
@@ -13,6 +14,44 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
+}
+
+.history-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: var(--border-radius-sm);
+  transition: color var(--transition-normal), background var(--transition-normal);
+}
+
+.history-toggle-btn:hover {
+  color: var(--text-main);
+  background: var(--bg-hover);
+}
+
+.sidebar-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  background: transparent;
+  transition: background var(--transition-normal);
+}
+
+.sidebar-resize-handle:hover,
+.sidebar-resize-handle:active {
+  background: var(--accent);
 }
 
 .history-header h3 {

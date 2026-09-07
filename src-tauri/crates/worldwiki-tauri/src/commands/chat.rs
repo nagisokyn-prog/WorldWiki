@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use tauri::State;
+use worldwiki_application::ApplicationError;
 use worldwiki_domain::ai::{AiModelInfo, AiProfile, Chat, ChatMessage};
 use crate::error::IpcError;
 use crate::state::AppState;
@@ -128,9 +129,10 @@ pub async fn update_chat_parent(
 
 #[tauri::command]
 pub async fn cancel_generation(
-    _state: State<'_, AppState>,
-    _chat_id: String,
+    state: State<'_, AppState>,
+    chat_id: String,
 ) -> Result<(), IpcError> {
+    state.services.chat.abort_generation(&chat_id);
     Ok(())
 }
 
@@ -282,4 +284,26 @@ pub async fn regenerate_chat_message(
     });
 
     Ok(())
+}
+
+#[tauri::command]
+pub async fn execute_ai_tool_direct(
+    state: State<'_, AppState>,
+    project: String,
+    tool_name: String,
+    tool_input: serde_json::Value,
+) -> Result<serde_json::Value, IpcError> {
+    let (res_str, is_err) = state
+        .services
+        .chat
+        .execute_tool(&project, &tool_name, &tool_input)
+        .await;
+
+    if is_err {
+        Err(ApplicationError::ExecutionFailed(res_str).into())
+    } else {
+        let val = serde_json::from_str::<serde_json::Value>(&res_str)
+            .unwrap_or(serde_json::Value::String(res_str));
+        Ok(val)
+    }
 }

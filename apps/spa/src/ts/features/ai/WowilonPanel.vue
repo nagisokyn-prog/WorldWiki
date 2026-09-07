@@ -28,6 +28,7 @@
           @move-chat="updateChatParent"
           @rename-chat="renameChat"
           @delete-chats="deleteChats"
+          @toggle="toggleSidebar"
         />
 
         <div class="wowilon-chat-area">
@@ -40,6 +41,7 @@
             @change-mode="handleModeChange"
             @toggle-sidebar="toggleSidebar"
             @restart-session="cancelGeneration"
+            @open-tools="isToolInspectorOpen = true"
           />
           
           <AiMessageList 
@@ -89,6 +91,14 @@
         </div>
       </div>
     </div>
+
+    <!-- MANUAL TOOL INSPECTOR -->
+    <AiToolInspector
+      :is-open="isToolInspectorOpen"
+      :current-project="currentProject"
+      @close="isToolInspectorOpen = false"
+      @insert-context="handleInsertContext"
+    />
   </div>
 </template>
 
@@ -100,6 +110,7 @@ import AiMessageList from './components/AiMessageList.vue';
 import AiChatInput from './components/AiChatInput.vue';
 import AiActionButtons from './components/AiActionButtons.vue';
 import AiContextSelector from './components/AiContextSelector.vue';
+import AiToolInspector from './components/AiToolInspector.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
 import { useWowilonPanel, type WowilonPanelProps, type WowilonPanelEmits } from './useWowilonPanel';
 
@@ -110,6 +121,7 @@ const {
   panelWidth,
   showSidebar,
   isSettingsOpen,
+  isToolInspectorOpen,
   selectedContext,
   activeProfile,
   activeModeSlug,
@@ -148,6 +160,7 @@ const {
   handleToolRejection,
   sendMessage,
   handleContextSelected,
+  handleInsertContext,
   removeContext,
   startResize,
   closePanel,

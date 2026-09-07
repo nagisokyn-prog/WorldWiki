@@ -1,12 +1,12 @@
+use crate::ai::chunker::DocumentChunker;
+use crate::ai::retrieval::embedder::EmbedderService;
+use crate::surrealdb::repos::project_where_clause;
 use serde_json::json;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 use tokio::task::JoinSet;
-
-use super::embedder::EmbedderService;
-use crate::ai::chunker::DocumentChunker;
 
 #[derive(Clone, Debug)]
 pub struct PendingChunk {
@@ -33,17 +33,29 @@ pub async fn reindex_project_lore_inner(
     project_id: &str,
 ) -> Result<usize, String> {
     let start = std::time::Instant::now();
-    let proj_part = project_id
+    let p_raw = project_id.to_string();
+    let p_clean = project_id
         .strip_prefix("projects:")
         .unwrap_or(project_id)
         .trim_matches('`')
+        .trim_matches('⟨')
+        .trim_matches('⟩')
+        .trim()
         .to_string();
 
-    let proj_rec = RecordId::new("projects", proj_part.as_str());
+    let proj_rec = RecordId::new(
+        "projects",
+        if p_clean.is_empty() {
+            "default"
+        } else {
+            &p_clean
+        },
+    );
+    let where_proj = project_where_clause("project_id");
 
     // 1. Clear existing chunks for this project
-    let del_query = "DELETE entity_chunks WHERE project_id = $proj";
-    if let Err(e) = db.query(del_query).bind(("proj", proj_rec.clone())).await {
+    let del_query = format!("DELETE entity_chunks WHERE {where_proj}");
+    if let Err(e) = db.query(del_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
         eprintln!("[INDEXER] Warning while clearing old chunks: {e}");
     }
 
@@ -53,8 +65,8 @@ pub async fn reindex_project_lore_inner(
     let mut pending_chunks: Vec<PendingChunk> = Vec::new();
 
     // 2. Collect and chunk all chapters
-    let chap_query = "SELECT id, title, content FROM chapters WHERE project_id = $proj";
-    if let Ok(mut resp) = db.query(chap_query).bind(("proj", proj_rec.clone())).await {
+    let chap_query = format!("SELECT id, title, content FROM chapters WHERE {where_proj}");
+    if let Ok(mut resp) = db.query(chap_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
         if let Ok(chapters) = resp.take::<Vec<serde_json::Value>>(0) {
             for chap in chapters {
                 let chap_id_str = chap
@@ -94,8 +106,8 @@ pub async fn reindex_project_lore_inner(
 
     // 3. Collect and chunk all entities
     let ent_query =
-        "SELECT id, name, entity_type, attributes FROM entities WHERE project_id = $proj";
-    if let Ok(mut resp) = db.query(ent_query).bind(("proj", proj_rec.clone())).await {
+        format!("SELECT id, name, entity_type, attributes FROM entities WHERE {where_proj}");
+    if let Ok(mut resp) = db.query(ent_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
         if let Ok(entities) = resp.take::<Vec<serde_json::Value>>(0) {
             for ent in entities {
                 let ent_id_str = ent

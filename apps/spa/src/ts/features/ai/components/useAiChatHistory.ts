@@ -21,6 +21,7 @@ export interface AiChatHistoryEmits {
   (e: 'move-chat', nodeId: string, newParentId: string): void;
   (e: 'rename-chat', id: string, newName: string): void;
   (e: 'delete-chats', ids: string[]): void;
+  (e: 'toggle'): void;
 }
 
 export function useAiChatHistory(
@@ -29,6 +30,32 @@ export function useAiChatHistory(
 ) {
   const searchQuery = ref('');
   const explorerTreeRef = ref<{ startRename: (node: { id: string }) => void } | null>(null);
+
+  const getInitialWidth = (): number => {
+    const saved = localStorage.getItem('worldwiki_ai_history_sidebar_width');
+    return saved ? Math.max(180, Math.min(500, parseInt(saved, 10))) : 250;
+  };
+  const sidebarWidth = ref<number>(getInitialWidth());
+
+  const startSidebarResize = (e: MouseEvent) => {
+    const startX = e.clientX;
+    const startW = sidebarWidth.value;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      const newW = Math.max(180, Math.min(500, startW + delta));
+      sidebarWidth.value = newW;
+      localStorage.setItem('worldwiki_ai_history_sidebar_width', String(newW));
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
 
   const buildTreeNodes = (nodes: AiChatTreeNode[]): HistoryTreeNode[] => {
     return nodes.map(node => ({
@@ -113,7 +140,9 @@ export function useAiChatHistory(
   return {
     searchQuery,
     explorerTreeRef,
+    sidebarWidth,
     treeSections,
+    startSidebarResize,
     handleNodeClick,
     createNewChat,
     handleMoveNode,

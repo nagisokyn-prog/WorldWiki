@@ -174,6 +174,7 @@ pub fn run() {
             worldwiki_tauri::commands::delete_aiprofile,
             worldwiki_tauri::commands::edit_chat_message,
             worldwiki_tauri::commands::regenerate_chat_message,
+            worldwiki_tauri::commands::execute_ai_tool_direct,
 
             // --- AI Локальные модели, Оборудование и Разрешения (worldwiki-tauri) ---
             worldwiki_tauri::commands::get_hardware_info,

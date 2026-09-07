@@ -21,6 +21,7 @@ pub struct ChatServices {
     pub event_publisher: Arc<dyn EventPublisherPort>,
     pub rag_port: Option<Arc<dyn RAGContextPort>>,
     pub ai_tools: Option<Arc<AiToolFacades>>,
+    pub active_cancellations: Arc<std::sync::RwLock<std::collections::HashMap<String, Arc<std::sync::atomic::AtomicBool>>>>,
 }
 
 pub struct SendMessageResult {
@@ -45,7 +46,18 @@ impl ChatServices {
             event_publisher,
             rag_port,
             ai_tools,
+            active_cancellations: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
         }
+    }
+
+    pub fn abort_generation(&self, chat_id: &str) -> bool {
+        if let Ok(map) = self.active_cancellations.read() {
+            if let Some(flag) = map.get(chat_id) {
+                flag.store(true, std::sync::atomic::Ordering::Relaxed);
+                return true;
+            }
+        }
+        false
     }
 
     pub async fn get_chat_tree(&self, project_id: &str) -> Result<Vec<Chat>, ApplicationError> {
@@ -304,12 +316,21 @@ impl ChatServices {
                 .and_then(|v| v.as_str())
         );
 
+        let cancel_flag = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        if let Ok(mut map) = self.active_cancellations.write() {
+            map.insert(chat_id.to_string(), cancel_flag.clone());
+        }
+
         let mut accumulated_reasoning = String::new();
         let mut all_tool_logs: Vec<String> = Vec::new();
         let mut last_text = String::new();
         let mut final_answer: Option<String> = None;
 
         for iteration in 0..MAX_AGENT_ITERATIONS {
+            if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+                println!("[AGENT] Aborted by user request before iteration {} for chat={}", iteration + 1, chat_id);
+                break;
+            }
             println!("[AGENT] Iteration {}/{}", iteration + 1, MAX_AGENT_ITERATIONS);
             let stream_req = StreamRequest {
                 profile: profile.clone(),
@@ -331,6 +352,10 @@ impl ChatServices {
             let mut tool_uses: Vec<ToolUseCall> = Vec::new();
 
             while let Some(event) = rx.recv().await {
+                if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+                    println!("[AGENT] Aborted by user during streaming for chat={}", chat_id);
+                    break;
+                }
                 if let Some(text) = event.text_delta {
                     assistant_text.push_str(&text);
                     self.emit_chunk(chat_id, assistant_msg_id, text, false, "text")
@@ -380,6 +405,12 @@ impl ChatServices {
 
             last_text = assistant_text.clone();
 
+            if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+                println!("[AGENT] Generation cancelled for chat={}", chat_id);
+                final_answer = Some(assistant_text);
+                break;
+            }
+
             if tool_uses.is_empty() {
                 final_answer = Some(assistant_text);
                 println!("[AGENT DONE] No more tool calls. Final answer emitted.");
@@ -405,6 +436,10 @@ impl ChatServices {
             });
 
             for tool in &tool_uses {
+                if cancel_flag.load(std::sync::atomic::Ordering::Relaxed) {
+                    println!("[AGENT] Aborted before executing tool={} for chat={}", tool.name, chat_id);
+                    break;
+                }
                 self.emit_tool(
                     chat_id,
                     assistant_msg_id,
@@ -426,6 +461,10 @@ impl ChatServices {
                     is_err,
                 ));
             }
+        }
+
+        if let Ok(mut map) = self.active_cancellations.write() {
+            map.remove(chat_id);
         }
 
         let answer = final_answer.unwrap_or(last_text);
@@ -450,7 +489,7 @@ impl ChatServices {
             .await;
     }
 
-    async fn execute_tool(&self, project_id: &str, name: &str, input: &Value) -> (String, bool) {
+    pub async fn execute_tool(&self, project_id: &str, name: &str, input: &Value) -> (String, bool) {
         let Some(ref tools) = self.ai_tools else {
             return (
                 "AI tools are not available in current environment".to_string(),
@@ -462,15 +501,24 @@ impl ChatServices {
             "query_world" => {
                 let query = input.get("query").and_then(|v| v.as_str()).unwrap_or("");
                 let scope = input.get("scope").and_then(|v| v.as_str()).unwrap_or("all");
-                let top_k = input.get("top_k").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
+                let top_k = input.get("top_k").and_then(|v| v.as_u64()).unwrap_or(8) as usize;
                 tools
                     .query_world(project_id, query, scope, top_k)
                     .await
-                    .map(|v| json!(v))
+                    .map(|list| {
+                        let count = list.len();
+                        json!({
+                            "status": "success",
+                            "count": count,
+                            "query": query,
+                            "results": list
+                        })
+                    })
             }
             "inspect_entity" => {
                 let entity_id = input
-                    .get("entity_id")
+                    .get("entity_id_or_name")
+                    .or_else(|| input.get("entity_id"))
                     .or_else(|| input.get("name"))
                     .or_else(|| input.get("query"))
                     .and_then(|v| v.as_str())
@@ -539,11 +587,51 @@ impl ChatServices {
         tool_logs: Option<&[String]>,
     ) {
         if let Ok(msgs) = self.chat_repo.get_messages(chat_id).await {
-            if let Some(mut m) = msgs.into_iter().find(|m| m.id == assistant_msg_id) {
+            let clean_target = assistant_msg_id
+                .trim_start_matches("chat_messages:")
+                .trim_matches('`')
+                .trim_matches('⟨')
+                .trim_matches('⟩');
+            if let Some(mut m) = msgs.into_iter().find(|m| {
+                m.id == assistant_msg_id
+                    || m.id == clean_target
+                    || m.id
+                        .trim_start_matches("chat_messages:")
+                        .trim_matches('`')
+                        .trim_matches('⟨')
+                        .trim_matches('⟩')
+                        == clean_target
+            }) {
                 m.content = content.to_string();
                 m.reasoning = reasoning.map(|s| s.to_string());
                 m.tool_logs = tool_logs.map(|l| l.to_vec());
                 let _ = self.chat_repo.save_message(&m).await;
+                println!(
+                    "[AGENT] Saved assistant message {} with reasoning len={:?}",
+                    m.id,
+                    reasoning.map(|r| r.len())
+                );
+            } else {
+                let m = ChatMessage {
+                    id: format!("chat_messages:{clean_target}"),
+                    project_id: "".to_string(),
+                    chat_id: chat_id.to_string(),
+                    role: MessageRole::Assistant,
+                    content: content.to_string(),
+                    reasoning: reasoning.map(|s| s.to_string()),
+                    tool_logs: tool_logs.map(|l| l.to_vec()),
+                    version: 1,
+                    parent_id: None,
+                    is_active: true,
+                    created_at: None,
+                    updated_at: None,
+                };
+                let _ = self.chat_repo.save_message(&m).await;
+                println!(
+                    "[AGENT] Fallback created assistant message {} with reasoning len={:?}",
+                    m.id,
+                    reasoning.map(|r| r.len())
+                );
             }
         }
     }

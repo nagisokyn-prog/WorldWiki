@@ -52,6 +52,7 @@ export function useWowilonPanel(
   const panelWidth = ref(Number.isNaN(savedWidth) ? 400 : Math.max(300, Math.min(1200, savedWidth)));
   const showSidebar = ref(localStorage.getItem('worldwiki_ai_show_sidebar') === 'true');
   const isSettingsOpen = ref(localStorage.getItem('worldwiki_ai_settings_open') === 'true');
+  const isToolInspectorOpen = ref(false);
   const selectedContext = ref<ContextItem[]>([]);
 
   watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_width', String(w)));
@@ -350,9 +351,33 @@ export function useWowilonPanel(
     });
   };
 
+  const findChatInTree = (nodes: typeof chatTree.value, id: string): typeof chatTree.value[0] | undefined => {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.children && node.children.length > 0) {
+        const match = findChatInTree(node.children, id);
+        if (match) return match;
+      }
+    }
+    return undefined;
+  };
+
+  const syncTokenUsageForChat = (chatId: string | null | undefined) => {
+    if (chatId) {
+      const found = findChatInTree(chatTree.value, chatId);
+      if (found && found.token_usage) {
+        tokenUsage.value = {
+          input_tokens: found.token_usage.input_tokens || 0,
+          output_tokens: found.token_usage.output_tokens || 0,
+          total_tokens: found.token_usage.total_tokens || 0,
+        };
+      }
+    }
+  };
+
   watch(activeChatId, (newId) => {
     if (newId) {
-      const found = chatTree.value.find(c => c.id === newId);
+      const found = findChatInTree(chatTree.value, newId);
       if (found && found.token_usage) {
         tokenUsage.value = {
           input_tokens: found.token_usage.input_tokens || 0,
@@ -373,6 +398,12 @@ export function useWowilonPanel(
       allMessages.value = [];
     }
   }, { immediate: true });
+
+  watch(chatTree, () => {
+    if (activeChatId.value) {
+      syncTokenUsageForChat(activeChatId.value);
+    }
+  }, { deep: true });
 
   watch(() => props.isOpen, (newVal) => {
     if (newVal && !activeChatId.value) {
@@ -448,6 +479,17 @@ export function useWowilonPanel(
 
   const handleContextSelected = (contexts: ContextItem[]) => {
     selectedContext.value = [...selectedContext.value, ...contexts];
+  };
+
+  const handleInsertContext = (text: string) => {
+    const newItem: ContextItem = {
+      id: `manual_tool_${Date.now()}`,
+      title: 'Ручной вызов инструмента',
+      type: 'manual',
+      content: text
+    };
+    selectedContext.value = [...selectedContext.value, newItem];
+    isToolInspectorOpen.value = false;
   };
 
   const removeContext = (ctx: ContextItem) => {
@@ -543,10 +585,39 @@ export function useWowilonPanel(
         if (chunk.chat_id !== activeChatId.value) return;
         // Иначе это наш чат, но placeholder ещё не добавился (крайний race) — 
         // добавляем «на лету» и записываем в него.
-        const newMsg: ChatMessage = { id: chunk.message_id, role: 'assistant', content: '' };
+        const lastGroup = renderedMessages.value[renderedMessages.value.length - 1];
+        const parentId = lastGroup?.activeMessage?.id ?? null;
+        const newMsg: ChatMessage = { 
+          id: chunk.message_id, 
+          role: 'assistant', 
+          content: '',
+          parent_id: parentId,
+          is_active: true
+        };
         allMessages.value.push(newMsg);
-        newMsg.content = chunk.text;
-        if (chunk.is_done) isGenerating.value = false;
+        if (chunk.chunk_type === 'reasoning') {
+          newMsg.reasoning = chunk.text;
+        } else if (chunk.chunk_type === 'tool_log') {
+          newMsg.toolLogs = [chunk.text];
+        } else if (chunk.chunk_type === 'usage') {
+          try {
+            const u = JSON.parse(chunk.text);
+            if (u && (u.total_tokens > 0 || u.input_tokens > 0 || u.output_tokens > 0)) {
+              tokenUsage.value = u;
+            }
+          } catch {
+            // ignore
+          }
+        } else {
+          newMsg.content = chunk.text;
+        }
+        if (chunk.is_done) {
+          isGenerating.value = false;
+          if (activeChatId.value) {
+            void loadMessages(activeChatId.value);
+            void loadChats();
+          }
+        }
         return;
       }
 
@@ -558,7 +629,9 @@ export function useWowilonPanel(
       } else if (chunk.chunk_type === 'usage') {
         try {
           const u = JSON.parse(chunk.text);
-          tokenUsage.value = u;
+          if (u && (u.total_tokens > 0 || u.input_tokens > 0 || u.output_tokens > 0)) {
+            tokenUsage.value = u;
+          }
         } catch {
           // ignore
         }
@@ -568,6 +641,10 @@ export function useWowilonPanel(
 
       if (chunk.is_done) {
         isGenerating.value = false;
+        if (activeChatId.value) {
+          void loadMessages(activeChatId.value);
+          void loadChats();
+        }
       }
     });
   });
@@ -582,6 +659,7 @@ export function useWowilonPanel(
     panelWidth,
     showSidebar,
     isSettingsOpen,
+    isToolInspectorOpen,
     selectedContext,
     activeProfile,
     activeModeSlug,
@@ -623,6 +701,7 @@ export function useWowilonPanel(
     sendMessage,
     loadMessages,
     handleContextSelected,
+    handleInsertContext,
     removeContext,
     startResize,
     closePanel,

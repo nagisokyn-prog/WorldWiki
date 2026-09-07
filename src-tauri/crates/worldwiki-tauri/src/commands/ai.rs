@@ -23,12 +23,14 @@ pub async fn ai_query_world(
 #[tauri::command]
 pub async fn ai_inspect_entity(
     state: State<'_, AppState>,
+    project_id: Option<String>,
     entity_id: String,
 ) -> Result<Value, IpcError> {
+    let proj = project_id.unwrap_or_default();
     state
         .services
         .ai_tools
-        .inspect_entity(&entity_id)
+        .inspect_entity(&proj, &entity_id)
         .await
         .map_err(IpcError::from)
 }
@@ -50,12 +52,14 @@ pub async fn ai_manage_entity(
 #[tauri::command]
 pub async fn ai_read_manuscript(
     state: State<'_, AppState>,
+    project_id: Option<String>,
     chapter_id: String,
 ) -> Result<Value, IpcError> {
+    let proj = project_id.unwrap_or_default();
     state
         .services
         .ai_tools
-        .read_manuscript(&chapter_id)
+        .read_manuscript(&proj, &chapter_id)
         .await
         .map_err(IpcError::from)
 }
@@ -69,6 +73,20 @@ pub async fn ai_edit_manuscript(
         .services
         .ai_tools
         .edit_manuscript(request)
+        .await
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn ai_chronology(
+    state: State<'_, AppState>,
+    action: String,
+    payload: Value,
+) -> Result<Value, IpcError> {
+    state
+        .services
+        .ai_tools
+        .chronology(&action, payload)
         .await
         .map_err(IpcError::from)
 }

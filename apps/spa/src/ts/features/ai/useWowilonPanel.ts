@@ -352,6 +352,16 @@ export function useWowilonPanel(
 
   watch(activeChatId, (newId) => {
     if (newId) {
+      const found = chatTree.value.find(c => c.id === newId);
+      if (found && found.token_usage) {
+        tokenUsage.value = {
+          input_tokens: found.token_usage.input_tokens || 0,
+          output_tokens: found.token_usage.output_tokens || 0,
+          total_tokens: found.token_usage.total_tokens || 0,
+        };
+      } else {
+        tokenUsage.value = { input_tokens: 0, output_tokens: 0, total_tokens: 0 };
+      }
       if (isGenerating.value && allMessages.value.length > 0) {
         return;
       }
@@ -359,6 +369,7 @@ export function useWowilonPanel(
         restoreScroll();
       });
     } else {
+      tokenUsage.value = { input_tokens: 0, output_tokens: 0, total_tokens: 0 };
       allMessages.value = [];
     }
   }, { immediate: true });

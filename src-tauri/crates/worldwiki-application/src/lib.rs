@@ -131,19 +131,19 @@ mod tests {
         assert_eq!(create_res["status"], "success");
 
         // 3. inspect_entity
-        let card = facades.inspect_entity("char_1").await.unwrap();
+        let card = facades.inspect_entity("proj_1", "char_1").await.unwrap();
         assert_eq!(card["entity"]["name"], "Гэндальф");
 
         // 4. read_manuscript
         let ch = Chapter::new("proj_1", "Глава A", 1);
         let ch_id = ch.id.clone();
         facades.manuscript.save_chapter(&ch).await.unwrap();
-        let read_val = facades.read_manuscript(&ch_id).await.unwrap();
+        let read_val = facades.read_manuscript("proj_1", &ch_id).await.unwrap();
         assert_eq!(read_val["title"], "Глава A");
 
         // 5. delegate_task
         let task_res = facades.delegate_task("task_001", "Проанализируй диалог").await.unwrap();
-        assert_eq!(task_res["status"], "spawned");
+        assert_eq!(task_res["status"], "spawned_read_only");
     }
 
     #[test]

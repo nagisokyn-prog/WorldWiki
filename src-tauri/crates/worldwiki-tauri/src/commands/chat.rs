@@ -265,7 +265,7 @@ pub async fn regenerate_chat_message(
     project: String,
     mode_slug: Option<String>,
 ) -> Result<(), IpcError> {
-    let (c_id, a_id) = state
+    let (c_id, a_id, u_text) = state
         .services
         .chat
         .regenerate_message(&project, &chat_id, &parent_msg_id)
@@ -277,7 +277,7 @@ pub async fn regenerate_chat_message(
 
     tokio::spawn(async move {
         chat_svc
-            .run_agent_loop(&p_id, &c_id, &a_id, "", mode_slug)
+            .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
             .await;
     });
 

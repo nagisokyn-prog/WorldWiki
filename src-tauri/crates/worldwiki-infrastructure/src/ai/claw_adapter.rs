@@ -144,6 +144,19 @@ impl LlmStreamPort for ClawStreamAdapter {
                 }
             }
 
+            let tools_def = request.tools.map(|tool_vals| {
+                tool_vals.into_iter().filter_map(|v| {
+                    let name = v.get("name").and_then(|n| n.as_str())?.to_string();
+                    let description = v.get("description").and_then(|d| d.as_str()).map(|d| d.to_string());
+                    let input_schema = v.get("input_schema").cloned().unwrap_or_else(|| json!({"type": "object"}));
+                    Some(claw_api::ToolDefinition {
+                        name,
+                        description,
+                        input_schema,
+                    })
+                }).collect::<Vec<_>>()
+            });
+
             let message_req = MessageRequest {
                 model,
                 messages: input_messages,
@@ -154,7 +167,7 @@ impl LlmStreamPort for ClawStreamAdapter {
                 },
                 temperature,
                 max_tokens,
-                tools: None,
+                tools: tools_def,
                 reasoning_effort,
                 ..Default::default()
             };

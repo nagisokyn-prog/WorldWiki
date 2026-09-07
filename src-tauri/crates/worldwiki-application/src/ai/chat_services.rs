@@ -1,11 +1,18 @@
-use crate::errors::ApplicationError;
-use std::sync::Arc;
-use serde_json::{json, Value};
-use worldwiki_domain::ai::{AiModelInfo, AiProfile, Chat, ChatMessage, MessageRole, StreamChunk, AgentToolEvent};
-use worldwiki_ports::ai::{AiProfileRepository, ChatRepository, LlmStreamPort, RAGContextPort, StreamRequest, ToolUseCall};
-use worldwiki_ports::events::EventPublisherPort;
-use super::prompt::{build_system_prompt_direct, history_to_input_messages, InputContentBlock, InputMessage, MAX_AGENT_ITERATIONS};
+use super::prompt::{
+    build_system_prompt_direct, history_to_input_messages, InputContentBlock, InputMessage,
+    MAX_AGENT_ITERATIONS,
+};
 use super::tools::AiToolFacades;
+use crate::errors::ApplicationError;
+use serde_json::{json, Value};
+use std::sync::Arc;
+use worldwiki_domain::ai::{
+    AgentToolEvent, AiModelInfo, AiProfile, Chat, ChatMessage, MessageRole, StreamChunk,
+};
+use worldwiki_ports::ai::{
+    AiProfileRepository, ChatRepository, LlmStreamPort, RAGContextPort, StreamRequest, ToolUseCall,
+};
+use worldwiki_ports::events::EventPublisherPort;
 
 pub struct ChatServices {
     pub chat_repo: Arc<dyn ChatRepository>,
@@ -144,10 +151,13 @@ impl ChatServices {
             is_done,
             chunk_type: chunk_type.to_string(),
         };
-        let _ = self.event_publisher.publish_raw(
-            "chat_stream_chunk",
-            serde_json::to_value(&event).unwrap_or_default(),
-        ).await;
+        let _ = self
+            .event_publisher
+            .publish_raw(
+                "chat_stream_chunk",
+                serde_json::to_value(&event).unwrap_or_default(),
+            )
+            .await;
     }
 
     async fn emit_tool(
@@ -163,10 +173,13 @@ impl ChatServices {
             tool_name,
             tool_args,
         };
-        let _ = self.event_publisher.publish_raw(
-            "agent_tool",
-            serde_json::to_value(&event).unwrap_or_default(),
-        ).await;
+        let _ = self
+            .event_publisher
+            .publish_raw(
+                "agent_tool",
+                serde_json::to_value(&event).unwrap_or_default(),
+            )
+            .await;
     }
 
     pub async fn run_agent_loop(
@@ -180,20 +193,29 @@ impl ChatServices {
         let profile = match self.profile_repo.get_active_profile(project_id).await {
             Ok(Some(p)) => p,
             Ok(None) => {
-                let err = "Нет активного AI-профиля. Настройте провайдера в настройках ИИ.".to_string();
-                self.save_assistant_text(chat_id, assistant_msg_id, &err, None, None).await;
-                self.emit_chunk(chat_id, assistant_msg_id, err, true, "text").await;
+                let err =
+                    "Нет активного AI-профиля. Настройте провайдера в настройках ИИ.".to_string();
+                self.save_assistant_text(chat_id, assistant_msg_id, &err, None, None)
+                    .await;
+                self.emit_chunk(chat_id, assistant_msg_id, err, true, "text")
+                    .await;
                 return;
             }
             Err(e) => {
                 let err = format!("Ошибка чтения AI-профиля: {e}");
-                self.save_assistant_text(chat_id, assistant_msg_id, &err, None, None).await;
-                self.emit_chunk(chat_id, assistant_msg_id, err, true, "text").await;
+                self.save_assistant_text(chat_id, assistant_msg_id, &err, None, None)
+                    .await;
+                self.emit_chunk(chat_id, assistant_msg_id, err, true, "text")
+                    .await;
                 return;
             }
         };
 
-        let history_msgs = self.chat_repo.get_messages(chat_id).await.unwrap_or_default();
+        let history_msgs = self
+            .chat_repo
+            .get_messages(chat_id)
+            .await
+            .unwrap_or_default();
         let history_vals: Vec<Value> = history_msgs
             .iter()
             .map(|m| serde_json::to_value(m).unwrap_or_default())
@@ -202,8 +224,10 @@ impl ChatServices {
         let mut prompt_messages = history_to_input_messages(&history_vals, assistant_msg_id);
         if prompt_messages.is_empty() {
             let err = "История чата пуста.".to_string();
-            self.save_assistant_text(chat_id, assistant_msg_id, &err, None, None).await;
-            self.emit_chunk(chat_id, assistant_msg_id, err, true, "text").await;
+            self.save_assistant_text(chat_id, assistant_msg_id, &err, None, None)
+                .await;
+            self.emit_chunk(chat_id, assistant_msg_id, err, true, "text")
+                .await;
             return;
         }
 
@@ -221,14 +245,26 @@ impl ChatServices {
 
         let retrieved_context = if let Some(ref rag) = self.rag_port {
             if !last_user_query.is_empty() {
-                match rag.retrieve_context(project_id, last_user_query, "all", 5).await {
+                match rag
+                    .retrieve_context(project_id, last_user_query, "all", 5)
+                    .await
+                {
                     Ok(items) => {
                         let text = items
                             .into_iter()
-                            .filter_map(|v| v.get("content").or_else(|| v.get("match")).and_then(|c| c.as_str()).map(|s| s.to_string()))
+                            .filter_map(|v| {
+                                v.get("content")
+                                    .or_else(|| v.get("match"))
+                                    .and_then(|c| c.as_str())
+                                    .map(|s| s.to_string())
+                            })
                             .collect::<Vec<_>>()
                             .join("\n\n");
-                        if text.trim().is_empty() { None } else { Some(text) }
+                        if text.trim().is_empty() {
+                            None
+                        } else {
+                            Some(text)
+                        }
                     }
                     Err(_) => None,
                 }
@@ -241,9 +277,31 @@ impl ChatServices {
 
         let system_prompt = build_system_prompt_direct(
             "",
-            profile.settings.get("custom_instructions").and_then(|v| v.as_str()).unwrap_or(""),
+            profile
+                .settings
+                .get("custom_instructions")
+                .and_then(|v| v.as_str())
+                .unwrap_or(""),
             project_id,
             retrieved_context.as_deref(),
+        );
+
+        println!("[AGENT] started: chat={} project={}", chat_id, project_id);
+        println!(
+            "\n[PROMPT ASSEMBLY TRACE]\n├─ Provider: {} | Model: {}\n├─ Auto-RAG Context: {} chars\n├─ System Prompt: {} chars\n├─ Messages Count: {}\n└─ Reasoning Effort: {:?}",
+            profile.provider,
+            profile
+                .settings
+                .get("model")
+                .and_then(|v| v.as_str())
+                .unwrap_or("default"),
+            retrieved_context.as_ref().map(|c| c.len()).unwrap_or(0),
+            system_prompt.len(),
+            prompt_messages.len(),
+            profile
+                .settings
+                .get("reasoning_effort")
+                .and_then(|v| v.as_str())
         );
 
         let mut accumulated_reasoning = String::new();
@@ -251,7 +309,8 @@ impl ChatServices {
         let mut last_text = String::new();
         let mut final_answer: Option<String> = None;
 
-        for _iteration in 0..MAX_AGENT_ITERATIONS {
+        for iteration in 0..MAX_AGENT_ITERATIONS {
+            println!("[AGENT] Iteration {}/{}", iteration + 1, MAX_AGENT_ITERATIONS);
             let stream_req = StreamRequest {
                 profile: profile.clone(),
                 system_prompt: system_prompt.clone(),
@@ -259,14 +318,14 @@ impl ChatServices {
                     .iter()
                     .map(|m| serde_json::to_value(m).unwrap_or_default())
                     .collect(),
+                tools: Some(AiToolFacades::tool_definitions()),
             };
 
             let (tx, mut rx) = tokio::sync::mpsc::channel(128);
             let stream_port = self.stream_port.clone();
 
-            let stream_handle = tokio::spawn(async move {
-                stream_port.stream_chat(stream_req, tx).await
-            });
+            let stream_handle =
+                tokio::spawn(async move { stream_port.stream_chat(stream_req, tx).await });
 
             let mut assistant_text = String::new();
             let mut tool_uses: Vec<ToolUseCall> = Vec::new();
@@ -274,19 +333,39 @@ impl ChatServices {
             while let Some(event) = rx.recv().await {
                 if let Some(text) = event.text_delta {
                     assistant_text.push_str(&text);
-                    self.emit_chunk(chat_id, assistant_msg_id, text, false, "text").await;
+                    self.emit_chunk(chat_id, assistant_msg_id, text, false, "text")
+                        .await;
                 }
                 if let Some(thinking) = event.reasoning_delta {
                     accumulated_reasoning.push_str(&thinking);
-                    self.emit_chunk(chat_id, assistant_msg_id, thinking, false, "reasoning").await;
+                    self.emit_chunk(chat_id, assistant_msg_id, thinking, false, "reasoning")
+                        .await;
                 }
                 if let Some(usage_val) = event.usage {
-                    self.emit_chunk(chat_id, assistant_msg_id, usage_val.to_string(), false, "usage").await;
+                    println!("[STREAM USAGE] {}", usage_val);
+                    if let Ok(tok_usage) = serde_json::from_value::<worldwiki_domain::ai::TokenUsage>(
+                        usage_val.clone(),
+                    ) {
+                        let _ = self.chat_repo.update_token_usage(chat_id, &tok_usage).await;
+                    }
+                    self.emit_chunk(
+                        chat_id,
+                        assistant_msg_id,
+                        usage_val.to_string(),
+                        false,
+                        "usage",
+                    )
+                    .await;
                 }
                 if let Some(tool) = event.tool_use {
                     let log_msg = format!("Используется инструмент: {}", tool.name);
                     all_tool_logs.push(log_msg.clone());
-                    self.emit_chunk(chat_id, assistant_msg_id, log_msg, false, "tool_log").await;
+                    println!(
+                        "[AGENT TOOL CALL] name={} id={} args={}",
+                        tool.name, tool.id, tool.input
+                    );
+                    self.emit_chunk(chat_id, assistant_msg_id, log_msg, false, "tool_log")
+                        .await;
                     tool_uses.push(tool);
                 }
                 if event.is_done {
@@ -294,40 +373,58 @@ impl ChatServices {
                 }
             }
 
-            let _ = stream_handle.await;
+            let stream_res = stream_handle.await;
+            if let Ok(Err(e)) = stream_res {
+                println!("[AGENT ERROR] Stream failed: {e}");
+            }
 
             last_text = assistant_text.clone();
 
             if tool_uses.is_empty() {
                 final_answer = Some(assistant_text);
+                println!("[AGENT DONE] No more tool calls. Final answer emitted.");
                 break;
             }
 
             let mut blocks = Vec::new();
             if !assistant_text.is_empty() {
-                blocks.push(InputContentBlock::Text { text: assistant_text });
+                blocks.push(InputContentBlock::Text {
+                    text: assistant_text,
+                });
+            }
+            for tool in &tool_uses {
+                blocks.push(InputContentBlock::ToolUse {
+                    id: tool.id.clone(),
+                    name: tool.name.clone(),
+                    input: tool.input.clone(),
+                });
             }
             prompt_messages.push(InputMessage {
                 role: "assistant".to_string(),
                 content: blocks,
             });
 
-            let mut any_error = false;
             for tool in &tool_uses {
-                self.emit_tool(chat_id, assistant_msg_id, tool.name.clone(), tool.input.clone()).await;
-                let (res_str, is_err) = self.execute_tool(project_id, &tool.name, &tool.input).await;
-                if is_err {
-                    any_error = true;
-                }
+                self.emit_tool(
+                    chat_id,
+                    assistant_msg_id,
+                    tool.name.clone(),
+                    tool.input.clone(),
+                )
+                .await;
+                let (res_str, is_err) =
+                    self.execute_tool(project_id, &tool.name, &tool.input).await;
+                println!(
+                    "[AGENT TOOL RESULT] name={} result_len={} is_err={}",
+                    tool.name,
+                    res_str.len(),
+                    is_err
+                );
                 prompt_messages.push(InputMessage::user_tool_result(
                     tool.id.clone(),
                     res_str,
                     is_err,
                 ));
-            }
-
-            if any_error {
-                break;
             }
         }
 
@@ -336,16 +433,29 @@ impl ChatServices {
             chat_id,
             assistant_msg_id,
             &answer,
-            if accumulated_reasoning.is_empty() { None } else { Some(&accumulated_reasoning) },
-            if all_tool_logs.is_empty() { None } else { Some(&all_tool_logs) },
-        ).await;
+            if accumulated_reasoning.is_empty() {
+                None
+            } else {
+                Some(&accumulated_reasoning)
+            },
+            if all_tool_logs.is_empty() {
+                None
+            } else {
+                Some(&all_tool_logs)
+            },
+        )
+        .await;
 
-        self.emit_chunk(chat_id, assistant_msg_id, String::new(), true, "text").await;
+        self.emit_chunk(chat_id, assistant_msg_id, String::new(), true, "text")
+            .await;
     }
 
     async fn execute_tool(&self, project_id: &str, name: &str, input: &Value) -> (String, bool) {
         let Some(ref tools) = self.ai_tools else {
-            return ("AI tools are not available in current environment".to_string(), true);
+            return (
+                "AI tools are not available in current environment".to_string(),
+                true,
+            );
         };
 
         let result: Result<Value, ApplicationError> = match name {
@@ -353,11 +463,19 @@ impl ChatServices {
                 let query = input.get("query").and_then(|v| v.as_str()).unwrap_or("");
                 let scope = input.get("scope").and_then(|v| v.as_str()).unwrap_or("all");
                 let top_k = input.get("top_k").and_then(|v| v.as_u64()).unwrap_or(5) as usize;
-                tools.query_world(project_id, query, scope, top_k).await.map(|v| json!(v))
+                tools
+                    .query_world(project_id, query, scope, top_k)
+                    .await
+                    .map(|v| json!(v))
             }
             "inspect_entity" => {
-                let entity_id = input.get("entity_id").and_then(|v| v.as_str()).unwrap_or("");
-                tools.inspect_entity(entity_id).await
+                let entity_id = input
+                    .get("entity_id")
+                    .or_else(|| input.get("name"))
+                    .or_else(|| input.get("query"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                tools.inspect_entity(project_id, entity_id).await
             }
             "manage_entity" => {
                 let action = input.get("action").and_then(|v| v.as_str()).unwrap_or("");
@@ -365,17 +483,35 @@ impl ChatServices {
                 tools.manage_entity(action, payload).await
             }
             "read_manuscript" => {
-                let chapter_id = input.get("chapter_id").and_then(|v| v.as_str()).unwrap_or("");
-                tools.read_manuscript(chapter_id).await
+                let chapter_id = input
+                    .get("chapter_id")
+                    .or_else(|| input.get("id"))
+                    .or_else(|| input.get("query"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                tools.read_manuscript(project_id, chapter_id).await
             }
-            "timeline_manager" => {
+            "edit_manuscript" => match serde_json::from_value::<
+                crate::workflows::EditManuscriptRequest,
+            >(input.clone())
+            {
+                Ok(req) => tools.edit_manuscript(req).await.map(|v| json!(v)),
+                Err(e) => Err(ApplicationError::Validation(e.to_string())),
+            },
+            "chronology" | "timeline_manager" => {
                 let action = input.get("action").and_then(|v| v.as_str()).unwrap_or("");
                 let payload = input.get("payload").cloned().unwrap_or(json!({}));
-                tools.timeline_manager(action, payload).await
+                tools.chronology(action, payload).await
             }
             "audit_consistency" => {
-                let target_type = input.get("target_type").and_then(|v| v.as_str()).unwrap_or("volume");
-                let target_id = input.get("target_id").and_then(|v| v.as_str()).unwrap_or("");
+                let target_type = input
+                    .get("target_type")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("volume");
+                let target_id = input
+                    .get("target_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 tools.audit_consistency(target_type, target_id).await
             }
             "delegate_task" => {
@@ -383,12 +519,14 @@ impl ChatServices {
                 let prompt = input.get("prompt").and_then(|v| v.as_str()).unwrap_or("");
                 tools.delegate_task(task_id, prompt).await
             }
-            other => Err(ApplicationError::Validation(format!("Unsupported tool: {other}"))),
+            other => Err(ApplicationError::Validation(format!(
+                "Unknown tool: {other}"
+            ))),
         };
 
         match result {
             Ok(v) => (v.to_string(), false),
-            Err(e) => (format!("Tool execution error: {e}"), true),
+            Err(e) => (format!("Error executing {name}: {e}"), true),
         }
     }
 
@@ -430,7 +568,11 @@ impl ChatServices {
                 || m.id.trim_start_matches("chat_messages:") == raw_id
         };
 
-        let chats = self.chat_repo.get_chat_tree(project_id).await.unwrap_or_default();
+        let chats = self
+            .chat_repo
+            .get_chat_tree(project_id)
+            .await
+            .unwrap_or_default();
         let mut target_chat_id = None;
         let mut all_msgs = Vec::new();
 
@@ -444,7 +586,14 @@ impl ChatServices {
         }
 
         if target_chat_id.is_none() {
-            for cid in &["chats:main", "chats:original", "chats:c_main", "main", "original", "c_main"] {
+            for cid in &[
+                "chats:main",
+                "chats:original",
+                "chats:c_main",
+                "main",
+                "original",
+                "c_main",
+            ] {
                 let msgs = self.chat_repo.get_messages(cid).await.unwrap_or_default();
                 if msgs.iter().any(is_match) {
                     target_chat_id = Some((*cid).to_string());
@@ -472,7 +621,10 @@ impl ChatServices {
             .map_err(ApplicationError::from)?;
 
         if let Some(ref orig_chat_id) = target_chat_id {
-            let _ = self.chat_repo.update_chat_parent(&new_chat_id, Some(orig_chat_id)).await;
+            let _ = self
+                .chat_repo
+                .update_chat_parent(&new_chat_id, Some(orig_chat_id))
+                .await;
         }
 
         if let Some(target_idx) = all_msgs.iter().position(is_match) {
@@ -483,7 +635,10 @@ impl ChatServices {
                 branch.push(msg);
                 curr = pid.and_then(|p| {
                     let p_raw = p.trim_start_matches("chat_messages:");
-                    all_msgs.iter().find(|m| m.id == p || m.id.trim_start_matches("chat_messages:") == p_raw).cloned()
+                    all_msgs
+                        .iter()
+                        .find(|m| m.id == p || m.id.trim_start_matches("chat_messages:") == p_raw)
+                        .cloned()
                 });
             }
             branch.reverse();
@@ -498,7 +653,10 @@ impl ChatServices {
                 let new_uuid = uuid::Uuid::new_v4().to_string();
                 let new_id = format!("chat_messages:{}", new_uuid);
                 id_map.insert(old_msg.id.clone(), new_id.clone());
-                id_map.insert(old_msg.id.trim_start_matches("chat_messages:").to_string(), new_id.clone());
+                id_map.insert(
+                    old_msg.id.trim_start_matches("chat_messages:").to_string(),
+                    new_id.clone(),
+                );
 
                 let mapped_parent = old_msg.parent_id.and_then(|p| id_map.get(&p).cloned());
                 let mut new_msg = ChatMessage::new(
@@ -510,7 +668,10 @@ impl ChatServices {
                 );
                 new_msg.parent_id = mapped_parent;
                 new_msg.is_active = old_msg.is_active;
-                self.chat_repo.save_message(&new_msg).await.map_err(ApplicationError::from)?;
+                self.chat_repo
+                    .save_message(&new_msg)
+                    .await
+                    .map_err(ApplicationError::from)?;
             }
         }
 
@@ -595,29 +756,10 @@ impl ChatServices {
         msg_id: &str,
         new_text: &str,
     ) -> Result<(String, String), ApplicationError> {
-        let msgs = self.chat_repo.get_messages(chat_id).await.unwrap_or_default();
-        if let Some(mut msg) = msgs.into_iter().find(|m| m.id == msg_id) {
-            msg.content = new_text.to_string();
-            self.chat_repo.save_message(&msg).await.map_err(ApplicationError::from)?;
-        }
-
-        let asst_uuid = uuid::Uuid::new_v4().to_string();
-        let asst_msg_id = format!("chat_messages:{asst_uuid}");
-        let mut asst_msg = ChatMessage::new(
-            asst_msg_id.clone(),
-            project_id,
-            chat_id,
-            MessageRole::Assistant,
-            "",
-        );
-        asst_msg.parent_id = Some(msg_id.to_string());
-
         self.chat_repo
-            .save_message(&asst_msg)
+            .edit_message_branch(project_id, chat_id, msg_id, new_text)
             .await
-            .map_err(ApplicationError::from)?;
-
-        Ok((chat_id.to_string(), asst_msg_id))
+            .map_err(ApplicationError::from)
     }
 
     pub async fn regenerate_message(
@@ -625,24 +767,11 @@ impl ChatServices {
         project_id: &str,
         chat_id: &str,
         parent_msg_id: &str,
-    ) -> Result<(String, String), ApplicationError> {
-        let asst_uuid = uuid::Uuid::new_v4().to_string();
-        let asst_msg_id = format!("chat_messages:{asst_uuid}");
-        let mut asst_msg = ChatMessage::new(
-            asst_msg_id.clone(),
-            project_id,
-            chat_id,
-            MessageRole::Assistant,
-            "",
-        );
-        asst_msg.parent_id = if parent_msg_id.is_empty() { None } else { Some(parent_msg_id.to_string()) };
-
+    ) -> Result<(String, String, String), ApplicationError> {
         self.chat_repo
-            .save_message(&asst_msg)
+            .regenerate_assistant_variant(project_id, chat_id, parent_msg_id)
             .await
-            .map_err(ApplicationError::from)?;
-
-        Ok((chat_id.to_string(), asst_msg_id))
+            .map_err(ApplicationError::from)
     }
 }
 
@@ -720,6 +849,70 @@ mod tests {
             }
             Ok(())
         }
+        async fn update_token_usage(
+            &self,
+            chat_id: &str,
+            usage: &worldwiki_domain::ai::TokenUsage,
+        ) -> Result<(), DomainError> {
+            let mut list = self.chats.lock().unwrap();
+            if let Some(c) = list.iter_mut().find(|c| c.id == chat_id) {
+                let cur = c.token_usage.get_or_insert_with(Default::default);
+                cur.input_tokens += usage.input_tokens;
+                cur.output_tokens += usage.output_tokens;
+                cur.total_tokens += usage.total_tokens;
+            }
+            Ok(())
+        }
+        async fn edit_message_branch(
+            &self,
+            project_id: &str,
+            chat_id: &str,
+            _msg_id: &str,
+            new_text: &str,
+        ) -> Result<(String, String), DomainError> {
+            let u_id = format!("chat_messages:u_{}", uuid::Uuid::new_v4());
+            let a_id = format!("chat_messages:a_{}", uuid::Uuid::new_v4());
+            let mut list = self.messages.lock().unwrap();
+            list.push(ChatMessage::new(
+                u_id,
+                project_id,
+                chat_id,
+                MessageRole::User,
+                new_text,
+            ));
+            list.push(ChatMessage::new(
+                a_id.clone(),
+                project_id,
+                chat_id,
+                MessageRole::Assistant,
+                "",
+            ));
+            Ok((chat_id.to_string(), a_id))
+        }
+        async fn regenerate_assistant_variant(
+            &self,
+            project_id: &str,
+            chat_id: &str,
+            parent_msg_id: &str,
+        ) -> Result<(String, String, String), DomainError> {
+            let a_id = format!("chat_messages:a_{}", uuid::Uuid::new_v4());
+            let user_text = {
+                let list = self.messages.lock().unwrap();
+                list.iter()
+                    .find(|m| m.id == parent_msg_id)
+                    .map(|m| m.content.clone())
+                    .unwrap_or_default()
+            };
+            let mut list = self.messages.lock().unwrap();
+            list.push(ChatMessage::new(
+                a_id.clone(),
+                project_id,
+                chat_id,
+                MessageRole::Assistant,
+                "",
+            ));
+            Ok((chat_id.to_string(), a_id, user_text))
+        }
     }
 
     #[derive(Default)]
@@ -775,13 +968,15 @@ mod tests {
             _request: StreamRequest,
             sender: tokio::sync::mpsc::Sender<StreamEventDto>,
         ) -> Result<(), DomainError> {
-            let _ = sender.send(StreamEventDto {
-                text_delta: Some("Ответ от модели".to_string()),
-                reasoning_delta: None,
-                tool_use: None,
-                usage: None,
-                is_done: true,
-            }).await;
+            let _ = sender
+                .send(StreamEventDto {
+                    text_delta: Some("Ответ от модели".to_string()),
+                    reasoning_delta: None,
+                    tool_use: None,
+                    usage: None,
+                    is_done: true,
+                })
+                .await;
             Ok(())
         }
     }
@@ -819,7 +1014,15 @@ mod tests {
         assert!(res.user_msg_id.starts_with("chat_messages:"));
         assert!(res.assistant_msg_id.starts_with("chat_messages:"));
 
-        services.run_agent_loop("projects:p1", &res.chat_id, &res.assistant_msg_id, "Привет, мир!", None).await;
+        services
+            .run_agent_loop(
+                "projects:p1",
+                &res.chat_id,
+                &res.assistant_msg_id,
+                "Привет, мир!",
+                None,
+            )
+            .await;
 
         let msgs = services.get_messages(&res.chat_id).await.unwrap();
         assert_eq!(msgs.len(), 2);

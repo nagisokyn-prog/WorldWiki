@@ -203,6 +203,7 @@ pub fn run() {
             worldwiki_tauri::commands::ai_manage_entity,
             worldwiki_tauri::commands::ai_read_manuscript,
             worldwiki_tauri::commands::ai_edit_manuscript,
+            worldwiki_tauri::commands::ai_chronology,
             worldwiki_tauri::commands::ai_timeline_manager,
             worldwiki_tauri::commands::ai_audit_consistency,
             worldwiki_tauri::commands::ai_delegate_task,

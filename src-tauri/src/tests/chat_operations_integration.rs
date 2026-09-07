@@ -208,13 +208,18 @@ async fn edit_message_updates_content() {
     seed_chat(&db).await;
     let services = create_test_services(Arc::new(db.clone()));
 
-    services.chat.edit_message("p_chop", "chats:c_main", "chat_messages:m_root", "Обновлённый вопрос")
+    let (chat_id, asst_id) = services
+        .chat
+        .edit_message("p_chop", "chats:c_main", "chat_messages:m_root", "Обновлённый вопрос")
         .await
         .expect("edit_message should succeed");
 
+    assert_eq!(chat_id, "chats:c_main");
+    assert!(!asst_id.is_empty());
+
     let msgs = services.chat.get_messages("chats:c_main").await.unwrap();
-    let root = msgs.iter().find(|m| m.id == "chat_messages:m_root").unwrap();
-    assert_eq!(root.content, "Обновлённый вопрос");
+    let updated_user_msg = msgs.iter().find(|m| m.content == "Обновлённый вопрос").unwrap();
+    assert!(updated_user_msg.is_active);
 }
 
 #[tokio::test]

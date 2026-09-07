@@ -74,7 +74,7 @@ async fn test_ai_tools_search_and_get_entity() {
     // 1. Получение сущности по ID через inspect_entity
     let card = services
         .ai_tools
-        .inspect_entity(&entity_id)
+        .inspect_entity("projects:p_ai", &entity_id)
         .await
         .expect("inspect_entity tool should execute");
 
@@ -95,7 +95,7 @@ async fn test_ai_tools_chapters_list_and_get_chapter() {
     // Чтение через read_manuscript
     let chap_val = services
         .ai_tools
-        .read_manuscript(&chap_id)
+        .read_manuscript("p_ai", &chap_id)
         .await
         .expect("read_manuscript tool should execute");
 

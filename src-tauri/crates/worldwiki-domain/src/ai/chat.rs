@@ -8,6 +8,13 @@ pub enum MessageRole {
     System,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct TokenUsage {
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub total_tokens: u64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Chat {
     pub id: String,
@@ -16,6 +23,7 @@ pub struct Chat {
     pub tag: Option<String>,
     pub parent_chat_id: Option<String>,
     pub session_context: Vec<String>,
+    pub token_usage: Option<TokenUsage>,
     pub created_at: Option<String>,
 }
 
@@ -28,6 +36,7 @@ impl Chat {
             tag: None,
             parent_chat_id: None,
             session_context: Vec::new(),
+            token_usage: None,
             created_at: None,
         }
     }

@@ -2,9 +2,11 @@ use async_trait::async_trait;
 use serde_json::Value;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
+use surrealdb::types::RecordId;
 use surrealdb::IndexedResults;
 use surrealdb::Surreal;
 
+use super::chat_repo::clean_record_id;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::knowledge::{Entity, EntityRelation};
 use worldwiki_domain::manuscript::{Arc as ArcNode, Chapter, Volume};
@@ -32,7 +34,8 @@ fn normalize_surreal_value(val: &mut Value) {
     if let Value::Object(map) = val {
         for (_k, v) in map.iter_mut() {
             if let Value::Object(inner) = v {
-                if let (Some(Value::String(tb)), Some(id_val)) = (inner.get("tb"), inner.get("id")) {
+                if let (Some(Value::String(tb)), Some(id_val)) = (inner.get("tb"), inner.get("id"))
+                {
                     let id_str = match id_val {
                         Value::String(s) => s.clone(),
                         _ => id_val.to_string().trim_matches('"').to_string(),
@@ -114,7 +117,10 @@ impl ChapterRepository for SurrealChapterRepository {
 
     async fn save(&self, chapter: &Chapter) -> Result<(), DomainError> {
         let clean = chapter.id.trim_start_matches("chapters:").to_string();
-        let proj_clean = chapter.project_id.trim_start_matches("projects:").to_string();
+        let proj_clean = chapter
+            .project_id
+            .trim_start_matches("projects:")
+            .to_string();
 
         // Используем MERGE SET с явными type::record() для полей-ссылок,
         // чтобы избежать несовместимости строки с TYPE record<projects> в SCHEMAFULL.
@@ -127,7 +133,8 @@ impl ChapterRepository for SurrealChapterRepository {
                 updated_at: time::now()
             };
         "#;
-        let mut res = self.db
+        let mut res = self
+            .db
             .query(sql)
             .bind(("c_id", clean))
             .bind(("p_id", proj_clean))
@@ -337,7 +344,10 @@ impl EntityRepository for SurrealEntityRepository {
 
     async fn save(&self, entity: &Entity) -> Result<(), DomainError> {
         let clean = entity.id.trim_start_matches("entities:").to_string();
-        let proj_clean = entity.project_id.trim_start_matches("projects:").to_string();
+        let proj_clean = entity
+            .project_id
+            .trim_start_matches("projects:")
+            .to_string();
 
         let sql = r#"
             UPSERT type::record('entities', $e_id) MERGE {
@@ -350,7 +360,8 @@ impl EntityRepository for SurrealEntityRepository {
                 updated_at: time::now()
             };
         "#;
-        let mut res = self.db
+        let mut res = self
+            .db
             .query(sql)
             .bind(("e_id", clean))
             .bind(("p_id", proj_clean))
@@ -670,66 +681,183 @@ impl RAGContextPort for SurrealRAGAdapter {
         _scope: &str,
         top_k: usize,
     ) -> Result<Vec<Value>, DomainError> {
-        let p_clean = project_id.trim_start_matches("projects:").to_string();
-        let q_lower = query.to_lowercase();
+        let p_clean = project_id
+            .trim_start_matches("projects:")
+            .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .to_string();
+        let proj_rec = RecordId::new(
+            "projects",
+            if p_clean.is_empty() {
+                "default"
+            } else {
+                &p_clean
+            },
+        );
+        let q_trimmed = query.trim();
+        let q_lower = q_trimmed.to_lowercase();
 
-        // Пробуем сначала с фильтрацией по project_id через type::record()
-        let mut res_ch = self.db
-            .query("SELECT id, title, content FROM chapters WHERE project_id = type::record('projects', $p_id)")
-            .bind(("p_id", p_clean.clone()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let mut chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
+        let mut list: Vec<Value> = Vec::new();
+        let mut entity_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
 
-        // Fallback: если запрос с type::record вернул пусто — берём все главы и фильтруем в Rust
-        // (SurrealKV иногда имеет особенности с record type comparison)
-        if chaps.is_empty() {
-            let mut res_all = self.db
-                .query("SELECT id, title, content, project_id FROM chapters")
-                .await
-                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-            let all_chaps: Vec<Value> = res_all.take(0).unwrap_or_default();
-            let p_clean_ref = &p_clean;
-            chaps = all_chaps.into_iter().filter(|v| {
-                let Some(p) = v.get("project_id") else { return true; };
-                let key = match p {
-                    Value::String(s) => s.trim_start_matches("projects:").to_string(),
-                    Value::Object(obj) => {
-                        let id_val = obj.get("id").unwrap_or(&Value::Null);
-                        match id_val {
-                            Value::Object(id_obj) => id_obj.get("String").and_then(|v| v.as_str()).unwrap_or("").to_string(),
-                            Value::String(s) => s.clone(),
-                            _ => String::new(),
+        // 0. Exact Document Retrieval (detect chapter requests like "глава 1", "глава 2", "chapter 1")
+        let is_chapter_req = q_lower.contains("глав") || q_lower.contains("chapter");
+        if is_chapter_req {
+            let num_opt = q_lower.split_whitespace().find_map(|word| {
+                word.trim_matches(|c: char| !c.is_numeric())
+                    .parse::<u32>()
+                    .ok()
+            });
+
+            if let Some(num) = num_opt {
+                let num_str = num.to_string();
+                let exact_sql = "SELECT id, title, content FROM chapters WHERE project_id = $proj AND (title CONTAINS $num_str OR title CONTAINS 'Глава ' + $num_str OR title CONTAINS 'Chapter ' + $num_str) LIMIT 1";
+                if let Ok(mut resp) = self
+                    .db
+                    .query(exact_sql)
+                    .bind(("proj", proj_rec.clone()))
+                    .bind(("num_str", num_str))
+                    .await
+                {
+                    if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                        for r in rows {
+                            list.push(r);
                         }
                     }
-                    _ => String::new(),
-                };
-                key == *p_clean_ref || p_clean_ref.is_empty()
-            }).collect();
+                }
+            }
         }
 
-        let mut res_tb = self.db
-            .query("SELECT id, title, content FROM text_blocks WHERE project_id = type::record('projects', $p_id)")
-            .bind(("p_id", p_clean.clone()))
+        // 1. BM25 Lexical search on entities
+        let ent_sql = "SELECT id, name AS title, description AS content, 'entity' AS source_type FROM entities WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) LIMIT 6";
+        if let Ok(mut resp) = self
+            .db
+            .query(ent_sql)
+            .bind(("proj", proj_rec.clone()))
+            .bind(("q", q_trimmed))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let text_blocks: Vec<Value> = res_tb.take(0).unwrap_or_default();
+        {
+            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                for r in rows {
+                    if let Some(id) = r.get("id").and_then(clean_record_id) {
+                        entity_ids.insert(id);
+                    }
+                    list.push(r);
+                }
+            }
+        }
 
-        let mut res_en = self.db
-            .query("SELECT id, name AS title, description AS content FROM entities WHERE project_id = type::record('projects', $p_id)")
-            .bind(("p_id", p_clean.clone()))
+        // 2. BM25 search on entity_chunks
+        let chunk_sql = "SELECT id, entity_id, content, 'lore_chunk' AS source_type FROM entity_chunks WHERE project_id = $proj AND content @1@ $q LIMIT 6";
+        if let Ok(mut resp) = self
+            .db
+            .query(chunk_sql)
+            .bind(("proj", proj_rec.clone()))
+            .bind(("q", q_trimmed))
             .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
+        {
+            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                for r in rows {
+                    if let Some(eid) = r.get("entity_id").and_then(clean_record_id) {
+                        entity_ids.insert(eid);
+                    }
+                    list.push(r);
+                }
+            }
+        }
 
-        // Ищем во всех таблицах по тексту
-        let mut list: Vec<Value> = Vec::new();
+        // 3. BM25 search on chapters
+        let chap_sql = "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) LIMIT 4";
+        if let Ok(mut resp) = self
+            .db
+            .query(chap_sql)
+            .bind(("proj", proj_rec.clone()))
+            .bind(("q", q_trimmed))
+            .await
+        {
+            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                for r in rows {
+                    list.push(r);
+                }
+            }
+        }
 
-        for item in text_blocks.into_iter().chain(chaps).chain(ents) {
-            let t = item.get("title").and_then(|v| v.as_str()).unwrap_or("").to_lowercase();
-            let cont = item.get("content").and_then(|v| v.as_str()).unwrap_or("").to_lowercase();
-            if q_lower.is_empty() || t.contains(&q_lower) || cont.contains(&q_lower) {
-                list.push(item);
+        // 4. Fallback search (substring contains) if BM25 yielded few results
+        if list.len() < top_k {
+            let mut res_ch = self.db
+                .query("SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE project_id = $proj")
+                .bind(("proj", proj_rec.clone()))
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            let chaps: Vec<Value> = res_ch.take(0).unwrap_or_default();
+
+            let mut res_en = self.db
+                .query("SELECT id, name AS title, description AS content, 'entity' AS source_type FROM entities WHERE project_id = $proj")
+                .bind(("proj", proj_rec.clone()))
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+            let ents: Vec<Value> = res_en.take(0).unwrap_or_default();
+
+            for item in chaps.into_iter().chain(ents) {
+                let id_str = item.get("id").and_then(clean_record_id).unwrap_or_default();
+                if list.iter().any(|existing| {
+                    existing
+                        .get("id")
+                        .and_then(clean_record_id)
+                        .unwrap_or_default()
+                        == id_str
+                }) {
+                    continue;
+                }
+                let t = item
+                    .get("title")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_lowercase();
+                let cont = item
+                    .get("content")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_lowercase();
+                if q_lower.is_empty() || t.contains(&q_lower) || cont.contains(&q_lower) {
+                    list.push(item);
+                }
+                if list.len() >= top_k {
+                    break;
+                }
+            }
+        }
+
+        // 5. Graph Expansion (relations for seed entities)
+        if !entity_ids.is_empty() {
+            let seed_list: Vec<RecordId> = entity_ids
+                .into_iter()
+                .filter_map(|s| {
+                    let raw = s
+                        .strip_prefix("entities:")
+                        .unwrap_or(&s)
+                        .replace(['⟨', '⟩', '`'], "");
+                    if raw.is_empty() {
+                        None
+                    } else {
+                        Some(RecordId::new("entities", raw))
+                    }
+                })
+                .collect();
+            let rel_sql = "SELECT in, out, rel_type, description, strength FROM entity_rel WHERE in IN $seeds OR out IN $seeds LIMIT 10";
+            if let Ok(mut resp) = self.db.query(rel_sql).bind(("seeds", seed_list)).await {
+                if let Ok(rows) = resp.take::<Vec<Value>>(0) {
+                    for r in rows {
+                        list.push(serde_json::json!({
+                            "source_type": "relation",
+                            "from": r.get("in"),
+                            "to": r.get("out"),
+                            "rel_type": r.get("rel_type"),
+                            "description": r.get("description"),
+                        }));
+                    }
+                }
             }
         }
 
@@ -743,7 +871,8 @@ impl RAGContextPort for SurrealRAGAdapter {
         chapter_id: &str,
     ) -> Result<Value, DomainError> {
         let clean_ch = clean_id("chapters", chapter_id);
-        let sql = "RETURN fn::get_chapter_multi_hop_context(type::record('chapters', $chapter_id));";
+        let sql =
+            "RETURN fn::get_chapter_multi_hop_context(type::record('chapters', $chapter_id));";
         let clean = clean_ch.trim_start_matches("chapters:").to_string();
         let mut res = self
             .db

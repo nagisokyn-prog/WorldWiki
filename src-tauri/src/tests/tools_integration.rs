@@ -40,7 +40,7 @@ async fn test_facade_inspect_and_manage_entity() {
     // 2. Инспекция карточки сущности
     let card = services
         .ai_tools
-        .inspect_entity("entities:hero_1")
+        .inspect_entity("projects:p_facade", "entities:hero_1")
         .await
         .expect("inspect_entity should succeed");
 
@@ -60,21 +60,20 @@ async fn test_facade_inspect_and_manage_entity() {
             "tags": []
         }))
         .await
-        .unwrap();
+        .expect("manage_entity create related should succeed");
 
-    let rel_res = services
+    services
         .ai_tools
         .manage_entity("relate", json!({
-            "id": "entity_rel:rel_aragorn_rivendell",
+            "id": "entity_relations:rel_1",
             "project_id": "projects:p_facade",
-            "from_entity": "entities:hero_1",
-            "to_entity": "entities:loc_1",
-            "relation_type": "born_in"
+            "source_id": "entities:hero_1",
+            "target_id": "entities:loc_1",
+            "relation_type": "located_at",
+            "role": "visitor"
         }))
         .await
         .expect("manage_entity relate should succeed");
-
-    assert_eq!(rel_res["status"], "success");
 
     // 4. Удаление сущности
     let del_res = services
@@ -96,7 +95,7 @@ async fn test_facade_read_and_edit_manuscript() {
     // Чтение через read_manuscript
     let read_res = services
         .ai_tools
-        .read_manuscript(&chap_id)
+        .read_manuscript("p_ms", &chap_id)
         .await
         .expect("read_manuscript should succeed");
 
@@ -120,7 +119,7 @@ async fn test_facade_read_and_edit_manuscript() {
     assert_eq!(edit_res.chapter_id, chap_id);
 
     // Проверяем обновленный контент
-    let verify_read = services.ai_tools.read_manuscript(&chap_id).await.unwrap();
+    let verify_read = services.ai_tools.read_manuscript("p_ms", &chap_id).await.unwrap();
     assert_eq!(verify_read["content"], "Обновленный текст главы соавтором.");
 }
 

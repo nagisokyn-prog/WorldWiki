@@ -23,7 +23,7 @@ impl SurrealChatRepository {
 /// - строка `"chats:main"` → `Some("chats:main")`
 /// - объект `{"tb":"chats","id":{"String":"main"}}` → `Some("chats:main")`
 /// - объект `{"tb":"chats","id":"main"}` → `Some("chats:main")`
-fn clean_record_id(val: &Value) -> Option<String> {
+pub(crate) fn clean_record_id(val: &Value) -> Option<String> {
     match val {
         Value::Null => None,
         Value::String(s) => {
@@ -109,6 +109,10 @@ impl ChatRepository for SurrealChatRepository {
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string());
 
+            let token_usage: Option<worldwiki_domain::ai::TokenUsage> = val
+                .get("token_usage")
+                .and_then(|v| serde_json::from_value(v.clone()).ok());
+
             let mut parent_chat_id = None;
             if let Some(edge) = edges
                 .iter()
@@ -128,6 +132,7 @@ impl ChatRepository for SurrealChatRepository {
                 tag,
                 parent_chat_id,
                 session_context: Vec::new(),
+                token_usage,
                 created_at,
             });
         }
@@ -298,12 +303,12 @@ impl ChatRepository for SurrealChatRepository {
     }
 
     async fn delete_chat(&self, chat_id: &str) -> Result<(), DomainError> {
-        let chat_clean = chat_id.trim_start_matches("chats:");
-        let c_id = format!("chats:{chat_clean}");
+        let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let chat_rec = RecordId::new("chats", chat_clean);
 
         self.db
-            .query("DELETE FROM chat_messages WHERE chat_id = type::record($id); DELETE contains WHERE out = type::record($id) OR in = type::record($id); DELETE type::record($id);")
-            .bind(("id", c_id))
+            .query("DELETE chat_messages WHERE chat_id = $chat; DELETE contains WHERE out = $chat OR in = $chat; DELETE $chat;")
+            .bind(("chat", chat_rec))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
@@ -311,12 +316,12 @@ impl ChatRepository for SurrealChatRepository {
     }
 
     async fn delete_message(&self, message_id: &str) -> Result<(), DomainError> {
-        let msg_clean = message_id.trim_start_matches("chat_messages:");
-        let m_id = format!("chat_messages:{msg_clean}");
+        let msg_clean = message_id.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let msg_rec = RecordId::new("chat_messages", msg_clean);
 
         self.db
-            .query("DELETE type::record($id)")
-            .bind(("id", m_id))
+            .query("DELETE $msg;")
+            .bind(("msg", msg_rec))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
@@ -328,7 +333,7 @@ impl ChatRepository for SurrealChatRepository {
         chat_id: &str,
         new_parent_id: Option<&str>,
     ) -> Result<(), DomainError> {
-        let chat_clean = chat_id.trim_start_matches("chats:");
+        let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
         let c_rec = RecordId::new("chats", chat_clean);
 
         self.db
@@ -338,7 +343,7 @@ impl ChatRepository for SurrealChatRepository {
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         if let Some(parent) = new_parent_id {
-            let p_clean = parent.trim_start_matches("chats:");
+            let p_clean = parent.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
             let p_rec = RecordId::new("chats", p_clean);
 
             self.db
@@ -353,41 +358,196 @@ impl ChatRepository for SurrealChatRepository {
     }
 
     async fn switch_variant(&self, message_id: &str) -> Result<(), DomainError> {
-        let msg_clean = message_id.trim_start_matches("chat_messages:");
-        let m_id = format!("chat_messages:{msg_clean}");
+        let msg_clean = message_id.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let msg_rec = RecordId::new("chat_messages", msg_clean);
 
         let mut res = self
             .db
-            .query("SELECT chat_id, parent_id FROM type::record($id)")
-            .bind(("id", m_id.clone()))
+            .query("SELECT chat_id, parent_id FROM $msg")
+            .bind(("msg", msg_rec.clone()))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let rows: Vec<Value> = res.take(0).unwrap_or_default();
-        if let Some(target) = rows.into_iter().next() {
-            let chat_id =
-                clean_record_id(target.get("chat_id").unwrap_or(&Value::Null)).unwrap_or_default();
-            let parent_id = target.get("parent_id").and_then(clean_record_id);
+        let orig: Option<Value> = res.take(0).unwrap_or_default();
+        if let Some(orig) = orig {
+            let chat_id_str = clean_record_id(orig.get("chat_id").unwrap_or(&Value::Null)).unwrap_or_default();
+            let chat_clean = chat_id_str.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+            let chat_rec = RecordId::new("chats", chat_clean);
 
-            if let Some(p) = parent_id {
+            let parent_id_val = orig.get("parent_id").cloned();
+            let parent_clean = parent_id_val.as_ref().and_then(clean_record_id);
+
+            if let Some(p_str) = parent_clean {
+                let p_clean = p_str.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+                let p_rec = RecordId::new("chat_messages", p_clean);
                 self.db
-                    .query("UPDATE chat_messages SET is_active = false WHERE chat_id = type::record($chat) AND parent_id = type::record($parent); UPDATE type::record($id) SET is_active = true;")
-                    .bind(("chat", chat_id))
-                    .bind(("parent", p))
-                    .bind(("id", m_id))
+                    .query("UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent; UPDATE $msg SET is_active = true;")
+                    .bind(("chat", chat_rec))
+                    .bind(("parent", p_rec))
+                    .bind(("msg", msg_rec))
                     .await
                     .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             } else {
                 self.db
-                    .query("UPDATE chat_messages SET is_active = false WHERE chat_id = type::record($chat) AND parent_id = NONE; UPDATE type::record($id) SET is_active = true;")
-                    .bind(("chat", chat_id))
-                    .bind(("id", m_id))
+                    .query("UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE; UPDATE $msg SET is_active = true;")
+                    .bind(("chat", chat_rec))
+                    .bind(("msg", msg_rec))
                     .await
                     .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
             }
         }
 
         Ok(())
+    }
+
+    async fn update_token_usage(&self, chat_id: &str, usage: &worldwiki_domain::ai::TokenUsage) -> Result<(), DomainError> {
+        let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let chat_rec = RecordId::new("chats", chat_clean);
+
+        let sql = "UPDATE $chat SET \
+                   token_usage.input_tokens = (IF token_usage.input_tokens != NONE AND token_usage.input_tokens != NULL { token_usage.input_tokens } ELSE { 0 }) + $in_tokens, \
+                   token_usage.output_tokens = (IF token_usage.output_tokens != NONE AND token_usage.output_tokens != NULL { token_usage.output_tokens } ELSE { 0 }) + $out_tokens, \
+                   token_usage.total_tokens = (IF token_usage.total_tokens != NONE AND token_usage.total_tokens != NULL { token_usage.total_tokens } ELSE { 0 }) + $tot_tokens;";
+
+        self.db
+            .query(sql)
+            .bind(("chat", chat_rec))
+            .bind(("in_tokens", usage.input_tokens as i64))
+            .bind(("out_tokens", usage.output_tokens as i64))
+            .bind(("tot_tokens", usage.total_tokens as i64))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        Ok(())
+    }
+
+    async fn edit_message_branch(
+        &self,
+        project_id: &str,
+        chat_id: &str,
+        msg_id: &str,
+        new_text: &str,
+    ) -> Result<(String, String), DomainError> {
+        let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let chat_rec = RecordId::new("chats", chat_clean);
+        let proj_clean = project_id.trim_start_matches("projects:");
+        let proj_rec = RecordId::new("projects", if proj_clean.is_empty() { "default" } else { proj_clean });
+
+        let msg_clean = msg_id.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let msg_rec = RecordId::new("chat_messages", msg_clean);
+
+        let mut check = self.db
+            .query("SELECT parent_id FROM $msg")
+            .bind(("msg", msg_rec))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let orig: Option<Value> = check.take(0).unwrap_or_default();
+        let parent_id_val = orig.as_ref().and_then(|v| v.get("parent_id").cloned());
+        let parent_clean = parent_id_val.as_ref().and_then(clean_record_id);
+
+        if let Some(ref p_str) = parent_clean {
+            let p_clean = p_str.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+            let p_rec = RecordId::new("chat_messages", p_clean);
+            self.db
+                .query("UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = $parent")
+                .bind(("chat", chat_rec.clone()))
+                .bind(("parent", p_rec))
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        } else {
+            self.db
+                .query("UPDATE chat_messages SET is_active = false WHERE chat_id = $chat AND parent_id = NONE")
+                .bind(("chat", chat_rec.clone()))
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        }
+
+        let new_user_uuid = uuid::Uuid::new_v4().to_string();
+        let new_user_rec = RecordId::new("chat_messages", new_user_uuid.as_str());
+        let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
+        let new_assistant_rec = RecordId::new("chat_messages", new_assistant_uuid.as_str());
+
+        if let Some(ref p_str) = parent_clean {
+            let p_clean = p_str.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+            let p_rec = RecordId::new("chat_messages", p_clean);
+            self.db
+                .query(r#"
+                    CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+                    CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+                "#)
+                .bind(("uid", new_user_rec))
+                .bind(("aid", new_assistant_rec))
+                .bind(("chat", chat_rec))
+                .bind(("proj", proj_rec))
+                .bind(("parent", p_rec))
+                .bind(("content", new_text.to_string()))
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        } else {
+            self.db
+                .query(r#"
+                    CREATE $uid SET chat_id = $chat, project_id = $proj, role = 'user', content = $content, version = 1, parent_id = NONE, is_active = true, created_at = time::now();
+                    CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $uid, is_active = true, created_at = time::now();
+                "#)
+                .bind(("uid", new_user_rec))
+                .bind(("aid", new_assistant_rec))
+                .bind(("chat", chat_rec))
+                .bind(("proj", proj_rec))
+                .bind(("content", new_text.to_string()))
+                .await
+                .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        }
+
+        Ok((format!("chats:{chat_clean}"), format!("chat_messages:{new_assistant_uuid}")))
+    }
+
+    async fn regenerate_assistant_variant(
+        &self,
+        project_id: &str,
+        chat_id: &str,
+        parent_msg_id: &str,
+    ) -> Result<(String, String, String), DomainError> {
+        let chat_clean = chat_id.trim_start_matches("chats:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let chat_rec = RecordId::new("chats", chat_clean);
+        let proj_clean = project_id.trim_start_matches("projects:");
+        let proj_rec = RecordId::new("projects", if proj_clean.is_empty() { "default" } else { proj_clean });
+
+        let parent_clean = parent_msg_id.trim_start_matches("chat_messages:").trim_matches('`').trim_matches('⟨').trim_matches('⟩');
+        let user_msg_rec = RecordId::new("chat_messages", parent_clean);
+
+        let mut check_user = self.db
+            .query("SELECT content FROM $parent")
+            .bind(("parent", user_msg_rec.clone()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let user_msg: Option<Value> = check_user.take(0).unwrap_or_default();
+        let user_text = user_msg
+            .and_then(|v| v.get("content").and_then(|c| c.as_str()).map(|s| s.to_string()))
+            .unwrap_or_default();
+
+        self.db
+            .query("UPDATE chat_messages SET is_active = false WHERE parent_id = $parent AND role = 'assistant'")
+            .bind(("parent", user_msg_rec.clone()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        let new_assistant_uuid = uuid::Uuid::new_v4().to_string();
+        let new_assistant_rec = RecordId::new("chat_messages", new_assistant_uuid.as_str());
+
+        self.db
+            .query(r#"
+                CREATE $aid SET chat_id = $chat, project_id = $proj, role = 'assistant', content = '', version = 1, parent_id = $parent, is_active = true, created_at = time::now();
+            "#)
+            .bind(("aid", new_assistant_rec))
+            .bind(("chat", chat_rec))
+            .bind(("proj", proj_rec))
+            .bind(("parent", user_msg_rec))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        Ok((format!("chats:{chat_clean}"), format!("chat_messages:{new_assistant_uuid}"), user_text))
     }
 }
 

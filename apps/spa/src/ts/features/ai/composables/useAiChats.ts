@@ -6,6 +6,7 @@ export interface AiChat {
   title: string;
   tag?: string;
   parent_chat_id?: string;
+  token_usage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
   created_at?: string;
 }
 
@@ -35,6 +36,7 @@ export function useAiChats(currentProject: string) {
         title: c.title,
         tag: c.tag,
         parent_chat_id: c.parent_chat_id,
+        token_usage: c.token_usage,
         created_at: c.created_at
       }));
     } catch (err) {

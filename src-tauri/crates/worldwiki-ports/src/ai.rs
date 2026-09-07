@@ -43,6 +43,7 @@ pub struct StreamRequest {
     pub profile: AiProfile,
     pub system_prompt: String,
     pub messages: Vec<Value>,
+    pub tools: Option<Vec<Value>>,
 }
 
 #[async_trait]
@@ -92,6 +93,9 @@ pub trait ChatRepository: Send + Sync {
     async fn delete_message(&self, message_id: &str) -> Result<(), DomainError>;
     async fn update_chat_parent(&self, chat_id: &str, new_parent_id: Option<&str>) -> Result<(), DomainError>;
     async fn switch_variant(&self, message_id: &str) -> Result<(), DomainError>;
+    async fn update_token_usage(&self, chat_id: &str, usage: &worldwiki_domain::ai::TokenUsage) -> Result<(), DomainError>;
+    async fn edit_message_branch(&self, project_id: &str, chat_id: &str, msg_id: &str, new_text: &str) -> Result<(String, String), DomainError>;
+    async fn regenerate_assistant_variant(&self, project_id: &str, chat_id: &str, parent_msg_id: &str) -> Result<(String, String, String), DomainError>;
 }
 
 #[async_trait]

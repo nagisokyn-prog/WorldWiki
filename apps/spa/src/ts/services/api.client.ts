@@ -445,20 +445,24 @@ export async function aiQueryWorld(projectId: string, query: string, scope: stri
     return await invoke('ai_query_world', { projectId, query, scope, topK });
 }
 
-export async function aiInspectEntity(entityId: string): Promise<unknown> {
-    return await invoke('ai_inspect_entity', { entityId });
+export async function aiInspectEntity(projectId: string | null, entityId: string): Promise<unknown> {
+    return await invoke('ai_inspect_entity', { projectId, entityId });
 }
 
 export async function aiManageEntity(action: string, payload: unknown): Promise<unknown> {
     return await invoke('ai_manage_entity', { action, payload });
 }
 
-export async function aiReadManuscript(chapterId: string): Promise<unknown> {
-    return await invoke('ai_read_manuscript', { chapterId });
+export async function aiReadManuscript(projectId: string | null, chapterId: string): Promise<unknown> {
+    return await invoke('ai_read_manuscript', { projectId, chapterId });
 }
 
 export async function aiEditManuscript(request: unknown): Promise<unknown> {
     return await invoke('ai_edit_manuscript', { request });
+}
+
+export async function aiChronology(action: string, payload: unknown): Promise<unknown> {
+    return await invoke('ai_chronology', { action, payload });
 }
 
 export async function aiTimelineManager(action: string, payload: unknown): Promise<unknown> {

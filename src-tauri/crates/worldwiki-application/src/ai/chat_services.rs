@@ -790,6 +790,8 @@ impl ChatServices {
                     reasoning: reasoning.map(|s| s.to_string()),
                     tool_logs: tool_logs.map(|l| l.to_vec()),
                     version: 1,
+                    quoted_context: None,
+                    citations: None,
                     parent_id: None,
                     is_active: true,
                     created_at: None,

@@ -182,6 +182,8 @@ impl ChatRepository for SurrealChatRepository {
                     .filter_map(|x| x.as_str().map(|s| s.to_string()))
                     .collect()
             });
+            let quoted_context = val.get("quoted_context").cloned().filter(|v| !v.is_null());
+            let citations = val.get("citations").and_then(|v| v.as_array()).cloned();
             let version = val.get("version").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
             let parent_id = val.get("parent_id").and_then(clean_record_id);
             let is_active = val
@@ -206,6 +208,8 @@ impl ChatRepository for SurrealChatRepository {
                 reasoning,
                 tool_logs,
                 version,
+                quoted_context,
+                citations,
                 parent_id,
                 is_active,
                 created_at,
@@ -264,6 +268,8 @@ impl ChatRepository for SurrealChatRepository {
              role = $role, content = $content, \
              reasoning = $reasoning, tool_logs = $tool_logs, \
              version = $version, \
+             quoted_context = $quoted_context, \
+             citations = $citations, \
              is_active = $is_active, updated_at = time::now(), \
              created_at = IF created_at != NONE AND created_at != NULL { created_at } ELSE { time::now() }"
         );
@@ -285,6 +291,8 @@ impl ChatRepository for SurrealChatRepository {
             .bind(("reasoning", message.reasoning.clone()))
             .bind(("tool_logs", message.tool_logs.clone().unwrap_or_default()))
             .bind(("version", message.version as i64))
+            .bind(("quoted_context", message.quoted_context.clone()))
+            .bind(("citations", message.citations.clone().unwrap_or_default()))
             .bind(("is_active", message.is_active));
 
         if let Some(p) = parent_clean {

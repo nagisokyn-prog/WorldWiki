@@ -1,7 +1,7 @@
 {
   "name": "@worldwiki/spa",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.85.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -37,7 +37,7 @@
     "katex": "^0.18.5",
     "markdown-it": "^15.0.0",
     "pinia": "4.0.3",
-    "tiptap-pagination-plus": "^2.1.0",
+    "tiptap-pagination-plus": "^3.1.0",
     "turndown": "^7.2.0",
     "uplot": "^1.6.31",
     "vue": "^3.5.0",

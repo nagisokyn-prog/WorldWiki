@@ -52,6 +52,8 @@ pub struct ChatMessage {
     pub reasoning: Option<String>,
     pub tool_logs: Option<Vec<String>>,
     pub version: u32,
+    pub quoted_context: Option<serde_json::Value>,
+    pub citations: Option<Vec<serde_json::Value>>,
     pub parent_id: Option<String>,
     pub is_active: bool,
     pub created_at: Option<String>,
@@ -75,12 +77,21 @@ impl ChatMessage {
             reasoning: None,
             tool_logs: None,
             version: 1,
+            quoted_context: None,
+            citations: None,
             parent_id: None,
             is_active: true,
             created_at: None,
             updated_at: None,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MessageNeighborhood {
+    pub target: ChatMessage,
+    pub before: Vec<ChatMessage>,
+    pub after: Vec<ChatMessage>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

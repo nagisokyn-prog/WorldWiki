@@ -153,6 +153,10 @@ export function useAiChatInput(
     sendLock = null;
   };
 
+  const focus = () => {
+    editor.value?.commands.focus();
+  };
+
   onBeforeUnmount(() => {
     if (editor.value) {
       editor.value.destroy();
@@ -168,6 +172,7 @@ export function useAiChatInput(
     autocompleteRef,
     handleSelectSkill,
     submitMessage,
-    unlock
+    unlock,
+    focus
   };
 }

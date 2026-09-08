@@ -8,7 +8,7 @@
 .wmodal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--modal-backdrop, rgba(0, 0, 0, 0.65));
+  background: var(--modal-backdrop);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -26,7 +26,7 @@
   color: var(--text-main);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md, 8px);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-modal, var(--shadow-lg));
   width: 460px;
   max-width: calc(100vw - 48px);
   max-height: calc(100vh - 96px);
@@ -210,7 +210,7 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-modal, var(--shadow-lg));
   padding: 12px;
   display: flex;
   flex-direction: column;

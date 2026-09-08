@@ -1,26 +1,26 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 73,
+  "currentDebt": 91,
   "fixedCount": 1033,
-  "introducedCount": 50,
-  "trendPercent": "93.1",
+  "introducedCount": 68,
+  "trendPercent": "91.4",
   "categories": {
-    "blackColors": 6,
-    "whiteColors": 2,
-    "hexColors": 0,
+    "blackColors": 7,
+    "whiteColors": 3,
+    "hexColors": 14,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 65
+    "inlineStyles": 67
   },
   "semanticRoles": {
-    "modalBackdrops": 1,
+    "modalBackdrops": 2,
     "sunkenBackgrounds": 0,
-    "borders": 0,
-    "text": 1
+    "borders": 2,
+    "text": 12
   },
   "topCssFiles": [
     {
-      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
       "count": 3
     },
     {
@@ -28,7 +28,7 @@
       "count": 3
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiModeSelector.css",
+      "file": "packages/resources/src/styles/features/ai/AiMermaidDiagram.css",
       "count": 1
     }
   ],
@@ -38,15 +38,31 @@
       "count": 17
     },
     {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "count": 6
+    },
+    {
       "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
       "count": 6
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
+      "count": 5
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
       "count": 3
     },
     {
       "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
+      "count": 3
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
+      "count": 3
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
       "count": 3
     },
     {
@@ -76,48 +92,32 @@
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
       "count": 2
-    },
-    {
-      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
-      "count": 2
-    },
-    {
-      "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
-      "count": 2
-    },
-    {
-      "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "count": 2
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiModeSelector.css",
-      "count": 1
     }
   ],
   "violations": [
     {
-      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
-      "line": 41,
-      "match": "rgba(0, 0, 0, 0.45)",
-      "snippet": "box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.45));"
+      "file": "packages/resources/src/styles/features/ai/AiMermaidDiagram.css",
+      "line": 91,
+      "match": "#ef4444",
+      "snippet": "color: var(--color-danger, #ef4444);"
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
-      "line": 111,
-      "match": "#ffffff",
-      "snippet": "color: var(--color-text-on-accent, #ffffff);"
+      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+      "line": 151,
+      "match": "#ef4444",
+      "snippet": "border-color: var(--color-danger, #ef4444);"
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
-      "line": 186,
-      "match": "#ffffff",
-      "snippet": "background: var(--color-text-on-accent, #ffffff);"
+      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+      "line": 152,
+      "match": "#ef4444",
+      "snippet": "color: var(--color-danger, #ef4444);"
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiModeSelector.css",
-      "line": 51,
-      "match": "rgba(0, 0, 0, 0.45)",
-      "snippet": "box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.45));"
+      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+      "line": 158,
+      "match": "rgba(0, 0, 0, 0.6)",
+      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.6));"
     },
     {
       "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
@@ -160,6 +160,114 @@
       "line": 22,
       "match": "inline-style",
       "snippet": "style=\"{ '--progress-w': progressPercent + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
+      "line": 61,
+      "match": "#3b82f6",
+      "snippet": "color: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
+      "line": 69,
+      "match": "#3b82f6",
+      "snippet": "background: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
+      "line": 70,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-on-accent, #ffffff);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "line": 78,
+      "match": "rgba(0, 0, 0, 0.35)",
+      "snippet": "box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "line": 94,
+      "match": "#3b82f6",
+      "snippet": "color: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "line": 114,
+      "match": "#3b82f6",
+      "snippet": "color: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "line": 142,
+      "match": "#3b82f6",
+      "snippet": "background: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "line": 143,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-on-accent, #ffffff);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "line": 7,
+      "match": "inline-style",
+      "snippet": "style=\"popoverStyle\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
+      "line": 30,
+      "match": "#3b82f6",
+      "snippet": "border-left: 3px solid var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
+      "line": 41,
+      "match": "#3b82f6",
+      "snippet": "color: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
+      "line": 52,
+      "match": "#3b82f6",
+      "snippet": "color: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiResearchProgress.vue",
+      "line": 93,
+      "match": "#3b82f6",
+      "snippet": "color: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
+      "line": 44,
+      "match": "rgba(0, 0, 0, 0.25)",
+      "snippet": "box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
+      "line": 66,
+      "match": "#60a5fa",
+      "snippet": "color: var(--color-accent-primary, #60a5fa);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
+      "line": 70,
+      "match": "#3b82f6",
+      "snippet": "background: var(--color-accent-primary, #3b82f6);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
+      "line": 71,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-on-accent, #ffffff);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
+      "line": 6,
+      "match": "inline-style",
+      "snippet": "style=\"{ left: `${position.x}px`, top: `${position.y}px` }\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiToolInspector.vue",

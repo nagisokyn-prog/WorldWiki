@@ -63,6 +63,16 @@
             @delete="deleteMessage"
             @tool-approve="handleToolApproval"
             @tool-reject="handleToolRejection"
+            @ask-source="handleAskSource"
+          />
+
+          <!-- Индикатор хода глубокого исследования -->
+          <AiResearchProgress
+            :stage="researchProgress.stage"
+            :query="researchProgress.query"
+            :hits-count="researchProgress.hitsCount"
+            :pages-count="researchProgress.pagesCount"
+            :evidence-count="researchProgress.evidenceCount"
           />
 
           <div class="chat-input-container">
@@ -96,6 +106,12 @@
               />
             </div>
 
+            <!-- Баннер цитируемого фрагмента сообщения -->
+            <AiQuoteReplyBanner
+              :quoted-text="activeQuote?.selected_text"
+              @clear="handleClearQuote"
+            />
+
             <AiChatInput 
               ref="chatInputRef"
               :loading="isGenerating"
@@ -106,6 +122,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Всплывающий тулбар при выделении текста в сообщениях -->
+    <AiSelectionToolbar
+      @ask-wowilon="handleAskWoWiLon"
+      @add-to-lore="handleAddToLore"
+    />
 
     <!-- MANUAL TOOL INSPECTOR -->
     <AiToolInspector
@@ -128,6 +150,9 @@ import AiContextSelector from './components/AiContextSelector.vue';
 import AiModeSelector from './components/AiModeSelector.vue';
 import AiAutoApproveModal from './components/AiAutoApproveModal.vue';
 import AiToolInspector from './components/AiToolInspector.vue';
+import AiSelectionToolbar from './components/AiSelectionToolbar.vue';
+import AiQuoteReplyBanner from './components/AiQuoteReplyBanner.vue';
+import AiResearchProgress from './components/AiResearchProgress.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
 import { useWowilonPanel, type WowilonPanelProps, type WowilonPanelEmits } from './useWowilonPanel';
 
@@ -157,6 +182,12 @@ const {
   editDraft,
   messagesListRef,
   chatInputRef,
+  activeQuote,
+  researchProgress,
+  handleAskWoWiLon,
+  handleClearQuote,
+  handleAskSource,
+  handleAddToLore,
   handleModeChange,
   toggleSidebar,
   cancelGeneration,

@@ -57,10 +57,11 @@ const {
   autocompleteRef,
   handleSelectSkill,
   submitMessage,
-  unlock
+  unlock,
+  focus
 } = useAiChatInput(props, emit);
 
-defineExpose({ unlock });
+defineExpose({ unlock, focus });
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiChatInput.css"></style>

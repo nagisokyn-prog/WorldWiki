@@ -148,14 +148,14 @@
 }
 
 .btn-icon-action.danger:hover {
-  border-color: var(--color-danger, #ef4444);
-  color: var(--color-danger, #ef4444);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: var(--modal-backdrop, rgba(0, 0, 0, 0.6));
+  background: var(--modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -38,6 +38,22 @@ export interface ChatMessage {
   reasoning?: string;
   toolLogs?: string[];
   toolCallWaiting?: ToolCallPayload | null;
+  quoted_context?: {
+    selected_text?: string;
+    source_message_id?: string;
+    source_chat_id?: string;
+    range?: [number, number];
+  } | null;
+  citations?: Array<{
+    index: number;
+    evidence_id: string;
+    page_id?: string;
+    url: string;
+    domain: string;
+    title: string;
+    claim_text?: string;
+    excerpt: string;
+  }> | null;
   parent_id?: string | null;
   is_active?: boolean;
   is_error?: boolean;
@@ -68,6 +84,43 @@ export function useWowilonPanel(
   const isToolInspectorOpen = ref(false);
   const selectedContext = ref<ContextItem[]>([]);
   const skills = ref<AiSkillItem[]>([...DEFAULT_BUILTIN_SKILLS]);
+
+  const activeQuote = ref<{ selected_text: string; source_message_id?: string } | null>(null);
+  const researchProgress = ref<{
+    stage: 'planning' | 'searching' | 'reading' | 'synthesizing' | 'completed' | 'idle';
+    query?: string;
+    hitsCount?: number;
+    pagesCount?: number;
+    evidenceCount?: number;
+  }>({ stage: 'idle' });
+
+  const handleAskWoWiLon = (payload: { selected_text: string; source_message_id?: string }) => {
+    activeQuote.value = payload;
+    chatInputRef.value?.focus?.();
+  };
+
+  const handleClearQuote = () => {
+    activeQuote.value = null;
+  };
+
+  const handleAskSource = (citation: { domain: string; title: string; excerpt: string; url: string }) => {
+    activeQuote.value = {
+      selected_text: `Источник: ${citation.title} (${citation.domain})\n${citation.excerpt}`,
+    };
+    chatInputRef.value?.focus?.();
+  };
+
+  const handleAddToLore = (text: string) => {
+    selectedContext.value = [
+      ...selectedContext.value,
+      {
+        id: `lore_selection_${Date.now()}`,
+        title: 'Выделенный фрагмент',
+        type: 'manual',
+        content: text,
+      },
+    ];
+  };
 
   const loadSkills = async () => {
     try {
@@ -150,7 +203,7 @@ export function useWowilonPanel(
 
   const messagesListRef = ref<{ containerRef: HTMLElement | null } | null>(null);
   const messagesContainer = computed(() => messagesListRef.value?.containerRef || null);
-  const chatInputRef = ref<{ unlock: () => void } | null>(null);
+  const chatInputRef = ref<{ unlock: () => void; focus: () => void } | null>(null);
 
   const loadMessages = async (chatId: string) => {
     try {
@@ -295,6 +348,11 @@ export function useWowilonPanel(
       if (skillContexts.length > 0) {
         messageToSend = `${skillContexts.join('\n\n')}\n\n${text}`;
       }
+    }
+
+    if (activeQuote.value) {
+      messageToSend = `[Цитата]: «${activeQuote.value.selected_text}»\n\n${messageToSend}`;
+      activeQuote.value = null;
     }
 
     try {
@@ -898,6 +956,12 @@ export function useWowilonPanel(
     removeContext,
     startResize,
     closePanel,
-    detachWindow
+    detachWindow,
+    activeQuote,
+    researchProgress,
+    handleAskWoWiLon,
+    handleClearQuote,
+    handleAskSource,
+    handleAddToLore
   };
 }

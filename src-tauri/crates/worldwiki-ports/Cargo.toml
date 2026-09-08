@@ -1,6 +1,6 @@
 [package]
 name = "worldwiki-ports"
-version = "0.1.0"
+version = "0.85.0"
 edition = "2021"
 description = "Ports and interfaces (Secondary Ports) for WorldWiki architecture"
 

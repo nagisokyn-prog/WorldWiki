@@ -1,6 +1,6 @@
 [package]
 name = "tauri-shell"
-version = "0.1.0"
+version = "0.85.0"
 description = "tauri-surreal-kit shell template — domain-agnostic Tauri + SurrealDB bootstrap"
 authors = []
 edition = "2021"
@@ -33,4 +33,4 @@ tempfile = "3.5"
 tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread"] }
 serde_json = "1"
 uuid = { version = "1", features = ["v4"] }
-serial_test = "2.0"
+serial_test = "4.0.1"

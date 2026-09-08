@@ -53,8 +53,15 @@
         <!-- Пузырь сообщения (Message Bubble) -->
         <div 
           class="message-bubble" 
+          :data-message-id="group.activeMessage.id"
           :class="{ 'is-error-bubble': group.activeMessage.is_error || isErrorMessage(group.activeMessage.content) }"
         >
+          <!-- Цитата из предыдущего контекста (если есть) -->
+          <div v-if="group.activeMessage.quoted_context" class="message-quote-ref">
+            <span class="quote-ref-icon">⚡</span>
+            <span class="quote-ref-text">«{{ group.activeMessage.quoted_context.selected_text }}»</span>
+          </div>
+
           <!-- Режим инлайн-редактирования -->
           <div v-if="editingMessageId === group.activeMessage.id" class="inline-editor">
             <textarea 
@@ -74,6 +81,19 @@
               <AiMermaidDiagram v-if="seg.type === 'mermaid'" :code="seg.content" />
               <SafeHtml v-else class="message-text-segment" :content="renderMarkdown(seg.content)" />
             </template>
+
+            <!-- Список структурных источников/цитат -->
+            <div v-if="group.activeMessage.citations && group.activeMessage.citations.length > 0" class="message-citations-footer">
+              <div class="citations-title">Источники и факты:</div>
+              <div class="citations-list">
+                <AiCitationBadge
+                  v-for="(cit, cIdx) in group.activeMessage.citations"
+                  :key="cIdx"
+                  :citation="cit"
+                  @ask-source="$emit('ask-source', $event)"
+                />
+              </div>
+            </div>
           </div>
         </div>
         
@@ -148,8 +168,10 @@
 import { SafeHtml } from '@worldwiki/components';
 import type { ChatMessage, MessageVariantGroup } from '../useWowilonPanel';
 import type { ToolCallPayload } from './AiToolApproval.vue';
+import type { CitationItem } from './AiCitation.model';
 import AiToolApproval from './AiToolApproval.vue';
 import AiMermaidDiagram from './AiMermaidDiagram.vue';
+import AiCitationBadge from './AiCitationBadge.vue';
 import { useAiMessageList } from './useAiMessageList';
 
 export interface AiMessageListProps {
@@ -163,7 +185,6 @@ export interface AiMessageListProps {
   isGenerating?: boolean;
 }
 
-
 export interface AiMessageListEmits {
   (e: 'scroll', event: Event): void;
   (e: 'update:editDraft', val: string): void;
@@ -176,6 +197,7 @@ export interface AiMessageListEmits {
   (e: 'delete', messageId: string): void;
   (e: 'tool-approve', payload: ToolCallPayload): void;
   (e: 'tool-reject', payload: ToolCallPayload): void;
+  (e: 'ask-source', citation: CitationItem): void;
 }
 
 defineProps<AiMessageListProps>();

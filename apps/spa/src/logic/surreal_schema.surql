@@ -301,29 +301,32 @@ DEFINE FIELD OVERWRITE role             ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE content          ON chat_messages TYPE string;
 DEFINE FIELD OVERWRITE reasoning        ON chat_messages TYPE option<string | null>;
 DEFINE FIELD OVERWRITE tool_logs        ON chat_messages TYPE option<array<string> | null>;
-DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
-DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object> FLEXIBLE;
-DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string | null>;
+DEFINE FIELD OVERWRITE version          ON chat_messages TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE quoted_context   ON chat_messages TYPE option<object> FLEXIBLE;
+DEFINE FIELD OVERWRITE citations        ON chat_messages TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE edited_content   ON chat_messages TYPE option<string | null>;
 DEFINE FIELD OVERWRITE feedback_comment ON chat_messages TYPE option<string | null>;
-DEFINE FIELD OVERWRITE rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
-DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE rag_was_bad      ON chat_messages TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE embeddings       ON chat_messages TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE parent_id        ON chat_messages TYPE option<record<chat_messages>>;
 DEFINE FIELD OVERWRITE is_active        ON chat_messages TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE created_at       ON chat_messages TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at       ON chat_messages TYPE datetime DEFAULT time::now();
 
-DEFINE INDEX OVERWRITE idx_chat_msg_emb_openai ON chat_messages COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
-DEFINE INDEX OVERWRITE idx_chat_msg_created_at ON chat_messages FIELDS created_at;
-DEFINE INDEX OVERWRITE idx_chat_msg_chat_id ON chat_messages FIELDS chat_id, created_at;
+DEFINE INDEX OVERWRITE idx_chat_msg_content_bm25 ON chat_messages COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_chat_msg_emb_primary  ON chat_messages COLUMNS embeddings.primary HNSW DIMENSION 768 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_chat_msg_emb_openai   ON chat_messages COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_chat_msg_created_at   ON chat_messages FIELDS created_at;
+DEFINE INDEX OVERWRITE idx_chat_msg_chat_id      ON chat_messages FIELDS chat_id, created_at;
 
 -- Память агента
 DEFINE TABLE OVERWRITE agent_memory SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON agent_memory TYPE record<projects>;
+DEFINE FIELD OVERWRITE project_id  ON agent_memory TYPE record<projects>;
 DEFINE FIELD OVERWRITE memory_type ON agent_memory TYPE string;
-DEFINE FIELD OVERWRITE content     ON agent_memory TYPE string;
-DEFINE FIELD OVERWRITE embeddings  ON agent_memory TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE importance  ON agent_memory TYPE int DEFAULT 5;
-DEFINE FIELD OVERWRITE created_at  ON agent_memory TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE content     ON agent_memory TYPE string;
+DEFINE FIELD OVERWRITE embeddings  ON agent_memory TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE importance  ON agent_memory TYPE int DEFAULT 5;
+DEFINE FIELD OVERWRITE created_at  ON agent_memory TYPE datetime DEFAULT time::now();
 DEFINE INDEX OVERWRITE idx_memory_emb_openai ON agent_memory COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
 
 -- ===============================================
@@ -332,52 +335,160 @@ DEFINE INDEX OVERWRITE idx_memory_emb_openai ON agent_memory COLUMNS embeddings.
 
 -- Профили ИИ (Ключи, модели, провайдеры)
 DEFINE TABLE OVERWRITE ai_profiles SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON ai_profiles TYPE record<projects>;
-DEFINE FIELD OVERWRITE name        ON ai_profiles TYPE string;
-DEFINE FIELD OVERWRITE provider    ON ai_profiles TYPE string; -- 'openai', 'anthropic', 'ollama', 'turboquant'
-DEFINE FIELD OVERWRITE base_url    ON ai_profiles TYPE option<string>;
-DEFINE FIELD OVERWRITE api_key     ON ai_profiles TYPE option<string>; -- Хранится локально
+DEFINE FIELD OVERWRITE project_id  ON ai_profiles TYPE record<projects>;
+DEFINE FIELD OVERWRITE name        ON ai_profiles TYPE string;
+DEFINE FIELD OVERWRITE provider    ON ai_profiles TYPE string; -- 'openai', 'anthropic', 'ollama', 'turboquant'
+DEFINE FIELD OVERWRITE base_url    ON ai_profiles TYPE option<string>;
+DEFINE FIELD OVERWRITE api_key     ON ai_profiles TYPE option<string>; -- Хранится локально
 DEFINE FIELD OVERWRITE settings    ON ai_profiles TYPE object FLEXIBLE DEFAULT {}; -- temperature, context_window, etc.
 DEFINE FIELD OVERWRITE is_active   ON ai_profiles TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_global   ON ai_profiles TYPE bool DEFAULT false;
 
 -- Артефакты (Генерации ИИ, не засоряющие чат)
 DEFINE TABLE OVERWRITE artifacts SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON artifacts TYPE record<projects>;
-DEFINE FIELD OVERWRITE chat_id     ON artifacts TYPE option<record<chats>>;
-DEFINE FIELD OVERWRITE type        ON artifacts TYPE string; -- 'document', 'code', 'table', 'graph'
-DEFINE FIELD OVERWRITE title       ON artifacts TYPE string;
-DEFINE FIELD OVERWRITE content     ON artifacts TYPE string;
-DEFINE FIELD OVERWRITE version     ON artifacts TYPE int DEFAULT 1;
-DEFINE FIELD OVERWRITE created_at  ON artifacts TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE project_id  ON artifacts TYPE record<projects>;
+DEFINE FIELD OVERWRITE chat_id     ON artifacts TYPE option<record<chats>>;
+DEFINE FIELD OVERWRITE type        ON artifacts TYPE string; -- 'document', 'code', 'table', 'graph'
+DEFINE FIELD OVERWRITE title       ON artifacts TYPE string;
+DEFINE FIELD OVERWRITE content     ON artifacts TYPE string;
+DEFINE FIELD OVERWRITE version     ON artifacts TYPE int DEFAULT 1;
+DEFINE FIELD OVERWRITE created_at  ON artifacts TYPE datetime DEFAULT time::now();
 
 DEFINE TABLE OVERWRITE ai_skills SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON ai_skills TYPE record<projects>;
-DEFINE FIELD OVERWRITE name        ON ai_skills TYPE string;
+DEFINE FIELD OVERWRITE project_id  ON ai_skills TYPE record<projects>;
+DEFINE FIELD OVERWRITE name        ON ai_skills TYPE string;
 DEFINE FIELD OVERWRITE description ON ai_skills TYPE string;
 DEFINE FIELD OVERWRITE prompt_text ON ai_skills TYPE string;
 DEFINE FIELD OVERWRITE is_unlocked ON ai_skills TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_custom_author_style ON ai_skills TYPE bool DEFAULT false;
-DEFINE FIELD OVERWRITE created_at  ON ai_skills TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE created_at  ON ai_skills TYPE datetime DEFAULT time::now();
 
 -- Пользовательский словарь (Локальный лор)
 DEFINE TABLE OVERWRITE user_dictionary SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON user_dictionary TYPE record<projects>;
-DEFINE FIELD OVERWRITE word        ON user_dictionary TYPE string;
-DEFINE FIELD OVERWRITE definition  ON user_dictionary TYPE option<string>;
+DEFINE FIELD OVERWRITE project_id  ON user_dictionary TYPE record<projects>;
+DEFINE FIELD OVERWRITE word        ON user_dictionary TYPE string;
+DEFINE FIELD OVERWRITE definition  ON user_dictionary TYPE option<string>;
 DEFINE FIELD OVERWRITE is_approved ON user_dictionary TYPE bool DEFAULT true;
-DEFINE FIELD OVERWRITE confidence  ON user_dictionary TYPE float DEFAULT 1.0;
+DEFINE FIELD OVERWRITE confidence  ON user_dictionary TYPE float DEFAULT 1.0;
 DEFINE INDEX OVERWRITE idx_dict_word ON user_dictionary FIELDS project_id, word;
 
--- Кэш поисковика (Web Search)
-DEFINE TABLE OVERWRITE web_cache SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON web_cache TYPE record<projects>;
-DEFINE FIELD OVERWRITE url         ON web_cache TYPE string;
-DEFINE FIELD OVERWRITE source_type ON web_cache TYPE string;
-DEFINE FIELD OVERWRITE content     ON web_cache TYPE string;
-DEFINE FIELD OVERWRITE embeddings  ON web_cache TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE fetched_at  ON web_cache TYPE datetime DEFAULT time::now();
-DEFINE FIELD OVERWRITE expires_at  ON web_cache TYPE option<datetime>;
+-- Глобальный кэш веб-страниц (Web Cache / Scraping)
+DEFINE TABLE OVERWRITE web_pages SCHEMAFULL;
+DEFINE FIELD OVERWRITE url                 ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE canonical_url       ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE domain              ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE title               ON web_pages TYPE option<string>;
+DEFINE FIELD OVERWRITE content_type        ON web_pages TYPE string DEFAULT "text/html";
+DEFINE FIELD OVERWRITE charset             ON web_pages TYPE string DEFAULT "utf-8";
+DEFINE FIELD OVERWRITE language            ON web_pages TYPE option<string>;
+DEFINE FIELD OVERWRITE content_hash        ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE content             ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE extracted_markdown  ON web_pages TYPE option<string>;
+DEFINE FIELD OVERWRITE status_code         ON web_pages TYPE int DEFAULT 200;
+DEFINE FIELD OVERWRITE hit_count           ON web_pages TYPE int DEFAULT 1;
+DEFINE FIELD OVERWRITE fetched_at          ON web_pages TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE expires_at          ON web_pages TYPE option<datetime> DEFAULT (time::now() + 14d);
+
+DEFINE INDEX OVERWRITE idx_web_pages_canonical ON web_pages FIELDS canonical_url UNIQUE;
+DEFINE INDEX OVERWRITE idx_web_pages_hash      ON web_pages FIELDS content_hash;
+DEFINE INDEX OVERWRITE idx_web_pages_domain    ON web_pages FIELDS domain;
+DEFINE INDEX OVERWRITE idx_web_pages_md_bm25   ON web_pages COLUMNS extracted_markdown FULLTEXT ANALYZER ru_en_analyzer BM25;
+
+-- Атомарные чанки веб-доказательств (Web Evidence)
+DEFINE TABLE OVERWRITE web_evidence SCHEMAFULL;
+DEFINE FIELD OVERWRITE page_id             ON web_evidence TYPE record<web_pages>;
+DEFINE FIELD OVERWRITE project_id          ON web_evidence TYPE record<projects>;
+DEFINE FIELD OVERWRITE chunk_index         ON web_evidence TYPE int;
+DEFINE FIELD OVERWRITE text                ON web_evidence TYPE string;
+DEFINE FIELD OVERWRITE start_offset        ON web_evidence TYPE int;
+DEFINE FIELD OVERWRITE end_offset          ON web_evidence TYPE int;
+DEFINE FIELD OVERWRITE simhash             ON web_evidence TYPE option<string>;
+DEFINE FIELD OVERWRITE embeddings          ON web_evidence TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE metadata            ON web_evidence TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at          ON web_evidence TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_evidence_page        ON web_evidence FIELDS page_id;
+DEFINE INDEX OVERWRITE idx_evidence_text_bm25   ON web_evidence COLUMNS text FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_evidence_emb_primary ON web_evidence COLUMNS embeddings.primary HNSW DIMENSION 768 DIST COSINE;
+
+-- Сессии исследований (Research Sessions)
+DEFINE TABLE OVERWRITE research_sessions SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id          ON research_sessions TYPE record<projects>;
+DEFINE FIELD OVERWRITE conversation_id     ON research_sessions TYPE record<chats>;
+DEFINE FIELD OVERWRITE user_message_id     ON research_sessions TYPE record<chat_messages>;
+DEFINE FIELD OVERWRITE mode                ON research_sessions TYPE string; -- 'direct' | 'research' | 'deep_research'
+DEFINE FIELD OVERWRITE status              ON research_sessions TYPE string; -- 'planning' | 'searching' | 'reading' | 'synthesizing' | 'verifying' | 'completed' | 'failed'
+DEFINE FIELD OVERWRITE objective           ON research_sessions TYPE string;
+DEFINE FIELD OVERWRITE plan                ON research_sessions TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE events              ON research_sessions TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE claims              ON research_sessions TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE used_page_ids       ON research_sessions TYPE array<record<web_pages>> DEFAULT [];
+DEFINE FIELD OVERWRITE used_evidence_ids   ON research_sessions TYPE array<record<web_evidence>> DEFAULT [];
+DEFINE FIELD OVERWRITE search_count        ON research_sessions TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE page_count          ON research_sessions TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE created_at          ON research_sessions TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE finished_at         ON research_sessions TYPE option<datetime>;
+
+-- Функция атомарного кэширования страницы
+DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
+    $url: string,
+    $canonical_url: string,
+    $domain: string,
+    $title: string,
+    $content_type: string,
+    $language: string,
+    $content_hash: string,
+    $content: string,
+    $extracted_md: string,
+    $status_code: int,
+    $ttl_days: int
+) {
+    LET $existing = (
+        SELECT id, content_hash FROM web_pages 
+        WHERE canonical_url = $canonical_url 
+        LIMIT 1
+    )[0];
+
+    IF $existing != NONE {
+        IF $existing.content_hash == $content_hash {
+            UPDATE $existing.id SET
+                hit_count += 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from::days($ttl_days);
+            RETURN { id: $existing.id, is_new: false, is_updated: false };
+        } ELSE {
+            UPDATE $existing.id SET
+                content_hash = $content_hash,
+                title = $title,
+                content_type = $content_type,
+                language = $language,
+                content = $content,
+                extracted_markdown = $extracted_md,
+                hit_count += 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from::days($ttl_days);
+            RETURN { id: $existing.id, is_new: false, is_updated: true };
+        };
+    } ELSE {
+        LET $created = (
+            CREATE web_pages SET
+                url = $url,
+                canonical_url = $canonical_url,
+                domain = $domain,
+                title = $title,
+                content_type = $content_type,
+                language = $language,
+                content_hash = $content_hash,
+                content = $content,
+                extracted_markdown = $extracted_md,
+                status_code = $status_code,
+                hit_count = 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from::days($ttl_days)
+        );
+        RETURN { id: $created[0].id, is_new: true, is_updated: false };
+    };
+};
 -- Чанки лора и энциклопедии для RAG-поиска (Гибридный HNSW + BM25)
 DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects>;

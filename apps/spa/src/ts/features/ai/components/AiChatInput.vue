@@ -1,11 +1,21 @@
 <template>
   <div class="ai-chat-input-wrapper" :class="{ 'is-focused': isFocused, 'is-loading': loading }">
+    <AiSkillAutocomplete
+      ref="autocompleteRef"
+      :is-open="isSkillAutocompleteOpen"
+      :search-query="skillSearchQuery"
+      :skills="skills || []"
+      @select="handleSelectSkill"
+      @close="isSkillAutocompleteOpen = false"
+    />
+
     <editor-content :editor="editor" class="ai-editor" />
     
     <div class="input-actions">
       <div class="input-hints">
         <span class="hint">Enter ⏎ Отправить</span>
         <span class="hint">Shift+Enter ⏎ Новая строка</span>
+        <span class="hint">!" Навыки</span>
       </div>
       
       <button
@@ -31,11 +41,9 @@
 
 <script setup lang="ts">
 import { EditorContent } from '@tiptap/vue-3';
-import { 
-  useAiChatInput, 
-  type AiChatInputProps, 
-  type AiChatInputEmits 
-} from './useAiChatInput';
+import AiSkillAutocomplete from './AiSkillAutocomplete.vue';
+import type { AiChatInputProps, AiChatInputEmits } from './AiChatInput.model';
+import { useAiChatInput } from './useAiChatInput';
 
 const props = defineProps<AiChatInputProps>();
 const emit = defineEmits<AiChatInputEmits>();
@@ -44,6 +52,10 @@ const {
   editor,
   isFocused,
   isEmpty,
+  isSkillAutocompleteOpen,
+  skillSearchQuery,
+  autocompleteRef,
+  handleSelectSkill,
   submitMessage,
   unlock
 } = useAiChatInput(props, emit);

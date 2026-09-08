@@ -3,7 +3,7 @@ import type { AiProfile, AiProfileSettings } from '../types/ai.types';
 import { useAiProfiles } from '../composables/useAiProfiles';
 import { useAiModels } from '../composables/useAiModels';
 
-export type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions';
+export type TabType = 'connections' | 'models' | 'local_ai' | 'modes' | 'permissions' | 'skills';
 
 export const tabTitles: Record<string, string> = {
   connections: 'Подключения и API-ключи',
@@ -11,11 +11,12 @@ export const tabTitles: Record<string, string> = {
   local_ai: 'Центр локальных моделей',
   modes: 'Режимы и роли ИИ-помощника',
   permissions: 'Инструменты и безопасность',
+  skills: 'Навыки и скиллы (Skills)',
 };
 
 export function useAiSettingsView() {
   const savedTab = localStorage.getItem('worldwiki_ai_settings_active_tab') as TabType;
-  const activeTab = ref<TabType>(savedTab && ['connections', 'models', 'local_ai', 'modes', 'permissions'].includes(savedTab) ? savedTab : 'connections');
+  const activeTab = ref<TabType>(savedTab && ['connections', 'models', 'local_ai', 'modes', 'permissions', 'skills'].includes(savedTab) ? savedTab : 'connections');
 
   watch(activeTab, (val) => {
     localStorage.setItem('worldwiki_ai_settings_active_tab', val);

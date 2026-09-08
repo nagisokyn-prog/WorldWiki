@@ -68,8 +68,13 @@
             </div>
           </div>
 
-          <!-- Отрендеренный текст сообщения -->
-          <SafeHtml v-else class="message-content" :content="renderMarkdown(group.activeMessage.content)" />
+          <!-- Отрендеренный текст сообщения с поддержкой Mermaid диаграмм -->
+          <div v-else class="message-content">
+            <template v-for="(seg, sIdx) in parseMessageContent(group.activeMessage.content)" :key="sIdx">
+              <AiMermaidDiagram v-if="seg.type === 'mermaid'" :code="seg.content" />
+              <SafeHtml v-else class="message-text-segment" :content="renderMarkdown(seg.content)" />
+            </template>
+          </div>
         </div>
         
         <!-- Переключатель вариантов ответа (Ветвление) -->
@@ -144,6 +149,7 @@ import { SafeHtml } from '@worldwiki/components';
 import type { ChatMessage, MessageVariantGroup } from '../useWowilonPanel';
 import type { ToolCallPayload } from './AiToolApproval.vue';
 import AiToolApproval from './AiToolApproval.vue';
+import AiMermaidDiagram from './AiMermaidDiagram.vue';
 import { useAiMessageList } from './useAiMessageList';
 
 export interface AiMessageListProps {
@@ -175,7 +181,7 @@ export interface AiMessageListEmits {
 defineProps<AiMessageListProps>();
 defineEmits<AiMessageListEmits>();
 
-const { containerRef, copyText, isErrorMessage } = useAiMessageList();
+const { containerRef, copyText, isErrorMessage, parseMessageContent } = useAiMessageList();
 
 defineExpose({
   containerRef

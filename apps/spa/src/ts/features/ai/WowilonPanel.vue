@@ -99,6 +99,7 @@
             <AiChatInput 
               ref="chatInputRef"
               :loading="isGenerating"
+              :skills="skills"
               @submit="sendMessage"
             />
           </div>
@@ -142,6 +143,7 @@ const {
   activeProfile,
   activeModeSlug,
   modes,
+  skills,
   chatTree,
   activeChatId,
   isChatsLoading,

@@ -20,6 +20,17 @@ import {
   aiRespondToolApproval
 } from '../../services/api.client';
 
+import type { AiSkillItem } from './components/AiSkillAutocomplete.model';
+
+const DEFAULT_BUILTIN_SKILLS: AiSkillItem[] = [
+  {
+    id: 'ai_skills:entity_type_creator',
+    name: 'Конструктор типов сущностей',
+    description: 'Пошаговое создание нового типа сущности на базе каталога блоков ui_editor.json с визуализацией через Mermaid MMD диаграмму.',
+    prompt_text: 'Ты используешь эталонный навык "Конструктор типов сущностей". Перед созданием структуры всегда строй Mermaid MMD диаграмму вкладок и полей.'
+  }
+];
+
 export interface ChatMessage {
   id?: string;
   role: 'user' | 'assistant' | 'system';
@@ -56,10 +67,32 @@ export function useWowilonPanel(
   const isSettingsOpen = ref(localStorage.getItem('worldwiki_ai_settings_open') === 'true');
   const isToolInspectorOpen = ref(false);
   const selectedContext = ref<ContextItem[]>([]);
+  const skills = ref<AiSkillItem[]>([...DEFAULT_BUILTIN_SKILLS]);
+
+  const loadSkills = async () => {
+    try {
+      const res = await invoke<AiSkillItem[]>('get_aiskills', {
+        project: currentProject
+      }).catch(() => null);
+
+      if (res && res.length > 0) {
+        skills.value = res;
+      } else {
+        skills.value = [...DEFAULT_BUILTIN_SKILLS];
+      }
+    } catch {
+      skills.value = [...DEFAULT_BUILTIN_SKILLS];
+    }
+  };
 
   watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_width', String(w)));
   watch(showSidebar, (v) => localStorage.setItem('worldwiki_ai_show_sidebar', String(v)));
-  watch(isSettingsOpen, (v) => localStorage.setItem('worldwiki_ai_settings_open', String(v)));
+  watch(isSettingsOpen, (v) => {
+    localStorage.setItem('worldwiki_ai_settings_open', String(v));
+    if (!v) {
+      void loadSkills();
+    }
+  });
   watch(isToolInspectorOpen, (v) => console.log('🔥🔥🔥 [useWowilonPanel] isToolInspectorOpen changed to:', v));
 
   let currentProject = 'global';
@@ -237,10 +270,37 @@ export function useWowilonPanel(
       parent_id: parentId
     });
 
+    let messageToSend = text;
+    const skillMatches = Array.from(text.matchAll(/!"([^"]+)"/g));
+    if (skillMatches.length > 0) {
+      const skillContexts: string[] = [];
+      for (const match of skillMatches) {
+        const skillName = match[1].trim();
+        const skill = skills.value.find(s => s.name.toLowerCase() === skillName.toLowerCase());
+        if (skill) {
+          let skillContent = skill.prompt_text || skill.description || '';
+          if (skillName.toLowerCase().includes('конструктор') && !skillContent.includes('## 🛑 Железные Инварианты')) {
+            try {
+              const res = await fetch('/skills/Конструктор_типов_сущностей.md');
+              if (res.ok) {
+                skillContent = await res.text();
+              }
+            } catch {
+              // fallback
+            }
+          }
+          skillContexts.push(`<context type="skill" name="${skill.name}">\n${skillContent}\n</context>`);
+        }
+      }
+      if (skillContexts.length > 0) {
+        messageToSend = `${skillContexts.join('\n\n')}\n\n${text}`;
+      }
+    }
+
     try {
       const res = (await sendChatMessage(
         currentChatId,
-        text,
+        messageToSend,
         currentProject,
         activeModeSlug.value || null
       )) as {
@@ -608,6 +668,7 @@ export function useWowilonPanel(
   onMounted(async () => {
     await loadChats();
     loadProfiles();
+    void loadSkills();
 
     try {
       const res = await invoke<AiTopBarMode[]>('get_aimodes', { project: currentProject });
@@ -791,6 +852,8 @@ export function useWowilonPanel(
     activeProfile,
     activeModeSlug,
     modes,
+    skills,
+    loadSkills,
     chatTree,
     activeChatId,
     isChatsLoading,

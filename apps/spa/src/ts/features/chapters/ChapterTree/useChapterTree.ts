@@ -225,14 +225,20 @@ export function useChapterTree(
         loadEntities();
     };
 
+    const entitySavedHandler = () => {
+        void load();
+    };
+
     onMounted(() => {
         document.addEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
         document.addEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
+        document.addEventListener('ww:entity-saved', entitySavedHandler);
         window.addEventListener('ww:schema-updated', schemaUpdatedHandler as EventListener);
     });
     onUnmounted(() => {
         document.removeEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
         document.removeEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
+        document.removeEventListener('ww:entity-saved', entitySavedHandler);
         window.removeEventListener('ww:schema-updated', schemaUpdatedHandler as EventListener);
     });
 

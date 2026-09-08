@@ -614,9 +614,12 @@ impl ChatServices {
                 "call_id": call_id,
                 "chat_id": chat_id,
                 "message_id": assistant_msg_id,
+                "assistant_msg_id": assistant_msg_id,
                 "tool_name": name,
                 "action": input.get("action").and_then(|v| v.as_str()).unwrap_or("edit"),
-                "input": input
+                "input": input,
+                "payload": input,
+                "description": format!("Вызов инструмента: {name}")
             });
 
             let _ = self

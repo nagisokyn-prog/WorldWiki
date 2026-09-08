@@ -351,7 +351,6 @@ DEFINE FIELD OVERWRITE content     ON artifacts TYPE string;
 DEFINE FIELD OVERWRITE version     ON artifacts TYPE int DEFAULT 1;
 DEFINE FIELD OVERWRITE created_at  ON artifacts TYPE datetime DEFAULT time::now();
 
--- Кастомные Скиллы (Разблокируемые после 15к слов)
 DEFINE TABLE OVERWRITE ai_skills SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON ai_skills TYPE record<projects>;
 DEFINE FIELD OVERWRITE name        ON ai_skills TYPE string;

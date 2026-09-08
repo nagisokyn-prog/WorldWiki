@@ -74,10 +74,14 @@ export function useAiAutoApproveModal(
     if (!state.value.enabled || activeCount.value === 0) {
       return 'Спрашивать всегда';
     }
+    const activeNames = availableCategories.value
+      .filter((cat) => state.value.categories[cat.key])
+      .map((cat) => cat.label);
+
     if (activeCount.value === total) {
-      return '✓ Все разрешены';
+      return `Авто: Все (${activeNames.join(', ')})`;
     }
-    return `✓ ${activeCount.value}/${total} разрешено`;
+    return `Авто: ${activeNames.join(', ')}`;
   });
 
   const toggleCategory = (key: keyof AutoApproveState['categories']) => {

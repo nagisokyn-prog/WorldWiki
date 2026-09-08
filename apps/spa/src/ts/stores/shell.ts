@@ -314,7 +314,8 @@ export const useShellStore = defineStore('shell', () => {
         });
 
         if (layout.currentSidebarTab.value === type) entityOps.loadEntityList(type);
-        if (type === 'chapter' && chapterTreeRef.value?.load) chapterTreeRef.value.load();
+        if (chapterTreeRef.value?.load) chapterTreeRef.value.load();
+        document.dispatchEvent(new CustomEvent('ww:entity-saved', { detail: { type, id } }));
       })?.catch?.(() => {});
 
       listen<{ type: string; id: string; data: Record<string, unknown> }>('ww-entity-live-sync', (event) => {

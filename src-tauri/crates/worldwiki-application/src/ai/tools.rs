@@ -119,18 +119,7 @@ impl AiToolFacades {
                     _ => return Err(ApplicationError::Validation("Expected object payload for entity".into())),
                 };
 
-                // 1. Determine entity ID (auto-generate safe unique ID if omitted or custom)
-                let raw_id = obj.get("id").and_then(|v| v.as_str()).unwrap_or("");
-                let is_safe_ascii = !raw_id.is_empty() && raw_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ':');
-                let entity_id = if raw_id.is_empty() || !is_safe_ascii {
-                    format!("entities:char_{}", uuid::Uuid::new_v4().simple())
-                } else if !raw_id.starts_with("entities:") {
-                    format!("entities:{raw_id}")
-                } else {
-                    raw_id.to_string()
-                };
-
-                // 2. Extract or determine Project ID
+                let raw_id = obj.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
                 let project_id = obj
                     .get("project_id")
                     .or_else(|| obj.get("projectId"))
@@ -138,16 +127,6 @@ impl AiToolFacades {
                     .unwrap_or("")
                     .to_string();
 
-                // 3. Extract or determine Type Key (character, location, organization, item, etc.)
-                let type_key = obj
-                    .get("type_key")
-                    .or_else(|| obj.get("entity_type"))
-                    .or_else(|| obj.get("type"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("character")
-                    .to_string();
-
-                // 4. Extract Name with high forgiveness (first input)
                 let mut name = obj
                     .get("name")
                     .or_else(|| obj.get("название"))
@@ -158,49 +137,114 @@ impl AiToolFacades {
                     .trim()
                     .to_string();
 
+                // 1. Try to find an existing entity if updating or if name already exists
+                let mut existing_entity: Option<Entity> = None;
+
+                if !raw_id.is_empty() {
+                    let full_id = if raw_id.starts_with("entities:") {
+                        raw_id.to_string()
+                    } else {
+                        format!("entities:{raw_id}")
+                    };
+                    if let Ok(card) = self.knowledge.get_full_card(&full_id).await {
+                        existing_entity = Some(card.entity);
+                    }
+                }
+
+                if existing_entity.is_none() && !name.is_empty() {
+                    let search_res = self.knowledge.entity_repo.search(&project_id, &name, 5).await.unwrap_or_default();
+                    if let Some(matched) = search_res.iter().find(|e| e.name.eq_ignore_ascii_case(&name)) {
+                        if let Ok(card) = self.knowledge.get_full_card(&matched.id).await {
+                            existing_entity = Some(card.entity);
+                        }
+                    }
+                }
+
+                // 2. Determine target ID, type_key, and created_at
+                let (entity_id, type_key, created_at, mut base_attributes, existing_tags) = if let Some(ref prev) = existing_entity {
+                    let prev_attrs = match &prev.attributes {
+                        Value::Object(m) => m.clone(),
+                        _ => serde_json::Map::new(),
+                    };
+                    (
+                        prev.id.clone(),
+                        obj.get("type_key")
+                            .or_else(|| obj.get("entity_type"))
+                            .or_else(|| obj.get("type"))
+                            .and_then(|v| v.as_str())
+                            .unwrap_or(&prev.type_key)
+                            .to_string(),
+                        prev.created_at,
+                        prev_attrs,
+                        prev.tags.clone(),
+                    )
+                } else {
+                    let is_safe_ascii = !raw_id.is_empty() && raw_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ':');
+                    let gen_id = if raw_id.is_empty() || !is_safe_ascii {
+                        format!("entities:char_{}", uuid::Uuid::new_v4().simple())
+                    } else if !raw_id.starts_with("entities:") {
+                        format!("entities:{raw_id}")
+                    } else {
+                        raw_id.to_string()
+                    };
+
+                    let t_key = obj
+                        .get("type_key")
+                        .or_else(|| obj.get("entity_type"))
+                        .or_else(|| obj.get("type"))
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("character")
+                        .to_string();
+
+                    (gen_id, t_key, chrono::Utc::now(), serde_json::Map::new(), Vec::new())
+                };
+
                 let description = obj
                     .get("description")
                     .or_else(|| obj.get("описание"))
                     .and_then(|v| v.as_str())
-                    .map(|s| s.to_string());
+                    .map(|s| s.to_string())
+                    .or_else(|| existing_entity.as_ref().and_then(|e| e.description.clone()));
 
-                let tags: Vec<String> = obj
-                    .get("tags")
-                    .and_then(|v| v.as_array())
-                    .map(|arr| {
-                        arr.iter()
-                            .filter_map(|x| x.as_str().map(|s| s.to_string()))
-                            .collect()
-                    })
-                    .unwrap_or_default();
+                let mut tags = existing_tags;
+                if let Some(new_tags) = obj.get("tags").and_then(|v| v.as_array()) {
+                    for t in new_tags.iter().filter_map(|x| x.as_str().map(|s| s.to_string())) {
+                        if !tags.contains(&t) {
+                            tags.push(t);
+                        }
+                    }
+                }
 
-                // 5. Build Attributes map
-                let mut attributes_map = match obj.remove("attributes") {
-                    Some(Value::Object(m)) => m,
-                    _ => serde_json::Map::new(),
-                };
+                // 3. Deep merge incoming attributes into base_attributes
+                if let Some(Value::Object(incoming_attrs)) = obj.remove("attributes") {
+                    for (k, v) in incoming_attrs {
+                        base_attributes.insert(k, v);
+                    }
+                }
 
                 // If name was inside attributes_map["название"]
                 if name.is_empty() {
-                    if let Some(n) = attributes_map.get("название").and_then(|v| v.as_str()) {
+                    if let Some(n) = base_attributes.get("название").and_then(|v| v.as_str()) {
                         name = n.trim().to_string();
                     }
                 }
 
                 if name.is_empty() {
-                    name = "Новая сущность".to_string();
+                    name = existing_entity
+                        .as_ref()
+                        .map(|e| e.name.clone())
+                        .unwrap_or_else(|| "Новая сущность".to_string());
                 }
 
-                // Ensure attributes["название"] matches entity.name
-                attributes_map.insert("название".to_string(), Value::String(name.clone()));
+                base_attributes.insert("название".to_string(), Value::String(name.clone()));
                 if let Some(ref d) = description {
-                    attributes_map.insert("описание".to_string(), Value::String(d.clone()));
+                    base_attributes.insert("описание".to_string(), Value::String(d.clone()));
                 }
 
-                // Collect any other root fields into attributes (e.g. "пол", "статус", "роль_в_истории")
+                // Collect any other root fields into attributes
                 for (k, v) in obj {
                     if !["id", "project_id", "projectId", "type_key", "entity_type", "type", "name", "tags", "created_at", "updated_at", "description", "описание"].contains(&k.as_str()) {
-                        attributes_map.insert(k, v);
+                        base_attributes.insert(k, v);
                     }
                 }
 
@@ -210,15 +254,15 @@ impl AiToolFacades {
                     type_key: type_key.clone(),
                     name: name.clone(),
                     description,
-                    attributes: Value::Object(attributes_map),
+                    attributes: Value::Object(base_attributes),
                     tags,
-                    created_at: chrono::Utc::now(),
+                    created_at,
                     updated_at: chrono::Utc::now(),
                 };
 
                 self.knowledge.save_entity(&entity).await?;
 
-                // Emit event for UI synchronization without F5 (Bug #9)
+                // Emit event for UI synchronization without F5
                 let _ = self.knowledge.events.publish_raw(
                     "ww-entity-saved",
                     serde_json::json!({
@@ -227,8 +271,9 @@ impl AiToolFacades {
                     })
                 ).await;
 
+                let status = if existing_entity.is_some() { "updated" } else { "created" };
                 Ok(serde_json::json!({
-                    "status": "success",
+                    "status": status,
                     "entity_id": entity.id,
                     "name": entity.name,
                     "type_key": entity.type_key
@@ -470,14 +515,14 @@ impl AiToolFacades {
 
         let entity_manage_def = serde_json::json!({
             "name": "entity_manage",
-            "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь. Для создания передайте action: 'create' и объект свойств (name, type_key, description, attributes). Поля id и project_id указывать НЕ нужно — они формируются автоматически.",
+            "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь. Для обновления передайте action: 'update', имя 'name' (или 'id') и обновленные свойства в 'attributes' (старые данные автоматически сохранятся и дополнятся). Для создания нового объекта используйте action: 'create'.",
             "input_schema": {
                 "type": "object",
                 "properties": {
                     "action": { "type": "string", "enum": ["create", "update", "delete", "relate"], "description": "Действие над сущностью" },
                     "payload": {
                         "type": "object",
-                        "description": "Бланк сущности. Для create: 'name' (обязательно), 'type_key' ('character', 'location', 'faction', 'item'), 'description', 'attributes'."
+                        "description": "Бланк сущности. Для update/create: 'name' (обязательно), 'id' (опционально), 'type_key' ('character', 'location', 'faction', 'item'), 'description', 'attributes' (объект с полями сущности)."
                     }
                 },
                 "required": ["action", "payload"]

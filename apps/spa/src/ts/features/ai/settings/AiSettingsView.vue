@@ -36,6 +36,13 @@
         </button>
         <button 
           class="nav-item" 
+          :class="{ active: activeTab === 'skills' }"
+          @click="activeTab = 'skills'"
+        >
+          <i class="fas fa-magic"></i> Навыки
+        </button>
+        <button 
+          class="nav-item" 
           :class="{ active: activeTab === 'permissions' }"
           @click="activeTab = 'permissions'"
         >
@@ -94,7 +101,13 @@
             :current-project="currentProject"
           />
 
-          <!-- 5. ПРАВА ДОСТУПА (PERMISSIONS) -->
+          <!-- 5. НАВЫКИ (SKILLS) -->
+          <AiSettingsSkillsTab
+            v-if="activeTab === 'skills'"
+            :current-project="currentProject"
+          />
+
+          <!-- 6. ПРАВА ДОСТУПА (PERMISSIONS) -->
           <AiSettingsPermissionsTab 
             v-if="activeTab === 'permissions'"
             @save-permissions="handleSavePermissions"
@@ -110,6 +123,7 @@ import AiSettingsConnectionsTab from './tabs/AiSettingsConnectionsTab.vue';
 import AiSettingsModelsTab from './tabs/AiSettingsModelsTab.vue';
 import AiSettingsLocalTab from './tabs/AiSettingsLocalTab.vue';
 import AiSettingsModesTab from './tabs/AiSettingsModesTab.vue';
+import AiSettingsSkillsTab from './tabs/AiSettingsSkillsTab.vue';
 import AiSettingsPermissionsTab from './tabs/AiSettingsPermissionsTab.vue';
 import { useAiSettingsView } from './useAiSettingsView';
 

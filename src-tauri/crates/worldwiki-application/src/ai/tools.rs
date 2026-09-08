@@ -524,7 +524,7 @@ impl AiToolFacades {
             }
         });
 
-        match mode {
+        match crate::ai::prompt::normalize_mode(mode) {
             "editor" => vec![
                 world_query_def,
                 entity_inspect_def,

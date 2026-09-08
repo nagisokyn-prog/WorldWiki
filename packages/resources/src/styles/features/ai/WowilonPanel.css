@@ -74,3 +74,10 @@
   min-width: 0;
   width: 100%;
 }
+
+.input-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+}

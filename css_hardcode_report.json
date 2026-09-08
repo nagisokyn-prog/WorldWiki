@@ -1,27 +1,35 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 64,
-  "fixedCount": 1030,
-  "introducedCount": 38,
-  "trendPercent": "94.0",
+  "currentDebt": 73,
+  "fixedCount": 1033,
+  "introducedCount": 50,
+  "trendPercent": "93.1",
   "categories": {
-    "blackColors": 0,
-    "whiteColors": 0,
-    "hexColors": 2,
+    "blackColors": 6,
+    "whiteColors": 2,
+    "hexColors": 0,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 62
+    "inlineStyles": 65
   },
   "semanticRoles": {
-    "modalBackdrops": 0,
+    "modalBackdrops": 1,
     "sunkenBackgrounds": 0,
     "borders": 0,
-    "text": 2
+    "text": 1
   },
   "topCssFiles": [
     {
-      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-      "count": 2
+      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiModeSelector.css",
+      "count": 1
     }
   ],
   "allTopFiles": [
@@ -34,6 +42,14 @@
       "count": 6
     },
     {
+      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "count": 3
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
+      "count": 3
+    },
+    {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
       "count": 3
     },
@@ -42,7 +58,7 @@
       "count": 3
     },
     {
-      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",
       "count": 2
     },
     {
@@ -74,36 +90,82 @@
       "count": 2
     },
     {
-      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
-      "count": 1
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiRecommended.vue",
+      "file": "packages/resources/src/styles/features/ai/AiModeSelector.css",
       "count": 1
     }
   ],
   "violations": [
     {
-      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-      "line": 448,
-      "match": "#1a1a1a",
-      "snippet": "color: var(--text-main, #1a1a1a);"
+      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "line": 41,
+      "match": "rgba(0, 0, 0, 0.45)",
+      "snippet": "box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.45));"
     },
     {
-      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-      "line": 482,
-      "match": "#999",
-      "snippet": "color: var(--text-muted, #999);"
+      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "line": 111,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-on-accent, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      "line": 186,
+      "match": "#ffffff",
+      "snippet": "background: var(--color-text-on-accent, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiModeSelector.css",
+      "line": 51,
+      "match": "rgba(0, 0, 0, 0.45)",
+      "snippet": "box-shadow: var(--shadow-dropdown, 0 8px 24px rgba(0, 0, 0, 0.45));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
+      "line": 11,
+      "match": "rgba(0, 0, 0, 0.65)",
+      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.65));"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
+      "line": 29,
+      "match": "rgba(0, 0, 0, 0.55)",
+      "snippet": "box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
+      "line": 213,
+      "match": "rgba(0, 0, 0, 0.55)",
+      "snippet": "box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);"
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",
+      "line": 11,
+      "match": "inline-style",
+      "snippet": "style=\"font-size: 8px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",
+      "line": 18,
+      "match": "inline-style",
+      "snippet": "style=\"color: var(--color-text-muted); font-size: 11px;\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
+      "line": 2,
+      "match": "inline-style",
+      "snippet": "style=\"{ width: sidebarWidth + 'px', minWidth: sidebarWidth + 'px' }\""
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
-      "line": 32,
+      "line": 22,
       "match": "inline-style",
       "snippet": "style=\"{ '--progress-w': progressPercent + '%' }\""
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiToolInspector.vue",
+      "line": 134,
+      "match": "rgba(0, 0, 0, 0.8)",
+      "snippet": "box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), var(--shadow-lg);"
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",
@@ -311,13 +373,13 @@
     },
     {
       "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "line": 25,
+      "line": 26,
       "match": "inline-style",
       "snippet": "style=\"dropdownStyle\""
     },
     {
       "file": "packages/components/src/components/Vue/XboxWheel.vue",
-      "line": 35,
+      "line": 36,
       "match": "inline-style",
       "snippet": "style=\"getItemStyle(i)\""
     },

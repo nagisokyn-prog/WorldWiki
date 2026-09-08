@@ -22,7 +22,6 @@ export interface AiChatTopBarEmits {
   (e: 'change-mode', mode: string): void;
   (e: 'toggle-sidebar'): void;
   (e: 'restart-session'): void;
-  (e: 'open-tools'): void;
 }
 
 export function useAiChatTopBar(props: AiChatTopBarProps, emit?: AiChatTopBarEmits) {
@@ -91,13 +90,6 @@ export function useAiChatTopBar(props: AiChatTopBarProps, emit?: AiChatTopBarEmi
     return (val || 0).toString();
   };
 
-  const handleOpenTools = () => {
-    console.log('🔥🔥🔥 [AiChatTopBar] Tools button clicked! Emitting open-tools');
-    if (emit) {
-      emit('open-tools');
-    }
-  };
-
   return {
     isIndexing,
     isUnloading,
@@ -105,7 +97,6 @@ export function useAiChatTopBar(props: AiChatTopBarProps, emit?: AiChatTopBarEmi
     progressPercent,
     handleReindexLore,
     handleUnloadAll,
-    handleOpenTools,
     formatTokens
   };
 }

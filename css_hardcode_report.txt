@@ -4,29 +4,31 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     64 мест
-  • Fixed (Устранено): -1030 мест 🎉
-  • New (Введено):    +38 мест
-  • Net Trend:        ↓ 995 (94.0% улучшение)
+  • Current Debt:     73 мест
+  • Fixed (Устранено): -1033 мест 🎉
+  • New (Введено):    +50 мест
+  • Net Trend:        ↓ 986 (93.1% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
 ────────────────────────────────────────────────────────────────────────
-  • [Оверлеи / Затемнения]   --modal-backdrop : 0 мест
+  • [Оверлеи / Затемнения]   --modal-backdrop : 1 мест
   • [Утопленные подложки]    --bg-sunken      : 0 мест
   • [Системные рамки]        --border-color   : 0 мест
-  • [Цвета текста]           --text-main/muted: 2 мест
+  • [Цвета текста]           --text-main/muted: 1 мест
 
 ────────────────────────────────────────────────────────────────────────
   2. РАЗБИВКА ПО ТИПАМ НАРУШЕНИЙ
 ────────────────────────────────────────────────────────────────────────
-  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      0 [Критично для Light Theme]
-  • Hardcoded White Colors  (rgba(255,255,...), #fff):     0 [Критично для Light Theme]
-  • Arbitrary HEX Colors    (#aabbcc):                   2
-  • Inline Styles           (style="..."):              62
+  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      6 [Критично для Light Theme]
+  • Hardcoded White Colors  (rgba(255,255,...), #fff):     2 [Критично для Light Theme]
+  • Arbitrary HEX Colors    (#aabbcc):                   0
+  • Inline Styles           (style="..."):              65
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────
   3. ПРИОРИТЕТНЫЕ CSS ФАЙЛЫ ДЛЯ СЛЕДУЮЩЕГО ШАГА (TOP-15 CSS ONLY)
 ────────────────────────────────────────────────────────────────────────
-   1. [  2 мест]  packages/resources/src/styles/features/chapters/EditorCoreTiptap.css
+   1. [  3 мест]  packages/resources/src/styles/features/ai/AiAutoApproveModal.css
+   2. [  3 мест]  packages/resources/src/styles/features/chapters/WordDialogs.css
+   3. [  1 мест]  packages/resources/src/styles/features/ai/AiModeSelector.css

@@ -41,7 +41,6 @@
             @change-mode="handleModeChange"
             @toggle-sidebar="toggleSidebar"
             @restart-session="cancelGeneration"
-            @open-tools="isToolInspectorOpen = true"
           />
           
           <AiMessageList 
@@ -77,12 +76,25 @@
               @resume="() => {}"
             />
             
-            <AiContextSelector
-              :selected-context="selectedContext"
-              :current-project="currentProject"
-              @context-selected="handleContextSelected"
-              @remove-context="removeContext"
-            />
+            <div class="input-controls-row">
+              <AiContextSelector
+                :selected-context="selectedContext"
+                :current-project="currentProject"
+                @context-selected="handleContextSelected"
+                @remove-context="removeContext"
+              />
+              <AiModeSelector
+                placement="top"
+                :active-mode-slug="activeModeSlug"
+                :modes="modes"
+                @change-mode="handleModeChange"
+              />
+              <AiAutoApproveModal
+                placement="top"
+                :current-project="currentProject"
+                :active-mode-slug="activeModeSlug"
+              />
+            </div>
 
             <AiChatInput 
               ref="chatInputRef"
@@ -112,6 +124,8 @@ import AiMessageList from './components/AiMessageList.vue';
 import AiChatInput from './components/AiChatInput.vue';
 import AiActionButtons from './components/AiActionButtons.vue';
 import AiContextSelector from './components/AiContextSelector.vue';
+import AiModeSelector from './components/AiModeSelector.vue';
+import AiAutoApproveModal from './components/AiAutoApproveModal.vue';
 import AiToolInspector from './components/AiToolInspector.vue';
 import AiSettingsView from './settings/AiSettingsView.vue';
 import { useWowilonPanel, type WowilonPanelProps, type WowilonPanelEmits } from './useWowilonPanel';

@@ -25,9 +25,7 @@ rem Install pnpm dependencies silently
 call pnpm install
 
 echo Generating TS bindings...
-cd src-tauri
-cargo test export_bindings
-cd ..
+call node scripts/codegen.js
 
 echo Starting dev build...
 cmd /k pnpm tauri dev -- --features ai-local

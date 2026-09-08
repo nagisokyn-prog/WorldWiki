@@ -339,7 +339,7 @@ impl ChatServices {
             None
         };
 
-        let mode = _mode_slug.as_deref().unwrap_or("companion");
+        let mode = super::prompt::normalize_mode(_mode_slug.as_deref().unwrap_or("companion"));
         let system_prompt = build_system_prompt_direct(
             mode,
             profile
@@ -575,7 +575,13 @@ impl ChatServices {
         };
 
         // 1. Role Mode Defense-in-depth Check
-        let is_allowed_in_mode = match mode {
+        let norm_mode = if matches!(mode, "direct" | "all" | "*") {
+            mode
+        } else {
+            super::prompt::normalize_mode(mode)
+        };
+
+        let is_allowed_in_mode = match norm_mode {
             "direct" | "all" | "*" => true,
             "editor" => !matches!(name, "consistency_audit" | "audit_consistency" | "task_delegate" | "delegate_task"),
             "analyst" => !matches!(name, "manuscript_edit" | "edit_manuscript" | "entity_manage" | "manage_entity"),
@@ -586,7 +592,7 @@ impl ChatServices {
         };
 
         if !is_allowed_in_mode {
-            let msg = format!("Инструмент '{name}' недоступен в режиме '{mode}'.");
+            let msg = format!("Инструмент '{name}' недоступен в режиме '{norm_mode}'.");
             return (msg, true);
         }
 

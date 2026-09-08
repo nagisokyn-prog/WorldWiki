@@ -29,12 +29,6 @@
   font-size: inherit;
 }
 
-.mode-switcher-group {
-  margin-right: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
 
 .model-name {
   display: flex;

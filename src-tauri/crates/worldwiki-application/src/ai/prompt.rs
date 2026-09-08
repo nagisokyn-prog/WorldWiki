@@ -118,7 +118,7 @@ pub fn build_system_prompt(
 pub fn build_system_kernel_prompt() -> &'static str {
     r#"<agent_contract>
 <identity>
-Ты — WoWiLon AI, литературный соавтор, редактор и аналитик писательской вселенной в приложении WorldWiki.
+Ты — WoWiLon AI, интеллектуальный литературный соавтор писательской вселенной в приложении WorldWiki.
 1. Пользователь в чате — это АВТОР произведения, а не его персонаж.
 2. Тексты в секции <context> и фрагменты глав — это фрагменты книги, написанные автором (даже если повествование в них ведётся от первого лица «Я»). Анализируй их со стороны как внимательный редактор и критик (сюжет, композицию, темп, психологию персонажей, атмосферу, диалоги), а не общайся с автором как с героем книги.
 </identity>
@@ -167,9 +167,18 @@ pub fn build_system_kernel_prompt() -> &'static str {
 </agent_contract>"#
 }
 
+/// Нормализатор слагов режимов (chat/edit/analyze -> companion/editor/analyst)
+pub fn normalize_mode(mode: &str) -> &'static str {
+    match mode.trim().to_lowercase().as_str() {
+        "edit" | "editor" | "редактор" => "editor",
+        "analyze" | "analyst" | "аналитик" => "analyst",
+        _ => "companion",
+    }
+}
+
 /// Модульные контракты для режимов companion, editor, analyst
 pub fn get_mode_prompt_contract(mode: &str) -> &'static str {
-    match mode {
+    match normalize_mode(mode) {
         "editor" => {
             r#"<mode name="editor">
 <role>
@@ -289,11 +298,27 @@ pub fn build_system_prompt_direct(
     project_id: &str,
     world_context: Option<&str>,
 ) -> String {
+    let norm_mode = normalize_mode(mode);
+    let (mode_display_name, mode_role_summary) = match norm_mode {
+        "editor" => (
+            "РЕЖИМ: РЕДАКТОР (Editor)",
+            "Ты работаешь в режиме прямого литературного редактирования текста рукописи и карточек сущностей в базе данных.",
+        ),
+        "analyst" => (
+            "РЕЖИМ: АНАЛИТИК (Analyst)",
+            "Ты работаешь в режиме глубокого анализа сюжета, поиска логических конфликтов (audit), хронологии и фоновых расследований. Прямое редактирование базы в этом режиме отключено.",
+        ),
+        _ => (
+            "РЕЖИМ: СОБЕСЕДНИК (Companion)",
+            "Ты работаешь в режиме литературного соавтора и партнера по брейнштормингу (только чтение лора и обсуждение идей).",
+        ),
+    };
+
     let kernel = build_system_kernel_prompt();
-    let mode_contract = get_mode_prompt_contract(mode);
+    let mode_contract = get_mode_prompt_contract(norm_mode);
 
     let mut out = format!(
-        "{kernel}\n\n{mode_contract}\n\n<project_context>\nПроект ID: {project_id}\n</project_context>"
+        "{kernel}\n\n<current_active_mode name=\"{norm_mode}\">\nТЕКУЩИЙ АКТИВНЫЙ РЕЖИМ СЕССИИ: {mode_display_name}.\n{mode_role_summary}\nЕсли пользователь спрашивает о твоем текущем режиме, системном промпте или роли — отвечай строго в соответствии с этим активным режимом ({mode_display_name}).\n</current_active_mode>\n\n{mode_contract}\n\n<project_context>\nПроект ID: {project_id}\n</project_context>"
     );
 
     if !custom_instructions.trim().is_empty() {
@@ -409,3 +434,38 @@ pub fn history_to_input_messages(history: &[Value], assistant_msg_id: &str) -> V
     out.reverse();
     out
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_normalize_mode() {
+        assert_eq!(normalize_mode("edit"), "editor");
+        assert_eq!(normalize_mode("editor"), "editor");
+        assert_eq!(normalize_mode("analyze"), "analyst");
+        assert_eq!(normalize_mode("analyst"), "analyst");
+        assert_eq!(normalize_mode("chat"), "companion");
+        assert_eq!(normalize_mode("companion"), "companion");
+        assert_eq!(normalize_mode("unknown"), "companion");
+    }
+
+    #[test]
+    fn test_build_system_prompt_direct_modes() {
+        let p_analyst = build_system_prompt_direct("analyze", "", "p1", None);
+        assert!(p_analyst.contains(r#"<current_active_mode name="analyst">"#));
+        assert!(p_analyst.contains("РЕЖИМ: АНАЛИТИК (Analyst)"));
+        assert!(p_analyst.contains(r#"<mode name="analyst">"#));
+
+        let p_editor = build_system_prompt_direct("edit", "", "p1", None);
+        assert!(p_editor.contains(r#"<current_active_mode name="editor">"#));
+        assert!(p_editor.contains("РЕЖИМ: РЕДАКТОР (Editor)"));
+        assert!(p_editor.contains(r#"<mode name="editor">"#));
+
+        let p_companion = build_system_prompt_direct("chat", "", "p1", None);
+        assert!(p_companion.contains(r#"<current_active_mode name="companion">"#));
+        assert!(p_companion.contains("РЕЖИМ: СОБЕСЕДНИК (Companion)"));
+        assert!(p_companion.contains(r#"<mode name="companion">"#));
+    }
+}
+

@@ -11,16 +11,6 @@
           </div>
         </div>
       </div>
-      <div class="mode-switcher mode-switcher-group">
-        <i class="fas fa-theater-masks"></i>
-        <select 
-          class="mode-select" 
-          :value="activeModeSlug" 
-          @change="$emit('change-mode', ($event.target as HTMLSelectElement).value)"
-        >
-          <option v-for="m in modes" :key="m.slug" :value="m.slug">{{ m.name }}</option>
-        </select>
-      </div>
 
       <div class="model-name">
         <i class="fas fa-microchip"></i>
@@ -55,15 +45,6 @@
         <span>{{ isUnloading ? 'Выгрузка...' : 'Сброс GPU' }}</span>
       </button>
 
-      <!-- КНОПКА ДИАГНОСТИКИ ИНСТРУМЕНТОВ -->
-      <button 
-        class="action-pill-btn" 
-        title="Диагностика и ручной тест инструментов (query_world, inspect_entity, read_manuscript)"
-        @click="handleOpenTools"
-      >
-        <i class="fas fa-terminal"></i>
-        <span>Инструменты</span>
-      </button>
 
       <!-- КНОПКА ПЕРЕЗАПУСКА СЕССИИ / СБРОСА -->
       <button 
@@ -104,7 +85,6 @@ const {
   progressPercent,
   handleReindexLore,
   handleUnloadAll,
-  handleOpenTools,
   formatTokens
 } = useAiChatTopBar(props, emit);
 </script>

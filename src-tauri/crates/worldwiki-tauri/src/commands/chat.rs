@@ -296,7 +296,7 @@ pub async fn execute_ai_tool_direct(
     let (res_str, is_err) = state
         .services
         .chat
-        .execute_tool(&project, &tool_name, &tool_input)
+        .execute_tool(&project, "", "", "direct", &tool_name, &tool_input)
         .await;
 
     if is_err {
@@ -306,4 +306,13 @@ pub async fn execute_ai_tool_direct(
             .unwrap_or(serde_json::Value::String(res_str));
         Ok(val)
     }
+}
+
+#[tauri::command]
+pub async fn ai_respond_tool_approval(
+    state: State<'_, AppState>,
+    call_id: String,
+    approved: bool,
+) -> Result<bool, IpcError> {
+    Ok(state.services.chat.respond_tool_approval(&call_id, approved))
 }

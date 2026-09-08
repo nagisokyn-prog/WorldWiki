@@ -106,49 +106,35 @@ impl RetrievalRouter {
             }
         }
 
+        let mut candidates: Vec<RetrievalCandidate> = Vec::new();
+        let mut entity_ids: HashSet<String> = HashSet::new();
+
         // 0.1 Exact & Fuzzy Entity Mention Retrieval (Auto Entity Dossier)
         let all_ent_query = format!("SELECT id, name, description, tags, custom_fields FROM entities WHERE {where_proj}");
         if let Ok(mut resp) = db.query(&all_ent_query).bind(("p_raw", p_raw.clone())).bind(("p_clean", p_clean.clone())).await {
             if let Ok(rows) = resp.take::<Vec<Value>>(0) {
-                let mut matched_dossiers = Vec::new();
                 for row in rows {
                     let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
                     let tags: Vec<String> = row.get("tags").and_then(|v| v.as_array()).map(|arr| {
                         arr.iter().filter_map(|x| x.as_str().map(|s| s.to_string())).collect()
                     }).unwrap_or_default();
                     if !name.is_empty() && crate::surrealdb::repos::fuzzy_match_name(query, name, &tags) {
-                        let id = row.get("id").and_then(|v| v.as_str()).unwrap_or("");
-                        let desc = row.get("description").and_then(|v| v.as_str()).unwrap_or("");
-                        let fields = row.get("custom_fields").cloned().unwrap_or(Value::Null);
-                        
-                        let mut card = format!("### Досье сущности: {} (ID: {})\n", name, id);
-                        if !desc.is_empty() {
-                            card.push_str(&format!("- **Описание**: {}\n", desc));
+                        let id = row.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                        let desc = row.get("description").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                        if !id.is_empty() {
+                            entity_ids.insert(id.clone());
                         }
-                        if !tags.is_empty() {
-                            card.push_str(&format!("- **Теги**: {}\n", tags.join(", ")));
-                        }
-                        if let Value::Object(map) = fields {
-                            if !map.is_empty() {
-                                card.push_str("- **Свойства**:\n");
-                                for (k, v) in map {
-                                    card.push_str(&format!("  * {}: {}\n", k, v));
-                                }
-                            }
-                        }
-                        matched_dossiers.push(card);
+                        candidates.push(RetrievalCandidate {
+                            source_type: "Entity".to_string(),
+                            title: name.to_string(),
+                            snippet: desc,
+                            score: 1.0,
+                            entity_id: Some(id),
+                        });
                     }
-                }
-                if !matched_dossiers.is_empty() {
-                    let entity_out = matched_dossiers.join("\n\n");
-                    println!("[RetrievalRouter] Auto Entity Matcher: found {} entity dossiers ({} chars)", matched_dossiers.len(), entity_out.len());
-                    return Some(entity_out);
                 }
             }
         }
-
-        let mut candidates: Vec<RetrievalCandidate> = Vec::new();
-        let mut entity_ids: HashSet<String> = HashSet::new();
 
         // 1. Lexical Search (BM25 / FTS)
         // Entities BM25

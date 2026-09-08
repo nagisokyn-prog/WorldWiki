@@ -119,10 +119,11 @@ impl AiToolFacades {
                     _ => return Err(ApplicationError::Validation("Expected object payload for entity".into())),
                 };
 
-                // 1. Extract or determine ID
+                // 1. Determine entity ID (auto-generate safe unique ID if omitted or custom)
                 let raw_id = obj.get("id").and_then(|v| v.as_str()).unwrap_or("");
-                let entity_id = if raw_id.is_empty() {
-                    format!("entities:{}", uuid::Uuid::new_v4())
+                let is_safe_ascii = !raw_id.is_empty() && raw_id.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == ':');
+                let entity_id = if raw_id.is_empty() || !is_safe_ascii {
+                    format!("entities:char_{}", uuid::Uuid::new_v4().simple())
                 } else if !raw_id.starts_with("entities:") {
                     format!("entities:{raw_id}")
                 } else {
@@ -157,6 +158,22 @@ impl AiToolFacades {
                     .trim()
                     .to_string();
 
+                let description = obj
+                    .get("description")
+                    .or_else(|| obj.get("описание"))
+                    .and_then(|v| v.as_str())
+                    .map(|s| s.to_string());
+
+                let tags: Vec<String> = obj
+                    .get("tags")
+                    .and_then(|v| v.as_array())
+                    .map(|arr| {
+                        arr.iter()
+                            .filter_map(|x| x.as_str().map(|s| s.to_string()))
+                            .collect()
+                    })
+                    .unwrap_or_default();
+
                 // 5. Build Attributes map
                 let mut attributes_map = match obj.remove("attributes") {
                     Some(Value::Object(m)) => m,
@@ -176,10 +193,13 @@ impl AiToolFacades {
 
                 // Ensure attributes["название"] matches entity.name
                 attributes_map.insert("название".to_string(), Value::String(name.clone()));
+                if let Some(ref d) = description {
+                    attributes_map.insert("описание".to_string(), Value::String(d.clone()));
+                }
 
-                // Collect any other root fields into attributes (e.g. "пол", "статус", "роль_в_истории", "описание")
+                // Collect any other root fields into attributes (e.g. "пол", "статус", "роль_в_истории")
                 for (k, v) in obj {
-                    if !["id", "project_id", "projectId", "type_key", "entity_type", "type", "name", "tags", "created_at", "updated_at", "description"].contains(&k.as_str()) {
+                    if !["id", "project_id", "projectId", "type_key", "entity_type", "type", "name", "tags", "created_at", "updated_at", "description", "описание"].contains(&k.as_str()) {
                         attributes_map.insert(k, v);
                     }
                 }
@@ -189,9 +209,9 @@ impl AiToolFacades {
                     project_id,
                     type_key: type_key.clone(),
                     name: name.clone(),
-                    description: attributes_map.get("описание").or_else(|| attributes_map.get("description")).and_then(|v| v.as_str()).map(|s| s.to_string()),
+                    description,
                     attributes: Value::Object(attributes_map),
-                    tags: Vec::new(),
+                    tags,
                     created_at: chrono::Utc::now(),
                     updated_at: chrono::Utc::now(),
                 };
@@ -221,8 +241,14 @@ impl AiToolFacades {
                 Ok(serde_json::json!({ "status": "success", "relation_id": rel.id }))
             }
             "delete" => {
-                let entity_id = payload.as_str().ok_or_else(|| ApplicationError::Validation("Expected entity_id string".into()))?;
-                self.knowledge.entity_repo.delete(entity_id).await?;
+                let entity_id = if let Some(s) = payload.as_str() {
+                    s.to_string()
+                } else if let Some(id) = payload.get("entity_id").or_else(|| payload.get("id")).and_then(|v| v.as_str()) {
+                    id.to_string()
+                } else {
+                    return Err(ApplicationError::Validation("Expected entity_id string or object with entity_id".into()));
+                };
+                self.knowledge.entity_repo.delete(&entity_id).await?;
                 Ok(serde_json::json!({ "status": "success", "deleted_id": entity_id }))
             }
             _ => Err(ApplicationError::Validation(format!("Unsupported action: {action}"))),
@@ -389,109 +415,143 @@ impl AiToolFacades {
         }))
     }
 
-    /// Возвращает канонические JSON-схемы инструментов для языковой модели
-    pub fn tool_definitions() -> Vec<Value> {
-        vec![
-            serde_json::json!({
-                "name": "query_world",
-                "description": "Гибридный семантический поиск (BM25 + HNSW + граф связей) по базе знаний мира, сущностям и главам рукописи текущего проекта.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "query": { "type": "string", "description": "Поисковый запрос фактов, информации или сущностей" },
-                        "scope": { "type": "string", "description": "Область поиска: 'all' (всё), 'entities' (только энциклопедия), 'chapters' (только рукопись)", "default": "all" },
-                        "top_k": { "type": "integer", "description": "Количество результатов", "default": 8 }
-                    },
-                    "required": ["query"]
-                }
-            }),
-            serde_json::json!({
-                "name": "inspect_entity",
-                "description": "Получить полную анкету сущности по ID ('entities:hero') ИЛИ по имени/псевдониму персонажа/локации (например, 'Лёха', 'Замок'). Автоматически находит карточку, динамические поля и граф связей.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "entity_id_or_name": { "type": "string", "description": "ID сущности (например, 'entities:char_123') ИЛИ точное/примерное имя персонажа/локации (например, 'Лёха', 'Замок')." },
-                        "entity_id": { "type": "string", "description": "Алиас для entity_id_or_name (обратная совместимость)." }
-                    }
-                }
-            }),
-            serde_json::json!({
-                "name": "manage_entity",
-                "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь (create, update, delete, relate). Для создания персонажа или локации передайте action: 'create' и плоский объект характеристик.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "action": { "type": "string", "enum": ["create", "update", "delete", "relate"], "description": "Действие над сущностью" },
-                        "payload": {
-                            "type": "object",
-                            "description": "Бланк сущности. Поля: 'name'/'название' (обязательно), 'type_key'/'entity_type' ('character', 'location', 'faction', 'item'), и любые свойства (например: 'роль_в_истории', 'статус', 'описание', 'пол')."
-                        }
-                    },
-                    "required": ["action", "payload"]
-                }
-            }),
+    /// Возвращает канонические JSON-схемы инструментов с фильтрацией по режимам (companion, editor, analyst)
+    pub fn tool_definitions_for_mode(mode: &str) -> Vec<Value> {
+        let world_query_def = serde_json::json!({
+            "name": "world_query",
+            "description": "Гибридный семантический и лексический поиск (BM25 + эмбеддинги + граф связей) по базе знаний мира, сущностям и главам рукописи.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "query": { "type": "string", "description": "Поисковый запрос фактов, информации или сущностей" },
+                    "scope": { "type": "string", "enum": ["all", "entities", "chapters"], "description": "Область поиска: 'all' (всё), 'entities' (энциклопедия), 'chapters' (рукопись)", "default": "all" },
+                    "top_k": { "type": "integer", "description": "Количество результатов", "default": 8 }
+                },
+                "required": ["query"]
+            }
+        });
 
-            serde_json::json!({
-                "name": "read_manuscript",
-                "description": "Прочитать текст главы рукописи по chapter_id, либо получить оглавление (chapter_id: 'list').",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "chapter_id": { "type": "string", "description": "ID главы (например, 'chapters:ch1') или 'list' для оглавления" }
-                    },
-                    "required": ["chapter_id"]
+        let entity_inspect_def = serde_json::json!({
+            "name": "entity_inspect",
+            "description": "Получить полную анкету сущности по ID ('entities:char_123') ИЛИ по имени/псевдониму персонажа/локации (например, 'Катя', 'Замок'). Автоматически извлекает карточку, свойства и граф связей.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "entity_id_or_name": { "type": "string", "description": "ID сущности (например, 'entities:char_123') ИЛИ точное/примерное имя персонажа/локации." },
+                    "entity_id": { "type": "string", "description": "Алиас для entity_id_or_name (обратная совместимость)." }
                 }
-            }),
-            serde_json::json!({
-                "name": "edit_manuscript",
-                "description": "Атомарное внесение правок в рукопись с поддержкой отката и парсингом ((Сущностей)).",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "chapter_id": { "type": "string", "description": "ID главы" },
-                        "operation_id": { "type": "string", "description": "Уникальный ID операции" },
-                        "patch": { "type": "object", "description": "Патч изменений" }
-                    },
-                    "required": ["chapter_id", "operation_id"]
-                }
-            }),
-            serde_json::json!({
-                "name": "chronology",
-                "description": "Расчет хронологии, конвертация календарных дат и расчет абсолютной минуты (M_abs).",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "action": { "type": "string", "enum": ["convert_absolute", "convert_date"] },
-                        "payload": { "type": "object", "description": "Параметры конвертации даты или календаря" }
-                    },
-                    "required": ["action", "payload"]
-                }
-            }),
-            serde_json::json!({
-                "name": "audit_consistency",
-                "description": "Комплексный аудит сюжета тома: проверка неразрешенных сюжетных обещаний (чеховских ружей) и противоречий.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "target_type": { "type": "string", "enum": ["volume"] },
-                        "target_id": { "type": "string", "description": "ID тома (например, 'volumes:vol1')" }
-                    },
-                    "required": ["target_type", "target_id"]
-                }
-            }),
-            serde_json::json!({
-                "name": "delegate_task",
-                "description": "Делегировать тяжелое исследование фоновому Read-Only субагенту.",
-                "input_schema": {
-                    "type": "object",
-                    "properties": {
-                        "task_id": { "type": "string", "description": "ID задачи" },
-                        "prompt": { "type": "string", "description": "Инструкция для субагента" }
-                    },
-                    "required": ["task_id", "prompt"]
-                }
-            }),
-        ]
+            }
+        });
+
+        let manuscript_read_def = serde_json::json!({
+            "name": "manuscript_read",
+            "description": "Прочитать текст главы рукописи по chapter_id/номеру/названию, либо получить оглавление (chapter_id: 'list').",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "chapter_id": { "type": "string", "description": "ID главы (например, 'chapters:ch1'), номер (например, '1') или 'list' для оглавления" }
+                },
+                "required": ["chapter_id"]
+            }
+        });
+
+        let timeline_manage_def = serde_json::json!({
+            "name": "timeline_manage",
+            "description": "Расчет хронологии, конвертация календарных дат и вычисление абсолютной минуты (M_abs).",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "action": { "type": "string", "enum": ["convert_absolute", "convert_date"] },
+                    "payload": { "type": "object", "description": "Параметры конвертации даты или календаря" }
+                },
+                "required": ["action", "payload"]
+            }
+        });
+
+        let entity_manage_def = serde_json::json!({
+            "name": "entity_manage",
+            "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь. Для создания передайте action: 'create' и объект свойств (name, type_key, description, attributes). Поля id и project_id указывать НЕ нужно — они формируются автоматически.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "action": { "type": "string", "enum": ["create", "update", "delete", "relate"], "description": "Действие над сущностью" },
+                    "payload": {
+                        "type": "object",
+                        "description": "Бланк сущности. Для create: 'name' (обязательно), 'type_key' ('character', 'location', 'faction', 'item'), 'description', 'attributes'."
+                    }
+                },
+                "required": ["action", "payload"]
+            }
+        });
+
+        let manuscript_edit_def = serde_json::json!({
+            "name": "manuscript_edit",
+            "description": "Атомарное точечное внесение правок в рукопись с поддержкой отката и сохранением маркеров ((Сущностей)).",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "chapter_id": { "type": "string", "description": "ID главы" },
+                    "operation_id": { "type": "string", "description": "Уникальный ID операции (например, uuid)" },
+                    "patch": { "type": "object", "description": "Минимальный патч изменений" }
+                },
+                "required": ["chapter_id", "operation_id"]
+            }
+        });
+
+        let consistency_audit_def = serde_json::json!({
+            "name": "consistency_audit",
+            "description": "Комплексный аудит сюжета тома: проверка неразрешенных сюжетных обещаний (чеховских ружей), зависших веток и противоречий.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "target_type": { "type": "string", "enum": ["volume"] },
+                    "target_id": { "type": "string", "description": "ID тома (например, 'volumes:vol_1')" }
+                },
+                "required": ["target_type", "target_id"]
+            }
+        });
+
+        let task_delegate_def = serde_json::json!({
+            "name": "task_delegate",
+            "description": "Делегировать тяжелое независимое исследование фоновому Read-Only субагенту.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "task_id": { "type": "string", "description": "ID задачи" },
+                    "prompt": { "type": "string", "description": "Подробная инструкция для субагента (цель, скоуп, ограничения)" }
+                },
+                "required": ["task_id", "prompt"]
+            }
+        });
+
+        match mode {
+            "editor" => vec![
+                world_query_def,
+                entity_inspect_def,
+                manuscript_read_def,
+                entity_manage_def,
+                manuscript_edit_def,
+                timeline_manage_def,
+            ],
+            "analyst" => vec![
+                world_query_def,
+                entity_inspect_def,
+                manuscript_read_def,
+                timeline_manage_def,
+                consistency_audit_def,
+                task_delegate_def,
+            ],
+            _ => vec![
+                world_query_def,
+                entity_inspect_def,
+                manuscript_read_def,
+                timeline_manage_def,
+            ], // companion (read-only)
+        }
+    }
+
+    /// Обратная совместимость для получения всех определений
+    pub fn tool_definitions() -> Vec<Value> {
+        Self::tool_definitions_for_mode("editor")
     }
 }

@@ -377,6 +377,10 @@ export async function executeAiToolDirect(project: string, toolName: string, too
     return await invoke('execute_ai_tool_direct', { project, toolName, toolInput });
 }
 
+export async function aiRespondToolApproval(callId: string, approved: boolean): Promise<boolean> {
+    return await invoke('ai_respond_tool_approval', { callId, approved });
+}
+
 export async function getHardwareInfo(): Promise<unknown> {
     return await invoke('get_hardware_info');
 }

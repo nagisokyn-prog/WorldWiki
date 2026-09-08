@@ -16,7 +16,8 @@ import {
   editChatMessage as editChatMsgApi,
   regenerateChatMessage as regenChatMsgApi,
   switchMessageVariant as switchMsgVarApi,
-  forkChat as forkChatApi
+  forkChat as forkChatApi,
+  aiRespondToolApproval
 } from '../../services/api.client';
 
 export interface ChatMessage {
@@ -108,6 +109,7 @@ export function useWowilonPanel(
   const hasError = ref(false);
   const tokenUsage = ref({ input_tokens: 0, output_tokens: 0, total_tokens: 0 });
   let unlistenChunk: UnlistenFn | null = null;
+  let unlistenApproval: UnlistenFn | null = null;
 
   const editingMessageId = ref<string | null>(null);
   const editDraft = ref('');
@@ -525,12 +527,36 @@ export function useWowilonPanel(
     selectedContext.value = selectedContext.value.filter(c => c.id !== ctx.id);
   };
 
-  const handleToolApproval = (data: unknown) => {
-    console.log('Tool approved:', data);
+  const handleToolApproval = async (data: { toolCallId?: string; approved?: boolean } | unknown) => {
+    const payload = data as { toolCallId?: string; approved?: boolean };
+    const callId = payload?.toolCallId;
+    if (callId) {
+      try {
+        await aiRespondToolApproval(callId, true);
+      } catch (err) {
+        console.error('Failed to approve tool call:', err);
+      }
+      const msg = allMessages.value.find(m => m.toolCallWaiting?.tool_call_id === callId);
+      if (msg) {
+        msg.toolCallWaiting = null;
+      }
+    }
   };
 
-  const handleToolRejection = (data: unknown) => {
-    console.log('Tool rejected:', data);
+  const handleToolRejection = async (data: { toolCallId?: string; approved?: boolean; feedback?: string } | unknown) => {
+    const payload = data as { toolCallId?: string; approved?: boolean; feedback?: string };
+    const callId = payload?.toolCallId;
+    if (callId) {
+      try {
+        await aiRespondToolApproval(callId, false);
+      } catch (err) {
+        console.error('Failed to reject tool call:', err);
+      }
+      const msg = allMessages.value.find(m => m.toolCallWaiting?.tool_call_id === callId);
+      if (msg) {
+        msg.toolCallWaiting = null;
+      }
+    }
   };
 
   const startResize = (e: MouseEvent) => {
@@ -594,6 +620,32 @@ export function useWowilonPanel(
       console.error("Failed to load modes", e);
       modes.value = [{ slug: 'chat', name: 'Собеседник' }, { slug: 'edit', name: 'Редактор' }, { slug: 'analyze', name: 'Аналитик' }];
     }
+
+    unlistenApproval = await listen<{
+      call_id: string;
+      chat_id: string;
+      assistant_msg_id: string;
+      tool_name: string;
+      action?: string;
+      payload?: unknown;
+      description?: string;
+    }>('ww-ai-tool-approval-request', (event) => {
+      const req = event.payload;
+      if (req.chat_id && activeChatId.value && req.chat_id !== activeChatId.value) {
+        return;
+      }
+      const msg = allMessages.value.find(m => m.id === req.assistant_msg_id) 
+        || allMessages.value[allMessages.value.length - 1];
+      if (msg) {
+        msg.toolCallWaiting = {
+          tool_call_id: req.call_id,
+          tool_name: req.tool_name,
+          tool_args: req.payload,
+          action: req.action,
+          description: req.description
+        };
+      }
+    });
 
     unlistenChunk = await listen<{
       chat_id: string;
@@ -724,6 +776,9 @@ export function useWowilonPanel(
   onUnmounted(() => {
     if (unlistenChunk) {
       unlistenChunk();
+    }
+    if (unlistenApproval) {
+      unlistenApproval();
     }
   });
 

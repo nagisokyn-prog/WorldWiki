@@ -22,6 +22,7 @@ pub struct ChatServices {
     pub rag_port: Option<Arc<dyn RAGContextPort>>,
     pub ai_tools: Option<Arc<AiToolFacades>>,
     pub active_cancellations: Arc<std::sync::RwLock<std::collections::HashMap<String, Arc<std::sync::atomic::AtomicBool>>>>,
+    pub pending_approvals: Arc<std::sync::RwLock<std::collections::HashMap<String, tokio::sync::oneshot::Sender<bool>>>>,
 }
 
 pub struct SendMessageResult {
@@ -47,7 +48,18 @@ impl ChatServices {
             rag_port,
             ai_tools,
             active_cancellations: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
+            pending_approvals: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
         }
+    }
+
+    pub fn respond_tool_approval(&self, call_id: &str, approved: bool) -> bool {
+        if let Ok(mut map) = self.pending_approvals.write() {
+            if let Some(tx) = map.remove(call_id) {
+                let _ = tx.send(approved);
+                return true;
+            }
+        }
+        false
     }
 
     pub fn abort_generation(&self, chat_id: &str) -> bool {
@@ -328,14 +340,8 @@ impl ChatServices {
         };
 
         let mode = _mode_slug.as_deref().unwrap_or("companion");
-        let role_def = match mode {
-            "editor" => "Ты — литературный редактор и стилистический критик в приложении WorldWiki. Твоя цель — улучшать текст, исправлять шероховатости, выдерживать атмосферу и темп.",
-            "analyst" => "Ты — аналитик и архивариус мира WorldWiki. Твоя цель — следить за каноном, хронологией, логикой событий и взаимосвязями персонажей.",
-            _ => "Ты — соавтор и литературный собеседник в приложении WorldWiki. Обсуждай идеи, развивай лор, вдохновляй автора и предлагай интересные сюжетные ходы.",
-        };
-
         let system_prompt = build_system_prompt_direct(
-            role_def,
+            mode,
             profile
                 .settings
                 .get("custom_instructions")
@@ -345,8 +351,7 @@ impl ChatServices {
             retrieved_context.as_deref(),
         );
 
-
-        println!("[AGENT] started: chat={} project={}", chat_id, project_id);
+        println!("[AGENT] started: chat={} project={} mode={}", chat_id, project_id, mode);
         println!(
             "\n[PROMPT ASSEMBLY TRACE]\n├─ Provider: {} | Model: {}\n├─ Auto-RAG Context: {} chars\n├─ System Prompt: {} chars\n├─ Messages Count: {}\n└─ Reasoning Effort: {:?}",
             profile.provider,
@@ -387,7 +392,7 @@ impl ChatServices {
                     .iter()
                     .map(|m| serde_json::to_value(m).unwrap_or_default())
                     .collect(),
-                tools: Some(AiToolFacades::tool_definitions()),
+                tools: Some(AiToolFacades::tool_definitions_for_mode(mode)),
             };
 
             let (tx, mut rx) = tokio::sync::mpsc::channel(128);
@@ -448,34 +453,15 @@ impl ChatServices {
 
             let mut stream_failed = false;
             let stream_res = stream_handle.await;
-            match stream_res {
-                Ok(Err(e)) => {
-                    let raw_err = e.to_string();
-                    println!("[AGENT ERROR] Stream failed: {raw_err}");
-                    let human_err = parse_llm_error_to_human(&raw_err);
-                    let err_display = if assistant_text.trim().is_empty() {
-                        human_err
-                    } else {
-                        format!("\n\n---\n{human_err}")
-                    };
-                    self.emit_chunk(chat_id, assistant_msg_id, err_display.clone(), false, "text").await;
-                    assistant_text.push_str(&err_display);
-                    stream_failed = true;
+            if let Ok(Err(e)) = stream_res {
+                println!("[AGENT STREAM ERROR] {e}");
+                stream_failed = true;
+                if assistant_text.is_empty() {
+                    let err_msg = format!("Ошибка генерации ответа: {e}");
+                    assistant_text = err_msg.clone();
+                    self.emit_chunk(chat_id, assistant_msg_id, err_msg, true, "error")
+                        .await;
                 }
-                Err(join_err) => {
-                    let err_msg = format!("Критический сбой задачи стриминга: {join_err}");
-                    println!("[AGENT ERROR] Task join error: {err_msg}");
-                    let human_err = format!("⚠️ **Сбой фонового потока**\n\n> {err_msg}");
-                    let err_display = if assistant_text.trim().is_empty() {
-                        human_err
-                    } else {
-                        format!("\n\n---\n{human_err}")
-                    };
-                    self.emit_chunk(chat_id, assistant_msg_id, err_display.clone(), false, "text").await;
-                    assistant_text.push_str(&err_display);
-                    stream_failed = true;
-                }
-                _ => {}
             }
 
             last_text = assistant_text.clone();
@@ -528,7 +514,7 @@ impl ChatServices {
                 )
                 .await;
                 let (res_str, is_err) =
-                    self.execute_tool(project_id, &tool.name, &tool.input).await;
+                    self.execute_tool(project_id, chat_id, assistant_msg_id, mode, &tool.name, &tool.input).await;
                 println!(
                     "[AGENT TOOL RESULT] name={} result_len={} is_err={}",
                     tool.name,
@@ -569,9 +555,17 @@ impl ChatServices {
             .await;
     }
 
-    pub async fn execute_tool(&self, project_id: &str, name: &str, input: &Value) -> (String, bool) {
+    pub async fn execute_tool(
+        &self,
+        project_id: &str,
+        chat_id: &str,
+        assistant_msg_id: &str,
+        mode: &str,
+        name: &str,
+        input: &Value,
+    ) -> (String, bool) {
         let start = std::time::Instant::now();
-        println!("\n🔥🔥🔥 [BACKEND TOOL EXECUTE] tool='{name}' project='{project_id}'\n├─ Input: {input}");
+        println!("\n🔥🔥🔥 [BACKEND TOOL EXECUTE] mode='{mode}' tool='{name}' project='{project_id}' chat='{chat_id}'\n├─ Input: {input}");
         let Some(ref tools) = self.ai_tools else {
             println!("└─ Error: AI tools not available in current environment");
             return (
@@ -580,8 +574,72 @@ impl ChatServices {
             );
         };
 
+        // 1. Role Mode Defense-in-depth Check
+        let is_allowed_in_mode = match mode {
+            "direct" | "all" | "*" => true,
+            "editor" => !matches!(name, "consistency_audit" | "audit_consistency" | "task_delegate" | "delegate_task"),
+            "analyst" => !matches!(name, "manuscript_edit" | "edit_manuscript" | "entity_manage" | "manage_entity"),
+            _ => matches!(
+                name,
+                "world_query" | "query_world" | "entity_inspect" | "inspect_entity" | "manuscript_read" | "read_manuscript" | "timeline_manage" | "chronology" | "timeline_manager"
+            ),
+        };
+
+        if !is_allowed_in_mode {
+            let msg = format!("Инструмент '{name}' недоступен в режиме '{mode}'.");
+            return (msg, true);
+        }
+
+        // 2. Consequential Tool Approval (Interactive Confirmation for Risky Mutations)
+        let is_consequential = (matches!(name, "manuscript_edit" | "edit_manuscript")
+            || (matches!(name, "entity_manage" | "manage_entity")
+                && input.get("action").and_then(|v| v.as_str()) == Some("delete")))
+            && !chat_id.is_empty()
+            && mode != "direct";
+
+        if is_consequential {
+            let call_id = uuid::Uuid::new_v4().to_string();
+            let (tx, rx) = tokio::sync::oneshot::channel();
+            if let Ok(mut map) = self.pending_approvals.write() {
+                map.insert(call_id.clone(), tx);
+            }
+
+            let approval_event = json!({
+                "call_id": call_id,
+                "chat_id": chat_id,
+                "message_id": assistant_msg_id,
+                "tool_name": name,
+                "action": input.get("action").and_then(|v| v.as_str()).unwrap_or("edit"),
+                "input": input
+            });
+
+            let _ = self
+                .event_publisher
+                .publish_raw("ww-ai-tool-approval-request", approval_event)
+                .await;
+
+            // Await approval up to 120 seconds
+            match tokio::time::timeout(std::time::Duration::from_secs(120), rx).await {
+                Ok(Ok(true)) => {
+                    println!("[TOOL APPROVAL] Approved by user: call_id={call_id}");
+                }
+                Ok(Ok(false)) => {
+                    println!("[TOOL APPROVAL] Rejected by user: call_id={call_id}");
+                    return ("Действие отклонено пользователем.".to_string(), true);
+                }
+                _ => {
+                    println!("[TOOL APPROVAL] Timeout or channel dropped: call_id={call_id}");
+                    if let Ok(mut map) = self.pending_approvals.write() {
+                        map.remove(&call_id);
+                    }
+                    return ("Время ожидания подтверждения действия истекло.".to_string(), true);
+                }
+            }
+        }
+
+        // 3. Execution with Project ID Auto-injection
         let result: Result<Value, ApplicationError> = match name {
-            "query_world" => {
+            "world_query" | "query_world" => {
                 let query = input.get("query").and_then(|v| v.as_str()).unwrap_or("");
                 let scope = input.get("scope").and_then(|v| v.as_str()).unwrap_or("all");
                 let top_k = input.get("top_k").and_then(|v| v.as_u64()).unwrap_or(8) as usize;
@@ -598,7 +656,7 @@ impl ChatServices {
                         })
                     })
             }
-            "inspect_entity" => {
+            "entity_inspect" | "inspect_entity" => {
                 let entity_id = input
                     .get("entity_id_or_name")
                     .or_else(|| input.get("entity_id"))
@@ -608,12 +666,17 @@ impl ChatServices {
                     .unwrap_or("");
                 tools.inspect_entity(project_id, entity_id).await
             }
-            "manage_entity" => {
+            "entity_manage" | "manage_entity" => {
                 let action = input.get("action").and_then(|v| v.as_str()).unwrap_or("");
-                let payload = input.get("payload").cloned().unwrap_or(json!({}));
+                let mut payload = input.get("payload").cloned().unwrap_or(json!({}));
+                if let Value::Object(ref mut map) = payload {
+                    if !map.contains_key("project_id") && !project_id.is_empty() {
+                        map.insert("project_id".to_string(), Value::String(project_id.to_string()));
+                    }
+                }
                 tools.manage_entity(action, payload).await
             }
-            "read_manuscript" => {
+            "manuscript_read" | "read_manuscript" => {
                 let chapter_id = input
                     .get("chapter_id")
                     .or_else(|| input.get("id"))
@@ -622,19 +685,24 @@ impl ChatServices {
                     .unwrap_or("");
                 tools.read_manuscript(project_id, chapter_id).await
             }
-            "edit_manuscript" => match serde_json::from_value::<
+            "manuscript_edit" | "edit_manuscript" => match serde_json::from_value::<
                 crate::workflows::EditManuscriptRequest,
             >(input.clone())
             {
                 Ok(req) => tools.edit_manuscript(req).await.map(|v| json!(v)),
                 Err(e) => Err(ApplicationError::Validation(e.to_string())),
             },
-            "chronology" | "timeline_manager" => {
+            "timeline_manage" | "chronology" | "timeline_manager" => {
                 let action = input.get("action").and_then(|v| v.as_str()).unwrap_or("");
-                let payload = input.get("payload").cloned().unwrap_or(json!({}));
+                let mut payload = input.get("payload").cloned().unwrap_or(json!({}));
+                if let Value::Object(ref mut map) = payload {
+                    if !map.contains_key("project_id") && !project_id.is_empty() {
+                        map.insert("project_id".to_string(), Value::String(project_id.to_string()));
+                    }
+                }
                 tools.chronology(action, payload).await
             }
-            "audit_consistency" => {
+            "consistency_audit" | "audit_consistency" => {
                 let target_type = input
                     .get("target_type")
                     .and_then(|v| v.as_str())
@@ -645,7 +713,7 @@ impl ChatServices {
                     .unwrap_or("");
                 tools.audit_consistency(target_type, target_id).await
             }
-            "delegate_task" => {
+            "task_delegate" | "delegate_task" => {
                 let task_id = input.get("task_id").and_then(|v| v.as_str()).unwrap_or("");
                 let prompt = input.get("prompt").and_then(|v| v.as_str()).unwrap_or("");
                 tools.delegate_task(task_id, prompt).await

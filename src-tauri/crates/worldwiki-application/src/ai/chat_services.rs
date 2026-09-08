@@ -256,7 +256,7 @@ impl ChatServices {
             .unwrap_or("");
 
         let retrieved_context = if let Some(ref rag) = self.rag_port {
-            if !last_user_query.is_empty() {
+            let direct_ctx = if !last_user_query.is_empty() {
                 match rag
                     .retrieve_context(project_id, last_user_query, "all", 5)
                     .await
@@ -282,13 +282,60 @@ impl ChatServices {
                 }
             } else {
                 None
+            };
+
+            if direct_ctx.is_some() {
+                direct_ctx
+            } else {
+                // Fallback: minimal lore summary so AI always remembers entities and chapters
+                match rag.retrieve_context(project_id, "", "all", 15).await {
+                    Ok(items) if !items.is_empty() => {
+                        let summary_lines = items
+                            .into_iter()
+                            .filter_map(|v| {
+                                let st = v.get("source_type").and_then(|s| s.as_str()).unwrap_or("");
+                                if st == "entity" {
+                                    let name = v.get("name").and_then(|n| n.as_str()).unwrap_or("");
+                                    let tk = v.get("type_key").and_then(|t| t.as_str()).unwrap_or("сущность");
+                                    if !name.is_empty() {
+                                        Some(format!("• {name} ({tk})"))
+                                    } else {
+                                        None
+                                    }
+                                } else if st == "chapter" {
+                                    let title = v.get("title").and_then(|t| t.as_str()).unwrap_or("");
+                                    if !title.is_empty() {
+                                        Some(format!("• Глава: {title}"))
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                }
+                            })
+                            .collect::<Vec<_>>();
+                        if !summary_lines.is_empty() {
+                            Some(format!("[Справочник проекта]:\n{}", summary_lines.join("\n")))
+                        } else {
+                            None
+                        }
+                    }
+                    _ => None,
+                }
             }
         } else {
             None
         };
 
+        let mode = _mode_slug.as_deref().unwrap_or("companion");
+        let role_def = match mode {
+            "editor" => "Ты — литературный редактор и стилистический критик в приложении WorldWiki. Твоя цель — улучшать текст, исправлять шероховатости, выдерживать атмосферу и темп.",
+            "analyst" => "Ты — аналитик и архивариус мира WorldWiki. Твоя цель — следить за каноном, хронологией, логикой событий и взаимосвязями персонажей.",
+            _ => "Ты — соавтор и литературный собеседник в приложении WorldWiki. Обсуждай идеи, развивай лор, вдохновляй автора и предлагай интересные сюжетные ходы.",
+        };
+
         let system_prompt = build_system_prompt_direct(
-            "",
+            role_def,
             profile
                 .settings
                 .get("custom_instructions")
@@ -297,6 +344,7 @@ impl ChatServices {
             project_id,
             retrieved_context.as_deref(),
         );
+
 
         println!("[AGENT] started: chat={} project={}", chat_id, project_id);
         println!(

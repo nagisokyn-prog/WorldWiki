@@ -138,4 +138,7 @@ pub trait ModelHubPort: Send + Sync {
 
 pub trait PermissionsPort: Send + Sync {
     fn get_tool_permissions_catalog(&self) -> Vec<ToolPermissionConfig>;
+    fn save_tool_permission(&self, tool_id: &str, level: &str) -> Result<(), DomainError>;
+    fn save_all_tool_permissions(&self, permissions: &std::collections::HashMap<String, String>) -> Result<(), DomainError>;
 }
+

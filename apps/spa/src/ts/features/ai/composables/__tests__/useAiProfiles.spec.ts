@@ -13,7 +13,11 @@ vi.mock('../../api/aiProfiles.api', () => ({
 describe('useAiProfiles', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    const { profiles, activeProfileId } = useAiProfiles('proj_1');
+    profiles.value = [];
+    activeProfileId.value = '';
   });
+
 
   describe('loadProfiles', () => {
     it('loads profiles and sets active profile', async () => {

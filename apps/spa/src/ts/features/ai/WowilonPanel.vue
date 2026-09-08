@@ -53,6 +53,7 @@
             :chat-title="getChatTitle(activeChatId)"
             :editing-message-id="editingMessageId"
             :render-markdown="renderMarkdown"
+            :is-generating="isGenerating"
             @scroll="saveScroll"
             @switch-variant="switchVariant"
             @start-edit="startEdit"

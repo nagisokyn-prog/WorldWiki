@@ -1,5 +1,4 @@
 import { computed, ref } from 'vue';
-import uiEditorData from '../../../../../public/struct/editor/ui_editor.json';
 
 export interface SchemaCustomField {
     label?: string;
@@ -60,7 +59,15 @@ export interface SchemaContainerItem {
 
 export function useSchemaContainer(props: { item: SchemaContainerItem }) {
     const isDraggedOver = ref(false);
-    const fullConfig = ref<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }>(uiEditorData as unknown as { templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown });
+    const rawConfigs = import.meta.glob<Record<string, { default?: { templates?: Record<string, SchemaTemplateConfig> }; templates?: Record<string, SchemaTemplateConfig> }>>(
+        '../../../../../public/struct/editor/ui_editor.json',
+        { eager: true }
+    );
+    const uiMod = Object.values(rawConfigs)[0];
+    const initialConfig = (uiMod && ('default' in uiMod ? uiMod.default : uiMod)) || {};
+    const fullConfig = ref<{ templates?: Record<string, SchemaTemplateConfig>; [key: string]: unknown }>(initialConfig as { templates?: Record<string, SchemaTemplateConfig> });
+
+
 
     const availableEntityTypes = computed(() => {
         let rawSchemas: Record<string, { default?: { name?: string; entityType?: string }; name?: string; entityType?: string }>;

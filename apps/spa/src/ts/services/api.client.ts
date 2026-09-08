@@ -413,6 +413,18 @@ export async function getToolPermissionsCatalog(): Promise<unknown[]> {
     return await invoke('get_tool_permissions_catalog');
 }
 
+export async function saveToolPermission(toolId: string, level: string): Promise<void> {
+    return await invoke('save_tool_permission', { toolId, level });
+}
+
+export async function saveAllToolPermissions(permissions: unknown): Promise<void> {
+    return await invoke('save_all_tool_permissions', { permissions });
+}
+
+export async function getAiCompletion(textBefore: string, projectId: string | null): Promise<string> {
+    return await invoke('get_ai_completion', { textBefore, projectId });
+}
+
 export async function fetchHfModels(query: string | null, token: string | null): Promise<unknown[]> {
     return await invoke('fetch_hf_models', { query, token });
 }

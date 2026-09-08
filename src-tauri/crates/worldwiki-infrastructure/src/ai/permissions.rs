@@ -1,20 +1,29 @@
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 use worldwiki_domain::ai::{
     PermissionLevel, RiskLevel, ToolCategory, ToolPermissionConfig,
 };
+use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::ai::PermissionsPort;
 
 #[derive(Default, Clone)]
-pub struct StaticPermissionsCatalog;
+pub struct StaticPermissionsCatalog {
+    user_permissions: Arc<RwLock<HashMap<String, PermissionLevel>>>,
+}
 
 impl StaticPermissionsCatalog {
     pub fn new() -> Self {
-        Self
+        Self {
+            user_permissions: Arc::new(RwLock::new(HashMap::new())),
+        }
     }
 }
 
 impl PermissionsPort for StaticPermissionsCatalog {
     fn get_tool_permissions_catalog(&self) -> Vec<ToolPermissionConfig> {
-        vec![
+        let user_map = self.user_permissions.read().map(|m| m.clone()).unwrap_or_default();
+        let mut list = vec![
+
             // 1. ПОИСК ПО ВСЕЛЕННОЙ (READ)
             ToolPermissionConfig {
                 id: "query_world".to_string(),
@@ -95,6 +104,43 @@ impl PermissionsPort for StaticPermissionsCatalog {
                 default_level: PermissionLevel::Ask,
                 user_level: None,
             },
-        ]
+        ];
+
+        for item in &mut list {
+            if let Some(lvl) = user_map.get(&item.id) {
+                item.user_level = Some(lvl.clone());
+            }
+        }
+
+        list
+    }
+
+    fn save_tool_permission(&self, tool_id: &str, level: &str) -> Result<(), DomainError> {
+        let perm_level = match level.to_lowercase().as_str() {
+            "allow" => PermissionLevel::Allow,
+            "ask" => PermissionLevel::Ask,
+            "deny" => PermissionLevel::Deny,
+            _ => PermissionLevel::Ask,
+        };
+        if let Ok(mut map) = self.user_permissions.write() {
+            map.insert(tool_id.to_string(), perm_level);
+        }
+        Ok(())
+    }
+
+    fn save_all_tool_permissions(&self, permissions: &HashMap<String, String>) -> Result<(), DomainError> {
+        if let Ok(mut map) = self.user_permissions.write() {
+            for (k, v) in permissions {
+                let perm_level = match v.to_lowercase().as_str() {
+                    "allow" => PermissionLevel::Allow,
+                    "ask" => PermissionLevel::Ask,
+                    "deny" => PermissionLevel::Deny,
+                    _ => PermissionLevel::Ask,
+                };
+                map.insert(k.clone(), perm_level);
+            }
+        }
+        Ok(())
     }
 }
+

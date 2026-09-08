@@ -3,6 +3,7 @@
 -- ===============================================
 
 DEFINE ANALYZER OVERWRITE like TOKENIZERS blank, class, camel FILTERS ascii, lowercase;
+DEFINE ANALYZER OVERWRITE ru_en_analyzer TOKENIZERS class, blank FILTERS lowercase, snowball(russian), snowball(english);
 
 DEFINE TABLE OVERWRITE projects SCHEMAFULL;
 DEFINE FIELD OVERWRITE name        ON projects TYPE string;
@@ -89,8 +90,8 @@ DEFINE FIELD OVERWRITE timeline_events.*.date ON chapters TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE timeline_events.*.epoch ON chapters TYPE option<string>;
 DEFINE FIELD OVERWRITE timeline_events.*.time ON chapters TYPE option<object> FLEXIBLE;
 
-DEFINE INDEX OVERWRITE idx_chapter_ft  ON chapters COLUMNS content FULLTEXT ANALYZER like BM25;
-DEFINE INDEX OVERWRITE idx_chapter_title_ft ON chapters COLUMNS title FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_chapter_ft  ON chapters COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_chapter_title_ft ON chapters COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25;
 DEFINE INDEX OVERWRITE idx_chapter_emb_openai ON chapters COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
 DEFINE INDEX OVERWRITE idx_chapter_emb_nemotron ON chapters COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
 
@@ -177,8 +178,8 @@ DEFINE FIELD OVERWRITE updated_at   ON entities TYPE option<datetime> DEFAULT ti
 
 DEFINE INDEX OVERWRITE idx_entity_project ON entities FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_entity_type    ON entities FIELDS project_id, entity_type;
-DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities COLUMNS name FULLTEXT ANALYZER like BM25;
-DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities COLUMNS description FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_entity_name_ft ON entities COLUMNS name FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_entity_desc_ft ON entities COLUMNS description FULLTEXT ANALYZER ru_en_analyzer BM25;
 DEFINE INDEX OVERWRITE idx_entity_emb_openai ON entities COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
 DEFINE INDEX OVERWRITE idx_entity_emb_local ON entities COLUMNS embeddings.local HNSW DIMENSION 1024 DIST COSINE;
 DEFINE INDEX OVERWRITE idx_entity_emb_nemotron ON entities COLUMNS embeddings.nemotron HNSW DIMENSION 2048 DIST COSINE;
@@ -392,7 +393,7 @@ DEFINE FIELD OVERWRITE embedding_openai    ON entity_chunks TYPE option<array<fl
 DEFINE FIELD OVERWRITE created_at          ON entity_chunks TYPE datetime DEFAULT time::now();
 
 DEFINE INDEX OVERWRITE idx_chunk_project   ON entity_chunks FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_chunk_content_bm25 ON entity_chunks COLUMNS content FULLTEXT ANALYZER like BM25;
+DEFINE INDEX OVERWRITE idx_chunk_content_bm25 ON entity_chunks COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
 DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embedding_nemotron HNSW DIMENSION 2048 DIST COSINE;
 
 -- ===============================================
@@ -430,18 +431,54 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters WHEN $event = "UPD
 -- АНАЛИТИКА И AI АГЕНТЫ: Встроенные функции
 -- ===============================================
 
-DEFINE FUNCTION OVERWRITE fn::project_word_count($proj: record<projects>) {
-    RETURN math::sum((SELECT VALUE word_count FROM chapters WHERE project_id = $proj));
+-- Атомарный сбор контекста RAG (сущности, чанки, главы, отранжированные связи) за 1 запрос
+DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
+    $proj: record<projects>, 
+    $q: string, 
+    $limit: int, 
+    $rel_limit: int
+) {
+    LET $ents = (
+        SELECT id, name, entity_type AS type_key, description, tags, attributes 
+        FROM entities 
+        WHERE project_id = $proj AND (name @1@ $q OR description @1@ $q) 
+        LIMIT $limit
+    );
+    
+    LET $chunks = (
+        SELECT id, entity_id, content 
+        FROM entity_chunks 
+        WHERE project_id = $proj AND content @1@ $q 
+        LIMIT $limit
+    );
+
+    LET $chaps = (
+        SELECT id, title, content 
+        FROM chapters 
+        WHERE project_id = $proj AND (title @1@ $q OR content @1@ $q) 
+        LIMIT $limit
+    );
+
+    LET $seed_entities = array::distinct(
+        array::concat($ents.id, $chunks.entity_id)
+    );
+
+    LET $rels = (
+        SELECT in, out, rel_type, description, strength 
+        FROM entity_rel 
+        WHERE in IN $seed_entities OR out IN $seed_entities 
+        ORDER BY strength DESC 
+        LIMIT $rel_limit
+    );
+
+    RETURN {
+        entities: $ents,
+        chunks: $chunks,
+        chapters: $chaps,
+        relations: $rels
+    };
 };
 
-DEFINE FUNCTION OVERWRITE fn::get_rag_context($proj: record<projects>, $emb: array<float>, $limit: int) {
-    RETURN (
-        SELECT id, title, content, vector::similarity::cosine(embeddings.openai, $emb) AS vec_score 
-        FROM chapters 
-        WHERE project_id = $proj AND embeddings.openai != NONE 
-        ORDER BY vec_score ASC LIMIT $limit
-    );
-};
 
 -- GraphRAG: 2-шаговый графовый обход контекста для главы (персонажи -> отношения -> таймлайн -> сюжетные ружья)
 DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<chapters>) {

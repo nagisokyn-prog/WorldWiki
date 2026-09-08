@@ -7,8 +7,9 @@
       @click.stop="toggle"
       @mouseenter="$emit('hover-start')"
       @mouseleave="$emit('hover-end')"
-      @wheel.prevent="onWheelClosed"
+      @wheel.passive="onWheelClosed"
     >
+
       <span class="font-medium">{{ selectedLabel }}</span>
       <span class="arrow-icon" :class="{ rotated: isOpen }">▼</span>
     </div>

@@ -2,14 +2,16 @@ import { ref, computed } from 'vue';
 import type { AiProfile } from '../types/ai.types';
 import { aiProfilesApi } from '../api/aiProfiles.api';
 
-export function useAiProfiles(currentProject: string) {
-  const profiles = ref<AiProfile[]>([]);
-  const activeProfileId = ref<string>('');
-  const isLoading = ref(false);
+const profiles = ref<AiProfile[]>([]);
+const activeProfileId = ref<string>('');
+const isLoading = ref(false);
 
-  const activeProfile = computed(() => {
-    return profiles.value.find(p => p.id === activeProfileId.value) || null;
-  });
+const activeProfile = computed(() => {
+  return profiles.value.find(p => p.id === activeProfileId.value) || null;
+});
+
+export function useAiProfiles(currentProject: string) {
+
 
   const loadProfiles = async () => {
     isLoading.value = true;

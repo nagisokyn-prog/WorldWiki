@@ -89,6 +89,42 @@ pub fn get_tool_permissions_catalog(state: State<'_, AppState>) -> Vec<ToolPermi
 }
 
 #[tauri::command]
+pub fn save_tool_permission(
+    state: State<'_, AppState>,
+    tool_id: String,
+    level: String,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .local_ai
+        .save_tool_permission(&tool_id, &level)
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub fn save_all_tool_permissions(
+    state: State<'_, AppState>,
+    permissions: std::collections::HashMap<String, String>,
+) -> Result<(), IpcError> {
+    state
+        .services
+        .local_ai
+        .save_all_tool_permissions(&permissions)
+        .map_err(IpcError::from)
+}
+
+#[tauri::command]
+pub async fn get_ai_completion(
+    _state: State<'_, AppState>,
+    _text_before: String,
+    _project_id: Option<String>,
+) -> Result<String, IpcError> {
+    // Inline GhostText completion endpoint
+    Ok("".to_string())
+}
+
+
+#[tauri::command]
 pub async fn fetch_hf_models(
     query: Option<String>,
     token: Option<String>,

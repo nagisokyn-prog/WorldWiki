@@ -186,6 +186,9 @@ pub fn run() {
             worldwiki_tauri::commands::unload_all_local_models,
             worldwiki_tauri::commands::delete_local_model,
             worldwiki_tauri::commands::get_tool_permissions_catalog,
+            worldwiki_tauri::commands::save_tool_permission,
+            worldwiki_tauri::commands::save_all_tool_permissions,
+            worldwiki_tauri::commands::get_ai_completion,
 
             // --- AI Hub & Retrieval (worldwiki-tauri) ---
             worldwiki_tauri::commands::fetch_hf_models,

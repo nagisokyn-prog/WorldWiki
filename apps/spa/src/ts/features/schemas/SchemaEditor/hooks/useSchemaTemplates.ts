@@ -1,5 +1,4 @@
-import { computed } from 'vue';
-import uiEditorData from '../../../../../../public/struct/editor/ui_editor.json';
+import { ref, computed, onMounted } from 'vue';
 
 export interface SchemaTemplateItem {
     type?: string;
@@ -7,7 +6,32 @@ export interface SchemaTemplateItem {
     [key: string]: unknown;
 }
 
+const templatesCache = ref<Record<string, SchemaTemplateItem>>({});
+let isFetchingTemplates = false;
+
+async function ensureTemplatesLoaded() {
+    if (Object.keys(templatesCache.value).length > 0 || isFetchingTemplates) return;
+    isFetchingTemplates = true;
+    try {
+        const res = await fetch('/struct/editor/ui_editor.json');
+        if (res.ok) {
+            const data = await res.json() as { templates?: Record<string, SchemaTemplateItem> };
+            if (data.templates) {
+                templatesCache.value = data.templates;
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to load ui_editor.json templates:', e);
+    } finally {
+        isFetchingTemplates = false;
+    }
+}
+
 export function useSchemaTemplates() {
+    onMounted(() => {
+        void ensureTemplatesLoaded();
+    });
+
     const atomicBricks = [
         { val: 'text', icon: '📝', label: 'Текст' },
         { val: 'textarea', icon: '📄', label: 'Абзац' },
@@ -25,7 +49,7 @@ export function useSchemaTemplates() {
     const ALLOWED_DYNAMIC_KEYS = ['Динамический элемент', 'Двунаправленная связь', 'Одиночный параметр'];
 
     const timelineTemplates = computed<Record<string, SchemaTemplateItem>>(() => {
-        const all = (uiEditorData.templates || {}) as Record<string, SchemaTemplateItem>;
+        const all = templatesCache.value;
         const result: Record<string, SchemaTemplateItem> = {};
         for (const key of ALLOWED_TIMELINE_KEYS) {
             if (all[key]) {
@@ -36,7 +60,7 @@ export function useSchemaTemplates() {
     });
 
     const dynamicTemplates = computed<Record<string, SchemaTemplateItem>>(() => {
-        const all = (uiEditorData.templates || {}) as Record<string, SchemaTemplateItem>;
+        const all = templatesCache.value;
         const result: Record<string, SchemaTemplateItem> = {};
         for (const key of ALLOWED_DYNAMIC_KEYS) {
             if (all[key]) {
@@ -45,6 +69,7 @@ export function useSchemaTemplates() {
         }
         return result;
     });
+
 
     const isAtomicField = (item: { type?: string } | null | undefined) => {
         if (!item) return false;

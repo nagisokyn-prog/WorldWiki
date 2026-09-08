@@ -65,4 +65,13 @@ impl LocalAiServices {
     pub fn get_tool_permissions_catalog(&self) -> Vec<ToolPermissionConfig> {
         self.permissions_catalog.get_tool_permissions_catalog()
     }
+
+    pub fn save_tool_permission(&self, tool_id: &str, level: &str) -> Result<(), DomainError> {
+        self.permissions_catalog.save_tool_permission(tool_id, level)
+    }
+
+    pub fn save_all_tool_permissions(&self, permissions: &std::collections::HashMap<String, String>) -> Result<(), DomainError> {
+        self.permissions_catalog.save_all_tool_permissions(permissions)
+    }
 }
+

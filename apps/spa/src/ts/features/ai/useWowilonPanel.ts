@@ -76,6 +76,7 @@ export function useWowilonPanel(
   const md = new MarkdownIt({ html: true, breaks: true, linkify: true });
 
   const {
+    chats,
     chatTree,
     activeChatId,
     isLoading: isChatsLoading,
@@ -85,6 +86,7 @@ export function useWowilonPanel(
     renameChat,
     deleteChats
   } = useAiChats(currentProject);
+
 
   const { activeProfile, loadProfiles } = useAiProfiles(currentProject);
 
@@ -635,6 +637,10 @@ export function useWowilonPanel(
             const u = JSON.parse(chunk.text);
             if (u && (u.total_tokens > 0 || u.input_tokens > 0 || u.output_tokens > 0)) {
               tokenUsage.value = u;
+              const targetChat = chats.value.find(c => c.id === (chunk.chat_id || activeChatId.value));
+              if (targetChat) {
+                targetChat.token_usage = u;
+              }
             }
           } catch {
             // ignore
@@ -669,10 +675,15 @@ export function useWowilonPanel(
           const u = JSON.parse(chunk.text);
           if (u && (u.total_tokens > 0 || u.input_tokens > 0 || u.output_tokens > 0)) {
             tokenUsage.value = u;
+            const targetChat = chats.value.find(c => c.id === (chunk.chat_id || activeChatId.value));
+            if (targetChat) {
+              targetChat.token_usage = u;
+            }
           }
         } catch {
           // ignore
         }
+
       } else {
         msg.content = (msg.content || '') + chunk.text;
       }

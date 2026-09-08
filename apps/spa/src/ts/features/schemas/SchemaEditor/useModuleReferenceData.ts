@@ -1,7 +1,6 @@
 import { ref, computed } from 'vue';
 import * as api from '@/services/api.client';
 import { useShellStore } from '@/stores/shell';
-import uiEditorData from '../../../../../public/struct/editor/ui_editor.json';
 
 export interface SchemaFieldDef {
     class?: string;
@@ -144,13 +143,8 @@ export function useModuleReferenceData() {
     // Реестр всех глобальных шаблонов
     const globalTemplates = computed<Record<string, RawTemplateDef>>(() => {
         const map: Record<string, RawTemplateDef> = {};
-        
-        // Базовые из ui_editor.json
-        if (uiEditorData && uiEditorData.templates) {
-            Object.assign(map, uiEditorData.templates as Record<string, RawTemplateDef>);
-        }
 
-        // Из всех остальных схем
+        // Из всех схем (включая ui_editor)
         for (const schema of allSchemas.value) {
             if (schema.templates) {
                 Object.assign(map, schema.templates);
@@ -158,6 +152,7 @@ export function useModuleReferenceData() {
         }
         return map;
     });
+
 
     const isMatchTemplate = (
         canonicalKey: string,

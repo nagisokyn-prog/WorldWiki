@@ -32,10 +32,11 @@
         </div>
 
         <!-- Мысли ИИ (рассуждения / Chain of Thought) -->
-        <details v-if="group.activeMessage.reasoning" class="thinking-accordion">
+        <details v-if="group.activeMessage.reasoning" class="thinking-accordion" :open="isGenerating">
           <summary><i class="fas fa-brain"></i> Ход мыслей (Thinking...)</summary>
           <SafeHtml class="thinking-content" :content="renderMarkdown(group.activeMessage.reasoning)" />
         </details>
+
         
         <!-- Логи вызова инструментов -->
         <div v-if="group.activeMessage.toolLogs && group.activeMessage.toolLogs.length > 0" class="tool-logs-container">
@@ -153,7 +154,9 @@ export interface AiMessageListProps {
   editingMessageId: string | null;
   editDraft: string;
   renderMarkdown: (text: string) => string;
+  isGenerating?: boolean;
 }
+
 
 export interface AiMessageListEmits {
   (e: 'scroll', event: Event): void;

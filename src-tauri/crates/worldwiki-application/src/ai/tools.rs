@@ -114,10 +114,105 @@ impl AiToolFacades {
     pub async fn manage_entity(&self, action: &str, payload: Value) -> Result<Value, ApplicationError> {
         match action {
             "create" | "update" => {
-                let entity: Entity = serde_json::from_value(payload)
-                    .map_err(|e| ApplicationError::Validation(e.to_string()))?;
+                let mut obj = match payload {
+                    Value::Object(map) => map,
+                    _ => return Err(ApplicationError::Validation("Expected object payload for entity".into())),
+                };
+
+                // 1. Extract or determine ID
+                let raw_id = obj.get("id").and_then(|v| v.as_str()).unwrap_or("");
+                let entity_id = if raw_id.is_empty() {
+                    format!("entities:{}", uuid::Uuid::new_v4())
+                } else if !raw_id.starts_with("entities:") {
+                    format!("entities:{raw_id}")
+                } else {
+                    raw_id.to_string()
+                };
+
+                // 2. Extract or determine Project ID
+                let project_id = obj
+                    .get("project_id")
+                    .or_else(|| obj.get("projectId"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+
+                // 3. Extract or determine Type Key (character, location, organization, item, etc.)
+                let type_key = obj
+                    .get("type_key")
+                    .or_else(|| obj.get("entity_type"))
+                    .or_else(|| obj.get("type"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("character")
+                    .to_string();
+
+                // 4. Extract Name with high forgiveness (first input)
+                let mut name = obj
+                    .get("name")
+                    .or_else(|| obj.get("название"))
+                    .or_else(|| obj.get("title"))
+                    .or_else(|| obj.get("label"))
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .trim()
+                    .to_string();
+
+                // 5. Build Attributes map
+                let mut attributes_map = match obj.remove("attributes") {
+                    Some(Value::Object(m)) => m,
+                    _ => serde_json::Map::new(),
+                };
+
+                // If name was inside attributes_map["название"]
+                if name.is_empty() {
+                    if let Some(n) = attributes_map.get("название").and_then(|v| v.as_str()) {
+                        name = n.trim().to_string();
+                    }
+                }
+
+                if name.is_empty() {
+                    name = "Новая сущность".to_string();
+                }
+
+                // Ensure attributes["название"] matches entity.name
+                attributes_map.insert("название".to_string(), Value::String(name.clone()));
+
+                // Collect any other root fields into attributes (e.g. "пол", "статус", "роль_в_истории", "описание")
+                for (k, v) in obj {
+                    if !["id", "project_id", "projectId", "type_key", "entity_type", "type", "name", "tags", "created_at", "updated_at", "description"].contains(&k.as_str()) {
+                        attributes_map.insert(k, v);
+                    }
+                }
+
+                let entity = Entity {
+                    id: entity_id.clone(),
+                    project_id,
+                    type_key: type_key.clone(),
+                    name: name.clone(),
+                    description: attributes_map.get("описание").or_else(|| attributes_map.get("description")).and_then(|v| v.as_str()).map(|s| s.to_string()),
+                    attributes: Value::Object(attributes_map),
+                    tags: Vec::new(),
+                    created_at: chrono::Utc::now(),
+                    updated_at: chrono::Utc::now(),
+                };
+
                 self.knowledge.save_entity(&entity).await?;
-                Ok(serde_json::json!({ "status": "success", "entity_id": entity.id }))
+
+                // Emit event for UI synchronization without F5 (Bug #9)
+                let _ = self.knowledge.events.publish_raw(
+                    "ww-entity-saved",
+                    serde_json::json!({
+                        "type": entity.type_key,
+                        "id": entity.id
+                    })
+                ).await;
+
+                Ok(serde_json::json!({
+                    "status": "success",
+                    "entity_id": entity.id,
+                    "name": entity.name,
+                    "type_key": entity.type_key
+                }))
             }
             "relate" => {
                 let rel: EntityRelation = serde_json::from_value(payload)
@@ -256,10 +351,40 @@ impl AiToolFacades {
     pub async fn delegate_task(&self, task_id: &str, prompt: &str) -> Result<Value, ApplicationError> {
         let token = self.job_manager.create_job(task_id).await;
         token.check()?;
+
+        println!("[SUBAGENT] Spawning subagent task_id={} with prompt='{}'", task_id, prompt);
+        
+        let query_res = self.query_world("", prompt, "all", 6).await.unwrap_or_default();
+        
+        let mut findings = Vec::new();
+        for item in query_res {
+            let st = item.get("source_type").and_then(|s| s.as_str()).unwrap_or("");
+            if st == "entity" {
+                if let Some(name) = item.get("name").and_then(|n| n.as_str()) {
+                    findings.push(format!("Сущность '{}': {:?}", name, item.get("attributes").unwrap_or(&serde_json::Value::Null)));
+                }
+            } else if st == "chapter" {
+                if let Some(title) = item.get("title").and_then(|t| t.as_str()) {
+                    let preview = item.get("content").and_then(|c| c.as_str()).unwrap_or("").chars().take(200).collect::<String>();
+                    findings.push(format!("Глава '{}': {}...", title, preview));
+                }
+            } else if let Some(content) = item.get("content").and_then(|c| c.as_str()) {
+                findings.push(content.to_string());
+            }
+        }
+
+        let summary = if findings.is_empty() {
+            format!("Саб-агент исследовал материалы по задаче '{}'. Прямых совпадений в базе знаний не обнаружено.", prompt)
+        } else {
+            format!("Саб-агент завершил исследование по задаче '{}'. Найдено {} фактов/источников:\n{}", prompt, findings.len(), findings.join("\n\n"))
+        };
+
         Ok(serde_json::json!({
             "task_id": task_id,
-            "status": "spawned_read_only",
+            "status": "completed",
             "prompt": prompt,
+            "summary": summary,
+            "findings_count": findings.len(),
             "capabilities": ["query_world", "read_manuscript", "inspect_entity", "chronology", "audit_consistency"]
         }))
     }
@@ -293,16 +418,20 @@ impl AiToolFacades {
             }),
             serde_json::json!({
                 "name": "manage_entity",
-                "description": "Создать/обновить/удалить сущность или добавить связь (create, update, delete, relate).",
+                "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь (create, update, delete, relate). Для создания персонажа или локации передайте action: 'create' и плоский объект характеристик.",
                 "input_schema": {
                     "type": "object",
                     "properties": {
-                        "action": { "type": "string", "enum": ["create", "update", "delete", "relate"] },
-                        "payload": { "type": "object", "description": "Данные сущности или связи" }
+                        "action": { "type": "string", "enum": ["create", "update", "delete", "relate"], "description": "Действие над сущностью" },
+                        "payload": {
+                            "type": "object",
+                            "description": "Бланк сущности. Поля: 'name'/'название' (обязательно), 'type_key'/'entity_type' ('character', 'location', 'faction', 'item'), и любые свойства (например: 'роль_в_истории', 'статус', 'описание', 'пол')."
+                        }
                     },
                     "required": ["action", "payload"]
                 }
             }),
+
             serde_json::json!({
                 "name": "read_manuscript",
                 "description": "Прочитать текст главы рукописи по chapter_id, либо получить оглавление (chapter_id: 'list').",

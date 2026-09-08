@@ -77,13 +77,20 @@ pub fn levenshtein_distance(a: &str, b: &str) -> usize {
 
 /// Checks if query fuzzy-matches target name or any aliases:
 /// 1. Canonical equality
-/// 2. Substring / Root match (for grammatical declensions like "Лёхой" -> "лех")
-/// 3. Levenshtein distance <= 2 (for typos in long names)
+/// 2. Snowball stemming match (all grammatical declensions like "Лёхе", "Лёхой", "Лёху" -> "лех")
+/// 3. Substring / Root match
+/// 4. Levenshtein distance <= 2 (for typos in long names)
 pub fn fuzzy_match_name(query: &str, target_name: &str, aliases: &[String]) -> bool {
     let q_canon = canonicalize_name(query);
     if q_canon.is_empty() {
         return false;
     }
+    let q_stem = super::stemmer::SnowballStemmer::stem_phrase(&q_canon);
+    let q_tokens: Vec<String> = q_canon
+        .split_whitespace()
+        .map(super::stemmer::SnowballStemmer::stem_word)
+        .filter(|s| !s.is_empty())
+        .collect();
 
     let check_candidate = |candidate: &str| -> bool {
         let c_canon = canonicalize_name(candidate);
@@ -94,11 +101,31 @@ pub fn fuzzy_match_name(query: &str, target_name: &str, aliases: &[String]) -> b
         if q_canon == c_canon {
             return true;
         }
-        // 2. Substring contains (query inside candidate or candidate inside query)
+        // 2. Snowball stem equality or containment
+        let c_stem = super::stemmer::SnowballStemmer::stem_phrase(&c_canon);
+        if !q_stem.is_empty()
+            && !c_stem.is_empty()
+            && (q_stem == c_stem || q_stem.contains(&c_stem) || c_stem.contains(&q_stem))
+        {
+            return true;
+        }
+
+        // 3. Word token stem overlap
+        let c_tokens: Vec<String> = c_canon
+            .split_whitespace()
+            .map(super::stemmer::SnowballStemmer::stem_word)
+            .filter(|s| !s.is_empty())
+            .collect();
+        for q_tok in &q_tokens {
+            if c_tokens.contains(q_tok) {
+                return true;
+            }
+        }
+        // 4. Substring contains (query inside candidate or candidate inside query)
         if q_canon.contains(&c_canon) || c_canon.contains(&q_canon) {
             return true;
         }
-        // 3. Root match (strip 1-3 chars declension endings if length >= 4)
+        // 5. Root match (strip 1-3 chars declension endings if length >= 4)
         let q_root = if q_canon.chars().count() >= 4 {
             q_canon
                 .chars()
@@ -118,7 +145,7 @@ pub fn fuzzy_match_name(query: &str, target_name: &str, aliases: &[String]) -> b
         if c_canon.starts_with(&q_root) || q_canon.starts_with(&c_root) {
             return true;
         }
-        // 4. Fuzzy Levenshtein for typos (<= 2 edits if length >= 4)
+        // 6. Fuzzy Levenshtein for typos (<= 2 edits if length >= 4)
         if q_canon.chars().count() >= 4
             && c_canon.chars().count() >= 4
             && levenshtein_distance(&q_canon, &c_canon) <= 2
@@ -138,6 +165,7 @@ pub fn fuzzy_match_name(query: &str, target_name: &str, aliases: &[String]) -> b
     }
     false
 }
+
 
 /// Universal helper to construct a project_id WHERE clause that matches
 /// RecordId, raw string, and cleaned string representations in SurrealDB.
@@ -864,6 +892,110 @@ impl SurrealRAGAdapter {
     }
 }
 
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct EntitySearchDto {
+    pub id: Option<Value>,
+    pub name: Option<String>,
+    pub type_key: Option<String>,
+    pub description: Option<String>,
+    pub tags: Option<Vec<String>>,
+    pub attributes: Option<Value>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct LoreChunkSearchDto {
+    pub id: Option<Value>,
+    pub entity_id: Option<Value>,
+    pub content: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct ChapterSearchDto {
+    pub id: Option<Value>,
+    pub title: Option<String>,
+    pub content: Option<String>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct EntityRelationSearchDto {
+    #[serde(rename = "in")]
+    pub from: Option<Value>,
+    pub out: Option<Value>,
+    pub rel_type: Option<String>,
+    pub description: Option<String>,
+    pub strength: Option<i32>,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+pub struct RagBundleDto {
+    #[serde(default)]
+    pub entities: Vec<EntitySearchDto>,
+    #[serde(default)]
+    pub chunks: Vec<LoreChunkSearchDto>,
+    #[serde(default)]
+    pub chapters: Vec<ChapterSearchDto>,
+    #[serde(default)]
+    pub relations: Vec<EntityRelationSearchDto>,
+}
+
+fn format_entity_search_dto(ent: &EntitySearchDto) -> Value {
+    let name = ent.name.as_deref().unwrap_or("Сущность");
+    let type_key = ent.type_key.as_deref().unwrap_or("entity");
+    let desc = ent.description.as_deref().unwrap_or("");
+    let tags = ent.tags.as_ref().map(|arr| arr.join(", ")).unwrap_or_default();
+
+    let mut out = format!("[СУЩНОСТЬ: {name} (тип: {type_key})]\n");
+    if !tags.is_empty() {
+        out.push_str(&format!("Теги: {tags}\n"));
+    }
+    if !desc.trim().is_empty() {
+        out.push_str(&format!("Описание: {}\n", desc.trim()));
+    }
+    if let Some(attrs) = ent.attributes.as_ref().and_then(|v| v.as_object()) {
+        for (k, v) in attrs {
+            if k == "embeddings" || k.starts_with('_') { continue; }
+            let val_str = match v {
+                Value::String(s) if !s.trim().is_empty() => s.clone(),
+                Value::Array(arr) if !arr.is_empty() => {
+                    let items: Vec<String> = arr.iter().filter_map(|item| match item {
+                        Value::String(s) => {
+                            let trimmed = s.trim();
+                            if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+                        }
+                        Value::Object(o) => {
+                            if let Some(n) = o.get("название").and_then(|x| x.as_str()) {
+                                let trimmed = n.trim();
+                                if trimmed.is_empty() { None } else { Some(trimmed.to_string()) }
+                            } else {
+                                Some(item.to_string())
+                            }
+                        }
+                        Value::Null => None,
+                        _ => Some(item.to_string()),
+                    }).collect();
+                    items.join(", ")
+                }
+                Value::Number(n) => n.to_string(),
+                Value::Bool(b) => b.to_string(),
+                _ => String::new(),
+            };
+            if !val_str.is_empty() {
+                out.push_str(&format!("- {k}: {val_str}\n"));
+            }
+        }
+    }
+    serde_json::json!({
+        "id": ent.id,
+        "name": name,
+        "type_key": type_key,
+        "title": name,
+        "content": out,
+        "source_type": "entity",
+        "tags": ent.tags,
+        "attributes": ent.attributes,
+    })
+}
+
 fn format_entity_dossier_value(row: &Value) -> Value {
     let mut obj = row.as_object().cloned().unwrap_or_default();
     let name = obj.get("name").and_then(|v| v.as_str()).or_else(|| obj.get("title").and_then(|v| v.as_str())).unwrap_or("Сущность");
@@ -977,70 +1109,69 @@ impl RAGContextPort for SurrealRAGAdapter {
             }
         }
 
-        // 1. BM25 Lexical search on entities
-        let ent_sql = format!(
-            "SELECT id, name, type_key, description, tags, attributes, 'entity' AS source_type FROM entities WHERE {where_proj} AND (name @1@ $q OR description @1@ $q) LIMIT 6"
-        );
-        if let Ok(mut resp) = self
+        // 1. Атомарный вызов fn::gather_rag_bundle (1 раундтрип, типизированный DTO)
+        let rel_limit = (top_k * 2).clamp(10, 30) as i64;
+        let sub_limit = (top_k as i64).clamp(4, 15);
+        let bundle_sql = "RETURN fn::gather_rag_bundle(type::record('projects', $p_clean), $q, $limit, $rel_limit);";
+
+        let bundle_opt: Option<RagBundleDto> = match self
             .db
-            .query(&ent_sql)
-            .bind(("p_raw", p_raw.clone()))
+            .query(bundle_sql)
             .bind(("p_clean", p_clean.clone()))
             .bind(("q", q_trimmed))
+            .bind(("limit", sub_limit))
+            .bind(("rel_limit", rel_limit))
             .await
         {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
-                for r in rows {
-                    if let Some(id) = r.get("id").and_then(clean_record_id) {
-                        entity_ids.insert(id);
-                    }
-                    list.push(format_entity_dossier_value(&r));
+            Ok(mut resp) => {
+                let raw_val: Option<Value> = resp.take(0).ok().flatten();
+                raw_val.and_then(|v| serde_json::from_value::<RagBundleDto>(v).ok())
+            }
+            Err(_) => None,
+        };
+
+        if let Some(bundle) = bundle_opt {
+            for ent in bundle.entities {
+                if let Some(id) = ent.id.as_ref().and_then(clean_record_id) {
+                    entity_ids.insert(id);
                 }
+                list.push(format_entity_search_dto(&ent));
+            }
+
+            for chunk in bundle.chunks {
+                if let Some(eid) = chunk.entity_id.as_ref().and_then(clean_record_id) {
+                    entity_ids.insert(eid);
+                }
+                list.push(serde_json::json!({
+                    "id": chunk.id,
+                    "entity_id": chunk.entity_id,
+                    "content": chunk.content.unwrap_or_default(),
+                    "source_type": "lore_chunk",
+                }));
+            }
+
+            for chap in bundle.chapters {
+                list.push(serde_json::json!({
+                    "id": chap.id,
+                    "title": chap.title.unwrap_or_default(),
+                    "content": chap.content.unwrap_or_default(),
+                    "source_type": "chapter",
+                }));
+            }
+
+            for rel in bundle.relations {
+                list.push(serde_json::json!({
+                    "source_type": "relation",
+                    "from": rel.from,
+                    "to": rel.out,
+                    "rel_type": rel.rel_type,
+                    "description": rel.description,
+                    "strength": rel.strength,
+                }));
             }
         }
 
-        // 2. BM25 search on entity_chunks
-        let chunk_sql = format!(
-            "SELECT id, entity_id, content, 'lore_chunk' AS source_type FROM entity_chunks WHERE {where_proj} AND content @1@ $q LIMIT 6"
-        );
-        if let Ok(mut resp) = self
-            .db
-            .query(&chunk_sql)
-            .bind(("p_raw", p_raw.clone()))
-            .bind(("p_clean", p_clean.clone()))
-            .bind(("q", q_trimmed))
-            .await
-        {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
-                for r in rows {
-                    if let Some(eid) = r.get("entity_id").and_then(clean_record_id) {
-                        entity_ids.insert(eid);
-                    }
-                    list.push(r);
-                }
-            }
-        }
-
-        // 3. BM25 search on chapters
-        let chap_sql = format!(
-            "SELECT id, title, content, 'chapter' AS source_type FROM chapters WHERE {where_proj} AND (title @1@ $q OR content @1@ $q) LIMIT 4"
-        );
-        if let Ok(mut resp) = self
-            .db
-            .query(&chap_sql)
-            .bind(("p_raw", p_raw.clone()))
-            .bind(("p_clean", p_clean.clone()))
-            .bind(("q", q_trimmed))
-            .await
-        {
-            if let Ok(rows) = resp.take::<Vec<Value>>(0) {
-                for r in rows {
-                    list.push(r);
-                }
-            }
-        }
-
-        // 4. Fallback search (Fuzzy & Substring contains) if BM25 yielded few results
+        // 2. Fallback search (Fuzzy & Snowball stemming) если лексический BM25 вернул мало данных
         if list.len() < top_k {
             let mut res_ch = self
                 .db
@@ -1097,10 +1228,15 @@ impl RAGContextPort for SurrealRAGAdapter {
                     .and_then(|v| serde_json::from_value(v.clone()).ok())
                     .unwrap_or_default();
 
+                let q_stem = super::stemmer::SnowballStemmer::stem_phrase(&q_canon);
+                let cont_canon = canonicalize_name(cont);
+                let cont_stem = super::stemmer::SnowballStemmer::stem_phrase(&cont_canon);
+
                 if q_canon.is_empty()
                     || fuzzy_match_name(q_trimmed, t, &tags)
                     || canonicalize_name(t).contains(&q_canon)
-                    || canonicalize_name(cont).contains(&q_canon)
+                    || cont_canon.contains(&q_canon)
+                    || (!q_stem.is_empty() && cont_stem.contains(&q_stem))
                 {
                     if let Some(eid) = item.get("id").and_then(clean_record_id) {
                         entity_ids.insert(eid);
@@ -1113,8 +1249,9 @@ impl RAGContextPort for SurrealRAGAdapter {
             }
         }
 
-        // 5. Graph Expansion (relations for seed entities)
-        if !entity_ids.is_empty() {
+        // 3. Дополнительное графовое расширение (если fallback добавил новые entity_ids)
+        let has_relations = list.iter().any(|r| r.get("source_type").and_then(|v| v.as_str()) == Some("relation"));
+        if !has_relations && !entity_ids.is_empty() {
             let seed_list: Vec<RecordId> = entity_ids
                 .into_iter()
                 .filter_map(|s| {
@@ -1129,7 +1266,7 @@ impl RAGContextPort for SurrealRAGAdapter {
                     }
                 })
                 .collect();
-            let rel_sql = "SELECT in, out, rel_type, description, strength FROM entity_rel WHERE in IN $seeds OR out IN $seeds LIMIT 10";
+            let rel_sql = "SELECT in, out, rel_type, description, strength FROM entity_rel WHERE in IN $seeds OR out IN $seeds ORDER BY strength DESC LIMIT 10";
             if let Ok(mut resp) = self.db.query(rel_sql).bind(("seeds", seed_list)).await {
                 if let Ok(rows) = resp.take::<Vec<Value>>(0) {
                     for r in rows {
@@ -1139,6 +1276,7 @@ impl RAGContextPort for SurrealRAGAdapter {
                             "to": r.get("out"),
                             "rel_type": r.get("rel_type"),
                             "description": r.get("description"),
+                            "strength": r.get("strength"),
                         }));
                     }
                 }

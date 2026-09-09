@@ -123,7 +123,7 @@ import AiSettingsConnectionsTab from './tabs/AiSettingsConnectionsTab.vue';
 import AiSettingsModelsTab from './tabs/AiSettingsModelsTab.vue';
 import AiSettingsLocalTab from './tabs/AiSettingsLocalTab.vue';
 import AiSettingsModesTab from './tabs/AiSettingsModesTab.vue';
-import AiSettingsSkillsTab from './tabs/AiSettingsSkillsTab.vue';
+import AiSettingsSkillsTab from './AiSettingsSkillsTab.vue';
 import AiSettingsPermissionsTab from './tabs/AiSettingsPermissionsTab.vue';
 import { useAiSettingsView } from './useAiSettingsView';
 

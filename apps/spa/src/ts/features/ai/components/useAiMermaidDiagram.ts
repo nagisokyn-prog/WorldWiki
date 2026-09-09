@@ -21,11 +21,10 @@ async function getMermaidInstance(): Promise<MermaidApi | null> {
         return mermaidInstance;
       }
 
-      // Load mermaid dynamically without compile-time module dependency
-      const dynamicImport = new Function('url', 'return import(url)');
-      const module = await dynamicImport('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs').catch(() => null);
+      // Load local bundled mermaid module asynchronously
+      const module = await import('mermaid');
       if (module && module.default) {
-        mermaidInstance = module.default as MermaidApi;
+        mermaidInstance = (module.default as unknown) as MermaidApi;
         return mermaidInstance;
       }
       return null;

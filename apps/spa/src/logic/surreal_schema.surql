@@ -454,7 +454,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
             UPDATE $existing.id SET
                 hit_count += 1,
                 fetched_at = time::now(),
-                expires_at = time::now() + duration::from::days($ttl_days);
+                expires_at = time::now() + duration::from_days($ttl_days);
             RETURN { id: $existing.id, is_new: false, is_updated: false };
         } ELSE {
             UPDATE $existing.id SET
@@ -466,7 +466,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
                 extracted_markdown = $extracted_md,
                 hit_count += 1,
                 fetched_at = time::now(),
-                expires_at = time::now() + duration::from::days($ttl_days);
+                expires_at = time::now() + duration::from_days($ttl_days);
             RETURN { id: $existing.id, is_new: false, is_updated: true };
         };
     } ELSE {
@@ -484,7 +484,7 @@ DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
                 status_code = $status_code,
                 hit_count = 1,
                 fetched_at = time::now(),
-                expires_at = time::now() + duration::from::days($ttl_days)
+                expires_at = time::now() + duration::from_days($ttl_days)
         );
         RETURN { id: $created[0].id, is_new: true, is_updated: false };
     };

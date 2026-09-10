@@ -55,4 +55,35 @@ describe('useAiMessageList', () => {
     expect(skills[0].name).toBe('Аналитик сюжета');
     expect(getCleanedContent(text)).toBe('Проверь дыры в главе 5');
   });
+
+  it('extracts raw quote prefix from user message and cleans content', () => {
+    const { getExtractedQuote, getCleanedContent } = useAiMessageList();
+    const raw = `[Цитата]: «Не знаю точно, какие блоки реально доступны в твоём каталоге Schema Editor — подскажи, что там есть»
+
+ладно. потом буду инструкцию править. скажи, ты видишь, что я на твоё сообщение сослался?`;
+
+    const quote = getExtractedQuote({ content: raw });
+    expect(quote).not.toBeNull();
+    expect(quote?.content).toBe('Не знаю точно, какие блоки реально доступны в твоём каталоге Schema Editor — подскажи, что там есть');
+
+    const cleaned = getCleanedContent(raw);
+    expect(cleaned).toBe('ладно. потом буду инструкцию править. скажи, ты видишь, что я на твоё сообщение сослался?');
+  });
+
+  it('extracts structured quoted_context object with priority', () => {
+    const { getExtractedQuote } = useAiMessageList();
+    const message = {
+      content: 'Мой ответ на вопрос',
+      quoted_context: {
+        selected_text: 'Исходный фрагмент текста',
+        author: 'WoWiLon AI'
+      }
+    };
+
+    const quote = getExtractedQuote(message);
+    expect(quote).toEqual({
+      name: 'WoWiLon AI',
+      content: 'Исходный фрагмент текста'
+    });
+  });
 });

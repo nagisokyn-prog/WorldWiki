@@ -104,6 +104,24 @@
                 :current-project="currentProject"
                 :active-mode-slug="activeModeSlug"
               />
+              <!-- 4. 🌐 Переключатель Web Search (DeepSeek Style) -->
+              <button
+                type="button"
+                class="ds-toggle-button interactive-el"
+                :class="{ 'is-active': isWebSearchEnabled }"
+                :title="isWebSearchEnabled ? 'Поиск в интернете включен' : 'Включить веб-поиск'"
+                @click="toggleWebSearch"
+              >
+                <div class="ds-toggle-button__icon">
+                  <svg viewBox="0 0 16 16" width="13" height="13" fill="none">
+                    <circle cx="8" cy="8" r="6.85" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M8 1.15C9.6 1.15 10.9 4.22 10.9 8C10.9 11.78 9.6 14.85 8 14.85" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M8 1.15C6.4 1.15 5.1 4.22 5.1 8C5.1 11.78 6.4 14.85 8 14.85" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M1.64 8H14.36" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <span class="ds-toggle-label">Search</span>
+              </button>
             </div>
 
             <!-- Баннер цитируемого фрагмента сообщения -->
@@ -183,6 +201,8 @@ const {
   messagesListRef,
   chatInputRef,
   activeQuote,
+  isWebSearchEnabled,
+  toggleWebSearch,
   researchProgress,
   handleAskWoWiLon,
   handleClearQuote,

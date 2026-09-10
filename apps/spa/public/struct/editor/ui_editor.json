@@ -267,18 +267,17 @@
       "headerTitle": "Запись",
       "fields": [
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "начальная_глава",
-          "label": "Начальная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
+          "label": "Начало в рукописи (Том / Арка / Глава)",
+          "placeholder": "Выберите том, арку и главу..."
         },
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "конечная_глава",
-          "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
+          "label": "Окончание в рукописи (Том / Арка / Глава)",
+          "placeholder": "Выберите том, арку и главу...",
+          "allowAutoExtend": true
         },
         {
           "type": "select",
@@ -424,16 +423,17 @@
           "dataPath": "динамика_отношений",
           "fields": [
             {
-              "type": "select",
+              "type": "manuscript_point",
               "class": "начальная_глава",
-              "label": "Начальная глава",
-              "placeholder": "Выберите главу..."
+              "label": "Начало в рукописи (Том / Арка / Глава)",
+              "placeholder": "Выберите том, арку и главу..."
             },
             {
-              "type": "select",
+              "type": "manuscript_point",
               "class": "конечная_глава",
-              "label": "Конечная глава",
-              "placeholder": "Выберите главу..."
+              "label": "Окончание в рукописи (Том / Арка / Глава)",
+              "placeholder": "Выберите том, арку и главу...",
+              "allowAutoExtend": true
             },
             {
               "type": "select",
@@ -489,7 +489,6 @@
       ],
       "itemClass": "dynamic-item"
     }
-
   },
   "api": {
     "list": "/api/project/{project}/generic",

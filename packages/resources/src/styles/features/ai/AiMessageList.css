@@ -460,3 +460,47 @@
 .ai-skill-pill-label {
   line-height: 1.2;
 }
+
+/* Карточка цитируемого фрагмента в пузыре сообщения */
+.ai-quote-card {
+  display: flex;
+  margin-bottom: 8px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-xs, 4px);
+  overflow: hidden;
+  font-size: 12px;
+  text-align: left;
+}
+
+.ai-quote-card__body {
+  padding: 6px 10px;
+  width: 100%;
+}
+
+.ai-quote-card__header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.ai-quote-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ai-quote-card__text {
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+

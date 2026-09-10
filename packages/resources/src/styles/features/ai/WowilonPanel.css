@@ -81,3 +81,45 @@
   gap: 8px;
   padding: 4px 12px;
 }
+
+/* DeepSeek-style Web Search Toggle Button */
+.ds-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast) ease;
+  user-select: none;
+  height: 28px;
+}
+
+.ds-toggle-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.ds-toggle-button.is-active {
+  background: var(--bg-selected);
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.ds-toggle-button__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ds-toggle-label {
+  line-height: 1;
+}
+

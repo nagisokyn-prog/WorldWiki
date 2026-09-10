@@ -4,26 +4,26 @@
 
   📈 BASELINE & TREND TRACKING:
   • Baseline Debt:    1059 мест
-  • Current Debt:     84 мест
+  • Current Debt:     66 мест
   • Fixed (Устранено): -1033 мест 🎉
-  • New (Введено):    +61 мест
-  • Net Trend:        ↓ 975 (92.1% улучшение)
+  • New (Введено):    +43 мест
+  • Net Trend:        ↓ 993 (93.8% улучшение)
 
 ────────────────────────────────────────────────────────────────────────
   1. СЕМАНТИЧЕСКИЕ РОЛИ ДОЛГА (ЗНАЧЕНИЕ → СМЫСЛ → ТОКЕН)
 ────────────────────────────────────────────────────────────────────────
   • [Оверлеи / Затемнения]   --modal-backdrop : 0 мест
   • [Утопленные подложки]    --bg-sunken      : 0 мест
-  • [Системные рамки]        --border-color   : 1 мест
-  • [Цвета текста]           --text-main/muted: 10 мест
+  • [Системные рамки]        --border-color   : 0 мест
+  • [Цвета текста]           --text-main/muted: 0 мест
 
 ────────────────────────────────────────────────────────────────────────
   2. РАЗБИВКА ПО ТИПАМ НАРУШЕНИЙ
 ────────────────────────────────────────────────────────────────────────
-  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      3 [Критично для Light Theme]
-  • Hardcoded White Colors  (rgba(255,255,...), #fff):     3 [Критично для Light Theme]
-  • Arbitrary HEX Colors    (#aabbcc):                  11
-  • Inline Styles           (style="..."):              67
+  • Hardcoded Black Colors  (rgba(0,0,0,...), #000):      1 [Критично для Light Theme]
+  • Hardcoded White Colors  (rgba(255,255,...), #fff):     0 [Критично для Light Theme]
+  • Arbitrary HEX Colors    (#aabbcc):                   0
+  • Inline Styles           (style="..."):              65
   • Hardcoded Radii         (border-radius: Xpx):          0
 
 ────────────────────────────────────────────────────────────────────────

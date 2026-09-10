@@ -7,6 +7,11 @@ export interface AttachedSkill {
   content: string;
 }
 
+export interface ExtractedQuote {
+  text: string;
+  author?: string;
+}
+
 export interface MessageSegment {
   type: 'markdown' | 'mermaid';
   content: string;

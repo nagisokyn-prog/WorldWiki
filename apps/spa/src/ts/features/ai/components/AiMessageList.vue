@@ -74,10 +74,19 @@
             </div>
           </div>
 
-          <!-- Цитата из предыдущего контекста (если есть) -->
-          <div v-if="group.activeMessage.quoted_context" class="message-quote-ref">
-            <span class="quote-ref-icon">⚡</span>
-            <span class="quote-ref-text">«{{ group.activeMessage.quoted_context.selected_text }}»</span>
+          <!-- Цитата из предыдущего контекста (аккуратный карточный бейдж) -->
+          <div v-if="getExtractedQuote(group.activeMessage)" class="ai-quote-card">
+            <div class="ai-quote-card__body">
+              <div class="ai-quote-card__header">
+                <svg class="ai-quote-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor">
+                  <path d="M6.5 4.5H3.5C2.4 4.5 1.5 5.4 1.5 6.5V9.5C1.5 10.6 2.4 11.5 3.5 11.5H5.5V13.5L8.5 10.5V6.5C8.5 5.4 7.6 4.5 6.5 4.5ZM14.5 4.5H11.5C10.4 4.5 9.5 5.4 9.5 6.5V9.5C9.5 10.6 10.4 11.5 11.5 11.5H13.5V13.5L16.5 10.5V6.5C16.5 5.4 15.6 4.5 14.5 4.5Z"/>
+                </svg>
+                <span class="ai-quote-label">{{ getExtractedQuote(group.activeMessage)?.name || 'Цитата' }}</span>
+              </div>
+              <div class="ai-quote-card__text">
+                «{{ getExtractedQuote(group.activeMessage)?.content }}»
+              </div>
+            </div>
           </div>
 
           <!-- Режим инлайн-редактирования -->
@@ -95,7 +104,7 @@
 
           <!-- Отрендеренный текст сообщения с поддержкой Mermaid диаграмм -->
           <div v-else class="message-content">
-            <template v-for="(seg, sIdx) in parseMessageContent(getCleanedContent(group.activeMessage.content))" :key="sIdx">
+            <template v-for="(seg, sIdx) in parseMessageContent(getCleanedContent(group.activeMessage.content, group.activeMessage.quoted_context))" :key="sIdx">
               <AiMermaidDiagram v-if="seg.type === 'mermaid'" :code="seg.content" />
               <SafeHtml v-else class="message-text-segment" :content="renderMarkdown(seg.content)" />
             </template>
@@ -198,6 +207,7 @@ const {
   copyText,
   isErrorMessage,
   getAttachedSkills,
+  getExtractedQuote,
   getCleanedContent,
   parseMessageContent
 } = useAiMessageList();

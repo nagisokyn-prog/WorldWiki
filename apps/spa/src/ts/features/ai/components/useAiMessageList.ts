@@ -68,12 +68,64 @@ export function useAiMessageList() {
     return { skills, cleanedContent };
   };
 
+  const extractQuoteAndCleanContent = (
+    rawContent?: string,
+    quotedContext?: { selected_text?: string; selectedText?: string; author?: string }
+  ): { quote: AttachedSkill | null; cleanedContent: string } => {
+    let cleanedContent = rawContent || '';
+    let quote: AttachedSkill | null = null;
+
+    // 1. Проверяем объект quoted_context
+    const structuredText = quotedContext?.selected_text || quotedContext?.selectedText;
+    if (structuredText && structuredText.trim()) {
+      quote = {
+        name: quotedContext?.author || 'Цитата',
+        content: structuredText.trim()
+      };
+    }
+
+    // 2. Проверяем префикс [Цитата]: «...» или [Цитата]: "..."
+    const quoteRegex = /(?:^|\n)(?:>\s*)?\[Цитата\]:\s*[«"]([\s\S]*?)[»"](?:\n+|$)/i;
+    const match = quoteRegex.exec(cleanedContent);
+    if (match) {
+      if (!quote) {
+        quote = {
+          name: 'Цитата',
+          content: match[1].trim()
+        };
+      }
+      cleanedContent = cleanedContent.replace(quoteRegex, '\n').trim();
+    }
+
+    // 3. Проверяем XML-тег <quoted_context>
+    const xmlQuoteRegex = /<quoted_context(?:\s+author=["']([^"']+)["'])?>([\s\S]*?)<\/quoted_context>/i;
+    const xmlMatch = xmlQuoteRegex.exec(cleanedContent);
+    if (xmlMatch) {
+      if (!quote) {
+        quote = {
+          name: xmlMatch[1] || 'Цитата',
+          content: xmlMatch[2].trim()
+        };
+      }
+      cleanedContent = cleanedContent.replace(xmlQuoteRegex, '').trim();
+    }
+
+    return { quote, cleanedContent };
+  };
+
   const getAttachedSkills = (content?: string): AttachedSkill[] => {
     return extractSkills(content).skills;
   };
 
-  const getCleanedContent = (content?: string): string => {
-    return extractSkills(content).cleanedContent;
+  const getExtractedQuote = (message?: { content?: string; quoted_context?: any; quotedContext?: any }): { name: string; content: string } | null => {
+    if (!message) return null;
+    const qContext = message.quoted_context || message.quotedContext;
+    return extractQuoteAndCleanContent(message.content, qContext).quote;
+  };
+
+  const getCleanedContent = (content?: string, quotedContext?: any): string => {
+    const afterSkills = extractSkills(content).cleanedContent;
+    return extractQuoteAndCleanContent(afterSkills, quotedContext).cleanedContent;
   };
 
   const parseMessageContent = (content?: string): MessageContentSegment[] => {
@@ -117,6 +169,8 @@ export function useAiMessageList() {
     isErrorMessage,
     extractSkills,
     getAttachedSkills,
+    extractQuoteAndCleanContent,
+    getExtractedQuote,
     getCleanedContent,
     parseMessageContent
   };

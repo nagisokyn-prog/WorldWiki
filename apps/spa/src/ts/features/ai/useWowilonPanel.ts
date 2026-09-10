@@ -86,6 +86,15 @@ export function useWowilonPanel(
   const skills = ref<AiSkillItem[]>([...DEFAULT_BUILTIN_SKILLS]);
 
   const activeQuote = ref<{ selected_text: string; source_message_id?: string } | null>(null);
+  const isWebSearchEnabled = ref<boolean>(
+    localStorage.getItem('wowilon_web_search_enabled') === 'true'
+  );
+
+  const toggleWebSearch = () => {
+    isWebSearchEnabled.value = !isWebSearchEnabled.value;
+    localStorage.setItem('wowilon_web_search_enabled', String(isWebSearchEnabled.value));
+  };
+
   const researchProgress = ref<{
     stage: 'planning' | 'searching' | 'reading' | 'synthesizing' | 'completed' | 'idle';
     query?: string;
@@ -958,6 +967,8 @@ export function useWowilonPanel(
     closePanel,
     detachWindow,
     activeQuote,
+    isWebSearchEnabled,
+    toggleWebSearch,
     researchProgress,
     handleAskWoWiLon,
     handleClearQuote,

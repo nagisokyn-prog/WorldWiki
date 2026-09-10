@@ -24,21 +24,24 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
 .ai-quote-reply-banner {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-md);
-  background: var(--color-bg-secondary);
-  border-left: 3px solid var(--color-accent-primary);
-  border-top: 1px solid var(--glass-border);
-  border-right: 1px solid var(--glass-border);
-  border-top-left-radius: var(--border-radius-md);
-  border-top-right-radius: var(--border-radius-md);
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  margin-bottom: 2px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .banner-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent-primary);
+  color: var(--accent);
+  font-size: 14px;
 }
 
 .banner-content {
@@ -47,31 +50,34 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
 }
 
 .banner-title {
-  font-size: 0.75rem;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-accent-primary);
+  color: var(--accent);
+  margin-bottom: 2px;
 }
 
 .banner-text {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
+  font-size: 12px;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-style: italic;
 }
 
 .banner-close-btn {
   background: transparent;
   border: none;
-  color: var(--color-text-tertiary);
+  color: var(--text-muted);
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: var(--border-radius-sm);
-  transition: all var(--transition-fast);
+  padding: 4px 8px;
+  border-radius: var(--radius-xs, 4px);
+  transition: all var(--anim-speed-fast) ease;
+  font-size: 12px;
 }
 
 .banner-close-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
+  background: var(--bg-hover);
+  color: var(--text-main);
 }
 </style>

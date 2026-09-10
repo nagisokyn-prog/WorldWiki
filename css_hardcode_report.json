@@ -1,22 +1,22 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 84,
+  "currentDebt": 66,
   "fixedCount": 1033,
-  "introducedCount": 61,
-  "trendPercent": "92.1",
+  "introducedCount": 43,
+  "trendPercent": "93.8",
   "categories": {
-    "blackColors": 3,
-    "whiteColors": 3,
-    "hexColors": 11,
+    "blackColors": 1,
+    "whiteColors": 0,
+    "hexColors": 0,
     "namedColors": 0,
     "radii": 0,
-    "inlineStyles": 67
+    "inlineStyles": 65
   },
   "semanticRoles": {
     "modalBackdrops": 0,
     "sunkenBackgrounds": 0,
-    "borders": 1,
-    "text": 10
+    "borders": 0,
+    "text": 0
   },
   "topCssFiles": [],
   "allTopFiles": [
@@ -25,24 +25,8 @@
       "count": 17
     },
     {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
-      "count": 6
-    },
-    {
       "file": "packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
       "count": 6
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
-      "count": 5
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
-      "count": 3
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
-      "count": 3
     },
     {
       "file": "apps/spa/src/ts/features/shell/EditorView.vue",
@@ -51,10 +35,6 @@
     {
       "file": "packages/components/src/components/Vue/TagsField.vue",
       "count": 3
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",
-      "count": 2
     },
     {
       "file": "apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
@@ -79,21 +59,29 @@
     {
       "file": "packages/components/src/components/Vue/WorkspaceLayout.vue",
       "count": 2
+    },
+    {
+      "file": "packages/components/src/components/Vue/XboxWheel.vue",
+      "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiChatTopBar.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
+      "count": 1
+    },
+    {
+      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
+      "count": 1
     }
   ],
   "violations": [
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",
-      "line": 11,
-      "match": "inline-style",
-      "snippet": "style=\"font-size: 8px;\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",
-      "line": 18,
-      "match": "inline-style",
-      "snippet": "style=\"color: var(--color-text-muted); font-size: 11px;\""
-    },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiChatHistory.vue",
       "line": 2,
@@ -107,54 +95,6 @@
       "snippet": "style=\"{ '--progress-w': progressPercent + '%' }\""
     },
     {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
-      "line": 61,
-      "match": "#3b82f6",
-      "snippet": "color: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
-      "line": 69,
-      "match": "#3b82f6",
-      "snippet": "background: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
-      "line": 70,
-      "match": "#ffffff",
-      "snippet": "color: var(--color-text-on-accent, #ffffff);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
-      "line": 78,
-      "match": "rgba(0, 0, 0, 0.35)",
-      "snippet": "box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
-      "line": 94,
-      "match": "#3b82f6",
-      "snippet": "color: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
-      "line": 114,
-      "match": "#3b82f6",
-      "snippet": "color: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
-      "line": 142,
-      "match": "#3b82f6",
-      "snippet": "background: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
-      "line": 143,
-      "match": "#ffffff",
-      "snippet": "color: var(--color-text-on-accent, #ffffff);"
-    },
-    {
       "file": "apps/spa/src/ts/features/ai/components/AiCitationPopover.vue",
       "line": 7,
       "match": "inline-style",
@@ -162,63 +102,15 @@
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
-      "line": 30,
-      "match": "#3b82f6",
-      "snippet": "border-left: 3px solid var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
-      "line": 41,
-      "match": "#3b82f6",
-      "snippet": "color: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiQuoteReplyBanner.vue",
-      "line": 52,
-      "match": "#3b82f6",
-      "snippet": "color: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiResearchProgress.vue",
-      "line": 93,
-      "match": "#3b82f6",
-      "snippet": "color: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
-      "line": 44,
-      "match": "rgba(0, 0, 0, 0.25)",
-      "snippet": "box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
-      "line": 66,
-      "match": "#60a5fa",
-      "snippet": "color: var(--color-accent-primary, #60a5fa);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
-      "line": 70,
-      "match": "#3b82f6",
-      "snippet": "background: var(--color-accent-primary, #3b82f6);"
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
-      "line": 71,
-      "match": "#ffffff",
-      "snippet": "color: var(--color-text-on-accent, #ffffff);"
+      "line": 34,
+      "match": "rgba(0, 0, 0, 0.15)",
+      "snippet": "box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);"
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
       "line": 6,
       "match": "inline-style",
       "snippet": "style=\"{ left: `${position.x}px`, top: `${position.y}px` }\""
-    },
-    {
-      "file": "apps/spa/src/ts/features/ai/components/AiToolInspector.vue",
-      "line": 134,
-      "match": "rgba(0, 0, 0, 0.8)",
-      "snippet": "box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), var(--shadow-lg);"
     },
     {
       "file": "apps/spa/src/ts/features/ai/settings/tabs/local/LocalAiExplore.vue",

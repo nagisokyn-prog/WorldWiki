@@ -2832,18 +2832,17 @@
       "type": "timeline",
       "fields": [
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "начальная_глава",
           "label": "Начальная глава",
-          "entityType": "chapter",
           "placeholder": "Выберите главу..."
         },
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "конечная_глава",
           "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
+          "placeholder": "Выберите главу...",
+          "allowAutoExtend": true
         },
         {
           "type": "select",
@@ -2924,18 +2923,17 @@
       "type": "timeline",
       "fields": [
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "начальная_глава",
           "label": "Начальная глава",
-          "entityType": "chapter",
           "placeholder": "Выберите главу..."
         },
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "конечная_глава",
           "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
+          "placeholder": "Выберите главу...",
+          "allowAutoExtend": true
         },
         {
           "type": "select",
@@ -3033,18 +3031,17 @@
       "type": "timeline",
       "fields": [
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "начальная_глава",
           "label": "Начальная глава",
-          "entityType": "chapter",
           "placeholder": "Выберите главу..."
         },
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "конечная_глава",
           "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
+          "placeholder": "Выберите главу...",
+          "allowAutoExtend": true
         },
         {
           "type": "select",
@@ -3142,18 +3139,17 @@
       "type": "timeline",
       "fields": [
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "начальная_глава",
           "label": "Начальная глава",
-          "entityType": "chapter",
           "placeholder": "Выберите главу..."
         },
         {
-          "type": "select",
+          "type": "manuscript_point",
           "class": "конечная_глава",
           "label": "Конечная глава",
-          "entityType": "chapter",
-          "placeholder": "Выберите главу..."
+          "placeholder": "Выберите главу...",
+          "allowAutoExtend": true
         },
         {
           "type": "select",

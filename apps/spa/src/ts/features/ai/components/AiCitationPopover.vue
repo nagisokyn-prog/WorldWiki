@@ -70,16 +70,16 @@ onUnmounted(() => {
   position: fixed;
   width: 320px;
   max-width: calc(100vw - 24px);
-  padding: var(--spacing-sm, 12px);
+  padding: var(--spacing-sm);
   background: var(--color-bg-secondary);
   border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-lg, 8px);
+  border-radius: var(--border-radius-lg);
   backdrop-filter: var(--glass-blur);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--shadow-lg);
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xs, 8px);
+  gap: var(--spacing-xs);
 }
 
 .popover-header {
@@ -91,7 +91,7 @@ onUnmounted(() => {
 .source-domain {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-accent-primary, #3b82f6);
+  color: var(--color-accent-primary);
 }
 
 .close-btn {
@@ -111,7 +111,7 @@ onUnmounted(() => {
 }
 
 .popover-title a:hover {
-  color: var(--color-accent-primary, #3b82f6);
+  color: var(--color-accent-primary);
   text-decoration: underline;
 }
 
@@ -121,9 +121,9 @@ onUnmounted(() => {
   line-height: 1.4;
   max-height: 100px;
   overflow-y: auto;
-  padding: var(--spacing-xs, 6px);
+  padding: var(--spacing-xs);
   background: var(--color-bg-tertiary);
-  border-radius: var(--border-radius-sm, 4px);
+  border-radius: var(--border-radius-sm);
 }
 
 .popover-actions {
@@ -139,12 +139,12 @@ onUnmounted(() => {
   padding: 6px 10px;
   font-size: 0.75rem;
   font-weight: 500;
-  background: var(--color-accent-primary, #3b82f6);
-  color: var(--color-text-on-accent, #ffffff);
+  background: var(--color-accent-primary);
+  color: var(--color-text-on-accent);
   border: none;
-  border-radius: var(--border-radius-sm, 4px);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
+  transition: all var(--transition-fast);
 }
 
 .action-btn.ask-wowilon:hover {

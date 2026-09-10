@@ -3,33 +3,35 @@ import { useAiAutoApproveModal } from './useAiAutoApproveModal';
 
 describe('useAiAutoApproveModal', () => {
   it('computes badgeText correctly based on active categories', () => {
-    const { autoApproveState, badgeText } = useAiAutoApproveModal({
+    const emit = () => {};
+    const { state, badgeText } = useAiAutoApproveModal({
       currentProject: 'proj_1',
-      activeModeSlug: 'chat'
-    });
+      activeModeSlug: 'editor'
+    }, emit as any);
 
-    autoApproveState.value = {
+    state.value.enabled = true;
+    state.value.categories = {
       read: true,
+      write: false,
+      delete: false,
       timeline: false,
-      edit_entities: false,
-      edit_text: false,
       audit: false,
-      subagents: false
+      delegate: false
     };
 
     expect(badgeText.value).toBe('Авто: Чтение');
 
-    autoApproveState.value.timeline = true;
+    state.value.categories.timeline = true;
     expect(badgeText.value).toBe('Авто: Чтение, Хронология');
 
-    autoApproveState.value = {
+    state.value.categories = {
       read: true,
+      write: true,
+      delete: true,
       timeline: true,
-      edit_entities: true,
-      edit_text: true,
       audit: true,
-      subagents: true
+      delegate: true
     };
-    expect(badgeText.value).toBe('Авто: Все (6)');
+    expect(badgeText.value).toBe('Авто: Все (Чтение, Запись, Удаление, Хронология)');
   });
 });

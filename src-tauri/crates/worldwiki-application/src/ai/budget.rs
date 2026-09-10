@@ -39,7 +39,7 @@ impl ContextBudgetManager {
                 // Приоритет 1 включается всегда (даже если превышен базовый бюджет)
                 used_tokens += item.tokens;
                 bundle.add_item(item);
-            } else if item.priority <= 3 && self.budget_limit > used_tokens {
+            } else if item.priority <= 4 && self.budget_limit > used_tokens {
                 // Пытаемся частично сжать (урезать) текст элемента
                 let available_tokens = self.budget_limit - used_tokens;
                 if available_tokens >= 30 {

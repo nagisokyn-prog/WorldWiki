@@ -6,6 +6,7 @@ pub mod lineage;
 pub mod budget;
 pub mod research;
 pub mod assembler;
+pub mod schema_adapter;
 
 pub use tools::AiToolFacades;
 pub use chat_services::*;
@@ -15,4 +16,5 @@ pub use lineage::*;
 pub use budget::*;
 pub use research::*;
 pub use assembler::*;
+pub use schema_adapter::*;
 

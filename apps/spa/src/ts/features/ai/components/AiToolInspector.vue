@@ -131,7 +131,7 @@ const {
   border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), var(--shadow-lg);
+  box-shadow: var(--shadow-xl);
   color: var(--text-main);
 }
 

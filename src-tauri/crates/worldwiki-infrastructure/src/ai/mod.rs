@@ -8,6 +8,7 @@ pub mod retrieval;
 pub mod client;
 pub mod claw_adapter;
 pub mod local_llm;
+pub mod model_discovery;
 
 pub use mock_ai::MockAiAdapter;
 pub use hardware::WinApiHardwareDetector;

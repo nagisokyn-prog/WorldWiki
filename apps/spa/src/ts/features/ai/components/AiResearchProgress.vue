@@ -86,11 +86,11 @@ const stageLabel = computed(() => {
   padding: 2px 6px;
   background: var(--color-bg-tertiary);
   color: var(--color-text-secondary);
-  border-radius: var(--border-radius-sm, 4px);
+  border-radius: var(--border-radius-sm);
 }
 
 .metric-badge strong {
-  color: var(--color-accent-primary, #3b82f6);
+  color: var(--color-accent-primary);
 }
 
 @keyframes spin {

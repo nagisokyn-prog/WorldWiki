@@ -24,21 +24,21 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
 .ai-quote-reply-banner {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm, 8px);
-  padding: var(--spacing-xs, 6px) var(--spacing-md, 12px);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
   background: var(--color-bg-secondary);
-  border-left: 3px solid var(--color-accent-primary, #3b82f6);
+  border-left: 3px solid var(--color-accent-primary);
   border-top: 1px solid var(--glass-border);
   border-right: 1px solid var(--glass-border);
-  border-top-left-radius: var(--border-radius-md, 6px);
-  border-top-right-radius: var(--border-radius-md, 6px);
+  border-top-left-radius: var(--border-radius-md);
+  border-top-right-radius: var(--border-radius-md);
 }
 
 .banner-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-accent-primary, #3b82f6);
+  color: var(--color-accent-primary);
 }
 
 .banner-content {
@@ -49,7 +49,7 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
 .banner-title {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-accent-primary, #3b82f6);
+  color: var(--color-accent-primary);
 }
 
 .banner-text {
@@ -66,8 +66,8 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
   color: var(--color-text-tertiary);
   cursor: pointer;
   padding: 2px 6px;
-  border-radius: var(--border-radius-sm, 4px);
-  transition: all var(--transition-fast, 0.15s ease);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
 }
 
 .banner-close-btn:hover {

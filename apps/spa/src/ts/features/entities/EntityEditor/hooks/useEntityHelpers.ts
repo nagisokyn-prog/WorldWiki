@@ -132,10 +132,26 @@ export function useEntityHelpers(
     return atomicBricks.some(b => b.val === item.type) || item.type === 'tags' || item.type === 'range';
   };
 
+  const getDynamicList = (pathOrContainer: string | DynamicContainer): Array<Record<string, unknown>> => {
+    const path = typeof pathOrContainer === 'string'
+      ? pathOrContainer
+      : (pathOrContainer.dataPath || pathOrContainer.id || '');
+    if (!path) return [];
+    const raw = getProp(path);
+    if (Array.isArray(raw)) {
+      return raw as Array<Record<string, unknown>>;
+    }
+    if (raw && typeof raw === 'object' && Object.keys(raw).length > 0) {
+      return [raw as Record<string, unknown>];
+    }
+    return [];
+  };
+
   return {
     getPhotoUrl,
     getProp,
     setProp,
+    getDynamicList,
     getResolvedTemplate,
     isAtomicField,
     photoUrlCache

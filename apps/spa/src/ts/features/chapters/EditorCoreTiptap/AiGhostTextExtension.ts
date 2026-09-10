@@ -50,13 +50,13 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
             const widget = document.createElement('span');
             widget.classList.add('ai-ghost-text');
             widget.textContent = pluginState.ghostText;
-            widget.style.color = '#999';
+            widget.style.color = 'var(--text-muted)';
             widget.style.pointerEvents = 'none';
             widget.style.userSelect = 'none';
             
             return DecorationSet.create(state.doc, [
               Decoration.widget(pluginState.pos, widget, { side: 1 })
-            ]);
+            ]) as any;
           },
           handleKeyDown(view, event) {
             if (event.key === 'Tab') {

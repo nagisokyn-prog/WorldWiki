@@ -17,7 +17,8 @@
     "test": "turbo test",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "generate:api": "node scripts/codegen.js"
+    "generate:api": "node scripts/codegen.js",
+    "audit:god-files": "node detect_god_files.js"
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.3.0",

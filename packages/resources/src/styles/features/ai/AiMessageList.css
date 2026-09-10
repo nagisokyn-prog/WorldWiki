@@ -256,7 +256,7 @@
 }
 
 .icon-btn.danger:hover {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--badge-danger-bg);
   color: var(--error);
 }
 
@@ -411,4 +411,52 @@
 .variant-switcher button:disabled {
   opacity: 0.3;
   cursor: default;
+}
+
+/* Прикрепленные навыки/скиллы (Компактный Badge/Pill) */
+.message-attached-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ai-skill-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--anim-speed-fast) ease;
+  user-select: none;
+  width: fit-content;
+}
+
+.ai-skill-pill:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.ai-skill-pill-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color var(--anim-speed-fast) ease;
+}
+
+.ai-skill-pill:hover .ai-skill-pill-icon {
+  color: var(--accent);
+}
+
+.ai-skill-pill-label {
+  line-height: 1.2;
 }

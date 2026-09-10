@@ -161,9 +161,18 @@
   width: 28px;
   height: 16px;
   background: var(--color-bg-tertiary);
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
   position: relative;
-  transition: background var(--transition-normal, 0.2s ease);
+  transition: background var(--transition-normal);
+}
+
+.modal-header-icon {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.badge-chevron {
+  font-size: 8px;
 }
 
 .switch-pill.is-on {

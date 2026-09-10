@@ -128,7 +128,7 @@ mod tests {
             "created_at": chrono::Utc::now(),
             "updated_at": chrono::Utc::now()
         })).await.unwrap();
-        assert_eq!(create_res["status"], "success");
+        assert_eq!(create_res["status"], "created");
 
         // 3. inspect_entity
         let card = facades.inspect_entity("proj_1", "char_1").await.unwrap();
@@ -143,7 +143,7 @@ mod tests {
 
         // 5. delegate_task
         let task_res = facades.delegate_task("task_001", "Проанализируй диалог").await.unwrap();
-        assert_eq!(task_res["status"], "spawned_read_only");
+        assert_eq!(task_res["status"], "completed");
     }
 
     #[test]

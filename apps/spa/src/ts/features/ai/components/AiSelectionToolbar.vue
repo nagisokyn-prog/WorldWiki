@@ -35,13 +35,13 @@ const { position, onAskWoWiLon, onAddToLore, onCopy } = useAiSelectionToolbar(em
   transform: translate(-50%, -100%);
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs, 4px);
-  padding: var(--spacing-xs, 4px) var(--spacing-sm, 6px);
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
   background: var(--color-bg-secondary);
   border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-lg, 8px);
+  border-radius: var(--border-radius-lg);
   backdrop-filter: var(--glass-blur);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-md);
   z-index: 9999;
   user-select: none;
 }
@@ -49,26 +49,26 @@ const { position, onAskWoWiLon, onAddToLore, onCopy } = useAiSelectionToolbar(em
 .toolbar-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs, 4px);
+  gap: var(--spacing-xs);
   padding: 4px 8px;
   background: transparent;
   color: var(--color-text-primary);
   border: none;
-  border-radius: var(--border-radius-sm, 4px);
+  border-radius: var(--border-radius-sm);
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
+  transition: all var(--transition-fast);
 }
 
 .toolbar-btn:hover {
   background: var(--color-bg-tertiary);
-  color: var(--color-accent-primary, #60a5fa);
+  color: var(--color-accent-primary);
 }
 
 .toolbar-btn.primary {
-  background: var(--color-accent-primary, #3b82f6);
-  color: var(--color-text-on-accent, #ffffff);
+  background: var(--color-accent-primary);
+  color: var(--color-text-on-accent);
 }
 
 .toolbar-btn.primary:hover {

@@ -59,13 +59,32 @@ impl AiToolFacades {
         self.search_workflow.search(project_id, query, scope, top_k).await
     }
 
-    /// 2. 🧙‍♂️ inspect_entity with Smart Resolution & Self-Healing
+    /// 2. 🧙‍♂️ inspect_entity with Smart Resolution & Schema Introspection
     pub async fn inspect_entity(&self, project_id: &str, entity_id_or_query: &str) -> Result<Value, ApplicationError> {
         let query = entity_id_or_query.trim();
         if query.is_empty() {
             return Ok(serde_json::json!({
                 "error": "entity_id or name cannot be empty",
                 "hint": "Provide an entity_id or name, or use query_world to search entities."
+            }));
+        }
+
+        // 0. Schema introspection request (e.g. "type:character", "schema:character" or "character")
+        let clean_q = query.to_lowercase();
+        if clean_q.starts_with("type:") || clean_q.starts_with("schema:") || ["character", "location", "faction", "organization", "item", "event", "state"].contains(&clean_q.as_str()) {
+            let norm_schema = crate::ai::schema_adapter::SchemaAdapter::load_schema(&clean_q);
+            let fill_guide = crate::ai::schema_adapter::SchemaAdapter::to_fill_guide(&norm_schema);
+            let scoped_schema = crate::ai::schema_adapter::SchemaAdapter::to_scoped_json_schema(&norm_schema, None);
+
+            return Ok(serde_json::json!({
+                "status": "schema_inspect",
+                "entity_type": norm_schema.entity_type,
+                "title": norm_schema.title,
+                "fill_guide": fill_guide,
+                "flat_fields_count": norm_schema.flat_fields.len(),
+                "dynamic_lists_count": norm_schema.dynamic_lists.len(),
+                "json_schema": scoped_schema,
+                "hint": "Используйте названия полей из fill_guide или json_schema для entity_manage."
             }));
         }
 
@@ -246,6 +265,20 @@ impl AiToolFacades {
                     if !["id", "project_id", "projectId", "type_key", "entity_type", "type", "name", "tags", "created_at", "updated_at", "description", "описание"].contains(&k.as_str()) {
                         base_attributes.insert(k, v);
                     }
+                }
+
+                // Strict Schema Validation
+                let norm_schema = crate::ai::schema_adapter::SchemaAdapter::load_schema(&type_key);
+                let attrs_val = Value::Object(base_attributes.clone());
+                if let Err(val_errs) = crate::ai::schema_adapter::SchemaAdapter::validate_attributes(&norm_schema, &attrs_val) {
+                    return Ok(serde_json::json!({
+                        "status": "validation_error",
+                        "is_error": true,
+                        "type_key": type_key,
+                        "entity_name": name,
+                        "errors": val_errs,
+                        "hint": format!("Пожалуйста, исправьте поля сущности '{}' в соответствии со схемой и повторите вызов entity_manage.", norm_schema.title)
+                    }));
                 }
 
                 let entity = Entity {
@@ -478,11 +511,11 @@ impl AiToolFacades {
 
         let entity_inspect_def = serde_json::json!({
             "name": "entity_inspect",
-            "description": "Получить полную анкету сущности по ID ('entities:char_123') ИЛИ по имени/псевдониму персонажа/локации (например, 'Катя', 'Замок'). Автоматически извлекает карточку, свойства и граф связей.",
+            "description": "Получить полную анкету сущности по ID ('entities:char_123') ИЛИ по имени (например, 'Катя'), ИЛИ запросить схему полей для типа (например, 'type:character', 'schema:location').",
             "input_schema": {
                 "type": "object",
                 "properties": {
-                    "entity_id_or_name": { "type": "string", "description": "ID сущности (например, 'entities:char_123') ИЛИ точное/примерное имя персонажа/локации." },
+                    "entity_id_or_name": { "type": "string", "description": "ID сущности ('entities:char_123'), имя ('Катя'), или запрос схемы ('type:character')." },
                     "entity_id": { "type": "string", "description": "Алиас для entity_id_or_name (обратная совместимость)." }
                 }
             }
@@ -515,7 +548,7 @@ impl AiToolFacades {
 
         let entity_manage_def = serde_json::json!({
             "name": "entity_manage",
-            "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь. Для обновления передайте action: 'update', имя 'name' (или 'id') и обновленные свойства в 'attributes' (старые данные автоматически сохранятся и дополнятся). Для создания нового объекта используйте action: 'create'.",
+            "description": "Создать, обновить или удалить сущность в энциклопедии мира, либо добавить связь. Для обновления/создания передайте: 'name' (обязательно), 'type_key' ('character', 'location', 'faction', 'item'), 'description', 'attributes' (объект с полями сущности, строго соответствующими схеме типа). Если не уверены в полях — предварительно вызовите entity_inspect(entity_id_or_name: 'type:character').",
             "input_schema": {
                 "type": "object",
                 "properties": {

@@ -382,7 +382,7 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
         console.warn('addDynamicItem: path is undefined, container lacks dataPath and id in schema');
         return;
     }
-    const arr = (helpers.getProp(formData.value, path) as Array<Record<string, unknown>>) || [];
+    const arr = helpers.getDynamicList(path);
     const tpl = typeof templateNameOrObj === 'string' ? config.value?.templates?.[templateNameOrObj] : templateNameOrObj;
     if (!tpl) return;
     const newItem: Record<string, unknown> = {};
@@ -432,16 +432,19 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     markModified();
   };
 
-  const removeDynamicItem = (path: string, idx: number) => {
-    const raw = helpers.getProp(formData.value, path);
-    if (!Array.isArray(raw)) {
-      console.warn(`[EntityEditor] removeDynamicItem: expected array at path "${path}", got:`, raw);
-      return;
-    }
-    const nextArr = [...raw];
-    if (idx >= 0 && idx < nextArr.length) {
-      nextArr.splice(idx, 1);
+  const removeDynamicItem = (path: string, idx: number | string) => {
+    if (!path) return;
+    const currentList = helpers.getDynamicList(path);
+    const nextArr = [...currentList];
+    const numIdx = typeof idx === 'number' ? idx : parseInt(String(idx), 10);
+
+    if (!isNaN(numIdx) && numIdx >= 0 && numIdx < nextArr.length) {
+      nextArr.splice(numIdx, 1);
       helpers.setProp(formData.value, path, nextArr);
+      markModified();
+    } else if (nextArr.length <= 1) {
+      // Если это был одиночный объект или невалидный индекс — сбрасываем в пустой массив
+      helpers.setProp(formData.value, path, []);
       markModified();
     }
   };

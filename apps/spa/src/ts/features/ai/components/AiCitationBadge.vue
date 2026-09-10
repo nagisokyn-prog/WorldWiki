@@ -58,16 +58,16 @@ const onAskSource = (item: CitationItem) => {
   line-height: 1;
   padding: 1px 4px;
   background: var(--color-bg-secondary);
-  color: var(--color-accent-primary, #3b82f6);
+  color: var(--color-accent-primary);
   border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-sm, 4px);
+  border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
+  transition: all var(--transition-fast);
 }
 
 .ai-citation-badge:hover {
-  background: var(--color-accent-primary, #3b82f6);
-  color: var(--color-text-on-accent, #ffffff);
+  background: var(--color-accent-primary);
+  color: var(--color-text-on-accent);
   transform: translateY(-1px);
 }
 </style>

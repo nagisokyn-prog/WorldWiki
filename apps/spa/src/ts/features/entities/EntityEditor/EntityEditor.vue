@@ -153,7 +153,7 @@
                       <button class="btn btn-small btn-outline interactive-el" @click="addDynamicItem(container.dataPath || container.id || '', container.template || '')">➕ Добавить</button>
                     </div>
 
-                    <div v-if="!getProp(container.dataPath || container.id || '') || (getProp(container.dataPath || container.id || '') as unknown[]).length === 0" class="empty-timeline">
+                    <div v-if="getDynamicList(container).length === 0" class="empty-timeline">
                       {{ container.emptyMessage || 'Элементы не добавлены' }}
                     </div>
                     
@@ -161,7 +161,7 @@
                       <!-- Двусторонние связи — свой компонент -->
                       <template v-if="container.isBidirectional || (getResolvedTemplate(container) as any)?.isBidirectional">
                         <RelationshipBlock
-                          v-for="(item, idx) in ((getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>) || [])"
+                          v-for="(item, idx) in getDynamicList(container)"
                           :key="idx"
                           :item="item"
                           :idx="idx"
@@ -177,7 +177,7 @@
                           @item-updated="(payload?: { item?: Record<string, unknown>; idx?: number }) => { 
                             const itemIdx = payload?.idx ?? idx;
                             const updatedItem = payload?.item ?? item;
-                            const structuredArr = getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>;
+                            const structuredArr = getDynamicList(container);
                             if (structuredArr && Array.isArray(structuredArr) && itemIdx < structuredArr.length) {
                               if (payload?.item) structuredArr[itemIdx] = updatedItem;
                               console.log('[EntityEditor.vue] 🔄 item-updated: обновил структурированный путь', itemIdx, 'в', container.dataPath || container.id);
@@ -189,7 +189,7 @@
 
                       <!-- Обычные динамические элементы -->
                       <template v-else>
-                        <div v-for="(item, idx) in ((getProp(container.dataPath || container.id || '') as Array<Record<string, unknown>>) || [])" :key="idx" class="glass-card mb-3 p-3 relative glass-card-stack" :style="{ '--z-item': 50 - idx }">
+                        <div v-for="(item, idx) in getDynamicList(container)" :key="idx" class="glass-card mb-3 p-3 relative glass-card-stack" :style="{ '--z-item': 50 - idx }">
                           <div class="flex justify-between mb-2 pb-2 border-b">
                             <strong class="text-accent">Элемент #{{ idx + 1 }}</strong>
                             <button class="btn-danger-icon interactive-el text-error cursor-pointer bg-transparent border-none" title="Удалить" @click="removeDynamicItem(container.dataPath || container.id || '', idx)">🗑️</button>
@@ -373,6 +373,7 @@ const {
     getPhotoUrl,
     getProp,
     setProp,
+    getDynamicList,
     getResolvedTemplate,
     getOptionsFor,
     markModified,

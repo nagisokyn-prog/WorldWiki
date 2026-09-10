@@ -5,6 +5,11 @@ export interface MessageContentSegment {
   content: string;
 }
 
+export interface AttachedSkill {
+  name: string;
+  content: string;
+}
+
 export function useAiMessageList() {
   const containerRef = ref<HTMLElement | null>(null);
 
@@ -27,6 +32,48 @@ export function useAiMessageList() {
       trimmed.startsWith('🔍') ||
       trimmed.startsWith('🌐')
     );
+  };
+
+  const extractSkills = (rawContent?: string): { skills: AttachedSkill[]; cleanedContent: string } => {
+    if (!rawContent) return { skills: [], cleanedContent: '' };
+
+    const skills: AttachedSkill[] = [];
+    const skillContextRegex = /<context\s+type=["']skill["'](?:\s+name=["']([^"']+)["'])?>([\s\S]*?)<\/context>/gi;
+
+    let match: RegExpExecArray | null;
+    while ((match = skillContextRegex.exec(rawContent)) !== null) {
+      const name = match[1]?.trim() || 'skills';
+      const content = match[2]?.trim() || '';
+      skills.push({ name, content });
+    }
+
+    // Удаляем <context type="skill">...</context> блоки из отображаемого текста
+    let cleanedContent = rawContent.replace(skillContextRegex, '').trim();
+
+    // Если в сообщении остался префикс !"Название скилла", извлекаем его как скилл если еще не был извлечен
+    const exclamationSkillRegex = /!"([^"]+)"/g;
+    let excMatch: RegExpExecArray | null;
+    while ((excMatch = exclamationSkillRegex.exec(cleanedContent)) !== null) {
+      const excName = excMatch[1].trim();
+      if (!skills.some(s => s.name.toLowerCase() === excName.toLowerCase())) {
+        skills.push({ name: excName, content: '' });
+      }
+    }
+
+    // Удаляем избыточный префикс !"Название скилла" из текста сообщения, если есть скилл-бейдж
+    if (skills.length > 0) {
+      cleanedContent = cleanedContent.replace(/!"([^"]+)"\s*/g, '').trim();
+    }
+
+    return { skills, cleanedContent };
+  };
+
+  const getAttachedSkills = (content?: string): AttachedSkill[] => {
+    return extractSkills(content).skills;
+  };
+
+  const getCleanedContent = (content?: string): string => {
+    return extractSkills(content).cleanedContent;
   };
 
   const parseMessageContent = (content?: string): MessageContentSegment[] => {
@@ -68,6 +115,9 @@ export function useAiMessageList() {
     containerRef,
     copyText,
     isErrorMessage,
+    extractSkills,
+    getAttachedSkills,
+    getCleanedContent,
     parseMessageContent
   };
 }

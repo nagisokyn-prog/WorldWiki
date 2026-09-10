@@ -16,9 +16,8 @@ use worldwiki_infrastructure::ai::{
     FsLocalModelManager, StaticPermissionsCatalog, WinApiHardwareDetector,
 };
 use worldwiki_infrastructure::events::InMemoryEventPublisher;
-use worldwiki_infrastructure::surrealdb::chat_repo::{
-    SurrealAiProfileRepository, SurrealChatRepository,
-};
+use worldwiki_infrastructure::surrealdb::chat_repo::SurrealChatRepository;
+use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepository;
 use worldwiki_infrastructure::surrealdb::memory_repos::{
     InMemoryChapterRepository, InMemoryEntityRepository, InMemoryPlanRepository,
     InMemoryPlotPromiseRepository, InMemoryRelationRepository,

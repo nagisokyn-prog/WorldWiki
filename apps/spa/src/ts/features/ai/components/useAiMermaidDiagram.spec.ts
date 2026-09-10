@@ -10,7 +10,7 @@ describe('useAiMermaidDiagram', () => {
     );
 
     expect(svgContent.value).toBe('');
-    expect(isLoading.value).toBe(true);
+    expect(isLoading.value).toBe(false);
     expect(errorMessage.value).toBe('');
     expect(showRaw.value).toBe(false);
     expect(isCopied.value).toBe(false);

@@ -8,14 +8,14 @@
     >
       <i class="fas fa-shield-alt"></i>
       <span>{{ badgeText }}</span>
-      <i class="fas fa-chevron-down" style="font-size: 8px;"></i>
+      <i class="fas fa-chevron-down badge-chevron"></i>
     </button>
 
     <div v-if="isOpen" class="auto-approve-popover" :class="{ 'open-down': placement === 'bottom' }">
       <div class="modal-header">
         <div class="modal-title-row">
           <span class="modal-title">Авто-разрешения</span>
-          <i class="fas fa-cog" style="color: var(--color-text-muted); font-size: 11px;"></i>
+          <i class="fas fa-cog modal-header-icon"></i>
         </div>
         <span class="modal-subtitle">
           Разрешенные категории действий выполняются без запроса подтверждения. Включайте только проверенные операции.

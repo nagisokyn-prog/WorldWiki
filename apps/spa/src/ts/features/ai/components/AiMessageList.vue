@@ -56,6 +56,24 @@
           :data-message-id="group.activeMessage.id"
           :class="{ 'is-error-bubble': group.activeMessage.is_error || isErrorMessage(group.activeMessage.content) }"
         >
+          <!-- Прикрепленные навыки/скиллы (Компактный Badge/Pill) -->
+          <div v-if="getAttachedSkills(group.activeMessage.content).length > 0" class="message-attached-skills">
+            <div 
+              v-for="(skill, sIdx) in getAttachedSkills(group.activeMessage.content)" 
+              :key="sIdx"
+              class="ai-skill-pill interactive-el"
+              :title="skill.name"
+            >
+              <div class="ai-skill-pill-icon">
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="none">
+                  <path d="M3 2.5C3 1.67 3.67 1 4.5 1H9.5L13 4.5V13.5C13 14.33 12.33 15 11.5 15H4.5C3.67 15 3 14.33 3 13.5V2.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M9 1V5H13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <span class="ai-skill-pill-label">{{ skill.name || 'skills' }}</span>
+            </div>
+          </div>
+
           <!-- Цитата из предыдущего контекста (если есть) -->
           <div v-if="group.activeMessage.quoted_context" class="message-quote-ref">
             <span class="quote-ref-icon">⚡</span>
@@ -77,7 +95,7 @@
 
           <!-- Отрендеренный текст сообщения с поддержкой Mermaid диаграмм -->
           <div v-else class="message-content">
-            <template v-for="(seg, sIdx) in parseMessageContent(group.activeMessage.content)" :key="sIdx">
+            <template v-for="(seg, sIdx) in parseMessageContent(getCleanedContent(group.activeMessage.content))" :key="sIdx">
               <AiMermaidDiagram v-if="seg.type === 'mermaid'" :code="seg.content" />
               <SafeHtml v-else class="message-text-segment" :content="renderMarkdown(seg.content)" />
             </template>
@@ -166,44 +184,23 @@
 
 <script setup lang="ts">
 import { SafeHtml } from '@worldwiki/components';
-import type { ChatMessage, MessageVariantGroup } from '../useWowilonPanel';
-import type { ToolCallPayload } from './AiToolApproval.vue';
-import type { CitationItem } from './AiCitation.model';
 import AiToolApproval from './AiToolApproval.vue';
 import AiMermaidDiagram from './AiMermaidDiagram.vue';
 import AiCitationBadge from './AiCitationBadge.vue';
+import type { AiMessageListProps, AiMessageListEmits } from './AiMessageList.model';
 import { useAiMessageList } from './useAiMessageList';
-
-export interface AiMessageListProps {
-  messages: ChatMessage[];
-  renderedMessages: MessageVariantGroup[];
-  activeChatId: string;
-  chatTitle: string;
-  editingMessageId: string | null;
-  editDraft: string;
-  renderMarkdown: (text: string) => string;
-  isGenerating?: boolean;
-}
-
-export interface AiMessageListEmits {
-  (e: 'scroll', event: Event): void;
-  (e: 'update:editDraft', val: string): void;
-  (e: 'switch-variant', msgId: string): void;
-  (e: 'start-edit', message: ChatMessage): void;
-  (e: 'cancel-edit'): void;
-  (e: 'save-edit', messageId: string): void;
-  (e: 'regenerate', parentId: string): void;
-  (e: 'branch', messageId: string | undefined): void;
-  (e: 'delete', messageId: string): void;
-  (e: 'tool-approve', payload: ToolCallPayload): void;
-  (e: 'tool-reject', payload: ToolCallPayload): void;
-  (e: 'ask-source', citation: CitationItem): void;
-}
 
 defineProps<AiMessageListProps>();
 defineEmits<AiMessageListEmits>();
 
-const { containerRef, copyText, isErrorMessage, parseMessageContent } = useAiMessageList();
+const {
+  containerRef,
+  copyText,
+  isErrorMessage,
+  getAttachedSkills,
+  getCleanedContent,
+  parseMessageContent
+} = useAiMessageList();
 
 defineExpose({
   containerRef

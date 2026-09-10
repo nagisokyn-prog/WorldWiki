@@ -433,10 +433,17 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   };
 
   const removeDynamicItem = (path: string, idx: number) => {
-    const arr = (helpers.getProp(formData.value, path) as unknown[]) || [];
-    arr.splice(idx, 1);
-    helpers.setProp(formData.value, path, arr);
-    markModified();
+    const raw = helpers.getProp(formData.value, path);
+    if (!Array.isArray(raw)) {
+      console.warn(`[EntityEditor] removeDynamicItem: expected array at path "${path}", got:`, raw);
+      return;
+    }
+    const nextArr = [...raw];
+    if (idx >= 0 && idx < nextArr.length) {
+      nextArr.splice(idx, 1);
+      helpers.setProp(formData.value, path, nextArr);
+      markModified();
+    }
   };
 
   const getOptionsFor = (field: SchemaField) => {

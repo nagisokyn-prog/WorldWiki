@@ -154,4 +154,4 @@ const {
 } = useTimeAtlasModal(props);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/features/timeline/TimeAtlasModal.css"></style>
+<style src="@worldwiki/resources/styles/features/timeline/TimeAtlasModal.css"></style>

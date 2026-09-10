@@ -1,38 +1,34 @@
 {
   "baselineDebt": 1059,
-  "currentDebt": 91,
+  "currentDebt": 121,
   "fixedCount": 1033,
-  "introducedCount": 68,
-  "trendPercent": "91.4",
+  "introducedCount": 98,
+  "trendPercent": "88.6",
   "categories": {
-    "blackColors": 7,
-    "whiteColors": 3,
-    "hexColors": 14,
+    "blackColors": 3,
+    "whiteColors": 27,
+    "hexColors": 24,
     "namedColors": 0,
     "radii": 0,
     "inlineStyles": 67
   },
   "semanticRoles": {
-    "modalBackdrops": 2,
+    "modalBackdrops": 0,
     "sunkenBackgrounds": 0,
-    "borders": 2,
-    "text": 12
+    "borders": 13,
+    "text": 24
   },
   "topCssFiles": [
     {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiMermaidDiagram.css",
-      "count": 1
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "count": 37
     }
   ],
   "allTopFiles": [
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "count": 37
+    },
     {
       "file": "packages/word-vibe/src/components/ruler/WordRuler.vue",
       "count": 17
@@ -48,14 +44,6 @@
     {
       "file": "apps/spa/src/ts/features/ai/components/AiSelectionToolbar.vue",
       "count": 5
-    },
-    {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
-      "count": 3
-    },
-    {
-      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
-      "count": 3
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
@@ -92,50 +80,234 @@
     {
       "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarPlayground/CalendarPlayground.vue",
       "count": 2
+    },
+    {
+      "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/TimelinePanel.vue",
+      "count": 2
     }
   ],
   "violations": [
     {
-      "file": "packages/resources/src/styles/features/ai/AiMermaidDiagram.css",
-      "line": 91,
-      "match": "#ef4444",
-      "snippet": "color: var(--color-danger, #ef4444);"
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 21,
+      "match": "#0f1218",
+      "snippet": "background: var(--color-bg-primary, var(--bg-base, #0f1218));"
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 102,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, var(--text-main, #ffffff));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 108,
+      "match": "#94a3b8",
+      "snippet": "color: var(--color-text-muted, var(--text-muted, #94a3b8));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 140,
+      "match": "rgba(255, 255, 255, 0.15)",
+      "snippet": "background: var(--color-border, rgba(255, 255, 255, 0.15));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 145,
+      "match": "rgba(255, 255, 255, 0.3)",
+      "snippet": "background: var(--color-text-muted, rgba(255, 255, 255, 0.3));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 150,
+      "match": "rgba(255, 255, 255, 0.04)",
+      "snippet": "background: var(--color-bg-secondary, var(--bg-panel, rgba(255, 255, 255, 0.04)));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
       "line": 151,
-      "match": "#ef4444",
-      "snippet": "border-color: var(--color-danger, #ef4444);"
+      "match": "rgba(255, 255, 255, 0.08)",
+      "snippet": "border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));"
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
-      "line": 152,
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 164,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, var(--text-main, #ffffff));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 168,
+      "match": "rgba(255, 255, 255, 0.08)",
+      "snippet": "border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 180,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, var(--text-main, #ffffff));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 199,
+      "match": "#7c3aed",
+      "snippet": "border: 1px solid var(--color-accent, #7c3aed);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 204,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 226,
       "match": "#ef4444",
       "snippet": "color: var(--color-danger, #ef4444);"
     },
     {
-      "file": "packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
-      "line": 158,
-      "match": "rgba(0, 0, 0, 0.6)",
-      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.6));"
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 232,
+      "match": "#22c55e",
+      "snippet": "color: var(--color-success, #22c55e);"
     },
     {
-      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
-      "line": 11,
-      "match": "rgba(0, 0, 0, 0.65)",
-      "snippet": "background: var(--modal-backdrop, rgba(0, 0, 0, 0.65));"
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 238,
+      "match": "#38bdf8",
+      "snippet": "color: var(--color-info, #38bdf8);"
     },
     {
-      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
-      "line": 29,
-      "match": "rgba(0, 0, 0, 0.55)",
-      "snippet": "box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);"
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 248,
+      "match": "rgba(255, 255, 255, 0.12)",
+      "snippet": "background: var(--color-border, rgba(255, 255, 255, 0.12));"
     },
     {
-      "file": "packages/resources/src/styles/features/chapters/WordDialogs.css",
-      "line": 213,
-      "match": "rgba(0, 0, 0, 0.55)",
-      "snippet": "box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55);"
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 260,
+      "match": "#7c3aed",
+      "snippet": "background: var(--color-accent, #7c3aed);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 261,
+      "match": "#ffffff",
+      "snippet": "border: 2px solid var(--color-bg-primary, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 282,
+      "match": "rgba(255, 255, 255, 0.05)",
+      "snippet": "background: var(--color-bg-elevated, rgba(255, 255, 255, 0.05));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 283,
+      "match": "rgba(255, 255, 255, 0.1)",
+      "snippet": "border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 287,
+      "match": "#94a3b8",
+      "snippet": "color: var(--color-text-muted, #94a3b8);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 294,
+      "match": "#7c3aed",
+      "snippet": "border-color: var(--color-accent, #7c3aed);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 295,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 296,
+      "match": "rgba(255, 255, 255, 0.08)",
+      "snippet": "background: var(--color-bg-hover, rgba(255, 255, 255, 0.08));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 300,
+      "match": "#7c3aed",
+      "snippet": "background: var(--color-accent, #7c3aed) !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 301,
+      "match": "#7c3aed",
+      "snippet": "border-color: var(--color-accent, #7c3aed) !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 302,
+      "match": "#ffffff",
+      "snippet": "color: #ffffff !important;"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 337,
+      "match": "rgba(255, 255, 255, 0.15)",
+      "snippet": "background-color: var(--color-border, rgba(255, 255, 255, 0.15));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 349,
+      "match": "#ffffff",
+      "snippet": "background-color: #ffffff;"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 355,
+      "match": "#7c3aed",
+      "snippet": "background-color: var(--color-accent, #7c3aed);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 366,
+      "match": "#7c3aed",
+      "snippet": "background: var(--color-accent, #7c3aed);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 367,
+      "match": "#ffffff",
+      "snippet": "color: #ffffff;"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 391,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, #ffffff);"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 406,
+      "match": "rgba(255, 255, 255, 0.15)",
+      "snippet": "border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 418,
+      "match": "rgba(255, 255, 255, 0.05)",
+      "snippet": "background: var(--color-bg-elevated, rgba(255, 255, 255, 0.05));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 419,
+      "match": "rgba(255, 255, 255, 0.15)",
+      "snippet": "border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "line": 421,
+      "match": "#ffffff",
+      "snippet": "color: var(--color-text-primary, #ffffff);"
     },
     {
       "file": "apps/spa/src/ts/features/ai/components/AiAutoApproveModal.vue",

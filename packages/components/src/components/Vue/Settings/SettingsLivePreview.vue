@@ -1,7 +1,7 @@
 <template>
   <div class="settings-live-preview" :style="previewStyles">
     <div class="preview-container">
-      <div class="preview-sidebar" :class="{ 'right-side': settings.layout.sidebarPos === 'row-reverse' }">
+      <div class="preview-sidebar" :class="{ 'right-side': settings?.layout?.sidebarPos === 'row-reverse' }">
         <div class="preview-sidebar-header"></div>
         <div class="preview-sidebar-item active"></div>
         <div class="preview-sidebar-item"></div>

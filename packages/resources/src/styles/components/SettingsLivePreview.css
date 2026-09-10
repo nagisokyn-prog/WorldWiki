@@ -3,7 +3,7 @@
   width: 100%;
   height: 200px;
   background: var(--bg-base);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 24px;
   border: 1px solid var(--border-color);
@@ -36,7 +36,7 @@
   height: 12px;
   background: var(--text-muted);
   opacity: 0.3;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   margin-bottom: 8px;
 }
 
@@ -44,11 +44,11 @@
   height: 16px;
   background: var(--text-muted);
   opacity: 0.2;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
 }
 .preview-sidebar-item.active {
   opacity: 0.5;
-  background: var(--accent-color);
+  background: var(--accent);
 }
 
 .preview-main {
@@ -85,7 +85,7 @@
 .preview-card {
   padding: 16px;
   border: 1px solid var(--border-color);
-  border-radius: var(--preview-card-radius, 8px);
+  border-radius: var(--preview-card-radius, var(--radius-sm));
   background: var(--bg-panel);
   backdrop-filter: blur(var(--preview-glass-blur, 0px));
   box-shadow: var(--preview-card-shadow, none);
@@ -98,7 +98,7 @@
   height: 8px;
   background: var(--text-muted);
   opacity: 0.4;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   width: 100%;
 }
 .preview-text-line.title {
@@ -113,12 +113,12 @@
 .preview-button {
   align-self: flex-start;
   padding: 6px 12px;
-  background: var(--accent-color);
+  background: var(--accent);
   color: var(--accent-text);
   font-size: 10px;
   font-weight: bold;
   margin-top: 4px;
-  border-radius: var(--preview-btn-radius, 4px);
+  border-radius: var(--preview-btn-radius, var(--radius-xs));
 }
 
 .preview-label {
@@ -128,7 +128,7 @@
   background: var(--modal-backdrop);
   color: var(--accent-text);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.05em;

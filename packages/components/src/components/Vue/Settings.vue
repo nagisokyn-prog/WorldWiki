@@ -51,4 +51,4 @@ defineExpose({
 });
 </script>
 
-<style scoped src="@worldwiki/resources/styles/components/Settings.css"></style>
+<style src="@worldwiki/resources/styles/components/Settings.css"></style>

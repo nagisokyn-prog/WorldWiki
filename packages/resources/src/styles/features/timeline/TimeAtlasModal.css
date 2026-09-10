@@ -15,6 +15,7 @@
   width: 90vw;
   max-width: 1100px;
   height: 85vh;
+  max-height: 850px;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-card, 16px);
@@ -22,6 +23,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  backdrop-filter: blur(var(--glass-blur-md, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur-md, 16px));
 }
 
 .atlas-header {
@@ -30,6 +33,13 @@
   align-items: center;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .atlas-badge {
@@ -72,11 +82,17 @@
   padding: 6px 14px;
   border-radius: var(--radius-xs, 6px);
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.atlas-tab-btn:hover:not(.active) {
+  background: var(--bg-hover);
+  color: var(--text-main);
 }
 
 .atlas-tab-btn.active {
@@ -109,22 +125,38 @@
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tab-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
 }
 
 .alignment-banner {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 12px 16px;
   background: var(--bg-selected);
   border: 1px solid var(--border-active);
   border-radius: var(--radius-md, 10px);
-  margin-bottom: 20px;
 }
 
 .alignment-icon {
   font-size: 20px;
   color: var(--accent);
+  flex-shrink: 0;
+}
+
+.alignment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .alignment-title {
@@ -132,7 +164,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  font-weight: 600;
 }
 
 .alignment-tags {
@@ -143,7 +175,7 @@
 
 .alignment-tag {
   font-size: 12px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: var(--radius-xs, 4px);
   background: var(--bg-hover);
   border: 1px solid var(--border-color);
@@ -151,15 +183,15 @@
 }
 
 .alignment-tag.holiday {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: var(--bg-hover);
+  border-color: var(--error);
   color: var(--error);
 }
 
 .alignment-tag.moon {
   background: var(--bg-selected);
   border-color: var(--border-active);
-  color: var(--accent-light, var(--text-main));
+  color: var(--accent-light, var(--accent));
 }
 
 .alignment-tag.sun {
@@ -168,8 +200,12 @@
   color: var(--accent);
 }
 
+/* ВКЛАДКА 1: Мост Времени */
 .master-pinned-section {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .section-label {
@@ -180,7 +216,6 @@
   font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.8px;
-  margin-bottom: 8px;
   text-transform: uppercase;
 }
 
@@ -200,12 +235,13 @@
 }
 
 .no-locals-box {
-  padding: 20px;
+  padding: 24px;
   text-align: center;
   color: var(--text-muted);
   font-size: 13px;
   border-radius: var(--radius-md, 10px);
   border: 1px dashed var(--border-color);
+  background: var(--bg-card);
 }
 
 .converter-grid {
@@ -222,6 +258,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  transition: border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .calendar-sync-card.is-master {
@@ -264,7 +301,7 @@
 .controls-row {
   display: flex;
   gap: 8px;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .control-group {
@@ -273,13 +310,19 @@
   gap: 4px;
 }
 
+.control-group.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
 .control-label {
   font-size: 10px;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
 .day-input {
-  width: 55px;
+  width: 65px;
 }
 
 .glass-input,
@@ -288,10 +331,13 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   border-radius: var(--radius-xs, 4px);
-  padding: 6px 8px;
+  padding: 6px 10px;
   font-size: 12px;
   outline: none;
   transition: border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  height: 32px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .glass-input:focus,
@@ -316,20 +362,20 @@
 
 .meta-pill {
   font-size: 11px;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: var(--radius-xs, 4px);
 }
 
 .season-pill {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--bg-hover);
   color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid var(--success);
 }
 
 .holiday-pill {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--bg-hover);
   color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid var(--error);
   font-weight: 600;
 }
 
@@ -348,7 +394,7 @@
   border-radius: var(--radius-xs, 4px);
 }
 
-/* Сетка */
+/* ВКЛАДКА 2: Наложенная Сетка */
 .matrix-toolbar {
   display: flex;
   gap: 16px;
@@ -358,7 +404,6 @@
   border-radius: var(--radius-md, 10px);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  margin-bottom: 16px;
 }
 
 .matrix-selector-group {
@@ -383,6 +428,11 @@
   padding: 4px 10px;
   border-radius: var(--radius-xs, 4px);
   cursor: pointer;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .matrix-btn:hover {
@@ -394,6 +444,8 @@
   font-weight: 600;
   font-size: 14px;
   color: var(--text-main);
+  min-width: 130px;
+  text-align: center;
 }
 
 .matrix-grid {
@@ -424,6 +476,10 @@
   border-color: var(--border-active);
   background: var(--bg-selected);
   box-shadow: var(--shadow-glow);
+}
+
+.matrix-day-cell.has-holiday {
+  border-color: var(--border-active);
 }
 
 .cell-top {
@@ -464,91 +520,23 @@
 }
 
 .base-holiday {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--bg-hover);
   color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid var(--error);
 }
 
 .comp-holiday {
-  background: rgba(245, 158, 11, 0.2);
+  background: var(--bg-hover);
   color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid var(--warning);
 }
 
 .cell-moons {
   font-size: 10px;
 }
 
-/* Сниппеты */
-.snippets-intro {
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 16px;
-}
-
-.snippets-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.snippet-card {
-  padding: 14px 18px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md, 10px);
-}
-
-.snippet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.snippet-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.copy-btn {
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: var(--radius-xs, 6px);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
-}
-
-.copy-btn:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-text);
-  box-shadow: var(--shadow-glow);
-}
-
-.copy-btn.copied {
-  background: var(--success);
-  border-color: var(--success);
-  color: var(--accent-text);
-}
-
-.snippet-text {
-  font-size: 14px;
-  color: var(--text-main);
-  font-family: Georgia, serif;
-  font-style: italic;
-}
-
-/* Стили вкладки «Срез Мира» */
+/* ВКЛАДКА 3: Срез Мира и География */
 .world-time-intro {
-  margin-bottom: 16px;
   font-size: 13px;
   color: var(--text-muted);
 }
@@ -562,12 +550,12 @@
 .region-card {
   padding: 16px;
   border-radius: var(--radius-sm, 8px);
-  background: var(--bg-panel);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform var(--anim-speed-fast) ease, box-shadow var(--anim-speed-fast) ease;
+  transition: transform var(--anim-speed-fast, 0.15s) ease, box-shadow var(--anim-speed-fast, 0.15s) ease;
 }
 
 .region-card:hover {
@@ -602,22 +590,17 @@
 
 .phase-pill {
   padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-pill, 12px);
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-.phase-pill.dawn {
-  background: rgba(245, 158, 11, 0.2);
-  color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-}
-
+.phase-pill.dawn,
 .phase-pill.day {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--bg-hover);
   color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  border: 1px solid var(--warning);
 }
 
 .phase-pill.dusk {
@@ -627,9 +610,9 @@
 }
 
 .phase-pill.night {
-  background: rgba(59, 130, 246, 0.15);
-  color: var(--info);
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: var(--bg-hover);
+  color: var(--info, var(--accent));
+  border: 1px solid var(--border-color);
 }
 
 .region-time-display {
@@ -677,13 +660,17 @@
   text-align: center;
   padding: 40px 20px;
   border-radius: var(--radius-sm, 8px);
+  background: var(--bg-card);
+  border: 1px dashed var(--border-color);
+  color: var(--text-muted);
 }
 
 .world-panorama-card {
   padding: 16px 20px;
   border-radius: var(--radius-sm, 8px);
-  background: var(--bg-panel);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
+  margin-top: 16px;
 }
 
 .panorama-header {
@@ -706,10 +693,84 @@
   font-size: 14px;
   line-height: 1.6;
   font-style: italic;
-  font-family: Georgia, serif;
   color: var(--text-main);
   background: var(--bg-sunken);
   padding: 12px 16px;
   border-left: 3px solid var(--accent);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 var(--radius-xs, 6px) var(--radius-xs, 6px) 0;
+}
+
+/* ВКЛАДКА 4: Датировки для Рукописи */
+.snippets-intro {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.snippets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.snippet-card {
+  padding: 14px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 10px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.snippet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.snippet-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.copy-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: var(--radius-xs, 6px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+}
+
+.copy-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-glow);
+}
+
+.copy-btn.copied {
+  background: var(--success);
+  border-color: var(--success);
+  color: var(--accent-text);
+}
+
+.snippet-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-main);
+  background: var(--bg-sunken);
+  padding: 10px 14px;
+  border-radius: var(--radius-xs, 6px);
+  border-left: 3px solid var(--accent);
+  font-style: italic;
 }

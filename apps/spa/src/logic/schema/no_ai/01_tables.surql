@@ -35,7 +35,7 @@ DEFINE FIELD OVERWRITE genres      ON projects TYPE option<array<string>>;
 DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string>;
 
 -- 2. ИЕРАРХИЯ СЮЖЕТА (ГРАФОВЫЕ СВЯЗИ)
-DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | arcs | chats OUT volumes | arcs | chapters | chats SCHEMAFULL;
+DEFINE TABLE OVERWRITE contains TYPE RELATION IN projects | volumes | chats OUT volumes | chapters | chats SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 -- 3. ТОМА
@@ -43,10 +43,17 @@ DEFINE TABLE OVERWRITE volumes SCHEMAFULL;
 DEFINE FIELD OVERWRITE title      ON volumes TYPE string;
 DEFINE FIELD OVERWRITE project_id ON volumes TYPE record<projects>;
 
--- 4. СЮЖЕТНЫЕ АРКИ
+-- 4. СЮЖЕТНЫЕ И ПЕРСОНАЖНЫЕ АРКИ (СЕМАНТИЧЕСКИЕ ЛИНИИ)
 DEFINE TABLE OVERWRITE arcs SCHEMAFULL;
-DEFINE FIELD OVERWRITE title      ON arcs TYPE string;
-DEFINE FIELD OVERWRITE project_id ON arcs TYPE record<projects>;
+DEFINE FIELD OVERWRITE project_id   ON arcs TYPE record<projects>;
+DEFINE FIELD OVERWRITE title        ON arcs TYPE string;
+DEFINE FIELD OVERWRITE description  ON arcs TYPE option<string>;
+DEFINE FIELD OVERWRITE arc_type     ON arcs TYPE string DEFAULT 'plot'; -- 'plot' | 'character' | 'relationship' | 'theme'
+DEFINE FIELD OVERWRITE character_id ON arcs TYPE option<record<entities>>;
+DEFINE FIELD OVERWRITE status       ON arcs TYPE string DEFAULT 'in_progress'; -- 'planned' | 'in_progress' | 'climax' | 'resolved'
+DEFINE FIELD OVERWRITE color        ON arcs TYPE string DEFAULT '#3b82f6';
+DEFINE FIELD OVERWRITE order_index  ON arcs TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE created_at   ON arcs TYPE datetime DEFAULT time::now();
 
 -- 5. ГЛАВЫ РУКОПИСИ
 DEFINE TABLE OVERWRITE chapters SCHEMAFULL CHANGEFEED 30d;
@@ -56,6 +63,7 @@ DEFINE FIELD OVERWRITE content        ON chapters TYPE string;
 DEFINE FIELD OVERWRITE summary        ON chapters TYPE option<string | null>;
 DEFINE FIELD OVERWRITE word_count      ON chapters TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE arcs            ON chapters TYPE array<record<arcs>> DEFAULT [];
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
@@ -133,14 +141,17 @@ DEFINE FIELD OVERWRITE to_types   ON relation_schemas TYPE array<string> DEFAULT
 
 -- 13. СВЯЗИ СУЩНОСТЕЙ
 DEFINE TABLE OVERWRITE entity_rel TYPE RELATION IN entities OUT entities SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id    ON entity_rel TYPE record<projects>;
-DEFINE FIELD OVERWRITE rel_type      ON entity_rel TYPE string;
-DEFINE FIELD OVERWRITE description   ON entity_rel TYPE option<string | null>;
-DEFINE FIELD OVERWRITE strength      ON entity_rel TYPE option<int | null>;
-DEFINE FIELD OVERWRITE attributes    ON entity_rel TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE start_chapter ON entity_rel TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE end_chapter   ON entity_rel TYPE option<record<chapters> | null>;
-DEFINE FIELD OVERWRITE created_at    ON entity_rel TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE project_id     ON entity_rel TYPE record<projects>;
+DEFINE FIELD OVERWRITE rel_type       ON entity_rel TYPE string;
+DEFINE FIELD OVERWRITE description    ON entity_rel TYPE option<string | null>;
+DEFINE FIELD OVERWRITE strength       ON entity_rel TYPE option<int | null>;
+DEFINE FIELD OVERWRITE attributes     ON entity_rel TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE start_volume   ON entity_rel TYPE option<record<volumes> | null>;
+DEFINE FIELD OVERWRITE start_chapter  ON entity_rel TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE end_volume     ON entity_rel TYPE option<record<volumes> | null>;
+DEFINE FIELD OVERWRITE end_chapter    ON entity_rel TYPE option<record<chapters> | null>;
+DEFINE FIELD OVERWRITE is_auto_extend ON entity_rel TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::now();
 
 -- 14. УЧАСТИЕ В ГЛАВАХ
 DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;

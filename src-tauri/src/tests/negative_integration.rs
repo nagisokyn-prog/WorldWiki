@@ -160,13 +160,13 @@ async fn negative_assign_chapter_invalid_parent() {
     let db = create_test_db().await;
     seed_project(&db, "p_neg_tree", "Negative Tree Project").await;
 
-    // Попытка привязать главу к несуществующей арке/тому
+    // Попытка привязать главу к несуществующему тому
     let res = assign_chapter_inner(
         &db,
         "p_neg_tree",
         "chapters:ghost_chap",
-        Some("arcs:ghost_arc".into()),
         None,
+        Some("volumes:ghost_vol".into()),
     ).await;
 
     assert!(res.is_ok(), "перепривязка не должна крашить бэкенд");

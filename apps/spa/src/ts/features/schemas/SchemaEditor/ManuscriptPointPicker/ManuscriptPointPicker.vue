@@ -28,19 +28,7 @@
         />
       </div>
 
-      <!-- Барабан 2: Арка -->
-      <div v-if="hasArcs" class="mpp-col">
-        <span class="mpp-col-label">Арка</span>
-        <XboxWheel
-          :model-value="cleanRecordId(internalPoint.arc_id)"
-          :options="arcOptions"
-          placeholder="-- Арка --"
-          :disabled="props.disabled || internalPoint.is_auto_extend"
-          @update:model-value="onArcChange"
-        />
-      </div>
-
-      <!-- Барабан 3: Глава -->
+      <!-- Барабан 2: Глава -->
       <div class="mpp-col">
         <span class="mpp-col-label">Глава</span>
         <XboxWheel
@@ -74,15 +62,13 @@ const {
   internalPoint,
   cleanRecordId,
   hasVolumes,
-  hasArcs,
   volumeOptions,
-  arcOptions,
   chapterOptions,
   onVolumeChange,
-  onArcChange,
   onChapterChange,
   toggleAutoExtend
 } = useManuscriptPointPicker(props, (event, value: ManuscriptPoint) => emit(event, value));
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/schemas/ManuscriptPointPicker.css"></style>
+

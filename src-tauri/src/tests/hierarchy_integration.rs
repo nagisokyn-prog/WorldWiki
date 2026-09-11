@@ -46,7 +46,7 @@ async fn create_multiple_volumes_increments_sort_order() {
 }
 
 #[tokio::test]
-async fn create_arc_in_volume_links_correctly() {
+async fn create_arc_creates_node_correctly() {
     let db = create_test_db().await;
     seed_project(&db, "p1", "Project 1").await;
 
@@ -58,19 +58,17 @@ async fn create_arc_in_volume_links_correctly() {
         .expect("create arc should succeed");
 
     assert_eq!(a1["title"], "Арка 1: Пролог");
-    assert_eq!(a1["volume_id"], v1_id);
     assert_eq!(a1["sort_order"], 0);
 
-    // Проверяем ребро contains от тома к арке
+    // Проверяем запись в таблице arcs
     let arc_id = a1["id"].as_str().unwrap();
-    let mut edge_res = db
-        .query("SELECT in, out FROM contains WHERE in = type::record($v) AND out = type::record($a)")
-        .bind(("v", v1_id))
+    let mut arc_res = db
+        .query("SELECT id, title FROM type::record($a)")
         .bind(("a", arc_id))
         .await
-        .expect("query edge");
-    let edges: Vec<serde_json::Value> = edge_res.take(0).unwrap();
-    assert_eq!(edges.len(), 1);
+        .expect("query arc");
+    let arcs: Vec<serde_json::Value> = arc_res.take(0).unwrap();
+    assert_eq!(arcs.len(), 1);
 }
 
 #[tokio::test]
@@ -87,8 +85,8 @@ async fn full_hierarchy_roundtrip() {
     let ch1_id = seed_chapter(&db, "p1", "ch1", "Глава 1 (в арке)", "контент 1").await;
     let ch2_id = seed_chapter(&db, "p1", "ch2", "Глава 2 (в томе 1)", "контент 2").await;
 
-    // Привязываем главу 1 к арке, главу 2 напрямую к тому 1
-    assign_chapter_inner(&db, "p1", &ch1_id, Some(arc_id.clone()), None).await.unwrap();
+    // Привязываем главу 1 к тому 1 с семантической аркой, главу 2 напрямую к тому 1
+    assign_chapter_inner(&db, "p1", &ch1_id, Some(arc_id.clone()), Some(vol_id.clone())).await.unwrap();
     assign_chapter_inner(&db, "p1", &ch2_id, None, Some(vol_id.clone())).await.unwrap();
 
     // Запрашиваем полную иерархию
@@ -104,13 +102,11 @@ async fn full_hierarchy_roundtrip() {
     assert_eq!(arcs.len(), 1);
     assert_eq!(chapters.len(), 2);
 
-    assert_eq!(arcs[0]["volume_id"], vol_id);
-
-    // Проверяем, что у главы 1 проставился arc_id, а у главы 2 volume_id
+    // Проверяем, что у обеих глав volume_id указывает на vol_id
     let ch1 = chapters.iter().find(|c| c["title"] == "Глава 1 (в арке)").unwrap();
     let ch2 = chapters.iter().find(|c| c["title"] == "Глава 2 (в томе 1)").unwrap();
 
-    assert_eq!(ch1["arc_id"], arc_id);
+    assert_eq!(ch1["volume_id"], vol_id);
     assert_eq!(ch2["volume_id"], vol_id);
 }
 
@@ -123,13 +119,13 @@ async fn assign_chapter_switches_parent_cleanly() {
     let v1 = create_volume_inner(&db, "p1", "Том 1").await.unwrap();
     let v1_id = v1["id"].as_str().unwrap().to_string();
 
-    let a1 = create_arc_inner(&db, "p1", "Арка 1", Some(v1_id.clone())).await.unwrap();
-    let a1_id = a1["id"].as_str().unwrap().to_string();
+    let v2 = create_volume_inner(&db, "p1", "Том 2").await.unwrap();
+    let v2_id = v2["id"].as_str().unwrap().to_string();
 
-    // 1. Привязываем главу напрямую к Тому 1
+    // 1. Привязываем главу к Тому 1
     assign_chapter_inner(&db, "p1", &ch_id, None, Some(v1_id.clone()))
         .await
-        .expect("assign to volume should succeed");
+        .expect("assign to volume 1 should succeed");
 
     let mut e1 = db.query("SELECT in, out FROM contains WHERE out = type::record($ch)")
         .bind(("ch", ch_id.clone()))
@@ -138,17 +134,17 @@ async fn assign_chapter_switches_parent_cleanly() {
     assert_eq!(edges1.len(), 1);
     assert_eq!(edges1[0]["in"], v1_id);
 
-    // 2. Перемещаем главу в Арку 1 (старое ребро должно удалиться, новое создаться)
-    assign_chapter_inner(&db, "p1", &ch_id, Some(a1_id.clone()), None)
+    // 2. Перемещаем главу в Том 2 (старое ребро должно удалиться, новое создаться)
+    assign_chapter_inner(&db, "p1", &ch_id, None, Some(v2_id.clone()))
         .await
-        .expect("assign to arc should succeed");
+        .expect("assign to volume 2 should succeed");
 
     let mut e2 = db.query("SELECT in, out FROM contains WHERE out = type::record($ch)")
         .bind(("ch", ch_id.clone()))
         .await.unwrap();
     let edges2: Vec<serde_json::Value> = e2.take(0).unwrap();
     assert_eq!(edges2.len(), 1, "должно остаться ровно одно входящее ребро contains");
-    assert_eq!(edges2[0]["in"], a1_id);
+    assert_eq!(edges2[0]["in"], v2_id);
 }
 
 #[tokio::test]
@@ -162,7 +158,7 @@ async fn get_chapter_hierarchy_returns_full_nested_tree() {
     let v2 = create_volume_inner(&db, "p1", "Том 2").await.unwrap();
     let _v2_id = v2["id"].as_str().unwrap().to_string();
 
-    // Создаём арку внутри Тома 1
+    // Создаём арку
     let a1 = create_arc_inner(&db, "p1", "Арка 1", Some(v1_id.clone())).await.unwrap();
     let a1_id = a1["id"].as_str().unwrap().to_string();
 
@@ -170,8 +166,8 @@ async fn get_chapter_hierarchy_returns_full_nested_tree() {
     let ch1_id = seed_chapter(&db, "p1", "ch1", "Глава 1 (в арке)", "контент 1").await;
     let ch2_id = seed_chapter(&db, "p1", "ch2", "Глава 2 (в томе 1)", "контент 2").await;
 
-    // Привязываем главу 1 к арке 1, а главу 2 к тому 1
-    assign_chapter_inner(&db, "p1", &ch1_id, Some(a1_id.clone()), None).await.unwrap();
+    // Привязываем главу 1 к тому 1 (с семантической аркой 1), а главу 2 к тому 1
+    assign_chapter_inner(&db, "p1", &ch1_id, Some(a1_id.clone()), Some(v1_id.clone())).await.unwrap();
     assign_chapter_inner(&db, "p1", &ch2_id, None, Some(v1_id.clone())).await.unwrap();
 
     // Запрашиваем полную иерархию
@@ -187,13 +183,11 @@ async fn get_chapter_hierarchy_returns_full_nested_tree() {
     assert_eq!(arcs.len(), 1);
     assert_eq!(chapters.len(), 2);
 
-    assert_eq!(arcs[0]["volume_id"], v1_id);
-
-    // Проверяем, что у главы 1 проставился arc_id, а у главы 2 volume_id
+    // Проверяем, что у обеих глав volume_id указывает на v1_id
     let ch1 = chapters.iter().find(|c| c["title"] == "Глава 1 (в арке)").unwrap();
     let ch2 = chapters.iter().find(|c| c["title"] == "Глава 2 (в томе 1)").unwrap();
 
-    assert_eq!(ch1["arc_id"], a1_id);
+    assert_eq!(ch1["volume_id"], v1_id);
     assert_eq!(ch2["volume_id"], v1_id);
 }
 

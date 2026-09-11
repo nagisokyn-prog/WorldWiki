@@ -7,9 +7,10 @@
 -- 3. BM25 полнотекстовые индексы для поиска автора (главы, сущности)
 -- ==============================================================================
 
--- 1. ИЕРАРХИЯ РУКОПИСИ
+-- 1. ИЕРАРХИЯ РУКОПИСИ И АРКИ
 DEFINE INDEX OVERWRITE idx_volume_project    ON volumes FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_arc_project       ON arcs FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_arc_type          ON arcs FIELDS project_id, arc_type;
 DEFINE INDEX OVERWRITE idx_chapter_project   ON chapters FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_chapter_ft        ON chapters COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
 DEFINE INDEX OVERWRITE idx_chapter_title_ft  ON chapters COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25;

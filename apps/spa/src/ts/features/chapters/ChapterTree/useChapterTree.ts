@@ -85,67 +85,27 @@ export function useChapterTree(
 
         // Volumes
         for (const vol of hierarchy.value.volumes) {
-            const arcs = getArcsForVolume(vol.id);
+            const chapters = hierarchy.value.chapters.filter(c => compareIds(c.volume_id, vol.id));
             const volNode: ExplorerNode = {
                 id: String(vol.id),
                 label: vol.title || 'Без названия',
                 emoji: '📚',
                 isGroup: true,
                 canAdd: true,
-                addLabel: 'Арка',
+                addLabel: 'Глава',
                 data: { type: 'volume', original: vol as unknown as Record<string, unknown> },
                 children: []
             };
 
-            for (const arc of arcs) {
-                const chapters = getChaptersForArc(arc.id);
-                const arcNode: ExplorerNode = {
-                    id: String(arc.id),
-                    label: arc.title || 'Без названия',
-                    emoji: '🌀',
-                    isGroup: true,
-                    canAdd: true,
-                    addLabel: 'Глава',
-                    data: { type: 'arc', original: arc as unknown as Record<string, unknown> },
-                    children: []
-                };
-
-                for (const ch of chapters) {
-                    arcNode.children?.push({
-                        id: String(ch.id),
-                        label: ch.title || 'Без названия',
-                        emoji: '📖',
-                        data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
-                    });
-                }
-                volNode.children?.push(arcNode);
-            }
-            msNodes.push(volNode);
-        }
-
-        // Root arcs
-        for (const arc of getRootArcs()) {
-            const chapters = getChaptersForArc(arc.id);
-            const arcNode: ExplorerNode = {
-                id: String(arc.id),
-                label: arc.title || 'Без названия',
-                emoji: '🌀',
-                isGroup: true,
-                canAdd: true,
-                addLabel: 'Глава',
-                data: { type: 'arc', original: arc as unknown as Record<string, unknown> },
-                children: []
-            };
-
             for (const ch of chapters) {
-                arcNode.children?.push({
+                volNode.children?.push({
                     id: String(ch.id),
                     label: ch.title || 'Без названия',
                     emoji: '📖',
                     data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
                 });
             }
-            msNodes.push(arcNode);
+            msNodes.push(volNode);
         }
 
         // Root chapters
@@ -310,12 +270,7 @@ export function useChapterTree(
                 const node = findNodeById(tempId);
                 if (node) explorerTreeRef.value?.startRename(node);
             } else {
-                const tempId = '__new_arc__' + Date.now();
-                hierarchy.value.arcs.push({ id: tempId, project_id: props.project, volume_id: parentId, title: 'Новая арка', sort_order: 999, description: null, created_at: null });
-                explorerTreeRef.value?.expandNode(String(parentId));
-                await nextTick();
-                const node = findNodeById(tempId);
-                if (node) explorerTreeRef.value?.startRename(node);
+                emit('create-chapter-in', { volumeId: parentId });
             }
         } else if (name) {
             emit('add-entity', sectionId, name);
@@ -325,19 +280,9 @@ export function useChapterTree(
     const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
         if (sectionId === 'manuscript') {
             if (parentId) {
-                const arc = hierarchy.value.arcs.find(a => String(a.id) === String(parentId));
-                if (arc) {
-                    emit('create-chapter-in', { arcId: arc.id, volumeId: arc.volume_id || (arc as unknown as { volumeId?: string }).volumeId });
-                } else {
-                    const vol = hierarchy.value.volumes.find(v => String(v.id) === String(parentId));
-                    if (vol) {
-                        handleCreate({ sectionId: 'manuscript', parentId });
-                    } else {
-                        emit('create-chapter-in', { arcId: null, volumeId: parentId });
-                    }
-                }
+                emit('create-chapter-in', { volumeId: parentId });
             } else {
-                emit('create-chapter-in', { arcId: null, volumeId: null });
+                emit('create-chapter-in', { volumeId: null });
             }
         } else {
             explorerTreeRef.value?.startCreate(sectionId);

@@ -4886,14 +4886,14 @@
         {
           "type": "manuscript_point",
           "class": "начальная_глава",
-          "label": "Начальная глава",
-          "placeholder": "Выберите главу..."
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
         },
         {
           "type": "manuscript_point",
           "class": "конечная_глава",
-          "label": "Конечная глава",
-          "placeholder": "Выберите главу...",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
           "allowAutoExtend": true
         },
         {
@@ -4976,14 +4976,14 @@
         {
           "type": "manuscript_point",
           "class": "начальная_глава",
-          "label": "Начальная глава",
-          "placeholder": "Выберите главу..."
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
         },
         {
           "type": "manuscript_point",
           "class": "конечная_глава",
-          "label": "Конечная глава",
-          "placeholder": "Выберите главу...",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
           "allowAutoExtend": true
         },
         {
@@ -5083,14 +5083,14 @@
         {
           "type": "manuscript_point",
           "class": "начальная_глава",
-          "label": "Начальная глава",
-          "placeholder": "Выберите главу..."
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
         },
         {
           "type": "manuscript_point",
           "class": "конечная_глава",
-          "label": "Конечная глава",
-          "placeholder": "Выберите главу...",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
           "allowAutoExtend": true
         },
         {
@@ -5190,14 +5190,14 @@
         {
           "type": "manuscript_point",
           "class": "начальная_глава",
-          "label": "Начальная глава",
-          "placeholder": "Выберите главу..."
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
         },
         {
           "type": "manuscript_point",
           "class": "конечная_глава",
-          "label": "Конечная глава",
-          "placeholder": "Выберите главу...",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
           "allowAutoExtend": true
         },
         {
@@ -5280,14 +5280,14 @@
         {
           "type": "manuscript_point",
           "class": "начальная_глава",
-          "label": "Начальная глава",
-          "placeholder": "Выберите главу..."
+          "label": "Начало в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу..."
         },
         {
           "type": "manuscript_point",
           "class": "конечная_глава",
-          "label": "Конечная глава",
-          "placeholder": "Выберите главу...",
+          "label": "Окончание в рукописи (Том / Глава)",
+          "placeholder": "Выберите том и главу...",
           "allowAutoExtend": true
         },
         {

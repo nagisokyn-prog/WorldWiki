@@ -196,7 +196,7 @@ async fn stress_deep_hierarchy_1000_nodes() {
             for c_idx in 0..20 {
                 let chap_key = format!("c_{v_idx}_{a_idx}_{c_idx}");
                 let c_id = seed_chapter(&db, "stress_tree", &chap_key, &format!("Глава {chap_key}"), "").await;
-                assign_chapter_inner(&db, "stress_tree", &c_id, Some(arc_id.clone()), None).await.unwrap();
+                assign_chapter_inner(&db, "stress_tree", &c_id, Some(arc_id.clone()), Some(vol_id.clone())).await.unwrap();
             }
         }
     }

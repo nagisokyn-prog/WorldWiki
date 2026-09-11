@@ -38,13 +38,11 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 
 -- 2. КАСКАДЫ ИЕРАРХИИ СЮЖЕТА
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
-    DELETE ->contains->arcs;
     DELETE ->contains->chapters;
     DELETE plans WHERE parent_ref = $before.id;
 };
 
 DEFINE EVENT OVERWRITE cascade_arc_delete ON TABLE arcs WHEN $event = "DELETE" THEN {
-    DELETE ->contains->chapters;
     DELETE plans WHERE parent_ref = $before.id;
 };
 
@@ -120,8 +118,11 @@ DEFINE EVENT OVERWRITE log_entity_rel_create ON TABLE entity_rel
                 description: $after.description,
                 strength: $after.strength,
                 attributes: $after.attributes,
+                start_volume: $after.start_volume,
                 start_chapter: $after.start_chapter,
-                end_chapter: $after.end_chapter
+                end_volume: $after.end_volume,
+                end_chapter: $after.end_chapter,
+                is_auto_extend: $after.is_auto_extend
             }, 
             created_at = time::now(), 
             commit_msg = NONE;
@@ -135,8 +136,11 @@ DEFINE EVENT OVERWRITE log_entity_rel_revision ON TABLE entity_rel
         OR $before.description != $after.description 
         OR $before.strength != $after.strength 
         OR $before.attributes != $after.attributes 
+        OR $before.start_volume != $after.start_volume 
         OR $before.start_chapter != $after.start_chapter 
+        OR $before.end_volume != $after.end_volume 
         OR $before.end_chapter != $after.end_chapter
+        OR $before.is_auto_extend != $after.is_auto_extend
     ) 
     THEN {
         CREATE entity_rel_revisions SET 
@@ -150,8 +154,11 @@ DEFINE EVENT OVERWRITE log_entity_rel_revision ON TABLE entity_rel
                 description: $before.description,
                 strength: $before.strength,
                 attributes: $before.attributes,
+                start_volume: $before.start_volume,
                 start_chapter: $before.start_chapter,
-                end_chapter: $before.end_chapter
+                end_volume: $before.end_volume,
+                end_chapter: $before.end_chapter,
+                is_auto_extend: $before.is_auto_extend
             }, 
             created_at = time::now(), 
             commit_msg = NONE;
@@ -172,8 +179,11 @@ DEFINE EVENT OVERWRITE log_entity_rel_delete ON TABLE entity_rel
                 description: $before.description,
                 strength: $before.strength,
                 attributes: $before.attributes,
+                start_volume: $before.start_volume,
                 start_chapter: $before.start_chapter,
-                end_chapter: $before.end_chapter
+                end_volume: $before.end_volume,
+                end_chapter: $before.end_chapter,
+                is_auto_extend: $before.is_auto_extend
             }, 
             created_at = time::now(), 
             commit_msg = NONE;

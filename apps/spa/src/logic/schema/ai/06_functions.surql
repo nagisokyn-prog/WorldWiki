@@ -2,12 +2,74 @@
 -- 06_FUNCTIONS.SURQL — ХРАНИМЫЕ АНАЛИТИЧЕСКИЕ И RAG ФУНКЦИИ (ULTRA EDITION)
 -- ==============================================================================
 -- Включает:
--- 1. fn::gather_rag_bundle (Автоматический сбор контекста сущностей, чанков, глав и связей)
--- 2. fn::get_chapter_multi_hop_context (GraphRAG: многошаговый обход связей и таймлайна главы)
--- 3. fn::resolve_auto_skills (Атомарный резолв навыков по триггерам и BM25)
+-- 1. fn::upsert_global_web_page (Атомарная функция кэширования веб-страниц)
+-- 2. fn::gather_rag_bundle (Автоматический сбор контекста сущностей, чанков, глав и связей)
+-- 3. fn::get_chapter_multi_hop_context (GraphRAG: многошаговый обход связей и таймлайна главы)
+-- 4. fn::resolve_auto_skills (Атомарный резолв навыков по триггерам и BM25)
 -- ==============================================================================
 
--- 1. СБОР RAG-КОНТЕКСТА (СУЩНОСТИ, ЧАНКИ, ГЛАВЫ, СВЯЗИ)
+-- 1. АТОМАРНАЯ ФУНКЦИЯ КЭШИРОВАНИЯ ВЕБ-СТРАНИЦЫ
+DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
+    $url: string,
+    $canonical_url: string,
+    $domain: string,
+    $title: string,
+    $content_type: string,
+    $language: string,
+    $content_hash: string,
+    $content: string,
+    $extracted_md: string,
+    $status_code: int,
+    $ttl_days: int
+) {
+    LET $existing = (
+        SELECT id, content_hash FROM web_pages 
+        WHERE canonical_url = $canonical_url 
+        LIMIT 1
+    )[0];
+
+    IF $existing != NONE {
+        IF $existing.content_hash == $content_hash {
+            UPDATE $existing.id SET
+                hit_count += 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from_days($ttl_days);
+            RETURN { id: $existing.id, is_new: false, is_updated: false };
+        } ELSE {
+            UPDATE $existing.id SET
+                content_hash = $content_hash,
+                title = $title,
+                content_type = $content_type,
+                language = $language,
+                content = $content,
+                extracted_markdown = $extracted_md,
+                hit_count += 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from_days($ttl_days);
+            RETURN { id: $existing.id, is_new: false, is_updated: true };
+        };
+    } ELSE {
+        LET $created = (
+            CREATE web_pages SET
+                url = $url,
+                canonical_url = $canonical_url,
+                domain = $domain,
+                title = $title,
+                content_type = $content_type,
+                language = $language,
+                content_hash = $content_hash,
+                content = $content,
+                extracted_markdown = $extracted_md,
+                status_code = $status_code,
+                hit_count = 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from_days($ttl_days)
+        );
+        RETURN { id: $created[0].id, is_new: true, is_updated: false };
+    };
+};
+
+-- 2. СБОР RAG-КОНТЕКСТА (СУЩНОСТИ, ЧАНКИ, ГЛАВЫ, СВЯЗИ)
 DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     $proj: record<projects>, 
     $q: string, 
@@ -55,7 +117,7 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     };
 };
 
--- 2. GRAPHRAG: МНОГОШАГОВЫЙ ОБХОД КОНТЕКСТА ГЛАВЫ
+-- 3. GRAPHRAG: МНОГОШАГОВЫЙ ОБХОД КОНТЕКСТА ГЛАВЫ
 DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<chapters>) {
     LET $participants = (SELECT VALUE in FROM appears_in WHERE out = $chapter);
     LET $relations = (
@@ -83,7 +145,7 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
     };
 };
 
--- 3. АТОМАРНЫЙ РЕЗОЛВ НАВЫКОВ (ТРИГГЕРЫ + BM25)
+-- 4. АТОМАРНЫЙ РЕЗОЛВ НАВЫКОВ (ТРИГГЕРЫ + BM25)
 DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
     $proj: option<record<projects>>,
     $query: string,

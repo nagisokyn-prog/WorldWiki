@@ -44,7 +44,6 @@ pub async fn get_chapter_hierarchy_inner(
     let mut edges_res = db.query(format!(r#"
         SELECT in, out, sort_order FROM contains 
         WHERE out IN (SELECT VALUE id FROM volumes WHERE {cond})
-           OR out IN (SELECT VALUE id FROM arcs WHERE {cond})
            OR out IN (SELECT VALUE id FROM chapters WHERE {cond})
     "#, cond = query_cond))
         .bind(("proj", proj_rec.clone()))
@@ -74,17 +73,8 @@ pub async fn get_chapter_hierarchy_inner(
     }
 
     for arc in &mut arcs {
-        if let Some(id) = arc.get("id").and_then(|i| i.as_str()) {
-            if let Some(edge) = edges.iter().find(|e| {
-                e.get("out").and_then(|o| o.as_str()).map(|o| compare_record_ids(o, id)).unwrap_or(false)
-            }) {
-                if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
-                    if parent.starts_with("volumes:") {
-                        arc["volume_id"] = edge["in"].clone();
-                    }
-                }
-                arc["sort_order"] = edge["sort_order"].clone();
-            }
+        if let Some(order) = arc.get("order_index") {
+            arc["sort_order"] = order.clone();
         }
     }
 
@@ -94,9 +84,7 @@ pub async fn get_chapter_hierarchy_inner(
                 e.get("out").and_then(|o| o.as_str()).map(|o| compare_record_ids(o, id)).unwrap_or(false)
             }) {
                 if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
-                    if parent.starts_with("arcs:") {
-                        chap["arc_id"] = edge["in"].clone();
-                    } else if parent.starts_with("volumes:") {
+                    if parent.starts_with("volumes:") {
                         chap["volume_id"] = edge["in"].clone();
                     }
                 }
@@ -168,8 +156,8 @@ pub async fn create_arc_inner(
     let clean_vol_id = if parent_str.contains(':') { parent_str } else { format!("volumes:{}", parent_str) };
     
     let mut max_order_res = db.query(r#"
-        SELECT math::max(sort_order) AS max_order FROM contains WHERE in = type::record($parent) GROUP ALL
-    "#).bind(("parent", clean_vol_id.clone())).await.map_err(|e| e.to_string())?;
+        SELECT math::max(order_index) AS max_order FROM arcs WHERE project_id = $proj GROUP ALL
+    "#).bind(("proj", proj_rec.clone())).await.map_err(|e| e.to_string())?;
     let max_orders: Vec<serde_json::Value> = max_order_res.take(0).unwrap_or_default();
     let next_order = max_orders.first()
         .and_then(|v| v.get("max_order"))
@@ -177,19 +165,19 @@ pub async fn create_arc_inner(
         .unwrap_or(-1) + 1;
 
     let mut create_res = db.query(r#"
-        LET $arc = (CREATE arcs SET project_id = $proj, title = $title RETURN VALUE id)[0];
-        LET $parent_rec = type::record($parent);
-        RELATE $parent_rec -> contains -> $arc SET sort_order = $order;
-        SELECT id, title, project_id, type::record($parent) AS volume_id, $order AS sort_order FROM $arc;
+        CREATE arcs SET project_id = $proj, title = $title, order_index = $order RETURN id, title, project_id, order_index AS sort_order;
     "#)
     .bind(("proj", proj_rec.clone()))
-    .bind(("parent", clean_vol_id.clone()))
     .bind(("title", title.to_string()))
     .bind(("order", next_order))
     .await.map_err(|e| e.to_string())?;
     
-    let arcs: Vec<serde_json::Value> = create_res.take(3).unwrap_or_default();
-    Ok(serde_json::json!(arcs.first()))
+    let mut arcs: Vec<serde_json::Value> = create_res.take(0).unwrap_or_default();
+    if let Some(arc) = arcs.first_mut() {
+        arc["volume_id"] = serde_json::Value::String(clean_vol_id);
+        return Ok(arc.clone());
+    }
+    Ok(serde_json::Value::Null)
 }
 
 pub async fn update_arc_inner(
@@ -229,9 +217,7 @@ pub async fn assign_chapter_inner(
         RecordId::new(table, raw)
     }
 
-    let new_parent: RecordId = if let Some(ref a) = arc_id {
-        make_record("arcs", a)
-    } else if let Some(ref v) = volume_id {
+    let new_parent: RecordId = if let Some(ref v) = volume_id {
         make_record("volumes", v)
     } else {
         RecordId::new("projects", pid_raw.as_str())
@@ -253,6 +239,16 @@ pub async fn assign_chapter_inner(
         let e = errs.values().next().unwrap();
         eprintln!("[ERROR] assign_chapter error: {}", e);
         return Err(e.to_string());
+    }
+
+    if let Some(ref a) = arc_id {
+        let clean_a = if a.contains(':') { a.to_string() } else { format!("arcs:{}", a) };
+        let _ = db.query(r#"
+            UPDATE type::record($chap) SET arcs = array::union(arcs || [], [type::record($arc)]);
+        "#)
+        .bind(("chap", clean_chap.clone()))
+        .bind(("arc", clean_a))
+        .await;
     }
 
     let updated_count = auto_extend_entities_inner(db, project, &clean_chap, arc_id.clone(), volume_id.clone()).await?;

@@ -1,6 +1,5 @@
 export interface ManuscriptPoint {
   volume_id?: string | null;
-  arc_id?: string | null;
   chapter_id?: string | null;
   is_auto_extend?: boolean;
   display_label?: string;
@@ -14,3 +13,4 @@ export interface ManuscriptPointPickerProps {
   disabled?: boolean;
   project?: string;
 }
+

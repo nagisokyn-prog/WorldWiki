@@ -45,22 +45,50 @@ async fn init_database() -> Surreal<Db> {
         .await
         .expect("Failed to use NS/DB");
 
-    // Загружаем пользовательский DDL через include_str! чтобы он был вкомпилирован
-    println!("[DEBUG] Applying surreal_schema.surql...");
-    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
-
-    match db.query(sql).await {
-        Ok(mut res) => {
-            if let Some(err) = res.take_errors().into_iter().next() {
-                eprintln!("DDL Error inside result: {:?}", err);
-            } else {
-                println!("DDL Schema applied successfully.");
-            }
-        }
-        Err(e) => eprintln!("Failed to execute DDL: {:?}", e),
+    if let Err(e) = apply_schema_pipeline(&db).await {
+        eprintln!("[CRITICAL] Failed to apply schema pipeline: {}", e);
     }
 
     db
+}
+
+pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), String> {
+    const DDL_CORE: &str = include_str!("../../apps/spa/src/logic/schema/01_core.surql");
+    const DDL_AI_WORKSPACE: &str = include_str!("../../apps/spa/src/logic/schema/02_ai_workspace.surql");
+    const DDL_WEB_RESEARCH: &str = include_str!("../../apps/spa/src/logic/schema/03_web_research.surql");
+    const DDL_EMBEDDINGS: &str = include_str!("../../apps/spa/src/logic/schema/04_embeddings_hnsw.surql");
+    const DDL_FUNCTIONS: &str = include_str!("../../apps/spa/src/logic/schema/05_functions.surql");
+
+    apply_ddl_module(db, "01_core", DDL_CORE).await?;
+    apply_ddl_module(db, "02_ai_workspace", DDL_AI_WORKSPACE).await?;
+    apply_ddl_module(db, "03_web_research", DDL_WEB_RESEARCH).await?;
+    apply_ddl_module(db, "04_embeddings_hnsw", DDL_EMBEDDINGS).await?;
+    apply_ddl_module(db, "05_functions", DDL_FUNCTIONS).await?;
+
+    Ok(())
+}
+
+pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result<(), String> {
+    if ddl.trim().is_empty() {
+        return Ok(());
+    }
+    match db.query(ddl).await {
+        Ok(mut res) => {
+            let errors = res.take_errors();
+            if !errors.is_empty() {
+                let err_msg = format!("DDL Error in module '{}': {:?}", name, errors);
+                eprintln!("{}", err_msg);
+                return Err(err_msg);
+            }
+            println!("[DB] Schema module '{}' applied successfully.", name);
+            Ok(())
+        }
+        Err(e) => {
+            let err_msg = format!("Failed to execute DDL module '{}': {:?}", name, e);
+            eprintln!("{}", err_msg);
+            Err(err_msg)
+        }
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

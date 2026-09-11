@@ -13,9 +13,9 @@
 //! Манифест встраивается в build.rs через rustc-link-arg-tests.
 
 use serde_json::{json, Value};
-use tauri::Manager;
-use world_wiki_lib::logic::ai::agent::runner::run_agent_loop;
-use world_wiki_lib::AppState;
+use std::sync::Arc;
+use world_wiki_lib::bootstrap::services::build_surreal_app_services;
+use worldwiki_infrastructure::events::InMemoryEventPublisher;
 
 /// Mock OpenAI SSE-сервер: слушает 127.0.0.1:0, отвечает одним сценарием.
 /// Полностью асинхронный (tokio), чтобы задача корректно завершалась
@@ -23,7 +23,9 @@ use world_wiki_lib::AppState;
 async fn spawn_mock_openai(answer_parts: Vec<String>) -> String {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.expect("bind mock server");
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind mock server");
     let port = listener.local_addr().unwrap().port();
 
     tokio::spawn(async move {
@@ -44,10 +46,7 @@ async fn spawn_mock_openai(answer_parts: Vec<String>) -> String {
                     Err(_) => break,
                 };
                 read_total += n;
-                if buf[..read_total]
-                    .windows(4)
-                    .any(|w| w == b"\r\n\r\n")
-                {
+                if buf[..read_total].windows(4).any(|w| w == b"\r\n\r\n") {
                     break;
                 }
             }
@@ -88,15 +87,6 @@ async fn spawn_mock_openai(answer_parts: Vec<String>) -> String {
     format!("http://127.0.0.1:{port}/v1")
 }
 
-/// Mock Tauri App с AppState поверх тестовой БД.
-fn build_mock_app(
-    db: surrealdb::Surreal<surrealdb::engine::local::Db>,
-) -> tauri::AppHandle<tauri::test::MockRuntime> {
-    let app = tauri::test::mock_app();
-    app.manage(AppState { db });
-    app.handle().clone()
-}
-
 #[tokio::test(flavor = "multi_thread")]
 async fn agent_loop_persists_streamed_answer_from_mock_llm() {
     use surrealdb::engine::local::SurrealKv;
@@ -105,11 +95,11 @@ async fn agent_loop_persists_streamed_answer_from_mock_llm() {
     // 1. Изолированная БД + схема
     let dir = std::env::temp_dir().join(format!("ww_agent_{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone()).await.unwrap();
+    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone())
+        .await
+        .unwrap();
     db.use_ns("test").use_db("test").await.unwrap();
-    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
-    let mut res = db.query(sql).await.unwrap();
-    assert!(res.take_errors().is_empty(), "schema errors");
+    world_wiki_lib::apply_schema_pipeline(&db).await.unwrap();
     eprintln!("MARK 1: БД и схема готовы");
 
     // 2. Mock LLM
@@ -156,22 +146,27 @@ async fn agent_loop_persists_streamed_answer_from_mock_llm() {
     .unwrap()
     .take_errors();
 
-    // 4. Запускаем цикл агента
-    let app = build_mock_app(db.clone());
-    eprintln!("MARK 3: app собран, запускаю run_agent_loop");
-    run_agent_loop(
-        app,
-        "projects:p_agent".to_string(),
-        "chats:c_ag".to_string(),
-        "chat_messages:m_asst".to_string(),
-        "Скажи привет".to_string(),
-        None,
-    )
-    .await;
+    // 4. Запускаем цикл агента через ChatServices
+    let services =
+        build_surreal_app_services(Arc::new(db.clone()), Arc::new(InMemoryEventPublisher));
+    eprintln!("MARK 3: services собраны, запускаю run_agent_loop");
+    services
+        .chat
+        .run_agent_loop(
+            "projects:p_agent",
+            "chats:c_ag",
+            "chat_messages:m_asst",
+            "Скажи привет",
+            None,
+        )
+        .await;
 
     // 5. Ответ из стрима должен быть сохранён в assistant-сообщении
     eprintln!("MARK 4: run_agent_loop вернулся, проверяю БД");
-    let mut r = db.query("SELECT content FROM chat_messages:m_asst").await.unwrap();
+    let mut r = db
+        .query("SELECT content FROM chat_messages:m_asst")
+        .await
+        .unwrap();
     let rows: Vec<Value> = r.take(0).unwrap();
     assert_eq!(
         rows[0]["content"], "Привет, писатель!",
@@ -215,10 +210,7 @@ async fn spawn_mock_capturing(answer_parts: Vec<String>, captured: SharedBuf) ->
                 };
                 read_total += n;
                 if body_needed.is_none() {
-                    if let Some(pos) = buf[..read_total]
-                        .windows(4)
-                        .position(|w| w == b"\r\n\r\n")
-                    {
+                    if let Some(pos) = buf[..read_total].windows(4).position(|w| w == b"\r\n\r\n") {
                         let head = String::from_utf8_lossy(&buf[..pos]);
                         body_needed = Some(
                             head.to_ascii_lowercase()
@@ -285,11 +277,11 @@ async fn agent_prompt_contains_retrieved_world_context() {
     // 1. Изолированная БД + продовая схема (нужны FTS-индексы для BM25!)
     let dir = std::env::temp_dir().join(format!("ww_rag_{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone()).await.unwrap();
+    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone())
+        .await
+        .unwrap();
     db.use_ns("test").use_db("test").await.unwrap();
-    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
-    let mut res = db.query(sql).await.unwrap();
-    assert!(res.take_errors().is_empty(), "schema errors");
+    world_wiki_lib::apply_schema_pipeline(&db).await.unwrap();
 
     // 2. Mock LLM с захватом prompt'а
     let captured: SharedBuf = Default::default();
@@ -351,20 +343,25 @@ async fn agent_prompt_contains_retrieved_world_context() {
     .unwrap()
     .take_errors();
 
-    // 6. Запуск агента
-    let app = build_mock_app(db.clone());
-    run_agent_loop(
-        app,
-        "projects:p_rag".to_string(),
-        "chats:c_rag".to_string(),
-        "chat_messages:m_ra".to_string(),
-        "Артур Пендрагон".to_string(),
-        None,
-    )
-    .await;
+    // 6. Запуск агента через ChatServices
+    let services =
+        build_surreal_app_services(Arc::new(db.clone()), Arc::new(InMemoryEventPublisher));
+    services
+        .chat
+        .run_agent_loop(
+            "projects:p_rag",
+            "chats:c_rag",
+            "chat_messages:m_ra",
+            "Артур Пендрагон",
+            None,
+        )
+        .await;
 
     // 7. Ответ сохранён
-    let mut r = db.query("SELECT content FROM chat_messages:m_ra").await.unwrap();
+    let mut r = db
+        .query("SELECT content FROM chat_messages:m_ra")
+        .await
+        .unwrap();
     let rows: Vec<Value> = r.take(0).unwrap();
     assert_eq!(
         rows[0]["content"], "Артур — король бриттов.",
@@ -414,57 +411,63 @@ fn sse_tool_call(id: &str, name: &str, arguments: &str) -> String {
     let chunk = json!({
         "id": "chatcmpl-mock", "object": "chat.completion.chunk",
         "created": 1, "model": "mock-model",
-        "choices": [{ "index": 0, "delta": {
-            "tool_calls": [{ "index": 0, "id": id, "type": "function",
-                "function": { "name": name, "arguments": arguments } }]
-        }}]
+        "choices": [{
+            "index": 0,
+            "delta": {
+                "tool_calls": [{
+                    "index": 0,
+                    "id": id,
+                    "type": "function",
+                    "function": { "name": name, "arguments": arguments }
+                }]
+            }
+        }]
     });
     body.push_str(&format!("data: {chunk}\n\n"));
     body.push_str(&sse_stop("tool_calls"));
     body
 }
 
-fn sse_stop(reason: &str) -> String {
+fn sse_stop(finish_reason: &str) -> String {
     let stop = json!({
-        "id": "chatcmpl-mock", "object": "chat.completion.chunk",
-        "created": 1, "model": "mock-model",
-        "choices": [{ "index": 0, "delta": {}, "finish_reason": reason }]
+        "id": "chatcmpl-mock",
+        "object": "chat.completion.chunk",
+        "created": 1,
+        "model": "mock-model",
+        "choices": [{ "index": 0, "delta": {}, "finish_reason": finish_reason }]
     });
     format!("data: {stop}\n\ndata: [DONE]\n\n")
 }
 
-/// Mock-сервер со СЦЕНАРИЯМИ: каждое новое соединение получает следующий
-/// сценарий (сырое SSE-тело); последний повторяется.
-async fn spawn_mock_scenarios(bodies: Vec<String>, captured: SharedBuf) -> String {
+/// Mock-сервер со сценариями: на 1-й запрос отдаёт scenario[0], на 2-й — scenario[1].
+async fn spawn_mock_scenarios(scenarios: Vec<String>, captured: SharedBuf) -> String {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
         .await
         .expect("bind mock server");
     let port = listener.local_addr().unwrap().port();
-    let queue = std::sync::Arc::new(tokio::sync::Mutex::new(bodies));
 
     tokio::spawn(async move {
-        for _ in 0..6 {
+        for body in scenarios {
             let mut s = match listener.accept().await {
                 Ok((s, _)) => s,
                 Err(_) => break,
             };
 
-            // Читаем заголовки + Content-Length байт body (keep-alive!)
             let mut buf = vec![0u8; 262144];
             let mut read_total = 0;
-            let mut need: Option<usize> = None;
+            let mut body_needed: Option<usize> = None;
             loop {
                 let n = match s.read(&mut buf[read_total..]).await {
                     Ok(0) | Err(_) => break,
                     Ok(n) => n,
                 };
                 read_total += n;
-                if need.is_none() {
+                if body_needed.is_none() {
                     if let Some(pos) = buf[..read_total].windows(4).position(|w| w == b"\r\n\r\n") {
                         let head = String::from_utf8_lossy(&buf[..pos]);
-                        need = Some(
+                        body_needed = Some(
                             head.to_ascii_lowercase()
                                 .lines()
                                 .find_map(|l| l.strip_prefix("content-length:"))
@@ -475,8 +478,8 @@ async fn spawn_mock_scenarios(bodies: Vec<String>, captured: SharedBuf) -> Strin
                         );
                     }
                 }
-                if let Some(n2) = need {
-                    if read_total >= n2 {
+                if let Some(need) = body_needed {
+                    if read_total >= need {
                         break;
                     }
                 }
@@ -485,18 +488,10 @@ async fn spawn_mock_scenarios(bodies: Vec<String>, captured: SharedBuf) -> Strin
                 captured.lock().await.extend_from_slice(&buf[..read_total]);
             }
 
-            let mut q = queue.lock().await;
-            let sse_body = if q.len() <= 1 {
-                q.first().cloned().unwrap_or_else(|| "data: [DONE]\n\n".to_string())
-            } else {
-                q.remove(0)
-            };
-            drop(q);
-
             let response = format!(
                 "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-cache\r\nConnection: close\r\nContent-Length: {}\r\n\r\n{}",
-                sse_body.len(),
-                sse_body
+                body.len(),
+                body
             );
             let _ = s.write_all(response.as_bytes()).await;
             let _ = s.flush().await;
@@ -514,11 +509,11 @@ async fn agent_loop_executes_tool_call_and_produces_final_answer() {
     // 1. БД + схема
     let dir = std::env::temp_dir().join(format!("ww_tool_{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone()).await.unwrap();
+    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone())
+        .await
+        .unwrap();
     db.use_ns("test").use_db("test").await.unwrap();
-    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
-    let mut res = db.query(sql).await.unwrap();
-    assert!(res.take_errors().is_empty(), "schema errors");
+    world_wiki_lib::apply_schema_pipeline(&db).await.unwrap();
 
     // 2. Mock: ход 1 → tool_call get_chapters_list; ход 2 → финальный текст
     let captured: SharedBuf = Default::default();
@@ -579,20 +574,25 @@ async fn agent_loop_executes_tool_call_and_produces_final_answer() {
     .unwrap()
     .take_errors();
 
-    // 5. Запуск
-    let app = build_mock_app(db.clone());
-    run_agent_loop(
-        app,
-        "projects:p_tool".to_string(),
-        "chats:c_t".to_string(),
-        "chat_messages:m_ta".to_string(),
-        "Сколько глав?".to_string(),
-        None,
-    )
-    .await;
+    // 5. Запуск через ChatServices
+    let services =
+        build_surreal_app_services(Arc::new(db.clone()), Arc::new(InMemoryEventPublisher));
+    services
+        .chat
+        .run_agent_loop(
+            "projects:p_tool",
+            "chats:c_t",
+            "chat_messages:m_ta",
+            "Сколько глав?",
+            None,
+        )
+        .await;
 
     // 6. Финальный ответ второго хода сохранён в assistant-сообщении
-    let mut r = db.query("SELECT content FROM chat_messages:m_ta").await.unwrap();
+    let mut r = db
+        .query("SELECT content FROM chat_messages:m_ta")
+        .await
+        .unwrap();
     let rows: Vec<Value> = r.take(0).unwrap();
     assert_eq!(
         rows[0]["content"], "В книге одна глава.",
@@ -628,11 +628,11 @@ async fn agent_loop_survives_midstream_disconnect() {
     // 1. БД + схема
     let dir = std::env::temp_dir().join(format!("ww_disc_{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone()).await.unwrap();
+    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone())
+        .await
+        .unwrap();
     db.use_ns("test").use_db("test").await.unwrap();
-    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
-    let mut res = db.query(sql).await.unwrap();
-    assert!(res.take_errors().is_empty(), "schema errors");
+    world_wiki_lib::apply_schema_pipeline(&db).await.unwrap();
 
     // 2. Mock: шлём одну дельту и ОБРЫВАЕМ соединение без [DONE]
     let captured: SharedBuf = Default::default();
@@ -688,24 +688,31 @@ async fn agent_loop_survives_midstream_disconnect() {
     .unwrap()
     .take_errors();
 
-    // 4. Запуск под таймаутом: обрыв не должен привести к зависанию
-    let app = build_mock_app(db.clone());
+    // 4. Запуск под таймаутом через ChatServices: обрыв не должен привести к зависанию
+    let services =
+        build_surreal_app_services(Arc::new(db.clone()), Arc::new(InMemoryEventPublisher));
+    let chat_svc = services.chat.clone();
     let loop_res = tokio::time::timeout(
         std::time::Duration::from_secs(30),
-        run_agent_loop(
-            app,
-            "projects:p_dsc".to_string(),
-            "chats:c_d".to_string(),
-            "chat_messages:m_da".to_string(),
-            "Вопрос".to_string(),
+        chat_svc.run_agent_loop(
+            "projects:p_dsc",
+            "chats:c_d",
+            "chat_messages:m_da",
+            "Вопрос",
             None,
         ),
     )
     .await;
-    assert!(loop_res.is_ok(), "run_agent_loop должен завершиться после обрыва, а не висеть");
+    assert!(
+        loop_res.is_ok(),
+        "run_agent_loop должен завершиться после обрыва, а не висеть"
+    );
 
     // 5. Частичный текст сохранён как ответ (graceful degradation)
-    let mut r = db.query("SELECT content FROM chat_messages:m_da").await.unwrap();
+    let mut r = db
+        .query("SELECT content FROM chat_messages:m_da")
+        .await
+        .unwrap();
     let rows: Vec<Value> = r.take(0).unwrap();
     let saved = rows[0]["content"].as_str().unwrap_or("");
     assert!(
@@ -795,16 +802,15 @@ async fn spawn_mock_holding(captured: SharedBuf) -> String {
 #[tokio::test(flavor = "multi_thread")]
 async fn cancel_generation_aborts_running_task_and_keeps_db_consistent() {
     use surrealdb::engine::local::SurrealKv;
-    use world_wiki_lib::AgentTasks;
 
     // 1. БД + схема
     let dir = std::env::temp_dir().join(format!("ww_cancel_{}", uuid::Uuid::new_v4()));
     std::fs::create_dir_all(&dir).unwrap();
-    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone()).await.unwrap();
+    let db = surrealdb::Surreal::new::<SurrealKv>(dir.clone())
+        .await
+        .unwrap();
     db.use_ns("test").use_db("test").await.unwrap();
-    let sql = include_str!("../../apps/spa/src/logic/surreal_schema.surql");
-    let mut res = db.query(sql).await.unwrap();
-    assert!(res.take_errors().is_empty(), "schema errors");
+    world_wiki_lib::apply_schema_pipeline(&db).await.unwrap();
 
     // 2. Медленный мок: стрим не заканчивается сам
     let captured: SharedBuf = Default::default();
@@ -849,52 +855,44 @@ async fn cancel_generation_aborts_running_task_and_keeps_db_consistent() {
     .unwrap()
     .take_errors();
 
-    // 4. Запуск как в send_chat_message: spawn + регистрация в AgentTasks
-    let app = build_mock_app(db.clone());
-    app.manage(AgentTasks::default());
-
-    let spawn_app = app.clone();
+    // 4. Запускаем генерацию в фоновом таске
+    let services =
+        build_surreal_app_services(Arc::new(db.clone()), Arc::new(InMemoryEventPublisher));
+    let chat_svc = services.chat.clone();
     let handle = tokio::spawn(async move {
-        run_agent_loop(
-            spawn_app,
-            "projects:p_cnl".to_string(),
-            "chats:c_cnl".to_string(),
-            "chat_messages:m_ca".to_string(),
-            "Длинный вопрос".to_string(),
-            None,
-        )
-        .await;
+        chat_svc
+            .run_agent_loop(
+                "projects:p_cnl",
+                "chats:c_cnl",
+                "chat_messages:m_ca",
+                "Длинный вопрос",
+                None,
+            )
+            .await;
     });
-    {
-        let tasks = app.state::<AgentTasks>();
-        tasks
-            .0
-            .lock()
-            .await
-            .insert("chats:c_cnl".to_string(), handle);
-    }
 
     // Даём генерации стартовать (мок успевает отдать первый чанк)
     tokio::time::sleep(std::time::Duration::from_millis(800)).await;
 
-    // 5. Отмена через продовый механизм
-    world_wiki_lib::logic::ai::cancel_generation(
-        "chats:c_cnl".to_string(),
-        app.state::<AgentTasks>(),
-    )
-    .await
-    .expect("cancel_generation должен пройти");
+    // 5. Отмена через ChatServices
+    let aborted = services.chat.abort_generation("chats:c_cnl");
+    assert!(aborted, "cancel_generation должен пройти");
 
-    // 6. Повторная отмена безопасна (задача уже удалена из реестра)
-    world_wiki_lib::logic::ai::cancel_generation(
-        "chats:c_cnl".to_string(),
-        app.state::<AgentTasks>(),
-    )
-    .await
-    .expect("повторная отмена должна быть no-op без паники");
+    // Ждём завершения таски
+    let _ = handle.await;
+
+    // 6. Повторная отмена безопасна (задача уже снята)
+    let aborted_repeat = services.chat.abort_generation("chats:c_cnl");
+    assert!(
+        !aborted_repeat,
+        "повторная отмена должна вернуть false без паники"
+    );
 
     // 7. DB консистентна: assistant-сообщение существует и читается
-    let mut r = db.query("SELECT content FROM chat_messages:m_ca").await.unwrap();
+    let mut r = db
+        .query("SELECT content FROM chat_messages:m_ca")
+        .await
+        .unwrap();
     let rows: Vec<Value> = r.take(0).unwrap();
     assert_eq!(rows.len(), 1, "assistant-сообщение на месте");
     let saved = rows[0]["content"].as_str().unwrap_or("");

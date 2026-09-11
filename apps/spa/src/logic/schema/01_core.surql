@@ -24,35 +24,33 @@ DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string>;
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
     
-    -- 1. Сюжет, главы и текст рукописи
-    DELETE FROM volumes WHERE project_id = $pid;
-    DELETE FROM arcs WHERE project_id = $pid;
-    DELETE FROM chapters WHERE project_id = $pid;
-    DELETE FROM text_blocks WHERE project_id = $pid;
-    DELETE FROM contains WHERE in = $pid OR in.project_id = $pid;
+    -- 1. Сущности, связи и история правок книги
+    DELETE entities WHERE project_id = $pid;
+    DELETE entity_chunks WHERE project_id = $pid;
+    DELETE entity_rel WHERE project_id = $pid;
+    DELETE appears_in WHERE project_id = $pid;
+    DELETE entity_revisions WHERE project_id = $pid;
+    DELETE chapter_revisions WHERE project_id = $pid;
+    DELETE tags WHERE project_id = $pid;
 
-    -- 2. Сущности, связи и история правок книги
-    DELETE FROM entities WHERE project_id = $pid;
-    DELETE FROM entity_chunks WHERE project_id = $pid;
-    DELETE FROM entity_rel WHERE project_id = $pid;
-    DELETE FROM appears_in WHERE project_id = $pid;
-    DELETE FROM entity_revisions WHERE project_id = $pid;
-    DELETE FROM chapter_revisions WHERE project_id = $pid;
-    DELETE FROM tags WHERE project_id = $pid;
+    -- 2. Сюжет, главы и текст рукописи
+    DELETE volumes WHERE project_id = $pid;
+    DELETE arcs WHERE project_id = $pid;
+    DELETE chapters WHERE project_id = $pid;
+    DELETE text_blocks WHERE project_id = $pid;
 
     -- 3. Планирование, таймлайн и сюжетные обещания
-    DELETE FROM plans WHERE project_id = $pid;
-    DELETE FROM plot_promises WHERE project_id = $pid;
-    DELETE FROM timeline_events WHERE project_id = $pid;
-    DELETE FROM participates_in WHERE in.project_id = $pid;
+    DELETE plans WHERE project_id = $pid;
+    DELETE plot_promises WHERE project_id = $pid;
+    DELETE timeline_events WHERE project_id = $pid;
 
     -- 4. ИИ-сессии и контекст диалогов по книге
-    DELETE FROM chats WHERE project_id = $pid;
-    DELETE FROM chat_messages WHERE project_id = $pid;
-    DELETE FROM agent_memory WHERE project_id = $pid;
-    DELETE FROM research_sessions WHERE project_id = $pid;
-    DELETE FROM auto_approval_settings WHERE project_id = $pid;
-    DELETE FROM ai_modes WHERE project_id = $pid AND (is_global != true OR is_global = NONE);
+    DELETE chats WHERE project_id = $pid;
+    DELETE chat_messages WHERE project_id = $pid;
+    DELETE agent_memory WHERE project_id = $pid;
+    DELETE research_sessions WHERE project_id = $pid;
+    DELETE auto_approval_settings WHERE project_id = $pid;
+    DELETE ai_modes WHERE project_id = $pid AND (is_global != true OR is_global = NONE);
 };
 
 -- ===============================================

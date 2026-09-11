@@ -224,3 +224,90 @@ async fn save_project_config_merges_without_losing_fields() {
     // верхнеуровневые поля мержатся, вложенный `data` перезаписывается последним save.
     assert_eq!(cfg["data"]["font"], "Inter");
 }
+
+#[tokio::test]
+async fn delete_project_preserves_global_knowledge_base() {
+    let db = create_test_db().await;
+    seed_project(&db, "proj_keep_global", "Keep Global Test").await;
+
+    // 1. Создаем вечные глобальные сущности
+    db.query(
+        r#"
+        CREATE web_pages:wp1 SET url = "https://example.com", canonical_url = "https://example.com", domain = "example.com", content_hash = "h1", content = "Web content";
+        CREATE web_evidence:we1 SET page_id = web_pages:wp1, project_id = type::record('projects:proj_keep_global'), chunk_index = 0, text = "Важный исторический факт", start_offset = 0, end_offset = 20;
+        CREATE entity_schemas:es1 SET project_id = type::record('projects:proj_keep_global'), type_key = "magic", type_name = "Магия", icon = "✨", color = "blue";
+        CREATE relation_schemas:rs1 SET project_id = type::record('projects:proj_keep_global'), rel_key = "mentor", rel_name = "Наставник", icon = "🎓", color = "gold";
+        CREATE ai_profiles:prof1 SET project_id = type::record('projects:proj_keep_global'), name = "OpenAI Global", provider = "openai", is_global = true;
+        CREATE ai_skills:sk1 SET project_id = type::record('projects:proj_keep_global'), name = "Конструктор лора", description = "Создание мира", prompt_text = "Тест", is_builtin = true;
+        CREATE calendars:cal1 SET project_id = type::record('projects:proj_keep_global'), name = "Григорианский", is_master = true;
+        CREATE artifacts:art1 SET project_id = type::record('projects:proj_keep_global'), type = "document", title = "Сводка фактов", content = "Текст документа";
+        CREATE user_dictionary:ud1 SET project_id = type::record('projects:proj_keep_global'), word = "Мана", definition = "Энергия";
+        "#
+    ).await.unwrap();
+
+    // 2. Удаляем проект
+    delete_project_inner(&db, "proj_keep_global").await.expect("delete project");
+
+    // 3. Проверяем, что ВСЕ вечные глобальные сущности сохранились в целости
+    let mut w_res = db.query("SELECT count() FROM web_evidence GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = w_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "web_evidence НЕ должна удаляться при сносе проекта");
+
+    let mut es_res = db.query("SELECT count() FROM entity_schemas GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = es_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "entity_schemas НЕ должны удаляться");
+
+    let mut rs_res = db.query("SELECT count() FROM relation_schemas GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = rs_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "relation_schemas НЕ должны удаляться");
+
+    let mut prof_res = db.query("SELECT count() FROM ai_profiles GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = prof_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "ai_profiles НЕ должны удаляться");
+
+    let mut sk_res = db.query("SELECT count() FROM ai_skills GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = sk_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "ai_skills НЕ должны удаляться");
+
+    let mut cal_res = db.query("SELECT count() FROM calendars GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = cal_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "calendars НЕ должны удаляться");
+
+    let mut art_res = db.query("SELECT count() FROM artifacts GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = art_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "artifacts НЕ должны удаляться");
+
+    let mut ud_res = db.query("SELECT count() FROM user_dictionary GROUP ALL").await.unwrap();
+    let count: Option<serde_json::Value> = ud_res.take(0).unwrap();
+    assert_eq!(count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0), 1, "user_dictionary НЕ должен удаляться");
+}
+
+#[tokio::test]
+async fn delete_project_cascades_timeline_and_chats() {
+    let db = create_test_db().await;
+    seed_project(&db, "proj_casc_full", "Cascade Full Test").await;
+
+    // 1. Создаем проектные данные: таймлайн, чаты, сообщения, сюжетные обещания, планы
+    db.query(
+        r#"
+        CREATE calendars:cal_p SET project_id = type::record('projects:proj_casc_full'), name = "Календарь", is_master = true;
+        CREATE timeline_events:te1 SET project_id = type::record('projects:proj_casc_full'), calendar_id = calendars:cal_p, title = "Битва у реки", m_abs = 1000;
+        CREATE chats:c1 SET project_id = type::record('projects:proj_casc_full'), title = "Диалог 1";
+        CREATE chat_messages:cm1 SET project_id = type::record('projects:proj_casc_full'), chat_id = chats:c1, role = "user", content = "Привет!";
+        CREATE plans:pl1 SET project_id = type::record('projects:proj_casc_full'), title = "План главы", parent_type = "chapter";
+        CREATE plot_promises:pp1 SET project_id = type::record('projects:proj_casc_full'), kind = "gun", quote = "Ружьё на стене";
+        CREATE agent_memory:am1 SET project_id = type::record('projects:proj_casc_full'), memory_type = "fact", content = "Герой левша";
+        "#
+    ).await.unwrap();
+
+    // 2. Удаляем проект
+    delete_project_inner(&db, "proj_casc_full").await.expect("delete project");
+
+    // 3. Проверяем, что все проектные сущности каскадно очищены
+    for table in ["timeline_events", "chats", "chat_messages", "plans", "plot_promises", "agent_memory"] {
+        let mut res = db.query(format!("SELECT count() FROM {table} WHERE project_id = type::record('projects:proj_casc_full') GROUP ALL")).await.unwrap();
+        let count: Option<serde_json::Value> = res.take(0).unwrap();
+        let cnt = count.and_then(|v| v.get("count").and_then(|c| c.as_u64())).unwrap_or(0);
+        assert_eq!(cnt, 0, "Таблица {table} должна быть каскадно очищена для проекта");
+    }
+}

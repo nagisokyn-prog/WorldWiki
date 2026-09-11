@@ -80,12 +80,11 @@ pub async fn delete_project_inner(
     let pid_raw = name.strip_prefix("projects:").unwrap_or(name).trim_matches('`');
     let pid_val = format!("projects:{}", pid_raw);
 
-    db.query(format!("DELETE FROM entities WHERE project_id = type::record('{pid_val}')")).await.map_err(|e| e.to_string())?;
-    db.query(format!("DELETE FROM chapters WHERE project_id = type::record('{pid_val}')")).await.map_err(|e| e.to_string())?;
-    db.query(format!("DELETE FROM volumes WHERE project_id = type::record('{pid_val}')")).await.map_err(|e| e.to_string())?;
-    db.query(format!("DELETE FROM arcs WHERE project_id = type::record('{pid_val}')")).await.map_err(|e| e.to_string())?;
-    db.query(format!("DELETE FROM entity_rel WHERE project_id = type::record('{pid_val}')")).await.map_err(|e| e.to_string())?;
-    db.query(format!("DELETE type::record('{pid_val}')")).await.map_err(|e| e.to_string())?;
+    db.query("DELETE projects WHERE id = type::record('projects', $p) OR id = $pid")
+        .bind(("p", pid_raw))
+        .bind(("pid", pid_val))
+        .await
+        .map_err(|e| e.to_string())?;
 
     Ok(name.to_string())
 }

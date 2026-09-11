@@ -35,12 +35,10 @@ pub async fn create_test_db() -> Surreal<Db> {
         .await
         .expect("Failed to use NS/DB");
 
-    // Применяем продовую схему через include_str! (вкомпилирована в бинарник).
-    let sql = include_str!("../../../apps/spa/src/logic/surreal_schema.surql");
-    let mut res = db.query(sql).await.expect("Failed to apply schema");
-    if let Some(err) = res.take_errors().into_iter().next() {
-        panic!("DDL schema errors: {err:?}");
-    }
+    // Применяем продовую модульную схему через apply_schema_pipeline.
+    crate::apply_schema_pipeline(&db)
+        .await
+        .expect("Failed to apply schema pipeline");
 
     db
 }

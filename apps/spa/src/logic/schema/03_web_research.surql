@@ -1,7 +1,135 @@
 -- ==============================================================================
 -- 03_WEB_RESEARCH.SURQL — ВЕБ-ИССЛЕДОВАНИЯ И КЭШ (ТОЛЬКО РЕДАКЦИЯ ULTRA)
 -- ==============================================================================
--- Включает: web_pages, web_evidence, research_sessions.
+-- Включает: web_pages (глобальный кэш), web_evidence (перманентная база фактов),
+--           research_sessions, функцию атомарного кэширования fn::upsert_global_web_page.
 -- ==============================================================================
 
--- [Зарезервировано под модульное разделение]
+-- ===============================================
+-- 1. ГЛОБАЛЬНЫЙ КЭШ ВЕБ-СТРАНИЦ (WEB CACHE)
+-- ===============================================
+
+DEFINE TABLE OVERWRITE web_pages SCHEMAFULL;
+DEFINE FIELD OVERWRITE url                 ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE canonical_url       ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE domain              ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE title               ON web_pages TYPE option<string>;
+DEFINE FIELD OVERWRITE content_type        ON web_pages TYPE string DEFAULT "text/html";
+DEFINE FIELD OVERWRITE charset             ON web_pages TYPE string DEFAULT "utf-8";
+DEFINE FIELD OVERWRITE language            ON web_pages TYPE option<string>;
+DEFINE FIELD OVERWRITE content_hash        ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE content             ON web_pages TYPE string;
+DEFINE FIELD OVERWRITE extracted_markdown  ON web_pages TYPE option<string>;
+DEFINE FIELD OVERWRITE status_code         ON web_pages TYPE int DEFAULT 200;
+DEFINE FIELD OVERWRITE hit_count           ON web_pages TYPE int DEFAULT 1;
+DEFINE FIELD OVERWRITE fetched_at          ON web_pages TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE expires_at          ON web_pages TYPE option<datetime> DEFAULT (time::now() + 14d);
+
+DEFINE INDEX OVERWRITE idx_web_pages_canonical ON web_pages FIELDS canonical_url UNIQUE;
+DEFINE INDEX OVERWRITE idx_web_pages_hash      ON web_pages FIELDS content_hash;
+DEFINE INDEX OVERWRITE idx_web_pages_domain    ON web_pages FIELDS domain;
+DEFINE INDEX OVERWRITE idx_web_pages_md_bm25   ON web_pages COLUMNS extracted_markdown FULLTEXT ANALYZER ru_en_analyzer BM25;
+
+-- ===============================================
+-- 2. ВЕЧНЫЕ ВЕБ-ДОКАЗАТЕЛЬСТВА (WEB EVIDENCE)
+-- ===============================================
+
+DEFINE TABLE OVERWRITE web_evidence SCHEMAFULL;
+DEFINE FIELD OVERWRITE page_id             ON web_evidence TYPE record<web_pages>;
+DEFINE FIELD OVERWRITE project_id          ON web_evidence TYPE option<record<projects>>;
+DEFINE FIELD OVERWRITE chunk_index         ON web_evidence TYPE int;
+DEFINE FIELD OVERWRITE text                ON web_evidence TYPE string;
+DEFINE FIELD OVERWRITE start_offset        ON web_evidence TYPE int;
+DEFINE FIELD OVERWRITE end_offset          ON web_evidence TYPE int;
+DEFINE FIELD OVERWRITE simhash             ON web_evidence TYPE option<string>;
+DEFINE FIELD OVERWRITE embeddings          ON web_evidence TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE metadata            ON web_evidence TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at          ON web_evidence TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_evidence_page        ON web_evidence FIELDS page_id;
+DEFINE INDEX OVERWRITE idx_evidence_text_bm25   ON web_evidence COLUMNS text FULLTEXT ANALYZER ru_en_analyzer BM25;
+
+-- ===============================================
+-- 3. СЕССИИ ПОИСКОВЫХ ИССЛЕДОВАНИЙ
+-- ===============================================
+
+DEFINE TABLE OVERWRITE research_sessions SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id          ON research_sessions TYPE record<projects>;
+DEFINE FIELD OVERWRITE conversation_id     ON research_sessions TYPE record<chats>;
+DEFINE FIELD OVERWRITE user_message_id     ON research_sessions TYPE record<chat_messages>;
+DEFINE FIELD OVERWRITE mode                ON research_sessions TYPE string; -- 'direct' | 'research' | 'deep_research'
+DEFINE FIELD OVERWRITE status              ON research_sessions TYPE string; -- 'planning' | 'searching' | 'reading' | 'synthesizing' | 'verifying' | 'completed' | 'failed'
+DEFINE FIELD OVERWRITE objective           ON research_sessions TYPE string;
+DEFINE FIELD OVERWRITE plan                ON research_sessions TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE events              ON research_sessions TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE claims              ON research_sessions TYPE array<object> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE used_page_ids       ON research_sessions TYPE array<record<web_pages>> DEFAULT [];
+DEFINE FIELD OVERWRITE used_evidence_ids   ON research_sessions TYPE array<record<web_evidence>> DEFAULT [];
+DEFINE FIELD OVERWRITE search_count        ON research_sessions TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE page_count          ON research_sessions TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE created_at          ON research_sessions TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE finished_at         ON research_sessions TYPE option<datetime>;
+
+-- ===============================================
+-- 4. АТОМАРНАЯ ФУНКЦИЯ КЭШИРОВАНИЯ СТРАНИЦЫ
+-- ===============================================
+
+DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
+    $url: string,
+    $canonical_url: string,
+    $domain: string,
+    $title: string,
+    $content_type: string,
+    $language: string,
+    $content_hash: string,
+    $content: string,
+    $extracted_md: string,
+    $status_code: int,
+    $ttl_days: int
+) {
+    LET $existing = (
+        SELECT id, content_hash FROM web_pages 
+        WHERE canonical_url = $canonical_url 
+        LIMIT 1
+    )[0];
+
+    IF $existing != NONE {
+        IF $existing.content_hash == $content_hash {
+            UPDATE $existing.id SET
+                hit_count += 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from_days($ttl_days);
+            RETURN { id: $existing.id, is_new: false, is_updated: false };
+        } ELSE {
+            UPDATE $existing.id SET
+                content_hash = $content_hash,
+                title = $title,
+                content_type = $content_type,
+                language = $language,
+                content = $content,
+                extracted_markdown = $extracted_md,
+                hit_count += 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from_days($ttl_days);
+            RETURN { id: $existing.id, is_new: false, is_updated: true };
+        };
+    } ELSE {
+        LET $created = (
+            CREATE web_pages SET
+                url = $url,
+                canonical_url = $canonical_url,
+                domain = $domain,
+                title = $title,
+                content_type = $content_type,
+                language = $language,
+                content_hash = $content_hash,
+                content = $content,
+                extracted_markdown = $extracted_md,
+                status_code = $status_code,
+                hit_count = 1,
+                fetched_at = time::now(),
+                expires_at = time::now() + duration::from_days($ttl_days)
+        );
+        RETURN { id: $created[0].id, is_new: true, is_updated: false };
+    };
+};

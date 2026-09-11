@@ -47,6 +47,12 @@ async fn smoke_all_required_tables_exist() {
         "artifacts",
         "web_pages",
         "web_evidence",
+        "timeline_events",
+        "participates_in",
+        "entity_chunks",
+        "plot_promises",
+        "research_sessions",
+        "auto_approval_settings",
     ];
 
     for table in expected_tables {

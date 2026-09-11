@@ -1,14 +1,13 @@
 -- ==============================================================================
--- 05_FUNCTIONS.SURQL — ХРАНИМЫЕ АНАЛИТИЧЕСКИЕ И RAG ФУНКЦИИ (ТОЛЬКО РЕДАКЦИЯ ULTRA)
+-- 06_FUNCTIONS.SURQL — ХРАНИМЫЕ АНАЛИТИЧЕСКИЕ И RAG ФУНКЦИИ (ULTRA EDITION)
 -- ==============================================================================
--- Включает: fn::gather_rag_bundle, fn::get_chapter_multi_hop_context,
---           fn::resolve_auto_skills.
+-- Включает:
+-- 1. fn::gather_rag_bundle (Автоматический сбор контекста сущностей, чанков, глав и связей)
+-- 2. fn::get_chapter_multi_hop_context (GraphRAG: многошаговый обход связей и таймлайна главы)
+-- 3. fn::resolve_auto_skills (Атомарный резолв навыков по триггерам и BM25)
 -- ==============================================================================
 
--- ===============================================
 -- 1. СБОР RAG-КОНТЕКСТА (СУЩНОСТИ, ЧАНКИ, ГЛАВЫ, СВЯЗИ)
--- ===============================================
-
 DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     $proj: record<projects>, 
     $q: string, 
@@ -56,10 +55,7 @@ DEFINE FUNCTION OVERWRITE fn::gather_rag_bundle(
     };
 };
 
--- ===============================================
 -- 2. GRAPHRAG: МНОГОШАГОВЫЙ ОБХОД КОНТЕКСТА ГЛАВЫ
--- ===============================================
-
 DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<chapters>) {
     LET $participants = (SELECT VALUE in FROM appears_in WHERE out = $chapter);
     LET $relations = (
@@ -87,10 +83,7 @@ DEFINE FUNCTION OVERWRITE fn::get_chapter_multi_hop_context($chapter: record<cha
     };
 };
 
--- ===============================================
 -- 3. АТОМАРНЫЙ РЕЗОЛВ НАВЫКОВ (ТРИГГЕРЫ + BM25)
--- ===============================================
-
 DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
     $proj: option<record<projects>>,
     $query: string,

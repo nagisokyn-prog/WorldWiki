@@ -1,14 +1,14 @@
 -- ==============================================================================
--- 03_WEB_RESEARCH.SURQL — ВЕБ-ИССЛЕДОВАНИЯ И КЭШ (ТОЛЬКО РЕДАКЦИЯ ULTRA)
+-- 02_WEB_RESEARCH_TABLES.SURQL — ТАБЛИЦЫ ВЕБ-ИССЛЕДОВАНИЙ (ULTRA EDITION)
 -- ==============================================================================
--- Включает: web_pages (глобальный кэш), web_evidence (перманентная база фактов),
---           research_sessions, функцию атомарного кэширования fn::upsert_global_web_page.
+-- Включает:
+-- 1. web_pages (Глобальный кэш веб-страниц)
+-- 2. web_evidence (Перманентная база фактов и веб-доказательств)
+-- 3. research_sessions (Сессии поисковых исследований)
+-- 4. fn::upsert_global_web_page (Атомарная функция кэширования веб-страниц)
 -- ==============================================================================
 
--- ===============================================
 -- 1. ГЛОБАЛЬНЫЙ КЭШ ВЕБ-СТРАНИЦ (WEB CACHE)
--- ===============================================
-
 DEFINE TABLE OVERWRITE web_pages SCHEMAFULL;
 DEFINE FIELD OVERWRITE url                 ON web_pages TYPE string;
 DEFINE FIELD OVERWRITE canonical_url       ON web_pages TYPE string;
@@ -25,15 +25,7 @@ DEFINE FIELD OVERWRITE hit_count           ON web_pages TYPE int DEFAULT 1;
 DEFINE FIELD OVERWRITE fetched_at          ON web_pages TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE expires_at          ON web_pages TYPE option<datetime> DEFAULT (time::now() + 14d);
 
-DEFINE INDEX OVERWRITE idx_web_pages_canonical ON web_pages FIELDS canonical_url UNIQUE;
-DEFINE INDEX OVERWRITE idx_web_pages_hash      ON web_pages FIELDS content_hash;
-DEFINE INDEX OVERWRITE idx_web_pages_domain    ON web_pages FIELDS domain;
-DEFINE INDEX OVERWRITE idx_web_pages_md_bm25   ON web_pages COLUMNS extracted_markdown FULLTEXT ANALYZER ru_en_analyzer BM25;
-
--- ===============================================
 -- 2. ВЕЧНЫЕ ВЕБ-ДОКАЗАТЕЛЬСТВА (WEB EVIDENCE)
--- ===============================================
-
 DEFINE TABLE OVERWRITE web_evidence SCHEMAFULL;
 DEFINE FIELD OVERWRITE page_id             ON web_evidence TYPE record<web_pages>;
 DEFINE FIELD OVERWRITE project_id          ON web_evidence TYPE option<record<projects>>;
@@ -46,13 +38,7 @@ DEFINE FIELD OVERWRITE embeddings          ON web_evidence TYPE object FLEXIBLE 
 DEFINE FIELD OVERWRITE metadata            ON web_evidence TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE created_at          ON web_evidence TYPE datetime DEFAULT time::now();
 
-DEFINE INDEX OVERWRITE idx_evidence_page        ON web_evidence FIELDS page_id;
-DEFINE INDEX OVERWRITE idx_evidence_text_bm25   ON web_evidence COLUMNS text FULLTEXT ANALYZER ru_en_analyzer BM25;
-
--- ===============================================
 -- 3. СЕССИИ ПОИСКОВЫХ ИССЛЕДОВАНИЙ
--- ===============================================
-
 DEFINE TABLE OVERWRITE research_sessions SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id          ON research_sessions TYPE record<projects>;
 DEFINE FIELD OVERWRITE conversation_id     ON research_sessions TYPE record<chats>;
@@ -70,10 +56,7 @@ DEFINE FIELD OVERWRITE page_count          ON research_sessions TYPE int DEFAULT
 DEFINE FIELD OVERWRITE created_at          ON research_sessions TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE finished_at         ON research_sessions TYPE option<datetime>;
 
--- ===============================================
 -- 4. АТОМАРНАЯ ФУНКЦИЯ КЭШИРОВАНИЯ СТРАНИЦЫ
--- ===============================================
-
 DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
     $url: string,
     $canonical_url: string,

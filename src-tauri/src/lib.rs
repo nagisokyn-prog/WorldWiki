@@ -53,17 +53,31 @@ async fn init_database() -> Surreal<Db> {
 }
 
 pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), String> {
-    const DDL_CORE: &str = include_str!("../../apps/spa/src/logic/schema/01_core.surql");
-    const DDL_AI_WORKSPACE: &str = include_str!("../../apps/spa/src/logic/schema/02_ai_workspace.surql");
-    const DDL_WEB_RESEARCH: &str = include_str!("../../apps/spa/src/logic/schema/03_web_research.surql");
-    const DDL_EMBEDDINGS: &str = include_str!("../../apps/spa/src/logic/schema/04_embeddings_hnsw.surql");
-    const DDL_FUNCTIONS: &str = include_str!("../../apps/spa/src/logic/schema/05_functions.surql");
+    // 1. БАЗОВОЕ ЯДРО (NO-AI / BASE EDITION)
+    const DDL_NOAI_00_ANALYZERS: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
+    const DDL_NOAI_01_TABLES: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/01_tables.surql");
+    const DDL_NOAI_02_INDEXES: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/02_indexes.surql");
+    const DDL_NOAI_03_EVENTS: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/03_events.surql");
 
-    apply_ddl_module(db, "01_core", DDL_CORE).await?;
-    apply_ddl_module(db, "02_ai_workspace", DDL_AI_WORKSPACE).await?;
-    apply_ddl_module(db, "03_web_research", DDL_WEB_RESEARCH).await?;
-    apply_ddl_module(db, "04_embeddings_hnsw", DDL_EMBEDDINGS).await?;
-    apply_ddl_module(db, "05_functions", DDL_FUNCTIONS).await?;
+    apply_ddl_module(db, "no_ai/00_analyzers", DDL_NOAI_00_ANALYZERS).await?;
+    apply_ddl_module(db, "no_ai/01_tables", DDL_NOAI_01_TABLES).await?;
+    apply_ddl_module(db, "no_ai/02_indexes", DDL_NOAI_02_INDEXES).await?;
+    apply_ddl_module(db, "no_ai/03_events", DDL_NOAI_03_EVENTS).await?;
+
+    // 2. ИИ-ПРОСТРАНСТВО (AI / ULTRA EDITION)
+    const DDL_AI_01_WORKSPACE: &str = include_str!("../../apps/spa/src/logic/schema/ai/01_workspace_tables.surql");
+    const DDL_AI_02_WEB_RESEARCH: &str = include_str!("../../apps/spa/src/logic/schema/ai/02_web_research_tables.surql");
+    const DDL_AI_03_EMBEDDINGS: &str = include_str!("../../apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql");
+    const DDL_AI_04_INDEXES: &str = include_str!("../../apps/spa/src/logic/schema/ai/04_indexes.surql");
+    const DDL_AI_05_EVENTS: &str = include_str!("../../apps/spa/src/logic/schema/ai/05_events.surql");
+    const DDL_AI_06_FUNCTIONS: &str = include_str!("../../apps/spa/src/logic/schema/ai/06_functions.surql");
+
+    apply_ddl_module(db, "ai/01_workspace_tables", DDL_AI_01_WORKSPACE).await?;
+    apply_ddl_module(db, "ai/02_web_research_tables", DDL_AI_02_WEB_RESEARCH).await?;
+    apply_ddl_module(db, "ai/03_embeddings_hnsw", DDL_AI_03_EMBEDDINGS).await?;
+    apply_ddl_module(db, "ai/04_indexes", DDL_AI_04_INDEXES).await?;
+    apply_ddl_module(db, "ai/05_events", DDL_AI_05_EVENTS).await?;
+    apply_ddl_module(db, "ai/06_functions", DDL_AI_06_FUNCTIONS).await?;
 
     Ok(())
 }

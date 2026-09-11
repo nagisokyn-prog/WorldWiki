@@ -80,11 +80,33 @@ pub async fn delete_project_inner(
     let pid_raw = name.strip_prefix("projects:").unwrap_or(name).trim_matches('`');
     let pid_val = format!("projects:{}", pid_raw);
 
-    db.query("DELETE projects WHERE id = type::record('projects', $p) OR id = $pid")
-        .bind(("p", pid_raw))
-        .bind(("pid", pid_val))
-        .await
-        .map_err(|e| e.to_string())?;
+    let mut retries = 5;
+    while retries > 0 {
+        let mut res = db.query("DELETE projects WHERE id = type::record('projects', $p) OR id = $pid")
+            .bind(("p", pid_raw))
+            .bind(("pid", pid_val.clone()))
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let errors = res.take_errors();
+        if errors.is_empty() {
+            return Ok(name.to_string());
+        }
+
+        let is_conflict = errors.values().any(|e| {
+            let msg = format!("{:?}", e);
+            msg.contains("Transaction conflict") || msg.contains("Transaction write conflict")
+        });
+
+        if is_conflict && retries > 1 {
+            retries -= 1;
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            continue;
+        }
+
+        eprintln!("[DELETE_PROJECT_ERROR] {:?}", errors);
+        return Err(format!("{:?}", errors));
+    }
 
     Ok(name.to_string())
 }

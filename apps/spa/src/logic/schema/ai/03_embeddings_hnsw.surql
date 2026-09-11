@@ -1,14 +1,13 @@
 -- ==============================================================================
--- 04_EMBEDDINGS_HNSW.SURQL — ВЕКТОРНЫЕ ИНДЕКСЫ И ЧАНКИ (ТОЛЬКО РЕДАКЦИЯ ULTRA)
+-- 03_EMBEDDINGS_HNSW.SURQL — ВЕКТОРНЫЕ ИНДЕКСЫ И ЧАНКИ (ULTRA EDITION)
 -- ==============================================================================
--- Включает: entity_chunks, векторные HNSW индексы для OpenAI (1536d),
---           Nemotron (2048d), Primary (768d), Local (1024d) и каскад entity_chunks.
+-- Включает:
+-- 1. entity_chunks (Чанки лора и энциклопедии для RAG-поиска)
+-- 2. Векторные HNSW индексы для OpenAI (1536d), Nemotron (2048d),
+--    Primary/Web (768d), Local (1024d) по всем сущностям системы.
 -- ==============================================================================
 
--- ===============================================
--- 1. ЧАНКИ ЛОРА И ЭНЦИКЛОПЕДИИ ДЛЯ RAG-ПОИСКА
--- ===============================================
-
+-- 1. ЧАНКИ ЛОРА И ЭНЦИКЛОПЕДИИ
 DEFINE TABLE OVERWRITE entity_chunks SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id          ON entity_chunks TYPE record<projects>;
 DEFINE FIELD OVERWRITE chapter_id          ON entity_chunks TYPE option<record<chapters> | null>;
@@ -21,17 +20,10 @@ DEFINE FIELD OVERWRITE embedding_nomic     ON entity_chunks TYPE option<array<fl
 DEFINE FIELD OVERWRITE embedding_openai    ON entity_chunks TYPE option<array<float> | null>;
 DEFINE FIELD OVERWRITE created_at          ON entity_chunks TYPE datetime DEFAULT time::now();
 
-DEFINE INDEX OVERWRITE idx_chunk_project      ON entity_chunks FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_chunk_content_bm25 ON entity_chunks COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
+-- 2. HNSW ВЕКТОРНЫЕ ИНДЕКСЫ
+
+-- Чанки (Entity Chunks)
 DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embedding_nemotron HNSW DIMENSION 2048 DIST COSINE;
-
-DEFINE EVENT OVERWRITE cascade_entity_chunks_delete ON TABLE entities WHEN $event = "DELETE" THEN {
-    DELETE entity_chunks WHERE entity_id = $before.id;
-};
-
--- ===============================================
--- 2. HNSW ВЕКТОРНЫЕ ИНДЕКСЫ ПО ВСЕМ СЛОЯМ
--- ===============================================
 
 -- Главы (Chapters)
 DEFINE INDEX OVERWRITE idx_chapter_emb_openai   ON chapters COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;

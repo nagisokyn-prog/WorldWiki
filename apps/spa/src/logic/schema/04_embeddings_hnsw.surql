@@ -25,7 +25,7 @@ DEFINE INDEX OVERWRITE idx_chunk_project      ON entity_chunks FIELDS project_id
 DEFINE INDEX OVERWRITE idx_chunk_content_bm25 ON entity_chunks COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
 DEFINE INDEX OVERWRITE idx_chunk_emb_nemotron ON entity_chunks COLUMNS embedding_nemotron HNSW DIMENSION 2048 DIST COSINE;
 
-DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DELETE" THEN {
+DEFINE EVENT OVERWRITE cascade_entity_chunks_delete ON TABLE entities WHEN $event = "DELETE" THEN {
     DELETE entity_chunks WHERE entity_id = $before.id;
 };
 

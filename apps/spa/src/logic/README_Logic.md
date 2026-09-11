@@ -115,7 +115,7 @@ flowchart TD
 > 1. **Единый Источник Правды**: Мастер-текстом рукописи является поле `chapters.content` (Tiptap JSON AST), где каждый абзац размечается через `SemanticParagraph` (`attrs.semanticTag` = `desc` | `dialog` | `thought`).
 > 2. **Роль `text_blocks`**: Это **вторичный производный индекс**, автоматически пересчитываемый при сохранении главы. Он необходим для гранулярного RAG-поиска по фрагментам и мгновенного расчета стилометрической структуры (соотношение диалогов, описаний и мыслей).
 > 3. **Версионирование блоков**: Блоки **не требуют** собственных ревизий и CHANGEFEED, так как полная история структуры и семантических тегов сохраняется в `chapter_revisions.content`. При откате главы `text_blocks` автоматически пересоздаются из сохраненного AST.
-> 4. **Нормализация участников**: В таблице `chapters` **нет** устаревших массивов `participants` или `timeline_events`. Участники определяются через рёбра `appears_in`, а хронология — через `timeline_events`.
+> 4. **Связи сцен и таймлайн**: Таблица `chapters` поддерживает поля `participants` и `timeline_events` (для быстрой сериализации таймлайна в UI/интеграциях), синхронизированные с нормализованными рёбрами `appears_in` и записями `timeline_events`.
 
 ---
 
@@ -179,8 +179,9 @@ DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 
 ---
 
-## 🛡️ 5. Матрица Каскадного Удаления Проекта (`cascade_project_delete`)
+## 🛡️ 5. Матрица Каскадного Удаления (Проекты и Гранулярные Сущности)
 
+### 5.1. Каскад Удаления Проекта (`cascade_project_delete`)
 При удалении проекта через `DELETE projects WHERE id = $pid` срабатывает атомарное событие `cascade_project_delete`:
 
 ```mermaid
@@ -207,6 +208,14 @@ flowchart TD
 
     Trigger --> Purged
 ```
+
+### 5.2. Гранулярные Каскады Удаления Доменных Узлов
+* 🧙‍♂️ **Удаление сущности (`cascade_entity_delete` в `01_core.surql`)**:
+  Очищает все входящие/исходящие связи `entity_rel`, участие в сценах `appears_in`, участие в таймлайне `participates_in`, ревизии карточки `entity_revisions` и ревизии связей `entity_rel_revisions`. В Ultra-редакции `cascade_entity_chunks_delete` удаляет векторные чанки `entity_chunks`.
+* 📖 **Удаление главы (`cascade_chapter_delete` в `01_core.surql`)**:
+  Очищает `text_blocks`, `appears_in`, `chapter_revisions`, вложенные `plans` и `plot_promises`.
+* ⏳ **Удаление календаря (`cascade_calendar_delete` в `01_core.surql`)**:
+  Не удаляет события таймлайна ($M_{\text{abs}}$ неизменен), а автоматически перепривязывает все привязанные `timeline_events` к главному мастер-календарю (`is_master = true`).
 
 ---
 

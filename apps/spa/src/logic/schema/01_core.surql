@@ -24,34 +24,37 @@ DEFINE FIELD OVERWRITE perfLevel   ON projects TYPE option<string>;
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
     
-    -- 1. Сущности, связи и история правок книги
-    DELETE entities WHERE project_id = $pid;
-    DELETE entity_chunks WHERE project_id = $pid;
+    -- 1. Связи, чанки, участие и ревизии лора (удаляются до сущностей)
     DELETE entity_rel WHERE project_id = $pid;
+    DELETE entity_chunks WHERE project_id = $pid;
     DELETE appears_in WHERE project_id = $pid;
+    DELETE participates_in WHERE project_id = $pid;
     DELETE entity_revisions WHERE project_id = $pid;
     DELETE entity_rel_revisions WHERE project_id = $pid;
-    DELETE chapter_revisions WHERE project_id = $pid;
     DELETE tags WHERE project_id = $pid;
 
-    -- 2. Сюжет, главы и текст рукописи
-    DELETE volumes WHERE project_id = $pid;
-    DELETE arcs WHERE project_id = $pid;
-    DELETE chapters WHERE project_id = $pid;
-    DELETE text_blocks WHERE project_id = $pid;
+    -- 2. Сущности лора
+    DELETE entities WHERE project_id = $pid;
 
-    -- 3. Планирование, таймлайн и сюжетные обещания
+    -- 3. Блоки текста, ревизии и главы рукописи
+    DELETE text_blocks WHERE project_id = $pid;
+    DELETE chapter_revisions WHERE project_id = $pid;
+    DELETE chapters WHERE project_id = $pid;
+    DELETE arcs WHERE project_id = $pid;
+    DELETE volumes WHERE project_id = $pid;
+
+    -- 4. Планирование, таймлайн и сюжетные обещания
     DELETE plans WHERE project_id = $pid;
     DELETE plot_promises WHERE project_id = $pid;
     DELETE timeline_events WHERE project_id = $pid;
 
-    -- 4. ИИ-сессии и проектные скиллы/настройки
+    -- 5. ИИ-сессии и проектные скиллы/настройки
     DELETE chats WHERE project_id = $pid;
     DELETE chat_messages WHERE project_id = $pid;
     DELETE agent_memory WHERE project_id = $pid;
     DELETE research_sessions WHERE project_id = $pid;
     DELETE auto_approval_settings WHERE project_id = $pid;
-    DELETE ai_skills WHERE project_id = $pid;
+    DELETE ai_skills WHERE project_id = $pid AND (is_builtin != true OR is_builtin = NONE);
     DELETE ai_modes WHERE project_id = $pid AND (is_global != true OR is_global = NONE);
 };
 
@@ -93,6 +96,8 @@ DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT 
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE option<array<object> | null> FLEXIBLE DEFAULT [];
+DEFINE FIELD OVERWRITE participants    ON chapters TYPE option<array<string> | null> DEFAULT [];
 
 DEFINE INDEX OVERWRITE idx_chapter_project  ON chapters FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_chapter_ft       ON chapters COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
@@ -100,8 +105,10 @@ DEFINE INDEX OVERWRITE idx_chapter_title_ft ON chapters COLUMNS title FULLTEXT A
 
 DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "DELETE" THEN {
     DELETE text_blocks WHERE chapter_id = $before.id;
+    DELETE appears_in WHERE out = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
     DELETE plot_promises WHERE chapter_id = $before.id;
+    DELETE chapter_revisions WHERE target_id = $before.id;
 };
 
 -- ===============================================
@@ -138,6 +145,13 @@ DEFINE FIELD OVERWRITE is_default  ON calendars TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE is_master   ON calendars TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE project_id  ON calendars TYPE record<projects>;
 DEFINE INDEX OVERWRITE idx_calendar_project ON calendars FIELDS project_id;
+
+DEFINE EVENT OVERWRITE cascade_calendar_delete ON TABLE calendars WHEN $event = "DELETE" THEN {
+    LET $master = (SELECT VALUE id FROM calendars WHERE project_id = $before.project_id AND (is_master = true OR is_default = true) LIMIT 1)[0];
+    IF $master != NONE AND $master != $before.id {
+        UPDATE timeline_events SET calendar_id = $master WHERE calendar_id = $before.id;
+    };
+};
 
 -- ===============================================
 -- 5. МЕТА-СХЕМЫ СУЩНОСТЕЙ И ИСТОРИЯ
@@ -212,6 +226,8 @@ DEFINE FIELD OVERWRITE created_at    ON entity_rel TYPE datetime DEFAULT time::n
 
 DEFINE INDEX OVERWRITE idx_rel_project ON entity_rel FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_rel_type    ON entity_rel FIELDS rel_type;
+DEFINE INDEX OVERWRITE idx_rel_in      ON entity_rel FIELDS in;
+DEFINE INDEX OVERWRITE idx_rel_out     ON entity_rel FIELDS out;
 
 DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects>;
@@ -219,6 +235,8 @@ DEFINE FIELD OVERWRITE role       ON appears_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now();
 DEFINE INDEX OVERWRITE idx_appears_in_project ON appears_in FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_appears_in_in      ON appears_in FIELDS in;
+DEFINE INDEX OVERWRITE idx_appears_in_out     ON appears_in FIELDS out;
 
 -- ===============================================
 -- 8. ПЛАНЫ И ЧЕК-ЛИСТЫ
@@ -234,6 +252,7 @@ DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at  ON plans TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at  ON plans TYPE datetime DEFAULT time::now();
 DEFINE INDEX OVERWRITE idx_plan_project ON plans FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_plan_parent  ON plans FIELDS parent_ref;
 
 DEFINE EVENT OVERWRITE cascade_plan_delete ON TABLE plans WHEN $event = "DELETE" THEN {
     DELETE plans WHERE parent_ref = $before.id;
@@ -255,11 +274,15 @@ DEFINE FIELD OVERWRITE created_at    ON timeline_events TYPE datetime DEFAULT ti
 
 DEFINE INDEX OVERWRITE idx_event_project ON timeline_events FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_event_m_abs   ON timeline_events FIELDS project_id, m_abs;
+DEFINE INDEX OVERWRITE idx_event_chapter ON timeline_events FIELDS chapter_id;
 
 DEFINE TABLE OVERWRITE participates_in TYPE RELATION IN entities OUT timeline_events SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON participates_in TYPE option<record<projects>>;
 DEFINE FIELD OVERWRITE role       ON participates_in TYPE option<string>;
 DEFINE FIELD OVERWRITE notes      ON participates_in TYPE option<string>;
 DEFINE FIELD OVERWRITE created_at ON participates_in TYPE datetime DEFAULT time::now();
+DEFINE INDEX OVERWRITE idx_participates_in_in  ON participates_in FIELDS in;
+DEFINE INDEX OVERWRITE idx_participates_in_out ON participates_in FIELDS out;
 
 -- ===============================================
 -- 10. РЕВИЗИИ СУЩНОСТЕЙ, СВЯЗЕЙ И ГЛАВ (ЧИСТЫЙ ТЕКСТ БЕЗ ВЕКТОРОВ)
@@ -287,6 +310,19 @@ DEFINE FIELD OVERWRITE created_at  ON entity_rel_revisions TYPE datetime DEFAULT
 DEFINE INDEX OVERWRITE idx_rel_rev_target  ON entity_rel_revisions FIELDS target_id;
 DEFINE INDEX OVERWRITE idx_rel_rev_project ON entity_rel_revisions FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_rel_rev_nodes   ON entity_rel_revisions FIELDS project_id, in_id, out_id;
+DEFINE INDEX OVERWRITE idx_rel_rev_in      ON entity_rel_revisions FIELDS in_id;
+DEFINE INDEX OVERWRITE idx_rel_rev_out     ON entity_rel_revisions FIELDS out_id;
+
+DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DELETE" THEN {
+    LET $eid = $before.id;
+    DELETE entity_rel WHERE in = $eid;
+    DELETE entity_rel WHERE out = $eid;
+    DELETE appears_in WHERE in = $eid;
+    DELETE participates_in WHERE in = $eid;
+    DELETE entity_revisions WHERE target_id = $eid;
+    DELETE entity_rel_revisions WHERE in_id = $eid;
+    DELETE entity_rel_revisions WHERE out_id = $eid;
+};
 
 DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters>;
@@ -382,9 +418,9 @@ DEFINE EVENT OVERWRITE log_entity_rel_delete ON TABLE entity_rel
         CREATE entity_rel_revisions SET 
             target_id = $before.id, 
             project_id = $before.project_id, 
-            in_id = $before.in,
-            out_id = $before.out,
-            action = "DELETE",
+            in_id = $before.in, 
+            out_id = $before.out, 
+            action = "DELETE", 
             content = {
                 rel_type: $before.rel_type,
                 description: $before.description,
@@ -405,6 +441,8 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters
         OR $before.content != $after.content 
         OR $before.summary != $after.summary 
         OR $before.footnotes != $after.footnotes
+        OR $before.timeline_events != $after.timeline_events
+        OR $before.participants != $after.participants
     ) 
     THEN {
         CREATE chapter_revisions SET 
@@ -415,6 +453,8 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters
                 content: $before.content,
                 summary: $before.summary,
                 footnotes: $before.footnotes,
+                timeline_events: $before.timeline_events,
+                participants: $before.participants,
                 word_count: $before.word_count
             }, 
             created_at = time::now(), 

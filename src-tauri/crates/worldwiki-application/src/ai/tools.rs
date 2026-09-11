@@ -339,7 +339,7 @@ impl AiToolFacades {
         let chapters = self.manuscript.repo.list_by_project(project_id).await
             .map_err(ApplicationError::Domain)?;
 
-        if query.is_empty() {
+        if query.is_empty() || query.eq_ignore_ascii_case("list") || query.eq_ignore_ascii_case("all") {
             let list: Vec<Value> = chapters.into_iter().map(|c| serde_json::json!({
                 "id": c.id,
                 "title": c.title,

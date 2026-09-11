@@ -107,12 +107,12 @@ DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
     );
 
     LET $trigger_matches = (
-        SELECT id, name, description, prompt_text, file_path, priority, 'exact_trigger' AS matched_via, 2.0 AS score
+        SELECT id, name, description, prompt_text, file_path, priority, 'trigger' AS matched_via, 2.0 AS score
         FROM ai_skills
         WHERE (project_id = $proj OR project_id = NONE)
           AND is_auto_trigger = true
           AND is_unlocked = true
-          AND triggers CONTAINS $query
+          AND array::any(triggers, |$t| string::len($t) > 0 AND (string::lowercase($query) CONTAINS string::lowercase($t) OR string::lowercase($t) CONTAINS string::lowercase($query)))
         LIMIT $limit
     );
 

@@ -1,24 +1,46 @@
 # 🧠 SurrealDB Схема Данных и Архитектура GraphRAG (README_Logic.md)
 
 > **Расположение**: [`apps/spa/src/logic/README_Logic.md`](./README_Logic.md)  
-> **Связанные файлы**: [`surreal_schema.surql`](./surreal_schema.surql)  
-> **Назначение**: Полная спецификация схемы базы данных SurrealDB (v2/v3), топология связного графа повествования (Narrative Graph), модель сущностей лора (Lore Knowledge Graph) и архитектура гибридного **GraphRAG** (Vector + BM25 + Graph Neighborhoods).
+> **Модули схемы**: [`schema/01_core.surql`](./schema/01_core.surql) .. [`schema/05_functions.surql`](./schema/05_functions.surql)  
+> **Инженерный стандарт**: [`.agents/rules/07-surrealdb.md`](../../../../.agents/rules/07-surrealdb.md)  
+> **Назначение**: Полная спецификация модульной схемы базы данных SurrealDB (v2/v3), топология связного графа повествования (Narrative Graph), модель сущностей лора (Lore Knowledge Graph) и архитектура гибридного **GraphRAG** (Vector + BM25 + Graph Neighborhoods).
 
 ---
 
 ## 🌟 1. Обзор Архитектуры Базы Данных
 
-WorldWiki использует встроенный движок **SurrealDB** (движок хранения `SurrealKv`), объединяющий в едином бинарном файле:
+WorldWiki использует встроенный движок **SurrealDB** (движок хранения `SurrealKv`), объединяющий в едином встраиваемом хранилище:
 
-1. **Реляционную модель** (типизированные таблицы `SCHEMAFULL` с каскадными событиями `EVENT`).
-2. **Документную модель** (гибкие JSON-поля `TYPE object FLEXIBLE`, версионирование Semantic AST).
-3. **Графовую модель** (нативные рёбра `TYPE RELATION IN ... OUT ...`, обход графа через `->` и `<-` без тяжелых `JOIN`).
-4. **Векторную модель** (HNSW векторные индексы на эмбеддинги 768 / 1536 / 2048 измерений).
-5. **Полнотекстовый поиск** (BM25 Fulltext с кастомным токенизатором `like`).
+1. **Реляционную модель** (строго типизированные таблицы `SCHEMAFULL` с B-Tree индексами и каскадными DDL-событиями `EVENT`).
+2. **Документную модель** (гибкие JSON-поля `TYPE object FLEXIBLE`, версионирование Semantic AST и динамические формы карточек).
+3. **Графовую модель** (нативные реберные таблицы `TYPE RELATION IN ... OUT ...`, обход графа через `->` и `<-` без тяжелых `JOIN`).
+4. **Векторную модель** (HNSW векторные индексы на эмбеддинги 768 / 1536 / 2048 измерений с метрикой `DIST COSINE`).
+5. **Полнотекстовый поиск** (BM25 Fulltext с многоязычным стеммингом `ru_en_analyzer`).
+6. **Аналитический движок** (хранимые функции `fn::*` для сбора многошагового RAG-контекста за 1 раундтрип).
 
 ---
 
-## 🕸️ 2. Топология Графа Повествования и Лора (GraphRAG Master Schema)
+## 📦 2. Модульная Структура Схемы и Продуктовые Редакции
+
+Схема базы данных декомпозирована на 5 независимых декларативных модулей в папке `schema/`:
+
+```
+apps/spa/src/logic/schema/
+├── 01_core.surql             # 🟢 Базовое ядро (Рукопись, сущности, таймлайн, ревизии, каскад) [Base & Ultra]
+├── 02_ai_workspace.surql     # 🧠 ИИ-пространство (Чаты, сообщения, роли, режимы, память) [Ultra]
+├── 03_web_research.surql     # 🌐 Веб-исследования (Кэш страниц web_pages, факты web_evidence) [Ultra]
+├── 04_embeddings_hnsw.surql  # ⚡ HNSW-индексы и векторные чанки entity_chunks [Ultra]
+└── 05_functions.surql        # 🔮 Хранимые аналитические функции (fn::gather_rag_bundle и др.) [Ultra]
+```
+
+### 🎯 Редакции Приложения и Совместимость к Апгрейду
+* **🟢 Редакция Base (Писательский фокус)**: Выполняет модуль `01_core.surql`. Полный функционал вики, лора, онтологии, таймлайна и рукописи. Работает мгновенно без тяжелых ИИ-зависимостей.
+* **🚀 Редакция Ultra (Интеллектуальный соавтор)**: Последовательно накатывает все 5 модулей (`01` $\to$ `05`). Разблокирует векторный поиск HNSW, DuckDuckGo-исследования, контекст GraphRAG и библиотеку навыков.
+* **🔄 Апгрейд Base $\to$ Ultra**: Полностью бесшовный и накопительный (Cumulative Migration) — при переходе на Ultra база просто донакатывает модули `02`..`05` поверх существующего проекта без потери данных.
+
+---
+
+## 🕸️ 3. Топология Графа Повествования и Лора (GraphRAG Master Schema)
 
 GraphRAG в WorldWiki связывает **5 фундаментальных доменных слоев**:
 
@@ -77,298 +99,128 @@ flowchart TD
 
 ---
 
-## 📊 3. Спецификация Таблиц и Графовых Рёбер
+## 📊 4. Спецификация Таблиц и Графовых Рёбер
 
-### 3.1. Узлы Рукописи (Narrative Nodes)
+### 4.1. Узлы Рукописи (Narrative Nodes)
 
-| Таблица           | Тип  | Назначение                | Ключевые поля                                             |
-| ----------------- | ---- | ------------------------- | --------------------------------------------------------- |
-| **`projects`**    | Узел | Корневой мир / проект     | `name`, `genres`, `perfLevel`, `data`                     |
-| **`volumes`**     | Узел | Том книги / часть эпопеи  | `title`, `project_id`                                     |
-| **`arcs`**        | Узел | Сюжетная арка внутри тома | `title`, `project_id`                                     |
-| **`chapters`**    | Узел | Глава рукописи            | `title`, `content`, `word_count`, `summary`, `embeddings` |
-| **`text_blocks`** | Узел | Семантический блок текста | `chapter_id`, `block_type`, `order_index`, `embeddings`   |
+| Таблица | Тип | Назначение | Ключевые поля |
+|---|---|---|---|
+| **`projects`** | Узел | Корневой мир / проект | `name`, `genres`, `perfLevel`, `data` |
+| **`volumes`** | Узел | Том книги / часть эпопеи | `title`, `project_id` |
+| **`arcs`** | Узел | Сюжетная арка внутри тома | `title`, `project_id` |
+| **`chapters`** | Узел | Глава рукописи (Единый Источник Правды AST) | `title`, `content`, `word_count`, `summary`, `embeddings` |
+| **`text_blocks`** | Индекс | Производный семантический индекс главы (RAG / стилометрия) | `chapter_id`, `block_type`, `order_index`, `embeddings` |
 
-### 3.2. Графовые Рёбра Сюжетной Иерархии (Narrative Hierarchy)
+> 💡 **Архитектурный Инвариант: Рукопись и Текст-Блоки**:
+> 1. **Единый Источник Правды**: Мастер-текстом рукописи является поле `chapters.content` (Tiptap JSON AST), где каждый абзац размечается через `SemanticParagraph` (`attrs.semanticTag` = `desc` | `dialog` | `thought`).
+> 2. **Роль `text_blocks`**: Это **вторичный производный индекс**, автоматически пересчитываемый при сохранении главы. Он необходим для гранулярного RAG-поиска по фрагментам и мгновенного расчета стилометрической структуры (соотношение диалогов, описаний и мыслей).
+> 3. **Версионирование блоков**: Блоки **не требуют** собственных ревизий и CHANGEFEED, так как полная история структуры и семантических тегов сохраняется в `chapter_revisions.content`. При откате главы `text_blocks` автоматически пересоздаются из сохраненного AST.
+> 4. **Нормализация участников**: В таблице `chapters` **нет** устаревших массивов `participants` или `timeline_events`. Участники определяются через рёбра `appears_in`, а хронология — через `timeline_events`.
 
-> 💡 **Архитектурное решение по чатам**: Чаты и сообщения (`chats`, `chat_messages`) **НЕ** смешиваются с графом `contains`. Для диалогов и веток используется классическая древовидная реляционная модель (`parent_id -> chat_messages.id`). Это гарантирует мгновенный и надёжный форк веток сообщений (Branching/Forking), перегенерацию ответов и откат версий без поломки графа.
+---
+
+### 4.2. Графовые Рёбра Сюжетной Иерархии (Narrative Hierarchy)
 
 ```sql
 -- Ребро вложенности рукописи (Project -> Volume -> Arc -> Chapter)
-DEFINE TABLE contains TYPE RELATION
-    IN projects | volumes | arcs
-    OUT volumes | arcs | chapters
+DEFINE TABLE OVERWRITE contains TYPE RELATION
+    IN projects | volumes | arcs | chats
+    OUT volumes | arcs | chapters | chats
     SCHEMAFULL;
-DEFINE FIELD sort_order ON contains TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 ```
 
 ---
 
-### 3.3. Граф Лора и Сущностей (Lore Knowledge Graph)
+### 4.3. Узлы Лора и Графовые Рёбра Знаний (Lore & Ontology)
 
-```sql
--- Таблица сущностей (Персонажи, Локации, Фракции, Артефакты)
-DEFINE TABLE entities SCHEMAFULL CHANGEFEED 30d;
-DEFINE FIELD project_id   ON entities TYPE record<projects>;
-DEFINE FIELD entity_type  ON entities TYPE string; -- 'character', 'location', etc.
-DEFINE FIELD name         ON entities TYPE string;
-DEFINE FIELD description  ON entities TYPE option<string>;
-DEFINE FIELD attributes   ON entities TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD embeddings   ON entities TYPE object FLEXIBLE DEFAULT {};
+| Таблица | Тип | Назначение | Ключевые поля |
+|---|---|---|---|
+| **`entity_schemas`** | Мета | Схемы типов (Персонаж, Локация, Магия) | `type_key`, `type_name`, `icon`, `color`, `fields_schema` |
+| **`schema_history`** | Мета | История версий структуры карточек | `schema_id`, `snapshot`, `saved_at`, `commit_msg` |
+| **`entities`** | Узел | Карточка сущности (Лор) | `entity_type`, `name`, `description`, `attributes`, `tags` |
+| **`entity_chunks`** | Узел | Текстовый чанк для векторного RAG | `entity_id`, `chunk_index`, `content`, `embedding_*` |
+| **`entity_rel`** | Ребро | Связь сущностей (`entities -> entities`) | `rel_type`, `description`, `strength`, `attributes`, `created_at` |
+| **`appears_in`** | Ребро | Участие в главе (`entities -> chapters`) | `role`, `notes`, `created_at` |
 
--- Графовое ребро между сущностями (Матрица отношений)
-DEFINE TABLE entity_rel TYPE RELATION IN entities OUT entities SCHEMAFULL;
-DEFINE FIELD project_id    ON entity_rel TYPE record<projects>;
-DEFINE FIELD rel_type      ON entity_rel TYPE string; -- 'ally', 'enemy', 'father', 'located_in'
-DEFINE FIELD strength      ON entity_rel TYPE option<int>; -- -100..+100
-DEFINE FIELD start_chapter ON entity_rel TYPE option<record<chapters>>;
-DEFINE FIELD end_chapter   ON entity_rel TYPE option<record<chapters>>;
-DEFINE FIELD attributes    ON entity_rel TYPE object FLEXIBLE DEFAULT {};
+---
+
+### 4.4. Таймлайн и Золотой Эталон Времени ($M_{\text{abs}}$)
+
+* **Золотой инвариант времени**: Время измеряется исключительно в **Абсолютных Минутах ($M_{\text{abs}} \in \mathbb{Z}$)** от фиксированной точки сотворения мира.
+* **Календари (`calendars`)**: Являются **проекциями (View / Линзами)**, вычисляющими отображение $M_{\text{abs}} \leftrightarrow$ «14 день месяца Дракона». Изменение параметров календаря **не требует** перезаписи событий в базе — движок отображения рассчитывает новую строку на лету.
+
+| Таблица | Тип | Назначение | Ключевые поля |
+|---|---|---|---|
+| **`calendars`** | Мета | Календарная система мира | `name`, `description`, `data`, `is_default`, `is_master` |
+| **`timeline_events`** | Узел | Событие хронологии | `title`, `description`, `m_abs`, `calendar_id`, `chapter_id` |
+| **`participates_in`** | Ребро | Участие в событии (`entities -> events`) | `role`, `notes`, `created_at` |
+
+---
+
+### 4.5. Двухуровневая Модель Истории: CHANGEFEED vs Семантические Ревизии
+
+Система разделяет поток событий и долговременную историю на **два изолированных слоя**:
+
+| Слой истории | Механизм | Назначение | Характеристики |
+|---|---|---|---|
+| **Реактивный поток дельт** | `CHANGEFEED 30d` на `chapters`, `entities` | Реактивный live-sync между окнами UI через `LIVE SELECT`, сессионный Undo/Redo, дебаг фоновых обновлений ИИ | TTL 30 дней, сырые дельты (включая технические апдейты векторов) |
+| **Семантические снимки (Git-like)** | `chapter_revisions`, `entity_revisions`, `entity_rel_revisions` | Долгосрочная история книги, UI отката версий, именованные коммиты `commit_msg`, закрепление `is_pinned` | Бессрочно, типизировано `SCHEMAFULL`, очищено от векторов |
+
+#### Жизненный цикл версионирования связей (`entity_rel_revisions`):
+* **`log_entity_rel_create` (`action = 'CREATE'`)**: Фиксирует момент создания связи между сущностями и исходные параметры.
+* **`log_entity_rel_revision` (`action = 'UPDATE'`)**: Сохраняет снапшот при изменении типа отношений, силы или атрибутов.
+* **`log_entity_rel_delete` (`action = 'DELETE'`)**: Сохраняет предсмертный снимок связи при её удалении автором для безопасного восстановления (Safety Net).
+
+> ⚠️ **Важное Разграничение Времени: Сюжетное vs Редакторское**:
+> 1. **Сюжетная Динамика Персонажей (Diegetic Narrative Time)**: Развитие отношений героев книги во времени (например, «были друзьями в томе 1, стали врагами в томе 3») хранится **внутри самой связи** `entity_rel` в полях `start_chapter`, `end_chapter` и JSON-атрибутах прогрессий `attributes`. Именно эти поля считывают ИИ и GraphRAG.
+> 2. **Редакторская История (Authoring / Git Time)**: Таблица `entity_rel_revisions` отражает **только действия автора в приложении** (когда автор создал карточку, исправил опечатку или удалил связь).
+> 3. **Изоляция от ИИ-контекста**: Ревизии связей `entity_rel_revisions` **НЕ передаются в ИИ-промпты и RAG-инструменты** (`fn::gather_rag_bundle`), так как ИИ должен видеть актуальный срез лора книги, а не черновики редактора. Они предназначены строго для UI истории изменений и отката (Undo).
+
+---
+
+## 🛡️ 5. Матрица Каскадного Удаления Проекта (`cascade_project_delete`)
+
+При удалении проекта через `DELETE projects WHERE id = $pid` срабатывает атомарное событие `cascade_project_delete`:
+
+```mermaid
+flowchart TD
+    DelProj["DELETE projects:p_id"] --> Trigger["EVENT cascade_project_delete"]
+    
+    subgraph Purged ["🗑️ Удаляются (Проектные данные)"]
+        Chapters["chapters, text_blocks, volumes, arcs"]
+        Entities["entities, entity_chunks, entity_rel, appears_in"]
+        Timeline["timeline_events, participates_in, plans, plot_promises"]
+        AiChats["chats, chat_messages, agent_memory, research_sessions"]
+        Revisions["entity_revisions, entity_rel_revisions, chapter_revisions"]
+        LocalSkills["ai_skills (только локальные project_id = $pid)"]
+    end
+
+    subgraph Protected ["🛡️ СОХРАНЯЮТСЯ НАВСЕГДА (База знаний автора)"]
+        WebCache["web_evidence, web_pages (База веб-фактов)"]
+        Schemas["entity_schemas, relation_schemas, schema_history"]
+        Profiles["ai_profiles (API-ключи и модели)"]
+        GlobalSkills["ai_skills (где project_id = NONE)"]
+        Calendars["calendars (Шаблоны летоисчислений)"]
+        Dict["user_dictionary (Писательский словарь)"]
+    end
+
+    Trigger --> Purged
 ```
 
 ---
 
-### 3.4. Первоклассный Таймлайн (Timeline Events & $M_{\text{abs}}$)
+## 🔮 6. Хранимые Аналитические Функции GraphRAG (`05_functions.surql`)
 
-```sql
--- Таблица глобальных событий мира
-DEFINE TABLE timeline_events SCHEMAFULL;
-DEFINE FIELD project_id    ON timeline_events TYPE record<projects>;
-DEFINE FIELD title         ON timeline_events TYPE string;
-DEFINE FIELD description   ON timeline_events TYPE option<string>;
-DEFINE FIELD m_abs         ON timeline_events TYPE int; -- Золотой эталон абсолютной минуты
-DEFINE FIELD calendar_id   ON timeline_events TYPE record<calendars>;
-DEFINE FIELD chapter_id    ON timeline_events TYPE option<record<chapters>>;
-DEFINE FIELD block_id      ON timeline_events TYPE option<string>;
-DEFINE FIELD created_at    ON timeline_events TYPE datetime DEFAULT time::now();
+### 1. `fn::gather_rag_bundle($proj, $q, $limit, $rel_limit)`
+Выполняет 1-раундтриповый сбор гибридного контекста:
+- Полнотекстовый поиск по сущностям, чанкам и главам (BM25).
+- Извлечение графовых рёбер отношений `entity_rel` 1-го порядка между найденными сущностями.
+- Возвращает типизированный объект `{ entities, chunks, chapters, relations }`.
 
-DEFINE INDEX idx_event_m_abs ON timeline_events FIELDS project_id, m_abs;
-
--- Графовое ребро участия сущностей в событии
-DEFINE TABLE participates_in TYPE RELATION IN entities OUT timeline_events SCHEMAFULL;
-DEFINE FIELD role  ON participates_in TYPE option<string>; -- 'initiator', 'victim', 'witness'
-DEFINE FIELD notes ON participates_in TYPE option<string>;
-```
-
----
-
-### 3.5. Граф Сюжетных Обещаний (Plot Promises)
-
-```sql
--- Таблица сюжетных обещаний (Чеховские ружья, тайны, предзнаменования)
-DEFINE TABLE plot_promises SCHEMAFULL;
-DEFINE FIELD project_id           ON plot_promises TYPE record<projects>;
-DEFINE FIELD chapter_id           ON plot_promises TYPE record<chapters>;
-DEFINE FIELD kind                 ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question'
-DEFINE FIELD quote                ON plot_promises TYPE string;
-DEFINE FIELD paragraph_index      ON plot_promises TYPE int DEFAULT 1;
-DEFINE FIELD block_id             ON plot_promises TYPE option<string>;
-DEFINE FIELD note                 ON plot_promises TYPE option<string>;
-DEFINE FIELD status               ON plot_promises TYPE string DEFAULT 'planted'; -- 'planted' | 'developed' | 'resolved'
-DEFINE FIELD progressions         ON plot_promises TYPE array<object> FLEXIBLE DEFAULT [];
-DEFINE FIELD resolution           ON plot_promises TYPE option<object> FLEXIBLE;
-DEFINE FIELD resolved_in_volume   ON plot_promises TYPE option<record<volumes>>;
-DEFINE FIELD resolved_in_arc      ON plot_promises TYPE option<record<arcs>>;
-DEFINE FIELD resolved_in_chapter  ON plot_promises TYPE option<record<chapters>>;
-DEFINE FIELD created_at           ON plot_promises TYPE datetime DEFAULT time::now();
-DEFINE FIELD updated_at           ON plot_promises TYPE datetime DEFAULT time::now();
-
-DEFINE INDEX idx_promise_project ON plot_promises FIELDS project_id;
-DEFINE INDEX idx_promise_chapter ON plot_promises FIELDS chapter_id;
-DEFINE INDEX idx_promise_status  ON plot_promises FIELDS project_id, status;
-```
-
----
-
-### 3.6. Планы и Сюжетные Чеклисты (Plans & Outline Checklists)
-
-```sql
--- Таблица иерархических планов и сюжетных задач (Тома, Арки, Главы, Подпланы)
-DEFINE TABLE plans SCHEMAFULL;
-DEFINE FIELD project_id  ON plans TYPE record<projects>;
-DEFINE FIELD title       ON plans TYPE string;
-DEFINE FIELD parent_ref  ON plans TYPE option<record<chapters> | record<arcs> | record<volumes> | record<plans> | null>;
-DEFINE FIELD parent_type ON plans TYPE string; -- 'volume' | 'arc' | 'chapter' | 'plan'
-DEFINE FIELD sort_order  ON plans TYPE int DEFAULT 0;
-DEFINE FIELD completed   ON plans TYPE bool DEFAULT false;
-DEFINE FIELD created_at  ON plans TYPE datetime DEFAULT time::now();
-DEFINE FIELD updated_at  ON plans TYPE datetime DEFAULT time::now();
-
-DEFINE EVENT cascade_plan_delete ON TABLE plans WHEN $event = "DELETE" THEN {
-    DELETE plans WHERE parent_ref = $before.id;
-};
-```
-
----
-
-## 🔍 4. Паттерны Запросов GraphRAG (Traversal Patterns)
-
-### 4.1. Гибридный Поиск Контекста для Главы (Multi-Hop Graph Context)
-Когда ИИ-соавтор открывает главу, GraphRAG извлекает не только текст, но и 2-шаговую семантическую окрестность:
-
-```sql
--- 1. Персонажи, появляющиеся в главе
--- 2. Их прямые союзники и враги (1 hop)
--- 3. События таймлайна, происходящие в этот момент времени
-LET $chapter = chapters:ch_01;
-
--- Участники главы:
-LET $participants = SELECT <-appears_in<-entities AS entity FROM $chapter;
-
--- Отношения между участниками:
-LET $relations = SELECT
-    in.name AS from,
-    rel_type,
-    strength,
-    out.name AS to
-FROM entity_rel
-WHERE in IN $participants.entity AND out IN $participants.entity;
-
--- Активные сюжетные ружья:
-LET $active_guns = SELECT * FROM plot_promises
-WHERE project_id = $chapter.project_id AND status != 'resolved';
-```
-
----
-
-### 4.2. Комплексный Сюжетный Аудит Тома/Арки (Незакрытые Ружья + Невыполненные Планы)
-
-При закрытии Тома или Арки система выполняет проверку по всему дереву вложенности:
-1. **Невыполненные чекпоинты планов** (`plans` где `completed = false`) на уровне Тома, его Арок и Глав.
-2. **Незакрытые сюжетные ружья** (`plot_promises` где `status != 'resolved'`), заложенные в главах этого тома.
-
-```sql
-LET $volume = volumes:vol_01;
-
--- 1. Главы и Арки внутри тома через граф вложенности:
-LET $arcs = SELECT VALUE out FROM $volume->contains;
-LET $chapters = SELECT VALUE out FROM $volume->contains->contains;
-
--- 2. Все невыполненные планы тома (на уровне тома, арок и глав):
-LET $pending_plans = SELECT 
-    id, 
-    title, 
-    parent_type, 
-    parent_ref 
-FROM plans 
-WHERE project_id = $volume.project_id 
-  AND completed = false 
-  AND (
-      parent_ref = $volume.id 
-      OR parent_ref IN $arcs 
-      OR parent_ref IN $chapters
-  );
-
--- 3. Все незакрытые сюжетные ружья, посаженные внутри глав этого тома:
-LET $unresolved_promises = SELECT 
-    id, 
-    kind, 
-    quote, 
-    chapter_id.title AS chapter_title, 
-    status 
-FROM plot_promises 
-WHERE project_id = $volume.project_id 
-  AND status != 'resolved' 
-  AND chapter_id IN $chapters;
-
--- Итог аудита готовности тома:
-RETURN {
-    volume_id: $volume.id,
-    has_blockers: (count($pending_plans) > 0 OR count($unresolved_promises) > 0),
-    pending_plans_count: count($pending_plans),
-    pending_plans: $pending_plans,
-    unresolved_promises_count: count($unresolved_promises),
-    unresolved_promises: $unresolved_promises
-};
-```>>;
-DEFINE FIELD resolved_in_arc      ON plot_promises TYPE option<record<arcs>>;
-DEFINE FIELD resolved_in_chapter  ON plot_promises TYPE option<record<chapters>>;
-DEFINE FIELD created_at           ON plot_promises TYPE datetime DEFAULT time::now();
-DEFINE FIELD updated_at           ON plot_promises TYPE datetime DEFAULT time::now();
-
-DEFINE INDEX idx_promise_project ON plot_promises FIELDS project_id;
-DEFINE INDEX idx_promise_chapter ON plot_promises FIELDS chapter_id;
-DEFINE INDEX idx_promise_status  ON plot_promises FIELDS project_id, status;
-```
-
----
-
-## 🔍 4. Паттерны Запросов GraphRAG (Traversal Patterns)
-
-### 4.1. Гибридный Поиск Контекста для Главы (Multi-Hop Graph Context)
-
-Когда ИИ-соавтор открывает главу, GraphRAG извлекает не только текст, но и 2-шаговую семантическую окрестность:
-
-```sql
--- 1. Персонажи, появляющиеся в главе
--- 2. Их прямые союзники и враги (1 hop)
--- 3. События таймлайна, происходящие в этот момент времени
-LET $chapter = chapters:ch_01;
-
--- Участники главы:
-LET $participants = SELECT <-appears_in<-entities AS entity FROM $chapter;
-
--- Отношения между участниками:
-LET $relations = SELECT
-    in.name AS from,
-    rel_type,
-    strength,
-    out.name AS to
-FROM entity_rel
-WHERE in IN $participants.entity AND out IN $participants.entity;
-
--- Активные сюжетные ружья:
-LET $active_guns = SELECT * FROM plot_promises
-WHERE project_id = $chapter.project_id AND status != 'resolved';
-```
-
----
-
-### 4.2. Проверка Незакрытых Сюжетных Ружей при Завершении Тома
-
-```sql
--- Поиск всех ружей, заложенных в Главе/Арке, но не закрытых к концу Тома
-SELECT
-    id,
-    kind,
-    quote,
-    chapter_id.title AS planted_in_chapter,
-    status
-FROM plot_promises
-WHERE project_id = $proj
-  AND status = 'planted'
-  AND chapter_id IN (SELECT VALUE out FROM $volume->contains->contains);
-```
-
----
-
-### 4.3. Хронологический Срез Мировых Событий (Timeline Window)
-
-```sql
--- Выборка всех событий мира между двумя абсолютными минутами M_abs
-SELECT
-    title,
-    m_abs,
-    description,
-    chapter_id.title AS chapter_title,
-    (SELECT in.name AS name, role FROM <-participates_in) AS characters
-FROM timeline_events
-WHERE project_id = $proj
-  AND m_abs >= $start_m_abs
-  AND m_abs <= $end_m_abs
-ORDER BY m_abs ASC;
-```
-
----
-
-## 🧹 5. План Очистки и Оптимизации `surreal_schema.surql`
-
-Для поддержания чистоты схемы в `surreal_schema.surql` зафиксированы следующие правила:
-
-1. **Устранение дубликатов**:
-   - Оставлена **единственная каноническая** декларация `plot_promises` со строгими `record<...>` связями.
-   - Оставлена **единственная каноническая** декларация `entity_chunks` с гибридными HNSW (2048/768/1536) и BM25 индексами.
-2. **Каскадные удаления (`cascade_*_delete`)**:
-   - Удаление проекта удаляет все связанные узлы и рёбра.
-   - Удаление тома/арки каскадно очищает граф через `DELETE ->contains->...`.
-   - Удаление главы удаляет связанные `text_blocks`, `plot_promises` и `timeline_events`.
+### 2. `fn::get_chapter_multi_hop_context($chapter)`
+Собирает полный контекст конкретной главы для литературного анализа:
+- Участники сцены из `appears_in`.
+- Отношения между участниками из `entity_rel`.
+- События таймлайна главы из `timeline_events`.
+- Активные сюжетные ружья и обещания из `plot_promises`.

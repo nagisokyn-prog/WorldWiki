@@ -371,7 +371,7 @@ async fn agent_prompt_contains_retrieved_world_context() {
     // 8. ГЛАВНОЕ: в prompt, ушедший к LLM, был подставлен retrieved-контекст
     let prompt = String::from_utf8_lossy(&captured.try_lock().unwrap()).into_owned();
     assert!(
-        prompt.contains("<world_context>"),
+        prompt.contains("<context>"),
         "в prompt должно попасть собранное world_context: {prompt}"
     );
     assert!(

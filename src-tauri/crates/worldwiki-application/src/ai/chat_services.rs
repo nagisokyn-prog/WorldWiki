@@ -629,7 +629,7 @@ impl ChatServices {
             "analyst" => !matches!(name, "manuscript_edit" | "edit_manuscript" | "entity_manage" | "manage_entity"),
             _ => matches!(
                 name,
-                "world_query" | "query_world" | "entity_inspect" | "inspect_entity" | "manuscript_read" | "read_manuscript" | "timeline_manage" | "chronology" | "timeline_manager"
+                "world_query" | "query_world" | "entity_inspect" | "inspect_entity" | "manuscript_read" | "read_manuscript" | "get_chapters_list" | "timeline_manage" | "chronology" | "timeline_manager"
             ),
         };
 
@@ -727,7 +727,7 @@ impl ChatServices {
                 }
                 tools.manage_entity(action, payload).await
             }
-            "manuscript_read" | "read_manuscript" => {
+            "manuscript_read" | "read_manuscript" | "get_chapters_list" => {
                 let chapter_id = input
                     .get("chapter_id")
                     .or_else(|| input.get("id"))

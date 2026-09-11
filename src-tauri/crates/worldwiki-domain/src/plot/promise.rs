@@ -37,7 +37,6 @@ pub struct PlotPromise {
     pub progressions: Vec<Value>,
     pub resolution: Option<Value>,
     pub resolved_in_volume: Option<String>,
-    pub resolved_in_arc: Option<String>,
     pub resolved_in_chapter: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -64,18 +63,16 @@ impl PlotPromise {
             progressions: Vec::new(),
             resolution: None,
             resolved_in_volume: None,
-            resolved_in_arc: None,
             resolved_in_chapter: None,
             created_at: now,
             updated_at: now,
         }
     }
 
-    pub fn resolve(&mut self, chapter_id: String, volume_id: Option<String>, arc_id: Option<String>, note: Option<String>) {
+    pub fn resolve(&mut self, chapter_id: String, volume_id: Option<String>, note: Option<String>) {
         self.status = PromiseStatus::Resolved;
         self.resolved_in_chapter = Some(chapter_id);
         self.resolved_in_volume = volume_id;
-        self.resolved_in_arc = arc_id;
         self.resolution = Some(serde_json::json!({
             "note": note,
             "resolved_at": Utc::now(),

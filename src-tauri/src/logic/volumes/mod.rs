@@ -25,14 +25,6 @@ pub async fn get_chapter_hierarchy_inner(
     let mut volumes: Vec<serde_json::Value> = volumes_res.take(0).unwrap_or_default();
     println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} volumes", volumes.len());
 
-    let mut arcs_res = db.query(format!("SELECT * FROM arcs WHERE {}", query_cond))
-        .bind(("proj", proj_rec.clone()))
-        .bind(("pid_val", pid_val.clone()))
-        .bind(("pid_literal", pid_literal.clone()))
-        .await.map_err(|e| e.to_string())?;
-    let mut arcs: Vec<serde_json::Value> = arcs_res.take(0).unwrap_or_default();
-    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} arcs", arcs.len());
-
     let mut chapters_res = db.query(format!("SELECT * FROM chapters WHERE {}", query_cond))
         .bind(("proj", proj_rec.clone()))
         .bind(("pid_val", pid_val.clone()))
@@ -72,12 +64,6 @@ pub async fn get_chapter_hierarchy_inner(
         raw1 == raw2
     }
 
-    for arc in &mut arcs {
-        if let Some(order) = arc.get("order_index") {
-            arc["sort_order"] = order.clone();
-        }
-    }
-
     for chap in &mut chapters {
         if let Some(id) = chap.get("id").and_then(|i| i.as_str()) {
             if let Some(edge) = edges.iter().find(|e| {
@@ -94,12 +80,10 @@ pub async fn get_chapter_hierarchy_inner(
     }
 
     volumes.sort_by_key(|v| v["sort_order"].as_i64().unwrap_or(0));
-    arcs.sort_by_key(|a| a["sort_order"].as_i64().unwrap_or(0));
     chapters.sort_by_key(|a| a["sort_order"].as_i64().unwrap_or(0));
 
     Ok(serde_json::json!({
         "volumes": volumes,
-        "arcs": arcs,
         "chapters": chapters
     }))
 }
@@ -144,59 +128,9 @@ pub async fn update_volume_inner(
     Ok(())
 }
 
-pub async fn create_arc_inner(
-    db: &Surreal<Db>,
-    project: &str,
-    title: &str,
-    volume_id: Option<String>,
-) -> Result<serde_json::Value, String> {
-    let pid_raw = project.trim().replace("projects:", "");
-    let proj_rec = RecordId::new("projects", pid_raw.as_str());
-    let parent_str = volume_id.unwrap_or_else(|| format!("projects:{}", pid_raw));
-    let clean_vol_id = if parent_str.contains(':') { parent_str } else { format!("volumes:{}", parent_str) };
-    
-    let mut max_order_res = db.query(r#"
-        SELECT math::max(order_index) AS max_order FROM arcs WHERE project_id = $proj GROUP ALL
-    "#).bind(("proj", proj_rec.clone())).await.map_err(|e| e.to_string())?;
-    let max_orders: Vec<serde_json::Value> = max_order_res.take(0).unwrap_or_default();
-    let next_order = max_orders.first()
-        .and_then(|v| v.get("max_order"))
-        .and_then(|n| n.as_i64())
-        .unwrap_or(-1) + 1;
-
-    let mut create_res = db.query(r#"
-        CREATE arcs SET project_id = $proj, title = $title, order_index = $order RETURN id, title, project_id, order_index AS sort_order;
-    "#)
-    .bind(("proj", proj_rec.clone()))
-    .bind(("title", title.to_string()))
-    .bind(("order", next_order))
-    .await.map_err(|e| e.to_string())?;
-    
-    let mut arcs: Vec<serde_json::Value> = create_res.take(0).unwrap_or_default();
-    if let Some(arc) = arcs.first_mut() {
-        arc["volume_id"] = serde_json::Value::String(clean_vol_id);
-        return Ok(arc.clone());
-    }
-    Ok(serde_json::Value::Null)
-}
-
-pub async fn update_arc_inner(
-    db: &Surreal<Db>,
-    id: &str,
-    title: &str,
-) -> Result<(), String> {
-    let clean_id = if id.contains(':') { id.to_string() } else { format!("arcs:{}", id) };
-    db.query("UPDATE type::record($id) SET title = $title")
-        .bind(("id", clean_id))
-        .bind(("title", title.to_string()))
-        .await.map_err(|e| e.to_string())?;
-    Ok(())
-}
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AutoExtendResult {
     pub chapter_id: String,
-    pub arc_id: Option<String>,
     pub volume_id: Option<String>,
     pub updated_count: u64,
 }
@@ -205,10 +139,9 @@ pub async fn assign_chapter_inner(
     db: &Surreal<Db>,
     project: &str,
     chapter_id: &str,
-    arc_id: Option<String>,
     volume_id: Option<String>,
 ) -> Result<AutoExtendResult, String> {
-    println!("\n\n🔥🔥🔥 [BACKEND] assign_chapter CALLED! project='{}', chapter_id='{}', arc_id={:?}, volume_id={:?}", project, chapter_id, arc_id, volume_id);
+    println!("\n\n🔥🔥🔥 [BACKEND] assign_chapter CALLED! project='{}', chapter_id='{}', volume_id={:?}", project, chapter_id, volume_id);
     let pid_raw = project.trim().replace("projects:", "");
     let clean_chap = if chapter_id.contains(':') { chapter_id.to_string() } else { format!("chapters:{}", chapter_id) };
 
@@ -241,21 +174,10 @@ pub async fn assign_chapter_inner(
         return Err(e.to_string());
     }
 
-    if let Some(ref a) = arc_id {
-        let clean_a = if a.contains(':') { a.to_string() } else { format!("arcs:{}", a) };
-        let _ = db.query(r#"
-            UPDATE type::record($chap) SET arcs = array::union(arcs || [], [type::record($arc)]);
-        "#)
-        .bind(("chap", clean_chap.clone()))
-        .bind(("arc", clean_a))
-        .await;
-    }
-
-    let updated_count = auto_extend_entities_inner(db, project, &clean_chap, arc_id.clone(), volume_id.clone()).await?;
+    let updated_count = auto_extend_entities_inner(db, project, &clean_chap, volume_id.clone()).await?;
 
     Ok(AutoExtendResult {
         chapter_id: clean_chap,
-        arc_id,
         volume_id,
         updated_count,
     })
@@ -269,9 +191,6 @@ fn update_point_if_auto_extend(val: &mut serde_json::Value, new_point: &serde_js
                 if auto_val.as_bool() == Some(true) {
                     if let Some(ch) = new_point.get("chapter_id") {
                         map.insert("chapter_id".to_string(), ch.clone());
-                    }
-                    if let Some(arc) = new_point.get("arc_id") {
-                        map.insert("arc_id".to_string(), arc.clone());
                     }
                     if let Some(vol) = new_point.get("volume_id") {
                         map.insert("volume_id".to_string(), vol.clone());
@@ -301,7 +220,6 @@ pub async fn auto_extend_entities_inner(
     db: &Surreal<Db>,
     project: &str,
     chapter_id: &str,
-    arc_id: Option<String>,
     volume_id: Option<String>,
 ) -> Result<u64, String> {
     let pid_raw = project.trim().replace("projects:", "");
@@ -313,7 +231,6 @@ pub async fn auto_extend_entities_inner(
 
     let new_point = serde_json::json!({
         "chapter_id": clean_chap,
-        "arc_id": arc_id,
         "volume_id": volume_id,
         "is_auto_extend": true
     });
@@ -366,11 +283,9 @@ fn heal_point_if_matches_chapter(
                 if ch_clean == del_clean || ch_raw == del_raw {
                     if let Some(fb) = fallback_point {
                         map.insert("chapter_id".to_string(), serde_json::json!(fb.chapter_id));
-                        map.insert("arc_id".to_string(), serde_json::json!(fb.arc_id));
                         map.insert("volume_id".to_string(), serde_json::json!(fb.volume_id));
                     } else {
                         map.insert("chapter_id".to_string(), serde_json::Value::Null);
-                        map.insert("arc_id".to_string(), serde_json::Value::Null);
                         map.insert("volume_id".to_string(), serde_json::Value::Null);
                     }
                     return true;

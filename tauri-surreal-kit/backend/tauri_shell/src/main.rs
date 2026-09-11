@@ -96,7 +96,7 @@ fn main() {
             // Example:
             //   get_projects, create_project, delete_project,
             //   get_entities, save_entity, delete_entity,
-            //   @entities:  [Chapter, Volume, Arc, Tag],
+            //   @entities:  [Chapter, Volume, Tag],
             //   @searchable: [TextBlock],
             //   @relations:  [Cites],
         ])

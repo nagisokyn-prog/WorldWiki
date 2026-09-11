@@ -20,7 +20,6 @@ describe('usePromisesPanel', () => {
       chapterId: 'ch_1',
       chapterTitle: 'Chapter One',
       currentVolumeId: 'vol_1',
-      currentArcId: 'arc_1',
       allChapters: [
         { id: 'ch_1', title: 'Chapter One' },
         { id: 'ch_2', title: 'Chapter Two' },

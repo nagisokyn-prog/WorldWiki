@@ -165,7 +165,6 @@ async fn negative_assign_chapter_invalid_parent() {
         &db,
         "p_neg_tree",
         "chapters:ghost_chap",
-        None,
         Some("volumes:ghost_vol".into()),
     ).await;
 

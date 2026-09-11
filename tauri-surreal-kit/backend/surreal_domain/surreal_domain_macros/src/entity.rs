@@ -305,7 +305,7 @@ pub fn impl_surreal_entity(ast: &DeriveInput) -> TokenStream {
                             }
                         };
 
-                        for key_ref in [#(#field_idents,)* "project_id", "volume_id", "arc_id", "parent_ref", "participants"].iter() {
+                        for key_ref in [#(#field_idents,)* "project_id", "volume_id", "parent_ref", "participants"].iter() {
                             let key: &str = key_ref;
                             if let Some(val) = obj.get(key) {
                                 // Handle both single values and arrays

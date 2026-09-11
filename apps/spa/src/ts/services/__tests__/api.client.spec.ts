@@ -252,9 +252,9 @@ describe('api.client (Tauri invoke contract tests)', () => {
     });
   });
 
-  describe('Hierarchy, Chapters, Volumes, Arcs', () => {
+  describe('Hierarchy, Chapters, Volumes', () => {
     it('getChapterHierarchy invokes get_chapter_hierarchy', async () => {
-      vi.mocked(invoke).mockResolvedValue({ volumes: [], arcs: [], chapters: [] });
+      vi.mocked(invoke).mockResolvedValue({ volumes: [], chapters: [] });
       await api.getChapterHierarchy('proj_1');
       expect(invoke).toHaveBeenCalledWith('get_chapter_hierarchy', { project: 'proj_1' });
     });
@@ -269,22 +269,11 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(invoke).toHaveBeenCalledWith('update_volume', { project: 'proj_1', id: 'vol_1', title: 'Volume 1 Updated' });
     });
 
-    it('createArc and updateArc invoke correctly', async () => {
-      vi.mocked(invoke).mockResolvedValue({ id: 'arc_1' });
-      const res = await api.createArc('proj_1', 'Arc 1', 'vol_1');
-      expect(invoke).toHaveBeenCalledWith('create_arc', { project: 'proj_1', title: 'Arc 1', volumeId: 'vol_1' });
-      expect(res).toEqual({ id: 'arc_1' });
-
-      await api.updateArc('proj_1', 'arc_1', 'Arc 1 Updated', 'vol_2');
-      expect(invoke).toHaveBeenCalledWith('update_arc', { project: 'proj_1', id: 'arc_1', title: 'Arc 1 Updated', volumeId: 'vol_2' });
-    });
-
     it('assignChapter invokes assign_chapter', async () => {
-      await api.assignChapter('proj_1', 'ch1', 'arc1', 'vol1');
+      await api.assignChapter('proj_1', 'ch1', 'vol1');
       expect(invoke).toHaveBeenCalledWith('assign_chapter', {
         project: 'proj_1',
         chapterId: 'ch1',
-        arcId: 'arc1',
         volumeId: 'vol1',
       });
     });
@@ -439,22 +428,6 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(invoke).toHaveBeenCalledWith('delete_volume', { id: 'vol1' });
     });
 
-    it('Arcs CRUD', async () => {
-      const arc: any = { id: 'arc1' };
-      vi.mocked(invoke).mockResolvedValueOnce([arc]).mockResolvedValueOnce(arc).mockResolvedValueOnce(arc);
-
-      expect(await api.getArcs('proj_1')).toEqual([arc]);
-      expect(invoke).toHaveBeenCalledWith('get_arcs', { project: 'proj_1' });
-
-      expect(await api.getArc('arc1')).toEqual(arc);
-      expect(invoke).toHaveBeenCalledWith('get_arc', { id: 'arc1' });
-
-      expect(await api.saveArc('proj_1', arc)).toEqual(arc);
-      expect(invoke).toHaveBeenCalledWith('save_arc', { project: 'proj_1', data: arc });
-
-      await api.deleteArc('arc1');
-      expect(invoke).toHaveBeenCalledWith('delete_arc', { id: 'arc1' });
-    });
 
     it('Plans CRUD', async () => {
       const plan: any = { id: 'p1' };

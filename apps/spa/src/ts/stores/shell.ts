@@ -417,7 +417,6 @@ export const useShellStore = defineStore('shell', () => {
     deleteChapter: manuscript.deleteChapter,
     renameChapter: manuscript.renameChapter,
     deleteVolume: manuscript.deleteVolume,
-    deleteArc: manuscript.deleteArc,
     onChapterRenamed: manuscript.onChapterRenamed,
 
     // Entity Ops

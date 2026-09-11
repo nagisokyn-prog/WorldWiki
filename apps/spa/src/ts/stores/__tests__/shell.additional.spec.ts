@@ -69,7 +69,6 @@ vi.mock('../../services/api.client', () => ({
   getChapterHierarchy: vi.fn(),
   assignChapter: vi.fn(),
   deleteVolume: vi.fn(),
-  deleteArc: vi.fn(),
   getEntities: vi.fn(),
   saveEntityWithRelations: vi.fn(),
   deleteEntity: vi.fn(),
@@ -500,46 +499,38 @@ describe('shell store additional coverage', () => {
     }
   });
 
-  it('covers createChapterIn with arcId, volumeId, and hierarchy numbering', async () => {
+  it('covers createChapterIn with volumeId, and hierarchy numbering', async () => {
     const { getChapterHierarchy, saveChapter, assignChapter } = await import('../../services/api.client');
+    type HierarchyType = import('../../services/api.client').ChapterHierarchy;
     vi.mocked(getChapterHierarchy).mockResolvedValueOnce({
+      volumes: [],
       chapters: [
-        { id: '1', title: 'Глава 3', arc_id: 'arc_1' },
-        { id: '2', title: 'Глава 7', arc_id: 'arc_1' },
+        { id: '1', title: 'Глава 3', volume_id: 'vol_1' },
+        { id: '2', title: 'Глава 7', volume_id: 'vol_1' },
       ],
-    } as any);
+    } as unknown as HierarchyType);
     vi.mocked(saveChapter).mockResolvedValueOnce({ id: 'created_ch_8' } as any);
 
-    await store.createChapterIn({ arcId: 'arc_1', volumeId: 'vol_1' });
+    await store.createChapterIn({ volumeId: 'vol_1' });
     expect(assignChapter).toHaveBeenCalled();
 
     // Root chapter numbering
-    vi.mocked(getChapterHierarchy).mockResolvedValueOnce({ chapters: [] } as any);
+    vi.mocked(getChapterHierarchy).mockResolvedValueOnce({ volumes: [], chapters: [] } as unknown as HierarchyType);
     await store.createChapterIn();
   });
 
-  it('covers deleteVolume and deleteArc with confirm and silent modes', async () => {
+  it('covers deleteVolume with confirm and silent modes', async () => {
     const { appConfirm } = await import('@worldwiki/components');
-    const { deleteVolume, deleteArc } = await import('../../services/api.client');
+    const { deleteVolume } = await import('../../services/api.client');
 
     // 1. deleteVolume cancelled
     vi.mocked(appConfirm).mockResolvedValueOnce(false);
-    await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [], [], false);
+    await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [], false);
     expect(deleteVolume).not.toHaveBeenCalled();
 
     // 2. deleteVolume silent
-    await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [{ id: 'ch_in_vol' }], ['arc_in_vol'], true);
+    await store.deleteVolume({ id: 'vol_1', title: 'Volume 1' }, [{ id: 'ch_in_vol' }], true);
     expect(deleteVolume).toHaveBeenCalledWith('vol_1');
-
-    // 3. deleteArc cancelled
-    vi.mocked(deleteArc).mockClear();
-    vi.mocked(appConfirm).mockResolvedValueOnce(false);
-    await store.deleteArc({ id: 'arc_1', title: 'Arc 1' }, [], false);
-    expect(deleteArc).not.toHaveBeenCalled();
-
-    // 4. deleteArc silent
-    await store.deleteArc({ id: 'arc_1', title: 'Arc 1' }, [{ id: 'ch_in_arc' }], true);
-    expect(deleteArc).toHaveBeenCalledWith('arc_1');
   });
 
   it('covers loadChapters and loadEntityList error catches', async () => {

@@ -22,7 +22,6 @@
           @rename-entity="renameEntity"
           @delete-entity="deleteEntity"
           @delete-volume="deleteVolume"
-          @delete-arc="deleteArc"
           @open-sandbox="openSandbox"
           @edit-schema="openSchemaEditor"
         ></chapter-tree-vue>

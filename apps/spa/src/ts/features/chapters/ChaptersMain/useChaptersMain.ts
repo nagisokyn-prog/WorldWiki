@@ -34,7 +34,7 @@ export function useChaptersMain(
   const { 
     loading, chapters, hierarchy, currentChapterId, currentChapter, 
     hasUnsavedChanges, debugError, isSaving,
-    currentChapterNode, currentArc, currentVolume
+    currentChapterNode, currentVolume
   } = storeToRefs(store);
 
   const {
@@ -175,8 +175,8 @@ export function useChaptersMain(
     emit('open-chapter-as-tab', ch);
   };
 
-  const createChapterIn = async ({ arcId, volumeId }: { arcId?: string; volumeId?: string }) => {
-    await createNewChapter(props.project, arcId, volumeId);
+  const createChapterIn = async ({ volumeId }: { volumeId?: string } = {}) => {
+    await createNewChapter(props.project, volumeId);
     await chapterTreeRef.value?.load();
   };
   
@@ -260,7 +260,7 @@ export function useChaptersMain(
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving, localActiveTreeNode, chapterTreeRef,
-    currentChapterNode, currentArc, currentVolume,
+    currentChapterNode, currentVolume,
     editorCoreRef, promisesPanelRef, isTimelineOpen, isParticipantsOpen,
     ...historyHook,
     ...layoutHook,

@@ -1,5 +1,5 @@
 import { Extension } from '@tiptap/core';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Plugin, PluginKey, type EditorState, type Transaction } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -7,7 +7,17 @@ export interface AiGhostTextOptions {
   projectId: string;
 }
 
-const ghostPluginKey = new PluginKey('aiGhostText');
+interface GhostPluginState {
+  ghostText: string;
+  pos: number | null;
+}
+
+type PluginSpecType = ConstructorParameters<typeof Plugin<GhostPluginState>>[0];
+type PluginProps = NonNullable<PluginSpecType['props']>;
+type PluginEditorView = Parameters<NonNullable<PluginProps['handleKeyDown']>>[0];
+type PluginDecorationsReturn = ReturnType<NonNullable<PluginProps['decorations']>>;
+
+const ghostPluginKey = new PluginKey<GhostPluginState>('aiGhostText');
 
 export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
   name: 'aiGhostText',
@@ -20,18 +30,17 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
 
   addProseMirrorPlugins() {
     let timeout: ReturnType<typeof setTimeout>;
-    let currentGhostText = '';
     let isFetching = false;
 
     return [
-      new Plugin({
+      new Plugin<GhostPluginState>({
         key: ghostPluginKey,
         state: {
-          init() {
+          init(): GhostPluginState {
             return { ghostText: '', pos: null };
           },
-          apply(tr, value) {
-            const meta = tr.getMeta(ghostPluginKey);
+          apply(tr: Transaction, value: GhostPluginState): GhostPluginState {
+            const meta = tr.getMeta(ghostPluginKey) as GhostPluginState | undefined;
             if (meta) {
               return meta;
             }
@@ -42,10 +51,10 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
           },
         },
         props: {
-          decorations(state) {
+          decorations(state: EditorState) {
             const pluginState = ghostPluginKey.getState(state);
-            if (!pluginState || !pluginState.ghostText || !pluginState.pos) {
-              return DecorationSet.empty;
+            if (!pluginState || !pluginState.ghostText || pluginState.pos === null) {
+              return DecorationSet.empty as unknown as PluginDecorationsReturn;
             }
             const widget = document.createElement('span');
             widget.classList.add('ai-ghost-text');
@@ -53,15 +62,15 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
             widget.style.color = 'var(--text-muted)';
             widget.style.pointerEvents = 'none';
             widget.style.userSelect = 'none';
-            
+
             return DecorationSet.create(state.doc, [
-              Decoration.widget(pluginState.pos, widget, { side: 1 })
-            ]) as any;
+              Decoration.widget(pluginState.pos, widget, { side: 1 }),
+            ]) as unknown as PluginDecorationsReturn;
           },
-          handleKeyDown(view, event) {
+          handleKeyDown(view: PluginEditorView, event: KeyboardEvent): boolean {
             if (event.key === 'Tab') {
               const state = ghostPluginKey.getState(view.state);
-              if (state && state.ghostText) {
+              if (state && state.ghostText && state.pos !== null) {
                 event.preventDefault();
                 const pos = state.pos;
                 const tr = view.state.tr.insertText(state.ghostText, pos);
@@ -71,58 +80,57 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
               }
             }
             return false;
-          }
+          },
         },
-        view: (_view) => {
+        view: (_view: PluginEditorView) => {
           return {
-            update: (view, prevState) => {
+            update: (view: PluginEditorView, prevState: EditorState) => {
               const state = view.state;
               if (prevState.doc.eq(state.doc) && prevState.selection.eq(state.selection)) {
                 return;
               }
-              
-              // Clear on any change
-              if (ghostPluginKey.getState(state)?.ghostText) {
-                 view.dispatch(state.tr.setMeta(ghostPluginKey, { ghostText: '', pos: null }));
-              }
-              currentGhostText = '';
+
               clearTimeout(timeout);
-              
-              const { $head } = state.selection;
-              // Only trigger at the end of a block
-              if ($head.parentOffset !== $head.parent.content.size) {
-                 return;
+              const { selection } = state;
+              if (!selection.empty) {
+                return;
               }
-              
-              const textBefore = $head.parent.textContent.slice(0, $head.parentOffset);
-              if (textBefore.trim().length < 10) return; // Need some context
-              
+
+              const pos = selection.from;
+              const textBefore = state.doc.textBetween(Math.max(0, pos - 500), pos, '\n');
+              if (!textBefore || textBefore.trim().length < 5) {
+                return;
+              }
+
               timeout = setTimeout(async () => {
                 if (isFetching) return;
                 isFetching = true;
                 try {
-                  const res = await invoke<string>('get_ai_completion', { 
-                    textBefore,
-                    projectId: this.options.projectId
+                  const suggestion = await invoke<string>('ai_suggest_continuation', {
+                    project: this.options.projectId,
+                    context: textBefore,
                   });
-                  if (res && res.trim()) {
-                    currentGhostText = res;
-                    const pos = view.state.selection.$head.pos;
-                    view.dispatch(view.state.tr.setMeta(ghostPluginKey, { ghostText: currentGhostText, pos }));
+                  if (suggestion && suggestion.trim()) {
+                    const tr = view.state.tr.setMeta(ghostPluginKey, {
+                      ghostText: suggestion,
+                      pos,
+                    });
+                    view.dispatch(tr);
                   }
-                } catch(e) {
-                  console.error('AI completion error', e);
+                } catch {
+                  // Fallback: тихо игнорируем ошибку генерации
                 } finally {
                   isFetching = false;
                 }
-              }, 1000); // 1s debounce
+              }, 600);
             },
             destroy: () => {
               clearTimeout(timeout);
-            }
+            },
           };
-        }
-      })
+        },
+      }),
     ];
   },
 });
+

@@ -4,12 +4,12 @@ import { useAiMermaidDiagram } from './useAiMermaidDiagram';
 describe('useAiMermaidDiagram', () => {
   it('initializes with default state', () => {
     const emit = vi.fn();
-    const { svgContent, isLoading, errorMessage, showRaw, isCopied } = useAiMermaidDiagram(
+    const { containerRef, isLoading, errorMessage, showRaw, isCopied } = useAiMermaidDiagram(
       { code: 'flowchart TD\nA --> B' },
       emit
     );
 
-    expect(svgContent.value).toBe('');
+    expect(containerRef.value).toBeNull();
     expect(isLoading.value).toBe(false);
     expect(errorMessage.value).toBe('');
     expect(showRaw.value).toBe(false);

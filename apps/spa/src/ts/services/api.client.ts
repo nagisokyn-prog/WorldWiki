@@ -5,11 +5,10 @@
  */
 import { invoke } from '@tauri-apps/api/core';
 export interface SearchResult<T> { entity: T; score: number; kind: string; }
-export interface AutoExtendResult { chapter_id?: string | null; arc_id?: string | null; volume_id?: string | null; updated_count?: number; }
-export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; arcs: (Arc & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { arc_id?: string | null; volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }
+export interface AutoExtendResult { chapter_id?: string | null; volume_id?: string | null; updated_count?: number; }
+export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }
 export interface ProjectSummary { id?: string; name: string; created_at?: string; genres?: string[]; perfLevel?: string; data?: Record<string, unknown>; stats?: Record<string, unknown>; icon?: string; [key: string]: unknown; }
 import type { Volume } from '../types/generated/Volume';
-import type { Arc } from '../types/generated/Arc';
 import type { Chapter } from '../types/generated/Chapter';
 import type { Entity } from '../types/generated/Entity';
 import type { EntitySchema } from '../types/generated/EntitySchema';
@@ -189,24 +188,16 @@ export async function updateVolume(project: string, id: string, title: string): 
     return await invoke('update_volume', { project, id, title });
 }
 
-export async function createArc(project: string, title: string, volumeId: string | null): Promise<unknown> {
-    return await invoke('create_arc', { project, title, volumeId });
-}
-
-export async function updateArc(project: string, id: string, title: string, volumeId: string | null): Promise<void> {
-    return await invoke('update_arc', { project, id, title, volumeId });
-}
-
-export async function assignChapter(project: string, chapterId: string, arcId: string | null, volumeId: string | null): Promise<unknown> {
-    return await invoke('assign_chapter', { project, chapterId, arcId, volumeId });
+export async function assignChapter(project: string, chapterId: string, volumeId: string | null): Promise<unknown> {
+    return await invoke('assign_chapter', { project, chapterId, volumeId });
 }
 
 export async function reorderNode(project: string, nodeType: string, id: string, sortOrder: number): Promise<void> {
     return await invoke('reorder_node', { project, nodeType, id, sortOrder });
 }
 
-export async function autoExtendTimeline(project: string, chapterId: string, arcId: string | null, volumeId: string | null): Promise<unknown> {
-    return await invoke('auto_extend_timeline', { project, chapterId, arcId, volumeId });
+export async function autoExtendTimeline(project: string, chapterId: string, volumeId: string | null): Promise<unknown> {
+    return await invoke('auto_extend_timeline', { project, chapterId, volumeId });
 }
 
 export async function healDeletedChapter(project: string, deletedChapterId: string, fallbackPoint: unknown | null): Promise<number> {
@@ -530,21 +521,6 @@ export async function deleteVolume(id: string): Promise<void> {
     return await invoke('delete_volume', { id });
 }
 
-export async function getArcs(project: string): Promise<Arc[]> {
-    return await invoke('get_arcs', { project });
-}
-
-export async function getArc(id: string): Promise<Arc | null> {
-    return await invoke('get_arc', { id });
-}
-
-export async function saveArc(project: string, data: Arc): Promise<Arc> {
-    return await invoke('save_arc', { project, data });
-}
-
-export async function deleteArc(id: string): Promise<void> {
-    return await invoke('delete_arc', { id });
-}
 
 export async function getPlans(project: string): Promise<Plan[]> {
     return await invoke('get_plans', { project });

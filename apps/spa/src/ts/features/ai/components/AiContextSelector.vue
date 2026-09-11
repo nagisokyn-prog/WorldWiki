@@ -26,10 +26,6 @@
             <i class="fas fa-book"></i> Тома
             <i class="fas fa-chevron-right arrow"></i>
           </div>
-          <div class="menu-item" @click="selectCategory('arc')">
-            <i class="fas fa-bookmark"></i> Арки
-            <i class="fas fa-chevron-right arrow"></i>
-          </div>
           <div class="menu-item" @click="selectCategory('chapter')">
             <i class="fas fa-file-alt"></i> Главы
             <i class="fas fa-chevron-right arrow"></i>
@@ -56,7 +52,7 @@
           </template>
           
           <template v-else>
-            <!-- List Volumes, Arcs, or Chapters -->
+            <!-- List Volumes or Chapters -->
             <div 
               v-for="item in filteredItems" 
               :key="item.id" 

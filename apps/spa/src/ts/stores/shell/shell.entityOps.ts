@@ -403,7 +403,6 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
           footnotes: {},
           timeline_events: [],
           participants: [],
-          arc_id: null,
           volume_id: null,
         } as unknown as Chapter;
         await api.saveChapter(deps.projectName.value, newChapter);

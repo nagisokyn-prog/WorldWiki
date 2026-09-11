@@ -7,6 +7,7 @@ import * as api from '../../services/api.client';
 import { entityApi } from '../../services/Entity/entity.api';
 import { useSchemaStore } from '../schema';
 import { settingsService } from '@worldwiki/components';
+import type { Chapter } from '../../types/generated/Chapter';
 
 vi.mock('../../services/api.client', () => ({
   getChapters: vi.fn(),
@@ -17,7 +18,6 @@ vi.mock('../../services/api.client', () => ({
   assignChapter: vi.fn(),
   healDeletedChapter: vi.fn(),
   deleteVolume: vi.fn(),
-  deleteArc: vi.fn(),
   getEntities: vi.fn(),
   saveEntityWithRelations: vi.fn(),
   deleteEntity: vi.fn(),
@@ -344,9 +344,10 @@ describe('shell store', () => {
 
     it('createChapterIn increments chapter numbers correctly', async () => {
       vi.mocked(api.getChapterHierarchy).mockResolvedValue({
-        chapters: [{ title: 'Глава 1' }, { title: 'Глава 2' }],
-      } as any);
-      vi.mocked(api.saveChapter).mockResolvedValue({ id: 'ch_3' } as any);
+        volumes: [],
+        chapters: [{ title: 'Глава 1' } as unknown as Chapter, { title: 'Глава 2' } as unknown as Chapter],
+      } as unknown as api.ChapterHierarchy);
+      vi.mocked(api.saveChapter).mockResolvedValue({ id: 'ch_3' } as unknown as Chapter);
 
       await shell.createChapterIn();
       expect(api.saveChapter).toHaveBeenCalledWith('default', expect.objectContaining({
@@ -375,24 +376,13 @@ describe('shell store', () => {
       }));
     });
 
-    it('deleteVolume deletes volume and associated chapters/arcs', async () => {
+    it('deleteVolume deletes volume and associated chapters', async () => {
       vi.mocked(api.deleteChapter).mockResolvedValue(undefined as any);
-      vi.mocked(api.deleteArc).mockResolvedValue(undefined as any);
       vi.mocked(api.deleteVolume).mockResolvedValue(undefined as any);
 
-      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], ['a1'], true);
+      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], true);
       expect(api.deleteChapter).toHaveBeenCalledWith('c1');
-      expect(api.deleteArc).toHaveBeenCalledWith('a1');
       expect(api.deleteVolume).toHaveBeenCalledWith('v1');
-    });
-
-    it('deleteArc deletes arc and associated chapters', async () => {
-      vi.mocked(api.deleteChapter).mockResolvedValue(undefined as any);
-      vi.mocked(api.deleteArc).mockResolvedValue(undefined as any);
-
-      await shell.deleteArc({ id: 'a1', title: 'Arc 1' }, [{ id: 'c1' }], true);
-      expect(api.deleteChapter).toHaveBeenCalledWith('c1');
-      expect(api.deleteArc).toHaveBeenCalledWith('a1');
     });
   });
 
@@ -607,36 +597,23 @@ describe('shell store', () => {
       expect(api.deleteEntity).toHaveBeenCalledWith('character:c1');
     });
 
-    it('deleteVolume and deleteArc clear activeTreeNode and handle tree reloads and errors', async () => {
+    it('deleteVolume clears activeTreeNode and handles tree reloads and errors', async () => {
       shell.activeTreeNode = { type: 'volume', node: { id: 'v1' } };
       shell.chapterTreeRef = { load: vi.fn() } as any;
 
       // Successful volume deletion
-      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], ['a1'], true);
+      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [{ id: 'c1' }], true);
       expect(shell.activeTreeNode).toBeNull();
       expect(shell.chapterTreeRef?.load).toHaveBeenCalled();
 
       // Cancelled volume deletion
       const { appConfirm } = await import('@worldwiki/components');
       vi.mocked(appConfirm).mockResolvedValueOnce(false);
-      await shell.deleteVolume({ id: 'v2', title: 'Vol 2' }, [], [], false);
+      await shell.deleteVolume({ id: 'v2', title: 'Vol 2' }, [], false);
 
       // Volume deletion error catch
       vi.mocked(api.deleteVolume).mockRejectedValueOnce(new Error('Volume deletion error'));
-      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [], [], true);
-
-      // Successful arc deletion
-      shell.activeTreeNode = { type: 'arc', node: { id: 'a1' } };
-      await shell.deleteArc({ id: 'a1', title: 'Arc 1' }, [{ id: 'c1' }], true);
-      expect(shell.activeTreeNode).toBeNull();
-
-      // Cancelled arc deletion
-      vi.mocked(appConfirm).mockResolvedValueOnce(false);
-      await shell.deleteArc({ id: 'a2', title: 'Arc 2' }, [], false);
-
-      // Arc deletion error catch
-      vi.mocked(api.deleteArc).mockRejectedValueOnce(new Error('Arc deletion error'));
-      await shell.deleteArc({ id: 'a1', title: 'Arc 1' }, [], true);
+      await shell.deleteVolume({ id: 'v1', title: 'Vol 1' }, [], true);
     });
 
     it('openFloatingEditor delegates to floatingStore', () => {
@@ -826,69 +803,43 @@ describe('shell store', () => {
       await shell.renameEntity('character', 'c1', 'New Name');
     });
 
-    it('resets activeTreeNode during deleteVolume and deleteArc', async () => {
+    it('resets activeTreeNode during deleteVolume', async () => {
       // 1. deleteVolume with matching activeTreeNode (chapter)
       shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_vol' } };
-      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [{ id: 'ch_in_vol' }], [], true);
+      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [{ id: 'ch_in_vol' }], true);
       expect(shell.activeTreeNode).toBeNull();
 
-      // 2. deleteVolume with matching activeTreeNode (arc)
-      shell.activeTreeNode = { type: 'arc', node: { id: 'arc_in_vol' } };
-      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [], ['arc_in_vol'], true);
-      expect(shell.activeTreeNode).toBeNull();
-
-      // 3. deleteVolume with matching activeTreeNode (volume itself)
+      // 2. deleteVolume with matching activeTreeNode (volume itself)
       shell.activeTreeNode = { type: 'volume', node: { id: 'vol_del' } };
-      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [], [], true);
+      await shell.deleteVolume({ id: 'vol_del', title: 'Volume to Delete' }, [], true);
       expect(shell.activeTreeNode).toBeNull();
 
-      // 4. closeEditorsFor with activeTreeNode matching closed editor
+      // 3. closeEditorsFor with activeTreeNode matching closed editor
       await shell.openChapterTab({ id: 'ch_active_node_tab', volume_id: 'vol_node_1' });
       shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_active_node_tab' } };
-      await shell.deleteVolume({ id: 'vol_node_1', title: 'Vol Node' }, [], [], true);
+      await shell.deleteVolume({ id: 'vol_node_1', title: 'Vol Node' }, [], true);
       expect(shell.activeTreeNode).toBeNull();
 
-      // 5. deleteArc with matching activeTreeNode (chapter in arc, and arc itself)
-      shell.activeTreeNode = { type: 'chapter', node: { id: 'ch_in_arc' } };
-      await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [{ id: 'ch_in_arc' }], true);
-      expect(shell.activeTreeNode).toBeNull();
-
-      shell.activeTreeNode = { type: 'arc', node: { id: 'arc_del' } };
-      await shell.deleteArc({ id: 'arc_del', title: 'Arc to Delete' }, [], true);
-      expect(shell.activeTreeNode).toBeNull();
-
-      // 6. deleteArc with open tabs matching arcId (camelCase)
-      await shell.openChapterTab({ id: 'ch_arc_camel', arcId: 'arc_camel_1' });
-      await shell.deleteArc({ id: 'arc_camel_1', title: 'Arc Camel' }, [], true);
-
-      // 7. deleteVolume with open tabs matching volume_id, arc_id, and chapter id
+      // 4. deleteVolume with open tabs matching volume_id and chapter id
       await shell.openChapterTab({ id: 'ch_vol_tab', volume_id: 'vol_tab_1' });
-      await shell.openChapterTab({ id: 'ch_arc_tab', arc_id: 'arc_tab_1' });
       await shell.openChapterTab({ id: 'ch_direct_tab' });
 
       await shell.deleteVolume(
         { id: 'vol_tab_1', title: 'Vol with tabs' },
         [{ id: 'ch_direct_tab' }],
-        ['arc_tab_1'],
         true
       );
 
-      // 4. deleteVolume & deleteArc with confirm rejection
+      // 5. deleteVolume with confirm rejection
       const { appConfirm } = await import('@worldwiki/components');
       (appConfirm as any).mockResolvedValueOnce(false);
-      await shell.deleteVolume({ id: 'vol_cancel', title: 'Vol Cancel' }, [], [], false);
+      await shell.deleteVolume({ id: 'vol_cancel', title: 'Vol Cancel' }, [], false);
 
-      (appConfirm as any).mockResolvedValueOnce(false);
-      await shell.deleteArc({ id: 'arc_cancel', title: 'Arc Cancel' }, [], false);
-
-      // 5. deleteChapter catch within deleteVolume and deleteArc
+      // 6. deleteChapter catch within deleteVolume
       vi.mocked(api.deleteChapter).mockRejectedValueOnce(new Error('Chapter vol error'));
-      await shell.deleteVolume({ id: 'vol_err', title: 'Vol Err' }, [{ id: 'ch_err_1' }], [], true);
+      await shell.deleteVolume({ id: 'vol_err', title: 'Vol Err' }, [{ id: 'ch_err_1' }], true);
 
-      vi.mocked(api.deleteChapter).mockRejectedValueOnce(new Error('Chapter arc error'));
-      await shell.deleteArc({ id: 'arc_err', title: 'Arc Err' }, [{ id: 'ch_err_2' }], true);
-
-      // 6. renameChapter error catch
+      // 7. renameChapter error catch
       vi.mocked(api.getChapter).mockRejectedValueOnce(new Error('Rename ch error'));
       await shell.renameChapter({ id: 'ch_1' }, 'New Ch Title');
     });
@@ -936,25 +887,20 @@ describe('shell store', () => {
     });
 
     it('covers createChapterIn branches', async () => {
-      // success with arcId
-      vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
-        chapters: [{ arc_id: 'arc_1', title: 'Глава 1' }]
-      });
-      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_2' } as any);
-      await shell.createChapterIn({ arcId: 'arc_1' });
-
       // success with volumeId
       vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
-        chapters: [{ volume_id: 'vol_1', title: 'Глава 2' }]
+        volumes: [],
+        chapters: [{ volume_id: 'vol_1', title: 'Глава 2' } as unknown as Chapter]
       });
-      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_3' } as any);
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'ch_3' } as unknown as Chapter);
       await shell.createChapterIn({ volumeId: 'vol_1' });
 
-      // without arc or vol
+      // without vol
       vi.mocked(api.getChapterHierarchy).mockResolvedValueOnce({
-        chapters: [{ title: 'Глава 3' }]
+        volumes: [],
+        chapters: [{ title: 'Глава 3' } as unknown as Chapter]
       });
-      vi.mocked(api.saveChapter).mockResolvedValueOnce({} as any); // saveRes without id
+      vi.mocked(api.saveChapter).mockResolvedValueOnce({} as unknown as Chapter); // saveRes without id
       await shell.createChapterIn();
 
       // error catch
@@ -1045,8 +991,3 @@ describe('shell store', () => {
     });
   });
 });
-
-
-
-
-

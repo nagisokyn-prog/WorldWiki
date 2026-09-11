@@ -35,7 +35,7 @@ mod tests {
     fn test_plot_promise_resolution() {
         let mut promise = PlotPromise::new("proj_1", "ch_1", PromiseKind::Gun, "Старинный револьвер на стене");
         assert_eq!(promise.status, PromiseStatus::Planted);
-        promise.resolve("ch_5".to_string(), Some("vol_1".to_string()), None, Some("Выстрелил в финале".to_string()));
+        promise.resolve("ch_5".to_string(), Some("vol_1".to_string()), Some("Выстрелил в финале".to_string()));
         assert_eq!(promise.status, PromiseStatus::Resolved);
         assert_eq!(promise.resolved_in_chapter.as_deref(), Some("ch_5"));
     }

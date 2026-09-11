@@ -23,7 +23,7 @@ import { ref } from 'vue';
 import type { AiCitationBadgeProps, CitationItem } from './AiCitation.model';
 import AiCitationPopover from './AiCitationPopover.vue';
 
-const props = defineProps<AiCitationBadgeProps>();
+defineProps<AiCitationBadgeProps>();
 const emit = defineEmits<{
   (e: 'ask-source', citation: CitationItem): void;
 }>();

@@ -22,7 +22,6 @@ export interface PromisesPanelProps {
   chapterId?: string | null;
   chapterTitle?: string | null;
   currentVolumeId?: string | null;
-  currentArcId?: string | null;
   allChapters?: ChapterMetaItem[];
 }
 
@@ -144,7 +143,6 @@ export function usePromisesPanel(
       progressions: [],
       resolution: null,
       resolved_in_volume: null,
-      resolved_in_arc: null,
       resolved_in_chapter: null
     };
 
@@ -196,7 +194,6 @@ export function usePromisesPanel(
       target.status = 'resolved';
       target.resolved_in_chapter = chapId;
       target.resolved_in_volume = props.currentVolumeId || null;
-      target.resolved_in_arc = props.currentArcId || null;
     }
 
     try {
@@ -221,7 +218,6 @@ export function usePromisesPanel(
       promise.status = (promise.progressions && promise.progressions.length > 0) ? 'developed' : 'planted';
       promise.resolved_in_chapter = null;
       promise.resolved_in_volume = null;
-      promise.resolved_in_arc = null;
     }
 
     try {
@@ -238,7 +234,6 @@ export function usePromisesPanel(
     if (newStatus === 'resolved' && props.chapterId) {
       item.resolved_in_chapter = props.chapterId;
       item.resolved_in_volume = props.currentVolumeId || null;
-      item.resolved_in_arc = props.currentArcId || null;
     }
 
     try {

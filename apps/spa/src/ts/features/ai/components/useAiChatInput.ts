@@ -25,7 +25,7 @@ export function useAiChatInput(
 
   const checkSkillTrigger = () => {
     if (!editor.value) return;
-    const { selection, doc } = editor.value.state;
+    const { selection } = editor.value.state;
     const { from, $from } = selection;
     
     // Получаем текст перед курсором в текущем параграфе

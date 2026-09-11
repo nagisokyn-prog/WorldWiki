@@ -66,7 +66,6 @@ export function useAiContextSelector(
     if (level.value === 0) return 'Добавить контекст';
     if (level.value === 1) {
       if (currentCategory.value === 'volume') return 'Тома';
-      if (currentCategory.value === 'arc') return 'Арки';
       if (currentCategory.value === 'chapter') return 'Главы';
       if (currentCategory.value === 'entity') return 'Типы сущностей';
     }

@@ -87,14 +87,13 @@
               :chapter-id="currentChapter.id"
               :chapter-title="currentChapter.title"
               :current-volume-id="currentVolume?.id"
-              :current-arc-id="currentArc?.id"
               :all-chapters="chapters"
               @locate="handleLocatePromise"
               @change="markUnsaved"
             />
           </div>
 
-          <!-- Зафиксированный внизу блок планов тома / арки / главы -->
+          <!-- Зафиксированный внизу блок планов тома / главы -->
           <div class="parent-plans-container">
             <!-- План тома -->
             <div v-if="currentVolume" class="parent-plan-accordion">
@@ -112,26 +111,6 @@
                   parent-type="volume"
                   :parent-id="currentVolume.id"
                   :parent-title="currentVolume.title"
-                />
-              </div>
-            </div>
-
-            <!-- План арки -->
-            <div v-if="currentArc" class="parent-plan-accordion">
-              <div class="accordion-header" @click="isArcPlanOpen = !isArcPlanOpen">
-                <span class="accordion-title"><i class="fas fa-bookmark text-accent"></i> План арки: {{ currentArc.title }}</span>
-                <div class="flex items-center gap-2">
-                  <button class="add-from-header-btn" title="Добавить пункт" @click.stop="addArcPlanItem">+</button>
-                  <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isArcPlanOpen }">▼</span>
-                </div>
-              </div>
-              <div v-show="isArcPlanOpen" class="accordion-body">
-                <PlanningPanel
-                  ref="arcPlanRef"
-                  :project="project"
-                  parent-type="arc"
-                  :parent-id="currentArc.id"
-                  :parent-title="currentArc.title"
                 />
               </div>
             </div>
@@ -301,9 +280,9 @@ const emit = defineEmits<{
 
 const {
   chapters, currentChapterId, currentChapter,
-  currentArc, currentVolume, isVolumePlanOpen,
-  isArcPlanOpen, isChapterPlanOpen, volumePlanRef, arcPlanRef, chapterPlanRef,
-  addVolumePlanItem, addArcPlanItem, addChapterPlanItem,
+  currentVolume, isVolumePlanOpen,
+  isChapterPlanOpen, volumePlanRef, chapterPlanRef,
+  addVolumePlanItem, addChapterPlanItem,
   hasUnsavedChanges, localActiveTreeNode, debugError,
   isExportModalOpen, showQuickLinkHint, isZenMode, floatingEditors, showHistory,
   isLoadingHistory, revisions, previewingRevId, maxSaves, toggleHistory,

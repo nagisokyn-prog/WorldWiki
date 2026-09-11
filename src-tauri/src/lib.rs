@@ -158,12 +158,10 @@ pub fn run() {
             get_custom_themes,
             load_theme,
             save_custom_theme,
-            // --- Главы / Тома / Арки ---
+            // --- Главы / Тома ---
             get_chapter_hierarchy,
             create_volume,
             update_volume,
-            create_arc,
-            update_arc,
             assign_chapter,
             reorder_node,
             auto_extend_timeline,
@@ -255,7 +253,7 @@ pub fn run() {
             worldwiki_tauri::commands::ai_audit_consistency,
             worldwiki_tauri::commands::ai_delegate_task,
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [Chapter, Volume, Arc, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
+            @entities: [Chapter, Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites]
 ])

@@ -27,7 +27,6 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE text_blocks WHERE project_id = $pid;
     DELETE chapter_revisions WHERE project_id = $pid;
     DELETE chapters WHERE project_id = $pid;
-    DELETE arcs WHERE project_id = $pid;
     DELETE volumes WHERE project_id = $pid;
 
     -- 4. Планирование, таймлайн и сюжетные обещания
@@ -39,10 +38,6 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 -- 2. КАСКАДЫ ИЕРАРХИИ СЮЖЕТА
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
     DELETE ->contains->chapters;
-    DELETE plans WHERE parent_ref = $before.id;
-};
-
-DEFINE EVENT OVERWRITE cascade_arc_delete ON TABLE arcs WHEN $event = "DELETE" THEN {
     DELETE plans WHERE parent_ref = $before.id;
 };
 

@@ -103,7 +103,7 @@ pub fn build_system_prompt(
     };
 
     let mut out = format!(
-        "{}\n\n{}\n\nПроект: {}\nДоступные данные: entities, chapters, text_blocks, volumes, arcs, entity_rel, calendars, user_dictionary.\nТаймлайн хранится в chapters.timeline_events.",
+        "{}\n\n{}\n\nПроект: {}\nДоступные данные: entities, chapters, text_blocks, volumes, entity_rel, calendars, user_dictionary.\nТаймлайн хранится в chapters.timeline_events.",
         base, global_core, project_id
     );
 

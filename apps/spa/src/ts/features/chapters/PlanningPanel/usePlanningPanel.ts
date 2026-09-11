@@ -24,7 +24,6 @@ export function usePlanningPanel(props: PlanningPanelProps) {
     // ─── Computed ────────────────────────────────────────────
     const nodeIcon = computed(() => {
         if (props.parentType === 'volume') return '📚';
-        if (props.parentType === 'arc') return '🌀';
         return '📖';
     });
 

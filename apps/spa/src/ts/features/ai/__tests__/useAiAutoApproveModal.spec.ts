@@ -21,7 +21,7 @@ describe('useAiAutoApproveModal', () => {
 
   it('filters available categories for editor mode (read, write, delete, timeline)', () => {
     const emit = vi.fn();
-    const { state, availableCategories, activeCount, badgeText } = useAiAutoApproveModal(
+    const { availableCategories, activeCount, badgeText } = useAiAutoApproveModal(
       { currentProject: 'p_test', activeModeSlug: 'editor' },
       emit
     );
@@ -33,7 +33,7 @@ describe('useAiAutoApproveModal', () => {
 
   it('filters available categories for analyst mode (read, timeline, audit, delegate)', () => {
     const emit = vi.fn();
-    const { state, availableCategories, activeCount, badgeText } = useAiAutoApproveModal(
+    const { availableCategories, activeCount, badgeText } = useAiAutoApproveModal(
       { currentProject: 'p_test', activeModeSlug: 'analyst' },
       emit
     );

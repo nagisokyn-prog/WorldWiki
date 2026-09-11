@@ -62,13 +62,11 @@ flowchart TD
     subgraph Narrative_Layer ["📚 Иерархия Рукописи (Narrative Tree)"]
         Project["Проект (projects)"]
         Volume["Том (volumes)"]
-        Arc["Арка (arcs)"]
         Chapter["Глава (chapters)"]
         TextBlock["Текст-блок (text_blocks)"]
 
         Project -->|contains| Volume
-        Volume -->|contains| Arc
-        Arc -->|contains| Chapter
+        Volume -->|contains| Chapter
         Chapter -->|contains| TextBlock
     end
 
@@ -114,7 +112,6 @@ flowchart TD
 |---|---|---|---|
 | **`projects`** | Узел | Корневой мир / проект | `name`, `genres`, `perfLevel`, `data` |
 | **`volumes`** | Узел | Том книги / часть эпопеи | `title`, `project_id` |
-| **`arcs`** | Узел | Сюжетная арка внутри тома | `title`, `project_id` |
 | **`chapters`** | Узел | Глава рукописи (Единый Источник Правды AST) | `title`, `content`, `word_count`, `summary`, `embeddings` |
 | **`text_blocks`** | Индекс | Производный семантический индекс главы (RAG / стилометрия) | `chapter_id`, `block_type`, `order_index`, `embeddings` |
 
@@ -129,10 +126,10 @@ flowchart TD
 ### 4.2. Графовые Рёбра Сюжетной Иерархии (Narrative Hierarchy)
 
 ```sql
--- Ребро вложенности рукописи (Project -> Volume -> Arc -> Chapter)
+-- Ребро вложенности рукописи (Project -> Volume -> Chapter)
 DEFINE TABLE OVERWRITE contains TYPE RELATION
-    IN projects | volumes | arcs | chats
-    OUT volumes | arcs | chapters | chats
+    IN projects | volumes | chats
+    OUT volumes | chapters | chats
     SCHEMAFULL;
 DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 ```
@@ -196,7 +193,7 @@ flowchart TD
     DelProj["DELETE projects:p_id"] --> Trigger["EVENT cascade_project_delete"]
     
     subgraph Purged ["🗑️ Удаляются (Проектные данные)"]
-        Chapters["chapters, text_blocks, volumes, arcs"]
+        Chapters["chapters, text_blocks, volumes"]
         Entities["entities, entity_chunks, entity_rel, appears_in"]
         Timeline["timeline_events, participates_in, plans, plot_promises"]
         AiChats["chats, chat_messages, agent_memory, research_sessions"]

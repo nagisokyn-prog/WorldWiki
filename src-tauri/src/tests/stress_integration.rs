@@ -15,7 +15,7 @@ use crate::logic::chapters::save_text_blocks_inner;
 use crate::logic::entities::{create_entity_relation_inner, get_entities_inner, get_entity_relations_inner, save_entity_inner};
 use crate::logic::models::{Entity, EntityRel};
 use crate::logic::projects::delete_project_inner;
-use crate::logic::volumes::{assign_chapter_inner, create_arc_inner, create_volume_inner, get_chapter_hierarchy_inner};
+use crate::logic::volumes::{assign_chapter_inner, create_volume_inner, get_chapter_hierarchy_inner};
 use super::common::{create_test_db, seed_chapter, seed_project};
 
 /// 1. Нагрузочный тест: Пакетная вставка 10,000 сущностей.
@@ -177,30 +177,25 @@ async fn stress_high_concurrency_50_workers() {
     println!("\n[STRESS TEST] 50 параллельных конкурентных воркеров завершили работу за {:?}", elapsed);
 }
 
-/// 4. Стресс-тест глубокой иерархии: Дерево из 530 узлов (тома -> арки -> главы) и замер `get_chapter_hierarchy`.
+/// 4. Стресс-тест глубокой иерархии: Дерево из 505 узлов (тома -> главы) и замер `get_chapter_hierarchy`.
 #[tokio::test]
 async fn stress_deep_hierarchy_1000_nodes() {
     let db = create_test_db().await;
     seed_project(&db, "stress_tree", "Tree Test").await;
 
-    // 5 томов, в каждом по 5 арок, в каждой по 20 глав = 5 + 25 + 500 = 530 узлов
+    // 5 томов, в каждом по 100 глав = 5 + 500 = 505 узлов
     let start_gen = Instant::now();
     for v_idx in 0..5 {
         let vol = create_volume_inner(&db, "stress_tree", &format!("Том {v_idx}")).await.unwrap();
         let vol_id = vol["id"].as_str().unwrap().to_string();
 
-        for a_idx in 0..5 {
-            let arc = create_arc_inner(&db, "stress_tree", &format!("Арка {v_idx}_{a_idx}"), Some(vol_id.clone())).await.unwrap();
-            let arc_id = arc["id"].as_str().unwrap().to_string();
-
-            for c_idx in 0..20 {
-                let chap_key = format!("c_{v_idx}_{a_idx}_{c_idx}");
-                let c_id = seed_chapter(&db, "stress_tree", &chap_key, &format!("Глава {chap_key}"), "").await;
-                assign_chapter_inner(&db, "stress_tree", &c_id, Some(arc_id.clone()), Some(vol_id.clone())).await.unwrap();
-            }
+        for c_idx in 0..100 {
+            let chap_key = format!("c_{v_idx}_{c_idx}");
+            let c_id = seed_chapter(&db, "stress_tree", &chap_key, &format!("Глава {chap_key}"), "").await;
+            assign_chapter_inner(&db, "stress_tree", &c_id, Some(vol_id.clone())).await.unwrap();
         }
     }
-    println!("\n[LOAD TEST] Построение дерева из 530 графовых узлов заняло {:?}", start_gen.elapsed());
+    println!("\n[LOAD TEST] Построение дерева из 505 графовых узлов заняло {:?}", start_gen.elapsed());
 
     // Замеряем время выборки полной иерархии
     let start_query = Instant::now();
@@ -209,11 +204,9 @@ async fn stress_deep_hierarchy_1000_nodes() {
 
     println!("[LOAD TEST] Запрос и сборка полного дерева иерархии заняли {:?}", query_elapsed);
     let volumes = hierarchy["volumes"].as_array().expect("volumes must be array");
-    let arcs = hierarchy["arcs"].as_array().expect("arcs must be array");
     let chapters = hierarchy["chapters"].as_array().expect("chapters must be array");
 
     assert_eq!(volumes.len(), 5, "должно быть 5 томов");
-    assert_eq!(arcs.len(), 25, "должно быть 25 арок");
     assert_eq!(chapters.len(), 500, "должно быть 500 глав");
 }
 

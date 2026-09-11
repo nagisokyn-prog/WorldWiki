@@ -124,7 +124,6 @@ export default defineComponent({
     const getEntityDisplayName = schema.getEntityDisplayName;
     const deleteEntity = shell.deleteEntity;
     const deleteVolume = shell.deleteVolume;
-    const deleteArc = shell.deleteArc;
     const createChapterIn = shell.createChapterIn;
     const deleteChapter = shell.deleteChapter;
     const renameChapter = shell.renameChapter;
@@ -216,7 +215,6 @@ export default defineComponent({
       getEntityDisplayName,
       deleteEntity,
       deleteVolume,
-      deleteArc,
       createChapterIn,
       deleteChapter,
       renameChapter,

@@ -4,7 +4,6 @@ import type { EntitySchema } from '../../../types/generated/EntitySchema';
 import type {
   EntityTypeItem,
   EntitySelectorItem,
-  InsertEntityPayload,
   EntityLinkSelectorProps,
   EntityLinkSelectorEmits
 } from './EntityLinkSelector.model';

@@ -7,7 +7,6 @@ import { useCalendarStore } from './calendar.store';
 import type { Chapter } from '../types/generated/Chapter';
 
 export type ChapterWithHierarchy = Chapter & {
-  arc_id?: string | null;
   volume_id?: string | null;
   [key: string]: unknown;
 };
@@ -17,22 +16,16 @@ export interface HierarchyVolume {
   title?: string;
   [key: string]: unknown;
 }
-export interface HierarchyArc {
-  id: string;
-  volume_id?: string | null;
-  title?: string;
-  [key: string]: unknown;
-}
+
 export interface ChapterHierarchy {
   volumes: HierarchyVolume[];
-  arcs: HierarchyArc[];
   chapters: ChapterWithHierarchy[];
 }
 
 export const useChapterStore = defineStore('chapter', () => {
   const loading = ref(false);
   const chapters = ref<ChapterWithHierarchy[]>([]);
-  const hierarchy = ref<ChapterHierarchy>({ volumes: [], arcs: [], chapters: [] });
+  const hierarchy = ref<ChapterHierarchy>({ volumes: [], chapters: [] });
   const currentChapterId = ref<string | undefined>(undefined);
   const currentChapter = ref<ChapterWithHierarchy | null>(null);
   const hasUnsavedChanges = ref(false);
@@ -48,18 +41,9 @@ export const useChapterStore = defineStore('chapter', () => {
     }) || null;
   });
 
-  const currentArc = computed(() => {
-    const ch = currentChapterNode.value;
-    if (!ch || !ch.arc_id || !hierarchy.value.arcs) return null;
-    return hierarchy.value.arcs.find(a => a.id === ch.arc_id) || null;
-  });
-
   const currentVolume = computed(() => {
     const ch = currentChapterNode.value;
-    let volId = ch?.volume_id;
-    if (!volId && currentArc.value) {
-      volId = currentArc.value.volume_id;
-    }
+    const volId = ch?.volume_id;
     if (!volId || !hierarchy.value.volumes) return null;
     return hierarchy.value.volumes.find(v => v.id === volId) || null;
   });
@@ -163,17 +147,12 @@ export const useChapterStore = defineStore('chapter', () => {
     }
   };
 
-  const createNewChapter = async (project: string, arcId?: string, volumeId?: string) => {
-    console.error('🔥🔥🔥 chapter.store: createNewChapter called with', { arcId, volumeId });
+  const createNewChapter = async (project: string, volumeId?: string) => {
+    console.error('🔥🔥🔥 chapter.store: createNewChapter called with', { volumeId });
     const allChapters = hierarchy.value?.chapters ?? [];
-    let relevantChapters = allChapters;
-    if (arcId || volumeId) {
-      relevantChapters = allChapters.filter(c => {
-        if (arcId) return c.arc_id === arcId;
-        if (volumeId) return c.volume_id === volumeId && !c.arc_id;
-        return false;
-      });
-    }
+    const relevantChapters = volumeId
+      ? allChapters.filter(c => c.volume_id === volumeId)
+      : allChapters.filter(c => !c.volume_id);
     let maxNum = 0;
     relevantChapters.forEach(c => {
       const m = (c.title || '').match(/Глава\s*(\d+)/i);
@@ -184,7 +163,6 @@ export const useChapterStore = defineStore('chapter', () => {
     });
     const num = maxNum + 1;
     const newCh: ChapterWithHierarchy = chapterService.createNew(`Глава ${num}`);
-    if (arcId) newCh.arc_id = arcId;
     if (volumeId) newCh.volume_id = volumeId;
 
     if (num === 1) {
@@ -210,10 +188,10 @@ export const useChapterStore = defineStore('chapter', () => {
     console.error('🔥🔥🔥 chapter.store: saving new chapter', newCh);
     await chapterService.save(project, newCh);
     console.error('🔥🔥🔥 chapter.store: chapter saved, checking relations...');
-    if (arcId || volumeId) {
-      console.error('🔥🔥🔥 chapter.store: calling api.assignChapter...', { project, id: newCh.id, arcId, volumeId });
+    if (volumeId) {
+      console.error('🔥🔥🔥 chapter.store: calling api.assignChapter...', { project, id: newCh.id, volumeId });
       if (newCh.id) {
-        await api.assignChapter(project, newCh.id, arcId ?? null, volumeId ?? null);
+        await api.assignChapter(project, newCh.id, volumeId);
       }
       console.error('🔥🔥🔥 chapter.store: api.assignChapter DONE!');
     }
@@ -245,7 +223,7 @@ export const useChapterStore = defineStore('chapter', () => {
   return {
     loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving,
-    currentChapterNode, currentArc, currentVolume,
+    currentChapterNode, currentVolume,
     loadChapters, loadHierarchy, saveChapter, openChapter, 
     createNewChapter, onRenameChapter, deleteChapter
   };

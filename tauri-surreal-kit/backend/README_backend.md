@@ -177,7 +177,7 @@ entity_commands![
     worldwiki_tauri::commands::ai_query_world,
 
     // Автогенерация для сущностей (CRUD)
-    @entities: [Chapter, Volume, Arc, Plan, Tag, Calendar, PlotPromise],
+    @entities: [Chapter, Volume, Plan, Tag, Calendar, PlotPromise],
 
     // Автогенерация для поисковых сущностей (CRUD + search)
     @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],

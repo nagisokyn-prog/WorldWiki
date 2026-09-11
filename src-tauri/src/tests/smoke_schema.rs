@@ -22,7 +22,6 @@ async fn smoke_all_required_tables_exist() {
     let expected_tables = [
         "projects",
         "volumes",
-        "arcs",
         "chapters",
         "text_blocks",
         "entities",
@@ -67,7 +66,7 @@ async fn smoke_all_required_tables_exist() {
 async fn smoke_tables_are_queryable_empty() {
     let db = create_test_db().await;
 
-    for table in ["projects", "volumes", "arcs", "chapters", "entities", "text_blocks", "entity_rel", "contains"] {
+    for table in ["projects", "volumes", "chapters", "entities", "text_blocks", "entity_rel", "contains"] {
         let mut res = db
             .query(format!("SELECT count() FROM {table} GROUP ALL"))
             .await

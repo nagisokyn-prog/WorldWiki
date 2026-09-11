@@ -1,14 +1,14 @@
-use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc};
 use super::status::ManuscriptStatus;
 use super::text_block::TextBlock;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Chapter {
     pub id: String,
     pub project_id: String,
     pub volume_id: Option<String>,
-    pub arc_id: Option<String>,
+    #[serde(default)]
     pub title: String,
     #[serde(default)]
     pub content: String,
@@ -35,7 +35,6 @@ impl Chapter {
             id: uuid::Uuid::new_v4().to_string(),
             project_id: project_id.into(),
             volume_id: None,
-            arc_id: None,
             title: title.into(),
             content: String::new(),
             summary: None,

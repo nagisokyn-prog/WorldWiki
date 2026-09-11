@@ -21,7 +21,6 @@ describe('useManuscriptPointPicker', () => {
         { id: 'volumes:v1', title: 'Том 1' },
         { id: 'volumes:v2', title: 'Том 2 (Пустой)' }
       ],
-      arcs: [],
       chapters: [
         { id: 'chapters:c1', title: 'Глава 1', volume_id: 'volumes:v1' },
         { id: 'chapters:c2', title: 'Глава 2', volume_id: 'volumes:v1' },

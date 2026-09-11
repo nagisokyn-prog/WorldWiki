@@ -29,7 +29,7 @@
         <p>Не удалось построить диаграмму:</p>
         <code>{{ errorMessage }}</code>
       </div>
-      <div v-else-if="svgContent" class="mermaid-svg-container" v-html="svgContent"></div>
+      <div v-show="!isLoading && !errorMessage" ref="containerRef" class="mermaid-svg-container"></div>
     </div>
   </div>
 </template>
@@ -42,7 +42,7 @@ const props = defineProps<AiMermaidDiagramProps>();
 const emit = defineEmits<AiMermaidDiagramEmits>();
 
 const {
-  svgContent,
+  containerRef,
   isLoading,
   errorMessage,
   showRaw,

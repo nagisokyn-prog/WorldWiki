@@ -416,7 +416,6 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
           const lastCh = hier.chapters[hier.chapters.length - 1];
           const initialPoint = {
             chapter_id: lastCh.id,
-            arc_id: lastCh.arc_id || null,
             volume_id: lastCh.volume_id || null,
             is_auto_extend: true
           };

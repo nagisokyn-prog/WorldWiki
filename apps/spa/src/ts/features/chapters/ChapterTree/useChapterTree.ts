@@ -62,10 +62,7 @@ export function useChapterTree(
         return clean1.replace(/"/g, '') === clean2.replace(/"/g, '');
     };
 
-    const getArcsForVolume = (volumeId: unknown) => hierarchy.value.arcs.filter(a => compareIds(a.volume_id, volumeId));
-    const getRootArcs = () => hierarchy.value.arcs.filter(a => !a.volume_id);
-    const getChaptersForArc = (arcId: unknown) => hierarchy.value.chapters.filter(c => compareIds(c.arc_id, arcId));
-    const getRootChapters = () => hierarchy.value.chapters.filter(c => !c.arc_id && !c.volume_id);
+    const getRootChapters = () => hierarchy.value.chapters.filter(c => !c.volume_id);
 
     const activeId = computed(() => {
         // if entity is open, use activeEditorId
@@ -296,21 +293,11 @@ export function useChapterTree(
             if (String(node.id).startsWith('__new_volume__')) {
                 await api.createVolume(props.project, newName);
                 await load();
-            } else if (String(node.id).startsWith('__new_arc__')) {
-                const volId = data?.original ? ((data.original.volumeId as string | undefined) || (data.original.volume_id as string | undefined) || null) : null;
-                await api.createArc(props.project, newName, volId);
-                await load();
             } else if (data?.type === 'volume' && data.original) {
                 const volId = String(data.original.id);
                 const vol = hierarchy.value.volumes.find((v) => String(v.id) === volId);
                 if (vol) vol.title = newName;
                 await api.updateVolume(props.project, volId, newName);
-                await load();
-            } else if (data?.type === 'arc' && data.original) {
-                const arcId = String(data.original.id);
-                const arc = hierarchy.value.arcs.find((a) => String(a.id) === arcId);
-                if (arc) arc.title = newName;
-                await api.updateArc(props.project, arcId, newName, null);
                 await load();
             } else if (data?.type === 'chapter' && data.original) {
                 const chId = String(data.original.id);
@@ -344,7 +331,7 @@ export function useChapterTree(
     };
 
     const handleCancelRename = async (node: { id: string }) => {
-        if (String(node.id).startsWith('__new_volume__') || String(node.id).startsWith('__new_arc__')) {
+        if (String(node.id).startsWith('__new_volume__')) {
             await load(); // Just reload from server to wipe out temp object
         }
     };
@@ -359,12 +346,8 @@ export function useChapterTree(
             const original = data.original || {};
 
             if (type === 'volume') {
-                const arcs = getArcsForVolume(original.id).map((a) => a.id);
-                let chapters = hierarchy.value.chapters.filter((c) => compareIds((c as unknown as { volumeId?: string }).volumeId || c.volume_id, original.id));
-                for (const arcId of arcs) chapters = chapters.concat(getChaptersForArc(arcId));
-                emit('delete-volume', original, chapters, arcs, ids.length > 1);
-            } else if (type === 'arc') {
-                emit('delete-arc', original, getChaptersForArc(original.id), ids.length > 1);
+                const chapters = hierarchy.value.chapters.filter((c) => compareIds((c as unknown as { volumeId?: string }).volumeId || c.volume_id, original.id));
+                emit('delete-volume', original, chapters, ids.length > 1);
             } else if (type === 'chapter') {
                 emit('delete-chapter', original, ids.length > 1);
             } else if (data.isEntity && type) {

@@ -13,9 +13,7 @@ vi.mock('vue-router', () => ({
 
 vi.mock('../../../../services/api.client', () => ({
   createVolume: vi.fn().mockResolvedValue({ id: 'vol_new' }),
-  createArc: vi.fn().mockResolvedValue({ id: 'arc_new' }),
   updateVolume: vi.fn().mockResolvedValue({}),
-  updateArc: vi.fn().mockResolvedValue({}),
   updateChapter: vi.fn().mockResolvedValue({}),
   updateEntity: vi.fn().mockResolvedValue({}),
   deleteEntitySchema: vi.fn().mockResolvedValue({}),
@@ -57,12 +55,8 @@ describe('useChapterTree', () => {
     emit = vi.fn();
     mockHierarchy = ref({
       volumes: [{ id: 'vol_1', title: 'Volume 1' }],
-      arcs: [
-        { id: 'arc_1', title: 'Arc 1', volume_id: 'vol_1' },
-        { id: 'arc_root', title: 'Root Arc' },
-      ],
       chapters: [
-        { id: 'ch_1', title: 'Chapter 1', arc_id: 'arc_1' },
+        { id: 'ch_1', title: 'Chapter 1', volume_id: 'vol_1' },
         { id: 'ch_root', title: 'Root Chapter' },
       ],
     });
@@ -73,11 +67,11 @@ describe('useChapterTree', () => {
     };
   });
 
-  it('computes explorer sections with root arcs and root chapters and computes activeId', () => {
+  it('computes explorer sections with volumes and root chapters and computes activeId', () => {
     const tree = useChapterTree(props, emit);
 
     expect(tree.activeId.value).toBe('ch_1');
-    expect(tree.explorerSections.value[0].nodes.length).toBe(3); // volume, root arc, root chapter
+    expect(tree.explorerSections.value[0].nodes.length).toBe(2); // volume, root chapter
 
     // Fallback activeId to activeNode
     props.activeEditorId = null;
@@ -177,12 +171,11 @@ describe('useChapterTree', () => {
     wrapper.unmount();
   });
 
-  it('covers load catch error and root arc with child chapters', async () => {
-    // 1. Root arc with chapters
+  it('covers load catch error and volume with child chapters', async () => {
+    // 1. Volume with chapters
     mockHierarchy.value = {
-      volumes: [],
-      arcs: [{ id: 'arc_root_with_ch', title: 'Root Arc With Ch' }],
-      chapters: [{ id: 'ch_in_root_arc', arc_id: 'arc_root_with_ch', title: 'Child Ch' }],
+      volumes: [{ id: 'vol_1', title: 'Volume 1' }],
+      chapters: [{ id: 'ch_in_vol', volume_id: 'vol_1', title: 'Child Ch' }],
     };
     const tree = useChapterTree(props, emit);
     const msSection = tree.explorerSections.value.find((s: any) => s.id === 'manuscript');
@@ -213,7 +206,7 @@ describe('useChapterTree', () => {
   it('handles handleDelete with unknown nodes', async () => {
     const tree = useChapterTree(props, emit);
     await tree.handleDelete(['unknown_id_123', 'vol_1']);
-    expect(emit).toHaveBeenCalledWith('delete-volume', expect.anything(), expect.anything(), expect.anything(), true);
+    expect(emit).toHaveBeenCalledWith('delete-volume', expect.anything(), expect.anything(), true);
   });
 
   describe('Comprehensive branch test coverage for useChapterTree', () => {
@@ -222,12 +215,8 @@ describe('useChapterTree', () => {
         volumes: [
           { id: { id: { String: 'vol_obj_id' } } }, // complex object id
         ],
-        arcs: [
-          { id: 'arc_in_vol', volume_id: { id: { String: 'vol_obj_id' } } }, // match via String
-          { id: 'arc_json_id', volume_id: { other: 'prop' } }, // match via JSON.stringify
-        ],
         chapters: [
-          { id: 'ch_in_arc', arc_id: 'arc_in_vol' },
+          { id: 'ch_in_vol', volume_id: { id: { String: 'vol_obj_id' } } },
         ],
       };
 
@@ -236,15 +225,11 @@ describe('useChapterTree', () => {
       expect(msSection?.nodes?.[0]?.children?.length).toBe(1);
     });
 
-    it('handles untitled volumes, arcs, chapters and deep grandchild hierarchy', () => {
+    it('handles untitled volumes and chapters', () => {
       mockHierarchy.value = {
         volumes: [{ id: 'vol_untitled' }], // no title
-        arcs: [
-          { id: 'arc_in_vol', volume_id: 'vol_untitled' }, // no title
-          { id: 'arc_root_untitled' }, // no title
-        ],
         chapters: [
-          { id: 'ch_in_arc', arc_id: 'arc_in_vol' }, // no title
+          { id: 'ch_in_vol', volume_id: 'vol_untitled' }, // no title
           { id: 'ch_root_untitled' }, // no title
         ],
       };
@@ -254,7 +239,6 @@ describe('useChapterTree', () => {
       expect(msSection).toBeDefined();
       expect(msSection?.nodes?.[0]?.label).toBe('Без названия');
       expect(msSection?.nodes?.[0]?.children?.[0]?.label).toBe('Без названия');
-      expect(msSection?.nodes?.[0]?.children?.[0]?.children?.[0]?.label).toBe('Без названия');
     });
 
 
@@ -308,7 +292,7 @@ describe('useChapterTree', () => {
       expect(emit).not.toHaveBeenCalled();
     });
 
-    it('handles handleCreateInline branches: arc parent, volume parent, unknown parent, non-manuscript', async () => {
+    it('handles handleCreateInline branches: volume parent, non-manuscript, root', async () => {
       const tree = useChapterTree(props, emit);
       tree.explorerTreeRef.value = {
         startCreate: vi.fn(),
@@ -320,23 +304,16 @@ describe('useChapterTree', () => {
       await tree.handleCreateInline({ sectionId: 'character' });
       expect(tree.explorerTreeRef.value.startCreate).toHaveBeenCalledWith('character');
 
-      // Manuscript with arc parent
-      await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'arc_1' });
-      expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: 'arc_1', volumeId: 'vol_1' });
-
-      // Manuscript with volume parent -> triggers handleCreate (add arc)
+      // Manuscript with volume parent
       await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'vol_1' });
-
-      // Manuscript with unknown parent fallback
-      await tree.handleCreateInline({ sectionId: 'manuscript', parentId: 'unknown_parent_999' });
-      expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: null, volumeId: 'unknown_parent_999' });
+      expect(emit).toHaveBeenCalledWith('create-chapter-in', { volumeId: 'vol_1' });
 
       // Manuscript root
       await tree.handleCreateInline({ sectionId: 'manuscript' });
-      expect(emit).toHaveBeenCalledWith('create-chapter-in', { arcId: null, volumeId: null });
+      expect(emit).toHaveBeenCalledWith('create-chapter-in', { volumeId: null });
     });
 
-    it('handles handleCreate for manuscript section: new volume and new arc', async () => {
+    it('handles handleCreate for manuscript section: new volume and new chapter in volume', async () => {
       const tree = useChapterTree(props, emit);
       tree.explorerTreeRef.value = {
         startRename: vi.fn(),
@@ -348,10 +325,9 @@ describe('useChapterTree', () => {
       await tree.handleCreate({ sectionId: 'manuscript' });
       expect(tree.explorerTreeRef.value?.startRename).toHaveBeenCalled();
 
-      // 2. Create arc in volume (with parentId)
+      // 2. Create chapter in volume (with parentId)
       await tree.handleCreate({ sectionId: 'manuscript', parentId: 'vol_1' });
-      expect(tree.explorerTreeRef.value?.expandNode).toHaveBeenCalledWith('vol_1');
-      expect(tree.explorerTreeRef.value?.startRename).toHaveBeenCalled();
+      expect(emit).toHaveBeenCalledWith('create-chapter-in', { volumeId: 'vol_1' });
     });
 
     it('handles handleRename and handleCancelRename across all node types', async () => {
@@ -361,23 +337,15 @@ describe('useChapterTree', () => {
       await tree.handleRename({ id: '__new_volume__', data: {} }, 'Brand New Volume');
       expect(api.createVolume).toHaveBeenCalledWith('my-proj', 'Brand New Volume');
 
-      // 2. __new_arc__
-      await tree.handleRename({ id: '__new_arc__123', data: { original: { volumeId: 'vol_1' } } }, 'New Arc');
-      expect(api.createArc).toHaveBeenCalledWith('my-proj', 'New Arc', 'vol_1');
-
-      // 3. Volume
+      // 2. Volume
       await tree.handleRename({ id: 'vol_1', data: { type: 'volume', original: { id: 'vol_1' } } }, 'Renamed Vol');
       expect(api.updateVolume).toHaveBeenCalledWith('my-proj', 'vol_1', 'Renamed Vol');
 
-      // 4. Arc
-      await tree.handleRename({ id: 'arc_1', data: { type: 'arc', original: { id: 'arc_1' } } }, 'Renamed Arc');
-      expect(api.updateArc).toHaveBeenCalledWith('my-proj', 'arc_1', 'Renamed Arc', null);
-
-      // 5. Chapter
+      // 3. Chapter
       await tree.handleRename({ id: 'ch_1', data: { type: 'chapter', original: { id: 'ch_1' } } }, 'Renamed Ch');
       expect(emit).toHaveBeenCalledWith('rename-chapter', { id: 'ch_1' }, 'Renamed Ch');
 
-      // 6. Entity
+      // 4. Entity
       await tree.handleRename({
         id: 'entities:char_1',
         data: {
@@ -388,17 +356,16 @@ describe('useChapterTree', () => {
       }, 'Renamed Hero');
       expect(emit).toHaveBeenCalledWith('rename-entity', 'character', 'char_1', 'Renamed Hero');
 
-      // Cancel rename for temporary new volume and new arc
+      // Cancel rename for temporary new volume
       await tree.handleCancelRename({ id: '__new_volume__' });
-      await tree.handleCancelRename({ id: '__new_arc__temp' });
     });
 
-    it('handles handleDelete for arc, chapter and entity node types', async () => {
+    it('handles handleDelete for volume, chapter and entity node types', async () => {
       const tree = useChapterTree(props, emit);
 
-      // Delete arc
-      await tree.handleDelete(['arc_root']);
-      expect(emit).toHaveBeenCalledWith('delete-arc', expect.anything(), expect.anything(), false);
+      // Delete volume
+      await tree.handleDelete(['vol_1']);
+      expect(emit).toHaveBeenCalledWith('delete-volume', expect.anything(), expect.anything(), false);
 
       // Delete chapter
       await tree.handleDelete(['ch_root']);

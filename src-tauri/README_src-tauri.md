@@ -183,7 +183,7 @@ src-tauri/
 - Rust-структуры с `serde` и `ts_rs` деривами.
 - Реализации трейта `SurrealRepository` для CRUD-операций.
 - TypeScript типы в `apps/spa/src/ts/types/generated/`.
-- Системные сущности: `Chapter`, `Volume`, `Arc`, `Plan`, `PlotPromise`, `Tag`, `Calendar`, `Chat`, `ChatMessage`, `AutoApprovalSetting`, `AiProfile`, `AiMode`, `Artifact`, `AiSkill`, `TextBlock`, `AgentMemory`, `WebCache`, `DictionaryWord`.
+- Системные сущности: `Chapter`, `Volume`, `Plan`, `PlotPromise`, `Tag`, `Calendar`, `Chat`, `ChatMessage`, `AutoApprovalSetting`, `AiProfile`, `AiMode`, `Artifact`, `AiSkill`, `TextBlock`, `AgentMemory`, `WebCache`, `DictionaryWord`.
 - Пользовательские сущности и связи: `Entity`, `EntitySchema`, `FieldDef`, `EntityRel`, `RelationSchema`, `Cites`.
 
 #### `src/logic/projects.rs`
@@ -204,9 +204,9 @@ src-tauri/
 - `get_chapter_revisions`, `toggle_chapter_history_pin` — история версий глав.
 
 #### `src/logic/volumes.rs`
-**Назначение**: Иерархия структуры книги (Проект ➔ Тома ➔ Арки ➔ Главы):
+**Назначение**: Иерархия структуры книги (Проект ➔ Тома ➔ Главы):
 - `get_chapter_hierarchy` — полная иерархическая структура с сортировкой.
-- `create_volume`, `update_volume`, `create_arc`, `update_arc`, `assign_chapter`, `reorder_node`.
+- `create_volume`, `update_volume`, `assign_chapter`, `reorder_node`.
 
 #### `src/logic/connections.rs`
 **Назначение**: Пользовательский граф связей между сущностями:

@@ -9,7 +9,7 @@ use surrealdb::Surreal;
 use super::chat_repo::clean_record_id;
 use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::knowledge::{Entity, EntityRelation};
-use worldwiki_domain::manuscript::{Arc as ArcNode, Chapter, Volume};
+use worldwiki_domain::manuscript::{Chapter, Volume};
 use worldwiki_domain::plot::{Plan, PlotPromise};
 use worldwiki_ports::ai::RAGContextPort;
 use worldwiki_ports::repositories::*;
@@ -426,71 +426,6 @@ impl VolumeRepository for SurrealVolumeRepository {
 }
 
 // ----------------------------------------------------------------------------
-// SurrealArcRepository
-// ----------------------------------------------------------------------------
-pub struct SurrealArcRepository {
-    db: Arc<Surreal<Db>>,
-}
-
-impl SurrealArcRepository {
-    pub fn new(db: Arc<Surreal<Db>>) -> Self {
-        Self { db }
-    }
-}
-
-#[async_trait]
-impl ArcRepository for SurrealArcRepository {
-    async fn get_by_id(&self, id: &str) -> Result<Option<ArcNode>, DomainError> {
-        let sql = "SELECT * FROM type::record('arcs', $id);";
-        let clean = id.trim_start_matches("arcs:");
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("id", clean.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_one(&mut res, 0)
-    }
-
-    async fn save(&self, arc: &ArcNode) -> Result<(), DomainError> {
-        let clean = arc.id.trim_start_matches("arcs:").to_string();
-        let data = prepare_data_for_upsert(
-            serde_json::to_value(arc).map_err(|e| DomainError::Validation(e.to_string()))?,
-        );
-        let sql = "UPSERT type::record('arcs', $id) CONTENT $data;";
-        self.db
-            .query(sql)
-            .bind(("id", clean))
-            .bind(("data", data))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
-    }
-
-    async fn delete(&self, id: &str) -> Result<(), DomainError> {
-        let clean = id.trim_start_matches("arcs:").to_string();
-        let sql = "DELETE type::record('arcs', $id);";
-        self.db
-            .query(sql)
-            .bind(("id", clean))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        Ok(())
-    }
-
-    async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<ArcNode>, DomainError> {
-        let sql = "SELECT * FROM arcs WHERE volume_id = $volume_id ORDER BY sort_order ASC;";
-        let mut res = self
-            .db
-            .query(sql)
-            .bind(("volume_id", volume_id.to_string()))
-            .await
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 0)
-    }
-}
-
-// ----------------------------------------------------------------------------
 // SurrealEntityRepository
 // ----------------------------------------------------------------------------
 pub struct SurrealEntityRepository {
@@ -865,9 +800,8 @@ impl PlanRepository for SurrealPlanRepository {
     async fn list_pending_by_volume(&self, volume_id: &str) -> Result<Vec<Plan>, DomainError> {
         let clean_vol = clean_id("volumes", volume_id);
         let sql = r#"
-            LET $arcs = SELECT VALUE out FROM $volume->contains;
-            LET $chapters = SELECT VALUE out FROM $volume->contains->contains;
-            SELECT * FROM plans WHERE completed = false AND (parent_ref = $volume OR parent_ref IN $arcs OR parent_ref IN $chapters);
+            LET $chapters = SELECT VALUE out FROM $volume->contains;
+            SELECT * FROM plans WHERE completed = false AND (parent_ref = $volume OR parent_ref IN $chapters);
         "#;
         let mut res = self
             .db
@@ -875,7 +809,7 @@ impl PlanRepository for SurrealPlanRepository {
             .bind(("volume", clean_vol))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
-        take_list(&mut res, 2)
+        take_list(&mut res, 1)
     }
 }
 

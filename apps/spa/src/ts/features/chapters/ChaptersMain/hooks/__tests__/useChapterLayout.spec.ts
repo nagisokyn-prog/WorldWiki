@@ -21,25 +21,17 @@ describe('useChapterLayout', () => {
     vi.useRealTimers();
   });
 
-  it('manages volume and arc plan item additions', async () => {
+  it('manages volume and chapter plan item additions', async () => {
     const layout = useChapterLayout();
     const mockVolumeRef = { addItem: vi.fn() };
-    const mockArcRef = { addItem: vi.fn() };
 
     layout.volumePlanRef.value = mockVolumeRef;
-    layout.arcPlanRef.value = mockArcRef;
 
     expect(layout.isVolumePlanOpen.value).toBe(false);
     layout.addVolumePlanItem();
     expect(layout.isVolumePlanOpen.value).toBe(true);
     vi.advanceTimersByTime(60);
     expect(mockVolumeRef.addItem).toHaveBeenCalled();
-
-    expect(layout.isArcPlanOpen.value).toBe(false);
-    layout.addArcPlanItem();
-    expect(layout.isArcPlanOpen.value).toBe(true);
-    vi.advanceTimersByTime(60);
-    expect(mockArcRef.addItem).toHaveBeenCalled();
 
     const mockChapterRef = { addItem: vi.fn() };
     layout.chapterPlanRef.value = mockChapterRef;
@@ -180,11 +172,6 @@ describe('useChapterLayout', () => {
     vm.isVolumePlanOpen = true;
     vm.volumePlanRef = null;
     vm.addVolumePlanItem();
-    vi.advanceTimersByTime(60);
-
-    vm.isArcPlanOpen = true;
-    vm.arcPlanRef = null;
-    vm.addArcPlanItem();
     vi.advanceTimersByTime(60);
 
     // Mousemove / mouseup when not dragging

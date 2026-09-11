@@ -24,7 +24,7 @@ export interface AiChatTopBarEmits {
   (e: 'restart-session'): void;
 }
 
-export function useAiChatTopBar(props: AiChatTopBarProps, emit?: AiChatTopBarEmits) {
+export function useAiChatTopBar(props: AiChatTopBarProps, _emit?: AiChatTopBarEmits) {
   const isIndexing = ref(false);
   const isUnloading = ref(false);
   const { availableModels, fetchModels } = useAiModels();

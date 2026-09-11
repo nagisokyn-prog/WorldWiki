@@ -343,8 +343,8 @@ describe('useRelationshipBlock', () => {
       const rel = useRelationshipBlock(props, emit);
       props.item.dynamics = [
         {
-          начальная_глава: { volume_id: 'v1', arc_id: 'a1', chapter_id: 'c1' },
-          конечная_глава: { volume_id: 'v1', arc_id: 'a2', chapter_id: 'c5', is_auto_extend: true }
+          начальная_глава: { volume_id: 'v1', chapter_id: 'c1' },
+          конечная_глава: { volume_id: 'v1', chapter_id: 'c5', is_auto_extend: true }
         }
       ];
 
@@ -353,10 +353,10 @@ describe('useRelationshipBlock', () => {
       expect(props.item.dynamics.length).toBe(2);
       expect(props.item.dynamics[0].конечная_глава.is_auto_extend).toBe(false);
       expect(props.item.dynamics[1].начальная_глава).toEqual({
-        volume_id: 'v1', arc_id: 'a2', chapter_id: 'c5', is_auto_extend: false
+        volume_id: 'v1', chapter_id: 'c5', is_auto_extend: false
       });
       expect(props.item.dynamics[1].конечная_глава).toEqual({
-        volume_id: 'v1', arc_id: 'a2', chapter_id: 'c5', is_auto_extend: true
+        volume_id: 'v1', chapter_id: 'c5', is_auto_extend: true
       });
     });
 

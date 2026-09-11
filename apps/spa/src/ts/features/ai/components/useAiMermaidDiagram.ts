@@ -41,7 +41,7 @@ export function useAiMermaidDiagram(
   props: AiMermaidDiagramProps,
   emit: AiMermaidDiagramEmits
 ) {
-  const svgContent = ref('');
+  const containerRef = ref<HTMLElement | null>(null);
   const isLoading = ref(false);
   const errorMessage = ref('');
   const showRaw = ref(false);
@@ -49,10 +49,28 @@ export function useAiMermaidDiagram(
 
   let renderCounter = 0;
 
+  const mountSvg = (svgString: string) => {
+    if (!containerRef.value) return;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgString, 'image/svg+xml');
+      const svgEl = doc.querySelector('svg');
+      if (svgEl) {
+        // Strip any script tags for bulletproof XSS protection
+        svgEl.querySelectorAll('script').forEach((s) => s.remove());
+        containerRef.value.replaceChildren(svgEl);
+      } else {
+        containerRef.value.replaceChildren();
+      }
+    } catch (e) {
+      console.warn('Failed to parse SVG:', e);
+    }
+  };
+
   const renderDiagram = async () => {
     const raw = props.code.trim();
     if (!raw) {
-      svgContent.value = '';
+      if (containerRef.value) containerRef.value.replaceChildren();
       return;
     }
 
@@ -65,16 +83,16 @@ export function useAiMermaidDiagram(
         mermaid.initialize({
           startOnLoad: false,
           theme: 'dark',
-          securityLevel: 'loose',
+          securityLevel: 'strict',
           fontFamily: 'inherit'
         });
 
         const id = `mermaid_diag_${Date.now()}_${++renderCounter}`;
         const { svg } = await mermaid.render(id, raw);
-        svgContent.value = svg;
+        mountSvg(svg);
         emit('rendered', svg);
       } else {
-        // Fallback when offline or CDN unavailable: show nicely formatted source view
+        // Fallback when offline or library unavailable: show nicely formatted source view
         showRaw.value = true;
       }
     } catch (e) {
@@ -109,7 +127,7 @@ export function useAiMermaidDiagram(
   });
 
   return {
-    svgContent,
+    containerRef,
     isLoading,
     errorMessage,
     showRaw,

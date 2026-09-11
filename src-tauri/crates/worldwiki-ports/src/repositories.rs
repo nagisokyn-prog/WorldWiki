@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use worldwiki_domain::manuscript::{Chapter, Volume, Arc as ArcNode};
+use worldwiki_domain::manuscript::{Chapter, Volume};
 use worldwiki_domain::knowledge::{Entity, EntityRelation};
 use worldwiki_domain::plot::{PlotPromise, Plan};
 use worldwiki_domain::errors::DomainError;
@@ -19,14 +19,6 @@ pub trait VolumeRepository: Send + Sync {
     async fn save(&self, volume: &Volume) -> Result<(), DomainError>;
     async fn delete(&self, id: &str) -> Result<(), DomainError>;
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Volume>, DomainError>;
-}
-
-#[async_trait]
-pub trait ArcRepository: Send + Sync {
-    async fn get_by_id(&self, id: &str) -> Result<Option<ArcNode>, DomainError>;
-    async fn save(&self, arc: &ArcNode) -> Result<(), DomainError>;
-    async fn delete(&self, id: &str) -> Result<(), DomainError>;
-    async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<ArcNode>, DomainError>;
 }
 
 #[async_trait]

@@ -192,15 +192,6 @@ surreal_entity! {
 }
 
 surreal_entity! {
-    #[table = "arcs"]
-    #[project_scoped]
-    #[tauri_commands]
-    pub struct Arc {
-        pub title: String,
-    }
-}
-
-surreal_entity! {
     #[table = "chapters"]
     #[project_scoped]
     #[tauri_commands]
@@ -254,7 +245,6 @@ surreal_entity! {
         #[flexible] #[serde(default)] pub progressions: serde_json::Value,
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub resolution: Option<serde_json::Value>,
         pub resolved_in_volume: Option<String>,
-        pub resolved_in_arc: Option<String>,
         pub resolved_in_chapter: Option<String>,
     }
 }
@@ -366,19 +356,19 @@ surreal_relation! {
 surreal_relation! {
     #[edge = "contains"]
     #[from = volumes]
-    #[to = arcs]
+    #[to = chapters]
     #[tauri_commands]
-    pub struct VolumeContainsArc {
+    pub struct VolumeContainsChapter {
         #[ts(type = "number")] pub sort_order: i64,
     }
 }
 
 surreal_relation! {
     #[edge = "contains"]
-    #[from = arcs]
+    #[from = projects]
     #[to = chapters]
     #[tauri_commands]
-    pub struct ArcContainsChapter {
+    pub struct ProjectContainsChapter {
         #[ts(type = "number")] pub sort_order: i64,
     }
 }
@@ -437,10 +427,10 @@ surreal_schema! {
     entities: [
         TextBlock, ChatMessage, Chat, DictionaryWord, WebCache, AgentMemory,
         AutoApprovalSetting, AiProfile, Artifact, AiSkill,
-        Calendar, Volume, Arc, Chapter, Tag, Plan
+        Calendar, Volume, Chapter, Tag, Plan
     ],
     relations: [
-        Cites, VolumeContainsArc, ArcContainsChapter, ProjectContainsVolume,
+        Cites, VolumeContainsChapter, ProjectContainsChapter, ProjectContainsVolume,
         ChatContainsMessage, MessageContainsMessage, ProjectContainsChat, ChatContainsChat
     ]
 }
@@ -467,7 +457,6 @@ mod ts_export_tests {
         AiSkill::export(&cfg).expect(export_err_msg);
         Plan::export(&cfg).expect(export_err_msg);
         Volume::export(&cfg).expect(export_err_msg);
-        Arc::export(&cfg).expect(export_err_msg);
         Chapter::export(&cfg).expect(export_err_msg);
         Tag::export(&cfg).expect(export_err_msg);
         Calendar::export(&cfg).expect(export_err_msg);

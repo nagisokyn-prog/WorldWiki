@@ -53,14 +53,13 @@ describe('useChaptersMain', () => {
     mockStore = {
       loading: ref(false),
       chapters: ref([]),
-      hierarchy: ref({ volumes: [], arcs: [], chapters: [] }),
+      hierarchy: ref({ volumes: [], chapters: [] }),
       currentChapterId: ref('ch_1'),
       currentChapter: ref({ id: 'ch_1', title: 'Prologue', scrollPos: 0 }),
       hasUnsavedChanges: ref(false),
       debugError: ref(''),
       isSaving: ref(false),
       currentChapterNode: ref(null),
-      currentArc: ref(null),
       currentVolume: ref(null),
       loadChapters: vi.fn().mockResolvedValue([]),
       saveChapter: vi.fn(),
@@ -198,8 +197,8 @@ describe('useChaptersMain', () => {
   it('handles tree node selection and opening chapter as tab', () => {
     const main = useChaptersMain(props, emit);
 
-    main.onTreeNodeSelect({ type: 'arc', node: { id: 'arc_1' } });
-    expect(main.localActiveTreeNode.value).toEqual({ type: 'arc', node: { id: 'arc_1' } });
+    main.onTreeNodeSelect({ type: 'volume', node: { id: 'vol_1' } });
+    expect(main.localActiveTreeNode.value).toEqual({ type: 'volume', node: { id: 'vol_1' } });
 
     main.openChapterFromTree({ id: 'ch_2', title: 'Chapter 2' });
     expect(main.localActiveTreeNode.value).toEqual({
@@ -214,8 +213,8 @@ describe('useChaptersMain', () => {
     const mockTree = { load: vi.fn().mockResolvedValue(undefined) };
     main.chapterTreeRef.value = mockTree;
 
-    await main.createChapterIn({ arcId: 'arc_1', volumeId: 'vol_1' });
-    expect(mockStore.createNewChapter).toHaveBeenCalledWith('proj_1', 'arc_1', 'vol_1');
+    await main.createChapterIn({ volumeId: 'vol_1' });
+    expect(mockStore.createNewChapter).toHaveBeenCalledWith('proj_1', 'vol_1');
     expect(mockTree.load).toHaveBeenCalled();
 
     await main.handleRenameChapter({ id: 'ch_1' } as any, 'New Name');

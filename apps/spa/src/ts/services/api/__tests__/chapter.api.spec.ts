@@ -47,7 +47,7 @@ describe('chapterApi', () => {
   });
 
   describe('saveChapter', () => {
-    it('saves chapter with arc and content', async () => {
+    it('saves chapter with volume and content', async () => {
       vi.mocked(api.saveChapter).mockResolvedValueOnce({ id: 'chapters:ch1' } as any);
       vi.mocked(api.assignChapter).mockResolvedValueOnce(undefined as any);
       vi.mocked(invoke).mockResolvedValueOnce(undefined);
@@ -55,7 +55,6 @@ describe('chapterApi', () => {
       const input = {
         id: 'chapters:ch1',
         title: 'Prologue',
-        arc_id: 'arc1',
         volume_id: 'vol1',
         content: '<p>Hello</p>',
       };
@@ -66,7 +65,7 @@ describe('chapterApi', () => {
         ...input,
         project_id: 'projects:my-proj',
       });
-      expect(api.assignChapter).toHaveBeenCalledWith('my-proj', 'ch1', 'arc1', 'vol1');
+      expect(api.assignChapter).toHaveBeenCalledWith('my-proj', 'ch1', 'vol1');
       expect(invoke).toHaveBeenCalledWith('save_text_blocks', {
         project: 'my-proj',
         chapterId: 'chapters:ch1',
@@ -84,7 +83,7 @@ describe('chapterApi', () => {
 
       const input = {
         id: 'ch2',
-        arc_id: 'arc1',
+        volume_id: 'vol1',
         content: '<p>Content</p>',
       };
 
@@ -136,7 +135,6 @@ describe('chapterApi', () => {
     it('getHierarchy calls get_chapter_hierarchy and processes items', async () => {
       vi.mocked(invoke).mockResolvedValueOnce({
         volumes: [{ id: 'v1' }],
-        arcs: [{ id: 'a1' }],
         chapters: [{ id: 'c1' }],
       });
 
@@ -144,13 +142,12 @@ describe('chapterApi', () => {
 
       expect(invoke).toHaveBeenCalledWith('get_chapter_hierarchy', { project: 'p1' });
       expect(res.volumes.length).toBe(1);
-      expect(res.arcs.length).toBe(1);
       expect(res.chapters.length).toBe(1);
 
-      // when volumes, arcs, chapters are undefined
+      // when volumes, chapters are undefined
       vi.mocked(invoke).mockResolvedValueOnce({});
       const emptyRes = await chapterApi.getHierarchy('p1');
-      expect(emptyRes).toEqual({ volumes: [], arcs: [], chapters: [] });
+      expect(emptyRes).toEqual({ volumes: [], chapters: [] });
     });
 
     it('createVolume, updateVolume, deleteVolume', async () => {
@@ -168,25 +165,10 @@ describe('chapterApi', () => {
       expect(invoke).toHaveBeenCalledWith('delete_volume', { id: 'vol_1' });
     });
 
-    it('createArc, updateArc, deleteArc', async () => {
-      vi.mocked(invoke).mockResolvedValueOnce({ id: 'arc_1' });
-      const arcId = await chapterApi.createArc('p1', 'Arc 1', 'vol_1');
-      expect(invoke).toHaveBeenCalledWith('create_arc', { project: 'p1', title: 'Arc 1', volumeId: 'vol_1' });
-      expect(arcId).toBe('arc_1');
-
-      vi.mocked(invoke).mockResolvedValueOnce(undefined);
-      await chapterApi.updateArc('p1', 'arc_1', 'Arc 1 Updated', null);
-      expect(invoke).toHaveBeenCalledWith('update_arc', { project: 'p1', id: 'arc_1', title: 'Arc 1 Updated', volumeId: null });
-
-      vi.mocked(invoke).mockResolvedValueOnce(undefined);
-      await chapterApi.deleteArc('p1', 'arc_1');
-      expect(invoke).toHaveBeenCalledWith('delete_arc', { id: 'arc_1' });
-    });
-
     it('assignChapter and reorderNode', async () => {
       vi.mocked(invoke).mockResolvedValueOnce(undefined);
-      await chapterApi.assignChapter('p1', 'ch1', 'arc1', 'vol1');
-      expect(invoke).toHaveBeenCalledWith('assign_chapter', { project: 'p1', chapterId: 'ch1', arcId: 'arc1', volumeId: 'vol1' });
+      await chapterApi.assignChapter('p1', 'ch1', 'vol1');
+      expect(invoke).toHaveBeenCalledWith('assign_chapter', { project: 'p1', chapterId: 'ch1', volumeId: 'vol1' });
 
       vi.mocked(invoke).mockResolvedValueOnce(undefined);
       await chapterApi.reorderNode('p1', 'chapter', 'ch1', 2);
@@ -200,7 +182,7 @@ describe('chapterApi', () => {
         { id: 'p1', parent_type: 'chapter', parent_ref: 'ch1', title: 'Plan 1', completed: false, sort_order: 2 },
         { id: 'p2', parent_type: 'chapter', parent_ref: 'ch1', title: 'Plan 0', completed: true, sort_order: 1 },
         { id: 'p0', parent_type: 'chapter', parent_ref: 'ch1', title: 'Plan No Order', completed: false }, // missing sort_order
-        { id: 'p3', parent_type: 'arc', parent_ref: 'a1', title: 'Other' },
+        { id: 'p3', parent_type: 'volume', parent_ref: 'v1', title: 'Other' },
       ]);
 
       const res = await chapterApi.getPlanItems('proj', 'chapter', 'ch1');
@@ -266,27 +248,18 @@ describe('chapterApi', () => {
       expect(res).toBe(false);
     });
 
-    it('handles default arguments for arcs, chapter assignment, and savePlanItem', async () => {
-      // 1. createArc & updateArc without volumeId
-      vi.mocked(invoke).mockResolvedValueOnce({ id: 'arc_no_vol' });
-      await chapterApi.createArc('p1', 'Arc Title');
-      expect(invoke).toHaveBeenCalledWith('create_arc', { project: 'p1', title: 'Arc Title', volumeId: null });
-
-      vi.mocked(invoke).mockResolvedValueOnce(undefined);
-      await chapterApi.updateArc('p1', 'arc_1', 'Arc Title');
-      expect(invoke).toHaveBeenCalledWith('update_arc', { project: 'p1', id: 'arc_1', title: 'Arc Title', volumeId: null });
-
-      // 2. assignChapter with default nulls
+    it('handles default arguments for chapter assignment, and savePlanItem', async () => {
+      // 1. assignChapter with default null
       vi.mocked(invoke).mockResolvedValueOnce(undefined);
       await chapterApi.assignChapter('p1', 'ch1');
-      expect(invoke).toHaveBeenCalledWith('assign_chapter', { project: 'p1', chapterId: 'ch1', arcId: null, volumeId: null });
+      expect(invoke).toHaveBeenCalledWith('assign_chapter', { project: 'p1', chapterId: 'ch1', volumeId: null });
 
-      // 3. getPlanItems when get_plans returns null
+      // 2. getPlanItems when get_plans returns null
       vi.mocked(invoke).mockResolvedValueOnce(null);
       const emptyPlans = await chapterApi.getPlanItems('p1', 'chapter', 'ch1');
       expect(emptyPlans).toEqual([]);
 
-      // 4. savePlanItem without optional fields
+      // 3. savePlanItem without optional fields
       vi.mocked(invoke).mockResolvedValueOnce({ id: 'plan_def' });
       await chapterApi.savePlanItem('p1', {
         parentType: 'chapter',
@@ -307,4 +280,3 @@ describe('chapterApi', () => {
     });
   });
 });
-

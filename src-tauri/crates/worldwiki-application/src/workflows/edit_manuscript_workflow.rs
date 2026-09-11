@@ -80,7 +80,7 @@ impl EditManuscriptAtomicWorkflow {
         let mut promises_resolved = 0;
         for pid in req.resolved_promise_ids {
             if let Some(mut promise) = self.plot_services.promise_repo.get_by_id(&pid).await? {
-                promise.resolve(chapter.id.clone(), chapter.volume_id.clone(), chapter.arc_id.clone(), None);
+                promise.resolve(chapter.id.clone(), chapter.volume_id.clone(), None);
                 self.plot_services.promise_repo.save(&promise).await?;
                 promises_resolved += 1;
             }

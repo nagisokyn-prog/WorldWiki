@@ -45,7 +45,7 @@
 |------|---------------|-----|---------------|
 | `src/tests/common.rs` | Инфраструктура: in-memory SurrealDB + схема `surreal_schema.surql` + сидинг | Инфраструктура | ✅ **ГОТОВО** |
 | `src/tests/timeline_integration.rs` | Таймлайн в SurrealDB: `in_memory_db_ready`, скоупы, каскады, roundtrip `save_global_timeline` | Integration | ✅ **6 тестов** |
-| `src/tests/hierarchy_integration.rs` | Иерархия сюжета: `create_volume`, `create_arc`, `assign_chapter`, `get_chapter_hierarchy`, `reorder_node` | Integration | ✅ **7 тестов** |
+| `src/tests/hierarchy_integration.rs` | Иерархия сюжета: `create_volume`, `assign_chapter`, `get_chapter_hierarchy`, `reorder_node` | Integration | ✅ **7 тестов** |
 | `src/tests/entity_integration.rs` | Сущности, схемы и связи: `save_entity` (CREATE/UPSERT), `get_entities`, `entity_rel`, снапшоты в `schema_history` | Integration | ✅ **6 тестов** |
 | `src/tests/text_blocks_integration.rs` | Текстовые блоки и семантика: нарезка HTML по `<p data-semantic-tag>`, маппинг тегов `desc`/`dialog`, ACID | Integration | ✅ **3 теста** |
 | `src/tests/project_integration.rs` | Жизненный цикл проекта: создание, сохранение `data`, каскадное DDL-удаление через `delete_project_data` | Integration | ✅ **3 теста** |

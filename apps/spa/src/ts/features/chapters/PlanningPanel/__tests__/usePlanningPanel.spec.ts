@@ -31,10 +31,6 @@ describe('usePlanningPanel', () => {
     expect(volumePanel.nodeIcon.value).toBe('📚');
     expect(volumePanel.nodeName.value).toBe('Без названия');
 
-    // arc icon
-    const arcPanel = usePlanningPanel({ ...props, parentType: 'arc' });
-    expect(arcPanel.nodeIcon.value).toBe('🌀');
-
     // Missing project / parentType / parentId
     const emptyPanel = usePlanningPanel({});
     await emptyPanel.load();

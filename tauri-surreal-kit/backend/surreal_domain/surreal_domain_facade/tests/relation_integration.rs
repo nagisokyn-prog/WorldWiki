@@ -187,17 +187,17 @@ surreal_entity! {
 }
 
 surreal_entity! {
-    #[table = "arcs"]
-    pub struct ArcNode {
+    #[table = "chapters"]
+    pub struct ChapterNode {
         pub title: String,
     }
 }
 
 surreal_relation! {
-    #[edge = "contains_arc"]
+    #[edge = "contains_chapter"]
     #[from = VolumeNode]
-    #[to = ArcNode]
-    pub struct VolumeContainsArcEdge {
+    #[to = ChapterNode]
+    pub struct VolumeContainsChapterEdge {
         pub sort_order: i32,
     }
 }
@@ -216,7 +216,7 @@ async fn test_heterogeneous_relation_and_self_referential() {
     let db = create_test_db().await;
     seed_project(&db, "p_graph", "Graph Project").await;
 
-    // 1. Heterogeneous relation (Volume -> Arc)
+    // 1. Heterogeneous relation (Volume -> Chapter)
     let vol = VolumeNode::create(
         &db,
         VolumeNode {
@@ -229,21 +229,21 @@ async fn test_heterogeneous_relation_and_self_referential() {
     .await
     .expect("Volume creation failed");
 
-    let arc = ArcNode::create(
+    let chap = ChapterNode::create(
         &db,
-        ArcNode {
+        ChapterNode {
             id: None,
             project_id: Some(json!("projects:p_graph")),
-            title: "Arc 1: Prologue".into(),
+            title: "Chapter 1: Prologue".into(),
         },
     )
     .await
-    .expect("Arc creation failed");
+    .expect("Chapter creation failed");
 
     let vol_id = vol.id.unwrap();
-    let arc_id = arc.id.unwrap();
+    let chap_id = chap.id.unwrap();
 
-    let contains_edge_data = VolumeContainsArcEdge {
+    let contains_edge_data = VolumeContainsChapterEdge {
         id: None,
         r#in: None,
         out: None,
@@ -251,9 +251,9 @@ async fn test_heterogeneous_relation_and_self_referential() {
         sort_order: 1,
     };
 
-    let contains_id = VolumeContainsArcEdge::relate(&db, &vol_id, &arc_id, contains_edge_data)
+    let contains_id = VolumeContainsChapterEdge::relate(&db, &vol_id, &chap_id, contains_edge_data)
         .await
-        .expect("VolumeContainsArc relate failed");
+        .expect("VolumeContainsChapter relate failed");
     assert!(!contains_id.is_empty());
 
     // 2. Self-referential relation (Character parent_of Character)

@@ -435,7 +435,7 @@ impl SchemaAdapter {
                         if let Some(item_obj) = item.as_object() {
                             for (item_k, item_v) in item_obj {
                                 // Игнорируем служебные ключи таймлайна
-                                if ["is_auto_extend", "chapter_id", "arc_id", "volume_id"].contains(&item_k.as_str()) {
+                                if ["is_auto_extend", "chapter_id", "volume_id"].contains(&item_k.as_str()) {
                                     continue;
                                 }
 

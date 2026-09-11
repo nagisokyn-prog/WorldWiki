@@ -10,6 +10,13 @@ export interface AttachedSkill {
   content: string;
 }
 
+export interface QuotedContextItem {
+  selected_text?: string;
+  selectedText?: string;
+  author?: string;
+  [key: string]: unknown;
+}
+
 export function useAiMessageList() {
   const containerRef = ref<HTMLElement | null>(null);
 
@@ -117,15 +124,15 @@ export function useAiMessageList() {
     return extractSkills(content).skills;
   };
 
-  const getExtractedQuote = (message?: { content?: string; quoted_context?: any; quotedContext?: any }): { name: string; content: string } | null => {
+  const getExtractedQuote = (message?: { content?: string; quoted_context?: QuotedContextItem | null; quotedContext?: QuotedContextItem | null }): { name: string; content: string } | null => {
     if (!message) return null;
-    const qContext = message.quoted_context || message.quotedContext;
+    const qContext = (message.quoted_context || message.quotedContext) as QuotedContextItem | undefined;
     return extractQuoteAndCleanContent(message.content, qContext).quote;
   };
 
-  const getCleanedContent = (content?: string, quotedContext?: any): string => {
+  const getCleanedContent = (content?: string, quotedContext?: QuotedContextItem | null): string => {
     const afterSkills = extractSkills(content).cleanedContent;
-    return extractQuoteAndCleanContent(afterSkills, quotedContext).cleanedContent;
+    return extractQuoteAndCleanContent(afterSkills, quotedContext || undefined).cleanedContent;
   };
 
   const parseMessageContent = (content?: string): MessageContentSegment[] => {

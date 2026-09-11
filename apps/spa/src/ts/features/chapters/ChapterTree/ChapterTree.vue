@@ -55,20 +55,7 @@
             <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
             <kbd class="ctx-kbd">F2</kbd>
           </div>
-          <div class="ctx-item" @click="console.error('🔥🔥🔥 ChapterTree: CREATE ARC IN VOLUME', node.id); handleCreate({ sectionId: 'manuscript', parentId: node.id }); close()">
-            <span class="ctx-label"><i class="fas fa-layer-group ctx-icon"></i> Добавить арку</span>
-          </div>
-          <div class="ctx-item" @click="console.error('🔥🔥🔥 ChapterTree: CREATE CHAPTER IN VOLUME', node.id); $emit('create-chapter-in', { arcId: null, volumeId: node.id }); close()">
-            <span class="ctx-label"><i class="fas fa-file-alt ctx-icon"></i> Добавить главу</span>
-          </div>
-        </template>
-        
-        <template v-else-if="isNodeType(node, 'arc')">
-          <div class="ctx-item" @click="startRename(node, close)">
-            <span class="ctx-label"><i class="fas fa-pen ctx-icon"></i> Переименовать</span>
-            <kbd class="ctx-kbd">F2</kbd>
-          </div>
-          <div class="ctx-item" @click="console.error('🔥🔥🔥 ChapterTree: CREATE CHAPTER IN ARC', node.id); handleCreateInline({ sectionId: 'manuscript', parentId: node.id }); close()">
+          <div class="ctx-item" @click="console.error('🔥🔥🔥 ChapterTree: CREATE CHAPTER IN VOLUME', node.id); $emit('create-chapter-in', { volumeId: node.id }); close()">
             <span class="ctx-label"><i class="fas fa-file-alt ctx-icon"></i> Добавить главу</span>
           </div>
         </template>
@@ -110,7 +97,7 @@ const props = withDefaults(defineProps<ChapterTreeProps>(), {
 
 const emit = defineEmits([
   'select-node', 'select-chapter', 'create-chapter-in', 'rename-chapter', 'delete-chapter',
-  'open-entity', 'add-entity', 'rename-entity', 'delete-entity', 'delete-volume', 'delete-arc', 'open-sandbox', 'edit-schema'
+  'open-entity', 'add-entity', 'rename-entity', 'delete-entity', 'delete-volume', 'open-sandbox', 'edit-schema'
 ]);
 
 const {

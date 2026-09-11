@@ -1,6 +1,6 @@
 /**
  * @file shell.manuscript.ts
- * @description Доменная логика структуры произведения: главы, тома, арки
+ * @description Доменная логика структуры произведения: главы, тома
  */
 
 import type { Ref } from 'vue';
@@ -53,7 +53,7 @@ export function useShellManuscript(deps: ManuscriptDeps) {
     }
   };
 
-  const createChapterIn = async ({ arcId, volumeId }: { arcId?: string; volumeId?: string } = {}) => {
+  const createChapterIn = async ({ volumeId }: { volumeId?: string } = {}) => {
     if (isCreatingChapter) return;
     isCreatingChapter = true;
     try {
@@ -63,13 +63,10 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       let relevantCount = 0;
       if (Array.isArray(allChapters)) {
         const relevantChapters = allChapters.filter((c) => {
-          const cArcId = c.arc_id ? String(c.arc_id) : null;
           const cVolId = c.volume_id ? String(c.volume_id) : null;
-          const targetArcId = arcId ? String(arcId) : null;
           const targetVolId = volumeId ? String(volumeId) : null;
-          if (targetArcId) return cArcId === targetArcId;
-          if (targetVolId) return cVolId === targetVolId && !cArcId;
-          return !cArcId && !cVolId;
+          if (targetVolId) return cVolId === targetVolId;
+          return !cVolId;
         });
         relevantCount = relevantChapters.length;
         relevantChapters.forEach((c) => {
@@ -93,12 +90,11 @@ export function useShellManuscript(deps: ManuscriptDeps) {
         footnotes: {},
         timeline_events: [],
         participants: [],
-        arc_id: arcId || null,
         volume_id: volumeId || null,
       } as unknown as Chapter;
       const saveRes = await api.saveChapter(deps.projectName.value, newCh);
       if (saveRes && saveRes.id) newCh.id = saveRes.id;
-      if ((arcId || volumeId) && newCh.id) await api.assignChapter(deps.projectName.value, newCh.id, arcId || null, volumeId || null);
+      if (volumeId && newCh.id) await api.assignChapter(deps.projectName.value, newCh.id, volumeId || null);
       deps.addLog('Manuscript -> Created new chapter', 'success');
       if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load(newCh.id || undefined);
       document.dispatchEvent(new CustomEvent('ww:hierarchy-changed'));
@@ -130,7 +126,6 @@ export function useShellManuscript(deps: ManuscriptDeps) {
           if (prevId) {
             fallbackPoint = {
               chapter_id: prevId,
-              arc_id: (prev.arc_id as string) || (prev.arcId as string) || null,
               volume_id: (prev.volume_id as string) || (prev.volumeId as string) || null,
               updated_count: 0
             };
@@ -142,7 +137,6 @@ export function useShellManuscript(deps: ManuscriptDeps) {
           if (nextId) {
             fallbackPoint = {
               chapter_id: nextId,
-              arc_id: (next.arc_id as string) || (next.arcId as string) || null,
               volume_id: (next.volume_id as string) || (next.volumeId as string) || null,
               updated_count: 0
             };
@@ -189,14 +183,13 @@ export function useShellManuscript(deps: ManuscriptDeps) {
     deps.updateTabData(id, { title });
   };
 
-  const deleteVolume = async (volume: { id: string; title?: string; [key: string]: unknown }, chaptersInVol: Array<{ id: string }> = [], arcsInVol: string[] = [], silent = false) => {
+  const deleteVolume = async (volume: { id: string; title?: string; [key: string]: unknown }, chaptersInVol: Array<{ id: string }> = [], silent = false) => {
     const { appConfirm } = await import('@worldwiki/components');
-    if (!silent && !await appConfirm(`Удалить том "${volume.title}" и все его содержимое?`)) return;
+    if (!silent && !await appConfirm(`Удалить том "${volume.title}" и все его главы?`)) return;
     try {
       closeEditorsFor(e =>
         e.tabType === 'chapter' && (
           compareIds(e.data.volume_id, volume.id) ||
-          arcsInVol.some(arcId => compareIds(e.data.arc_id, arcId)) ||
           chaptersInVol.some(c => String(c.id) === e.id)
         )
       );
@@ -204,12 +197,6 @@ export function useShellManuscript(deps: ManuscriptDeps) {
         try { await api.deleteChapter(ch.id); } catch (err) { console.error('Ошибка удаления главы (vol):', err); }
         deps.closeEditor(String(ch.id), true);
         if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'chapter' && deps.activeTreeNode.value.node.id === ch.id) {
-          deps.activeTreeNode.value = null;
-        }
-      }
-      for (const arcId of arcsInVol) {
-        await api.deleteArc(arcId);
-        if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'arc' && deps.activeTreeNode.value.node.id === arcId) {
           deps.activeTreeNode.value = null;
         }
       }
@@ -226,43 +213,12 @@ export function useShellManuscript(deps: ManuscriptDeps) {
     }
   };
 
-  const deleteArc = async (arc: { id: string; title?: string; [key: string]: unknown }, chaptersInArc: Array<{ id: string }> = [], silent = false) => {
-    const { appConfirm } = await import('@worldwiki/components');
-    if (!silent && !await appConfirm(`Удалить арку "${arc.title}" и все ее главы?`)) return;
-    try {
-      closeEditorsFor(e =>
-        e.tabType === 'chapter' && (
-          compareIds(e.data.arcId, arc.id) ||
-          chaptersInArc.some(c => String(c.id) === e.id)
-        )
-      );
-      for (const ch of chaptersInArc) {
-        try { await api.deleteChapter(ch.id); } catch (err) { console.error('Ошибка удаления главы (arc):', err); }
-        deps.closeEditor(String(ch.id), true);
-        if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'chapter' && deps.activeTreeNode.value.node.id === ch.id) {
-          deps.activeTreeNode.value = null;
-        }
-      }
-      await api.deleteArc(arc.id);
-      deps.addLog(`Deleted arc [${arc.id}]`, 'warn');
-      if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === 'arc' && deps.activeTreeNode.value.node.id === arc.id) {
-        deps.activeTreeNode.value = null;
-      }
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-      deps.addToast(`Арка "${arc.title}" удалена`, 'warn');
-      if (deps.currentSidebarTab.value === 'chapters') deps.loadEntityList('chapters');
-    } catch (e) {
-      deps.addLog(`Error deleting arc: ${e}`, 'error');
-    }
-  };
-
   return {
     loadChapters,
     createChapterIn,
     deleteChapter,
     renameChapter,
     onChapterRenamed,
-    deleteVolume,
-    deleteArc
+    deleteVolume
   };
 }

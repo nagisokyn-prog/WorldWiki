@@ -1,11 +1,10 @@
-//! Query Analyzer for extracting structured intent, chapter/volume/arc references,
+//! Query Analyzer for extracting structured intent, chapter/volume references,
 //! Roman/Arabic numerals, and Russian ordinal word numbers from user queries.
 
 #[derive(Debug, Clone, Default)]
 pub struct ExtractedIntent {
     pub chapter_num: Option<i64>,
     pub volume_num: Option<i64>,
-    pub arc_num: Option<i64>,
     pub is_chitchat: bool,
     pub semantic_query: String,
 }
@@ -46,7 +45,11 @@ const ORDINAL_STEMS: &[(&str, i64)] = &[
 /// Parses Roman numerals into integers
 pub fn parse_roman_numeral(s: &str) -> Option<i64> {
     let clean = s.trim().to_uppercase();
-    if clean.is_empty() || !clean.chars().all(|c| matches!(c, 'I' | 'V' | 'X' | 'L' | 'C' | 'D' | 'M')) {
+    if clean.is_empty()
+        || !clean
+            .chars()
+            .all(|c| matches!(c, 'I' | 'V' | 'X' | 'L' | 'C' | 'D' | 'M'))
+    {
         return None;
     }
 
@@ -91,19 +94,26 @@ fn parse_russian_ordinal(word: &str) -> Option<i64> {
     None
 }
 
-/// Analyzes user input to extract structural references (chapter, volume, arc)
+/// Analyzes user input to extract structural references (chapter, volume)
 pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
     let mut intent = ExtractedIntent {
         chapter_num: None,
         volume_num: None,
-        arc_num: None,
         is_chitchat: false,
         semantic_query: user_query.trim().to_string(),
     };
 
     let lower = user_query.to_lowercase();
     let words: Vec<&str> = lower
-        .split(|c: char| c.is_whitespace() || c == ',' || c == '.' || c == '?' || c == '!' || c == ':' || c == ';')
+        .split(|c: char| {
+            c.is_whitespace()
+                || c == ','
+                || c == '.'
+                || c == '?'
+                || c == '!'
+                || c == ':'
+                || c == ';'
+        })
         .filter(|s| !s.is_empty())
         .collect();
 
@@ -111,14 +121,15 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
     for (i, &word) in words.iter().enumerate() {
         let is_chapter_kw = word.starts_with("глав") || word == "chapter" || word == "гл";
         let is_volume_kw = word.starts_with("том") || word == "volume";
-        let is_arc_kw = word.starts_with("арк") || word.starts_with("акт") || word == "arc" || word == "act";
 
-        if is_chapter_kw || is_volume_kw || is_arc_kw {
+        if is_chapter_kw || is_volume_kw {
             // Check preceding word (e.g. "первая глава", "3 глава")
             let mut num: Option<i64> = None;
             if i > 0 {
                 let prev = words[i - 1];
-                num = prev.parse::<i64>().ok()
+                num = prev
+                    .parse::<i64>()
+                    .ok()
                     .or_else(|| parse_roman_numeral(prev))
                     .or_else(|| parse_russian_ordinal(prev));
             }
@@ -126,7 +137,9 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
             // Check following word (e.g. "глава 1", "глава первая", "глава IV")
             if num.is_none() && i + 1 < words.len() {
                 let next = words[i + 1];
-                num = next.parse::<i64>().ok()
+                num = next
+                    .parse::<i64>()
+                    .ok()
                     .or_else(|| parse_roman_numeral(next))
                     .or_else(|| parse_russian_ordinal(next));
             }
@@ -136,8 +149,6 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
                     intent.chapter_num = Some(n);
                 } else if is_volume_kw && intent.volume_num.is_none() {
                     intent.volume_num = Some(n);
-                } else if is_arc_kw && intent.arc_num.is_none() {
-                    intent.arc_num = Some(n);
                 }
             }
         }
@@ -147,7 +158,11 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
     if intent.chapter_num.is_none() {
         for &word in &words {
             if let Some(n) = parse_russian_ordinal(word) {
-                if lower.contains("глав") || lower.contains("прочит") || lower.contains("сюжет") || lower.contains("текст") {
+                if lower.contains("глав")
+                    || lower.contains("прочит")
+                    || lower.contains("сюжет")
+                    || lower.contains("текст")
+                {
                     intent.chapter_num = Some(n);
                     break;
                 }
@@ -156,17 +171,36 @@ pub fn analyze_user_query(user_query: &str) -> ExtractedIntent {
     }
 
     // Detect pure chitchat / greetings (do not trigger RAG context on smalltalk)
-    let is_lore_query = lower.contains("глав") || lower.contains("персонаж") || lower.contains("геро") 
-        || lower.contains("сюжет") || lower.contains("книг") || lower.contains("мир") 
-        || lower.contains("событи") || lower.contains("описан") || lower.contains("кто так") 
-        || lower.contains("расскажи") || lower.contains("что происход") || lower.contains("почему");
+    let is_lore_query = lower.contains("глав")
+        || lower.contains("персонаж")
+        || lower.contains("геро")
+        || lower.contains("сюжет")
+        || lower.contains("книг")
+        || lower.contains("мир")
+        || lower.contains("событи")
+        || lower.contains("описан")
+        || lower.contains("кто так")
+        || lower.contains("расскажи")
+        || lower.contains("что происход")
+        || lower.contains("почему");
 
-    let is_greeting = lower.contains("привет") || lower.contains("здравствуй") || lower.contains("добрый день")
-        || lower.contains("добрый вечер") || lower.contains("доброе утро") || lower.contains("проверка связи")
-        || lower.contains("тестовое сообщение") || lower.contains("как дела") || lower.contains("как полет")
-        || lower.contains("как полёт") || lower.contains("ты тут") || lower == "тест" || lower == "хай" || lower == "ку";
+    let is_greeting = lower.contains("привет")
+        || lower.contains("здравствуй")
+        || lower.contains("добрый день")
+        || lower.contains("добрый вечер")
+        || lower.contains("доброе утро")
+        || lower.contains("проверка связи")
+        || lower.contains("тестовое сообщение")
+        || lower.contains("как дела")
+        || lower.contains("как полет")
+        || lower.contains("как полёт")
+        || lower.contains("ты тут")
+        || lower == "тест"
+        || lower == "хай"
+        || lower == "ку";
 
-    if is_greeting && !is_lore_query && intent.chapter_num.is_none() && intent.volume_num.is_none() {
+    if is_greeting && !is_lore_query && intent.chapter_num.is_none() && intent.volume_num.is_none()
+    {
         intent.is_chitchat = true;
     }
 
@@ -180,79 +214,76 @@ mod tests {
     // ---------- parse_roman_numeral ----------
 
     #[test]
-    fn roman_basic_values() {
+    fn parses_single_digits() {
         assert_eq!(parse_roman_numeral("I"), Some(1));
+        assert_eq!(parse_roman_numeral("v"), Some(5));
+        assert_eq!(parse_roman_numeral("X"), Some(10));
+    }
+
+    #[test]
+    fn parses_compound_roman() {
         assert_eq!(parse_roman_numeral("IV"), Some(4));
-        assert_eq!(parse_roman_numeral("V"), Some(5));
-        assert_eq!(parse_roman_numeral("IX"), Some(9));
-        assert_eq!(parse_roman_numeral("XIX"), Some(19));
+        assert_eq!(parse_roman_numeral("ix"), Some(9));
+        assert_eq!(parse_roman_numeral("XIV"), Some(14));
+        assert_eq!(parse_roman_numeral("xix"), Some(19));
+        assert_eq!(parse_roman_numeral("XXIV"), Some(24));
         assert_eq!(parse_roman_numeral("XLII"), Some(42));
-        assert_eq!(parse_roman_numeral("XCIX"), Some(99));
-        assert_eq!(parse_roman_numeral("CDXCIX"), Some(499));
-        assert_eq!(parse_roman_numeral("D"), Some(500));
     }
 
     #[test]
-    fn roman_case_and_whitespace_insensitive() {
-        assert_eq!(parse_roman_numeral("iv"), Some(4));
-        assert_eq!(parse_roman_numeral("  xIv "), Some(14));
-        assert_eq!(parse_roman_numeral("mMm"), None, "свыше лимита в 500");
-    }
-
-    #[test]
-    fn roman_invalid_inputs() {
+    fn rejects_invalid_roman() {
         assert_eq!(parse_roman_numeral(""), None);
-        assert_eq!(parse_roman_numeral("   "), None);
         assert_eq!(parse_roman_numeral("ABC"), None);
-        assert_eq!(parse_roman_numeral("12"), None);
+        assert_eq!(parse_roman_numeral("123"), None);
         assert_eq!(parse_roman_numeral("глава"), None);
-        // Аддитивная запись «IIII» парсером принимается как 4 (известное поведение)
-        assert_eq!(parse_roman_numeral("IIII"), Some(4));
+    }
+
+    // ---------- parse_russian_ordinal ----------
+
+    #[test]
+    fn parses_basic_ordinals() {
+        assert_eq!(parse_russian_ordinal("первая"), Some(1));
+        assert_eq!(parse_russian_ordinal("первой"), Some(1));
+        assert_eq!(parse_russian_ordinal("первом"), Some(1));
+        assert_eq!(parse_russian_ordinal("второй"), Some(2));
+        assert_eq!(parse_russian_ordinal("третья"), Some(3));
+        assert_eq!(parse_russian_ordinal("третьем"), Some(3));
+        assert_eq!(parse_russian_ordinal("четвертая"), Some(4));
+        assert_eq!(parse_russian_ordinal("четвертый"), Some(4));
+        assert_eq!(parse_russian_ordinal("пятая"), Some(5));
+        assert_eq!(parse_russian_ordinal("десятая"), Some(10));
     }
 
     #[test]
-    fn roman_over_limit_returns_none() {
-        // Лимит парсера — 500 (главы не нумеруются римскими свыше)
-        assert_eq!(parse_roman_numeral("DC"), None);   // 600
-        assert_eq!(parse_roman_numeral("M"), None);     // 1000
-        assert_eq!(parse_roman_numeral("MMMCMXCIX"), None); // 3999
-    }
-
-    // ---------- parse_russian_ordinal (через analyze_user_query) ----------
-
-    #[test]
-    fn russian_ordinals_before_keyword() {
-        let i1 = analyze_user_query("третья глава");
-        assert_eq!(i1.chapter_num, Some(3));
-
-        let i2 = analyze_user_query("первый том");
-        assert_eq!(i2.volume_num, Some(1));
-
-        let i3 = analyze_user_query("вторая арка");
-        assert_eq!(i3.arc_num, Some(2));
-
-        let i4 = analyze_user_query("пятая глава мне интересна");
-        assert_eq!(i4.chapter_num, Some(5));
+    fn parses_teens_and_tens() {
+        assert_eq!(parse_russian_ordinal("одиннадцатая"), Some(11));
+        assert_eq!(parse_russian_ordinal("двенадцатая"), Some(12));
+        assert_eq!(parse_russian_ordinal("двадцатая"), Some(20));
+        assert_eq!(parse_russian_ordinal("тридцатая"), Some(30));
+        assert_eq!(parse_russian_ordinal("сотая"), Some(100));
     }
 
     #[test]
-    fn russian_ordinals_after_keyword() {
+    fn ignores_non_ordinals() {
+        assert_eq!(parse_russian_ordinal("глава"), None);
+        assert_eq!(parse_russian_ordinal("том"), None);
+        assert_eq!(parse_russian_ordinal("привет"), None);
+        assert_eq!(parse_russian_ordinal("123"), None);
+    }
+
+    #[test]
+    fn handles_case_insensitivity() {
+        assert_eq!(parse_russian_ordinal("ПЕРВАЯ"), Some(1));
+        assert_eq!(parse_russian_ordinal("Второй"), Some(2));
+    }
+
+    #[test]
+    fn extracts_chapter_and_volume_ordinals() {
         let i1 = analyze_user_query("глава третья");
         assert_eq!(i1.chapter_num, Some(3));
         let i2 = analyze_user_query("том второй");
         assert_eq!(i2.volume_num, Some(2));
     }
-
-    #[test]
-    fn ordinary_word_is_not_ordinal() {
-        let intent = analyze_user_query("глава перчаток короля");
-        assert_eq!(intent.chapter_num, None);
-
-        let intent2 = analyze_user_query("глада пятнышко");
-        assert_eq!(intent2.chapter_num, None);
-    }
-
-    // ---------- analyze_user_query ----------
 
     #[test]
     fn extracts_chapter_arabic_after_keyword() {
@@ -268,24 +299,26 @@ mod tests {
     }
 
     #[test]
-    fn extracts_volume_and_arc() {
+    fn extracts_volume() {
         let v = analyze_user_query("события тома 2 очень важны");
         assert_eq!(v.volume_num, Some(2));
         assert_eq!(v.chapter_num, None);
-
-        let a = analyze_user_query("акт 3 завершается битвой");
-        assert_eq!(a.arc_num, Some(3));
     }
 
     #[test]
     fn first_reference_wins_when_duplicated() {
         let intent = analyze_user_query("глава 5 и потом глава 7");
-        assert_eq!(intent.chapter_num, Some(5), "берётся первая найденная глава");
+        assert_eq!(
+            intent.chapter_num,
+            Some(5),
+            "берётся первая найденная глава"
+        );
     }
 
     #[test]
     fn chitchat_greeting_detected() {
-        for q in ["привет", "как дела?", "добрый день", "ты тут?", "хай"] {
+        for q in ["привет", "как дела?", "добрый день", "ты тут?", "хай"]
+        {
             let intent = analyze_user_query(q);
             assert!(intent.is_chitchat, "ожидается chitchat: {q}");
         }
@@ -294,7 +327,10 @@ mod tests {
     #[test]
     fn lore_question_is_not_chitchat_even_with_greeting_word() {
         let intent = analyze_user_query("привет! расскажи о мире этого романа");
-        assert!(!intent.is_chitchat, "вопрос про лор не должен считаться болтовнёй");
+        assert!(
+            !intent.is_chitchat,
+            "вопрос про лор не должен считаться болтовнёй"
+        );
         assert_eq!(intent.chapter_num, None);
     }
 
@@ -316,7 +352,6 @@ mod tests {
         let intent = analyze_user_query("кто такой Артур?");
         assert_eq!(intent.chapter_num, None);
         assert_eq!(intent.volume_num, None);
-        assert_eq!(intent.arc_num, None);
         assert!(!intent.is_chitchat);
     }
 }

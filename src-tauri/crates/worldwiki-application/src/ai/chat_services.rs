@@ -10,7 +10,8 @@ use worldwiki_domain::ai::{
     AgentToolEvent, AiModelInfo, AiProfile, Chat, ChatMessage, MessageRole, StreamChunk,
 };
 use worldwiki_ports::ai::{
-    AiProfileRepository, ChatRepository, LlmStreamPort, RAGContextPort, StreamRequest, ToolUseCall,
+    AiProfileRepository, ChatRepository, LlmStreamPort, RAGContextPort, SkillRepositoryPort,
+    StreamRequest, ToolUseCall,
 };
 use worldwiki_ports::events::EventPublisherPort;
 
@@ -20,6 +21,7 @@ pub struct ChatServices {
     pub stream_port: Arc<dyn LlmStreamPort>,
     pub event_publisher: Arc<dyn EventPublisherPort>,
     pub rag_port: Option<Arc<dyn RAGContextPort>>,
+    pub skill_repo: Option<Arc<dyn SkillRepositoryPort>>,
     pub ai_tools: Option<Arc<AiToolFacades>>,
     pub active_cancellations: Arc<std::sync::RwLock<std::collections::HashMap<String, Arc<std::sync::atomic::AtomicBool>>>>,
     pub pending_approvals: Arc<std::sync::RwLock<std::collections::HashMap<String, tokio::sync::oneshot::Sender<bool>>>>,
@@ -38,6 +40,7 @@ impl ChatServices {
         stream_port: Arc<dyn LlmStreamPort>,
         event_publisher: Arc<dyn EventPublisherPort>,
         rag_port: Option<Arc<dyn RAGContextPort>>,
+        skill_repo: Option<Arc<dyn SkillRepositoryPort>>,
         ai_tools: Option<Arc<AiToolFacades>>,
     ) -> Self {
         Self {
@@ -46,6 +49,7 @@ impl ChatServices {
             stream_port,
             event_publisher,
             rag_port,
+            skill_repo,
             ai_tools,
             active_cancellations: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
             pending_approvals: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
@@ -339,8 +343,42 @@ impl ChatServices {
             None
         };
 
+        let detected_skills = if let Some(ref sr) = self.skill_repo {
+            if !last_user_query.is_empty() {
+                sr.resolve_active_skills(Some(project_id), last_user_query, 2).await.unwrap_or_default()
+            } else {
+                vec![]
+            }
+        } else {
+            vec![]
+        };
+
+        let mut active_skill_instructions = String::new();
+        for skill in &detected_skills {
+            let content = if !skill.prompt_text.is_empty() {
+                skill.prompt_text.clone()
+            } else {
+                skill.description.clone()
+            };
+            active_skill_instructions.push_str(&format!(
+                "\n\n<active_skill id=\"{}\" name=\"{}\">\n{}\n</active_skill>",
+                skill.id, skill.name, content
+            ));
+
+            let _ = self.event_publisher.publish_raw(
+                "ai:skill_activated",
+                serde_json::json!({
+                    "chat_id": chat_id,
+                    "skill_id": skill.id,
+                    "skill_name": skill.name,
+                    "matched_via": skill.matched_via,
+                    "score": skill.score
+                }),
+            ).await;
+        }
+
         let mode = super::prompt::normalize_mode(_mode_slug.as_deref().unwrap_or("companion"));
-        let system_prompt = build_system_prompt_direct(
+        let mut system_prompt = build_system_prompt_direct(
             mode,
             profile
                 .settings
@@ -350,6 +388,10 @@ impl ChatServices {
             project_id,
             retrieved_context.as_deref(),
         );
+
+        if !active_skill_instructions.is_empty() {
+            system_prompt.push_str(&active_skill_instructions);
+        }
 
         println!("[AGENT] started: chat={} project={} mode={}", chat_id, project_id, mode);
         println!(
@@ -1321,6 +1363,7 @@ mod tests {
             event_publisher,
             None,
             None,
+            None,
         );
 
         let res = services
@@ -1359,6 +1402,7 @@ mod tests {
             profile_repo,
             stream_port,
             event_publisher,
+            None,
             None,
             None,
         );

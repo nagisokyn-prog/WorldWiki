@@ -1,48 +1,48 @@
-# 🏛️ Архитектура Продуктовых Редакций (Base, Pro, Ultra) и Модульной Схемы SurrealDB
+# 🏛️ Архитектура Продуктовых Редакций (Base и Ultra) и Модульной Схемы SurrealDB
 
-В данном документе описана архитектура разделения приложения **WorldWiki** на три продуктовые редакции (**Base**, **Pro**, **Ultra**), включая изоляцию фронтенд-бандлов, компиляцию Rust-бэкенда и послойную DDL-схему SurrealDB с правилами идемпотентного применения через `OVERWRITE`.
-
----
-
-## 📊 1. Матрица Редакций и Возможностей
-
-| Возможность / Слой | 🟢 Base (Базовый) | 🔷 Pro (Облачный AI) | 🟣 Ultra (Локальный + Облачный) |
-|---|---|---|---|
-| **Ядро Вики и Лор** | Полный доступ (сущности, связи, граф, календарь, таймлайны) | Полный доступ | Полный доступ |
-| **Редактор рукописи** | Word-Vibe, Tiptap, пагинация, стили, экспорт DOCX | Полный доступ | Полный доступ |
-| **Локальная БД (SurrealDB)** | Чистая реляционно-документная база | База + таблицы чатов и сессий | База + чаты + **HNSW векторные индексы (768d)** |
-| **WoWiLon AI Ассистент** | ❌ Вырезан из бандла (0 KB) | 🟢 Облачные API (OpenAI, Claude, DeepSeek, OpenRouter) | 🟢 Облачные API + локальная `llama.cpp` |
-| **Поиск по лору** | Точные совпадения и фильтры | **BM25** полнотекстовый поиск + `((Сущности))` | **Гибридный RAG**: BM25 + **Векторный HNSW** |
-| **Deep Research (Веб)** | ❌ Отключен | 🟢 DuckDuckGo, парсинг, цитаты `[1]` | 🟢 DuckDuckGo, парсинг, цитаты `[1]` |
-| **Работа офлайн** | 100% Офлайн | Офлайн (без AI) | **100% Офлайн со всеми AI-функциями** |
+В данном документе описана архитектура разделения приложения **WorldWiki** на две продуктовые редакции (**Base** и **Ultra**), включая изоляцию фронтенд-бандлов, компиляцию Rust-бэкенда, модульное разбиение DDL-схемы SurrealDB на независимые `.surql` файлы и правила бесшовного апгрейда.
 
 ---
 
-## 🎨 2. Архитектура Фронтенда (Tree-Shaking и Изоляция UI)
+## 📊 1. Матрица Редакций и Возможностей (Base vs Ultra)
 
-В редакции **Base** исходный код AI-модулей не должен попадать в продакшен-бандл.
+| Возможность / Слой | 🟢 Base (Базовый / Писательский) | 🟣 Ultra (Максимальный с ИИ) |
+|---|---|---|
+| **Ядро Вики и Лор** | Полный доступ (сущности, связи, граф, календари, таймлайн, онтология) | Полный доступ |
+| **Редактор рукописи** | Word-Vibe, Tiptap, пагинация, стили, экспорт DOCX | Полный доступ |
+| **Локальная БД (SurrealDB)** | Реляционно-документная база (`01_core.surql`) | База + ИИ-таблицы + **HNSW векторные индексы** + Функции |
+| **WoWiLon AI Ассистент** | ❌ Вырезан из бандла (0 KB) | 🟢 **Гибридный ИИ**: Облачные API (OpenAI, Claude, DeepSeek, OpenRouter) + локальная `llama.cpp` |
+| **Поиск по лору** | Точные совпадения, морфология, фильтры | **Гибридный RAG**: BM25 + **Векторный HNSW** + `fn::gather_rag_bundle` |
+| **Deep Research (Веб)** | ❌ Отключен | 🟢 DuckDuckGo / SearXNG, парсинг, база фактов `web_evidence` |
+| **Библиотека навыков** | ❌ Отключена | 🟢 Автоподбор скиллов, `fn::resolve_auto_skills`, кастомные промпты |
+| **Работа офлайн** | 100% Офлайн | **100% Офлайн с локальными LLM и эмбеддингами** |
+
+---
+
+## 🎨 2. Архитектура Фронтенда (Vite Modes & Dead Code Elimination)
+
+В редакции **Base** исходный код AI-модулей полностью исключается из продакшен-бандла.
 
 ### 2.1. Режимы сборки (Vite Modes)
-В `package.json` объявляются отдельные команды сборки:
+В `package.json`:
 ```json
 {
   "scripts": {
     "build:base":  "vite build --mode base",
-    "build:pro":   "vite build --mode pro",
     "build:ultra": "vite build --mode ultra"
   }
 }
 ```
 
 ### 2.2. Dead Code Elimination (DCE)
-Импорт компонентов AI выполняется через динамические импорты с проверкой флага окружения `import.meta.env.VITE_APP_EDITION`:
+Импорт компонентов ИИ выполняется через динамические импорты с проверкой флага окружения `import.meta.env.VITE_APP_EDITION`:
 
 ```ts
 import { defineAsyncComponent } from 'vue';
 
 // При сборке 'build:base' условие статически вычисляется в false,
 // и Rollup/Vite полностью вырезает папку features/ai из итоговых .js файлов
-export const WowilonPanel = import.meta.env.VITE_APP_EDITION !== 'base'
+export const WowilonPanel = import.meta.env.VITE_APP_EDITION === 'ultra'
   ? defineAsyncComponent(() => import('@/ts/features/ai/WowilonPanel.vue'))
   : null;
 ```
@@ -55,114 +55,58 @@ export const WowilonPanel = import.meta.env.VITE_APP_EDITION !== 'base'
 
 ```toml
 [features]
-default = ["ai-cloud", "ai-local"]
+default = ["ai-full"]
 
-# Редакция Base: сборка без фичей (--no-default-features)
-# Редакция Pro: сборка с облачным AI
-ai-cloud = ["dep:claw_runtime", "dep:claw_api"]
-
-# Редакция Ultra: облачный AI + локальный движок llama.cpp
-ai-local = ["ai-cloud", "dep:llama-sys"]
+# Редакция Base: чистая сборка без ИИ зависимостей (--no-default-features)
+# Редакция Ultra: облачный AI + локальный движок llama.cpp + векторные зависимости
+ai-full = ["dep:claw_runtime", "dep:claw_api", "dep:llama-sys", "dep:fastembed"]
 ```
 
 ---
 
-## 🗄️ 4. Модульная Архитектура Схемы SurrealDB
+## 🗄️ 4. Модульная Архитектура Схемы SurrealDB (`src/logic/schema/`)
 
-Вместо монолитного файла DDL схема разделяется на 3 последовательных слоя в каталоге `src/logic/schema/`:
+Монолитный файл `surreal_schema.surql` разделяется на изолированные предметные DDL-файлы:
 
 ```
-src/logic/schema/
-├── 01_core.surql          # Ядро: проекты, главы, сущности, связи, календарь, настройки
-├── 02_ai_cloud.surql      # AI Облако: чаты, навыки, веб-страницы, доказательства, BM25, кастомные функции
-└── 03_ai_vectors.surql    # AI Векторы: тяжелые HNSW индексы (768d) для эмбеддингов
+apps/spa/src/logic/schema/
+├── 01_core.surql                 # Базовое ядро: проекты, тома, арки, главы, текст, сущности, таймлайн, планы
+├── 02_ai_workspace.surql         # ИИ-пространство: ai_profiles, ai_modes, chats, chat_messages, agent_memory, artifacts, ai_skills
+├── 03_web_research.surql         # Веб-исследования: web_pages, web_evidence, research_sessions
+├── 04_embeddings_hnsw.surql      # Векторные HNSW индексы и чанки: entity_chunks, эмбеддинги глав и сообщений
+└── 05_functions.surql            # Аналитические функции: fn::gather_rag_bundle, fn::resolve_auto_skills, fn::upsert_global_web_page
 ```
 
-### 4.1. Содержимое файлов схемы
+### 4.1. Карта выполнения по редакциям
 
-#### 📄 `01_core.surql` (Выполняется во ВСЕХ версиях):
-- Таблицы: `projects`, `chapters`, `entities`, `entity_types`, `relations`, `calendar_events`, `app_settings`.
-- Базовые индексы по `id`, `project_id`, `created_at`.
-- Системные функции валидации текста и дат.
-
-#### 📄 `02_ai_cloud.surql` (Выполняется в `Pro` и `Ultra`):
-- Таблицы: `chat_messages`, `chat_sessions`, `ai_skills`, `ai_permissions`, `web_pages`, `web_evidence`, `research_sessions`.
-- Легковесные BM25 индексы: `idx_chat_msg_content_bm25`, `idx_entities_name_bm25`.
-- Кастомные функции: `fn::upsert_global_web_page`, `fn::resolve_entity_mentions`.
-
-#### 📄 `03_ai_vectors.surql` (Выполняется ТОЛЬКО в `Ultra`):
-- Векторные поля: `DEFINE FIELD OVERWRITE embedding ON entity_chunks TYPE option<array<float, 768>>`.
-- Векторные HNSW индексы: 
-  ```surrealql
-  DEFINE INDEX OVERWRITE idx_entity_chunks_emb ON entity_chunks 
-      FIELDS embedding 
-      TYPE HNSW 
-      DIMENSION 768 
-      DIST COSINE;
-  ```
+| Файл схемы | 🟢 Редакция Base | 🟣 Редакция Ultra | Назначение |
+|---|:---:|:---:|---|
+| **`01_core.surql`** | ✅ Выполняется | ✅ Выполняется | Рукопись, лор, онтология, таймлайн, `cascade_project_delete` |
+| **`02_ai_workspace.surql`** | ❌ Пропускается | ✅ Выполняется | Профили моделей, ключи, чаты, память, навыки |
+| **`03_web_research.surql`** | ❌ Пропускается | ✅ Выполняется | Кэш страниц и постоянная база веб-доказательств |
+| **`04_embeddings_hnsw.surql`** | ❌ Пропускается | ✅ Выполняется | Тяжелые HNSW векторные индексы (1536d / 2048d / 1024d) |
+| **`05_functions.surql`** | ❌ Пропускается | ✅ Выполняется | Хранимые функции для GraphRAG и гибридного скоринга |
 
 ---
 
-## ⚡ 5. Правила и Стандарты Использования `OVERWRITE` в SurrealQL
+## 🔄 5. Гарантия Совместимости и Бесшовного Апгрейда (Base ➔ Ultra)
 
-Для обеспечения **100% идемпотентности** (возможности повторного безопасного наката схемы при старте приложения без ошибок «resource already exists»), **ВСЕ** DDL-инструкции обязаны использовать ключевое слово `OVERWRITE`.
+1. **Апгрейд (Base ➔ Ultra)**:
+   * Пользователь переходит на редакцию Ultra.
+   * При первом запуске бэкенд последовательно выполняет недостающие модули (`02_ai_workspace.surql` ➔ `03_web_research.surql` ➔ `04_embeddings_hnsw.surql` ➔ `05_functions.surql`).
+   * Благодаря `OVERWRITE` существующие данные рукописи, персонажей и глав **не затрагиваются**, а новые таблицы и индексы мгновенно становятся активными.
 
-### 5.1. Канонические шаблоны `OVERWRITE`:
-
-#### 1. Объявление таблиц:
-```surrealql
--- ПРАВИЛЬНО:
-DEFINE TABLE OVERWRITE entities SCHEMAFULL;
-
--- НЕПРАВИЛЬНО (упадет при повторном запуске):
-DEFINE TABLE entities SCHEMAFULL;
-```
-
-#### 2. Объявление полей:
-```surrealql
--- ПРАВИЛЬНО:
-DEFINE FIELD OVERWRITE name ON entities TYPE string;
-DEFINE FIELD OVERWRITE tags ON entities TYPE array<string> DEFAULT [];
-
--- НЕПРАВИЛЬНО:
-DEFINE FIELD name ON entities TYPE string;
-```
-
-#### 3. Объявление индексов:
-```surrealql
--- ПРАВИЛЬНО:
-DEFINE INDEX OVERWRITE idx_entities_project ON entities FIELDS project_id;
-DEFINE INDEX OVERWRITE idx_chat_msg_bm25 ON chat_messages FIELDS content SEARCH ANALYZER standard BM25;
-
--- НЕПРАВИЛЬНО:
-DEFINE INDEX idx_entities_project ON entities FIELDS project_id;
-```
-
-#### 4. Объявление кастомных функций:
-```surrealql
--- ПРАВИЛЬНО:
-DEFINE FUNCTION OVERWRITE fn::upsert_global_web_page(
-    $url: string,
-    $canonical_url: string,
-    $ttl_days: int
-) {
-    -- тело функции
-};
-
--- НЕПРАВИЛЬНО:
-DEFINE FUNCTION fn::upsert_global_web_page(...) { ... };
-```
+2. **Даунгрейд / Открытие базы Ultra в редакции Base**:
+   * Редакция Base обращается только к таблицам ядра (`01_core.surql`).
+   * Наличие в базе таблиц `ai_profiles`, `web_evidence` или `chats` никак не мешает работе Base: база данных остается 100% валидной.
 
 ---
 
-## 🔄 6. Стратегия Миграций и Совместимости Данных
+## ⚡ 6. Стандарты Идемпотентности (`OVERWRITE`)
 
-1. **Апгрейд (Base ➔ Pro ➔ Ultra)**:
-   - Пользователь активирует Pro/Ultra.
-   - Приложение выполняет недостающие `.surql` файлы (`02_ai_cloud.surql` / `03_ai_vectors.surql`).
-   - SurrealDB автоматически создает новые таблицы и строит индексы по уже существующим данным без перезаписи данных.
-
-2. **Даунгрейд / Открытие проекта Ultra в редакции Base**:
-   - Редакция Base читает только таблицы ядра (`01_core.surql`).
-   - Наличие в базе таблиц `chat_messages` или векторных полей `embedding` никак не блокирует чтение сущностей и глав рукописи.
-   - База данных остается полностью валидной и не повреждается.
+Для гарантии безопасного наката при старте приложения:
+* Все таблицы объявляются как `DEFINE TABLE OVERWRITE <name> SCHEMAFULL;`
+* Все поля объявляются как `DEFINE FIELD OVERWRITE <name> ON <table> TYPE ...;`
+* Все индексы объявляются как `DEFINE INDEX OVERWRITE <name> ON <table> ...;`
+* Все события объявляются как `DEFINE EVENT OVERWRITE <name> ON TABLE <table> ...;`
+* Все функции объявляются как `DEFINE FUNCTION OVERWRITE fn::<name>(...) { ... };`

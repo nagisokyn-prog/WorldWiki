@@ -20,16 +20,9 @@ import {
   aiRespondToolApproval
 } from '../../services/api.client';
 
-import type { AiSkillItem } from './components/AiSkillAutocomplete.model';
-
-const DEFAULT_BUILTIN_SKILLS: AiSkillItem[] = [
-  {
-    id: 'ai_skills:entity_type_creator',
-    name: 'Конструктор типов сущностей',
-    description: 'Пошаговое создание нового типа сущности на базе каталога блоков ui_editor.json с визуализацией через Mermaid MMD диаграмму.',
-    prompt_text: 'Ты используешь эталонный навык "Конструктор типов сущностей". Перед созданием структуры всегда строй Mermaid MMD диаграмму вкладок и полей.'
-  }
-];
+import type { AiSkillItem } from './skills/aiSkills.model';
+import { DEFAULT_BUILTIN_SKILLS } from './skills/defaultBuiltinSkills';
+import { buildSkillContext } from './skills/skillTriggerRouter';
 
 export interface ChatMessage {
   id?: string;
@@ -138,7 +131,30 @@ export function useWowilonPanel(
       }).catch(() => null);
 
       if (res && res.length > 0) {
-        skills.value = res;
+        const builtinMap = new Map<string, AiSkillItem>(
+          DEFAULT_BUILTIN_SKILLS.map((s) => [s.id, s])
+        );
+        const merged: AiSkillItem[] = [];
+
+        for (const item of res) {
+          if (builtinMap.has(item.id)) {
+            const def = builtinMap.get(item.id)!;
+            merged.push({
+              ...def,
+              ...item,
+              triggers: item.triggers && item.triggers.length > 0 ? item.triggers : def.triggers
+            });
+            builtinMap.delete(item.id);
+          } else {
+            merged.push(item);
+          }
+        }
+
+        for (const def of builtinMap.values()) {
+          merged.unshift(def);
+        }
+
+        skills.value = merged;
       } else {
         skills.value = [...DEFAULT_BUILTIN_SKILLS];
       }
@@ -332,32 +348,9 @@ export function useWowilonPanel(
       parent_id: parentId
     });
 
-    let messageToSend = text;
-    const skillMatches = Array.from(text.matchAll(/!"([^"]+)"/g));
-    if (skillMatches.length > 0) {
-      const skillContexts: string[] = [];
-      for (const match of skillMatches) {
-        const skillName = match[1].trim();
-        const skill = skills.value.find(s => s.name.toLowerCase() === skillName.toLowerCase());
-        if (skill) {
-          let skillContent = skill.prompt_text || skill.description || '';
-          if (skillName.toLowerCase().includes('конструктор') && !skillContent.includes('## 🛑 Железные Инварианты')) {
-            try {
-              const res = await fetch('/skills/Конструктор_типов_сущностей.md');
-              if (res.ok) {
-                skillContent = await res.text();
-              }
-            } catch {
-              // fallback
-            }
-          }
-          skillContexts.push(`<context type="skill" name="${skill.name}">\n${skillContent}\n</context>`);
-        }
-      }
-      if (skillContexts.length > 0) {
-        messageToSend = `${skillContexts.join('\n\n')}\n\n${text}`;
-      }
-    }
+    // Разрешаем навыки (ручной вызов !"Навык" или авто-триггеры по ключевым фразам)
+    const { augmentedMessage } = await buildSkillContext(text, skills.value);
+    let messageToSend = augmentedMessage;
 
     if (activeQuote.value) {
       messageToSend = `[Цитата]: «${activeQuote.value.selected_text}»\n\n${messageToSend}`;

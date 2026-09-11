@@ -86,6 +86,7 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
+  flex: 1;
 }
 
 .skill-card-icon {
@@ -97,12 +98,14 @@
 .skill-card-body {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  flex: 1;
 }
 
 .skill-card-title {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 13px;
   font-weight: 600;
@@ -119,10 +122,59 @@
   font-family: var(--font-family-mono, monospace);
 }
 
+.skill-badge-builtin {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+}
+
+.skill-badge-custom {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-bg-tertiary);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  font-weight: 500;
+}
+
 .skill-card-desc {
   font-size: 11px;
   color: var(--color-text-secondary);
   line-height: 1.35;
+}
+
+.skill-triggers-preview {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.triggers-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.trigger-chip-sm {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-bg-primary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.trigger-chip-more {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-style: italic;
 }
 
 .skill-card-actions {
@@ -163,7 +215,7 @@
 }
 
 .skill-edit-modal {
-  width: 500px;
+  width: 540px;
   max-width: 90vw;
   background: var(--color-bg-primary);
   border: 1px solid var(--border-color);
@@ -190,6 +242,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .form-group {
@@ -202,6 +256,64 @@
   font-size: 11px;
   font-weight: 500;
   color: var(--color-text-secondary);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.form-checkbox {
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.checkbox-label {
+  font-size: 12px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.triggers-input-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.triggers-chip-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+
+.trigger-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: var(--border-radius-sm, 4px);
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.trigger-chip-remove {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.trigger-chip-remove:hover {
+  color: var(--color-danger);
+}
+
+.trigger-field-input {
+  width: 100%;
 }
 
 .form-input,

@@ -9,7 +9,7 @@ export function useAiModels() {
 
   const getCacheKey = (provider: string) => `ai_models_cache_${provider}`;
 
-  const fetchModels = async (provider: string, apiKey: string, _baseUrl?: string, forceNetwork = false) => {
+  const fetchModels = async (provider: string, apiKey: string, _baseUrl?: string, forceNetwork = true) => {
     fetchError.value = '';
 
     // 1. For local provider, fetch installed models directly
@@ -52,7 +52,9 @@ export function useAiModels() {
       }
     } catch (err: unknown) {
       console.error('[useAiModels] Fetch models failed:', err);
-      fetchError.value = String(err);
+      if (forceNetwork) {
+        fetchError.value = String(err);
+      }
     } finally {
       isFetchingModels.value = false;
     }

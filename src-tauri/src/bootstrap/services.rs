@@ -18,6 +18,7 @@ use worldwiki_infrastructure::ai::{
 use worldwiki_infrastructure::events::InMemoryEventPublisher;
 use worldwiki_infrastructure::surrealdb::chat_repo::SurrealChatRepository;
 use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepository;
+use worldwiki_infrastructure::surrealdb::skill_repo::SurrealSkillRepository;
 use worldwiki_infrastructure::surrealdb::memory_repos::{
     InMemoryChapterRepository, InMemoryEntityRepository, InMemoryPlanRepository,
     InMemoryPlotPromiseRepository, InMemoryRelationRepository,
@@ -75,12 +76,14 @@ pub fn build_app_services() -> AppServices {
     let dummy_db = Arc::new(Surreal::init());
     let chat_repo = Arc::new(SurrealChatRepository::new(dummy_db.clone()));
     let profile_repo = Arc::new(SurrealAiProfileRepository::new(dummy_db.clone()));
+    let skill_repo = Arc::new(SurrealSkillRepository::new(dummy_db.clone()));
     let chat = Arc::new(ChatServices::new(
         chat_repo,
         profile_repo,
         ai_adapter.clone(),
         events.clone(),
         None,
+        Some(skill_repo),
         Some(ai_tools.clone()),
     ));
 
@@ -153,12 +156,14 @@ pub fn build_surreal_app_services(
         job_manager.clone(),
     ));
 
+    let skill_repo = Arc::new(SurrealSkillRepository::new(db.clone()));
     let chat = Arc::new(ChatServices::new(
         chat_repo,
         profile_repo,
         stream_adapter,
         event_publisher.clone(),
         Some(rag_adapter.clone()),
+        Some(skill_repo),
         Some(ai_tools.clone()),
     ));
 

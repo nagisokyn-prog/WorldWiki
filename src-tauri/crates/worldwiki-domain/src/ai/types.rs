@@ -171,3 +171,15 @@ pub struct AgentToolEvent {
     pub tool_args: serde_json::Value,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SkillMatch {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+    pub prompt_text: String,
+    pub file_path: Option<String>,
+    pub matched_via: String, // "exact_trigger" | "bm25" | "vector" | "manual"
+    pub score: f32,
+}
+
+

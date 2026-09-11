@@ -45,7 +45,8 @@ async fn smoke_all_required_tables_exist() {
         "ai_skills",
         "appears_in",
         "artifacts",
-        "web_cache",
+        "web_pages",
+        "web_evidence",
     ];
 
     for table in expected_tables {

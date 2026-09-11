@@ -61,6 +61,14 @@ surreal_entity! {
     }
 }
 
+fn default_true() -> bool {
+    true
+}
+
+fn default_skill_priority() -> i64 {
+    10
+}
+
 surreal_entity! {
     #[table = "ai_skills"]
     #[project_scoped]
@@ -69,6 +77,11 @@ surreal_entity! {
         pub name: String,
         pub description: String,
         pub prompt_text: String,
+        #[serde(default)] pub triggers: Vec<String>,
+        #[serde(default = "default_true")] pub is_auto_trigger: bool,
+        #[serde(default = "default_skill_priority")] pub priority: i64,
+        #[serde(default)] pub is_builtin: bool,
+        #[serde(skip_serializing_if = "Option::is_none")] pub file_path: Option<String>,
         pub is_unlocked: bool,
         pub is_custom_author_style: bool,
     }

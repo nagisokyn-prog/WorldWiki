@@ -165,3 +165,16 @@ pub trait PermissionsPort: Send + Sync {
     fn save_all_tool_permissions(&self, permissions: &std::collections::HashMap<String, String>) -> Result<(), DomainError>;
 }
 
+#[async_trait]
+pub trait SkillRepositoryPort: Send + Sync {
+    async fn resolve_active_skills(
+        &self,
+        project_id: Option<&str>,
+        query: &str,
+        limit: usize,
+    ) -> Result<Vec<worldwiki_domain::ai::SkillMatch>, DomainError>;
+
+    async fn get_skill_content(&self, skill_id: &str) -> Result<Option<String>, DomainError>;
+}
+
+

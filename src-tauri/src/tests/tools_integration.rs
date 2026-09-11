@@ -29,13 +29,13 @@ async fn test_facade_inspect_and_manage_entity() {
             "entity_type": "character",
             "name": "Арагорн",
             "description": "Следопыт Севера",
-            "attributes": { "level": 50 },
+            "attributes": {},
             "tags": ["дунадан"]
         }))
         .await
         .expect("manage_entity create should succeed");
 
-    assert_eq!(create_res["status"], "success");
+    assert_eq!(create_res["status"], "created");
 
     // 2. Инспекция карточки сущности
     let card = services

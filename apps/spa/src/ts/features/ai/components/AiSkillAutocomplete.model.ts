@@ -1,14 +1,6 @@
-export interface AiSkillItem {
-  id: string;
-  name: string;
-  description: string;
-  prompt_text?: string;
-  trigger?: string;
-  content?: string;
-  project_id?: string;
-  is_unlocked?: boolean;
-  is_custom_author_style?: boolean;
-}
+import type { AiSkillItem } from '../skills/aiSkills.model';
+
+export type { AiSkillItem };
 
 export interface AiSkillAutocompleteProps {
   isOpen: boolean;

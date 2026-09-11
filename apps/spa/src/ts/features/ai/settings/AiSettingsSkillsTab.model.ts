@@ -1,13 +1,6 @@
-export interface AiSkillItem {
-  id: string;
-  project_id?: string;
-  name: string;
-  description: string;
-  prompt_text: string;
-  is_unlocked?: boolean;
-  is_custom_author_style?: boolean;
-  created_at?: string;
-}
+import type { AiSkillItem } from '../skills/aiSkills.model';
+
+export type { AiSkillItem };
 
 export interface AiSettingsSkillsTabProps {
   currentProject: string;

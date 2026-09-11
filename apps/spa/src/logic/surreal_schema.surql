@@ -29,7 +29,8 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
     DELETE FROM chat_messages WHERE project_id = $pid;
     DELETE FROM user_dictionary WHERE project_id = $pid;
     DELETE FROM agent_memory WHERE project_id = $pid;
-    DELETE FROM web_cache WHERE project_id = $pid;
+    DELETE FROM web_evidence WHERE project_id = $pid;
+    DELETE FROM research_sessions WHERE project_id = $pid;
     DELETE FROM plans WHERE project_id = $pid;
     DELETE FROM entity_revisions WHERE project_id = $pid;
     DELETE FROM chapter_revisions WHERE project_id = $pid;
@@ -355,13 +356,55 @@ DEFINE FIELD OVERWRITE version     ON artifacts TYPE int DEFAULT 1;
 DEFINE FIELD OVERWRITE created_at  ON artifacts TYPE datetime DEFAULT time::now();
 
 DEFINE TABLE OVERWRITE ai_skills SCHEMAFULL;
-DEFINE FIELD OVERWRITE project_id  ON ai_skills TYPE record<projects>;
-DEFINE FIELD OVERWRITE name        ON ai_skills TYPE string;
-DEFINE FIELD OVERWRITE description ON ai_skills TYPE string;
-DEFINE FIELD OVERWRITE prompt_text ON ai_skills TYPE string;
-DEFINE FIELD OVERWRITE is_unlocked ON ai_skills TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE project_id             ON ai_skills TYPE option<record<projects>>;
+DEFINE FIELD OVERWRITE name                   ON ai_skills TYPE string;
+DEFINE FIELD OVERWRITE description            ON ai_skills TYPE string;
+DEFINE FIELD OVERWRITE prompt_text            ON ai_skills TYPE string;
+DEFINE FIELD OVERWRITE triggers               ON ai_skills TYPE array<string> DEFAULT [];
+DEFINE FIELD OVERWRITE is_auto_trigger        ON ai_skills TYPE bool DEFAULT true;
+DEFINE FIELD OVERWRITE priority               ON ai_skills TYPE int DEFAULT 10;
+DEFINE FIELD OVERWRITE is_builtin             ON ai_skills TYPE bool DEFAULT false;
+DEFINE FIELD OVERWRITE file_path              ON ai_skills TYPE option<string>;
+DEFINE FIELD OVERWRITE is_unlocked            ON ai_skills TYPE bool DEFAULT true;
 DEFINE FIELD OVERWRITE is_custom_author_style ON ai_skills TYPE bool DEFAULT false;
-DEFINE FIELD OVERWRITE created_at  ON ai_skills TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE embeddings             ON ai_skills TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE created_at             ON ai_skills TYPE datetime DEFAULT time::now();
+
+DEFINE INDEX OVERWRITE idx_skills_project     ON ai_skills FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_skills_name_ft    ON ai_skills COLUMNS name FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_skills_desc_ft    ON ai_skills COLUMNS description FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_skills_prompt_ft  ON ai_skills COLUMNS prompt_text FULLTEXT ANALYZER ru_en_analyzer BM25;
+DEFINE INDEX OVERWRITE idx_skills_emb_openai  ON ai_skills COLUMNS embeddings.openai HNSW DIMENSION 1536 DIST COSINE;
+DEFINE INDEX OVERWRITE idx_skills_emb_local   ON ai_skills COLUMNS embeddings.local HNSW DIMENSION 1024 DIST COSINE;
+
+-- Атомарная функция гибридного резолва навыков (Детерминированные триггеры + BM25)
+DEFINE FUNCTION OVERWRITE fn::resolve_auto_skills(
+    $proj: option<record<projects>>,
+    $query: string,
+    $limit: int
+) {
+    LET $bm25_matches = (
+        SELECT id, name, description, prompt_text, file_path, priority, 'bm25' AS matched_via, 1.0 AS score
+        FROM ai_skills
+        WHERE (project_id = $proj OR project_id = NONE)
+          AND is_auto_trigger = true
+          AND is_unlocked = true
+          AND (name @1@ $query OR description @1@ $query OR prompt_text @1@ $query)
+        LIMIT $limit
+    );
+
+    LET $trigger_matches = (
+        SELECT id, name, description, prompt_text, file_path, priority, 'exact_trigger' AS matched_via, 2.0 AS score
+        FROM ai_skills
+        WHERE (project_id = $proj OR project_id = NONE)
+          AND is_auto_trigger = true
+          AND is_unlocked = true
+          AND triggers CONTAINS $query
+        LIMIT $limit
+    );
+
+    RETURN array::distinct(array::concat($trigger_matches, $bm25_matches));
+};
 
 -- Пользовательский словарь (Локальный лор)
 DEFINE TABLE OVERWRITE user_dictionary SCHEMAFULL;

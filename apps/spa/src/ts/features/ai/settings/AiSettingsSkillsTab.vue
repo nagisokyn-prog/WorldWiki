@@ -7,7 +7,7 @@
           v-model="searchQuery"
           type="text"
           class="skills-search-input"
-          placeholder="Поиск по навыкам..."
+          placeholder="Поиск по навыкам и триггерам..."
         >
       </div>
       <button class="btn-create-skill" @click="openCreateModal">
@@ -27,8 +27,24 @@
             <div class="skill-card-title">
               <span>{{ skill.name }}</span>
               <span class="skill-trigger-tag">!"{{ skill.name }}"</span>
+              <span v-if="skill.is_builtin" class="skill-badge-builtin">Системный</span>
+              <span v-else class="skill-badge-custom">Авторский</span>
             </div>
             <span class="skill-card-desc">{{ skill.description }}</span>
+            
+            <div v-if="skill.triggers && skill.triggers.length > 0" class="skill-triggers-preview">
+              <span class="triggers-label">🎯 Авто-триггеры:</span>
+              <span
+                v-for="trig in skill.triggers.slice(0, 4)"
+                :key="trig"
+                class="trigger-chip-sm"
+              >
+                {{ trig }}
+              </span>
+              <span v-if="skill.triggers.length > 4" class="trigger-chip-more">
+                +{{ skill.triggers.length - 4 }}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -37,7 +53,7 @@
             <i class="fas fa-pencil-alt"></i>
           </button>
           <button
-            v-if="skill.is_custom_author_style"
+            v-if="skill.is_custom_author_style && !skill.is_builtin"
             class="btn-icon-action danger"
             title="Удалить навык"
             @click="deleteSkill(skill.id)"
@@ -60,7 +76,7 @@
 
         <div class="modal-form-body">
           <div class="form-group">
-            <label>Название навыка (на русском):</label>
+            <label>Название навыка:</label>
             <input
               v-model="editingSkill.name"
               type="text"
@@ -77,6 +93,43 @@
               class="form-input"
               placeholder="Для чего предназначен этот навык..."
             >
+          </div>
+
+          <div class="form-group">
+            <div class="checkbox-row">
+              <input
+                id="skill-auto-trigger"
+                v-model="editingSkill.is_auto_trigger"
+                type="checkbox"
+                class="form-checkbox"
+              >
+              <label for="skill-auto-trigger" class="checkbox-label">
+                Автоматически подключать при наличии фраз-триггеров в сообщении
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>🎯 Фразы-триггеры (нажмите Enter для добавления):</label>
+            <div class="triggers-input-box">
+              <div class="triggers-chip-container">
+                <span
+                  v-for="trig in editingSkill.triggers || []"
+                  :key="trig"
+                  class="trigger-chip"
+                >
+                  {{ trig }}
+                  <i class="fas fa-times trigger-chip-remove" @click.stop="removeTrigger(trig)"></i>
+                </span>
+              </div>
+              <input
+                v-model="newTriggerInput"
+                type="text"
+                class="form-input trigger-field-input"
+                placeholder="Введите фразу (например, 'сделай главным героем') и нажмите Enter..."
+                @keydown.enter.prevent="addTrigger"
+              >
+            </div>
           </div>
 
           <div class="form-group">
@@ -106,15 +159,17 @@ const props = defineProps<AiSettingsSkillsTabProps>();
 const emit = defineEmits<AiSettingsSkillsTabEmits>();
 
 const {
-  skills,
   filteredSkills,
   isLoading,
   searchQuery,
   isEditing,
   editingSkill,
+  newTriggerInput,
   openCreateModal,
   openEditModal,
   closeModal,
+  addTrigger,
+  removeTrigger,
   saveSkill,
   deleteSkill
 } = useAiSettingsSkillsTab(props, emit);

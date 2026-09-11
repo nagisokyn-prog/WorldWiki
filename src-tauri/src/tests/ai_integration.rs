@@ -124,7 +124,7 @@ async fn test_ai_tools_create_entity_and_relation() {
         .await
         .expect("manage_entity create should execute");
 
-    assert_eq!(create_res["status"], "success");
+    assert_eq!(create_res["status"], "created");
 
     // Создаём второго персонажа
     let create2_res = services
@@ -139,8 +139,9 @@ async fn test_ai_tools_create_entity_and_relation() {
             "tags": []
         }))
         .await
-        .unwrap();
-    assert_eq!(create2_res["status"], "success");
+        .expect("manage_entity create should execute");
+
+    assert_eq!(create2_res["status"], "created");
 
     // 2. Создание связи через manage_entity (action relate)
     let rel_res = services

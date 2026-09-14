@@ -86,29 +86,44 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
           return {
             update: (view: PluginEditorView, prevState: EditorState) => {
               const state = view.state;
-              if (prevState.doc.eq(state.doc) && prevState.selection.eq(state.selection)) {
+              if (prevState && prevState.doc.eq(state.doc) && prevState.selection.eq(state.selection)) {
                 return;
               }
 
               clearTimeout(timeout);
-              const { selection } = state;
-              if (!selection.empty) {
+
+              const { $head } = state.selection;
+              if (!$head || !$head.parent) {
                 return;
               }
 
-              const pos = selection.from;
-              const textBefore = state.doc.textBetween(Math.max(0, pos - 500), pos, '\n');
-              if (!textBefore || textBefore.trim().length < 5) {
+              const isAtBlockEnd = $head.parentOffset === $head.parent.content.size;
+              const currentPluginState = ghostPluginKey.getState(state);
+
+              if (!isAtBlockEnd) {
+                if (currentPluginState && currentPluginState.ghostText) {
+                  const tr = view.state.tr.setMeta(ghostPluginKey, { ghostText: '', pos: null });
+                  view.dispatch(tr);
+                }
                 return;
               }
+
+              const parentText = $head.parent.textContent || '';
+              const textBefore = parentText.slice(Math.max(0, $head.parentOffset - 25), $head.parentOffset);
+
+              if (!textBefore || textBefore.trim().length < 10) {
+                return;
+              }
+
+              const pos = $head.pos;
 
               timeout = setTimeout(async () => {
                 if (isFetching) return;
                 isFetching = true;
                 try {
-                  const suggestion = await invoke<string>('ai_suggest_continuation', {
-                    project: this.options.projectId,
-                    context: textBefore,
+                  const suggestion = await invoke<string>('get_ai_completion', {
+                    textBefore,
+                    projectId: this.options.projectId,
                   });
                   if (suggestion && suggestion.trim()) {
                     const tr = view.state.tr.setMeta(ghostPluginKey, {
@@ -117,8 +132,8 @@ export const AiGhostTextExtension = Extension.create<AiGhostTextOptions>({
                     });
                     view.dispatch(tr);
                   }
-                } catch {
-                  // Fallback: тихо игнорируем ошибку генерации
+                } catch (err) {
+                  console.error('Failed to fetch AI ghost text completion:', err);
                 } finally {
                   isFetching = false;
                 }

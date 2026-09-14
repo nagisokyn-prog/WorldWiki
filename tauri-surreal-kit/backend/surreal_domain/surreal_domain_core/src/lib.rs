@@ -104,10 +104,11 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
         // Bind all parameters
         for (k, v) in map.iter() {
             if let Some(s) = v.as_str() {
-                let parts: Vec<&str> = s.split(':').collect();
-                if parts.len() == 2 && !s.contains(' ') && !s.contains('{') {
-                    // Bind as RecordId
-                    db_query = db_query.bind((k.as_str(), surrealdb::types::RecordId::new(parts[0], parts[1])));
+                let parts: Vec<&str> = s.splitn(2, ':').collect();
+                if parts.len() == 2 && !parts[0].is_empty() && parts[0].chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !parts[1].is_empty() && !s.contains('{') && !s.contains('\n') {
+                    // Bind as RecordId, stripping surrounding backticks if present
+                    let raw_id = parts[1].trim_matches('`');
+                    db_query = db_query.bind((k.as_str(), surrealdb::types::RecordId::new(parts[0], raw_id)));
                 } else {
                     db_query = db_query.bind((k.as_str(), v.clone()));
                 }
@@ -152,15 +153,16 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
 
     #[allow(async_fn_in_trait)]
     async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surrealdb::Error> {
-                        let pid_raw = project_id.split(':').next_back().unwrap_or(project_id);
+        let pid_raw = project_id.splitn(2, ':').last().unwrap_or(project_id).trim_matches('`');
         let pid_str = format!("projects:{}", pid_raw);
+        let pid_backticked = format!("projects:`{}`", pid_raw);
         // Отсутствие таблицы приходит ошибкой NotFound на take() — трактуем
         // как пустой результат; сам .await запроса не фейлится, остальные
         // ошибки (например, битый SQL) пробрасываем.
-        let mut res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw) OR project_id = $pid_str", Self::TABLE))
-            .bind(("pid", project_id.to_string()))
-            .bind(("pid_raw", pid_raw.to_string()))
+        let mut res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = $pid_str OR project_id = $pid_backticked", Self::TABLE))
+            .bind(("pid", surrealdb::types::RecordId::new("projects", pid_raw)))
             .bind(("pid_str", pid_str))
+            .bind(("pid_backticked", pid_backticked))
             .await?;
 
         let entities: Vec<serde_json::Value> = match res.take(0) {
@@ -204,8 +206,8 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
     #[allow(async_fn_in_trait)]
     async fn save<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, entity: &Self) -> Result<Self, surrealdb::Error> {
         if let Some(id_str) = entity.get_id() {
-            let parts: Vec<&str> = id_str.split(':').collect();
-            let actual_id = if parts.len() == 2 { parts[1] } else { &id_str };
+            let parts: Vec<&str> = id_str.splitn(2, ':').collect();
+            let actual_id = if parts.len() == 2 { parts[1].trim_matches('`') } else { id_str.trim_matches('`') };
             
             let mut val = serde_json::to_value(entity).unwrap();
             let map = val.as_object_mut().unwrap();
@@ -249,10 +251,11 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
             // Bind только не-null значения
             for (k, v) in bind_values {
                 if let Some(s) = v.as_str() {
-                    let parts: Vec<&str> = s.split(':').collect();
-                    if parts.len() == 2 && !s.contains(' ') && !s.contains('{') {
-                        // Bind as RecordId
-                        db_query = db_query.bind((k.as_str(), surrealdb::types::RecordId::new(parts[0], parts[1])));
+                    let parts: Vec<&str> = s.splitn(2, ':').collect();
+                    if parts.len() == 2 && !parts[0].is_empty() && parts[0].chars().all(|c| c.is_ascii_alphanumeric() || c == '_') && !parts[1].is_empty() && !s.contains('{') && !s.contains('\n') {
+                        // Bind as RecordId, stripping surrounding backticks if present
+                        let raw_id = parts[1].trim_matches('`');
+                        db_query = db_query.bind((k.as_str(), surrealdb::types::RecordId::new(parts[0], raw_id)));
                     } else {
                         db_query = db_query.bind((k.as_str(), v.clone()));
                     }
@@ -276,11 +279,11 @@ pub trait SurrealRepository: Serialize + serde::de::DeserializeOwned + Clone + S
 
     #[allow(async_fn_in_trait)]
     async fn delete<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, id: &str) -> Result<(), surrealdb::Error> {
-        let parts: Vec<&str> = id.split(':').collect();
+        let parts: Vec<&str> = id.splitn(2, ':').collect();
         if parts.len() == 2 && parts[0] != Self::TABLE {
             return Ok(());
         }
-                        let actual_id = if parts.len() == 2 { parts[1] } else { id };
+        let actual_id = if parts.len() == 2 { parts[1].trim_matches('`') } else { id.trim_matches('`') };
                         // Отсутствующая таблица/запись → NotFound → идемпотентный Ok.
                 let res: Result<Option<serde_json::Value>, surrealdb::Error> =
             db.delete((Self::TABLE, actual_id)).await;

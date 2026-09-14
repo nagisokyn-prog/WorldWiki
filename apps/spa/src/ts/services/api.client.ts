@@ -521,7 +521,6 @@ export async function deleteVolume(id: string): Promise<void> {
     return await invoke('delete_volume', { id });
 }
 
-
 export async function getPlans(project: string): Promise<Plan[]> {
     return await invoke('get_plans', { project });
 }

@@ -260,8 +260,8 @@ function generate() {
         ` */`,
         `import { invoke } from '@tauri-apps/api/core';`,
         `export interface SearchResult<T> { entity: T; score: number; kind: string; }`,
-        `export interface AutoExtendResult { chapter_id?: string | null; arc_id?: string | null; volume_id?: string | null; updated_count?: number; }`,
-        `export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; arcs: (Arc & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { arc_id?: string | null; volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }`,
+        `export interface AutoExtendResult { chapter_id?: string | null; volume_id?: string | null; updated_count?: number; }`,
+        `export interface ChapterHierarchy { volumes: (Volume & { sort_order?: number; [key: string]: unknown })[]; chapters: (Chapter & { volume_id?: string | null; sort_order?: number; [key: string]: unknown })[]; }`,
         `export interface ProjectSummary { id?: string; name: string; created_at?: string; genres?: string[]; perfLevel?: string; data?: Record<string, unknown>; stats?: Record<string, unknown>; icon?: string; [key: string]: unknown; }`,
         `// TODO: импорты типов из \`../types/generated/... \` будут добавлены ниже.`,
         ``
@@ -301,7 +301,6 @@ function generate() {
     }
     
     usedTypes.add('Volume');
-    usedTypes.add('Arc');
     usedTypes.add('Chapter');
     usedTypes.add('Entity');
     

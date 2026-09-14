@@ -21,7 +21,7 @@
       </div>
     </div>
     
-    <div v-auto-animate class="timeline-events-list">
+    <div class="timeline-events-list">
       <div v-if="events.length === 0" class="empty-events-hint">
         Нет событий в таймлайне.
       </div>
@@ -35,26 +35,26 @@
           <button class="delete-btn" @click.stop="removeEvent(idx)">🗑️</button>
         </div>
         
-        <div v-show="isExpanded(idx)" class="event-content">
+        <div v-if="isExpanded(idx)" class="event-content">
           <!-- Визуальное отображение даты и сезона -->
         <div class="date-display-column">
           <div 
-            v-for="calId in selectedCalendarIds" 
+            v-for="calId in getDisplayCalendarIds(ev)" 
             :key="calId" 
             class="date-display multi-date-display"
           >
-            <template v-if="getConvertedDateInfo(ev, calId)">
-              <div class="cal-badge-name" :class="{ 'native-cal': getConvertedDateInfo(ev, calId)?.isNative }" :title="getConvertedDateInfo(ev, calId)?.isNative ? 'Родной календарь события' : ''">
-                {{ getConvertedDateInfo(ev, calId)?.calName }}
+            <template v-if="convertedDateInfoMap.get(`${idx}:${calId}`)">
+              <div class="cal-badge-name" :class="{ 'native-cal': convertedDateInfoMap.get(`${idx}:${calId}`)?.isNative }" :title="convertedDateInfoMap.get(`${idx}:${calId}`)?.isNative ? 'Родной календарь события' : ''">
+                {{ convertedDateInfoMap.get(`${idx}:${calId}`)?.calName }}
               </div>
-              <div class="season-badge" :style="{ '--season-bg': getConvertedDateInfo(ev, calId)?.seasonColor }">
-                {{ getConvertedDateInfo(ev, calId)?.seasonName }}
+              <div class="season-badge" :style="{ '--season-bg': convertedDateInfoMap.get(`${idx}:${calId}`)?.seasonColor }">
+                {{ convertedDateInfoMap.get(`${idx}:${calId}`)?.seasonName }}
               </div>
               <div class="date-text">
-                {{ getConvertedDateInfo(ev, calId)?.dateStr }}
+                {{ convertedDateInfoMap.get(`${idx}:${calId}`)?.dateStr }}
               </div>
-              <div class="time-of-day-badge" :style="{ '--time-bg': getConvertedDateInfo(ev, calId)?.timeOfDayColor }">
-                {{ getConvertedDateInfo(ev, calId)?.timeOfDayName }}
+              <div class="time-of-day-badge" :style="{ '--time-bg': convertedDateInfoMap.get(`${idx}:${calId}`)?.timeOfDayColor }">
+                {{ convertedDateInfoMap.get(`${idx}:${calId}`)?.timeOfDayName }}
               </div>
             </template>
           </div>
@@ -107,10 +107,11 @@ const {
   availableCalendars,
   selectedCalendarIds,
   toggleCalendarSelection,
+  getDisplayCalendarIds,
   isExpanded,
   toggleExpand,
   removeEvent,
-  getConvertedDateInfo,
+  convertedDateInfoMap,
   getUniversalDateObject,
   updateEventFullDate,
   onChange,

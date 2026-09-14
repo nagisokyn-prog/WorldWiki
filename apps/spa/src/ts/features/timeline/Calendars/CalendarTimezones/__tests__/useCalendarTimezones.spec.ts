@@ -61,4 +61,40 @@ describe('useCalendarTimezones', () => {
       timezones: [],
     }));
   });
+
+  it('correctly extracts and sets whole hours and minutes fractions for daylight', () => {
+    props.modelValue.настройки_времени = {
+      часов_в_сутках: 24,
+      минут_в_часе: 60,
+    };
+    const hook = useCalendarTimezones(props, emit);
+
+    const testRegion = {
+      id: 'reg_1',
+      name: 'Test',
+      timezone_id: 'tz_1',
+      latitude: 45,
+      longitude: 0,
+      summer_day_hours: 16.5, // 16h 30m
+      winter_day_hours: 8.25,  // 8h 15m
+    };
+
+    expect(hook.getSummerHours(testRegion)).toBe(16);
+    expect(hook.getSummerMinutes(testRegion)).toBe(30);
+    expect(hook.getWinterHours(testRegion)).toBe(8);
+    expect(hook.getWinterMinutes(testRegion)).toBe(15);
+
+    // Update summer hours to 17
+    hook.setSummerHours(testRegion, 17);
+    expect(testRegion.summer_day_hours).toBe(17.5);
+
+    // Update summer minutes to 45
+    hook.setSummerMinutes(testRegion, 45);
+    expect(testRegion.summer_day_hours).toBe(17.75);
+
+    // Update winter hours and minutes
+    hook.setWinterHours(testRegion, 9);
+    hook.setWinterMinutes(testRegion, 30);
+    expect(testRegion.winter_day_hours).toBe(9.5);
+  });
 });

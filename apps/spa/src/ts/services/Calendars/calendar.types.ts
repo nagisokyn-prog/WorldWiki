@@ -29,6 +29,8 @@ export interface CalendarEra {
 export interface CalendarSeason {
   название: string;
   месяцы: number[];
+  цвет?: string;
+  color?: string;
 }
 
 export interface CalendarHoliday {
@@ -107,6 +109,7 @@ export interface CalendarData {
   название: string;
   calendar_type?: 'master' | 'local';
   is_master?: boolean;
+  is_story_origin?: boolean;
   дней_в_неделе: number;
   названия_дней_недели: string[];
   первый_месяц_года: number;
@@ -168,6 +171,8 @@ export interface WorldRegion {
   timezone_id: string;
   latitude: number;  // Широта (-90 .. +90): управляет сезонами и длиной дня
   longitude: number; // Долгота (-180 .. +180): управляет солнечным полуднем
+  summer_day_hours?: number; // Макс. часы света летом
+  winter_day_hours?: number; // Мин. часы света зимой
 }
 
 /** Астрономическое состояние солнца в регионе для писателя */

@@ -31,7 +31,7 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
   border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   margin-bottom: 2px;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -71,7 +71,7 @@ const emit = defineEmits<AiQuoteReplyBannerEmits>();
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px 8px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   transition: all var(--anim-speed-fast) ease;
   font-size: 12px;
 }

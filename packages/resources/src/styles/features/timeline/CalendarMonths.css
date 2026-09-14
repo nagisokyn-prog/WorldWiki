@@ -5,19 +5,50 @@
 }
 
 .month-name-input {
-  max-width: 120px;
+  width: 95px;
+  max-width: 110px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: var(--radius-xs, 4px);
 }
 
 .month-days-input {
-  max-width: 60px;
+  width: 48px;
+  max-width: 55px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: var(--radius-xs, 4px);
+}
+
+.months-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.months-sum-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-xs, 4px);
+  font-weight: 500;
+  border: 1px solid var(--border-color);
+}
+
+.months-sum-badge.balance-ok {
+  color: var(--color-success, var(--success));
+  background: var(--bg-sunken);
+}
+
+.months-sum-badge.balance-warn {
+  color: var(--color-warning, var(--warning));
+  background: var(--bg-sunken);
+}
+
+.months-sum-badge.balance-neutral {
+  color: var(--text-muted);
+  background: var(--bg-sunken);
 }

@@ -59,10 +59,6 @@ body.focus-mode .sidebar-universal:hover {
   flex-shrink: 0;
   z-index: 20;
 }
-.sidebar-resize-handle:hover,
-.sidebar-resize-handle:active {
-  background: var(--accent);
-}
 
 /* Content Area */
 .content-area-new {

@@ -266,25 +266,9 @@
   vertical-align: middle;
 }
 
-.history-drawer {
-  width: 280px;
-  box-shadow: var(--shadow-dropdown);
-  z-index: 10;
-}
-
-.checkbox-accent {
-  accent-color: var(--accent);
-  width: 16px;
-  height: 16px;
-}
-
 .range-val-badge {
   min-width: 36px;
   text-align: right;
-}
-
-.preview-badge-warning {
-  color: var(--warning);
 }
 
 .banner-sandbox-preview {
@@ -295,10 +279,4 @@
 
 .glass-card-stack {
   z-index: var(--z-item, 1);
-}
-
-
-
-.diff-summary-text {
-  line-height: 1.4;
 }

@@ -382,3 +382,28 @@
   background: rgba(239, 68, 68, 0.15) !important;
   color: var(--error);
 }
+
+/* 8. ИСТОРИЯ И УТИЛИТЫ */
+.history-drawer {
+  width: 280px;
+  box-shadow: var(--shadow-dropdown);
+  z-index: 10;
+}
+
+.preview-badge-warning {
+  color: var(--warning);
+}
+
+.diff-summary-text {
+  line-height: 1.4;
+}
+
+.sidebar-resize-handle:hover,
+.sidebar-resize-handle:active {
+  background: var(--accent);
+}
+
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}

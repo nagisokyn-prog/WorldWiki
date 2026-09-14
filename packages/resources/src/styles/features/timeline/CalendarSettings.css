@@ -32,6 +32,48 @@
   user-select: none;
 }
 
+.settings-header-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.settings-help-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 0 4px;
+  border-radius: var(--radius-xs, 4px);
+  transition: all var(--anim-speed) var(--anim-ease);
+}
+
+.settings-help-btn:hover {
+  color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.settings-help-popover {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs, 4px);
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+
+.settings-help-popover ul {
+  margin: 6px 0 0 0;
+  padding-left: 16px;
+}
+
+.settings-help-popover li {
+  margin-bottom: 3px;
+}
+
 .help-icon {
   cursor: help;
   color: var(--info);

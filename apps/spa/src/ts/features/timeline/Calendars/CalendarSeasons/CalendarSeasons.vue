@@ -5,14 +5,21 @@
       <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="mt-3">
-      <div v-auto-animate class="item-list">
+    <div v-if="!isCollapsed" class="mt-3">
+      <div class="item-list">
         <div
           v-for="(season, sIdx) in modelValue.сезоны"
           :key="sIdx"
           class="item-row season-row-wrap"
         >
           <div class="season-top-row">
+            <input
+              :value="season.цвет || '#3b82f6'"
+              type="color"
+              class="season-color-picker interactive-el"
+              title="Цвет сезона"
+              @input="season.цвет = ($event.target as HTMLInputElement).value || '#3b82f6'"
+            />
             <input
               v-model="season.название"
               type="text"

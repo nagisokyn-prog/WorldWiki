@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { CalendarData, CalendarMonth } from '../../../../services/Calendars/calendar.types';
 
 export interface CalendarMonthsProps {
@@ -19,9 +19,10 @@ export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: st
 
   const addMonth = () => {
     if (!props.modelValue.месяцы) props.modelValue.месяцы = [];
+    const idx = props.modelValue.месяцы.length;
     props.modelValue.месяцы.push({
-      название: `Месяц ${props.modelValue.месяцы.length + 1}`,
-      дней: 30,
+      название: `Месяц ${idx + 1}`,
+      дней: 30
     });
   };
 
@@ -31,10 +32,47 @@ export function useCalendarMonths(props: CalendarMonthsProps, _emit?: (event: st
     }
   };
 
+  const totalMonthsDays = computed(() => {
+    return (props.modelValue.месяцы || []).reduce((acc, m) => acc + (Number(m.дней) || 0), 0);
+  });
+
+  const targetYearDays = computed(() => {
+    const target = props.modelValue.дней_в_году ?? (props.modelValue as { days_in_year?: number }).days_in_year;
+    return typeof target === 'number' && target > 0 ? target : null;
+  });
+
+  const daysBalanceText = computed(() => {
+    const sum = totalMonthsDays.value;
+    const target = targetYearDays.value;
+    if (target === null) {
+      return `${sum} дн`;
+    }
+    if (sum === target) {
+      return `✓ ${sum} / ${target} дн`;
+    }
+    if (sum < target) {
+      return `⚠️ ${sum} / ${target} дн (-${target - sum})`;
+    }
+    return `⚠️ ${sum} / ${target} дн (+${sum - target})`;
+  });
+
+  const daysBalanceClass = computed(() => {
+    const sum = totalMonthsDays.value;
+    const target = targetYearDays.value;
+    if (target === null) {
+      return 'balance-neutral';
+    }
+    return sum === target ? 'balance-ok' : 'balance-warn';
+  });
+
   return {
     isCollapsed,
     moveItem,
     addMonth,
-    removeMonth
+    removeMonth,
+    totalMonthsDays,
+    targetYearDays,
+    daysBalanceText,
+    daysBalanceClass
   };
 }

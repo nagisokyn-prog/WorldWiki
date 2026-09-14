@@ -63,7 +63,7 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
   const currentEra = computed(() => eras.value[currentEraIdx.value] || eras.value[0] || { год_начала: 1, год_конца: 9999, название: '' });
 
   const yearRange = computed(() => currentEra.value.год_конца - currentEra.value.год_начала);
-  const yearInputMode = computed(() => yearRange.value > 500);
+  const yearInputMode = computed(() => yearRange.value > 50);
 
   const timeSettings = computed(() => calendar.value?.настройки_времени || { часов_в_сутках: 24, минут_в_часе: 60 });
 
@@ -130,12 +130,12 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
       } 
       else if (val.calendar_id && val.original_input) {
         currentCalendarId.value = val.calendar_id;
-        currentEraIdx.value = val.original_input.era_index;
-        currentYear.value = val.original_input.year;
-        currentMonthIdx.value = val.original_input.month;
-        currentDay.value = val.original_input.day;
-        currentHour.value = val.original_input.hour ?? Math.floor(timeSettings.value.часов_в_сутках / 2);
-        currentMinute.value = val.original_input.minute ?? 0;
+        currentEraIdx.value = Number(val.original_input.era_index) || 0;
+        currentYear.value = Number(val.original_input.year) || currentEra.value.год_начала;
+        currentMonthIdx.value = Number(val.original_input.month) || 0;
+        currentDay.value = Number(val.original_input.day) || 1;
+        currentHour.value = val.original_input.hour !== undefined ? Number(val.original_input.hour) : Math.floor(timeSettings.value.часов_в_сутках / 2);
+        currentMinute.value = val.original_input.minute !== undefined ? Number(val.original_input.minute) : 0;
       }
     } else {
       const defaultCal = allCalendars.value.find(c => c.is_default) || allCalendars.value[0];
@@ -185,15 +185,15 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
       hour?: number;
       minute?: number;
     } = {
-      era_index: currentEraIdx.value,
-      year: currentYear.value,
-      month: currentMonthIdx.value,
-      day: currentDay.value
+      era_index: Number(currentEraIdx.value) || 0,
+      year: Number(currentYear.value) || 1,
+      month: Number(currentMonthIdx.value) || 0,
+      day: Number(currentDay.value) || 1
     };
 
     if (props.showTime) {
-      original_input.hour = currentHour.value;
-      original_input.minute = currentMinute.value;
+      original_input.hour = Number(currentHour.value) || 0;
+      original_input.minute = Number(currentMinute.value) || 0;
     }
 
     const absolute_minute = CalendarMath.getAbsoluteMinute(original_input, calendar.value);
@@ -251,24 +251,44 @@ export function useUniversalDatePicker(props: UniversalDatePickerProps, emit: (e
     settingsService.onChange((s: AppSettings) => wheelHorizontal.value = s.dropdowns?.wheelOrientation === 'horizontal');
   });
 
-  watch(() => props.modelValue, (newVal) => {
-    if (!newVal || typeof newVal !== 'object') return;
-    if (newVal.calendar_id && newVal.original_input) {
-      if (
-        newVal.calendar_id !== currentCalendarId.value ||
-        newVal.original_input.era_index !== currentEraIdx.value ||
-        newVal.original_input.year !== currentYear.value ||
-        newVal.original_input.month !== currentMonthIdx.value ||
-        newVal.original_input.day !== currentDay.value ||
-        (props.showTime && newVal.original_input.hour !== currentHour.value) ||
-        (props.showTime && newVal.original_input.minute !== currentMinute.value)
-      ) {
-        syncFromProps();
+  watch(
+    () => {
+      const val = props.modelValue;
+      if (!val || typeof val !== 'object') return null;
+      return [
+        val.calendar_id,
+        val.original_input?.era_index,
+        val.original_input?.year,
+        val.original_input?.month,
+        val.original_input?.day,
+        val.original_input?.hour,
+        val.original_input?.minute,
+        val.эпоха_ключ,
+        val.год,
+        val.месяц,
+        val.день
+      ];
+    },
+    () => {
+      const val = props.modelValue;
+      if (!val || typeof val !== 'object') return;
+      if (val.calendar_id && val.original_input) {
+        if (
+          val.calendar_id !== currentCalendarId.value ||
+          val.original_input.era_index !== currentEraIdx.value ||
+          val.original_input.year !== currentYear.value ||
+          val.original_input.month !== currentMonthIdx.value ||
+          val.original_input.day !== currentDay.value ||
+          (props.showTime && val.original_input.hour !== currentHour.value) ||
+          (props.showTime && val.original_input.minute !== currentMinute.value)
+        ) {
+          syncFromProps();
+        }
+      } else if (val.эпоха_ключ !== undefined) {
+        syncFromProps(true);
       }
-    } else if (newVal.эпоха_ключ !== undefined) {
-      syncFromProps(true);
     }
-  }, { deep: true });
+  );
 
   return {
     allCalendars,

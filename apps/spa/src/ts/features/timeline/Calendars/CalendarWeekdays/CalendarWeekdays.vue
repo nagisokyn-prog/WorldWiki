@@ -1,12 +1,12 @@
 <template>
-  <div class="calendar-section">
+  <div class="calendar-section calendar-weekdays-card">
     <div class="section-header weekdays-section-header" @click="isCollapsed = !isCollapsed">
       <h4 class="m-0">📅 Дни недели</h4>
       <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="mt-3">
-      <div v-auto-animate class="item-list">
+    <div v-if="!isCollapsed" class="mt-3">
+      <div class="item-list">
         <div v-for="(day, dIdx) in modelValue.названия_дней_недели" :key="dIdx" class="item-row">
           <input
             :value="day"

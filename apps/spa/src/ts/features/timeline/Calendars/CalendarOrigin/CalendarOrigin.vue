@@ -5,7 +5,7 @@
       <span class="origin-collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="origin-content">
+    <div v-if="!isCollapsed" class="origin-content">
       <div v-if="modelValue.точка_отсчета" class="grid-3">
         <div class="calendar-field">
           <label>Год</label>

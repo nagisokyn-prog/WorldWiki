@@ -8,7 +8,7 @@
       <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
 
-    <div v-show="!isCollapsed" class="mt-3">
+    <div v-if="!isCollapsed" class="mt-3">
       <!-- Toggle link -->
       <label class="settings-checkbox-label mb-3">
         <input v-model="isLinked" type="checkbox" class="interactive-el">

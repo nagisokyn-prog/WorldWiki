@@ -78,9 +78,10 @@
             v-if="activeTab === 'matrix'"
             v-model:matrix-base-cal-id="matrixBaseCalId"
             v-model:matrix-compare-cal-id="matrixCompareCalId"
+            v-model:matrix-era="matrixEra"
+            v-model:matrix-year="matrixYear"
+            v-model:matrix-month="matrixMonth"
             :all-calendars="allCalendars"
-            :matrix-year="matrixYear"
-            :matrix-month="matrixMonth"
             :matrix-base-cal="matrixBaseCal"
             :matrix-grid-days="matrixGridDays"
             @select-day="selectMatrixDay"
@@ -91,6 +92,11 @@
           <!-- ВКЛАДКА 3: Срез Мира и География -->
           <TimeAtlasWorldTab
             v-if="activeTab === 'world_time'"
+            v-model:world-hour="worldHour"
+            v-model:world-minute="worldMinute"
+            :master-calendar-name="masterCalendarName"
+            :max-hours="maxHours"
+            :max-minutes="maxMinutes"
             :world-time-snapshot="worldTimeSnapshot"
             :world-time-snippet="worldTimeSnippet"
             :is-world-time-copied="isWorldTimeCopied"
@@ -133,10 +139,13 @@ const {
   localCalendarRecords,
   worldTimeSnapshot,
   worldTimeSnippet,
+  worldHour,
+  worldMinute,
   isWorldTimeCopied,
   copyWorldTimeSnippet,
   matrixBaseCalId,
   matrixCompareCalId,
+  matrixEra,
   matrixYear,
   matrixMonth,
   matrixBaseCal,

@@ -28,11 +28,46 @@
       </div>
 
       <div class="matrix-nav-group">
-        <button class="matrix-btn interactive-el" @click="$emit('prevMonth')">◀</button>
-        <span class="matrix-cur-month">
-          {{ matrixBaseCal?.месяцы?.[matrixMonth]?.название }} {{ matrixYear }} г.
-        </span>
-        <button class="matrix-btn interactive-el" @click="$emit('nextMonth')">▶</button>
+        <button class="matrix-btn interactive-el" title="Предыдущий месяц" @click="$emit('prevMonth')">◀</button>
+        
+        <!-- Era Select -->
+        <select
+          v-if="matrixBaseCal?.эпохи && matrixBaseCal.эпохи.length > 0"
+          :value="matrixEra || 0"
+          class="interactive-el glass-select matrix-era-select"
+          @change="$emit('update:matrixEra', Number(($event.target as HTMLSelectElement).value))"
+        >
+          <option v-for="(era, eIdx) in matrixBaseCal.эпохи" :key="eIdx" :value="eIdx">
+            {{ era.название || `Эпоха ${eIdx + 1}` }}
+          </option>
+        </select>
+
+        <!-- Year Input -->
+        <input
+          :value="matrixYear"
+          type="number"
+          class="interactive-el glass-input matrix-year-input"
+          title="Год"
+          @change="$emit('update:matrixYear', Number(($event.target as HTMLInputElement).value))"
+        />
+
+        <!-- Month Select -->
+        <select
+          :value="matrixMonth"
+          class="interactive-el glass-select matrix-month-select"
+          title="Месяц"
+          @change="$emit('update:matrixMonth', Number(($event.target as HTMLSelectElement).value))"
+        >
+          <option
+            v-for="(m, mIdx) in matrixBaseCal?.месяцы || []"
+            :key="mIdx"
+            :value="mIdx"
+          >
+            {{ m.название }}
+          </option>
+        </select>
+
+        <button class="matrix-btn interactive-el" title="Следующий месяц" @click="$emit('nextMonth')">▶</button>
       </div>
     </div>
 
@@ -82,6 +117,7 @@ defineProps<{
   allCalendars: CalendarRecord[];
   matrixBaseCalId: string;
   matrixCompareCalId: string;
+  matrixEra?: number;
   matrixYear: number;
   matrixMonth: number;
   matrixBaseCal: CalendarData | null;
@@ -98,6 +134,9 @@ defineProps<{
 defineEmits<{
   (e: 'update:matrixBaseCalId', value: string): void;
   (e: 'update:matrixCompareCalId', value: string): void;
+  (e: 'update:matrixEra', value: number): void;
+  (e: 'update:matrixYear', value: number): void;
+  (e: 'update:matrixMonth', value: number): void;
   (e: 'prevMonth'): void;
   (e: 'nextMonth'): void;
   (e: 'selectDay', baseMin: number): void;

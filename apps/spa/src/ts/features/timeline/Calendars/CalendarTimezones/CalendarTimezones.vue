@@ -13,7 +13,7 @@
       </button>
     </div>
 
-    <div v-auto-animate class="moons-list mb-3">
+    <div class="moons-list mb-3">
       <div v-for="(tz, idx) in timezones" :key="tz.id" class="moon-item glass-panel tz-item-card">
         <div class="grid-3">
           <div class="calendar-field">
@@ -45,7 +45,7 @@
       </button>
     </div>
 
-    <div v-auto-animate class="moons-list">
+    <div class="moons-list">
       <div v-for="(reg, rIdx) in regions" :key="reg.id" class="moon-item glass-panel tz-item-card">
         <div class="grid-4">
           <div class="calendar-field">
@@ -70,11 +70,73 @@
             <input v-model.number="reg.longitude" type="number" step="1" min="-180" max="180" class="interactive-el" placeholder="0.0" @input="updateParent">
           </div>
         </div>
-        <button type="button" class="btn-delete-tz" @click="removeRegion(rIdx)">Удалить регион</button>
+        <div class="grid-2 mt-2">
+          <div class="calendar-field">
+            <label class="glass-label label-summer">☀️ Макс. световой день (лето)</label>
+            <div class="daylight-fraction-group">
+              <div class="daylight-input-unit">
+                <input
+                  :value="getSummerHours(reg)"
+                  type="number"
+                  min="0"
+                  :max="hoursInDay"
+                  class="interactive-el daylight-hours-input"
+                  placeholder="16"
+                  @input="setSummerHours(reg, Number(($event.target as HTMLInputElement).value))"
+                />
+                <span class="daylight-unit-label">ч</span>
+              </div>
+              <div class="daylight-fraction-unit">
+                <input
+                  :value="getSummerMinutes(reg)"
+                  type="number"
+                  min="0"
+                  :max="minsInHour - 1"
+                  class="interactive-el daylight-mins-input"
+                  placeholder="0"
+                  @input="setSummerMinutes(reg, Number(($event.target as HTMLInputElement).value))"
+                />
+                <span class="daylight-fraction-divider">/</span>
+                <span class="daylight-denom-label">{{ minsInHour }} мин</span>
+              </div>
+            </div>
+          </div>
+          <div class="calendar-field">
+            <label class="glass-label label-winter">❄️ Мин. световой день (зима)</label>
+            <div class="daylight-fraction-group">
+              <div class="daylight-input-unit">
+                <input
+                  :value="getWinterHours(reg)"
+                  type="number"
+                  min="0"
+                  :max="hoursInDay"
+                  class="interactive-el daylight-hours-input"
+                  placeholder="8"
+                  @input="setWinterHours(reg, Number(($event.target as HTMLInputElement).value))"
+                />
+                <span class="daylight-unit-label">ч</span>
+              </div>
+              <div class="daylight-fraction-unit">
+                <input
+                  :value="getWinterMinutes(reg)"
+                  type="number"
+                  min="0"
+                  :max="minsInHour - 1"
+                  class="interactive-el daylight-mins-input"
+                  placeholder="0"
+                  @input="setWinterMinutes(reg, Number(($event.target as HTMLInputElement).value))"
+                />
+                <span class="daylight-fraction-divider">/</span>
+                <span class="daylight-denom-label">{{ minsInHour }} мин</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-delete-tz mt-2" @click="removeRegion(rIdx)">Удалить регион</button>
       </div>
 
       <div v-if="regions.length === 0" class="tz-empty-hint">
-        Нет регионов. Добавьте регионы мира с широтой и долготой, чтобы система автоматически рассчитывала восход, закат и местное время.
+        Нет регионов. Добавьте регионы мира с широтой, долготой и световым днём, чтобы система автоматически рассчитывала восход, закат и местное время.
       </div>
     </div>
   </div>
@@ -94,7 +156,17 @@ const {
   removeTimezone,
   addRegion,
   removeRegion,
-  updateParent
+  updateParent,
+  minsInHour,
+  hoursInDay,
+  getSummerHours,
+  getSummerMinutes,
+  setSummerHours,
+  setSummerMinutes,
+  getWinterHours,
+  getWinterMinutes,
+  setWinterHours,
+  setWinterMinutes
 } = useCalendarTimezones(props, emit);
 </script>
 

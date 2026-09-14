@@ -5,8 +5,8 @@
       <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="mt-3">
-      <div v-auto-animate class="item-list">
+    <div v-if="!isCollapsed" class="mt-3">
+      <div class="item-list">
         <div v-for="(holiday, hIdx) in modelValue.праздники" :key="hIdx" class="item-row holiday-row-wrap">
           <input
             v-model="holiday.название"

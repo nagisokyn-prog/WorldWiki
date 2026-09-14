@@ -5,8 +5,8 @@
       <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="mt-3">
-      <div v-auto-animate class="item-list">
+    <div v-if="!isCollapsed" class="mt-3">
+      <div class="item-list">
         <div v-for="(moon, mIdx) in calendar.moons" :key="mIdx" class="item-row moon-row flex-col items-stretch gap-2">
           <div class="flex gap-2 items-center">
             <input v-model="moon.name" type="text" class="item-name interactive-el" placeholder="Название луны">

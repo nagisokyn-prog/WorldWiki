@@ -208,6 +208,38 @@ describe('useCalendarPlayground', () => {
     expect(singleDays[9].holidayText).toBe('One Day');
     expect(singleDays[10].holidayText).toBe('');
   });
+
+  it('handles story origin checkbox and header expand restrictions', () => {
+    const originCal: any = {
+      ...props.calendar,
+      is_story_origin: false,
+    };
+    const emit = vi.fn();
+    const hook = useCalendarPlayground({ calendar: originCal }, emit);
+
+    expect(hook.isCollapsed.value).toBe(true);
+
+    // Clicking header when not origin calendar -> should NOT expand
+    hook.handleHeaderClick();
+    expect(hook.isCollapsed.value).toBe(true);
+
+    // Toggle origin ON -> expands and emits set-origin
+    hook.toggleStoryOrigin({ target: { checked: true } } as any);
+    expect(originCal.is_story_origin).toBe(true);
+    expect(hook.isCollapsed.value).toBe(false);
+    expect(emit).toHaveBeenCalledWith('set-origin');
+
+    // Header click when active -> toggles collapse
+    hook.handleHeaderClick();
+    expect(hook.isCollapsed.value).toBe(true);
+    hook.handleHeaderClick();
+    expect(hook.isCollapsed.value).toBe(false);
+
+    // Toggle origin OFF -> collapses
+    hook.toggleStoryOrigin({ target: { checked: false } } as any);
+    expect(originCal.is_story_origin).toBe(false);
+    expect(hook.isCollapsed.value).toBe(true);
+  });
 });
 
 

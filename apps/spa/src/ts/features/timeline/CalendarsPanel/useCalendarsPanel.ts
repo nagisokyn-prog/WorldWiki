@@ -178,6 +178,14 @@ export function useCalendarsPanel(props: { project?: string }) {
         return calendars.value.find(c => c.is_master)?.data || null;
     });
 
+    const setStoryOrigin = (idx: number) => {
+        calendars.value.forEach((c, i) => {
+            if (c.data) {
+                c.data.is_story_origin = (i === idx);
+            }
+        });
+    };
+
     return {
         project,
         calendars,
@@ -189,6 +197,7 @@ export function useCalendarsPanel(props: { project?: string }) {
         saveCalendar,
         removeCalendar,
         setDefault,
+        setStoryOrigin,
         saveAll
     };
 }

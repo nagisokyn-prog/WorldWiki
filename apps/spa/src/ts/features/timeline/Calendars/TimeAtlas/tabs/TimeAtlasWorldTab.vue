@@ -1,7 +1,30 @@
 <template>
   <div class="tab-pane">
-    <div class="world-time-intro">
-      <p>Синхронный срез физического времени и астрономического солнца по всем регионам планеты в этот момент:</p>
+    <div class="world-time-intro flex justify-between items-center flex-wrap gap-3">
+      <p class="m-0">Синхронный срез физического времени и астрономического солнца по всем регионам планеты в этот момент:</p>
+      
+      <div class="world-time-controls flex items-center gap-2 glass-panel p-2">
+        <label class="text-xs text-muted">Время: {{ masterCalendarName || 'Календарь Мира' }}:</label>
+        <input
+          :value="worldHour"
+          type="number"
+          min="0"
+          :max="(maxHours || 24) - 1"
+          class="interactive-el glass-input w-16 text-center"
+          title="Час"
+          @input="$emit('update:worldHour', Number(($event.target as HTMLInputElement).value))"
+        />
+        <span>:</span>
+        <input
+          :value="worldMinute"
+          type="number"
+          min="0"
+          :max="(maxMinutes || 60) - 1"
+          class="interactive-el glass-input w-16 text-center"
+          title="Минута"
+          @input="$emit('update:worldMinute', Number(($event.target as HTMLInputElement).value))"
+        />
+      </div>
     </div>
 
     <!-- Сетка регионов мира -->
@@ -79,6 +102,16 @@ defineProps<{
   }>;
   worldTimeSnippet: string;
   isWorldTimeCopied: boolean;
+  worldHour?: number;
+  worldMinute?: number;
+  masterCalendarName?: string;
+  maxHours?: number;
+  maxMinutes?: number;
   copyWorldTimeSnippet: () => Promise<void>;
+}>();
+
+defineEmits<{
+  (e: 'update:worldHour', val: number): void;
+  (e: 'update:worldMinute', val: number): void;
 }>();
 </script>

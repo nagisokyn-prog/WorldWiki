@@ -1,12 +1,12 @@
 <template>
-  <div class="calendar-section">
+  <div class="calendar-section calendar-eras-card">
     <div class="eras-section-header" @click="isCollapsed = !isCollapsed">
       <h4>🏛️ Эпохи</h4>
       <span class="eras-collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="eras-content">
-      <div v-auto-animate class="item-list">
+    <div v-if="!isCollapsed" class="eras-content">
+      <div class="item-list">
         <div v-for="(era, eIdx) in modelValue.эпохи" :key="eIdx" class="era-card">
           <div class="item-row">
             <input

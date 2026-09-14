@@ -2,11 +2,12 @@
 
 
 .weekday-input {
-  max-width: 140px;
+  width: 100px;
+  max-width: 120px;
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-main);
-  padding: 4px 8px;
+  padding: 4px 6px;
   border-radius: var(--radius-xs, 4px);
   transition: all var(--anim-speed) var(--anim-ease);
 }

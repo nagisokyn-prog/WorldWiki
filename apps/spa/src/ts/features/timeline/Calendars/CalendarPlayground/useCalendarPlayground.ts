@@ -2,8 +2,11 @@ import { ref, computed, watch } from 'vue';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
 import type { CalendarData, MoonPhaseResult } from '../../../../services/Calendars/calendar.types';
 
-export function useCalendarPlayground(props: { calendar: CalendarData }) {
-  const isCollapsed = ref(false);
+export function useCalendarPlayground(
+  props: { calendar: CalendarData },
+  emit?: (event: 'set-origin') => void
+) {
+  const isCollapsed = ref(true);
 
   const filters = ref({
     seasons: true,
@@ -12,10 +15,12 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
   });
 
   const initOrigin = () => {
+    const firstEra = props.calendar.эпохи?.[0];
+    const startYear = firstEra ? (firstEra.год_начала ?? 1) : 1;
     if (!props.calendar.точка_отсчета) {
       props.calendar.точка_отсчета = {
         эпоха: 0,
-        год: 1,
+        год: startYear,
         месяц: 0,
         день: 1,
         день_недели: 0
@@ -23,7 +28,24 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
     }
   };
 
-  watch(() => props.calendar, () => initOrigin(), { immediate: true });
+  const handleHeaderClick = () => {
+    if (!props.calendar.is_story_origin) return;
+    isCollapsed.value = !isCollapsed.value;
+  };
+
+  const toggleStoryOrigin = (e: Event) => {
+    const checked = (e.target as HTMLInputElement).checked;
+    props.calendar.is_story_origin = checked;
+    if (checked) {
+      initOrigin();
+      isCollapsed.value = false;
+      emit?.('set-origin');
+    } else {
+      isCollapsed.value = true;
+    }
+  };
+
+  watch(() => [props.calendar._id, props.calendar.название], () => initOrigin(), { immediate: true });
 
   const origin = computed(() => props.calendar.точка_отсчета!);
 
@@ -127,7 +149,8 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
       let seasonName = '';
       if (filters.value.seasons) {
         seasonName = CalendarMath.getSeasonForDate(cal, inputDate.year, inputDate.month);
-        seasonColor = seasonColorsMap[seasonName] || 'rgba(255,255,255,0.03)';
+        const seasonObj = cal.сезоны?.find(s => s.название === seasonName);
+        seasonColor = seasonObj?.цвет || seasonColorsMap[seasonName] || 'rgba(255,255,255,0.03)';
       }
 
       let holiday = null;
@@ -165,6 +188,8 @@ export function useCalendarPlayground(props: { calendar: CalendarData }) {
 
   return {
     isCollapsed,
+    handleHeaderClick,
+    toggleStoryOrigin,
     filters,
     origin,
     daysInWeek,

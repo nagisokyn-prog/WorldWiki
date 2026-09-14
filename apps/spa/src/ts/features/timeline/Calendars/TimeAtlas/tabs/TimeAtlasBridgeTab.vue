@@ -13,6 +13,23 @@
         </div>
 
         <div class="controls-row">
+          <div v-if="masterCalData.эпохи && masterCalData.эпохи.length > 0" class="control-group">
+            <label class="control-label">Эпоха</label>
+            <select
+              :value="getLocalDateForCal(masterCalData).era_index"
+              class="interactive-el glass-select"
+              @change="onEraChange(masterCalData, $event)"
+            >
+              <option
+                v-for="(era, eIdx) in masterCalData.эпохи"
+                :key="eIdx"
+                :value="eIdx"
+              >
+                {{ era.название || `Эпоха ${eIdx + 1}` }}
+              </option>
+            </select>
+          </div>
+
           <div class="control-group">
             <label class="control-label">Год</label>
             <input
@@ -103,6 +120,23 @@
         </div>
 
         <div class="controls-row">
+          <div v-if="item.data.эпохи && item.data.эпохи.length > 0" class="control-group">
+            <label class="control-label">Эпоха</label>
+            <select
+              :value="getLocalDateForCal(item.data).era_index"
+              class="interactive-el glass-select"
+              @change="onEraChange(item.data, $event)"
+            >
+              <option
+                v-for="(era, eIdx) in item.data.эпохи"
+                :key="eIdx"
+                :value="eIdx"
+              >
+                {{ era.название || `Эпоха ${eIdx + 1}` }}
+              </option>
+            </select>
+          </div>
+
           <div class="control-group">
             <label class="control-label">Год</label>
             <input
@@ -185,6 +219,7 @@ const props = defineProps<TimeAtlasBridgeTabProps>();
 const {
   masterCalData,
   localCalsWithData,
+  onEraChange,
   onYearChange,
   onMonthChange,
   onDayChange

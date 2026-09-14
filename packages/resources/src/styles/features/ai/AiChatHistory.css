@@ -49,11 +49,6 @@
   transition: background var(--transition-normal);
 }
 
-.sidebar-resize-handle:hover,
-.sidebar-resize-handle:active {
-  background: var(--accent);
-}
-
 .history-header h3 {
   margin: 0;
   font-size: 13px;

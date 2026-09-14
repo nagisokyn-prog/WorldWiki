@@ -36,6 +36,7 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
   // Для матричного режима (сетки)
   const matrixBaseCalId = ref<string>('');
   const matrixCompareCalId = ref<string>('');
+  const matrixEra = ref(0);
   const matrixYear = ref(1);
   const matrixMonth = ref(0);
 
@@ -195,7 +196,7 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     const days = [];
     for (let d = 1; d <= matrixDaysCount.value; d++) {
       const baseInput: CalendarDate['original_input'] = {
-        era_index: 0,
+        era_index: matrixEra.value,
         year: matrixYear.value,
         month: matrixMonth.value,
         day: d,
@@ -351,11 +352,60 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     }
   };
 
+  const masterCalendarName = computed(() => masterCalendar.value?.название || 'Календарь Мира');
+  const masterTimeSettings = computed(() => {
+    const m = masterCalendar.value;
+    return m?.настройки_времени || (m as { time_settings?: { часов_в_сутках?: number; минут_в_часе?: number } })?.time_settings;
+  });
+  const maxHours = computed(() => masterTimeSettings.value?.часов_в_сутках || 24);
+  const maxMinutes = computed(() => masterTimeSettings.value?.минут_в_часе || 60);
+
+  const worldHour = computed({
+    get: () => {
+      const hoursInDay = maxHours.value;
+      const minsInHour = maxMinutes.value;
+      const dayMins = hoursInDay * minsInHour;
+      const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
+      return Math.floor(remMins / minsInHour);
+    },
+    set: (newHour: number) => {
+      const hoursInDay = maxHours.value;
+      const minsInHour = maxMinutes.value;
+      const dayMins = hoursInDay * minsInHour;
+      const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
+      const curMin = (((currentWorldMinute.value % dayMins) + dayMins) % dayMins) % minsInHour;
+      const hClamped = Math.max(0, Math.min(hoursInDay - 1, newHour));
+      currentWorldMinute.value = dayIndex * dayMins + hClamped * minsInHour + curMin;
+    }
+  });
+
+  const worldMinute = computed({
+    get: () => {
+      const hoursInDay = maxHours.value;
+      const minsInHour = maxMinutes.value;
+      const dayMins = hoursInDay * minsInHour;
+      const remMins = ((currentWorldMinute.value % dayMins) + dayMins) % dayMins;
+      return remMins % minsInHour;
+    },
+    set: (newMin: number) => {
+      const hoursInDay = maxHours.value;
+      const minsInHour = maxMinutes.value;
+      const dayMins = hoursInDay * minsInHour;
+      const dayIndex = Math.floor(currentWorldMinute.value / dayMins);
+      const curHour = Math.floor((((currentWorldMinute.value % dayMins) + dayMins) % dayMins) / minsInHour);
+      const mClamped = Math.max(0, Math.min(minsInHour - 1, newMin));
+      currentWorldMinute.value = dayIndex * dayMins + curHour * minsInHour + mClamped;
+    }
+  });
+
   return {
     activeTab,
     allCalendars,
     loading,
     masterCalendar,
+    masterCalendarName,
+    maxHours,
+    maxMinutes,
     masterCalendarRecord,
     localCalendarRecords,
     currentWorldMinute,
@@ -364,11 +414,14 @@ export function useTimeAtlasModal(props: { project: string; isOpen: boolean }, _
     worldRegions,
     worldTimeSnapshot,
     worldTimeSnippet,
+    worldHour,
+    worldMinute,
     isWorldTimeCopied,
     copyWorldTimeSnippet,
     selectedCalIds,
     matrixBaseCalId,
     matrixCompareCalId,
+    matrixEra,
     matrixYear,
     matrixMonth,
     matrixBaseCal,

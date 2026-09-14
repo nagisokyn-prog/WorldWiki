@@ -389,15 +389,25 @@ describe('useTimelinePanel', () => {
         {
           date: { era: 0, year: 10, month: 0, day: 1 },
           description: 'Legacy event',
-          // no time, no calendar_id
         },
       ];
       const panel = useTimelinePanel({ project: 'p1', events: customEvents as any }, emit);
       panel.availableCalendars.value = [mockCalendar];
-      panel.selectedCalendarIds.value = []; // empty selectedCalendarIds
-
+      panel.selectedCalendarIds.value = [];
       panel.addEvent();
       expect(emit).toHaveBeenCalledWith('update:events', expect.any(Array));
+    });
+
+    it('computes getDisplayCalendarIds with native calendar always leading and extra comparative calendars following', () => {
+      const panel = useTimelinePanel(props, emit);
+      panel.availableCalendars.value = [mockCalendar, { id: 'cal2', data: { название: 'Secondary Cal' } } as any];
+      panel.selectedCalendarIds.value = ['cal1', 'cal2'];
+
+      const ev1 = { date: { era: 0, year: 1, month: 0, day: 1 }, description: '', calendar_id: 'cal2' };
+      const displayIds = panel.getDisplayCalendarIds(ev1 as any);
+      expect(displayIds[0]).toBe('cal2'); // native calendar first
+      expect(displayIds[1]).toBe('cal1'); // comparative calendar second
+      expect(displayIds.length).toBe(2);
     });
   });
 });

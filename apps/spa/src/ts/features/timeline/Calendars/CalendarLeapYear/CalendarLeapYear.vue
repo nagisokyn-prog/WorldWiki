@@ -1,11 +1,11 @@
 <template>
-  <div class="calendar-section">
+  <div class="calendar-section calendar-leap-card">
     <div class="leap-section-header" @click="isCollapsed = !isCollapsed">
       <h4>📅 Високосный год</h4>
       <span class="leap-collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="leap-content">
+    <div v-if="!isCollapsed" class="leap-content">
       <div class="grid-2">
         <div class="calendar-field">
           <label>Правило</label>

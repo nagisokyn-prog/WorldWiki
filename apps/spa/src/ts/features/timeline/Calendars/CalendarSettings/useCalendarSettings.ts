@@ -46,9 +46,18 @@ export function useCalendarSettings(props: CalendarSettingsProps, emit: (event: 
 
   const dayLengthAnchor = computed(() => calendar.value.day_length_anchor);
 
+  const title = computed(() => props.isMaster ? '🪐 Физика планеты и эталон времени' : '⏱️ Местное деление времени');
+  const showTooltip = ref(false);
+  const toggleTooltip = () => {
+    showTooltip.value = !showTooltip.value;
+  };
+
   return {
     isCollapsed,
     settings,
-    dayLengthAnchor
+    dayLengthAnchor,
+    title,
+    showTooltip,
+    toggleTooltip
   };
 }

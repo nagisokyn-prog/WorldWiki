@@ -29,6 +29,19 @@ export function useTimeAtlasBridgeTab(props: TimeAtlasBridgeTabProps) {
       }));
   });
 
+  const onEraChange = (cal: CalendarData, e: Event) => {
+    const select = e.target as HTMLSelectElement;
+    const eraIdx = Number(select.value);
+    const current = props.getLocalDateForCal(cal);
+    const era = cal.эпохи?.[eraIdx];
+    let year = current.year;
+    if (era) {
+      if (year < era.год_начала) year = era.год_начала;
+      if (year > era.год_конца) year = era.год_конца;
+    }
+    props.updateFromLocalDate(cal, { ...current, era_index: eraIdx, year });
+  };
+
   const onYearChange = (cal: CalendarData, e: Event) => {
     const input = e.target as HTMLInputElement;
     const current = props.getLocalDateForCal(cal);
@@ -50,6 +63,7 @@ export function useTimeAtlasBridgeTab(props: TimeAtlasBridgeTabProps) {
   return {
     masterCalData,
     localCalsWithData,
+    onEraChange,
     onYearChange,
     onMonthChange,
     onDayChange

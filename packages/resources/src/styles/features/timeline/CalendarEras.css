@@ -7,8 +7,24 @@
 .era-card {
   margin-bottom: 10px;
   background: var(--bg-sunken);
-  padding: 10px;
+  padding: 8px;
   border-radius: var(--radius-xs, 6px);
+  min-width: 0;
+}
+
+.era-card .item-row {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.era-card .item-name {
+  min-width: 85px;
+  flex: 2;
+}
+
+.era-card .item-duration {
+  min-width: 50px;
+  flex: 1;
 }
 
 .era-reverse-row {

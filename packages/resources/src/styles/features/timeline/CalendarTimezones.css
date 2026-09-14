@@ -106,3 +106,37 @@
   border-radius: var(--radius-xs, 4px);
   margin-bottom: 8px;
 }
+
+.daylight-fraction-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.daylight-input-unit,
+.daylight-fraction-unit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.daylight-hours-input {
+  width: 52px;
+}
+
+.daylight-mins-input {
+  width: 48px;
+}
+
+.daylight-unit-label,
+.daylight-denom-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.daylight-fraction-divider {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0 2px;
+}

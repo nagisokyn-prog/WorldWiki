@@ -53,4 +53,28 @@ describe('useCalendarMonths', () => {
     expect(props.modelValue.месяцы.length).toBe(2);
     expect(props.modelValue.месяцы[1].название).toBe('Месяц 2');
   });
+
+  it('correctly calculates totalMonthsDays and daysBalance when target days in year is set or unset', () => {
+    // With 31 + 28 = 59 days, no target
+    const hook = useCalendarMonths(props);
+    expect(hook.totalMonthsDays.value).toBe(59);
+    expect(hook.daysBalanceText.value).toBe('59 дн');
+    expect(hook.daysBalanceClass.value).toBe('balance-neutral');
+
+    // With target = 365 (deficit)
+    props.modelValue.дней_в_году = 365;
+    expect(hook.targetYearDays.value).toBe(365);
+    expect(hook.daysBalanceText.value).toContain('⚠️ 59 / 365 дн (-306)');
+    expect(hook.daysBalanceClass.value).toBe('balance-warn');
+
+    // When matched
+    props.modelValue.дней_в_году = 59;
+    expect(hook.daysBalanceText.value).toBe('✓ 59 / 59 дн');
+    expect(hook.daysBalanceClass.value).toBe('balance-ok');
+
+    // Excess
+    props.modelValue.дней_в_году = 50;
+    expect(hook.daysBalanceText.value).toContain('⚠️ 59 / 50 дн (+9)');
+    expect(hook.daysBalanceClass.value).toBe('balance-warn');
+  });
 });

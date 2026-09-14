@@ -46,11 +46,6 @@
   transition: all 0.2s;
 }
 
-.nav-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-main);
-}
-
 .nav-item.active {
   background: var(--bg-surface);
   color: var(--accent);

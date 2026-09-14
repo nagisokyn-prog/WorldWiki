@@ -2,7 +2,7 @@
   <div class="tool-section timeline-section">
     <h4><i class="fas fa-calendar-alt"></i> Календари проекта</h4>
     
-    <div v-auto-animate class="timeline-events-list">
+    <div class="timeline-events-list">
       <div
         v-if="!project"
         class="calendar-warning-box"
@@ -31,7 +31,7 @@
           </div>
         </div>
         
-        <div v-show="isExpanded(idx)" class="event-content">
+        <div v-if="isExpanded(idx)" class="event-content">
           
           <div class="calendar-settings-section">
             <div class="grid-2">
@@ -40,9 +40,18 @@
                 <input v-model="cal.data.название" type="text" class="interactive-el">
               </div>
               <div class="calendar-field">
-                <label>Дней в неделе</label>
-                <input v-model.number="cal.data.дней_в_неделе" type="number" min="1" max="20" class="interactive-el">
+                <label>Дней в году</label>
+                <input v-model.number="cal.data.дней_в_году" type="number" min="1" class="interactive-el" placeholder="365">
               </div>
+            </div>
+            <div v-if="!cal.is_master && masterCalendar?.timezones && masterCalendar.timezones.length > 0" class="calendar-field mt-3">
+              <label>🌍 Часовой пояс региона в Мире</label>
+              <select v-model="cal.data.default_timezone_id" class="interactive-el glass-select">
+                <option :value="undefined">По умолчанию (0 мин / Основной)</option>
+                <option v-for="tz in masterCalendar.timezones" :key="tz.id" :value="tz.id">
+                  {{ tz.name }} ({{ tz.base_offset_hours >= 0 ? '+' : '' }}{{ tz.base_offset_hours }} ч)
+                </option>
+              </select>
             </div>
           </div>
 
@@ -67,7 +76,7 @@
           <div class="calendar-full-row-grid">
             <CalendarHolidays v-model="cal.data" />
           </div>
-          <CalendarPlayground :calendar="cal.data" />
+          <CalendarPlayground :calendar="cal.data" @set-origin="setStoryOrigin(idx)" />
 
         </div>
       </div>
@@ -105,6 +114,7 @@ const {
   saveCalendar,
   removeCalendar,
   setDefault,
+  setStoryOrigin,
   saveAll
 } = useCalendarsPanel(props);
 

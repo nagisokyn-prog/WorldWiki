@@ -12,6 +12,34 @@
   align-items: center;
   user-select: none;
 }
+.playground-section.is-origin-disabled .playground-section-header {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+.origin-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.origin-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.origin-active-badge {
+  font-size: 11px;
+  background: var(--accent);
+  color: var(--accent-text);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  margin-left: 8px;
+}
+.origin-inactive-hint {
+  margin-left: 8px;
+  font-size: 11px;
+}
 .playground-controls {
   display: flex;
   justify-content: space-between;

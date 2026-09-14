@@ -541,6 +541,15 @@
   color: var(--text-muted);
 }
 
+.world-time-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 280px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .world-regions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

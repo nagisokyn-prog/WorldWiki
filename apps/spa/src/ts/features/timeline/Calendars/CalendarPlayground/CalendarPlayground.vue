@@ -1,11 +1,23 @@
 <template>
-  <div class="calendar-section playground-section">
-    <div class="section-header playground-section-header" @click="isCollapsed = !isCollapsed">
-      <h4 class="text-accent m-0"><i class="fas fa-calendar-alt"></i> Точка отсчёта в произведении</h4>
-      <span class="text-xs text-muted opacity-70">{{ isCollapsed ? '▶' : '▼' }}</span>
+  <div class="calendar-section playground-section" :class="{ 'is-origin-disabled': !calendar.is_story_origin }">
+    <div class="section-header playground-section-header" @click="handleHeaderClick">
+      <div class="header-left">
+        <label class="origin-checkbox-label" title="Точка отсчёта произведения" @click.stop>
+          <input
+            type="checkbox"
+            :checked="calendar.is_story_origin"
+            class="interactive-el origin-checkbox"
+            @change="toggleStoryOrigin"
+          />
+        </label>
+        <h4 class="text-accent m-0"><i class="fas fa-calendar-alt"></i> 📖 Дата первой главы (Точка отсчёта сюжета)</h4>
+        <span v-if="calendar.is_story_origin" class="origin-active-badge">🌟 Точка отсчёта</span>
+        <span v-else class="origin-inactive-hint text-xs text-muted">(Отметьте галочкой, чтобы развернуть)</span>
+      </div>
+      <span class="text-xs text-muted opacity-70">{{ (isCollapsed || !calendar.is_story_origin) ? '▶' : '▼' }}</span>
     </div>
     
-    <div v-show="!isCollapsed" class="mt-4">
+    <div v-if="!isCollapsed && calendar.is_story_origin" class="mt-4">
       
       <!-- Controls -->
       <div class="playground-controls">
@@ -110,8 +122,14 @@ const props = defineProps<{
   calendar: CalendarData;
 }>();
 
+const emit = defineEmits<{
+  (e: 'set-origin'): void;
+}>();
+
 const {
   isCollapsed,
+  handleHeaderClick,
+  toggleStoryOrigin,
   filters,
   origin,
   daysInWeek,
@@ -123,7 +141,7 @@ const {
   gridDays,
   getDayTooltip,
   isSignificantPhase
-} = useCalendarPlayground(props);
+} = useCalendarPlayground(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/CalendarPlayground.css"></style>

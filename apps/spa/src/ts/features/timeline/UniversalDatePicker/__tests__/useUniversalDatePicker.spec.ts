@@ -81,7 +81,8 @@ describe('useUniversalDatePicker', () => {
     expect(vm.currentCalendarId).toBe('cal_1');
     expect(vm.currentYear).toBe(100);
     expect(vm.eraOptions.length).toBe(2);
-    expect(vm.yearOptions.length).toBe(200);
+    expect(vm.yearInputMode).toBe(true);
+    expect(vm.yearOptions.length).toBe(0);
     expect(vm.monthOptions.length).toBe(1);
     expect(vm.dayOptions.length).toBe(30);
     expect(vm.hourOptions.length).toBe(24);

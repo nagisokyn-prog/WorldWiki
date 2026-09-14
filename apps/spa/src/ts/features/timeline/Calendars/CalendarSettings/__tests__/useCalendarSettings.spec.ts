@@ -55,4 +55,27 @@ describe('useCalendarSettings', () => {
     await nextTick();
     expect(hook.dayLengthAnchor.value!.summer_solstice_hours).toBe(18.0);
   });
+
+  it('provides dynamic title based on isMaster and handles tooltip toggle', () => {
+    const masterProps: any = {
+      modelValue: {},
+      isMaster: true,
+    };
+    const masterHook = useCalendarSettings(masterProps, emit);
+    expect(masterHook.title.value).toBe('🪐 Физика планеты и эталон времени');
+
+    const localProps: any = {
+      modelValue: {},
+      isMaster: false,
+    };
+    const localHook = useCalendarSettings(localProps, emit);
+    expect(localHook.title.value).toBe('⏱️ Местное деление времени');
+    expect(localHook.showTooltip.value).toBe(false);
+
+    localHook.toggleTooltip();
+    expect(localHook.showTooltip.value).toBe(true);
+
+    localHook.toggleTooltip();
+    expect(localHook.showTooltip.value).toBe(false);
+  });
 });

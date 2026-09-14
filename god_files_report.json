@@ -4,11 +4,11 @@
     "status": "CRITICAL_GOD_FILE",
     "severityScore": 75,
     "lang": "Rust",
-    "totalLines": 1384,
-    "codeLines": 1277,
+    "totalLines": 1428,
+    "codeLines": 1317,
     "functionsCount": 45,
     "issues": [
-      "Критический размер: 1384 строк (порог 800)",
+      "Критический размер: 1428 строк (порог 800)",
       "Слишком много функций/методов: 45 (порог 25)"
     ],
     "details": {
@@ -26,19 +26,19 @@
     "status": "CRITICAL_GOD_FILE",
     "severityScore": 75,
     "lang": "Rust",
-    "totalLines": 1309,
-    "codeLines": 1155,
-    "functionsCount": 53,
+    "totalLines": 1243,
+    "codeLines": 1098,
+    "functionsCount": 48,
     "issues": [
-      "Критический размер: 1309 строк (порог 800)",
-      "Слишком много функций/методов: 53 (порог 25)"
+      "Критический размер: 1243 строк (порог 800)",
+      "Слишком много функций/методов: 48 (порог 25)"
     ],
     "details": {
       "hasSqlQueries": true,
       "hasHttpCalls": false,
       "hasTauriCommands": false,
       "hasDomainLogic": true,
-      "structs": 13,
+      "structs": 12,
       "enums": 0,
       "traits": 0
     }
@@ -48,16 +48,16 @@
     "status": "CRITICAL_GOD_FILE",
     "severityScore": 75,
     "lang": "TypeScript",
-    "totalLines": 968,
+    "totalLines": 972,
     "codeLines": 852,
-    "functionsCount": 38,
+    "functionsCount": 39,
     "issues": [
-      "Критический размер: 968 строк (порог 800)",
-      "Слишком много функций/методов: 38 (порог 25)"
+      "Критический размер: 972 строк (порог 800)",
+      "Слишком много функций/методов: 39 (порог 25)"
     ],
     "details": {
       "hasDirectIpc": true,
-      "hasDirectHttp": true,
+      "hasDirectHttp": false,
       "hasStoreAndApi": false,
       "interfaces": 5,
       "classes": 0
@@ -88,14 +88,14 @@
   {
     "file": "apps/spa/src/ts/services/api.client.ts",
     "status": "CRITICAL_GOD_FILE",
-    "severityScore": 75,
+    "severityScore": 55,
     "lang": "TypeScript",
-    "totalLines": 809,
-    "codeLines": 607,
-    "functionsCount": 193,
+    "totalLines": 784,
+    "codeLines": 588,
+    "functionsCount": 187,
     "issues": [
-      "Критический размер: 809 строк (порог 800)",
-      "Слишком много функций/методов: 193 (порог 25)"
+      "Чрезмерный размер: 784 строк (порог 500)",
+      "Слишком много функций/методов: 187 (порог 25)"
     ],
     "details": {
       "hasDirectIpc": true,
@@ -128,26 +128,6 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts",
-    "status": "CRITICAL_GOD_FILE",
-    "severityScore": 55,
-    "lang": "TypeScript",
-    "totalLines": 509,
-    "codeLines": 443,
-    "functionsCount": 26,
-    "issues": [
-      "Чрезмерный размер: 509 строк (порог 500)",
-      "Слишком много функций/методов: 26 (порог 25)"
-    ],
-    "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": false,
-      "hasStoreAndApi": false,
-      "interfaces": 3,
-      "classes": 0
-    }
-  },
-  {
     "file": "src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
     "status": "CRITICAL_GOD_FILE",
     "severityScore": 55,
@@ -175,11 +155,11 @@
     "status": "CRITICAL_GOD_FILE",
     "severityScore": 50,
     "lang": "TypeScript",
-    "totalLines": 889,
-    "codeLines": 684,
+    "totalLines": 945,
+    "codeLines": 720,
     "functionsCount": 3,
     "issues": [
-      "Критический размер: 889 строк (порог 800)"
+      "Критический размер: 945 строк (порог 800)"
     ],
     "details": {
       "hasDirectIpc": false,
@@ -252,6 +232,26 @@
       "structs": 4,
       "enums": 0,
       "traits": 0
+    }
+  },
+  {
+    "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts",
+    "status": "MONOLITH_WARNING",
+    "severityScore": 40,
+    "lang": "TypeScript",
+    "totalLines": 560,
+    "codeLines": 485,
+    "functionsCount": 20,
+    "issues": [
+      "Чрезмерный размер: 560 строк (порог 500)",
+      "Много функций в одном файле: 20 (порог 15)"
+    ],
+    "details": {
+      "hasDirectIpc": false,
+      "hasDirectHttp": false,
+      "hasStoreAndApi": false,
+      "interfaces": 1,
+      "classes": 0
     }
   },
   {
@@ -479,18 +479,18 @@
     "status": "MONOLITH_WARNING",
     "severityScore": 30,
     "lang": "Rust",
-    "totalLines": 521,
-    "codeLines": 463,
-    "functionsCount": 3,
+    "totalLines": 523,
+    "codeLines": 464,
+    "functionsCount": 5,
     "issues": [
-      "Чрезмерный размер: 521 строк (порог 500)"
+      "Чрезмерный размер: 523 строк (порог 500)"
     ],
     "details": {
       "hasSqlQueries": false,
       "hasHttpCalls": false,
       "hasTauriCommands": false,
       "hasDomainLogic": true,
-      "structs": 31,
+      "structs": 30,
       "enums": 0,
       "traits": 0
     }
@@ -538,11 +538,11 @@
     "status": "MONOLITH_WARNING",
     "severityScore": 25,
     "lang": "Vue",
-    "totalLines": 224,
-    "codeLines": 207,
+    "totalLines": 244,
+    "codeLines": 227,
     "functionsCount": 0,
     "issues": [
-      "Перегруженный <script setup>: 76 строк (норма <= 30)"
+      "Перегруженный <script setup>: 78 строк (норма <= 30)"
     ],
     "details": {
       "hasDirectIpc": false,
@@ -576,11 +576,11 @@
     "status": "MONOLITH_WARNING",
     "severityScore": 25,
     "lang": "Rust",
-    "totalLines": 168,
-    "codeLines": 147,
-    "functionsCount": 37,
+    "totalLines": 181,
+    "codeLines": 157,
+    "functionsCount": 39,
     "issues": [
-      "Слишком много функций/методов: 37 (порог 25)"
+      "Слишком много функций/методов: 39 (порог 25)"
     ],
     "details": {
       "hasSqlQueries": false,
@@ -589,7 +589,7 @@
       "hasDomainLogic": true,
       "structs": 6,
       "enums": 0,
-      "traits": 12
+      "traits": 13
     }
   },
   {
@@ -597,11 +597,11 @@
     "status": "MONOLITH_WARNING",
     "severityScore": 25,
     "lang": "Rust",
-    "totalLines": 66,
-    "codeLines": 58,
-    "functionsCount": 32,
+    "totalLines": 58,
+    "codeLines": 51,
+    "functionsCount": 28,
     "issues": [
-      "Слишком много функций/методов: 32 (порог 25)"
+      "Слишком много функций/методов: 28 (порог 25)"
     ],
     "details": {
       "hasSqlQueries": false,
@@ -610,7 +610,7 @@
       "hasDomainLogic": true,
       "structs": 0,
       "enums": 0,
-      "traits": 7
+      "traits": 6
     }
   },
   {
@@ -638,11 +638,11 @@
     "status": "ATTENTION",
     "severityScore": 20,
     "lang": "TypeScript",
-    "totalLines": 487,
-    "codeLines": 434,
+    "totalLines": 486,
+    "codeLines": 433,
     "functionsCount": 17,
     "issues": [
-      "Повышенный размер: 487 строк (порог 350)",
+      "Повышенный размер: 486 строк (порог 350)",
       "Много функций в одном файле: 17 (порог 15)"
     ],
     "details": {
@@ -674,23 +674,45 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts",
+    "file": "apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts",
     "status": "ATTENTION",
     "severityScore": 20,
     "lang": "TypeScript",
-    "totalLines": 452,
-    "codeLines": 393,
-    "functionsCount": 20,
+    "totalLines": 437,
+    "codeLines": 375,
+    "functionsCount": 23,
     "issues": [
-      "Повышенный размер: 452 строк (порог 350)",
-      "Много функций в одном файле: 20 (порог 15)"
+      "Повышенный размер: 437 строк (порог 350)",
+      "Много функций в одном файле: 23 (порог 15)"
     ],
     "details": {
       "hasDirectIpc": false,
       "hasDirectHttp": false,
       "hasStoreAndApi": false,
-      "interfaces": 1,
+      "interfaces": 3,
       "classes": 0
+    }
+  },
+  {
+    "file": "tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/lib.rs",
+    "status": "ATTENTION",
+    "severityScore": 20,
+    "lang": "Rust",
+    "totalLines": 379,
+    "codeLines": 303,
+    "functionsCount": 17,
+    "issues": [
+      "Повышенный размер: 379 строк (порог 350)",
+      "Много функций в одном файле: 17 (порог 15)"
+    ],
+    "details": {
+      "hasSqlQueries": true,
+      "hasHttpCalls": false,
+      "hasTauriCommands": false,
+      "hasDomainLogic": false,
+      "structs": 6,
+      "enums": 2,
+      "traits": 2
     }
   },
   {
@@ -714,44 +736,25 @@
     }
   },
   {
-    "file": "tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/lib.rs",
+    "file": "src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs",
     "status": "ATTENTION",
     "severityScore": 20,
     "lang": "Rust",
-    "totalLines": 376,
-    "codeLines": 300,
-    "functionsCount": 17,
+    "totalLines": 358,
+    "codeLines": 305,
+    "functionsCount": 20,
     "issues": [
-      "Повышенный размер: 376 строк (порог 350)",
-      "Много функций в одном файле: 17 (порог 15)"
+      "Повышенный размер: 358 строк (порог 350)",
+      "Много функций в одном файле: 20 (порог 15)"
     ],
     "details": {
-      "hasSqlQueries": true,
+      "hasSqlQueries": false,
       "hasHttpCalls": false,
       "hasTauriCommands": false,
       "hasDomainLogic": false,
-      "structs": 6,
-      "enums": 2,
-      "traits": 2
-    }
-  },
-  {
-    "file": "apps/spa/src/ts/features/ai/components/AiCitationBadge.vue",
-    "status": "ATTENTION",
-    "severityScore": 15,
-    "lang": "Vue",
-    "totalLines": 74,
-    "codeLines": 65,
-    "functionsCount": 2,
-    "issues": [
-      "Локальное объявление состояния ref/reactive внутри .vue вместо Composable use*.ts"
-    ],
-    "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": false,
-      "hasStoreAndApi": false,
-      "interfaces": 0,
-      "classes": 0
+      "structs": 1,
+      "enums": 0,
+      "traits": 0
     }
   },
   {
@@ -774,34 +777,15 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/stores/shell/shell.entityOps.ts",
-    "status": "ATTENTION",
-    "severityScore": 10,
-    "lang": "TypeScript",
-    "totalLines": 477,
-    "codeLines": 428,
-    "functionsCount": 11,
-    "issues": [
-      "Повышенный размер: 477 строк (порог 350)"
-    ],
-    "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": true,
-      "hasStoreAndApi": false,
-      "interfaces": 2,
-      "classes": 0
-    }
-  },
-  {
     "file": "src-tauri/crates/worldwiki-application/src/ai/prompt.rs",
     "status": "ATTENTION",
     "severityScore": 10,
     "lang": "Rust",
-    "totalLines": 472,
-    "codeLines": 405,
+    "totalLines": 498,
+    "codeLines": 429,
     "functionsCount": 11,
     "issues": [
-      "Повышенный размер: 472 строк (порог 350)"
+      "Повышенный размер: 498 строк (порог 350)"
     ],
     "details": {
       "hasSqlQueries": false,
@@ -811,6 +795,25 @@
       "structs": 1,
       "enums": 1,
       "traits": 0
+    }
+  },
+  {
+    "file": "apps/spa/src/ts/stores/shell/shell.entityOps.ts",
+    "status": "ATTENTION",
+    "severityScore": 10,
+    "lang": "TypeScript",
+    "totalLines": 476,
+    "codeLines": 427,
+    "functionsCount": 11,
+    "issues": [
+      "Повышенный размер: 476 строк (порог 350)"
+    ],
+    "details": {
+      "hasDirectIpc": false,
+      "hasDirectHttp": true,
+      "hasStoreAndApi": false,
+      "interfaces": 2,
+      "classes": 0
     }
   },
   {
@@ -833,42 +836,40 @@
     }
   },
   {
-    "file": "src-tauri/src/logic/volumes/mod.rs",
-    "status": "ATTENTION",
-    "severityScore": 10,
-    "lang": "Rust",
-    "totalLines": 459,
-    "codeLines": 408,
-    "functionsCount": 13,
-    "issues": [
-      "Повышенный размер: 459 строк (порог 350)"
-    ],
-    "details": {
-      "hasSqlQueries": true,
-      "hasHttpCalls": false,
-      "hasTauriCommands": false,
-      "hasDomainLogic": false,
-      "structs": 1,
-      "enums": 0,
-      "traits": 0
-    }
-  },
-  {
     "file": "apps/spa/src/ts/stores/shell.ts",
     "status": "ATTENTION",
     "severityScore": 10,
     "lang": "TypeScript",
-    "totalLines": 451,
-    "codeLines": 372,
+    "totalLines": 450,
+    "codeLines": 371,
     "functionsCount": 11,
     "issues": [
-      "Повышенный размер: 451 строк (порог 350)"
+      "Повышенный размер: 450 строк (порог 350)"
     ],
     "details": {
       "hasDirectIpc": false,
       "hasDirectHttp": false,
       "hasStoreAndApi": true,
       "interfaces": 0,
+      "classes": 0
+    }
+  },
+  {
+    "file": "apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/useTimeAtlasModal.ts",
+    "status": "ATTENTION",
+    "severityScore": 10,
+    "lang": "TypeScript",
+    "totalLines": 443,
+    "codeLines": 370,
+    "functionsCount": 10,
+    "issues": [
+      "Повышенный размер: 443 строк (порог 350)"
+    ],
+    "details": {
+      "hasDirectIpc": false,
+      "hasDirectHttp": false,
+      "hasStoreAndApi": false,
+      "interfaces": 1,
       "classes": 0
     }
   },
@@ -991,25 +992,6 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/useTimeAtlasModal.ts",
-    "status": "ATTENTION",
-    "severityScore": 10,
-    "lang": "TypeScript",
-    "totalLines": 390,
-    "codeLines": 320,
-    "functionsCount": 10,
-    "issues": [
-      "Повышенный размер: 390 строк (порог 350)"
-    ],
-    "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": false,
-      "hasStoreAndApi": false,
-      "interfaces": 1,
-      "classes": 0
-    }
-  },
-  {
     "file": "src-tauri/src/logic/batch/mod.rs",
     "status": "ATTENTION",
     "severityScore": 10,
@@ -1073,22 +1055,24 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/features/schemas/SchemaEditor/ManuscriptPointPicker/useManuscriptPointPicker.ts",
+    "file": "src-tauri/src/logic/volumes/mod.rs",
     "status": "ATTENTION",
     "severityScore": 10,
-    "lang": "TypeScript",
-    "totalLines": 374,
-    "codeLines": 320,
-    "functionsCount": 9,
+    "lang": "Rust",
+    "totalLines": 370,
+    "codeLines": 326,
+    "functionsCount": 11,
     "issues": [
-      "Повышенный размер: 374 строк (порог 350)"
+      "Повышенный размер: 370 строк (порог 350)"
     ],
     "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": false,
-      "hasStoreAndApi": false,
-      "interfaces": 1,
-      "classes": 0
+      "hasSqlQueries": true,
+      "hasHttpCalls": false,
+      "hasTauriCommands": false,
+      "hasDomainLogic": false,
+      "structs": 1,
+      "enums": 0,
+      "traits": 0
     }
   },
   {
@@ -1113,25 +1097,6 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/features/chapters/PromisesPanel/usePromisesPanel.ts",
-    "status": "ATTENTION",
-    "severityScore": 10,
-    "lang": "TypeScript",
-    "totalLines": 339,
-    "codeLines": 299,
-    "functionsCount": 16,
-    "issues": [
-      "Много функций в одном файле: 16 (порог 15)"
-    ],
-    "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": false,
-      "hasStoreAndApi": false,
-      "interfaces": 3,
-      "classes": 0
-    }
-  },
-  {
     "file": "packages/components/src/ts/composables/useEditorGroups.ts",
     "status": "ATTENTION",
     "severityScore": 10,
@@ -1151,24 +1116,22 @@
     }
   },
   {
-    "file": "src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs",
+    "file": "apps/spa/src/ts/features/chapters/PromisesPanel/usePromisesPanel.ts",
     "status": "ATTENTION",
     "severityScore": 10,
-    "lang": "Rust",
-    "totalLines": 323,
-    "codeLines": 262,
-    "functionsCount": 19,
+    "lang": "TypeScript",
+    "totalLines": 334,
+    "codeLines": 294,
+    "functionsCount": 16,
     "issues": [
-      "Много функций в одном файле: 19 (порог 15)"
+      "Много функций в одном файле: 16 (порог 15)"
     ],
     "details": {
-      "hasSqlQueries": false,
-      "hasHttpCalls": false,
-      "hasTauriCommands": false,
-      "hasDomainLogic": false,
-      "structs": 1,
-      "enums": 0,
-      "traits": 0
+      "hasDirectIpc": false,
+      "hasDirectHttp": false,
+      "hasStoreAndApi": false,
+      "interfaces": 3,
+      "classes": 0
     }
   },
   {
@@ -1290,6 +1253,25 @@
     }
   },
   {
+    "file": "apps/spa/src/ts/features/timeline/Calendars/CalendarTimezones/useCalendarTimezones.ts",
+    "status": "ATTENTION",
+    "severityScore": 10,
+    "lang": "TypeScript",
+    "totalLines": 236,
+    "codeLines": 200,
+    "functionsCount": 16,
+    "issues": [
+      "Много функций в одном файле: 16 (порог 15)"
+    ],
+    "details": {
+      "hasDirectIpc": false,
+      "hasDirectHttp": false,
+      "hasStoreAndApi": false,
+      "interfaces": 0,
+      "classes": 0
+    }
+  },
+  {
     "file": "src-tauri/crates/worldwiki-infrastructure/src/ai/chunker.rs",
     "status": "ATTENTION",
     "severityScore": 10,
@@ -1332,25 +1314,6 @@
     }
   },
   {
-    "file": "apps/spa/src/ts/features/chapters/ChaptersMain/hooks/useChapterLayout.ts",
-    "status": "ATTENTION",
-    "severityScore": 10,
-    "lang": "TypeScript",
-    "totalLines": 185,
-    "codeLines": 160,
-    "functionsCount": 16,
-    "issues": [
-      "Много функций в одном файле: 16 (порог 15)"
-    ],
-    "details": {
-      "hasDirectIpc": false,
-      "hasDirectHttp": false,
-      "hasStoreAndApi": false,
-      "interfaces": 0,
-      "classes": 0
-    }
-  },
-  {
     "file": "src-tauri/src/logic/entities/commands.rs",
     "status": "ATTENTION",
     "severityScore": 10,
@@ -1369,6 +1332,25 @@
       "structs": 0,
       "enums": 0,
       "traits": 0
+    }
+  },
+  {
+    "file": "apps/spa/src/ts/features/chapters/ChaptersMain/hooks/useChapterLayout.ts",
+    "status": "ATTENTION",
+    "severityScore": 10,
+    "lang": "TypeScript",
+    "totalLines": 172,
+    "codeLines": 148,
+    "functionsCount": 15,
+    "issues": [
+      "Много функций в одном файле: 15 (порог 15)"
+    ],
+    "details": {
+      "hasDirectIpc": false,
+      "hasDirectHttp": false,
+      "hasStoreAndApi": false,
+      "interfaces": 0,
+      "classes": 0
     }
   },
   {

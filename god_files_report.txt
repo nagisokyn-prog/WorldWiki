@@ -1,44 +1,40 @@
 ОТЧЕТ АУДИТА БОЖЕСТВЕННЫХ ФАЙЛОВ
-Дата: 2026-09-10T18:19:18.104Z
-Всего проверено файлов: 591
-Критических God Files: 10
-Предупреждений: 20
+Дата: 2026-09-14T19:30:46.503Z
+Всего проверено файлов: 596
+Критических God Files: 9
+Предупреждений: 21
 
-[CRITICAL_GOD_FILE] (1384 lines, 45 fns) src-tauri/crates/worldwiki-application/src/ai/chat_services.rs
-  - Критический размер: 1384 строк (порог 800)
+[CRITICAL_GOD_FILE] (1428 lines, 45 fns) src-tauri/crates/worldwiki-application/src/ai/chat_services.rs
+  - Критический размер: 1428 строк (порог 800)
   - Слишком много функций/методов: 45 (порог 25)
 
-[CRITICAL_GOD_FILE] (1309 lines, 53 fns) src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs
-  - Критический размер: 1309 строк (порог 800)
-  - Слишком много функций/методов: 53 (порог 25)
+[CRITICAL_GOD_FILE] (1243 lines, 48 fns) src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs
+  - Критический размер: 1243 строк (порог 800)
+  - Слишком много функций/методов: 48 (порог 25)
 
-[CRITICAL_GOD_FILE] (968 lines, 38 fns) apps/spa/src/ts/features/ai/useWowilonPanel.ts
-  - Критический размер: 968 строк (порог 800)
-  - Слишком много функций/методов: 38 (порог 25)
+[CRITICAL_GOD_FILE] (972 lines, 39 fns) apps/spa/src/ts/features/ai/useWowilonPanel.ts
+  - Критический размер: 972 строк (порог 800)
+  - Слишком много функций/методов: 39 (порог 25)
 
 [CRITICAL_GOD_FILE] (937 lines, 31 fns) src-tauri/src/logic/entities/mod.rs
   - Критический размер: 937 строк (порог 800)
   - Слишком много функций/методов: 31 (порог 25)
 
-[CRITICAL_GOD_FILE] (809 lines, 193 fns) apps/spa/src/ts/services/api.client.ts
-  - Критический размер: 809 строк (порог 800)
-  - Слишком много функций/методов: 193 (порог 25)
+[CRITICAL_GOD_FILE] (784 lines, 187 fns) apps/spa/src/ts/services/api.client.ts
+  - Чрезмерный размер: 784 строк (порог 500)
+  - Слишком много функций/методов: 187 (порог 25)
 
 [CRITICAL_GOD_FILE] (581 lines, 38 fns) tauri-surreal-kit/backend/tauri_shell/src/logic/system.rs
   - Чрезмерный размер: 581 строк (порог 500)
   - Слишком много функций/методов: 38 (порог 25)
-
-[CRITICAL_GOD_FILE] (509 lines, 26 fns) apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts
-  - Чрезмерный размер: 509 строк (порог 500)
-  - Слишком много функций/методов: 26 (порог 25)
 
 [CRITICAL_GOD_FILE] (454 lines, 17 fns) src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs
   - Повышенный размер: 454 строк (порог 350)
   - Много функций в одном файле: 17 (порог 15)
   - Смешивание слоёв архитектуры (DB + HTTP / UI + IPC) в одном файле
 
-[CRITICAL_GOD_FILE] (889 lines, 3 fns) apps/spa/src/ts/services/Calendars/calendar.math.ts
-  - Критический размер: 889 строк (порог 800)
+[CRITICAL_GOD_FILE] (945 lines, 3 fns) apps/spa/src/ts/services/Calendars/calendar.math.ts
+  - Критический размер: 945 строк (порог 800)
 
 [CRITICAL_GOD_FILE] (807 lines, 13 fns) src-tauri/crates/worldwiki-application/src/ai/schema_adapter.rs
   - Критический размер: 807 строк (порог 800)
@@ -50,6 +46,10 @@
 [MONOLITH_WARNING] (626 lines, 15 fns) src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs
   - Чрезмерный размер: 626 строк (порог 500)
   - Много функций в одном файле: 15 (порог 15)
+
+[MONOLITH_WARNING] (560 lines, 20 fns) apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts
+  - Чрезмерный размер: 560 строк (порог 500)
+  - Много функций в одном файле: 20 (порог 15)
 
 [MONOLITH_WARNING] (559 lines, 15 fns) apps/spa/src/ts/utils/ui-helpers.ts
   - Чрезмерный размер: 559 строк (порог 500)
@@ -87,8 +87,8 @@
 [MONOLITH_WARNING] (566 lines, 0 fns) apps/spa/src/ts/services/document/ast/ASTAdapter.ts
   - Чрезмерный размер: 566 строк (порог 500)
 
-[MONOLITH_WARNING] (521 lines, 3 fns) src-tauri/src/logic/models.rs
-  - Чрезмерный размер: 521 строк (порог 500)
+[MONOLITH_WARNING] (523 lines, 5 fns) src-tauri/src/logic/models.rs
+  - Чрезмерный размер: 523 строк (порог 500)
 
 [MONOLITH_WARNING] (272 lines, 0 fns) apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue
   - Перегруженный <script setup>: 76 строк (норма <= 30)
@@ -96,62 +96,63 @@
 [MONOLITH_WARNING] (248 lines, 0 fns) apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue
   - Перегруженный <script setup>: 60 строк (норма <= 30)
 
-[MONOLITH_WARNING] (224 lines, 0 fns) apps/spa/src/ts/features/ai/WowilonPanel.vue
-  - Перегруженный <script setup>: 76 строк (норма <= 30)
+[MONOLITH_WARNING] (244 lines, 0 fns) apps/spa/src/ts/features/ai/WowilonPanel.vue
+  - Перегруженный <script setup>: 78 строк (норма <= 30)
 
 [MONOLITH_WARNING] (183 lines, 0 fns) packages/word-vibe/src/components/WordVibeEditor.vue
   - Перегруженный <script setup>: 55 строк (норма <= 30)
 
-[MONOLITH_WARNING] (168 lines, 37 fns) src-tauri/crates/worldwiki-ports/src/ai.rs
-  - Слишком много функций/методов: 37 (порог 25)
+[MONOLITH_WARNING] (181 lines, 39 fns) src-tauri/crates/worldwiki-ports/src/ai.rs
+  - Слишком много функций/методов: 39 (порог 25)
 
-[MONOLITH_WARNING] (66 lines, 32 fns) src-tauri/crates/worldwiki-ports/src/repositories.rs
-  - Слишком много функций/методов: 32 (порог 25)
+[MONOLITH_WARNING] (58 lines, 28 fns) src-tauri/crates/worldwiki-ports/src/repositories.rs
+  - Слишком много функций/методов: 28 (порог 25)
 
 [ATTENTION] (496 lines, 15 fns) packages/word-vibe/src/editor/useRkWordEditor.ts
   - Повышенный размер: 496 строк (порог 350)
   - Много функций в одном файле: 15 (порог 15)
 
-[ATTENTION] (487 lines, 17 fns) apps/spa/src/ts/features/entities/EntityEditor/useEntityEditor.ts
-  - Повышенный размер: 487 строк (порог 350)
+[ATTENTION] (486 lines, 17 fns) apps/spa/src/ts/features/entities/EntityEditor/useEntityEditor.ts
+  - Повышенный размер: 486 строк (порог 350)
   - Много функций в одном файле: 17 (порог 15)
 
 [ATTENTION] (465 lines, 19 fns) apps/spa/src/ts/services/Calendars/timeline-panel.ts
   - Повышенный размер: 465 строк (порог 350)
   - Много функций в одном файле: 19 (порог 15)
 
-[ATTENTION] (452 lines, 20 fns) apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts
-  - Повышенный размер: 452 строк (порог 350)
-  - Много функций в одном файле: 20 (порог 15)
+[ATTENTION] (437 lines, 23 fns) apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts
+  - Повышенный размер: 437 строк (порог 350)
+  - Много функций в одном файле: 23 (порог 15)
+
+[ATTENTION] (379 lines, 17 fns) tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/lib.rs
+  - Повышенный размер: 379 строк (порог 350)
+  - Много функций в одном файле: 17 (порог 15)
 
 [ATTENTION] (378 lines, 19 fns) apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEditorCoreTiptap.ts
   - Повышенный размер: 378 строк (порог 350)
   - Много функций в одном файле: 19 (порог 15)
 
-[ATTENTION] (376 lines, 17 fns) tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/src/lib.rs
-  - Повышенный размер: 376 строк (порог 350)
-  - Много функций в одном файле: 17 (порог 15)
-
-[ATTENTION] (74 lines, 2 fns) apps/spa/src/ts/features/ai/components/AiCitationBadge.vue
-  - Локальное объявление состояния ref/reactive внутри .vue вместо Composable use*.ts
+[ATTENTION] (358 lines, 20 fns) src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs
+  - Повышенный размер: 358 строк (порог 350)
+  - Много функций в одном файле: 20 (порог 15)
 
 [ATTENTION] (74 lines, 1 fns) apps/spa/src/ts/features/ai/components/AiHeader.vue
   - Локальное объявление состояния ref/reactive внутри .vue вместо Composable use*.ts
 
-[ATTENTION] (477 lines, 11 fns) apps/spa/src/ts/stores/shell/shell.entityOps.ts
-  - Повышенный размер: 477 строк (порог 350)
+[ATTENTION] (498 lines, 11 fns) src-tauri/crates/worldwiki-application/src/ai/prompt.rs
+  - Повышенный размер: 498 строк (порог 350)
 
-[ATTENTION] (472 lines, 11 fns) src-tauri/crates/worldwiki-application/src/ai/prompt.rs
-  - Повышенный размер: 472 строк (порог 350)
+[ATTENTION] (476 lines, 11 fns) apps/spa/src/ts/stores/shell/shell.entityOps.ts
+  - Повышенный размер: 476 строк (порог 350)
 
 [ATTENTION] (469 lines, 14 fns) apps/spa/src/ts/services/Entity/useRelationshipBlock.ts
   - Повышенный размер: 469 строк (порог 350)
 
-[ATTENTION] (459 lines, 13 fns) src-tauri/src/logic/volumes/mod.rs
-  - Повышенный размер: 459 строк (порог 350)
+[ATTENTION] (450 lines, 11 fns) apps/spa/src/ts/stores/shell.ts
+  - Повышенный размер: 450 строк (порог 350)
 
-[ATTENTION] (451 lines, 11 fns) apps/spa/src/ts/stores/shell.ts
-  - Повышенный размер: 451 строк (порог 350)
+[ATTENTION] (443 lines, 10 fns) apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/useTimeAtlasModal.ts
+  - Повышенный размер: 443 строк (порог 350)
 
 [ATTENTION] (422 lines, 1 fns) src-tauri/crates/worldwiki-infrastructure/src/ai/model_discovery.rs
   - Повышенный размер: 422 строк (порог 350)
@@ -171,9 +172,6 @@
 [ATTENTION] (390 lines, 9 fns) apps/spa/src/ts/app/project_launcher.ts
   - Повышенный размер: 390 строк (порог 350)
 
-[ATTENTION] (390 lines, 10 fns) apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/useTimeAtlasModal.ts
-  - Повышенный размер: 390 строк (порог 350)
-
 [ATTENTION] (383 lines, 14 fns) src-tauri/src/logic/batch/mod.rs
   - Повышенный размер: 383 строк (порог 350)
 
@@ -183,20 +181,17 @@
 [ATTENTION] (378 lines, 12 fns) src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs
   - Повышенный размер: 378 строк (порог 350)
 
-[ATTENTION] (374 lines, 9 fns) apps/spa/src/ts/features/schemas/SchemaEditor/ManuscriptPointPicker/useManuscriptPointPicker.ts
-  - Повышенный размер: 374 строк (порог 350)
+[ATTENTION] (370 lines, 11 fns) src-tauri/src/logic/volumes/mod.rs
+  - Повышенный размер: 370 строк (порог 350)
 
 [ATTENTION] (362 lines, 8 fns) src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router.rs
   - Повышенный размер: 362 строк (порог 350)
 
-[ATTENTION] (339 lines, 16 fns) apps/spa/src/ts/features/chapters/PromisesPanel/usePromisesPanel.ts
-  - Много функций в одном файле: 16 (порог 15)
-
 [ATTENTION] (336 lines, 18 fns) packages/components/src/ts/composables/useEditorGroups.ts
   - Много функций в одном файле: 18 (порог 15)
 
-[ATTENTION] (323 lines, 19 fns) src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs
-  - Много функций в одном файле: 19 (порог 15)
+[ATTENTION] (334 lines, 16 fns) apps/spa/src/ts/features/chapters/PromisesPanel/usePromisesPanel.ts
+  - Много функций в одном файле: 16 (порог 15)
 
 [ATTENTION] (319 lines, 19 fns) src-tauri/crates/worldwiki-tauri/src/commands/chat.rs
   - Много функций в одном файле: 19 (порог 15)
@@ -216,17 +211,20 @@
 [ATTENTION] (258 lines, 15 fns) apps/spa/src/ts/features/ai/settings/tabs/local/useLocalAiTab.ts
   - Много функций в одном файле: 15 (порог 15)
 
+[ATTENTION] (236 lines, 16 fns) apps/spa/src/ts/features/timeline/Calendars/CalendarTimezones/useCalendarTimezones.ts
+  - Много функций в одном файле: 16 (порог 15)
+
 [ATTENTION] (226 lines, 15 fns) src-tauri/crates/worldwiki-infrastructure/src/ai/chunker.rs
   - Много функций в одном файле: 15 (порог 15)
 
 [ATTENTION] (218 lines, 24 fns) src-tauri/crates/worldwiki-infrastructure/src/surrealdb/memory_repos.rs
   - Много функций в одном файле: 24 (порог 15)
 
-[ATTENTION] (185 lines, 16 fns) apps/spa/src/ts/features/chapters/ChaptersMain/hooks/useChapterLayout.ts
-  - Много функций в одном файле: 16 (порог 15)
-
 [ATTENTION] (177 lines, 18 fns) src-tauri/src/logic/entities/commands.rs
   - Много функций в одном файле: 18 (порог 15)
+
+[ATTENTION] (172 lines, 15 fns) apps/spa/src/ts/features/chapters/ChaptersMain/hooks/useChapterLayout.ts
+  - Много функций в одном файле: 15 (порог 15)
 
 [ATTENTION] (168 lines, 15 fns) apps/spa/src/ts/stores/shell/shell.layout.ts
   - Много функций в одном файле: 15 (порог 15)

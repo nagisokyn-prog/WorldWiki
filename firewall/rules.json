@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "version": "1.0",
+      "category": "Architecture",
+      "severity": "Deny",
+      "title": "Domain crate cannot import external frameworks",
+      "description": "worldwiki-domain must remain pure without dependencies on tauri, tokio, surrealdb, or reqwest.",
+      "remediation": "Move infrastructure dependencies to ports and adapter traits."
+    },
+    {
+      "id": "ARCH-002",
+      "version": "1.0",
+      "category": "Architecture",
+      "severity": "Deny",
+      "title": "Application layer cannot import Tauri",
+      "description": "worldwiki-application use cases must not depend on tauri::* types.",
+      "remediation": "Pass UI parameters as clean DTOs into use case methods."
+    },
+    {
+      "id": "ARCH-005",
+      "version": "1.0",
+      "category": "Architecture",
+      "severity": "Deny",
+      "title": "Tauri SDK isolated strictly to adapters/tauri",
+      "description": "Only worldwiki-tauri crate is authorized to import and configure Tauri APIs.",
+      "remediation": "Move desktop bridge commands into crates/adapters/tauri."
+    },
+    {
+      "id": "ASYNC-001",
+      "version": "1.0",
+      "category": "Robustness",
+      "severity": "Deny",
+      "title": "MutexGuard held across await point",
+      "description": "Holding std::sync::MutexGuard across .await point causes Tokio worker starvation and deadlocks.",
+      "remediation": "Use tokio::sync::Mutex or explicitly drop the guard before .await."
+    },
+    {
+      "id": "SEC-001",
+      "version": "1.0",
+      "category": "Security",
+      "severity": "Deny",
+      "title": "Tainted input reached process execution sink",
+      "description": "Unsanitized IPC arguments cannot reach std::process::Command without explicit validation.",
+      "remediation": "Sanitize path via validate_safe_path() or annotate function with #[arch_guard(sanitizes)]."
+    },
+    {
+      "id": "VUE-001",
+      "version": "1.0",
+      "category": "Convention",
+      "severity": "Deny",
+      "title": "Logic bloat in Vue SFC script setup",
+      "description": "Vue components must contain only glue code (props, emits, useFeature calls) under 25-30 lines.",
+      "remediation": "Extract business logic into use<Component>.ts composable."
+    },
+    {
+      "id": "VUE-002",
+      "version": "1.0",
+      "category": "Architecture",
+      "severity": "Deny",
+      "title": "Direct Tauri IPC import in Vue template",
+      "description": "Vue components cannot directly call invoke() or listen() from @tauri-apps/api.",
+      "remediation": "Route data calls through use*.ts -> Store -> API Client."
+    },
+    {
+      "id": "LEAK-001",
+      "version": "1.0",
+      "category": "Robustness",
+      "severity": "Deny",
+      "title": "Resource listener without symmetric onUnmounted cleanup",
+      "description": "Calling listen() or addEventListener() in composables requires symmetrical unlisten in onUnmounted.",
+      "remediation": "Store unlisten handle and execute it inside onUnmounted(() => { ... })."
+    },
+    {
+      "id": "CSS-001",
+      "version": "1.0",
+      "category": "Convention",
+      "severity": "Deny",
+      "title": "Zero raw CSS in Vue SFC templates",
+      "description": "Feature styles must be extracted into dedicated stylesheets in @worldwiki/resources.",
+      "remediation": "Use <style scoped src=\"@worldwiki/resources/src/styles/...\">."
+    },
+    {
+      "id": "CSS-002",
+      "version": "1.0",
+      "category": "Convention",
+      "severity": "Deny",
+      "title": "Mirroring stylesheet taxonomy violation",
+      "description": "CSS files in @worldwiki/resources must 1-to-1 mirror the component folder structure.",
+      "remediation": "Place stylesheet into matching styles/features/<feature>/<Component>.css path."
+    },
+    {
+      "id": "CSS-003",
+      "version": "1.0",
+      "category": "Convention",
+      "severity": "Warn",
+      "title": "Duplicate CSS declaration blocks",
+      "description": "Identical CSS rule sets repeated across multiple stylesheets should be unified.",
+      "remediation": "Extract repeated rule set into a shared utility in @worldwiki/resources/base."
+    },
+    {
+      "id": "CSS-004",
+      "version": "1.0",
+      "category": "Convention",
+      "severity": "Deny",
+      "title": "Hardcoded CSS values and colors",
+      "description": "Direct hex colors, named colors, raw border-radius and shadows are forbidden.",
+      "remediation": "Use design tokens: var(--color-...), var(--border-radius-...), var(--glass-...)."
+    }
+  ]
+}

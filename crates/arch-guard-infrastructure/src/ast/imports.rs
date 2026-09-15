@@ -27,11 +27,8 @@ impl<'a> ImportChecker<'a> {
                 if self.is_domain_crate() {
                     let forbidden_domain_pkgs = ["tauri", "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix"];
                     if forbidden_domain_pkgs.contains(&root_segment.as_str()) {
-                        violations.push(self.create_violation(
+                        violations.push(self.build_violation(
                             "ARCH-001",
-                            "1.0",
-                            Category::Architecture,
-                            Severity::Deny,
                             item_use,
                             &format!("Domain crate '{}' cannot import external framework '{}'", self.crate_name, root_segment),
                             "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
@@ -39,34 +36,25 @@ impl<'a> ImportChecker<'a> {
                     }
                 }
 
+
                 // ARCH-002: Application cannot import Tauri
-                if self.is_application_crate() {
-                    if root_segment == "tauri" {
-                        violations.push(self.create_violation(
-                            "ARCH-002",
-                            "1.0",
-                            Category::Architecture,
-                            Severity::Deny,
-                            item_use,
-                            &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
-                            "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
-                        ));
-                    }
+                if self.is_application_crate() && root_segment == "tauri" {
+                    violations.push(self.build_violation(
+                        "ARCH-002",
+                        item_use,
+                        &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
+                        "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
+                    ));
                 }
 
                 // ARCH-005: Tauri SDK isolated strictly to adapters/tauri or worldwiki-tauri
-                if !self.is_tauri_authorized_crate() {
-                    if root_segment == "tauri" {
-                        violations.push(self.create_violation(
-                            "ARCH-005",
-                            "1.0",
-                            Category::Architecture,
-                            Severity::Deny,
-                            item_use,
-                            &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
-                            "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
-                        ));
-                    }
+                if !self.is_tauri_authorized_crate() && root_segment == "tauri" {
+                    violations.push(self.build_violation(
+                        "ARCH-005",
+                        item_use,
+                        &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
+                        "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
+                    ));
                 }
 
                 self.inspect_use_tree(tree, item_use, violations);
@@ -96,25 +84,22 @@ impl<'a> ImportChecker<'a> {
             || self.current_file.to_string_lossy().contains("crates/worldwiki-tauri")
     }
 
-    fn create_violation(
+    fn build_violation(
         &self,
         rule_id: &str,
-        rule_version: &str,
-        category: Category,
-        severity: Severity,
         item_use: &ItemUse,
         message: &str,
         remediation: &str,
     ) -> Violation {
         let snippet = quote::quote!(#item_use).to_string();
         let symbol = "use".to_string();
-        let fingerprint = compute_fingerprint(rule_id, rule_version, &symbol, &snippet);
+        let fingerprint = compute_fingerprint(rule_id, "1.0", &symbol, &snippet);
 
         Violation {
             rule_id: rule_id.to_string(),
-            rule_version: rule_version.to_string(),
-            category,
-            severity,
+            rule_version: "1.0".to_string(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
             file: self.current_file.to_path_buf(),
             line: 1,
             column: 1,
@@ -126,3 +111,4 @@ impl<'a> ImportChecker<'a> {
         }
     }
 }
+

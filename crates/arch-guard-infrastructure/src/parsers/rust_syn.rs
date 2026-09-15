@@ -13,8 +13,9 @@ pub struct RustSynParserAdapter;
 
 impl AstParserPort for RustSynParserAdapter {
     fn can_parse(&self, path: &Path) -> bool {
-        path.extension().map_or(false, |ext| ext == "rs")
+        path.extension().is_some_and(|ext| ext == "rs")
     }
+
 
     fn parse_file(&self, path: &Path, crate_name: &str) -> Result<Vec<Violation>, String> {
         let content = fs::read_to_string(path)

@@ -54,9 +54,41 @@ impl CssRuleChecker {
 
     pub fn validate_css_file(content: &str, file_path: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
+
+        // CSS-002: Check mirroring stylesheet taxonomy in @worldwiki/resources
+        let path_str = file_path.to_string_lossy().replace('\\', "/");
+        if path_str.contains("packages/resources/src/styles") {
+            let is_valid_taxonomy = path_str.contains("styles/tokens")
+                || path_str.contains("styles/components")
+                || path_str.contains("styles/features")
+                || path_str.contains("styles/base")
+                || path_str.contains("styles/views")
+                || path_str.ends_with("index.css")
+                || path_str.ends_with("styles.css");
+
+            if !is_valid_taxonomy {
+                let fingerprint = compute_fingerprint("CSS-002", "1.0", "stylesheet_taxonomy", &path_str);
+                violations.push(Violation {
+                    rule_id: "CSS-002".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Convention,
+                    severity: Severity::Deny,
+                    file: file_path.to_path_buf(),
+                    line: 1,
+                    column: 1,
+                    symbol: "stylesheet_taxonomy".into(),
+                    snippet: path_str.clone(),
+                    message: "Orphan or misplaced stylesheet outside standard design taxonomy.".into(),
+                    remediation: "Place stylesheet into styles/tokens/, styles/components/, or styles/features/ matching component structure.".into(),
+                    fingerprint,
+                });
+            }
+        }
+
         Self::validate_css_content(content, file_path, 1, &mut violations);
         violations
     }
+
 
     fn validate_css_content(
         content: &str,

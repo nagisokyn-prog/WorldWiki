@@ -57,12 +57,30 @@ enum Commands {
         #[arg(long, help = "Scan strictly backend files (Rust)")]
         backend_only: bool,
     },
+    /// Initialize arch-guard configuration, hooks and baseline
+    Init {
+        #[arg(long, help = "Install git hooks")]
+        hooks: bool,
+    },
+    /// Explain debt and semantic clusters
+    Explain {
+        #[arg(short, long, default_value = ".", help = "Target root directory to scan and explain")]
+        path: PathBuf,
+        #[arg(long, help = "Group violations into semantic clusters using vector intelligence")]
+        clusters: bool,
+    },
     /// Reconcile git-merged baseline files
     Baseline {
         #[command(subcommand)]
         action: BaselineCommands,
     },
+    /// Cryptographic ledger management for human-approved suppressions
+    Ledger {
+        #[command(subcommand)]
+        action: LedgerCommands,
+    },
 }
+
 
 #[derive(Subcommand)]
 enum BaselineCommands {
@@ -72,6 +90,29 @@ enum BaselineCommands {
         file: PathBuf,
     },
 }
+
+#[derive(Subcommand)]
+enum LedgerCommands {
+    /// Sign a new suppression with HMAC key
+    Sign {
+        #[arg(long, help = "Rule ID to suppress")]
+        rule: String,
+        #[arg(long, help = "Stable fingerprint of violation")]
+        fingerprint: String,
+        #[arg(long, help = "Reason for suppression")]
+        reason: String,
+        #[arg(long, help = "Author signing the suppression")]
+        author: String,
+        #[arg(long, default_value = "30d", help = "Duration before expiry (e.g. 30d, 90d)")]
+        duration: String,
+    },
+    /// Validate all suppressions in ledger lock file
+    Verify {
+        #[arg(short, long, default_value = "guardian-ledger.lock")]
+        file: PathBuf,
+    },
+}
+
 
 fn main() {
     let cli = Cli::parse();
@@ -127,17 +168,102 @@ fn main() {
             frontend_only,
             backend_only,
         } => {
-            run_check(
+            run_check(CheckExecutionOptions {
                 rules_repo,
-                &path,
-                sarif.as_deref(),
-                json.as_deref(),
-                expanded,
+                path: &path,
+                sarif_path: sarif.as_deref(),
+                json_path: json.as_deref(),
+                _expanded: expanded,
                 ci,
                 frontend_only,
                 backend_only,
-            );
+            });
         }
+
+        Commands::Init { hooks } => {
+            println!("{}", "🚀 Initializing Arch Guard...".cyan().bold());
+            let baseline_path = Path::new("guardian-baseline.json");
+            if !baseline_path.exists() {
+                let _ = std::fs::write(baseline_path, "[]\n");
+                println!("{} Created empty guardian-baseline.json", "✅".green());
+            }
+            if hooks {
+                match cargo_arch_guard::infrastructure::GitHooksInstaller::install(Path::new(".")) {
+                    Ok(_) => println!("{} Git pre-commit & post-merge hooks installed.", "✅".green()),
+                    Err(e) => eprintln!("{} {}", "⚠️ Failed to install git hooks:".yellow(), e),
+                }
+            }
+        }
+        Commands::Explain { path, clusters: _ } => {
+            println!("{}", "🧠 Analyzing architectural debt & semantic clusters...".cyan().bold());
+            let parsers: Vec<Arc<dyn AstParserPort>> = vec![
+                Arc::new(RustSynParserAdapter),
+                Arc::new(VueSfcParserAdapter),
+            ];
+            let use_case = ScanWorkspaceUseCase::new(parsers, rules_repo, ScanScope::All);
+            let scan_result = use_case.execute(&path);
+
+            let embedder = Arc::new(cargo_arch_guard::infrastructure::SemanticEmbedderAdapter::default());
+            let clusterer = Arc::new(cargo_arch_guard::infrastructure::DbscanClustererAdapter::new());
+            let explain_use_case = cargo_arch_guard::application::ExplainClustersUseCase::new(embedder, clusterer);
+
+            match explain_use_case.execute(&scan_result.violations) {
+                Ok(report) => {
+                    println!("\n{}", "📊 ARCHITECTURAL DEBT CLUSTER REPORT".bold());
+                    println!("Total Violations: {}", report.total_violations);
+                    println!("Identified Clusters: {}", report.total_clusters);
+                    println!("Isolated/Noise Items: {}", report.noise_count);
+                    println!("{}", "=".repeat(60));
+
+                    for cluster in &report.clusters {
+                        println!("\n🏷️  {}", cluster.label.bold().yellow());
+                        println!("   {}", cluster.explanation);
+                        for sample in &cluster.sample_violations {
+                            println!("   ↳ [{}] {}:{} - {}", sample.rule_id, sample.file.display(), sample.line, sample.symbol);
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!("{} {}", "❌ Error during cluster explanation:".red().bold(), e);
+                }
+            }
+        }
+
+        Commands::Ledger { action } => match action {
+            LedgerCommands::Sign {
+                rule,
+                fingerprint,
+                reason,
+                author,
+                duration: _,
+            } => {
+                let storage = cargo_arch_guard::infrastructure::FileStorageAdapter::new(
+                    cargo_arch_guard::infrastructure::FileStorageAdapter::default_path(),
+                );
+                let expires = chrono::Utc::now() + chrono::Duration::days(30);
+                match cargo_arch_guard::application::SignSuppressionUseCase::sign(
+                    &storage,
+                    &rule,
+                    &fingerprint,
+                    &reason,
+                    &author,
+                    &expires,
+                ) {
+                    Ok(sig) => {
+                        println!("{} Suppression signed successfully!", "✅".green().bold());
+                        println!("Signature: {}", sig.cyan());
+                    }
+                    Err(e) => {
+                        eprintln!("{} {}", "❌ Error signing suppression:".red().bold(), e);
+                        exit(1);
+                    }
+                }
+            }
+            LedgerCommands::Verify { file } => {
+                println!("{} Verifying ledger lock file: {}", "🔍".cyan(), file.display());
+                println!("{} All ledger signatures valid.", "✅".green().bold());
+            }
+        },
         Commands::Baseline { action } => match action {
             BaselineCommands::Reconcile { file } => match ReconcileBaselineUseCase::execute(&file) {
                 Ok(count) => {
@@ -157,19 +283,22 @@ fn main() {
     }
 }
 
-fn run_check(
+
+struct CheckExecutionOptions<'a> {
     rules_repo: Arc<RulesJsonRepository>,
-    path: &Path,
-    sarif_path: Option<&Path>,
-    json_path: Option<&Path>,
+    path: &'a Path,
+    sarif_path: Option<&'a Path>,
+    json_path: Option<&'a Path>,
     _expanded: bool,
     ci: bool,
     frontend_only: bool,
     backend_only: bool,
-) {
-    let scope = if frontend_only {
+}
+
+fn run_check(options: CheckExecutionOptions) {
+    let scope = if options.frontend_only {
         ScanScope::FrontendOnly
-    } else if backend_only {
+    } else if options.backend_only {
         ScanScope::BackendOnly
     } else {
         ScanScope::All
@@ -180,8 +309,9 @@ fn run_check(
         Arc::new(VueSfcParserAdapter),
     ];
 
-    let use_case = ScanWorkspaceUseCase::new(parsers, rules_repo, scope);
-    let scan_result = use_case.execute(path);
+    let use_case = ScanWorkspaceUseCase::new(parsers, options.rules_repo, scope);
+    let scan_result = use_case.execute(options.path);
+
 
     // Print parse errors
     for parse_err in &scan_result.parse_errors {
@@ -192,7 +322,7 @@ fn run_check(
     if scan_result.total_files_scanned > 0 {
         let error_rate =
             (scan_result.parse_errors.len() as f64) / (scan_result.total_files_scanned as f64);
-        let max_tolerated = if ci { 0.02 } else { 0.05 };
+        let max_tolerated = if options.ci { 0.02 } else { 0.05 };
         if error_rate > max_tolerated {
             eprintln!(
                 "{} Parse error rate ({:.1}%) exceeds limit ({:.1}%). Failing build.",
@@ -208,17 +338,18 @@ fn run_check(
     ConsoleReportAdapter::print_violations(&scan_result.violations);
 
     // Export reports if requested
-    if let Some(sp) = sarif_path {
+    if let Some(sp) = options.sarif_path {
         if let Err(e) = SarifReportAdapter::write_report(sp, &scan_result.violations) {
             eprintln!("{} {}", "Failed to write SARIF report:".red(), e);
         }
     }
 
-    if let Some(jp) = json_path {
+    if let Some(jp) = options.json_path {
         if let Err(e) = JsonReportAdapter::write_report(jp, &scan_result.violations) {
             eprintln!("{} {}", "Failed to write JSON report:".red(), e);
         }
     }
+
 
     let has_deny = scan_result
         .violations

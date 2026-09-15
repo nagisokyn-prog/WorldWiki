@@ -6,16 +6,22 @@ pub use arch_guard_infrastructure as infrastructure;
 
 // Re-exports for convenience and backwards-compatibility
 pub use application::{
-    ReconcileBaselineUseCase, ScanResult, ScanScope, ScanWorkspaceUseCase, SignSuppressionUseCase,
+    ExplainClustersUseCase, ReconcileBaselineUseCase, ScanResult, ScanScope,
+    ScanWorkspaceUseCase, SignSuppressionUseCase,
 };
 pub use domain::{
-    compute_fingerprint, Category, LayerRule, PackageArchMetadata, PackageMetrics,
-    PressureCalculator, RuleDefinition, RulesConfig, Severity, Suppression, Violation,
-    WorkspaceArchMetadata,
+    compute_fingerprint, Category, ClusterAnalysisReport, LayerRule, PackageArchMetadata,
+    PackageMetrics, PressureCalculator, RuleDefinition, RulesConfig, Severity, Suppression,
+    Violation, ViolationCluster, WorkspaceArchMetadata,
 };
 pub use infrastructure::{
-    ConsoleReportAdapter, FileStorageAdapter, JsonReportAdapter, KeyringStorageAdapter,
-    MockStorageAdapter, RulesJsonRepository, RustSynParserAdapter, SarifReportAdapter,
+    ConsoleReportAdapter, DbscanClustererAdapter, FileStorageAdapter, GitHooksInstaller,
+    JsonReportAdapter, KeyringStorageAdapter, MockStorageAdapter, PatternCache,
+    RulesJsonRepository, RustSynParserAdapter, SarifReportAdapter, SemanticEmbedderAdapter,
     VueSfcParserAdapter,
 };
-pub use ports::{AstParserPort, KeyStoragePort, ReportPublisherPort, RulesRepositoryPort};
+pub use ports::{
+    AstParserPort, ClustererPort, KeyStoragePort, ReportPublisherPort, RulesRepositoryPort,
+    VectorEmbedderPort,
+};
+

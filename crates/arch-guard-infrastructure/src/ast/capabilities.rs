@@ -12,8 +12,9 @@ pub struct CapabilitiesVisitor<'a> {
 
 impl<'a> CapabilitiesVisitor<'a> {
     pub fn new(current_file: &'a Path, crate_name: &'a str) -> Self {
-        let is_build_rs = current_file.file_name().map_or(false, |n| n == "build.rs");
+        let is_build_rs = current_file.file_name().is_some_and(|n| n == "build.rs");
         Self {
+
             current_file,
             crate_name,
             is_build_rs,

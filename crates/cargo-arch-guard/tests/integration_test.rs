@@ -202,3 +202,37 @@ fn test_scan_workspace_use_case_orchestration() {
         assert_eq!(result.violations.len(), 0);
     }
 }
+
+#[test]
+fn test_semantic_embedder_and_clustering() {
+    use cargo_arch_guard::application::ExplainClustersUseCase;
+    use cargo_arch_guard::domain::{Category, Severity, Violation};
+    use cargo_arch_guard::infrastructure::{DbscanClustererAdapter, SemanticEmbedderAdapter};
+
+    let embedder = Arc::new(SemanticEmbedderAdapter::default());
+    let clusterer = Arc::new(DbscanClustererAdapter::new());
+    let use_case = ExplainClustersUseCase::with_params(embedder, clusterer, 1.2, 2);
+
+    let mut violations = Vec::new();
+    for i in 0..6 {
+        violations.push(Violation {
+            rule_id: "ARCH-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: PathBuf::from(format!("src/domain/entity_{}.rs", i)),
+            line: 10,
+            column: 1,
+            symbol: "use_tauri".into(),
+            snippet: "use tauri::command;".into(),
+            message: "Domain crate cannot import external framework tauri".into(),
+            remediation: "Move to ports".into(),
+            fingerprint: format!("fp_{}", i),
+        });
+    }
+
+    let report = use_case.execute(&violations).expect("Clustering must succeed");
+    assert_eq!(report.total_violations, 6);
+    assert!(report.total_clusters > 0, "Identical violation patterns must cluster together");
+}
+

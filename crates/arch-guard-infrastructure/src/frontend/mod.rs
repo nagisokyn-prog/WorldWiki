@@ -3,7 +3,8 @@ pub mod lifecycle_rules;
 pub mod sfc_parser;
 pub mod vue_rules;
 
-use crate::domain::rules::Violation;
+use arch_guard_domain::Violation;
+
 use crate::frontend::css_rules::CssRuleChecker;
 use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
 use crate::frontend::sfc_parser::VueSfcParser;

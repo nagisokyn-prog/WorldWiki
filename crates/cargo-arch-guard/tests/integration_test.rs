@@ -6,7 +6,8 @@ use cargo_arch_guard::infrastructure::{
     MockStorageAdapter, RulesJsonRepository, RustSynParserAdapter, VueSfcParserAdapter,
 };
 use cargo_arch_guard::ports::{AstParserPort, RulesRepositoryPort};
-use cargo_arch_guard::taint::TaintGraphAnalyzer;
+use cargo_arch_guard::infrastructure::taint::TaintGraphAnalyzer;
+
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -123,8 +124,8 @@ import { invoke } from '@tauri-apps/api/core';
 invoke('save_chapter');
 </script>
 "#;
-    let sfc = cargo_arch_guard::frontend::sfc_parser::VueSfcParser::parse(sfc_content);
-    let violations = cargo_arch_guard::frontend::vue_rules::VueRuleChecker::check(
+    let sfc = cargo_arch_guard::infrastructure::frontend::sfc_parser::VueSfcParser::parse(sfc_content);
+    let violations = cargo_arch_guard::infrastructure::frontend::vue_rules::VueRuleChecker::check(
         &sfc,
         std::path::Path::new("TestComponent.vue"),
     );
@@ -141,7 +142,7 @@ fn test_css_hardcoded_tokens_detected() {
     background: rgba(0, 0, 0, 0.5);
 }
 "#;
-    let violations = cargo_arch_guard::frontend::css_rules::CssRuleChecker::validate_css_file(
+    let violations = cargo_arch_guard::infrastructure::frontend::css_rules::CssRuleChecker::validate_css_file(
         css_content,
         std::path::Path::new("test.css"),
     );
@@ -157,7 +158,7 @@ export function useFeature() {
 }
 "#;
     let violations =
-        cargo_arch_guard::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
+        cargo_arch_guard::infrastructure::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
             ts_bad,
             std::path::Path::new("useFeature.ts"),
         );
@@ -173,12 +174,13 @@ export function useFeature() {
 }
 "#;
     let ok_violations =
-        cargo_arch_guard::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
+        cargo_arch_guard::infrastructure::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
             ts_good,
             std::path::Path::new("useFeature.ts"),
         );
     assert_eq!(ok_violations.len(), 0, "Symmetric onUnmounted cleanup must pass");
 }
+
 
 #[test]
 fn test_scan_workspace_use_case_orchestration() {

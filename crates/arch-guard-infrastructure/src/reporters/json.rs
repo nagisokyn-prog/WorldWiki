@@ -1,5 +1,6 @@
-use crate::domain::rules::Violation;
-use crate::ports::reporter::ReportPublisherPort;
+use arch_guard_domain::Violation;
+use arch_guard_ports::ReportPublisherPort;
+
 use serde::Serialize;
 use std::fs;
 use std::path::Path;

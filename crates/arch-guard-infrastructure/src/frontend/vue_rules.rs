@@ -1,4 +1,5 @@
-use crate::domain::rules::{Category, Severity, Violation, compute_fingerprint};
+use arch_guard_domain::{compute_fingerprint, Category, Severity, Violation};
+
 use crate::frontend::sfc_parser::VueSfc;
 use std::path::Path;
 

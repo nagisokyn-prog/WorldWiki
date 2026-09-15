@@ -93,6 +93,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "arch-guard-application"
+version = "0.1.0"
+dependencies = [
+ "arch-guard-domain",
+ "arch-guard-ports",
+ "chrono",
+ "hmac",
+ "rayon",
+ "serde",
+ "serde_json",
+ "sha2",
+ "walkdir",
+]
+
+[[package]]
+name = "arch-guard-domain"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
+name = "arch-guard-infrastructure"
+version = "0.1.0"
+dependencies = [
+ "arch-guard-domain",
+ "arch-guard-ports",
+ "colored",
+ "keyring",
+ "petgraph",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "serde",
+ "serde_json",
+ "syn 3.0.5",
+ "walkdir",
+]
+
+[[package]]
+name = "arch-guard-ports"
+version = "0.1.0"
+dependencies = [
+ "arch-guard-domain",
+]
+
+[[package]]
 name = "async-broadcast"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -297,6 +347,10 @@ dependencies = [
 name = "cargo-arch-guard"
 version = "0.1.0"
 dependencies = [
+ "arch-guard-application",
+ "arch-guard-domain",
+ "arch-guard-infrastructure",
+ "arch-guard-ports",
  "cargo_metadata",
  "chrono",
  "clap",

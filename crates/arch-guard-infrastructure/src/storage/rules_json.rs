@@ -1,5 +1,6 @@
-use crate::domain::rules::{RuleDefinition, RulesConfig};
-use crate::ports::storage::RulesRepositoryPort;
+use arch_guard_domain::{RuleDefinition, RulesConfig};
+use arch_guard_ports::RulesRepositoryPort;
+
 use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};

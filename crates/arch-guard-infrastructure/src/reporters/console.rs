@@ -1,5 +1,6 @@
-use crate::domain::rules::{Severity, Violation};
-use crate::ports::reporter::ReportPublisherPort;
+use arch_guard_domain::{Severity, Violation};
+use arch_guard_ports::ReportPublisherPort;
+
 use colored::*;
 use std::path::Path;
 

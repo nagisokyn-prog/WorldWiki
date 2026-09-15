@@ -3,8 +3,11 @@ name = "worldwiki-tauri"
 version = "0.85.0"
 edition = "2021"
 description = "Driving Adapter for Tauri v2 IPC, bridge macro, and AppState"
+[package.metadata.arch-guard]
+layer = "tauri"
 
 [dependencies]
+
 worldwiki-domain = { path = "../worldwiki-domain" }
 worldwiki-ports = { path = "../worldwiki-ports" }
 worldwiki-application = { path = "../worldwiki-application" }

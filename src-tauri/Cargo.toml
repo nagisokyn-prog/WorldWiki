@@ -8,9 +8,22 @@ edition = "2021"
 [workspace]
 members = [
     "crates/*",
+    "../crates/*",
     "."
 ]
 resolver = "2"
+
+[workspace.metadata.arch-guard]
+preset = "hexagonal-strict"
+
+[workspace.metadata.arch-guard.layers]
+domain = { allowed_dependencies = [] }
+ports = { allowed_dependencies = ["domain"] }
+application = { allowed_dependencies = ["domain", "ports"] }
+infrastructure = { allowed_dependencies = ["domain", "ports", "application"] }
+tauri = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
+cli = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
+
 
 [lib]
 name = "world_wiki_lib"

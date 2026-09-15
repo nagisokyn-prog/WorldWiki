@@ -40,8 +40,9 @@ crates/cargo-arch-guard/tests/fixtures/
 - [ ] **Шаг 1.1**: Создать крейт `crates/cargo-arch-guard` в `Cargo.toml`.
 - [ ] **Шаг 1.2**: Реализовать runtime-загрузчик `rules.json` (`loader.rs`) и команду `--validate-rules`.
 - [ ] **Шаг 1.3**: Реализовать структуру `Violation` и вычисление стабильного `fingerprint` с учетом `rule_version`.
-- [ ] **Шаг 1.4**: Реализовать `syn` Visitor:
+- [ ] **Шаг 1.4**: Реализовать `syn` Visitor и модули AST:
   - `ARCH-001..ARCH-008` (границы крейтов);
+  - Двухуровневый аудит макросов (`ast/macros.rs`): Уровень 1 — рекурсивный разбор токенов `macro_rules!` и вызовов; Уровень 2 — режим `--expanded` (`cargo +nightly rustc --profile=check -- -Zunpretty=expanded`) для аудита proc-macro derives;
   - `ASYNC-001` (Scope-aware детектор `MutexGuard` через `.await` с эвристикой инициализации);
   - `SEC-001` (Bounded Taint-to-Sink до глубины 3 вызовов).
 - [ ] **Шаг 1.5**: Реализовать толерантный парсинг (пропуск ошибок `[PARSE-ERROR]` с порогом $2\%$ в CI).

@@ -1,0 +1,56 @@
+[package]
+name = "cargo-arch-guard"
+version = "0.1.0"
+edition = "2021"
+authors = ["Danila"]
+description = "Architectural & Capability Firewall for Rust and Hexagonal Architecture"
+
+[package.metadata.arch-guard]
+layer = "cli"
+
+[[bin]]
+name = "cargo-arch-guard"
+path = "src/main.rs"
+
+[lib]
+name = "cargo_arch_guard"
+path = "src/lib.rs"
+
+[dependencies]
+arch-guard-domain = { path = "../arch-guard-domain" }
+arch-guard-ports = { path = "../arch-guard-ports" }
+arch-guard-application = { path = "../arch-guard-application" }
+arch-guard-infrastructure = { path = "../arch-guard-infrastructure" }
+
+# 1. CLI & Метаданные воркспейса
+
+cargo_metadata = "0.23.1"
+clap = { version = "4.4", features = ["derive", "env"] }
+
+# 2. Быстрый AST-анализ синтаксиса Rust (Rust 2024 / syn 3.0 ready)
+syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
+proc-macro2 = "1.0"
+quote = "1.0"
+
+# 3. Графы зависимостей и потоков данных (Taint)
+petgraph = "0.8.3"
+
+# 4. Безопасность и хранение ключей (RustCrypto 2026 stack)
+keyring = "4.2.0"
+sha2 = "0.11.0"
+hmac = "0.13.0"
+chrono = { version = "0.4", features = ["serde"] }
+
+# 5. Высокопроизводительный параллелизм и файловая система
+rayon = "1.8"
+walkdir = "2.4"
+fs2 = "0.4"
+
+# 6. Сериализация, парсинг и вывод
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+colored = "3.1.1"
+regex = "1.10"
+
+[dev-dependencies]
+tempfile = "3.8"

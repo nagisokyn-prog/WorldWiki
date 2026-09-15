@@ -1,17 +1,26 @@
 pub mod ast;
 pub mod frontend;
 pub mod hooks;
+pub mod manifest;
 pub mod parsers;
 pub mod reporters;
+pub mod scanner;
 pub mod storage;
 pub mod taint;
 pub mod vector;
 
 pub use hooks::GitHooksInstaller;
-pub use parsers::{RustSynParserAdapter, VueSfcParserAdapter};
+pub use manifest::CargoMetadataManifestAdapter;
+pub use parsers::{ParallelAstEngineAdapter, RustSynParserAdapter, VueSfcParserAdapter};
+
 pub use reporters::{ConsoleReportAdapter, JsonReportAdapter, SarifReportAdapter};
+
+pub use scanner::WalkDirScannerAdapter;
 pub use storage::{
-    FileStorageAdapter, KeyringStorageAdapter, MockStorageAdapter, RulesJsonRepository,
+    FileBaselineStorageAdapter, FileStorageAdapter, KeyringStorageAdapter, MockStorageAdapter,
+    RulesJsonRepository,
 };
+
 pub use vector::{DbscanClustererAdapter, PatternCache, SemanticEmbedderAdapter};
+
 

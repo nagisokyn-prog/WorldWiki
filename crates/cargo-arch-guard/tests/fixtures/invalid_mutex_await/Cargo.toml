@@ -1,0 +1,9 @@
+[package]
+name = "worldwiki-infrastructure"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.arch-guard]
+layer = "infrastructure"
+
+[workspace]

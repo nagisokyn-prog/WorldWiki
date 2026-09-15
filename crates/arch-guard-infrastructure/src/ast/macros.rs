@@ -47,3 +47,25 @@ impl<'a, 'ast> Visit<'ast> for MacroVisitor<'a> {
         visit::visit_macro(self, node);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_macro_visitor_traversal() {
+        let code = r#"
+            macro_rules! my_macro {
+                () => {};
+            }
+            fn test() {
+                println!("hello");
+            }
+        "#;
+        let syntax_tree = syn::parse_file(code).unwrap();
+        let mut visitor = MacroVisitor::new(Path::new("test.rs"), "my-crate");
+        visitor.visit_file(&syntax_tree);
+        assert_eq!(visitor.violations.len(), 0);
+    }
+}
+

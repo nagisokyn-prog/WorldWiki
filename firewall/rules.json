@@ -109,6 +109,25 @@
       "title": "Hardcoded CSS values and colors",
       "description": "Direct hex colors, named colors, raw border-radius and shadows are forbidden.",
       "remediation": "Use design tokens: var(--color-...), var(--border-radius-...), var(--glass-...)."
+    },
+    {
+      "id": "ARCH-020",
+      "version": "1.0",
+      "category": "Architecture",
+      "severity": "Deny",
+      "title": "Layer manifest dependency violation",
+      "description": "Crate dependencies in Cargo.toml must strictly comply with the allowed dependency matrix for the declared [package.metadata.arch-guard] layer.",
+      "remediation": "Remove the forbidden dependency from Cargo.toml or move the logic to a compliant architectural layer."
+    },
+    {
+      "id": "ARCH-021",
+      "version": "1.0",
+      "category": "Architecture",
+      "severity": "Warn",
+      "title": "Missing architectural layer declaration",
+      "description": "Every workspace crate should explicitly declare [package.metadata.arch-guard] layer = \"...\" in Cargo.toml.",
+      "remediation": "Add [package.metadata.arch-guard] layer = \"domain|ports|application|infrastructure|adapter\" to Cargo.toml."
     }
   ]
 }
+

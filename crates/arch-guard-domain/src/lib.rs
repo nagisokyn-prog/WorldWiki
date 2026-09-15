@@ -6,7 +6,9 @@ pub mod rules;
 pub mod suppression;
 
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
-pub use layer::{LayerRule, PackageArchMetadata, WorkspaceArchMetadata};
+pub use layer::{ArchLayer, LayerRule, PackageArchMetadata, WorkspaceArchMetadata};
+
+
 
 pub use metrics::{PackageMetrics, PressureCalculator};
 pub use preset::Preset;

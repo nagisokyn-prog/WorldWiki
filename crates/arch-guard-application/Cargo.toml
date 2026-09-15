@@ -10,12 +10,9 @@ layer = "application"
 
 [dependencies]
 arch-guard-domain = { path = "../arch-guard-domain" }
-
 arch-guard-ports = { path = "../arch-guard-ports" }
-rayon = "1.8"
-walkdir = "2.4"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4", default-features = false }
 hmac = "0.13.0"
 sha2 = "0.11.0"
+
+

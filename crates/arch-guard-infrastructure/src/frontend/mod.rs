@@ -40,3 +40,23 @@ impl FrontendAnalyzer {
         Ok(violations)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_frontend_analyzer_delegates_by_extension() {
+        let temp = tempdir().unwrap();
+        let vue_file = temp.path().join("Test.vue");
+        fs::write(&vue_file, "<template><div>OK</div></template>").unwrap();
+
+        let violations = FrontendAnalyzer::analyze_file(&vue_file).unwrap();
+        assert_eq!(violations.len(), 0);
+
+        let missing = temp.path().join("none.vue");
+        assert!(FrontendAnalyzer::analyze_file(&missing).is_err());
+    }
+}
+

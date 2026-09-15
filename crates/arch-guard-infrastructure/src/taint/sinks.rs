@@ -17,3 +17,21 @@ impl TaintSinkDetector {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sink_detector() {
+        let cmd_expr: syn::Expr = syn::parse_str("Command::new(\"sh\")").unwrap();
+        assert!(TaintSinkDetector::is_dangerous_sink(&cmd_expr).is_some());
+
+        let tokio_cmd_expr: syn::Expr = syn::parse_str("tokio::process::Command::new(\"sh\")").unwrap();
+        assert!(TaintSinkDetector::is_dangerous_sink(&tokio_cmd_expr).is_some());
+
+        let safe_expr: syn::Expr = syn::parse_str("println!(\"hello\")").unwrap();
+        assert!(TaintSinkDetector::is_dangerous_sink(&safe_expr).is_none());
+    }
+}
+

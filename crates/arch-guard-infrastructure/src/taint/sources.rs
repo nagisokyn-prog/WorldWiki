@@ -14,3 +14,23 @@ impl TaintSourceFinder {
         false
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_taint_source_finder() {
+        let code_tauri = r#"
+            #[tauri::command]
+            fn save_item(path: String) {}
+        "#;
+        let item_tauri: syn::ItemFn = syn::parse_str(code_tauri).unwrap();
+        assert!(TaintSourceFinder::is_taint_source(&item_tauri));
+
+        let code_regular = "fn internal_fn() {}";
+        let item_reg: syn::ItemFn = syn::parse_str(code_regular).unwrap();
+        assert!(!TaintSourceFinder::is_taint_source(&item_reg));
+    }
+}
+

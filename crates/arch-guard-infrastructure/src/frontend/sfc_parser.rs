@@ -77,3 +77,42 @@ fn extract_attr(attrs: &str, attr_name: &str) -> Option<String> {
     let re = Regex::new(&pattern).ok()?;
     re.captures(attrs).and_then(|caps| caps.get(1).map(|m| m.as_str().to_string()))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sfc_parser_comprehensive() {
+        let content = r#"
+<template>
+    <div>Hello World</div>
+</template>
+
+<script setup lang="ts">
+const x = 1;
+</script>
+
+<script lang="ts">
+export default {};
+</script>
+
+<style scoped>
+.hello { color: red; }
+</style>
+
+<style src="./external.css">
+</style>
+        "#;
+
+        let sfc = VueSfcParser::parse(content);
+        assert!(sfc.template.is_some());
+        assert!(sfc.template.as_ref().unwrap().contains("<div>Hello World</div>"));
+        assert!(sfc.script_setup.is_some());
+        assert!(sfc.script.is_some());
+        assert_eq!(sfc.styles.len(), 2);
+        assert!(sfc.styles[0].scoped);
+        assert_eq!(sfc.styles[1].src, Some("./external.css".to_string()));
+    }
+}
+

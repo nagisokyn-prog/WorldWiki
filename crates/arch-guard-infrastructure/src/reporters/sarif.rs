@@ -133,3 +133,58 @@ impl ReportPublisherPort for SarifReportAdapter {
         Self::write_report(target_path, violations)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arch_guard_domain::{Category, Severity};
+    use std::path::PathBuf;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_sarif_report_export_success() {
+        let temp = tempdir().unwrap();
+        let report_file = temp.path().join("sub/sarif/report.sarif");
+
+        let violations = vec![Violation {
+            rule_id: "ARCH-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: PathBuf::from("src/domain/entity.rs"),
+            line: 12,
+            column: 4,
+            symbol: "use_tauri".into(),
+            snippet: "use tauri;".into(),
+            message: "Domain violation".into(),
+            remediation: "Move to ports".into(),
+            fingerprint: "fp".into(),
+        }];
+
+        let adapter = SarifReportAdapter;
+        adapter.export_report(&report_file, &violations).unwrap();
+        assert!(report_file.exists());
+
+        let content = fs::read_to_string(&report_file).unwrap();
+        assert!(content.contains("sarif-schema-2.1.0"));
+        assert!(content.contains("ARCH-001"));
+        assert!(content.contains("src/domain/entity.rs"));
+
+        // Test publish_violations (no-op implementation)
+        assert!(adapter.publish_violations(&violations).is_ok());
+    }
+
+    #[test]
+    fn test_sarif_report_export_failure() {
+        let temp = tempdir().unwrap();
+        let invalid_path = temp.path().join("dir_exists");
+        fs::create_dir_all(&invalid_path).unwrap();
+
+        // Attempting to write a file over an existing directory path should fail
+        let adapter = SarifReportAdapter;
+        let res = adapter.export_report(&invalid_path, &[]);
+        assert!(res.is_err());
+    }
+}
+
+

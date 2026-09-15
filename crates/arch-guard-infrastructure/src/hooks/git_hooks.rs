@@ -53,3 +53,31 @@ cargo run --manifest-path crates/cargo-arch-guard/Cargo.toml -- baseline reconci
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_git_hooks_install_success() {
+        let temp = tempdir().unwrap();
+        let git_dir = temp.path().join(".git");
+        fs::create_dir_all(&git_dir).unwrap();
+
+        let result = GitHooksInstaller::install(temp.path());
+        assert!(result.is_ok());
+
+        assert!(git_dir.join("hooks/pre-commit").exists());
+        assert!(git_dir.join("hooks/post-merge").exists());
+        assert!(temp.path().join(".gitattributes").exists());
+    }
+
+    #[test]
+    fn test_git_hooks_install_non_git_repo_fails() {
+        let temp = tempdir().unwrap();
+        let result = GitHooksInstaller::install(temp.path());
+        assert!(result.is_err(), "Must fail if .git does not exist");
+    }
+}
+

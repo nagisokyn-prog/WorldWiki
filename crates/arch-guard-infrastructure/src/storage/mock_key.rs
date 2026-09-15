@@ -21,3 +21,16 @@ impl KeyStoragePort for MockStorageAdapter {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mock_storage_adapter() {
+        let storage = MockStorageAdapter::new(vec![1, 2, 3]);
+        assert_eq!(storage.get_key().unwrap(), vec![1, 2, 3]);
+        assert!(storage.set_key(&[4, 5, 6]).is_ok());
+    }
+}
+

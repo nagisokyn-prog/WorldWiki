@@ -56,3 +56,28 @@ impl FileAnalyzer {
         Ok(violations)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_file_analyzer_clean_code() {
+        let temp = tempdir().unwrap();
+        let file_path = temp.path().join("clean.rs");
+        std::fs::write(&file_path, "pub struct CleanDomain { pub id: String }").unwrap();
+
+        let violations = FileAnalyzer::analyze_file(&file_path, "worldwiki-domain").unwrap();
+        assert_eq!(violations.len(), 0);
+    }
+
+    #[test]
+    fn test_file_analyzer_nonexistent_file_returns_err() {
+        let temp = tempdir().unwrap();
+        let missing_path = temp.path().join("missing.rs");
+        let result = FileAnalyzer::analyze_file(&missing_path, "worldwiki-domain");
+        assert!(result.is_err());
+    }
+}
+

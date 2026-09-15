@@ -17,8 +17,13 @@
     "test": "turbo test",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:guard": "cargo test --manifest-path crates/Cargo.toml --workspace",
+    "cov:guard": "cargo llvm-cov --manifest-path crates/Cargo.toml --workspace",
+    "cov:guard:html": "cargo llvm-cov --manifest-path crates/Cargo.toml --workspace --html --open",
+
     "generate:api": "node scripts/codegen.js",
     "audit:god-files": "node detect_god_files.js"
+
   },
   "dependencies": {
     "@fontsource/fira-code": "^5.3.0",

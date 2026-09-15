@@ -66,3 +66,63 @@ impl PressureCalculator {
         (weighted_sum / (total_loc as f64)) * 1000.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::rules::Category;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_package_metrics_calculation() {
+        let metrics = PackageMetrics::compute("domain".into(), 10, 0, 8, 10);
+        assert_eq!(metrics.instability, 0.0);
+        assert_eq!(metrics.abstractness, 0.8);
+        assert!((metrics.distance_from_main_sequence - 0.2).abs() < 1e-6);
+        assert!(!metrics.in_zone_of_pain);
+
+        let pain = PackageMetrics::compute("concrete_god".into(), 10, 0, 0, 10);
+        assert!(pain.in_zone_of_pain);
+    }
+
+    #[test]
+    fn test_pressure_calculator_score() {
+        let violations = vec![
+            Violation {
+                rule_id: "ARCH-001".into(),
+                rule_version: "1.0".into(),
+                category: Category::Architecture,
+                severity: Severity::Deny,
+                file: PathBuf::from("test.rs"),
+                line: 1,
+                column: 1,
+                symbol: "fn".into(),
+                snippet: "use tauri;".into(),
+                message: "err".into(),
+                remediation: "fix".into(),
+                fingerprint: "fp1".into(),
+            },
+            Violation {
+                rule_id: "CSS-003".into(),
+                rule_version: "1.0".into(),
+                category: Category::Convention,
+                severity: Severity::Warn,
+                file: PathBuf::from("test.css"),
+                line: 1,
+                column: 1,
+                symbol: "css".into(),
+                snippet: "dup".into(),
+                message: "err".into(),
+                remediation: "fix".into(),
+                fingerprint: "fp2".into(),
+            },
+        ];
+
+        let score = PressureCalculator::compute_score(&violations, 100);
+        assert_eq!(score, 130.0); // (10 + 3) / 100 * 1000 = 130.0
+
+        let zero = PressureCalculator::compute_score(&[], 0);
+        assert_eq!(zero, 0.0);
+    }
+}
+

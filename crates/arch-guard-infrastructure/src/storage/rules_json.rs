@@ -75,3 +75,96 @@ impl RulesRepositoryPort for RulesJsonRepository {
         self.rules_by_id.get(rule_id).cloned()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_rules_json_load_success() {
+        let temp = tempdir().unwrap();
+        let file_path = temp.path().join("rules.json");
+        let json_content = r#"{
+            "version": "1.0",
+            "rules": [
+                {
+                    "id": "ARCH-001",
+                    "version": "1.0",
+                    "category": "Architecture",
+                    "severity": "Deny",
+                    "title": "Domain purity",
+                    "description": "desc",
+                    "remediation": "rem"
+                }
+            ]
+        }"#;
+        fs::write(&file_path, json_content).unwrap();
+
+        let repo = RulesJsonRepository::load_from_file(&file_path).unwrap();
+        let rule = repo.get_rule("ARCH-001").unwrap();
+        assert_eq!(rule.id, "ARCH-001");
+        assert!(repo.load_config().is_ok());
+
+        assert!(repo.validate_registered_rules(&["ARCH-001"]).is_ok());
+        assert!(repo.validate_registered_rules(&["NON_EXISTENT"]).is_err());
+    }
+
+    #[test]
+    fn test_rules_json_duplicate_id_error() {
+        let temp = tempdir().unwrap();
+        let file_path = temp.path().join("rules_dup.json");
+        let json_content = r#"{
+            "version": "1.0",
+            "rules": [
+                {
+                    "id": "ARCH-001",
+                    "version": "1.0",
+                    "category": "Architecture",
+                    "severity": "Deny",
+                    "title": "Rule 1",
+                    "description": "desc",
+                    "remediation": "rem"
+                },
+                {
+                    "id": "ARCH-001",
+                    "version": "1.0",
+                    "category": "Architecture",
+                    "severity": "Deny",
+                    "title": "Rule 1 duplicate",
+                    "description": "desc",
+                    "remediation": "rem"
+                }
+            ]
+        }"#;
+        fs::write(&file_path, json_content).unwrap();
+
+        let err = RulesJsonRepository::load_from_file(&file_path).unwrap_err();
+        assert!(err.contains("Duplicate rule id 'ARCH-001'"));
+    }
+
+    #[test]
+    fn test_rules_json_missing_or_corrupted_file() {
+        let temp = tempdir().unwrap();
+        let non_existent = temp.path().join("does_not_exist.json");
+        assert!(RulesJsonRepository::load_from_file(&non_existent).is_err());
+
+        let corrupted = temp.path().join("corrupted.json");
+        fs::write(&corrupted, "{ not valid json").unwrap();
+        assert!(RulesJsonRepository::load_from_file(&corrupted).is_err());
+    }
+
+    #[test]
+    fn test_find_rules_path_fallback() {
+        let temp = tempdir().unwrap();
+        let custom = temp.path().join("custom_rules.json");
+        fs::write(&custom, "{}").unwrap();
+
+        let resolved = RulesJsonRepository::find_rules_path(Some(&custom));
+        assert_eq!(resolved, custom);
+
+        let default_path = RulesJsonRepository::find_rules_path(None);
+        assert!(!default_path.as_os_str().is_empty());
+    }
+}
+

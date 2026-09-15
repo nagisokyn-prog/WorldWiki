@@ -53,3 +53,52 @@ impl ReportPublisherPort for ConsoleReportAdapter {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arch_guard_domain::Category;
+    use std::path::PathBuf;
+
+    #[test]
+    fn test_console_reporter_empty_and_with_violations() {
+        let adapter = ConsoleReportAdapter;
+        // 1. Empty
+        assert!(adapter.publish_violations(&[]).is_ok());
+
+        // 2. With violations
+        let violations = vec![
+            Violation {
+                rule_id: "ARCH-001".into(),
+                rule_version: "1.0".into(),
+                category: Category::Architecture,
+                severity: Severity::Deny,
+                file: PathBuf::from("src/lib.rs"),
+                line: 1,
+                column: 1,
+                symbol: "sym".into(),
+                snippet: "use tauri;".into(),
+                message: "msg".into(),
+                remediation: "rem".into(),
+                fingerprint: "fp".into(),
+            },
+            Violation {
+                rule_id: "ARCH-021".into(),
+                rule_version: "1.0".into(),
+                category: Category::Architecture,
+                severity: Severity::Warn,
+                file: PathBuf::from("Cargo.toml"),
+                line: 1,
+                column: 1,
+                symbol: "sym2".into(),
+                snippet: "".into(),
+                message: "warn".into(),
+                remediation: "rem".into(),
+                fingerprint: "fp2".into(),
+            },
+        ];
+        assert!(adapter.publish_violations(&violations).is_ok());
+        assert!(adapter.export_report(Path::new("dummy"), &violations).is_ok());
+    }
+}
+

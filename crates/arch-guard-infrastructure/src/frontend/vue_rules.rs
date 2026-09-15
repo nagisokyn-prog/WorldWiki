@@ -102,3 +102,47 @@ impl VueRuleChecker {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_vue_rule_checker_tauri_import_vue002() {
+        let sfc = VueSfc {
+            script_setup: Some("import { invoke } from '@tauri-apps/api/core';".into()),
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule_id, "VUE-002");
+    }
+
+    #[test]
+    fn test_vue_rule_checker_bloated_script_setup_vue001() {
+        let temp = tempdir().unwrap();
+        let comp_path = temp.path().join("MyComponent.vue");
+
+        // Bloated script setup > 35 lines with ref / computed and NO companion hook
+        let mut heavy_lines = vec!["const a = ref(1);", "const b = computed(() => 2);"];
+        for _ in 0..40 {
+            heavy_lines.push("console.log('line');");
+        }
+        let sfc = VueSfc {
+            script_setup: Some(heavy_lines.join("\n")),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+
+        let violations = VueRuleChecker::check(&sfc, &comp_path);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule_id, "VUE-001");
+
+        // Now add companion hook: useMyComponent.ts
+        std::fs::write(temp.path().join("useMyComponent.ts"), "export const useMyComponent = () => {};").unwrap();
+        let violations_with_hook = VueRuleChecker::check(&sfc, &comp_path);
+        assert!(violations_with_hook.is_empty(), "Companion hook should satisfy VUE-001");
+    }
+}
+

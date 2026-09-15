@@ -75,3 +75,42 @@ impl VectorEmbedderPort for SemanticEmbedderAdapter {
         Ok(result)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_semantic_embedder_dimension_and_normalization() {
+        let embedder = SemanticEmbedderAdapter::new(64);
+        assert_eq!(embedder.dimension(), 64);
+
+        let texts = vec![
+            "Rule: ARCH-001 (v1.0)\nuse tauri::command;".to_string(),
+            "Rule: CSS-004 (v1.0)\ncolor: #ff0000;".to_string(),
+        ];
+
+        let vectors = embedder.embed_texts(&texts).unwrap();
+        assert_eq!(vectors.len(), 2);
+        assert_eq!(vectors[0].len(), 64);
+
+        // Check L2 normalization: norm should be ~ 1.0
+        let norm0: f32 = vectors[0].iter().map(|x| x * x).sum::<f32>().sqrt();
+        assert!((norm0 - 1.0).abs() < 1e-5);
+    }
+
+    #[test]
+    fn test_semantic_embedder_default_and_zero_norm() {
+        let embedder = SemanticEmbedderAdapter::default();
+        assert_eq!(embedder.dimension(), 128);
+
+        // Text with no valid tokens (only spaces or single punctuation)
+        let texts = vec!["   ... ???   ".to_string()];
+        let vectors = embedder.embed_texts(&texts).unwrap();
+        assert_eq!(vectors.len(), 1);
+        assert_eq!(vectors[0].len(), 128);
+        assert_eq!(vectors[0][0], 0.0);
+    }
+}
+
+

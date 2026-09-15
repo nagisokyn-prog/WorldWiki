@@ -167,3 +167,52 @@ impl CssRuleChecker {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::frontend::sfc_parser::VueStyleBlock;
+
+    #[test]
+    fn test_css_rule_checker_bloated_inline_style_css001() {
+        let mut lines = Vec::new();
+        for _ in 0..30 {
+            lines.push(".btn { margin: 0; }");
+        }
+        let sfc = VueSfc {
+            styles: vec![VueStyleBlock {
+                content: lines.join("\n"),
+                src: None,
+                scoped: true,
+                start_line: 10,
+            }],
+            ..Default::default()
+        };
+
+        let violations = CssRuleChecker::check_sfc_styles(&sfc, Path::new("src/Button.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "CSS-001"));
+    }
+
+    #[test]
+    fn test_css_rule_checker_hex_and_rgb_css004() {
+        let css = r#"
+            .box {
+                color: #ff00ff;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 8px;
+            }
+        "#;
+        let violations = CssRuleChecker::validate_css_file(css, Path::new("src/styles.css"));
+        assert_eq!(violations.len(), 3);
+        assert!(violations.iter().all(|v| v.rule_id == "CSS-004"));
+    }
+
+    #[test]
+    fn test_css_taxonomy_css002() {
+        let invalid_taxonomy = Path::new("packages/resources/src/styles/random/bad.css");
+        let violations = CssRuleChecker::validate_css_file("/* comment */", invalid_taxonomy);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule_id, "CSS-002");
+    }
+}
+

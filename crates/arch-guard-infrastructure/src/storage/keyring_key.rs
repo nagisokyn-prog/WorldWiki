@@ -53,3 +53,26 @@ fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
         .map(|i| u8::from_str_radix(&s[i..i + 2], 16).map_err(|e| e.to_string()))
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_keyring_storage_adapter_creation_and_hex_utils() {
+        let adapter = KeyringStorageAdapter::default();
+        assert_eq!(adapter.service, "cargo-arch-guard");
+        assert_eq!(adapter.user, "master-key");
+
+        let bytes = vec![0x12, 0xAB, 0xCD, 0xEF];
+        let hex = hex_encode(&bytes);
+        assert_eq!(hex, "12abcdef");
+
+        let decoded = hex_decode(&hex).unwrap();
+        assert_eq!(decoded, bytes);
+
+        assert!(hex_decode("123").is_err(), "Odd length should fail");
+        assert!(hex_decode("ZZ").is_err(), "Invalid hex chars should fail");
+    }
+}
+

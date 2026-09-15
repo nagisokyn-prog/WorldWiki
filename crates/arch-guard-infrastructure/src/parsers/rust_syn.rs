@@ -56,3 +56,30 @@ impl AstParserPort for RustSynParserAdapter {
         Ok(violations)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_rust_syn_parser_adapter() {
+        let adapter = RustSynParserAdapter;
+        assert!(adapter.can_parse(Path::new("src/lib.rs")));
+        assert!(!adapter.can_parse(Path::new("src/lib.vue")));
+
+        let temp = tempdir().unwrap();
+        let valid_file = temp.path().join("valid.rs");
+        fs::write(&valid_file, "pub fn foo() {}").unwrap();
+        assert!(adapter.parse_file(&valid_file, "domain").is_ok());
+
+        let invalid_file = temp.path().join("invalid.rs");
+        fs::write(&invalid_file, "fn foo( { broken syntax").unwrap();
+        let err = adapter.parse_file(&invalid_file, "domain").unwrap_err();
+        assert!(err.contains("[PARSE-ERROR]"));
+
+        let missing = temp.path().join("missing.rs");
+        assert!(adapter.parse_file(&missing, "domain").is_err());
+    }
+}
+

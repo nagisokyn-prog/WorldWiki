@@ -66,3 +66,37 @@ impl LifecycleRuleChecker {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_lifecycle_rule_checker_memory_leak_leak001() {
+        // 1. Missing cleanup for addEventListener
+        let leak_listener = "window.addEventListener('resize', handleResize);";
+        let v1 = LifecycleRuleChecker::check_typescript_file(leak_listener, Path::new("src/useWindow.ts"));
+        assert_eq!(v1.len(), 1);
+        assert_eq!(v1[0].rule_id, "LEAK-001");
+
+        // 2. Missing cleanup for setInterval
+        let leak_timer = "setInterval(tick, 1000);";
+        let v2 = LifecycleRuleChecker::check_typescript_file(leak_timer, Path::new("src/useTimer.ts"));
+        assert_eq!(v2.len(), 1);
+        assert_eq!(v2[0].rule_id, "LEAK-001");
+
+        // 3. Proper cleanup with onUnmounted
+        let clean = r#"
+            window.addEventListener('resize', handleResize);
+            onUnmounted(() => { window.removeEventListener('resize', handleResize); });
+        "#;
+        let v3 = LifecycleRuleChecker::check_typescript_file(clean, Path::new("src/useWindow.ts"));
+        assert!(v3.is_empty());
+
+        // 4. Ignored in test / spec files
+        let test_file = "window.addEventListener('click', fn);";
+        let v4 = LifecycleRuleChecker::check_typescript_file(test_file, Path::new("src/useWindow.spec.ts"));
+        assert!(v4.is_empty());
+    }
+}
+

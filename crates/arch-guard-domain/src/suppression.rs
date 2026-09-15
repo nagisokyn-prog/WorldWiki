@@ -27,3 +27,37 @@ impl Suppression {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_suppression_expiration_and_payload() {
+        let future = Utc::now() + chrono::Duration::days(10);
+        let s = Suppression {
+            rule_id: "ARCH-001".into(),
+            fingerprint: "fp123".into(),
+            reason: "temporary".into(),
+            author: "alice".into(),
+            expires: future,
+            signature: "sig".into(),
+        };
+
+        assert!(!s.is_expired());
+        let payload = s.canonical_payload();
+        assert!(payload.starts_with("ARCH-001:fp123:temporary:alice:"));
+
+        let past = Utc::now() - chrono::Duration::days(1);
+        let expired_s = Suppression {
+            rule_id: "ARCH-001".into(),
+            fingerprint: "fp123".into(),
+            reason: "temporary".into(),
+            author: "alice".into(),
+            expires: past,
+            signature: "sig".into(),
+        };
+        assert!(expired_s.is_expired());
+    }
+}
+

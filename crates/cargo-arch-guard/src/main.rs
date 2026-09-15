@@ -9,10 +9,14 @@ use cargo_arch_guard::application::{
 };
 use cargo_arch_guard::domain::Severity;
 use cargo_arch_guard::infrastructure::{
-    ConsoleReportAdapter, JsonReportAdapter, RulesJsonRepository, RustSynParserAdapter,
+    CargoMetadataManifestAdapter, ConsoleReportAdapter, FileBaselineStorageAdapter,
+    JsonReportAdapter, ParallelAstEngineAdapter, RulesJsonRepository, RustSynParserAdapter,
     SarifReportAdapter, VueSfcParserAdapter,
 };
 use cargo_arch_guard::ports::AstParserPort;
+
+
+
 
 #[derive(Parser)]
 #[command(name = "cargo-arch-guard")]
@@ -200,8 +204,12 @@ fn main() {
                 Arc::new(RustSynParserAdapter),
                 Arc::new(VueSfcParserAdapter),
             ];
-            let use_case = ScanWorkspaceUseCase::new(parsers, rules_repo, ScanScope::All);
+            let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
+            let scanner = Arc::new(cargo_arch_guard::infrastructure::WalkDirScannerAdapter::new());
+            let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, rules_repo, ScanScope::All);
             let scan_result = use_case.execute(&path);
+
+
 
             let embedder = Arc::new(cargo_arch_guard::infrastructure::SemanticEmbedderAdapter::default());
             let clusterer = Arc::new(cargo_arch_guard::infrastructure::DbscanClustererAdapter::new());
@@ -265,21 +273,26 @@ fn main() {
             }
         },
         Commands::Baseline { action } => match action {
-            BaselineCommands::Reconcile { file } => match ReconcileBaselineUseCase::execute(&file) {
-                Ok(count) => {
-                    println!(
-                        "{} Reconciled baseline file {} ({} entries)",
-                        "✅".green().bold(),
-                        file.display(),
-                        count
-                    );
+            BaselineCommands::Reconcile { file } => {
+                let storage = Arc::new(FileBaselineStorageAdapter::new());
+                let use_case = ReconcileBaselineUseCase::new(storage);
+                match use_case.execute(&file) {
+                    Ok(count) => {
+                        println!(
+                            "{} Reconciled baseline file {} ({} entries)",
+                            "✅".green().bold(),
+                            file.display(),
+                            count
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("{} {}", "❌ Failed to reconcile baseline:".red().bold(), e);
+                        exit(1);
+                    }
                 }
-                Err(e) => {
-                    eprintln!("{} {}", "❌ Failed to reconcile baseline:".red().bold(), e);
-                    exit(1);
-                }
-            },
+            }
         },
+
     }
 }
 
@@ -309,8 +322,15 @@ fn run_check(options: CheckExecutionOptions) {
         Arc::new(VueSfcParserAdapter),
     ];
 
-    let use_case = ScanWorkspaceUseCase::new(parsers, options.rules_repo, scope);
+    let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
+    let scanner = Arc::new(cargo_arch_guard::infrastructure::WalkDirScannerAdapter::new());
+    let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
+    let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, options.rules_repo, scope)
+        .with_manifest_parser(manifest_parser);
     let scan_result = use_case.execute(options.path);
+
+
+
 
 
     // Print parse errors

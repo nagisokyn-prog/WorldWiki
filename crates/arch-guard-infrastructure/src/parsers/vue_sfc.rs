@@ -41,3 +41,44 @@ impl AstParserPort for VueSfcParserAdapter {
         Ok(violations)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_vue_sfc_parser_adapter_can_parse_and_parse_files() {
+        let adapter = VueSfcParserAdapter;
+        assert!(adapter.can_parse(Path::new("Component.vue")));
+        assert!(adapter.can_parse(Path::new("styles.css")));
+        assert!(adapter.can_parse(Path::new("useHook.ts")));
+        assert!(adapter.can_parse(Path::new("legacy.js")));
+        assert!(!adapter.can_parse(Path::new("main.rs")));
+
+        let temp = tempdir().unwrap();
+
+        // 1. Vue SFC test
+        let vue_path = temp.path().join("App.vue");
+        fs::write(&vue_path, "<template><div>Hello</div></template><script setup>const x = 1;</script>").unwrap();
+        let vue_res = adapter.parse_file(&vue_path, "spa").unwrap();
+        assert_eq!(vue_res.len(), 0);
+
+        // 2. CSS test
+        let css_path = temp.path().join("app.css");
+        fs::write(&css_path, "body { color: var(--color-text-primary); }").unwrap();
+        let css_res = adapter.parse_file(&css_path, "spa").unwrap();
+        assert_eq!(css_res.len(), 0);
+
+        // 3. TS test
+        let ts_path = temp.path().join("hook.ts");
+        fs::write(&ts_path, "export function useOk() {}").unwrap();
+        let ts_res = adapter.parse_file(&ts_path, "spa").unwrap();
+        assert_eq!(ts_res.len(), 0);
+
+        // 4. Missing file
+        let missing = temp.path().join("missing.vue");
+        assert!(adapter.parse_file(&missing, "spa").is_err());
+    }
+}
+

@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "arch-guard-domain",
+    "arch-guard-ports",
+    "arch-guard-application",
+    "arch-guard-infrastructure",
+    "cargo-arch-guard",
+]
+exclude = [
+    "cargo-arch-guard/tests/fixtures/valid_clean_hexagonal",
+    "cargo-arch-guard/tests/fixtures/invalid_domain_imports",
+    "cargo-arch-guard/tests/fixtures/invalid_mutex_await",
+    "cargo-arch-guard/tests/fixtures/taint_depth_3",
+]
+resolver = "2"
+

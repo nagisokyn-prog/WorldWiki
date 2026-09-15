@@ -46,3 +46,55 @@ impl ReportPublisherPort for JsonReportAdapter {
         Self::write_report(target_path, violations)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arch_guard_domain::{Category, Severity};
+    use std::path::PathBuf;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_json_report_export_success() {
+        let temp = tempdir().unwrap();
+        let report_file = temp.path().join("sub/dir/report.json");
+
+        let violations = vec![Violation {
+            rule_id: "ARCH-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: PathBuf::from("src/lib.rs"),
+            line: 1,
+            column: 1,
+            symbol: "use_tauri".into(),
+            snippet: "use tauri;".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "fp".into(),
+        }];
+
+        let adapter = JsonReportAdapter;
+        adapter.export_report(&report_file, &violations).unwrap();
+        assert!(report_file.exists());
+
+        let content = fs::read_to_string(&report_file).unwrap();
+        assert!(content.contains("\"total_violations\": 1"));
+        assert!(content.contains("\"rule_id\": \"ARCH-001\""));
+
+        assert!(adapter.publish_violations(&violations).is_ok());
+    }
+
+    #[test]
+    fn test_json_report_export_failure() {
+        let temp = tempdir().unwrap();
+        let invalid_path = temp.path().join("dir_exists");
+        fs::create_dir_all(&invalid_path).unwrap();
+
+        let adapter = JsonReportAdapter;
+        let res = adapter.export_report(&invalid_path, &[]);
+        assert!(res.is_err());
+    }
+}
+
+

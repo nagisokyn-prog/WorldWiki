@@ -133,12 +133,36 @@ pnpm --filter @worldwiki/components test
 npm run test:coverage
 ```
 
+### 🛡️ Архитектурный Фаервол и Крейты (Arch Guard):
+```powershell
+# Запуск ВСЕХ тестов фаервола (из любого места):
+pnpm test:guard
+# или через cargo alias:
+cargo test-guard
+
+# Процент покрытия (Coverage) в терминале:
+pnpm cov:guard
+# или:
+cargo cov-guard
+
+# Открыть интерактивный HTML-отчет в браузере:
+pnpm cov:guard:html
+# или:
+cargo cov-guard-html
+
+# Если вы уже находитесь в папке crates/cargo-arch-guard/:
+cargo test
+cargo llvm-cov
+cargo llvm-cov --html --open
+```
+
 ### 🎭 End-to-End тесты (Playwright):
 ```powershell
 npx playwright test
 ```
 
 ---
+
 
 ## 5. Бэкенд и Rust (Cargo)
 

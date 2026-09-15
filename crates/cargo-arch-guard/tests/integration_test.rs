@@ -191,9 +191,12 @@ fn test_scan_workspace_use_case_orchestration() {
             Arc::new(RustSynParserAdapter),
             Arc::new(VueSfcParserAdapter),
         ];
+        let ast_engine = Arc::new(cargo_arch_guard::infrastructure::ParallelAstEngineAdapter::new(parsers));
 
+        let scanner = Arc::new(cargo_arch_guard::infrastructure::WalkDirScannerAdapter::new());
         let use_case = ScanWorkspaceUseCase::new(
-            parsers,
+            scanner,
+            ast_engine,
             repo,
             ScanScope::All,
         );
@@ -202,6 +205,8 @@ fn test_scan_workspace_use_case_orchestration() {
         assert_eq!(result.violations.len(), 0);
     }
 }
+
+
 
 #[test]
 fn test_semantic_embedder_and_clustering() {
@@ -235,4 +240,71 @@ fn test_semantic_embedder_and_clustering() {
     assert_eq!(report.total_violations, 6);
     assert!(report.total_clusters > 0, "Identical violation patterns must cluster together");
 }
+
+#[test]
+fn test_manifest_layer_validation_self_check() {
+    use cargo_arch_guard::infrastructure::CargoMetadataManifestAdapter;
+    use cargo_arch_guard::ports::ManifestParserPort;
+
+    let adapter = CargoMetadataManifestAdapter::new();
+    let workspace_root = manifest_dir().join("../..");
+    let violations = adapter
+        .check_manifest_layers(&workspace_root)
+        .expect("Self workspace metadata analysis must succeed");
+
+    // All 5 firewall crates declare layer and comply with ARCH-020/ARCH-021
+    let arch_020_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "ARCH-020").collect();
+    assert_eq!(
+        arch_020_violations.len(),
+        0,
+        "Firewall crates must not violate layer boundaries"
+    );
+}
+
+#[test]
+fn test_manifest_layer_validation_detects_forbidden_dependency() {
+    use cargo_arch_guard::infrastructure::CargoMetadataManifestAdapter;
+    use cargo_arch_guard::ports::ManifestParserPort;
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+    let root = dir.path();
+
+    // Create a dummy workspace with invalid domain -> tokio dependency
+    std::fs::write(
+        root.join("Cargo.toml"),
+        r#"[workspace]
+members = ["domain-crate"]
+resolver = "2"
+"#,
+    ).unwrap();
+
+    let domain_dir = root.join("domain-crate");
+    std::fs::create_dir_all(domain_dir.join("src")).unwrap();
+    std::fs::write(domain_dir.join("src/lib.rs"), "// dummy").unwrap();
+    std::fs::write(
+        domain_dir.join("Cargo.toml"),
+        r#"[package]
+name = "domain-crate"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.arch-guard]
+layer = "domain"
+
+[dependencies]
+tokio = "1.0"
+"#,
+    ).unwrap();
+
+    let adapter = CargoMetadataManifestAdapter::new();
+    let violations = adapter
+        .check_manifest_layers(root)
+        .expect("Analysis on test workspace must succeed");
+
+    let arch_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "ARCH-001" || v.rule_id == "ARCH-020").collect();
+    assert!(!arch_violations.is_empty(), "Manifest layer checker must flag forbidden external dependency in domain");
+}
+
+
 

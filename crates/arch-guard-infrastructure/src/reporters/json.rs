@@ -75,14 +75,19 @@ mod tests {
         }];
 
         let adapter = JsonReportAdapter;
-        adapter.export_report(&report_file, &violations).unwrap();
+        let port: &dyn ReportPublisherPort = &adapter;
+        port.export_report(&report_file, &violations).unwrap();
         assert!(report_file.exists());
 
         let content = fs::read_to_string(&report_file).unwrap();
         assert!(content.contains("\"total_violations\": 1"));
         assert!(content.contains("\"rule_id\": \"ARCH-001\""));
 
-        assert!(adapter.publish_violations(&violations).is_ok());
+        assert!(port.publish_violations(&violations).is_ok());
+
+        // Direct call
+        let direct_file = temp.path().join("sub/dir/direct.json");
+        assert!(JsonReportAdapter::write_report(&direct_file, &violations).is_ok());
     }
 
     #[test]
@@ -94,6 +99,12 @@ mod tests {
         let adapter = JsonReportAdapter;
         let res = adapter.export_report(&invalid_path, &[]);
         assert!(res.is_err());
+
+        // Parent dir creation failure: create file as parent
+        let blocker = temp.path().join("blocker_file");
+        fs::write(&blocker, "blocking").unwrap();
+        let bad_parent_path = blocker.join("nested/report.json");
+        assert!(JsonReportAdapter::write_report(&bad_parent_path, &[]).is_err());
     }
 }
 

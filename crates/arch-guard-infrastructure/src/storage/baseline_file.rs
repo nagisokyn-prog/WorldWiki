@@ -51,5 +51,18 @@ mod tests {
         let after_write = storage.read(&file_path).unwrap();
         assert_eq!(after_write, Some("[\"hash1\", \"hash2\"]".into()));
     }
+
+    #[test]
+    fn test_file_baseline_storage_default_and_write_failure() {
+        let storage = FileBaselineStorageAdapter;
+        let port: &dyn BaselineStoragePort = &storage;
+        let temp = tempdir().unwrap();
+        let dir_as_file = temp.path().join("dir");
+        fs::create_dir_all(&dir_as_file).unwrap();
+
+        assert!(port.write(&dir_as_file, "data").is_err());
+        assert!(port.read(&dir_as_file).is_err());
+    }
 }
+
 

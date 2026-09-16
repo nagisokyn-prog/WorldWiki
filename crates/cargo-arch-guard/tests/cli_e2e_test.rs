@@ -296,3 +296,104 @@ fn test_cli_check_frontend_and_backend_only_flags() {
     assert!(out_back.status.success());
 }
 
+#[test]
+fn test_cli_invalid_rules_path_fails() {
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg("non_existent_rules.json")
+        .arg("check")
+        .output()
+        .expect("Failed to execute with invalid rules path");
+
+    assert!(!output.status.success(), "Must fail on non-existent rules path");
+}
+
+#[test]
+fn test_cli_explain_clusters_with_violations() {
+    let invalid_path = fixture_dir("invalid_domain_imports");
+    if !invalid_path.exists() {
+        return;
+    }
+
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("explain")
+        .arg("--path")
+        .arg(&invalid_path)
+        .output()
+        .expect("Failed to execute explain command");
+
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("Total Violations:"));
+}
+
+#[test]
+fn test_cli_default_command_no_subcommand() {
+    let clean_path = fixture_dir("valid_clean_hexagonal");
+    if !clean_path.exists() {
+        return;
+    }
+
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .current_dir(&clean_path)
+        .output()
+        .expect("Failed to execute default check");
+
+    assert!(output.status.success());
+}
+
+#[test]
+fn test_cli_validate_rules_failure_on_incomplete_rules() {
+    let temp = tempdir().unwrap();
+    let partial_rules = temp.path().join("partial_rules.json");
+    let content = r#"{
+        "version": "1.0",
+        "rules": [
+            {
+                "id": "ARCH-001",
+                "version": "1.0",
+                "category": "Architecture",
+                "severity": "Deny",
+                "title": "T1",
+                "description": "D1",
+                "remediation": "R1"
+            }
+        ]
+    }"#;
+    fs::write(&partial_rules, content).unwrap();
+
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(&partial_rules)
+        .arg("--validate-rules")
+        .output()
+        .expect("Failed to execute validate-rules");
+
+    assert!(!output.status.success(), "Must fail when rules.json lacks required rules");
+}
+
+#[test]
+fn test_cli_init_already_existing_baseline() {
+    let temp = tempdir().unwrap();
+    let baseline_file = temp.path().join("guardian-baseline.json");
+    fs::write(&baseline_file, "[\"existing_hash\"]\n").unwrap();
+
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("init")
+        .current_dir(temp.path())
+        .output()
+        .expect("Failed to execute init");
+
+    assert!(output.status.success());
+    let content = fs::read_to_string(&baseline_file).unwrap();
+    assert!(content.contains("existing_hash"), "Must not overwrite existing baseline");
+}
+
+
+

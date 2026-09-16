@@ -82,6 +82,12 @@ mod tests {
     }
 
     #[test]
+    fn test_mock_key_set_key() {
+        let storage = MockKey(Ok(vec![0x42; 32]));
+        assert!(storage.set_key(&[0x11, 0x22]).is_ok());
+    }
+
+    #[test]
     fn test_sign_and_verify_success() {
         let storage = MockKey(Ok(vec![0x42; 32]));
         let expires = Utc::now() + chrono::Duration::days(10);
@@ -100,7 +106,7 @@ mod tests {
             fingerprint: "fp123".into(),
             reason: "Temporary refactor".into(),
             author: "Alice".into(),
-            expires: expires.to_rfc3339(),
+            expires,
             signature: sig,
         };
 
@@ -116,7 +122,7 @@ mod tests {
             fingerprint: "fp123".into(),
             reason: "Old".into(),
             author: "Alice".into(),
-            expires: past.to_rfc3339(),
+            expires: past,
             signature: "001122".into(),
         };
         assert!(!SignSuppressionUseCase::verify(&storage, &supp_expired));
@@ -126,10 +132,34 @@ mod tests {
             fingerprint: "fp123".into(),
             reason: "Valid".into(),
             author: "Alice".into(),
-            expires: (Utc::now() + chrono::Duration::days(10)).to_rfc3339(),
+            expires: Utc::now() + chrono::Duration::days(10),
             signature: "invalid_hex".into(),
         };
         assert!(!SignSuppressionUseCase::verify(&storage, &supp_corrupted));
+
+        let supp_invalid_chars = Suppression {
+            rule_id: "ARCH-001".into(),
+            fingerprint: "fp123".into(),
+            reason: "Valid".into(),
+            author: "Alice".into(),
+            expires: Utc::now() + chrono::Duration::days(10),
+            signature: "zzzz".into(),
+        };
+        assert!(!SignSuppressionUseCase::verify(&storage, &supp_invalid_chars));
+    }
+
+    #[test]
+    fn test_verify_storage_error() {
+        let storage = MockKey(Err("Storage read failure".into()));
+        let supp = Suppression {
+            rule_id: "ARCH-001".into(),
+            fingerprint: "fp123".into(),
+            reason: "Valid".into(),
+            author: "Alice".into(),
+            expires: Utc::now() + chrono::Duration::days(10),
+            signature: "aabbcc".into(),
+        };
+        assert!(!SignSuppressionUseCase::verify(&storage, &supp));
     }
 
     #[test]
@@ -145,6 +175,13 @@ mod tests {
             &expires,
         );
         assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_hex_decode_branches() {
+        assert_eq!(hex_decode("0123456789abcdef").unwrap(), vec![0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef]);
+        assert!(hex_decode("1").is_err());
+        assert!(hex_decode("gh").is_err());
     }
 }
 

@@ -5,10 +5,12 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+#[derive(Debug)]
 pub struct RulesJsonRepository {
     pub config: RulesConfig,
     pub rules_by_id: HashMap<String, RuleDefinition>,
 }
+
 
 impl RulesJsonRepository {
     pub fn load_from_file(path: &Path) -> Result<Self, String> {
@@ -102,9 +104,11 @@ mod tests {
         fs::write(&file_path, json_content).unwrap();
 
         let repo = RulesJsonRepository::load_from_file(&file_path).unwrap();
-        let rule = repo.get_rule("ARCH-001").unwrap();
+        let port: &dyn RulesRepositoryPort = &repo;
+        let rule = port.get_rule("ARCH-001").unwrap();
         assert_eq!(rule.id, "ARCH-001");
-        assert!(repo.load_config().is_ok());
+        assert!(port.get_rule("NON_EXISTENT").is_none());
+        assert!(port.load_config().is_ok());
 
         assert!(repo.validate_registered_rules(&["ARCH-001"]).is_ok());
         assert!(repo.validate_registered_rules(&["NON_EXISTENT"]).is_err());

@@ -138,6 +138,35 @@ mod tests {
         assert_eq!(back_files.len(), 1);
         assert_eq!(back_files[0].path.file_name().unwrap(), "lib.rs");
     }
+
+    #[test]
+    fn test_walkdir_scanner_package_json_inference() {
+        let temp = tempdir().unwrap();
+        let root = temp.path();
+        std::fs::write(root.join("package.json"), "{\n  \"name\": \"@worldwiki/spa\"\n}").unwrap();
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        let vue_file = src.join("Main.vue");
+        std::fs::write(&vue_file, "<template></template>").unwrap();
+
+        let scanner = WalkDirScannerAdapter;
+        let files = scanner.scan_files(root, ScanScope::FrontendOnly);
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].crate_name, "@worldwiki/spa");
+    }
+
+    #[test]
+    fn test_walkdir_scanner_unknown_crate_inference() {
+        let temp = tempdir().unwrap();
+        let lone_file = temp.path().join("standalone.rs");
+        std::fs::write(&lone_file, "// standalone").unwrap();
+
+        let scanner = WalkDirScannerAdapter::new();
+        let files = scanner.scan_files(temp.path(), ScanScope::BackendOnly);
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].crate_name, "unknown");
+    }
 }
+
 
 

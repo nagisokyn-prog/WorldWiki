@@ -67,5 +67,13 @@ mod tests {
         visitor.visit_file(&syntax_tree);
         assert_eq!(visitor.violations.len(), 0);
     }
+
+    #[test]
+    fn test_run_cargo_expand_invalid_dir() {
+        let invalid_dir = Path::new("non_existent_crate_path_123");
+        let res = MacroVisitor::run_cargo_expand(invalid_dir);
+        assert!(res.is_err());
+    }
 }
+
 

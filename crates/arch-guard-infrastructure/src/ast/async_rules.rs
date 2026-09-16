@@ -81,3 +81,35 @@ pub fn is_std_mutex_lock_expression(init: &Option<syn::LocalInit>) -> bool {
     }
     false
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_async_rules_mutex_guard_across_await_async001() {
+        let code_violating = r#"
+            async fn foo() {
+                let guard = my_mutex.lock().unwrap();
+                do_something_async().await;
+            }
+        "#;
+        let file: syn::File = syn::parse_str(code_violating).unwrap();
+        let mut visitor = MutexGuardVisitor::new(Path::new("src/async_service.rs"));
+        visitor.visit_file(&file);
+        assert_eq!(visitor.violations.len(), 1);
+        assert_eq!(visitor.violations[0].rule_id, "ASYNC-001");
+
+        let code_clean = r#"
+            async fn foo() {
+                let guard = tokio_mutex.lock().await;
+                do_something_async().await;
+            }
+        "#;
+        let file_clean: syn::File = syn::parse_str(code_clean).unwrap();
+        let mut visitor_clean = MutexGuardVisitor::new(Path::new("src/async_service.rs"));
+        visitor_clean.visit_file(&file_clean);
+        assert!(visitor_clean.violations.is_empty());
+    }
+}
+

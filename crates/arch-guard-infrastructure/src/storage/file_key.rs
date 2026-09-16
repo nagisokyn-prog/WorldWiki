@@ -76,17 +76,18 @@ mod tests {
         let temp = tempdir().unwrap();
         let key_path = temp.path().join("subdir/custom.key");
         let storage = FileStorageAdapter::new(key_path);
+        let port: &dyn KeyStoragePort = &storage;
 
         // 1. Auto-generate on missing
-        let key1 = storage.get_key().unwrap();
+        let key1 = port.get_key().unwrap();
         assert_eq!(key1.len(), 32);
 
         // 2. Set custom key
         let custom_key = vec![0x99; 32];
-        storage.set_key(&custom_key).unwrap();
+        port.set_key(&custom_key).unwrap();
 
         // 3. Read back
-        let read_key = storage.get_key().unwrap();
+        let read_key = port.get_key().unwrap();
         assert_eq!(read_key, custom_key);
     }
 
@@ -110,6 +111,22 @@ mod tests {
         fs::write(&key_path, "not_hex_data!").unwrap();
         let storage = FileStorageAdapter::new(key_path);
         assert!(storage.get_key().is_err());
+    }
+
+    #[test]
+    fn test_file_storage_set_key_error() {
+        let temp = tempdir().unwrap();
+        let invalid_path = temp.path().join("invalid_dir");
+        fs::create_dir_all(&invalid_path).unwrap();
+        // Pointing file path directly to an existing directory causes fs::write to fail
+        let storage = FileStorageAdapter::new(invalid_path);
+        assert!(storage.set_key(&[1, 2, 3]).is_err());
+
+        // Parent dir creation failure
+        let blocker = temp.path().join("blocker_file");
+        fs::write(&blocker, "block").unwrap();
+        let bad_parent_storage = FileStorageAdapter::new(blocker.join("nested/custom.key"));
+        assert!(bad_parent_storage.set_key(&[1, 2, 3]).is_err());
     }
 }
 

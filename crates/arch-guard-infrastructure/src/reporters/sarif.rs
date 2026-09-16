@@ -162,7 +162,8 @@ mod tests {
         }];
 
         let adapter = SarifReportAdapter;
-        adapter.export_report(&report_file, &violations).unwrap();
+        let port: &dyn ReportPublisherPort = &adapter;
+        port.export_report(&report_file, &violations).unwrap();
         assert!(report_file.exists());
 
         let content = fs::read_to_string(&report_file).unwrap();
@@ -171,7 +172,11 @@ mod tests {
         assert!(content.contains("src/domain/entity.rs"));
 
         // Test publish_violations (no-op implementation)
-        assert!(adapter.publish_violations(&violations).is_ok());
+        assert!(port.publish_violations(&violations).is_ok());
+
+        // Direct call
+        let direct_file = temp.path().join("sub/sarif/direct.sarif");
+        assert!(SarifReportAdapter::write_report(&direct_file, &violations).is_ok());
     }
 
     #[test]
@@ -184,6 +189,12 @@ mod tests {
         let adapter = SarifReportAdapter;
         let res = adapter.export_report(&invalid_path, &[]);
         assert!(res.is_err());
+
+        // Parent dir creation failure
+        let blocker = temp.path().join("blocker_file");
+        fs::write(&blocker, "blocking").unwrap();
+        let bad_parent_path = blocker.join("nested/report.sarif");
+        assert!(SarifReportAdapter::write_report(&bad_parent_path, &[]).is_err());
     }
 }
 

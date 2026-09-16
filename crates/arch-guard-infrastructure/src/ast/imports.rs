@@ -112,3 +112,46 @@ impl<'a> ImportChecker<'a> {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_import_checker_domain_violations_arch001() {
+        let code = "use tokio::sync::Mutex;";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(Path::new("src/domain/entity.rs"), "worldwiki-domain");
+        let violations = checker.check_use(&item_use);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule_id, "ARCH-001");
+    }
+
+    #[test]
+    fn test_import_checker_app_violations_arch002() {
+        let code = "use tauri::command;";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(Path::new("src/application/use_case.rs"), "worldwiki-application");
+        let violations = checker.check_use(&item_use);
+        assert!(violations.iter().any(|v| v.rule_id == "ARCH-002"));
+    }
+
+    #[test]
+    fn test_import_checker_unauthorized_tauri_arch005() {
+        let code = "use tauri::AppHandle;";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(Path::new("src/infra/repo.rs"), "worldwiki-infrastructure");
+        let violations = checker.check_use(&item_use);
+        assert!(violations.iter().any(|v| v.rule_id == "ARCH-005"));
+    }
+
+    #[test]
+    fn test_import_checker_authorized_tauri_and_group_tree() {
+        let code = "use tauri::{AppHandle, Manager};";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(Path::new("src/adapters/tauri/commands.rs"), "worldwiki-tauri");
+        let violations = checker.check_use(&item_use);
+        assert!(violations.is_empty(), "Tauri adapter is authorized to import tauri");
+    }
+}
+
+

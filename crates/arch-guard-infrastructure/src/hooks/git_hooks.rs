@@ -71,6 +71,10 @@ mod tests {
         assert!(git_dir.join("hooks/pre-commit").exists());
         assert!(git_dir.join("hooks/post-merge").exists());
         assert!(temp.path().join(".gitattributes").exists());
+
+        // Re-install when .gitattributes already contains the union merge driver
+        let result2 = GitHooksInstaller::install(temp.path());
+        assert!(result2.is_ok());
     }
 
     #[test]
@@ -79,5 +83,35 @@ mod tests {
         let result = GitHooksInstaller::install(temp.path());
         assert!(result.is_err(), "Must fail if .git does not exist");
     }
+
+    #[test]
+    fn test_git_hooks_install_hooks_dir_creation_failure() {
+        let temp = tempdir().unwrap();
+        let git_dir = temp.path().join(".git");
+        fs::create_dir_all(&git_dir).unwrap();
+        // Create .git/hooks as a file so fs::create_dir_all fails
+        fs::write(git_dir.join("hooks"), "not a directory").unwrap();
+
+        let result = GitHooksInstaller::install(temp.path());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_git_hooks_install_pre_commit_and_post_merge_write_failures() {
+        // Pre-commit write failure
+        let temp1 = tempdir().unwrap();
+        let hooks1 = temp1.path().join(".git/hooks");
+        fs::create_dir_all(&hooks1).unwrap();
+        fs::create_dir_all(hooks1.join("pre-commit")).unwrap(); // directory instead of file causes fs::write to fail
+        assert!(GitHooksInstaller::install(temp1.path()).is_err());
+
+        // Post-merge write failure
+        let temp2 = tempdir().unwrap();
+        let hooks2 = temp2.path().join(".git/hooks");
+        fs::create_dir_all(&hooks2).unwrap();
+        fs::create_dir_all(hooks2.join("post-merge")).unwrap();
+        assert!(GitHooksInstaller::install(temp2.path()).is_err());
+    }
 }
+
 

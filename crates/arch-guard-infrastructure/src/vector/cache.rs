@@ -50,6 +50,7 @@ impl PatternCache {
         let mut file = OpenOptions::new()
             .create(true)
             .write(true)
+            .truncate(true)
             .open(&self.cache_file)
             .map_err(|e| format!("Failed to open cache file for write: {}", e))?;
 
@@ -97,6 +98,20 @@ mod tests {
         let cache = PatternCache::new(temp.path());
         cache.write_cached(&[]).unwrap();
         assert_eq!(cache.read_cached().unwrap(), None);
+    }
+
+    #[test]
+    fn test_pattern_cache_directory_open_fails_returns_none() {
+        let temp = tempdir().unwrap();
+        let cache_dir = temp.path().join(".archguard").join("cache").join("patterns.bin");
+        // Create patterns.bin as a directory so File::open fails
+        fs::create_dir_all(&cache_dir).unwrap();
+
+        let cache = PatternCache::new(temp.path());
+        assert_eq!(cache.read_cached().unwrap(), None);
+
+        // write_cached fails because patterns.bin is a directory
+        assert!(cache.write_cached(b"data").is_err());
     }
 }
 

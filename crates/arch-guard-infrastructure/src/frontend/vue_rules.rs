@@ -126,9 +126,7 @@ mod tests {
 
         // Bloated script setup > 35 lines with ref / computed and NO companion hook
         let mut heavy_lines = vec!["const a = ref(1);", "const b = computed(() => 2);"];
-        for _ in 0..40 {
-            heavy_lines.push("console.log('line');");
-        }
+        heavy_lines.extend(vec!["console.log('line');"; 40]);
         let sfc = VueSfc {
             script_setup: Some(heavy_lines.join("\n")),
             script_setup_start_line: 1,

@@ -175,10 +175,7 @@ mod tests {
 
     #[test]
     fn test_css_rule_checker_bloated_inline_style_css001() {
-        let mut lines = Vec::new();
-        for _ in 0..30 {
-            lines.push(".btn { margin: 0; }");
-        }
+        let lines = vec![".btn { margin: 0; }"; 30];
         let sfc = VueSfc {
             styles: vec![VueStyleBlock {
                 content: lines.join("\n"),

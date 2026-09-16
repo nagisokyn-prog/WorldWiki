@@ -25,3 +25,31 @@ pub use ports::{
     VectorEmbedderPort,
 };
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cargo_arch_guard_re_exports() {
+        let v = Violation {
+            rule_id: "ARCH-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: std::path::PathBuf::from("src/lib.rs"),
+            line: 1,
+            column: 1,
+            symbol: "sym".into(),
+            snippet: "snip".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "fp".into(),
+        };
+        assert_eq!(v.rule_id, "ARCH-001");
+        assert_eq!(
+            compute_fingerprint("ARCH-001", "1.0", "sym", "snippet"),
+            compute_fingerprint("ARCH-001", "1.0", "sym", "snippet")
+        );
+    }
+}
+

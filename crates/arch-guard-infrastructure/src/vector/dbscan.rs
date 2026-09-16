@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn test_dbscan_default_and_empty() {
-        let clusterer = DbscanClustererAdapter::default();
+        let clusterer = DbscanClustererAdapter;
         let empty: Vec<Vec<f32>> = vec![];
         let res = clusterer.cluster(&empty, 0.5, 2).unwrap();
         assert!(res.is_empty());

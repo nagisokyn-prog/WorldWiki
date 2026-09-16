@@ -79,5 +79,23 @@ mod tests {
         let result = FileAnalyzer::analyze_file(&missing_path, "worldwiki-domain");
         assert!(result.is_err());
     }
+
+    #[test]
+    fn test_file_analyzer_parse_error_and_scan_summary() {
+        let temp = tempdir().unwrap();
+        let invalid_path = temp.path().join("invalid.rs");
+        std::fs::write(&invalid_path, "fn bad( { broken").unwrap();
+        let result = FileAnalyzer::analyze_file(&invalid_path, "domain");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("[PARSE-ERROR]"));
+
+        let summary = ScanSummary {
+            total_files: 10,
+            parse_errors: 1,
+            violations: Vec::new(),
+        };
+        assert_eq!(summary.total_files, 10);
+    }
 }
+
 

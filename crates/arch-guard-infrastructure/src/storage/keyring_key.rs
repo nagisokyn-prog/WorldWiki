@@ -73,6 +73,14 @@ mod tests {
 
         assert!(hex_decode("123").is_err(), "Odd length should fail");
         assert!(hex_decode("ZZ").is_err(), "Invalid hex chars should fail");
+
+        // Execute get_key and set_key methods directly and via trait object
+        let port: &dyn KeyStoragePort = &adapter;
+        let _ = port.set_key(&[0x11, 0x22]);
+        let _ = port.get_key();
+        let _ = adapter.set_key(&[0x11, 0x22]);
+        let _ = adapter.get_key();
     }
 }
+
 

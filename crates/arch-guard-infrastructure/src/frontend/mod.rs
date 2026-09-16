@@ -55,8 +55,21 @@ mod tests {
         let violations = FrontendAnalyzer::analyze_file(&vue_file).unwrap();
         assert_eq!(violations.len(), 0);
 
+        let css_file = temp.path().join("Test.css");
+        fs::write(&css_file, "body { color: var(--color-text-primary); }").unwrap();
+        assert!(FrontendAnalyzer::analyze_file(&css_file).unwrap().is_empty());
+
+        let ts_file = temp.path().join("Test.ts");
+        fs::write(&ts_file, "export const x = 1;").unwrap();
+        assert!(FrontendAnalyzer::analyze_file(&ts_file).unwrap().is_empty());
+
+        let txt_file = temp.path().join("Test.txt");
+        fs::write(&txt_file, "ignored text").unwrap();
+        assert!(FrontendAnalyzer::analyze_file(&txt_file).unwrap().is_empty());
+
         let missing = temp.path().join("none.vue");
         assert!(FrontendAnalyzer::analyze_file(&missing).is_err());
     }
 }
+
 

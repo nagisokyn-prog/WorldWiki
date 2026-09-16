@@ -7,20 +7,27 @@ edition = "2021"
 
 [workspace]
 members = [
-    "crates/*",
-    "../crates/*",
-    "."
+    ".",
+    "../crates/cerberus-domain",
+    "../crates/cerberus-ports",
+    "../crates/cerberus-application",
+    "../crates/cerberus-infrastructure",
+    "../crates/cargo-cerberus",
+]
+exclude = [
+    "../crates/target",
 ]
 resolver = "2"
 
-[workspace.metadata.arch-guard]
+[workspace.metadata.cerberus]
 preset = "hexagonal-strict"
 
-[workspace.metadata.arch-guard.layers]
+[workspace.metadata.cerberus.layers]
 domain = { allowed_dependencies = [] }
 ports = { allowed_dependencies = ["domain"] }
 application = { allowed_dependencies = ["domain", "ports"] }
 infrastructure = { allowed_dependencies = ["domain", "ports", "application"] }
+adapter = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
 tauri = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
 cli = { allowed_dependencies = ["domain", "ports", "application", "infrastructure"] }
 

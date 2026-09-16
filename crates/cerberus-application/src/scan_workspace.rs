@@ -119,6 +119,7 @@ mod tests {
             Ok(RulesConfig {
                 schema: None,
                 version: "1.0".into(),
+                ignore: vec![],
                 rules: vec![],
             })
         }

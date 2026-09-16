@@ -49,6 +49,7 @@ impl RulesRepositoryPort for MockRulesRepo {
         Ok(RulesConfig {
             schema: None,
             version: "1.0.0".into(),
+            ignore: vec![],
             rules: self.0.clone(),
         })
     }

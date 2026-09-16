@@ -32,15 +32,14 @@ impl RulesJsonRepository {
 
     pub fn find_rules_path(custom_path: Option<&PathBuf>) -> PathBuf {
         if let Some(p) = custom_path {
-            if p.exists() {
-                return p.clone();
-            }
+            return p.clone();
         }
 
         let candidates = [
             PathBuf::from("firewall/rules.json"),
             PathBuf::from("../firewall/rules.json"),
             PathBuf::from("../../firewall/rules.json"),
+            PathBuf::from(".cerberus/rules.json"),
             PathBuf::from(".archguard/rules.json"),
         ];
 

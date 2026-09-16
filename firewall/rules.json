@@ -1,6 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.0.0",
+  "ignore": [
+    "target",
+    "node_modules",
+    ".git",
+    "dist",
+    "coverage"
+  ],
   "rules": [
     {
       "id": "ARCH-001",
@@ -115,19 +122,18 @@
       "version": "1.0",
       "category": "Architecture",
       "severity": "Deny",
-      "title": "Layer manifest dependency violation",
-      "description": "Crate dependencies in Cargo.toml must strictly comply with the allowed dependency matrix for the declared [package.metadata.arch-guard] layer.",
-      "remediation": "Remove the forbidden dependency from Cargo.toml or move the logic to a compliant architectural layer."
+      "title": "Layer Dependency Hierarchy Violation in Cargo.toml",
+      "description": "Crate dependencies in Cargo.toml must strictly comply with the allowed dependency matrix for the declared [package.metadata.cerberus] layer.",
+      "remediation": "Invert dependency direction or move logic: pure domain/ports layers cannot depend on outer layers."
     },
     {
       "id": "ARCH-021",
       "version": "1.0",
       "category": "Architecture",
       "severity": "Warn",
-      "title": "Missing architectural layer declaration",
-      "description": "Every workspace crate should explicitly declare [package.metadata.arch-guard] layer = \"...\" in Cargo.toml.",
-      "remediation": "Add [package.metadata.arch-guard] layer = \"domain|ports|application|infrastructure|adapter\" to Cargo.toml."
+      "title": "Missing Architectural Layer Metadata",
+      "description": "Every workspace crate should explicitly declare [package.metadata.cerberus] layer = \"...\" in Cargo.toml.",
+      "remediation": "Add [package.metadata.cerberus] layer = \"domain|ports|application|infrastructure|adapter\" to Cargo.toml."
     }
   ]
 }
-

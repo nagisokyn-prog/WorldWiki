@@ -19,6 +19,8 @@ pub struct WorkspaceArchMetadata {
 pub struct PackageArchMetadata {
     #[serde(default)]
     pub layer: Option<String>,
+    #[serde(default)]
+    pub ignore: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -130,7 +132,10 @@ mod tests {
         let parsed: WorkspaceArchMetadata = serde_json::from_str(&json).unwrap();
         assert_eq!(meta, parsed);
 
-        let pkg = PackageArchMetadata { layer: Some("domain".into()) };
+        let pkg = PackageArchMetadata {
+            layer: Some("domain".into()),
+            ignore: vec![],
+        };
         let pkg_json = serde_json::to_string(&pkg).unwrap();
         let pkg_parsed: PackageArchMetadata = serde_json::from_str(&pkg_json).unwrap();
         assert_eq!(pkg, pkg_parsed);

@@ -301,7 +301,7 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                 Arc::new(VueSfcParserAdapter),
             ];
             let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
-            let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new());
+            let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new().with_ignores(rules_repo.config.ignore.clone()));
             let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, rules_repo, ScanScope::All);
             let scan_result = use_case.execute(&path);
 
@@ -475,7 +475,7 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     ];
 
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
-    let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new());
+    let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new().with_ignores(options.rules_repo.config.ignore.clone()));
     let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
     let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, options.rules_repo, scope)
         .with_manifest_parser(manifest_parser);
@@ -794,7 +794,8 @@ mod tests {
         }).is_ok());
 
         // Test parse error limit in CI mode
-        let broken_dir = temp.path().join("broken_src");
+        let broken_temp = tempdir().unwrap();
+        let broken_dir = broken_temp.path().join("broken_src");
         std::fs::create_dir_all(&broken_dir).unwrap();
         std::fs::write(broken_dir.join("broken.rs"), "fn broken( {").unwrap();
 

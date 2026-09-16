@@ -3,11 +3,26 @@ use std::path::Path;
 use walkdir::WalkDir;
 
 
-pub struct WalkDirScannerAdapter;
+pub struct WalkDirScannerAdapter {
+    pub ignore_patterns: Vec<String>,
+}
 
 impl WalkDirScannerAdapter {
     pub fn new() -> Self {
-        Self
+        Self {
+            ignore_patterns: vec![
+                "target".into(),
+                "node_modules".into(),
+                ".git".into(),
+                "dist".into(),
+                "coverage".into(),
+            ],
+        }
+    }
+
+    pub fn with_ignores(mut self, ignores: Vec<String>) -> Self {
+        self.ignore_patterns.extend(ignores);
+        self
     }
 }
 
@@ -24,14 +39,30 @@ impl FileSystemScannerPort for WalkDirScannerAdapter {
             .filter_map(|e| e.ok())
             .filter(|e| {
                 let path = e.path();
-                let path_str = path.to_string_lossy();
-                if path_str.contains("target")
-                    || path_str.contains("node_modules")
-                    || path_str.contains(".git")
-                    || path_str.contains("dist")
-                    || path_str.contains("coverage")
-                {
-                    return false;
+
+                // 1. Auto-skip hidden folders and files starting with '.' within root_dir
+                if let Ok(rel_path) = path.strip_prefix(root_dir) {
+                    for component in rel_path.components() {
+                        let s = component.as_os_str().to_string_lossy();
+                        if s.starts_with('.') {
+                            return false;
+                        }
+                    }
+                }
+
+                // 2. Custom and built-in ignore patterns relative to root_dir
+                if let Ok(rel_path) = path.strip_prefix(root_dir) {
+                    let rel_str = rel_path.to_string_lossy().replace('\\', "/");
+                    for pattern in &self.ignore_patterns {
+                        let norm_pat = pattern.replace('\\', "/").trim_matches('/').to_string();
+                        if !norm_pat.is_empty()
+                            && (rel_str == norm_pat
+                                || rel_str.starts_with(&format!("{}/", norm_pat))
+                                || rel_str.contains(&format!("/{}/", norm_pat)))
+                        {
+                            return false;
+                        }
+                    }
                 }
 
                 let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
@@ -166,6 +197,33 @@ mod tests {
         let files = scanner.scan_files(temp.path(), ScanScope::BackendOnly);
         assert_eq!(files.len(), 1);
         assert_eq!(files[0].crate_name, "unknown");
+    }
+
+    #[test]
+    fn test_walkdir_scanner_skips_hidden_dot_directories_and_custom_ignores() {
+        let temp = tempdir().unwrap();
+        let root = temp.path();
+
+        // 1. Normal file
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(src.join("lib.rs"), "pub fn ok() {}").unwrap();
+
+        // 2. Hidden dot directory (.logic_legacy)
+        let legacy = src.join(".logic_legacy/ai");
+        std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::write(legacy.join("manager.rs"), "pub fn bad() {}").unwrap();
+
+        // 3. Custom ignored directory
+        let ignored_dir = root.join("custom_ignore");
+        std::fs::create_dir_all(&ignored_dir).unwrap();
+        std::fs::write(ignored_dir.join("skip.rs"), "pub fn skip() {}").unwrap();
+
+        let scanner = WalkDirScannerAdapter::new().with_ignores(vec!["custom_ignore".into()]);
+        let files = scanner.scan_files(root, ScanScope::All);
+
+        assert_eq!(files.len(), 1);
+        assert_eq!(files[0].path.file_name().unwrap(), "lib.rs");
     }
 }
 

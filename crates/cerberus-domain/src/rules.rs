@@ -33,6 +33,8 @@ pub struct RulesConfig {
     #[serde(rename = "$schema", default)]
     pub schema: Option<String>,
     pub version: String,
+    #[serde(default)]
+    pub ignore: Vec<String>,
     pub rules: Vec<RuleDefinition>,
 }
 

@@ -1,4 +1,4 @@
-# 🛡️ ARCHITECTURAL & CAPABILITY FIREWALL (`arch-guard`)
+# 🛡️ ARCHITECTURAL & CAPABILITY FIREWALL (`Cerberus` / `cargo-cerberus`)
 ## Инженерный Хаб и План Реализации
 
 > **Проект**: Независимый, сверхбыстрый архитектурный и капабилити-фаервол нового поколения для Rust, Vue 3, TypeScript и CSS.  
@@ -15,7 +15,7 @@
 | [**01_ARCHITECTURE_CORE.md**](./01_ARCHITECTURE_CORE.md) | Архитектура ядра Rust CLI: `syn` AST Visitor, `cargo_metadata`, граф зависимостей, Taint-to-Sink Data-Flow Engine. | Rust, `syn`, `cargo_metadata`, `rayon`, `petgraph` |
 | [**02_FRONTEND_GUARDIAN.md**](./02_FRONTEND_GUARDIAN.md) | Анализатор Vue 3 SFC, TypeScript и CSS: чистота `<script setup>`, Scoped CSS, детектор утечек ресурсов и IPC. | TypeScript, `oxc_parser`, `lightningcss`, AST |
 | [**03_VECTOR_INTELLIGENCE.md**](./03_VECTOR_INTELLIGENCE.md) | Семантическая кластеризация Baseline (HDBSCAN), выявление 15 корневых паттернов и Architecture Memory RAG. | `bge-m3`, `all-MiniLM`, HDBSCAN, SurrealDB HNSW |
-| [**04_RATCHET_AND_LEDGER.md**](./04_RATCHET_AND_LEDGER.md) | Принцип Храповика (`guardian-baseline.json`), криптографический реестр `guardian-ledger.lock` и Human-in-the-Loop. | SHA-256/HMAC, JSON Baseline, CLI Wizard |
+| [**04_RATCHET_AND_LEDGER.md**](./04_RATCHET_AND_LEDGER.md) | Принцип Храповика (`cerberus-baseline.json`), криптографический реестр `cerberus-ledger.lock` и Human-in-the-Loop. | SHA-256/HMAC, JSON Baseline, CLI Wizard |
 | [**05_IMPLEMENTATION_ROADMAP.md**](./05_IMPLEMENTATION_ROADMAP.md) | Пошаговый спринтерский план разработки, файлы проекта, команды запуска и чеклист сдачи. | Спринты 1–4, миграция 7 JS-скриптов |
 
 ---
@@ -24,9 +24,9 @@
 
 ```mermaid
 flowchart TD
-    CLI["npx arch-guard / cargo arch-guard (CLI Entrypoint)"]
+    CLI["npx cerberus / cargo cerberus (CLI Entrypoint)"]
     
-    CLI --> RUST_CORE["crates/cargo-arch-guard (Rust AST Engine)"]
+    CLI --> RUST_CORE["crates/cargo-cerberus (Rust AST Engine)"]
     CLI --> FRONT_CORE["packages/sfc-guardian (Web AST Engine)"]
     
     RUST_CORE --> SYN["syn AST + cargo_metadata"]
@@ -50,12 +50,11 @@ flowchart TD
 
 ```bash
 # 1. Инициализация в 1 команду
-npx arch-guard init
+cargo cerberus init
 
 # 2. Запуск в CI / pre-commit
-pnpm lint:arch
-cargo arch-guard
+cargo cerberus check
 
 # 3. Интеллектуальный отчет по кластерам техдолга
-cargo arch-guard explain --clusters
+cargo cerberus explain --clusters
 ```

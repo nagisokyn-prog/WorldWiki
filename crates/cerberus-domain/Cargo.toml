@@ -1,11 +1,11 @@
 [package]
-name = "arch-guard-domain"
+name = "cerberus-domain"
 version = "0.1.0"
 edition = "2021"
 authors = ["Danila"]
-description = "Pure Domain model for Architectural Firewall (ARCH-001 compliant: 0 framework SDKs)"
+description = "Pure Domain model for Cerberus Architectural Firewall (ARCH-001 compliant: 0 framework SDKs)"
 
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "domain"
 
 [dependencies]

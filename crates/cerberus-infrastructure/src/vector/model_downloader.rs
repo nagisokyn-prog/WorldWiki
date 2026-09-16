@@ -1,4 +1,4 @@
-use arch_guard_ports::ModelDownloaderPort;
+use cerberus_ports::ModelDownloaderPort;
 use std::fs;
 use std::path::Path;
 use std::process::Command;

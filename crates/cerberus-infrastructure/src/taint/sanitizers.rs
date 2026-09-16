@@ -4,10 +4,10 @@ pub struct TaintSanitizerChecker;
 
 impl TaintSanitizerChecker {
     pub fn is_sanitizer_fn(item_fn: &ItemFn) -> bool {
-        // 1. Explicit attribute: #[arch_guard(sanitizes)]
+        // 1. Explicit attribute: #[cerberus(sanitizes)] or #[arch_guard(sanitizes)]
         for attr in &item_fn.attrs {
             let attr_str = quote::quote!(#attr).to_string();
-            if attr_str.contains("arch_guard") && attr_str.contains("sanitizes") {
+            if (attr_str.contains("cerberus") || attr_str.contains("arch_guard")) && attr_str.contains("sanitizes") {
                 return true;
             }
         }

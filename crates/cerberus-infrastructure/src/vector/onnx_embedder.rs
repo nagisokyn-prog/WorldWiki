@@ -1,4 +1,4 @@
-use arch_guard_ports::VectorEmbedderPort;
+use cerberus_ports::VectorEmbedderPort;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use crate::vector::SemanticEmbedderAdapter;

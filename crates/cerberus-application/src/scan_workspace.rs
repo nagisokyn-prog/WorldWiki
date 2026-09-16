@@ -1,6 +1,6 @@
-use arch_guard_domain::Violation;
-pub use arch_guard_ports::ScanScope;
-use arch_guard_ports::{
+use cerberus_domain::Violation;
+pub use cerberus_ports::ScanScope;
+use cerberus_ports::{
     AstEnginePort, FileSystemScannerPort, ManifestParserPort, RulesRepositoryPort, ScannedSourceFile,
 };
 use std::path::Path;
@@ -77,7 +77,7 @@ impl ScanWorkspaceUseCase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arch_guard_domain::{Category, RuleDefinition, RulesConfig, Severity};
+    use cerberus_domain::{Category, RuleDefinition, RulesConfig, Severity};
     use std::path::PathBuf;
 
     struct MockScanner;

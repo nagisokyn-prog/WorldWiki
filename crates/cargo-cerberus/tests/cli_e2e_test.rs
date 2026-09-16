@@ -5,7 +5,7 @@ use std::process::Command;
 use tempfile::tempdir;
 
 fn cargo_bin() -> PathBuf {
-    PathBuf::from(env!("CARGO_BIN_EXE_cargo-arch-guard"))
+    PathBuf::from(env!("CARGO_BIN_EXE_cargo-cerberus"))
 }
 
 fn rules_path() -> PathBuf {
@@ -33,7 +33,7 @@ fn test_cli_check_clean_project_exits_zero() {
         .arg("--path")
         .arg(&clean_path)
         .output()
-        .expect("Failed to execute cargo-arch-guard check");
+        .expect("Failed to execute cargo-cerberus check");
 
     assert!(
         output.status.success(),
@@ -62,7 +62,7 @@ fn test_cli_check_violating_project_exits_one() {
         .arg("--path")
         .arg(&invalid_path)
         .output()
-        .expect("Failed to execute cargo-arch-guard check");
+        .expect("Failed to execute cargo-cerberus check");
 
     assert!(
         !output.status.success(),
@@ -104,7 +104,7 @@ fn test_cli_check_exports_sarif_and_json_reports() {
         .arg("--json")
         .arg(&json_path)
         .output()
-        .expect("Failed to execute cargo-arch-guard check with reports");
+        .expect("Failed to execute cargo-cerberus check with reports");
 
     assert!(output.status.success());
     assert!(sarif_path.exists(), "SARIF report file must be created");
@@ -554,8 +554,8 @@ fn test_e2e_ledger_security_tamper_and_expiry() {
 
     // 1. Valid initial suppression signed with old key
     let expires = chrono::Utc::now() + chrono::Duration::days(30);
-    let old_storage = cargo_arch_guard::infrastructure::FileStorageAdapter::new(old_key_file.clone());
-    let sig = cargo_arch_guard::application::SignSuppressionUseCase::sign(
+    let old_storage = cargo_cerberus::infrastructure::FileStorageAdapter::new(old_key_file.clone());
+    let sig = cargo_cerberus::application::SignSuppressionUseCase::sign(
         &old_storage,
         "ARCH-001",
         "fp123",
@@ -626,7 +626,7 @@ fn test_e2e_model_status_and_clean_command() {
 
     assert!(output_status.status.success());
     let stdout = String::from_utf8_lossy(&output_status.stdout);
-    assert!(stdout.contains("ARCH GUARD NEURAL MODEL STATUS"));
+    assert!(stdout.contains("CERBERUS NEURAL MODEL STATUS"));
 
     let output_clean = Command::new(cargo_bin())
         .arg("--rules-path")

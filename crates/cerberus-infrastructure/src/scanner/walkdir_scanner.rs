@@ -1,4 +1,4 @@
-use arch_guard_ports::{FileSystemScannerPort, ScanScope, ScannedSourceFile};
+use cerberus_ports::{FileSystemScannerPort, ScanScope, ScannedSourceFile};
 use std::path::Path;
 use walkdir::WalkDir;
 

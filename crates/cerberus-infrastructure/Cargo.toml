@@ -1,17 +1,16 @@
 [package]
-name = "arch-guard-infrastructure"
+name = "cerberus-infrastructure"
 version = "0.1.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Concrete infrastructure adapters (Syn AST, Vue SFC, Keyring, JSON/SARIF) for Architectural Firewall"
 
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "infrastructure"
 
 [dependencies]
-arch-guard-domain = { path = "../arch-guard-domain" }
-
-arch-guard-ports = { path = "../arch-guard-ports" }
+cerberus-domain = { path = "../cerberus-domain" }
+cerberus-ports = { path = "../cerberus-ports" }
 syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
 proc-macro2 = "1.0"
 quote = "1.0"

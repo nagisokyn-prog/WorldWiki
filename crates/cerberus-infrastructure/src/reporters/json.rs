@@ -1,5 +1,5 @@
-use arch_guard_domain::Violation;
-use arch_guard_ports::ReportPublisherPort;
+use cerberus_domain::Violation;
+use cerberus_ports::ReportPublisherPort;
 
 use serde::Serialize;
 use std::fs;
@@ -49,7 +49,7 @@ impl ReportPublisherPort for JsonReportAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arch_guard_domain::{Category, Severity};
+    use cerberus_domain::{Category, Severity};
     use std::path::PathBuf;
     use tempfile::tempdir;
 

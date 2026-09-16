@@ -1,9 +1,9 @@
-use arch_guard_domain::Violation;
+use cerberus_domain::Violation;
 use crate::frontend::css_rules::CssRuleChecker;
 use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
 use crate::frontend::sfc_parser::VueSfcParser;
 use crate::frontend::vue_rules::VueRuleChecker;
-use arch_guard_ports::AstParserPort;
+use cerberus_ports::AstParserPort;
 
 use std::fs;
 use std::path::Path;

@@ -1,16 +1,16 @@
 [package]
-name = "arch-guard-application"
+name = "cerberus-application"
 version = "0.1.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Application Use Cases for Architectural Firewall (ARCH-002 compliant: zero UI/Tauri dependencies)"
 
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "application"
 
 [dependencies]
-arch-guard-domain = { path = "../arch-guard-domain" }
-arch-guard-ports = { path = "../arch-guard-ports" }
+cerberus-domain = { path = "../cerberus-domain" }
+cerberus-ports = { path = "../cerberus-ports" }
 chrono = { version = "0.4", default-features = false }
 hmac = "0.13.0"
 sha2 = "0.11.0"

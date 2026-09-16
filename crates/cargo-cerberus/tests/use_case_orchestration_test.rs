@@ -1,15 +1,15 @@
-use cargo_arch_guard::application::{
+use cargo_cerberus::application::{
     ExplainClustersUseCase, ReconcileBaselineUseCase, ScanScope, ScanWorkspaceUseCase,
     SignSuppressionUseCase,
 };
-use cargo_arch_guard::domain::{
+use cargo_cerberus::domain::{
     Category, RuleDefinition, RulesConfig, Severity, Suppression, Violation,
 };
-use cargo_arch_guard::infrastructure::{
+use cargo_cerberus::infrastructure::{
     DbscanClustererAdapter, FileBaselineStorageAdapter, MockStorageAdapter,
     SemanticEmbedderAdapter,
 };
-use cargo_arch_guard::ports::{
+use cargo_cerberus::ports::{
     AstEnginePort, FileSystemScannerPort, ManifestParserPort,
     RulesRepositoryPort, ScannedSourceFile,
 };

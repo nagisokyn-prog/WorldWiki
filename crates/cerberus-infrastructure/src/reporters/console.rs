@@ -1,5 +1,5 @@
-use arch_guard_domain::{Severity, Violation};
-use arch_guard_ports::ReportPublisherPort;
+use cerberus_domain::{Severity, Violation};
+use cerberus_ports::ReportPublisherPort;
 
 use colored::*;
 use std::path::Path;
@@ -9,11 +9,11 @@ pub struct ConsoleReportAdapter;
 impl ConsoleReportAdapter {
     pub fn print_violations(violations: &[Violation]) {
         if violations.is_empty() {
-            println!("{}", "✅ [cargo-arch-guard] 0 architectural violations found. Clean build!".green().bold());
+            println!("{}", "✅ [cargo-cerberus] 0 architectural violations found. Clean build!".green().bold());
             return;
         }
 
-        println!("{}", format!("⚠️  [cargo-arch-guard] Found {} architectural violation(s):", violations.len()).yellow().bold());
+        println!("{}", format!("⚠️  [cargo-cerberus] Found {} architectural violation(s):", violations.len()).yellow().bold());
         println!("{}", "=".repeat(70));
 
         for (idx, v) in violations.iter().enumerate() {
@@ -57,7 +57,7 @@ impl ReportPublisherPort for ConsoleReportAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arch_guard_domain::Category;
+    use cerberus_domain::Category;
     use std::path::PathBuf;
 
     #[test]

@@ -1,4 +1,4 @@
-use arch_guard_ports::KeyStoragePort;
+use cerberus_ports::KeyStoragePort;
 
 use std::fs;
 use std::path::PathBuf;
@@ -14,9 +14,9 @@ impl FileStorageAdapter {
 
     pub fn resolve_default_path(home: Option<PathBuf>) -> PathBuf {
         if let Some(h) = home {
-            h.join(".config").join("archguard").join("master.key")
+            h.join(".config").join("cerberus").join("master.key")
         } else {
-            PathBuf::from(".archguard/master.key")
+            PathBuf::from(".cerberus/master.key")
         }
     }
 
@@ -119,10 +119,10 @@ mod tests {
         assert!(!def.as_os_str().is_empty());
 
         let custom_home = FileStorageAdapter::resolve_default_path(Some(PathBuf::from("/custom/home")));
-        assert_eq!(custom_home, PathBuf::from("/custom/home/.config/archguard/master.key"));
+        assert_eq!(custom_home, PathBuf::from("/custom/home/.config/cerberus/master.key"));
 
         let none_home = FileStorageAdapter::resolve_default_path(None);
-        assert_eq!(none_home, PathBuf::from(".archguard/master.key"));
+        assert_eq!(none_home, PathBuf::from(".cerberus/master.key"));
     }
 
     #[test]

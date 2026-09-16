@@ -1,4 +1,4 @@
-use arch_guard_domain::{compute_fingerprint, Category, Severity, Violation};
+use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
 use std::path::Path;
 use syn::{ItemUse, UsePath, UseTree};
 

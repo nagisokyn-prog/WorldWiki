@@ -1,12 +1,12 @@
-use cargo_arch_guard::application::{
+use cargo_cerberus::application::{
     ScanScope, ScanWorkspaceUseCase, SignSuppressionUseCase,
 };
-use cargo_arch_guard::domain::{compute_fingerprint, Suppression};
-use cargo_arch_guard::infrastructure::{
+use cargo_cerberus::domain::{compute_fingerprint, Suppression};
+use cargo_cerberus::infrastructure::{
     MockStorageAdapter, RulesJsonRepository, RustSynParserAdapter, VueSfcParserAdapter,
 };
-use cargo_arch_guard::ports::{AstParserPort, RulesRepositoryPort};
-use cargo_arch_guard::infrastructure::taint::TaintGraphAnalyzer;
+use cargo_cerberus::ports::{AstParserPort, RulesRepositoryPort};
+use cargo_cerberus::infrastructure::taint::TaintGraphAnalyzer;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -124,8 +124,8 @@ import { invoke } from '@tauri-apps/api/core';
 invoke('save_chapter');
 </script>
 "#;
-    let sfc = cargo_arch_guard::infrastructure::frontend::sfc_parser::VueSfcParser::parse(sfc_content);
-    let violations = cargo_arch_guard::infrastructure::frontend::vue_rules::VueRuleChecker::check(
+    let sfc = cargo_cerberus::infrastructure::frontend::sfc_parser::VueSfcParser::parse(sfc_content);
+    let violations = cargo_cerberus::infrastructure::frontend::vue_rules::VueRuleChecker::check(
         &sfc,
         std::path::Path::new("TestComponent.vue"),
     );
@@ -142,7 +142,7 @@ fn test_css_hardcoded_tokens_detected() {
     background: rgba(0, 0, 0, 0.5);
 }
 "#;
-    let violations = cargo_arch_guard::infrastructure::frontend::css_rules::CssRuleChecker::validate_css_file(
+    let violations = cargo_cerberus::infrastructure::frontend::css_rules::CssRuleChecker::validate_css_file(
         css_content,
         std::path::Path::new("test.css"),
     );
@@ -158,7 +158,7 @@ export function useFeature() {
 }
 "#;
     let violations =
-        cargo_arch_guard::infrastructure::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
+        cargo_cerberus::infrastructure::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
             ts_bad,
             std::path::Path::new("useFeature.ts"),
         );
@@ -174,7 +174,7 @@ export function useFeature() {
 }
 "#;
     let ok_violations =
-        cargo_arch_guard::infrastructure::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
+        cargo_cerberus::infrastructure::frontend::lifecycle_rules::LifecycleRuleChecker::check_typescript_file(
             ts_good,
             std::path::Path::new("useFeature.ts"),
         );
@@ -191,9 +191,9 @@ fn test_scan_workspace_use_case_orchestration() {
             Arc::new(RustSynParserAdapter),
             Arc::new(VueSfcParserAdapter),
         ];
-        let ast_engine = Arc::new(cargo_arch_guard::infrastructure::ParallelAstEngineAdapter::new(parsers));
+        let ast_engine = Arc::new(cargo_cerberus::infrastructure::ParallelAstEngineAdapter::new(parsers));
 
-        let scanner = Arc::new(cargo_arch_guard::infrastructure::WalkDirScannerAdapter::new());
+        let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new());
         let use_case = ScanWorkspaceUseCase::new(
             scanner,
             ast_engine,
@@ -210,9 +210,9 @@ fn test_scan_workspace_use_case_orchestration() {
 
 #[test]
 fn test_semantic_embedder_and_clustering() {
-    use cargo_arch_guard::application::ExplainClustersUseCase;
-    use cargo_arch_guard::domain::{Category, Severity, Violation};
-    use cargo_arch_guard::infrastructure::{DbscanClustererAdapter, SemanticEmbedderAdapter};
+    use cargo_cerberus::application::ExplainClustersUseCase;
+    use cargo_cerberus::domain::{Category, Severity, Violation};
+    use cargo_cerberus::infrastructure::{DbscanClustererAdapter, SemanticEmbedderAdapter};
 
     let embedder = Arc::new(SemanticEmbedderAdapter::default());
     let clusterer = Arc::new(DbscanClustererAdapter::new());
@@ -243,8 +243,8 @@ fn test_semantic_embedder_and_clustering() {
 
 #[test]
 fn test_manifest_layer_validation_self_check() {
-    use cargo_arch_guard::infrastructure::CargoMetadataManifestAdapter;
-    use cargo_arch_guard::ports::ManifestParserPort;
+    use cargo_cerberus::infrastructure::CargoMetadataManifestAdapter;
+    use cargo_cerberus::ports::ManifestParserPort;
 
     let adapter = CargoMetadataManifestAdapter::new();
     let workspace_root = manifest_dir().join("../..");
@@ -263,8 +263,8 @@ fn test_manifest_layer_validation_self_check() {
 
 #[test]
 fn test_manifest_layer_validation_detects_forbidden_dependency() {
-    use cargo_arch_guard::infrastructure::CargoMetadataManifestAdapter;
-    use cargo_arch_guard::ports::ManifestParserPort;
+    use cargo_cerberus::infrastructure::CargoMetadataManifestAdapter;
+    use cargo_cerberus::ports::ManifestParserPort;
     use tempfile::tempdir;
 
     let dir = tempdir().unwrap();
@@ -289,7 +289,7 @@ name = "domain-crate"
 version = "0.1.0"
 edition = "2021"
 
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "domain"
 
 [dependencies]

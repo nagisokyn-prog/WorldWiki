@@ -1,4 +1,4 @@
-use arch_guard_domain::Violation;
+use cerberus_domain::Violation;
 use std::path::Path;
 
 pub trait ReportPublisherPort: Send + Sync {

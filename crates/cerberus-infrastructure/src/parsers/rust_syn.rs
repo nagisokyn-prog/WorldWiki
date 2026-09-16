@@ -2,8 +2,8 @@ use crate::ast::async_rules::MutexGuardVisitor;
 use crate::ast::capabilities::CapabilitiesVisitor;
 use crate::ast::imports::ImportChecker;
 use crate::ast::macros::MacroVisitor;
-use arch_guard_domain::Violation;
-use arch_guard_ports::AstParserPort;
+use cerberus_domain::Violation;
+use cerberus_ports::AstParserPort;
 
 use std::fs;
 use std::path::Path;

@@ -1,5 +1,5 @@
-use arch_guard_domain::Violation;
-use arch_guard_ports::{AstEnginePort, AstParserPort, ScannedSourceFile};
+use cerberus_domain::Violation;
+use cerberus_ports::{AstEnginePort, AstParserPort, ScannedSourceFile};
 use rayon::prelude::*;
 use std::sync::Arc;
 
@@ -44,7 +44,7 @@ impl AstEnginePort for ParallelAstEngineAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arch_guard_domain::{Category, Severity};
+    use cerberus_domain::{Category, Severity};
     use std::path::{Path, PathBuf};
 
     struct TestParser;

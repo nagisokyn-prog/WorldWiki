@@ -1,5 +1,5 @@
-use arch_guard_domain::{ArchLayer, Category, Severity, Violation};
-use arch_guard_ports::ManifestParserPort;
+use cerberus_domain::{ArchLayer, Category, Severity, Violation};
+use cerberus_ports::ManifestParserPort;
 use cargo_metadata::MetadataCommand;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -45,7 +45,8 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                 let pkg_name_str = pkg.name.to_string();
                 let declared_layer = pkg
                     .metadata
-                    .get("arch-guard")
+                    .get("cerberus")
+                    .or_else(|| pkg.metadata.get("arch-guard"))
                     .and_then(|m| m.get("layer"))
                     .and_then(|l| l.as_str());
 
@@ -63,7 +64,7 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                             symbol: pkg_name_str.clone(),
                             snippet: format!("[package]\nname = \"{}\"", pkg_name_str),
                             message: format!(
-                                "Crate '{}' is missing architectural layer metadata [package.metadata.arch-guard].layer in Cargo.toml",
+                                "Crate '{}' is missing architectural layer metadata [package.metadata.cerberus].layer in Cargo.toml",
                                 pkg_name_str
                             ),
                             remediation: "Declare layer = \"domain|ports|application|infrastructure|adapter|cli\" in Cargo.toml".into(),
@@ -251,7 +252,7 @@ mod tests {
         let adapter = CargoMetadataManifestAdapter::new();
         let violations = adapter.check_manifest_layers(&cargo_toml).unwrap();
         let arch021 = violations.iter().find(|v| v.rule_id == "ARCH-021");
-        assert!(arch021.is_some(), "Should warn about missing [package.metadata.arch-guard]");
+        assert!(arch021.is_some(), "Should warn about missing [package.metadata.cerberus]");
     }
 
     #[test]
@@ -274,7 +275,7 @@ mod tests {
             version = "0.1.0"
             edition = "2021"
 
-            [package.metadata.arch-guard]
+            [package.metadata.cerberus]
             layer = "infrastructure"
 
             [dependencies]
@@ -292,7 +293,7 @@ mod tests {
             version = "0.1.0"
             edition = "2021"
 
-            [package.metadata.arch-guard]
+            [package.metadata.cerberus]
             layer = "domain"
 
             [dependencies]
@@ -315,7 +316,7 @@ mod tests {
             version = "0.1.0"
             edition = "2021"
 
-            [package.metadata.arch-guard]
+            [package.metadata.cerberus]
             layer = "application"
 
             [dependencies]
@@ -334,7 +335,7 @@ mod tests {
             version = "0.1.0"
             edition = "2021"
 
-            [package.metadata.arch-guard]
+            [package.metadata.cerberus]
             layer = "ports"
 
             [dependencies]

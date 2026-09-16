@@ -4,20 +4,20 @@ use std::path::{Path, PathBuf};
 use std::process::exit;
 use std::sync::Arc;
 
-use cargo_arch_guard::application::{
+use cargo_cerberus::application::{
     ReconcileBaselineUseCase, ScanScope, ScanWorkspaceUseCase,
 };
-use cargo_arch_guard::domain::Severity;
-use cargo_arch_guard::infrastructure::{
+use cargo_cerberus::domain::Severity;
+use cargo_cerberus::infrastructure::{
     CargoMetadataManifestAdapter, ConsoleReportAdapter, FileBaselineStorageAdapter,
     JsonReportAdapter, ParallelAstEngineAdapter, RulesJsonRepository, RustSynParserAdapter,
     SarifReportAdapter, VueSfcParserAdapter,
 };
-use cargo_arch_guard::ports::AstParserPort;
+use cargo_cerberus::ports::AstParserPort;
 
 #[derive(Parser, Debug)]
-#[command(name = "cargo-arch-guard")]
-#[command(bin_name = "cargo-arch-guard")]
+#[command(name = "cargo-cerberus")]
+#[command(bin_name = "cargo-cerberus")]
 #[command(
     about = "Architectural & Capability Firewall (Hexagonal Core: Ports & Adapters)",
     version = "0.1.0"
@@ -58,7 +58,7 @@ pub enum Commands {
         #[arg(long, help = "Scan strictly backend files (Rust)")]
         backend_only: bool,
     },
-    /// Initialize arch-guard configuration, hooks and baseline
+    /// Initialize cerberus configuration, hooks and baseline
     Init {
         #[arg(long, help = "Install git hooks")]
         hooks: bool,
@@ -101,9 +101,9 @@ pub enum ModelCommands {
 
 #[derive(Subcommand, Debug)]
 pub enum BaselineCommands {
-    /// Deduplicate and fix merged guardian-baseline.json
+    /// Deduplicate and fix merged cerberus-baseline.json
     Reconcile {
-        #[arg(short, long, default_value = "guardian-baseline.json")]
+        #[arg(short, long, default_value = "cerberus-baseline.json")]
         file: PathBuf,
     },
 }
@@ -125,14 +125,14 @@ pub enum LedgerCommands {
     },
     /// Validate all suppressions in ledger lock file
     Verify {
-        #[arg(short, long, default_value = "guardian-ledger.lock")]
+        #[arg(short, long, default_value = "cerberus-ledger.lock")]
         file: PathBuf,
     },
     /// Batch re-sign all suppressions in ledger lock file upon key rotation
     ReSign {
         #[arg(long, help = "Re-sign all entries in ledger lock file")]
         all: bool,
-        #[arg(short, long, default_value = "guardian-ledger.lock", help = "Path to ledger lock file")]
+        #[arg(short, long, default_value = "cerberus-ledger.lock", help = "Path to ledger lock file")]
         file: PathBuf,
         #[arg(long, help = "Path to old key (required unless --force)")]
         old_key_path: Option<PathBuf>,
@@ -144,7 +144,7 @@ pub enum LedgerCommands {
 }
 
 fn main() {
-    if std::env::var("ARCH_GUARD_TEST_MAIN").is_ok() {
+    if std::env::var("CERBERUS_TEST_MAIN").is_ok() {
         return;
     }
     let cli = Cli::parse();
@@ -218,27 +218,27 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
         }),
 
         Commands::Init { hooks, models } => {
-            println!("{}", "🚀 Initializing Arch Guard...".cyan().bold());
-            let baseline_path = Path::new("guardian-baseline.json");
-            if !baseline_path.exists() {
+            println!("{}", "🚀 Initializing Cerberus...".cyan().bold());
+            let baseline_path = Path::new("cerberus-baseline.json");
+            if !baseline_path.exists() && !Path::new("guardian-baseline.json").exists() {
                 let _ = std::fs::write(baseline_path, "[]\n");
-                println!("{} Created empty guardian-baseline.json", "✅".green());
+                println!("{} Created empty cerberus-baseline.json", "✅".green());
             }
             if hooks {
-                match cargo_arch_guard::infrastructure::GitHooksInstaller::install(Path::new(".")) {
+                match cargo_cerberus::infrastructure::GitHooksInstaller::install(Path::new(".")) {
                     Ok(_) => println!("{} Git pre-commit & post-merge hooks installed.", "✅".green()),
                     Err(e) => eprintln!("{} {}", "⚠️ Failed to install git hooks:".yellow(), e),
                 }
             }
             if models {
                 println!("{}", "⬇️ Downloading CodeBERTa neural model for vector intelligence...".cyan());
-                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
-                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
-                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                let downloader = Arc::new(cargo_cerberus::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_cerberus::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_cerberus::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
                 match use_case.download(
                     &cache_dir,
-                    cargo_arch_guard::infrastructure::ModelRegistry::CODEBERTA_ONNX_URL,
-                    cargo_arch_guard::infrastructure::ModelRegistry::TOKENIZER_JSON_URL,
+                    cargo_cerberus::infrastructure::ModelRegistry::CODEBERTA_ONNX_URL,
+                    cargo_cerberus::infrastructure::ModelRegistry::TOKENIZER_JSON_URL,
                 ) {
                     Ok(_) => println!("{} Neural model successfully installed to {}", "✅".green(), cache_dir.display()),
                     Err(e) => eprintln!("{} {}", "⚠️ Failed to download neural model:".yellow(), e),
@@ -250,13 +250,13 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
         Commands::Model { action } => match action {
             ModelCommands::Download => {
                 println!("{}", "⬇️ Downloading CodeBERTa ONNX model & tokenizer...".cyan().bold());
-                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
-                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
-                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                let downloader = Arc::new(cargo_cerberus::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_cerberus::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_cerberus::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
                 match use_case.download(
                     &cache_dir,
-                    cargo_arch_guard::infrastructure::ModelRegistry::CODEBERTA_ONNX_URL,
-                    cargo_arch_guard::infrastructure::ModelRegistry::TOKENIZER_JSON_URL,
+                    cargo_cerberus::infrastructure::ModelRegistry::CODEBERTA_ONNX_URL,
+                    cargo_cerberus::infrastructure::ModelRegistry::TOKENIZER_JSON_URL,
                 ) {
                     Ok(_) => {
                         println!("{} Model and tokenizer successfully cached to {}", "✅".green().bold(), cache_dir.display());
@@ -266,24 +266,24 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                 }
             }
             ModelCommands::Status => {
-                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
-                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
-                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                let downloader = Arc::new(cargo_cerberus::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_cerberus::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_cerberus::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
                 let status = use_case.status(&cache_dir);
 
-                println!("{}", "🧠 ARCH GUARD NEURAL MODEL STATUS".bold());
+                println!("{}", "🧠 CERBERUS NEURAL MODEL STATUS".bold());
                 println!("Cache Directory: {}", cache_dir.display());
                 println!("Model File (ONNX): {} ({})", if status.model_exists { "✅ Found".green() } else { "❌ Missing".yellow() }, status.model_path.display());
                 println!("Tokenizer File:    {} ({})", if status.tokenizer_exists { "✅ Found".green() } else { "❌ Missing".yellow() }, status.tokenizer_path.display());
                 if !status.model_exists || !status.tokenizer_exists {
-                    println!("\n💡 Tip: Run 'cargo arch-guard model download' to install neural weights.");
+                    println!("\n💡 Tip: Run 'cargo cerberus model download' to install neural weights.");
                 }
                 Ok(())
             }
             ModelCommands::Clean => {
-                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
-                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
-                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                let downloader = Arc::new(cargo_cerberus::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_cerberus::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_cerberus::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
                 match use_case.clean(&cache_dir) {
                     Ok(count) => {
                         println!("{} Removed {} cached model file(s) from {}", "✅".green().bold(), count, cache_dir.display());
@@ -301,18 +301,18 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                 Arc::new(VueSfcParserAdapter),
             ];
             let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
-            let scanner = Arc::new(cargo_arch_guard::infrastructure::WalkDirScannerAdapter::new());
+            let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new());
             let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, rules_repo, ScanScope::All);
             let scan_result = use_case.execute(&path);
 
-            let embedder_adapter = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default();
+            let embedder_adapter = cargo_cerberus::infrastructure::TractOnnxEmbedderAdapter::default();
             if !embedder_adapter.is_model_available() {
                 println!("{} Neural model not detected. Using fast Subword N-Gram / TF-IDF fallback.", "ℹ️".cyan());
-                println!("💡 Tip: Run 'cargo arch-guard model download' for deep 768-dim semantic code understanding.");
+                println!("💡 Tip: Run 'cargo cerberus model download' for deep 768-dim semantic code understanding.");
             }
             let embedder = Arc::new(embedder_adapter);
-            let clusterer = Arc::new(cargo_arch_guard::infrastructure::DbscanClustererAdapter::new());
-            let explain_use_case = cargo_arch_guard::application::ExplainClustersUseCase::new(embedder, clusterer);
+            let clusterer = Arc::new(cargo_cerberus::infrastructure::DbscanClustererAdapter::new());
+            let explain_use_case = cargo_cerberus::application::ExplainClustersUseCase::new(embedder, clusterer);
 
             match explain_use_case.execute(&scan_result.violations) {
                 Ok(report) => {
@@ -343,11 +343,11 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                 author,
                 duration: _,
             } => {
-                let storage = cargo_arch_guard::infrastructure::FileStorageAdapter::new(
-                    cargo_arch_guard::infrastructure::FileStorageAdapter::default_path(),
+                let storage = cargo_cerberus::infrastructure::FileStorageAdapter::new(
+                    cargo_cerberus::infrastructure::FileStorageAdapter::default_path(),
                 );
                 let expires = chrono::Utc::now() + chrono::Duration::days(30);
-                match cargo_arch_guard::application::SignSuppressionUseCase::sign(
+                match cargo_cerberus::application::SignSuppressionUseCase::sign(
                     &storage,
                     &rule,
                     &fingerprint,
@@ -364,7 +364,12 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                 }
             }
             LedgerCommands::Verify { file } => {
-                println!("{} Verifying ledger lock file: {}", "🔍".cyan(), file.display());
+                let resolved_file = if file == Path::new("cerberus-ledger.lock") && !file.exists() && Path::new("guardian-ledger.lock").exists() {
+                    PathBuf::from("guardian-ledger.lock")
+                } else {
+                    file
+                };
+                println!("{} Verifying ledger lock file: {}", "🔍".cyan(), resolved_file.display());
                 println!("{} All ledger signatures valid.", "✅".green().bold());
                 Ok(())
             }
@@ -375,24 +380,30 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                 new_key_path,
                 force,
             } => {
-                let default_new_path = cargo_arch_guard::infrastructure::FileStorageAdapter::default_path();
+                let default_new_path = cargo_cerberus::infrastructure::FileStorageAdapter::default_path();
                 let new_path = match new_key_path {
                     Some(p) => p,
                     None => default_new_path,
                 };
                 let new_storage =
-                    cargo_arch_guard::infrastructure::FileStorageAdapter::new(new_path);
+                    cargo_cerberus::infrastructure::FileStorageAdapter::new(new_path);
                 let old_storage =
-                    old_key_path.map(cargo_arch_guard::infrastructure::FileStorageAdapter::new);
+                    old_key_path.map(cargo_cerberus::infrastructure::FileStorageAdapter::new);
 
-                let old_ref: Option<&dyn cargo_arch_guard::ports::KeyStoragePort> = match &old_storage {
-                    Some(s) => Some(s as &dyn cargo_arch_guard::ports::KeyStoragePort),
+                let old_ref: Option<&dyn cargo_cerberus::ports::KeyStoragePort> = match &old_storage {
+                    Some(s) => Some(s as &dyn cargo_cerberus::ports::KeyStoragePort),
                     None => None,
                 };
 
-                match cargo_arch_guard::application::ReSignAllUseCase::execute(
-                    cargo_arch_guard::application::ReSignOptions {
-                        lock_file: &file,
+                let resolved_file = if file == Path::new("cerberus-ledger.lock") && !file.exists() && Path::new("guardian-ledger.lock").exists() {
+                    PathBuf::from("guardian-ledger.lock")
+                } else {
+                    file
+                };
+
+                match cargo_cerberus::application::ReSignAllUseCase::execute(
+                    cargo_cerberus::application::ReSignOptions {
+                        lock_file: &resolved_file,
                         old_storage: old_ref,
                         new_storage: &new_storage,
                         force,
@@ -403,7 +414,7 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
                             "{} Successfully re-signed {} suppression(s) in {}",
                             "✅".green().bold(),
                             count,
-                            file.display()
+                            resolved_file.display()
                         );
                         Ok(())
                     }
@@ -414,14 +425,19 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
 
         Commands::Baseline { action } => match action {
             BaselineCommands::Reconcile { file } => {
+                let resolved_file = if file == Path::new("cerberus-baseline.json") && !file.exists() && Path::new("guardian-baseline.json").exists() {
+                    PathBuf::from("guardian-baseline.json")
+                } else {
+                    file
+                };
                 let storage = Arc::new(FileBaselineStorageAdapter::new());
                 let use_case = ReconcileBaselineUseCase::new(storage);
-                match use_case.execute(&file) {
+                match use_case.execute(&resolved_file) {
                     Ok(count) => {
                         println!(
                             "{} Reconciled baseline file {} ({} entries)",
                             "✅".green().bold(),
-                            file.display(),
+                            resolved_file.display(),
                             count
                         );
                         Ok(())
@@ -459,7 +475,7 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     ];
 
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
-    let scanner = Arc::new(cargo_arch_guard::infrastructure::WalkDirScannerAdapter::new());
+    let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new());
     let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
     let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, options.rules_repo, scope)
         .with_manifest_parser(manifest_parser);
@@ -467,7 +483,7 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
 
     // Deep macro expansion audit (Tier 2)
     if options.expanded {
-        match cargo_arch_guard::infrastructure::MacroVisitor::run_cargo_expand(options.path) {
+        match cargo_cerberus::infrastructure::MacroVisitor::run_cargo_expand(options.path) {
             Ok(expanded_code) => {
                 let syn_parser = RustSynParserAdapter;
                 if let Ok(expanded_violations) =
@@ -549,9 +565,9 @@ mod tests {
 
     #[test]
     fn test_main_function_entrypoint() {
-        std::env::set_var("ARCH_GUARD_TEST_MAIN", "1");
+        std::env::set_var("CERBERUS_TEST_MAIN", "1");
         main();
-        std::env::remove_var("ARCH_GUARD_TEST_MAIN");
+        std::env::remove_var("CERBERUS_TEST_MAIN");
     }
 
     #[test]

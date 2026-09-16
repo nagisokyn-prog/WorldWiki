@@ -16,9 +16,9 @@ impl GitHooksInstaller {
 
         // 1. Pre-commit hook
         let pre_commit_script = r#"#!/bin/sh
-# Arch Guard Pre-commit hook
-echo "🛡️  [Arch Guard] Checking architectural invariants..."
-cargo run --manifest-path crates/cargo-arch-guard/Cargo.toml -- check || {
+# Cerberus Pre-commit hook
+echo "🛡️  [Cerberus] Checking architectural invariants..."
+cargo run --manifest-path crates/cargo-cerberus/Cargo.toml -- check || {
     echo "❌ Architectural firewall violations found. Commit blocked."
     exit 1
 }
@@ -29,9 +29,9 @@ cargo run --manifest-path crates/cargo-arch-guard/Cargo.toml -- check || {
 
         // 2. Post-merge hook
         let post_merge_script = r#"#!/bin/sh
-# Arch Guard Post-merge hook: reconcile baseline merge conflicts
-echo "🛡️  [Arch Guard] Reconciling guardian-baseline.json..."
-cargo run --manifest-path crates/cargo-arch-guard/Cargo.toml -- baseline reconcile || true
+# Cerberus Post-merge hook: reconcile baseline merge conflicts
+echo "🛡️  [Cerberus] Reconciling cerberus-baseline.json..."
+cargo run --manifest-path crates/cargo-cerberus/Cargo.toml -- baseline reconcile || true
 "#;
         let post_merge_path = hooks_dir.join("post-merge");
         fs::write(&post_merge_path, post_merge_script)
@@ -45,8 +45,8 @@ cargo run --manifest-path crates/cargo-arch-guard/Cargo.toml -- baseline reconci
             String::new()
         };
 
-        if !gitattributes_content.contains("guardian-baseline.json") {
-            gitattributes_content.push_str("\nguardian-baseline.json merge=union\n");
+        if !gitattributes_content.contains("cerberus-baseline.json") {
+            gitattributes_content.push_str("\ncerberus-baseline.json merge=union\nguardian-baseline.json merge=union\n");
             let _ = fs::write(&gitattributes_path, gitattributes_content);
         }
 

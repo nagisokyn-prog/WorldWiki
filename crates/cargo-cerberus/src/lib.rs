@@ -1,8 +1,8 @@
 // 🦀 Hexagonal Core: Ports & Adapters Architecture
-pub use arch_guard_domain as domain;
-pub use arch_guard_ports as ports;
-pub use arch_guard_application as application;
-pub use arch_guard_infrastructure as infrastructure;
+pub use cerberus_domain as domain;
+pub use cerberus_ports as ports;
+pub use cerberus_application as application;
+pub use cerberus_infrastructure as infrastructure;
 
 // Re-exports for convenience and backwards-compatibility
 pub use application::{
@@ -30,7 +30,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_cargo_arch_guard_re_exports() {
+    fn test_cargo_cerberus_re_exports() {
         let v = Violation {
             rule_id: "ARCH-001".into(),
             rule_version: "1.0".into(),

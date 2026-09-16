@@ -1,13 +1,13 @@
 [package]
-name = "arch-guard-ports"
+name = "cerberus-ports"
 version = "0.1.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Pure Traits/Ports for Architectural Firewall (ARCH-003 compliant: zero infrastructure dependencies)"
 
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "ports"
 
 [dependencies]
-arch-guard-domain = { path = "../arch-guard-domain" }
+cerberus-domain = { path = "../cerberus-domain" }
 

@@ -1,4 +1,4 @@
-use arch_guard_domain::{RuleDefinition, RulesConfig};
+use cerberus_domain::{RuleDefinition, RulesConfig};
 use std::path::Path;
 
 pub trait KeyStoragePort: Send + Sync {

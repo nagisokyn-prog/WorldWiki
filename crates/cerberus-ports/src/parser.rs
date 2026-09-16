@@ -1,5 +1,5 @@
 use crate::scanner::ScannedSourceFile;
-use arch_guard_domain::Violation;
+use cerberus_domain::Violation;
 use std::path::Path;
 
 pub trait AstParserPort: Send + Sync {

@@ -93,59 +93,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "arch-guard-application"
-version = "0.1.0"
-dependencies = [
- "arch-guard-domain",
- "arch-guard-ports",
- "chrono",
- "hmac",
- "serde",
- "serde_json",
- "sha2",
- "tempfile",
-]
-
-[[package]]
-name = "arch-guard-domain"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "serde",
- "serde_json",
- "sha2",
-]
-
-[[package]]
-name = "arch-guard-infrastructure"
-version = "0.1.0"
-dependencies = [
- "arch-guard-domain",
- "arch-guard-ports",
- "cargo_metadata",
- "colored",
- "fs2",
- "keyring",
- "petgraph",
- "proc-macro2",
- "quote",
- "rayon",
- "regex",
- "serde",
- "serde_json",
- "syn 3.0.5",
- "tempfile",
- "walkdir",
-]
-
-[[package]]
-name = "arch-guard-ports"
-version = "0.1.0"
-dependencies = [
- "arch-guard-domain",
-]
-
-[[package]]
 name = "async-broadcast"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -347,14 +294,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "cargo-arch-guard"
+name = "cargo-cerberus"
 version = "0.1.0"
 dependencies = [
- "arch-guard-application",
- "arch-guard-domain",
- "arch-guard-infrastructure",
- "arch-guard-ports",
  "cargo_metadata",
+ "cerberus-application",
+ "cerberus-domain",
+ "cerberus-infrastructure",
+ "cerberus-ports",
  "chrono",
  "clap",
  "colored",
@@ -415,6 +362,59 @@ checksum = "a3eb0f42d6c360dc3f8a821f6bf2fdea7f72bfd36b3076eb0e6d1e9e0752fff4"
 dependencies = [
  "find-msvc-tools",
  "shlex",
+]
+
+[[package]]
+name = "cerberus-application"
+version = "0.1.0"
+dependencies = [
+ "cerberus-domain",
+ "cerberus-ports",
+ "chrono",
+ "hmac",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+]
+
+[[package]]
+name = "cerberus-domain"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
+name = "cerberus-infrastructure"
+version = "0.1.0"
+dependencies = [
+ "cargo_metadata",
+ "cerberus-domain",
+ "cerberus-ports",
+ "colored",
+ "fs2",
+ "keyring",
+ "petgraph",
+ "proc-macro2",
+ "quote",
+ "rayon",
+ "regex",
+ "serde",
+ "serde_json",
+ "syn 3.0.5",
+ "tempfile",
+ "walkdir",
+]
+
+[[package]]
+name = "cerberus-ports"
+version = "0.1.0"
+dependencies = [
+ "cerberus-domain",
 ]
 
 [[package]]

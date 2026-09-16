@@ -1,4 +1,4 @@
-use arch_guard_domain::{compute_fingerprint, Category, Severity, Violation};
+use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
 
 use crate::taint::sanitizers::TaintSanitizerChecker;
 use crate::taint::sinks::TaintSinkDetector;
@@ -115,7 +115,7 @@ impl<'a, 'ast> Visit<'ast> for FunctionSinkVisitor<'a> {
                 symbol,
                 snippet,
                 message: format!("Tainted input reached {}: unsanitized data reaches execution sink", sink_desc),
-                remediation: "Sanitize path via validate_safe_path() or annotate function with #[arch_guard(sanitizes)].".into(),
+                remediation: "Sanitize path via validate_safe_path() or annotate function with #[cerberus(sanitizes)].".into(),
                 fingerprint,
             });
             return;
@@ -174,7 +174,7 @@ mod tests {
                 inner_exec(clean);
             }
 
-            #[arch_guard(sanitizes)]
+            #[cerberus(sanitizes)]
             fn sanitize_filename(p: String) -> String { p }
 
             fn inner_exec(cmd: String) {

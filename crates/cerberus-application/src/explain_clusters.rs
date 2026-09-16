@@ -1,5 +1,5 @@
-use arch_guard_domain::{ClusterAnalysisReport, Violation, ViolationCluster};
-use arch_guard_ports::{ClustererPort, VectorEmbedderPort};
+use cerberus_domain::{ClusterAnalysisReport, Violation, ViolationCluster};
+use cerberus_ports::{ClustererPort, VectorEmbedderPort};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -137,7 +137,7 @@ impl ExplainClustersUseCase {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arch_guard_domain::{Category, Severity};
+    use cerberus_domain::{Category, Severity};
     use std::path::PathBuf;
 
     struct DummyEmbedder;

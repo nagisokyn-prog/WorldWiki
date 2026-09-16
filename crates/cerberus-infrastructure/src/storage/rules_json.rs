@@ -1,5 +1,5 @@
-use arch_guard_domain::{RuleDefinition, RulesConfig};
-use arch_guard_ports::RulesRepositoryPort;
+use cerberus_domain::{RuleDefinition, RulesConfig};
+use cerberus_ports::RulesRepositoryPort;
 
 use std::collections::HashMap;
 use std::fs;

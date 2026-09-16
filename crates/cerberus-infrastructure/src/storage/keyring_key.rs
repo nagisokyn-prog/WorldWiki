@@ -1,4 +1,4 @@
-use arch_guard_ports::KeyStoragePort;
+use cerberus_ports::KeyStoragePort;
 
 pub struct KeyringStorageAdapter {
     pub service: String,
@@ -8,7 +8,7 @@ pub struct KeyringStorageAdapter {
 impl KeyringStorageAdapter {
     pub fn new() -> Self {
         Self {
-            service: "cargo-arch-guard".into(),
+            service: "cargo-cerberus".into(),
             user: "master-key".into(),
         }
     }
@@ -77,7 +77,7 @@ mod tests {
     #[test]
     fn test_keyring_storage_adapter_creation_and_hex_utils() {
         let adapter = KeyringStorageAdapter::default();
-        assert_eq!(adapter.service, "cargo-arch-guard");
+        assert_eq!(adapter.service, "cargo-cerberus");
         assert_eq!(adapter.user, "master-key");
 
         let bytes = vec![0x12, 0xAB, 0xCD, 0xEF];

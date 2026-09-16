@@ -1,26 +1,26 @@
 [package]
-name = "cargo-arch-guard"
+name = "cargo-cerberus"
 version = "0.1.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Architectural & Capability Firewall for Rust and Hexagonal Architecture"
 
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "cli"
 
 [[bin]]
-name = "cargo-arch-guard"
+name = "cargo-cerberus"
 path = "src/main.rs"
 
 [lib]
-name = "cargo_arch_guard"
+name = "cargo_cerberus"
 path = "src/lib.rs"
 
 [dependencies]
-arch-guard-domain = { path = "../arch-guard-domain" }
-arch-guard-ports = { path = "../arch-guard-ports" }
-arch-guard-application = { path = "../arch-guard-application" }
-arch-guard-infrastructure = { path = "../arch-guard-infrastructure" }
+cerberus-domain = { path = "../cerberus-domain" }
+cerberus-ports = { path = "../cerberus-ports" }
+cerberus-application = { path = "../cerberus-application" }
+cerberus-infrastructure = { path = "../cerberus-infrastructure" }
 
 # 1. CLI & Метаданные воркспейса
 

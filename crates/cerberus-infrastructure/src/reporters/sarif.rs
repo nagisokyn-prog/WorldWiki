@@ -1,5 +1,5 @@
-use arch_guard_domain::Violation;
-use arch_guard_ports::ReportPublisherPort;
+use cerberus_domain::Violation;
+use cerberus_ports::ReportPublisherPort;
 
 use serde::Serialize;
 use std::fs;
@@ -101,7 +101,7 @@ impl SarifReportAdapter {
             runs: vec![SarifRun {
                 tool: SarifTool {
                     driver: SarifDriver {
-                        name: "cargo-arch-guard",
+                        name: "cargo-cerberus",
                         version: "0.1.0",
                     },
                 },
@@ -136,7 +136,7 @@ impl ReportPublisherPort for SarifReportAdapter {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arch_guard_domain::{Category, Severity};
+    use cerberus_domain::{Category, Severity};
     use std::path::PathBuf;
     use tempfile::tempdir;
 

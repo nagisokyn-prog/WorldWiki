@@ -58,8 +58,12 @@ impl ScanWorkspaceUseCase {
             }
         }
 
-        violations.retain(|v| {
+        violations.retain_mut(|v| {
             if let Some(def) = self.rules_repo.get_rule(&v.rule_id) {
+                if def.severity == cerberus_domain::Severity::Off {
+                    return false;
+                }
+                v.severity = def.severity;
                 v.rule_version == def.version
             } else {
                 true

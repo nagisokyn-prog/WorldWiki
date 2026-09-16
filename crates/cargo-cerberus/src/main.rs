@@ -13,7 +13,7 @@ use cargo_cerberus::infrastructure::{
     JsonReportAdapter, ParallelAstEngineAdapter, RulesJsonRepository, RustSynParserAdapter,
     SarifReportAdapter, VueSfcParserAdapter,
 };
-use cargo_cerberus::ports::AstParserPort;
+use cargo_cerberus::ports::{AstParserPort, FileSystemScannerPort};
 
 #[derive(Parser, Debug)]
 #[command(name = "cargo-cerberus")]
@@ -143,11 +143,19 @@ pub enum LedgerCommands {
     },
 }
 
+fn parse_cli() -> Cli {
+    let mut args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 && args[1] == "cerberus" {
+        args.remove(1);
+    }
+    Cli::parse_from(args)
+}
+
 fn main() {
     if std::env::var("CERBERUS_TEST_MAIN").is_ok() {
         return;
     }
-    let cli = Cli::parse();
+    let cli = parse_cli();
     if let Err(e) = run_app(cli) {
         eprintln!("{}", e);
         exit(1);
@@ -164,10 +172,8 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
     };
 
     if cli.validate_rules {
-        let known_rules = [
-            "ARCH-001", "ARCH-002", "ARCH-005", "ASYNC-001", "SEC-001", "VUE-001", "VUE-002",
-            "CSS-001", "CSS-004", "LEAK-001",
-        ];
+        let all_builtin = cargo_cerberus::domain::BuiltinRuleRegistry::all_rules();
+        let known_rules: Vec<&str> = all_builtin.iter().map(|r| r.id.as_str()).collect();
         match rules_repo.validate_registered_rules(&known_rules) {
             Ok(_) => {
                 println!(
@@ -477,8 +483,8 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
     let scanner = Arc::new(cargo_cerberus::infrastructure::WalkDirScannerAdapter::new().with_ignores(options.rules_repo.config.ignore.clone()));
     let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
-    let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, options.rules_repo, scope)
-        .with_manifest_parser(manifest_parser);
+    let use_case = ScanWorkspaceUseCase::new(scanner.clone(), ast_engine, options.rules_repo, scope)
+        .with_manifest_parser(manifest_parser.clone());
     let mut scan_result = use_case.execute(options.path);
 
     // Deep macro expansion audit (Tier 2)
@@ -513,6 +519,64 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
         }
     }
 
+    // Compute Martin Metrics (I, A, D) & Topology
+    let mut martin_metrics = Vec::new();
+    if scope == ScanScope::All || scope == ScanScope::BackendOnly {
+        if let Ok((metrics, topology_violations)) = manifest_parser.compute_workspace_martin_metrics(options.path) {
+            martin_metrics = metrics;
+            for tv in topology_violations {
+                let mut exists = false;
+                for existing in &scan_result.violations {
+                    if existing.fingerprint == tv.fingerprint {
+                        exists = true;
+                        break;
+                    }
+                }
+                if !exists {
+                    scan_result.violations.push(tv);
+                }
+            }
+        }
+    }
+
+    // Blast Radius & God Object Fan-In Analysis (ARCH-040)
+    let scanned_source_files = scanner.scan_files(options.path, scope);
+    let all_paths: Vec<PathBuf> = scanned_source_files.iter().map(|f| f.path.clone()).collect();
+    let mut file_imports_map: std::collections::HashMap<PathBuf, std::collections::HashSet<String>> = std::collections::HashMap::new();
+    for sf in &scanned_source_files {
+        if sf.path.extension().is_some_and(|e| e == "rs") {
+            if let Ok(code) = std::fs::read_to_string(&sf.path) {
+                if let Ok(parsed) = syn::parse_file(&code) {
+                    let mut imports = std::collections::HashSet::new();
+                    for item in &parsed.items {
+                        if let syn::Item::Use(item_use) = item {
+                            let use_str = quote::quote!(#item_use).to_string();
+                            for segment in use_str.split_whitespace() {
+                                if !segment.is_empty() && segment != "use" && segment != "pub" && segment != "crate" && segment != "::" && segment != ";" {
+                                    imports.insert(segment.trim_matches(';').to_string());
+                                }
+                            }
+                        }
+                    }
+                    file_imports_map.insert(sf.path.clone(), imports);
+                }
+            }
+        }
+    }
+    let blast_violations = cargo_cerberus::infrastructure::BlastRadiusAnalyzer::analyze_blast_radius(&all_paths, &file_imports_map);
+    for bv in blast_violations {
+        let mut exists = false;
+        for existing in &scan_result.violations {
+            if existing.fingerprint == bv.fingerprint {
+                exists = true;
+                break;
+            }
+        }
+        if !exists {
+            scan_result.violations.push(bv);
+        }
+    }
+
     // Print parse errors
     for parse_err in &scan_result.parse_errors {
         eprintln!("{} {}", "⚠️".yellow(), parse_err);
@@ -535,6 +599,7 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
 
     // Console output
     ConsoleReportAdapter::print_violations(&scan_result.violations);
+    ConsoleReportAdapter::print_martin_metrics(&martin_metrics);
 
     // Export reports if requested
     if let Some(sp) = options.sarif_path {
@@ -577,21 +642,14 @@ mod tests {
         std::fs::create_dir_all(&src_dir).unwrap();
         std::fs::write(src_dir.join("lib.rs"), "pub fn ok() {}").unwrap();
 
-        let valid_rules_json = r#"{
-            "version": "1.0",
-            "rules": [
-                {"id": "ARCH-001", "version": "1.0", "category": "Architecture", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "ARCH-002", "version": "1.0", "category": "Architecture", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "ARCH-005", "version": "1.0", "category": "Architecture", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "ASYNC-001", "version": "1.0", "category": "Robustness", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "SEC-001", "version": "1.0", "category": "Security", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "VUE-001", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "VUE-002", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "CSS-001", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "CSS-004", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
-                {"id": "LEAK-001", "version": "1.0", "category": "Robustness", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"}
-            ]
-        }"#;
+        let all_rules = cargo_cerberus::domain::BuiltinRuleRegistry::all_rules();
+        let valid_rules_config = cargo_cerberus::domain::RulesConfig {
+            schema: None,
+            version: "1.0".to_string(),
+            ignore: Vec::new(),
+            rules: all_rules,
+        };
+        let valid_rules_json = serde_json::to_string(&valid_rules_config).unwrap();
         let valid_rules_file = temp.path().join("valid_rules.json");
         std::fs::write(&valid_rules_file, valid_rules_json).unwrap();
 

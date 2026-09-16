@@ -1,12 +1,19 @@
 use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
 use std::path::Path;
 use syn::visit::{self, Visit};
-use syn::{Block, ExprAwait, Local, Pat};
+use syn::{Block, ExprAwait, ExprCall, ItemFn, Local, Pat};
 
 pub struct MutexGuardVisitor<'a> {
     pub current_file: &'a Path,
     pub scope_stack: Vec<Vec<syn::Ident>>,
+    pub in_async_fn: bool,
     pub violations: Vec<Violation>,
+}
+
+impl<'a> Default for MutexGuardVisitor<'a> {
+    fn default() -> Self {
+        Self::new(Path::new(""))
+    }
 }
 
 impl<'a> MutexGuardVisitor<'a> {
@@ -14,12 +21,20 @@ impl<'a> MutexGuardVisitor<'a> {
         Self {
             current_file,
             scope_stack: Vec::new(),
+            in_async_fn: false,
             violations: Vec::new(),
         }
     }
 }
 
 impl<'a, 'ast> Visit<'ast> for MutexGuardVisitor<'a> {
+    fn visit_item_fn(&mut self, node: &'ast ItemFn) {
+        let prev_async = self.in_async_fn;
+        self.in_async_fn = node.sig.asyncness.is_some();
+        visit::visit_item_fn(self, node);
+        self.in_async_fn = prev_async;
+    }
+
     fn visit_block(&mut self, node: &'ast Block) {
         self.scope_stack.push(Vec::new());
         visit::visit_block(self, node);
@@ -35,6 +50,34 @@ impl<'a, 'ast> Visit<'ast> for MutexGuardVisitor<'a> {
             }
         }
         visit::visit_local(self, node);
+    }
+
+    fn visit_expr_call(&mut self, node: &'ast ExprCall) {
+        let call_str = quote::quote!(#node.func).to_string();
+        if self.in_async_fn
+            && (call_str.contains("thread :: sleep") || call_str.contains("std :: thread :: sleep"))
+        {
+            let snippet = quote::quote!(#node).to_string();
+            let fingerprint = compute_fingerprint("ASYNC-002", "1.0", "thread_sleep", &snippet);
+            self.violations.push(Violation {
+                rule_id: "ASYNC-002".into(),
+                rule_version: "1.0".into(),
+                category: Category::Robustness,
+                severity: Severity::Warn,
+                file: self.current_file.to_path_buf(),
+                line: 1,
+                column: 1,
+                symbol: "thread_sleep".into(),
+                snippet,
+                message:
+                    "Blocking std::thread::sleep inside async function freezes Tokio worker thread."
+                        .into(),
+                remediation: "Use tokio::time::sleep().await instead of synchronous thread sleep."
+                    .into(),
+                fingerprint,
+            });
+        }
+        visit::visit_expr_call(self, node);
     }
 
     fn visit_expr_await(&mut self, node: &'ast ExprAwait) {
@@ -111,5 +154,22 @@ mod tests {
         visitor_clean.visit_file(&file_clean);
         assert!(visitor_clean.violations.is_empty());
     }
-}
 
+    #[test]
+    fn test_blocking_thread_sleep_in_async_async002() {
+        let code = r#"
+            async fn sleep_handler() {
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
+        "#;
+        let file: syn::File = syn::parse_str(code).unwrap();
+        let mut visitor = MutexGuardVisitor::new(Path::new("src/sleep.rs"));
+        visitor.visit_file(&file);
+        assert_eq!(visitor.violations.len(), 1);
+        assert_eq!(visitor.violations[0].rule_id, "ASYNC-002");
+
+        // Test Default
+        let def = MutexGuardVisitor::default();
+        assert!(!def.in_async_fn);
+    }
+}

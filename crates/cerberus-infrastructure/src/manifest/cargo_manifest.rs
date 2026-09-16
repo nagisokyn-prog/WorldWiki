@@ -10,6 +10,75 @@ impl CargoMetadataManifestAdapter {
     pub fn new() -> Self {
         Self
     }
+
+    pub fn compute_workspace_martin_metrics(
+        &self,
+        workspace_root: &Path,
+    ) -> Result<(Vec<cerberus_domain::PackageMetrics>, Vec<Violation>), String> {
+        use crate::metrics::PackageTopologyAnalyzer;
+
+        let manifest_path = if workspace_root.is_file() && workspace_root.ends_with("Cargo.toml") {
+            workspace_root.to_path_buf()
+        } else {
+            workspace_root.join("Cargo.toml")
+        };
+
+        if !manifest_path.exists() {
+            return Ok((Vec::new(), Vec::new()));
+        }
+
+        let metadata = MetadataCommand::new()
+            .manifest_path(&manifest_path)
+            .exec()
+            .map_err(|e| format!("Failed to read cargo metadata: {}", e))?;
+
+        let mut package_names = Vec::new();
+        let mut dependencies_map: HashMap<String, Vec<String>> = HashMap::new();
+        let mut type_counts: HashMap<String, (usize, usize)> = HashMap::new();
+        let mut package_manifest_paths: HashMap<String, PathBuf> = HashMap::new();
+
+        for pkg in &metadata.packages {
+            if metadata.workspace_members.contains(&pkg.id) {
+                let name = pkg.name.to_string();
+                package_names.push(name.clone());
+                package_manifest_paths.insert(name.clone(), pkg.manifest_path.clone().into_std_path_buf());
+
+                let mut internal_deps = Vec::new();
+                for dep in &pkg.dependencies {
+                    if dep.kind == cargo_metadata::DependencyKind::Normal {
+                        internal_deps.push(dep.name.clone());
+                    }
+                }
+                dependencies_map.insert(name.clone(), internal_deps);
+
+                // Scan sources for traits and structs
+                let pkg_root = pkg.manifest_path.parent().map(|p| p.as_std_path()).unwrap_or(Path::new("."));
+                let src_dir = pkg_root.join("src");
+                let mut sources = Vec::new();
+                if src_dir.exists() {
+                    for entry in walkdir::WalkDir::new(&src_dir).into_iter().flatten() {
+                        if entry.path().extension().is_some_and(|e| e == "rs") {
+                            if let Ok(content) = std::fs::read_to_string(entry.path()) {
+                                sources.push(content);
+                            }
+                        }
+                    }
+                }
+                let counts = PackageTopologyAnalyzer::count_types_in_sources(&sources);
+                type_counts.insert(name, counts);
+            }
+        }
+
+        let metrics = PackageTopologyAnalyzer::compute_topology_metrics(
+            &package_names,
+            &dependencies_map,
+            &type_counts,
+        );
+
+        let violations = PackageTopologyAnalyzer::check_zone_of_pain(&metrics, &package_manifest_paths);
+
+        Ok((metrics, violations))
+    }
 }
 
 impl Default for CargoMetadataManifestAdapter {
@@ -208,8 +277,14 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             }
         }
 
-        Ok(violations)
+        // 3. Third pass: Transitive capabilities check for pure layers (SEC-002)
+        violations.extend(super::transitive_capabilities::TransitiveCapabilityChecker::check_transitive_capabilities(
+            &metadata,
+            &package_layers,
+            &package_manifests,
+        ));
 
+        Ok(violations)
     }
 }
 
@@ -367,5 +442,56 @@ mod tests {
 
         let adapter = CargoMetadataManifestAdapter::new();
         assert!(adapter.check_manifest_layers(&cargo_toml).is_err());
+        assert!(adapter.compute_workspace_martin_metrics(&cargo_toml).is_err());
+
+        // Test non-existing manifest returns empty
+        let non_existent = temp.path().join("missing/Cargo.toml");
+        let (empty_metrics, empty_violations) = adapter.compute_workspace_martin_metrics(&non_existent).unwrap();
+        assert!(empty_metrics.is_empty());
+        assert!(empty_violations.is_empty());
+    }
+
+    #[test]
+    fn test_compute_workspace_martin_metrics_success() {
+        let temp = tempdir().unwrap();
+        let cargo_toml = temp.path().join("Cargo.toml");
+        let workspace_toml = r#"
+            [workspace]
+            members = ["crate-a", "crate-b"]
+            resolver = "2"
+        "#;
+        std::fs::write(&cargo_toml, workspace_toml).unwrap();
+
+        let a_dir = temp.path().join("crate-a");
+        std::fs::create_dir_all(a_dir.join("src")).unwrap();
+        std::fs::write(a_dir.join("src/lib.rs"), "pub trait Action { fn run(&self); }\npub struct Actor;").unwrap();
+        let a_cargo = r#"
+            [package]
+            name = "crate-a"
+            version = "0.1.0"
+            edition = "2021"
+        "#;
+        std::fs::write(a_dir.join("Cargo.toml"), a_cargo).unwrap();
+
+        let b_dir = temp.path().join("crate-b");
+        std::fs::create_dir_all(b_dir.join("src")).unwrap();
+        std::fs::write(b_dir.join("src/lib.rs"), "use crate_a::Action;\npub fn b() {}").unwrap();
+        let b_cargo = r#"
+            [package]
+            name = "crate-b"
+            version = "0.1.0"
+            edition = "2021"
+
+            [dependencies]
+            crate-a = { path = "../crate-a" }
+        "#;
+        std::fs::write(b_dir.join("Cargo.toml"), b_cargo).unwrap();
+
+        let adapter = CargoMetadataManifestAdapter::new();
+        let (metrics, _violations) = adapter.compute_workspace_martin_metrics(&cargo_toml).unwrap();
+        assert_eq!(metrics.len(), 2);
+        let a_metric = metrics.iter().find(|m| m.package_name == "crate-a").unwrap();
+        assert_eq!(a_metric.afferent_coupling, 1);
+        assert_eq!(a_metric.abstractness, 0.5); // 1 trait, 1 struct -> 1 / 2 = 0.5
     }
 }

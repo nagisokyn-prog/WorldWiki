@@ -8,14 +8,11 @@ edition = "2021"
 [workspace]
 members = [
     ".",
-    "../crates/cerberus-domain",
-    "../crates/cerberus-ports",
-    "../crates/cerberus-application",
-    "../crates/cerberus-infrastructure",
-    "../crates/cargo-cerberus",
-]
-exclude = [
-    "../crates/target",
+    "crates/worldwiki-domain",
+    "crates/worldwiki-ports",
+    "crates/worldwiki-application",
+    "crates/worldwiki-infrastructure",
+    "crates/worldwiki-tauri",
 ]
 resolver = "2"
 

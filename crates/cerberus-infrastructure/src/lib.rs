@@ -2,6 +2,7 @@ pub mod ast;
 pub mod frontend;
 pub mod hooks;
 pub mod manifest;
+pub mod metrics;
 pub mod parsers;
 pub mod reporters;
 pub mod scanner;
@@ -11,7 +12,8 @@ pub mod vector;
 
 pub use ast::MacroVisitor;
 pub use hooks::GitHooksInstaller;
-pub use manifest::CargoMetadataManifestAdapter;
+pub use manifest::{CargoMetadataManifestAdapter, TransitiveCapabilityChecker};
+pub use metrics::{AstComplexityAnalyzer, BlastRadiusAnalyzer, PackageTopologyAnalyzer, SlocCalculator};
 pub use parsers::{ParallelAstEngineAdapter, RustSynParserAdapter, VueSfcParserAdapter};
 
 pub use reporters::{ConsoleReportAdapter, JsonReportAdapter, SarifReportAdapter};

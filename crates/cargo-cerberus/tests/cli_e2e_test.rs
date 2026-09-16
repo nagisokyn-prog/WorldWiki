@@ -9,8 +9,12 @@ fn cargo_bin() -> PathBuf {
 }
 
 fn rules_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../firewall/rules.json")
+    let cerberus = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../cerberus.json");
+    if cerberus.exists() {
+        cerberus
+    } else {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../firewall/rules.json")
+    }
 }
 
 fn fixture_dir(name: &str) -> PathBuf {
@@ -134,7 +138,9 @@ fn test_cli_validate_rules_flag() {
 
     assert!(
         output.status.success(),
-        "Rules validation against rules.json must succeed"
+        "Rules validation against rules.json must succeed. stderr: {}\nstdout: {}",
+        String::from_utf8_lossy(&output.stderr),
+        String::from_utf8_lossy(&output.stdout)
     );
 }
 

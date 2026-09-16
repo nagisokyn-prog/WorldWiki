@@ -1,4 +1,4 @@
-use cerberus_domain::{RuleDefinition, RulesConfig};
+use cerberus_domain::{BuiltinRuleRegistry, CerberusConfig, RuleDefinition, RulesConfig};
 use cerberus_ports::RulesRepositoryPort;
 
 use std::collections::HashMap;
@@ -11,23 +11,79 @@ pub struct RulesJsonRepository {
     pub rules_by_id: HashMap<String, RuleDefinition>,
 }
 
-
 impl RulesJsonRepository {
     pub fn load_from_file(path: &Path) -> Result<Self, String> {
         let content = fs::read_to_string(path)
             .map_err(|e| format!("Failed to read rules file at {}: {}", path.display(), e))?;
+
+        // 1. Try parsing modern cerberus.json format (rules as HashMap<String, Severity>)
+        if let Ok(cerberus_cfg) = serde_json::from_str::<CerberusConfig>(&content) {
+            let builtin_map = BuiltinRuleRegistry::rule_map();
+            let mut rules_by_id = HashMap::new();
+
+            // Populate all built-ins first
+            for rule in BuiltinRuleRegistry::all_rules() {
+                rules_by_id.insert(rule.id.clone(), rule);
+            }
+
+            // Apply severity overrides
+            for (rule_key, &severity) in &cerberus_cfg.rules {
+                let canonical_id = BuiltinRuleRegistry::canonical_rule_id(rule_key);
+                if let Some(def) = builtin_map.get(&canonical_id) {
+                    let mut overridden = def.clone();
+                    overridden.severity = severity;
+                    rules_by_id.insert(canonical_id, overridden);
+                } else {
+                    // Custom rule declaration
+                    rules_by_id.insert(
+                        canonical_id.clone(),
+                        RuleDefinition {
+                            id: canonical_id,
+                            version: "1.0".into(),
+                            category: cerberus_domain::Category::Convention,
+                            severity,
+                            title: rule_key.clone(),
+                            description: format!("Configured rule {}", rule_key),
+                            remediation: "Follow project architecture guidelines.".into(),
+                        },
+                    );
+                }
+            }
+
+            let rules_vec = rules_by_id.values().cloned().collect();
+            let config = RulesConfig {
+                schema: cerberus_cfg.schema,
+                version: cerberus_cfg.version,
+                ignore: cerberus_cfg.ignore,
+                rules: rules_vec,
+            };
+
+            return Ok(Self {
+                config,
+                rules_by_id,
+            });
+        }
+
+        // 2. Fallback to legacy RulesConfig format (rules as Vec<RuleDefinition>)
         let config: RulesConfig = serde_json::from_str(&content)
             .map_err(|e| format!("Failed to parse rules JSON at {}: {}", path.display(), e))?;
 
         let mut rules_by_id = HashMap::new();
         for rule in &config.rules {
             if rules_by_id.contains_key(&rule.id) {
-                return Err(format!("Duplicate rule id '{}' in {}", rule.id, path.display()));
+                return Err(format!(
+                    "Duplicate rule id '{}' in {}",
+                    rule.id,
+                    path.display()
+                ));
             }
             rules_by_id.insert(rule.id.clone(), rule.clone());
         }
 
-        Ok(Self { config, rules_by_id })
+        Ok(Self {
+            config,
+            rules_by_id,
+        })
     }
 
     pub fn find_rules_path(custom_path: Option<&PathBuf>) -> PathBuf {
@@ -36,6 +92,10 @@ impl RulesJsonRepository {
         }
 
         let candidates = [
+            PathBuf::from("cerberus.json"),
+            PathBuf::from("../cerberus.json"),
+            PathBuf::from("../../cerberus.json"),
+            PathBuf::from(".cerberusrc"),
             PathBuf::from("firewall/rules.json"),
             PathBuf::from("../firewall/rules.json"),
             PathBuf::from("../../firewall/rules.json"),
@@ -49,14 +109,18 @@ impl RulesJsonRepository {
             }
         }
 
-        PathBuf::from("firewall/rules.json")
+        PathBuf::from("cerberus.json")
     }
 
     pub fn validate_registered_rules(&self, used_rule_ids: &[&str]) -> Result<(), Vec<String>> {
         let mut errors = Vec::new();
         for &id in used_rule_ids {
-            if !self.rules_by_id.contains_key(id) {
-                errors.push(format!("Analyzer emitted rule '{}' which is not declared in rules.json", id));
+            let canonical = BuiltinRuleRegistry::canonical_rule_id(id);
+            if !self.rules_by_id.contains_key(id) && !self.rules_by_id.contains_key(&canonical) {
+                errors.push(format!(
+                    "Analyzer emitted rule '{}' which is not declared in configuration",
+                    id
+                ));
             }
         }
         if !errors.is_empty() {
@@ -73,17 +137,54 @@ impl RulesRepositoryPort for RulesJsonRepository {
     }
 
     fn get_rule(&self, rule_id: &str) -> Option<RuleDefinition> {
-        self.rules_by_id.get(rule_id).cloned()
+        let canonical = BuiltinRuleRegistry::canonical_rule_id(rule_id);
+        self.rules_by_id
+            .get(rule_id)
+            .or_else(|| self.rules_by_id.get(&canonical))
+            .cloned()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use cerberus_domain::Severity;
     use tempfile::tempdir;
 
     #[test]
-    fn test_rules_json_load_success() {
+    fn test_rules_json_load_modern_cerberus_json() {
+        let temp = tempdir().unwrap();
+        let file_path = temp.path().join("cerberus.json");
+        let json_content = r#"{
+            "version": "1.0",
+            "ignore": [".logic_legacy", "target"],
+            "rules": {
+                "arch/domain-purity": "deny",
+                "vue/no-monolith-script-setup": "warn",
+                "css/no-hardcoded-colors": "off"
+            }
+        }"#;
+        fs::write(&file_path, json_content).unwrap();
+
+        let repo = RulesJsonRepository::load_from_file(&file_path).unwrap();
+        assert_eq!(repo.config.ignore.len(), 2);
+
+        let arch001 = repo.get_rule("ARCH-001").unwrap();
+        assert_eq!(arch001.severity, Severity::Deny);
+
+        let vue001 = repo.get_rule("VUE-001").unwrap();
+        assert_eq!(vue001.severity, Severity::Warn);
+
+        let css001 = repo.get_rule("CSS-001").unwrap();
+        assert_eq!(css001.severity, Severity::Off);
+
+        assert!(repo
+            .validate_registered_rules(&["ARCH-001", "VUE-001"])
+            .is_ok());
+    }
+
+    #[test]
+    fn test_rules_json_load_legacy_success() {
         let temp = tempdir().unwrap();
         let file_path = temp.path().join("rules.json");
         let json_content = r#"{
@@ -170,4 +271,3 @@ mod tests {
         assert!(!default_path.as_os_str().is_empty());
     }
 }
-

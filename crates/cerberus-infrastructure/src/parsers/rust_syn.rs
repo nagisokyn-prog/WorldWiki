@@ -1,8 +1,11 @@
+use crate::ast::ai_slop::AiSlopVisitor;
 use crate::ast::async_rules::MutexGuardVisitor;
 use crate::ast::capabilities::CapabilitiesVisitor;
 use crate::ast::imports::ImportChecker;
 use crate::ast::macros::MacroVisitor;
-use cerberus_domain::Violation;
+use crate::ast::panic_vector::PanicVectorVisitor;
+use crate::metrics::AstComplexityAnalyzer;
+use cerberus_domain::{PressureWeights, Violation};
 use cerberus_ports::AstParserPort;
 
 use std::fs;
@@ -16,7 +19,6 @@ impl AstParserPort for RustSynParserAdapter {
         path.extension().is_some_and(|ext| ext == "rs")
     }
 
-
     fn parse_file(&self, path: &Path, crate_name: &str) -> Result<Vec<Violation>, String> {
         let content = fs::read_to_string(path)
             .map_err(|e| format!("Could not read file {}: {}", path.display(), e))?;
@@ -25,7 +27,12 @@ impl AstParserPort for RustSynParserAdapter {
 }
 
 impl RustSynParserAdapter {
-    pub fn parse_source(&self, content: &str, path: &Path, crate_name: &str) -> Result<Vec<Violation>, String> {
+    pub fn parse_source(
+        &self,
+        content: &str,
+        path: &Path,
+        crate_name: &str,
+    ) -> Result<Vec<Violation>, String> {
         let syntax_tree = match syn::parse_file(content) {
             Ok(tree) => tree,
             Err(e) => {
@@ -43,7 +50,7 @@ impl RustSynParserAdapter {
             }
         }
 
-        // 2. ASYNC-001 MutexGuard across await
+        // 2. ASYNC-001 / ASYNC-002 (MutexGuard across await, blocking sleep in async)
         let mut async_visitor = MutexGuardVisitor::new(path);
         async_visitor.visit_file(&syntax_tree);
         violations.extend(async_visitor.violations);
@@ -57,6 +64,40 @@ impl RustSynParserAdapter {
         let mut macro_visitor = MacroVisitor::new(path, crate_name);
         macro_visitor.visit_file(&syntax_tree);
         violations.extend(macro_visitor.violations);
+
+        // 5. Panic Vector (ROB-001)
+        let mut panic_visitor = PanicVectorVisitor::new(path);
+        panic_visitor.visit_file(&syntax_tree);
+        violations.extend(panic_visitor.violations);
+
+        // 6. AI-Slop & Indirection Tax (SLOP-001)
+        let mut slop_visitor = AiSlopVisitor::new(path, crate_name);
+        slop_visitor.visit_file(&syntax_tree);
+        violations.extend(slop_visitor.violations);
+
+        // 7. Code Complexity & Architectural Pressure (ARCH-030, ARCH-031)
+        let weights = PressureWeights::default();
+        if let Ok(metrics) = AstComplexityAnalyzer::analyze_rust_file(content, path, 0.0, &weights) {
+            let path_str = path.to_string_lossy().to_lowercase();
+            let (warn_sloc, deny_sloc, warn_pressure, deny_pressure) = if path_str.contains("domain") {
+                (200, 350, 100.0, 200.0)
+            } else if path_str.contains("application") {
+                (150, 300, 80.0, 180.0)
+            } else if path_str.contains("infrastructure") {
+                (400, 700, 200.0, 400.0)
+            } else {
+                (300, 500, 150.0, 300.0)
+            };
+
+            let complexity_violations = AstComplexityAnalyzer::check_thresholds(
+                &metrics,
+                warn_sloc,
+                deny_sloc,
+                warn_pressure,
+                deny_pressure,
+            );
+            violations.extend(complexity_violations);
+        }
 
         Ok(violations)
     }
@@ -86,5 +127,17 @@ mod tests {
         let missing = temp.path().join("missing.rs");
         assert!(adapter.parse_file(&missing, "domain").is_err());
     }
-}
 
+    #[test]
+    fn test_rust_syn_parser_complexity_threshold() {
+        let adapter = RustSynParserAdapter;
+        let mut big_code = String::new();
+        for i in 0..400 {
+            big_code.push_str(&format!("pub fn fn_{}() {{ if true {{}} }}\n", i));
+        }
+        let violations = adapter
+            .parse_source(&big_code, Path::new("crates/domain/src/god.rs"), "domain")
+            .unwrap();
+        assert!(violations.iter().any(|v| v.rule_id == "ARCH-031"));
+    }
+}

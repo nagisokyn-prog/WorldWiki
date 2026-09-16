@@ -418,6 +418,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "cerberus-sfc"
+version = "0.1.0"
+dependencies = [
+ "cerberus-application",
+ "cerberus-domain",
+ "cerberus-infrastructure",
+ "cerberus-ports",
+ "chrono",
+ "clap",
+ "colored",
+ "rayon",
+ "regex",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "walkdir",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

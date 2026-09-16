@@ -54,12 +54,7 @@ impl FileSystemScannerPort for WalkDirScannerAdapter {
                 if let Ok(rel_path) = path.strip_prefix(root_dir) {
                     let rel_str = rel_path.to_string_lossy().replace('\\', "/");
                     for pattern in &self.ignore_patterns {
-                        let norm_pat = pattern.replace('\\', "/").trim_matches('/').to_string();
-                        if !norm_pat.is_empty()
-                            && (rel_str == norm_pat
-                                || rel_str.starts_with(&format!("{}/", norm_pat))
-                                || rel_str.contains(&format!("/{}/", norm_pat)))
-                        {
+                        if matches_ignore_pattern(&rel_str, pattern) {
                             return false;
                         }
                     }
@@ -79,6 +74,49 @@ impl FileSystemScannerPort for WalkDirScannerAdapter {
             })
             .collect()
     }
+}
+
+pub fn matches_ignore_pattern(rel_path: &str, pattern: &str) -> bool {
+    let norm_path = rel_path.replace('\\', "/");
+    let norm_pat = pattern.replace('\\', "/");
+
+    // Suffix match (e.g. "*.min.js", "**/*.prod.js", "*.log")
+    if norm_pat.contains('*') {
+        if let Some(suffix) = norm_pat.strip_prefix("**/*") {
+            if norm_path.ends_with(suffix) {
+                return true;
+            }
+        }
+        if let Some(suffix) = norm_pat.strip_prefix("*") {
+            if norm_path.ends_with(suffix) {
+                return true;
+            }
+        }
+        if let Some(prefix) = norm_pat.strip_suffix("/**") {
+            let clean_prefix = prefix.trim_start_matches("**/").trim_matches('/');
+            if !clean_prefix.is_empty()
+                && (norm_path == clean_prefix
+                    || norm_path.starts_with(&format!("{clean_prefix}/"))
+                    || norm_path.contains(&format!("/{clean_prefix}/"))
+                    || norm_path.ends_with(&format!("/{clean_prefix}")))
+            {
+                return true;
+            }
+        }
+    }
+
+    // Direct folder or prefix match (e.g. "target", "node_modules", "dist")
+    let clean = norm_pat.trim_matches('*').trim_matches('/');
+    if !clean.is_empty()
+        && (norm_path == clean
+            || norm_path.starts_with(&format!("{clean}/"))
+            || norm_path.contains(&format!("/{clean}/"))
+            || norm_path.ends_with(&format!("/{clean}")))
+    {
+        return true;
+    }
+
+    false
 }
 
 fn infer_crate_name(file_path: &Path) -> String {

@@ -1,4 +1,4 @@
-use cerberus_domain::{Severity, Violation};
+use cerberus_domain::{PackageMetrics, Severity, Violation};
 use cerberus_ports::ReportPublisherPort;
 
 use colored::*;
@@ -20,6 +20,7 @@ impl ConsoleReportAdapter {
             let severity_badge = match v.severity {
                 Severity::Deny => "[DENY]".red().bold(),
                 Severity::Warn => "[WARN]".yellow().bold(),
+                Severity::Off => "[OFF]".dimmed(),
             };
 
             println!(
@@ -39,6 +40,43 @@ impl ConsoleReportAdapter {
             println!("  🔑 Fingerprint: {}", v.fingerprint.dimmed());
             println!("{}", "-".repeat(70));
         }
+    }
+
+    pub fn print_martin_metrics(metrics: &[PackageMetrics]) {
+        if metrics.is_empty() {
+            return;
+        }
+
+        println!("\n{}", "──────────────────────────────────────────────────────────────────────────".dimmed());
+        println!("{}", "📊 MARTIN PACKAGE METRICS (I, A, D) & ARCHITECTURAL TOPOLOGY".bold());
+        println!("{}", "──────────────────────────────────────────────────────────────────────────".dimmed());
+        println!(
+            "{:<24} {:>4} {:>4} {:>10} {:>10} {:>12} {:>14}",
+            "Package", "Ca", "Ce", "I (Instab)", "A (Abstr)", "D (Distance)", "Zone of Pain"
+        );
+        println!("{}", "-".repeat(82));
+
+        for m in metrics {
+            let status = if m.in_zone_of_pain {
+                "⚠️ PAIN".red().bold()
+            } else if m.distance_from_main_sequence > 0.7 {
+                "🟡 High D".yellow()
+            } else {
+                "✅ Clean".green()
+            };
+
+            println!(
+                "{:<24} {:>4} {:>4} {:>10.2} {:>10.2} {:>12.2} {:>14}",
+                m.package_name.bold(),
+                m.afferent_coupling,
+                m.efferent_coupling,
+                m.instability,
+                m.abstractness,
+                m.distance_from_main_sequence,
+                status
+            );
+        }
+        println!("{}\n", "──────────────────────────────────────────────────────────────────────────".dimmed());
     }
 }
 
@@ -100,5 +138,14 @@ mod tests {
         assert!(adapter.publish_violations(&violations).is_ok());
         assert!(adapter.export_report(Path::new("dummy"), &violations).is_ok());
     }
-}
 
+    #[test]
+    fn test_console_reporter_martin_metrics() {
+        let metrics = vec![
+            PackageMetrics::compute("worldwiki-domain".into(), 4, 0, 8, 10),
+            PackageMetrics::compute("worldwiki-god".into(), 5, 0, 0, 10),
+        ];
+        ConsoleReportAdapter::print_martin_metrics(&metrics);
+        ConsoleReportAdapter::print_martin_metrics(&[]);
+    }
+}

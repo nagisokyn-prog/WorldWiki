@@ -1,0 +1,33 @@
+{
+  "$schema": "https://cerberus-firewall.dev/schema.json",
+  "version": "1.0",
+  "ignore": [
+    ".logic_legacy/**",
+    "tests/fixtures/**",
+    "target/**",
+    "node_modules/**",
+    "dist/**",
+    "coverage/**"
+  ],
+  "extends": [
+    "cerberus:vue-clean-architecture",
+    "cerberus:fsd-strict",
+    "cerberus:perf-high-fps",
+    "cerberus:css-design-tokens"
+  ],
+  "rules": {
+    "vue/no-monolith-script-setup": "deny",
+    "vue/require-companion-hook": "deny",
+    "vue/no-types-in-sfc": "deny",
+    "css/no-hardcoded-colors": "deny",
+    "css/require-design-tokens": "deny",
+    "css/max-style-lines": "warn",
+    "fsd/layer-imports-hierarchy": "deny",
+    "fsd/public-api-only": "deny",
+    "fsd/ui-kit-zero-domain": "deny",
+    "perf/shallow-ref-for-heavy-ast": "deny",
+    "perf/no-reactive-canvas-three": "deny",
+    "perf/no-allocations-in-raf": "deny",
+    "leak/uncleaned-ipc-listener": "deny"
+  }
+}

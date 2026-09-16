@@ -1,0 +1,38 @@
+[package]
+name = "cerberus-sfc"
+version = "0.1.0"
+edition = "2021"
+authors = ["Danila"]
+description = "Frontend & Vue SFC Architecture Firewall (Rule 08, FSD, CSS Tokens, Reactivity Analyzer)"
+
+[package.metadata.cerberus]
+layer = "cli"
+
+[[bin]]
+name = "cerberus-sfc"
+path = "src/main.rs"
+
+[lib]
+name = "cerberus_sfc"
+path = "src/lib.rs"
+
+[dependencies]
+cerberus-domain = { path = "../cerberus-domain" }
+cerberus-ports = { path = "../cerberus-ports" }
+cerberus-application = { path = "../cerberus-application" }
+cerberus-infrastructure = { path = "../cerberus-infrastructure" }
+
+# CLI & Terminal Output
+clap = { version = "4.4", features = ["derive", "env"] }
+colored = "3.1.1"
+
+# Serialization & Parallelism
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rayon = "1.8"
+walkdir = "2.4"
+regex = "1.10"
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tempfile = "3.8"

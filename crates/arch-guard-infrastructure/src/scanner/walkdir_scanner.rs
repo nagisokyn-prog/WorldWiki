@@ -140,6 +140,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::default_constructed_unit_structs)]
     fn test_walkdir_scanner_package_json_inference() {
         let temp = tempdir().unwrap();
         let root = temp.path();
@@ -149,7 +150,7 @@ mod tests {
         let vue_file = src.join("Main.vue");
         std::fs::write(&vue_file, "<template></template>").unwrap();
 
-        let scanner = WalkDirScannerAdapter;
+        let scanner = WalkDirScannerAdapter::default();
         let files = scanner.scan_files(root, ScanScope::FrontendOnly);
         assert_eq!(files.len(), 1);
         assert_eq!(files[0].crate_name, "@worldwiki/spa");

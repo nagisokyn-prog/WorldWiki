@@ -53,8 +53,9 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::default_constructed_unit_structs)]
     fn test_file_baseline_storage_default_and_write_failure() {
-        let storage = FileBaselineStorageAdapter;
+        let storage = FileBaselineStorageAdapter::default();
         let port: &dyn BaselineStoragePort = &storage;
         let temp = tempdir().unwrap();
         let dir_as_file = temp.path().join("dir");

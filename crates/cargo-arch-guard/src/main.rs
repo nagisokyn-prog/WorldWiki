@@ -379,3 +379,61 @@ fn run_check(options: CheckExecutionOptions) {
         exit(1);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_run_check_clean_with_failing_reports() {
+        let temp = tempdir().unwrap();
+        let src_dir = temp.path().join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        std::fs::write(src_dir.join("lib.rs"), "pub fn ok() {}").unwrap();
+
+        let rules_file = temp.path().join("rules.json");
+        std::fs::write(&rules_file, "{\"version\": \"1.0\", \"rules\": []}").unwrap();
+        let rules_repo = Arc::new(RulesJsonRepository::load_from_file(&rules_file).unwrap());
+
+        // Create directories for sarif and json to trigger error branches in write_report
+        let sarif_dir = temp.path().join("sarif_dir");
+        std::fs::create_dir_all(&sarif_dir).unwrap();
+        let json_dir = temp.path().join("json_dir");
+        std::fs::create_dir_all(&json_dir).unwrap();
+
+        run_check(CheckExecutionOptions {
+            rules_repo: rules_repo.clone(),
+            path: temp.path(),
+            sarif_path: Some(&sarif_dir),
+            json_path: Some(&json_dir),
+            _expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+        });
+
+        // Test frontend_only and backend_only scopes
+        run_check(CheckExecutionOptions {
+            rules_repo: rules_repo.clone(),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            _expanded: false,
+            ci: true,
+            frontend_only: true,
+            backend_only: false,
+        });
+
+        run_check(CheckExecutionOptions {
+            rules_repo,
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            _expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: true,
+        });
+    }
+}

@@ -18,8 +18,7 @@ impl SignSuppressionUseCase {
         expires: &DateTime<Utc>,
     ) -> Result<String, String> {
         let key = storage.get_key()?;
-        let mut mac = HmacSha256::new_from_slice(&key)
-            .map_err(|e| format!("Invalid HMAC key: {}", e))?;
+        let mut mac = HmacSha256::new_from_slice(&key).expect("HMAC supports arbitrary key length");
 
         let expires_str = expires.to_rfc3339();
         let payload = format!("{}:{}:{}:{}:{}", rule_id, fingerprint, reason, author, expires_str);
@@ -39,10 +38,7 @@ impl SignSuppressionUseCase {
             Err(_) => return false,
         };
 
-        let mut mac = match HmacSha256::new_from_slice(&key) {
-            Ok(m) => m,
-            Err(_) => return false,
-        };
+        let mut mac = HmacSha256::new_from_slice(&key).unwrap_or_else(|_| HmacSha256::new(&Default::default()));
 
         let payload = suppression.canonical_payload();
         mac.update(payload.as_bytes());

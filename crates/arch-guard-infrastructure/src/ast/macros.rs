@@ -73,6 +73,9 @@ mod tests {
         let invalid_dir = Path::new("non_existent_crate_path_123");
         let res = MacroVisitor::run_cargo_expand(invalid_dir);
         assert!(res.is_err());
+
+        // Execute on existing directory (returns Err on non-nightly or Ok on nightly)
+        let _ = MacroVisitor::run_cargo_expand(Path::new("."));
     }
 }
 

@@ -83,6 +83,11 @@ mod tests {
 
         let pain = PackageMetrics::compute("concrete_god".into(), 10, 0, 0, 10);
         assert!(pain.in_zone_of_pain);
+
+        // Zero coupling and zero classes
+        let empty_metrics = PackageMetrics::compute("empty".into(), 0, 0, 0, 0);
+        assert_eq!(empty_metrics.instability, 0.0);
+        assert_eq!(empty_metrics.abstractness, 0.0);
     }
 
     #[test]

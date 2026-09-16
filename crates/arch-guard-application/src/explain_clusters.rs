@@ -254,6 +254,7 @@ mod tests {
 
         // 3. Dimension call
         assert_eq!(DummyEmbedder.dimension(), 2);
+        assert_eq!(FailingEmbedder.dimension(), 2);
     }
 
     struct MixedClusterer;

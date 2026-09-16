@@ -86,7 +86,7 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
 
             let pkg_name_str = pkg.name.as_str();
             let current_layer = package_layers.get(pkg_name_str).copied().unwrap_or(ArchLayer::Unknown);
-            let manifest_file = package_manifests.get(pkg_name_str).cloned().unwrap_or_else(|| manifest_path.clone());
+            let manifest_file = package_manifests.get(pkg_name_str).cloned().unwrap_or_default();
 
 
             for dep in &pkg.dependencies {
@@ -218,8 +218,9 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
+    #[allow(clippy::default_constructed_unit_structs)]
     fn test_cargo_metadata_manifest_default_and_non_existent() {
-        let adapter = CargoMetadataManifestAdapter;
+        let adapter = CargoMetadataManifestAdapter::default();
         let temp = tempdir().unwrap();
         // Missing Cargo.toml
         let violations = adapter.check_manifest_layers(temp.path()).unwrap();
@@ -263,7 +264,7 @@ mod tests {
         "#;
         std::fs::write(&cargo_toml, root_content).unwrap();
 
-        // 1. Infra crate
+        // 1. Infra crate (with a normal dep to cover infra layer branch)
         let infra_dir = temp.path().join("infra-crate");
         std::fs::create_dir_all(infra_dir.join("src")).unwrap();
         std::fs::write(infra_dir.join("src/lib.rs"), "pub fn i() {}").unwrap();
@@ -275,6 +276,9 @@ mod tests {
 
             [package.metadata.arch-guard]
             layer = "infrastructure"
+
+            [dependencies]
+            serde = "1.0"
         "#;
         std::fs::write(infra_dir.join("Cargo.toml"), infra_cargo).unwrap();
 

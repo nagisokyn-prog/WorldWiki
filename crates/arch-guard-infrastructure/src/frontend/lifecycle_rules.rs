@@ -97,6 +97,21 @@ mod tests {
         let test_file = "window.addEventListener('click', fn);";
         let v4 = LifecycleRuleChecker::check_typescript_file(test_file, Path::new("src/useWindow.spec.ts"));
         assert!(v4.is_empty());
+
+        // 5. Tauri listen without unmount
+        let tauri_leak = "listen('sync-db', handle);";
+        let v5 = LifecycleRuleChecker::check_typescript_file(tauri_leak, Path::new("src/useSync.ts"));
+        assert_eq!(v5.len(), 1);
+
+        // 6. Alternate cleanup hooks: tryOnScopeDispose / onBeforeUnmount / tryOnUnmounted
+        let alt_clean1 = "listen('e', h); tryOnScopeDispose(() => {});";
+        assert!(LifecycleRuleChecker::check_typescript_file(alt_clean1, Path::new("src/useSync.ts")).is_empty());
+
+        let alt_clean2 = "listen('e', h); onBeforeUnmount(() => {});";
+        assert!(LifecycleRuleChecker::check_typescript_file(alt_clean2, Path::new("src/useSync.ts")).is_empty());
+
+        let alt_clean3 = "listen('e', h); tryOnUnmounted(() => {});";
+        assert!(LifecycleRuleChecker::check_typescript_file(alt_clean3, Path::new("src/useSync.ts")).is_empty());
     }
 }
 

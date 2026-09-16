@@ -124,8 +124,9 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::default_constructed_unit_structs)]
     fn test_dbscan_default_and_empty() {
-        let clusterer = DbscanClustererAdapter;
+        let clusterer = DbscanClustererAdapter::default();
         let empty: Vec<Vec<f32>> = vec![];
         let res = clusterer.cluster(&empty, 0.5, 2).unwrap();
         assert!(res.is_empty());

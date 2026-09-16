@@ -118,9 +118,10 @@ mod tests {
         let temp = tempdir().unwrap();
         let invalid_path = temp.path().join("invalid_dir");
         fs::create_dir_all(&invalid_path).unwrap();
-        // Pointing file path directly to an existing directory causes fs::write to fail
+        // Pointing file path directly to an existing directory causes fs::write and fs::read to fail
         let storage = FileStorageAdapter::new(invalid_path);
         assert!(storage.set_key(&[1, 2, 3]).is_err());
+        assert!(storage.get_key().is_err());
 
         // Parent dir creation failure
         let blocker = temp.path().join("blocker_file");

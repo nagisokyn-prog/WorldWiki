@@ -113,6 +113,16 @@ export default {};
         assert_eq!(sfc.styles.len(), 2);
         assert!(sfc.styles[0].scoped);
         assert_eq!(sfc.styles[1].src, Some("./external.css".to_string()));
+
+        // Single quote src and empty SFC
+        let single_quote_sfc = VueSfcParser::parse("<style src='./single.css'></style>");
+        assert_eq!(single_quote_sfc.styles[0].src, Some("./single.css".to_string()));
+
+        let empty_sfc = VueSfcParser::parse("");
+        assert!(empty_sfc.template.is_none());
+        assert!(empty_sfc.script.is_none());
+        assert!(empty_sfc.script_setup.is_none());
+        assert!(empty_sfc.styles.is_empty());
     }
 }
 

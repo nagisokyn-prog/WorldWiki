@@ -141,6 +141,20 @@ mod tests {
         std::fs::write(temp.path().join("useMyComponent.ts"), "export const useMyComponent = () => {};").unwrap();
         let violations_with_hook = VueRuleChecker::check(&sfc, &comp_path);
         assert!(violations_with_hook.is_empty(), "Companion hook should satisfy VUE-001");
+
+        // Test companion hook in hooks/ subdirectory
+        std::fs::remove_file(temp.path().join("useMyComponent.ts")).unwrap();
+        let hooks_dir = temp.path().join("hooks");
+        std::fs::create_dir_all(&hooks_dir).unwrap();
+        std::fs::write(hooks_dir.join("useMyComponent.ts"), "export const useMyComponent = () => {};").unwrap();
+        assert!(VueRuleChecker::check(&sfc, &comp_path).is_empty(), "hooks/ companion hook should satisfy VUE-001");
+
+        // Test plugin-shell Tauri violation
+        let shell_sfc = VueSfc {
+            script_setup: Some("import '@tauri-apps/plugin-shell';".into()),
+            ..Default::default()
+        };
+        assert_eq!(VueRuleChecker::check(&shell_sfc, Path::new("MyComponent.vue")).len(), 1);
     }
 }
 

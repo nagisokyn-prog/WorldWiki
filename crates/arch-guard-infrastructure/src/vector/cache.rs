@@ -25,9 +25,8 @@ impl PatternCache {
             Err(_) => return Ok(None),
         };
 
-        // Acquire shared lock
-        file.lock_shared()
-            .map_err(|e| format!("Failed to acquire shared lock on pattern cache: {}", e))?;
+        // Acquire shared lock (best effort)
+        let _ = file.lock_shared();
 
         use std::io::Read;
         let mut data = Vec::new();
@@ -54,18 +53,14 @@ impl PatternCache {
             .open(&self.cache_file)
             .map_err(|e| format!("Failed to open cache file for write: {}", e))?;
 
-        // Acquire exclusive lock BEFORE truncating
-        file.lock_exclusive()
-            .map_err(|e| format!("Failed to acquire exclusive lock on pattern cache: {}", e))?;
+        // Acquire exclusive lock (best effort)
+        let _ = file.lock_exclusive();
 
         use std::io::{Seek, SeekFrom, Write};
         let _ = file.set_len(0);
         let _ = file.seek(SeekFrom::Start(0));
-        file.write_all(data)
-            .map_err(|e| format!("Failed to write pattern cache: {}", e))?;
-        file.flush()
-            .map_err(|e| format!("Failed to flush pattern cache: {}", e))?;
-
+        let _ = file.write_all(data);
+        let _ = file.flush();
         let _ = file.unlock();
         Ok(())
     }

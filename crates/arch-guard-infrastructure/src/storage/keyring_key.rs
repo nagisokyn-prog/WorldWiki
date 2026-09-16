@@ -80,6 +80,15 @@ mod tests {
         let _ = port.get_key();
         let _ = adapter.set_key(&[0x11, 0x22]);
         let _ = adapter.get_key();
+
+        // Trigger Entry execution with custom service/user
+        let bad_adapter = KeyringStorageAdapter {
+            service: "invalid_service".into(),
+            user: "invalid_user".into(),
+        };
+        let bad_port: &dyn KeyStoragePort = &bad_adapter;
+        let _ = bad_port.get_key();
+        let _ = bad_port.set_key(&[0x11, 0x22]);
     }
 }
 

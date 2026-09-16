@@ -114,9 +114,26 @@ mod tests {
         assert!(ArchLayer::Infrastructure.can_depend_on(ArchLayer::Ports));
         assert!(!ArchLayer::Infrastructure.can_depend_on(ArchLayer::Application));
 
-        // Adapter / CLI can depend on anything
+        // Adapter / CLI / Unknown can depend on anything
         assert!(ArchLayer::Cli.can_depend_on(ArchLayer::Infrastructure));
         assert!(ArchLayer::Adapter.can_depend_on(ArchLayer::Application));
+        assert!(ArchLayer::Unknown.can_depend_on(ArchLayer::Domain));
+    }
+
+    #[test]
+    fn test_layer_metadata_structs_serde() {
+        let meta = WorkspaceArchMetadata {
+            preset: Some("hexagonal".into()),
+            layers: HashMap::from([("domain".into(), LayerRule { allowed_dependencies: vec!["ports".into()] })]),
+        };
+        let json = serde_json::to_string(&meta).unwrap();
+        let parsed: WorkspaceArchMetadata = serde_json::from_str(&json).unwrap();
+        assert_eq!(meta, parsed);
+
+        let pkg = PackageArchMetadata { layer: Some("domain".into()) };
+        let pkg_json = serde_json::to_string(&pkg).unwrap();
+        let pkg_parsed: PackageArchMetadata = serde_json::from_str(&pkg_json).unwrap();
+        assert_eq!(pkg, pkg_parsed);
     }
 }
 

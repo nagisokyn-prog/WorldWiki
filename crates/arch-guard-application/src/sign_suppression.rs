@@ -38,7 +38,7 @@ impl SignSuppressionUseCase {
             Err(_) => return false,
         };
 
-        let mut mac = HmacSha256::new_from_slice(&key).unwrap_or_else(|_| HmacSha256::new(&Default::default()));
+        let mut mac = HmacSha256::new_from_slice(&key).expect("HMAC supports arbitrary key length");
 
         let payload = suppression.canonical_payload();
         mac.update(payload.as_bytes());

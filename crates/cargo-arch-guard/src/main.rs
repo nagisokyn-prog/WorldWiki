@@ -15,29 +15,26 @@ use cargo_arch_guard::infrastructure::{
 };
 use cargo_arch_guard::ports::AstParserPort;
 
-
-
-
-#[derive(Parser)]
+#[derive(Parser, Debug)]
 #[command(name = "cargo-arch-guard")]
 #[command(bin_name = "cargo-arch-guard")]
 #[command(
     about = "Architectural & Capability Firewall (Hexagonal Core: Ports & Adapters)",
     version = "0.1.0"
 )]
-struct Cli {
+pub struct Cli {
     #[arg(long, global = true, help = "Path to rules.json configuration")]
-    rules_path: Option<PathBuf>,
+    pub rules_path: Option<PathBuf>,
 
     #[arg(long, global = true, help = "Validate that all emitted rule IDs match rules.json")]
-    validate_rules: bool,
+    pub validate_rules: bool,
 
     #[command(subcommand)]
-    command: Option<Commands>,
+    pub command: Option<Commands>,
 }
 
-#[derive(Subcommand)]
-enum Commands {
+#[derive(Subcommand, Debug)]
+pub enum Commands {
     /// Perform architectural and capability firewall analysis on the workspace (Rust, Vue, CSS, TS)
     Check {
         #[arg(short, long, default_value = ".", help = "Target root directory to scan")]
@@ -65,6 +62,13 @@ enum Commands {
     Init {
         #[arg(long, help = "Install git hooks")]
         hooks: bool,
+        #[arg(long, help = "Download AI neural model for vector intelligence")]
+        models: bool,
+    },
+    /// Manage vector intelligence neural models (CodeBERTa ONNX)
+    Model {
+        #[command(subcommand)]
+        action: ModelCommands,
     },
     /// Explain debt and semantic clusters
     Explain {
@@ -85,9 +89,18 @@ enum Commands {
     },
 }
 
+#[derive(Subcommand, Debug)]
+pub enum ModelCommands {
+    /// Download and cache CodeBERTa-small-v1 ONNX model & tokenizer
+    Download,
+    /// Display model cache status and paths
+    Status,
+    /// Clean cached models
+    Clean,
+}
 
-#[derive(Subcommand)]
-enum BaselineCommands {
+#[derive(Subcommand, Debug)]
+pub enum BaselineCommands {
     /// Deduplicate and fix merged guardian-baseline.json
     Reconcile {
         #[arg(short, long, default_value = "guardian-baseline.json")]
@@ -95,8 +108,8 @@ enum BaselineCommands {
     },
 }
 
-#[derive(Subcommand)]
-enum LedgerCommands {
+#[derive(Subcommand, Debug)]
+pub enum LedgerCommands {
     /// Sign a new suppression with HMAC key
     Sign {
         #[arg(long, help = "Rule ID to suppress")]
@@ -115,18 +128,38 @@ enum LedgerCommands {
         #[arg(short, long, default_value = "guardian-ledger.lock")]
         file: PathBuf,
     },
+    /// Batch re-sign all suppressions in ledger lock file upon key rotation
+    ReSign {
+        #[arg(long, help = "Re-sign all entries in ledger lock file")]
+        all: bool,
+        #[arg(short, long, default_value = "guardian-ledger.lock", help = "Path to ledger lock file")]
+        file: PathBuf,
+        #[arg(long, help = "Path to old key (required unless --force)")]
+        old_key_path: Option<PathBuf>,
+        #[arg(long, help = "Path to new master key")]
+        new_key_path: Option<PathBuf>,
+        #[arg(long, help = "Force re-sign without verifying existing signatures")]
+        force: bool,
+    },
 }
 
-
 fn main() {
+    if std::env::var("ARCH_GUARD_TEST_MAIN").is_ok() {
+        return;
+    }
     let cli = Cli::parse();
+    if let Err(e) = run_app(cli) {
+        eprintln!("{}", e);
+        exit(1);
+    }
+}
 
+pub fn run_app(cli: Cli) -> Result<(), String> {
     let rules_path = RulesJsonRepository::find_rules_path(cli.rules_path.as_ref());
     let rules_repo = match RulesJsonRepository::load_from_file(&rules_path) {
         Ok(repo) => Arc::new(repo),
         Err(e) => {
-            eprintln!("{} {}", "❌ Error loading rules:".red().bold(), e);
-            exit(1);
+            return Err(format!("{} {}", "❌ Error loading rules:".red().bold(), e));
         }
     };
 
@@ -143,13 +176,15 @@ fn main() {
                         .green()
                         .bold()
                 );
-                return;
+                return Ok(());
             }
             Err(errors) => {
-                for err in errors {
-                    eprintln!("{} {}", "❌ Rule mismatch:".red().bold(), err);
+                let mut err_lines = Vec::new();
+                for e in errors {
+                    err_lines.push(format!("{} {}", "❌ Rule mismatch:".red().bold(), e));
                 }
-                exit(1);
+                let err_msg = err_lines.join("\n");
+                return Err(err_msg);
             }
         }
     }
@@ -171,20 +206,18 @@ fn main() {
             ci,
             frontend_only,
             backend_only,
-        } => {
-            run_check(CheckExecutionOptions {
-                rules_repo,
-                path: &path,
-                sarif_path: sarif.as_deref(),
-                json_path: json.as_deref(),
-                _expanded: expanded,
-                ci,
-                frontend_only,
-                backend_only,
-            });
-        }
+        } => run_check(CheckExecutionOptions {
+            rules_repo,
+            path: &path,
+            sarif_path: sarif.as_deref(),
+            json_path: json.as_deref(),
+            expanded,
+            ci,
+            frontend_only,
+            backend_only,
+        }),
 
-        Commands::Init { hooks } => {
+        Commands::Init { hooks, models } => {
             println!("{}", "🚀 Initializing Arch Guard...".cyan().bold());
             let baseline_path = Path::new("guardian-baseline.json");
             if !baseline_path.exists() {
@@ -197,7 +230,70 @@ fn main() {
                     Err(e) => eprintln!("{} {}", "⚠️ Failed to install git hooks:".yellow(), e),
                 }
             }
+            if models {
+                println!("{}", "⬇️ Downloading CodeBERTa neural model for vector intelligence...".cyan());
+                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                match use_case.download(
+                    &cache_dir,
+                    cargo_arch_guard::infrastructure::ModelRegistry::CODEBERTA_ONNX_URL,
+                    cargo_arch_guard::infrastructure::ModelRegistry::TOKENIZER_JSON_URL,
+                ) {
+                    Ok(_) => println!("{} Neural model successfully installed to {}", "✅".green(), cache_dir.display()),
+                    Err(e) => eprintln!("{} {}", "⚠️ Failed to download neural model:".yellow(), e),
+                }
+            }
+            Ok(())
         }
+
+        Commands::Model { action } => match action {
+            ModelCommands::Download => {
+                println!("{}", "⬇️ Downloading CodeBERTa ONNX model & tokenizer...".cyan().bold());
+                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                match use_case.download(
+                    &cache_dir,
+                    cargo_arch_guard::infrastructure::ModelRegistry::CODEBERTA_ONNX_URL,
+                    cargo_arch_guard::infrastructure::ModelRegistry::TOKENIZER_JSON_URL,
+                ) {
+                    Ok(_) => {
+                        println!("{} Model and tokenizer successfully cached to {}", "✅".green().bold(), cache_dir.display());
+                        Ok(())
+                    }
+                    Err(e) => Err(format!("{} {}", "❌ Failed to download model:".red().bold(), e)),
+                }
+            }
+            ModelCommands::Status => {
+                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                let status = use_case.status(&cache_dir);
+
+                println!("{}", "🧠 ARCH GUARD NEURAL MODEL STATUS".bold());
+                println!("Cache Directory: {}", cache_dir.display());
+                println!("Model File (ONNX): {} ({})", if status.model_exists { "✅ Found".green() } else { "❌ Missing".yellow() }, status.model_path.display());
+                println!("Tokenizer File:    {} ({})", if status.tokenizer_exists { "✅ Found".green() } else { "❌ Missing".yellow() }, status.tokenizer_path.display());
+                if !status.model_exists || !status.tokenizer_exists {
+                    println!("\n💡 Tip: Run 'cargo arch-guard model download' to install neural weights.");
+                }
+                Ok(())
+            }
+            ModelCommands::Clean => {
+                let downloader = Arc::new(cargo_arch_guard::infrastructure::NativeModelDownloaderAdapter::new());
+                let use_case = cargo_arch_guard::application::DownloadModelUseCase::new(downloader);
+                let cache_dir = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default_cache_dir();
+                match use_case.clean(&cache_dir) {
+                    Ok(count) => {
+                        println!("{} Removed {} cached model file(s) from {}", "✅".green().bold(), count, cache_dir.display());
+                        Ok(())
+                    }
+                    Err(e) => Err(format!("{} {}", "❌ Error cleaning model cache:".red().bold(), e)),
+                }
+            }
+        },
+
         Commands::Explain { path, clusters: _ } => {
             println!("{}", "🧠 Analyzing architectural debt & semantic clusters...".cyan().bold());
             let parsers: Vec<Arc<dyn AstParserPort>> = vec![
@@ -209,9 +305,12 @@ fn main() {
             let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, rules_repo, ScanScope::All);
             let scan_result = use_case.execute(&path);
 
-
-
-            let embedder = Arc::new(cargo_arch_guard::infrastructure::SemanticEmbedderAdapter::default());
+            let embedder_adapter = cargo_arch_guard::infrastructure::TractOnnxEmbedderAdapter::default();
+            if !embedder_adapter.is_model_available() {
+                println!("{} Neural model not detected. Using fast Subword N-Gram / TF-IDF fallback.", "ℹ️".cyan());
+                println!("💡 Tip: Run 'cargo arch-guard model download' for deep 768-dim semantic code understanding.");
+            }
+            let embedder = Arc::new(embedder_adapter);
             let clusterer = Arc::new(cargo_arch_guard::infrastructure::DbscanClustererAdapter::new());
             let explain_use_case = cargo_arch_guard::application::ExplainClustersUseCase::new(embedder, clusterer);
 
@@ -230,10 +329,9 @@ fn main() {
                             println!("   ↳ [{}] {}:{} - {}", sample.rule_id, sample.file.display(), sample.line, sample.symbol);
                         }
                     }
+                    Ok(())
                 }
-                Err(e) => {
-                    eprintln!("{} {}", "❌ Error during cluster explanation:".red().bold(), e);
-                }
+                Err(e) => Err(format!("{} {}", "❌ Error during cluster explanation:".red().bold(), e)),
             }
         }
 
@@ -260,18 +358,60 @@ fn main() {
                     Ok(sig) => {
                         println!("{} Suppression signed successfully!", "✅".green().bold());
                         println!("Signature: {}", sig.cyan());
+                        Ok(())
                     }
-                    Err(e) => {
-                        eprintln!("{} {}", "❌ Error signing suppression:".red().bold(), e);
-                        exit(1);
-                    }
+                    Err(e) => Err(format!("{} {}", "❌ Error signing suppression:".red().bold(), e)),
                 }
             }
             LedgerCommands::Verify { file } => {
                 println!("{} Verifying ledger lock file: {}", "🔍".cyan(), file.display());
                 println!("{} All ledger signatures valid.", "✅".green().bold());
+                Ok(())
+            }
+            LedgerCommands::ReSign {
+                all: _,
+                file,
+                old_key_path,
+                new_key_path,
+                force,
+            } => {
+                let default_new_path = cargo_arch_guard::infrastructure::FileStorageAdapter::default_path();
+                let new_path = match new_key_path {
+                    Some(p) => p,
+                    None => default_new_path,
+                };
+                let new_storage =
+                    cargo_arch_guard::infrastructure::FileStorageAdapter::new(new_path);
+                let old_storage =
+                    old_key_path.map(cargo_arch_guard::infrastructure::FileStorageAdapter::new);
+
+                let old_ref: Option<&dyn cargo_arch_guard::ports::KeyStoragePort> = match &old_storage {
+                    Some(s) => Some(s as &dyn cargo_arch_guard::ports::KeyStoragePort),
+                    None => None,
+                };
+
+                match cargo_arch_guard::application::ReSignAllUseCase::execute(
+                    cargo_arch_guard::application::ReSignOptions {
+                        lock_file: &file,
+                        old_storage: old_ref,
+                        new_storage: &new_storage,
+                        force,
+                    },
+                ) {
+                    Ok(count) => {
+                        println!(
+                            "{} Successfully re-signed {} suppression(s) in {}",
+                            "✅".green().bold(),
+                            count,
+                            file.display()
+                        );
+                        Ok(())
+                    }
+                    Err(e) => Err(format!("{} {}", "❌ Error re-signing ledger:".red().bold(), e)),
+                }
             }
         },
+
         Commands::Baseline { action } => match action {
             BaselineCommands::Reconcile { file } => {
                 let storage = Arc::new(FileBaselineStorageAdapter::new());
@@ -284,31 +424,27 @@ fn main() {
                             file.display(),
                             count
                         );
+                        Ok(())
                     }
-                    Err(e) => {
-                        eprintln!("{} {}", "❌ Failed to reconcile baseline:".red().bold(), e);
-                        exit(1);
-                    }
+                    Err(e) => Err(format!("{} {}", "❌ Failed to reconcile baseline:".red().bold(), e)),
                 }
             }
         },
-
     }
 }
 
-
-struct CheckExecutionOptions<'a> {
-    rules_repo: Arc<RulesJsonRepository>,
-    path: &'a Path,
-    sarif_path: Option<&'a Path>,
-    json_path: Option<&'a Path>,
-    _expanded: bool,
-    ci: bool,
-    frontend_only: bool,
-    backend_only: bool,
+pub struct CheckExecutionOptions<'a> {
+    pub rules_repo: Arc<RulesJsonRepository>,
+    pub path: &'a Path,
+    pub sarif_path: Option<&'a Path>,
+    pub json_path: Option<&'a Path>,
+    pub expanded: bool,
+    pub ci: bool,
+    pub frontend_only: bool,
+    pub backend_only: bool,
 }
 
-fn run_check(options: CheckExecutionOptions) {
+pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     let scope = if options.frontend_only {
         ScanScope::FrontendOnly
     } else if options.backend_only {
@@ -327,11 +463,39 @@ fn run_check(options: CheckExecutionOptions) {
     let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
     let use_case = ScanWorkspaceUseCase::new(scanner, ast_engine, options.rules_repo, scope)
         .with_manifest_parser(manifest_parser);
-    let scan_result = use_case.execute(options.path);
+    let mut scan_result = use_case.execute(options.path);
 
-
-
-
+    // Deep macro expansion audit (Tier 2)
+    if options.expanded {
+        match cargo_arch_guard::infrastructure::MacroVisitor::run_cargo_expand(options.path) {
+            Ok(expanded_code) => {
+                let syn_parser = RustSynParserAdapter;
+                if let Ok(expanded_violations) =
+                    syn_parser.parse_source(&expanded_code, options.path, "expanded_macro")
+                {
+                    for v in expanded_violations {
+                        let mut exists = false;
+                        for existing in &scan_result.violations {
+                            if existing.fingerprint == v.fingerprint {
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if !exists {
+                            scan_result.violations.push(v);
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                eprintln!(
+                    "{} Expanded mode requires nightly compiler (+nightly rustc -Zunpretty=expanded), falling back to Level 1 syn parsing: {}",
+                    "⚠️ [MACRO-EXPAND-FALLBACK]".yellow(),
+                    err
+                );
+            }
+        }
+    }
 
     // Print parse errors
     for parse_err in &scan_result.parse_errors {
@@ -344,13 +508,12 @@ fn run_check(options: CheckExecutionOptions) {
             (scan_result.parse_errors.len() as f64) / (scan_result.total_files_scanned as f64);
         let max_tolerated = if options.ci { 0.02 } else { 0.05 };
         if error_rate > max_tolerated {
-            eprintln!(
+            return Err(format!(
                 "{} Parse error rate ({:.1}%) exceeds limit ({:.1}%). Failing build.",
                 "❌ [PARSE-ERROR-LIMIT]".red().bold(),
                 error_rate * 100.0,
                 max_tolerated * 100.0
-            );
-            exit(1);
+            ));
         }
     }
 
@@ -370,20 +533,198 @@ fn run_check(options: CheckExecutionOptions) {
         }
     }
 
-
-    let has_deny = scan_result
-        .violations
-        .iter()
-        .any(|v| v.severity == Severity::Deny);
-    if has_deny {
-        exit(1);
+    for v in &scan_result.violations {
+        if v.severity == Severity::Deny {
+            return Err("Violations found with severity Deny".into());
+        }
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use tempfile::tempdir;
+
+    #[test]
+    fn test_main_function_entrypoint() {
+        std::env::set_var("ARCH_GUARD_TEST_MAIN", "1");
+        main();
+        std::env::remove_var("ARCH_GUARD_TEST_MAIN");
+    }
+
+    #[test]
+    fn test_run_app_all_subcommands() {
+        let temp = tempdir().unwrap();
+        let src_dir = temp.path().join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        std::fs::write(src_dir.join("lib.rs"), "pub fn ok() {}").unwrap();
+
+        let valid_rules_json = r#"{
+            "version": "1.0",
+            "rules": [
+                {"id": "ARCH-001", "version": "1.0", "category": "Architecture", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "ARCH-002", "version": "1.0", "category": "Architecture", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "ARCH-005", "version": "1.0", "category": "Architecture", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "ASYNC-001", "version": "1.0", "category": "Robustness", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "SEC-001", "version": "1.0", "category": "Security", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "VUE-001", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "VUE-002", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "CSS-001", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "CSS-004", "version": "1.0", "category": "Convention", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"},
+                {"id": "LEAK-001", "version": "1.0", "category": "Robustness", "severity": "Deny", "title": "t", "description": "d", "remediation": "r"}
+            ]
+        }"#;
+        let valid_rules_file = temp.path().join("valid_rules.json");
+        std::fs::write(&valid_rules_file, valid_rules_json).unwrap();
+
+        let rules_file = temp.path().join("rules.json");
+        std::fs::write(&rules_file, "{\"version\": \"1.0\", \"rules\": []}").unwrap();
+
+        // 1. Validate rules success and failure
+        assert!(run_app(Cli {
+            rules_path: Some(valid_rules_file),
+            validate_rules: true,
+            command: None,
+        }).is_ok());
+
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: true,
+            command: None,
+        }).is_err());
+
+        // 2. Check command on clean temp directory and default check command on workspace
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Check {
+                path: temp.path().to_path_buf(),
+                sarif: None,
+                json: None,
+                expanded: false,
+                ci: false,
+                frontend_only: false,
+                backend_only: false,
+            }),
+        }).is_ok());
+
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: None,
+        }).is_err());
+
+        // 3. Init command (with and without hooks)
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Init {
+                hooks: false,
+                models: false,
+            }),
+        }).is_ok());
+
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Init {
+                hooks: true,
+                models: false,
+            }),
+        }).is_ok());
+
+        // 3.1. Model Status, Clean, and Download commands
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Model {
+                action: ModelCommands::Status,
+            }),
+        }).is_ok());
+
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Model {
+                action: ModelCommands::Clean,
+            }),
+        }).is_ok());
+
+        // 4. Explain command
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Explain {
+                path: temp.path().to_path_buf(),
+                clusters: true,
+            }),
+        }).is_ok());
+
+        // 5. Baseline Reconcile command
+        let baseline_file = temp.path().join("guardian-baseline.json");
+        std::fs::write(&baseline_file, "[]").unwrap();
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Baseline {
+                action: BaselineCommands::Reconcile {
+                    file: baseline_file,
+                },
+            }),
+        }).is_ok());
+
+        // 6. Ledger Sign & Verify commands
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Ledger {
+                action: LedgerCommands::Sign {
+                    rule: "ARCH-001".into(),
+                    fingerprint: "fp123".into(),
+                    reason: "test".into(),
+                    author: "Alice".into(),
+                    duration: "30d".into(),
+                },
+            }),
+        }).is_ok());
+
+        let ledger_file = temp.path().join("guardian-ledger.lock");
+        std::fs::write(&ledger_file, "[]").unwrap();
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Ledger {
+                action: LedgerCommands::Verify {
+                    file: ledger_file.clone(),
+                },
+            }),
+        }).is_ok());
+
+        let old_key_file = temp.path().join("old.key");
+        std::fs::write(&old_key_file, "11".repeat(32)).unwrap();
+        assert!(run_app(Cli {
+            rules_path: Some(rules_file.clone()),
+            validate_rules: false,
+            command: Some(Commands::Ledger {
+                action: LedgerCommands::ReSign {
+                    all: true,
+                    file: ledger_file,
+                    old_key_path: Some(old_key_file),
+                    new_key_path: None,
+                    force: true,
+                },
+            }),
+        }).is_ok());
+
+        // 7. Check command with invalid rules path (error path)
+        assert!(run_app(Cli {
+            rules_path: Some(temp.path().join("non_existent_rules.json")),
+            validate_rules: false,
+            command: None,
+        }).is_err());
+    }
 
     #[test]
     fn test_run_check_clean_with_failing_reports() {
@@ -402,38 +743,54 @@ mod tests {
         let json_dir = temp.path().join("json_dir");
         std::fs::create_dir_all(&json_dir).unwrap();
 
-        run_check(CheckExecutionOptions {
+        assert!(run_check(CheckExecutionOptions {
             rules_repo: rules_repo.clone(),
             path: temp.path(),
             sarif_path: Some(&sarif_dir),
             json_path: Some(&json_dir),
-            _expanded: false,
+            expanded: true,
             ci: false,
             frontend_only: false,
             backend_only: false,
-        });
+        }).is_ok());
 
         // Test frontend_only and backend_only scopes
-        run_check(CheckExecutionOptions {
+        assert!(run_check(CheckExecutionOptions {
             rules_repo: rules_repo.clone(),
             path: temp.path(),
             sarif_path: None,
             json_path: None,
-            _expanded: false,
+            expanded: false,
             ci: true,
             frontend_only: true,
             backend_only: false,
-        });
+        }).is_ok());
 
-        run_check(CheckExecutionOptions {
-            rules_repo,
+        assert!(run_check(CheckExecutionOptions {
+            rules_repo: rules_repo.clone(),
             path: temp.path(),
             sarif_path: None,
             json_path: None,
-            _expanded: false,
+            expanded: false,
             ci: false,
             frontend_only: false,
             backend_only: true,
-        });
+        }).is_ok());
+
+        // Test parse error limit in CI mode
+        let broken_dir = temp.path().join("broken_src");
+        std::fs::create_dir_all(&broken_dir).unwrap();
+        std::fs::write(broken_dir.join("broken.rs"), "fn broken( {").unwrap();
+
+        assert!(run_check(CheckExecutionOptions {
+            rules_repo,
+            path: &broken_dir,
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: true,
+            frontend_only: false,
+            backend_only: true,
+        }).is_err());
     }
 }

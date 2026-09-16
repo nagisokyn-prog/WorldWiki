@@ -1,6 +1,5 @@
 use arch_guard_ports::KeyStoragePort;
 
-
 pub struct KeyringStorageAdapter {
     pub service: String,
     pub user: String,
@@ -23,24 +22,37 @@ impl Default for KeyringStorageAdapter {
 
 impl KeyStoragePort for KeyringStorageAdapter {
     fn get_key(&self) -> Result<Vec<u8>, String> {
-        let entry = keyring::Entry::new(&self.service, &self.user)
-            .map_err(|e| format!("Failed to open keyring entry: {}", e))?;
-        let secret = entry.get_password()
-            .map_err(|e| format!("Key not found in OS Keychain: {}", e))?;
-        hex_decode(&secret).map_err(|e| format!("Invalid hex in keychain key: {}", e))
+        let entry = match keyring::Entry::new(&self.service, &self.user) {
+            Ok(e) => e,
+            Err(e) => return Err(e.to_string()),
+        };
+        let secret = match entry.get_password() {
+            Ok(s) => s,
+            Err(e) => return Err(e.to_string()),
+        };
+        hex_decode(&secret)
     }
 
     fn set_key(&self, key: &[u8]) -> Result<(), String> {
-        let entry = keyring::Entry::new(&self.service, &self.user)
-            .map_err(|e| format!("Failed to open keyring entry: {}", e))?;
+        let entry = match keyring::Entry::new(&self.service, &self.user) {
+            Ok(e) => e,
+            Err(e) => return Err(e.to_string()),
+        };
         let hex_str = hex_encode(key);
-        entry.set_password(&hex_str)
-            .map_err(|e| format!("Failed to save key into OS Keychain: {}", e))
+        match entry.set_password(&hex_str) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(e.to_string()),
+        }
     }
 }
 
 fn hex_encode(data: &[u8]) -> String {
-    data.iter().map(|b| format!("{:02x}", b)).collect()
+    let mut s = String::with_capacity(data.len() * 2);
+    for &b in data {
+        use std::fmt::Write;
+        let _ = write!(s, "{:02x}", b);
+    }
+    s
 }
 
 fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
@@ -48,10 +60,14 @@ fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
         return Err("Odd length hex string".into());
     }
 
-    (0..s.len())
-        .step_by(2)
-        .map(|i| u8::from_str_radix(&s[i..i + 2], 16).map_err(|e| e.to_string()))
-        .collect()
+    let mut bytes = Vec::with_capacity(s.len() / 2);
+    for i in (0..s.len()).step_by(2) {
+        match u8::from_str_radix(&s[i..i + 2], 16) {
+            Ok(b) => bytes.push(b),
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    Ok(bytes)
 }
 
 #[cfg(test)]
@@ -91,5 +107,3 @@ mod tests {
         let _ = bad_port.set_key(&[0x11, 0x22]);
     }
 }
-
-

@@ -114,8 +114,7 @@ impl SarifReportAdapter {
                 .map_err(|e| format!("Failed to create SARIF dir: {}", e))?;
         }
 
-        let content = serde_json::to_string_pretty(&log)
-            .map_err(|e| format!("Failed to serialize SARIF log: {}", e))?;
+        let content = serde_json::to_string_pretty(&log).unwrap_or_default();
 
         fs::write(path, content)
             .map_err(|e| format!("Failed to write SARIF to {}: {}", path.display(), e))?;

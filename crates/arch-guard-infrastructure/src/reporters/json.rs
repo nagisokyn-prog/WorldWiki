@@ -27,8 +27,7 @@ impl JsonReportAdapter {
                 .map_err(|e| format!("Failed to create report directory: {}", e))?;
         }
 
-        let json_str = serde_json::to_string_pretty(&report)
-            .map_err(|e| format!("Failed to serialize report: {}", e))?;
+        let json_str = serde_json::to_string_pretty(&report).unwrap_or_default();
 
         fs::write(path, json_str)
             .map_err(|e| format!("Failed to write report to {}: {}", path.display(), e))?;

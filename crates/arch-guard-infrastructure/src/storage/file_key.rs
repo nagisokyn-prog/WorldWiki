@@ -9,8 +9,12 @@ pub struct FileStorageAdapter {
 
 impl FileStorageAdapter {
     pub fn default_path() -> PathBuf {
-        if let Some(home) = dirs_home() {
-            home.join(".config").join("archguard").join("master.key")
+        Self::resolve_default_path(dirs_home())
+    }
+
+    pub fn resolve_default_path(home: Option<PathBuf>) -> PathBuf {
+        if let Some(h) = home {
+            h.join(".config").join("archguard").join("master.key")
         } else {
             PathBuf::from(".archguard/master.key")
         }
@@ -34,7 +38,6 @@ impl KeyStoragePort for FileStorageAdapter {
         hex_decode(trimmed).map_err(|e| format!("Invalid hex key: {}", e))
     }
 
-
     fn set_key(&self, key: &[u8]) -> Result<(), String> {
         if let Some(parent) = self.path.parent() {
             fs::create_dir_all(parent).map_err(|e| format!("Failed to create dir {}: {}", parent.display(), e))?;
@@ -46,13 +49,27 @@ impl KeyStoragePort for FileStorageAdapter {
 }
 
 fn dirs_home() -> Option<PathBuf> {
-    std::env::var_os("USERPROFILE")
-        .or_else(|| std::env::var_os("HOME"))
-        .map(PathBuf::from)
+    resolve_home_from_vars(std::env::var_os("USERPROFILE"), std::env::var_os("HOME"))
+}
+
+pub fn resolve_home_from_vars(
+    userprofile: Option<std::ffi::OsString>,
+    home: Option<std::ffi::OsString>,
+) -> Option<PathBuf> {
+    match (userprofile, home) {
+        (Some(up), _) => Some(PathBuf::from(up)),
+        (None, Some(h)) => Some(PathBuf::from(h)),
+        (None, None) => None,
+    }
 }
 
 fn hex_encode(data: &[u8]) -> String {
-    data.iter().map(|b| format!("{:02x}", b)).collect()
+    let mut s = String::with_capacity(data.len() * 2);
+    for &b in data {
+        use std::fmt::Write;
+        let _ = write!(s, "{:02x}", b);
+    }
+    s
 }
 
 fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
@@ -60,15 +77,20 @@ fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
         return Err("Odd length hex string".into());
     }
 
-    (0..s.len())
-        .step_by(2)
-        .map(|i| u8::from_str_radix(&s[i..i + 2], 16).map_err(|e| e.to_string()))
-        .collect()
+    let mut bytes = Vec::with_capacity(s.len() / 2);
+    for i in (0..s.len()).step_by(2) {
+        match u8::from_str_radix(&s[i..i + 2], 16) {
+            Ok(b) => bytes.push(b),
+            Err(e) => return Err(e.to_string()),
+        }
+    }
+    Ok(bytes)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ffi::OsString;
     use tempfile::tempdir;
 
     #[test]
@@ -95,6 +117,25 @@ mod tests {
     fn test_file_storage_adapter_default_path() {
         let def = FileStorageAdapter::default_path();
         assert!(!def.as_os_str().is_empty());
+
+        let custom_home = FileStorageAdapter::resolve_default_path(Some(PathBuf::from("/custom/home")));
+        assert_eq!(custom_home, PathBuf::from("/custom/home/.config/archguard/master.key"));
+
+        let none_home = FileStorageAdapter::resolve_default_path(None);
+        assert_eq!(none_home, PathBuf::from(".archguard/master.key"));
+    }
+
+    #[test]
+    fn test_resolve_home_from_vars() {
+        assert_eq!(
+            resolve_home_from_vars(Some(OsString::from("C:\\Users\\Test")), None),
+            Some(PathBuf::from("C:\\Users\\Test"))
+        );
+        assert_eq!(
+            resolve_home_from_vars(None, Some(OsString::from("/home/user"))),
+            Some(PathBuf::from("/home/user"))
+        );
+        assert_eq!(resolve_home_from_vars(None, None), None);
     }
 
     #[test]
@@ -118,7 +159,6 @@ mod tests {
         let temp = tempdir().unwrap();
         let invalid_path = temp.path().join("invalid_dir");
         fs::create_dir_all(&invalid_path).unwrap();
-        // Pointing file path directly to an existing directory causes fs::write and fs::read to fail
         let storage = FileStorageAdapter::new(invalid_path);
         assert!(storage.set_key(&[1, 2, 3]).is_err());
         assert!(storage.get_key().is_err());
@@ -130,5 +170,3 @@ mod tests {
         assert!(bad_parent_storage.set_key(&[1, 2, 3]).is_err());
     }
 }
-
-

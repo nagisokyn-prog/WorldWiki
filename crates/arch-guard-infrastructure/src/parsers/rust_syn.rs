@@ -20,8 +20,13 @@ impl AstParserPort for RustSynParserAdapter {
     fn parse_file(&self, path: &Path, crate_name: &str) -> Result<Vec<Violation>, String> {
         let content = fs::read_to_string(path)
             .map_err(|e| format!("Could not read file {}: {}", path.display(), e))?;
+        self.parse_source(&content, path, crate_name)
+    }
+}
 
-        let syntax_tree = match syn::parse_file(&content) {
+impl RustSynParserAdapter {
+    pub fn parse_source(&self, content: &str, path: &Path, crate_name: &str) -> Result<Vec<Violation>, String> {
+        let syntax_tree = match syn::parse_file(content) {
             Ok(tree) => tree,
             Err(e) => {
                 return Err(format!("[PARSE-ERROR] {}: {}", path.display(), e));

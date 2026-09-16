@@ -105,7 +105,7 @@ impl ExplainClustersUseCase {
             rule_ids.sort();
 
             let sample_violations = items.iter().take(3).cloned().collect();
-            let primary_rule = rule_ids.first().cloned().unwrap_or_else(|| "UNKNOWN".into());
+            let primary_rule = rule_ids.first().cloned().unwrap_or_default();
             let label = format!("Cluster #{}: {} ({})", c_id, primary_rule, count);
             let explanation = format!(
                 "Pervasive architectural pattern affecting {} locations. Dominant rule(s): {}.",

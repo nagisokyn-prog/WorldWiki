@@ -100,7 +100,10 @@ dependencies = [
  "arch-guard-ports",
  "chrono",
  "hmac",
+ "serde",
+ "serde_json",
  "sha2",
+ "tempfile",
 ]
 
 [[package]]

@@ -1,4 +1,5 @@
 pub mod clusterer;
+pub mod downloader;
 pub mod embedder;
 pub mod manifest;
 pub mod parser;
@@ -7,6 +8,7 @@ pub mod scanner;
 pub mod storage;
 
 pub use clusterer::ClustererPort;
+pub use downloader::ModelDownloaderPort;
 pub use embedder::VectorEmbedderPort;
 pub use manifest::ManifestParserPort;
 pub use parser::{AstEnginePort, AstParserPort};

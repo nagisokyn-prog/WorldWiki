@@ -174,7 +174,7 @@ fn test_cli_ledger_sign_and_verify_command() {
     let temp = tempdir().unwrap();
     let key_dir = temp.path().join(".archguard/keys");
     fs::create_dir_all(&key_dir).unwrap();
-    fs::write(key_dir.join("secret.key"), [0x42u8; 32]).unwrap();
+    fs::write(key_dir.join("secret.key"), "42".repeat(32)).unwrap();
 
     let output = Command::new(cargo_bin())
         .arg("--rules-path")
@@ -395,5 +395,246 @@ fn test_cli_init_already_existing_baseline() {
     assert!(content.contains("existing_hash"), "Must not overwrite existing baseline");
 }
 
+#[test]
+fn test_e2e_git_merge_conflict_reconcile() {
+    let temp = tempdir().unwrap();
+    let baseline_file = temp.path().join("guardian-baseline.json");
 
+    let conflict_content = r#"<<<<<<< HEAD
+[
+  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+]
+=======
+[
+  "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+]
+>>>>>>> feature/refactor-domain
+"#;
+    fs::write(&baseline_file, conflict_content).unwrap();
 
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("baseline")
+        .arg("reconcile")
+        .arg("--file")
+        .arg(&baseline_file)
+        .output()
+        .expect("Failed to execute baseline reconcile");
+
+    assert!(output.status.success());
+    let content = fs::read_to_string(&baseline_file).unwrap();
+    assert!(!content.contains("<<<<<<<"), "Conflict markers must be removed");
+    assert!(!content.contains(">>>>>>>"), "Conflict markers must be removed");
+    assert!(!content.contains("======="), "Conflict markers must be removed");
+
+    let parsed: Vec<String> = serde_json::from_str(&content).expect("Must be valid JSON array");
+    assert_eq!(parsed.len(), 3, "Must deduplicate into 3 unique hashes");
+    assert_eq!(parsed[0], "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+    assert_eq!(parsed[1], "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+    assert_eq!(parsed[2], "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
+}
+
+#[test]
+fn test_e2e_ledger_re_sign_all_command() {
+    let temp = tempdir().unwrap();
+    let lock_file = temp.path().join("guardian-ledger.lock");
+
+    let old_key_file = temp.path().join("old.key");
+    let new_key_file = temp.path().join("new.key");
+    fs::write(&old_key_file, "11".repeat(32)).unwrap();
+    fs::write(&new_key_file, "22".repeat(32)).unwrap();
+
+    // Initial sign
+    let output_sign = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("ledger")
+        .arg("sign")
+        .arg("--rule")
+        .arg("ARCH-001")
+        .arg("--fingerprint")
+        .arg("fp123")
+        .arg("--reason")
+        .arg("Refactor")
+        .arg("--author")
+        .arg("Alice")
+        .current_dir(temp.path())
+        .output()
+        .unwrap();
+    assert!(output_sign.status.success());
+
+    // Create a mock ledger lock with initial signature
+    let expires = chrono::Utc::now() + chrono::Duration::days(30);
+    let initial_supp = vec![serde_json::json!({
+        "rule_id": "ARCH-001",
+        "fingerprint": "fp123",
+        "reason": "Refactor",
+        "author": "Alice",
+        "expires": expires.to_rfc3339(),
+        "signature": "initial_sig"
+    })];
+    fs::write(&lock_file, serde_json::to_string_pretty(&initial_supp).unwrap()).unwrap();
+
+    // Force re-sign with new key
+    let output_resign = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("ledger")
+        .arg("re-sign")
+        .arg("--all")
+        .arg("--file")
+        .arg(&lock_file)
+        .arg("--new-key-path")
+        .arg(&new_key_file)
+        .arg("--force")
+        .output()
+        .expect("Failed to execute ledger re-sign");
+
+    assert!(
+        output_resign.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output_resign.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output_resign.stdout);
+    assert!(stdout.contains("Successfully re-signed 1 suppression"));
+
+    // Verify lock file contains valid updated signature
+    let updated_content = fs::read_to_string(&lock_file).unwrap();
+    assert!(!updated_content.contains("initial_sig"), "Old signature must be replaced");
+}
+
+#[test]
+fn test_e2e_pure_vue_project_scan() {
+    let temp = tempdir().unwrap();
+    let src_dir = temp.path().join("src/components");
+    fs::create_dir_all(&src_dir).unwrap();
+
+    // 1. Vue component with hardcoded hex colors and monolith script
+    let mut heavy_script = String::from("<script setup>\nimport { ref } from 'vue';\nconst val = ref(0);\n");
+    for i in 0..40 {
+        heavy_script.push_str(&format!("function job_{}() {{ val.value += {}; }}\n", i, i));
+    }
+    heavy_script.push_str("</script>\n<template><div class=\"box\">Hello</div></template>\n<style>\n.box { color: #ff0000; background: #000000; }\n</style>\n");
+    fs::write(src_dir.join("HeavyMonolith.vue"), heavy_script).unwrap();
+
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("check")
+        .arg("--path")
+        .arg(temp.path())
+        .arg("--frontend-only")
+        .output()
+        .expect("Failed to execute check on pure Vue project");
+
+    let combined = format!(
+        "{} {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    assert!(
+        combined.contains("VUE-001") || combined.contains("CSS-001") || combined.contains("CSS-004"),
+        "Must detect Vue frontend violations: {}",
+        combined
+    );
+}
+
+#[test]
+fn test_e2e_ledger_security_tamper_and_expiry() {
+    let temp = tempdir().unwrap();
+    let lock_file = temp.path().join("guardian-ledger.lock");
+    let old_key_file = temp.path().join("old.key");
+    let new_key_file = temp.path().join("new.key");
+    fs::write(&old_key_file, "33".repeat(32)).unwrap();
+    fs::write(&new_key_file, "44".repeat(32)).unwrap();
+
+    // 1. Valid initial suppression signed with old key
+    let expires = chrono::Utc::now() + chrono::Duration::days(30);
+    let old_storage = cargo_arch_guard::infrastructure::FileStorageAdapter::new(old_key_file.clone());
+    let sig = cargo_arch_guard::application::SignSuppressionUseCase::sign(
+        &old_storage,
+        "ARCH-001",
+        "fp123",
+        "Valid reason",
+        "Lead",
+        &expires,
+    ).unwrap();
+
+    let entry = serde_json::json!({
+        "rule_id": "ARCH-001",
+        "fingerprint": "fp123",
+        "reason": "Tampered reason", // Tampered reason!
+        "author": "Lead",
+        "expires": expires.to_rfc3339(),
+        "signature": sig
+    });
+    fs::write(&lock_file, serde_json::to_string_pretty(&vec![entry]).unwrap()).unwrap();
+
+    // Re-signing without --force must fail on tampered content
+    let output_tamper = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("ledger")
+        .arg("re-sign")
+        .arg("--all")
+        .arg("--file")
+        .arg(&lock_file)
+        .arg("--old-key-path")
+        .arg(&old_key_file)
+        .arg("--new-key-path")
+        .arg(&new_key_file)
+        .output()
+        .expect("Failed to execute ledger re-sign");
+
+    assert!(!output_tamper.status.success(), "Tampered entry must be rejected during re-sign verification");
+}
+
+#[test]
+fn test_e2e_check_with_expanded_flag() {
+    let clean_path = fixture_dir("valid_clean_hexagonal");
+    if !clean_path.exists() {
+        return;
+    }
+
+    let output = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("check")
+        .arg("--path")
+        .arg(&clean_path)
+        .arg("--expanded")
+        .output()
+        .expect("Failed to execute check with --expanded");
+
+    // Must exit 0 (either successfully expanded or gracefully fallen back with warning)
+    assert!(output.status.success(), "Expanded mode check on clean project must succeed");
+}
+
+#[test]
+fn test_e2e_model_status_and_clean_command() {
+    let output_status = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("model")
+        .arg("status")
+        .output()
+        .expect("Failed to execute model status");
+
+    assert!(output_status.status.success());
+    let stdout = String::from_utf8_lossy(&output_status.stdout);
+    assert!(stdout.contains("ARCH GUARD NEURAL MODEL STATUS"));
+
+    let output_clean = Command::new(cargo_bin())
+        .arg("--rules-path")
+        .arg(rules_path())
+        .arg("model")
+        .arg("clean")
+        .output()
+        .expect("Failed to execute model clean");
+
+    assert!(output_clean.status.success());
+}

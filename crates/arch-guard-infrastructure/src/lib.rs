@@ -9,6 +9,7 @@ pub mod storage;
 pub mod taint;
 pub mod vector;
 
+pub use ast::MacroVisitor;
 pub use hooks::GitHooksInstaller;
 pub use manifest::CargoMetadataManifestAdapter;
 pub use parsers::{ParallelAstEngineAdapter, RustSynParserAdapter, VueSfcParserAdapter};
@@ -21,6 +22,7 @@ pub use storage::{
     RulesJsonRepository,
 };
 
-pub use vector::{DbscanClustererAdapter, PatternCache, SemanticEmbedderAdapter};
-
-
+pub use vector::{
+    DbscanClustererAdapter, ModelRegistry, NativeModelDownloaderAdapter, PatternCache,
+    SemanticEmbedderAdapter, TractOnnxEmbedderAdapter,
+};

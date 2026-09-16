@@ -36,7 +36,12 @@ impl<'a, 'ast> Visit<'ast> for AiSlopVisitor<'a> {
 
         visit::visit_item_fn(self, node);
 
-        if self.current_fn_clones >= 4 {
+        let is_test = node.attrs.iter().any(|attr| {
+            let path = quote::quote!(#attr).to_string();
+            path.contains("test")
+        });
+
+        if !is_test && self.current_fn_clones >= 4 {
             let fn_name = node.sig.ident.to_string();
             let snippet = format!("fn {}() ({} .clone() calls)", fn_name, self.current_fn_clones);
             let fingerprint = compute_fingerprint("SLOP-001", "1.0", &fn_name, &snippet);

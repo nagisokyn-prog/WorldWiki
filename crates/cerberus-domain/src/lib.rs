@@ -12,8 +12,8 @@ pub use metrics::{FileMetrics, PackageMetrics, PressureCalculator, PressureWeigh
 pub use preset::Preset;
 pub use registry::BuiltinRuleRegistry;
 pub use rules::{
-    compute_fingerprint, Category, CerberusConfig, RuleDefinition, RuleOverride, RulesConfig,
-    Severity, Violation,
+    compute_fingerprint, Category, CerberusConfig, LimitsConfig, RuleDefinition, RuleOverride,
+    RulesConfig, Severity, Violation,
 };
 pub use suppression::Suppression;
 

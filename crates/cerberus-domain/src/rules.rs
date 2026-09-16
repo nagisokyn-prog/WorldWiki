@@ -85,6 +85,54 @@ pub struct RuleOverride {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LimitsConfig {
+    #[serde(default = "default_max_sloc_warn")]
+    pub max_sloc_warn: usize,
+    #[serde(default = "default_max_sloc_deny")]
+    pub max_sloc_deny: usize,
+    #[serde(default = "default_max_pressure_warn")]
+    pub max_pressure_warn: f64,
+    #[serde(default = "default_max_pressure_deny")]
+    pub max_pressure_deny: f64,
+    #[serde(default = "default_max_style_lines")]
+    pub max_style_lines: usize,
+    #[serde(default = "default_max_script_setup_lines")]
+    pub max_script_setup_lines: usize,
+}
+
+fn default_max_sloc_warn() -> usize {
+    500
+}
+fn default_max_sloc_deny() -> usize {
+    800
+}
+fn default_max_pressure_warn() -> f64 {
+    200.0
+}
+fn default_max_pressure_deny() -> f64 {
+    400.0
+}
+fn default_max_style_lines() -> usize {
+    25
+}
+fn default_max_script_setup_lines() -> usize {
+    35
+}
+
+impl Default for LimitsConfig {
+    fn default() -> Self {
+        Self {
+            max_sloc_warn: default_max_sloc_warn(),
+            max_sloc_deny: default_max_sloc_deny(),
+            max_pressure_warn: default_max_pressure_warn(),
+            max_pressure_deny: default_max_pressure_deny(),
+            max_style_lines: default_max_style_lines(),
+            max_script_setup_lines: default_max_script_setup_lines(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CerberusConfig {
     #[serde(rename = "$schema", default)]
     pub schema: Option<String>,
@@ -94,6 +142,8 @@ pub struct CerberusConfig {
     pub ignore: Vec<String>,
     #[serde(default)]
     pub extends: Vec<String>,
+    #[serde(default)]
+    pub limits: LimitsConfig,
     #[serde(default)]
     pub rules: HashMap<String, Severity>,
     #[serde(default)]
@@ -107,6 +157,7 @@ impl Default for CerberusConfig {
             version: default_version(),
             ignore: Vec::new(),
             extends: Vec::new(),
+            limits: LimitsConfig::default(),
             rules: HashMap::new(),
             overrides: Vec::new(),
         }

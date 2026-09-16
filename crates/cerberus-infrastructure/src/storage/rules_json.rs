@@ -5,9 +5,10 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct RulesJsonRepository {
     pub config: RulesConfig,
+    pub cerberus_config: Option<CerberusConfig>,
     pub rules_by_id: HashMap<String, RuleDefinition>,
 }
 
@@ -52,14 +53,15 @@ impl RulesJsonRepository {
 
             let rules_vec = rules_by_id.values().cloned().collect();
             let config = RulesConfig {
-                schema: cerberus_cfg.schema,
-                version: cerberus_cfg.version,
-                ignore: cerberus_cfg.ignore,
+                schema: cerberus_cfg.schema.clone(),
+                version: cerberus_cfg.version.clone(),
+                ignore: cerberus_cfg.ignore.clone(),
                 rules: rules_vec,
             };
 
             return Ok(Self {
                 config,
+                cerberus_config: Some(cerberus_cfg),
                 rules_by_id,
             });
         }
@@ -82,8 +84,16 @@ impl RulesJsonRepository {
 
         Ok(Self {
             config,
+            cerberus_config: None,
             rules_by_id,
         })
+    }
+
+    pub fn limits(&self) -> cerberus_domain::LimitsConfig {
+        self.cerberus_config
+            .as_ref()
+            .map(|c| c.limits.clone())
+            .unwrap_or_default()
     }
 
     pub fn find_rules_path(custom_path: Option<&PathBuf>) -> PathBuf {
@@ -158,16 +168,25 @@ mod tests {
         let json_content = r#"{
             "version": "1.0",
             "ignore": [".logic_legacy", "target"],
+            "limits": {
+                "max_sloc_warn": 600,
+                "max_sloc_deny": 900
+            },
             "rules": {
                 "arch/domain-purity": "deny",
                 "vue/no-monolith-script-setup": "warn",
-                "css/no-hardcoded-colors": "off"
+                "css/no-hardcoded-colors": "off",
+                "custom/team-rule": "deny"
             }
         }"#;
         fs::write(&file_path, json_content).unwrap();
 
         let repo = RulesJsonRepository::load_from_file(&file_path).unwrap();
         assert_eq!(repo.config.ignore.len(), 2);
+
+        let limits = repo.limits();
+        assert_eq!(limits.max_sloc_warn, 600);
+        assert_eq!(limits.max_sloc_deny, 900);
 
         let arch001 = repo.get_rule("ARCH-001").unwrap();
         assert_eq!(arch001.severity, Severity::Deny);
@@ -178,8 +197,11 @@ mod tests {
         let css001 = repo.get_rule("CSS-001").unwrap();
         assert_eq!(css001.severity, Severity::Off);
 
+        let custom = repo.get_rule("custom/team-rule").unwrap();
+        assert_eq!(custom.severity, Severity::Deny);
+
         assert!(repo
-            .validate_registered_rules(&["ARCH-001", "VUE-001"])
+            .validate_registered_rules(&["ARCH-001", "VUE-001", "custom/team-rule"])
             .is_ok());
     }
 

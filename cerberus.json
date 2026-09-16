@@ -19,22 +19,54 @@
     "cerberus:perf-high-fps",
     "cerberus:css-design-tokens"
   ],
+  "limits": {
+    "max_sloc_warn": 500,
+    "max_sloc_deny": 800,
+    "max_pressure_warn": 200.0,
+    "max_pressure_deny": 400.0,
+    "max_style_lines": 25,
+    "max_script_setup_lines": 35
+  },
   "rules": {
     "arch/domain-purity": "deny",
     "arch/ports-isolation": "deny",
+    "arch/tauri-isolation": "deny",
+    "arch/manifest-hierarchy": "deny",
+    "arch/missing-layer": "warn",
+    "arch/zone-of-pain": "warn",
+    "arch/god-object-blast-radius": "warn",
+
+    "code/max-pressure": "warn",
+    "code/max-sloc": "deny",
+
     "async/no-sync-mutex-in-await": "deny",
+    "async/no-zombie-spawn": "warn",
+
+    "robustness/no-raw-unwrap-panic": "warn",
+    "quality/ai-slop-detector": "warn",
+
     "sec/taint-sink-execution": "deny",
+    "sec/transitive-capabilities": "warn",
+
     "vue/no-monolith-script-setup": "deny",
     "vue/require-companion-hook": "deny",
     "vue/no-types-in-sfc": "deny",
+
     "css/no-hardcoded-colors": "deny",
     "css/require-design-tokens": "deny",
+    "css/max-style-lines": "warn",
+
     "fsd/layer-imports-hierarchy": "deny",
     "fsd/public-api-only": "deny",
     "fsd/ui-kit-zero-domain": "deny",
+    "fsd/no-cross-slice-imports": "deny",
+
     "perf/shallow-ref-for-heavy-ast": "deny",
     "perf/no-reactive-canvas-three": "deny",
     "perf/no-allocations-in-raf": "deny",
+    "perf/no-template-methods-in-loops": "deny",
+    "perf/no-cascading-watchers": "deny",
+
     "leak/uncleaned-ipc-listener": "deny"
   }
 }

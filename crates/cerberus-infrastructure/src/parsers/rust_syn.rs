@@ -75,11 +75,19 @@ impl RustSynParserAdapter {
         slop_visitor.visit_file(&syntax_tree);
         violations.extend(slop_visitor.violations);
 
-        // 7. Code Complexity & Architectural Pressure (ARCH-030, ARCH-031)
         let weights = PressureWeights::default();
         if let Ok(metrics) = AstComplexityAnalyzer::analyze_rust_file(content, path, 0.0, &weights) {
             let path_str = path.to_string_lossy().to_lowercase();
-            let (warn_sloc, deny_sloc, warn_pressure, deny_pressure) = if path_str.contains("domain") {
+            let is_test_file = path_str.contains("/tests/")
+                || path_str.contains("\\tests\\")
+                || path_str.contains("/benches/")
+                || path_str.contains("\\benches\\")
+                || path_str.ends_with("_test.rs")
+                || path_str.ends_with("_spec.rs");
+
+            let (warn_sloc, deny_sloc, warn_pressure, deny_pressure) = if is_test_file {
+                (1000, 2000, 500.0, 1000.0)
+            } else if path_str.contains("domain") {
                 (200, 350, 100.0, 200.0)
             } else if path_str.contains("application") {
                 (150, 300, 80.0, 180.0)
@@ -88,6 +96,7 @@ impl RustSynParserAdapter {
             } else {
                 (300, 500, 150.0, 300.0)
             };
+
 
             let complexity_violations = AstComplexityAnalyzer::check_thresholds(
                 &metrics,

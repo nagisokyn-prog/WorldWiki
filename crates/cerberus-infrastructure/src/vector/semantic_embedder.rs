@@ -56,11 +56,12 @@ impl VectorEmbedderPort for SemanticEmbedderAdapter {
                 let sign = if (hash >> 32) % 2 == 0 { 1.0f32 } else { -1.0f32 };
                 vector[idx] += sign;
 
-                // N-gram features for code snippets (length 3..5)
-                if clean.len() >= 3 {
-                    for i in 0..=(clean.len() - 3) {
-                        let ngram = &clean[i..i + 3];
-                        let ngram_hash = Self::hash_token(ngram);
+                // Unicode-safe N-gram features for code snippets (length 3)
+                let chars: Vec<char> = clean.chars().collect();
+                if chars.len() >= 3 {
+                    for window in chars.windows(3) {
+                        let ngram: String = window.iter().collect();
+                        let ngram_hash = Self::hash_token(&ngram);
                         let ngram_idx = (ngram_hash as usize) % self.dimension;
                         vector[ngram_idx] += 0.5;
                     }

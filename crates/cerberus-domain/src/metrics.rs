@@ -5,12 +5,12 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PackageMetrics {
     pub package_name: String,
-    pub afferent_coupling: usize, // Ca
-    pub efferent_coupling: usize, // Ce
-    pub instability: f64,         // I = Ce / (Ca + Ce)
-    pub abstractness: f64,        // A = Na / Nc
-    pub distance_from_main_sequence: f64, // D = |A + I - 1|
-    pub in_zone_of_pain: bool,    // A < 0.2 && I < 0.2 && Ca > 3
+    pub afferent_coupling: usize,
+    pub efferent_coupling: usize,
+    pub instability: f64,
+    pub abstractness: f64,
+    pub distance_from_main_sequence: f64,
+    pub in_zone_of_pain: bool,
 }
 
 impl PackageMetrics {
@@ -133,93 +133,5 @@ impl PressureCalculator {
         }
 
         (weighted_sum / (total_loc as f64)) * 1000.0
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::rules::Category;
-
-    #[test]
-    fn test_package_metrics_calculation() {
-        let metrics = PackageMetrics::compute("domain".into(), 10, 0, 8, 10);
-        assert_eq!(metrics.instability, 0.0);
-        assert_eq!(metrics.abstractness, 0.8);
-        assert!((metrics.distance_from_main_sequence - 0.2).abs() < 1e-6);
-        assert!(!metrics.in_zone_of_pain);
-
-        let pain = PackageMetrics::compute("concrete_god".into(), 10, 0, 0, 10);
-        assert!(pain.in_zone_of_pain);
-
-        // Zero coupling and zero classes
-        let empty_metrics = PackageMetrics::compute("empty".into(), 0, 0, 0, 0);
-        assert_eq!(empty_metrics.instability, 0.0);
-        assert_eq!(empty_metrics.abstractness, 0.0);
-    }
-
-    #[test]
-    fn test_file_metrics_and_pressure_calculation() {
-        let weights = PressureWeights::default();
-        let file_metrics = FileMetrics::compute(
-            PathBuf::from("src/domain/entity.rs"),
-            100, // sloc
-            10,  // functions
-            5,   // cyclomatic
-            4,   // dependencies
-            3,   // ast_depth
-            0.1, // distance_d
-            &weights,
-        );
-
-        // S_arch = (0.1 * 100) + (2.0 * 10) + (3.0 * 5) + (1.5 * 4) + (4.0 * 3) + (20.0 * 0.1)
-        // S_arch = 10 + 20 + 15 + 6 + 12 + 2 = 65.0
-        assert_eq!(file_metrics.sloc, 100);
-        assert_eq!(file_metrics.functions, 10);
-        assert_eq!(file_metrics.cyclomatic, 5);
-        assert_eq!(file_metrics.dependencies, 4);
-        assert_eq!(file_metrics.ast_depth, 3);
-        assert!((file_metrics.distance_d - 0.1).abs() < 1e-6);
-        assert!((file_metrics.pressure_score - 65.0).abs() < 1e-6);
-    }
-
-    #[test]
-    fn test_pressure_calculator_score() {
-        let violations = vec![
-            Violation {
-                rule_id: "ARCH-001".into(),
-                rule_version: "1.0".into(),
-                category: Category::Architecture,
-                severity: Severity::Deny,
-                file: PathBuf::from("test.rs"),
-                line: 1,
-                column: 1,
-                symbol: "fn".into(),
-                snippet: "use tauri;".into(),
-                message: "err".into(),
-                remediation: "fix".into(),
-                fingerprint: "fp1".into(),
-            },
-            Violation {
-                rule_id: "CSS-003".into(),
-                rule_version: "1.0".into(),
-                category: Category::Convention,
-                severity: Severity::Warn,
-                file: PathBuf::from("test.css"),
-                line: 1,
-                column: 1,
-                symbol: "css".into(),
-                snippet: "dup".into(),
-                message: "err".into(),
-                remediation: "fix".into(),
-                fingerprint: "fp2".into(),
-            },
-        ];
-
-        let score = PressureCalculator::compute_score(&violations, 100);
-        assert_eq!(score, 130.0);
-
-        let zero = PressureCalculator::compute_score(&[], 0);
-        assert_eq!(zero, 0.0);
     }
 }

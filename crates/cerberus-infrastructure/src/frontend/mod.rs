@@ -7,12 +7,12 @@ pub mod vue_rules;
 
 use cerberus_domain::Violation;
 
-use crate::frontend::css_rules::CssRuleChecker;
-use crate::frontend::fsd_rules::FsdRulesChecker;
-use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
-use crate::frontend::perf_rules::PerfRulesChecker;
-use crate::frontend::sfc_parser::VueSfcParser;
-use crate::frontend::vue_rules::VueRuleChecker;
+pub use crate::frontend::css_rules::CssRuleChecker;
+pub use crate::frontend::fsd_rules::{FsdLayer, FsdRulesChecker};
+pub use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
+pub use crate::frontend::perf_rules::PerfRulesChecker;
+pub use crate::frontend::sfc_parser::VueSfcParser;
+pub use crate::frontend::vue_rules::VueRuleChecker;
 use std::fs;
 use std::path::Path;
 
@@ -79,5 +79,3 @@ mod tests {
         assert!(FrontendAnalyzer::analyze_file(&missing).is_err());
     }
 }
-
-

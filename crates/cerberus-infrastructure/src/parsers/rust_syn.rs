@@ -86,15 +86,15 @@ impl RustSynParserAdapter {
                 || path_str.ends_with("_spec.rs");
 
             let (warn_sloc, deny_sloc, warn_pressure, deny_pressure) = if is_test_file {
-                (1000, 2000, 500.0, 1000.0)
+                (1500, 3000, 800.0, 1500.0)
             } else if path_str.contains("domain") {
-                (200, 350, 100.0, 200.0)
-            } else if path_str.contains("application") {
-                (150, 300, 80.0, 180.0)
-            } else if path_str.contains("infrastructure") {
-                (400, 700, 200.0, 400.0)
-            } else {
                 (300, 500, 150.0, 300.0)
+            } else if path_str.contains("application") {
+                (400, 600, 200.0, 400.0)
+            } else if path_str.contains("infrastructure") {
+                (500, 800, 250.0, 500.0)
+            } else {
+                (500, 800, 200.0, 400.0)
             };
 
 

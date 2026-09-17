@@ -33,11 +33,23 @@ impl TractOnnxEmbedderAdapter {
                 Err(_) => ".".to_string(),
             },
         };
-        PathBuf::from(home)
+        let cerberus_dir = PathBuf::from(&home)
+            .join(".cache")
+            .join("cerberus")
+            .join("models")
+            .join("codeberta");
+        if cerberus_dir.exists() {
+            return cerberus_dir;
+        }
+        let legacy_dir = PathBuf::from(&home)
             .join(".cache")
             .join("archguard")
             .join("models")
-            .join("codeberta")
+            .join("codeberta");
+        if legacy_dir.exists() {
+            return legacy_dir;
+        }
+        cerberus_dir
     }
 
     pub fn is_model_available(&self) -> bool {
@@ -81,11 +93,22 @@ impl TractOnnxEmbedderAdapter {
 impl Default for TractOnnxEmbedderAdapter {
     fn default() -> Self {
         let cache_dir = Self::default_cache_dir();
-        let model_path = cache_dir.join("model_quantized.onnx");
-        let tokenizer_path = cache_dir.join("tokenizer.json");
+        let model_path = if cache_dir.join("model_quantized.onnx").exists() {
+            Some(cache_dir.join("model_quantized.onnx"))
+        } else if cache_dir.join("model.onnx").exists() {
+            Some(cache_dir.join("model.onnx"))
+        } else {
+            None
+        };
 
-        let (m_path, t_path) = if model_path.exists() && tokenizer_path.exists() {
-            (Some(model_path), Some(tokenizer_path))
+        let tokenizer_path = if cache_dir.join("tokenizer.json").exists() {
+            Some(cache_dir.join("tokenizer.json"))
+        } else {
+            None
+        };
+
+        let (m_path, t_path) = if model_path.is_some() && tokenizer_path.is_some() {
+            (model_path, tokenizer_path)
         } else {
             (None, None)
         };
@@ -93,6 +116,7 @@ impl Default for TractOnnxEmbedderAdapter {
         Self::new(m_path, t_path)
     }
 }
+
 
 impl VectorEmbedderPort for TractOnnxEmbedderAdapter {
     fn dimension(&self) -> usize {

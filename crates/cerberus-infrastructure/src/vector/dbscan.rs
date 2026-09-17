@@ -67,10 +67,11 @@ impl ClustererPort for DbscanClustererAdapter {
             .into_par_iter()
             .map(|i| {
                 let mut neighbors = Vec::new();
-                let target = &embeddings[i];
-                for (j, other) in embeddings.iter().enumerate() {
-                    if Self::is_within_eps_squared(target, other, eps_sq) {
-                        neighbors.push(j);
+                if let Some(target) = embeddings.get(i) {
+                    for (j, other) in embeddings.iter().enumerate() {
+                        if Self::is_within_eps_squared(target, other, eps_sq) {
+                            neighbors.push(j);
+                        }
                     }
                 }
                 neighbors
@@ -83,32 +84,47 @@ impl ClustererPort for DbscanClustererAdapter {
         let mut cluster_id = 0;
 
         for i in 0..n {
-            if visited[i] {
+            if visited.get(i).copied().unwrap_or(false) {
                 continue;
             }
-            visited[i] = true;
+            if let Some(v) = visited.get_mut(i) {
+                *v = true;
+            }
 
-            let neighbors = &all_neighbors[i];
+            let neighbors = match all_neighbors.get(i) {
+                Some(nb) => nb,
+                None => continue,
+            };
 
             if neighbors.len() < min_points {
                 // Mark as noise (None)
-                labels[i] = None;
+                if let Some(l) = labels.get_mut(i) {
+                    *l = None;
+                }
             } else {
                 // Expand cluster
-                labels[i] = Some(cluster_id);
+                if let Some(l) = labels.get_mut(i) {
+                    *l = Some(cluster_id);
+                }
                 let mut queue = VecDeque::from(neighbors.clone());
 
                 while let Some(neighbor_idx) = queue.pop_front() {
-                    if !visited[neighbor_idx] {
-                        visited[neighbor_idx] = true;
-                        let sub_neighbors = &all_neighbors[neighbor_idx];
-                        if sub_neighbors.len() >= min_points {
-                            queue.extend(sub_neighbors.iter().copied());
+                    let is_visited = visited.get(neighbor_idx).copied().unwrap_or(false);
+                    if !is_visited {
+                        if let Some(v) = visited.get_mut(neighbor_idx) {
+                            *v = true;
+                        }
+                        if let Some(sub_neighbors) = all_neighbors.get(neighbor_idx) {
+                            if sub_neighbors.len() >= min_points {
+                                queue.extend(sub_neighbors.iter().copied());
+                            }
                         }
                     }
 
-                    if labels[neighbor_idx].is_none() {
-                        labels[neighbor_idx] = Some(cluster_id);
+                    if let Some(l) = labels.get_mut(neighbor_idx) {
+                        if l.is_none() {
+                            *l = Some(cluster_id);
+                        }
                     }
                 }
 

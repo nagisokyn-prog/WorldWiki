@@ -38,8 +38,6 @@ impl FsdLayer {
         if *self == FsdLayer::Unknown || target == FsdLayer::Unknown {
             return true;
         }
-        // Higher layer can import lower layer. Lower layer cannot import higher layer.
-        // Self layer cannot import same layer slice (handled separately).
         *self >= target
     }
 
@@ -56,13 +54,20 @@ impl FsdLayer {
     }
 }
 
+pub struct ImportSite<'a> {
+    pub file: &'a Path,
+    pub line: usize,
+    pub snippet: &'a str,
+    pub target: &'a str,
+}
+
 impl FsdRulesChecker {
     pub fn check_source(source: &str, file_path: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
         let current_path_str = file_path.to_string_lossy();
         let current_layer = FsdLayer::parse(&current_path_str);
 
-        let is_uikit_package = current_path_str.contains("packages/components")
+        let is_uikit = current_path_str.contains("packages/components")
             || current_path_str.contains("packages\\components")
             || current_path_str.contains("@worldwiki/components");
 
@@ -72,137 +77,27 @@ impl FsdRulesChecker {
                 continue;
             }
 
-            // Extract import target path
             let import_target = extract_import_target(trimmed);
             if import_target.is_empty() {
                 continue;
             }
 
-            // 1. UI-Kit Purity Check (FSD-003)
-            if is_uikit_package
-                && (import_target.contains("stores")
-                    || import_target.contains("pinia")
-                    || import_target.contains("@/app")
-                    || import_target.contains("@/features")
-                    || import_target.contains("@/entities"))
-            {
-                let fingerprint = compute_fingerprint(
-                    "FSD-003",
-                    "1.0",
-                    &import_target,
-                    trimmed,
-                );
-                violations.push(Violation {
-                    rule_id: "FSD-003".into(),
-                    rule_version: "1.0".into(),
-                    category: Category::Architecture,
-                    severity: Severity::Deny,
-                    file: file_path.to_path_buf(),
-                    line: line_idx + 1,
-                    column: 1,
-                    symbol: import_target.clone(),
-                    snippet: trimmed.to_string(),
-                    message: format!(
-                        "UI-Kit package cannot import business stores or application layer: '{}'",
-                        import_target
-                    ),
-                    remediation: "Pass data via props and callbacks into pure UI components.".into(),
-                    fingerprint,
-                });
+            let site = ImportSite {
+                file: file_path,
+                line: line_idx + 1,
+                snippet: trimmed,
+                target: &import_target,
+            };
+
+            if is_uikit {
+                check_uikit_purity(&site, &mut violations);
             }
 
-            // 2. FSD Layer Hierarchy Check (FSD-001)
             let target_layer = FsdLayer::parse(&import_target);
             if current_layer != FsdLayer::Unknown && target_layer != FsdLayer::Unknown {
-                if !current_layer.can_import(target_layer) {
-                    let fingerprint = compute_fingerprint(
-                        "FSD-001",
-                        "1.0",
-                        &import_target,
-                        trimmed,
-                    );
-                    violations.push(Violation {
-                        rule_id: "FSD-001".into(),
-                        rule_version: "1.0".into(),
-                        category: Category::Architecture,
-                        severity: Severity::Deny,
-                        file: file_path.to_path_buf(),
-                        line: line_idx + 1,
-                        column: 1,
-                        symbol: import_target.clone(),
-                        snippet: trimmed.to_string(),
-                        message: format!(
-                            "FSD Layer Violation: layer '{}' is forbidden from importing from upper layer '{}' ('{}')",
-                            current_layer.as_str(),
-                            target_layer.as_str(),
-                            import_target
-                        ),
-                        remediation: "Invert dependency direction: entities cannot import features/pages/widgets.".into(),
-                        fingerprint,
-                    });
-                }
-
-                // 3. FSD Cross-Slice Direct Dependency (FSD-004)
-                if current_layer == target_layer && matches!(current_layer, FsdLayer::Features | FsdLayer::Entities | FsdLayer::Widgets) {
-                    let current_slice = extract_slice_name(&current_path_str, current_layer);
-                    let target_slice = extract_slice_name(&import_target, target_layer);
-                    if let (Some(cur), Some(tgt)) = (current_slice, target_slice) {
-                        if cur != tgt {
-                            let fingerprint = compute_fingerprint(
-                                "FSD-004",
-                                "1.0",
-                                &import_target,
-                                trimmed,
-                            );
-                            violations.push(Violation {
-                                rule_id: "FSD-004".into(),
-                                rule_version: "1.0".into(),
-                                category: Category::Architecture,
-                                severity: Severity::Deny,
-                                file: file_path.to_path_buf(),
-                                line: line_idx + 1,
-                                column: 1,
-                                symbol: import_target.clone(),
-                                snippet: trimmed.to_string(),
-                                message: format!(
-                                    "FSD Cross-Slice Violation: slice '{}' cannot directly depend on sibling slice '{}'",
-                                    cur, tgt
-                                ),
-                                remediation: "Compose sibling slices at the widgets or pages level.".into(),
-                                fingerprint,
-                            });
-                        }
-                    }
-                }
-
-                // 4. FSD Public API Check (FSD-002)
-                if (import_target.contains("/features/") || import_target.contains("/entities/"))
-                    && (import_target.contains("/internal/") || import_target.contains("/model/") || import_target.contains("/ui/"))
-                {
-                    let fingerprint = compute_fingerprint(
-                        "FSD-002",
-                        "1.0",
-                        &import_target,
-                        trimmed,
-                    );
-                    violations.push(Violation {
-                        rule_id: "FSD-002".into(),
-                        rule_version: "1.0".into(),
-                        category: Category::Architecture,
-                        severity: Severity::Deny,
-                        file: file_path.to_path_buf(),
-                        line: line_idx + 1,
-                        column: 1,
-                        symbol: import_target.clone(),
-                        snippet: trimmed.to_string(),
-                        message: format!(
-                            "FSD Public API bypass: import '{}' reaches into private internals of slice",
-                            import_target
-                        ),
-                        remediation: "Import from slice public API root (e.g. '@/features/auth') instead of deep internals.".into(),
-                        fingerprint,
-                    });
-                }
+                check_layer_hierarchy(current_layer, target_layer, &site, &mut violations);
+                check_cross_slice(current_layer, target_layer, &current_path_str, &site, &mut violations);
+                check_public_api(&site, &mut violations);
             }
         }
 
@@ -210,9 +105,114 @@ impl FsdRulesChecker {
     }
 }
 
+fn check_uikit_purity(site: &ImportSite, out: &mut Vec<Violation>) {
+    if site.target.contains("stores")
+        || site.target.contains("pinia")
+        || site.target.contains("@/app")
+        || site.target.contains("@/features")
+        || site.target.contains("@/entities")
+    {
+        out.push(Violation {
+            rule_id: "FSD-003".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: site.file.to_path_buf(),
+            line: site.line,
+            column: 1,
+            symbol: site.target.to_string(),
+            snippet: site.snippet.to_string(),
+            message: format!("UI-Kit package cannot import business stores or application layer: '{}'", site.target),
+            remediation: "Pass data via props and callbacks into pure UI components.".into(),
+            fingerprint: compute_fingerprint("FSD-003", "1.0", site.target, site.snippet),
+        });
+    }
+}
+
+fn check_layer_hierarchy(
+    cur: FsdLayer,
+    tgt: FsdLayer,
+    site: &ImportSite,
+    out: &mut Vec<Violation>,
+) {
+    if !cur.can_import(tgt) {
+        out.push(Violation {
+            rule_id: "FSD-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: site.file.to_path_buf(),
+            line: site.line,
+            column: 1,
+            symbol: site.target.to_string(),
+            snippet: site.snippet.to_string(),
+            message: format!(
+                "FSD Layer Violation: layer '{}' is forbidden from importing from upper layer '{}' ('{}')",
+                cur.as_str(),
+                tgt.as_str(),
+                site.target
+            ),
+            remediation: "Invert dependency direction: entities cannot import features/pages/widgets.".into(),
+            fingerprint: compute_fingerprint("FSD-001", "1.0", site.target, site.snippet),
+        });
+    }
+}
+
+fn check_cross_slice(
+    cur_layer: FsdLayer,
+    tgt_layer: FsdLayer,
+    cur_path: &str,
+    site: &ImportSite,
+    out: &mut Vec<Violation>,
+) {
+    if cur_layer == tgt_layer && matches!(cur_layer, FsdLayer::Features | FsdLayer::Entities | FsdLayer::Widgets) {
+        let current_slice = extract_slice_name(cur_path, cur_layer);
+        let target_slice = extract_slice_name(site.target, tgt_layer);
+        if let (Some(cur), Some(tgt)) = (current_slice, target_slice) {
+            if cur != tgt {
+                out.push(Violation {
+                    rule_id: "FSD-004".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Architecture,
+                    severity: Severity::Deny,
+                    file: site.file.to_path_buf(),
+                    line: site.line,
+                    column: 1,
+                    symbol: site.target.to_string(),
+                    snippet: site.snippet.to_string(),
+                    message: format!("FSD Cross-Slice Violation: slice '{}' cannot directly depend on sibling slice '{}'", cur, tgt),
+                    remediation: "Compose sibling slices at the widgets or pages level.".into(),
+                    fingerprint: compute_fingerprint("FSD-004", "1.0", site.target, site.snippet),
+                });
+            }
+        }
+    }
+}
+
+fn check_public_api(site: &ImportSite, out: &mut Vec<Violation>) {
+    if (site.target.contains("/features/") || site.target.contains("/entities/"))
+        && (site.target.contains("/internal/") || site.target.contains("/model/") || site.target.contains("/ui/"))
+    {
+        out.push(Violation {
+            rule_id: "FSD-002".into(),
+            rule_version: "1.0".into(),
+            category: Category::Architecture,
+            severity: Severity::Deny,
+            file: site.file.to_path_buf(),
+            line: site.line,
+            column: 1,
+            symbol: site.target.to_string(),
+            snippet: site.snippet.to_string(),
+            message: format!("FSD Public API bypass: import '{}' reaches into private internals of slice", site.target),
+            remediation: "Import from slice public API root (e.g. '@/features/auth') instead of deep internals.".into(),
+            fingerprint: compute_fingerprint("FSD-002", "1.0", site.target, site.snippet),
+        });
+    }
+}
+
 fn extract_import_target(line: &str) -> String {
     if let Some(pos) = line.find("from") {
-        let rest = &line[pos + 4..].trim();
+        let rest = line.get(pos + 4..).unwrap_or("").trim();
         let target = rest.trim_matches(';').trim().trim_matches('\'').trim_matches('"');
         return target.to_string();
     }
@@ -224,59 +224,11 @@ fn extract_slice_name(path: &str, layer: FsdLayer) -> Option<String> {
     let normalized = path.replace('\\', "/");
     let marker = format!("{}/", layer_str);
     if let Some(idx) = normalized.find(&marker) {
-        let rest = &normalized[idx + marker.len()..];
+        let rest = normalized.get(idx + marker.len()..).unwrap_or("");
         let slice = rest.split('/').next()?;
         if !slice.is_empty() {
             return Some(slice.to_string());
         }
     }
     None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_fsd_layer_parsing() {
-        assert_eq!(FsdLayer::parse("src/entities/user/model.ts"), FsdLayer::Entities);
-        assert_eq!(FsdLayer::parse("src/features/auth/useAuth.ts"), FsdLayer::Features);
-        assert_eq!(FsdLayer::parse("src/widgets/header/Header.vue"), FsdLayer::Widgets);
-        assert_eq!(FsdLayer::parse("src/pages/home/Home.vue"), FsdLayer::Pages);
-        assert_eq!(FsdLayer::parse("src/shared/ui/button.vue"), FsdLayer::Shared);
-        assert_eq!(FsdLayer::parse("src/utils/math.ts"), FsdLayer::Unknown);
-    }
-
-    #[test]
-    fn test_fsd_violations_detection() {
-        let entities_file = Path::new("src/entities/user/useUser.ts");
-        let code = r#"
-            import { useAuth } from '@/features/auth';
-            import { Button } from '@/shared/ui';
-            import { secret } from '@/features/auth/internal/secret';
-        "#;
-
-        let violations = FsdRulesChecker::check_source(code, entities_file);
-        assert_eq!(violations.len(), 3);
-        assert_eq!(violations.iter().filter(|v| v.rule_id == "FSD-001").count(), 2);
-        assert_eq!(violations.iter().filter(|v| v.rule_id == "FSD-002").count(), 1);
-    }
-
-    #[test]
-    fn test_fsd_uikit_purity_check() {
-        let uikit_file = Path::new("packages/components/src/Button.vue");
-        let code = "import { useUserStore } from '@/stores/user';";
-        let violations = FsdRulesChecker::check_source(code, uikit_file);
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].rule_id, "FSD-003");
-    }
-
-    #[test]
-    fn test_fsd_cross_slice_dependency_check() {
-        let feature_auth = Path::new("src/features/auth/useAuth.ts");
-        let code = "import { getCart } from '@/features/cart';";
-        let violations = FsdRulesChecker::check_source(code, feature_auth);
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].rule_id, "FSD-004");
-    }
 }

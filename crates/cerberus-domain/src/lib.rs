@@ -5,6 +5,8 @@ pub mod preset;
 pub mod registry;
 pub mod rules;
 pub mod suppression;
+pub mod traits;
+pub mod tree;
 
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
 pub use layer::{ArchLayer, LayerRule, PackageArchMetadata, WorkspaceArchMetadata};
@@ -16,4 +18,8 @@ pub use rules::{
     RulesConfig, Severity, Violation,
 };
 pub use suppression::Suppression;
-
+pub use traits::{
+    ArchitecturalEntity, DiagnosticReporter, DomainModel, Fingerprintable, MetricsProvider,
+    RuleEvaluator,
+};
+pub use tree::{DirNode, FileMetricsNode, HealthLevel, PackageNode, TreeItemNode, TreeReport};

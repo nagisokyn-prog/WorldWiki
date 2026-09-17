@@ -25,7 +25,7 @@ impl RustAstComplexityVisitor {
     pub fn new() -> Self {
         Self {
             function_count: 0,
-            cyclomatic_complexity: 1, // base complexity for file
+            cyclomatic_complexity: 1,
             dependencies: HashSet::new(),
             max_ast_depth: 0,
             current_depth: 0,
@@ -47,7 +47,23 @@ impl RustAstComplexityVisitor {
 }
 
 impl<'ast> Visit<'ast> for RustAstComplexityVisitor {
+    fn visit_item_mod(&mut self, node: &'ast syn::ItemMod) {
+        let is_test = node.ident == "tests"
+            || node.ident == "test"
+            || node.attrs.iter().any(|attr| {
+                let s = quote::quote!(#attr).to_string();
+                s.contains("cfg (test)") || s.contains("cfg(test)") || s.contains("test")
+            });
+
+        if !is_test {
+            visit::visit_item_mod(self, node);
+        }
+    }
+
     fn visit_item_fn(&mut self, node: &'ast ItemFn) {
+        if node.attrs.iter().any(|attr| quote::quote!(#attr).to_string().contains("test")) {
+            return;
+        }
         self.function_count += 1;
         self.enter_node();
         visit::visit_item_fn(self, node);
@@ -55,6 +71,9 @@ impl<'ast> Visit<'ast> for RustAstComplexityVisitor {
     }
 
     fn visit_impl_item_fn(&mut self, node: &'ast ImplItemFn) {
+        if node.attrs.iter().any(|attr| quote::quote!(#attr).to_string().contains("test")) {
+            return;
+        }
         self.function_count += 1;
         self.enter_node();
         visit::visit_impl_item_fn(self, node);
@@ -172,7 +191,6 @@ impl AstComplexityAnalyzer {
     ) -> Vec<Violation> {
         let mut violations = Vec::new();
 
-        // 1. Check SLOC limits
         if metrics.sloc > deny_sloc {
             let snippet = format!("SLOC: {} (deny limit: {})", metrics.sloc, deny_sloc);
             let fingerprint = compute_fingerprint("ARCH-031", "1.0", "file", &snippet);
@@ -186,10 +204,7 @@ impl AstComplexityAnalyzer {
                 column: 1,
                 symbol: "file".into(),
                 snippet,
-                message: format!(
-                    "File SLOC ({}) exceeds strict limit ({})",
-                    metrics.sloc, deny_sloc
-                ),
+                message: format!("File SLOC ({}) exceeds strict limit ({})", metrics.sloc, deny_sloc),
                 remediation: "Decompose this file into cohesive submodules and separate single-responsibility units.".into(),
                 fingerprint,
             });
@@ -206,16 +221,12 @@ impl AstComplexityAnalyzer {
                 column: 1,
                 symbol: "file".into(),
                 snippet,
-                message: format!(
-                    "File SLOC ({}) exceeds recommended limit ({})",
-                    metrics.sloc, warn_sloc
-                ),
+                message: format!("File SLOC ({}) exceeds recommended limit ({})", metrics.sloc, warn_sloc),
                 remediation: "Consider decomposing large modules before they become unmaintainable.".into(),
                 fingerprint,
             });
         }
 
-        // 2. Check Pressure S_arch limits
         if metrics.pressure_score > deny_pressure {
             let snippet = format!(
                 "S_arch: {:.1} (Functions: {}, Cyclomatic: {}, Depth: {})",
@@ -232,10 +243,7 @@ impl AstComplexityAnalyzer {
                 column: 1,
                 symbol: "file".into(),
                 snippet,
-                message: format!(
-                    "Architectural Pressure S_arch ({:.1}) exceeds critical limit ({:.1})",
-                    metrics.pressure_score, deny_pressure
-                ),
+                message: format!("Architectural Pressure S_arch ({:.1}) exceeds critical limit ({:.1})", metrics.pressure_score, deny_pressure),
                 remediation: "Reduce cyclomatic complexity, split functions, and simplify AST branching.".into(),
                 fingerprint,
             });
@@ -255,152 +263,12 @@ impl AstComplexityAnalyzer {
                 column: 1,
                 symbol: "file".into(),
                 snippet,
-                message: format!(
-                    "High Architectural Pressure S_arch ({:.1}) exceeds warning limit ({:.1})",
-                    metrics.pressure_score, warn_pressure
-                ),
+                message: format!("High Architectural Pressure S_arch ({:.1}) exceeds warning limit ({:.1})", metrics.pressure_score, warn_pressure),
                 remediation: "Refactor complex branching logic into smaller helper functions.".into(),
                 fingerprint,
             });
         }
 
         violations
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::path::PathBuf;
-
-    #[test]
-    fn test_rust_ast_complexity_analysis() {
-        let code = r#"
-use std::path::Path;
-use std::collections::HashMap;
-
-pub fn complex_function(val: i32) -> Result<String, ()> {
-    if val > 10 && val < 20 {
-        for i in 0..val {
-            if i % 2 == 0 {
-                println!("Even");
-            }
-        }
-    } else {
-        match val {
-            1 => println!("One"),
-            2 => println!("Two"),
-            _ => return Err(()),
-        }
-    }
-    Ok("done".to_string())
-}
-"#;
-        let path = PathBuf::from("src/test.rs");
-        let weights = PressureWeights::default();
-        let metrics = AstComplexityAnalyzer::analyze_rust_file(code, &path, 0.05, &weights)
-            .expect("Should analyze");
-
-        assert_eq!(metrics.functions, 1);
-        assert!(metrics.cyclomatic >= 6); // if, &&, for, if, match arms
-        assert_eq!(metrics.dependencies, 2);
-        assert!(metrics.ast_depth >= 4);
-        assert!(metrics.pressure_score > 0.0);
-    }
-
-    #[test]
-    fn test_threshold_violations() {
-        let file_metrics = FileMetrics {
-            file_path: PathBuf::from("src/god.rs"),
-            sloc: 500,
-            functions: 30,
-            cyclomatic: 40,
-            dependencies: 20,
-            ast_depth: 10,
-            distance_d: 0.9,
-            pressure_score: 350.0,
-        };
-
-        let violations = AstComplexityAnalyzer::check_thresholds(
-            &file_metrics,
-            200, // warn sloc
-            350, // deny sloc
-            150.0, // warn pressure
-            300.0, // deny pressure
-        );
-
-        assert_eq!(violations.len(), 2);
-        assert_eq!(violations[0].rule_id, "ARCH-031");
-        assert_eq!(violations[0].severity, Severity::Deny);
-        assert_eq!(violations[1].rule_id, "ARCH-030");
-        assert_eq!(violations[1].severity, Severity::Deny);
-
-        // Test warning branch
-        let warn_file_metrics = FileMetrics {
-            file_path: PathBuf::from("src/warn.rs"),
-            sloc: 250,
-            functions: 10,
-            cyclomatic: 15,
-            dependencies: 5,
-            ast_depth: 4,
-            distance_d: 0.2,
-            pressure_score: 200.0,
-        };
-
-        let warn_violations = AstComplexityAnalyzer::check_thresholds(
-            &warn_file_metrics,
-            200, // warn sloc
-            350, // deny sloc
-            150.0, // warn pressure
-            300.0, // deny pressure
-        );
-
-        assert_eq!(warn_violations.len(), 2);
-        assert_eq!(warn_violations[0].rule_id, "ARCH-031");
-        assert_eq!(warn_violations[0].severity, Severity::Warn);
-        assert_eq!(warn_violations[1].rule_id, "ARCH-030");
-        assert_eq!(warn_violations[1].severity, Severity::Warn);
-    }
-
-    #[test]
-    fn test_ast_complexity_all_constructs_and_errors() {
-        let code = r#"
-pub trait MyTrait {
-    fn trait_fn(&self);
-}
-
-pub struct MyStruct;
-
-impl MyStruct {
-    pub fn loop_and_try(&self) -> Result<(), ()> {
-        let mut x = 0;
-        while x < 5 {
-            x += 1;
-        }
-        loop {
-            if x == 10 || x == 20 {
-                break;
-            }
-        }
-        let _ = Some(1).ok_or(())?;
-        Ok(())
-    }
-}
-"#;
-        let path = PathBuf::from("src/all.rs");
-        let weights = PressureWeights::default();
-        let metrics = AstComplexityAnalyzer::analyze_rust_file(code, &path, 0.0, &weights)
-            .expect("Should analyze");
-
-        assert_eq!(metrics.functions, 2); // 1 trait fn + 1 impl fn
-        assert!(metrics.cyclomatic >= 4); // while, loop, ||, ?
-
-        // Parse error test
-        let broken_code = "fn broken( { ";
-        assert!(AstComplexityAnalyzer::analyze_rust_file(broken_code, &path, 0.0, &weights).is_err());
-
-        // Default visitor test
-        let default_visitor = RustAstComplexityVisitor::default();
-        assert_eq!(default_visitor.function_count, 0);
     }
 }

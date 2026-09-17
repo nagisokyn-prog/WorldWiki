@@ -24,44 +24,47 @@ impl VueSfcParser {
         let mut sfc = VueSfc::default();
 
         // 1 & 2. Extract <script ...>...</script> blocks
-        let script_re = Regex::new(r"(?s)<script([^>]*)>(.*?)</script>").unwrap();
-        for caps in script_re.captures_iter(content) {
-            let attrs = caps.get(1).map_or("", |m| m.as_str());
-            if let Some(m) = caps.get(2) {
-                let body = m.as_str().to_string();
-                if attrs.contains("setup") {
-                    sfc.script_setup_start_line = line_number_at_offset(content, m.start());
-                    sfc.script_setup = Some(body);
-                } else {
-                    sfc.script = Some(body);
+        if let Ok(script_re) = Regex::new(r"(?s)<script([^>]*)>(.*?)</script>") {
+            for caps in script_re.captures_iter(content) {
+                let attrs = caps.get(1).map_or("", |m| m.as_str());
+                if let Some(m) = caps.get(2) {
+                    let body = m.as_str().to_string();
+                    if attrs.contains("setup") {
+                        sfc.script_setup_start_line = line_number_at_offset(content, m.start());
+                        sfc.script_setup = Some(body);
+                    } else {
+                        sfc.script = Some(body);
+                    }
                 }
             }
         }
 
         // 3. Extract <template>...</template>
-        let template_re = Regex::new(r"(?s)<template[^>]*>(.*?)</template>").unwrap();
-        if let Some(caps) = template_re.captures(content) {
-            if let Some(m) = caps.get(1) {
-                sfc.template = Some(m.as_str().to_string());
+        if let Ok(template_re) = Regex::new(r"(?s)<template[^>]*>(.*?)</template>") {
+            if let Some(caps) = template_re.captures(content) {
+                if let Some(m) = caps.get(1) {
+                    sfc.template = Some(m.as_str().to_string());
+                }
             }
         }
 
         // 4. Extract all <style ...>...</style> blocks
-        let style_re = Regex::new(r"(?s)<style([^>]*)>(.*?)</style>").unwrap();
-        for caps in style_re.captures_iter(content) {
-            let attrs = caps.get(1).map_or("", |m| m.as_str());
-            let body = caps.get(2).map_or("", |m| m.as_str());
-            let start_line = caps.get(2).map_or(1, |m| line_number_at_offset(content, m.start()));
+        if let Ok(style_re) = Regex::new(r"(?s)<style([^>]*)>(.*?)</style>") {
+            for caps in style_re.captures_iter(content) {
+                let attrs = caps.get(1).map_or("", |m| m.as_str());
+                let body = caps.get(2).map_or("", |m| m.as_str());
+                let start_line = caps.get(2).map_or(1, |m| line_number_at_offset(content, m.start()));
 
-            let scoped = attrs.contains("scoped");
-            let src = extract_attr(attrs, "src");
+                let scoped = attrs.contains("scoped");
+                let src = extract_attr(attrs, "src");
 
-            sfc.styles.push(VueStyleBlock {
-                content: body.to_string(),
-                src,
-                scoped,
-                start_line,
-            });
+                sfc.styles.push(VueStyleBlock {
+                    content: body.to_string(),
+                    src,
+                    scoped,
+                    start_line,
+                });
+            }
         }
 
         sfc
@@ -69,7 +72,7 @@ impl VueSfcParser {
 }
 
 fn line_number_at_offset(content: &str, offset: usize) -> usize {
-    content[..offset].chars().filter(|&c| c == '\n').count() + 1
+    content.get(..offset).unwrap_or(content).chars().filter(|&c| c == '\n').count() + 1
 }
 
 fn extract_attr(attrs: &str, attr_name: &str) -> Option<String> {

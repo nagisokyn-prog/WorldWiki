@@ -62,7 +62,8 @@ fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
 
     let mut bytes = Vec::with_capacity(s.len() / 2);
     for i in (0..s.len()).step_by(2) {
-        match u8::from_str_radix(&s[i..i + 2], 16) {
+        let chunk = s.get(i..i + 2).ok_or("Invalid slice range")?;
+        match u8::from_str_radix(chunk, 16) {
             Ok(b) => bytes.push(b),
             Err(e) => return Err(e.to_string()),
         }

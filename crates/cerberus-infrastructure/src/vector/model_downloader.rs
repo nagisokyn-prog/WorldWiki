@@ -117,5 +117,12 @@ mod tests {
         let target_file = temp.path().join("sub/test.file");
         let dl_res = downloader.download_file("https://invalid.domain.123456789.xyz/notfound", &target_file);
         assert!(dl_res.is_err());
+
+        // Test parent creation failure (file existing where directory expected)
+        let blocker = temp.path().join("blocker_file");
+        fs::write(&blocker, b"blocking").unwrap();
+        let invalid_dest = blocker.join("child/test.bin");
+        let dir_err = downloader.download_file("https://example.com/test", &invalid_dest);
+        assert!(dir_err.is_err());
     }
 }

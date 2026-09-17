@@ -20,9 +20,24 @@ pub use infrastructure::{
     RulesJsonRepository, RustSynParserAdapter, SarifReportAdapter, SemanticEmbedderAdapter,
     VueSfcParserAdapter,
 };
+pub mod check_runner;
+pub use check_runner::*;
+
+pub mod cli;
+pub use cli::*;
+
+pub mod commands;
+pub use commands::*;
+
+pub mod ledger_commands;
+pub use ledger_commands::*;
+
+pub mod model_commands;
+pub use model_commands::*;
+
 pub use ports::{
-    AstParserPort, ClustererPort, KeyStoragePort, ReportPublisherPort, RulesRepositoryPort,
-    VectorEmbedderPort,
+    AstParserPort, ClustererPort, KeyStoragePort, ModelDownloaderPort, ReportPublisherPort,
+    RulesRepositoryPort, VectorEmbedderPort,
 };
 
 #[cfg(test)]
@@ -52,4 +67,3 @@ mod tests {
         );
     }
 }
-

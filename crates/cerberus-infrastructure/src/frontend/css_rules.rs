@@ -96,9 +96,16 @@ impl CssRuleChecker {
         start_line_offset: usize,
         violations: &mut Vec<Violation>,
     ) {
-        let hex_re = Regex::new(r"#(?:[0-9a-fA-F]{3,4}){1,2}\b").unwrap();
-        let rgb_hsl_re = Regex::new(r"\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)").unwrap();
-        let border_radius_re = Regex::new(r"border-radius\s*:\s*\d+px").unwrap();
+        let Ok(hex_re) = Regex::new(r"#(?:[0-9a-fA-F]{3,4}){1,2}\b") else {
+            return;
+        };
+        let Ok(rgb_hsl_re) = Regex::new(r"\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)") else {
+            return;
+        };
+        let Ok(border_radius_re) = Regex::new(r"border-radius\s*:\s*\d+px") else {
+            return;
+        };
+
 
         for (idx, line) in content.lines().enumerate() {
             let trimmed = line.trim();

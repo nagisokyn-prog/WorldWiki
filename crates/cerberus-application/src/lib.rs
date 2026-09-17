@@ -2,13 +2,18 @@ pub mod download_model;
 pub mod explain_clusters;
 pub mod re_sign_all;
 pub mod reconcile_baseline;
+pub mod render_tree;
 pub mod scan_workspace;
 pub mod sign_suppression;
+pub mod tree_hierarchy;
+pub mod tree_metrics;
 
 pub use download_model::{DownloadModelUseCase, ModelStatus};
 pub use explain_clusters::ExplainClustersUseCase;
 pub use re_sign_all::{ReSignAllUseCase, ReSignOptions};
 pub use reconcile_baseline::ReconcileBaselineUseCase;
+pub use render_tree::RenderTreeUseCase;
 pub use scan_workspace::{ScanResult, ScanScope, ScanWorkspaceUseCase};
-pub use sign_suppression::SignSuppressionUseCase;
-
+pub use sign_suppression::{hex_decode, SignSuppressionUseCase};
+pub use tree_hierarchy::build_tree_hierarchy;
+pub use tree_metrics::TreeMetricsCollector;

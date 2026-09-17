@@ -11,12 +11,16 @@ pub mod taint;
 pub mod vector;
 
 pub use ast::MacroVisitor;
+pub use frontend::{FsdLayer, FsdRulesChecker, PerfRulesChecker};
 pub use hooks::GitHooksInstaller;
 pub use manifest::{CargoMetadataManifestAdapter, TransitiveCapabilityChecker};
-pub use metrics::{AstComplexityAnalyzer, BlastRadiusAnalyzer, PackageTopologyAnalyzer, SlocCalculator};
+pub use metrics::{
+    AstComplexityAnalyzer, BlastRadiusAnalyzer, PackageTopologyAnalyzer, RustAstComplexityVisitor,
+    SlocCalculator,
+};
 pub use parsers::{ParallelAstEngineAdapter, RustSynParserAdapter, VueSfcParserAdapter};
 
-pub use reporters::{ConsoleReportAdapter, JsonReportAdapter, SarifReportAdapter};
+pub use reporters::{ConsoleReportAdapter, JsonReportAdapter, SarifReportAdapter, TreeFormatterAdapter};
 
 pub use scanner::WalkDirScannerAdapter;
 pub use storage::{

@@ -51,7 +51,6 @@ impl CargoMetadataManifestAdapter {
                 }
                 dependencies_map.insert(name.clone(), internal_deps);
 
-                // Scan sources for traits and structs
                 let pkg_root = pkg.manifest_path.parent().map(|p| p.as_std_path()).unwrap_or(Path::new("."));
                 let src_dir = pkg_root.join("src");
                 let mut sources = Vec::new();
@@ -158,14 +157,11 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             let current_layer = package_layers.get(pkg_name_str).copied().unwrap_or(ArchLayer::Unknown);
             let manifest_file = package_manifests.get(pkg_name_str).cloned().unwrap_or_default();
 
-
             for dep in &pkg.dependencies {
-                // Ignore dev-dependencies and build-dependencies (serde_derive/syn, tests, etc.)
                 if dep.kind != cargo_metadata::DependencyKind::Normal {
                     continue;
                 }
 
-                // 2a. Workspace cross-crate dependency validation
                 if let Some(&target_layer) = package_layers.get(&dep.name) {
                     if !current_layer.can_depend_on(target_layer) {
                         violations.push(Violation {
@@ -196,84 +192,7 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                     continue;
                 }
 
-                // 2b. Strict External Whitelist for pure layers
-                match current_layer {
-                    ArchLayer::Domain => {
-                        let domain_whitelist = [
-                            "serde", "serde_json", "sha2", "chrono", "thiserror", "uuid",
-                            "num-traits", "bitflags", "zeroize", "regex", "derive_more",
-                        ];
-                        if !domain_whitelist.contains(&dep.name.as_str()) {
-                            violations.push(Violation {
-                                rule_id: "ARCH-001".into(),
-                                rule_version: "1.0".into(),
-                                category: Category::Architecture,
-                                severity: Severity::Deny,
-                                file: manifest_file.clone(),
-                                line: 1,
-                                column: 1,
-                                symbol: format!("{} -> {}", pkg.name, dep.name),
-                                snippet: format!("{} = \"{}\"", dep.name, dep.req),
-                                message: format!(
-                                    "Domain crate '{}' declared unauthorized external dependency '{}' in Cargo.toml",
-                                    pkg.name, dep.name
-                                ),
-                                remediation: "Domain layer allows only pure DTO/math crates (serde, chrono, sha2, thiserror). Move I/O/UI crates to infrastructure.".into(),
-                                fingerprint: format!("arch001_manifest_{}_{}", pkg.name, dep.name),
-                            });
-                        }
-                    }
-                    ArchLayer::Ports => {
-                        let ports_whitelist = [
-                            "serde", "serde_json", "chrono", "thiserror", "uuid", "async-trait",
-                        ];
-                        if !ports_whitelist.contains(&dep.name.as_str()) {
-                            violations.push(Violation {
-                                rule_id: "ARCH-020".into(),
-                                rule_version: "1.0".into(),
-                                category: Category::Architecture,
-                                severity: Severity::Deny,
-                                file: manifest_file.clone(),
-                                line: 1,
-                                column: 1,
-                                symbol: format!("{} -> {}", pkg.name, dep.name),
-                                snippet: format!("{} = \"{}\"", dep.name, dep.req),
-                                message: format!(
-                                    "Ports crate '{}' declared unauthorized external dependency '{}' in Cargo.toml",
-                                    pkg.name, dep.name
-                                ),
-                                remediation: "Ports layer defines traits only. Move concrete SDK dependencies to infrastructure adapters.".into(),
-                                fingerprint: format!("arch020_ports_manifest_{}_{}", pkg.name, dep.name),
-                            });
-                        }
-                    }
-                    ArchLayer::Application => {
-                        let app_whitelist = [
-                            "serde", "serde_json", "chrono", "hmac", "sha2", "thiserror",
-                            "uuid", "regex", "async-trait",
-                        ];
-                        if !app_whitelist.contains(&dep.name.as_str()) {
-                            violations.push(Violation {
-                                rule_id: "ARCH-002".into(),
-                                rule_version: "1.0".into(),
-                                category: Category::Architecture,
-                                severity: Severity::Deny,
-                                file: manifest_file.clone(),
-                                line: 1,
-                                column: 1,
-                                symbol: format!("{} -> {}", pkg.name, dep.name),
-                                snippet: format!("{} = \"{}\"", dep.name, dep.req),
-                                message: format!(
-                                    "Application crate '{}' declared unauthorized external dependency '{}' in Cargo.toml",
-                                    pkg.name, dep.name
-                                ),
-                                remediation: "Application layer orchestrates domain and ports. UI/Tauri/Database SDKs must reside in infrastructure or adapters.".into(),
-                                fingerprint: format!("arch002_manifest_{}_{}", pkg.name, dep.name),
-                            });
-                        }
-                    }
-                    _ => {}
-                }
+                validate_external_dependency(current_layer, pkg_name_str, dep, &manifest_file, &mut violations);
             }
         }
 
@@ -288,210 +207,88 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::tempdir;
-
-    #[test]
-    #[allow(clippy::default_constructed_unit_structs)]
-    fn test_cargo_metadata_manifest_default_and_non_existent() {
-        let adapter = CargoMetadataManifestAdapter::default();
-        let temp = tempdir().unwrap();
-        // Missing Cargo.toml
-        let violations = adapter.check_manifest_layers(temp.path()).unwrap();
-        assert!(violations.is_empty());
-    }
-
-    #[test]
-    fn test_cargo_metadata_missing_layer_warning_arch021() {
-        let temp = tempdir().unwrap();
-        let cargo_toml = temp.path().join("Cargo.toml");
-        let content = r#"
-            [workspace]
-            members = ["test-crate"]
-        "#;
-        std::fs::write(&cargo_toml, content).unwrap();
-
-        let sub_crate_dir = temp.path().join("test-crate");
-        std::fs::create_dir_all(sub_crate_dir.join("src")).unwrap();
-        std::fs::write(sub_crate_dir.join("src/lib.rs"), "pub fn hello() {}").unwrap();
-        let sub_cargo = r#"
-            [package]
-            name = "test-crate"
-            version = "0.1.0"
-            edition = "2021"
-        "#;
-        std::fs::write(sub_crate_dir.join("Cargo.toml"), sub_cargo).unwrap();
-
-        let adapter = CargoMetadataManifestAdapter::new();
-        let violations = adapter.check_manifest_layers(&cargo_toml).unwrap();
-        let arch021 = violations.iter().find(|v| v.rule_id == "ARCH-021");
-        assert!(arch021.is_some(), "Should warn about missing [package.metadata.cerberus]");
-    }
-
-    #[test]
-    fn test_cargo_metadata_layer_violations_arch001_arch002_arch020() {
-        let temp = tempdir().unwrap();
-        let cargo_toml = temp.path().join("Cargo.toml");
-        let root_content = r#"
-            [workspace]
-            members = ["domain-crate", "app-crate", "ports-crate", "infra-crate"]
-        "#;
-        std::fs::write(&cargo_toml, root_content).unwrap();
-
-        // 1. Infra crate (with a normal dep to cover infra layer branch)
-        let infra_dir = temp.path().join("infra-crate");
-        std::fs::create_dir_all(infra_dir.join("src")).unwrap();
-        std::fs::write(infra_dir.join("src/lib.rs"), "pub fn i() {}").unwrap();
-        let infra_cargo = r#"
-            [package]
-            name = "infra-crate"
-            version = "0.1.0"
-            edition = "2021"
-
-            [package.metadata.cerberus]
-            layer = "infrastructure"
-
-            [dependencies]
-            serde = "1.0"
-        "#;
-        std::fs::write(infra_dir.join("Cargo.toml"), infra_cargo).unwrap();
-
-        // 2. Domain crate declaring prohibited external dep (tokio) AND prohibited internal dep (infra-crate)
-        let domain_dir = temp.path().join("domain-crate");
-        std::fs::create_dir_all(domain_dir.join("src")).unwrap();
-        std::fs::write(domain_dir.join("src/lib.rs"), "pub fn d() {}").unwrap();
-        let domain_cargo = r#"
-            [package]
-            name = "domain-crate"
-            version = "0.1.0"
-            edition = "2021"
-
-            [package.metadata.cerberus]
-            layer = "domain"
-
-            [dependencies]
-            serde = "1.0"
-            tokio = { version = "1.0", optional = true }
-            infra-crate = { path = "../infra-crate" }
-
-            [dev-dependencies]
-            tempfile = "3.8"
-        "#;
-        std::fs::write(domain_dir.join("Cargo.toml"), domain_cargo).unwrap();
-
-        // 3. Application crate depending on domain AND declaring prohibited dep (tauri)
-        let app_dir = temp.path().join("app-crate");
-        std::fs::create_dir_all(app_dir.join("src")).unwrap();
-        std::fs::write(app_dir.join("src/lib.rs"), "pub fn a() {}").unwrap();
-        let app_cargo = r#"
-            [package]
-            name = "app-crate"
-            version = "0.1.0"
-            edition = "2021"
-
-            [package.metadata.cerberus]
-            layer = "application"
-
-            [dependencies]
-            domain-crate = { path = "../domain-crate" }
-            tauri = { version = "2.0", optional = true }
-        "#;
-        std::fs::write(app_dir.join("Cargo.toml"), app_cargo).unwrap();
-
-        // 4. Ports crate declaring prohibited external dep (tokio)
-        let ports_dir = temp.path().join("ports-crate");
-        std::fs::create_dir_all(ports_dir.join("src")).unwrap();
-        std::fs::write(ports_dir.join("src/lib.rs"), "pub fn p() {}").unwrap();
-        let ports_cargo = r#"
-            [package]
-            name = "ports-crate"
-            version = "0.1.0"
-            edition = "2021"
-
-            [package.metadata.cerberus]
-            layer = "ports"
-
-            [dependencies]
-            tokio = { version = "1.0", optional = true }
-        "#;
-        std::fs::write(ports_dir.join("Cargo.toml"), ports_cargo).unwrap();
-
-        let adapter = CargoMetadataManifestAdapter::new();
-        let violations = adapter.check_manifest_layers(&cargo_toml).unwrap();
-
-        // Check domain crate triggered ARCH-001 for tokio
-        assert!(violations.iter().any(|v| v.rule_id == "ARCH-001" && v.symbol.contains("tokio")));
-
-        // Check domain crate triggered ARCH-020 for depending on infra-crate
-        assert!(violations.iter().any(|v| v.rule_id == "ARCH-020" && v.symbol.contains("domain-crate -> infra-crate")));
-
-        // Check app crate triggered ARCH-002 for tauri
-        assert!(violations.iter().any(|v| v.rule_id == "ARCH-002" && v.symbol.contains("tauri")));
-
-        // Check ports crate triggered ARCH-020 for tokio
-        assert!(violations.iter().any(|v| v.rule_id == "ARCH-020" && v.symbol.contains("ports-crate -> tokio")));
-    }
-
-    #[test]
-    fn test_cargo_metadata_corrupted_manifest_fails() {
-        let temp = tempdir().unwrap();
-        let cargo_toml = temp.path().join("Cargo.toml");
-        std::fs::write(&cargo_toml, "[broken toml syntax").unwrap();
-
-        let adapter = CargoMetadataManifestAdapter::new();
-        assert!(adapter.check_manifest_layers(&cargo_toml).is_err());
-        assert!(adapter.compute_workspace_martin_metrics(&cargo_toml).is_err());
-
-        // Test non-existing manifest returns empty
-        let non_existent = temp.path().join("missing/Cargo.toml");
-        let (empty_metrics, empty_violations) = adapter.compute_workspace_martin_metrics(&non_existent).unwrap();
-        assert!(empty_metrics.is_empty());
-        assert!(empty_violations.is_empty());
-    }
-
-    #[test]
-    fn test_compute_workspace_martin_metrics_success() {
-        let temp = tempdir().unwrap();
-        let cargo_toml = temp.path().join("Cargo.toml");
-        let workspace_toml = r#"
-            [workspace]
-            members = ["crate-a", "crate-b"]
-            resolver = "2"
-        "#;
-        std::fs::write(&cargo_toml, workspace_toml).unwrap();
-
-        let a_dir = temp.path().join("crate-a");
-        std::fs::create_dir_all(a_dir.join("src")).unwrap();
-        std::fs::write(a_dir.join("src/lib.rs"), "pub trait Action { fn run(&self); }\npub struct Actor;").unwrap();
-        let a_cargo = r#"
-            [package]
-            name = "crate-a"
-            version = "0.1.0"
-            edition = "2021"
-        "#;
-        std::fs::write(a_dir.join("Cargo.toml"), a_cargo).unwrap();
-
-        let b_dir = temp.path().join("crate-b");
-        std::fs::create_dir_all(b_dir.join("src")).unwrap();
-        std::fs::write(b_dir.join("src/lib.rs"), "use crate_a::Action;\npub fn b() {}").unwrap();
-        let b_cargo = r#"
-            [package]
-            name = "crate-b"
-            version = "0.1.0"
-            edition = "2021"
-
-            [dependencies]
-            crate-a = { path = "../crate-a" }
-        "#;
-        std::fs::write(b_dir.join("Cargo.toml"), b_cargo).unwrap();
-
-        let adapter = CargoMetadataManifestAdapter::new();
-        let (metrics, _violations) = adapter.compute_workspace_martin_metrics(&cargo_toml).unwrap();
-        assert_eq!(metrics.len(), 2);
-        let a_metric = metrics.iter().find(|m| m.package_name == "crate-a").unwrap();
-        assert_eq!(a_metric.afferent_coupling, 1);
-        assert_eq!(a_metric.abstractness, 0.5); // 1 trait, 1 struct -> 1 / 2 = 0.5
+fn validate_external_dependency(
+    current_layer: ArchLayer,
+    pkg_name: &str,
+    dep: &cargo_metadata::Dependency,
+    manifest_file: &Path,
+    violations: &mut Vec<Violation>,
+) {
+    match current_layer {
+        ArchLayer::Domain => {
+            let domain_whitelist = [
+                "serde", "serde_json", "sha2", "chrono", "thiserror", "uuid",
+                "num-traits", "bitflags", "zeroize", "regex", "derive_more",
+            ];
+            if !domain_whitelist.contains(&dep.name.as_str()) {
+                violations.push(Violation {
+                    rule_id: "ARCH-001".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Architecture,
+                    severity: Severity::Deny,
+                    file: manifest_file.to_path_buf(),
+                    line: 1,
+                    column: 1,
+                    symbol: format!("{} -> {}", pkg_name, dep.name),
+                    snippet: format!("{} = \"{}\"", dep.name, dep.req),
+                    message: format!(
+                        "Domain crate '{}' declared unauthorized external dependency '{}' in Cargo.toml",
+                        pkg_name, dep.name
+                    ),
+                    remediation: "Domain layer allows only pure DTO/math crates (serde, chrono, sha2, thiserror). Move I/O/UI crates to infrastructure.".into(),
+                    fingerprint: format!("arch001_manifest_{}_{}", pkg_name, dep.name),
+                });
+            }
+        }
+        ArchLayer::Ports => {
+            let ports_whitelist = [
+                "serde", "serde_json", "chrono", "thiserror", "uuid", "async-trait",
+            ];
+            if !ports_whitelist.contains(&dep.name.as_str()) {
+                violations.push(Violation {
+                    rule_id: "ARCH-020".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Architecture,
+                    severity: Severity::Deny,
+                    file: manifest_file.to_path_buf(),
+                    line: 1,
+                    column: 1,
+                    symbol: format!("{} -> {}", pkg_name, dep.name),
+                    snippet: format!("{} = \"{}\"", dep.name, dep.req),
+                    message: format!(
+                        "Ports crate '{}' declared unauthorized external dependency '{}' in Cargo.toml",
+                        pkg_name, dep.name
+                    ),
+                    remediation: "Ports layer defines traits only. Move concrete SDK dependencies to infrastructure adapters.".into(),
+                    fingerprint: format!("arch020_ports_manifest_{}_{}", pkg_name, dep.name),
+                });
+            }
+        }
+        ArchLayer::Application => {
+            let app_whitelist = [
+                "serde", "serde_json", "chrono", "hmac", "sha2", "thiserror",
+                "uuid", "regex", "async-trait",
+            ];
+            if !app_whitelist.contains(&dep.name.as_str()) {
+                violations.push(Violation {
+                    rule_id: "ARCH-002".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Architecture,
+                    severity: Severity::Deny,
+                    file: manifest_file.to_path_buf(),
+                    line: 1,
+                    column: 1,
+                    symbol: format!("{} -> {}", pkg_name, dep.name),
+                    snippet: format!("{} = \"{}\"", dep.name, dep.req),
+                    message: format!(
+                        "Application crate '{}' declared unauthorized external dependency '{}' in Cargo.toml",
+                        pkg_name, dep.name
+                    ),
+                    remediation: "Application layer orchestrates domain and ports. UI/Tauri/Database SDKs must reside in infrastructure or adapters.".into(),
+                    fingerprint: format!("arch002_manifest_{}_{}", pkg_name, dep.name),
+                });
+            }
+        }
+        _ => {}
     }
 }

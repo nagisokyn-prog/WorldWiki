@@ -58,7 +58,7 @@ fn test_chaos_huge_file_parsing_performance() {
     std::fs::write(&huge_file, code).unwrap();
 
     let start = std::time::Instant::now();
-    let parser = RustSynParserAdapter;
+    let parser = RustSynParserAdapter::default();
     let result = parser.parse_file(&huge_file, "worldwiki-domain");
     let duration = start.elapsed();
 
@@ -78,7 +78,7 @@ fn test_chaos_malformed_syntax_and_invalid_utf8_recovery() {
     let broken_rs = temp.path().join("broken.rs");
     std::fs::write(&broken_rs, "pub fn unclosed( { let x = ; %%% @@@ !!!").unwrap();
 
-    let parser = RustSynParserAdapter;
+    let parser = RustSynParserAdapter::default();
     let rs_result = parser.parse_file(&broken_rs, "worldwiki-domain");
     assert!(
         rs_result.is_err(),

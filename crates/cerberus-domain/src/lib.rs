@@ -9,7 +9,7 @@ pub mod traits;
 pub mod tree;
 
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
-pub use layer::{ArchLayer, LayerRule, PackageArchMetadata, WorkspaceArchMetadata};
+pub use layer::{ArchLayer, LayerRule, LayerTopologyMatrix, PackageArchMetadata, WorkspaceArchMetadata};
 pub use metrics::{FileMetrics, PackageMetrics, PressureCalculator, PressureWeights};
 pub use preset::Preset;
 pub use registry::BuiltinRuleRegistry;

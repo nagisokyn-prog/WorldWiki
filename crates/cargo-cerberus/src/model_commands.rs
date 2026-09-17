@@ -131,7 +131,7 @@ pub fn handle_explain(path: &Path, _clusters: bool) -> Result<(), String> {
     let use_case = cerberus_application::ExplainClustersUseCase::new(embedder, clusterer);
 
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> = vec![
-        Arc::new(cerberus_infrastructure::RustSynParserAdapter),
+        Arc::new(cerberus_infrastructure::RustSynParserAdapter::default()),
         Arc::new(cerberus_infrastructure::VueSfcParserAdapter),
     ];
     let scanner: Arc<dyn cerberus_ports::FileSystemScannerPort> =

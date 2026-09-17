@@ -27,7 +27,7 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     let scope = resolve_scope(options.frontend_only, options.backend_only);
 
     let parsers: Vec<Arc<dyn AstParserPort>> = vec![
-        Arc::new(RustSynParserAdapter),
+        Arc::new(RustSynParserAdapter::default()),
         Arc::new(VueSfcParserAdapter),
     ];
 
@@ -106,7 +106,7 @@ fn validate_error_rate(total_files: usize, error_count: usize, ci: bool) -> Resu
 fn audit_macro_expansion(path: &Path, violations: &mut Vec<Violation>) {
     match cerberus_infrastructure::MacroVisitor::run_cargo_expand(path) {
         Ok(expanded_code) => {
-            let syn_parser = RustSynParserAdapter;
+            let syn_parser = RustSynParserAdapter::default();
             if let Ok(expanded_violations) =
                 syn_parser.parse_source(&expanded_code, path, "expanded_macro")
             {

@@ -56,7 +56,7 @@ impl TestWorkspace {
     pub fn scan(&self) -> Vec<Violation> {
         let scanner = Arc::new(WalkDirScannerAdapter::new());
         let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
-            vec![Arc::new(RustSynParserAdapter)];
+            vec![Arc::new(RustSynParserAdapter::default())];
         let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
         let use_case =

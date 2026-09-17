@@ -104,8 +104,19 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             .map_err(|e| format!("Failed to read cargo metadata: {}", e))?;
 
         let mut violations = Vec::new();
-        let mut package_layers: HashMap<String, ArchLayer> = HashMap::new();
+        let mut package_layers: HashMap<String, String> = HashMap::new();
+        let mut package_arch_layers: HashMap<String, ArchLayer> = HashMap::new();
         let mut package_manifests: HashMap<String, PathBuf> = HashMap::new();
+
+        // 0. Extract workspace architecture metadata
+        let ws_arch: cerberus_domain::WorkspaceArchMetadata = metadata
+            .workspace_metadata
+            .get("cerberus")
+            .or_else(|| metadata.workspace_metadata.get("arch-guard"))
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
+            .unwrap_or_default();
+
+        let topology = cerberus_domain::LayerTopologyMatrix::from_workspace_metadata(&ws_arch);
 
         // 1. First pass: extract declared layers for each workspace package
         for pkg in &metadata.packages {
@@ -118,8 +129,8 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                     .and_then(|m| m.get("layer"))
                     .and_then(|l| l.as_str());
 
-                let layer = match declared_layer {
-                    Some(l_str) => ArchLayer::parse(l_str),
+                let (layer_str, arch_layer) = match declared_layer {
+                    Some(l_str) => (l_str.to_string(), ArchLayer::parse(l_str)),
                     None => {
                         violations.push(Violation {
                             rule_id: "ARCH-021".into(),
@@ -138,11 +149,12 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                             remediation: "Declare layer = \"domain|ports|application|infrastructure|adapter|cli\" in Cargo.toml".into(),
                             fingerprint: format!("arch021_{}", pkg_name_str),
                         });
-                        ArchLayer::Unknown
+                        ("unknown".to_string(), ArchLayer::Unknown)
                     }
                 };
 
-                package_layers.insert(pkg_name_str.clone(), layer);
+                package_layers.insert(pkg_name_str.clone(), layer_str);
+                package_arch_layers.insert(pkg_name_str.clone(), arch_layer);
                 package_manifests.insert(pkg_name_str, pkg.manifest_path.clone().into_std_path_buf());
             }
         }
@@ -154,7 +166,8 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             }
 
             let pkg_name_str = pkg.name.as_str();
-            let current_layer = package_layers.get(pkg_name_str).copied().unwrap_or(ArchLayer::Unknown);
+            let current_layer_str = package_layers.get(pkg_name_str).cloned().unwrap_or_default();
+            let current_arch_layer = package_arch_layers.get(pkg_name_str).copied().unwrap_or(ArchLayer::Unknown);
             let manifest_file = package_manifests.get(pkg_name_str).cloned().unwrap_or_default();
 
             for dep in &pkg.dependencies {
@@ -162,8 +175,8 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                     continue;
                 }
 
-                if let Some(&target_layer) = package_layers.get(&dep.name) {
-                    if !current_layer.can_depend_on(target_layer) {
+                if let Some(target_layer_str) = package_layers.get(&dep.name) {
+                    if !topology.is_dependency_allowed(&current_layer_str, target_layer_str) {
                         violations.push(Violation {
                             rule_id: "ARCH-020".into(),
                             rule_version: "1.0".into(),
@@ -177,14 +190,14 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                             message: format!(
                                 "Layer dependency violation: '{}' (layer: {}) is forbidden from depending on '{}' (layer: {})",
                                 pkg.name,
-                                current_layer.as_str(),
+                                current_layer_str,
                                 dep.name,
-                                target_layer.as_str()
+                                target_layer_str
                             ),
                             remediation: format!(
                                 "Invert dependency or move logic: layer '{}' cannot depend on '{}'",
-                                current_layer.as_str(),
-                                target_layer.as_str()
+                                current_layer_str,
+                                target_layer_str
                             ),
                             fingerprint: format!("arch020_{}_{}", pkg.name, dep.name),
                         });
@@ -192,14 +205,34 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                     continue;
                 }
 
-                validate_external_dependency(current_layer, pkg_name_str, dep, &manifest_file, &mut violations);
+                if topology.is_external_dep_forbidden(&current_layer_str, &dep.name) {
+                    violations.push(Violation {
+                        rule_id: "ARCH-001".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Architecture,
+                        severity: Severity::Deny,
+                        file: manifest_file.clone(),
+                        line: 1,
+                        column: 1,
+                        symbol: format!("{} -> {}", pkg_name_str, dep.name),
+                        snippet: format!("{} = \"{}\"", dep.name, dep.req),
+                        message: format!(
+                            "Layer '{}' in crate '{}' forbids external dependency '{}' in Cargo.toml",
+                            current_layer_str, pkg_name_str, dep.name
+                        ),
+                        remediation: "Move external dependency to outer infrastructure layers or invert via traits.".into(),
+                        fingerprint: format!("arch001_forbid_{}_{}", pkg_name_str, dep.name),
+                    });
+                }
+
+                validate_external_dependency(current_arch_layer, pkg_name_str, dep, &manifest_file, &mut violations);
             }
         }
 
         // 3. Third pass: Transitive capabilities check for pure layers (SEC-002)
         violations.extend(super::transitive_capabilities::TransitiveCapabilityChecker::check_transitive_capabilities(
             &metadata,
-            &package_layers,
+            &package_arch_layers,
             &package_manifests,
         ));
 

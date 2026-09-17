@@ -1,71 +1,361 @@
-use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
+use cerberus_domain::{compute_fingerprint, Category, LayerTopologyMatrix, Severity, Violation};
 use std::path::Path;
 use syn::{ItemUse, UsePath, UseTree};
 
 pub struct ImportChecker<'a> {
     pub current_file: &'a Path,
     pub crate_name: &'a str,
+    pub matrix: Option<&'a LayerTopologyMatrix>,
 }
 
 impl<'a> ImportChecker<'a> {
     pub fn new(current_file: &'a Path, crate_name: &'a str) -> Self {
-        Self { current_file, crate_name }
+        Self {
+            current_file,
+            crate_name,
+            matrix: None,
+        }
+    }
+
+    pub fn with_matrix(mut self, matrix: &'a LayerTopologyMatrix) -> Self {
+        self.matrix = Some(matrix);
+        self
     }
 
     pub fn check_use(&self, item_use: &ItemUse) -> Vec<Violation> {
         let mut violations = Vec::new();
-        self.inspect_use_tree(&item_use.tree, item_use, &mut violations);
+        let mut prefix = Vec::new();
+        self.inspect_use_tree(&item_use.tree, item_use, &mut prefix, &mut violations);
         violations
     }
 
-    fn inspect_use_tree(&self, tree: &UseTree, item_use: &ItemUse, violations: &mut Vec<Violation>) {
+    fn inspect_use_tree(
+        &self,
+        tree: &UseTree,
+        item_use: &ItemUse,
+        prefix: &mut Vec<String>,
+        violations: &mut Vec<Violation>,
+    ) {
         match tree {
             UseTree::Path(UsePath { ident, tree, .. }) => {
-                let root_segment = ident.to_string();
-
-                // ARCH-001: Domain cannot import external frameworks
-                if self.is_domain_crate() {
-                    let forbidden_domain_pkgs = ["tauri", "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix"];
-                    if forbidden_domain_pkgs.contains(&root_segment.as_str()) {
-                        violations.push(self.build_violation(
-                            "ARCH-001",
-                            item_use,
-                            &format!("Domain crate '{}' cannot import external framework '{}'", self.crate_name, root_segment),
-                            "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
-                        ));
-                    }
-                }
-
-
-                // ARCH-002: Application cannot import Tauri
-                if self.is_application_crate() && root_segment == "tauri" {
-                    violations.push(self.build_violation(
-                        "ARCH-002",
-                        item_use,
-                        &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
-                        "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
-                    ));
-                }
-
-                // ARCH-005: Tauri SDK isolated strictly to adapters/tauri or worldwiki-tauri
-                if !self.is_tauri_authorized_crate() && root_segment == "tauri" {
-                    violations.push(self.build_violation(
-                        "ARCH-005",
-                        item_use,
-                        &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
-                        "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
-                    ));
-                }
-
-                self.inspect_use_tree(tree, item_use, violations);
+                let segment = ident.to_string();
+                prefix.push(segment);
+                self.inspect_use_tree(tree, item_use, prefix, violations);
+                prefix.pop();
+            }
+            UseTree::Name(name) => {
+                prefix.push(name.ident.to_string());
+                self.check_full_import_path(prefix, item_use, violations);
+                prefix.pop();
+            }
+            UseTree::Rename(rename) => {
+                prefix.push(rename.ident.to_string());
+                self.check_full_import_path(prefix, item_use, violations);
+                prefix.pop();
+            }
+            UseTree::Glob(_) => {
+                prefix.push("*".to_string());
+                self.check_full_import_path(prefix, item_use, violations);
+                prefix.pop();
             }
             UseTree::Group(group) => {
                 for item in &group.items {
-                    self.inspect_use_tree(item, item_use, violations);
+                    self.inspect_use_tree(item, item_use, prefix, violations);
                 }
             }
-            _ => {}
         }
+    }
+
+    fn check_full_import_path(
+        &self,
+        path_segments: &[String],
+        item_use: &ItemUse,
+        violations: &mut Vec<Violation>,
+    ) {
+        if path_segments.is_empty() {
+            return;
+        }
+
+        let root_segment = &path_segments[0];
+        let full_path_str = path_segments.join("::");
+        let current_layer = self.detect_source_layer();
+
+        // 1. Check matrix-defined forbidden external dependencies (ARCH-001)
+        if let Some(matrix) = self.matrix {
+            if matrix.is_external_dep_forbidden(&current_layer, root_segment) {
+                violations.push(self.build_violation(
+                    "ARCH-001",
+                    item_use,
+                    &format!(
+                        "Layer '{}' in crate '{}' forbids external dependency '{}'",
+                        current_layer, self.crate_name, root_segment
+                    ),
+                    "Remove external framework dependency and use abstract ports traits.",
+                ));
+            }
+        } else if self.is_domain_crate() || current_layer == "domain" {
+            let default_forbidden_domain = [
+                "tauri", "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix", "sqlx",
+            ];
+            if default_forbidden_domain.contains(&root_segment.as_str()) {
+                violations.push(self.build_violation(
+                    "ARCH-001",
+                    item_use,
+                    &format!(
+                        "Domain crate '{}' cannot import external framework '{}'",
+                        self.crate_name, root_segment
+                    ),
+                    "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                ));
+            }
+        }
+
+        // 2. ARCH-002: Application cannot import Tauri
+        if (self.is_application_crate() || current_layer == "application") && root_segment == "tauri" {
+            violations.push(self.build_violation(
+                "ARCH-002",
+                item_use,
+                &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
+                "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
+            ));
+        }
+
+        // 3. ARCH-005: Tauri SDK isolated strictly to adapters/tauri or worldwiki-tauri
+        if !self.is_tauri_authorized_crate() && root_segment == "tauri" {
+            violations.push(self.build_violation(
+                "ARCH-005",
+                item_use,
+                &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
+                "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
+            ));
+        }
+
+        // 4. MOD-001: Boundary Capsule / Module Encapsulation violation
+        // E.g. importing crate::modules::<other_mod>::internal::*
+        let should_check_boundaries = self.matrix.is_none_or(|m| m.enforce_boundaries)
+            || self.current_file.to_string_lossy().contains("modules")
+            || self.crate_name.contains("monolith");
+
+        if should_check_boundaries {
+            if let Some(mod_violation) = self.check_module_boundary_violation(path_segments, item_use) {
+                violations.push(mod_violation);
+            }
+        }
+
+        // 5. CQRS-001: Command/Write layer importing Read model or Read DB
+        if (current_layer == "command_handler"
+            || current_layer == "write_service"
+            || current_layer == "domain_write"
+            || self.current_file.to_string_lossy().contains("/command/")
+            || self.current_file.to_string_lossy().contains("/write/"))
+            && (full_path_str.contains("read_db")
+                || full_path_str.contains("query_handler")
+                || full_path_str.contains("read_repo"))
+        {
+            violations.push(self.build_violation(
+                "CQRS-001",
+                item_use,
+                &format!(
+                    "CQRS boundary violation: Write pipeline at '{}' cannot import Read model '{}'",
+                    self.current_file.display(),
+                    full_path_str
+                ),
+                "Isolate Write commands from Read models. Query through dedicated Read repository or event projection.",
+            ));
+        }
+
+        // 6. EVT-001: Event Producer synchronous call / direct import to Consumer
+        if (current_layer == "producer" || self.current_file.to_string_lossy().contains("/producer/"))
+            && (full_path_str.contains("consumer") || full_path_str.contains("subscriber"))
+        {
+            violations.push(self.build_violation(
+                "EVT-001",
+                item_use,
+                &format!(
+                    "Event-driven decoupling violation: Producer at '{}' directly imports Consumer '{}'",
+                    self.current_file.display(),
+                    full_path_str
+                ),
+                "Producers must only publish events to the EventBus/Broker without knowing consumer implementations.",
+            ));
+        }
+
+        // 7. ARCH-007: Layer Topology Inversion (when internal intra-crate layer imports are forbidden)
+        if let Some(matrix) = self.matrix {
+            let target_layer = self.detect_target_layer(path_segments);
+            if let Some(target) = target_layer {
+                if target != current_layer && !matrix.is_dependency_allowed(&current_layer, &target) {
+                    violations.push(self.build_violation(
+                        "ARCH-007",
+                        item_use,
+                        &format!(
+                            "Layer topology violation: layer '{}' is not allowed to depend on layer '{}' (import: '{}')",
+                            current_layer, target, full_path_str
+                        ),
+                        "Refactor code to respect the layer hierarchy defined in the workspace architecture matrix.",
+                    ));
+                }
+            }
+        }
+    }
+
+    fn check_module_boundary_violation(
+        &self,
+        path_segments: &[String],
+        item_use: &ItemUse,
+    ) -> Option<Violation> {
+        let file_path = self.current_file.to_string_lossy().replace('\\', "/");
+        let current_module = self.extract_module_name_from_path(&file_path);
+
+        // Check if path accesses `internal` or private submodule of another module
+        let mut target_module = None;
+        let mut accesses_internal = false;
+
+        for (i, seg) in path_segments.iter().enumerate() {
+            if seg == "modules" || seg == "module" {
+                if let Some(next_seg) = path_segments.get(i + 1) {
+                    target_module = Some(next_seg.clone());
+                }
+            }
+            if seg == "internal" || seg == "private" {
+                accesses_internal = true;
+            }
+        }
+
+        if let Some(target) = target_module {
+            if let Some(current) = current_module {
+                if current != target && accesses_internal {
+                    return Some(self.build_violation(
+                        "MOD-001",
+                        item_use,
+                        &format!(
+                            "Module boundary violation: Module '{}' illegally accesses private internal scope of module '{}'",
+                            current, target
+                        ),
+                        &format!(
+                            "Access module '{}' exclusively through its public API ('{}/api.rs' or '{}/lib.rs')",
+                            target, target, target
+                        ),
+                    ));
+                }
+            } else if accesses_internal {
+                return Some(self.build_violation(
+                    "MOD-001",
+                    item_use,
+                    &format!(
+                        "Module boundary violation: Illegal direct access to internal scope of module '{}'",
+                        target
+                    ),
+                    &format!(
+                        "Access module '{}' exclusively through its public API.",
+                        target
+                    ),
+                ));
+            }
+        }
+
+        None
+    }
+
+    fn extract_module_name_from_path(&self, path: &str) -> Option<String> {
+        let parts: Vec<&str> = path.split('/').collect();
+        for (i, part) in parts.iter().enumerate() {
+            if *part == "modules" || *part == "module" {
+                if let Some(mod_name) = parts.get(i + 1) {
+                    return Some(mod_name.to_string());
+                }
+            }
+        }
+        None
+    }
+
+    fn detect_source_layer(&self) -> String {
+        let file_path = self.current_file.to_string_lossy().to_lowercase().replace('\\', "/");
+
+        for layer in [
+            "domain_write",
+            "command_handler",
+            "write_service",
+            "query_handler",
+            "read_service",
+            "domain_core",
+            "domain_services",
+            "application_services",
+            "controller",
+            "service",
+            "repository",
+            "entity",
+            "usecase",
+            "producer",
+            "consumer",
+            "plugin",
+            "core",
+            "pages",
+            "widgets",
+            "features",
+            "entities",
+            "shared",
+            "domain",
+            "ports",
+            "application",
+            "infrastructure",
+            "adapter",
+            "cli",
+        ] {
+            if file_path.contains(&format!("/{}/", layer)) || file_path.contains(&format!("{}/", layer)) {
+                return layer.to_string();
+            }
+        }
+
+        if self.is_domain_crate() {
+            return "domain".to_string();
+        }
+        if self.is_application_crate() {
+            return "application".to_string();
+        }
+
+        "unknown".to_string()
+    }
+
+    fn detect_target_layer(&self, path_segments: &[String]) -> Option<String> {
+        let full = path_segments.join("::").to_lowercase();
+        for layer in [
+            "command_handler",
+            "write_service",
+            "query_handler",
+            "read_service",
+            "domain_core",
+            "domain_services",
+            "application_services",
+            "controller",
+            "service",
+            "repository",
+            "entity",
+            "usecase",
+            "producer",
+            "consumer",
+            "plugin",
+            "core",
+            "pages",
+            "widgets",
+            "features",
+            "entities",
+            "shared",
+            "domain",
+            "ports",
+            "application",
+            "infrastructure",
+            "adapter",
+            "cli",
+        ] {
+            if full.starts_with(&format!("crate::{}::", layer))
+                || full.starts_with(&format!("super::{}::", layer))
+                || path_segments.iter().any(|s| s.to_lowercase() == layer)
+            {
+                return Some(layer.to_string());
+            }
+        }
+        None
     }
 
     fn is_domain_crate(&self) -> bool {
@@ -152,6 +442,55 @@ mod tests {
         let violations = checker.check_use(&item_use);
         assert!(violations.is_empty(), "Tauri adapter is authorized to import tauri");
     }
+
+    #[test]
+    fn test_import_checker_modular_monolith_capsule_mod001() {
+        let code = "use crate::modules::billing::internal::SecretVault;";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(
+            Path::new("src/modules/orders/service.rs"),
+            "modular_monolith",
+        );
+        let violations = checker.check_use(&item_use);
+        assert_eq!(violations.len(), 1);
+        assert_eq!(violations[0].rule_id, "MOD-001");
+    }
+
+    #[test]
+    fn test_import_checker_cqrs_and_event_driven() {
+        // CQRS Write importing Read model
+        let code_cqrs = "use crate::read_db::UserQueryRepository;";
+        let item_use_cqrs: ItemUse = syn::parse_str(code_cqrs).unwrap();
+        let checker_cqrs = ImportChecker::new(
+            Path::new("src/command/create_user.rs"),
+            "cqrs_app",
+        );
+        let violations_cqrs = checker_cqrs.check_use(&item_use_cqrs);
+        assert!(violations_cqrs.iter().any(|v| v.rule_id == "CQRS-001"));
+
+        // Event-driven Producer importing Consumer
+        let code_evt = "use crate::consumer::send_email_handler;";
+        let item_use_evt: ItemUse = syn::parse_str(code_evt).unwrap();
+        let checker_evt = ImportChecker::new(
+            Path::new("src/producer/order_created.rs"),
+            "event_app",
+        );
+        let violations_evt = checker_evt.check_use(&item_use_evt);
+        assert!(violations_evt.iter().any(|v| v.rule_id == "EVT-001"));
+    }
+
+    #[test]
+    fn test_import_checker_layered_topology_violation_arch007() {
+        let matrix = LayerTopologyMatrix::preset_matrix("layered");
+        let code = "use crate::repository::UserRepository;";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(
+            Path::new("src/controller/user_controller.rs"),
+            "layered_app",
+        )
+        .with_matrix(&matrix);
+
+        let violations = checker.check_use(&item_use);
+        assert!(violations.iter().any(|v| v.rule_id == "ARCH-007"));
+    }
 }
-
-

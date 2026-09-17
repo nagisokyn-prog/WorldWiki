@@ -55,7 +55,7 @@ fn test_use_case_ai_008_unverified_unsafe_blocks_and_proximity_safety_passes() {
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
-        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter::default())];
     let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
@@ -111,7 +111,7 @@ fn test_use_case_ai_009_strict_todo_regex_rules() {
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
-        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter::default())];
     let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
@@ -159,7 +159,7 @@ fn test_use_case_ai_013_universal_compiler_suppression_and_signed_ledger_pass() 
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
-        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter::default())];
     let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
     let storage = MockStorageAdapter::new(vec![1, 2, 3, 4, 5, 6, 7, 8]);
 
@@ -239,7 +239,7 @@ fn test_use_case_test_005_domain_determinism() {
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
-        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter::default())];
     let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
@@ -304,7 +304,7 @@ fn test_use_case_err_hygiene_and_concurrency_perf_rules() {
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
-        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter::default())];
     let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);

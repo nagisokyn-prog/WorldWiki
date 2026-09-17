@@ -190,3 +190,54 @@ fn test_compute_workspace_martin_metrics_success() {
     assert_eq!(a_metric.afferent_coupling, 1);
     assert_eq!(a_metric.abstractness, 0.5);
 }
+
+#[test]
+fn test_cargo_metadata_workspace_arch_metadata_preset() {
+    let temp = tempdir().unwrap();
+    let cargo_toml = temp.path().join("Cargo.toml");
+    let workspace_toml = r#"
+        [workspace]
+        members = ["core-crate", "plugin-crate"]
+        resolver = "2"
+
+        [workspace.metadata.cerberus]
+        preset = "microkernel"
+        enforce_module_boundaries = true
+    "#;
+    std::fs::write(&cargo_toml, workspace_toml).unwrap();
+
+    let core_dir = temp.path().join("core-crate");
+    std::fs::create_dir_all(core_dir.join("src")).unwrap();
+    std::fs::write(core_dir.join("src/lib.rs"), "pub fn run() {}").unwrap();
+    let core_cargo = r#"
+        [package]
+        name = "core-crate"
+        version = "0.1.0"
+        edition = "2021"
+
+        [package.metadata.cerberus]
+        layer = "core"
+    "#;
+    std::fs::write(core_dir.join("Cargo.toml"), core_cargo).unwrap();
+
+    let plugin_dir = temp.path().join("plugin-crate");
+    std::fs::create_dir_all(plugin_dir.join("src")).unwrap();
+    std::fs::write(plugin_dir.join("src/lib.rs"), "pub fn p() {}").unwrap();
+    let plugin_cargo = r#"
+        [package]
+        name = "plugin-crate"
+        version = "0.1.0"
+        edition = "2021"
+
+        [package.metadata.cerberus]
+        layer = "plugin"
+
+        [dependencies]
+        core-crate = { path = "../core-crate" }
+    "#;
+    std::fs::write(plugin_dir.join("Cargo.toml"), plugin_cargo).unwrap();
+
+    let adapter = CargoMetadataManifestAdapter::new();
+    let violations = adapter.check_manifest_layers(&cargo_toml).unwrap();
+    assert!(violations.iter().any(|v| v.rule_id == "ARCH-020"), "Plugin cannot directly depend on core in microkernel preset");
+}

@@ -1,7 +1,7 @@
 use cerberus_domain::{
     ArchLayer, Category, DirNode, FileMetrics, FileMetricsNode, HealthLevel, LayerRule,
-    PackageArchMetadata, PackageMetrics, PackageNode, PressureCalculator, PressureWeights, Severity,
-    TreeItemNode, TreeReport, Violation, WorkspaceArchMetadata,
+    LayerTopologyMatrix, PackageArchMetadata, PackageMetrics, PackageNode, PressureCalculator,
+    PressureWeights, Severity, TreeItemNode, TreeReport, Violation, WorkspaceArchMetadata,
 };
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -61,8 +61,10 @@ fn test_layer_metadata_structs_serde() {
             "domain".into(),
             LayerRule {
                 allowed_dependencies: vec!["ports".into()],
+                forbidden_external_dependencies: vec!["reqwest".into()],
             },
         )]),
+        enforce_module_boundaries: true,
     };
     let json = serde_json::to_string(&meta).unwrap();
     let parsed: WorkspaceArchMetadata = serde_json::from_str(&json).unwrap();
@@ -75,6 +77,109 @@ fn test_layer_metadata_structs_serde() {
     let pkg_json = serde_json::to_string(&pkg).unwrap();
     let pkg_parsed: PackageArchMetadata = serde_json::from_str(&pkg_json).unwrap();
     assert_eq!(pkg, pkg_parsed);
+}
+
+#[test]
+fn test_layer_topology_matrix_presets_and_custom() {
+    // 0. Default matrix
+    let def_matrix = LayerTopologyMatrix::default();
+    assert_eq!(def_matrix.preset_name, "hexagonal");
+    assert!(def_matrix.is_dependency_allowed("application", "domain"));
+
+    // 1. Hexagonal preset
+    let hex = LayerTopologyMatrix::preset_matrix("hexagonal");
+    assert!(hex.is_dependency_allowed("application", "domain"));
+    assert!(hex.is_dependency_allowed("infrastructure", "ports"));
+    assert!(!hex.is_dependency_allowed("domain", "infrastructure"));
+    assert!(hex.is_external_dep_forbidden("domain", "reqwest"));
+    assert!(!hex.is_external_dep_forbidden("infrastructure", "reqwest"));
+
+    // 2. Layered N-Tier
+    let layered = LayerTopologyMatrix::preset_matrix("layered");
+    assert!(layered.is_dependency_allowed("controller", "service"));
+    assert!(layered.is_dependency_allowed("service", "repository"));
+    assert!(!layered.is_dependency_allowed("controller", "repository"));
+    assert!(!layered.is_dependency_allowed("service", "controller"));
+
+    // 3. Clean architecture
+    let clean = LayerTopologyMatrix::preset_matrix("clean");
+    assert!(clean.is_dependency_allowed("usecase", "entity"));
+    assert!(!clean.is_dependency_allowed("entity", "usecase"));
+
+    // 4. Modular Monolith
+    let modular = LayerTopologyMatrix::preset_matrix("modular_monolith");
+    assert!(modular.enforce_boundaries);
+
+    // 5. CQRS
+    let cqrs = LayerTopologyMatrix::preset_matrix("cqrs");
+    assert!(cqrs.is_dependency_allowed("command_handler", "domain_write"));
+    assert!(!cqrs.is_dependency_allowed("command_handler", "read_db"));
+
+    // 6. Onion
+    let onion = LayerTopologyMatrix::preset_matrix("onion");
+    assert!(onion.is_dependency_allowed("application_services", "domain_services"));
+    assert!(!onion.is_dependency_allowed("domain_core", "infrastructure"));
+
+    // 7. Microkernel
+    let microkernel = LayerTopologyMatrix::preset_matrix("microkernel");
+    assert!(microkernel.is_dependency_allowed("plugin", "core_api"));
+    assert!(!microkernel.is_dependency_allowed("core", "plugin"));
+
+    // 8. Actor
+    let actor = LayerTopologyMatrix::preset_matrix("actor");
+    assert!(actor.is_dependency_allowed("worker_actor", "messages"));
+
+    // 9. Serverless
+    let serverless = LayerTopologyMatrix::preset_matrix("serverless");
+    assert!(serverless.is_dependency_allowed("handler", "shared"));
+
+    // 10. Vue FSD
+    let fsd = LayerTopologyMatrix::preset_matrix("vue_fsd");
+    assert!(fsd.is_dependency_allowed("pages", "widgets"));
+    assert!(fsd.is_dependency_allowed("widgets", "features"));
+    assert!(fsd.is_dependency_allowed("features", "entities"));
+    assert!(fsd.is_dependency_allowed("entities", "shared"));
+    assert!(!fsd.is_dependency_allowed("entities", "features"));
+    assert!(!fsd.is_dependency_allowed("shared", "entities"));
+
+    // 11. BFF
+    let bff = LayerTopologyMatrix::preset_matrix("bff");
+    assert!(bff.is_dependency_allowed("bff_gateway", "domain_client"));
+
+    // 12. Event Driven
+    let evt = LayerTopologyMatrix::preset_matrix("event_driven");
+    assert!(evt.is_dependency_allowed("producer", "events"));
+    assert!(!evt.is_dependency_allowed("producer", "consumer"));
+
+    // 13. Final boss
+    let boss = LayerTopologyMatrix::preset_matrix("final_boss");
+    assert!(boss.enforce_boundaries);
+    assert!(boss.is_dependency_allowed("spa", "packages_components"));
+
+    // 14. Unknown / Default fallback
+    let unknown = LayerTopologyMatrix::preset_matrix("custom_nonexistent");
+    assert_eq!(unknown.preset_name, "custom_nonexistent");
+
+    // 15. Dynamic override from WorkspaceArchMetadata
+    let mut custom_layers = HashMap::new();
+    custom_layers.insert(
+        "frontend".into(),
+        LayerRule {
+            allowed_dependencies: vec!["backend_api".into()],
+            forbidden_external_dependencies: vec!["direct_db".into()],
+        },
+    );
+    let ws_meta = WorkspaceArchMetadata {
+        preset: Some("custom".into()),
+        layers: custom_layers,
+        enforce_module_boundaries: true,
+    };
+    let dyn_matrix = LayerTopologyMatrix::from_workspace_metadata(&ws_meta);
+    assert!(dyn_matrix.enforce_boundaries);
+    assert!(dyn_matrix.is_dependency_allowed("frontend", "backend_api"));
+    assert!(!dyn_matrix.is_dependency_allowed("frontend", "direct_db"));
+    assert!(dyn_matrix.is_external_dep_forbidden("frontend", "direct_db"));
+    assert!(!dyn_matrix.is_external_dep_forbidden("backend_api", "direct_db"));
 }
 
 #[test]

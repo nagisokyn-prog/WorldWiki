@@ -39,7 +39,7 @@ fn test_fingerprint_deterministic() {
 fn test_invalid_domain_imports_detected() {
     let fixture_path = manifest_dir().join("tests/fixtures/invalid_domain_imports/src/lib.rs");
     if fixture_path.exists() {
-        let parser = RustSynParserAdapter;
+        let parser = RustSynParserAdapter::default();
         let violations = parser
             .parse_file(&fixture_path, "worldwiki-domain")
             .expect("Should parse fixture");
@@ -52,7 +52,7 @@ fn test_invalid_domain_imports_detected() {
 fn test_invalid_mutex_await_detected() {
     let fixture_path = manifest_dir().join("tests/fixtures/invalid_mutex_await/src/lib.rs");
     if fixture_path.exists() {
-        let parser = RustSynParserAdapter;
+        let parser = RustSynParserAdapter::default();
         let violations = parser
             .parse_file(&fixture_path, "worldwiki-infrastructure")
             .expect("Should parse fixture");
@@ -65,7 +65,7 @@ fn test_invalid_mutex_await_detected() {
 fn test_clean_hexagonal_has_zero_violations() {
     let fixture_path = manifest_dir().join("tests/fixtures/valid_clean_hexagonal/src/lib.rs");
     if fixture_path.exists() {
-        let parser = RustSynParserAdapter;
+        let parser = RustSynParserAdapter::default();
         let violations = parser
             .parse_file(&fixture_path, "worldwiki-domain")
             .expect("Should parse fixture");
@@ -188,7 +188,7 @@ fn test_scan_workspace_use_case_orchestration() {
     if rules_path.exists() {
         let repo = Arc::new(RulesJsonRepository::load_from_file(&rules_path).unwrap());
         let parsers: Vec<Arc<dyn AstParserPort>> = vec![
-            Arc::new(RustSynParserAdapter),
+            Arc::new(RustSynParserAdapter::default()),
             Arc::new(VueSfcParserAdapter),
         ];
         let ast_engine = Arc::new(cargo_cerberus::infrastructure::ParallelAstEngineAdapter::new(parsers));

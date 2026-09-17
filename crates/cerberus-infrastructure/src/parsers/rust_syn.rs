@@ -12,7 +12,10 @@ use std::fs;
 use std::path::Path;
 use syn::visit::Visit;
 
-pub struct RustSynParserAdapter;
+#[derive(Default, Clone)]
+pub struct RustSynParserAdapter {
+    pub matrix: Option<cerberus_domain::LayerTopologyMatrix>,
+}
 
 impl AstParserPort for RustSynParserAdapter {
     fn can_parse(&self, path: &Path) -> bool {
@@ -27,6 +30,16 @@ impl AstParserPort for RustSynParserAdapter {
 }
 
 impl RustSynParserAdapter {
+    pub fn new() -> Self {
+        Self { matrix: None }
+    }
+
+    pub fn with_matrix(matrix: cerberus_domain::LayerTopologyMatrix) -> Self {
+        Self {
+            matrix: Some(matrix),
+        }
+    }
+
     pub fn parse_source(
         &self,
         content: &str,
@@ -42,8 +55,11 @@ impl RustSynParserAdapter {
 
         let mut violations = Vec::new();
 
-        // 1. Imports check (ARCH-001..ARCH-008)
-        let import_checker = ImportChecker::new(path, crate_name);
+        // 1. Imports check (ARCH-001..ARCH-008, MOD-001, CQRS-001, EVT-001)
+        let mut import_checker = ImportChecker::new(path, crate_name);
+        if let Some(matrix) = &self.matrix {
+            import_checker = import_checker.with_matrix(matrix);
+        }
         for item in &syntax_tree.items {
             if let syn::Item::Use(item_use) = item {
                 violations.extend(import_checker.check_use(item_use));
@@ -141,7 +157,7 @@ mod tests {
 
     #[test]
     fn test_rust_syn_parser_adapter() {
-        let adapter = RustSynParserAdapter;
+        let adapter = RustSynParserAdapter::new();
         assert!(adapter.can_parse(Path::new("src/lib.rs")));
         assert!(!adapter.can_parse(Path::new("src/lib.vue")));
 
@@ -157,11 +173,19 @@ mod tests {
 
         let missing = temp.path().join("missing.rs");
         assert!(adapter.parse_file(&missing, "domain").is_err());
+
+        // Test with_matrix
+        let matrix = cerberus_domain::LayerTopologyMatrix::preset_matrix("layered");
+        let matrix_adapter = RustSynParserAdapter::with_matrix(matrix);
+        let violations = matrix_adapter
+            .parse_source("use crate::repository::Repo;", Path::new("src/controller/c.rs"), "app")
+            .unwrap();
+        assert!(violations.iter().any(|v| v.rule_id == "ARCH-007"));
     }
 
     #[test]
     fn test_rust_syn_parser_complexity_threshold() {
-        let adapter = RustSynParserAdapter;
+        let adapter = RustSynParserAdapter::default();
         let mut big_code = String::new();
         for i in 0..400 {
             big_code.push_str(&format!("pub fn fn_{}() {{ if true {{}} }}\n", i));
@@ -170,5 +194,11 @@ mod tests {
             .parse_source(&big_code, Path::new("crates/domain/src/god.rs"), "domain")
             .unwrap();
         assert!(violations.iter().any(|v| v.rule_id == "ARCH-031"));
+
+        // Test file path branch
+        let test_violations = adapter
+            .parse_source("pub fn small() {}", Path::new("tests/my_test.rs"), "domain")
+            .unwrap();
+        assert!(test_violations.is_empty());
     }
 }

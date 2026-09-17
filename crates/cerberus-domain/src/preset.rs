@@ -4,6 +4,7 @@ use std::str::FromStr;
 pub enum Preset {
     HexagonalStrict,
     HardenedSandbox,
+    HardenedZeroTrust,
     Permissive,
 }
 
@@ -20,6 +21,7 @@ impl FromStr for Preset {
         match name.to_lowercase().as_str() {
             "hexagonal-strict" | "hexagonal" => Ok(Self::HexagonalStrict),
             "hardened-sandbox" | "sandbox" => Ok(Self::HardenedSandbox),
+            "hardened-zero-trust" | "zero-trust" | "distrust" => Ok(Self::HardenedZeroTrust),
             "permissive" => Ok(Self::Permissive),
             _ => Err(()),
         }
@@ -35,6 +37,8 @@ mod tests {
         assert_eq!(Preset::from_name("hexagonal"), Some(Preset::HexagonalStrict));
         assert_eq!(Preset::from_name("HEXAGONAL-STRICT"), Some(Preset::HexagonalStrict));
         assert_eq!(Preset::from_name("sandbox"), Some(Preset::HardenedSandbox));
+        assert_eq!(Preset::from_name("hardened-zero-trust"), Some(Preset::HardenedZeroTrust));
+        assert_eq!(Preset::from_name("distrust"), Some(Preset::HardenedZeroTrust));
         assert_eq!(Preset::from_name("permissive"), Some(Preset::Permissive));
     }
 

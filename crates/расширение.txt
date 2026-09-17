@@ -1,0 +1,523 @@
+Окей. Давай разберу системно. Сейчас Cerberus — это **«линтер с хорошими правилами»**. Чтобы он стал **«Цербером в буквальном смысле»** — трёхголовым псом, который жрёт всё, что движется — нужно сменить **философию** с «catch violations» на **«express distrust»**.
+
+Разница:
+- **Сейчас**: «этот код нарушает правило ARCH-001» → deny.
+- **Должно быть**: «этот код **может** нарушить инвариант X при условии Y» → deny.
+
+То есть ты переходишь от **детекции нарушений** к **выражению недоверия**. Это фундаментальный сдвиг.
+
+## Часть 1: Философский сдвиг
+
+Три уровня «злости»:
+
+**Уровень 1: Detection (сейчас).** Ловит известные паттерны нарушений.
+- `domain` импортирует `reqwest` → deny.
+- `path` из IPC идёт в `Command::new` → deny.
+
+**Уровень 2: Capability (частично есть).** Ловит **возможности**, а не паттерны.
+- Этот крейт **может** открыть сокет (через 3 уровня транзитивных зависимостей) → warn.
+- Эта функция **может** паниковать на 40% путей исполнения → warn.
+
+**Уровень 3: Distrust (нужно добавить).** Выражает **презумпцию виновности**.
+- Любой код, сгенерированный LLM, **обязан** быть покрыт property-based тестом на инварианты → deny без теста.
+- Любое изменение в `Cargo.toml` **обязано** иметь capability diff review → deny без подписи.
+- Любая функция с I/O **обязана** быть в `infrastructure` или иметь `#[explicit_io]` маркер → deny по умолчанию.
+
+Сейчас у тебя первые два уровня. Третий — твой **реальный дифференциатор**.
+
+## Часть 2: Новые головы Цербера
+
+### Голова 4: PERFORMANCE & SCALABILITY
+
+```
+PERF-001: I/O в цикле
+  Если функция с capability I/O вызывается внутри for/while/iterator
+  → warn (N+1 detection)
+  → deny если функция помечена #[hot_path]
+
+PERF-002: Unbounded channel
+  tokio::sync::mpsc::channel без ёмкости
+  → warn в hot path
+  → deny в request handler
+
+PERF-003: CPU-bound в tokio::spawn
+  Тело async fn содержит цикл > N итераций без spawn_blocking
+  → warn
+
+PERF-004: Синхронный Mutex в async
+  std::sync::Mutex в async fn (даже без .await)
+  → warn
+  → deny если функция вызывается из runtime
+
+PERF-005: Аллокация в hot loop
+  Vec::new(), String::new(), format!, .clone() внутри for
+  → warn если цикл > 1000 итераций (эвристика)
+
+PERF-006: Blocking в Drop
+  impl Drop с fs::write, Command, sleep
+  → deny (это UB-риск)
+
+PERF-007: Рекурсия без tail-call
+  Рекурсивная функция без явного ограничения глубины
+  → warn для production кода
+
+PERF-008: Квадратичная сложность
+  Вложенные циклы без ранних выходов и без break
+  → warn если оба > N
+```
+
+### Голова 5: CONCURRENCY & CORRECTNESS
+
+```
+CONC-001: Arc cycle
+  Структура содержит Arc<Self> или Arc<Mutex<Vec<Arc<Self>>>>
+  → warn (утечка памяти)
+
+CONC-002: spawn без JoinHandle
+  tokio::spawn(...) без сохранения handle или CancellationToken
+  → deny в production
+
+CONC-003: select! без biased
+  tokio::select! без biased и без random fairness
+  → warn (недетерминизм под нагрузкой)
+
+CONC-004: RwLock вместо Mutex
+  Mutex используется только для чтения в >80% случаев
+  → warn (деградация)
+
+CONC-005: Отсутствие CancellationToken
+  Long-running task без отмены
+  → deny в request handler
+
+CONC-006: Двойной lock
+  Один Mutex лочится дважды в одной функции (deadlock)
+  → deny (100% deadlock)
+
+CONC-007: Unsafe Send/Sync
+  impl Send/Sync для типа с raw pointers
+  → deny без #[safety_comment]
+
+CONC-008: Static mut
+  static mut ANY_TYPE
+  → deny (UB)
+
+CONC-009: Interrupt-safe
+  Mutex, held через .await
+  → deny (уже есть как ASYNC-002)
+```
+
+### Голова 6: ERROR HANDLING & OBSERVABILITY
+
+```
+ERR-001: Игнорирование Result
+  let _ = result; или result.ok();
+  → deny в production
+
+ERR-002: unwrap в Drop
+  impl Drop с .unwrap()/.expect()
+  → deny (UB)
+
+ERR-003: Result<T, String>
+  Result<T, String> в публичном API
+  → warn (теряется тип ошибки)
+
+ERR-004: Result<T, E> где E не Error
+  E не реализует std::error::Error
+  → warn (не работает с ? и anyhow)
+
+ERR-005: panic! в библиотеке
+  panic! в crate с lib target
+  → deny (библиотеки не должны паниковать)
+
+ERR-006: Box<dyn Error> в публичном API
+  → warn (теряется структура)
+
+ERR-007: Отсутствие #[from] для From
+  impl From для error types без #[from]
+  → warn
+
+ERR-008: Преобразование ошибки в String
+  .map_err(|e| e.to_string())
+  → warn
+
+OBS-001: Result без логирования
+  Result возвращается без tracing::error/warn
+  → warn если функция публичная
+
+OBS-002: Отсутствие #[instrument]
+  Публичная async fn без #[tracing::instrument]
+  → warn
+
+OBS-003: tracing без fields
+  tracing::info! без структурированных полей
+  → warn
+
+OBS-004: Логи без correlation id
+  Логи внутри request handler без request_id
+  → warn
+
+OBS-005: println! в production
+  println!/eprintln! вне main/tests
+  → deny (уже есть как ARCH-023)
+
+OBS-006: Отсутствие метрик
+  Публичный endpoint/handler без #[metrics] или counter
+  → warn
+
+OBS-007: Секреты в логах
+  tracing::info!({:?}, api_key)
+  → deny
+```
+
+### Голова 7: SECURITY (расширение TAINT)
+
+```
+SEC-001: SQL injection
+  Tainted → sqlx::query/format!/raw query
+  → deny
+
+SEC-002: Path traversal
+  Tainted path → fs::read/write/File::open
+  → deny без sanitize
+
+SEC-003: Command injection
+  Tainted → Command::new → args
+  → deny
+
+SEC-004: Template injection (SSTI)
+  Tainted → tera/minijinja/handlebars::render
+  → deny
+
+SEC-005: Deserialization attacks
+  serde_json::from_str на tainted без deny_unknown_fields
+  → warn
+
+SEC-006: XSS во Vue
+  v-html на tainted
+  → deny (уже есть в SFC)
+
+SEC-007: CSRF в Tauri
+  IPC command без проверки origin
+  → warn
+
+SEC-008: Timing attack
+  Сравнение секретов через ==
+  → deny (constant_time_eq обязателен)
+
+SEC-009: Hardcoded secrets
+  Строки вида "sk-...", "AKIA...", base64 > 40 символов
+  → deny
+
+SEC-010: Weak crypto
+  md5, sha1, des, rc4
+  → deny
+
+SEC-011: Insecure random
+  rand::thread_rng() для crypto
+  → deny (нужен OsRng)
+
+SEC-012: XXE
+  XML parser с external entities enabled
+  → deny
+
+SEC-013: SSRF
+  Tainted URL → reqwest::get
+  → deny без allowlist
+
+SEC-014: Open redirect
+  Tainted redirect_uri
+  → deny
+
+SEC-015: Prototype pollution (TS/JS)
+  Object.assign(target, tainted) без hasOwnProperty
+  → warn
+
+SEC-016: ReDoS
+  Regex с nested quantifiers
+  → warn
+```
+
+### Голова 8: DATA INTEGRITY
+
+```
+DATA-001: Транзакция с I/O
+  Между BEGIN и COMMIT есть сетевой вызов
+  → deny
+
+DATA-002: Отсутствие idempotency
+  POST/PUT handler без idempotency key
+  → warn
+
+DATA-003: Двойная запись без outbox
+  Публикация события + запись в БД без outbox pattern
+  → warn
+
+DATA-004: Отсутствие optimistic lock
+  Update без version/updated_at check
+  → warn
+
+DATA-005: Money as float
+  f32/f64 для денег
+  → deny
+
+DATA-006: Time as Instant без timezone
+  SystemTime/NaiveDateTime в публичном API
+  → warn
+
+DATA-007: N+1 через ORM
+  Loop по результатам с вызовом связанных сущностей
+  → warn
+
+DATA-008: Отсутствие pagination
+  Query без LIMIT/OFFSET в горячем пути
+  → warn
+
+DATA-009: Mutating cached data
+  Изменение объекта из кэша на месте
+  → warn
+
+DATA-010: Unbounded collection
+  Vec/HashMap растёт без eviction policy
+  → warn
+```
+
+### Голова 9: SUPPLY CHAIN
+
+```
+SUP-001: Transitive capability leak
+  Зависимость N-го уровня открывает сокет/процессы
+  → warn (уже упоминается)
+
+SUP-002: Non-pinned dependency
+  Cargo.toml с "*" или ">=" для production
+  → warn
+
+SUP-003: Git dependency
+  Зависимость из git:// или http://
+  → deny
+
+SUP-004: Unmaintained crate
+  Последний релиз > 2 лет назад
+  → warn
+
+SUP-005: Duplicate versions
+  Два разных версии одного крейта в дереве
+  → warn
+
+SUP-006: Feature bloat
+  Крейт с 50+ features включён целиком
+  → warn
+
+SUP-007: Build script capability
+  build.rs с Command/network/fs
+  → deny без подписи
+
+SUP-008: Proc macro с I/O
+  proc-macro crate с fs/network/process
+  → deny (нарушение гигиены макросов)
+
+SUP-009: Unsafe в зависимостях
+  Транзитивная зависимость с unsafe блоками без аудита
+  → warn с деталями
+
+SUP-010: Yanked version
+  Использование yanked версии из crates.io
+  → deny
+```
+
+### Голова 10: AI-AGENT DEFENSE (это твой killer)
+
+```
+AI-001: Изменение capability конфигов без подписи
+  Изменение cerberus.json, rules.json, package.json.guardian без HMAC
+  → deny
+
+AI-002: Capability diff без review
+  PR добавляет > N новых capability в слой
+  → require human approval (не auto-fail, но block merge)
+
+AI-003: Рефлексивный зонд
+  std::env::current_exe, /proc, ~/.cargo, ~/.config
+  → deny в не-infrastructure
+
+AI-004: Самомодификация
+  fs::write на пути .cerberus/, Cargo.toml, guardian-ledger.lock
+  → deny
+
+AI-005: Подозрительный генерик-полиморфизм
+  Функция с > 5 generic параметров и unsafe
+  → warn (попытка обхода типовой системы)
+
+AI-006: Динамическая загрузка кода
+  libloading, dlopen, dynasm
+  → deny без подписи
+
+AI-007: Вычисляемые строки в макросах
+  quote!, macro_rules! с конкатенацией из внешних данных
+  → deny (code injection)
+
+AI-008: Unsafe без #[safety_comment]
+  Любой unsafe блок без комментария
+  → deny
+
+AI-009: TODO без TTL
+  // TODO без даты или issue ссылки
+  → warn
+
+AI-010: Признаки LLM-генерации
+  Co-authored-by: Claude/GPT/Copilot в коммите + отсутствие тестов на новый код
+  → warn (эвристика)
+
+AI-011: Раздувание тестов
+  Новый код + тесты, но мокают всё (включая типы из domain)
+  → warn (тесты не проверяют реальное поведение)
+
+AI-012: Snapshot без ревью
+  insta::assert_snapshot! на новом снапшоте
+  → require human approval
+
+AI-013: Отключение проверок
+  #[allow(dead_code)], #[allow(unused)], #[allow(clippy::all)]
+  → deny без подписи (это те же suppressions)
+
+AI-014: Изменение pre-commit hooks
+  Модификация .git/hooks/* или .husky/*
+  → deny
+
+AI-015: Network в build/test
+  build.rs или тест с network access
+  → deny
+```
+
+### Голова 11: TESTABILITY (то, что ты хотел)
+
+```
+TEST-001: I/O без trait
+  Функция с I/O (fs, net, time, random) без параметра типа &dyn Trait
+  → warn
+
+TEST-002: Static мутабельное состояние
+  lazy_static!, once_cell с Mutex, static mut
+  → warn
+
+TEST-003: new() создаёт зависимости
+  fn new() -> Self создаёт конкретные типы вместо Arc<dyn Trait>
+  → warn
+
+TEST-004: Бизнес-логика в impl без trait
+  impl с публичными методами без трейта
+  → warn
+
+TEST-005: Time::now / Uuid::new_v4 в domain
+  Прямое использование в бизнес-логике без инъекции
+  → deny
+
+TEST-006: Отсутствие unit-тестов
+  Публичная функция без #[cfg(test)] mod в том же файле
+  → warn
+
+TEST-007: Только happy-path тесты
+  В тестах нет #[should_panic] или assert на Err
+  → warn
+
+TEST-008: Mock всего
+  Тесты мокают типы из domain (не только ports)
+  → warn
+
+TEST-009: Отсутствие property-based тестов
+  Парсеры/сериализаторы без proptest
+  → warn
+
+TEST-010: Отсутствие fuzzing
+  Публичный парсер без fuzz target
+  → warn
+```
+
+## Часть 3: Cross-cutting — то, что делает правила «умнее»
+
+**1. Capability Budget (вместо бинарного deny).**
+```toml
+[capabilities.domain]
+max_network_calls = 0
+max_fs_writes = 0
+max_process_spawns = 0
+max_env_reads = 0
+max_unsafe_blocks = 0
+
+[capabilities.application]
+max_network_calls = 5   # явно разрешено 5, с обоснованием
+max_fs_writes = 0
+```
+
+Вместо «domain не может делать X» → «domain может делать X **не более N раз**, и каждый вызов задокументирован».
+
+**2. Cross-language taint.**
+Сейчас taint только внутри Rust или внутри Vue. Нужен **сквозной**:
+- Аргумент Tauri IPC (Rust side) → taint → параметр в Vue компоненте.
+- Если этот параметр попадает в `v-html` без sanitize → deny.
+
+Это **реально уникально**. Никто такого не делает.
+
+**3. Provenance tracking.**
+```rust
+// В коде есть маркер
+#[generated_by(llm, model = "claude-opus", commit = "abc123")]
+```
+Правила могут **ужесточаться** для LLM-генерированного кода:
+- TEST-001..010 применяются только к LLM-коду.
+- Требуется property-based test.
+- Требуется human review для unsafe.
+
+Это можно **автоматически** определять через `git log --grep="Co-authored-by:"`.
+
+**4. Invariants DSL (расширение architecture-as-config).**
+```toml
+[[invariant]]
+id = "INV-MONEY-001"
+description = "Все денежные операции идемпотентны"
+assert = "all fn in domain::money have #[idempotent]"
+severity = "deny"
+
+[[invariant]]
+id = "INV-EVENT-001"
+description = "Все события имеют version"
+assert = "all struct impl Event have field version"
+severity = "deny"
+```
+
+Это **policy layer**, который позволяет выражать **бизнес-инварианты**, а не только технические.
+
+**5. Temporal rules.**
+Правила, которые проверяют **diff между коммитами**, а не только текущий код:
+- «Этот PR добавил 3 новых capability без изменения ADR» → warn.
+- «Этот PR удалил 5 тестов и не добавил новых» → deny.
+- «Этот PR изменил публичный API без bump версии» → deny.
+
+**6. Rules as Code (расширение).**
+Позволить писать правила на **Rust** (как `cargo-deny`), **TOML** (декларативно) и **WASM** (для переносимости). Тогда сообщество начнёт контрибьютить.
+
+## Часть 4: Как сделать существующие правила злее
+
+**1. Уровень строгости по умолчанию → `deny`.**
+Сейчас много `warn`. Сделай так, чтобы в пресете `hardened-sandbox` **всё** было `deny`, кроме `OBS-*` и `PERF-*` (которые `warn`).
+
+**2. Правила на **дизайн**, не только на нарушения.**
+- Отсутствие ADR для нового архитектурного решения → deny.
+- Отсутствие `#[doc]` для публичного API → warn.
+- Отсутствие `#[safety_comment]` для unsafe → deny (уже есть).
+
+**3. Правила на **тренды**, не только на точки.**
+- «S_arch растёт на > 5% за PR» → deny.
+- «Test coverage падает на > 2% за PR» → deny.
+- «Количество `.clone()` растёт на > 10% за PR» → warn.
+
+**4. Правила на **аномалии**, не только на паттерны.**
+- «Эта функция имеет 200 строк и 0 вызовов из других модулей» → warn (мёртвый код).
+- «Этот файл был изменён 47 раз за месяц» → warn (hot spot).
+- «Этот крейт используется только одним модулем» → warn (возможно, не нужен).
+
+**5. Правила на **контракты**, не только на синтаксис.**
+- «Публичная функция возвращает `impl Trait`, но трейт не sealed» → warn.
+- «Публичный enum не помечен `#[non_exhaustive]`» → warn.
+- «Публичный struct имеет публичные поля» → warn.
+

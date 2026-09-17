@@ -12,6 +12,13 @@ pub enum Category {
     Robustness,
     Convention,
     Performance,
+    Concurrency,
+    ErrorHandling,
+    Observability,
+    DataIntegrity,
+    SupplyChain,
+    AiDefense,
+    Testability,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

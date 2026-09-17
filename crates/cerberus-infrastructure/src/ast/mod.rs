@@ -1,15 +1,25 @@
+pub mod ai_defense;
 pub mod ai_slop;
 pub mod async_rules;
 pub mod capabilities;
+pub mod concurrency_rules;
+pub mod error_rules;
 pub mod imports;
 pub mod macros;
 pub mod panic_vector;
+pub mod rust_perf;
+pub mod testability;
 pub mod visitor;
 
+pub use ai_defense::AiDefenseChecker;
 pub use ai_slop::AiSlopVisitor;
 pub use async_rules::MutexGuardVisitor;
 pub use capabilities::CapabilitiesVisitor;
+pub use concurrency_rules::ConcurrencyRulesChecker;
+pub use error_rules::ErrorRulesChecker;
 pub use imports::ImportChecker;
 pub use macros::MacroVisitor;
 pub use panic_vector::PanicVectorVisitor;
+pub use rust_perf::RustPerfChecker;
+pub use testability::TestabilityChecker;
 pub use visitor::{FileAnalyzer, ScanSummary};

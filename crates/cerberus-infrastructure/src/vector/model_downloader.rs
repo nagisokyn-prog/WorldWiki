@@ -53,9 +53,9 @@ impl ModelDownloaderPort for NativeModelDownloaderAdapter {
             }
         }
 
-        // Try curl first
+        // Try curl first with timeout
         let curl_res = Command::new("curl")
-            .args(["-L", "-s", "-f", "-o"])
+            .args(["-L", "-s", "-f", "--connect-timeout", "2", "-m", "10", "-o"])
             .arg(dest_path)
             .arg(url)
             .output();
@@ -63,9 +63,9 @@ impl ModelDownloaderPort for NativeModelDownloaderAdapter {
         match curl_res {
             Ok(out) if out.status.success() && dest_path.exists() => Ok(()),
             _ => {
-                // Fallback to PowerShell on Windows
+                // Fallback to PowerShell on Windows with timeout
                 let ps_script = format!(
-                    "Invoke-WebRequest -UseBasicParsing -Uri '{}' -OutFile '{}'",
+                    "Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri '{}' -OutFile '{}'",
                     url,
                     dest_path.display()
                 );
@@ -113,16 +113,16 @@ mod tests {
         let missing = temp.path().join("missing.txt");
         assert!(NativeModelDownloaderAdapter::compute_sha256(&missing).is_err());
 
-        // Test download invalid url returns error
+        // Test download invalid url returns error immediately (connection refused port 1, 0ms)
         let target_file = temp.path().join("sub/test.file");
-        let dl_res = downloader.download_file("https://invalid.domain.123456789.xyz/notfound", &target_file);
+        let dl_res = downloader.download_file("http://127.0.0.1:1/nonexistent", &target_file);
         assert!(dl_res.is_err());
 
         // Test parent creation failure (file existing where directory expected)
         let blocker = temp.path().join("blocker_file");
         fs::write(&blocker, b"blocking").unwrap();
         let invalid_dest = blocker.join("child/test.bin");
-        let dir_err = downloader.download_file("https://example.com/test", &invalid_dest);
+        let dir_err = downloader.download_file("http://127.0.0.1:1/test", &invalid_dest);
         assert!(dir_err.is_err());
     }
 }

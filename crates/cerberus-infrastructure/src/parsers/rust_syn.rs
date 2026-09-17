@@ -75,6 +75,28 @@ impl RustSynParserAdapter {
         slop_visitor.visit_file(&syntax_tree);
         violations.extend(slop_visitor.violations);
 
+        let path_str = path.to_string_lossy();
+
+        // 7. AI-Agent Defense (AI-003, AI-008, AI-009, AI-013)
+        let ai_checker = crate::ast::AiDefenseChecker::new(&path_str, crate_name, &[], content);
+        violations.extend(ai_checker.check_file(&syntax_tree));
+
+        // 8. Testability & Pure Domain (TEST-002, TEST-003, TEST-005)
+        let test_checker = crate::ast::TestabilityChecker::new(&path_str, crate_name, &[]);
+        violations.extend(test_checker.check_file(&syntax_tree));
+
+        // 9. Error Handling & Hygiene (ERR-001, ERR-002, ERR-003, ERR-005)
+        let err_checker = crate::ast::ErrorRulesChecker::new(&path_str, crate_name, &[]);
+        violations.extend(err_checker.check_file(&syntax_tree));
+
+        // 10. Concurrency & Correctness (CONC-002, CONC-008)
+        let conc_checker = crate::ast::ConcurrencyRulesChecker::new(&path_str, &[]);
+        violations.extend(conc_checker.check_file(&syntax_tree));
+
+        // 11. Rust Performance & Loops (PERF-006, PERF-011, PERF-012)
+        let perf_checker = crate::ast::RustPerfChecker::new(&path_str, &[]);
+        violations.extend(perf_checker.check_file(&syntax_tree));
+
         let weights = PressureWeights::default();
         if let Ok(metrics) = AstComplexityAnalyzer::analyze_rust_file(content, path, 0.0, &weights) {
             let path_str = path.to_string_lossy().to_lowercase();

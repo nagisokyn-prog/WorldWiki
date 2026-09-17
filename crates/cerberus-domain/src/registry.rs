@@ -35,6 +35,9 @@ impl BuiltinRuleRegistry {
             r("ROB-001", Category::Robustness, Severity::Warn, "High Panic Collapse Vector (.unwrap / .expect / raw indexing)", "Module execution paths can panic at runtime due to unwrap(), expect(), or unchecked slice indexing.", "Replace .unwrap() with ? error propagation and vec[i] with .get(i)."),
             r("SEC-001", Category::Security, Severity::Deny, "Taint-to-Sink Command Execution Vulnerability", "Unsanitized user input reaches system command execution sink.", "Sanitize path via validate_safe_path() or annotate function with #[cerberus(sanitizes)]."),
             r("SEC-002", Category::Security, Severity::Warn, "Transitive Capability Leakage in Pure Layer", "Pure domain or ports layer pulls transitive dependencies with network sockets or OS process execution capabilities.", "Remove bloated transitive dependencies from pure layer Cargo.toml."),
+            r("SEC-003", Category::Security, Severity::Deny, "Command Injection Vector", "Tainted external arguments flow directly into Process Command execution.", "Use allowlisted commands and sanitize arguments."),
+            r("SEC-008", Category::Security, Severity::Deny, "Timing Attack on Secret Comparison", "Direct == comparison of authentication tokens or crypto hashes is vulnerable to side-channel timing attacks.", "Use subtle::ConstantTimeEq for constant-time comparison."),
+            r("SEC-009", Category::Security, Severity::Deny, "Hardcoded API Secrets or Private Keys", "Static API keys or token signatures detected in source code.", "Load secrets dynamically from environment variables or OS keyring."),
             r("SLOP-001", Category::Convention, Severity::Warn, "AI-Slop and Indirection Tax Detected", "Excessive .clone() density, mutable state in global lazy_static/RwLock, or unnecessary thread wrappers detected.", "Fix lifetimes instead of defensive cloning; avoid global mutable locks."),
 
             // 2. Vue SFC & Component Anatomy Rules
@@ -53,14 +56,45 @@ impl BuiltinRuleRegistry {
             r("FSD-003", Category::Architecture, Severity::Deny, "UI-Kit package cannot import business stores", "@worldwiki/components UI kit must remain pure and cannot import business stores/Pinia.", "Pass callbacks and props into UI-Kit components from host application."),
             r("FSD-004", Category::Architecture, Severity::Deny, "FSD Cross-slice direct dependency", "Sibling slices at the same level cannot directly depend on each other.", "Compose slices at widgets or pages level."),
 
-            // 5. High-Performance & Reactive Integrity (Rule 08) Rules
+            // 5. Performance Rules
             r("PERF-001", Category::Performance, Severity::Deny, "Deep reactivity on large data structure / AST", "Wrapping 1000+ AST nodes or large logs in ref()/reactive() causes massive CPU overhead.", "Use shallowRef() + triggerRef(), markRaw(), or Object.freeze()."),
             r("PERF-002", Category::Performance, Severity::Deny, "Deep reactivity on Three.js / Canvas / Monaco instances", "Wrapping Canvas/WebGL/Monaco instances in Vue Proxy causes memory leaks.", "Wrap instance in markRaw(new Instance())."),
             r("PERF-003", Category::Performance, Severity::Deny, "Memory allocation inside requestAnimationFrame render loop", "Allocating objects inside RAF loop triggers GC frame drops.", "Preallocate reusable vectors and buffers outside render loop."),
             r("PERF-004", Category::Performance, Severity::Deny, "Uncached function call in v-for template", "Calling regular methods inside v-for runs on every render frame without dependency caching.", "Precompute mapped data into computed() property."),
             r("PERF-005", Category::Performance, Severity::Deny, "Cascading deep watcher without depth limit", "Using watch(..., { deep: true }) on complex objects causes reactive cascading re-renders.", "Use scalar getters or Vue 3.5+ depth limit { deep: 1 }."),
+            r("PERF-006", Category::Performance, Severity::Deny, "Blocking I/O in Drop Implementation", "Calling filesystem, process spawn or thread sleep in Drop can block runtime or cause deadlock.", "Perform asynchronous graceful shutdown explicitly."),
+            r("PERF-011", Category::Performance, Severity::Warn, "I/O Operation in Iteration Loop", "Invoking filesystem or network operations in for/while loops causes N+1 performance collapse.", "Batch I/O operations outside the loop."),
+            r("PERF-012", Category::Performance, Severity::Warn, "Unbounded Async Channel", "tokio::sync::mpsc::unbounded_channel() without capacity causes out-of-memory under high load.", "Use bounded channel with backpressure."),
 
-            // 6. Memory & IPC Leak Rules
+            // 6. Concurrency Rules
+            r("CONC-002", Category::Concurrency, Severity::Deny, "Orphan Background Tokio Task", "tokio::spawn without storing JoinHandle or passing CancellationToken risks task leakage.", "Store JoinHandle or attach CancellationToken."),
+            r("CONC-006", Category::Concurrency, Severity::Deny, "Double Lock Deadlock Vector", "Acquiring same Mutex/RwLock twice within single execution scope guarantees deadlock.", "Decompose lock guards into distinct lexical blocks."),
+            r("CONC-008", Category::Concurrency, Severity::Deny, "Mutable Static State", "static mut causes undefined behavior and data races.", "Use Atomic types or OnceLock<Mutex<T>>."),
+
+            // 7. Error Handling & Observability Rules
+            r("ERR-001", Category::ErrorHandling, Severity::Deny, "Silent Result Dropping", "let _ = result; silently suppresses error propagation.", "Handle error explicitly or propagate with ? operator."),
+            r("ERR-002", Category::ErrorHandling, Severity::Deny, "Panic or Unwrap in Drop Implementation", "Unwrapping or panicking inside Drop during stack unwinding causes double-panic process abort.", "Log error via tracing::error! without panicking."),
+            r("ERR-003", Category::ErrorHandling, Severity::Warn, "Untyped String Error in Public API", "Result<T, String> loses structured error context.", "Define strongly typed enum Error with thiserror."),
+            r("ERR-005", Category::ErrorHandling, Severity::Deny, "Panic or Unimplemented in Library Target", "Libraries must not panic or abort host applications.", "Return Result<T, Error> instead of panicking."),
+            r("OBS-007", Category::Observability, Severity::Deny, "Sensitive Secret Leakage in Log Macro", "Passing api_key, password or secret into tracing/println log macros.", "Redact sensitive fields with secrecy or #[debug(skip)]."),
+
+            // 8. AI-Agent Defense & Zero-Trust Rules
+            r("AI-001", Category::AiDefense, Severity::Deny, "Unauthorized Firewall Configuration Tampering", "Modifying .cerberus/rules.json or suppressions.lock without cryptographic HMAC signature is prohibited.", "Use cargo cerberus ledger sign to record authorized suppressions."),
+            r("AI-003", Category::AiDefense, Severity::Deny, "Suspicious Reflection / Environment Probe", "Reading current_exe, /proc or ~/.cargo outside infrastructure layer indicates unauthorized sandbox probe.", "Perform platform probing exclusively within infrastructure adapter."),
+            r("AI-008", Category::AiDefense, Severity::Deny, "Unverified Unsafe Block", "unsafe blocks must be preceded by // SAFETY: explanation comment.", "Add // SAFETY: comment proving memory safety invariants."),
+            r("AI-009", Category::AiDefense, Severity::Warn, "Undated / Unbounded TODO Stub", "TODO or FIXME without expiration date or issue link causes technical debt accumulation.", "Use format // TODO(YYYY-MM-DD, #issue): description."),
+            r("AI-013", Category::AiDefense, Severity::Deny, "Unauthorized Compiler Warning Suppression", "Adding #[allow(dead_code)], #[allow(unused)] or clippy suppressions without ledger signature is prohibited.", "Sign suppression in cerberus ledger or eliminate root cause."),
+
+            // 9. Testability & Pure Domain Rules
+            r("TEST-002", Category::Testability, Severity::Deny, "Mutable Global State in Testable Code", "Global mutable locks hinder deterministic parallel testing.", "Inject dependencies and state through struct constructors."),
+            r("TEST-003", Category::Testability, Severity::Warn, "Direct Adapter Instantiation in Domain", "Domain creating concrete storage adapter directly violates Dependency Inversion.", "Accept Arc<dyn Port> through constructor."),
+            r("TEST-005", Category::Testability, Severity::Deny, "Non-Deterministic System Call in Domain", "Direct calls to SystemTime::now(), Instant::now(), or Uuid::new_v4() inside domain violate deterministic domain purity.", "Inject time/id provider port or pass timestamp as method argument."),
+
+            // 10. Data Integrity Rules
+            r("DATA-001", Category::DataIntegrity, Severity::Deny, "Network or Blocking I/O inside Database Transaction", "Performing network calls within open DB transaction causes connection pool starvation.", "Move external I/O outside transaction boundary."),
+            r("DATA-005", Category::DataIntegrity, Severity::Deny, "Floating Point Used for Financial / Currency Values", "f32/f64 suffer from binary rounding errors for currency.", "Use integer cents (i64) or rust_decimal::Decimal."),
+
+            // 11. Memory & IPC Leak Rules
             r("LEAK-001", Category::Robustness, Severity::Deny, "Uncleaned Tauri IPC listener or setInterval timer", "Calling listen() or setInterval() without corresponding cleanup leaks memory.", "Save unlisten handle and clean up symmetrically in onUnmounted()."),
         ]
     }
@@ -90,6 +124,9 @@ impl BuiltinRuleRegistry {
             ("robustness/no-raw-unwrap-panic", "ROB-001"),
             ("sec/taint-sink-execution", "SEC-001"),
             ("sec/transitive-capabilities", "SEC-002"),
+            ("sec/command-injection", "SEC-003"),
+            ("sec/timing-attack", "SEC-008"),
+            ("sec/hardcoded-secrets", "SEC-009"),
             ("quality/ai-slop-detector", "SLOP-001"),
             ("vue/no-monolith-script-setup", "VUE-001"),
             ("vue/require-companion-hook", "VUE-002"),
@@ -106,6 +143,27 @@ impl BuiltinRuleRegistry {
             ("perf/no-allocations-in-raf", "PERF-003"),
             ("perf/no-template-methods-in-loops", "PERF-004"),
             ("perf/no-deep-watch-cascades", "PERF-005"),
+            ("perf/no-blocking-in-drop", "PERF-006"),
+            ("perf/no-io-in-loops", "PERF-011"),
+            ("perf/no-unbounded-channels", "PERF-012"),
+            ("conc/no-orphan-spawn", "CONC-002"),
+            ("conc/no-double-lock", "CONC-006"),
+            ("conc/no-static-mut", "CONC-008"),
+            ("err/no-silent-result-drop", "ERR-001"),
+            ("err/no-panic-in-drop", "ERR-002"),
+            ("err/no-string-error-in-pub-api", "ERR-003"),
+            ("err/no-panic-in-library", "ERR-005"),
+            ("obs/no-secret-in-logs", "OBS-007"),
+            ("ai/no-unauthorized-config", "AI-001"),
+            ("ai/no-reflection-probe", "AI-003"),
+            ("ai/require-safety-comment", "AI-008"),
+            ("ai/no-undated-todo", "AI-009"),
+            ("ai/no-unauthorized-allow", "AI-013"),
+            ("test/no-mutable-global-state", "TEST-002"),
+            ("test/no-direct-adapter-instantiation", "TEST-003"),
+            ("test/deterministic-domain", "TEST-005"),
+            ("data/no-io-in-transactions", "DATA-001"),
+            ("data/no-float-money", "DATA-005"),
             ("leak/uncleaned-ipc-listener", "LEAK-001"),
         ];
 

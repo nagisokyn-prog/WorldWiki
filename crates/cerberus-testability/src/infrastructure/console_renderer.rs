@@ -1,5 +1,5 @@
 use colored::Colorize;
-use crate::domain::score::{FileTestabilityReport, TestabilityTier, WorkspaceTestabilityReport};
+use crate::domain::score::{TestabilityTier, WorkspaceTestabilityReport};
 
 pub struct ConsoleTestabilityRenderer;
 
@@ -93,7 +93,6 @@ impl ConsoleTestabilityRenderer {
         out
     }
 
-    #[must_use]
     pub fn render_json(report: &WorkspaceTestabilityReport) -> Result<String, serde_json::Error> {
         serde_json::to_string_pretty(report)
     }

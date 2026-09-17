@@ -1,6 +1,5 @@
 use syn::visit::Visit;
-use crate::domain::factor::TestabilityFactor;
-use crate::domain::friction::{DampingMath, TestFriction};
+use crate::domain::friction::DampingMath;
 use crate::domain::layer::LayerContext;
 use crate::domain::score::{FileTestabilityReport, TestabilityTier};
 use crate::infrastructure::syn_visitor::TestabilityAstVisitor;

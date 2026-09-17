@@ -306,5 +306,143 @@ tokio = "1.0"
     assert!(!arch_violations.is_empty(), "Manifest layer checker must flag forbidden external dependency in domain");
 }
 
+#[test]
+fn test_cli_testability_command_execution() {
+    use cargo_cerberus::cli::{parse_cli_from, run_app};
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+    let json_file = dir.path().join("testability.json");
+
+    // 1. Calibrate mode
+    let cli_cal = parse_cli_from(["cargo-cerberus", "testability", "--calibrate"]);
+    assert!(run_app(cli_cal).is_ok());
+
+    // 2. Scan workspace with JSON output and threshold
+    let cli_scan = parse_cli_from([
+        "cargo-cerberus",
+        "testability",
+        "--path",
+        dir.path().to_str().unwrap(),
+        "--json",
+        json_file.to_str().unwrap(),
+        "--threshold",
+        "50.0",
+    ]);
+    assert!(run_app(cli_scan).is_ok());
+    assert!(json_file.exists());
+
+    // 3. Unreachable threshold failure
+    let cli_fail = parse_cli_from([
+        "cargo-cerberus",
+        "testability",
+        "--path",
+        dir.path().to_str().unwrap(),
+        "--threshold",
+        "101.0",
+    ]);
+    assert!(run_app(cli_fail).is_err());
+}
+
+#[test]
+fn test_cli_all_subcommands_and_flags_integration() {
+    use cargo_cerberus::cli::{parse_cli_from, run_app};
+    use tempfile::tempdir;
+
+    let dir = tempdir().unwrap();
+    let root = dir.path();
+    let json_tree = root.join("tree.json");
+    let fake_rules = root.join("rules.json");
+    std::fs::write(&fake_rules, r#"{"schema_version":"1.0","rules":[]}"#).unwrap();
+
+    // 1. validate-rules with rules_path
+    let cli_val = parse_cli_from([
+        "cargo-cerberus",
+        "--rules-path",
+        fake_rules.to_str().unwrap(),
+        "--validate-rules",
+    ]);
+    assert!(run_app(cli_val).is_err());
+
+    // 2. Tree with JSON export
+    let cli_tree = parse_cli_from([
+        "cargo-cerberus",
+        "tree",
+        "--path",
+        root.to_str().unwrap(),
+        "--json",
+        json_tree.to_str().unwrap(),
+    ]);
+    assert!(run_app(cli_tree).is_ok());
+    assert!(json_tree.exists());
+
+    // 3. Tree console rendering
+    let cli_tree_console = parse_cli_from([
+        "cargo-cerberus",
+        "tree",
+        "--path",
+        root.to_str().unwrap(),
+    ]);
+    assert!(run_app(cli_tree_console).is_ok());
+
+    // 4. Init with hooks flag (zero network)
+    let cli_init = parse_cli_from(["cargo-cerberus", "init", "--hooks"]);
+    assert!(run_app(cli_init).is_ok());
+
+    // 5. Model status and clean
+    let cli_status = parse_cli_from(["cargo-cerberus", "model", "status"]);
+    assert!(run_app(cli_status).is_ok());
+
+    let cli_clean = parse_cli_from(["cargo-cerberus", "model", "clean"]);
+    assert!(run_app(cli_clean).is_ok());
+
+    // 6. Explain with clusters
+    let cli_explain = parse_cli_from([
+        "cargo-cerberus",
+        "explain",
+        "--path",
+        root.to_str().unwrap(),
+        "--clusters",
+    ]);
+    assert!(run_app(cli_explain).is_ok());
+
+    // 7. Baseline reconcile CLI
+    let baseline_file = root.join("cerberus-baseline.json");
+    std::fs::write(&baseline_file, "[]\n").unwrap();
+    let cli_base = parse_cli_from([
+        "cargo-cerberus",
+        "baseline",
+        "reconcile",
+        "--file",
+        baseline_file.to_str().unwrap(),
+    ]);
+    assert!(run_app(cli_base).is_ok());
+
+    // 8. Model download with mock downloader (success & failure paths)
+    use cargo_cerberus::model_commands::handle_model_with_downloader;
+    use cargo_cerberus::cli::ModelCommands;
+    use cerberus_ports::ModelDownloaderPort;
+    use std::path::Path;
+
+    struct FakeDownloader(bool);
+    impl ModelDownloaderPort for FakeDownloader {
+        fn download_file(&self, _url: &str, dest: &Path) -> Result<(), String> {
+            if self.0 {
+                std::fs::create_dir_all(dest.parent().unwrap()).unwrap();
+                std::fs::write(dest, b"model").unwrap();
+                Ok(())
+            } else {
+                Err("Network error".into())
+            }
+        }
+    }
+
+    let cache_dir = root.join("models_cache");
+    assert!(handle_model_with_downloader(ModelCommands::Download, Arc::new(FakeDownloader(true)), &cache_dir).is_ok());
+    assert!(handle_model_with_downloader(ModelCommands::Download, Arc::new(FakeDownloader(false)), &cache_dir).is_err());
+    assert!(handle_model_with_downloader(ModelCommands::Status, Arc::new(FakeDownloader(true)), &cache_dir).is_ok());
+    assert!(handle_model_with_downloader(ModelCommands::Clean, Arc::new(FakeDownloader(true)), &cache_dir).is_ok());
+}
+
 
 

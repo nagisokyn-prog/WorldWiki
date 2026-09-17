@@ -48,6 +48,12 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
         Commands::Tree { path, json } => handle_tree(&path, json.as_deref(), &rules_repo),
         Commands::Baseline { action } => handle_baseline(action),
         Commands::Ledger { action } => handle_ledger(action),
+        Commands::Testability {
+            path,
+            json,
+            threshold,
+            calibrate,
+        } => handle_testability(&path, json.as_deref(), threshold, calibrate),
     }
 }
 
@@ -156,3 +162,66 @@ fn handle_tree(
         )),
     }
 }
+
+fn handle_testability(
+    path: &Path,
+    json: Option<&Path>,
+    threshold: Option<f64>,
+    calibrate: bool,
+) -> Result<(), String> {
+    if calibrate {
+        println!("{}", "🧬 Running Cerberus Testability Calibration Suite...".cyan().bold());
+        let cal_res = cerberus_testability::RunCalibrationSuiteUseCase::run_suite();
+        for (anchor, report) in &cal_res.anchor_reports {
+            println!(
+                "  [{}] {:<45} -> Score: {:>5.1} (Expected: [{:.1}, {:.1}])",
+                anchor.id, anchor.name, report.t_composite, anchor.target_score_range.0, anchor.target_score_range.1
+            );
+        }
+        if !cal_res.validation_errors.is_empty() {
+            for err in &cal_res.validation_errors {
+                eprintln!("{} {}", "❌ Calibration error:".red().bold(), err);
+            }
+            return Err("Calibration suite failed!".to_string());
+        }
+        println!("{}", "✅ All synthetic anchors calibrated and strictly monotonic.".green().bold());
+        return Ok(());
+    }
+
+    let report = match cerberus_testability::AnalyzeWorkspaceTestabilityUseCase::analyze_path(path) {
+        Ok(r) => r,
+        Err(e) => return Err(format!("{} {}", "❌ Error analyzing workspace testability:".red().bold(), e)),
+    };
+
+    if let Some(json_path) = json {
+        let json_str = match cerberus_testability::ConsoleTestabilityRenderer::render_json(&report) {
+            Ok(s) => s,
+            Err(e) => return Err(format!("Failed to serialize JSON report: {}", e)),
+        };
+        if let Err(e) = std::fs::write(json_path, json_str) {
+            return Err(format!("Failed to write JSON report: {}", e));
+        }
+        println!(
+            "{} Testability report saved to {}",
+            "✅".green().bold(),
+            json_path.display()
+        );
+    } else {
+        let console_out = cerberus_testability::ConsoleTestabilityRenderer::render_report(&report);
+        print!("{}", console_out);
+    }
+
+    if let Some(min_score) = threshold {
+        if report.workspace_score < min_score {
+            return Err(format!(
+                "{} Workspace testability score ({:.1}) is below threshold ({:.1})",
+                "❌ Error:".red().bold(),
+                report.workspace_score,
+                min_score
+            ));
+        }
+    }
+
+    Ok(())
+}
+

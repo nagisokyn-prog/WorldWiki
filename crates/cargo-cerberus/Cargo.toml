@@ -21,6 +21,7 @@ cerberus-domain = { path = "../cerberus-domain" }
 cerberus-ports = { path = "../cerberus-ports" }
 cerberus-application = { path = "../cerberus-application" }
 cerberus-infrastructure = { path = "../cerberus-infrastructure" }
+cerberus-testability = { path = "../cerberus-testability" }
 
 # 1. CLI & Метаданные воркспейса
 

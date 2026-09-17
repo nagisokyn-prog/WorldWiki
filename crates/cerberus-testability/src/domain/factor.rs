@@ -71,9 +71,9 @@ impl TestabilityFactor {
             (Self::F02DirectOsFsAccess, LayerContext::Application) => 20.0,
             (Self::F02DirectOsFsAccess, _) => 0.0,
 
-            (Self::F03SharedGlobalMutableState, LayerContext::Domain) => 40.0,
-            (Self::F03SharedGlobalMutableState, LayerContext::Application) => 35.0,
-            (Self::F03SharedGlobalMutableState, _) => 25.0,
+            (Self::F03SharedGlobalMutableState, LayerContext::Domain) => 60.0,
+            (Self::F03SharedGlobalMutableState, LayerContext::Application) => 45.0,
+            (Self::F03SharedGlobalMutableState, _) => 30.0,
 
             (Self::F04SideEffectingConstructor, LayerContext::Domain) => 30.0,
             (Self::F04SideEffectingConstructor, LayerContext::Application) => 20.0,
@@ -85,7 +85,7 @@ impl TestabilityFactor {
 
             (Self::F06ConcreteCouplingInBoundary, LayerContext::Domain) => 25.0,
             (Self::F06ConcreteCouplingInBoundary, LayerContext::Application) => 20.0,
-            (Self::F06ConcreteCouplingInBoundary, _) => 0.0,
+            (Self::F06ConcreteCouplingInBoundary, _) => 5.0,
 
             (Self::Conc002OrphanConcurrency, LayerContext::Domain) => 30.0,
             (Self::Conc002OrphanConcurrency, LayerContext::Application) => 20.0,

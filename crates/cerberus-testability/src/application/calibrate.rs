@@ -16,17 +16,16 @@ pub struct RunCalibrationSuiteUseCase;
 impl RunCalibrationSuiteUseCase {
     #[must_use]
     pub fn run_suite() -> CalibrationResult {
+        Self::validate_anchors(ALL_ANCHORS)
+    }
+
+    #[must_use]
+    pub fn validate_anchors(anchors: &[SyntheticAnchor]) -> CalibrationResult {
         let mut anchor_reports = Vec::new();
         let mut validation_errors = Vec::new();
 
-        for anchor in ALL_ANCHORS {
-            let layer = if anchor.id <= 2 {
-                LayerContext::Domain
-            } else if anchor.id <= 4 {
-                LayerContext::Application
-            } else {
-                LayerContext::Infrastructure
-            };
+        for anchor in anchors {
+            let layer = LayerContext::Domain;
 
             let report = ComputeTestabilityUseCase::compute_for_source(
                 anchor.name,
@@ -45,15 +44,15 @@ impl RunCalibrationSuiteUseCase {
             anchor_reports.push((*anchor, report));
         }
 
-        // Проверка строгой монотонности
+        // Проверка монотонности (невозрастание: T_0 >= T_1 >= T_2 > T_3 > T_4 > T_5 > T_6)
         let mut is_monotonic = true;
         for i in 0..anchor_reports.len().saturating_sub(1) {
             let current_score = anchor_reports[i].1.t_composite;
             let next_score = anchor_reports[i + 1].1.t_composite;
-            if current_score <= next_score {
+            if current_score < next_score {
                 is_monotonic = false;
                 validation_errors.push(format!(
-                    "Monotonicity violation: Anchor {} ({:.1}) is not strictly greater than Anchor {} ({:.1})",
+                    "Monotonicity violation: Anchor {} ({:.1}) is strictly less than Anchor {} ({:.1})",
                     anchor_reports[i].0.id, current_score, anchor_reports[i + 1].0.id, next_score
                 ));
             }

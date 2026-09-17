@@ -302,6 +302,7 @@ dependencies = [
  "cerberus-domain",
  "cerberus-infrastructure",
  "cerberus-ports",
+ "cerberus-testability",
  "chrono",
  "clap",
  "colored",

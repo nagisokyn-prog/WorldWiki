@@ -82,6 +82,17 @@ pub enum Commands {
         #[command(subcommand)]
         action: LedgerCommands,
     },
+    /// Calculate Testability Index (T-Score) and identify structural test friction
+    Testability {
+        #[arg(short, long, default_value = ".", help = "Target root directory to scan")]
+        path: PathBuf,
+        #[arg(long, help = "Path to export JSON testability report")]
+        json: Option<PathBuf>,
+        #[arg(long, help = "Minimum acceptable testability score threshold (0-100)")]
+        threshold: Option<f64>,
+        #[arg(long, help = "Run calibration suite against synthetic anchors")]
+        calibrate: bool,
+    },
 }
 
 #[derive(Subcommand, Debug)]

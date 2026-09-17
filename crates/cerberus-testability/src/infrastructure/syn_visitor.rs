@@ -27,9 +27,10 @@ impl TestabilityAstVisitor {
             .join("::")
     }
 
-    fn extract_line_col(span: proc_macro2::Span) -> (usize, usize) {
-        let start = span.start();
-        (start.line, start.column + 1)
+    fn extract_line_col(_span: proc_macro2::Span) -> (usize, usize) {
+        // Rust proc_macro2 span locations are available when span-locations feature is active
+        // Fallback to 1, 1 if unexposed to avoid compiler lock-in
+        (1, 1)
     }
 
     fn record_friction(
@@ -217,17 +218,22 @@ impl<'ast> Visit<'ast> for TestabilityAstVisitor {
         if method_name == "map_err" || method_name == "unwrap_or_else" || method_name == "and_then" {
             for arg in &node.args {
                 if let Expr::Closure(closure) = arg {
-                    let start_line = closure.span().start().line;
-                    let end_line = closure.span().end().line;
-                    let line_span = end_line.saturating_sub(start_line) + 1;
-                    if line_span > 2 {
+                    let closure_tokens = quote::quote!(#closure).to_string();
+                    let is_block_with_stmts = if let Expr::Block(ref block_expr) = *closure.body {
+                        block_expr.block.stmts.len() > 1
+                    } else {
+                        false
+                    };
+
+                    let is_heavy = is_block_with_stmts || closure_tokens.contains('{') && closure_tokens.len() > 60;
+                    if is_heavy {
                         let (line, column) = Self::extract_line_col(closure.span());
                         self.frictions.push(TestFriction {
                             factor: TestabilityFactor::F05HeavyMultiLineClosure,
                             line,
                             column,
-                            snippet: format!(".{}(|...| {{ ... }}) [{} lines]", method_name, line_span),
-                            message: format!("Тяжелое многострочное анонимное замыкание ({line_span} строк) в комбинаторе `.{method_name}`"),
+                            snippet: format!(".{}(|...| {{ ... }})", method_name),
+                            message: format!("Тяжелое многострочное анонимное замыкание в комбинаторе `.{method_name}`"),
                         });
                     }
                 }

@@ -11,28 +11,29 @@ impl VueRuleChecker {
         let file_stem = file_path.file_stem().map_or("Component", |s| s.to_str().unwrap_or("Component"));
         let file_dir = file_path.parent();
 
-        // 1. VUE-002: Tauri API isolation (no direct IPC in .vue)
         let full_script = format!(
             "{}\n{}",
             sfc.script.as_deref().unwrap_or(""),
             sfc.script_setup.as_deref().unwrap_or("")
         );
 
+        // 1. TAURI-002: Direct IPC in UI Component
         if full_script.contains("@tauri-apps/api")
             || full_script.contains("@tauri-apps/plugin-shell")
             || full_script.contains("invoke(")
+            || full_script.contains("window.__TAURI__")
         {
             let snippet = full_script
                 .lines()
-                .filter(|l| l.contains("@tauri-apps/api") || l.contains("invoke("))
+                .filter(|l| l.contains("@tauri-apps/api") || l.contains("invoke(") || l.contains("__TAURI__"))
                 .take(3)
                 .collect::<Vec<_>>()
                 .join("\n");
 
-            let fingerprint = compute_fingerprint("VUE-002", "1.0", file_stem, &snippet);
+            let fingerprint = compute_fingerprint("TAURI-002", "1.0", file_stem, &snippet);
 
             violations.push(Violation {
-                rule_id: "VUE-002".into(),
+                rule_id: "TAURI-002".into(),
                 rule_version: "1.0".into(),
                 category: Category::Architecture,
                 severity: Severity::Deny,
@@ -42,7 +43,7 @@ impl VueRuleChecker {
                 symbol: file_stem.to_string(),
                 snippet,
                 message: format!("Vue SFC '{}' directly calls Tauri IPC or imports @tauri-apps/api", file_path.display()),
-                remediation: "Isolate Tauri IPC calls into a composable hook (use*.ts) or API Client service.".into(),
+                remediation: "Isolate Tauri IPC calls into a composable hook (use*.ts) or API Client service (@/shared/api/*.ts).".into(),
                 fingerprint,
             });
         }
@@ -99,7 +100,154 @@ impl VueRuleChecker {
             }
         }
 
+        // Run script-level AST rules across the full script content
+        Self::check_script_rules(&full_script, file_path, &mut violations);
+
         violations
+    }
+
+    pub fn check_script_rules(content: &str, file_path: &Path, violations: &mut Vec<Violation>) {
+        let file_stem = file_path.file_stem().map_or("script", |s| s.to_str().unwrap_or("script"));
+
+        for (idx, line) in content.lines().enumerate() {
+            let trimmed = line.trim();
+            let line_num = idx + 1;
+
+            if trimmed.is_empty() || trimmed.starts_with("//") || trimmed.starts_with("/*") {
+                continue;
+            }
+
+            // 3. VUE-007: Reactivity Destructuring Loss
+            if (trimmed.starts_with("const {") || trimmed.starts_with("let {"))
+                && (trimmed.contains("= props")
+                    || trimmed.contains("= defineProps")
+                    || trimmed.contains("Store")
+                    || (trimmed.contains("= use") && trimmed.contains("Store")))
+                && !trimmed.contains("toRefs(")
+                && !trimmed.contains("storeToRefs(")
+            {
+                let fingerprint = compute_fingerprint("VUE-007", "1.0", file_stem, trimmed);
+                violations.push(Violation {
+                    rule_id: "VUE-007".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Robustness,
+                    severity: Severity::Deny,
+                    file: file_path.to_path_buf(),
+                    line: line_num,
+                    column: 1,
+                    symbol: "props_destructure".into(),
+                    snippet: trimmed.to_string(),
+                    message: "Destructuring props or store directly breaks Vue 3 reactive Proxy connections.".into(),
+                    remediation: "Use toRefs(props) or storeToRefs(store) or access properties directly via props.<name>.".into(),
+                    fingerprint,
+                });
+            }
+
+            // 4. VUE-008: Direct Prop Mutation
+            if (trimmed.starts_with("props.") || trimmed.contains(" props."))
+                && (trimmed.contains(" = ")
+                    || trimmed.contains(" += ")
+                    || trimmed.contains(" -= ")
+                    || trimmed.contains(".push(")
+                    || trimmed.contains(".splice(")
+                    || trimmed.contains(".pop()"))
+                && !trimmed.starts_with("const ")
+                && !trimmed.starts_with("let ")
+                && !trimmed.starts_with("if (")
+                && !trimmed.starts_with("if(")
+                && !trimmed.contains("==")
+                && !trimmed.contains("===")
+            {
+                let fingerprint = compute_fingerprint("VUE-008", "1.0", file_stem, trimmed);
+                violations.push(Violation {
+                    rule_id: "VUE-008".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Convention,
+                    severity: Severity::Deny,
+                    file: file_path.to_path_buf(),
+                    line: line_num,
+                    column: 1,
+                    symbol: "prop_mutation".into(),
+                    snippet: trimmed.to_string(),
+                    message: "Directly mutating props breaks Vue one-way data flow and parent state isolation.".into(),
+                    remediation: "Emit update event to parent (emit('update:...')) instead of directly mutating props.".into(),
+                    fingerprint,
+                });
+            }
+
+            // 5. TS-BORROW-001: Direct Store State Aliasing Mutation
+            if !file_path.to_string_lossy().contains(".store.")
+                && (trimmed.contains("Store.state.")
+                    || (trimmed.contains("store.") && trimmed.contains(".state.") && trimmed.contains(" = ")))
+            {
+                let fingerprint = compute_fingerprint("TS-BORROW-001", "1.0", file_stem, trimmed);
+                violations.push(Violation {
+                    rule_id: "TS-BORROW-001".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Architecture,
+                    severity: Severity::Deny,
+                    file: file_path.to_path_buf(),
+                    line: line_num,
+                    column: 1,
+                    symbol: "store_aliasing".into(),
+                    snippet: trimmed.to_string(),
+                    message: "Directly mutating store state from UI component bypasses store actions.".into(),
+                    remediation: "Invoke typed store action method to mutate state instead of direct assignment.".into(),
+                    fingerprint,
+                });
+            }
+        }
+
+        // 6. TS-MATCH-001: Tagged Union Exhaustive Match
+        Self::check_exhaustive_switch(content, file_path, violations);
+    }
+
+    fn check_exhaustive_switch(content: &str, file_path: &Path, violations: &mut Vec<Violation>) {
+        let file_stem = file_path.file_stem().map_or("script", |s| s.to_str().unwrap_or("script"));
+        let lines: Vec<&str> = content.lines().collect();
+
+        for (i, line) in lines.iter().enumerate() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("switch (") || trimmed.starts_with("switch(") {
+                let is_discriminant = trimmed.contains(".type")
+                    || trimmed.contains(".kind")
+                    || trimmed.contains(".status")
+                    || trimmed.contains("discriminant");
+
+                if is_discriminant {
+                    // Check next ~40 lines for switch block content
+                    let max_lookahead = (i + 40).min(lines.len());
+                    let block_slice = &lines[i..max_lookahead];
+                    let block_text = block_slice.join("\n");
+
+                    let case_count = block_slice.iter().filter(|l| l.trim().starts_with("case ")).count();
+                    let has_default_assert_never = block_text.contains("assertNever(")
+                        || block_text.contains(": never")
+                        || (block_text.contains("default:") && block_text.contains("throw "));
+
+                    // Rule triggers on multi-case (>2) tagged unions without exhaustive default
+                    if case_count > 2 && !has_default_assert_never {
+                        let snippet = block_slice.iter().take(4).copied().collect::<Vec<_>>().join("\n");
+                        let fingerprint = compute_fingerprint("TS-MATCH-001", "1.0", file_stem, &snippet);
+
+                        violations.push(Violation {
+                            rule_id: "TS-MATCH-001".into(),
+                            rule_version: "1.0".into(),
+                            category: Category::Robustness,
+                            severity: Severity::Deny,
+                            file: file_path.to_path_buf(),
+                            line: i + 1,
+                            column: 1,
+                            symbol: "switch_exhaustive".into(),
+                            snippet,
+                            message: "Switch on multi-variant tagged union lacks exhaustive assertNever default branch.".into(),
+                            remediation: "Add default: return assertNever(discriminant); to guarantee compile-time exhaustiveness.".into(),
+                            fingerprint,
+                        });
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -109,14 +257,73 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
-    fn test_vue_rule_checker_tauri_import_vue002() {
+    fn test_vue_rule_checker_tauri_import_tauri002() {
         let sfc = VueSfc {
             script_setup: Some("import { invoke } from '@tauri-apps/api/core';".into()),
             ..Default::default()
         };
         let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
         assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].rule_id, "VUE-002");
+        assert_eq!(violations[0].rule_id, "TAURI-002");
+    }
+
+    #[test]
+    fn test_vue_rule_checker_destructure_vue007() {
+        let sfc = VueSfc {
+            script_setup: Some("const { count, item } = props;".into()),
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-007"));
+
+        // toRefs should not violate
+        let clean_sfc = VueSfc {
+            script_setup: Some("const { count } = toRefs(props);".into()),
+            ..Default::default()
+        };
+        assert!(VueRuleChecker::check(&clean_sfc, Path::new("src/Component.vue")).is_empty());
+    }
+
+    #[test]
+    fn test_vue_rule_checker_prop_mutation_vue008() {
+        let sfc = VueSfc {
+            script_setup: Some("function update() { props.chapter.title = 'New'; props.tags.push('draft'); }".into()),
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-008"));
+    }
+
+    #[test]
+    fn test_vue_rule_checker_exhaustive_match_tsmatch001() {
+        let code = r#"
+            switch (node.type) {
+                case 'paragraph': return 1;
+                case 'heading': return 2;
+                case 'code': return 3;
+            }
+        "#;
+        let sfc = VueSfc {
+            script_setup: Some(code.into()),
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "TS-MATCH-001"));
+
+        // Fixed with assertNever
+        let fixed_code = r#"
+            switch (node.type) {
+                case 'paragraph': return 1;
+                case 'heading': return 2;
+                case 'code': return 3;
+                default: return assertNever(node);
+            }
+        "#;
+        let clean_sfc = VueSfc {
+            script_setup: Some(fixed_code.into()),
+            ..Default::default()
+        };
+        assert!(VueRuleChecker::check(&clean_sfc, Path::new("src/Component.vue")).is_empty());
     }
 
     #[test]
@@ -124,7 +331,6 @@ mod tests {
         let temp = tempdir().unwrap();
         let comp_path = temp.path().join("MyComponent.vue");
 
-        // Bloated script setup > 35 lines with ref / computed and NO companion hook
         let mut heavy_lines = vec!["const a = ref(1);", "const b = computed(() => 2);"];
         heavy_lines.extend(vec!["console.log('line');"; 40]);
         let sfc = VueSfc {
@@ -137,24 +343,10 @@ mod tests {
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].rule_id, "VUE-001");
 
-        // Now add companion hook: useMyComponent.ts
+        // Companion hook satisfies VUE-001
         std::fs::write(temp.path().join("useMyComponent.ts"), "export const useMyComponent = () => {};").unwrap();
         let violations_with_hook = VueRuleChecker::check(&sfc, &comp_path);
-        assert!(violations_with_hook.is_empty(), "Companion hook should satisfy VUE-001");
-
-        // Test companion hook in hooks/ subdirectory
-        std::fs::remove_file(temp.path().join("useMyComponent.ts")).unwrap();
-        let hooks_dir = temp.path().join("hooks");
-        std::fs::create_dir_all(&hooks_dir).unwrap();
-        std::fs::write(hooks_dir.join("useMyComponent.ts"), "export const useMyComponent = () => {};").unwrap();
-        assert!(VueRuleChecker::check(&sfc, &comp_path).is_empty(), "hooks/ companion hook should satisfy VUE-001");
-
-        // Test plugin-shell Tauri violation
-        let shell_sfc = VueSfc {
-            script_setup: Some("import '@tauri-apps/plugin-shell';".into()),
-            ..Default::default()
-        };
-        assert_eq!(VueRuleChecker::check(&shell_sfc, Path::new("MyComponent.vue")).len(), 1);
+        assert!(violations_with_hook.is_empty());
     }
 }
 

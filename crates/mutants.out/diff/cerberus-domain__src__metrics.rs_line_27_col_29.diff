@@ -1,0 +1,21 @@
+--- cerberus-domain/src/metrics.rs
++++ replace / with % in PackageMetrics::compute
+@@ -19,17 +19,17 @@
+         afferent: usize,
+         efferent: usize,
+         abstract_classes: usize,
+         total_classes: usize,
+     ) -> Self {
+         let instability = if afferent + efferent == 0 {
+             0.0
+         } else {
+-            efferent as f64 / (afferent + efferent) as f64
++            efferent as f64 % /* ~ changed by cargo-mutants ~ */ (afferent + efferent) as f64
+         };
+ 
+         let abstractness = if total_classes == 0 {
+             0.0
+         } else {
+             abstract_classes as f64 / total_classes as f64
+         };
+ 

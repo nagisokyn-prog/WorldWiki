@@ -1,14 +1,16 @@
 use super::common::TestWorkspace;
 use cerberus_application::SignSuppressionUseCase;
 use cerberus_infrastructure::MockStorageAdapter;
-use std::sync::Arc;
 
 #[test]
 fn test_ai_008_unverified_unsafe_blocks_and_proximity_safety_passes() {
     let ws = TestWorkspace::new();
 
     // 1. Negative Case A: raw unsafe with no comment at all
-    ws.write_file("src/bad_a.rs", "pub fn bad_a() { unsafe { let _ = 42; } }\n");
+    ws.write_file(
+        "src/bad_a.rs",
+        "pub fn bad_a() { unsafe { let _ = 42; } }\n",
+    );
 
     // 2. Negative Case B: safety comment far away at top of file (> 3 lines above)
     ws.write_file(
@@ -44,7 +46,10 @@ pub fn good() {
     );
 
     let violations = ws.scan();
-    let ai008_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "AI-008").collect();
+    let ai008_violations: Vec<_> = violations
+        .iter()
+        .filter(|v| v.rule_id == "AI-008")
+        .collect();
     assert_eq!(
         ai008_violations.len(),
         2,
@@ -84,7 +89,10 @@ fn test_ai_009_strict_todo_regex_rules() {
     );
 
     let violations = ws.scan();
-    let todo_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "AI-009").collect();
+    let todo_violations: Vec<_> = violations
+        .iter()
+        .filter(|v| v.rule_id == "AI-009")
+        .collect();
     assert_eq!(
         todo_violations.len(),
         3,
@@ -128,11 +136,12 @@ fn test_ai_013_universal_compiler_suppression_and_signed_ledger_pass() {
     );
 
     // 2. Authorize suppression for unused_func by signing in ledger
-    let storage = Arc::new(MockStorageAdapter::new());
+    let storage =
+        MockStorageAdapter::new(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
     let target_fp = &ai013_violations[0].fingerprint;
     let expires = chrono::Utc::now() + chrono::Duration::days(30);
-    SignSuppressionUseCase::sign(
-        storage.as_ref(),
+    let signature = SignSuppressionUseCase::sign(
+        &storage,
         "AI-013",
         target_fp,
         "Temporary allowance during refactoring",
@@ -141,10 +150,14 @@ fn test_ai_013_universal_compiler_suppression_and_signed_ledger_pass() {
     )
     .unwrap();
 
-    // Verify storage has suppression record
-    let record = storage.find_suppression(target_fp).unwrap();
-    assert!(record.is_some());
-    let record = record.unwrap();
-    assert_eq!(record.rule_id, "AI-013");
-    assert_eq!(record.approved_by, "lead@worldwiki.org");
+    let suppression = cerberus_domain::Suppression {
+        rule_id: "AI-013".into(),
+        fingerprint: target_fp.clone(),
+        reason: "Temporary allowance during refactoring".into(),
+        author: "lead@worldwiki.org".into(),
+        expires,
+        signature,
+    };
+
+    assert!(SignSuppressionUseCase::verify(&storage, &suppression));
 }

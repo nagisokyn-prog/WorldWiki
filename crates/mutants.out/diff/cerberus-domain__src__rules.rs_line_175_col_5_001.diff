@@ -1,0 +1,21 @@
+--- cerberus-domain/src/rules.rs
++++ replace default_version -> String with "xyzzy".into()
+@@ -167,17 +167,17 @@
+             limits: LimitsConfig::default(),
+             rules: HashMap::new(),
+             overrides: Vec::new(),
+         }
+     }
+ }
+ 
+ fn default_version() -> String {
+-    "1.0".into()
++    "xyzzy".into() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ #[derive(Debug, Clone, Serialize, Deserialize)]
+ pub struct RulesConfig {
+     #[serde(rename = "$schema", default)]
+     pub schema: Option<String>,
+     pub version: String,
+     #[serde(default)]

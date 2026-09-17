@@ -437,6 +437,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "cerberus-testability"
+version = "0.1.0"
+dependencies = [
+ "cerberus-domain",
+ "colored",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 3.0.5",
+ "tempfile",
+ "walkdir",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"

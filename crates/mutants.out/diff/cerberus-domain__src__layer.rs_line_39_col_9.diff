@@ -1,0 +1,29 @@
+--- cerberus-domain/src/layer.rs
++++ replace ArchLayer::parse -> Self with Default::default()
+@@ -31,25 +31,17 @@
+     Infrastructure,
+     Adapter,
+     Cli,
+     Unknown,
+ }
+ 
+ impl ArchLayer {
+     pub fn parse(s: &str) -> Self {
+-        match s.to_lowercase().as_str() {
+-            "domain" => Self::Domain,
+-            "ports" | "port" => Self::Ports,
+-            "application" | "app" | "usecase" | "usecases" => Self::Application,
+-            "infrastructure" | "infra" => Self::Infrastructure,
+-            "adapter" | "adapters" | "tauri" => Self::Adapter,
+-            "cli" | "entrypoint" | "bin" => Self::Cli,
+-            _ => Self::Unknown,
+-        }
++        Default::default() /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn as_str(&self) -> &'static str {
+         match self {
+             Self::Domain => "domain",
+             Self::Ports => "ports",
+             Self::Application => "application",
+             Self::Infrastructure => "infrastructure",

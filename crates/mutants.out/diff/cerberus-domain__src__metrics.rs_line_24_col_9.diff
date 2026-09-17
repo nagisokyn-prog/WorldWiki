@@ -1,0 +1,44 @@
+--- cerberus-domain/src/metrics.rs
++++ replace PackageMetrics::compute -> Self with Default::default()
+@@ -16,40 +16,17 @@
+ impl PackageMetrics {
+     pub fn compute(
+         package_name: String,
+         afferent: usize,
+         efferent: usize,
+         abstract_classes: usize,
+         total_classes: usize,
+     ) -> Self {
+-        let instability = if afferent + efferent == 0 {
+-            0.0
+-        } else {
+-            efferent as f64 / (afferent + efferent) as f64
+-        };
+-
+-        let abstractness = if total_classes == 0 {
+-            0.0
+-        } else {
+-            abstract_classes as f64 / total_classes as f64
+-        };
+-
+-        let distance = (abstractness + instability - 1.0).abs();
+-        let in_zone_of_pain = abstractness < 0.2 && instability < 0.2 && afferent > 3;
+-
+-        Self {
+-            package_name,
+-            afferent_coupling: afferent,
+-            efferent_coupling: efferent,
+-            instability,
+-            abstractness,
+-            distance_from_main_sequence: distance,
+-            in_zone_of_pain,
+-        }
++        Default::default() /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+ pub struct PressureWeights {
+     pub w_sloc: f64,
+     pub w_functions: f64,
+     pub w_cyclomatic: f64,

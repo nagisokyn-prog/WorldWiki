@@ -1,0 +1,1378 @@
+[
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::check_file -> Vec<Violation> with vec![]\n@@ -14,24 +14,17 @@\n         Self {\n             file_path,\n             crate_name,\n             rules,\n         }\n     }\n \n     pub fn check_file(&self, syntax: &File) -> Vec<Violation> {\n-        let mut violations = Vec::new();\n-        let mut visitor = ErrorRulesVisitor {\n-            checker: self,\n-            violations: &mut violations,\n-            in_drop_impl: false,\n-        };\n-        visitor.visit_file(syntax);\n-        violations\n+        vec![] /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn check_stmt(&self, stmt: &Stmt, in_drop: bool, violations: &mut Vec<Violation>) {\n         if let Stmt::Local(local) = stmt {\n             // ERR-001: let _ = result;\n             if self.is_rule_enabled(\"ERR-001\") {\n                 if let syn::Pat::Wild(_) = &local.pat {\n                     if let Some(init) = &local.init {\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_file",
+      "return_type": "-> Vec<Violation>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 30
+        },
+        "start": {
+          "column": 5,
+          "line": 21
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:22:9: replace ErrorRulesChecker<'a>::check_file -> Vec<Violation> with vec![]",
+    "package": "cerberus-infrastructure",
+    "replacement": "vec![]",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 29
+      },
+      "start": {
+        "column": 9,
+        "line": 22
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::check_file -> Vec<Violation> with vec![Default::default()]\n@@ -14,24 +14,17 @@\n         Self {\n             file_path,\n             crate_name,\n             rules,\n         }\n     }\n \n     pub fn check_file(&self, syntax: &File) -> Vec<Violation> {\n-        let mut violations = Vec::new();\n-        let mut visitor = ErrorRulesVisitor {\n-            checker: self,\n-            violations: &mut violations,\n-            in_drop_impl: false,\n-        };\n-        visitor.visit_file(syntax);\n-        violations\n+        vec![Default::default()] /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn check_stmt(&self, stmt: &Stmt, in_drop: bool, violations: &mut Vec<Violation>) {\n         if let Stmt::Local(local) = stmt {\n             // ERR-001: let _ = result;\n             if self.is_rule_enabled(\"ERR-001\") {\n                 if let syn::Pat::Wild(_) = &local.pat {\n                     if let Some(init) = &local.init {\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_file",
+      "return_type": "-> Vec<Violation>",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 30
+        },
+        "start": {
+          "column": 5,
+          "line": 21
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:22:9: replace ErrorRulesChecker<'a>::check_file -> Vec<Violation> with vec![Default::default()]",
+    "package": "cerberus-infrastructure",
+    "replacement": "vec![Default::default()]",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 29
+      },
+      "start": {
+        "column": 9,
+        "line": 22
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::check_stmt with ()\n@@ -25,120 +25,17 @@\n             violations: &mut violations,\n             in_drop_impl: false,\n         };\n         visitor.visit_file(syntax);\n         violations\n     }\n \n     fn check_stmt(&self, stmt: &Stmt, in_drop: bool, violations: &mut Vec<Violation>) {\n-        if let Stmt::Local(local) = stmt {\n-            // ERR-001: let _ = result;\n-            if self.is_rule_enabled(\"ERR-001\") {\n-                if let syn::Pat::Wild(_) = &local.pat {\n-                    if let Some(init) = &local.init {\n-                        let expr = &init.expr;\n-                        let expr_str = quote::quote!(#expr).to_string();\n-                        // If it contains a method call or function call likely returning Result\n-                        if expr_str.contains(\"write\")\n-                            || expr_str.contains(\"read\")\n-                            || expr_str.contains(\"send\")\n-                            || expr_str.contains(\"execute\")\n-                            || expr_str.contains(\"save\")\n-                            || expr_str.contains(\"flush\")\n-                        {\n-                            let snippet = format!(\"let _ = {}\", expr_str);\n-                            let fp = compute_fingerprint(\"ERR-001\", \"1.0\", \"wildcard_let\", &snippet);\n-\n-                            violations.push(Violation {\n-                                rule_id: \"ERR-001\".into(),\n-                                rule_version: \"1.0\".into(),\n-                                category: Category::ErrorHandling,\n-                                severity: self.get_severity(\"ERR-001\", Severity::Deny),\n-                                file: PathBuf::from(self.file_path),\n-                                line: 1,\n-                                column: 1,\n-                                symbol: \"wildcard_let\".into(),\n-                                message: \"Silent error suppression 'let _ = ...' drops critical operation errors.\".into(),\n-                                snippet,\n-                                remediation: \"Handle Result explicitly or propagate error via '?'; log failures before ignoring.\".into(),\n-                                fingerprint: fp,\n-                            });\n-                        }\n-                    }\n-                }\n-            }\n-        }\n-\n-        // ERR-002: Panic in Drop\n-        if in_drop && self.is_rule_enabled(\"ERR-002\") {\n-            let stmt_str = quote::quote!(#stmt).to_string();\n-            if stmt_str.contains(\"unwrap (\")\n-                || stmt_str.contains(\"expect (\")\n-                || stmt_str.contains(\"panic !\")\n-            {\n-                let snippet = stmt_str;\n-                let fp = compute_fingerprint(\"ERR-002\", \"1.0\", \"drop_panic\", &snippet);\n-\n-                violations.push(Violation {\n-                    rule_id: \"ERR-002\".into(),\n-                    rule_version: \"1.0\".into(),\n-                    category: Category::ErrorHandling,\n-                    severity: self.get_severity(\"ERR-002\", Severity::Deny),\n-                    file: PathBuf::from(self.file_path),\n-                    line: 1,\n-                    column: 1,\n-                    symbol: \"drop_panic\".into(),\n-                    message: \"Unwrapping or panicking inside 'Drop' implementation risks double-panic and immediate process abort during stack unwinding.\".into(),\n-                    snippet,\n-                    remediation: \"Handle errors gracefully inside Drop by logging via 'tracing::error!' without calling .unwrap() or panic!.\".into(),\n-                    fingerprint: fp,\n-                });\n-            }\n-        }\n-\n-        // ERR-005: Panic in library target (statement position)\n-        if self.is_rule_enabled(\"ERR-005\") {\n-            let is_lib_target = self.crate_name.contains(\"domain\")\n-                || self.crate_name.contains(\"ports\")\n-                || self.file_path.ends_with(\"lib.rs\")\n-                || !self.file_path.contains(\"bin\");\n-\n-            if is_lib_target {\n-                if let Stmt::Macro(stmt_macro) = stmt {\n-                    let macro_name = stmt_macro\n-                        .mac\n-                        .path\n-                        .segments\n-                        .last()\n-                        .map(|s| s.ident.to_string())\n-                        .unwrap_or_default();\n-\n-                    if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n-                        let snippet = format!(\"{}!(...)\", macro_name);\n-                        let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n-\n-                        violations.push(Violation {\n-                            rule_id: \"ERR-005\".into(),\n-                            rule_version: \"1.0\".into(),\n-                            category: Category::ErrorHandling,\n-                            severity: self.get_severity(\"ERR-005\", Severity::Deny),\n-                            file: PathBuf::from(self.file_path),\n-                            line: 1,\n-                            column: 1,\n-                            symbol: macro_name,\n-                            message: \"Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.\".into(),\n-                            snippet,\n-                            remediation: \"Replace panic!/unimplemented! with structured Result::Err(Error) return value.\".into(),\n-                            fingerprint: fp,\n-                        });\n-                    }\n-                }\n-            }\n-        }\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn check_pub_fn(&self, item_fn: &ItemFn, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-003\") {\n             return;\n         }\n \n         if let Visibility::Public(_) = &item_fn.vis {\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:33:9: replace ErrorRulesChecker<'a>::check_stmt with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 10,
+        "line": 136
+      },
+      "start": {
+        "column": 9,
+        "line": 33
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -38,17 +38,17 @@\n                         let expr = &init.expr;\n                         let expr_str = quote::quote!(#expr).to_string();\n                         // If it contains a method call or function call likely returning Result\n                         if expr_str.contains(\"write\")\n                             || expr_str.contains(\"read\")\n                             || expr_str.contains(\"send\")\n                             || expr_str.contains(\"execute\")\n                             || expr_str.contains(\"save\")\n-                            || expr_str.contains(\"flush\")\n+                            && /* ~ changed by cargo-mutants ~ */ expr_str.contains(\"flush\")\n                         {\n                             let snippet = format!(\"let _ = {}\", expr_str);\n                             let fp = compute_fingerprint(\"ERR-001\", \"1.0\", \"wildcard_let\", &snippet);\n \n                             violations.push(Violation {\n                                 rule_id: \"ERR-001\".into(),\n                                 rule_version: \"1.0\".into(),\n                                 category: Category::ErrorHandling,\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:46:29: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 46
+      },
+      "start": {
+        "column": 29,
+        "line": 46
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -37,17 +37,17 @@\n                     if let Some(init) = &local.init {\n                         let expr = &init.expr;\n                         let expr_str = quote::quote!(#expr).to_string();\n                         // If it contains a method call or function call likely returning Result\n                         if expr_str.contains(\"write\")\n                             || expr_str.contains(\"read\")\n                             || expr_str.contains(\"send\")\n                             || expr_str.contains(\"execute\")\n-                            || expr_str.contains(\"save\")\n+                            && /* ~ changed by cargo-mutants ~ */ expr_str.contains(\"save\")\n                             || expr_str.contains(\"flush\")\n                         {\n                             let snippet = format!(\"let _ = {}\", expr_str);\n                             let fp = compute_fingerprint(\"ERR-001\", \"1.0\", \"wildcard_let\", &snippet);\n \n                             violations.push(Violation {\n                                 rule_id: \"ERR-001\".into(),\n                                 rule_version: \"1.0\".into(),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:45:29: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 45
+      },
+      "start": {
+        "column": 29,
+        "line": 45
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -36,17 +36,17 @@\n                 if let syn::Pat::Wild(_) = &local.pat {\n                     if let Some(init) = &local.init {\n                         let expr = &init.expr;\n                         let expr_str = quote::quote!(#expr).to_string();\n                         // If it contains a method call or function call likely returning Result\n                         if expr_str.contains(\"write\")\n                             || expr_str.contains(\"read\")\n                             || expr_str.contains(\"send\")\n-                            || expr_str.contains(\"execute\")\n+                            && /* ~ changed by cargo-mutants ~ */ expr_str.contains(\"execute\")\n                             || expr_str.contains(\"save\")\n                             || expr_str.contains(\"flush\")\n                         {\n                             let snippet = format!(\"let _ = {}\", expr_str);\n                             let fp = compute_fingerprint(\"ERR-001\", \"1.0\", \"wildcard_let\", &snippet);\n \n                             violations.push(Violation {\n                                 rule_id: \"ERR-001\".into(),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:44:29: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 44
+      },
+      "start": {
+        "column": 29,
+        "line": 44
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -35,17 +35,17 @@\n             if self.is_rule_enabled(\"ERR-001\") {\n                 if let syn::Pat::Wild(_) = &local.pat {\n                     if let Some(init) = &local.init {\n                         let expr = &init.expr;\n                         let expr_str = quote::quote!(#expr).to_string();\n                         // If it contains a method call or function call likely returning Result\n                         if expr_str.contains(\"write\")\n                             || expr_str.contains(\"read\")\n-                            || expr_str.contains(\"send\")\n+                            && /* ~ changed by cargo-mutants ~ */ expr_str.contains(\"send\")\n                             || expr_str.contains(\"execute\")\n                             || expr_str.contains(\"save\")\n                             || expr_str.contains(\"flush\")\n                         {\n                             let snippet = format!(\"let _ = {}\", expr_str);\n                             let fp = compute_fingerprint(\"ERR-001\", \"1.0\", \"wildcard_let\", &snippet);\n \n                             violations.push(Violation {\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:43:29: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 43
+      },
+      "start": {
+        "column": 29,
+        "line": 43
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -34,17 +34,17 @@\n             // ERR-001: let _ = result;\n             if self.is_rule_enabled(\"ERR-001\") {\n                 if let syn::Pat::Wild(_) = &local.pat {\n                     if let Some(init) = &local.init {\n                         let expr = &init.expr;\n                         let expr_str = quote::quote!(#expr).to_string();\n                         // If it contains a method call or function call likely returning Result\n                         if expr_str.contains(\"write\")\n-                            || expr_str.contains(\"read\")\n+                            && /* ~ changed by cargo-mutants ~ */ expr_str.contains(\"read\")\n                             || expr_str.contains(\"send\")\n                             || expr_str.contains(\"execute\")\n                             || expr_str.contains(\"save\")\n                             || expr_str.contains(\"flush\")\n                         {\n                             let snippet = format!(\"let _ = {}\", expr_str);\n                             let fp = compute_fingerprint(\"ERR-001\", \"1.0\", \"wildcard_let\", &snippet);\n \n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:42:29: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 31,
+        "line": 42
+      },
+      "start": {
+        "column": 29,
+        "line": 42
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace && with || in ErrorRulesChecker<'a>::check_stmt\n@@ -64,17 +64,17 @@\n                             });\n                         }\n                     }\n                 }\n             }\n         }\n \n         // ERR-002: Panic in Drop\n-        if in_drop && self.is_rule_enabled(\"ERR-002\") {\n+        if in_drop || /* ~ changed by cargo-mutants ~ */ self.is_rule_enabled(\"ERR-002\") {\n             let stmt_str = quote::quote!(#stmt).to_string();\n             if stmt_str.contains(\"unwrap (\")\n                 || stmt_str.contains(\"expect (\")\n                 || stmt_str.contains(\"panic !\")\n             {\n                 let snippet = stmt_str;\n                 let fp = compute_fingerprint(\"ERR-002\", \"1.0\", \"drop_panic\", &snippet);\n \n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:72:20: replace && with || in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "||",
+    "span": {
+      "end": {
+        "column": 22,
+        "line": 72
+      },
+      "start": {
+        "column": 20,
+        "line": 72
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -68,17 +68,17 @@\n             }\n         }\n \n         // ERR-002: Panic in Drop\n         if in_drop && self.is_rule_enabled(\"ERR-002\") {\n             let stmt_str = quote::quote!(#stmt).to_string();\n             if stmt_str.contains(\"unwrap (\")\n                 || stmt_str.contains(\"expect (\")\n-                || stmt_str.contains(\"panic !\")\n+                && /* ~ changed by cargo-mutants ~ */ stmt_str.contains(\"panic !\")\n             {\n                 let snippet = stmt_str;\n                 let fp = compute_fingerprint(\"ERR-002\", \"1.0\", \"drop_panic\", &snippet);\n \n                 violations.push(Violation {\n                     rule_id: \"ERR-002\".into(),\n                     rule_version: \"1.0\".into(),\n                     category: Category::ErrorHandling,\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:76:17: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 76
+      },
+      "start": {
+        "column": 17,
+        "line": 76
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -67,17 +67,17 @@\n                 }\n             }\n         }\n \n         // ERR-002: Panic in Drop\n         if in_drop && self.is_rule_enabled(\"ERR-002\") {\n             let stmt_str = quote::quote!(#stmt).to_string();\n             if stmt_str.contains(\"unwrap (\")\n-                || stmt_str.contains(\"expect (\")\n+                && /* ~ changed by cargo-mutants ~ */ stmt_str.contains(\"expect (\")\n                 || stmt_str.contains(\"panic !\")\n             {\n                 let snippet = stmt_str;\n                 let fp = compute_fingerprint(\"ERR-002\", \"1.0\", \"drop_panic\", &snippet);\n \n                 violations.push(Violation {\n                     rule_id: \"ERR-002\".into(),\n                     rule_version: \"1.0\".into(),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:75:17: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 75
+      },
+      "start": {
+        "column": 17,
+        "line": 75
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -95,17 +95,17 @@\n             }\n         }\n \n         // ERR-005: Panic in library target (statement position)\n         if self.is_rule_enabled(\"ERR-005\") {\n             let is_lib_target = self.crate_name.contains(\"domain\")\n                 || self.crate_name.contains(\"ports\")\n                 || self.file_path.ends_with(\"lib.rs\")\n-                || !self.file_path.contains(\"bin\");\n+                && /* ~ changed by cargo-mutants ~ */ !self.file_path.contains(\"bin\");\n \n             if is_lib_target {\n                 if let Stmt::Macro(stmt_macro) = stmt {\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n                         .segments\n                         .last()\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:103:17: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 103
+      },
+      "start": {
+        "column": 17,
+        "line": 103
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -94,17 +94,17 @@\n                 });\n             }\n         }\n \n         // ERR-005: Panic in library target (statement position)\n         if self.is_rule_enabled(\"ERR-005\") {\n             let is_lib_target = self.crate_name.contains(\"domain\")\n                 || self.crate_name.contains(\"ports\")\n-                || self.file_path.ends_with(\"lib.rs\")\n+                && /* ~ changed by cargo-mutants ~ */ self.file_path.ends_with(\"lib.rs\")\n                 || !self.file_path.contains(\"bin\");\n \n             if is_lib_target {\n                 if let Stmt::Macro(stmt_macro) = stmt {\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n                         .segments\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:102:17: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 102
+      },
+      "start": {
+        "column": 17,
+        "line": 102
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -93,17 +93,17 @@\n                     fingerprint: fp,\n                 });\n             }\n         }\n \n         // ERR-005: Panic in library target (statement position)\n         if self.is_rule_enabled(\"ERR-005\") {\n             let is_lib_target = self.crate_name.contains(\"domain\")\n-                || self.crate_name.contains(\"ports\")\n+                && /* ~ changed by cargo-mutants ~ */ self.crate_name.contains(\"ports\")\n                 || self.file_path.ends_with(\"lib.rs\")\n                 || !self.file_path.contains(\"bin\");\n \n             if is_lib_target {\n                 if let Stmt::Macro(stmt_macro) = stmt {\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:101:17: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 19,
+        "line": 101
+      },
+      "start": {
+        "column": 17,
+        "line": 101
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ delete ! in ErrorRulesChecker<'a>::check_stmt\n@@ -95,17 +95,17 @@\n             }\n         }\n \n         // ERR-005: Panic in library target (statement position)\n         if self.is_rule_enabled(\"ERR-005\") {\n             let is_lib_target = self.crate_name.contains(\"domain\")\n                 || self.crate_name.contains(\"ports\")\n                 || self.file_path.ends_with(\"lib.rs\")\n-                || !self.file_path.contains(\"bin\");\n+                ||  /* ~ changed by cargo-mutants ~ */self.file_path.contains(\"bin\");\n \n             if is_lib_target {\n                 if let Stmt::Macro(stmt_macro) = stmt {\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n                         .segments\n                         .last()\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:103:20: delete ! in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 21,
+        "line": 103
+      },
+      "start": {
+        "column": 20,
+        "line": 103
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_stmt\n@@ -107,17 +107,17 @@\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n                         .segments\n                         .last()\n                         .map(|s| s.ident.to_string())\n                         .unwrap_or_default();\n \n-                    if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n+                    if macro_name == \"panic\" && /* ~ changed by cargo-mutants ~ */ macro_name == \"unimplemented\" {\n                         let snippet = format!(\"{}!(...)\", macro_name);\n                         let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n \n                         violations.push(Violation {\n                             rule_id: \"ERR-005\".into(),\n                             rule_version: \"1.0\".into(),\n                             category: Category::ErrorHandling,\n                             severity: self.get_severity(\"ERR-005\", Severity::Deny),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:115:46: replace || with && in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 48,
+        "line": 115
+      },
+      "start": {
+        "column": 46,
+        "line": 115
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace == with != in ErrorRulesChecker<'a>::check_stmt\n@@ -107,17 +107,17 @@\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n                         .segments\n                         .last()\n                         .map(|s| s.ident.to_string())\n                         .unwrap_or_default();\n \n-                    if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n+                    if macro_name != /* ~ changed by cargo-mutants ~ */ \"panic\" || macro_name == \"unimplemented\" {\n                         let snippet = format!(\"{}!(...)\", macro_name);\n                         let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n \n                         violations.push(Violation {\n                             rule_id: \"ERR-005\".into(),\n                             rule_version: \"1.0\".into(),\n                             category: Category::ErrorHandling,\n                             severity: self.get_severity(\"ERR-005\", Severity::Deny),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:115:35: replace == with != in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 37,
+        "line": 115
+      },
+      "start": {
+        "column": 35,
+        "line": 115
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace == with != in ErrorRulesChecker<'a>::check_stmt\n@@ -107,17 +107,17 @@\n                     let macro_name = stmt_macro\n                         .mac\n                         .path\n                         .segments\n                         .last()\n                         .map(|s| s.ident.to_string())\n                         .unwrap_or_default();\n \n-                    if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n+                    if macro_name == \"panic\" || macro_name != /* ~ changed by cargo-mutants ~ */ \"unimplemented\" {\n                         let snippet = format!(\"{}!(...)\", macro_name);\n                         let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n \n                         violations.push(Violation {\n                             rule_id: \"ERR-005\".into(),\n                             rule_version: \"1.0\".into(),\n                             category: Category::ErrorHandling,\n                             severity: self.get_severity(\"ERR-005\", Severity::Deny),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 137
+        },
+        "start": {
+          "column": 5,
+          "line": 32
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:115:60: replace == with != in ErrorRulesChecker<'a>::check_stmt",
+    "package": "cerberus-infrastructure",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 62,
+        "line": 115
+      },
+      "start": {
+        "column": 60,
+        "line": 115
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::check_pub_fn with ()\n@@ -132,43 +132,17 @@\n                         });\n                     }\n                 }\n             }\n         }\n     }\n \n     fn check_pub_fn(&self, item_fn: &ItemFn, violations: &mut Vec<Violation>) {\n-        if !self.is_rule_enabled(\"ERR-003\") {\n-            return;\n-        }\n-\n-        if let Visibility::Public(_) = &item_fn.vis {\n-            let ret_str = quote::quote!(#item_fn.sig.output).to_string();\n-            if ret_str.contains(\"Result <\") && ret_str.contains(\"String >\") {\n-                let name = item_fn.sig.ident.to_string();\n-                let snippet = format!(\"pub fn {}(...) -> {}\", name, ret_str);\n-                let fp = compute_fingerprint(\"ERR-003\", \"1.0\", &name, &snippet);\n-\n-                violations.push(Violation {\n-                    rule_id: \"ERR-003\".into(),\n-                    rule_version: \"1.0\".into(),\n-                    category: Category::ErrorHandling,\n-                    severity: self.get_severity(\"ERR-003\", Severity::Warn),\n-                    file: PathBuf::from(self.file_path),\n-                    line: 1,\n-                    column: 1,\n-                    symbol: name,\n-                    message: \"Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.\".into(),\n-                    snippet,\n-                    remediation: \"Define domain-specific typed error enum using thiserror (e.g., Result<T, DomainError>).\".into(),\n-                    fingerprint: fp,\n-                });\n-            }\n-        }\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_pub_fn",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 167
+        },
+        "start": {
+          "column": 5,
+          "line": 139
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:140:9: replace ErrorRulesChecker<'a>::check_pub_fn with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 10,
+        "line": 166
+      },
+      "start": {
+        "column": 9,
+        "line": 140
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ delete ! in ErrorRulesChecker<'a>::check_pub_fn\n@@ -132,17 +132,17 @@\n                         });\n                     }\n                 }\n             }\n         }\n     }\n \n     fn check_pub_fn(&self, item_fn: &ItemFn, violations: &mut Vec<Violation>) {\n-        if !self.is_rule_enabled(\"ERR-003\") {\n+        if  /* ~ changed by cargo-mutants ~ */self.is_rule_enabled(\"ERR-003\") {\n             return;\n         }\n \n         if let Visibility::Public(_) = &item_fn.vis {\n             let ret_str = quote::quote!(#item_fn.sig.output).to_string();\n             if ret_str.contains(\"Result <\") && ret_str.contains(\"String >\") {\n                 let name = item_fn.sig.ident.to_string();\n                 let snippet = format!(\"pub fn {}(...) -> {}\", name, ret_str);\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_pub_fn",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 167
+        },
+        "start": {
+          "column": 5,
+          "line": 139
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:140:12: delete ! in ErrorRulesChecker<'a>::check_pub_fn",
+    "package": "cerberus-infrastructure",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 140
+      },
+      "start": {
+        "column": 12,
+        "line": 140
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace && with || in ErrorRulesChecker<'a>::check_pub_fn\n@@ -138,17 +138,17 @@\n \n     fn check_pub_fn(&self, item_fn: &ItemFn, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-003\") {\n             return;\n         }\n \n         if let Visibility::Public(_) = &item_fn.vis {\n             let ret_str = quote::quote!(#item_fn.sig.output).to_string();\n-            if ret_str.contains(\"Result <\") && ret_str.contains(\"String >\") {\n+            if ret_str.contains(\"Result <\") || /* ~ changed by cargo-mutants ~ */ ret_str.contains(\"String >\") {\n                 let name = item_fn.sig.ident.to_string();\n                 let snippet = format!(\"pub fn {}(...) -> {}\", name, ret_str);\n                 let fp = compute_fingerprint(\"ERR-003\", \"1.0\", &name, &snippet);\n \n                 violations.push(Violation {\n                     rule_id: \"ERR-003\".into(),\n                     rule_version: \"1.0\".into(),\n                     category: Category::ErrorHandling,\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_pub_fn",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 167
+        },
+        "start": {
+          "column": 5,
+          "line": 139
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:146:45: replace && with || in ErrorRulesChecker<'a>::check_pub_fn",
+    "package": "cerberus-infrastructure",
+    "replacement": "||",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 146
+      },
+      "start": {
+        "column": 45,
+        "line": 146
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::check_library_panic with ()\n@@ -162,57 +162,17 @@\n                     remediation: \"Define domain-specific typed error enum using thiserror (e.g., Result<T, DomainError>).\".into(),\n                     fingerprint: fp,\n                 });\n             }\n         }\n     }\n \n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n-        if !self.is_rule_enabled(\"ERR-005\") {\n-            return;\n-        }\n-\n-        let is_lib_target = self.crate_name.contains(\"domain\")\n-            || self.crate_name.contains(\"ports\")\n-            || self.file_path.ends_with(\"lib.rs\")\n-            || !self.file_path.contains(\"bin\");\n-        if !is_lib_target {\n-            return;\n-        }\n-\n-        if let Expr::Macro(expr_macro) = expr {\n-            let macro_name = expr_macro\n-                .mac\n-                .path\n-                .segments\n-                .last()\n-                .map(|s| s.ident.to_string())\n-                .unwrap_or_default();\n-\n-            if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n-                let snippet = format!(\"{}!(...)\", macro_name);\n-                let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n-\n-                violations.push(Violation {\n-                    rule_id: \"ERR-005\".into(),\n-                    rule_version: \"1.0\".into(),\n-                    category: Category::ErrorHandling,\n-                    severity: self.get_severity(\"ERR-005\", Severity::Deny),\n-                    file: PathBuf::from(self.file_path),\n-                    line: 1,\n-                    column: 1,\n-                    symbol: macro_name,\n-                    message: \"Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.\".into(),\n-                    snippet,\n-                    remediation: \"Replace panic!/unimplemented! with structured Result::Err(Error) return value.\".into(),\n-                    fingerprint: fp,\n-                });\n-            }\n-        }\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn is_rule_enabled(&self, rule_id: &str) -> bool {\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n             .map(|r| r.severity != Severity::Off)\n             .unwrap_or(true)\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:170:9: replace ErrorRulesChecker<'a>::check_library_panic with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 10,
+        "line": 210
+      },
+      "start": {
+        "column": 9,
+        "line": 170
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ delete ! in ErrorRulesChecker<'a>::check_library_panic\n@@ -162,17 +162,17 @@\n                     remediation: \"Define domain-specific typed error enum using thiserror (e.g., Result<T, DomainError>).\".into(),\n                     fingerprint: fp,\n                 });\n             }\n         }\n     }\n \n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n-        if !self.is_rule_enabled(\"ERR-005\") {\n+        if  /* ~ changed by cargo-mutants ~ */self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n             || self.crate_name.contains(\"ports\")\n             || self.file_path.ends_with(\"lib.rs\")\n             || !self.file_path.contains(\"bin\");\n         if !is_lib_target {\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:170:12: delete ! in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 170
+      },
+      "start": {
+        "column": 12,
+        "line": 170
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_library_panic\n@@ -169,17 +169,17 @@\n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n             || self.crate_name.contains(\"ports\")\n             || self.file_path.ends_with(\"lib.rs\")\n-            || !self.file_path.contains(\"bin\");\n+            && /* ~ changed by cargo-mutants ~ */ !self.file_path.contains(\"bin\");\n         if !is_lib_target {\n             return;\n         }\n \n         if let Expr::Macro(expr_macro) = expr {\n             let macro_name = expr_macro\n                 .mac\n                 .path\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:177:13: replace || with && in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 177
+      },
+      "start": {
+        "column": 13,
+        "line": 177
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_library_panic\n@@ -168,17 +168,17 @@\n \n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n             || self.crate_name.contains(\"ports\")\n-            || self.file_path.ends_with(\"lib.rs\")\n+            && /* ~ changed by cargo-mutants ~ */ self.file_path.ends_with(\"lib.rs\")\n             || !self.file_path.contains(\"bin\");\n         if !is_lib_target {\n             return;\n         }\n \n         if let Expr::Macro(expr_macro) = expr {\n             let macro_name = expr_macro\n                 .mac\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:176:13: replace || with && in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 176
+      },
+      "start": {
+        "column": 13,
+        "line": 176
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_library_panic\n@@ -167,17 +167,17 @@\n     }\n \n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n-            || self.crate_name.contains(\"ports\")\n+            && /* ~ changed by cargo-mutants ~ */ self.crate_name.contains(\"ports\")\n             || self.file_path.ends_with(\"lib.rs\")\n             || !self.file_path.contains(\"bin\");\n         if !is_lib_target {\n             return;\n         }\n \n         if let Expr::Macro(expr_macro) = expr {\n             let macro_name = expr_macro\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:175:13: replace || with && in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 15,
+        "line": 175
+      },
+      "start": {
+        "column": 13,
+        "line": 175
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ delete ! in ErrorRulesChecker<'a>::check_library_panic\n@@ -169,17 +169,17 @@\n     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {\n         if !self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n             || self.crate_name.contains(\"ports\")\n             || self.file_path.ends_with(\"lib.rs\")\n-            || !self.file_path.contains(\"bin\");\n+            ||  /* ~ changed by cargo-mutants ~ */self.file_path.contains(\"bin\");\n         if !is_lib_target {\n             return;\n         }\n \n         if let Expr::Macro(expr_macro) = expr {\n             let macro_name = expr_macro\n                 .mac\n                 .path\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:177:16: delete ! in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 17,
+        "line": 177
+      },
+      "start": {
+        "column": 16,
+        "line": 177
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ delete ! in ErrorRulesChecker<'a>::check_library_panic\n@@ -170,17 +170,17 @@\n         if !self.is_rule_enabled(\"ERR-005\") {\n             return;\n         }\n \n         let is_lib_target = self.crate_name.contains(\"domain\")\n             || self.crate_name.contains(\"ports\")\n             || self.file_path.ends_with(\"lib.rs\")\n             || !self.file_path.contains(\"bin\");\n-        if !is_lib_target {\n+        if  /* ~ changed by cargo-mutants ~ */is_lib_target {\n             return;\n         }\n \n         if let Expr::Macro(expr_macro) = expr {\n             let macro_name = expr_macro\n                 .mac\n                 .path\n                 .segments\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "UnaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:178:12: delete ! in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "",
+    "span": {
+      "end": {
+        "column": 13,
+        "line": 178
+      },
+      "start": {
+        "column": 12,
+        "line": 178
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace || with && in ErrorRulesChecker<'a>::check_library_panic\n@@ -183,17 +183,17 @@\n             let macro_name = expr_macro\n                 .mac\n                 .path\n                 .segments\n                 .last()\n                 .map(|s| s.ident.to_string())\n                 .unwrap_or_default();\n \n-            if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n+            if macro_name == \"panic\" && /* ~ changed by cargo-mutants ~ */ macro_name == \"unimplemented\" {\n                 let snippet = format!(\"{}!(...)\", macro_name);\n                 let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n \n                 violations.push(Violation {\n                     rule_id: \"ERR-005\".into(),\n                     rule_version: \"1.0\".into(),\n                     category: Category::ErrorHandling,\n                     severity: self.get_severity(\"ERR-005\", Severity::Deny),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:191:38: replace || with && in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "&&",
+    "span": {
+      "end": {
+        "column": 40,
+        "line": 191
+      },
+      "start": {
+        "column": 38,
+        "line": 191
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace == with != in ErrorRulesChecker<'a>::check_library_panic\n@@ -183,17 +183,17 @@\n             let macro_name = expr_macro\n                 .mac\n                 .path\n                 .segments\n                 .last()\n                 .map(|s| s.ident.to_string())\n                 .unwrap_or_default();\n \n-            if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n+            if macro_name != /* ~ changed by cargo-mutants ~ */ \"panic\" || macro_name == \"unimplemented\" {\n                 let snippet = format!(\"{}!(...)\", macro_name);\n                 let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n \n                 violations.push(Violation {\n                     rule_id: \"ERR-005\".into(),\n                     rule_version: \"1.0\".into(),\n                     category: Category::ErrorHandling,\n                     severity: self.get_severity(\"ERR-005\", Severity::Deny),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:191:27: replace == with != in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 191
+      },
+      "start": {
+        "column": 27,
+        "line": 191
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace == with != in ErrorRulesChecker<'a>::check_library_panic\n@@ -183,17 +183,17 @@\n             let macro_name = expr_macro\n                 .mac\n                 .path\n                 .segments\n                 .last()\n                 .map(|s| s.ident.to_string())\n                 .unwrap_or_default();\n \n-            if macro_name == \"panic\" || macro_name == \"unimplemented\" {\n+            if macro_name == \"panic\" || macro_name != /* ~ changed by cargo-mutants ~ */ \"unimplemented\" {\n                 let snippet = format!(\"{}!(...)\", macro_name);\n                 let fp = compute_fingerprint(\"ERR-005\", \"1.0\", &macro_name, &snippet);\n \n                 violations.push(Violation {\n                     rule_id: \"ERR-005\".into(),\n                     rule_version: \"1.0\".into(),\n                     category: Category::ErrorHandling,\n                     severity: self.get_severity(\"ERR-005\", Severity::Deny),\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::check_library_panic",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 211
+        },
+        "start": {
+          "column": 5,
+          "line": 169
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:191:52: replace == with != in ErrorRulesChecker<'a>::check_library_panic",
+    "package": "cerberus-infrastructure",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 54,
+        "line": 191
+      },
+      "start": {
+        "column": 52,
+        "line": 191
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::is_rule_enabled -> bool with true\n@@ -206,21 +206,17 @@\n                     remediation: \"Replace panic!/unimplemented! with structured Result::Err(Error) return value.\".into(),\n                     fingerprint: fp,\n                 });\n             }\n         }\n     }\n \n     fn is_rule_enabled(&self, rule_id: &str) -> bool {\n-        self.rules\n-            .iter()\n-            .find(|r| r.id == rule_id)\n-            .map(|r| r.severity != Severity::Off)\n-            .unwrap_or(true)\n+        true /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n             .map(|r| r.severity)\n             .unwrap_or(default)\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::is_rule_enabled",
+      "return_type": "-> bool",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 219
+        },
+        "start": {
+          "column": 5,
+          "line": 213
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:214:9: replace ErrorRulesChecker<'a>::is_rule_enabled -> bool with true",
+    "package": "cerberus-infrastructure",
+    "replacement": "true",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 218
+      },
+      "start": {
+        "column": 9,
+        "line": 214
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::is_rule_enabled -> bool with false\n@@ -206,21 +206,17 @@\n                     remediation: \"Replace panic!/unimplemented! with structured Result::Err(Error) return value.\".into(),\n                     fingerprint: fp,\n                 });\n             }\n         }\n     }\n \n     fn is_rule_enabled(&self, rule_id: &str) -> bool {\n-        self.rules\n-            .iter()\n-            .find(|r| r.id == rule_id)\n-            .map(|r| r.severity != Severity::Off)\n-            .unwrap_or(true)\n+        false /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n             .map(|r| r.severity)\n             .unwrap_or(default)\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::is_rule_enabled",
+      "return_type": "-> bool",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 219
+        },
+        "start": {
+          "column": 5,
+          "line": 213
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:214:9: replace ErrorRulesChecker<'a>::is_rule_enabled -> bool with false",
+    "package": "cerberus-infrastructure",
+    "replacement": "false",
+    "span": {
+      "end": {
+        "column": 29,
+        "line": 218
+      },
+      "start": {
+        "column": 9,
+        "line": 214
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace == with != in ErrorRulesChecker<'a>::is_rule_enabled\n@@ -208,17 +208,17 @@\n                 });\n             }\n         }\n     }\n \n     fn is_rule_enabled(&self, rule_id: &str) -> bool {\n         self.rules\n             .iter()\n-            .find(|r| r.id == rule_id)\n+            .find(|r| r.id != /* ~ changed by cargo-mutants ~ */ rule_id)\n             .map(|r| r.severity != Severity::Off)\n             .unwrap_or(true)\n     }\n \n     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::is_rule_enabled",
+      "return_type": "-> bool",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 219
+        },
+        "start": {
+          "column": 5,
+          "line": 213
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:216:28: replace == with != in ErrorRulesChecker<'a>::is_rule_enabled",
+    "package": "cerberus-infrastructure",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 30,
+        "line": 216
+      },
+      "start": {
+        "column": 28,
+        "line": 216
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace != with == in ErrorRulesChecker<'a>::is_rule_enabled\n@@ -209,17 +209,17 @@\n             }\n         }\n     }\n \n     fn is_rule_enabled(&self, rule_id: &str) -> bool {\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n-            .map(|r| r.severity != Severity::Off)\n+            .map(|r| r.severity == /* ~ changed by cargo-mutants ~ */ Severity::Off)\n             .unwrap_or(true)\n     }\n \n     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n             .map(|r| r.severity)\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::is_rule_enabled",
+      "return_type": "-> bool",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 219
+        },
+        "start": {
+          "column": 5,
+          "line": 213
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:217:33: replace != with == in ErrorRulesChecker<'a>::is_rule_enabled",
+    "package": "cerberus-infrastructure",
+    "replacement": "==",
+    "span": {
+      "end": {
+        "column": 35,
+        "line": 217
+      },
+      "start": {
+        "column": 33,
+        "line": 217
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace ErrorRulesChecker<'a>::get_severity -> Severity with Default::default()\n@@ -214,21 +214,17 @@\n         self.rules\n             .iter()\n             .find(|r| r.id == rule_id)\n             .map(|r| r.severity != Severity::Off)\n             .unwrap_or(true)\n     }\n \n     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {\n-        self.rules\n-            .iter()\n-            .find(|r| r.id == rule_id)\n-            .map(|r| r.severity)\n-            .unwrap_or(default)\n+        Default::default() /* ~ changed by cargo-mutants ~ */\n     }\n }\n \n struct ErrorRulesVisitor<'a, 'b> {\n     checker: &'a ErrorRulesChecker<'a>,\n     violations: &'b mut Vec<Violation>,\n     in_drop_impl: bool,\n }\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::get_severity",
+      "return_type": "-> Severity",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 227
+        },
+        "start": {
+          "column": 5,
+          "line": 221
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:222:9: replace ErrorRulesChecker<'a>::get_severity -> Severity with Default::default()",
+    "package": "cerberus-infrastructure",
+    "replacement": "Default::default()",
+    "span": {
+      "end": {
+        "column": 32,
+        "line": 226
+      },
+      "start": {
+        "column": 9,
+        "line": 222
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace == with != in ErrorRulesChecker<'a>::get_severity\n@@ -216,17 +216,17 @@\n             .find(|r| r.id == rule_id)\n             .map(|r| r.severity != Severity::Off)\n             .unwrap_or(true)\n     }\n \n     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {\n         self.rules\n             .iter()\n-            .find(|r| r.id == rule_id)\n+            .find(|r| r.id != /* ~ changed by cargo-mutants ~ */ rule_id)\n             .map(|r| r.severity)\n             .unwrap_or(default)\n     }\n }\n \n struct ErrorRulesVisitor<'a, 'b> {\n     checker: &'a ErrorRulesChecker<'a>,\n     violations: &'b mut Vec<Violation>,\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "ErrorRulesChecker<'a>::get_severity",
+      "return_type": "-> Severity",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 227
+        },
+        "start": {
+          "column": 5,
+          "line": 221
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:224:28: replace == with != in ErrorRulesChecker<'a>::get_severity",
+    "package": "cerberus-infrastructure",
+    "replacement": "!=",
+    "span": {
+      "end": {
+        "column": 30,
+        "line": 224
+      },
+      "start": {
+        "column": 28,
+        "line": 224
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_impl with ()\n@@ -230,25 +230,17 @@\n struct ErrorRulesVisitor<'a, 'b> {\n     checker: &'a ErrorRulesChecker<'a>,\n     violations: &'b mut Vec<Violation>,\n     in_drop_impl: bool,\n }\n \n impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {\n     fn visit_item_impl(&mut self, item: &ItemImpl) {\n-        let prev_in_drop = self.in_drop_impl;\n-        if let Some((trait_path, _)) = &item.trait_ {\n-            let trait_name = quote::quote!(#trait_path).to_string();\n-            if trait_name.ends_with(\"Drop\") {\n-                self.in_drop_impl = true;\n-            }\n-        }\n-        syn::visit::visit_item_impl(self, item);\n-        self.in_drop_impl = prev_in_drop;\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn visit_stmt(&mut self, item: &Stmt) {\n         self.checker\n             .check_stmt(item, self.in_drop_impl, self.violations);\n         syn::visit::visit_stmt(self, item);\n     }\n \n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "<impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_impl",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 247
+        },
+        "start": {
+          "column": 5,
+          "line": 237
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:238:9: replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_impl with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 42,
+        "line": 246
+      },
+      "start": {
+        "column": 9,
+        "line": 238
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_stmt with ()\n@@ -242,19 +242,17 @@\n                 self.in_drop_impl = true;\n             }\n         }\n         syn::visit::visit_item_impl(self, item);\n         self.in_drop_impl = prev_in_drop;\n     }\n \n     fn visit_stmt(&mut self, item: &Stmt) {\n-        self.checker\n-            .check_stmt(item, self.in_drop_impl, self.violations);\n-        syn::visit::visit_stmt(self, item);\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn visit_item_fn(&mut self, item: &ItemFn) {\n         self.checker.check_pub_fn(item, self.violations);\n         syn::visit::visit_item_fn(self, item);\n     }\n \n     fn visit_impl_item(&mut self, item: &syn::ImplItem) {\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "<impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_stmt",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 253
+        },
+        "start": {
+          "column": 5,
+          "line": 249
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:250:9: replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_stmt with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 44,
+        "line": 252
+      },
+      "start": {
+        "column": 9,
+        "line": 250
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_fn with ()\n@@ -248,18 +248,17 @@\n \n     fn visit_stmt(&mut self, item: &Stmt) {\n         self.checker\n             .check_stmt(item, self.in_drop_impl, self.violations);\n         syn::visit::visit_stmt(self, item);\n     }\n \n     fn visit_item_fn(&mut self, item: &ItemFn) {\n-        self.checker.check_pub_fn(item, self.violations);\n-        syn::visit::visit_item_fn(self, item);\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn visit_impl_item(&mut self, item: &syn::ImplItem) {\n         if let syn::ImplItem::Fn(method) = item {\n             if let Visibility::Public(_) = &method.vis {\n                 let ret_str = quote::quote!(#method.sig.output).to_string();\n                 if ret_str.contains(\"Result <\") && ret_str.contains(\"String >\") {\n                     let name = method.sig.ident.to_string();\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "<impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_fn",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 258
+        },
+        "start": {
+          "column": 5,
+          "line": 255
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:256:9: replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_fn with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 47,
+        "line": 257
+      },
+      "start": {
+        "column": 9,
+        "line": 256
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_impl_item with ()\n@@ -253,41 +253,16 @@\n     }\n \n     fn visit_item_fn(&mut self, item: &ItemFn) {\n         self.checker.check_pub_fn(item, self.violations);\n         syn::visit::visit_item_fn(self, item);\n     }\n \n     fn visit_impl_item(&mut self, item: &syn::ImplItem) {\n-        if let syn::ImplItem::Fn(method) = item {\n-            if let Visibility::Public(_) = &method.vis {\n-                let ret_str = quote::quote!(#method.sig.output).to_string();\n-                if ret_str.contains(\"Result <\") && ret_str.contains(\"String >\") {\n-                    let name = method.sig.ident.to_string();\n-                    let snippet = format!(\"pub fn {}(...) -> {}\", name, ret_str);\n-                    let fp = compute_fingerprint(\"ERR-003\", \"1.0\", &name, &snippet);\n-\n-                    self.violations.push(Violation {\n-                        rule_id: \"ERR-003\".into(),\n-                        rule_version: \"1.0\".into(),\n-                        category: Category::ErrorHandling,\n-                        severity: self.checker.get_severity(\"ERR-003\", Severity::Warn),\n-                        file: PathBuf::from(self.checker.file_path),\n-                        line: 1,\n-                        column: 1,\n-                        symbol: name,\n-                        message: \"Public method returns untyped 'Result<T, String>'.\".into(),\n-                        snippet,\n-                        remediation: \"Define domain-specific typed error enum using thiserror.\".into(),\n-                        fingerprint: fp,\n-                    });\n-                }\n-            }\n-        }\n-        syn::visit::visit_impl_item(self, item);\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n \n     fn visit_expr(&mut self, item: &Expr) {\n         self.checker.check_library_panic(item, self.violations);\n         syn::visit::visit_expr(self, item);\n     }\n }\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "<impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_impl_item",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 287
+        },
+        "start": {
+          "column": 5,
+          "line": 260
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:261:9: replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_impl_item with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 49,
+        "line": 286
+      },
+      "start": {
+        "column": 9,
+        "line": 261
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace && with || in <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_impl_item\n@@ -256,17 +256,17 @@\n         self.checker.check_pub_fn(item, self.violations);\n         syn::visit::visit_item_fn(self, item);\n     }\n \n     fn visit_impl_item(&mut self, item: &syn::ImplItem) {\n         if let syn::ImplItem::Fn(method) = item {\n             if let Visibility::Public(_) = &method.vis {\n                 let ret_str = quote::quote!(#method.sig.output).to_string();\n-                if ret_str.contains(\"Result <\") && ret_str.contains(\"String >\") {\n+                if ret_str.contains(\"Result <\") || /* ~ changed by cargo-mutants ~ */ ret_str.contains(\"String >\") {\n                     let name = method.sig.ident.to_string();\n                     let snippet = format!(\"pub fn {}(...) -> {}\", name, ret_str);\n                     let fp = compute_fingerprint(\"ERR-003\", \"1.0\", &name, &snippet);\n \n                     self.violations.push(Violation {\n                         rule_id: \"ERR-003\".into(),\n                         rule_version: \"1.0\".into(),\n                         category: Category::ErrorHandling,\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "<impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_impl_item",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 287
+        },
+        "start": {
+          "column": 5,
+          "line": 260
+        }
+      }
+    },
+    "genre": "BinaryOperator",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:264:49: replace && with || in <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_impl_item",
+    "package": "cerberus-infrastructure",
+    "replacement": "||",
+    "span": {
+      "end": {
+        "column": 51,
+        "line": 264
+      },
+      "start": {
+        "column": 49,
+        "line": 264
+      }
+    }
+  },
+  {
+    "diff": "--- cerberus-infrastructure/src/ast/error_rules.rs\n+++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_expr with ()\n@@ -282,12 +282,11 @@\n                     });\n                 }\n             }\n         }\n         syn::visit::visit_impl_item(self, item);\n     }\n \n     fn visit_expr(&mut self, item: &Expr) {\n-        self.checker.check_library_panic(item, self.violations);\n-        syn::visit::visit_expr(self, item);\n+        () /* ~ changed by cargo-mutants ~ */\n     }\n }\n",
+    "file": "cerberus-infrastructure/src/ast/error_rules.rs",
+    "function": {
+      "function_name": "<impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_expr",
+      "return_type": "",
+      "span": {
+        "end": {
+          "column": 6,
+          "line": 292
+        },
+        "start": {
+          "column": 5,
+          "line": 289
+        }
+      }
+    },
+    "genre": "FnValue",
+    "name": "cerberus-infrastructure/src/ast/error_rules.rs:290:9: replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_expr with ()",
+    "package": "cerberus-infrastructure",
+    "replacement": "()",
+    "span": {
+      "end": {
+        "column": 44,
+        "line": 291
+      },
+      "start": {
+        "column": 9,
+        "line": 290
+      }
+    }
+  }
+]

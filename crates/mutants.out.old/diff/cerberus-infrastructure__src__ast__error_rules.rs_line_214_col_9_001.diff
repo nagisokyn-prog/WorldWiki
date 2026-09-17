@@ -1,0 +1,25 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace ErrorRulesChecker<'a>::is_rule_enabled -> bool with false
+@@ -206,21 +206,17 @@
+                     remediation: "Replace panic!/unimplemented! with structured Result::Err(Error) return value.".into(),
+                     fingerprint: fp,
+                 });
+             }
+         }
+     }
+ 
+     fn is_rule_enabled(&self, rule_id: &str) -> bool {
+-        self.rules
+-            .iter()
+-            .find(|r| r.id == rule_id)
+-            .map(|r| r.severity != Severity::Off)
+-            .unwrap_or(true)
++        false /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
+         self.rules
+             .iter()
+             .find(|r| r.id == rule_id)
+             .map(|r| r.severity)
+             .unwrap_or(default)

@@ -94,6 +94,46 @@ impl<'a> ErrorRulesChecker<'a> {
                 });
             }
         }
+
+        // ERR-005: Panic in library target (statement position)
+        if self.is_rule_enabled("ERR-005") {
+            let is_lib_target = self.crate_name.contains("domain")
+                || self.crate_name.contains("ports")
+                || self.file_path.ends_with("lib.rs")
+                || !self.file_path.contains("bin");
+
+            if is_lib_target {
+                if let Stmt::Macro(stmt_macro) = stmt {
+                    let macro_name = stmt_macro
+                        .mac
+                        .path
+                        .segments
+                        .last()
+                        .map(|s| s.ident.to_string())
+                        .unwrap_or_default();
+
+                    if macro_name == "panic" || macro_name == "unimplemented" {
+                        let snippet = format!("{}!(...)", macro_name);
+                        let fp = compute_fingerprint("ERR-005", "1.0", &macro_name, &snippet);
+
+                        violations.push(Violation {
+                            rule_id: "ERR-005".into(),
+                            rule_version: "1.0".into(),
+                            category: Category::ErrorHandling,
+                            severity: self.get_severity("ERR-005", Severity::Deny),
+                            file: PathBuf::from(self.file_path),
+                            line: 1,
+                            column: 1,
+                            symbol: macro_name,
+                            message: "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.".into(),
+                            snippet,
+                            remediation: "Replace panic!/unimplemented! with structured Result::Err(Error) return value.".into(),
+                            fingerprint: fp,
+                        });
+                    }
+                }
+            }
+        }
     }
 
     fn check_pub_fn(&self, item_fn: &ItemFn, violations: &mut Vec<Violation>) {
@@ -249,5 +289,48 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
     fn visit_expr(&mut self, item: &Expr) {
         self.checker.check_library_panic(item, self.violations);
         syn::visit::visit_expr(self, item);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_error_rules_comprehensive() {
+        let code = r#"
+            pub struct MyStruct;
+
+            impl MyStruct {
+                pub fn method_returning_string_err(&self) -> Result<(), String> {
+                    Ok(())
+                }
+            }
+
+            impl Drop for MyStruct {
+                fn drop(&mut self) {
+                    let _ = std::fs::read("file");
+                    let _ = std::fs::write("file", b"data");
+                    let _ = self.save();
+                    panic!("Drop panic");
+                }
+            }
+
+            pub fn pub_fn_returning_string_err() -> Result<u32, String> {
+                let _ = std::fs::write("out", b"x");
+                let x = panic!("expr panic");
+                unimplemented!("expr unimpl");
+                Ok(1)
+            }
+        "#;
+
+        let syntax = syn::parse_file(code).unwrap();
+        let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &[]);
+        let violations = checker.check_file(&syntax);
+
+        assert!(violations.iter().any(|v| v.rule_id == "ERR-001"));
+        assert!(violations.iter().any(|v| v.rule_id == "ERR-002"));
+        assert!(violations.iter().any(|v| v.rule_id == "ERR-003"));
+        assert!(violations.iter().any(|v| v.rule_id == "ERR-005"));
     }
 }

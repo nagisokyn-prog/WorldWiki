@@ -1,0 +1,21 @@
+--- cerberus-domain/src/layer.rs
++++ delete match arm "ports" | "port" in ArchLayer::parse
+@@ -33,17 +33,17 @@
+     Cli,
+     Unknown,
+ }
+ 
+ impl ArchLayer {
+     pub fn parse(s: &str) -> Self {
+         match s.to_lowercase().as_str() {
+             "domain" => Self::Domain,
+-            "ports" | "port" => Self::Ports,
++             /* ~ changed by cargo-mutants ~ */
+             "application" | "app" | "usecase" | "usecases" => Self::Application,
+             "infrastructure" | "infra" => Self::Infrastructure,
+             "adapter" | "adapters" | "tauri" => Self::Adapter,
+             "cli" | "entrypoint" | "bin" => Self::Cli,
+             _ => Self::Unknown,
+         }
+     }
+ 

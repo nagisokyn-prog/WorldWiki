@@ -1,0 +1,28 @@
+--- cerberus-domain/src/registry.rs
++++ replace r -> RuleDefinition with Default::default()
+@@ -1,24 +1,16 @@
+ use crate::rules::{Category, RuleDefinition, Severity};
+ use std::collections::HashMap;
+ 
+ pub struct BuiltinRuleRegistry;
+ 
+ #[inline]
+ fn r(id: &str, cat: Category, sev: Severity, title: &str, desc: &str, rem: &str) -> RuleDefinition {
+-    RuleDefinition {
+-        id: id.into(),
+-        version: "1.0".into(),
+-        category: cat,
+-        severity: sev,
+-        title: title.into(),
+-        description: desc.into(),
+-        remediation: rem.into(),
+-    }
++    Default::default() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ impl BuiltinRuleRegistry {
+     pub fn all_rules() -> Vec<RuleDefinition> {
+         vec![
+             // 1. Rust & Hexagonal Backend Rules
+             r("ARCH-001", Category::Architecture, Severity::Deny, "Domain crate cannot import external frameworks", "worldwiki-domain must remain pure without dependencies on tauri, tokio, surrealdb, or reqwest.", "Move infrastructure dependencies to ports and adapter traits in infrastructure."),
+             r("ARCH-002", Category::Architecture, Severity::Deny, "Application layer cannot import Tauri", "worldwiki-application use cases must not depend on tauri::* types.", "Pass UI parameters as clean DTOs into use case methods."),

@@ -24,21 +24,22 @@ impl RenderTreeUseCase {
         let cargo_toml_files = collector.find_cargo_tomls(root);
 
         if cargo_toml_files.is_empty() {
-            let name = root
-                .file_name()
-                .map(|s| s.to_string_lossy().to_string())
-                .unwrap_or_else(|| "root".to_string());
+            let name = match root.file_name() {
+                Some(s) => s.to_string_lossy().to_string(),
+                None => "root".to_string(),
+            };
             let pkg = self.build_package_node(&collector, &name, root)?;
             packages.push(pkg);
         } else {
             for cargo_path in &cargo_toml_files {
                 let pkg_dir = cargo_path.parent().unwrap_or(root);
-                let pkg_name = collector.extract_package_name(cargo_path).unwrap_or_else(|| {
-                    pkg_dir
-                        .file_name()
-                        .map(|s| s.to_string_lossy().to_string())
-                        .unwrap_or_else(|| "crate".to_string())
-                });
+                let pkg_name = match collector.extract_package_name(cargo_path) {
+                    Some(n) => n,
+                    None => match pkg_dir.file_name() {
+                        Some(s) => s.to_string_lossy().to_string(),
+                        None => "crate".to_string(),
+                    },
+                };
 
                 if pkg_dir.join("src").exists() {
                     let pkg = self.build_package_node(&collector, &pkg_name, pkg_dir)?;
@@ -93,5 +94,69 @@ impl RenderTreeUseCase {
             is_zone_of_pain,
             children,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_render_tree_use_case() {
+        let limits = LimitsConfig::default();
+        let weights = PressureWeights::default();
+        let use_case = RenderTreeUseCase::new(limits.clone(), weights.clone());
+
+        // Non-existent path
+        assert!(use_case.execute(Path::new("non_existent_path_404")).is_err());
+
+        // Path without Cargo.toml
+        let temp = tempdir().unwrap();
+        let src_dir = temp.path().join("src");
+        std::fs::create_dir_all(&src_dir).unwrap();
+        std::fs::write(src_dir.join("port.rs"), "pub trait MyPort {}").unwrap();
+        std::fs::write(src_dir.join("my_trait.rs"), "pub trait OtherTrait {}").unwrap();
+        std::fs::write(src_dir.join("interface.rs"), "pub trait AnInterface {}").unwrap();
+
+        let report = use_case.execute(temp.path()).unwrap();
+        assert_eq!(report.packages.len(), 1);
+        assert!(report.packages[0].abstractness > 0.0);
+
+        // Path with Cargo.toml
+        std::fs::write(
+            temp.path().join("Cargo.toml"),
+            "[package]\nname = \"my-crate\"\nversion = \"0.1.0\"\n",
+        ).unwrap();
+
+        let report2 = use_case.execute(temp.path()).unwrap();
+        assert_eq!(report2.packages.len(), 1);
+        assert_eq!(report2.packages[0].name, "my-crate");
+
+        // Cargo without package name
+        std::fs::write(
+            temp.path().join("Cargo.toml"),
+            "[workspace]\nmembers = []\n",
+        ).unwrap();
+        let report_unnamed = use_case.execute(temp.path()).unwrap();
+        assert_eq!(report_unnamed.packages.len(), 1);
+
+        // Path where package has no src directory
+        let no_src_temp = tempdir().unwrap();
+        std::fs::write(no_src_temp.path().join("mod.rs"), "pub fn test() {}").unwrap();
+        let report3 = use_case.execute(no_src_temp.path()).unwrap();
+        assert_eq!(report3.packages.len(), 1);
+
+        // Path where Cargo.toml has no src folder in directory
+        let cargo_no_src = tempdir().unwrap();
+        std::fs::write(
+            cargo_no_src.path().join("Cargo.toml"),
+            "[package]\nname = \"no-src-crate\"\nversion = \"0.1.0\"\n",
+        ).unwrap();
+        let report4 = use_case.execute(cargo_no_src.path()).unwrap();
+        assert_eq!(report4.packages.len(), 0);
+
+        let collector = TreeMetricsCollector::new(&limits, &weights);
+        let _ = use_case.build_package_node(&collector, "custom", temp.path());
     }
 }

@@ -1,0 +1,21 @@
+--- cerberus-domain/src/metrics.rs
++++ replace + with * in PackageMetrics::compute
+@@ -28,17 +28,17 @@
+         };
+ 
+         let abstractness = if total_classes == 0 {
+             0.0
+         } else {
+             abstract_classes as f64 / total_classes as f64
+         };
+ 
+-        let distance = (abstractness + instability - 1.0).abs();
++        let distance = (abstractness * /* ~ changed by cargo-mutants ~ */ instability - 1.0).abs();
+         let in_zone_of_pain = abstractness < 0.2 && instability < 0.2 && afferent > 3;
+ 
+         Self {
+             package_name,
+             afferent_coupling: afferent,
+             efferent_coupling: efferent,
+             instability,
+             abstractness,

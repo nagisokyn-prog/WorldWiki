@@ -1,16 +1,15 @@
 use cerberus_application::{ScanScope, ScanWorkspaceUseCase};
 use cerberus_domain::{BuiltinRuleRegistry, Severity, Violation};
 use cerberus_infrastructure::{
-    ParallelAstEngineAdapter, RulesJsonRepository, WalkDirScannerAdapter,
+    ParallelAstEngineAdapter, RulesJsonRepository, RustSynParserAdapter, WalkDirScannerAdapter,
 };
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::sync::Arc;
 use tempfile::tempdir;
 
 pub struct TestWorkspace {
     pub root: tempfile::TempDir,
-    pub src_dir: PathBuf,
     pub rules_repo: Arc<RulesJsonRepository>,
 }
 
@@ -42,11 +41,7 @@ impl TestWorkspace {
         fs::write(&rules_file, serde_json::to_string_pretty(&config).unwrap()).unwrap();
         let rules_repo = Arc::new(RulesJsonRepository::load_from_file(&rules_file).unwrap());
 
-        Self {
-            root,
-            src_dir,
-            rules_repo,
-        }
+        Self { root, rules_repo }
     }
 
     pub fn write_file(&self, relative_path: &str, content: &str) -> PathBuf {
@@ -60,14 +55,12 @@ impl TestWorkspace {
 
     pub fn scan(&self) -> Vec<Violation> {
         let scanner = Arc::new(WalkDirScannerAdapter::new());
-        let parser = Arc::new(ParallelAstEngineAdapter::new(4));
+        let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
+            vec![Arc::new(RustSynParserAdapter)];
+        let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
-        let use_case = ScanWorkspaceUseCase::new(
-            scanner,
-            parser,
-            self.rules_repo.clone(),
-            ScanScope::All,
-        );
+        let use_case =
+            ScanWorkspaceUseCase::new(scanner, parser, self.rules_repo.clone(), ScanScope::All);
         let result = use_case.execute(self.root.path());
         result.violations
     }

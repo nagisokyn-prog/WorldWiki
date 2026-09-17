@@ -1,0 +1,21 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace == with != in ErrorRulesChecker<'a>::get_severity
+@@ -216,17 +216,17 @@
+             .find(|r| r.id == rule_id)
+             .map(|r| r.severity != Severity::Off)
+             .unwrap_or(true)
+     }
+ 
+     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
+         self.rules
+             .iter()
+-            .find(|r| r.id == rule_id)
++            .find(|r| r.id != /* ~ changed by cargo-mutants ~ */ rule_id)
+             .map(|r| r.severity)
+             .unwrap_or(default)
+     }
+ }
+ 
+ struct ErrorRulesVisitor<'a, 'b> {
+     checker: &'a ErrorRulesChecker<'a>,
+     violations: &'b mut Vec<Violation>,

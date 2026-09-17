@@ -1,0 +1,21 @@
+--- cerberus-domain/src/traits.rs
++++ replace <impl Fingerprintable for crate::rules::Violation>::compute_fingerprint -> String with "xyzzy".into()
+@@ -50,17 +50,17 @@
+ 
+ /// Trait for verifying cryptographic suppressions
+ pub trait SuppressionVerifier: Send + Sync {
+     fn verify_suppression(&self, fingerprint: &str) -> bool;
+ }
+ 
+ impl Fingerprintable for crate::rules::Violation {
+     fn compute_fingerprint(&self) -> String {
+-        self.fingerprint.clone()
++        "xyzzy".into() /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ impl DomainModel for crate::rules::Violation {
+     fn model_type(&self) -> &'static str {
+         "Violation"
+     }
+ }

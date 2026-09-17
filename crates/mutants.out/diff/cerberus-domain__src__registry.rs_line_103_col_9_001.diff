@@ -1,0 +1,25 @@
+--- cerberus-domain/src/registry.rs
++++ replace BuiltinRuleRegistry::rule_map -> HashMap<String, RuleDefinition> with HashMap::from_iter([(String::new(), Default::default())])
+@@ -95,21 +95,17 @@
+             r("DATA-005", Category::DataIntegrity, Severity::Deny, "Floating Point Used for Financial / Currency Values", "f32/f64 suffer from binary rounding errors for currency.", "Use integer cents (i64) or rust_decimal::Decimal."),
+ 
+             // 11. Memory & IPC Leak Rules
+             r("LEAK-001", Category::Robustness, Severity::Deny, "Uncleaned Tauri IPC listener or setInterval timer", "Calling listen() or setInterval() without corresponding cleanup leaks memory.", "Save unlisten handle and clean up symmetrically in onUnmounted()."),
+         ]
+     }
+ 
+     pub fn rule_map() -> HashMap<String, RuleDefinition> {
+-        let mut map = HashMap::new();
+-        for rule in Self::all_rules() {
+-            map.insert(rule.id.clone(), rule);
+-        }
+-        map
++        HashMap::from_iter([(String::new(), Default::default())]) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn alias_map() -> HashMap<String, String> {
+         let pairs = [
+             ("arch/domain-purity", "ARCH-001"),
+             ("arch/app-purity", "ARCH-002"),
+             ("arch/ports-isolation", "ARCH-003"),
+             ("arch/tauri-isolation", "ARCH-005"),

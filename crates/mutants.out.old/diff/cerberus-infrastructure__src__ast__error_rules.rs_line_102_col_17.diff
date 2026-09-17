@@ -1,0 +1,21 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace || with && in ErrorRulesChecker<'a>::check_stmt
+@@ -94,17 +94,17 @@
+                 });
+             }
+         }
+ 
+         // ERR-005: Panic in library target (statement position)
+         if self.is_rule_enabled("ERR-005") {
+             let is_lib_target = self.crate_name.contains("domain")
+                 || self.crate_name.contains("ports")
+-                || self.file_path.ends_with("lib.rs")
++                && /* ~ changed by cargo-mutants ~ */ self.file_path.ends_with("lib.rs")
+                 || !self.file_path.contains("bin");
+ 
+             if is_lib_target {
+                 if let Stmt::Macro(stmt_macro) = stmt {
+                     let macro_name = stmt_macro
+                         .mac
+                         .path
+                         .segments

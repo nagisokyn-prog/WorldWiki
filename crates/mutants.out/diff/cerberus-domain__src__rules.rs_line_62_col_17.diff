@@ -1,0 +1,26 @@
+--- cerberus-domain/src/rules.rs
++++ replace <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::visit_str -> Result<Severity, E> with Ok(Default::default())
+@@ -54,22 +54,17 @@
+             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                 formatter.write_str("a string representing severity ('deny'|'error', 'warn'|'warning', 'off'|'ignore')")
+             }
+ 
+             fn visit_str<E>(self, value: &str) -> Result<Severity, E>
+             where
+                 E: serde::de::Error,
+             {
+-                match value.to_lowercase().as_str() {
+-                    "deny" | "error" => Ok(Severity::Deny),
+-                    "warn" | "warning" => Ok(Severity::Warn),
+-                    "off" | "ignore" => Ok(Severity::Off),
+-                    _ => Err(E::custom(format!("Unknown severity level: '{}'", value))),
+-                }
++                Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+             }
+         }
+ 
+         deserializer.deserialize_str(SeverityVisitor)
+     }
+ }
+ 
+ #[derive(Debug, Clone, Serialize, Deserialize)]

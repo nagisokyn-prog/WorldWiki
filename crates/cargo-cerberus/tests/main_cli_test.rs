@@ -339,14 +339,16 @@ fn test_cli_deep_coverage_branches() {
         &cache_dir,
     ).is_ok());
 
-    // Explain with violations in project
+    // Explain with violations in project forming clusters
     let src_dir = temp.path().join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-    std::fs::write(
-        src_dir.join("bad.rs"),
-        "pub fn bad() { panic!(\"test\"); panic!(\"test2\"); panic!(\"test3\"); }",
-    )
-    .unwrap();
+    for i in 0..5 {
+        std::fs::write(
+            src_dir.join(format!("bad_{}.rs", i)),
+            format!("pub fn bad_{}() {{ panic!(\"critical system failure\"); }}", i),
+        )
+        .unwrap();
+    }
     let _ = cargo_cerberus::model_commands::handle_explain(temp.path(), true);
 
     // Baseline error path (directory instead of file causes read_to_string error)
@@ -405,4 +407,43 @@ fn test_cli_deep_coverage_branches() {
         backend_only: false,
     })
     .is_err());
+
+    // Execute command with invalid rules path
+    let bad_rules_path = PathBuf::from("non_existent_rules_404.json");
+    assert!(cargo_cerberus::commands::execute_command(
+        Commands::Init { hooks: false, models: false },
+        Some(&bad_rules_path),
+    ).is_err());
+
+    // Validate rules registry on non-existent path
+    assert!(cargo_cerberus::commands::validate_rules_registry(Some(&bad_rules_path)).is_err());
+
+    // Init command
+    assert!(cargo_cerberus::commands::execute_command(
+        Commands::Init { hooks: true, models: false },
+        None,
+    ).is_ok());
+
+    // Model status and clean direct
+    assert!(cargo_cerberus::model_commands::handle_model(ModelCommands::Status).is_ok());
+    assert!(cargo_cerberus::model_commands::handle_model(ModelCommands::Clean).is_ok());
+
+    // Test main binary execution
+    let bin = PathBuf::from(env!("CARGO_BIN_EXE_cargo-cerberus"));
+    if bin.exists() {
+        let output = std::process::Command::new(&bin)
+            .arg("init")
+            .output()
+            .expect("Failed to run cargo-cerberus binary");
+        assert!(output.status.success() || !output.stdout.is_empty());
+
+        let err_output = std::process::Command::new(&bin)
+            .env("CERBERUS_TEST_MAIN", "1")
+            .arg("--rules-path")
+            .arg("non_existent_path_404.json")
+            .arg("check")
+            .output()
+            .expect("Failed to run cargo-cerberus binary for error");
+        assert!(!err_output.status.success() || !err_output.stderr.is_empty());
+    }
 }

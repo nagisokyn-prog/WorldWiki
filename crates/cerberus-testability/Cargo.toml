@@ -1,0 +1,26 @@
+[package]
+name = "cerberus-testability"
+version = "0.1.0"
+edition = "2021"
+authors = ["Danila"]
+description = "Testability Index Engine (T-score) and Architectural Friction Detector for Rust"
+
+[package.metadata.cerberus]
+layer = "testability"
+
+[lib]
+name = "cerberus_testability"
+path = "src/lib.rs"
+
+[dependencies]
+cerberus-domain = { path = "../cerberus-domain" }
+syn = { version = "3.0.5", features = ["full", "visit", "extra-traits"] }
+proc-macro2 = "1.0"
+quote = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+colored = "3.1.1"
+walkdir = "2.4"
+
+[dev-dependencies]
+tempfile = "3.8"

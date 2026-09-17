@@ -1,8 +1,7 @@
 use cerberus_application::{ScanScope, ScanWorkspaceUseCase, SignSuppressionUseCase};
 use cerberus_domain::{BuiltinRuleRegistry, Severity};
 use cerberus_infrastructure::{
-    FileBaselineStorageAdapter, MockStorageAdapter, ParallelAstEngineAdapter,
-    RulesJsonRepository, WalkDirScannerAdapter,
+    MockStorageAdapter, ParallelAstEngineAdapter, RulesJsonRepository, WalkDirScannerAdapter,
 };
 use std::fs;
 use std::path::Path;
@@ -36,11 +35,7 @@ fn test_use_case_ai_008_unverified_unsafe_blocks_and_proximity_safety_passes() {
 
     // 1. Negative Case A: raw unsafe with no comment at all
     let bad_file_a = src_dir.join("bad_a.rs");
-    fs::write(
-        &bad_file_a,
-        "pub fn bad_a() { unsafe { let _ = 42; } }\n",
-    )
-    .unwrap();
+    fs::write(&bad_file_a, "pub fn bad_a() { unsafe { let _ = 42; } }\n").unwrap();
 
     // 2. Negative Case B: safety comment far away at top of file
     let bad_file_b = src_dir.join("bad_b.rs");
@@ -59,16 +54,29 @@ fn test_use_case_ai_008_unverified_unsafe_blocks_and_proximity_safety_passes() {
     .unwrap();
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
-    let parser = Arc::new(ParallelAstEngineAdapter::new(4));
+    let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+    let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
     let result = use_case.execute(temp.path());
     let violations = result.violations;
 
-    let ai008_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "AI-008").collect();
-    assert_eq!(ai008_violations.len(), 2, "Expected exactly 2 violations for bad_a and bad_b");
-    assert!(ai008_violations.iter().any(|v| v.file.ends_with("bad_a.rs")));
-    assert!(ai008_violations.iter().any(|v| v.file.ends_with("bad_b.rs")));
+    let ai008_violations: Vec<_> = violations
+        .iter()
+        .filter(|v| v.rule_id == "AI-008")
+        .collect();
+    assert_eq!(
+        ai008_violations.len(),
+        2,
+        "Expected exactly 2 violations for bad_a and bad_b"
+    );
+    assert!(ai008_violations
+        .iter()
+        .any(|v| v.file.ends_with("bad_a.rs")));
+    assert!(ai008_violations
+        .iter()
+        .any(|v| v.file.ends_with("bad_b.rs")));
     assert!(!ai008_violations.iter().any(|v| v.file.ends_with("good.rs")));
 }
 
@@ -102,14 +110,23 @@ fn test_use_case_ai_009_strict_todo_regex_rules() {
     .unwrap();
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
-    let parser = Arc::new(ParallelAstEngineAdapter::new(4));
+    let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+    let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
     let result = use_case.execute(temp.path());
     let violations = result.violations;
 
-    let todo_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "AI-009").collect();
-    assert_eq!(todo_violations.len(), 3, "Expected 3 invalid TODO/FIXME comments to fail");
+    let todo_violations: Vec<_> = violations
+        .iter()
+        .filter(|v| v.rule_id == "AI-009")
+        .collect();
+    assert_eq!(
+        todo_violations.len(),
+        3,
+        "Expected 3 invalid TODO/FIXME comments to fail"
+    );
 }
 
 #[test]
@@ -141,21 +158,29 @@ fn test_use_case_ai_013_universal_compiler_suppression_and_signed_ledger_pass() 
     .unwrap();
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
-    let parser = Arc::new(ParallelAstEngineAdapter::new(4));
-    let storage = Arc::new(MockStorageAdapter::new(vec![1, 2, 3, 4]));
-    let _baseline = Arc::new(FileBaselineStorageAdapter::new());
+    let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+    let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
+    let storage = MockStorageAdapter::new(vec![1, 2, 3, 4, 5, 6, 7, 8]);
 
     // 1. Initial scan: 3 unauthorized allow suppressions detected
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
     let initial_violations = use_case.execute(temp.path()).violations;
-    let ai013_violations: Vec<_> = initial_violations.iter().filter(|v| v.rule_id == "AI-013").collect();
-    assert_eq!(ai013_violations.len(), 3, "Expected 3 AI-013 violations initially");
+    let ai013_violations: Vec<_> = initial_violations
+        .iter()
+        .filter(|v| v.rule_id == "AI-013")
+        .collect();
+    assert_eq!(
+        ai013_violations.len(),
+        3,
+        "Expected 3 AI-013 violations initially"
+    );
 
     // 2. Authorize suppression for unused_func by signing in ledger
     let target_fp = &ai013_violations[0].fingerprint;
     let expires = chrono::Utc::now() + chrono::Duration::days(30);
-    SignSuppressionUseCase::sign(
-        storage.as_ref(),
+    let signature = SignSuppressionUseCase::sign(
+        &storage,
         "AI-013",
         target_fp,
         "Temporary allowance during refactoring",
@@ -164,12 +189,16 @@ fn test_use_case_ai_013_universal_compiler_suppression_and_signed_ledger_pass() 
     )
     .unwrap();
 
-    // Verify storage has suppression record
-    let record = storage.find_suppression(target_fp).unwrap();
-    assert!(record.is_some());
-    let record = record.unwrap();
-    assert_eq!(record.rule_id, "AI-013");
-    assert_eq!(record.approved_by, "lead@worldwiki.org");
+    let suppression = cerberus_domain::Suppression {
+        rule_id: "AI-013".into(),
+        fingerprint: target_fp.clone(),
+        reason: "Temporary allowance during refactoring".into(),
+        author: "lead@worldwiki.org".into(),
+        expires,
+        signature,
+    };
+
+    assert!(SignSuppressionUseCase::verify(&storage, &suppression));
 }
 
 #[test]
@@ -209,13 +238,21 @@ fn test_use_case_test_005_domain_determinism() {
     .unwrap();
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
-    let parser = Arc::new(ParallelAstEngineAdapter::new(4));
+    let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+    let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
     let violations = use_case.execute(temp.path()).violations;
 
-    let test005_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "TEST-005").collect();
-    assert!(!test005_violations.is_empty(), "Expected TEST-005 in domain");
+    let test005_violations: Vec<_> = violations
+        .iter()
+        .filter(|v| v.rule_id == "TEST-005")
+        .collect();
+    assert!(
+        !test005_violations.is_empty(),
+        "Expected TEST-005 in domain"
+    );
     for v in &test005_violations {
         assert!(v.file.to_string_lossy().contains("domain"));
         assert!(!v.file.to_string_lossy().contains("infrastructure"));
@@ -266,14 +303,31 @@ fn test_use_case_err_hygiene_and_concurrency_perf_rules() {
     .unwrap();
 
     let scanner = Arc::new(WalkDirScannerAdapter::new());
-    let parser = Arc::new(ParallelAstEngineAdapter::new(4));
+    let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> =
+        vec![Arc::new(cerberus_infrastructure::RustSynParserAdapter)];
+    let parser = Arc::new(ParallelAstEngineAdapter::new(parsers));
 
     let use_case = ScanWorkspaceUseCase::new(scanner, parser, rules_repo, ScanScope::All);
     let violations = use_case.execute(temp.path()).violations;
 
-    assert!(violations.iter().any(|v| v.rule_id == "ERR-001"), "ERR-001 silent result drop");
-    assert!(violations.iter().any(|v| v.rule_id == "ERR-002"), "ERR-002 panic in drop");
-    assert!(violations.iter().any(|v| v.rule_id == "ERR-003"), "ERR-003 Result<T, String>");
-    assert!(violations.iter().any(|v| v.rule_id == "CONC-002"), "CONC-002 orphan tokio spawn");
-    assert!(violations.iter().any(|v| v.rule_id == "PERF-011"), "PERF-011 I/O in loop");
+    assert!(
+        violations.iter().any(|v| v.rule_id == "ERR-001"),
+        "ERR-001 silent result drop"
+    );
+    assert!(
+        violations.iter().any(|v| v.rule_id == "ERR-002"),
+        "ERR-002 panic in drop"
+    );
+    assert!(
+        violations.iter().any(|v| v.rule_id == "ERR-003"),
+        "ERR-003 Result<T, String>"
+    );
+    assert!(
+        violations.iter().any(|v| v.rule_id == "CONC-002"),
+        "CONC-002 orphan tokio spawn"
+    );
+    assert!(
+        violations.iter().any(|v| v.rule_id == "PERF-011"),
+        "PERF-011 I/O in loop"
+    );
 }

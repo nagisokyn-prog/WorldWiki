@@ -171,6 +171,25 @@ impl CssRuleChecker {
                     fingerprint,
                 });
             }
+
+            // Check CSS-006: !important abuse
+            if trimmed.contains("!important") {
+                let fingerprint = compute_fingerprint("CSS-006", "1.0", "important_abuse", trimmed);
+                violations.push(Violation {
+                    rule_id: "CSS-006".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Convention,
+                    severity: Severity::Deny,
+                    file: file_path.to_path_buf(),
+                    line: current_line,
+                    column: 1,
+                    symbol: "important_abuse".into(),
+                    snippet: trimmed.to_string(),
+                    message: "Use of !important in stylesheet breaks CSS cascade specificity.".into(),
+                    remediation: "Refactor CSS selector specificity or component structure instead of using !important.".into(),
+                    fingerprint,
+                });
+            }
         }
     }
 }

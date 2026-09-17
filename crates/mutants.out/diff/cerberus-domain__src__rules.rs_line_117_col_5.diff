@@ -1,0 +1,21 @@
+--- cerberus-domain/src/rules.rs
++++ replace default_max_pressure_warn -> f64 with 0.0
+@@ -109,17 +109,17 @@
+ 
+ fn default_max_sloc_warn() -> usize {
+     500
+ }
+ fn default_max_sloc_deny() -> usize {
+     800
+ }
+ fn default_max_pressure_warn() -> f64 {
+-    200.0
++    0.0 /* ~ changed by cargo-mutants ~ */
+ }
+ fn default_max_pressure_deny() -> f64 {
+     400.0
+ }
+ fn default_max_style_lines() -> usize {
+     25
+ }
+ fn default_max_script_setup_lines() -> usize {

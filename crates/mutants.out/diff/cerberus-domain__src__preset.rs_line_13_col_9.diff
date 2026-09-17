@@ -1,0 +1,21 @@
+--- cerberus-domain/src/preset.rs
++++ replace Preset::from_name -> Option<Self> with None
+@@ -5,17 +5,17 @@
+     HexagonalStrict,
+     HardenedSandbox,
+     HardenedZeroTrust,
+     Permissive,
+ }
+ 
+ impl Preset {
+     pub fn from_name(name: &str) -> Option<Self> {
+-        name.parse().ok()
++        None /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ impl FromStr for Preset {
+     type Err = ();
+ 
+     fn from_str(name: &str) -> Result<Self, Self::Err> {
+         match name.to_lowercase().as_str() {

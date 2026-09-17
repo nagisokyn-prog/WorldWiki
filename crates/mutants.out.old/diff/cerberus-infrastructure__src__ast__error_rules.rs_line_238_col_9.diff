@@ -1,0 +1,29 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_item_impl with ()
+@@ -230,25 +230,17 @@
+ struct ErrorRulesVisitor<'a, 'b> {
+     checker: &'a ErrorRulesChecker<'a>,
+     violations: &'b mut Vec<Violation>,
+     in_drop_impl: bool,
+ }
+ 
+ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
+     fn visit_item_impl(&mut self, item: &ItemImpl) {
+-        let prev_in_drop = self.in_drop_impl;
+-        if let Some((trait_path, _)) = &item.trait_ {
+-            let trait_name = quote::quote!(#trait_path).to_string();
+-            if trait_name.ends_with("Drop") {
+-                self.in_drop_impl = true;
+-            }
+-        }
+-        syn::visit::visit_item_impl(self, item);
+-        self.in_drop_impl = prev_in_drop;
++        () /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn visit_stmt(&mut self, item: &Stmt) {
+         self.checker
+             .check_stmt(item, self.in_drop_impl, self.violations);
+         syn::visit::visit_stmt(self, item);
+     }
+ 

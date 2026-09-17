@@ -131,6 +131,18 @@ fn test_sfc_validate_rules_success_and_err() {
         command: None,
     }).is_ok());
 
+    let mismatch_config = temp.path().join("mismatch.json");
+    std::fs::write(
+        &mismatch_config,
+        "{\"version\": \"1.0\", \"rules\": [{\"id\": \"ONLY_ONE_RULE\", \"version\": \"1.0\", \"category\": \"Architecture\", \"severity\": \"deny\", \"title\": \"t\", \"description\": \"d\", \"remediation\": \"r\"}]}",
+    )
+    .unwrap();
+    assert!(run_app(Cli {
+        rules_path: Some(mismatch_config),
+        validate_rules: true,
+        command: None,
+    }).is_err());
+
     let invalid_file = temp.path().join("invalid.json");
     std::fs::write(&invalid_file, "{\"version\": \"1.0\", \"rules\": []}").unwrap();
     assert!(run_app(Cli {
@@ -250,6 +262,12 @@ fn test_sfc_binary_e2e_and_parse_cli() {
             .output()
             .expect("Failed to execute cerberus-sfc binary");
         assert!(output.status.success());
+
+        let init_output = std::process::Command::new(&bin)
+            .arg("init")
+            .output()
+            .expect("Failed to execute cerberus-sfc init");
+        assert!(init_output.status.success() || !init_output.stdout.is_empty());
 
         let err_output = std::process::Command::new(&bin)
             .env("CERBERUS_TEST_MAIN", "1")

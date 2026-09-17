@@ -88,7 +88,7 @@ fn test_vue_types_in_sfc_and_v_for_method() {
     let violations = PerfRulesChecker::check_source(code, file);
     assert_eq!(violations.len(), 2);
     assert!(violations.iter().any(|v| v.rule_id == "VUE-003"));
-    assert!(violations.iter().any(|v| v.rule_id == "PERF-004"));
+    assert!(violations.iter().any(|v| v.rule_id == "VUE-009"));
 }
 
 #[test]

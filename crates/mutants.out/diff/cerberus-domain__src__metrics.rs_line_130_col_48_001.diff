@@ -1,0 +1,21 @@
+--- cerberus-domain/src/metrics.rs
++++ replace += with *= in PressureCalculator::compute_score
+@@ -122,17 +122,17 @@
+         if total_loc == 0 {
+             return 0.0;
+         }
+ 
+         let mut weighted_sum = 0.0;
+         for v in violations {
+             match v.severity {
+                 Severity::Deny => weighted_sum += 10.0,
+-                Severity::Warn => weighted_sum += 3.0,
++                Severity::Warn => weighted_sum *= /* ~ changed by cargo-mutants ~ */ 3.0,
+                 Severity::Off => {}
+             }
+         }
+ 
+         (weighted_sum / (total_loc as f64)) * 1000.0
+     }
+ }
+ 

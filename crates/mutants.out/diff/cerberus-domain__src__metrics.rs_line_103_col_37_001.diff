@@ -1,0 +1,21 @@
+--- cerberus-domain/src/metrics.rs
++++ replace * with / in FileMetrics::compute
+@@ -95,17 +95,17 @@
+         distance_d: f64,
+         weights: &PressureWeights,
+     ) -> Self {
+         let score = (weights.w_sloc * sloc as f64)
+             + (weights.w_functions * functions as f64)
+             + (weights.w_cyclomatic * cyclomatic as f64)
+             + (weights.w_dependencies * dependencies as f64)
+             + (weights.w_ast_depth * ast_depth as f64)
+-            + (weights.w_distance_d * distance_d);
++            + (weights.w_distance_d / /* ~ changed by cargo-mutants ~ */ distance_d);
+ 
+         Self {
+             file_path,
+             sloc,
+             functions,
+             cyclomatic,
+             dependencies,
+             ast_depth,

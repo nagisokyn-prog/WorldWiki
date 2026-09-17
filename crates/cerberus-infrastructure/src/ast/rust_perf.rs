@@ -183,3 +183,37 @@ impl<'a, 'b> Visit<'_> for RustPerfVisitor<'a, 'b> {
         syn::visit::visit_expr_call(self, item);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rust_perf_checker() {
+        let code = r#"
+            struct MyResource;
+            impl Drop for MyResource {
+                fn drop(&mut self) {
+                    fs::write("test.txt", "data");
+                }
+            }
+
+            fn run() {
+                while true {
+                    fs::read("file.txt");
+                }
+                for i in 0..10 {
+                    let (tx, rx) = mpsc::unbounded_channel();
+                }
+            }
+        "#;
+        let syntax: syn::File = syn::parse_str(code).unwrap();
+        let checker = RustPerfChecker::new("src/perf.rs", &[]);
+        let violations = checker.check_file(&syntax);
+
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-006"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-011"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-012"));
+    }
+}
+

@@ -272,3 +272,85 @@ impl AstComplexityAnalyzer {
         violations
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ast_complexity_visitor_and_analyzer() {
+        let mut visitor = RustAstComplexityVisitor::default();
+        assert_eq!(visitor.function_count, 0);
+        assert_eq!(visitor.cyclomatic_complexity, 1);
+        visitor.leave_node(); // test underflow branch current_depth == 0
+
+        let code = r#"
+            #[cfg(test)]
+            mod my_custom_suite {
+                pub fn ignored() {}
+            }
+            mod inner {
+                use std::collections::HashMap;
+                pub trait Foo {
+                    fn bar(&self);
+                }
+                struct Baz;
+                impl Foo for Baz {
+                    fn bar(&self) {}
+                }
+                pub fn calculate(a: bool, b: bool) -> Result<i32, String> {
+                    if a && b {
+                        for i in 0..10 {
+                            while false {
+                                loop {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    match 1 {
+                        1 => Ok(10),
+                        _ => Err("err".into()),
+                    }
+                }
+                pub fn with_try() -> Result<(), ()> {
+                    let _ = Ok::<(), ()>(())?;
+                    Ok(())
+                }
+            }
+        "#;
+        let weights = PressureWeights::default();
+        let path = Path::new("src/test.rs");
+        let metrics = AstComplexityAnalyzer::analyze_rust_file(code, path, 0.5, &weights).unwrap();
+        assert!(metrics.functions >= 3);
+        assert!(metrics.cyclomatic > 5);
+
+        // Deny pressure
+        let v1 = AstComplexityAnalyzer::check_thresholds(&metrics, 1000, 2000, 0.1, 0.2);
+        assert!(!v1.is_empty());
+        assert_eq!(v1[0].rule_id, "ARCH-030");
+        assert_eq!(v1[0].severity, Severity::Deny);
+
+        // Warn pressure
+        let v2 = AstComplexityAnalyzer::check_thresholds(&metrics, 1000, 2000, 0.001, 1000.0);
+        assert!(!v2.is_empty());
+        assert_eq!(v2[0].severity, Severity::Warn);
+
+        // SLOC deny & warn
+        let mut heavy_metrics = metrics.clone();
+        heavy_metrics.sloc = 3000;
+        let v3 = AstComplexityAnalyzer::check_thresholds(&heavy_metrics, 1000, 2000, 1000.0, 2000.0);
+        assert_eq!(v3[0].rule_id, "ARCH-031");
+        assert_eq!(v3[0].severity, Severity::Deny);
+
+        heavy_metrics.sloc = 1500;
+        let v4 = AstComplexityAnalyzer::check_thresholds(&heavy_metrics, 1000, 2000, 1000.0, 2000.0);
+        assert_eq!(v4[0].rule_id, "ARCH-031");
+        assert_eq!(v4[0].severity, Severity::Warn);
+
+        // Parse error
+        assert!(AstComplexityAnalyzer::analyze_rust_file("invalid syntax {{{{", path, 0.0, &weights).is_err());
+    }
+}
+
+

@@ -1,0 +1,84 @@
+--- cerberus-domain/src/registry.rs
++++ replace BuiltinRuleRegistry::alias_map -> HashMap<String, String> with HashMap::from_iter([("xyzzy".into(), "xyzzy".into())])
+@@ -103,80 +103,17 @@
+         let mut map = HashMap::new();
+         for rule in Self::all_rules() {
+             map.insert(rule.id.clone(), rule);
+         }
+         map
+     }
+ 
+     pub fn alias_map() -> HashMap<String, String> {
+-        let pairs = [
+-            ("arch/domain-purity", "ARCH-001"),
+-            ("arch/app-purity", "ARCH-002"),
+-            ("arch/ports-isolation", "ARCH-003"),
+-            ("arch/tauri-isolation", "ARCH-005"),
+-            ("arch/manifest-hierarchy", "ARCH-020"),
+-            ("arch/missing-layer", "ARCH-021"),
+-            ("arch/zone-of-pain", "ARCH-013"),
+-            ("arch/god-object-blast-radius", "ARCH-040"),
+-            ("code/max-pressure", "ARCH-030"),
+-            ("code/max-sloc", "ARCH-031"),
+-            ("async/no-sync-mutex-in-await", "ASYNC-001"),
+-            ("async/no-zombie-spawn", "ASYNC-002"),
+-            ("robustness/no-raw-unwrap-panic", "ROB-001"),
+-            ("sec/taint-sink-execution", "SEC-001"),
+-            ("sec/transitive-capabilities", "SEC-002"),
+-            ("sec/command-injection", "SEC-003"),
+-            ("sec/timing-attack", "SEC-008"),
+-            ("sec/hardcoded-secrets", "SEC-009"),
+-            ("quality/ai-slop-detector", "SLOP-001"),
+-            ("vue/no-monolith-script-setup", "VUE-001"),
+-            ("vue/require-companion-hook", "VUE-002"),
+-            ("vue/no-types-in-sfc", "VUE-003"),
+-            ("css/no-hardcoded-colors", "CSS-001"),
+-            ("css/require-design-tokens", "CSS-002"),
+-            ("css/max-style-lines", "CSS-004"),
+-            ("fsd/layer-imports-hierarchy", "FSD-001"),
+-            ("fsd/public-api-only", "FSD-002"),
+-            ("fsd/ui-kit-zero-domain", "FSD-003"),
+-            ("fsd/no-cross-slice-imports", "FSD-004"),
+-            ("perf/shallow-ref-for-heavy-ast", "PERF-001"),
+-            ("perf/no-reactive-canvas-three", "PERF-002"),
+-            ("perf/no-allocations-in-raf", "PERF-003"),
+-            ("perf/no-template-methods-in-loops", "PERF-004"),
+-            ("perf/no-deep-watch-cascades", "PERF-005"),
+-            ("perf/no-blocking-in-drop", "PERF-006"),
+-            ("perf/no-io-in-loops", "PERF-011"),
+-            ("perf/no-unbounded-channels", "PERF-012"),
+-            ("conc/no-orphan-spawn", "CONC-002"),
+-            ("conc/no-double-lock", "CONC-006"),
+-            ("conc/no-static-mut", "CONC-008"),
+-            ("err/no-silent-result-drop", "ERR-001"),
+-            ("err/no-panic-in-drop", "ERR-002"),
+-            ("err/no-string-error-in-pub-api", "ERR-003"),
+-            ("err/no-panic-in-library", "ERR-005"),
+-            ("obs/no-secret-in-logs", "OBS-007"),
+-            ("ai/no-unauthorized-config", "AI-001"),
+-            ("ai/no-reflection-probe", "AI-003"),
+-            ("ai/require-safety-comment", "AI-008"),
+-            ("ai/no-undated-todo", "AI-009"),
+-            ("ai/no-unauthorized-allow", "AI-013"),
+-            ("test/no-mutable-global-state", "TEST-002"),
+-            ("test/no-direct-adapter-instantiation", "TEST-003"),
+-            ("test/deterministic-domain", "TEST-005"),
+-            ("data/no-io-in-transactions", "DATA-001"),
+-            ("data/no-float-money", "DATA-005"),
+-            ("leak/uncleaned-ipc-listener", "LEAK-001"),
+-        ];
+-
+-        let mut map = HashMap::new();
+-        for (k, v) in pairs {
+-            map.insert(k.to_string(), v.to_string());
+-        }
+-        map
++        HashMap::from_iter([("xyzzy".into(), "xyzzy".into())]) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn canonical_rule_id(key: &str) -> String {
+         let aliases = Self::alias_map();
+         if let Some(canonical) = aliases.get(key) {
+             canonical.clone()
+         } else {
+             key.to_string()

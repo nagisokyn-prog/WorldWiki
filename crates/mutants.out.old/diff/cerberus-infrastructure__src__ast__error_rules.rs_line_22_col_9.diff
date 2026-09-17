@@ -1,0 +1,28 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace ErrorRulesChecker<'a>::check_file -> Vec<Violation> with vec![]
+@@ -14,24 +14,17 @@
+         Self {
+             file_path,
+             crate_name,
+             rules,
+         }
+     }
+ 
+     pub fn check_file(&self, syntax: &File) -> Vec<Violation> {
+-        let mut violations = Vec::new();
+-        let mut visitor = ErrorRulesVisitor {
+-            checker: self,
+-            violations: &mut violations,
+-            in_drop_impl: false,
+-        };
+-        visitor.visit_file(syntax);
+-        violations
++        vec![] /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn check_stmt(&self, stmt: &Stmt, in_drop: bool, violations: &mut Vec<Violation>) {
+         if let Stmt::Local(local) = stmt {
+             // ERR-001: let _ = result;
+             if self.is_rule_enabled("ERR-001") {
+                 if let syn::Pat::Wild(_) = &local.pat {
+                     if let Some(init) = &local.init {

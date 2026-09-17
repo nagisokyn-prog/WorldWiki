@@ -1,0 +1,21 @@
+--- cerberus-domain/src/tree.rs
++++ replace += with -= in traverse_tree
+@@ -120,17 +120,17 @@
+     for item in items {
+         match item {
+             TreeItemNode::File(file) => {
+                 *total_files += 1;
+                 match file.health {
+                     HealthLevel::Healthy => *healthy_count += 1,
+                     HealthLevel::Warning => *warning_count += 1,
+                     HealthLevel::Critical => {
+-                        *critical_count += 1;
++                        *critical_count -= /* ~ changed by cargo-mutants ~ */ 1;
+                         hotspots.push(file.clone());
+                     }
+                 }
+             }
+             TreeItemNode::Dir(dir) => {
+                 traverse_tree(
+                     &dir.children,
+                     total_files,

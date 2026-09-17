@@ -129,7 +129,7 @@ invoke('save_chapter');
         &sfc,
         std::path::Path::new("TestComponent.vue"),
     );
-    let tauri_v: Vec<_> = violations.iter().filter(|v| v.rule_id == "VUE-002").collect();
+    let tauri_v: Vec<_> = violations.iter().filter(|v| v.rule_id == "TAURI-002").collect();
     assert!(!tauri_v.is_empty(), "Direct Tauri IPC in Vue SFC must be blocked");
 }
 

@@ -4,3 +4,4 @@ pub mod testability_test;
 pub mod error_handling_test;
 pub mod concurrency_test;
 pub mod performance_test;
+pub mod frontend_rules_test;

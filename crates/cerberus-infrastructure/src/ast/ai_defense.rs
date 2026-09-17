@@ -97,8 +97,16 @@ impl<'a> AiDefenseChecker<'a> {
 
         for (line_idx, line) in lines.iter().enumerate() {
             let trimmed = line.trim();
-            // Look for 'unsafe {' or 'unsafe fn'
-            if trimmed.starts_with("unsafe ") || trimmed.starts_with("unsafe{") || trimmed == "unsafe" {
+            // Look for 'unsafe {' or 'unsafe fn' anywhere on the line
+            let is_unsafe = trimmed.starts_with("unsafe ")
+                || trimmed.starts_with("unsafe{")
+                || trimmed == "unsafe"
+                || trimmed.contains(" unsafe ")
+                || trimmed.contains(" unsafe{")
+                || trimmed.starts_with("pub unsafe ")
+                || trimmed.starts_with("async unsafe ");
+
+            if is_unsafe {
                 let mut has_safety_above = false;
 
                 // Inspect 1 to 3 lines directly above

@@ -1,0 +1,21 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ delete ! in ErrorRulesChecker<'a>::check_library_panic
+@@ -170,17 +170,17 @@
+         if !self.is_rule_enabled("ERR-005") {
+             return;
+         }
+ 
+         let is_lib_target = self.crate_name.contains("domain")
+             || self.crate_name.contains("ports")
+             || self.file_path.ends_with("lib.rs")
+             || !self.file_path.contains("bin");
+-        if !is_lib_target {
++        if  /* ~ changed by cargo-mutants ~ */is_lib_target {
+             return;
+         }
+ 
+         if let Expr::Macro(expr_macro) = expr {
+             let macro_name = expr_macro
+                 .mac
+                 .path
+                 .segments

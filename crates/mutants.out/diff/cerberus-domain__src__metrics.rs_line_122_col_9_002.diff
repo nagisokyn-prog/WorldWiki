@@ -1,0 +1,34 @@
+--- cerberus-domain/src/metrics.rs
++++ replace PressureCalculator::compute_score -> f64 with -1.0
+@@ -114,30 +114,17 @@
+         }
+     }
+ }
+ 
+ pub struct PressureCalculator;
+ 
+ impl PressureCalculator {
+     pub fn compute_score(violations: &[Violation], total_loc: usize) -> f64 {
+-        if total_loc == 0 {
+-            return 0.0;
+-        }
+-
+-        let mut weighted_sum = 0.0;
+-        for v in violations {
+-            match v.severity {
+-                Severity::Deny => weighted_sum += 10.0,
+-                Severity::Warn => weighted_sum += 3.0,
+-                Severity::Off => {}
+-            }
+-        }
+-
+-        (weighted_sum / (total_loc as f64)) * 1000.0
++        -1.0 /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     #[test]

@@ -1,0 +1,3 @@
+cerberus-domain/src/metrics.rs:24:39: replace + with * in PackageMetrics::compute
+cerberus-domain/src/rules.rs:55:17: replace <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::expecting -> fmt::Result with Ok(Default::default())
+cerberus-domain/src/suppression.rs:16:20: replace > with >= in Suppression::is_expired

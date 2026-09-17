@@ -1,0 +1,21 @@
+--- cerberus-domain/src/preset.rs
++++ delete match arm "hardened-zero-trust" | "zero-trust" | "distrust" in <impl FromStr for Preset>::from_str
+@@ -16,17 +16,17 @@
+ 
+ impl FromStr for Preset {
+     type Err = ();
+ 
+     fn from_str(name: &str) -> Result<Self, Self::Err> {
+         match name.to_lowercase().as_str() {
+             "hexagonal-strict" | "hexagonal" => Ok(Self::HexagonalStrict),
+             "hardened-sandbox" | "sandbox" => Ok(Self::HardenedSandbox),
+-            "hardened-zero-trust" | "zero-trust" | "distrust" => Ok(Self::HardenedZeroTrust),
++             /* ~ changed by cargo-mutants ~ */
+             "permissive" => Ok(Self::Permissive),
+             _ => Err(()),
+         }
+     }
+ }
+ 
+ #[cfg(test)]
+ mod tests {

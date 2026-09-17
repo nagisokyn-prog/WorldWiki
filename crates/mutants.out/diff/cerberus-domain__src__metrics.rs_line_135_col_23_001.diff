@@ -1,0 +1,21 @@
+--- cerberus-domain/src/metrics.rs
++++ replace / with * in PressureCalculator::compute_score
+@@ -127,17 +127,17 @@
+         for v in violations {
+             match v.severity {
+                 Severity::Deny => weighted_sum += 10.0,
+                 Severity::Warn => weighted_sum += 3.0,
+                 Severity::Off => {}
+             }
+         }
+ 
+-        (weighted_sum / (total_loc as f64)) * 1000.0
++        (weighted_sum * /* ~ changed by cargo-mutants ~ */ (total_loc as f64)) * 1000.0
+     }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     #[test]

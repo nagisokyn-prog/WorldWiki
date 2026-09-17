@@ -1,0 +1,21 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace != with == in ErrorRulesChecker<'a>::is_rule_enabled
+@@ -209,17 +209,17 @@
+             }
+         }
+     }
+ 
+     fn is_rule_enabled(&self, rule_id: &str) -> bool {
+         self.rules
+             .iter()
+             .find(|r| r.id == rule_id)
+-            .map(|r| r.severity != Severity::Off)
++            .map(|r| r.severity == /* ~ changed by cargo-mutants ~ */ Severity::Off)
+             .unwrap_or(true)
+     }
+ 
+     fn get_severity(&self, rule_id: &str, default: Severity) -> Severity {
+         self.rules
+             .iter()
+             .find(|r| r.id == rule_id)
+             .map(|r| r.severity)

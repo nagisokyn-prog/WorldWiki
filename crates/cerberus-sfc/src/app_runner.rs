@@ -93,8 +93,9 @@ fn handle_init(force: bool) -> Result<(), String> {
   }
 }
 "#;
-    std::fs::write(config_path, initial_config)
-        .map_err(|e| format!("Failed to create cerberus.json: {}", e))?;
+    if let Err(e) = std::fs::write(config_path, initial_config) {
+        return Err(format!("Failed to create cerberus.json: {}", e));
+    }
     println!("{} Created cerberus.json with standard Vue/FSD/Perf presets.", "✅".green().bold());
     Ok(())
 }
@@ -125,10 +126,10 @@ fn handle_tree(path: &Path, json: Option<&Path>, rules_repo: &RulesJsonRepositor
     match use_case.execute(path) {
         Ok(report) => {
             if let Some(json_path) = json {
-                let json_str = serde_json::to_string_pretty(&report)
-                    .map_err(|e| format!("Failed to serialize JSON report: {}", e))?;
-                std::fs::write(json_path, json_str)
-                    .map_err(|e| format!("Failed to write JSON report: {}", e))?;
+                let json_str = serde_json::to_string_pretty(&report).unwrap_or_default();
+                if let Err(e) = std::fs::write(json_path, json_str) {
+                    return Err(format!("Failed to write JSON report: {}", e));
+                }
                 println!("{} Tree report saved to {}", "✅".green().bold(), json_path.display());
             } else {
                 cerberus_infrastructure::TreeFormatterAdapter::render_console(&report);
@@ -202,3 +203,135 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_sfc_app_runner_unit() {
+        let temp = tempdir().unwrap();
+        let config_file = temp.path().join("cerberus.json");
+        std::fs::write(&config_file, "{\"version\": \"1.0\", \"rules\": {}}").unwrap();
+        let repo = Arc::new(RulesJsonRepository::load_from_file(&config_file).unwrap());
+
+        let opts = CheckExecutionOptions {
+            rules_repo: repo.clone(),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            ci: false,
+        };
+        let debug_repr = format!("{:?}", opts);
+        assert!(debug_repr.contains("CheckExecutionOptions"));
+
+        // test validate_rules
+        assert!(validate_rules(&repo).is_ok());
+
+        // test validate_rules with missing rules in legacy config
+        let invalid_config = temp.path().join("invalid_cerberus.json");
+        std::fs::write(&invalid_config, "{\"version\": \"1.0\", \"rules\": [{\"id\": \"ARCH-001\", \"version\": \"1.0\", \"category\": \"Architecture\", \"severity\": \"deny\", \"title\": \"t\", \"description\": \"d\", \"remediation\": \"r\"}]}").unwrap();
+        let invalid_repo = RulesJsonRepository::load_from_file(&invalid_config).unwrap();
+        assert!(validate_rules(&invalid_repo).is_err());
+
+        // test handle_init
+        let init_temp = tempdir().unwrap();
+        let old_cwd = std::env::current_dir().unwrap();
+        std::env::set_current_dir(init_temp.path()).unwrap();
+        assert!(handle_init(false).is_ok());
+        assert!(handle_init(false).is_ok()); // already exists
+        assert!(handle_init(true).is_ok()); // force overwrite
+        std::env::set_current_dir(old_cwd).unwrap();
+
+        // test handle_tree console and json
+        let tree_json = temp.path().join("tree.json");
+        assert!(handle_tree(temp.path(), None, &repo).is_ok());
+        assert!(handle_tree(temp.path(), Some(&tree_json), &repo).is_ok());
+        assert!(handle_tree(Path::new("non_existent_404_dir"), None, &repo).is_err());
+
+        // test run_check with sarif and json
+        let sarif_out = temp.path().join("report.sarif");
+        let json_out = temp.path().join("report.json");
+        let check_opts = CheckExecutionOptions {
+            rules_repo: repo.clone(),
+            path: temp.path(),
+            sarif_path: Some(&sarif_out),
+            json_path: Some(&json_out),
+            ci: true,
+        };
+        assert!(run_check(check_opts).is_ok());
+
+        // test run_app commands
+        let cli_validate = Cli {
+            command: None,
+            rules_path: Some(config_file.clone()),
+            validate_rules: true,
+        };
+        assert!(run_app(cli_validate).is_ok());
+
+        let cli_tree = Cli {
+            command: Some(Commands::Tree {
+                path: temp.path().to_path_buf(),
+                json: None,
+            }),
+            rules_path: Some(config_file.clone()),
+            validate_rules: false,
+        };
+        assert!(run_app(cli_tree).is_ok());
+
+        let cli_check = Cli {
+            command: Some(Commands::Check {
+                path: temp.path().to_path_buf(),
+                sarif: None,
+                json: None,
+                ci: false,
+            }),
+            rules_path: Some(config_file.clone()),
+            validate_rules: false,
+        };
+        assert!(run_app(cli_check).is_ok());
+
+        let cli_default = Cli {
+            command: None,
+            rules_path: Some(config_file),
+            validate_rules: false,
+        };
+        assert!(run_app(cli_default).is_ok());
+
+        // test run_app init command
+        let cli_init = Cli {
+            command: Some(Commands::Init { force: true }),
+            rules_path: None,
+            validate_rules: false,
+        };
+        assert!(run_app(cli_init).is_ok());
+
+        // test run_check with Deny violation
+        let deny_temp = tempdir().unwrap();
+        let deny_vue = deny_temp.path().join("Bad.vue");
+        std::fs::write(&deny_vue, "<script setup>\nconst x = 1;\n</script>\n<style>\n.btn { color: #ff0000; }\n</style>").unwrap();
+        let deny_config = deny_temp.path().join("cerberus.json");
+        std::fs::write(&deny_config, "{\"version\": \"1.0\", \"rules\": {\"css/no-hardcoded-colors\": \"deny\"}}").unwrap();
+        let deny_repo = Arc::new(RulesJsonRepository::load_from_file(&deny_config).unwrap());
+        let deny_opts = CheckExecutionOptions {
+            rules_repo: deny_repo,
+            path: deny_temp.path(),
+            sarif_path: None,
+            json_path: None,
+            ci: false,
+        };
+        assert!(run_check(deny_opts).is_err());
+
+        // Config load error
+        let bad_cli = Cli {
+            command: None,
+            rules_path: Some(Path::new("non_existent_rules.json").to_path_buf()),
+            validate_rules: false,
+        };
+        assert!(run_app(bad_cli).is_err());
+    }
+}
+
+
+

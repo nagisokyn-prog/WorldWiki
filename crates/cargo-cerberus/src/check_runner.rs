@@ -212,3 +212,62 @@ fn export_reports(sarif_path: Option<&Path>, json_path: Option<&Path>, violation
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_check_runner_helpers() {
+        assert_eq!(resolve_scope(true, false), ScanScope::FrontendOnly);
+        assert_eq!(resolve_scope(false, true), ScanScope::BackendOnly);
+        assert_eq!(resolve_scope(false, false), ScanScope::All);
+
+        assert!(validate_error_rate(0, 0, false).is_ok());
+        assert!(validate_error_rate(100, 1, false).is_ok());
+        assert!(validate_error_rate(100, 10, true).is_err());
+        assert!(validate_error_rate(100, 10, false).is_err());
+
+        let temp = tempdir().unwrap();
+        let rs_file = temp.path().join("lib.rs");
+        std::fs::write(&rs_file, "use std::path::Path;\npub fn foo() {}").unwrap();
+
+        let imports = extract_rs_imports(&rs_file);
+        assert!(imports.is_some());
+        assert!(imports.unwrap().contains("std"));
+
+        let non_existent = temp.path().join("none.rs");
+        assert!(extract_rs_imports(&non_existent).is_none());
+
+        let mut v1 = Vec::new();
+        let sample_v = Violation {
+            rule_id: "TEST-001".into(),
+            rule_version: "1.0".into(),
+            category: cerberus_domain::Category::Architecture,
+            severity: Severity::Warn,
+            file: PathBuf::from("test.rs"),
+            line: 1,
+            column: 1,
+            symbol: "sym".into(),
+            snippet: "code".into(),
+            message: "msg".into(),
+            remediation: "fix".into(),
+            fingerprint: "fp123".into(),
+        };
+        merge_unique_violations(&mut v1, vec![sample_v.clone(), sample_v.clone()]);
+        assert_eq!(v1.len(), 1);
+
+        // Test export reports
+        let sarif_out = temp.path().join("out.sarif");
+        let json_out = temp.path().join("out.json");
+        export_reports(Some(&sarif_out), Some(&json_out), &v1);
+        assert!(sarif_out.exists());
+        assert!(json_out.exists());
+
+        // Test macro expansion fallback
+        let mut violations = Vec::new();
+        audit_macro_expansion(temp.path(), &mut violations);
+    }
+}
+

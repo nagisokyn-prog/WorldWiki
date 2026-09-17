@@ -9,12 +9,40 @@ fn cargo_bin() -> PathBuf {
 }
 
 fn rules_path() -> PathBuf {
-    let cerberus = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../cerberus.json");
-    if cerberus.exists() {
-        cerberus
-    } else {
-        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../firewall/rules.json")
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let candidates = [
+        manifest_dir.join("../../cerberus.json"),
+        manifest_dir.join("../../firewall/rules.json"),
+        manifest_dir.join("../.cerberus/rules.json"),
+        manifest_dir.join(".cerberus/rules.json"),
+    ];
+    for p in &candidates {
+        if p.exists() {
+            return p.clone();
+        }
     }
+
+    // Fallback for isolated builds / cargo-mutants tempdir
+    let fallback = manifest_dir.join("target").join("test_rules.json");
+    if let Some(parent) = fallback.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    let mut config = serde_json::json!({
+        "version": "2.0",
+        "rules": {}
+    });
+    for rule in cerberus_domain::BuiltinRuleRegistry::all_rules() {
+        config["rules"][&rule.id] = serde_json::Value::String(match rule.severity {
+            cerberus_domain::Severity::Deny => "deny".into(),
+            cerberus_domain::Severity::Warn => "warn".into(),
+            cerberus_domain::Severity::Off => "off".into(),
+        });
+    }
+    let _ = fs::write(
+        &fallback,
+        serde_json::to_string_pretty(&config).unwrap_or_default(),
+    );
+    fallback
 }
 
 fn fixture_dir(name: &str) -> PathBuf {

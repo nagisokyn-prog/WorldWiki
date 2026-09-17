@@ -1,0 +1,21 @@
+--- cerberus-domain/src/rules.rs
++++ replace default_max_script_setup_lines -> usize with 1
+@@ -118,17 +118,17 @@
+ }
+ fn default_max_pressure_deny() -> f64 {
+     400.0
+ }
+ fn default_max_style_lines() -> usize {
+     25
+ }
+ fn default_max_script_setup_lines() -> usize {
+-    35
++    1 /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ impl Default for LimitsConfig {
+     fn default() -> Self {
+         Self {
+             max_sloc_warn: default_max_sloc_warn(),
+             max_sloc_deny: default_max_sloc_deny(),
+             max_pressure_warn: default_max_pressure_warn(),

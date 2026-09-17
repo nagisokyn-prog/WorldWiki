@@ -1,0 +1,21 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace == with != in ErrorRulesChecker<'a>::check_library_panic
+@@ -183,17 +183,17 @@
+             let macro_name = expr_macro
+                 .mac
+                 .path
+                 .segments
+                 .last()
+                 .map(|s| s.ident.to_string())
+                 .unwrap_or_default();
+ 
+-            if macro_name == "panic" || macro_name == "unimplemented" {
++            if macro_name == "panic" || macro_name != /* ~ changed by cargo-mutants ~ */ "unimplemented" {
+                 let snippet = format!("{}!(...)", macro_name);
+                 let fp = compute_fingerprint("ERR-005", "1.0", &macro_name, &snippet);
+ 
+                 violations.push(Violation {
+                     rule_id: "ERR-005".into(),
+                     rule_version: "1.0".into(),
+                     category: Category::ErrorHandling,
+                     severity: self.get_severity("ERR-005", Severity::Deny),

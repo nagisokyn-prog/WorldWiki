@@ -1,0 +1,2 @@
+cerberus-infrastructure/src/ast/error_rules.rs:22:9: replace ErrorRulesChecker<'a>::check_file -> Vec<Violation> with vec![Default::default()]
+cerberus-infrastructure/src/ast/error_rules.rs:222:9: replace ErrorRulesChecker<'a>::get_severity -> Severity with Default::default()

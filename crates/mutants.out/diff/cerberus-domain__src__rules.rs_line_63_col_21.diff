@@ -1,0 +1,21 @@
+--- cerberus-domain/src/rules.rs
++++ delete match arm "deny" | "error" in <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::visit_str
+@@ -55,17 +55,17 @@
+                 formatter.write_str("a string representing severity ('deny'|'error', 'warn'|'warning', 'off'|'ignore')")
+             }
+ 
+             fn visit_str<E>(self, value: &str) -> Result<Severity, E>
+             where
+                 E: serde::de::Error,
+             {
+                 match value.to_lowercase().as_str() {
+-                    "deny" | "error" => Ok(Severity::Deny),
++                     /* ~ changed by cargo-mutants ~ */
+                     "warn" | "warning" => Ok(Severity::Warn),
+                     "off" | "ignore" => Ok(Severity::Off),
+                     _ => Err(E::custom(format!("Unknown severity level: '{}'", value))),
+                 }
+             }
+         }
+ 
+         deserializer.deserialize_str(SeverityVisitor)

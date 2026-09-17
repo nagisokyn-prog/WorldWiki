@@ -357,6 +357,32 @@ mod tests {
         assert_eq!(parsed_v.rule_id, "ARCH-001");
         assert_eq!(parsed_v.line, 10);
 
+        // Test LimitsConfig defaults and serde deserialization
+        let default_limits = LimitsConfig::default();
+        assert_eq!(default_limits.max_sloc_warn, 500);
+        assert_eq!(default_limits.max_sloc_deny, 800);
+        assert_eq!(default_limits.max_pressure_warn, 200.0);
+        assert_eq!(default_limits.max_pressure_deny, 400.0);
+        assert_eq!(default_limits.max_style_lines, 25);
+        assert_eq!(default_limits.max_script_setup_lines, 35);
+
+        let from_empty_json: LimitsConfig = serde_json::from_str("{}").unwrap();
+        assert_eq!(from_empty_json.max_sloc_warn, 500);
+        assert_eq!(from_empty_json.max_sloc_deny, 800);
+        assert_eq!(from_empty_json.max_pressure_warn, 200.0);
+        assert_eq!(from_empty_json.max_pressure_deny, 400.0);
+        assert_eq!(from_empty_json.max_style_lines, 25);
+        assert_eq!(from_empty_json.max_script_setup_lines, 35);
+
+        // Test Severity deserialization error message
+        let invalid_sev_err = serde_json::from_str::<Severity>("\"invalid_level\"").unwrap_err();
+        assert!(invalid_sev_err.to_string().contains("severity"));
+
+        // Test compute_fingerprint
+        let fp_sha = compute_fingerprint("AI-001", "1.0", "sym", "snippet");
+        assert_ne!(fp_sha, "xyzzy");
+        assert_eq!(fp_sha.len(), 64);
+
         // Exercise Debug trait implementations
         let _ = format!("{:?}", Category::Architecture);
         let _ = format!("{:?}", Severity::Deny);

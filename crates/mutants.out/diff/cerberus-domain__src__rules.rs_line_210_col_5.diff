@@ -1,0 +1,31 @@
+--- cerberus-domain/src/rules.rs
++++ replace compute_fingerprint -> String with String::new()
+@@ -202,27 +202,17 @@
+ }
+ 
+ pub fn compute_fingerprint(
+     rule_id: &str,
+     rule_version: &str,
+     symbol: &str,
+     snippet: &str,
+ ) -> String {
+-    let mut hasher = Sha256::new();
+-    hasher.update(rule_id.as_bytes());
+-    hasher.update(b":");
+-    hasher.update(rule_version.as_bytes());
+-    hasher.update(b":");
+-    hasher.update(symbol.as_bytes());
+-    hasher.update(b":");
+-    let normalized = snippet.split_whitespace().collect::<Vec<_>>().join(" ");
+-    hasher.update(normalized.as_bytes());
+-    let hash_bytes = hasher.finalize();
+-    hash_bytes.iter().map(|b| format!("{:02x}", b)).collect()
++    String::new() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     #[test]
+     fn test_severity_serde_and_aliases() {

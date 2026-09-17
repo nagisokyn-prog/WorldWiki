@@ -1,0 +1,22 @@
+--- cerberus-domain/src/layer.rs
++++ replace ArchLayer::can_depend_on -> bool with true
+@@ -55,18 +55,11 @@
+             Self::Infrastructure => "infrastructure",
+             Self::Adapter => "adapter",
+             Self::Cli => "cli",
+             Self::Unknown => "unknown",
+         }
+     }
+ 
+     pub fn can_depend_on(&self, target: ArchLayer) -> bool {
+-        match self {
+-            Self::Domain => matches!(target, Self::Domain),
+-            Self::Ports => matches!(target, Self::Domain | Self::Ports),
+-            Self::Application => matches!(target, Self::Domain | Self::Ports | Self::Application),
+-            Self::Infrastructure => matches!(target, Self::Domain | Self::Ports | Self::Infrastructure),
+-            Self::Adapter | Self::Cli => true,
+-            Self::Unknown => true,
+-        }
++        true /* ~ changed by cargo-mutants ~ */
+     }
+ }

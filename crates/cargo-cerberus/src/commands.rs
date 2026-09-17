@@ -10,12 +10,16 @@ use crate::ledger_commands::{handle_baseline, handle_ledger};
 use crate::model_commands::{handle_explain, handle_model};
 
 pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Result<(), String> {
-    let resolved_rules_path = RulesJsonRepository::find_rules_path(rules_path);
-    let rules_repo = match RulesJsonRepository::load_from_file(&resolved_rules_path) {
-        Ok(repo) => Arc::new(repo),
-        Err(e) => {
-            return Err(format!("{} {}", "❌ Error loading rules:".red().bold(), e));
+    let rules_repo = if let Some(p) = rules_path {
+        match RulesJsonRepository::load_from_file(p) {
+            Ok(repo) => Arc::new(repo),
+            Err(e) => {
+                return Err(format!("{} {}", "❌ Error loading rules:".red().bold(), e));
+            }
         }
+    } else {
+        let resolved = RulesJsonRepository::find_rules_path(None);
+        Arc::new(RulesJsonRepository::load_from_file_or_default(&resolved))
     };
 
     match command {

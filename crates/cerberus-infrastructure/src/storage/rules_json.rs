@@ -89,6 +89,14 @@ impl RulesJsonRepository {
         })
     }
 
+    pub fn load_from_file_or_default(path: &Path) -> Self {
+        if path.exists() {
+            Self::load_from_file(path).unwrap_or_default()
+        } else {
+            Self::default()
+        }
+    }
+
     pub fn limits(&self) -> cerberus_domain::LimitsConfig {
         self.cerberus_config
             .as_ref()
@@ -137,6 +145,27 @@ impl RulesJsonRepository {
             Err(errors)
         } else {
             Ok(())
+        }
+    }
+}
+
+impl Default for RulesJsonRepository {
+    fn default() -> Self {
+        let mut rules_by_id = HashMap::new();
+        for rule in BuiltinRuleRegistry::all_rules() {
+            rules_by_id.insert(rule.id.clone(), rule);
+        }
+        let rules_vec = rules_by_id.values().cloned().collect();
+        let config = RulesConfig {
+            schema: None,
+            version: "2.0".into(),
+            ignore: Vec::new(),
+            rules: rules_vec,
+        };
+        Self {
+            config,
+            cerberus_config: None,
+            rules_by_id,
         }
     }
 }
@@ -291,5 +320,15 @@ mod tests {
 
         let default_path = RulesJsonRepository::find_rules_path(None);
         assert!(!default_path.as_os_str().is_empty());
+
+        let default_repo = RulesJsonRepository::default();
+        assert!(!default_repo.rules_by_id.is_empty());
+
+        let loaded_or_default = RulesJsonRepository::load_from_file_or_default(&custom);
+        assert!(!loaded_or_default.rules_by_id.is_empty());
+
+        let missing_path = temp.path().join("missing.json");
+        let fallback_default = RulesJsonRepository::load_from_file_or_default(&missing_path);
+        assert!(!fallback_default.rules_by_id.is_empty());
     }
 }

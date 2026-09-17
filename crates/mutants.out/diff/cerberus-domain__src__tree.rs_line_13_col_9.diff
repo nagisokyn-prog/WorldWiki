@@ -1,0 +1,25 @@
+--- cerberus-domain/src/tree.rs
++++ replace HealthLevel::badge_symbol -> &'static str with ""
+@@ -5,21 +5,17 @@
+ pub enum HealthLevel {
+     Healthy,
+     Warning,
+     Critical,
+ }
+ 
+ impl HealthLevel {
+     pub fn badge_symbol(&self) -> &'static str {
+-        match self {
+-            HealthLevel::Healthy => "✅",
+-            HealthLevel::Warning => "⚠️",
+-            HealthLevel::Critical => "🚨",
+-        }
++        "" /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ #[derive(Debug, Clone, Serialize, Deserialize)]
+ pub struct FileMetricsNode {
+     pub name: String,
+     pub path: PathBuf,
+     pub sloc: usize,

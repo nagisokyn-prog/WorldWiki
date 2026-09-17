@@ -10,6 +10,8 @@ impl PerfRulesChecker {
 
         let mut in_raf_block = false;
         let mut in_v_for_template = false;
+        let mut in_loop_block = false;
+        let mut loop_has_read = false;
 
         for (line_idx, line) in source.lines().enumerate() {
             let trimmed = line.trim();
@@ -23,6 +25,61 @@ impl PerfRulesChecker {
             check_canvas_reactivity(trimmed, file_path, line_num, &mut violations);
             check_deep_watch(trimmed, file_path, line_num, &mut violations);
 
+            // Loop tracking for Layout Thrashing
+            if trimmed.contains(".forEach(")
+                || trimmed.contains("for (")
+                || trimmed.contains("for(")
+                || trimmed.contains("while (")
+                || trimmed.contains("while(")
+            {
+                in_loop_block = true;
+                loop_has_read = false;
+            }
+
+            let has_read = trimmed.contains(".offsetHeight")
+                || trimmed.contains(".offsetWidth")
+                || trimmed.contains(".scrollTop")
+                || trimmed.contains(".clientHeight")
+                || trimmed.contains(".clientWidth")
+                || trimmed.contains(".getBoundingClientRect()");
+
+            let has_write = trimmed.contains(".style.")
+                || trimmed.contains(".style[")
+                || trimmed.contains(".classList.add(")
+                || trimmed.contains(".classList.remove(")
+                || trimmed.contains(".setAttribute('style'");
+
+            if in_loop_block {
+                if has_read {
+                    loop_has_read = true;
+                }
+                if loop_has_read && has_write {
+                    let fingerprint = compute_fingerprint("PERF-DOM-001", "1.0", "layout_thrashing", trimmed);
+                    violations.push(Violation {
+                        rule_id: "PERF-DOM-001".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Performance,
+                        severity: Severity::Warn,
+                        file: file_path.to_path_buf(),
+                        line: line_num,
+                        column: 1,
+                        symbol: "layout_thrashing".into(),
+                        snippet: trimmed.to_string(),
+                        message: "Interleaving DOM geometry reads and style writes inside loop causes forced synchronous reflow (Layout Thrashing).".into(),
+                        remediation: "Batch all DOM geometry measurements outside the loop, then schedule style writes inside requestAnimationFrame().".into(),
+                        fingerprint,
+                    });
+                    loop_has_read = false;
+                }
+                if trimmed.contains("});") || trimmed == "}" {
+                    in_loop_block = false;
+                    loop_has_read = false;
+                }
+            } else if has_read && has_write {
+                // Same line Layout Thrashing
+                check_layout_thrashing(trimmed, file_path, line_num, &mut violations);
+            }
+
             // RAF state & checks
             if trimmed.contains("requestAnimationFrame(") || trimmed.contains("function renderLoop") {
                 in_raf_block = true;
@@ -34,7 +91,7 @@ impl PerfRulesChecker {
                 }
             }
 
-            // V-For template method calls
+            // V-For template method calls (VUE-009 / PERF-004)
             if trimmed.contains("v-for=") {
                 in_v_for_template = true;
             }
@@ -49,6 +106,45 @@ impl PerfRulesChecker {
         }
 
         violations
+    }
+}
+
+fn check_layout_thrashing(trimmed: &str, file_path: &Path, line: usize, out: &mut Vec<Violation>) {
+    let has_read = trimmed.contains(".offsetHeight")
+        || trimmed.contains(".offsetWidth")
+        || trimmed.contains(".scrollTop")
+        || trimmed.contains(".clientHeight")
+        || trimmed.contains(".clientWidth")
+        || trimmed.contains(".getBoundingClientRect()");
+
+    let has_write = trimmed.contains(".style.")
+        || trimmed.contains(".style[")
+        || trimmed.contains(".classList.add(")
+        || trimmed.contains(".classList.remove(")
+        || trimmed.contains(".setAttribute('style'");
+
+    if has_read && has_write {
+        let is_unthrottled_scroll = trimmed.contains("scroll") || trimmed.contains("resize");
+        let severity = if is_unthrottled_scroll {
+            Severity::Deny
+        } else {
+            Severity::Warn
+        };
+
+        out.push(Violation {
+            rule_id: "PERF-DOM-001".into(),
+            rule_version: "1.0".into(),
+            category: Category::Performance,
+            severity,
+            file: file_path.to_path_buf(),
+            line,
+            column: 1,
+            symbol: "layout_thrashing".into(),
+            snippet: trimmed.to_string(),
+            message: "Interleaving DOM geometry reads and style writes causes forced synchronous reflow (Layout Thrashing).".into(),
+            remediation: "Batch all DOM geometry measurements first, then schedule style writes inside requestAnimationFrame().".into(),
+            fingerprint: compute_fingerprint("PERF-DOM-001", "1.0", "layout_thrashing", trimmed),
+        });
     }
 }
 
@@ -156,7 +252,7 @@ fn check_raf_allocation(trimmed: &str, file_path: &Path, line: usize, out: &mut 
 
 fn check_v_for_template_call(trimmed: &str, file_path: &Path, line: usize, out: &mut Vec<Violation>) {
     out.push(Violation {
-        rule_id: "PERF-004".into(),
+        rule_id: "VUE-009".into(),
         rule_version: "1.0".into(),
         category: Category::Performance,
         severity: Severity::Deny,
@@ -167,7 +263,7 @@ fn check_v_for_template_call(trimmed: &str, file_path: &Path, line: usize, out: 
         snippet: trimmed.to_string(),
         message: "Uncached function call inside v-for template re-executes on every render frame".into(),
         remediation: "Precompute mapped values using a typed computed() property or Map.".into(),
-        fingerprint: compute_fingerprint("PERF-004", "1.0", "uncached_template_call", trimmed),
+        fingerprint: compute_fingerprint("VUE-009", "1.0", "uncached_template_call", trimmed),
     });
 }
 
@@ -187,5 +283,74 @@ fn check_deep_watch(trimmed: &str, file_path: &Path, line: usize, out: &mut Vec<
             remediation: "Use specific scalar getters in watch(() => [x.a, x.b]) or Vue 3.5+ depth limit { deep: 1 }.".into(),
             fingerprint: compute_fingerprint("PERF-005", "1.0", "deep_watch_cascade", trimmed),
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_perf_rules_comprehensive() {
+        let code = r#"
+            interface Props { title: string }
+            type Props = { title: string }
+            type Emits = { (e: 'save'): void }
+            export interface Dto { id: number }
+            const doc1 = ref<LargeSemanticDocument>(raw);
+            const doc2 = reactive<LargeSemanticDocument>(raw);
+            const scene1 = reactive(new Scene());
+            const scene2 = ref(new Scene());
+            const editor1 = ref(new Editor());
+            const editor2 = reactive(new Editor());
+            const canvas1 = ref(new Canvas());
+            const canvas2 = reactive(new Canvas());
+            const w = watch(x, () => {}, { deep: true });
+
+            requestAnimationFrame(() => {
+                const arr = new Array(10);
+                const obj = new Object();
+                const v = new Vector3(1, 2, 3);
+                const t = new THREE.Mesh();
+                const mapped = raw.map(x => x + 1);
+                const filtered = raw.filter(x => x > 0);
+            });
+
+            // Same line Layout Thrashing
+            window.onscroll = () => { el.style.height = `${el.offsetHeight}px`; };
+            el.style.width = `${el.offsetWidth}px`;
+
+            // Loop Layout Thrashing
+            for (let i = 0; i < 10; i++) {
+                const top = el.scrollTop;
+                el.classList.add('active');
+            }
+            while (running) {
+                const h = el.clientHeight;
+                el.classList.remove('hidden');
+            }
+            elements.forEach(el => {
+                const w = el.clientWidth;
+                const rect = el.getBoundingClientRect();
+                el.style.height = `${rect.height}px`;
+                el.setAttribute('style', 'color: red');
+            });
+
+            // v-for template method
+            <template>
+                <div v-for="item in items">
+                    {{ compute(item) }}
+                </div>
+            </template>
+        "#;
+
+        let violations = PerfRulesChecker::check_source(code, Path::new("Test.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-003"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-001"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-002"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-003"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-005"));
+        assert!(violations.iter().any(|v| v.rule_id == "PERF-DOM-001"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-009"));
     }
 }

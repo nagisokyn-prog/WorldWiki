@@ -1,0 +1,12 @@
+cerberus-domain/src/layer.rs:39:9: replace ArchLayer::parse -> Self with Default::default()
+cerberus-domain/src/metrics.rs:24:9: replace PackageMetrics::compute -> Self with Default::default()
+cerberus-domain/src/metrics.rs:98:9: replace FileMetrics::compute -> Self with Default::default()
+cerberus-domain/src/preset.rs:13:9: replace Preset::from_name -> Option<Self> with Some(Default::default())
+cerberus-domain/src/preset.rs:21:9: replace <impl FromStr for Preset>::from_str -> Result<Self, Self::Err> with Ok(Default::default())
+cerberus-domain/src/registry.rs:8:5: replace r -> RuleDefinition with Default::default()
+cerberus-domain/src/registry.rs:21:9: replace BuiltinRuleRegistry::all_rules -> Vec<RuleDefinition> with vec![Default::default()]
+cerberus-domain/src/registry.rs:103:9: replace BuiltinRuleRegistry::rule_map -> HashMap<String, RuleDefinition> with HashMap::from_iter([(String::new(), Default::default())])
+cerberus-domain/src/registry.rs:103:9: replace BuiltinRuleRegistry::rule_map -> HashMap<String, RuleDefinition> with HashMap::from_iter([("xyzzy".into(), Default::default())])
+cerberus-domain/src/rules.rs:36:9: replace <impl Serialize for Severity>::serialize -> Result<S::Ok, S::Error> with Ok(Default::default())
+cerberus-domain/src/rules.rs:49:9: replace <impl Deserialize<'de> for Severity>::deserialize -> Result<Self, D::Error> with Ok(Default::default())
+cerberus-domain/src/rules.rs:62:17: replace <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::visit_str -> Result<Severity, E> with Ok(Default::default())

@@ -1,0 +1,37 @@
+--- cerberus-domain/src/metrics.rs
++++ replace FileMetrics::compute -> Self with Default::default()
+@@ -90,33 +90,17 @@
+         sloc: usize,
+         functions: usize,
+         cyclomatic: usize,
+         dependencies: usize,
+         ast_depth: usize,
+         distance_d: f64,
+         weights: &PressureWeights,
+     ) -> Self {
+-        let score = (weights.w_sloc * sloc as f64)
+-            + (weights.w_functions * functions as f64)
+-            + (weights.w_cyclomatic * cyclomatic as f64)
+-            + (weights.w_dependencies * dependencies as f64)
+-            + (weights.w_ast_depth * ast_depth as f64)
+-            + (weights.w_distance_d * distance_d);
+-
+-        Self {
+-            file_path,
+-            sloc,
+-            functions,
+-            cyclomatic,
+-            dependencies,
+-            ast_depth,
+-            distance_d,
+-            pressure_score: score,
+-        }
++        Default::default() /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ pub struct PressureCalculator;
+ 
+ impl PressureCalculator {
+     pub fn compute_score(violations: &[Violation], total_loc: usize) -> f64 {
+         if total_loc == 0 {

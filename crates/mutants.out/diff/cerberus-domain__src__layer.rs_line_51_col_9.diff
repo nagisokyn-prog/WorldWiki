@@ -1,0 +1,29 @@
+--- cerberus-domain/src/layer.rs
++++ replace ArchLayer::as_str -> &'static str with ""
+@@ -43,25 +43,17 @@
+             "infrastructure" | "infra" => Self::Infrastructure,
+             "adapter" | "adapters" | "tauri" => Self::Adapter,
+             "cli" | "entrypoint" | "bin" => Self::Cli,
+             _ => Self::Unknown,
+         }
+     }
+ 
+     pub fn as_str(&self) -> &'static str {
+-        match self {
+-            Self::Domain => "domain",
+-            Self::Ports => "ports",
+-            Self::Application => "application",
+-            Self::Infrastructure => "infrastructure",
+-            Self::Adapter => "adapter",
+-            Self::Cli => "cli",
+-            Self::Unknown => "unknown",
+-        }
++        "" /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn can_depend_on(&self, target: ArchLayer) -> bool {
+         match self {
+             Self::Domain => matches!(target, Self::Domain),
+             Self::Ports => matches!(target, Self::Domain | Self::Ports),
+             Self::Application => matches!(target, Self::Domain | Self::Ports | Self::Application),
+             Self::Infrastructure => matches!(target, Self::Domain | Self::Ports | Self::Infrastructure),

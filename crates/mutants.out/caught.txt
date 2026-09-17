@@ -1,0 +1,124 @@
+cerberus-domain/src/layer.rs:40:13: delete match arm "domain" in ArchLayer::parse
+cerberus-domain/src/layer.rs:41:13: delete match arm "ports" | "port" in ArchLayer::parse
+cerberus-domain/src/layer.rs:42:13: delete match arm "application" | "app" | "usecase" | "usecases" in ArchLayer::parse
+cerberus-domain/src/layer.rs:43:13: delete match arm "infrastructure" | "infra" in ArchLayer::parse
+cerberus-domain/src/layer.rs:44:13: delete match arm "adapter" | "adapters" | "tauri" in ArchLayer::parse
+cerberus-domain/src/layer.rs:45:13: delete match arm "cli" | "entrypoint" | "bin" in ArchLayer::parse
+cerberus-domain/src/layer.rs:51:9: replace ArchLayer::as_str -> &'static str with ""
+cerberus-domain/src/layer.rs:51:9: replace ArchLayer::as_str -> &'static str with "xyzzy"
+cerberus-domain/src/layer.rs:63:9: replace ArchLayer::can_depend_on -> bool with true
+cerberus-domain/src/layer.rs:63:9: replace ArchLayer::can_depend_on -> bool with false
+cerberus-domain/src/metrics.rs:24:50: replace == with != in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:24:39: replace + with - in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:27:29: replace / with % in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:27:29: replace / with * in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:27:41: replace + with - in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:27:41: replace + with * in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:30:45: replace == with != in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:33:37: replace / with % in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:33:37: replace / with * in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:36:52: replace - with + in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:36:52: replace - with / in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:36:38: replace + with - in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:36:38: replace + with * in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:71: replace && with || in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:50: replace && with || in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:44: replace < with == in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:44: replace < with > in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:44: replace < with <= in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:65: replace < with == in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:65: replace < with > in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:65: replace < with <= in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:83: replace > with == in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:83: replace > with < in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:37:83: replace > with >= in PackageMetrics::compute
+cerberus-domain/src/metrics.rs:103:13: replace + with - in FileMetrics::compute
+cerberus-domain/src/metrics.rs:103:13: replace + with * in FileMetrics::compute
+cerberus-domain/src/metrics.rs:102:13: replace + with - in FileMetrics::compute
+cerberus-domain/src/metrics.rs:102:13: replace + with * in FileMetrics::compute
+cerberus-domain/src/metrics.rs:101:13: replace + with - in FileMetrics::compute
+cerberus-domain/src/metrics.rs:101:13: replace + with * in FileMetrics::compute
+cerberus-domain/src/metrics.rs:100:13: replace + with - in FileMetrics::compute
+cerberus-domain/src/metrics.rs:100:13: replace + with * in FileMetrics::compute
+cerberus-domain/src/metrics.rs:99:13: replace + with - in FileMetrics::compute
+cerberus-domain/src/metrics.rs:99:13: replace + with * in FileMetrics::compute
+cerberus-domain/src/metrics.rs:98:37: replace * with + in FileMetrics::compute
+cerberus-domain/src/metrics.rs:98:37: replace * with / in FileMetrics::compute
+cerberus-domain/src/metrics.rs:99:36: replace * with + in FileMetrics::compute
+cerberus-domain/src/metrics.rs:99:36: replace * with / in FileMetrics::compute
+cerberus-domain/src/metrics.rs:100:37: replace * with + in FileMetrics::compute
+cerberus-domain/src/metrics.rs:100:37: replace * with / in FileMetrics::compute
+cerberus-domain/src/metrics.rs:101:39: replace * with + in FileMetrics::compute
+cerberus-domain/src/metrics.rs:101:39: replace * with / in FileMetrics::compute
+cerberus-domain/src/metrics.rs:102:36: replace * with + in FileMetrics::compute
+cerberus-domain/src/metrics.rs:102:36: replace * with / in FileMetrics::compute
+cerberus-domain/src/metrics.rs:103:37: replace * with + in FileMetrics::compute
+cerberus-domain/src/metrics.rs:103:37: replace * with / in FileMetrics::compute
+cerberus-domain/src/metrics.rs:122:9: replace PressureCalculator::compute_score -> f64 with 0.0
+cerberus-domain/src/metrics.rs:122:9: replace PressureCalculator::compute_score -> f64 with 1.0
+cerberus-domain/src/metrics.rs:122:9: replace PressureCalculator::compute_score -> f64 with -1.0
+cerberus-domain/src/metrics.rs:122:22: replace == with != in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:129:48: replace += with -= in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:129:48: replace += with *= in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:130:48: replace += with -= in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:130:48: replace += with *= in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:135:45: replace * with + in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:135:45: replace * with / in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:135:23: replace / with % in PressureCalculator::compute_score
+cerberus-domain/src/metrics.rs:135:23: replace / with * in PressureCalculator::compute_score
+cerberus-domain/src/preset.rs:13:9: replace Preset::from_name -> Option<Self> with None
+cerberus-domain/src/preset.rs:22:13: delete match arm "hexagonal-strict" | "hexagonal" in <impl FromStr for Preset>::from_str
+cerberus-domain/src/preset.rs:23:13: delete match arm "hardened-sandbox" | "sandbox" in <impl FromStr for Preset>::from_str
+cerberus-domain/src/preset.rs:24:13: delete match arm "hardened-zero-trust" | "zero-trust" | "distrust" in <impl FromStr for Preset>::from_str
+cerberus-domain/src/preset.rs:25:13: delete match arm "permissive" in <impl FromStr for Preset>::from_str
+cerberus-domain/src/registry.rs:21:9: replace BuiltinRuleRegistry::all_rules -> Vec<RuleDefinition> with vec![]
+cerberus-domain/src/registry.rs:103:9: replace BuiltinRuleRegistry::rule_map -> HashMap<String, RuleDefinition> with HashMap::new()
+cerberus-domain/src/registry.rs:111:9: replace BuiltinRuleRegistry::alias_map -> HashMap<String, String> with HashMap::new()
+cerberus-domain/src/registry.rs:111:9: replace BuiltinRuleRegistry::alias_map -> HashMap<String, String> with HashMap::from_iter([(String::new(), String::new())])
+cerberus-domain/src/registry.rs:111:9: replace BuiltinRuleRegistry::alias_map -> HashMap<String, String> with HashMap::from_iter([(String::new(), "xyzzy".into())])
+cerberus-domain/src/registry.rs:111:9: replace BuiltinRuleRegistry::alias_map -> HashMap<String, String> with HashMap::from_iter([("xyzzy".into(), String::new())])
+cerberus-domain/src/registry.rs:111:9: replace BuiltinRuleRegistry::alias_map -> HashMap<String, String> with HashMap::from_iter([("xyzzy".into(), "xyzzy".into())])
+cerberus-domain/src/registry.rs:178:9: replace BuiltinRuleRegistry::canonical_rule_id -> String with String::new()
+cerberus-domain/src/registry.rs:178:9: replace BuiltinRuleRegistry::canonical_rule_id -> String with "xyzzy".into()
+cerberus-domain/src/rules.rs:63:21: delete match arm "deny" | "error" in <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::visit_str
+cerberus-domain/src/rules.rs:64:21: delete match arm "warn" | "warning" in <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::visit_str
+cerberus-domain/src/rules.rs:65:21: delete match arm "off" | "ignore" in <impl Deserialize<'de> for Severity>::deserialize::<impl Visitor<'de> for SeverityVisitor>::visit_str
+cerberus-domain/src/rules.rs:111:5: replace default_max_sloc_warn -> usize with 0
+cerberus-domain/src/rules.rs:111:5: replace default_max_sloc_warn -> usize with 1
+cerberus-domain/src/rules.rs:114:5: replace default_max_sloc_deny -> usize with 0
+cerberus-domain/src/rules.rs:114:5: replace default_max_sloc_deny -> usize with 1
+cerberus-domain/src/rules.rs:117:5: replace default_max_pressure_warn -> f64 with 0.0
+cerberus-domain/src/rules.rs:117:5: replace default_max_pressure_warn -> f64 with 1.0
+cerberus-domain/src/rules.rs:117:5: replace default_max_pressure_warn -> f64 with -1.0
+cerberus-domain/src/rules.rs:120:5: replace default_max_pressure_deny -> f64 with 0.0
+cerberus-domain/src/rules.rs:120:5: replace default_max_pressure_deny -> f64 with 1.0
+cerberus-domain/src/rules.rs:120:5: replace default_max_pressure_deny -> f64 with -1.0
+cerberus-domain/src/rules.rs:123:5: replace default_max_style_lines -> usize with 0
+cerberus-domain/src/rules.rs:123:5: replace default_max_style_lines -> usize with 1
+cerberus-domain/src/rules.rs:126:5: replace default_max_script_setup_lines -> usize with 0
+cerberus-domain/src/rules.rs:126:5: replace default_max_script_setup_lines -> usize with 1
+cerberus-domain/src/rules.rs:175:5: replace default_version -> String with String::new()
+cerberus-domain/src/rules.rs:175:5: replace default_version -> String with "xyzzy".into()
+cerberus-domain/src/rules.rs:210:5: replace compute_fingerprint -> String with String::new()
+cerberus-domain/src/rules.rs:210:5: replace compute_fingerprint -> String with "xyzzy".into()
+cerberus-domain/src/suppression.rs:16:9: replace Suppression::is_expired -> bool with true
+cerberus-domain/src/suppression.rs:16:9: replace Suppression::is_expired -> bool with false
+cerberus-domain/src/suppression.rs:16:20: replace > with == in Suppression::is_expired
+cerberus-domain/src/suppression.rs:16:20: replace > with < in Suppression::is_expired
+cerberus-domain/src/suppression.rs:20:9: replace Suppression::canonical_payload -> String with String::new()
+cerberus-domain/src/suppression.rs:20:9: replace Suppression::canonical_payload -> String with "xyzzy".into()
+cerberus-domain/src/traits.rs:58:9: replace <impl Fingerprintable for crate::rules::Violation>::compute_fingerprint -> String with String::new()
+cerberus-domain/src/traits.rs:58:9: replace <impl Fingerprintable for crate::rules::Violation>::compute_fingerprint -> String with "xyzzy".into()
+cerberus-domain/src/traits.rs:64:9: replace <impl DomainModel for crate::rules::Violation>::model_type -> &'static str with ""
+cerberus-domain/src/traits.rs:64:9: replace <impl DomainModel for crate::rules::Violation>::model_type -> &'static str with "xyzzy"
+cerberus-domain/src/tree.rs:13:9: replace HealthLevel::badge_symbol -> &'static str with ""
+cerberus-domain/src/tree.rs:13:9: replace HealthLevel::badge_symbol -> &'static str with "xyzzy"
+cerberus-domain/src/tree.rs:120:5: replace traverse_tree with ()
+cerberus-domain/src/tree.rs:123:30: replace += with -= in traverse_tree
+cerberus-domain/src/tree.rs:123:30: replace += with *= in traverse_tree
+cerberus-domain/src/tree.rs:125:60: replace += with -= in traverse_tree
+cerberus-domain/src/tree.rs:125:60: replace += with *= in traverse_tree
+cerberus-domain/src/tree.rs:126:60: replace += with -= in traverse_tree
+cerberus-domain/src/tree.rs:126:60: replace += with *= in traverse_tree
+cerberus-domain/src/tree.rs:128:41: replace += with -= in traverse_tree
+cerberus-domain/src/tree.rs:128:41: replace += with *= in traverse_tree

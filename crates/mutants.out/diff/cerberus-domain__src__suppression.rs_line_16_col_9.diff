@@ -1,0 +1,21 @@
+--- cerberus-domain/src/suppression.rs
++++ replace Suppression::is_expired -> bool with true
+@@ -8,17 +8,17 @@
+     pub reason: String,
+     pub author: String,
+     pub expires: DateTime<Utc>,
+     pub signature: String,
+ }
+ 
+ impl Suppression {
+     pub fn is_expired(&self) -> bool {
+-        Utc::now() > self.expires
++        true /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     pub fn canonical_payload(&self) -> String {
+         format!(
+             "{}:{}:{}:{}:{}",
+             self.rule_id,
+             self.fingerprint,
+             self.reason,

@@ -1,0 +1,16 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace <impl Visit<'_> for ErrorRulesVisitor<'a, 'b>>::visit_expr with ()
+@@ -282,12 +282,11 @@
+                     });
+                 }
+             }
+         }
+         syn::visit::visit_impl_item(self, item);
+     }
+ 
+     fn visit_expr(&mut self, item: &Expr) {
+-        self.checker.check_library_panic(item, self.violations);
+-        syn::visit::visit_expr(self, item);
++        () /* ~ changed by cargo-mutants ~ */
+     }
+ }

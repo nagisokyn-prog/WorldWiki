@@ -6,6 +6,7 @@ members = [
     "cerberus-infrastructure",
     "cargo-cerberus",
     "cerberus-sfc",
+    "cerberus-testability",
 ]
 exclude = [
     "cargo-cerberus/tests/fixtures/valid_clean_hexagonal",

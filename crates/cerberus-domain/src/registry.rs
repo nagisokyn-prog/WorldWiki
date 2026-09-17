@@ -44,11 +44,16 @@ impl BuiltinRuleRegistry {
             r("VUE-001", Category::Convention, Severity::Deny, "Heavy business logic in <script setup>", "<script setup> block exceeds 30 lines of glue code. Logic must be decomposed into companion hook.", "Extract state, computed, and methods into use<Component>.ts hook."),
             r("VUE-002", Category::Convention, Severity::Deny, "Missing companion use<Component>.ts hook", "Non-trivial Vue component must have a companion use<Component>.ts hook.", "Create use<Component>.ts alongside <Component>.vue."),
             r("VUE-003", Category::Convention, Severity::Deny, "Declaring types inside .vue file is forbidden", "Interface Props, Emits, and DTO declarations must be placed in .model.ts or .types.ts.", "Move interfaces and types to <Component>.model.ts."),
+            r("VUE-007", Category::Robustness, Severity::Deny, "Reactivity Destructuring Loss", "Destructuring props or store directly breaks Vue 3 reactive Proxy connections.", "Use toRefs(props) or storeToRefs(store) to maintain reactive signals."),
+            r("VUE-008", Category::Convention, Severity::Deny, "Direct Prop Mutation Violation", "Directly mutating props (props.x = val or props.list.push()) violates one-way data flow.", "Emit update events to parent (emit('update:...')) instead of mutating props."),
+            r("VUE-009", Category::Performance, Severity::Deny, "Heavy Template Method in Loop Anti-pattern", "Calling heavy functions or methods in v-for without stable key causes frame drops on every render.", "Precompute mapped data into computed() property or use stable unique :key."),
+            r("TAURI-002", Category::Architecture, Severity::Deny, "Direct IPC in UI Component", "Calling invoke() or importing @tauri-apps/api directly from .vue presentation component is prohibited.", "Isolate Tauri IPC calls into shared API client services (@/shared/api/*.ts)."),
 
             // 3. CSS & Design Tokens Rules
             r("CSS-001", Category::Convention, Severity::Deny, "Hardcoded Hex/RGB/HSL color in CSS", "Direct Hex/RGB/HSL and named HTML colors are prohibited. Design system tokens must be used.", "Replace hardcoded color with var(--color-*) design token."),
             r("CSS-002", Category::Convention, Severity::Deny, "Missing design tokens for border-radius/transitions", "Hardcoded border-radius (8px, 4px) and transition durations violate design token standard.", "Use var(--border-radius-*) and var(--transition-*)."),
             r("CSS-004", Category::Convention, Severity::Deny, "CSS bloat in <style> block", "Scoped <style> block exceeds 70 lines. Style sheets must be decomposed with atomic subcomponents.", "Decompose template and styles into smaller subcomponents."),
+            r("CSS-006", Category::Convention, Severity::Deny, "Important Rule Abuse in Scoped CSS", "Using !important in scoped component styles breaks CSS cascade specificity and theme overrides.", "Refactor CSS selector specificity instead of using !important."),
 
             // 4. Feature-Sliced Design (FSD) Rules
             r("FSD-001", Category::Architecture, Severity::Deny, "FSD Layer Boundary Violation", "Lower FSD layer cannot import from upper layers.", "Follow FSD hierarchy: app -> pages -> widgets -> features -> entities -> shared."),
@@ -56,7 +61,7 @@ impl BuiltinRuleRegistry {
             r("FSD-003", Category::Architecture, Severity::Deny, "UI-Kit package cannot import business stores", "@worldwiki/components UI kit must remain pure and cannot import business stores/Pinia.", "Pass callbacks and props into UI-Kit components from host application."),
             r("FSD-004", Category::Architecture, Severity::Deny, "FSD Cross-slice direct dependency", "Sibling slices at the same level cannot directly depend on each other.", "Compose slices at widgets or pages level."),
 
-            // 5. Performance Rules
+            // 5. Performance & Reactive Rules
             r("PERF-001", Category::Performance, Severity::Deny, "Deep reactivity on large data structure / AST", "Wrapping 1000+ AST nodes or large logs in ref()/reactive() causes massive CPU overhead.", "Use shallowRef() + triggerRef(), markRaw(), or Object.freeze()."),
             r("PERF-002", Category::Performance, Severity::Deny, "Deep reactivity on Three.js / Canvas / Monaco instances", "Wrapping Canvas/WebGL/Monaco instances in Vue Proxy causes memory leaks.", "Wrap instance in markRaw(new Instance())."),
             r("PERF-003", Category::Performance, Severity::Deny, "Memory allocation inside requestAnimationFrame render loop", "Allocating objects inside RAF loop triggers GC frame drops.", "Preallocate reusable vectors and buffers outside render loop."),
@@ -65,6 +70,7 @@ impl BuiltinRuleRegistry {
             r("PERF-006", Category::Performance, Severity::Deny, "Blocking I/O in Drop Implementation", "Calling filesystem, process spawn or thread sleep in Drop can block runtime or cause deadlock.", "Perform asynchronous graceful shutdown explicitly."),
             r("PERF-011", Category::Performance, Severity::Warn, "I/O Operation in Iteration Loop", "Invoking filesystem or network operations in for/while loops causes N+1 performance collapse.", "Batch I/O operations outside the loop."),
             r("PERF-012", Category::Performance, Severity::Warn, "Unbounded Async Channel", "tokio::sync::mpsc::unbounded_channel() without capacity causes out-of-memory under high load.", "Use bounded channel with backpressure."),
+            r("PERF-DOM-001", Category::Performance, Severity::Warn, "Layout Thrashing / Forced Synchronous Reflow", "Interleaving DOM geometry reads (offsetHeight, scrollTop) and style writes in loops causes forced reflow.", "Batch DOM reads first, then apply writes using requestAnimationFrame()."),
 
             // 6. Concurrency Rules
             r("CONC-002", Category::Concurrency, Severity::Deny, "Orphan Background Tokio Task", "tokio::spawn without storing JoinHandle or passing CancellationToken risks task leakage.", "Store JoinHandle or attach CancellationToken."),
@@ -85,17 +91,21 @@ impl BuiltinRuleRegistry {
             r("AI-009", Category::AiDefense, Severity::Warn, "Undated / Unbounded TODO Stub", "TODO or FIXME without expiration date or issue link causes technical debt accumulation.", "Use format // TODO(YYYY-MM-DD, #issue): description."),
             r("AI-013", Category::AiDefense, Severity::Deny, "Unauthorized Compiler Warning Suppression", "Adding #[allow(dead_code)], #[allow(unused)] or clippy suppressions without ledger signature is prohibited.", "Sign suppression in cerberus ledger or eliminate root cause."),
 
-            // 9. Testability & Pure Domain Rules
+            // 9. Testability, Type Safety & Domain Rules
             r("TEST-002", Category::Testability, Severity::Deny, "Mutable Global State in Testable Code", "Global mutable locks hinder deterministic parallel testing.", "Inject dependencies and state through struct constructors."),
             r("TEST-003", Category::Testability, Severity::Warn, "Direct Adapter Instantiation in Domain", "Domain creating concrete storage adapter directly violates Dependency Inversion.", "Accept Arc<dyn Port> through constructor."),
             r("TEST-005", Category::Testability, Severity::Deny, "Non-Deterministic System Call in Domain", "Direct calls to SystemTime::now(), Instant::now(), or Uuid::new_v4() inside domain violate deterministic domain purity.", "Inject time/id provider port or pass timestamp as method argument."),
+            r("TS-BORROW-001", Category::Architecture, Severity::Deny, "Store State Direct Aliasing Mutation", "Directly mutating store.state.* properties from presentation components bypasses store actions.", "Call typed store actions to modify application state."),
+            r("TS-MATCH-001", Category::Robustness, Severity::Deny, "Non-Exhaustive Tagged Union Pattern Match", "Switch on external or multi-variant tagged union lacks exhaustive assertNever default branch.", "Add default: return assertNever(discriminant); to guarantee compile-time exhaustiveness."),
 
             // 10. Data Integrity Rules
             r("DATA-001", Category::DataIntegrity, Severity::Deny, "Network or Blocking I/O inside Database Transaction", "Performing network calls within open DB transaction causes connection pool starvation.", "Move external I/O outside transaction boundary."),
             r("DATA-005", Category::DataIntegrity, Severity::Deny, "Floating Point Used for Financial / Currency Values", "f32/f64 suffer from binary rounding errors for currency.", "Use integer cents (i64) or rust_decimal::Decimal."),
 
-            // 11. Memory & IPC Leak Rules
+            // 11. Memory, IPC Leak & Drift Rules
             r("LEAK-001", Category::Robustness, Severity::Deny, "Uncleaned Tauri IPC listener or setInterval timer", "Calling listen() or setInterval() without corresponding cleanup leaks memory.", "Save unlisten handle and clean up symmetrically in onUnmounted()."),
+            r("FE-RAII-001", Category::Robustness, Severity::Deny, "Symmetric Lifecycle Cleanup Violation", "Global event listeners, timers or IPC subscriptions are not symmetrically released in onUnmounted().", "Release all allocated handles in onUnmounted()."),
+            r("TAURI-DRIFT-001", Category::Architecture, Severity::Warn, "Cross-Language DTO Schema Drift", "Field names, types or serde renaming modifiers in Rust tauri commands mismatch TypeScript client DTOs.", "Sync Rust DTO struct and TypeScript interface fields."),
         ]
     }
 
@@ -131,9 +141,14 @@ impl BuiltinRuleRegistry {
             ("vue/no-monolith-script-setup", "VUE-001"),
             ("vue/require-companion-hook", "VUE-002"),
             ("vue/no-types-in-sfc", "VUE-003"),
+            ("vue/no-destructure", "VUE-007"),
+            ("vue/no-prop-mutation", "VUE-008"),
+            ("vue/no-template-methods", "VUE-009"),
+            ("tauri/no-direct-ipc", "TAURI-002"),
             ("css/no-hardcoded-colors", "CSS-001"),
             ("css/require-design-tokens", "CSS-002"),
             ("css/max-style-lines", "CSS-004"),
+            ("css/no-important", "CSS-006"),
             ("fsd/layer-imports-hierarchy", "FSD-001"),
             ("fsd/public-api-only", "FSD-002"),
             ("fsd/ui-kit-zero-domain", "FSD-003"),
@@ -146,6 +161,7 @@ impl BuiltinRuleRegistry {
             ("perf/no-blocking-in-drop", "PERF-006"),
             ("perf/no-io-in-loops", "PERF-011"),
             ("perf/no-unbounded-channels", "PERF-012"),
+            ("perf/layout-thrashing", "PERF-DOM-001"),
             ("conc/no-orphan-spawn", "CONC-002"),
             ("conc/no-double-lock", "CONC-006"),
             ("conc/no-static-mut", "CONC-008"),
@@ -162,9 +178,13 @@ impl BuiltinRuleRegistry {
             ("test/no-mutable-global-state", "TEST-002"),
             ("test/no-direct-adapter-instantiation", "TEST-003"),
             ("test/deterministic-domain", "TEST-005"),
+            ("ts/store-aliasing", "TS-BORROW-001"),
+            ("ts/exhaustive-match", "TS-MATCH-001"),
             ("data/no-io-in-transactions", "DATA-001"),
             ("data/no-float-money", "DATA-005"),
             ("leak/uncleaned-ipc-listener", "LEAK-001"),
+            ("fe/raii-cleanup", "FE-RAII-001"),
+            ("tauri/dto-drift", "TAURI-DRIFT-001"),
         ];
 
         let mut map = HashMap::new();

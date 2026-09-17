@@ -58,6 +58,18 @@ mod tests {
             signature: "sig".into(),
         };
         assert!(expired_s.is_expired());
+
+        // Boundary test: future is never expired
+        let future_boundary = Utc::now() + chrono::Duration::seconds(5);
+        let s_future = Suppression {
+            rule_id: "ARCH-001".into(),
+            fingerprint: "fp123".into(),
+            reason: "temporary".into(),
+            author: "alice".into(),
+            expires: future_boundary,
+            signature: "sig".into(),
+        };
+        assert!(!s_future.is_expired());
     }
 }
 

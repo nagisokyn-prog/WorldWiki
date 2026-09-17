@@ -1,0 +1,26 @@
+--- cerberus-domain/src/registry.rs
++++ replace BuiltinRuleRegistry::canonical_rule_id -> String with String::new()
+@@ -170,22 +170,17 @@
+         let mut map = HashMap::new();
+         for (k, v) in pairs {
+             map.insert(k.to_string(), v.to_string());
+         }
+         map
+     }
+ 
+     pub fn canonical_rule_id(key: &str) -> String {
+-        let aliases = Self::alias_map();
+-        if let Some(canonical) = aliases.get(key) {
+-            canonical.clone()
+-        } else {
+-            key.to_string()
+-        }
++        String::new() /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+ 
+     #[test]

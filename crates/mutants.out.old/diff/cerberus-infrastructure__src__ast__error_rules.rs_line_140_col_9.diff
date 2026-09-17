@@ -1,0 +1,47 @@
+--- cerberus-infrastructure/src/ast/error_rules.rs
++++ replace ErrorRulesChecker<'a>::check_pub_fn with ()
+@@ -132,43 +132,17 @@
+                         });
+                     }
+                 }
+             }
+         }
+     }
+ 
+     fn check_pub_fn(&self, item_fn: &ItemFn, violations: &mut Vec<Violation>) {
+-        if !self.is_rule_enabled("ERR-003") {
+-            return;
+-        }
+-
+-        if let Visibility::Public(_) = &item_fn.vis {
+-            let ret_str = quote::quote!(#item_fn.sig.output).to_string();
+-            if ret_str.contains("Result <") && ret_str.contains("String >") {
+-                let name = item_fn.sig.ident.to_string();
+-                let snippet = format!("pub fn {}(...) -> {}", name, ret_str);
+-                let fp = compute_fingerprint("ERR-003", "1.0", &name, &snippet);
+-
+-                violations.push(Violation {
+-                    rule_id: "ERR-003".into(),
+-                    rule_version: "1.0".into(),
+-                    category: Category::ErrorHandling,
+-                    severity: self.get_severity("ERR-003", Severity::Warn),
+-                    file: PathBuf::from(self.file_path),
+-                    line: 1,
+-                    column: 1,
+-                    symbol: name,
+-                    message: "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.".into(),
+-                    snippet,
+-                    remediation: "Define domain-specific typed error enum using thiserror (e.g., Result<T, DomainError>).".into(),
+-                    fingerprint: fp,
+-                });
+-            }
+-        }
++        () /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     fn check_library_panic(&self, expr: &Expr, violations: &mut Vec<Violation>) {
+         if !self.is_rule_enabled("ERR-005") {
+             return;
+         }
+ 
+         let is_lib_target = self.crate_name.contains("domain")

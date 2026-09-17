@@ -1,0 +1,21 @@
+--- cerberus-domain/src/traits.rs
++++ replace <impl DomainModel for crate::rules::Violation>::model_type -> &'static str with "xyzzy"
+@@ -56,17 +56,17 @@
+ impl Fingerprintable for crate::rules::Violation {
+     fn compute_fingerprint(&self) -> String {
+         self.fingerprint.clone()
+     }
+ }
+ 
+ impl DomainModel for crate::rules::Violation {
+     fn model_type(&self) -> &'static str {
+-        "Violation"
++        "xyzzy" /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use crate::rules::{Category, Severity, Violation};
+     use std::path::PathBuf;

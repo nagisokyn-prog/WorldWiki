@@ -1,0 +1,38 @@
+--- cerberus-domain/src/tree.rs
++++ replace traverse_tree with ()
+@@ -112,34 +112,10 @@
+ fn traverse_tree(
+     items: &[TreeItemNode],
+     total_files: &mut usize,
+     healthy_count: &mut usize,
+     warning_count: &mut usize,
+     critical_count: &mut usize,
+     hotspots: &mut Vec<FileMetricsNode>,
+ ) {
+-    for item in items {
+-        match item {
+-            TreeItemNode::File(file) => {
+-                *total_files += 1;
+-                match file.health {
+-                    HealthLevel::Healthy => *healthy_count += 1,
+-                    HealthLevel::Warning => *warning_count += 1,
+-                    HealthLevel::Critical => {
+-                        *critical_count += 1;
+-                        hotspots.push(file.clone());
+-                    }
+-                }
+-            }
+-            TreeItemNode::Dir(dir) => {
+-                traverse_tree(
+-                    &dir.children,
+-                    total_files,
+-                    healthy_count,
+-                    warning_count,
+-                    critical_count,
+-                    hotspots,
+-                );
+-            }
+-        }
+-    }
++    () /* ~ changed by cargo-mutants ~ */
+ }

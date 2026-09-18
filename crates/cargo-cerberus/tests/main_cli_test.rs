@@ -70,6 +70,12 @@ fn test_run_app_all_subcommands() {
         rules_path: Some(rules_file.clone()),
         validate_rules: false,
         command: Some(Commands::Init {
+            path: temp.path().to_path_buf(),
+            preset: None,
+            adopt: true,
+            force: true,
+            frontend_only: false,
+            backend_only: false,
             hooks: false,
             models: false,
         }),
@@ -79,6 +85,12 @@ fn test_run_app_all_subcommands() {
         rules_path: Some(rules_file.clone()),
         validate_rules: false,
         command: Some(Commands::Init {
+            path: temp.path().to_path_buf(),
+            preset: None,
+            adopt: true,
+            force: true,
+            frontend_only: false,
+            backend_only: false,
             hooks: true,
             models: false,
         }),
@@ -113,12 +125,15 @@ fn test_run_app_all_subcommands() {
 
     // 4.1. Tree command (console and JSON export)
     let tree_json = temp.path().join("tree.json");
+    let tree_txt = temp.path().join("tree.txt");
     assert!(run_app(Cli {
         rules_path: Some(rules_file.clone()),
         validate_rules: false,
         command: Some(Commands::Tree {
             path: temp.path().to_path_buf(),
             json: Some(tree_json.clone()),
+            save_json: None,
+            output: None,
         }),
     }).is_ok());
     assert!(tree_json.exists());
@@ -129,8 +144,11 @@ fn test_run_app_all_subcommands() {
         command: Some(Commands::Tree {
             path: temp.path().to_path_buf(),
             json: None,
+            save_json: None,
+            output: Some(tree_txt.clone()),
         }),
     }).is_ok());
+    assert!(tree_txt.exists());
 
     // Tree error branches
     assert!(run_app(Cli {
@@ -139,6 +157,8 @@ fn test_run_app_all_subcommands() {
         command: Some(Commands::Tree {
             path: PathBuf::from("non_existent_tree_path_123"),
             json: None,
+            save_json: None,
+            output: None,
         }),
     }).is_err());
 
@@ -411,7 +431,16 @@ fn test_cli_deep_coverage_branches() {
     // Execute command with invalid rules path
     let bad_rules_path = PathBuf::from("non_existent_rules_404.json");
     assert!(cargo_cerberus::commands::execute_command(
-        Commands::Init { hooks: false, models: false },
+        Commands::Init {
+            path: PathBuf::from("."),
+            preset: None,
+            adopt: false,
+            force: true,
+            frontend_only: false,
+            backend_only: false,
+            hooks: false,
+            models: false,
+        },
         Some(&bad_rules_path),
     ).is_err());
 
@@ -419,8 +448,18 @@ fn test_cli_deep_coverage_branches() {
     assert!(cargo_cerberus::commands::validate_rules_registry(Some(&bad_rules_path)).is_err());
 
     // Init command
+    let init_temp = tempdir().unwrap();
     assert!(cargo_cerberus::commands::execute_command(
-        Commands::Init { hooks: true, models: false },
+        Commands::Init {
+            path: init_temp.path().to_path_buf(),
+            preset: None,
+            adopt: true,
+            force: true,
+            frontend_only: false,
+            backend_only: false,
+            hooks: true,
+            models: false,
+        },
         None,
     ).is_ok());
 

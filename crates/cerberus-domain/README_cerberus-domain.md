@@ -33,6 +33,7 @@
 ```
 crates/cerberus-domain/src/
 ├── lib.rs            # 📚 Корневой модуль и реэкспорт доменного API
+├── catalog.rs        # 📖 Офлайн-каталог документации правил (RuleCatalog, RuleDocEntry)
 ├── rules.rs          # 📜 Сущности Rule, Severity, Violation, Fingerprints
 ├── registry.rs       # 🏛️ Встроенный эталонный реестр правил (BuiltinRuleRegistry)
 ├── suppression.rs    # 🔐 Модель SuppressionRecord, подписи HMAC-SHA256

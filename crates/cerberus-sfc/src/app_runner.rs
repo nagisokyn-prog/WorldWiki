@@ -10,11 +10,15 @@ use cerberus_infrastructure::{
 };
 use cerberus_ports::AstParserPort;
 
-use crate::cli::{Cli, Commands};
+use crate::cli::{Cli, Commands, RuleCommands};
 
 pub fn run_app(cli: Cli) -> Result<(), String> {
-    if let Some(Commands::Init { force }) = cli.command {
-        return handle_init(force);
+    if let Some(Commands::Init { path, adopt, force }) = cli.command {
+        return handle_init(&path, adopt, force);
+    }
+
+    if let Some(Commands::Rule { action }) = cli.command {
+        return handle_rule(action);
     }
 
     let rules_path = RulesJsonRepository::find_rules_path(cli.rules_path.as_ref());
@@ -51,53 +55,61 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
     }
 }
 
-fn handle_init(force: bool) -> Result<(), String> {
+fn handle_init(path: &Path, adopt: bool, force: bool) -> Result<(), String> {
     println!("{}", "🚀 Initializing Cerberus Frontend Guardian...".cyan().bold());
-    let config_path = Path::new("cerberus.json");
-    if config_path.exists() && !force {
-        println!("{} cerberus.json already exists (use --force to overwrite)", "ℹ️".yellow());
-        return Ok(());
-    }
 
-    let initial_config = r#"{
-  "$schema": "https://cerberus-firewall.dev/schema.json",
-  "version": "1.0",
-  "ignore": [
-    ".logic_legacy/**",
-    "tests/fixtures/**",
-    "target/**",
-    "node_modules/**",
-    "dist/**",
-    "coverage/**"
-  ],
-  "extends": [
-    "cerberus:vue-clean-architecture",
-    "cerberus:fsd-strict",
-    "cerberus:perf-high-fps",
-    "cerberus:css-design-tokens"
-  ],
-  "rules": {
-    "vue/no-monolith-script-setup": "deny",
-    "vue/require-companion-hook": "deny",
-    "vue/no-types-in-sfc": "deny",
-    "css/no-hardcoded-colors": "deny",
-    "css/require-design-tokens": "deny",
-    "css/max-style-lines": "warn",
-    "fsd/layer-imports-hierarchy": "deny",
-    "fsd/public-api-only": "deny",
-    "fsd/ui-kit-zero-domain": "deny",
-    "perf/shallow-ref-for-heavy-ast": "deny",
-    "perf/no-reactive-canvas-three": "deny",
-    "perf/no-allocations-in-raf": "deny",
-    "leak/uncleaned-ipc-listener": "deny"
-  }
-}
-"#;
-    if let Err(e) = std::fs::write(config_path, initial_config) {
-        return Err(format!("Failed to create cerberus.json: {}", e));
+    let opts = cerberus_application::ScaffoldOptions::new(path, cerberus_application::ProjectScope::FrontendOnly)
+        .with_adopt(adopt)
+        .with_force(force);
+
+    match cerberus_application::ScaffoldUseCase::execute(&opts) {
+        Ok(report) => {
+            println!("{} {}", "✅".green().bold(), report.message);
+            Ok(())
+        }
+        Err(e) => Err(format!("{} {}", "❌ Frontend scaffolding failed:".red().bold(), e)),
     }
-    println!("{} Created cerberus.json with standard Vue/FSD/Perf presets.", "✅".green().bold());
-    Ok(())
+}
+
+fn handle_rule(action: RuleCommands) -> Result<(), String> {
+    match action {
+        RuleCommands::List { json, markdown } => {
+            let format = if json {
+                cerberus_application::ExplainFormat::Json
+            } else if markdown {
+                cerberus_application::ExplainFormat::Markdown
+            } else {
+                cerberus_application::ExplainFormat::Terminal
+            };
+            match cerberus_application::ExplainRuleUseCase::list(format) {
+                Ok(out) => {
+                    print!("{}", out);
+                    Ok(())
+                }
+                Err(e) => Err(format!("{} {}", "❌ Error listing rules:".red().bold(), e)),
+            }
+        }
+        RuleCommands::Explain {
+            rule,
+            json,
+            markdown,
+        } => {
+            let format = if json {
+                cerberus_application::ExplainFormat::Json
+            } else if markdown {
+                cerberus_application::ExplainFormat::Markdown
+            } else {
+                cerberus_application::ExplainFormat::Terminal
+            };
+            match cerberus_application::ExplainRuleUseCase::explain(&rule, format) {
+                Ok(card) => {
+                    print!("{}", card);
+                    Ok(())
+                }
+                Err(e) => Err(format!("{} {}", "❌ Error explaining rule:".red().bold(), e)),
+            }
+        }
+    }
 }
 
 fn validate_rules(rules_repo: &RulesJsonRepository) -> Result<(), String> {
@@ -237,12 +249,18 @@ mod tests {
 
         // test handle_init
         let init_temp = tempdir().unwrap();
-        let old_cwd = std::env::current_dir().unwrap();
-        std::env::set_current_dir(init_temp.path()).unwrap();
-        assert!(handle_init(false).is_ok());
-        assert!(handle_init(false).is_ok()); // already exists
-        assert!(handle_init(true).is_ok()); // force overwrite
-        std::env::set_current_dir(old_cwd).unwrap();
+        assert!(handle_init(init_temp.path(), false, false).is_ok());
+        assert!(handle_init(init_temp.path(), false, false).is_ok()); // already exists, skips gracefully
+        assert!(handle_init(init_temp.path(), true, true).is_ok()); // force overwrite
+
+        // test handle_rule
+        assert!(handle_rule(RuleCommands::List { json: false, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::List { json: true, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::List { json: false, markdown: true }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "VUE-007".into(), json: false, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "VUE-007".into(), json: true, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "VUE-007".into(), json: false, markdown: true }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "NONEXISTENT".into(), json: false, markdown: false }).is_err());
 
         // test handle_tree console and json
         let tree_json = temp.path().join("tree.json");
@@ -300,12 +318,31 @@ mod tests {
         assert!(run_app(cli_default).is_ok());
 
         // test run_app init command
+        let init_run_temp = tempdir().unwrap();
         let cli_init = Cli {
-            command: Some(Commands::Init { force: true }),
+            command: Some(Commands::Init {
+                path: init_run_temp.path().to_path_buf(),
+                adopt: true,
+                force: true,
+            }),
             rules_path: None,
             validate_rules: false,
         };
         assert!(run_app(cli_init).is_ok());
+
+        // test run_app rule command
+        let cli_rule = Cli {
+            command: Some(Commands::Rule {
+                action: RuleCommands::Explain {
+                    rule: "CSS-001".into(),
+                    json: false,
+                    markdown: false,
+                },
+            }),
+            rules_path: None,
+            validate_rules: false,
+        };
+        assert!(run_app(cli_rule).is_ok());
 
         // test run_check with Deny violation
         let deny_temp = tempdir().unwrap();

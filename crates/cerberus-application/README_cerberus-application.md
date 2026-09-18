@@ -35,6 +35,8 @@
 ```
 crates/cerberus-application/src/
 ├── lib.rs                  # 📚 Корневой модуль, реэкспорт всех Use Case'ов
+├── explain_rule.rs         # 📖 ExplainRuleUseCase (Офлайн-карточки правил, Markdown, JSON, Terminal)
+├── scaffold.rs             # 🏗️ ScaffoldUseCase (Генерация cerberus.json, CERBERUS.md, baseline)
 ├── scan_workspace.rs       # 🔍 ScanWorkspaceUseCase (Главный сценарий аудита)
 ├── explain_clusters.rs     # 🧠 ExplainClustersUseCase (Семантическая кластеризация AI)
 ├── render_tree.rs          # 🌳 RenderTreeUseCase (Построение дерева компонентов)
@@ -43,7 +45,8 @@ crates/cerberus-application/src/
 ├── sign_suppression.rs     # ✍️ SignSuppressionUseCase (Подписание подавления HMAC-SHA256)
 ├── re_sign_all.rs          # 🔄 ReSignAllUseCase (Ротация ключей и переподписание реестра)
 ├── reconcile_baseline.rs   # 📄 ReconcileBaselineUseCase (Нормализация cerberus-baseline.json)
-└── download_model.rs       # ⬇️ DownloadModelUseCase (Загрузка и верификация ONNX-модели)
+├── download_model.rs       # ⬇️ DownloadModelUseCase (Загрузка и верификация ONNX-модели)
+└── templates/              # 📋 Встроенные шаблоны (CERBERUS.template.md)
 ```
 
 ---

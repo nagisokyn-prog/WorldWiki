@@ -19,6 +19,7 @@ pub enum Category {
     SupplyChain,
     AiDefense,
     Testability,
+    Frontend,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -1,0 +1,168 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Cerberus Architectural & Frontend Configuration Schema",
+  "description": "Configuration schema for Cerberus Architectural Firewall and Frontend AST Engine",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference URL or path"
+    },
+    "version": {
+      "type": "string",
+      "description": "Cerberus configuration schema version"
+    },
+    "backend": {
+      "type": "object",
+      "description": "Backend (Rust) Architectural Matrix and Invariants",
+      "properties": {
+        "layers": {
+          "type": "object",
+          "description": "Dictionary of architectural layers and their topology rules",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "allowed_deps": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of internal layers this layer is permitted to import"
+              },
+              "forbidden_deps": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of internal layers strictly forbidden from being imported"
+              },
+              "allowed_external": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of external SDK crates permitted in this layer (e.g. ['tauri'])"
+              },
+              "forbidden_external": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "List of external SDK crates strictly forbidden in this layer (e.g. ['reqwest', 'tokio', 'tauri'])"
+              },
+              "description": {
+                "type": "string",
+                "description": "Human-readable purpose and architectural boundary description"
+              }
+            }
+          }
+        },
+        "sla": {
+          "type": "object",
+          "description": "Service Level Agreements for architectural health and testability",
+          "properties": {
+            "min_testability_score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Minimum acceptable Testability Index (TI) composite score"
+            },
+            "max_violations_warning": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum tolerated warning-level violations before CI failure"
+            },
+            "max_violations_deny": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Maximum tolerated deny-level violations before CI failure"
+            }
+          }
+        }
+      }
+    },
+    "frontend": {
+      "type": "object",
+      "description": "Frontend (Vue 3, TypeScript, CSS) AST & FSD Governance",
+      "properties": {
+        "ast": {
+          "type": "object",
+          "description": "Vue 3 AST Reactivity & Performance Rules",
+          "properties": {
+            "enforce_shallow_ref": {
+              "type": "boolean",
+              "description": "Enforce shallowRef for large collections, AST, and foreign instances"
+            },
+            "ban_deep_watcher": {
+              "type": "boolean",
+              "description": "Ban unconstrained watch(..., { deep: true }) causing reactivity storms"
+            },
+            "max_dom_nodes_threshold": {
+              "type": "integer",
+              "description": "Threshold of DOM elements before virtual scrolling is mandated"
+            },
+            "enforce_raii_cleanup": {
+              "type": "boolean",
+              "description": "Ensure symmetrical cleanup of IPC listeners and timers in onUnmounted"
+            }
+          }
+        },
+        "fsd": {
+          "type": "object",
+          "description": "Feature-Sliced Design slice hierarchy settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Feature-Sliced Design hierarchy linting"
+            },
+            "hierarchy": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Ordered slice hierarchy from top to bottom"
+            }
+          }
+        },
+        "css": {
+          "type": "object",
+          "description": "Scoped CSS and Design Token rules",
+          "properties": {
+            "ban_hex_colors": {
+              "type": "boolean",
+              "description": "Prohibit direct Hex color literals (#fff, #000000)"
+            },
+            "ban_raw_rgb": {
+              "type": "boolean",
+              "description": "Prohibit direct rgb() and rgba() function calls"
+            },
+            "ban_named_colors": {
+              "type": "boolean",
+              "description": "Prohibit named HTML colors (red, black, white, blue)"
+            },
+            "enforce_design_tokens": {
+              "type": "boolean",
+              "description": "Require all color values to use CSS custom properties var(--color-*)"
+            }
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "description": "Structural AST code size and complexity thresholds",
+      "properties": {
+        "max_file_loc": {
+          "type": "integer",
+          "description": "Maximum allowed lines of code per file"
+        },
+        "max_fn_loc": {
+          "type": "integer",
+          "description": "Maximum allowed lines of code per function"
+        },
+        "max_cyclomatic_complexity": {
+          "type": "integer",
+          "description": "Maximum allowed cyclomatic complexity per function"
+        },
+        "max_cognitive_complexity": {
+          "type": "integer",
+          "description": "Maximum allowed cognitive complexity per function"
+        },
+        "max_fn_params": {
+          "type": "integer",
+          "description": "Maximum allowed parameter count per function"
+        }
+      }
+    }
+  }
+}

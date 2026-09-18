@@ -429,24 +429,42 @@ cargo install --path crates/cerberus-sfc
 ```bash
 # 1. Запуск полного аудита проекта
 cargo cerberus check
+cargo cerberus check --layer-matrix               # Проверка топологической матрицы слоев
+cargo cerberus check --ci --sarif target/cerberus-report.sarif # Режим CI/CD с кодом возврата 1
 
-# 2. Аудит в режиме CI/CD (с кодом возврата 1 при Deny нарушениях и экспортом SARIF)
-cargo cerberus check --ci --sarif target/cerberus-report.sarif
+# 2. Офлайн-реестр правил и карточки ремедиации (Zero Network)
+cargo cerberus rule list                          # Вывод полного списка зарегистрированных правил
+cargo cerberus rule explain ARCH-001              # Детальная карточка с Rationale, Bad/Good примерами и фиксом
+cargo cerberus rule explain VUE-007 --markdown    # Экспорт карточки правила в формате Markdown
+cargo cerberus rule explain CSS-001 --json        # Экспорт описания правила в JSON
 
-# 3. Визуализация дерева архитектуры компонентов и расчет Blast Radius
-cargo cerberus tree
+# 3. Инициализация и внедрение в легаси-проекты
+cargo cerberus init                               # Генерация cerberus.json ($schema) и CERBERUS.md
+cargo cerberus init --adopt                       # Захват текущих нарушений в baseline без падения CI
+cargo cerberus init --frontend-only               # Инициализация конфигурации только для фронтенда
 
-# 4. Анализ семантических кластеров долга
-cargo cerberus explain
+# 4. Визуализация дерева архитектуры компонентов и расчет Blast Radius
+cargo cerberus tree                               # Консольное дерево здоровья кодовой базы
+cargo cerberus tree --json                        # Экспорт дерева в формате JSON
+cargo cerberus tree --save-json ./reports/tree.json # Сохранение JSON-отчета в файл
+cargo cerberus tree --output ./reports/tree.txt   # Сохранение текстового ASCII-дерева в файл
 
-# 5. Загрузка нейросетевой модели CodeBERTa (ONNX)
-cargo cerberus model download
+# 5. Расчет Индекса Тестируемости (Testability Index - TI)
+cargo cerberus testability calculate              # Расчет композитного скора тестируемости
+cargo cerberus testability calculate --strict --min-score 85 # Контроль порога SLA в CI
+cargo cerberus testability explain src/domain.rs  # Детальный разбор архетипов файла
 
-# 6. Подписание подавления нарушения криптографическим ключом
-cargo cerberus ledger sign --rule ARCH-001 --fingerprint <HASH> --reason "Временный техдолг" --author "developer@company.com"
+# 6. Анализ семантических кластеров долга (AI / DBSCAN)
+cargo cerberus explain --clusters                 # Группировка нарушений по смысловым векторам
+cargo cerberus model download                     # Загрузка локальной нейросетевой модели CodeBERTa
 
-# 7. Сверка и нормализация файла baseline
-cargo cerberus baseline reconcile
+# 7. Подписание подавления нарушения криптографическим ключом (HMAC-SHA256)
+cargo cerberus ledger sign --rule ARCH-001 --fingerprint <HASH> --reason "Плановый рефакторинг" --author "dev@company.com"
+cargo cerberus ledger verify                      # Верификация всех активных подписей в ledger.lock
+cargo cerberus ledger re-sign-all                 # Пакетное переподписание при ротации ключей
+
+# 8. Сверка и нормализация файла baseline (Храповик техдолга)
+cargo cerberus baseline reconcile                 # Автоматическое удаление исправленных нарушений из baseline
 ```
 
 ---

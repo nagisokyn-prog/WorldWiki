@@ -46,12 +46,29 @@ pub enum Commands {
         #[arg(long, help = "Scan strictly backend files (Rust)")]
         backend_only: bool,
     },
-    /// Initialize cerberus configuration, hooks and baseline
+    /// Initialize cerberus configuration, constitution, hooks, and baseline
     Init {
+        #[arg(short, long, default_value = ".", help = "Target root directory to scaffold")]
+        path: PathBuf,
+        #[arg(long, help = "Scaffold preset (e.g. hexagonal, clean, modular)")]
+        preset: Option<String>,
+        #[arg(long, help = "Adopt existing codebase and grandfather current violations into baseline")]
+        adopt: bool,
+        #[arg(long, help = "Force overwrite existing cerberus.json or CERBERUS.md")]
+        force: bool,
+        #[arg(long, help = "Scaffold strictly frontend configuration")]
+        frontend_only: bool,
+        #[arg(long, help = "Scaffold strictly backend configuration")]
+        backend_only: bool,
         #[arg(long, help = "Install git hooks")]
         hooks: bool,
         #[arg(long, help = "Download AI neural model for vector intelligence")]
         models: bool,
+    },
+    /// Inspect rule catalog, explain rationale, and view good/bad code examples
+    Rule {
+        #[command(subcommand)]
+        action: RuleCommands,
     },
     /// Manage vector intelligence neural models (CodeBERTa ONNX)
     Model {
@@ -71,6 +88,10 @@ pub enum Commands {
         path: PathBuf,
         #[arg(long, help = "Path to export JSON tree report")]
         json: Option<PathBuf>,
+        #[arg(long, help = "Path to save JSON tree report (alias for --json)")]
+        save_json: Option<PathBuf>,
+        #[arg(long, help = "Path to save ASCII tree output to text file")]
+        output: Option<PathBuf>,
     },
     /// Reconcile git-merged baseline files
     Baseline {
@@ -92,6 +113,26 @@ pub enum Commands {
         threshold: Option<f64>,
         #[arg(long, help = "Run calibration suite against synthetic anchors")]
         calibrate: bool,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum RuleCommands {
+    /// List all registered architectural and quality rules
+    List {
+        #[arg(long, help = "Output list as JSON")]
+        json: bool,
+        #[arg(long, help = "Output list as Markdown")]
+        markdown: bool,
+    },
+    /// Display full explain card, rationale, good/bad examples, and remediation recipe for a rule
+    Explain {
+        #[arg(help = "Rule ID (e.g. ARCH-001, VUE-007, CSS-001)")]
+        rule: String,
+        #[arg(long, help = "Output card as JSON")]
+        json: bool,
+        #[arg(long, help = "Output card as Markdown")]
+        markdown: bool,
     },
 }
 

@@ -52,28 +52,19 @@ crates/cerberus-sfc/src/
 
 ### 3. [`cli.rs`](./src/cli.rs)
 - **Ответственность**: Конфигурация аргументов командной строки через `clap`.
-- **Флаги**:
-  - `--path <DIR>`: путь к каталогу с фронтенд-компонентами (по умолчанию `.`).
-  - `--rules <FILE>`: путь к файлу правил `.cerberus/rules.json`.
-  - `--ci`: режим CI с возвратом кода 1 при наличии `Deny`.
-  - `--sarif <FILE>`: экспорт результатов в SARIF.
-  - `--json <FILE>`: экспорт результатов в JSON.
-  - `--css-only`: ограничить проверку только CSS дизайн-токенами.
-  - `--vue-only`: ограничить проверку только структурой Vue-компонентов.
+- **Поддерживаемые команды**:
+  - `check`: статический анализ файлов `.vue`, `.css`, `.ts` (`--path`, `--rules-path`, `--ci`, `--sarif`, `--json`).
+  - `rule`: офлайн-документация frontend-правил (`list`, `explain <ID>` с `--json`, `--markdown`).
+  - `init`: инициализация frontend-конфигурации `cerberus.json` (`--adopt`, `--force`, `--path`).
+  - `tree`: построение дерева компонентов и метрик сложности (`--json`).
 
 ### 4. [`app_runner.rs`](./src/app_runner.rs)
-- **Ответственность**: Оркестрация процесса проверки компонентов.
+- **Ответственность**: Главный раннер фронтенд-аудита.
 - **Как работает**:
-  - Сканирует целевую директорию на наличие файлов `.vue` и `.ts`.
-  - Загружает правила из `RulesJsonRepository`.
-  - Передает каждый компонент в `VueSfcParserAdapter`.
-  - Запускает цепочку правил:
-    1. `VueRulesChecker` (монолиты `<script setup>`, компаньоны `use*.ts`, типы в `*.model.ts`).
-    2. `CssRulesChecker` (Hex-цвета, HTML-цвета, `rgb()`, `border-radius`, раздувание стилей).
-    3. `FsdRulesChecker` (границы слоев FSD).
-    4. `PerfRulesChecker` (утечки IPC listeners, deep watch, отсутствие `shallowRef`).
-  - Выводит результаты аудита с префиксом `[cerberus-sfc]` в цветном консольном формате.
-  - При необходимости экспортирует SARIF и JSON отчеты.
+  - `run_check`: запускает `ScanWorkspaceUseCase` с фильтрацией `ScanScope::FrontendOnly`.
+  - `handle_rule`: выводит офлайн-карточки правил через `ExplainRuleUseCase`.
+  - `handle_init`: генерирует frontend-ориентированный `cerberus.json` и baseline через `ScaffoldUseCase`.
+  - `handle_tree`: строит иерархическое дерево фронтенда.
 
 ---
 

@@ -66,21 +66,23 @@ crates/cargo-cerberus/src/
 - **Как работает**:
   - Определяет корневую структуру `Cli` (с поддержкой вызова как `cargo cerberus ...`, так и прямого `cargo-cerberus ...`).
   - Описывает перечисление `Commands`:
-    - `Check`: запуск статического анализа проекта.
+    - `Check`: запуск статического анализа проекта (`--layer-matrix`, `--json`, `--sarif`, `--ci`).
+    - `Rule`: офлайн-документация и карточки правил (`list`, `explain <ID>` с `--json`, `--markdown`).
+    - `Init`: интеллектуальная инициализация `cerberus.json` ($schema), `CERBERUS.md` и baseline (`--adopt`, `--force`, `--frontend-only`, `--backend-only`).
+    - `Tree`: визуализация дерева модулей с метриками (`--json`, `--save-json`, `--output`).
+    - `Testability`: расчет индекса тестируемости (TI) и калибровка анкоров (`--strict`, `--min-score`, `--calibrate`).
     - `Explain`: семантический анализ кластеров долга.
     - `Ledger`: криптографическое управление подавлениями (`Sign`, `ReSign`, `Verify`).
     - `Baseline`: сверка и нормализация baseline-файла (`Reconcile`).
     - `Model`: управление нейросетевыми ONNX-моделями (`Download`, `Status`, `Clean`).
-    - `Tree`: визуализация дерева модулей и компонентов с метриками.
-    - `Init`: инициализация дефолтного `.cerberus/rules.json`.
 
 ### 4. [`commands.rs`](./src/commands.rs)
 
 - **Ответственность**: Диспетчеризация базовых команд системы.
 - **Как работает**:
-  - `handle_init(path)`: создает конфигурационный каталог `.cerberus/` и генерирует эталонный файл правил `rules.json` с дефолтными политиками.
-  - `handle_tree(path, options)`: инстанциирует `WalkdirScannerAdapter`, `RenderTreeUseCase` и `TreeFormatterReporter`, формируя консольное дерево с индикаторами SLOC и Blast Radius.
-  - `validate_rules_repository(repo)`: выполняет проверку целостности загруженного файла правил (отсутствие дубликатов ID, корректность severity).
+  - `handle_init(path, adopt, force, ...)`: использует `ScaffoldUseCase`, создавая `cerberus.json` со схемой, `CERBERUS.md` с полной шпаргалкой CLI и инициирует baseline без сетевых зависимостей.
+  - `handle_rule(action)`: вызывает `ExplainRuleUseCase` для мгновенного отображения правил, антипаттернов и рецептов ремедиации (Terminal, Markdown, JSON).
+  - `handle_tree(path, json, output, repo)`: инстанциирует `RenderTreeUseCase` и `TreeFormatterAdapter`, поддерживая консольный вывод, экспорт в JSON и сохранение в текстовый файл.
 
 ### 5. [`check_runner.rs`](./src/check_runner.rs)
 

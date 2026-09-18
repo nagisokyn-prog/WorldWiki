@@ -16,8 +16,8 @@ fn test_main_entrypoint_and_cli_parsing() {
     let _ = format!("{:?}", cli1);
     let _ = format!("{:?}", cli1.command);
 
-    let cli2 = Cli::try_parse_from(["cerberus-sfc", "init", "--force"]).unwrap();
-    assert!(matches!(cli2.command, Some(Commands::Init { force: true })));
+    let cli2 = Cli::try_parse_from(["cerberus-sfc", "init", "--force", "--adopt", "--path", "."]).unwrap();
+    assert!(matches!(cli2.command, Some(Commands::Init { force: true, adopt: true, .. })));
     let _ = format!("{:?}", cli2);
     let _ = format!("{:?}", cli2.command);
 
@@ -51,7 +51,11 @@ fn test_sfc_run_app_init_and_check() {
     assert!(run_app(Cli {
         rules_path: Some(config_file.clone()),
         validate_rules: false,
-        command: Some(Commands::Init { force: true }),
+        command: Some(Commands::Init {
+            path: temp.path().to_path_buf(),
+            adopt: true,
+            force: true,
+        }),
     }).is_ok());
 
     // Test Tree command
@@ -99,20 +103,26 @@ fn test_sfc_run_app_init_and_check() {
     assert!(run_app(Cli {
         rules_path: Some(config_file),
         validate_rules: false,
-        command: Some(Commands::Init { force: false }),
-    }).is_ok());
+        command: Some(Commands::Init {
+            path: temp.path().to_path_buf(),
+            adopt: false,
+            force: false,
+        }),
+    }).is_ok()); // Already exists, skips gracefully
 
-    // Test Init write failure when cerberus.json is a directory
+    // Test Init write failure when target is invalid file as dir
     let temp_err = tempdir().unwrap();
-    std::fs::create_dir(temp_err.path().join("cerberus.json")).unwrap();
-    let prev_cwd = std::env::current_dir().unwrap();
-    let _ = std::env::set_current_dir(temp_err.path());
+    let bad_file = temp_err.path().join("blocked_file.txt");
+    std::fs::write(&bad_file, "blocking").unwrap();
     assert!(run_app(Cli {
         rules_path: None,
         validate_rules: false,
-        command: Some(Commands::Init { force: true }),
+        command: Some(Commands::Init {
+            path: bad_file.join("sub"),
+            adopt: false,
+            force: true,
+        }),
     }).is_err());
-    let _ = std::env::set_current_dir(prev_cwd);
 }
 
 #[test]

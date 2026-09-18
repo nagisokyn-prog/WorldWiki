@@ -5,7 +5,7 @@ use std::sync::Arc;
 use cerberus_infrastructure::{GitHooksInstaller, NativeModelDownloaderAdapter, RulesJsonRepository};
 
 use crate::check_runner::{run_check, CheckExecutionOptions};
-use crate::cli::Commands;
+use crate::cli::{Commands, RuleCommands};
 use crate::ledger_commands::{handle_baseline, handle_ledger};
 use crate::model_commands::{handle_explain, handle_model};
 
@@ -42,10 +42,28 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
             backend_only,
         }),
 
-        Commands::Init { hooks, models } => handle_init(hooks, models),
+        Commands::Init {
+            path,
+            preset: _,
+            adopt,
+            force,
+            frontend_only,
+            backend_only,
+            hooks,
+            models,
+        } => handle_init(&path, adopt, force, frontend_only, backend_only, hooks, models),
+        Commands::Rule { action } => handle_rule(action),
         Commands::Model { action } => handle_model(action),
         Commands::Explain { path, clusters } => handle_explain(&path, clusters),
-        Commands::Tree { path, json } => handle_tree(&path, json.as_deref(), &rules_repo),
+        Commands::Tree {
+            path,
+            json,
+            save_json,
+            output,
+        } => {
+            let json_target = json.or(save_json);
+            handle_tree(&path, json_target.as_deref(), output.as_deref(), &rules_repo)
+        }
         Commands::Baseline { action } => handle_baseline(action),
         Commands::Ledger { action } => handle_ledger(action),
         Commands::Testability {
@@ -86,15 +104,38 @@ pub fn validate_rules_registry(rules_path: Option<&PathBuf>) -> Result<(), Strin
     }
 }
 
-fn handle_init(hooks: bool, models: bool) -> Result<(), String> {
+fn handle_init(
+    path: &Path,
+    adopt: bool,
+    force: bool,
+    frontend_only: bool,
+    backend_only: bool,
+    hooks: bool,
+    models: bool,
+) -> Result<(), String> {
     println!("{}", "🚀 Initializing Cerberus...".cyan().bold());
-    let baseline_path = Path::new("cerberus-baseline.json");
-    if !baseline_path.exists() && !Path::new("guardian-baseline.json").exists() {
-        let _ = std::fs::write(baseline_path, "[]\n");
-        println!("{} Created empty cerberus-baseline.json", "✅".green());
+
+    let scope = if frontend_only {
+        cerberus_application::ProjectScope::FrontendOnly
+    } else if backend_only {
+        cerberus_application::ProjectScope::BackendOnly
+    } else {
+        cerberus_application::ProjectScope::Fullstack
+    };
+
+    let opts = cerberus_application::ScaffoldOptions::new(path, scope)
+        .with_adopt(adopt)
+        .with_force(force);
+
+    match cerberus_application::ScaffoldUseCase::execute(&opts) {
+        Ok(report) => {
+            println!("{} {}", "✅".green().bold(), report.message);
+        }
+        Err(e) => return Err(format!("{} {}", "❌ Scaffolding failed:".red().bold(), e)),
     }
+
     if hooks {
-        match GitHooksInstaller::install(Path::new(".")) {
+        match GitHooksInstaller::install(path) {
             Ok(_) => println!(
                 "{} Git pre-commit & post-merge hooks installed.",
                 "✅".green()
@@ -126,9 +167,51 @@ fn handle_init(hooks: bool, models: bool) -> Result<(), String> {
     Ok(())
 }
 
+fn handle_rule(action: RuleCommands) -> Result<(), String> {
+    match action {
+        RuleCommands::List { json, markdown } => {
+            let format = if json {
+                cerberus_application::ExplainFormat::Json
+            } else if markdown {
+                cerberus_application::ExplainFormat::Markdown
+            } else {
+                cerberus_application::ExplainFormat::Terminal
+            };
+            match cerberus_application::ExplainRuleUseCase::list(format) {
+                Ok(out) => {
+                    print!("{}", out);
+                    Ok(())
+                }
+                Err(e) => Err(format!("{} {}", "❌ Error listing rules:".red().bold(), e)),
+            }
+        }
+        RuleCommands::Explain {
+            rule,
+            json,
+            markdown,
+        } => {
+            let format = if json {
+                cerberus_application::ExplainFormat::Json
+            } else if markdown {
+                cerberus_application::ExplainFormat::Markdown
+            } else {
+                cerberus_application::ExplainFormat::Terminal
+            };
+            match cerberus_application::ExplainRuleUseCase::explain(&rule, format) {
+                Ok(card) => {
+                    print!("{}", card);
+                    Ok(())
+                }
+                Err(e) => Err(format!("{} {}", "❌ Error explaining rule:".red().bold(), e)),
+            }
+        }
+    }
+}
+
 fn handle_tree(
     path: &Path,
     json: Option<&Path>,
+    output: Option<&Path>,
     rules_repo: &RulesJsonRepository,
 ) -> Result<(), String> {
     let limits = rules_repo.limits();
@@ -149,6 +232,17 @@ fn handle_tree(
                     "{} Tree report saved to {}",
                     "✅".green().bold(),
                     json_path.display()
+                );
+            } else if let Some(out_path) = output {
+                // Render text output to file
+                let formatted = cerberus_infrastructure::TreeFormatterAdapter::render_string(&report);
+                if let Err(e) = std::fs::write(out_path, formatted) {
+                    return Err(format!("Failed to write output text file: {}", e));
+                }
+                println!(
+                    "{} ASCII tree saved to {}",
+                    "✅".green().bold(),
+                    out_path.display()
                 );
             } else {
                 cerberus_infrastructure::TreeFormatterAdapter::render_console(&report);
@@ -223,5 +317,69 @@ fn handle_testability(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_handle_init_all_modes() {
+        let temp = tempdir().unwrap();
+        assert!(handle_init(temp.path(), true, true, false, false, false, false).is_ok());
+        assert!(handle_init(temp.path(), false, true, true, false, false, false).is_ok());
+        assert!(handle_init(temp.path(), false, true, false, true, false, false).is_ok());
+    }
+
+    #[test]
+    fn test_handle_rule_commands() {
+        assert!(handle_rule(RuleCommands::List { json: false, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::List { json: true, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::List { json: false, markdown: true }).is_ok());
+
+        assert!(handle_rule(RuleCommands::Explain { rule: "ARCH-001".into(), json: false, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "ARCH-001".into(), json: true, markdown: false }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "ARCH-001".into(), json: false, markdown: true }).is_ok());
+        assert!(handle_rule(RuleCommands::Explain { rule: "NONEXISTENT".into(), json: false, markdown: false }).is_err());
+    }
+
+    #[test]
+    fn test_handle_tree_and_output() {
+        let temp = tempdir().unwrap();
+        let repo = RulesJsonRepository::default();
+        let json_out = temp.path().join("tree.json");
+        let txt_out = temp.path().join("tree.txt");
+
+        assert!(handle_tree(temp.path(), None, None, &repo).is_ok());
+        assert!(handle_tree(temp.path(), Some(&json_out), None, &repo).is_ok());
+        assert!(handle_tree(temp.path(), None, Some(&txt_out), &repo).is_ok());
+        assert!(handle_tree(Path::new("non_existent_404_dir"), None, None, &repo).is_err());
+    }
+
+    #[test]
+    fn test_execute_command_rule_and_init() {
+        let temp = tempdir().unwrap();
+        let cmd_init = Commands::Init {
+            path: temp.path().to_path_buf(),
+            preset: None,
+            adopt: true,
+            force: true,
+            frontend_only: false,
+            backend_only: false,
+            hooks: false,
+            models: false,
+        };
+        assert!(execute_command(cmd_init, None).is_ok());
+
+        let cmd_rule = Commands::Rule {
+            action: RuleCommands::Explain {
+                rule: "ARCH-001".into(),
+                json: false,
+                markdown: false,
+            },
+        };
+        assert!(execute_command(cmd_rule, None).is_ok());
+    }
 }
 

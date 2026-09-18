@@ -46,8 +46,38 @@ pub enum Commands {
 
     /// Initialize cerberus.json configuration with frontend presets
     Init {
+        #[arg(short, long, default_value = ".", help = "Target root directory to scaffold")]
+        path: PathBuf,
+        #[arg(long, help = "Adopt existing codebase and capture baseline")]
+        adopt: bool,
         #[arg(long, help = "Force overwrite if cerberus.json already exists")]
         force: bool,
+    },
+
+    /// Inspect rule catalog, explain rationale, and view good/bad code examples
+    Rule {
+        #[command(subcommand)]
+        action: RuleCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum RuleCommands {
+    /// List all registered frontend architectural and quality rules
+    List {
+        #[arg(long, help = "Output list as JSON")]
+        json: bool,
+        #[arg(long, help = "Output list as Markdown")]
+        markdown: bool,
+    },
+    /// Display full explain card, rationale, good/bad examples, and remediation recipe for a rule
+    Explain {
+        #[arg(help = "Rule ID (e.g. VUE-007, CSS-001, FSD-001)")]
+        rule: String,
+        #[arg(long, help = "Output card as JSON")]
+        json: bool,
+        #[arg(long, help = "Output card as Markdown")]
+        markdown: bool,
     },
 }
 

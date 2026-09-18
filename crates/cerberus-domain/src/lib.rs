@@ -1,3 +1,4 @@
+pub mod catalog;
 pub mod cluster;
 pub mod layer;
 pub mod metrics;
@@ -10,6 +11,7 @@ pub mod suppression;
 pub mod traits;
 pub mod tree;
 
+pub use catalog::{RuleCatalog, RuleDocEntry};
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
 pub use layer::{ArchLayer, LayerRule, LayerTopologyMatrix, PackageArchMetadata, WorkspaceArchMetadata};
 pub use metrics::{FileMetrics, PackageMetrics, PressureCalculator, PressureWeights};

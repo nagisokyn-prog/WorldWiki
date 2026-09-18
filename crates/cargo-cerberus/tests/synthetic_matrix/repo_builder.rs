@@ -42,6 +42,28 @@ impl SyntheticRepoBuilder {
         full_path
     }
 
+    pub fn write_files_parallel(&mut self, files: Vec<(String, String)>) {
+        use rayon::prelude::*;
+        let root = &self.root_path;
+
+        let counts: Vec<(usize, usize)> = files
+            .par_iter()
+            .map(|(rel_path, content)| {
+                let full_path = root.join(rel_path);
+                if let Some(parent) = full_path.parent() {
+                    let _ = fs::create_dir_all(parent);
+                }
+                let _ = fs::write(&full_path, content);
+                (1, content.lines().count())
+            })
+            .collect();
+
+        for (fc, sloc) in counts {
+            self.total_files += fc;
+            self.total_sloc += sloc;
+        }
+    }
+
     pub fn write_cargo_workspace(&mut self, members: &[&str], cerberus_preset: Option<&str>) {
         let members_toml: Vec<String> = members.iter().map(|m| format!("\"{}\"", m)).collect();
         let preset_section = match cerberus_preset {

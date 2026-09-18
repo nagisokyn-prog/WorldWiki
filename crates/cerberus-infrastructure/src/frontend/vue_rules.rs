@@ -8,7 +8,9 @@ pub struct VueRuleChecker;
 impl VueRuleChecker {
     pub fn check(sfc: &VueSfc, file_path: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
-        let file_stem = file_path.file_stem().map_or("Component", |s| s.to_str().unwrap_or("Component"));
+        let file_stem = file_path
+            .file_stem()
+            .map_or("Component", |s| s.to_str().unwrap_or("Component"));
         let file_dir = file_path.parent();
 
         let full_script = format!(
@@ -25,7 +27,11 @@ impl VueRuleChecker {
         {
             let snippet = full_script
                 .lines()
-                .filter(|l| l.contains("@tauri-apps/api") || l.contains("invoke(") || l.contains("__TAURI__"))
+                .filter(|l| {
+                    l.contains("@tauri-apps/api")
+                        || l.contains("invoke(")
+                        || l.contains("__TAURI__")
+                })
                 .take(3)
                 .collect::<Vec<_>>()
                 .join("\n");
@@ -48,54 +54,77 @@ impl VueRuleChecker {
             });
         }
 
-        // 2. VUE-001: Script Setup Purity & Companion Hook Check
+        // 2. VUE-001 & VUE-002: Script Setup Purity & Companion Hook Check
         if let Some(script_setup) = &sfc.script_setup {
-            let active_lines: Vec<&str> = script_setup
-                .lines()
-                .map(|l| l.trim())
-                .filter(|l| !l.is_empty() && !l.starts_with("//") && !l.starts_with("/*"))
-                .collect();
+            let has_heavy_logic = script_setup.contains("function ")
+                || script_setup.contains("reactive(")
+                || script_setup.contains("computed(")
+                || script_setup.contains("watch(")
+                || script_setup.contains("ref(");
 
-            if active_lines.len() > 35 {
-                let has_heavy_logic = script_setup.contains("ref(")
-                    || script_setup.contains("reactive(")
-                    || script_setup.contains("computed(")
-                    || script_setup.contains("watch(")
-                    || script_setup.contains("function ");
+            if has_heavy_logic {
+                let logic_snippet = script_setup
+                    .lines()
+                    .map(|l| l.trim())
+                    .filter(|l| {
+                        l.starts_with("function ")
+                            || l.contains("reactive(")
+                            || l.contains("computed(")
+                            || l.contains("watch(")
+                            || l.contains("ref(")
+                    })
+                    .take(3)
+                    .collect::<Vec<_>>()
+                    .join("\n");
 
-                if has_heavy_logic {
-                    let has_companion = if let Some(dir) = file_dir {
-                        let companion1 = dir.join(format!("use{}.ts", file_stem));
-                        let companion2 = dir.join("hooks").join(format!("use{}.ts", file_stem));
-                        companion1.exists() || companion2.exists()
-                    } else {
-                        false
-                    };
+                let fingerprint = compute_fingerprint("VUE-001", "1.0", file_stem, &logic_snippet);
 
-                    if !has_companion {
-                        let snippet = active_lines.iter().take(5).copied().collect::<Vec<_>>().join("\n");
-                        let fingerprint = compute_fingerprint("VUE-001", "1.0", file_stem, &snippet);
+                violations.push(Violation {
+                    rule_id: "VUE-001".into(),
+                    rule_version: "1.0".into(),
+                    category: Category::Convention,
+                    severity: Severity::Deny,
+                    file: file_path.to_path_buf(),
+                    line: sfc.script_setup_start_line,
+                    column: 1,
+                    symbol: file_stem.to_string(),
+                    snippet: logic_snippet.clone(),
+                    message: format!(
+                        "Vue component '{}' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
+                        file_path.display()
+                    ),
+                    remediation: format!("Extract all functions, state, computed properties, and watchers into companion composable use{}.ts.", file_stem),
+                    fingerprint,
+                });
 
-                        violations.push(Violation {
-                            rule_id: "VUE-001".into(),
-                            rule_version: "1.0".into(),
-                            category: Category::Convention,
-                            severity: Severity::Deny,
-                            file: file_path.to_path_buf(),
-                            line: sfc.script_setup_start_line,
-                            column: 1,
-                            symbol: file_stem.to_string(),
-                            snippet,
-                            message: format!(
-                                "Vue component '{}' has bloated <script setup> ({} lines) without companion hook use{}.ts",
-                                file_path.display(),
-                                active_lines.len(),
-                                file_stem
-                            ),
-                            remediation: format!("Extract state and methods into a companion composable use{}.ts.", file_stem),
-                            fingerprint,
-                        });
-                    }
+                let has_companion = if let Some(dir) = file_dir {
+                    let companion1 = dir.join(format!("use{}.ts", file_stem));
+                    let companion2 = dir.join("hooks").join(format!("use{}.ts", file_stem));
+                    companion1.exists() || companion2.exists()
+                } else {
+                    false
+                };
+
+                if !has_companion {
+                    let fp2 = compute_fingerprint("VUE-002", "1.0", file_stem, &logic_snippet);
+                    violations.push(Violation {
+                        rule_id: "VUE-002".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Convention,
+                        severity: Severity::Deny,
+                        file: file_path.to_path_buf(),
+                        line: sfc.script_setup_start_line,
+                        column: 1,
+                        symbol: file_stem.to_string(),
+                        snippet: logic_snippet,
+                        message: format!(
+                            "Vue component '{}' is missing required companion hook use{}.ts",
+                            file_path.display(),
+                            file_stem
+                        ),
+                        remediation: format!("Create use{}.ts alongside {}.vue.", file_stem, file_stem),
+                        fingerprint: fp2,
+                    });
                 }
             }
         }
@@ -107,7 +136,9 @@ impl VueRuleChecker {
     }
 
     pub fn check_script_rules(content: &str, file_path: &Path, violations: &mut Vec<Violation>) {
-        let file_stem = file_path.file_stem().map_or("script", |s| s.to_str().unwrap_or("script"));
+        let file_stem = file_path
+            .file_stem()
+            .map_or("script", |s| s.to_str().unwrap_or("script"));
 
         for (idx, line) in content.lines().enumerate() {
             let trimmed = line.trim();
@@ -178,7 +209,9 @@ impl VueRuleChecker {
             // 5. TS-BORROW-001: Direct Store State Aliasing Mutation
             if !file_path.to_string_lossy().contains(".store.")
                 && (trimmed.contains("Store.state.")
-                    || (trimmed.contains("store.") && trimmed.contains(".state.") && trimmed.contains(" = ")))
+                    || (trimmed.contains("store.")
+                        && trimmed.contains(".state.")
+                        && trimmed.contains(" = ")))
             {
                 let fingerprint = compute_fingerprint("TS-BORROW-001", "1.0", file_stem, trimmed);
                 violations.push(Violation {
@@ -203,7 +236,9 @@ impl VueRuleChecker {
     }
 
     fn check_exhaustive_switch(content: &str, file_path: &Path, violations: &mut Vec<Violation>) {
-        let file_stem = file_path.file_stem().map_or("script", |s| s.to_str().unwrap_or("script"));
+        let file_stem = file_path
+            .file_stem()
+            .map_or("script", |s| s.to_str().unwrap_or("script"));
         let lines: Vec<&str> = content.lines().collect();
 
         for (i, line) in lines.iter().enumerate() {
@@ -220,15 +255,24 @@ impl VueRuleChecker {
                     let block_slice = &lines[i..max_lookahead];
                     let block_text = block_slice.join("\n");
 
-                    let case_count = block_slice.iter().filter(|l| l.trim().starts_with("case ")).count();
+                    let case_count = block_slice
+                        .iter()
+                        .filter(|l| l.trim().starts_with("case "))
+                        .count();
                     let has_default_assert_never = block_text.contains("assertNever(")
                         || block_text.contains(": never")
                         || (block_text.contains("default:") && block_text.contains("throw "));
 
                     // Rule triggers on multi-case (>2) tagged unions without exhaustive default
                     if case_count > 2 && !has_default_assert_never {
-                        let snippet = block_slice.iter().take(4).copied().collect::<Vec<_>>().join("\n");
-                        let fingerprint = compute_fingerprint("TS-MATCH-001", "1.0", file_stem, &snippet);
+                        let snippet = block_slice
+                            .iter()
+                            .take(4)
+                            .copied()
+                            .collect::<Vec<_>>()
+                            .join("\n");
+                        let fingerprint =
+                            compute_fingerprint("TS-MATCH-001", "1.0", file_stem, &snippet);
 
                         violations.push(Violation {
                             rule_id: "TS-MATCH-001".into(),
@@ -287,7 +331,10 @@ mod tests {
     #[test]
     fn test_vue_rule_checker_prop_mutation_vue008() {
         let sfc = VueSfc {
-            script_setup: Some("function update() { props.chapter.title = 'New'; props.tags.push('draft'); }".into()),
+            script_setup: Some(
+                "function update() { props.chapter.title = 'New'; props.tags.push('draft'); }"
+                    .into(),
+            ),
             ..Default::default()
         };
         let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
@@ -344,9 +391,12 @@ mod tests {
         assert_eq!(violations[0].rule_id, "VUE-001");
 
         // Companion hook satisfies VUE-001
-        std::fs::write(temp.path().join("useMyComponent.ts"), "export const useMyComponent = () => {};").unwrap();
+        std::fs::write(
+            temp.path().join("useMyComponent.ts"),
+            "export const useMyComponent = () => {};",
+        )
+        .unwrap();
         let violations_with_hook = VueRuleChecker::check(&sfc, &comp_path);
         assert!(violations_with_hook.is_empty());
     }
 }
-

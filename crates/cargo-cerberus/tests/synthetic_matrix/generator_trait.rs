@@ -28,10 +28,23 @@ pub struct BenchmarkScorecardEntry {
     pub recall: f64,
     pub precision: f64,
     pub f1_score: f64,
+    pub testability_score: f64,
+    pub testability_tier: String,
 }
 
 pub trait ArchFixtureGenerator: Send + Sync {
     fn name(&self) -> &'static str;
-    fn generate_clean(&self, builder: &mut crate::synthetic_matrix::repo_builder::SyntheticRepoBuilder) -> Result<(), String>;
-    fn generate_seeded(&self, builder: &mut crate::synthetic_matrix::repo_builder::SyntheticRepoBuilder) -> Result<GroundTruthManifest, String>;
+    fn default_target_sloc(&self) -> usize {
+        150_000
+    }
+    fn generate_clean(
+        &self,
+        builder: &mut crate::synthetic_matrix::repo_builder::SyntheticRepoBuilder,
+        target_sloc: usize,
+    ) -> Result<(), String>;
+    fn generate_seeded(
+        &self,
+        builder: &mut crate::synthetic_matrix::repo_builder::SyntheticRepoBuilder,
+        target_sloc: usize,
+    ) -> Result<GroundTruthManifest, String>;
 }

@@ -29,6 +29,7 @@ impl AstParserPort for VueSfcParserAdapter {
                 let sfc = VueSfcParser::parse(&content);
                 violations.extend(VueRuleChecker::check(&sfc, path));
                 violations.extend(CssRuleChecker::check_sfc_styles(&sfc, path));
+                violations.extend(crate::frontend::fsd_rules::FsdRulesChecker::check_source(&content, path));
 
                 // Check SFC SLOC limits (warn: 150, deny: 250)
                 let sloc = SlocCalculator::count_sloc(&content, path);
@@ -39,6 +40,7 @@ impl AstParserPort for VueSfcParserAdapter {
             }
             "ts" | "js" => {
                 violations.extend(LifecycleRuleChecker::check_typescript_file(&content, path));
+                violations.extend(crate::frontend::fsd_rules::FsdRulesChecker::check_source(&content, path));
 
                 let sloc = SlocCalculator::count_sloc(&content, path);
                 let filename = path.file_name().and_then(|f| f.to_str()).unwrap_or("");

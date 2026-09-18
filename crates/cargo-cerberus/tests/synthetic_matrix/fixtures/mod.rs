@@ -1,3 +1,5 @@
+#![allow(unused_imports, dead_code)]
+
 pub mod hexagonal_fixture;
 pub mod layered_fixture;
 pub mod clean_arch_fixture;

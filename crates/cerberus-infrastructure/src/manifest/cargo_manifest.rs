@@ -98,12 +98,33 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             return Ok(Vec::new());
         }
 
-        let metadata = MetadataCommand::new()
-            .manifest_path(&manifest_path)
-            .exec()
-            .map_err(|e| format!("Failed to read cargo metadata: {}", e))?;
-
         let mut violations = Vec::new();
+
+        let metadata = match MetadataCommand::new().manifest_path(&manifest_path).exec() {
+            Ok(m) => m,
+            Err(e) => {
+                let err_msg = e.to_string();
+                if err_msg.contains("cyclic package dependency") || err_msg.contains("cyclic dependency") {
+                    violations.push(Violation {
+                        rule_id: "ARCH-022".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Architecture,
+                        severity: Severity::Deny,
+                        file: manifest_path,
+                        line: 1,
+                        column: 1,
+                        symbol: "workspace::cyclic_dependency".into(),
+                        snippet: err_msg.clone(),
+                        message: format!("Cyclic package dependency detected in Cargo workspace graph: {}", err_msg),
+                        remediation: "Break package cycle by extracting shared types into a common crate or using abstract traits.".into(),
+                        fingerprint: cerberus_domain::compute_fingerprint("ARCH-022", "1.0", "workspace", &err_msg),
+                    });
+                    return Ok(violations);
+                }
+                return Err(format!("Failed to read cargo metadata: {}", err_msg));
+            }
+        };
+
         let mut package_layers: HashMap<String, String> = HashMap::new();
         let mut package_arch_layers: HashMap<String, ArchLayer> = HashMap::new();
         let mut package_manifests: HashMap<String, PathBuf> = HashMap::new();
@@ -132,24 +153,29 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                 let (layer_str, arch_layer) = match declared_layer {
                     Some(l_str) => (l_str.to_string(), ArchLayer::parse(l_str)),
                     None => {
-                        violations.push(Violation {
-                            rule_id: "ARCH-021".into(),
-                            rule_version: "1.0".into(),
-                            category: Category::Architecture,
-                            severity: Severity::Warn,
-                            file: pkg.manifest_path.clone().into_std_path_buf(),
-                            line: 1,
-                            column: 1,
-                            symbol: pkg_name_str.clone(),
-                            snippet: format!("[package]\nname = \"{}\"", pkg_name_str),
-                            message: format!(
-                                "Crate '{}' is missing architectural layer metadata [package.metadata.cerberus].layer in Cargo.toml",
-                                pkg_name_str
-                            ),
-                            remediation: "Declare layer = \"domain|ports|application|infrastructure|adapter|cli\" in Cargo.toml".into(),
-                            fingerprint: format!("arch021_{}", pkg_name_str),
-                        });
-                        ("unknown".to_string(), ArchLayer::Unknown)
+                        let detected = topology.detect_layer(pkg.manifest_path.as_str(), Some(&pkg_name_str));
+                        if detected != "unknown" {
+                            (detected.clone(), ArchLayer::parse(&detected))
+                        } else {
+                            violations.push(Violation {
+                                rule_id: "ARCH-021".into(),
+                                rule_version: "1.0".into(),
+                                category: Category::Architecture,
+                                severity: Severity::Warn,
+                                file: pkg.manifest_path.clone().into_std_path_buf(),
+                                line: 1,
+                                column: 1,
+                                symbol: pkg_name_str.clone(),
+                                snippet: format!("[package]\nname = \"{}\"", pkg_name_str),
+                                message: format!(
+                                    "Crate '{}' is missing architectural layer metadata [package.metadata.cerberus].layer in Cargo.toml",
+                                    pkg_name_str
+                                ),
+                                remediation: "Declare layer = \"domain|ports|application|infrastructure|adapter|cli\" in Cargo.toml".into(),
+                                fingerprint: format!("arch021_{}", pkg_name_str),
+                            });
+                            ("unknown".to_string(), ArchLayer::Unknown)
+                        }
                     }
                 };
 
@@ -167,7 +193,7 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
 
             let pkg_name_str = pkg.name.as_str();
             let current_layer_str = package_layers.get(pkg_name_str).cloned().unwrap_or_default();
-            let current_arch_layer = package_arch_layers.get(pkg_name_str).copied().unwrap_or(ArchLayer::Unknown);
+            let current_arch_layer = package_arch_layers.get(pkg_name_str).cloned().unwrap_or(ArchLayer::Unknown);
             let manifest_file = package_manifests.get(pkg_name_str).cloned().unwrap_or_default();
 
             for dep in &pkg.dependencies {
@@ -223,9 +249,12 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                         remediation: "Move external dependency to outer infrastructure layers or invert via traits.".into(),
                         fingerprint: format!("arch001_forbid_{}_{}", pkg_name_str, dep.name),
                     });
+                } else if !topology.is_external_dep_allowed(&current_layer_str, &dep.name)
+                    || (!topology.allowed_external.contains_key(&current_layer_str)
+                        && (topology.preset_name == "hexagonal" || topology.preset_name.is_empty()))
+                {
+                    validate_external_dependency(&current_arch_layer, pkg_name_str, dep, &manifest_file, &mut violations);
                 }
-
-                validate_external_dependency(current_arch_layer, pkg_name_str, dep, &manifest_file, &mut violations);
             }
         }
 
@@ -241,7 +270,7 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
 }
 
 fn validate_external_dependency(
-    current_layer: ArchLayer,
+    current_layer: &ArchLayer,
     pkg_name: &str,
     dep: &cargo_metadata::Dependency,
     manifest_file: &Path,

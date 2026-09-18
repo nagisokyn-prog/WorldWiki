@@ -1,4 +1,7 @@
-use cerberus_domain::{compute_fingerprint, Category, LayerTopologyMatrix, Severity, Violation};
+use cerberus_domain::{
+    compute_fingerprint, normalize_path, path_contains, Category, LayerTopologyMatrix, Severity,
+    Violation,
+};
 use std::path::Path;
 use syn::{ItemUse, UsePath, UseTree};
 
@@ -110,18 +113,22 @@ impl<'a> ImportChecker<'a> {
             }
         }
 
-        // 2. ARCH-002: Application cannot import Tauri
-        if (self.is_application_crate() || current_layer == "application") && root_segment == "tauri" {
+        // 2. ARCH-002: Application / UseCases cannot import Tauri
+        if (self.is_application_crate()
+            || current_layer == "application"
+            || current_layer == "usecases"
+            || current_layer == "usecase"
+            || current_layer == "app")
+            && root_segment == "tauri"
+        {
             violations.push(self.build_violation(
                 "ARCH-002",
                 item_use,
                 &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
                 "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
             ));
-        }
-
-        // 3. ARCH-005: Tauri SDK isolated strictly to adapters/tauri or worldwiki-tauri
-        if !self.is_tauri_authorized_crate() && root_segment == "tauri" {
+        } else if !self.is_tauri_authorized_crate() && root_segment == "tauri" {
+            // 3. ARCH-005: Tauri SDK isolated strictly to adapters/tauri or worldwiki-tauri
             violations.push(self.build_violation(
                 "ARCH-005",
                 item_use,
@@ -133,7 +140,7 @@ impl<'a> ImportChecker<'a> {
         // 4. MOD-001: Boundary Capsule / Module Encapsulation violation
         // E.g. importing crate::modules::<other_mod>::internal::*
         let should_check_boundaries = self.matrix.is_none_or(|m| m.enforce_boundaries)
-            || self.current_file.to_string_lossy().contains("modules")
+            || path_contains(self.current_file, "modules")
             || self.crate_name.contains("monolith");
 
         if should_check_boundaries {
@@ -143,14 +150,19 @@ impl<'a> ImportChecker<'a> {
         }
 
         // 5. CQRS-001: Command/Write layer importing Read model or Read DB
-        if (current_layer == "command_handler"
+        if (current_layer == "commands"
+            || current_layer == "command"
+            || current_layer == "command_handler"
             || current_layer == "write_service"
             || current_layer == "domain_write"
-            || self.current_file.to_string_lossy().contains("/command/")
-            || self.current_file.to_string_lossy().contains("/write/"))
+            || path_contains(self.current_file, "/command/")
+            || path_contains(self.current_file, "/write/"))
             && (full_path_str.contains("read_db")
                 || full_path_str.contains("query_handler")
-                || full_path_str.contains("read_repo"))
+                || full_path_str.contains("read_repo")
+                || full_path_str.contains("projection")
+                || full_path_str.contains("read_model")
+                || full_path_str.contains("read_service"))
         {
             violations.push(self.build_violation(
                 "CQRS-001",
@@ -165,7 +177,10 @@ impl<'a> ImportChecker<'a> {
         }
 
         // 6. EVT-001: Event Producer synchronous call / direct import to Consumer
-        if (current_layer == "producer" || self.current_file.to_string_lossy().contains("/producer/"))
+        if (current_layer == "producer"
+            || current_layer == "event_producer"
+            || self.crate_name.contains("producer")
+            || path_contains(self.current_file, "/producer/"))
             && (full_path_str.contains("consumer") || full_path_str.contains("subscriber"))
         {
             violations.push(self.build_violation(
@@ -181,19 +196,21 @@ impl<'a> ImportChecker<'a> {
         }
 
         // 7. ARCH-007: Layer Topology Inversion (when internal intra-crate layer imports are forbidden)
-        if let Some(matrix) = self.matrix {
-            let target_layer = self.detect_target_layer(path_segments);
-            if let Some(target) = target_layer {
-                if target != current_layer && !matrix.is_dependency_allowed(&current_layer, &target) {
-                    violations.push(self.build_violation(
-                        "ARCH-007",
-                        item_use,
-                        &format!(
-                            "Layer topology violation: layer '{}' is not allowed to depend on layer '{}' (import: '{}')",
-                            current_layer, target, full_path_str
-                        ),
-                        "Refactor code to respect the layer hierarchy defined in the workspace architecture matrix.",
-                    ));
+        if violations.is_empty() {
+            if let Some(matrix) = self.matrix {
+                let target_layer = self.detect_target_layer(path_segments);
+                if let Some(target) = target_layer {
+                    if target != current_layer && !matrix.is_dependency_allowed(&current_layer, &target) {
+                        violations.push(self.build_violation(
+                            "ARCH-007",
+                            item_use,
+                            &format!(
+                                "Layer topology violation: layer '{}' is not allowed to depend on layer '{}' (import: '{}')",
+                                current_layer, target, full_path_str
+                            ),
+                            "Refactor code to respect the layer hierarchy defined in the workspace architecture matrix.",
+                        ));
+                    }
                 }
             }
         }
@@ -270,7 +287,14 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn detect_source_layer(&self) -> String {
-        let file_path = self.current_file.to_string_lossy().to_lowercase().replace('\\', "/");
+        let file_path = normalize_path(self.current_file);
+
+        if let Some(matrix) = self.matrix {
+            let detected = matrix.detect_layer(&file_path, Some(self.crate_name));
+            if detected != "unknown" {
+                return detected;
+            }
+        }
 
         for layer in [
             "domain_write",
@@ -301,8 +325,14 @@ impl<'a> ImportChecker<'a> {
             "infrastructure",
             "adapter",
             "cli",
+            "bff",
         ] {
-            if file_path.contains(&format!("/{}/", layer)) || file_path.contains(&format!("{}/", layer)) {
+            if file_path.contains(&format!("/{}/", layer))
+                || file_path.contains(&format!("{}/", layer))
+                || file_path.contains(&format!("{}-", layer))
+                || file_path.contains(&format!("-{}", layer))
+                || self.crate_name.contains(layer)
+            {
                 return layer.to_string();
             }
         }
@@ -318,7 +348,32 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn detect_target_layer(&self, path_segments: &[String]) -> Option<String> {
-        let full = path_segments.join("::").to_lowercase();
+        if path_segments.is_empty() {
+            return None;
+        }
+
+        // 1. If the last segment is PascalCase (Struct/Trait/Enum/Type), drop it from layer candidates
+        let candidates: &[String] = if path_segments.len() > 1
+            && path_segments.last().is_some_and(|s| s.chars().next().is_some_and(|c| c.is_uppercase()))
+        {
+            &path_segments[..path_segments.len() - 1]
+        } else {
+            path_segments
+        };
+
+        // 2. Query dynamic LayerTopologyMatrix if present
+        if let Some(matrix) = self.matrix {
+            for seg in candidates {
+                let seg_clean = seg.trim_start_matches("crate::").trim_start_matches("super::");
+                let detected = matrix.detect_layer(seg_clean, Some(seg_clean));
+                if detected != "unknown" {
+                    return Some(detected);
+                }
+            }
+        }
+
+        // 3. Fallback: well-known architectural layer names
+        let full = candidates.join("::").to_lowercase();
         for layer in [
             "command_handler",
             "write_service",
@@ -334,6 +389,7 @@ impl<'a> ImportChecker<'a> {
             "usecase",
             "producer",
             "consumer",
+            "plugin_api",
             "plugin",
             "core",
             "pages",
@@ -347,10 +403,11 @@ impl<'a> ImportChecker<'a> {
             "infrastructure",
             "adapter",
             "cli",
+            "bff",
         ] {
             if full.starts_with(&format!("crate::{}::", layer))
                 || full.starts_with(&format!("super::{}::", layer))
-                || path_segments.iter().any(|s| s.to_lowercase() == layer)
+                || candidates.iter().any(|s| s.to_lowercase() == layer)
             {
                 return Some(layer.to_string());
             }
@@ -359,19 +416,23 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn is_domain_crate(&self) -> bool {
-        self.crate_name == "worldwiki-domain" || self.crate_name.contains("domain")
+        self.crate_name == "worldwiki-domain" || self.crate_name.contains("domain") || self.crate_name.contains("core")
     }
 
     fn is_application_crate(&self) -> bool {
-        self.crate_name == "worldwiki-application" || self.crate_name.contains("application")
+        self.crate_name == "worldwiki-application"
+            || self.crate_name.contains("application")
+            || self.crate_name.contains("usecase")
+            || self.crate_name.contains("usecases")
     }
 
     fn is_tauri_authorized_crate(&self) -> bool {
         self.crate_name == "worldwiki-tauri"
+            || self.crate_name.contains("adapter")
             || self.crate_name == "world-wiki"
             || self.crate_name.contains("tauri")
-            || self.current_file.to_string_lossy().contains("adapters/tauri")
-            || self.current_file.to_string_lossy().contains("crates/worldwiki-tauri")
+            || path_contains(self.current_file, "adapters/tauri")
+            || path_contains(self.current_file, "crates/worldwiki-tauri")
     }
 
     fn build_violation(
@@ -493,4 +554,20 @@ mod tests {
         let violations = checker.check_use(&item_use);
         assert!(violations.iter().any(|v| v.rule_id == "ARCH-007"));
     }
+
+    #[test]
+    fn test_import_checker_microkernel_leaf_type_pascal_case_disambiguation() {
+        let matrix = LayerTopologyMatrix::preset_matrix("microkernel");
+        let code = "use kernel_api::Plugin;";
+        let item_use: ItemUse = syn::parse_str(code).unwrap();
+        let checker = ImportChecker::new(
+            Path::new("kernel-core/src/lib.rs"),
+            "kernel-core",
+        )
+        .with_matrix(&matrix);
+
+        let violations = checker.check_use(&item_use);
+        assert!(violations.is_empty(), "kernel-core importing trait Plugin from kernel_api must NOT trigger false positive ARCH-007");
+    }
 }
+

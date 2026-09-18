@@ -1,5 +1,6 @@
 use crate::synthetic_matrix::generator_trait::{ArchFixtureGenerator, GroundTruthManifest, SeededViolation};
 use crate::synthetic_matrix::repo_builder::SyntheticRepoBuilder;
+use crate::synthetic_matrix::scale_helper::ScaleHelper;
 
 pub struct ActorSystemFixture;
 
@@ -8,26 +9,52 @@ impl ArchFixtureGenerator for ActorSystemFixture {
         "9. Actor System (Shared-Nothing Concurrency)"
     }
 
-    fn generate_clean(&self, builder: &mut SyntheticRepoBuilder) -> Result<(), String> {
+    fn default_target_sloc(&self) -> usize {
+        350_000
+    }
+
+    fn generate_clean(
+        &self,
+        builder: &mut SyntheticRepoBuilder,
+        target_sloc: usize,
+    ) -> Result<(), String> {
         builder.write_cargo_workspace(&["actor-app"], Some("actor"));
-
         builder.write_package_manifest("actor-app", "actor", &[]);
-        builder.write_file("actor-app/src/lib.rs", "pub mod messages;\npub mod worker;");
 
-        builder.write_file("actor-app/src/messages/mod.rs", "pub enum Msg { Ping, Pong }");
-        builder.write_file("actor-app/src/worker/mod.rs", "use crate::messages::Msg;\npub struct WorkerActor;\nimpl WorkerActor { pub fn handle(&mut self, _m: Msg) {} }");
+        let (mut files, _) =
+            ScaleHelper::generate_rust_modules("actor-app", "actor", target_sloc, false);
+
+        files.push((
+            "actor-app/src/messages/mod.rs".into(),
+            "pub enum Msg { Ping, Pong }\n".into(),
+        ));
+        files.push((
+            "actor-app/src/worker/mod.rs".into(),
+            "use crate::messages::Msg;\npub struct WorkerActor;\nimpl WorkerActor { pub fn handle(&mut self, _m: Msg) {} }\n".into(),
+        ));
+
+        builder.write_files_parallel(files);
 
         Ok(())
     }
 
-    fn generate_seeded(&self, builder: &mut SyntheticRepoBuilder) -> Result<GroundTruthManifest, String> {
-        self.generate_clean(builder)?;
+    fn generate_seeded(
+        &self,
+        builder: &mut SyntheticRepoBuilder,
+        target_sloc: usize,
+    ) -> Result<GroundTruthManifest, String> {
+        builder.write_cargo_workspace(&["actor-app"], Some("actor"));
+        builder.write_package_manifest("actor-app", "actor", &[]);
 
-        // Seeded Violation: Shared global mutable state violation in Actor system (AI-008 unsafe without safety contract)
-        builder.write_file(
-            "actor-app/src/worker/leaky_state.rs",
-            "static mut GLOBAL_ACTOR_STATE: u64 = 0;\npub fn mutate_shared() { unsafe { GLOBAL_ACTOR_STATE += 1; } }",
-        );
+        let (mut files, _) =
+            ScaleHelper::generate_rust_modules("actor-app", "actor", target_sloc, false);
+
+        files.push((
+            "actor-app/src/worker/leaky_state.rs".into(),
+            "static mut GLOBAL_ACTOR_STATE: u64 = 0;\npub fn mutate_shared() { unsafe { GLOBAL_ACTOR_STATE += 1; } }\n".into(),
+        ));
+
+        builder.write_files_parallel(files);
 
         Ok(GroundTruthManifest {
             paradigm_name: self.name(),
@@ -38,6 +65,11 @@ impl ArchFixtureGenerator for ActorSystemFixture {
                     rule_id: "AI-008".into(),
                     target_file_suffix: "actor-app/src/worker/leaky_state.rs".into(),
                     description: "Unverified unsafe block without SAFETY comment".into(),
+                },
+                SeededViolation {
+                    rule_id: "CONC-008".into(),
+                    target_file_suffix: "actor-app/src/worker/leaky_state.rs".into(),
+                    description: "Mutable static state violates actor encapsulation".into(),
                 },
             ],
         })

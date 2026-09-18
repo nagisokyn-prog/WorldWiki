@@ -47,10 +47,14 @@ fn test_arch_layer_dependency_matrix_rules() {
     assert!(ArchLayer::Infrastructure.can_depend_on(ArchLayer::Ports));
     assert!(!ArchLayer::Infrastructure.can_depend_on(ArchLayer::Application));
 
-    // Adapter / CLI / Unknown can depend on anything
+    // Adapter / CLI / Custom / Unknown can depend on anything
     assert!(ArchLayer::Cli.can_depend_on(ArchLayer::Infrastructure));
     assert!(ArchLayer::Adapter.can_depend_on(ArchLayer::Application));
     assert!(ArchLayer::Unknown.can_depend_on(ArchLayer::Domain));
+    let custom = ArchLayer::parse("plugin_api");
+    assert_eq!(custom, ArchLayer::Custom("plugin_api".into()));
+    assert_eq!(custom.as_str(), "plugin_api");
+    assert!(custom.can_depend_on(ArchLayer::Domain));
 }
 
 #[test]
@@ -62,9 +66,11 @@ fn test_layer_metadata_structs_serde() {
             LayerRule {
                 allowed_dependencies: vec!["ports".into()],
                 forbidden_external_dependencies: vec!["reqwest".into()],
+                ..Default::default()
             },
         )]),
         enforce_module_boundaries: true,
+        ..Default::default()
     };
     let json = serde_json::to_string(&meta).unwrap();
     let parsed: WorkspaceArchMetadata = serde_json::from_str(&json).unwrap();
@@ -167,12 +173,14 @@ fn test_layer_topology_matrix_presets_and_custom() {
         LayerRule {
             allowed_dependencies: vec!["backend_api".into()],
             forbidden_external_dependencies: vec!["direct_db".into()],
+            ..Default::default()
         },
     );
     let ws_meta = WorkspaceArchMetadata {
         preset: Some("custom".into()),
         layers: custom_layers,
         enforce_module_boundaries: true,
+        ..Default::default()
     };
     let dyn_matrix = LayerTopologyMatrix::from_workspace_metadata(&ws_meta);
     assert!(dyn_matrix.enforce_boundaries);

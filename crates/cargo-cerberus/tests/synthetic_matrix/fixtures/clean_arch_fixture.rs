@@ -1,5 +1,6 @@
 use crate::synthetic_matrix::generator_trait::{ArchFixtureGenerator, GroundTruthManifest, SeededViolation};
 use crate::synthetic_matrix::repo_builder::SyntheticRepoBuilder;
+use crate::synthetic_matrix::scale_helper::ScaleHelper;
 
 pub struct CleanArchFixture;
 
@@ -8,45 +9,115 @@ impl ArchFixtureGenerator for CleanArchFixture {
         "3. Clean Architecture (Entities <- UseCases <- Controllers/Gateways)"
     }
 
-    fn generate_clean(&self, builder: &mut SyntheticRepoBuilder) -> Result<(), String> {
-        builder.write_cargo_workspace(&["entities-crate", "usecases-crate", "controllers-crate"], Some("clean"));
+    fn default_target_sloc(&self) -> usize {
+        200_000
+    }
+
+    fn generate_clean(
+        &self,
+        builder: &mut SyntheticRepoBuilder,
+        target_sloc: usize,
+    ) -> Result<(), String> {
+        builder.write_cargo_workspace(
+            &["entities-crate", "usecases-crate", "controllers-crate"],
+            Some("clean"),
+        );
 
         builder.write_package_manifest("entities-crate", "entities", &[]);
-        builder.write_file("entities-crate/src/lib.rs", "pub struct Product { pub id: u64, pub price: f64 }");
+        builder.write_package_manifest(
+            "usecases-crate",
+            "usecases",
+            &[("entities-crate", Some("../entities-crate"))],
+        );
+        builder.write_package_manifest(
+            "controllers-crate",
+            "controllers",
+            &[
+                ("usecases-crate", Some("../usecases-crate")),
+                ("entities-crate", Some("../entities-crate")),
+            ],
+        );
 
-        builder.write_package_manifest("usecases-crate", "usecases", &[("entities-crate", Some("../entities-crate"))]);
-        builder.write_file("usecases-crate/src/lib.rs", "use entities_crate::Product;\npub fn calculate_discount(p: &Product) -> f64 { p.price * 0.9 }");
+        let per_crate_sloc = target_sloc / 3;
+        let mut all_files = Vec::new();
 
-        builder.write_package_manifest("controllers-crate", "controllers", &[("usecases-crate", Some("../usecases-crate")), ("entities-crate", Some("../entities-crate"))]);
-        builder.write_file("controllers-crate/src/lib.rs", "use usecases_crate::calculate_discount;\npub fn handle_http_request() {}");
+        let (ent_files, _) =
+            ScaleHelper::generate_rust_modules("entities-crate", "entities", per_crate_sloc, false);
+        all_files.extend(ent_files);
+
+        let (uc_files, _) =
+            ScaleHelper::generate_rust_modules("usecases-crate", "usecases", per_crate_sloc, false);
+        all_files.extend(uc_files);
+
+        let (ctrl_files, _) = ScaleHelper::generate_rust_modules(
+            "controllers-crate",
+            "controllers",
+            per_crate_sloc,
+            false,
+        );
+        all_files.extend(ctrl_files);
+
+        builder.write_files_parallel(all_files);
 
         Ok(())
     }
 
-    fn generate_seeded(&self, builder: &mut SyntheticRepoBuilder) -> Result<GroundTruthManifest, String> {
-        builder.write_cargo_workspace(&["entities-crate", "usecases-crate", "controllers-crate"], Some("clean"));
+    fn generate_seeded(
+        &self,
+        builder: &mut SyntheticRepoBuilder,
+        target_sloc: usize,
+    ) -> Result<GroundTruthManifest, String> {
+        builder.write_cargo_workspace(
+            &["entities-crate", "usecases-crate", "controllers-crate"],
+            Some("clean"),
+        );
 
         // Seeded Violation: Entities depends on UseCases (inverting Clean Architecture Dependency Rule)
-        builder.write_package_manifest("entities-crate", "entities", &[("usecases-crate", Some("../usecases-crate"))]);
-        builder.write_file("entities-crate/src/lib.rs", "use usecases_crate::calculate_discount;\npub struct Product;");
-
+        builder.write_package_manifest(
+            "entities-crate",
+            "entities",
+            &[("usecases-crate", Some("../usecases-crate"))],
+        );
         builder.write_package_manifest("usecases-crate", "usecases", &[]);
-        builder.write_file("usecases-crate/src/lib.rs", "pub fn calculate_discount() {}");
+        builder.write_package_manifest(
+            "controllers-crate",
+            "controllers",
+            &[("usecases-crate", Some("../usecases-crate"))],
+        );
 
-        builder.write_package_manifest("controllers-crate", "controllers", &[("usecases-crate", Some("../usecases-crate"))]);
-        builder.write_file("controllers-crate/src/lib.rs", "pub fn handle_http_request() {}");
+        let per_crate_sloc = target_sloc / 3;
+        let mut all_files = Vec::new();
+        let mut expected_violations = vec![SeededViolation {
+            rule_id: "ARCH-020".into(),
+            target_file_suffix: "entities-crate/Cargo.toml".into(),
+            description: "Layer 'entities' cannot depend on layer 'usecases'".into(),
+        }];
+
+        let (ent_files, mut ent_viol) =
+            ScaleHelper::generate_rust_modules("entities-crate", "entities", per_crate_sloc, true);
+        all_files.extend(ent_files);
+        expected_violations.append(&mut ent_viol);
+
+        let (uc_files, mut uc_viol) =
+            ScaleHelper::generate_rust_modules("usecases-crate", "usecases", per_crate_sloc, true);
+        all_files.extend(uc_files);
+        expected_violations.append(&mut uc_viol);
+
+        let (ctrl_files, _) = ScaleHelper::generate_rust_modules(
+            "controllers-crate",
+            "controllers",
+            per_crate_sloc,
+            false,
+        );
+        all_files.extend(ctrl_files);
+
+        builder.write_files_parallel(all_files);
 
         Ok(GroundTruthManifest {
             paradigm_name: self.name(),
             total_files: builder.total_files,
             approximate_sloc: builder.total_sloc,
-            expected_violations: vec![
-                SeededViolation {
-                    rule_id: "ARCH-020".into(),
-                    target_file_suffix: "entities-crate/Cargo.toml".into(),
-                    description: "Layer 'entities' cannot depend on layer 'usecases'".into(),
-                },
-            ],
+            expected_violations,
         })
     }
 }

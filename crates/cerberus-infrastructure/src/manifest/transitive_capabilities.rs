@@ -28,7 +28,7 @@ impl TransitiveCapabilityChecker {
 
         for pkg in &metadata.packages {
             let pkg_name = pkg.name.as_str();
-            let layer = package_layers.get(pkg_name).copied().unwrap_or(ArchLayer::Unknown);
+            let layer = package_layers.get(pkg_name).cloned().unwrap_or(ArchLayer::Unknown);
 
             if matches!(layer, ArchLayer::Domain | ArchLayer::Ports) {
                 let manifest_file = package_manifests

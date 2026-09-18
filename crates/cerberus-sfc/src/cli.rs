@@ -34,6 +34,12 @@ pub enum Commands {
 
         #[arg(long, help = "Enforce strict CI mode (fails if parse error rate > 2%)")]
         ci: bool,
+
+        #[arg(long, help = "Record detected violations into baseline")]
+        record_baseline: bool,
+
+        #[arg(long, help = "Path to baseline file")]
+        baseline: Option<PathBuf>,
     },
 
     /// Render hierarchical architectural pressure and metrics tree (Martin metrics + AST 4-tuples)

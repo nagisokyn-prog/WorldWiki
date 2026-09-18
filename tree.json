@@ -1,0 +1,850 @@
+{
+  "packages": [
+    {
+      "name": "world-wiki",
+      "path": ".\\src-tauri",
+      "ca": 2,
+      "ce": 10,
+      "instability": 0.8333333333333334,
+      "abstractness": 0.05263157894736842,
+      "distance": 0.11403508771929816,
+      "is_zone_of_pain": false,
+      "children": [
+        {
+          "Dir": {
+            "name": "bootstrap",
+            "path": ".\\src-tauri\\src\\bootstrap",
+            "children": [
+              {
+                "File": {
+                  "name": "mod.rs",
+                  "path": ".\\src-tauri\\src\\bootstrap\\mod.rs",
+                  "sloc": 2,
+                  "functions": 0,
+                  "cyclomatic": 1,
+                  "dependencies": 0,
+                  "ast_depth": 1,
+                  "pressure": 7.2,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "services.rs",
+                  "path": ".\\src-tauri\\src\\bootstrap\\services.rs",
+                  "sloc": 172,
+                  "functions": 2,
+                  "cyclomatic": 1,
+                  "dependencies": 20,
+                  "ast_depth": 3,
+                  "pressure": 66.2,
+                  "health": "Healthy"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Dir": {
+            "name": "logic",
+            "path": ".\\src-tauri\\src\\logic",
+            "children": [
+              {
+                "Dir": {
+                  "name": "batch",
+                  "path": ".\\src-tauri\\src\\logic\\batch",
+                  "children": [
+                    {
+                      "File": {
+                        "name": "commands.rs",
+                        "path": ".\\src-tauri\\src\\logic\\batch\\commands.rs",
+                        "sloc": 28,
+                        "functions": 0,
+                        "cyclomatic": 1,
+                        "dependencies": 1,
+                        "ast_depth": 2,
+                        "pressure": 15.3,
+                        "health": "Healthy"
+                      }
+                    },
+                    {
+                      "File": {
+                        "name": "mod.rs",
+                        "path": ".\\src-tauri\\src\\logic\\batch\\mod.rs",
+                        "sloc": 314,
+                        "functions": 36,
+                        "cyclomatic": 45,
+                        "dependencies": 6,
+                        "ast_depth": 7,
+                        "pressure": 275.4,
+                        "health": "Warning"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Dir": {
+                  "name": "chapters",
+                  "path": ".\\src-tauri\\src\\logic\\chapters",
+                  "children": [
+                    {
+                      "File": {
+                        "name": "commands.rs",
+                        "path": ".\\src-tauri\\src\\logic\\chapters\\commands.rs",
+                        "sloc": 41,
+                        "functions": 0,
+                        "cyclomatic": 1,
+                        "dependencies": 1,
+                        "ast_depth": 2,
+                        "pressure": 16.6,
+                        "health": "Healthy"
+                      }
+                    },
+                    {
+                      "File": {
+                        "name": "mod.rs",
+                        "path": ".\\src-tauri\\src\\logic\\chapters\\mod.rs",
+                        "sloc": 183,
+                        "functions": 6,
+                        "cyclomatic": 15,
+                        "dependencies": 5,
+                        "ast_depth": 6,
+                        "pressure": 106.8,
+                        "health": "Healthy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Dir": {
+                  "name": "connections",
+                  "path": ".\\src-tauri\\src\\logic\\connections",
+                  "children": [
+                    {
+                      "File": {
+                        "name": "commands.rs",
+                        "path": ".\\src-tauri\\src\\logic\\connections\\commands.rs",
+                        "sloc": 27,
+                        "functions": 0,
+                        "cyclomatic": 1,
+                        "dependencies": 1,
+                        "ast_depth": 2,
+                        "pressure": 15.2,
+                        "health": "Healthy"
+                      }
+                    },
+                    {
+                      "File": {
+                        "name": "mod.rs",
+                        "path": ".\\src-tauri\\src\\logic\\connections\\mod.rs",
+                        "sloc": 112,
+                        "functions": 9,
+                        "cyclomatic": 16,
+                        "dependencies": 3,
+                        "ast_depth": 6,
+                        "pressure": 105.7,
+                        "health": "Healthy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Dir": {
+                  "name": "entities",
+                  "path": ".\\src-tauri\\src\\logic\\entities",
+                  "children": [
+                    {
+                      "File": {
+                        "name": "commands.rs",
+                        "path": ".\\src-tauri\\src\\logic\\entities\\commands.rs",
+                        "sloc": 153,
+                        "functions": 0,
+                        "cyclomatic": 1,
+                        "dependencies": 3,
+                        "ast_depth": 2,
+                        "pressure": 30.8,
+                        "health": "Healthy"
+                      }
+                    },
+                    {
+                      "File": {
+                        "name": "mod.rs",
+                        "path": ".\\src-tauri\\src\\logic\\entities\\mod.rs",
+                        "sloc": 815,
+                        "functions": 50,
+                        "cyclomatic": 64,
+                        "dependencies": 7,
+                        "ast_depth": 7,
+                        "pressure": 412.0,
+                        "health": "Critical"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Dir": {
+                  "name": "projects",
+                  "path": ".\\src-tauri\\src\\logic\\projects",
+                  "children": [
+                    {
+                      "File": {
+                        "name": "commands.rs",
+                        "path": ".\\src-tauri\\src\\logic\\projects\\commands.rs",
+                        "sloc": 34,
+                        "functions": 0,
+                        "cyclomatic": 1,
+                        "dependencies": 1,
+                        "ast_depth": 2,
+                        "pressure": 15.9,
+                        "health": "Healthy"
+                      }
+                    },
+                    {
+                      "File": {
+                        "name": "mod.rs",
+                        "path": ".\\src-tauri\\src\\logic\\projects\\mod.rs",
+                        "sloc": 100,
+                        "functions": 3,
+                        "cyclomatic": 9,
+                        "dependencies": 2,
+                        "ast_depth": 5,
+                        "pressure": 66.0,
+                        "health": "Healthy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Dir": {
+                  "name": "volumes",
+                  "path": ".\\src-tauri\\src\\logic\\volumes",
+                  "children": [
+                    {
+                      "File": {
+                        "name": "commands.rs",
+                        "path": ".\\src-tauri\\src\\logic\\volumes\\commands.rs",
+                        "sloc": 94,
+                        "functions": 0,
+                        "cyclomatic": 2,
+                        "dependencies": 2,
+                        "ast_depth": 3,
+                        "pressure": 30.4,
+                        "health": "Healthy"
+                      }
+                    },
+                    {
+                      "File": {
+                        "name": "mod.rs",
+                        "path": ".\\src-tauri\\src\\logic\\volumes\\mod.rs",
+                        "sloc": 326,
+                        "functions": 9,
+                        "cyclomatic": 36,
+                        "dependencies": 3,
+                        "ast_depth": 8,
+                        "pressure": 195.1,
+                        "health": "Healthy"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "File": {
+                  "name": "mod.rs",
+                  "path": ".\\src-tauri\\src\\logic\\mod.rs",
+                  "sloc": 21,
+                  "functions": 0,
+                  "cyclomatic": 1,
+                  "dependencies": 0,
+                  "ast_depth": 2,
+                  "pressure": 13.1,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "models.rs",
+                  "path": ".\\src-tauri\\src\\logic\\models.rs",
+                  "sloc": 464,
+                  "functions": 5,
+                  "cyclomatic": 1,
+                  "dependencies": 5,
+                  "ast_depth": 5,
+                  "pressure": 86.9,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "schema.rs",
+                  "path": ".\\src-tauri\\src\\logic\\schema.rs",
+                  "sloc": 4,
+                  "functions": 1,
+                  "cyclomatic": 1,
+                  "dependencies": 0,
+                  "ast_depth": 2,
+                  "pressure": 13.4,
+                  "health": "Healthy"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Dir": {
+            "name": "tests",
+            "path": ".\\src-tauri\\src\\tests",
+            "children": [
+              {
+                "File": {
+                  "name": "ai_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\ai_integration.rs",
+                  "sloc": 134,
+                  "functions": 7,
+                  "cyclomatic": 2,
+                  "dependencies": 7,
+                  "ast_depth": 4,
+                  "pressure": 59.9,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "batch_and_connections_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\batch_and_connections_integration.rs",
+                  "sloc": 234,
+                  "functions": 6,
+                  "cyclomatic": 1,
+                  "dependencies": 6,
+                  "ast_depth": 4,
+                  "pressure": 63.400000000000006,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "chat_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\chat_integration.rs",
+                  "sloc": 75,
+                  "functions": 3,
+                  "cyclomatic": 1,
+                  "dependencies": 3,
+                  "ast_depth": 2,
+                  "pressure": 29.0,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "chat_operations_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\chat_operations_integration.rs",
+                  "sloc": 182,
+                  "functions": 11,
+                  "cyclomatic": 1,
+                  "dependencies": 3,
+                  "ast_depth": 3,
+                  "pressure": 59.7,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "common.rs",
+                  "path": ".\\src-tauri\\src\\tests\\common.rs",
+                  "sloc": 62,
+                  "functions": 3,
+                  "cyclomatic": 3,
+                  "dependencies": 3,
+                  "ast_depth": 4,
+                  "pressure": 41.7,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "document_export_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\document_export_integration.rs",
+                  "sloc": 272,
+                  "functions": 8,
+                  "cyclomatic": 5,
+                  "dependencies": 8,
+                  "ast_depth": 6,
+                  "pressure": 94.2,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "embeddings_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\embeddings_integration.rs",
+                  "sloc": 149,
+                  "functions": 4,
+                  "cyclomatic": 4,
+                  "dependencies": 4,
+                  "ast_depth": 4,
+                  "pressure": 56.9,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "entity_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\entity_integration.rs",
+                  "sloc": 532,
+                  "functions": 19,
+                  "cyclomatic": 1,
+                  "dependencies": 4,
+                  "ast_depth": 4,
+                  "pressure": 116.2,
+                  "health": "Warning"
+                }
+              },
+              {
+                "File": {
+                  "name": "export_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\export_integration.rs",
+                  "sloc": 116,
+                  "functions": 8,
+                  "cyclomatic": 1,
+                  "dependencies": 8,
+                  "ast_depth": 3,
+                  "pressure": 54.6,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "hierarchy_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\hierarchy_integration.rs",
+                  "sloc": 175,
+                  "functions": 10,
+                  "cyclomatic": 1,
+                  "dependencies": 2,
+                  "ast_depth": 3,
+                  "pressure": 55.5,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "mod.rs",
+                  "path": ".\\src-tauri\\src\\tests\\mod.rs",
+                  "sloc": 18,
+                  "functions": 0,
+                  "cyclomatic": 1,
+                  "dependencies": 0,
+                  "ast_depth": 1,
+                  "pressure": 8.8,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "negative_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\negative_integration.rs",
+                  "sloc": 141,
+                  "functions": 10,
+                  "cyclomatic": 1,
+                  "dependencies": 7,
+                  "ast_depth": 4,
+                  "pressure": 63.6,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "project_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\project_integration.rs",
+                  "sloc": 222,
+                  "functions": 12,
+                  "cyclomatic": 3,
+                  "dependencies": 7,
+                  "ast_depth": 4,
+                  "pressure": 81.7,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "retrieval_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\retrieval_integration.rs",
+                  "sloc": 246,
+                  "functions": 15,
+                  "cyclomatic": 8,
+                  "dependencies": 6,
+                  "ast_depth": 4,
+                  "pressure": 103.6,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "smoke_schema.rs",
+                  "path": ".\\src-tauri\\src\\tests\\smoke_schema.rs",
+                  "sloc": 63,
+                  "functions": 2,
+                  "cyclomatic": 3,
+                  "dependencies": 1,
+                  "ast_depth": 4,
+                  "pressure": 36.8,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "stress_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\stress_integration.rs",
+                  "sloc": 193,
+                  "functions": 5,
+                  "cyclomatic": 12,
+                  "dependencies": 10,
+                  "ast_depth": 7,
+                  "pressure": 108.3,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "text_blocks_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\text_blocks_integration.rs",
+                  "sloc": 71,
+                  "functions": 3,
+                  "cyclomatic": 1,
+                  "dependencies": 3,
+                  "ast_depth": 2,
+                  "pressure": 28.6,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "timeline_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\timeline_integration.rs",
+                  "sloc": 242,
+                  "functions": 15,
+                  "cyclomatic": 2,
+                  "dependencies": 5,
+                  "ast_depth": 6,
+                  "pressure": 91.7,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "tools_integration.rs",
+                  "path": ".\\src-tauri\\src\\tests\\tools_integration.rs",
+                  "sloc": 138,
+                  "functions": 4,
+                  "cyclomatic": 1,
+                  "dependencies": 4,
+                  "ast_depth": 4,
+                  "pressure": 46.8,
+                  "health": "Healthy"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "File": {
+            "name": "lib.rs",
+            "path": ".\\src-tauri\\src\\lib.rs",
+            "sloc": 247,
+            "functions": 5,
+            "cyclomatic": 6,
+            "dependencies": 16,
+            "ast_depth": 6,
+            "pressure": 100.7,
+            "health": "Healthy"
+          }
+        },
+        {
+          "File": {
+            "name": "main.rs",
+            "path": ".\\src-tauri\\src\\main.rs",
+            "sloc": 4,
+            "functions": 1,
+            "cyclomatic": 1,
+            "dependencies": 0,
+            "ast_depth": 2,
+            "pressure": 13.4,
+            "health": "Healthy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "llama-sys",
+      "path": ".\\src-tauri\\llama-sys",
+      "ca": 2,
+      "ce": 0,
+      "instability": 0.0,
+      "abstractness": 0.0,
+      "distance": 1.0,
+      "is_zone_of_pain": true,
+      "children": [
+        {
+          "File": {
+            "name": "lib.rs",
+            "path": ".\\src-tauri\\llama-sys\\src\\lib.rs",
+            "sloc": 4,
+            "functions": 0,
+            "cyclomatic": 1,
+            "dependencies": 0,
+            "ast_depth": 1,
+            "pressure": 7.4,
+            "health": "Healthy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "surreal_domain_core",
+      "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_core",
+      "ca": 2,
+      "ce": 2,
+      "instability": 0.5,
+      "abstractness": 0.0,
+      "distance": 0.5,
+      "is_zone_of_pain": false,
+      "children": [
+        {
+          "File": {
+            "name": "lib.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_core\\src\\lib.rs",
+            "sloc": 303,
+            "functions": 28,
+            "cyclomatic": 27,
+            "dependencies": 2,
+            "ast_depth": 9,
+            "pressure": 206.3,
+            "health": "Warning"
+          }
+        }
+      ]
+    },
+    {
+      "name": "surreal_domain",
+      "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_facade",
+      "ca": 2,
+      "ce": 0,
+      "instability": 0.0,
+      "abstractness": 0.0,
+      "distance": 1.0,
+      "is_zone_of_pain": true,
+      "children": [
+        {
+          "File": {
+            "name": "lib.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_facade\\src\\lib.rs",
+            "sloc": 2,
+            "functions": 0,
+            "cyclomatic": 1,
+            "dependencies": 0,
+            "ast_depth": 1,
+            "pressure": 7.2,
+            "health": "Healthy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "surreal_domain_macros",
+      "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_macros",
+      "ca": 2,
+      "ce": 10,
+      "instability": 0.8333333333333334,
+      "abstractness": 0.0,
+      "distance": 0.16666666666666663,
+      "is_zone_of_pain": false,
+      "children": [
+        {
+          "File": {
+            "name": "entity.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_macros\\src\\entity.rs",
+            "sloc": 335,
+            "functions": 22,
+            "cyclomatic": 48,
+            "dependencies": 6,
+            "ast_depth": 14,
+            "pressure": 286.5,
+            "health": "Warning"
+          }
+        },
+        {
+          "File": {
+            "name": "entity_commands.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_macros\\src\\entity_commands.rs",
+            "sloc": 101,
+            "functions": 3,
+            "cyclomatic": 9,
+            "dependencies": 4,
+            "ast_depth": 7,
+            "pressure": 77.1,
+            "health": "Healthy"
+          }
+        },
+        {
+          "File": {
+            "name": "lib.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_macros\\src\\lib.rs",
+            "sloc": 25,
+            "functions": 4,
+            "cyclomatic": 1,
+            "dependencies": 2,
+            "ast_depth": 2,
+            "pressure": 24.5,
+            "health": "Healthy"
+          }
+        },
+        {
+          "File": {
+            "name": "relation.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_macros\\src\\relation.rs",
+            "sloc": 222,
+            "functions": 6,
+            "cyclomatic": 24,
+            "dependencies": 5,
+            "ast_depth": 8,
+            "pressure": 145.7,
+            "health": "Healthy"
+          }
+        },
+        {
+          "File": {
+            "name": "schema.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\surreal_domain\\surreal_domain_macros\\src\\schema.rs",
+            "sloc": 13,
+            "functions": 1,
+            "cyclomatic": 1,
+            "dependencies": 2,
+            "ast_depth": 5,
+            "pressure": 29.3,
+            "health": "Healthy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "tauri-shell",
+      "path": ".\\tauri-surreal-kit\\backend\\tauri_shell",
+      "ca": 2,
+      "ce": 10,
+      "instability": 0.8333333333333334,
+      "abstractness": 0.0,
+      "distance": 0.16666666666666663,
+      "is_zone_of_pain": false,
+      "children": [
+        {
+          "Dir": {
+            "name": "logic",
+            "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\logic",
+            "children": [
+              {
+                "File": {
+                  "name": "mod.rs",
+                  "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\logic\\mod.rs",
+                  "sloc": 3,
+                  "functions": 0,
+                  "cyclomatic": 1,
+                  "dependencies": 0,
+                  "ast_depth": 1,
+                  "pressure": 7.3,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "performance.rs",
+                  "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\logic\\performance.rs",
+                  "sloc": 72,
+                  "functions": 4,
+                  "cyclomatic": 5,
+                  "dependencies": 1,
+                  "ast_depth": 4,
+                  "pressure": 47.7,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "system.rs",
+                  "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\logic\\system.rs",
+                  "sloc": 449,
+                  "functions": 33,
+                  "cyclomatic": 5,
+                  "dependencies": 9,
+                  "ast_depth": 5,
+                  "pressure": 159.4,
+                  "health": "Healthy"
+                }
+              },
+              {
+                "File": {
+                  "name": "system_core.rs",
+                  "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\logic\\system_core.rs",
+                  "sloc": 162,
+                  "functions": 18,
+                  "cyclomatic": 24,
+                  "dependencies": 5,
+                  "ast_depth": 8,
+                  "pressure": 163.7,
+                  "health": "Healthy"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "File": {
+            "name": "lib.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\lib.rs",
+            "sloc": 1,
+            "functions": 0,
+            "cyclomatic": 1,
+            "dependencies": 0,
+            "ast_depth": 1,
+            "pressure": 7.1,
+            "health": "Healthy"
+          }
+        },
+        {
+          "File": {
+            "name": "main.rs",
+            "path": ".\\tauri-surreal-kit\\backend\\tauri_shell\\src\\main.rs",
+            "sloc": 57,
+            "functions": 3,
+            "cyclomatic": 1,
+            "dependencies": 5,
+            "ast_depth": 4,
+            "pressure": 38.2,
+            "health": "Healthy"
+          }
+        }
+      ]
+    }
+  ],
+  "total_files": 52,
+  "healthy_count": 47,
+  "warning_count": 4,
+  "critical_count": 1,
+  "avg_distance": 0.4912280701754385,
+  "hotspots": [
+    {
+      "name": "mod.rs",
+      "path": ".\\src-tauri\\src\\logic\\entities\\mod.rs",
+      "sloc": 815,
+      "functions": 50,
+      "cyclomatic": 64,
+      "dependencies": 7,
+      "ast_depth": 7,
+      "pressure": 412.0,
+      "health": "Critical"
+    }
+  ]
+}

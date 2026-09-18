@@ -15,7 +15,10 @@ pub use catalog::{RuleCatalog, RuleDocEntry};
 pub use cluster::{ClusterAnalysisReport, ViolationCluster};
 pub use layer::{ArchLayer, LayerRule, LayerTopologyMatrix, PackageArchMetadata, WorkspaceArchMetadata};
 pub use metrics::{FileMetrics, PackageMetrics, PressureCalculator, PressureWeights};
-pub use path_utils::{normalize_path, normalize_path_str, path_contains, path_ends_with, path_starts_with};
+pub use path_utils::{
+    is_path_ignored, matches_ignore_pattern, normalize_path, normalize_path_str, path_contains,
+    path_ends_with, path_starts_with,
+};
 pub use preset::Preset;
 pub use registry::BuiltinRuleRegistry;
 pub use rules::{

@@ -1,3 +1,5 @@
+use cerberus_domain::is_path_ignored;
+pub use cerberus_domain::matches_ignore_pattern;
 use cerberus_ports::{FileSystemScannerPort, ScanScope, ScannedSourceFile};
 use std::path::Path;
 use walkdir::WalkDir;
@@ -40,20 +42,8 @@ impl FileSystemScannerPort for WalkDirScannerAdapter {
                 let path = e.path();
 
                 if let Ok(rel_path) = path.strip_prefix(root_dir) {
-                    for component in rel_path.components() {
-                        let s = component.as_os_str().to_string_lossy();
-                        if s.starts_with('.') {
-                            return false;
-                        }
-                    }
-                }
-
-                if let Ok(rel_path) = path.strip_prefix(root_dir) {
-                    let rel_str = rel_path.to_string_lossy().replace('\\', "/");
-                    for pattern in &self.ignore_patterns {
-                        if matches_ignore_pattern(&rel_str, pattern) {
-                            return false;
-                        }
+                    if is_path_ignored(rel_path, &self.ignore_patterns) {
+                        return false;
                     }
                 }
 
@@ -71,47 +61,6 @@ impl FileSystemScannerPort for WalkDirScannerAdapter {
             })
             .collect()
     }
-}
-
-pub fn matches_ignore_pattern(rel_path: &str, pattern: &str) -> bool {
-    let norm_path = rel_path.replace('\\', "/");
-    let norm_pat = pattern.replace('\\', "/");
-
-    if norm_pat.contains('*') {
-        if let Some(suffix) = norm_pat.strip_prefix("**/*") {
-            if norm_path.ends_with(suffix) {
-                return true;
-            }
-        }
-        if let Some(suffix) = norm_pat.strip_prefix("*") {
-            if norm_path.ends_with(suffix) {
-                return true;
-            }
-        }
-        if let Some(prefix) = norm_pat.strip_suffix("/**") {
-            let clean_prefix = prefix.trim_start_matches("**/").trim_matches('/');
-            if !clean_prefix.is_empty()
-                && (norm_path == clean_prefix
-                    || norm_path.starts_with(&format!("{clean_prefix}/"))
-                    || norm_path.contains(&format!("/{clean_prefix}/"))
-                    || norm_path.ends_with(&format!("/{clean_prefix}")))
-            {
-                return true;
-            }
-        }
-    }
-
-    let clean = norm_pat.trim_matches('*').trim_matches('/');
-    if !clean.is_empty()
-        && (norm_path == clean
-            || norm_path.starts_with(&format!("{clean}/"))
-            || norm_path.contains(&format!("/{clean}/"))
-            || norm_path.ends_with(&format!("/{clean}")))
-    {
-        return true;
-    }
-
-    false
 }
 
 fn infer_crate_name(file_path: &Path) -> String {

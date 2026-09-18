@@ -131,6 +131,8 @@ crates/cargo-cerberus/src/
 |                      | `--json <FILE>`        | Экспорт полного отчета в машиночитаемый JSON.                         |
 |                      | `--frontend-only`      | Сканировать только Vue SFC и TypeScript файлы.                        |
 |                      | `--backend-only`       | Сканировать только Rust модули и Cargo.toml.                          |
+|                      | `--record-baseline`    | Зафиксировать все текущие нарушения в структурированный `baseline`.    |
+|                      | `--baseline <PATH>`    | Явный путь к файлу baseline (по умолчанию `cerberus-baseline.json`).  |
 | `explain`            | `--details`            | Показать подробные сниппеты кода для каждого кластера нарушений.      |
 | `tree`               | `--max-depth <N>`      | Ограничение глубины отображения дерева компонентов.                   |
 | `ledger sign`        | `--rule <ID>`          | ID подавляемого правила (например, `ARCH-001`).                       |

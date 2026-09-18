@@ -7,11 +7,21 @@ use crate::tree_metrics::TreeMetricsCollector;
 pub struct RenderTreeUseCase {
     limits: LimitsConfig,
     weights: PressureWeights,
+    ignore_patterns: Vec<String>,
 }
 
 impl RenderTreeUseCase {
     pub fn new(limits: LimitsConfig, weights: PressureWeights) -> Self {
-        Self { limits, weights }
+        Self {
+            limits,
+            weights,
+            ignore_patterns: Vec::new(),
+        }
+    }
+
+    pub fn with_ignores(mut self, ignore_patterns: Vec<String>) -> Self {
+        self.ignore_patterns = ignore_patterns;
+        self
     }
 
     pub fn execute(&self, root: &Path) -> Result<TreeReport, String> {
@@ -19,7 +29,8 @@ impl RenderTreeUseCase {
             return Err(format!("Path does not exist: {}", root.display()));
         }
 
-        let collector = TreeMetricsCollector::new(&self.limits, &self.weights);
+        let collector =
+            TreeMetricsCollector::new(&self.limits, &self.weights, &self.ignore_patterns);
         let mut packages = Vec::new();
         let cargo_toml_files = collector.find_cargo_tomls(root);
 
@@ -28,7 +39,7 @@ impl RenderTreeUseCase {
                 Some(s) => s.to_string_lossy().to_string(),
                 None => "root".to_string(),
             };
-            let pkg = self.build_package_node(&collector, &name, root)?;
+            let pkg = self.build_package_node(&collector, &name, root, root)?;
             packages.push(pkg);
         } else {
             for cargo_path in &cargo_toml_files {
@@ -42,7 +53,7 @@ impl RenderTreeUseCase {
                 };
 
                 if pkg_dir.join("src").exists() {
-                    let pkg = self.build_package_node(&collector, &pkg_name, pkg_dir)?;
+                    let pkg = self.build_package_node(&collector, &pkg_name, pkg_dir, root)?;
                     packages.push(pkg);
                 }
             }
@@ -56,6 +67,7 @@ impl RenderTreeUseCase {
         collector: &TreeMetricsCollector,
         name: &str,
         dir: &Path,
+        workspace_root: &Path,
     ) -> Result<PackageNode, String> {
         let src_dir = if dir.join("src").exists() {
             dir.join("src")
@@ -64,7 +76,7 @@ impl RenderTreeUseCase {
         };
 
         let mut all_files = Vec::new();
-        collector.collect_source_files(&src_dir, &mut all_files);
+        collector.collect_source_files(workspace_root, &src_dir, &mut all_files);
 
         let children = build_tree_hierarchy(&src_dir, &all_files);
         let total_files = all_files.len();
@@ -106,7 +118,8 @@ mod tests {
     fn test_render_tree_use_case() {
         let limits = LimitsConfig::default();
         let weights = PressureWeights::default();
-        let use_case = RenderTreeUseCase::new(limits.clone(), weights.clone());
+        let use_case = RenderTreeUseCase::new(limits.clone(), weights.clone())
+            .with_ignores(vec!["vendor/**".into(), "ignored_crate/**".into()]);
 
         // Non-existent path
         assert!(use_case.execute(Path::new("non_existent_path_404")).is_err());
@@ -119,9 +132,18 @@ mod tests {
         std::fs::write(src_dir.join("my_trait.rs"), "pub trait OtherTrait {}").unwrap();
         std::fs::write(src_dir.join("interface.rs"), "pub trait AnInterface {}").unwrap();
 
+        let vendor_dir = temp.path().join("vendor").join("ignored");
+        std::fs::create_dir_all(&vendor_dir).unwrap();
+        std::fs::write(vendor_dir.join("Cargo.toml"), "[package]\nname = \"vendor-pkg\"\nversion = \"0.1.0\"\n").unwrap();
+        let vendor_src = vendor_dir.join("src");
+        std::fs::create_dir_all(&vendor_src).unwrap();
+        std::fs::write(vendor_src.join("lib.rs"), "pub fn vendor_func() {}").unwrap();
+
         let report = use_case.execute(temp.path()).unwrap();
         assert_eq!(report.packages.len(), 1);
         assert!(report.packages[0].abstractness > 0.0);
+        // vendor-pkg should be ignored!
+        assert!(!report.packages.iter().any(|p| p.name == "vendor-pkg"));
 
         // Path with Cargo.toml
         std::fs::write(
@@ -156,7 +178,7 @@ mod tests {
         let report4 = use_case.execute(cargo_no_src.path()).unwrap();
         assert_eq!(report4.packages.len(), 0);
 
-        let collector = TreeMetricsCollector::new(&limits, &weights);
-        let _ = use_case.build_package_node(&collector, "custom", temp.path());
+        let collector = TreeMetricsCollector::new(&limits, &weights, &[]);
+        let _ = use_case.build_package_node(&collector, "custom", temp.path(), temp.path());
     }
 }

@@ -11,17 +11,45 @@ fn test_main_entrypoint_and_cli_parsing() {
     let cli_sfc_arg = parse_cli_from(["cargo", "cerberus-sfc", "init"]);
     assert!(matches!(cli_sfc_arg.command, Some(Commands::Init { .. })));
 
-    let cli1 = Cli::try_parse_from(["cerberus-sfc", "check", "--path", "src", "--ci", "--sarif", "s.sarif", "--json", "j.json"]).unwrap();
-    assert!(matches!(cli1.command, Some(Commands::Check { ci: true, .. })));
+    let cli1 = Cli::try_parse_from([
+        "cerberus-sfc",
+        "check",
+        "--path",
+        "src",
+        "--ci",
+        "--sarif",
+        "s.sarif",
+        "--json",
+        "j.json",
+    ])
+    .unwrap();
+    assert!(matches!(
+        cli1.command,
+        Some(Commands::Check { ci: true, .. })
+    ));
     let _ = format!("{:?}", cli1);
     let _ = format!("{:?}", cli1.command);
 
-    let cli2 = Cli::try_parse_from(["cerberus-sfc", "init", "--force", "--adopt", "--path", "."]).unwrap();
-    assert!(matches!(cli2.command, Some(Commands::Init { force: true, adopt: true, .. })));
+    let cli2 =
+        Cli::try_parse_from(["cerberus-sfc", "init", "--force", "--adopt", "--path", "."]).unwrap();
+    assert!(matches!(
+        cli2.command,
+        Some(Commands::Init {
+            force: true,
+            adopt: true,
+            ..
+        })
+    ));
     let _ = format!("{:?}", cli2);
     let _ = format!("{:?}", cli2.command);
 
-    let cli3 = Cli::try_parse_from(["cerberus-sfc", "--validate-rules", "--rules-path", "cerberus.json"]).unwrap();
+    let cli3 = Cli::try_parse_from([
+        "cerberus-sfc",
+        "--validate-rules",
+        "--rules-path",
+        "cerberus.json",
+    ])
+    .unwrap();
     assert!(cli3.validate_rules);
     let _ = format!("{:?}", cli3);
     let _ = format!("{:?}", cli3.command);
@@ -32,7 +60,11 @@ fn test_sfc_run_app_init_and_check() {
     let temp = tempdir().unwrap();
     let src_dir = temp.path().join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-    std::fs::write(src_dir.join("Card.vue"), "<template><div>OK</div></template>").unwrap();
+    std::fs::write(
+        src_dir.join("Card.vue"),
+        "<template><div>OK</div></template>",
+    )
+    .unwrap();
 
     let config_file = temp.path().join("cerberus.json");
     std::fs::write(&config_file, "{\"version\": \"1.0\", \"rules\": {}}").unwrap();
@@ -45,8 +77,11 @@ fn test_sfc_run_app_init_and_check() {
             sarif: None,
             json: None,
             ci: false,
+            record_baseline: false,
+            baseline: None,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     assert!(run_app(Cli {
         rules_path: Some(config_file.clone()),
@@ -56,7 +91,8 @@ fn test_sfc_run_app_init_and_check() {
             adopt: true,
             force: true,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     // Test Tree command
     let tree_json = temp.path().join("sfc_tree.json");
@@ -67,7 +103,8 @@ fn test_sfc_run_app_init_and_check() {
             path: temp.path().to_path_buf(),
             json: Some(tree_json.clone()),
         }),
-    }).is_ok());
+    })
+    .is_ok());
     assert!(tree_json.exists());
 
     assert!(run_app(Cli {
@@ -77,7 +114,8 @@ fn test_sfc_run_app_init_and_check() {
             path: temp.path().to_path_buf(),
             json: None,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     // Tree error branches
     assert!(run_app(Cli {
@@ -87,7 +125,8 @@ fn test_sfc_run_app_init_and_check() {
             path: PathBuf::from("non_existent_sfc_tree_path_123"),
             json: None,
         }),
-    }).is_err());
+    })
+    .is_err());
 
     let invalid_json_dir = temp.path().join("invalid_json_dir");
     std::fs::create_dir_all(&invalid_json_dir).unwrap();
@@ -98,7 +137,8 @@ fn test_sfc_run_app_init_and_check() {
             path: temp.path().to_path_buf(),
             json: Some(invalid_json_dir),
         }),
-    }).is_err());
+    })
+    .is_err());
 
     assert!(run_app(Cli {
         rules_path: Some(config_file),
@@ -108,7 +148,8 @@ fn test_sfc_run_app_init_and_check() {
             adopt: false,
             force: false,
         }),
-    }).is_ok()); // Already exists, skips gracefully
+    })
+    .is_ok()); // Already exists, skips gracefully
 
     // Test Init write failure when target is invalid file as dir
     let temp_err = tempdir().unwrap();
@@ -122,7 +163,8 @@ fn test_sfc_run_app_init_and_check() {
             adopt: false,
             force: true,
         }),
-    }).is_err());
+    })
+    .is_err());
 }
 
 #[test]
@@ -139,7 +181,8 @@ fn test_sfc_validate_rules_success_and_err() {
         rules_path: Some(config_file),
         validate_rules: true,
         command: None,
-    }).is_ok());
+    })
+    .is_ok());
 
     let mismatch_config = temp.path().join("mismatch.json");
     std::fs::write(
@@ -151,7 +194,8 @@ fn test_sfc_validate_rules_success_and_err() {
         rules_path: Some(mismatch_config),
         validate_rules: true,
         command: None,
-    }).is_err());
+    })
+    .is_err());
 
     let invalid_file = temp.path().join("invalid.json");
     std::fs::write(&invalid_file, "{\"version\": \"1.0\", \"rules\": []}").unwrap();
@@ -159,14 +203,16 @@ fn test_sfc_validate_rules_success_and_err() {
         rules_path: Some(invalid_file),
         validate_rules: true,
         command: None,
-    }).is_err());
+    })
+    .is_err());
 
     let non_existent = temp.path().join("does_not_exist.json");
     assert!(run_app(Cli {
         rules_path: Some(non_existent),
         validate_rules: false,
         command: None,
-    }).is_err());
+    })
+    .is_err());
 }
 
 #[test]
@@ -174,7 +220,11 @@ fn test_sfc_run_check_reports_and_errors() {
     let temp = tempdir().unwrap();
     let src_dir = temp.path().join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
-    std::fs::write(src_dir.join("Card.vue"), "<template><div>OK</div></template>").unwrap();
+    std::fs::write(
+        src_dir.join("Card.vue"),
+        "<template><div>OK</div></template>",
+    )
+    .unwrap();
 
     let config_file = temp.path().join("cerberus.json");
     std::fs::write(&config_file, "{\"version\": \"1.0\", \"rules\": {}}").unwrap();
@@ -189,6 +239,8 @@ fn test_sfc_run_check_reports_and_errors() {
         sarif_path: Some(&sarif_file),
         json_path: Some(&json_file),
         ci: false,
+        record_baseline: false,
+        baseline_path: None,
     };
     let _ = format!("{:?}", check_opts);
     assert!(run_check(check_opts).is_ok());
@@ -200,7 +252,8 @@ fn test_sfc_run_check_reports_and_errors() {
         rules_path: Some(config_file.clone()),
         validate_rules: false,
         command: None,
-    }).is_ok());
+    })
+    .is_ok());
 
     let bad_src_dir = temp.path().join("bad_src");
     std::fs::create_dir_all(&bad_src_dir).unwrap();
@@ -216,7 +269,10 @@ fn test_sfc_run_check_reports_and_errors() {
         sarif_path: None,
         json_path: None,
         ci: true,
-    }).is_err());
+        record_baseline: false,
+        baseline_path: None,
+    })
+    .is_err());
 
     let invalid_export_dir = temp.path().join("invalid_export_dir");
     std::fs::create_dir_all(&invalid_export_dir).unwrap();
@@ -227,7 +283,10 @@ fn test_sfc_run_check_reports_and_errors() {
         sarif_path: Some(&invalid_export_dir),
         json_path: Some(&invalid_export_dir),
         ci: false,
-    }).is_ok());
+        record_baseline: false,
+        baseline_path: None,
+    })
+    .is_ok());
 
     let locked_temp = tempdir().unwrap();
     let locked_file_path = locked_temp.path().join("locked.vue");
@@ -250,7 +309,10 @@ fn test_sfc_run_check_reports_and_errors() {
             sarif_path: None,
             json_path: None,
             ci: true,
-        }).is_err());
+            record_baseline: false,
+            baseline_path: None,
+        })
+        .is_err());
     }
 }
 
@@ -263,7 +325,11 @@ fn test_sfc_binary_e2e_and_parse_cli() {
         let temp = tempdir().unwrap();
         let src_dir = temp.path().join("src");
         std::fs::create_dir_all(&src_dir).unwrap();
-        std::fs::write(src_dir.join("Component.vue"), "<template><div>OK</div></template>").unwrap();
+        std::fs::write(
+            src_dir.join("Component.vue"),
+            "<template><div>OK</div></template>",
+        )
+        .unwrap();
 
         let output = std::process::Command::new(&bin)
             .arg("check")

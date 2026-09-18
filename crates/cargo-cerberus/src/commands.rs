@@ -220,7 +220,8 @@ fn handle_tree(
 ) -> Result<(), String> {
     let limits = rules_repo.limits();
     let weights = cerberus_domain::PressureWeights::default();
-    let use_case = cerberus_application::RenderTreeUseCase::new(limits, weights);
+    let use_case = cerberus_application::RenderTreeUseCase::new(limits, weights)
+        .with_ignores(rules_repo.config.ignore.to_vec());
 
     match use_case.execute(path) {
         Ok(report) => {

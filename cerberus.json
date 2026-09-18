@@ -12,7 +12,8 @@
     "**/*.min.js",
     "**/*.prod.js",
     "vendor/**",
-    "crates/**"
+    "crates/**",
+    "src/dist-check/**"
   ],
   "extends": [
     "cerberus:rust-hexagonal",

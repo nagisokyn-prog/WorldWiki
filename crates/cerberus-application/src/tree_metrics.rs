@@ -1,21 +1,29 @@
-use cerberus_domain::{FileMetricsNode, HealthLevel, LimitsConfig, PressureWeights};
+use cerberus_domain::{is_path_ignored, FileMetricsNode, HealthLevel, LimitsConfig, PressureWeights};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 pub struct TreeMetricsCollector<'a> {
     pub limits: &'a LimitsConfig,
     pub weights: &'a PressureWeights,
+    pub ignore_patterns: &'a [String],
 }
 
 impl<'a> TreeMetricsCollector<'a> {
-    pub fn new(limits: &'a LimitsConfig, weights: &'a PressureWeights) -> Self {
-        Self { limits, weights }
+    pub fn new(
+        limits: &'a LimitsConfig,
+        weights: &'a PressureWeights,
+        ignore_patterns: &'a [String],
+    ) -> Self {
+        Self {
+            limits,
+            weights,
+            ignore_patterns,
+        }
     }
 
     pub fn find_cargo_tomls(&self, root: &Path) -> Vec<PathBuf> {
         let mut results = Vec::new();
-        let ignore_dirs = ["target", "node_modules", ".git", "dist", "build"];
-        walk_cargo(root, &mut results, &ignore_dirs);
+        walk_cargo(root, root, &mut results, self.ignore_patterns);
         results
     }
 
@@ -33,19 +41,26 @@ impl<'a> TreeMetricsCollector<'a> {
         None
     }
 
-    pub fn collect_source_files(&self, dir: &Path, files: &mut Vec<FileMetricsNode>) {
-        let ignore_dirs = ["target", "node_modules", ".git", "dist", "build"];
+    pub fn collect_source_files(
+        &self,
+        workspace_root: &Path,
+        dir: &Path,
+        files: &mut Vec<FileMetricsNode>,
+    ) {
         let valid_exts = ["rs", "vue", "ts", "js", "css"];
 
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
+                if let Ok(rel_path) = path.strip_prefix(workspace_root) {
+                    if is_path_ignored(rel_path, self.ignore_patterns) {
+                        continue;
+                    }
+                }
                 let name = entry.file_name().to_string_lossy().to_string();
 
                 if path.is_dir() {
-                    if !ignore_dirs.contains(&name.as_str()) {
-                        self.collect_source_files(&path, files);
-                    }
+                    self.collect_source_files(workspace_root, &path, files);
                 } else if let Some(ext_os) = path.extension() {
                     if let Some(ext) = ext_os.to_str() {
                         if valid_exts.contains(&ext) {
@@ -90,16 +105,24 @@ impl<'a> TreeMetricsCollector<'a> {
     }
 }
 
-fn walk_cargo(dir: &Path, results: &mut Vec<PathBuf>, ignore_dirs: &[&str]) {
-    if let Ok(entries) = fs::read_dir(dir) {
+fn walk_cargo(
+    workspace_root: &Path,
+    current_dir: &Path,
+    results: &mut Vec<PathBuf>,
+    ignore_patterns: &[String],
+) {
+    if let Ok(entries) = fs::read_dir(current_dir) {
         for entry in entries.flatten() {
             let path = entry.path();
+            if let Ok(rel_path) = path.strip_prefix(workspace_root) {
+                if is_path_ignored(rel_path, ignore_patterns) {
+                    continue;
+                }
+            }
             let name = entry.file_name().to_string_lossy().to_string();
 
             if path.is_dir() {
-                if !ignore_dirs.contains(&name.as_str()) {
-                    walk_cargo(&path, results, ignore_dirs);
-                }
+                walk_cargo(workspace_root, &path, results, ignore_patterns);
             } else if name == "Cargo.toml" {
                 results.push(path);
             }

@@ -35,9 +35,7 @@ pub struct ExplainRuleUseCase;
 impl ExplainRuleUseCase {
     pub fn explain(rule_id: &str, format: ExplainFormat) -> Result<String, ExplainError> {
         let normalized = rule_id.trim();
-        let entry = RuleCatalog::all()
-            .into_iter()
-            .find(|r| r.id.eq_ignore_ascii_case(normalized))
+        let entry = RuleCatalog::get(normalized)
             .ok_or_else(|| ExplainError::RuleNotFound(normalized.to_string()))?;
 
         match format {

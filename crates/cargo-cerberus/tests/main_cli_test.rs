@@ -42,13 +42,15 @@ fn test_run_app_all_subcommands() {
         rules_path: Some(valid_rules_file),
         validate_rules: true,
         command: None,
-    }).is_ok());
+    })
+    .is_ok());
 
     assert!(run_app(Cli {
         rules_path: Some(rules_file.clone()),
         validate_rules: true,
         command: None,
-    }).is_err());
+    })
+    .is_err());
 
     // 2. Check command on clean temp directory
     assert!(run_app(Cli {
@@ -62,8 +64,49 @@ fn test_run_app_all_subcommands() {
             ci: false,
             frontend_only: false,
             backend_only: false,
+            record_baseline: false,
+            baseline: None,
         }),
-    }).is_ok());
+    })
+    .is_ok());
+
+    // 2.1. Check with record_baseline and grandfathering
+    let custom_base = temp.path().join("recorded-baseline.json");
+    assert!(run_app(Cli {
+        rules_path: Some(rules_file.clone()),
+        validate_rules: false,
+        command: Some(Commands::Check {
+            path: temp.path().to_path_buf(),
+            sarif: None,
+            json: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: true,
+            baseline: Some(custom_base.clone()),
+        }),
+    })
+    .is_ok());
+    assert!(custom_base.exists());
+
+    // Check with loaded custom baseline
+    assert!(run_app(Cli {
+        rules_path: Some(rules_file.clone()),
+        validate_rules: false,
+        command: Some(Commands::Check {
+            path: temp.path().to_path_buf(),
+            sarif: None,
+            json: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline: Some(custom_base.clone()),
+        }),
+    })
+    .is_ok());
 
     // 3. Init command (with and without hooks)
     assert!(run_app(Cli {
@@ -79,7 +122,8 @@ fn test_run_app_all_subcommands() {
             hooks: false,
             models: false,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     assert!(run_app(Cli {
         rules_path: Some(rules_file.clone()),
@@ -94,7 +138,8 @@ fn test_run_app_all_subcommands() {
             hooks: true,
             models: false,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     // 3.1. Model Status, Clean, and Download commands
     assert!(run_app(Cli {
@@ -103,7 +148,8 @@ fn test_run_app_all_subcommands() {
         command: Some(Commands::Model {
             action: ModelCommands::Status,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     assert!(run_app(Cli {
         rules_path: Some(rules_file.clone()),
@@ -111,7 +157,8 @@ fn test_run_app_all_subcommands() {
         command: Some(Commands::Model {
             action: ModelCommands::Clean,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     // 4. Explain command
     assert!(run_app(Cli {
@@ -121,7 +168,8 @@ fn test_run_app_all_subcommands() {
             path: temp.path().to_path_buf(),
             clusters: true,
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     // 4.1. Tree command (console and JSON export)
     let tree_json = temp.path().join("tree.json");
@@ -135,7 +183,8 @@ fn test_run_app_all_subcommands() {
             save_json: None,
             output: None,
         }),
-    }).is_ok());
+    })
+    .is_ok());
     assert!(tree_json.exists());
 
     assert!(run_app(Cli {
@@ -147,7 +196,8 @@ fn test_run_app_all_subcommands() {
             save_json: None,
             output: Some(tree_txt.clone()),
         }),
-    }).is_ok());
+    })
+    .is_ok());
     assert!(tree_txt.exists());
 
     // Tree error branches
@@ -160,7 +210,8 @@ fn test_run_app_all_subcommands() {
             save_json: None,
             output: None,
         }),
-    }).is_err());
+    })
+    .is_err());
 
     // 5. Baseline Reconcile command
     let baseline_file = temp.path().join("guardian-baseline.json");
@@ -173,7 +224,8 @@ fn test_run_app_all_subcommands() {
                 file: baseline_file,
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     let direct_baseline = temp.path().join("cerberus-baseline.json");
     std::fs::write(&direct_baseline, "[]").unwrap();
@@ -185,7 +237,8 @@ fn test_run_app_all_subcommands() {
                 file: direct_baseline,
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     // 6. Ledger Sign & Verify commands
     assert!(run_app(Cli {
@@ -200,7 +253,8 @@ fn test_run_app_all_subcommands() {
                 duration: "30d".into(),
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     let ledger_file = temp.path().join("guardian-ledger.lock");
     std::fs::write(&ledger_file, "[]").unwrap();
@@ -212,7 +266,8 @@ fn test_run_app_all_subcommands() {
                 file: ledger_file.clone(),
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     let direct_ledger = temp.path().join("cerberus-ledger.lock");
     std::fs::write(&direct_ledger, "[]").unwrap();
@@ -224,7 +279,8 @@ fn test_run_app_all_subcommands() {
                 file: direct_ledger.clone(),
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     let old_key_file = temp.path().join("old.key");
     std::fs::write(&old_key_file, "11".repeat(32)).unwrap();
@@ -240,7 +296,8 @@ fn test_run_app_all_subcommands() {
                 force: true,
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 
     let new_key_file = temp.path().join("new.key");
     std::fs::write(&new_key_file, "22".repeat(32)).unwrap();
@@ -256,7 +313,8 @@ fn test_run_app_all_subcommands() {
                 force: true,
             },
         }),
-    }).is_ok());
+    })
+    .is_ok());
 }
 
 #[test]
@@ -284,7 +342,10 @@ fn test_run_check_clean_with_failing_reports() {
         ci: false,
         frontend_only: false,
         backend_only: false,
-    }).is_ok());
+        record_baseline: false,
+        baseline_path: None,
+    })
+    .is_ok());
 
     assert!(run_check(CheckExecutionOptions {
         rules_repo: Arc::clone(&rules_repo),
@@ -295,7 +356,10 @@ fn test_run_check_clean_with_failing_reports() {
         ci: true,
         frontend_only: true,
         backend_only: false,
-    }).is_ok());
+        record_baseline: false,
+        baseline_path: None,
+    })
+    .is_ok());
 
     assert!(run_check(CheckExecutionOptions {
         rules_repo: Arc::clone(&rules_repo),
@@ -306,7 +370,10 @@ fn test_run_check_clean_with_failing_reports() {
         ci: false,
         frontend_only: false,
         backend_only: true,
-    }).is_ok());
+        record_baseline: false,
+        baseline_path: None,
+    })
+    .is_ok());
 }
 
 struct TestModelDownloader(bool);
@@ -332,32 +399,44 @@ fn test_cli_deep_coverage_branches() {
     std::fs::create_dir_all(&cache_dir).unwrap();
 
     // 1. Download success with mock downloader
-    assert!(cargo_cerberus::model_commands::handle_model_with_downloader(
-        ModelCommands::Download,
-        Arc::new(TestModelDownloader(true)),
-        &cache_dir,
-    ).is_ok());
+    assert!(
+        cargo_cerberus::model_commands::handle_model_with_downloader(
+            ModelCommands::Download,
+            Arc::new(TestModelDownloader(true)),
+            &cache_dir,
+        )
+        .is_ok()
+    );
 
     // 2. Status when files exist
-    assert!(cargo_cerberus::model_commands::handle_model_with_downloader(
-        ModelCommands::Status,
-        Arc::new(TestModelDownloader(true)),
-        &cache_dir,
-    ).is_ok());
+    assert!(
+        cargo_cerberus::model_commands::handle_model_with_downloader(
+            ModelCommands::Status,
+            Arc::new(TestModelDownloader(true)),
+            &cache_dir,
+        )
+        .is_ok()
+    );
 
     // 3. Download failure with failing mock
-    assert!(cargo_cerberus::model_commands::handle_model_with_downloader(
-        ModelCommands::Download,
-        Arc::new(TestModelDownloader(false)),
-        &cache_dir,
-    ).is_err());
+    assert!(
+        cargo_cerberus::model_commands::handle_model_with_downloader(
+            ModelCommands::Download,
+            Arc::new(TestModelDownloader(false)),
+            &cache_dir,
+        )
+        .is_err()
+    );
 
     // 4. Clean cache
-    assert!(cargo_cerberus::model_commands::handle_model_with_downloader(
-        ModelCommands::Clean,
-        Arc::new(TestModelDownloader(true)),
-        &cache_dir,
-    ).is_ok());
+    assert!(
+        cargo_cerberus::model_commands::handle_model_with_downloader(
+            ModelCommands::Clean,
+            Arc::new(TestModelDownloader(true)),
+            &cache_dir,
+        )
+        .is_ok()
+    );
 
     // Explain with violations in project forming clusters
     let src_dir = temp.path().join("src");
@@ -365,7 +444,10 @@ fn test_cli_deep_coverage_branches() {
     for i in 0..5 {
         std::fs::write(
             src_dir.join(format!("bad_{}.rs", i)),
-            format!("pub fn bad_{}() {{ panic!(\"critical system failure\"); }}", i),
+            format!(
+                "pub fn bad_{}() {{ panic!(\"critical system failure\"); }}",
+                i
+            ),
         )
         .unwrap();
     }
@@ -374,22 +456,26 @@ fn test_cli_deep_coverage_branches() {
     // Baseline error path (directory instead of file causes read_to_string error)
     let invalid_dir = temp.path().join("invalid_dir_baseline");
     std::fs::create_dir_all(&invalid_dir).unwrap();
-    assert!(cargo_cerberus::ledger_commands::handle_baseline(BaselineCommands::Reconcile {
-        file: invalid_dir,
-    })
-    .is_err());
+    assert!(
+        cargo_cerberus::ledger_commands::handle_baseline(BaselineCommands::Reconcile {
+            file: invalid_dir,
+        })
+        .is_err()
+    );
 
     // Ledger error paths
     let bad_lock = temp.path().join("corrupted.lock");
     std::fs::write(&bad_lock, "not valid json").unwrap();
-    assert!(cargo_cerberus::ledger_commands::handle_ledger(LedgerCommands::ReSign {
-        all: true,
-        file: bad_lock,
-        old_key_path: None,
-        new_key_path: None,
-        force: false,
-    })
-    .is_err());
+    assert!(
+        cargo_cerberus::ledger_commands::handle_ledger(LedgerCommands::ReSign {
+            all: true,
+            file: bad_lock,
+            old_key_path: None,
+            new_key_path: None,
+            force: false,
+        })
+        .is_err()
+    );
 
     // Resolve file fallback test
     let fallback_dir = temp.path().join("guardian-baseline.json");
@@ -425,6 +511,8 @@ fn test_cli_deep_coverage_branches() {
         ci: true,
         frontend_only: false,
         backend_only: false,
+        record_baseline: false,
+        baseline_path: None,
     })
     .is_err());
 
@@ -442,7 +530,8 @@ fn test_cli_deep_coverage_branches() {
             models: false,
         },
         Some(&bad_rules_path),
-    ).is_err());
+    )
+    .is_err());
 
     // Validate rules registry on non-existent path
     assert!(cargo_cerberus::commands::validate_rules_registry(Some(&bad_rules_path)).is_err());
@@ -461,7 +550,8 @@ fn test_cli_deep_coverage_branches() {
             models: false,
         },
         None,
-    ).is_ok());
+    )
+    .is_ok());
 
     // Model status and clean direct
     assert!(cargo_cerberus::model_commands::handle_model(ModelCommands::Status).is_ok());

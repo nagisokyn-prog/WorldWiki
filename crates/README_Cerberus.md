@@ -560,7 +560,7 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 - ✅ **Precision: 100.0% (1.0000)** (Точность без ложных срабатываний, SLA $\ge$ 90%)
 - ✅ **Throughput: 120 560 SLOC/s** (Сквозная скорость анализа, SLA $\ge$ 100 000 SLOC/s)
 - ✅ **Peak RSS: 69.5 MB** (Пиковое потребление памяти на 1.61M SLOC, SLA $<$ 1 200 MB)
-- ✅ **Function Coverage: 100.00% (749/749)** (Абсолютное покрытие всех функций и замыканий кодовой базы)
+- ✅ **Function Coverage: 100.00% (801/801)** (Абсолютное покрытие всех функций, методов и замыканий кодовой базы)
 
 ---
 
@@ -570,7 +570,7 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 
 | Крейт / Исходный файл (`crates/`) | Function Coverage | Line Coverage | Region Coverage | Статус |
 |---|---|---|---|---|
-| **`cargo-cerberus/src/check_runner.rs`** | **100.00%** (14/14) | 97.45% (191/196) | 97.10% (335/345) | ✅ Verified |
+| **`cargo-cerberus/src/check_runner.rs`** | **100.00%** (14/14) | 98.45% (193/196) | 97.97% (338/345) | ✅ Verified |
 | **`cargo-cerberus/src/cli.rs`** | **100.00%** (4/4) | 97.37% (37/38) | 97.50% (39/40) | ✅ Verified |
 | **`cargo-cerberus/src/commands.rs`** | **100.00%** (6/6) | 86.13% (149/173) | 84.50% (229/271) | ✅ Verified |
 | **`cargo-cerberus/src/ledger_commands.rs`** | **100.00%** (3/3) | 94.19% (81/86) | 96.83% (122/126) | ✅ Verified |
@@ -658,6 +658,6 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-testability/src/infrastructure/console_renderer.rs`** | **100.00%** (2/2) | 95.18% (79/83) | 93.41% (156/167) | ✅ Verified |
 | **`cerberus-testability/src/infrastructure/frontend_visitor.rs`** | **100.00%** (2/2) | 89.47% (136/152) | 88.28% (211/239) | ✅ Verified |
 | **`cerberus-testability/src/infrastructure/syn_visitor.rs`** | **100.00%** (24/24) | 92.29% (371/402) | 92.84% (441/475) | ✅ Verified |
-| **🏆 TOTALS (Суммарно по всем 7 крейтам)** | **`100.00% (749/749)`** | **`96.80% (10599/10949)`** | **`97.15% (18541/19084)`** | **🥇 100% Green** |
+| **🏆 TOTALS (Суммарно по всем 7 крейтам)** | **`100.00% (801/801)`** | **`96.85% (10620/10965)`** | **`97.20% (18560/19090)`** | **🥇 100% Green** |
 
 

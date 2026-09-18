@@ -45,6 +45,12 @@ pub enum Commands {
 
         #[arg(long, help = "Scan strictly backend files (Rust)")]
         backend_only: bool,
+
+        #[arg(long, help = "Record all detected violation fingerprints into baseline file")]
+        record_baseline: bool,
+
+        #[arg(long, help = "Path to baseline file (default: cerberus-baseline.json)")]
+        baseline: Option<PathBuf>,
     },
     /// Initialize cerberus configuration, constitution, hooks, and baseline
     Init {
@@ -228,6 +234,8 @@ pub fn run_app(cli: Cli) -> Result<(), String> {
         ci: false,
         frontend_only: false,
         backend_only: false,
+        record_baseline: false,
+        baseline: None,
     };
 
     execute_command(cli.command.unwrap_or(default_command), cli.rules_path.as_ref())

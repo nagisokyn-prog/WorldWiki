@@ -19,7 +19,7 @@ pub struct RuleCatalog;
 
 impl RuleCatalog {
     pub fn all() -> Vec<RuleDocEntry> {
-        vec![
+        let bespoke = vec![
             RuleDocEntry {
                 id: "ARCH-001".to_string(),
                 name: "Domain Layer Zero-SDK Invariant".to_string(),
@@ -212,11 +212,44 @@ impl RuleCatalog {
                 remediation_recipe: "Validate input against a strict whitelist and pass arguments individually rather than through a shell string.".to_string(),
                 configuration_hint: "\"rules\": { \"SEC-001\": \"deny\" }".to_string(),
             },
-        ]
+        ];
+
+        let mut existing_ids: std::collections::HashSet<String> = bespoke.iter().map(|r| r.id.to_uppercase()).collect();
+        let mut results = bespoke;
+
+        for rule in crate::BuiltinRuleRegistry::all_rules() {
+            if !existing_ids.contains(&rule.id.to_uppercase()) {
+                existing_ids.insert(rule.id.to_uppercase());
+                results.push(RuleDocEntry {
+                    id: rule.id.clone(),
+                    name: rule.title.clone(),
+                    category: rule.category,
+                    default_severity: rule.severity,
+                    summary: rule.description.clone(),
+                    rationale: format!("Enforces architectural integrity and quality standards for rule {}.", rule.id),
+                    bad_example: format!("// Violates rule {}\n// Description: {}", rule.id, rule.description),
+                    good_example: format!("// Remediated clean pattern for {}\n// Remediation: {}", rule.id, rule.remediation),
+                    remediation_recipe: rule.remediation.clone(),
+                    configuration_hint: format!("\"rules\": {{ \"{}\": \"{:?}\" }}", rule.id, rule.severity).to_lowercase(),
+                });
+            }
+        }
+
+        results.sort_by(|a, b| {
+            let cat_cmp = format!("{:?}", a.category).cmp(&format!("{:?}", b.category));
+            if cat_cmp == std::cmp::Ordering::Equal {
+                a.id.cmp(&b.id)
+            } else {
+                cat_cmp
+            }
+        });
+
+        results
     }
 
     pub fn get(id: &str) -> Option<RuleDocEntry> {
-        let id_upper = id.to_uppercase();
+        let canonical = crate::BuiltinRuleRegistry::canonical_rule_id(id.trim());
+        let id_upper = canonical.to_uppercase();
         Self::all().into_iter().find(|r| r.id.to_uppercase() == id_upper)
     }
 
@@ -246,7 +279,7 @@ mod tests {
     fn test_rule_catalog_all_and_get() {
         let all = RuleCatalog::all();
         assert!(!all.is_empty());
-        assert!(all.len() >= 15);
+        assert!(all.len() >= 50);
 
         let arch001 = RuleCatalog::get("ARCH-001");
         assert!(arch001.is_some());
@@ -257,9 +290,18 @@ mod tests {
         assert!(!entry.bad_example.is_empty());
         assert!(!entry.good_example.is_empty());
 
-        // Case insensitivity
+        // Case insensitivity & alias lookup
         assert_eq!(RuleCatalog::get("arch-001"), RuleCatalog::get("ARCH-001"));
+        assert_eq!(RuleCatalog::get("arch/domain-purity"), RuleCatalog::get("ARCH-001"));
+        assert_eq!(RuleCatalog::get("vue/no-destructure"), RuleCatalog::get("VUE-007"));
         assert!(RuleCatalog::get("NON-EXISTENT-RULE").is_none());
+
+        // Test non-bespoke registry rule derived entry
+        let arch020 = RuleCatalog::get("ARCH-020");
+        assert!(arch020.is_some());
+        let entry020 = arch020.unwrap();
+        assert_eq!(entry020.id, "ARCH-020");
+        assert!(entry020.rationale.contains("ARCH-020"));
     }
 
     #[test]

@@ -31,6 +31,8 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
             ci,
             frontend_only,
             backend_only,
+            record_baseline,
+            baseline,
         } => run_check(CheckExecutionOptions {
             rules_repo,
             path: &path,
@@ -40,6 +42,8 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
             ci,
             frontend_only,
             backend_only,
+            record_baseline,
+            baseline_path: baseline.as_deref(),
         }),
 
         Commands::Init {

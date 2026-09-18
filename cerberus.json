@@ -10,7 +10,9 @@
     "coverage/**",
     "**/libs/**",
     "**/*.min.js",
-    "**/*.prod.js"
+    "**/*.prod.js",
+    "vendor/**",
+    "crates/**"
   ],
   "extends": [
     "cerberus:rust-hexagonal",
@@ -19,6 +21,27 @@
     "cerberus:perf-high-fps",
     "cerberus:css-design-tokens"
   ],
+  "layers": {
+    "domain": {
+      "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
+      "allowed_deps": []
+    },
+    "application": {
+      "forbidden_external": ["tauri"],
+      "allowed_deps": ["domain", "ports"]
+    },
+    "ports": {
+      "forbidden_external": ["tauri", "surrealdb"],
+      "allowed_deps": ["domain"]
+    },
+    "infrastructure": {
+      "allowed_deps": ["domain", "ports"]
+    },
+    "adapters_tauri": {
+      "allowed_external": ["tauri"],
+      "allowed_deps": ["domain", "application", "ports"]
+    }
+  },
   "limits": {
     "max_sloc_warn": 500,
     "max_sloc_deny": 800,

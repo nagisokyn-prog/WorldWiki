@@ -26,7 +26,7 @@
 
 ## 🌟 Назначение крейта
 
-`cerberus-infrastructure` — это крупнейший крейт экосистемы, содержащий все низкоуровневые реализации интерфейсов ([`cerberus-ports`](../cerberus-ports/README.md)). Здесь инкапсулирована работа с внешними библиотеками: синтаксическим парсером `syn`, рантаймом машинного обучения `ort` (ONNX), многопоточным движком `rayon`, токенизатором `tokenizers`, криптографическим хэшированием и файловой системой.
+`cerberus-infrastructure` — это крупнейший крейт экосистемы, содержащий все низкоуровневые реализации интерфейсов ([`cerberus-ports`](../cerberus-ports/README_cerberus-ports.md)). Здесь инкапсулирована работа с внешними библиотеками: синтаксическим парсером `syn`, рантаймом машинного обучения `ort` (ONNX), многопоточным движком `rayon`, токенизатором `tokenizers`, криптографическим хэшированием и файловой системой.
 
 ---
 
@@ -35,7 +35,7 @@
 Инфраструктурный слой изолирует внешние зависимости от доменной логики:
 - Реализует трейты из `cerberus-ports`.
 - Транслирует низкоуровневые ошибки сторонних библиотек (I/O, ONNX, Parse errors) в доменные ошибки.
-- Предоставляет конкретные структуры (`RulesJsonRepository`, `WalkdirScannerAdapter`, `RustSynParserAdapter`, `DbscanClustererAdapter`, `OnnxEmbedder` и др.) для сборки в Composition Root ([`cargo-cerberus`](../cargo-cerberus/README.md)).
+- Предоставляет конкретные структуры (`RulesJsonRepository`, `WalkdirScannerAdapter`, `RustSynParserAdapter`, `DbscanClustererAdapter`, `OnnxEmbedder` и др.) для сборки в Composition Root ([`cargo-cerberus`](../cargo-cerberus/README_cargo-cerberus.md)).
 
 ---
 

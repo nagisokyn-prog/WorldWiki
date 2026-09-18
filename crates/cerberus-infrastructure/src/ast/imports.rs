@@ -83,13 +83,44 @@ impl<'a> ImportChecker<'a> {
         let full_path_str = path_segments.join("::");
         let current_layer = self.detect_source_layer();
 
-        // 1. Check Tauri framework imports first (ARCH-002, ARCH-005, ARCH-001)
+        // 1. Check std::* dangerous I/O blacklist in pure domain layers
+        if root_segment == "std" {
+            let is_pure_layer = self.is_domain_crate()
+                || current_layer == "domain"
+                || current_layer == "core"
+                || current_layer == "entities"
+                || current_layer == "entity"
+                || current_layer == "domain_core";
+
+            if is_pure_layer && path_segments.len() >= 2 {
+                let sub_mod = path_segments[1].as_str();
+                if matches!(sub_mod, "fs" | "net" | "process" | "os") {
+                    violations.push(self.build_violation(
+                        "ARCH-001",
+                        item_use,
+                        &format!(
+                            "Domain crate '{}' cannot perform direct I/O via 'std::{}'",
+                            self.crate_name, sub_mod
+                        ),
+                        "Move filesystem/network/process operations to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                    ));
+                    return;
+                }
+            }
+            return;
+        }
+
+        // 2. Check Tauri framework imports (ARCH-002, ARCH-005, ARCH-001)
         if root_segment == "tauri" {
             if self.is_application_crate()
                 || current_layer == "application"
                 || current_layer == "usecases"
                 || current_layer == "usecase"
                 || current_layer == "app"
+                || current_layer == "service"
+                || current_layer == "services"
+                || current_layer == "domain_services"
+                || current_layer == "application_services"
             {
                 violations.push(self.build_violation(
                     "ARCH-002",
@@ -102,6 +133,7 @@ impl<'a> ImportChecker<'a> {
                     || current_layer == "domain"
                     || current_layer == "core"
                     || current_layer == "entities"
+                    || current_layer == "entity"
                     || current_layer == "domain_core"
                 {
                     violations.push(self.build_violation(
@@ -120,9 +152,18 @@ impl<'a> ImportChecker<'a> {
                 }
             }
         } else {
-            // 2. Check matrix-defined forbidden external dependencies (ARCH-001)
+            // 3. Pure Whitelist check (fast-path allow)
+            const PURE_WHITELIST: &[&str] = &[
+                "serde", "thiserror", "derive_more", "bitflags", "smallvec", "tinyvec",
+                "rust_decimal", "itertools", "unicode_segmentation", "unicode_width", "strum", "strum_macros",
+            ];
+            let is_in_pure_whitelist = PURE_WHITELIST.contains(&root_segment.as_str());
+
+            // 4. Check matrix-defined forbidden external dependencies (ARCH-001)
+            let mut matrix_matched = false;
             if let Some(matrix) = self.matrix {
                 if matrix.is_external_dep_forbidden(&current_layer, root_segment) {
+                    matrix_matched = true;
                     violations.push(self.build_violation(
                         "ARCH-001",
                         item_use,
@@ -133,21 +174,39 @@ impl<'a> ImportChecker<'a> {
                         "Remove external framework dependency and use abstract ports traits.",
                     ));
                 }
-            } else if self.is_domain_crate()
-                || current_layer == "domain"
-                || current_layer == "core"
-                || current_layer == "entities"
-                || current_layer == "domain_core"
-            {
+            }
+
+            // 5. Capability Fallback for pure domain layers when not matched by matrix
+            if !matrix_matched && !is_in_pure_whitelist && (
+                self.is_domain_crate()
+                    || current_layer == "domain"
+                    || current_layer == "core"
+                    || current_layer == "entities"
+                    || current_layer == "entity"
+                    || current_layer == "domain_core"
+            ) {
                 let default_forbidden_domain = [
                     "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix", "sqlx",
+                    "diesel", "sea_orm", "mongodb", "redis", "warp", "tonic", "ureq",
+                    "rusqlite", "postgres", "deadpool", "r2d2", "async_std", "smol",
                 ];
-                if default_forbidden_domain.contains(&root_segment.as_str()) {
+                let root_lower = root_segment.to_lowercase();
+                let is_forbidden_sdk = default_forbidden_domain.contains(&root_lower.as_str());
+                let has_io_capability_token = root_lower.contains("http")
+                    || root_lower.contains("client")
+                    || root_lower.contains("grpc")
+                    || root_lower.contains("sql")
+                    || root_lower.contains("database")
+                    || root_lower.ends_with("_db")
+                    || root_lower.contains("orm")
+                    || root_lower.contains("runtime");
+
+                if is_forbidden_sdk || has_io_capability_token {
                     violations.push(self.build_violation(
                         "ARCH-001",
                         item_use,
                         &format!(
-                            "Domain crate '{}' cannot import external framework '{}'",
+                            "Domain crate '{}' cannot import external framework or I/O dependency '{}'",
                             self.crate_name, root_segment
                         ),
                         "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
@@ -356,13 +415,6 @@ impl<'a> ImportChecker<'a> {
             }
         }
 
-        if self.is_domain_crate() {
-            return "domain".to_string();
-        }
-        if self.is_application_crate() {
-            return "application".to_string();
-        }
-
         "unknown".to_string()
     }
 
@@ -435,7 +487,11 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn is_domain_crate(&self) -> bool {
-        self.crate_name == "worldwiki-domain" || self.crate_name.contains("domain") || self.crate_name.contains("core")
+        self.crate_name == "worldwiki-domain"
+            || self.crate_name.contains("domain")
+            || self.crate_name.contains("core")
+            || self.crate_name.contains("entity")
+            || self.crate_name.contains("entities")
     }
 
     fn is_application_crate(&self) -> bool {
@@ -443,6 +499,8 @@ impl<'a> ImportChecker<'a> {
             || self.crate_name.contains("application")
             || self.crate_name.contains("usecase")
             || self.crate_name.contains("usecases")
+            || self.crate_name.contains("service")
+            || self.crate_name.contains("services")
     }
 
     fn is_tauri_authorized_crate(&self) -> bool {
@@ -587,6 +645,117 @@ mod tests {
 
         let violations = checker.check_use(&item_use);
         assert!(violations.is_empty(), "kernel-core importing trait Plugin from kernel_api must NOT trigger false positive ARCH-007");
+    }
+
+    #[test]
+    fn test_import_checker_glob_and_rename_and_std_fs() {
+        let code_glob = "use std::fs::*;";
+        let item_use_glob: ItemUse = syn::parse_str(code_glob).unwrap();
+        let checker_domain = ImportChecker::new(Path::new("src/domain/model.rs"), "worldwiki-domain");
+        let violations = checker_domain.check_use(&item_use_glob);
+        assert!(violations.iter().any(|v| v.rule_id == "ARCH-001"));
+
+        let code_rename = "use reqwest::Client as HttpClient;";
+        let item_use_rename: ItemUse = syn::parse_str(code_rename).unwrap();
+        let violations_rename = checker_domain.check_use(&item_use_rename);
+        assert!(violations_rename.iter().any(|v| v.rule_id == "ARCH-001"));
+
+        // Boundary violation when current file is not in a named module (e.g. root lib.rs)
+        let code_root = "use crate::modules::billing::internal::SecretKey;";
+        let item_use_root: ItemUse = syn::parse_str(code_root).unwrap();
+        let checker_root = ImportChecker::new(Path::new("src/lib.rs"), "modular_monolith");
+        let violations_root = checker_root.check_use(&item_use_root);
+        assert!(violations_root.iter().any(|v| v.rule_id == "MOD-001"));
+
+        // Test unknown layer fallback and super import
+        let checker_unknown = ImportChecker::new(Path::new("unknown/path.rs"), "custom_pkg");
+        let code_safe = "use serde::Serialize;";
+        let item_use_safe: ItemUse = syn::parse_str(code_safe).unwrap();
+        let violations_unknown = checker_unknown.check_use(&item_use_safe);
+        assert!(violations_unknown.is_empty());
+
+        let code_super = "use super::repository::UserRepository;";
+        let item_use_super: ItemUse = syn::parse_str(code_super).unwrap();
+        let checker_service = ImportChecker::new(Path::new("src/controller/user.rs"), "layered_app");
+        let _ = checker_service.check_use(&item_use_super);
+    }
+
+    #[test]
+    fn test_import_checker_target_layer_detection_and_fallback_closures() {
+        let checker = ImportChecker::new(Path::new("src/infra/repo.rs"), "my_crate");
+        
+        // Empty segments
+        assert_eq!(checker.detect_target_layer(&[]), None);
+
+        // Single lowercase candidate (not PascalCase)
+        let single = vec!["domain".to_string()];
+        assert_eq!(checker.detect_target_layer(&single), Some("domain".to_string()));
+
+        // crate::domain::MyStruct (fallback matching crate::* prefix and candidates.iter().any)
+        let segs = vec!["crate".to_string(), "domain".to_string(), "User".to_string()];
+        assert_eq!(checker.detect_target_layer(&segs), Some("domain".to_string()));
+
+        // super::service::Auth (fallback matching super::* prefix)
+        let segs_super = vec!["super".to_string(), "service".to_string(), "Auth".to_string()];
+        assert_eq!(checker.detect_target_layer(&segs_super), Some("service".to_string()));
+
+        // candidates.iter().any matching
+        let segs_any = vec!["nested".to_string(), "controller".to_string()];
+        assert_eq!(checker.detect_target_layer(&segs_any), Some("controller".to_string()));
+
+        // Unrecognized layer
+        let segs_none = vec!["foo".to_string(), "bar".to_string()];
+        assert_eq!(checker.detect_target_layer(&segs_none), None);
+    }
+
+    #[test]
+    fn test_import_checker_source_layer_crate_fallbacks() {
+        // Detected layer from crate name
+        let checker_dom = ImportChecker::new(Path::new("src/foo.rs"), "domain_core_crate");
+        assert_eq!(checker_dom.detect_source_layer(), "domain_core");
+
+        // Detected layer from path
+        let checker_app = ImportChecker::new(Path::new("src/application/usecases.rs"), "my_pkg");
+        assert_eq!(checker_app.detect_source_layer(), "application");
+
+        // Unknown layer when neither path nor crate contains keywords
+        let checker_unk = ImportChecker::new(Path::new("src/unknown.rs"), "custom_pkg");
+        assert_eq!(checker_unk.detect_source_layer(), "unknown");
+    }
+
+    #[test]
+    fn test_import_checker_additional_io_and_cqrs_and_evt_branches() {
+        // std::net, std::process, std::os
+        for sub in &["net", "process", "os"] {
+            let code = format!("use std::{}::TcpStream;", sub);
+            let item_use: ItemUse = syn::parse_str(&code).unwrap();
+            let checker = ImportChecker::new(Path::new("src/domain/entity.rs"), "worldwiki-domain");
+            let violations = checker.check_use(&item_use);
+            assert!(violations.iter().any(|v| v.rule_id == "ARCH-001"));
+        }
+
+        // CQRS with query_handler, read_repo, projection, read_model, read_service
+        for keyword in &["query_handler", "read_repo", "projection", "read_model", "read_service"] {
+            let code = format!("use crate::infra::{};", keyword);
+            let item_use: ItemUse = syn::parse_str(&code).unwrap();
+            let checker = ImportChecker::new(Path::new("src/command/handler.rs"), "app");
+            let violations = checker.check_use(&item_use);
+            assert!(violations.iter().any(|v| v.rule_id == "CQRS-001"));
+        }
+
+        // EVT with subscriber
+        let code_sub = "use crate::subscriber::order_event;";
+        let item_use_sub: ItemUse = syn::parse_str(code_sub).unwrap();
+        let checker_evt = ImportChecker::new(Path::new("src/producer/emit.rs"), "producer_crate");
+        let violations = checker_evt.check_use(&item_use_sub);
+        assert!(violations.iter().any(|v| v.rule_id == "EVT-001"));
+
+        // Boundary with module / private
+        let code_priv = "use crate::module::auth::private::Key;";
+        let item_use_priv: ItemUse = syn::parse_str(code_priv).unwrap();
+        let checker_mod = ImportChecker::new(Path::new("src/module/billing/handler.rs"), "monolith");
+        let violations_mod = checker_mod.check_use(&item_use_priv);
+        assert!(violations_mod.iter().any(|v| v.rule_id == "MOD-001"));
     }
 }
 

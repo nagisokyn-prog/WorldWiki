@@ -21,13 +21,8 @@ impl ArchFixtureGenerator for BffFixture {
         builder.write_cargo_workspace(&["bff-gateway"], Some("bff"));
         builder.write_package_manifest("bff-gateway", "bff", &[]);
 
-        let (mut files, _) =
+        let (files, _) =
             ScaleHelper::generate_rust_modules("bff-gateway", "bff", target_sloc, false);
-
-        files.push((
-            "bff-gateway/src/profile.rs".into(),
-            "pub struct UserDto { pub id: u64 }\npub fn get_profile() -> UserDto { UserDto { id: 1 } }\n".into(),
-        ));
 
         builder.write_files_parallel(files);
 
@@ -43,7 +38,7 @@ impl ArchFixtureGenerator for BffFixture {
         builder.write_package_manifest("bff-gateway", "bff", &[]);
 
         let (mut files, _) =
-            ScaleHelper::generate_rust_modules("bff-gateway", "bff", target_sloc, true);
+            ScaleHelper::generate_rust_modules("bff-gateway", "bff", target_sloc, false);
 
         // Seeded Violation: BFF connects directly to database via sqlx (ARCH-001)
         files.push((

@@ -5,20 +5,20 @@ pub struct ScorecardPrinter;
 
 impl ScorecardPrinter {
     pub fn print_scorecard(entries: &[BenchmarkScorecardEntry]) {
-        println!("\n{}", "=".repeat(142).cyan().bold());
+        println!("\n{}", "=".repeat(156).cyan().bold());
         println!(
             "{}",
             "🏛️  CERBERUS 2.0 UNIVERSAL ARCHITECTURAL STRESS MATRIX & TESTABILITY SCORECARD"
                 .yellow()
                 .bold()
         );
-        println!("{}", "=".repeat(142).cyan().bold());
+        println!("{}", "=".repeat(156).cyan().bold());
 
         println!(
-            "{:<40} {:>6} {:>8} {:>9} {:>14} {:>8} {:>7} {:>7} {:>12} {:>7} {:>7} {:>7}",
-            "Paradigm", "Files", "SLOC", "Time(ms)", "Throughput", "RSS(MB)", "T_unit", "T_int", "TI (Tier)", "Recall", "Prec", "F1"
+            "{:<36} {:>6} {:>8} {:>9} {:>14} {:>8} {:>6} {:>6} {:>10} {:>36}",
+            "Paradigm", "Files", "SLOC", "Time(ms)", "Throughput", "RSS(MB)", "T_unit", "T_int", "TI (Tier)", "Archetype Breakdown (P / M / I / F / X)"
         );
-        println!("{}", "-".repeat(142).blue());
+        println!("{}", "-".repeat(156).blue());
 
         let mut total_files = 0;
         let mut total_sloc = 0;
@@ -45,15 +45,18 @@ impl ScorecardPrinter {
                 max_rss = e.peak_rss_mb;
             }
 
-            let recall_str = format!("{:.1}%", e.recall * 100.0);
-            let prec_str = format!("{:.1}%", e.precision * 100.0);
-            let f1_str = format!("{:.4}", e.f1_score);
             let throughput_str = format!("{:.0} SLOC/s", e.throughput_sloc_per_sec);
             let ti_str = format!("{:.1} ({})", e.testability_score, e.testability_tier);
 
+            let short_name = if e.paradigm_name.len() > 36 {
+                &e.paradigm_name[..36]
+            } else {
+                &e.paradigm_name
+            };
+
             println!(
-                "{:<40} {:>6} {:>8} {:>8.2}ms {:>14} {:>7.1}MB {:>6.1} {:>6.1} {:>12} {:>7} {:>7} {:>7}",
-                e.paradigm_name.green(),
+                "{:<36} {:>6} {:>8} {:>8.2}ms {:>14} {:>7.1}MB {:>6.1} {:>6.1} {:>10} {:>36}",
+                short_name.green(),
                 e.total_files,
                 e.total_sloc,
                 e.duration_ms,
@@ -62,13 +65,11 @@ impl ScorecardPrinter {
                 e.t_unit,
                 e.t_integration,
                 ti_str.magenta(),
-                recall_str.cyan(),
-                prec_str.cyan(),
-                f1_str.bold()
+                e.archetype_distribution.cyan()
             );
         }
 
-        println!("{}", "=".repeat(142).cyan().bold());
+        println!("{}", "=".repeat(156).cyan().bold());
 
         let total_recall = if sum_tp + sum_fn > 0 {
             sum_tp as f64 / (sum_tp + sum_fn) as f64
@@ -108,7 +109,7 @@ impl ScorecardPrinter {
         };
 
         println!(
-            "{:<40} {:>6} {:>8} {:>8.2}ms {:>12.0} SLOC/s {:>7.1}MB {:>6.1} {:>6.1} {:>10.1} TI {:>6.1}% {:>6.1}% {:>7.4}",
+            "{:<36} {:>6} {:>8} {:>8.2}ms {:>12.0} SLOC/s {:>7.1}MB {:>6.1} {:>6.1} {:>10.1} TI [Recall: {:.1}%, Prec: {:.1}%, F1: {:.4}]",
             "🏆 COMPOSITE TOTAL".yellow().bold(),
             total_files,
             total_sloc,
@@ -122,7 +123,7 @@ impl ScorecardPrinter {
             total_prec * 100.0,
             total_f1
         );
-        println!("{}", "=".repeat(142).cyan().bold());
+        println!("{}", "=".repeat(156).cyan().bold());
 
         println!("\n📋 {}", "SLA VERIFICATION REPORT:".bold());
         let recall_check = if total_recall >= 0.95 {

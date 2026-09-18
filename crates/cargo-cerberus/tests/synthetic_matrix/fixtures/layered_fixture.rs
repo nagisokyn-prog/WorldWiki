@@ -46,29 +46,32 @@ impl ArchFixtureGenerator for LayeredNTierFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 4;
+        let ent_sloc = target_sloc * 15 / 100;
+        let svc_sloc = target_sloc * 10 / 100;
+        let repo_sloc = target_sloc * 50 / 100;
+        let ctrl_sloc = target_sloc.saturating_sub(ent_sloc + svc_sloc + repo_sloc);
         let mut all_files = Vec::new();
 
         let (ent_files, _) =
-            ScaleHelper::generate_rust_modules("entity-crate", "entity", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("entity-crate", "entity", ent_sloc, false);
         all_files.extend(ent_files);
 
         let (repo_files, _) = ScaleHelper::generate_rust_modules(
             "repository-crate",
             "repository",
-            per_crate_sloc,
+            repo_sloc,
             false,
         );
         all_files.extend(repo_files);
 
         let (svc_files, _) =
-            ScaleHelper::generate_rust_modules("service-crate", "service", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("service-crate", "service", svc_sloc, false);
         all_files.extend(svc_files);
 
         let (ctrl_files, _) = ScaleHelper::generate_rust_modules(
             "controller-crate",
             "controller",
-            per_crate_sloc,
+            ctrl_sloc,
             false,
         );
         all_files.extend(ctrl_files);
@@ -84,40 +87,46 @@ impl ArchFixtureGenerator for LayeredNTierFixture {
         target_sloc: usize,
     ) -> Result<GroundTruthManifest, String> {
         builder.write_cargo_workspace(
-            &["entity-crate", "repository-crate", "service-crate", "controller-crate"],
+            &["entity-crate", "repository-crate", "service-crate", "controller-crate", "api-crate"],
             Some("layered"),
         );
 
         builder.write_package_manifest("entity-crate", "entity", &[]);
+        builder.write_package_manifest("api-crate", "controller", &[("entity-crate", Some("../entity-crate"))]);
         builder.write_package_manifest(
             "repository-crate",
             "repository",
             &[("entity-crate", Some("../entity-crate"))],
         );
 
-        // Seeded Violation 1: Service depends on Controller (ARCH-020)
+        // Seeded Violation 1: Service depends on Controller/api-crate (ARCH-020, acyclic)
         builder.write_package_manifest(
             "service-crate",
             "service",
             &[
                 ("repository-crate", Some("../repository-crate")),
                 ("entity-crate", Some("../entity-crate")),
-                ("controller-crate", Some("../controller-crate")),
+                ("api-crate", Some("../api-crate")),
             ],
         );
 
-        // Seeded Violation 2: Controller directly depends on Repository (skipping Service, ARCH-020)
+        // Seeded Violation 2: Controller directly depends on Repository (ARCH-020)
         builder.write_package_manifest(
             "controller-crate",
             "controller",
             &[
-                ("repository-crate", Some("../repository-crate")),
+                ("service-crate", Some("../service-crate")),
                 ("entity-crate", Some("../entity-crate")),
+                ("repository-crate", Some("../repository-crate")),
             ],
         );
 
-        let per_crate_sloc = target_sloc / 4;
+        let ent_sloc = target_sloc * 15 / 100;
+        let svc_sloc = target_sloc * 10 / 100;
+        let repo_sloc = target_sloc * 50 / 100;
+        let ctrl_sloc = target_sloc.saturating_sub(ent_sloc + svc_sloc + repo_sloc);
         let mut all_files = Vec::new();
+        all_files.push(("api-crate/src/lib.rs".into(), "pub fn api_entry() {}\n".into()));
         let mut expected_violations = vec![
             SeededViolation {
                 rule_id: "ARCH-020".into(),
@@ -132,28 +141,28 @@ impl ArchFixtureGenerator for LayeredNTierFixture {
         ];
 
         let (ent_files, mut ent_viol) =
-            ScaleHelper::generate_rust_modules("entity-crate", "entity", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("entity-crate", "entity", ent_sloc, true);
         all_files.extend(ent_files);
         expected_violations.append(&mut ent_viol);
 
         let (repo_files, mut repo_viol) = ScaleHelper::generate_rust_modules(
             "repository-crate",
             "repository",
-            per_crate_sloc,
+            repo_sloc,
             true,
         );
         all_files.extend(repo_files);
         expected_violations.append(&mut repo_viol);
 
         let (svc_files, mut svc_viol) =
-            ScaleHelper::generate_rust_modules("service-crate", "service", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("service-crate", "service", svc_sloc, true);
         all_files.extend(svc_files);
         expected_violations.append(&mut svc_viol);
 
         let (ctrl_files, mut ctrl_viol) = ScaleHelper::generate_rust_modules(
             "controller-crate",
             "controller",
-            per_crate_sloc,
+            ctrl_sloc,
             true,
         );
         all_files.extend(ctrl_files);

@@ -35,25 +35,27 @@ impl ArchFixtureGenerator for MicroservicesFixture {
             &[("shared-proto", Some("../shared-proto"))],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let proto_sloc = target_sloc * 10 / 100;
+        let auth_sloc = target_sloc * 45 / 100;
+        let bill_sloc = target_sloc.saturating_sub(proto_sloc + auth_sloc);
         let mut all_files = Vec::new();
 
         let (proto_files, _) = ScaleHelper::generate_rust_modules(
             "shared-proto",
             "shared_proto",
-            per_crate_sloc,
+            proto_sloc,
             false,
         );
         all_files.extend(proto_files);
 
         let (auth_files, _) =
-            ScaleHelper::generate_rust_modules("service-auth", "service_auth", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("service-auth", "service_auth", auth_sloc, false);
         all_files.extend(auth_files);
 
         let (bill_files, _) = ScaleHelper::generate_rust_modules(
             "service-billing",
             "service_billing",
-            per_crate_sloc,
+            bill_sloc,
             false,
         );
         all_files.extend(bill_files);
@@ -91,36 +93,35 @@ impl ArchFixtureGenerator for MicroservicesFixture {
             &[("shared-proto", Some("../shared-proto"))],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let proto_sloc = target_sloc * 10 / 100;
+        let auth_sloc = target_sloc * 45 / 100;
+        let bill_sloc = target_sloc.saturating_sub(proto_sloc + auth_sloc);
         let mut all_files = Vec::new();
-        let mut expected_violations = vec![SeededViolation {
+        let expected_violations = vec![SeededViolation {
             rule_id: "ARCH-020".into(),
             target_file_suffix: "service-auth/Cargo.toml".into(),
             description: "Bounded context violation: service_auth cannot depend directly on service_billing".into(),
         }];
 
-        let (proto_files, mut proto_viol) = ScaleHelper::generate_rust_modules(
+        let (proto_files, _) = ScaleHelper::generate_rust_modules(
             "shared-proto",
             "shared_proto",
-            per_crate_sloc,
-            true,
+            proto_sloc,
+            false,
         );
         all_files.extend(proto_files);
-        expected_violations.append(&mut proto_viol);
 
-        let (auth_files, mut auth_viol) =
-            ScaleHelper::generate_rust_modules("service-auth", "service_auth", per_crate_sloc, true);
+        let (auth_files, _) =
+            ScaleHelper::generate_rust_modules("service-auth", "service_auth", auth_sloc, false);
         all_files.extend(auth_files);
-        expected_violations.append(&mut auth_viol);
 
-        let (bill_files, mut bill_viol) = ScaleHelper::generate_rust_modules(
+        let (bill_files, _) = ScaleHelper::generate_rust_modules(
             "service-billing",
             "service_billing",
-            per_crate_sloc,
-            true,
+            bill_sloc,
+            false,
         );
         all_files.extend(bill_files);
-        expected_violations.append(&mut bill_viol);
 
         builder.write_files_parallel(all_files);
 

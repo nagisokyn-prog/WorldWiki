@@ -1,6 +1,6 @@
 [package]
 name = "cerberus-ports"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Pure Traits/Ports for Architectural Firewall (ARCH-003 compliant: zero infrastructure dependencies)"

@@ -1,6 +1,6 @@
 [package]
 name = "cerberus-application"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Application Use Cases for Architectural Firewall (ARCH-002 compliant: zero UI/Tauri dependencies)"

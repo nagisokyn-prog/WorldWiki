@@ -295,7 +295,7 @@ dependencies = [
 
 [[package]]
 name = "cargo-cerberus"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cargo_metadata",
  "cerberus-application",
@@ -367,7 +367,7 @@ dependencies = [
 
 [[package]]
 name = "cerberus-application"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cerberus-domain",
  "cerberus-ports",
@@ -381,7 +381,7 @@ dependencies = [
 
 [[package]]
 name = "cerberus-domain"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "serde",
@@ -391,7 +391,7 @@ dependencies = [
 
 [[package]]
 name = "cerberus-infrastructure"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cargo_metadata",
  "cerberus-domain",
@@ -413,14 +413,14 @@ dependencies = [
 
 [[package]]
 name = "cerberus-ports"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cerberus-domain",
 ]
 
 [[package]]
 name = "cerberus-sfc"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cerberus-application",
  "cerberus-domain",
@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "cerberus-testability"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cerberus-domain",
  "colored",

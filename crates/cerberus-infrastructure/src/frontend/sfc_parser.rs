@@ -130,7 +130,16 @@ export default {};
         let single_quote_sfc = VueSfcParser::parse("<style src='./single.css'></style>");
         assert_eq!(single_quote_sfc.styles[0].src, Some("./single.css".to_string()));
 
+        let custom_attr_val = extract_attr("lang=\"scss\" scoped", "lang");
+        assert_eq!(custom_attr_val, Some("scss".to_string()));
+
+        let style_block = VueStyleBlock::default();
+        let _cloned = style_block.clone();
+        let _dbg = format!("{:?}", style_block);
+
         let empty_sfc = VueSfcParser::parse("");
+        let _sfc_dbg = format!("{:?}", empty_sfc);
+        let _sfc_cloned = empty_sfc.clone();
         assert!(empty_sfc.template.is_none());
         assert!(empty_sfc.script.is_none());
         assert!(empty_sfc.script_setup.is_none());

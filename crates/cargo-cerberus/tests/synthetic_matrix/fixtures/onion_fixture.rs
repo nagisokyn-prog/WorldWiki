@@ -38,23 +38,25 @@ impl ArchFixtureGenerator for OnionFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let core_sloc = target_sloc * 40 / 100;
+        let svc_sloc = target_sloc * 25 / 100;
+        let infra_sloc = target_sloc.saturating_sub(core_sloc + svc_sloc);
         let mut all_files = Vec::new();
 
         let (core_files, _) =
-            ScaleHelper::generate_rust_modules("onion-core", "domain_core", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("onion-core", "domain_core", core_sloc, false);
         all_files.extend(core_files);
 
         let (svc_files, _) = ScaleHelper::generate_rust_modules(
             "onion-services",
             "domain_services",
-            per_crate_sloc,
+            svc_sloc,
             false,
         );
         all_files.extend(svc_files);
 
         let (infra_files, _) =
-            ScaleHelper::generate_rust_modules("onion-infra", "infra", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("onion-infra", "onion_infra", infra_sloc, false);
         all_files.extend(infra_files);
 
         builder.write_files_parallel(all_files);
@@ -87,26 +89,28 @@ impl ArchFixtureGenerator for OnionFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let core_sloc = target_sloc * 40 / 100;
+        let svc_sloc = target_sloc * 25 / 100;
+        let infra_sloc = target_sloc.saturating_sub(core_sloc + svc_sloc);
         let mut all_files = Vec::new();
         let mut expected_violations = Vec::new();
 
         let (core_files, mut core_viol) =
-            ScaleHelper::generate_rust_modules("onion-core", "domain_core", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("onion-core", "domain_core", core_sloc, true);
         all_files.extend(core_files);
         expected_violations.append(&mut core_viol);
 
         let (svc_files, mut svc_viol) = ScaleHelper::generate_rust_modules(
             "onion-services",
             "domain_services",
-            per_crate_sloc,
+            svc_sloc,
             true,
         );
         all_files.extend(svc_files);
         expected_violations.append(&mut svc_viol);
 
         let (infra_files, mut infra_viol) =
-            ScaleHelper::generate_rust_modules("onion-infra", "infra", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("onion-infra", "onion_infra", infra_sloc, true);
         all_files.extend(infra_files);
         expected_violations.append(&mut infra_viol);
 

@@ -1,6 +1,6 @@
 [package]
 name = "cerberus-domain"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
 authors = ["Danila"]
 description = "Pure Domain model for Cerberus Architectural Firewall (ARCH-001 compliant: 0 framework SDKs)"

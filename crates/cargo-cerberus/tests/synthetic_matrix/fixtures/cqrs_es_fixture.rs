@@ -50,18 +50,18 @@ impl ArchFixtureGenerator for CqrsEsFixture {
         builder.write_cargo_workspace(&["cqrs-app"], Some("cqrs"));
         builder.write_package_manifest("cqrs-app", "commands", &[]);
 
-        let (mut files, mut violations) =
-            ScaleHelper::generate_rust_modules("cqrs-app", "commands", target_sloc, true);
+        let (mut files, _) =
+            ScaleHelper::generate_rust_modules("cqrs-app", "commands", target_sloc, false);
 
         files.push((
             "cqrs-app/src/command/bad_write.rs".into(),
             "use crate::read_db::OrderSummaryView;\npub fn mutate_and_read() {}\n".into(),
         ));
-        violations.push(SeededViolation {
+        let violations = vec![SeededViolation {
             rule_id: "CQRS-001".into(),
             target_file_suffix: "cqrs-app/src/command/bad_write.rs".into(),
             description: "CQRS boundary violation: Write pipeline cannot import Read model 'read_db'".into(),
-        });
+        }];
 
         builder.write_files_parallel(files);
 

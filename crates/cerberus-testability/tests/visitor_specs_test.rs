@@ -1,7 +1,7 @@
 use std::path::Path;
 use tempfile::tempdir;
 use cerberus_testability::domain::{
-    DampingMath, LayerContext, TestabilityFactor, TestabilityTier,
+    DampingMath, LayerContext, TestabilityArchetype, TestabilityFactor, TestabilityTier,
     WorkspaceTestabilityReport,
 };
 use cerberus_testability::application::{
@@ -38,6 +38,42 @@ fn test_factor_metadata_and_weights() {
         assert!(factor.unit_ratio() > 0.0);
         assert!(factor.integration_ratio() >= 0.0);
     }
+}
+
+#[test]
+fn test_archetypes_and_dominance_rules() {
+    let pure = TestabilityArchetype::Pure;
+    let mock = TestabilityArchetype::Mockable;
+    let int_bound = TestabilityArchetype::IntBound;
+    let flaky = TestabilityArchetype::Flaky;
+    let poison = TestabilityArchetype::Poisoned;
+
+    assert_eq!(pure.t_unit(), 100.0);
+    assert_eq!(pure.t_int(), 100.0);
+    assert_eq!(pure.ti(), 100.0);
+
+    assert_eq!(mock.t_unit(), 85.0);
+    assert_eq!(mock.t_int(), 90.0);
+    assert_eq!(mock.ti(), 86.5);
+
+    assert_eq!(int_bound.t_unit(), 25.0);
+    assert_eq!(int_bound.t_int(), 85.0);
+    assert_eq!(int_bound.ti(), 43.0);
+
+    assert_eq!(flaky.t_unit(), 15.0);
+    assert_eq!(flaky.t_int(), 35.0);
+    assert_eq!(flaky.ti(), 21.0);
+
+    assert_eq!(poison.t_unit(), 5.0);
+    assert_eq!(poison.t_int(), 15.0);
+    assert_eq!(poison.ti(), 8.0);
+
+    // Dominance order: Poisoned > Flaky > IntBound > Mockable > Pure
+    assert_eq!(pure.combine(mock), mock);
+    assert_eq!(mock.combine(int_bound), int_bound);
+    assert_eq!(int_bound.combine(flaky), flaky);
+    assert_eq!(flaky.combine(poison), poison);
+    assert_eq!(pure.combine(poison), poison);
 }
 
 #[test]
@@ -153,7 +189,8 @@ impl GodService {
     );
 
     assert!(report.frictions.len() >= 5);
-    assert!(report.t_composite < 50.0);
+    assert_eq!(report.archetype, TestabilityArchetype::Poisoned);
+    assert_eq!(report.t_composite, 8.0);
     assert!(report.sloc > 10);
 }
 
@@ -174,7 +211,7 @@ fn test_renderer_and_workspace_analysis() {
     assert!(console_output.contains("domain.rs") || console_output.contains("service.rs"));
 
     let json_output = ConsoleTestabilityRenderer::render_json(&report).unwrap();
-    assert!(json_output.contains("\"schema_version\": \"2.0.0\""));
+    assert!(json_output.contains("\"schema_version\": \"2.3.0\""));
 
     let mem_report = AnalyzeWorkspaceTestabilityUseCase::analyze_in_memory(&[
         ("test1.rs", "pub fn x() -> i32 { 42 }", LayerContext::Domain),
@@ -190,6 +227,7 @@ fn test_unparsable_source_fallback() {
     let unparsable = "pub fn not valid rust syntax { { {";
     let report = ComputeTestabilityUseCase::compute_for_source("invalid.rs", unparsable, LayerContext::Domain);
     assert_eq!(report.frictions.len(), 0);
+    assert_eq!(report.archetype, TestabilityArchetype::Pure);
     assert_eq!(report.t_composite, 100.0);
 }
 
@@ -244,12 +282,9 @@ pub fn check_combinators() {
         LayerContext::Domain,
     );
 
-    let default_vis = cerberus_testability::infrastructure::TestabilityAstVisitor::default();
-    assert!(default_vis.frictions.is_empty());
-
     assert!(report.frictions.len() >= 6);
+    assert_eq!(report.archetype, TestabilityArchetype::Poisoned);
 }
-
 
 #[test]
 fn test_renderer_all_tiers_and_long_paths() {
@@ -259,16 +294,19 @@ fn test_renderer_all_tiers_and_long_paths() {
         FileTestabilityReport {
             file_path: "short.rs".to_string(),
             layer: LayerContext::Domain,
+            archetype: TestabilityArchetype::Pure,
             sloc: 50,
             t_unit: 100.0,
             t_integration: 100.0,
             t_composite: 100.0,
             tier: TestabilityTier::S,
             frictions: Vec::new(),
+            triggers: Vec::new(),
         },
         FileTestabilityReport {
             file_path: "very_long_nested_path_to_some_very_deeply_nested_module_inside_application_crate.rs".to_string(),
             layer: LayerContext::Application,
+            archetype: TestabilityArchetype::Mockable,
             sloc: 120,
             t_unit: 85.0,
             t_integration: 90.0,
@@ -281,15 +319,17 @@ fn test_renderer_all_tiers_and_long_paths() {
                 snippet: "closure".to_string(),
                 message: "msg".to_string(),
             }],
+            triggers: vec!["Mockable interface".to_string()],
         },
         FileTestabilityReport {
             file_path: "tier_b.rs".to_string(),
             layer: LayerContext::Infrastructure,
+            archetype: TestabilityArchetype::Mockable,
             sloc: 80,
-            t_unit: 72.0,
-            t_integration: 80.0,
-            t_composite: 74.4,
-            tier: TestabilityTier::B,
+            t_unit: 85.0,
+            t_integration: 90.0,
+            t_composite: 86.5,
+            tier: TestabilityTier::A,
             frictions: vec![TestFriction {
                 factor: TestabilityFactor::F04SideEffectingConstructor,
                 line: 20,
@@ -297,36 +337,43 @@ fn test_renderer_all_tiers_and_long_paths() {
                 snippet: "ctor".to_string(),
                 message: "msg".to_string(),
             }],
+            triggers: vec!["Mockable interface".to_string()],
         },
         FileTestabilityReport {
             file_path: "tier_c.rs".to_string(),
             layer: LayerContext::Infrastructure,
+            archetype: TestabilityArchetype::IntBound,
             sloc: 200,
-            t_unit: 55.0,
-            t_integration: 65.0,
-            t_composite: 58.0,
-            tier: TestabilityTier::C,
+            t_unit: 25.0,
+            t_integration: 85.0,
+            t_composite: 43.0,
+            tier: TestabilityTier::D,
             frictions: Vec::new(),
+            triggers: vec!["Direct I/O".to_string()],
         },
         FileTestabilityReport {
             file_path: "tier_d.rs".to_string(),
             layer: LayerContext::Domain,
+            archetype: TestabilityArchetype::Flaky,
             sloc: 90,
-            t_unit: 35.0,
-            t_integration: 45.0,
-            t_composite: 38.0,
-            tier: TestabilityTier::D,
+            t_unit: 15.0,
+            t_integration: 35.0,
+            t_composite: 21.0,
+            tier: TestabilityTier::F,
             frictions: Vec::new(),
+            triggers: vec!["SystemTime::now".to_string()],
         },
         FileTestabilityReport {
             file_path: "tier_f.rs".to_string(),
             layer: LayerContext::Domain,
+            archetype: TestabilityArchetype::Poisoned,
             sloc: 300,
-            t_unit: 10.0,
-            t_integration: 20.0,
-            t_composite: 13.0,
+            t_unit: 5.0,
+            t_integration: 15.0,
+            t_composite: 8.0,
             tier: TestabilityTier::F,
             frictions: Vec::new(),
+            triggers: vec!["static mut".to_string()],
         },
     ];
 
@@ -334,8 +381,6 @@ fn test_renderer_all_tiers_and_long_paths() {
     let output = ConsoleTestabilityRenderer::render_report(&ws_report);
     assert!(output.contains("[S]"));
     assert!(output.contains("[A]"));
-    assert!(output.contains("[B]"));
-    assert!(output.contains("[C]"));
     assert!(output.contains("[D]"));
     assert!(output.contains("[F]"));
     assert!(output.contains("..."));
@@ -345,17 +390,17 @@ fn test_renderer_all_tiers_and_long_paths() {
         let single_file = vec![FileTestabilityReport {
             file_path: "f.rs".to_string(),
             layer: LayerContext::Domain,
+            archetype: TestabilityArchetype::Pure,
             sloc: 10,
             t_unit: score,
             t_integration: score,
             t_composite: score,
             tier: TestabilityTier::from_score(score),
             frictions: Vec::new(),
+            triggers: Vec::new(),
         }];
         let r = WorkspaceTestabilityReport::new(single_file);
         let s = ConsoleTestabilityRenderer::render_report(&r);
         assert!(!s.is_empty());
     }
 }
-
-

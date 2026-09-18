@@ -51,17 +51,21 @@ impl TestabilityTier {
     }
 }
 
+use super::archetype::TestabilityArchetype;
+
 /// Отчет тестируемости для отдельного файла
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FileTestabilityReport {
     pub file_path: String,
     pub layer: LayerContext,
+    pub archetype: TestabilityArchetype,
     pub sloc: usize,
     pub t_unit: f64,
     pub t_integration: f64,
     pub t_composite: f64,
     pub tier: TestabilityTier,
     pub frictions: Vec<TestFriction>,
+    pub triggers: Vec<String>,
 }
 
 /// Сводный отчет тестируемости по воркспейсу / проекту
@@ -74,6 +78,8 @@ pub struct WorkspaceTestabilityReport {
     pub workspace_t_integration: f64,
     pub total_files: usize,
     pub tier_counts: HashMap<TestabilityTier, usize>,
+    pub archetype_counts: HashMap<TestabilityArchetype, usize>,
+    pub archetype_percentages: HashMap<TestabilityArchetype, f64>,
     pub files: Vec<FileTestabilityReport>,
 }
 
@@ -89,88 +95,58 @@ impl WorkspaceTestabilityReport {
         tier_counts.insert(TestabilityTier::D, 0);
         tier_counts.insert(TestabilityTier::F, 0);
 
+        let mut archetype_counts = HashMap::new();
+        archetype_counts.insert(TestabilityArchetype::Pure, 0);
+        archetype_counts.insert(TestabilityArchetype::Mockable, 0);
+        archetype_counts.insert(TestabilityArchetype::IntBound, 0);
+        archetype_counts.insert(TestabilityArchetype::Flaky, 0);
+        archetype_counts.insert(TestabilityArchetype::Poisoned, 0);
+
         if total_files == 0 {
+            let mut archetype_percentages = HashMap::new();
+            archetype_percentages.insert(TestabilityArchetype::Pure, 100.0);
+            archetype_percentages.insert(TestabilityArchetype::Mockable, 0.0);
+            archetype_percentages.insert(TestabilityArchetype::IntBound, 0.0);
+            archetype_percentages.insert(TestabilityArchetype::Flaky, 0.0);
+            archetype_percentages.insert(TestabilityArchetype::Poisoned, 0.0);
+
             return Self {
-                schema_version: "2.0.0".to_string(),
+                schema_version: "2.3.0".to_string(),
                 workspace_score: 100.0,
                 workspace_tier: TestabilityTier::S,
                 workspace_t_unit: 100.0,
                 workspace_t_integration: 100.0,
                 total_files: 0,
                 tier_counts,
+                archetype_counts,
+                archetype_percentages,
                 files,
             };
         }
 
-        let mut sum_sq_unit_pen = 0.0;
-        let mut sum_sq_int_pen = 0.0;
-        let mut min_composite = 100.0;
-        let mut defective_files = 0;
-        let mut max_category_weight = 1.0f64;
-
         for file in &files {
             *tier_counts.entry(file.tier).or_insert(0) += 1;
-            let u_pen = (100.0 - file.t_unit).max(0.0);
-            let i_pen = (100.0 - file.t_integration).max(0.0);
-            sum_sq_unit_pen += u_pen * u_pen;
-            sum_sq_int_pen += i_pen * i_pen;
-
-            if file.t_composite < min_composite {
-                min_composite = file.t_composite;
-            }
-            if file.t_composite < 99.0 || !file.frictions.is_empty() {
-                defective_files += 1;
-                for f in &file.frictions {
-                    let w = match f.factor {
-                        super::factor::TestabilityFactor::F03SharedGlobalMutableState
-                        | super::factor::TestabilityFactor::F02DirectOsFsAccess
-                        | super::factor::TestabilityFactor::F04SideEffectingConstructor
-                        | super::factor::TestabilityFactor::F06ConcreteCouplingInBoundary => 2.5,
-                        super::factor::TestabilityFactor::F01HiddenAmbientIo
-                        | super::factor::TestabilityFactor::Conc002OrphanConcurrency => 1.8,
-                        super::factor::TestabilityFactor::F05HeavyMultiLineClosure => 1.0,
-                    };
-                    if w > max_category_weight {
-                        max_category_weight = w;
-                    }
-                }
-            }
+            *archetype_counts.entry(file.archetype).or_insert(0) += 1;
         }
 
-        let (raw_workspace_score, raw_t_unit, raw_t_integration) = if defective_files == 0 {
-            (100.0, 100.0, 100.0)
-        } else {
-            let defect_rate = defective_files as f64 / total_files as f64;
-            let rms_unit_pen = (sum_sq_unit_pen / total_files as f64).sqrt();
-            let rms_int_pen = (sum_sq_int_pen / total_files as f64).sqrt();
+        let n_f64 = total_files as f64;
+        let p_pure = *archetype_counts.get(&TestabilityArchetype::Pure).unwrap_or(&0) as f64 / n_f64;
+        let p_mock = *archetype_counts.get(&TestabilityArchetype::Mockable).unwrap_or(&0) as f64 / n_f64;
+        let p_int = *archetype_counts.get(&TestabilityArchetype::IntBound).unwrap_or(&0) as f64 / n_f64;
+        let p_flaky = *archetype_counts.get(&TestabilityArchetype::Flaky).unwrap_or(&0) as f64 / n_f64;
+        let p_poison = *archetype_counts.get(&TestabilityArchetype::Poisoned).unwrap_or(&0) as f64 / n_f64;
 
-            let density_weight = if defect_rate >= 0.70 {
-                1.4
-            } else if defect_rate >= 0.45 {
-                1.25
-            } else if defect_rate >= 0.25 {
-                1.15
-            } else if defect_rate >= 0.10 {
-                1.05
-            } else {
-                1.0
-            };
+        let mut archetype_percentages = HashMap::new();
+        archetype_percentages.insert(TestabilityArchetype::Pure, (p_pure * 1000.0).round() / 10.0);
+        archetype_percentages.insert(TestabilityArchetype::Mockable, (p_mock * 1000.0).round() / 10.0);
+        archetype_percentages.insert(TestabilityArchetype::IntBound, (p_int * 1000.0).round() / 10.0);
+        archetype_percentages.insert(TestabilityArchetype::Flaky, (p_flaky * 1000.0).round() / 10.0);
+        archetype_percentages.insert(TestabilityArchetype::Poisoned, (p_poison * 1000.0).round() / 10.0);
 
-            let mult = density_weight;
-
-            if defect_rate < 0.01 && defective_files <= 3 {
-                // Isolated point defect in large repository: localized impact (Tier S: ~96.9)
-                let isolated_penalty = ((100.0 - min_composite) * 0.04 * max_category_weight).clamp(0.5, 3.1);
-                let score = (100.0 - isolated_penalty).clamp(0.0, 100.0);
-                (score, score, score)
-            } else {
-                // Systemic defect density penalty with RMS power mean
-                let u_score = (100.0 - (rms_unit_pen * mult)).clamp(0.0, 100.0);
-                let i_score = (100.0 - (rms_int_pen * mult)).clamp(0.0, 100.0);
-                let score = (0.70 * u_score + 0.30 * i_score).clamp(0.0, 100.0);
-                (score, u_score, i_score)
-            }
-        };
+        // Каноническая линейная агрегация воркспейса по формулам раздела 3
+        let raw_t_unit = (1.00 * p_pure + 0.85 * p_mock + 0.25 * p_int + 0.15 * p_flaky + 0.05 * p_poison) * 100.0;
+        let raw_t_integration = (1.00 * p_pure + 0.90 * p_mock + 0.85 * p_int + 0.35 * p_flaky + 0.15 * p_poison) * 100.0;
+        let raw_workspace_score = 0.70 * raw_t_unit + 0.30 * raw_t_integration;
 
         let workspace_score = (raw_workspace_score * 10.0).round() / 10.0;
         let workspace_tier = TestabilityTier::from_score(workspace_score);
@@ -178,13 +154,15 @@ impl WorkspaceTestabilityReport {
         let workspace_t_integration = (raw_t_integration * 10.0).round() / 10.0;
 
         Self {
-            schema_version: "2.0.0".to_string(),
+            schema_version: "2.3.0".to_string(),
             workspace_score,
             workspace_tier,
             workspace_t_unit,
             workspace_t_integration,
             total_files,
             tier_counts,
+            archetype_counts,
+            archetype_percentages,
             files,
         }
     }

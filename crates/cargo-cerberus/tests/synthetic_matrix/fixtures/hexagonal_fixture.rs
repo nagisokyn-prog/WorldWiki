@@ -45,25 +45,29 @@ impl ArchFixtureGenerator for HexagonalCleanFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 5;
+        let dom_sloc = target_sloc * 35 / 100;
+        let ports_sloc = target_sloc * 10 / 100;
+        let app_sloc = target_sloc * 25 / 100;
+        let infra_sloc = target_sloc * 18 / 100;
+        let adapter_sloc = target_sloc * 12 / 100;
         let mut all_files = Vec::new();
 
         let (dom_files, _) =
-            ScaleHelper::generate_rust_modules("domain", "domain", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("domain", "domain", dom_sloc, false);
         all_files.extend(dom_files);
 
         let (ports_files, _) =
-            ScaleHelper::generate_rust_modules("ports", "ports", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("ports", "ports", ports_sloc, false);
         all_files.extend(ports_files);
 
         let (app_files, _) =
-            ScaleHelper::generate_rust_modules("application", "application", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("application", "application", app_sloc, false);
         all_files.extend(app_files);
 
         let (infra_files, _) = ScaleHelper::generate_rust_modules(
             "infrastructure",
             "infrastructure",
-            per_crate_sloc,
+            infra_sloc,
             false,
         );
         all_files.extend(infra_files);
@@ -71,7 +75,7 @@ impl ArchFixtureGenerator for HexagonalCleanFixture {
         let (adapter_files, _) = ScaleHelper::generate_rust_modules(
             "adapter-tauri",
             "adapter",
-            per_crate_sloc,
+            adapter_sloc,
             false,
         );
         all_files.extend(adapter_files);
@@ -113,28 +117,32 @@ impl ArchFixtureGenerator for HexagonalCleanFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 5;
+        let dom_sloc = target_sloc * 35 / 100;
+        let ports_sloc = target_sloc * 10 / 100;
+        let app_sloc = target_sloc * 25 / 100;
+        let infra_sloc = target_sloc * 18 / 100;
+        let adapter_sloc = target_sloc * 12 / 100;
         let mut all_files = Vec::new();
         let mut expected_violations = Vec::new();
 
         let (dom_files, mut dom_viol) =
-            ScaleHelper::generate_rust_modules("domain", "domain", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("domain", "domain", dom_sloc, true);
         all_files.extend(dom_files);
         expected_violations.append(&mut dom_viol);
 
         let (ports_files, _) =
-            ScaleHelper::generate_rust_modules("ports", "ports", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("ports", "ports", ports_sloc, false);
         all_files.extend(ports_files);
 
         let (app_files, mut app_viol) =
-            ScaleHelper::generate_rust_modules("application", "application", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("application", "application", app_sloc, true);
         all_files.extend(app_files);
         expected_violations.append(&mut app_viol);
 
         let (infra_files, mut infra_viol) = ScaleHelper::generate_rust_modules(
             "infrastructure",
             "infrastructure",
-            per_crate_sloc,
+            infra_sloc,
             true,
         );
         all_files.extend(infra_files);
@@ -143,7 +151,7 @@ impl ArchFixtureGenerator for HexagonalCleanFixture {
         let (adapter_files, _) = ScaleHelper::generate_rust_modules(
             "adapter-tauri",
             "adapter",
-            per_crate_sloc,
+            adapter_sloc,
             false,
         );
         all_files.extend(adapter_files);

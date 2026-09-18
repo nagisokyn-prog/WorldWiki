@@ -7,8 +7,8 @@ pub use application::{
     RunCalibrationSuiteUseCase,
 };
 pub use domain::{
-    DampingMath, FileTestabilityReport, LayerContext, TestFriction, TestabilityFactor,
-    TestabilityTier, WorkspaceTestabilityReport,
+    DampingMath, FileTestabilityReport, LayerContext, TestFriction, TestabilityArchetype,
+    TestabilityFactor, TestabilityTier, WorkspaceTestabilityReport,
 };
 pub use infrastructure::{
     ConsoleTestabilityRenderer, TestabilityAstVisitor, ALL_ANCHORS, SyntheticAnchor,

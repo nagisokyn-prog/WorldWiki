@@ -16,7 +16,7 @@
 
 ## 🌟 Назначение крейта
 
-`cerberus-ports` определяет абстрактные интерфейсы (Rust-трейты), через которые ядро приложения ([`cerberus-application`](../cerberus-application/README.md)) взаимодействует с внешним миром: файловой системой, синтаксическими парсерами, нейросетевыми ONNX-рантаймами, генераторами отчетов и хранилищами ключей.
+`cerberus-ports` определяет абстрактные интерфейсы (Rust-трейты), через которые ядро приложения ([`cerberus-application`](../cerberus-application/README_cerberus-application.md)) взаимодействует с внешним миром: файловой системой, синтаксическими парсерами, нейросетевыми ONNX-рантаймами, генераторами отчетов и хранилищами ключей.
 
 ---
 
@@ -156,6 +156,6 @@ crates/cerberus-ports/src/
 
 ## 🔗 Связи в гексагональной структуре
 
-- Использует типы из [`cerberus-domain`](../cerberus-domain/README.md) (`Rule`, `Violation`, `Severity`, `SuppressionRecord`, `ComponentNode`).
-- Предоставляет интерфейсы для [`cerberus-application`](../cerberus-application/README.md).
-- Реализуется в [`cerberus-infrastructure`](../cerberus-infrastructure/README.md).
+- Использует типы из [`cerberus-domain`](../cerberus-domain/README_cerberus-domain.md) (`Rule`, `Violation`, `Severity`, `SuppressionRecord`, `ComponentNode`).
+- Предоставляет интерфейсы для [`cerberus-application`](../cerberus-application/README_cerberus-application.md).
+- Реализуется в [`cerberus-infrastructure`](../cerberus-infrastructure/README_cerberus-infrastructure.md).

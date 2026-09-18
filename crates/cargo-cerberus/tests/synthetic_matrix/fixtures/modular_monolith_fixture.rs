@@ -51,8 +51,8 @@ impl ArchFixtureGenerator for ModularMonolithFixture {
         builder.write_cargo_workspace(&["monolith-app"], Some("modular_monolith"));
         builder.write_package_manifest("monolith-app", "module", &[]);
 
-        let (mut files, mut expected_violations) =
-            ScaleHelper::generate_rust_modules("monolith-app", "module", target_sloc, true);
+        let (mut files, _) =
+            ScaleHelper::generate_rust_modules("monolith-app", "module", target_sloc, false);
 
         files.push((
             "monolith-app/src/modules/billing/api.rs".into(),
@@ -67,11 +67,11 @@ impl ArchFixtureGenerator for ModularMonolithFixture {
             "use crate::modules::billing::internal::SecretVaultKey;\npub fn steal_key() {}\n".into(),
         ));
 
-        expected_violations.push(SeededViolation {
+        let expected_violations = vec![SeededViolation {
             rule_id: "MOD-001".into(),
             target_file_suffix: "monolith-app/src/modules/orders/leaky.rs".into(),
             description: "Module boundary violation: Module 'orders' illegally accesses private internal scope of module 'billing'".into(),
-        });
+        }];
 
         builder.write_files_parallel(files);
 

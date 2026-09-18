@@ -133,8 +133,8 @@ fn evaluate_fixture(
     // 1. Reset working set memory before test
     trim_process_working_set();
 
-    // 2. Phase 1: Clean Repo (verify 0 false positives)
-    let clean_fp = {
+    // 2. Phase 1: Clean Repo (verify 0 false positives & measure canonical testability)
+    let (clean_fp, (testability_score, testability_tier, t_unit, t_integration, archetype_distribution)) = {
         let mut clean_builder = SyntheticRepoBuilder::new();
         generator
             .generate_clean(&mut clean_builder, target_sloc)
@@ -153,7 +153,28 @@ fn evaluate_fixture(
                 .collect::<Vec<_>>()
                 .join("\n")
         );
-        fp
+
+        let test_stats = match cerberus_testability::AnalyzeWorkspaceTestabilityUseCase::analyze_path(
+            &clean_builder.root_path,
+        ) {
+            Ok(rep) => {
+                let p = rep.archetype_percentages.get(&cerberus_testability::TestabilityArchetype::Pure).unwrap_or(&0.0);
+                let m = rep.archetype_percentages.get(&cerberus_testability::TestabilityArchetype::Mockable).unwrap_or(&0.0);
+                let i = rep.archetype_percentages.get(&cerberus_testability::TestabilityArchetype::IntBound).unwrap_or(&0.0);
+                let f = rep.archetype_percentages.get(&cerberus_testability::TestabilityArchetype::Flaky).unwrap_or(&0.0);
+                let x = rep.archetype_percentages.get(&cerberus_testability::TestabilityArchetype::Poisoned).unwrap_or(&0.0);
+                (
+                    rep.workspace_score,
+                    format!("{:?}", rep.workspace_tier),
+                    rep.workspace_t_unit,
+                    rep.workspace_t_integration,
+                    format!("P:{:.0}% M:{:.0}% I:{:.0}% F:{:.0}% X:{:.0}%", p, m, i, f, x),
+                )
+            }
+            Err(_) => (100.0, "TierA".into(), 100.0, 100.0, "P:100%".into()),
+        };
+
+        (fp, test_stats)
     };
 
     // Trim again after clean repo is dropped
@@ -173,20 +194,6 @@ fn evaluate_fixture(
 
     // Measure working set RSS during active seeded scan
     let peak_rss_mb = get_process_working_set_mb();
-
-    // 4. Testability Analysis (cerberus-testability) executed separately
-    let (testability_score, testability_tier, t_unit, t_integration) =
-        match cerberus_testability::AnalyzeWorkspaceTestabilityUseCase::analyze_path(
-            &seeded_builder.root_path,
-        ) {
-            Ok(rep) => (
-                rep.workspace_score,
-                format!("{:?}", rep.workspace_tier),
-                rep.workspace_t_unit,
-                rep.workspace_t_integration,
-            ),
-            Err(_) => (100.0, "TierA".into(), 100.0, 100.0),
-        };
 
     let mut matched_expected = vec![false; manifest.expected_violations.len()];
     let mut matched_actual = vec![false; seeded_res.violations.len()];
@@ -210,35 +217,19 @@ fn evaluate_fixture(
     let total_false_positives = clean_fp + extra_seeded;
 
     if false_negatives > 0 {
-        eprintln!(
-            "[DEBUG FN for {}]: {} false negatives:",
-            generator.name(),
-            false_negatives
-        );
+        eprintln!("\n❌ [{}] MISSED EXPECTED VIOLATIONS (False Negatives = {}):", generator.name(), false_negatives);
         for (e_idx, expected) in manifest.expected_violations.iter().enumerate() {
             if !matched_expected[e_idx] {
-                eprintln!(
-                    "  -> UNMATCHED FN: rule={}, target_suffix={}",
-                    expected.rule_id, expected.target_file_suffix
-                );
+                eprintln!("   - Expected [{}]: suffix '{}', desc: '{}'", expected.rule_id, expected.target_file_suffix, expected.description);
             }
         }
     }
 
     if extra_seeded > 0 {
-        eprintln!(
-            "[DEBUG Extra Violations in Seeded for {}]: {} extra:",
-            generator.name(),
-            extra_seeded
-        );
+        eprintln!("\n⚠️ [{}] UNEXPECTED SEEDED VIOLATIONS (Extra False Positives = {}):", generator.name(), extra_seeded);
         for (a_idx, v) in seeded_res.violations.iter().enumerate() {
             if !matched_actual[a_idx] {
-                eprintln!(
-                    "  -> EXTRA: rule={}, file={}, msg={}",
-                    v.rule_id,
-                    v.file.display(),
-                    v.message
-                );
+                eprintln!("   + Unmatched actual [{}]: file '{}', msg: '{}'", v.rule_id, v.file.display(), v.message);
             }
         }
     }
@@ -284,6 +275,7 @@ fn evaluate_fixture(
         testability_tier,
         t_unit,
         t_integration,
+        archetype_distribution,
     }
 }
 

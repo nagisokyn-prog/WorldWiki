@@ -24,9 +24,9 @@
 
 В соответствии с принципами гексагональной архитектуры, `cargo-cerberus` является **точкой сборки** приложения:
 
-1. Он инстанциирует конкретные адаптеры из [`cerberus-infrastructure`](../cerberus-infrastructure/README.md) (файловые хранилища, парсеры Syn/Vue, DBSCAN-кластеризатор, ONNX-эмбеддер).
-2. Оборачивает их в интерфейсы трейтов из [`cerberus-ports`](../cerberus-ports/README.md).
-3. Передает зависимости в конструкторы Use Case'ов из [`cerberus-application`](../cerberus-application/README.md).
+1. Он инстанциирует конкретные адаптеры из [`cerberus-infrastructure`](../cerberus-infrastructure/README_cerberus-infrastructure.md) (файловые хранилища, парсеры Syn/Vue, DBSCAN-кластеризатор, ONNX-эмбеддер).
+2. Оборачивает их в интерфейсы трейтов из [`cerberus-ports`](../cerberus-ports/README_cerberus-ports.md).
+3. Передает зависимости в конструкторы Use Case'ов из [`cerberus-application`](../cerberus-application/README_cerberus-application.md).
 4. Запускает исполнение сценариев и транслирует результаты нарушений в коды возврата (`std::process::ExitCode`).
 
 ---

@@ -23,8 +23,8 @@
 ## 🏛️ Архитектурная роль
 
 `cerberus-sfc` выступает в качестве альтернативного **Composition Root**, оптимизированного для фронтенда:
-- Использует доменные модели из [`cerberus-domain`](../cerberus-domain/README.md).
-- Инстанциирует фронтенд-парсеры и правила из [`cerberus-infrastructure`](../cerberus-infrastructure/README.md) (`VueSfcParserAdapter`, `VueRulesChecker`, `CssRulesChecker`, `FsdRulesChecker`, `PerfRulesChecker`).
+- Использует доменные модели из [`cerberus-domain`](../cerberus-domain/README_cerberus-domain.md).
+- Инстанциирует фронтенд-парсеры и правила из [`cerberus-infrastructure`](../cerberus-infrastructure/README_cerberus-infrastructure.md) (`VueSfcParserAdapter`, `VueRulesChecker`, `CssRulesChecker`, `FsdRulesChecker`, `PerfRulesChecker`).
 - Предоставляет изолированный бинарник `cerberus-sfc.exe`.
 
 ---

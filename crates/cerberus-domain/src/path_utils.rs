@@ -56,6 +56,8 @@ mod tests {
         assert!(path_contains(&win_path, "/producer/"));
         assert!(path_contains(&win_path, "\\producer\\"));
         assert!(path_contains(&unix_path, "/producer/"));
+        assert!(path_starts_with(&win_path, "c:/users/kuzma"));
+        assert!(path_starts_with(&unix_path, "/home/kuzma"));
         assert!(path_ends_with(&win_path, "src/producer/sync_leak.rs"));
         assert!(path_ends_with(&win_path, "src\\producer\\sync_leak.rs"));
     }

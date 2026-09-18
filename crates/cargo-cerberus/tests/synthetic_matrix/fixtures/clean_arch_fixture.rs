@@ -38,21 +38,23 @@ impl ArchFixtureGenerator for CleanArchFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let ent_sloc = target_sloc * 45 / 100;
+        let uc_sloc = target_sloc * 25 / 100;
+        let ctrl_sloc = target_sloc.saturating_sub(ent_sloc + uc_sloc);
         let mut all_files = Vec::new();
 
         let (ent_files, _) =
-            ScaleHelper::generate_rust_modules("entities-crate", "entities", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("entities-crate", "entities", ent_sloc, false);
         all_files.extend(ent_files);
 
         let (uc_files, _) =
-            ScaleHelper::generate_rust_modules("usecases-crate", "usecases", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("usecases-crate", "usecases", uc_sloc, false);
         all_files.extend(uc_files);
 
         let (ctrl_files, _) = ScaleHelper::generate_rust_modules(
             "controllers-crate",
             "controllers",
-            per_crate_sloc,
+            ctrl_sloc,
             false,
         );
         all_files.extend(ctrl_files);
@@ -85,7 +87,9 @@ impl ArchFixtureGenerator for CleanArchFixture {
             &[("usecases-crate", Some("../usecases-crate"))],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let ent_sloc = target_sloc * 45 / 100;
+        let uc_sloc = target_sloc * 25 / 100;
+        let ctrl_sloc = target_sloc.saturating_sub(ent_sloc + uc_sloc);
         let mut all_files = Vec::new();
         let mut expected_violations = vec![SeededViolation {
             rule_id: "ARCH-020".into(),
@@ -94,19 +98,19 @@ impl ArchFixtureGenerator for CleanArchFixture {
         }];
 
         let (ent_files, mut ent_viol) =
-            ScaleHelper::generate_rust_modules("entities-crate", "entities", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("entities-crate", "entities", ent_sloc, true);
         all_files.extend(ent_files);
         expected_violations.append(&mut ent_viol);
 
         let (uc_files, mut uc_viol) =
-            ScaleHelper::generate_rust_modules("usecases-crate", "usecases", per_crate_sloc, true);
+            ScaleHelper::generate_rust_modules("usecases-crate", "usecases", uc_sloc, true);
         all_files.extend(uc_files);
         expected_violations.append(&mut uc_viol);
 
         let (ctrl_files, _) = ScaleHelper::generate_rust_modules(
             "controllers-crate",
             "controllers",
-            per_crate_sloc,
+            ctrl_sloc,
             false,
         );
         all_files.extend(ctrl_files);

@@ -39,3 +39,20 @@ impl Default for SlaConfig {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_sla_config_defaults_and_serde() {
+        let def = SlaConfig::default();
+        assert_eq!(def.min_recall, 0.95);
+        assert_eq!(def.min_paradigm_precision, 0.65);
+        assert_eq!(def.min_composite_precision, 0.90);
+        assert_eq!(def.max_rss_mb, 1200.0);
+
+        let parsed: SlaConfig = serde_json::from_str("{}").unwrap();
+        assert_eq!(parsed, def);
+    }
+}

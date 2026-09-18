@@ -32,8 +32,8 @@ pub fn calculate_tax(base: f64, rate: f64) -> Result<f64, String> {
 pub const ANCHOR_1_DI_PORTS: SyntheticAnchor = SyntheticAnchor {
     id: 1,
     name: "Anchor 1: Hexagonal Ports & Inversion of Control",
-    expected_tier: TestabilityTier::S,
-    target_score_range: (95.0, 100.0),
+    expected_tier: TestabilityTier::A,
+    target_score_range: (85.0, 90.0),
     source_code: r#"
 pub trait ClockPort {
     fn now_millis(&self) -> u64;
@@ -59,8 +59,8 @@ pub fn process_order(
 pub const ANCHOR_2_NAMED_MAP: SyntheticAnchor = SyntheticAnchor {
     id: 2,
     name: "Anchor 2: Clean Named Error Mapping",
-    expected_tier: TestabilityTier::S,
-    target_score_range: (95.0, 100.0),
+    expected_tier: TestabilityTier::A,
+    target_score_range: (85.0, 90.0),
     source_code: r#"
 pub trait StoragePort {
     fn read(&self, path: &str) -> Result<Vec<u8>, std::io::Error>;
@@ -75,8 +75,8 @@ pub fn load_profile(path: &str, storage: &dyn StoragePort) -> Result<Vec<u8>, St
 pub const ANCHOR_3_THICK_LAMBDA: SyntheticAnchor = SyntheticAnchor {
     id: 3,
     name: "Anchor 3: Thick Multi-Line Closure in Pipeline",
-    expected_tier: TestabilityTier::S,
-    target_score_range: (85.0, 98.0),
+    expected_tier: TestabilityTier::A,
+    target_score_range: (85.0, 90.0),
     source_code: r#"
 pub trait StoragePort {
     fn read(&self, path: &str) -> Result<Vec<u8>, std::io::Error>;
@@ -95,8 +95,8 @@ pub fn load_profile(path: &str, storage: &dyn StoragePort) -> Result<Vec<u8>, St
 pub const ANCHOR_4_SIDE_EFFECT_CTOR: SyntheticAnchor = SyntheticAnchor {
     id: 4,
     name: "Anchor 4: Side-Effecting Constructor with Direct I/O",
-    expected_tier: TestabilityTier::B,
-    target_score_range: (65.0, 80.0),
+    expected_tier: TestabilityTier::F,
+    target_score_range: (5.0, 15.0),
     source_code: r#"
 pub struct DatabaseConnection;
 impl DatabaseConnection {
@@ -121,8 +121,8 @@ impl Service {
 pub const ANCHOR_5_GLOBAL_STATE: SyntheticAnchor = SyntheticAnchor {
     id: 5,
     name: "Anchor 5: Shared Global Mutable State",
-    expected_tier: TestabilityTier::C,
-    target_score_range: (50.0, 68.0),
+    expected_tier: TestabilityTier::F,
+    target_score_range: (5.0, 15.0),
     source_code: r#"
 use std::collections::HashMap;
 
@@ -140,7 +140,7 @@ pub const ANCHOR_6_FULL_CHAOS: SyntheticAnchor = SyntheticAnchor {
     id: 6,
     name: "Anchor 6: Full Architectural Chaos",
     expected_tier: TestabilityTier::F,
-    target_score_range: (0.0, 20.0),
+    target_score_range: (5.0, 15.0),
     source_code: r#"
 use std::collections::HashMap;
 

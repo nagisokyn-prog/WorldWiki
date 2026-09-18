@@ -383,6 +383,13 @@ impl LayerTopologyMatrix {
                 layer_patterns.insert("service".into(), vec!["**/service/**".into(), "**/services/**".into()]);
                 layer_patterns.insert("repository".into(), vec!["**/repository/**".into(), "**/repo/**".into()]);
                 layer_patterns.insert("entity".into(), vec!["**/entity/**".into(), "**/entities/**".into()]);
+
+                let mut entity_forbid = HashSet::new();
+                for f in ["tauri", "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix", "sqlx"] {
+                    entity_forbid.insert(f.into());
+                }
+                forbidden_external.insert("entity".into(), entity_forbid.clone());
+                forbidden_external.insert("entities".into(), entity_forbid);
             }
 
             // 3. Clean Architecture (Entities <- UseCases <- Controllers/Gateways)
@@ -489,7 +496,7 @@ impl LayerTopologyMatrix {
                 layer_aliases.insert("domain_core".into(), ["onion-core", "domain-core", "core", "domain_core", "domain"].into_iter().map(String::from).collect());
                 layer_aliases.insert("domain_services".into(), ["onion-services", "onion-service", "domain_service", "domain_services"].into_iter().map(String::from).collect());
                 layer_aliases.insert("application_services".into(), ["onion-app", "app_core", "application_services", "application"].into_iter().map(String::from).collect());
-                layer_aliases.insert("infrastructure".into(), ["onion-infra", "infra", "infrastructure"].into_iter().map(String::from).collect());
+                layer_aliases.insert("infrastructure".into(), ["onion-infra", "infra", "infrastructure", "onion_infra"].into_iter().map(String::from).collect());
 
                 layer_patterns.insert("domain_core".into(), vec!["**/domain/**".into(), "**/core/**".into(), "**/domain_core/**".into()]);
                 layer_patterns.insert("domain_services".into(), vec!["**/domain_service/**".into(), "**/services/**".into()]);

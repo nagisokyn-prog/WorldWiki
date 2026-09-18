@@ -26,7 +26,7 @@ impl ArchFixtureGenerator for MicrokernelFixture {
         builder.write_package_manifest("kernel-api", "plugin_api", &[]);
         builder.write_package_manifest(
             "kernel-core",
-            "core",
+            "kernel",
             &[("kernel-api", Some("../kernel-api"))],
         );
         builder.write_package_manifest(
@@ -35,21 +35,23 @@ impl ArchFixtureGenerator for MicrokernelFixture {
             &[("kernel-api", Some("../kernel-api"))],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let api_sloc = target_sloc * 10 / 100;
+        let core_sloc = target_sloc * 45 / 100;
+        let plugin_sloc = target_sloc.saturating_sub(api_sloc + core_sloc);
         let mut all_files = Vec::new();
 
         let (api_files, _) =
-            ScaleHelper::generate_rust_modules("kernel-api", "plugin_api", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("kernel-api", "plugin_api", api_sloc, false);
         all_files.extend(api_files);
 
         let (core_files, _) =
-            ScaleHelper::generate_rust_modules("kernel-core", "core", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("kernel-core", "kernel", core_sloc, false);
         all_files.extend(core_files);
 
         let (plugin_files, _) = ScaleHelper::generate_rust_modules(
             "kernel-plugin-pdf",
             "plugin",
-            per_crate_sloc,
+            plugin_sloc,
             false,
         );
         all_files.extend(plugin_files);
@@ -72,7 +74,7 @@ impl ArchFixtureGenerator for MicrokernelFixture {
         builder.write_package_manifest("kernel-api", "plugin_api", &[]);
         builder.write_package_manifest(
             "kernel-core",
-            "core",
+            "kernel",
             &[("kernel-api", Some("../kernel-api"))],
         );
 
@@ -86,7 +88,9 @@ impl ArchFixtureGenerator for MicrokernelFixture {
             ],
         );
 
-        let per_crate_sloc = target_sloc / 3;
+        let api_sloc = target_sloc * 10 / 100;
+        let core_sloc = target_sloc * 45 / 100;
+        let plugin_sloc = target_sloc.saturating_sub(api_sloc + core_sloc);
         let mut all_files = Vec::new();
         let expected_violations = vec![SeededViolation {
             rule_id: "ARCH-020".into(),
@@ -95,18 +99,18 @@ impl ArchFixtureGenerator for MicrokernelFixture {
         }];
 
         let (api_files, _) =
-            ScaleHelper::generate_rust_modules("kernel-api", "plugin_api", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("kernel-api", "plugin_api", api_sloc, false);
         all_files.extend(api_files);
 
         let (core_files, _) =
-            ScaleHelper::generate_rust_modules("kernel-core", "core", per_crate_sloc, false);
+            ScaleHelper::generate_rust_modules("kernel-core", "kernel", core_sloc, false);
         all_files.extend(core_files);
 
         let (plugin_files, _) = ScaleHelper::generate_rust_modules(
             "kernel-plugin-pdf",
             "plugin",
-            per_crate_sloc,
-            true,
+            plugin_sloc,
+            false,
         );
         all_files.extend(plugin_files);
 

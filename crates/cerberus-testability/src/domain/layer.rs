@@ -24,7 +24,12 @@ impl LayerContext {
     #[must_use]
     pub fn from_str_loose(s: &str) -> Self {
         let s = s.to_lowercase();
-        if s.contains("domain") || s.contains("entity") || s.contains("entities") || s.contains("core") || s.contains("model") {
+        if s.contains("kernel") {
+            Self::Infrastructure
+        } else if (s.contains("domain") || s.contains("entity") || s.contains("entities") || s.contains("core") || s.contains("model"))
+            && !s.ends_with(".vue")
+            && !s.contains("apps/")
+        {
             Self::Domain
         } else if s.contains("application") || s.contains("usecase") || s.contains("use_case") || s.contains("service") || s.contains("commands") || s.contains("queries") {
             Self::Application
@@ -46,6 +51,8 @@ impl LayerContext {
             || s.contains("producer")
             || s.contains("consumer")
             || s.contains("plugin")
+            || s.contains("apps/")
+            || s.ends_with(".vue")
         {
             Self::Infrastructure
         } else {
@@ -56,7 +63,13 @@ impl LayerContext {
     #[must_use]
     pub fn from_path(path: &Path) -> Self {
         let path_str = path.to_string_lossy().to_lowercase();
-        if path_str.contains("domain") || path_str.contains("entity") || path_str.contains("entities") || path_str.contains("core") {
+        if path_str.contains("kernel") {
+            Self::Infrastructure
+        } else if (path_str.contains("domain") || path_str.contains("entity") || path_str.contains("entities") || path_str.contains("core"))
+            && !path_str.ends_with(".vue")
+            && !path_str.contains("apps/")
+            && !path_str.contains("apps\\")
+        {
             Self::Domain
         } else if path_str.contains("application") || path_str.contains("usecase") || path_str.contains("service") || path_str.contains("commands") || path_str.contains("queries") {
             Self::Application
@@ -78,10 +91,35 @@ impl LayerContext {
             || path_str.contains("plugin")
             || path_str.contains("controller")
             || path_str.contains("db")
+            || path_str.contains("apps/")
+            || path_str.contains("apps\\")
+            || path_str.ends_with(".vue")
         {
             Self::Infrastructure
         } else {
             Self::Unknown
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_layer_context_methods() {
+        assert_eq!(LayerContext::Domain.as_str(), "Domain");
+        assert_eq!(LayerContext::Application.as_str(), "Application");
+        assert_eq!(LayerContext::Infrastructure.as_str(), "Infrastructure");
+        assert_eq!(LayerContext::Unknown.as_str(), "Unknown");
+
+        assert_eq!(LayerContext::from_str_loose("domain"), LayerContext::Domain);
+        assert_eq!(LayerContext::from_str_loose("app"), LayerContext::Unknown);
+        assert_eq!(LayerContext::from_str_loose("infrastructure"), LayerContext::Infrastructure);
+
+        assert_eq!(LayerContext::from_path(Path::new("src/domain/model.rs")), LayerContext::Domain);
+        assert_eq!(LayerContext::from_path(Path::new("src/application/uc.rs")), LayerContext::Application);
+        assert_eq!(LayerContext::from_path(Path::new("src/infra/db.rs")), LayerContext::Infrastructure);
+        assert_eq!(LayerContext::from_path(Path::new("unknown/path.rs")), LayerContext::Unknown);
     }
 }

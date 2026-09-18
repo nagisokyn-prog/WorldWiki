@@ -41,6 +41,8 @@ crates/cerberus-domain/src/
 ├── tree.rs           # 🌳 Структура дерева компонентов (ComponentNode)
 ├── preset.rs         # 🎚️ Профили строгости правил (Strict, Recommended, Relaxed)
 ├── cluster.rs        # 🧠 Модель семантического кластера нарушений
+├── sla.rs            # 📊 Конфигурация инженерного SLA (Recall, Precision, RSS)
+├── path_utils.rs     # 🛠️ Кроссплатформенная нормализация путей файлов
 └── traits.rs         # 🔌 Базовые доменные интерфейсы
 ```
 
@@ -118,6 +120,7 @@ crates/cerberus-domain/src/
 
 ## 🔗 Связи с другими слоями
 
-- Используется в [`cerberus-ports`](../cerberus-ports/README.md) для определения типов в сигнатурах интерфейсов.
-- Используется в [`cerberus-application`](../cerberus-application/README.md) для выполнения чистых доменных вычислений.
+- Используется в [`cerberus-ports`](../cerberus-ports/README_cerberus-ports.md) для определения типов в сигнатурах интерфейсов.
+- Используется в [`cerberus-application`](../cerberus-application/README_cerberus-application.md) для выполнения чистых доменных вычислений.
+- Используется в [`cerberus-testability`](../cerberus-testability/README_cerberus-testability.md) для правил и классификации.
 - **НЕ ЗАВИСИТ** ни от каких других крейтов.

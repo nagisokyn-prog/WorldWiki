@@ -50,19 +50,19 @@ impl ArchFixtureGenerator for EventDrivenFixture {
         builder.write_cargo_workspace(&["event-app"], Some("event_driven"));
         builder.write_package_manifest("event-app", "producer", &[]);
 
-        let (mut files, mut expected_violations) =
-            ScaleHelper::generate_rust_modules("event-app", "producer", target_sloc, true);
+        let (mut files, _) =
+            ScaleHelper::generate_rust_modules("event-app", "producer", target_sloc, false);
 
         files.push((
             "event-app/src/producer/sync_leak.rs".into(),
             "use crate::consumer::on_order_event;\npub fn sync_call() {}\n".into(),
         ));
 
-        expected_violations.push(SeededViolation {
+        let expected_violations = vec![SeededViolation {
             rule_id: "EVT-001".into(),
             target_file_suffix: "event-app/src/producer/sync_leak.rs".into(),
             description: "Event-driven violation: Producer directly imports Consumer".into(),
-        });
+        }];
 
         builder.write_files_parallel(files);
 

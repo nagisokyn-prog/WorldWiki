@@ -67,12 +67,15 @@ impl TestabilityAstVisitor {
             );
         }
 
-        // F-02: Direct OS / FS Access
+        // F-02: Direct OS / FS Access & Dynamic Linking (libloading)
         if path_str.starts_with("std::fs")
             || path_str.starts_with("tokio::fs")
             || path_str.starts_with("std::net")
             || path_str.starts_with("tokio::net")
             || path_str.starts_with("reqwest")
+            || path_str.starts_with("libloading")
+            || path_str.contains("Library::new")
+            || path_str.contains("Library::get")
             || path_str == "File::create"
             || path_str == "File::open"
         {
@@ -80,7 +83,7 @@ impl TestabilityAstVisitor {
                 TestabilityFactor::F02DirectOsFsAccess,
                 span,
                 path_str.clone(),
-                format!("Прямой доступ к ресурсам ОС/сети `{path_str}` без абстракции"),
+                format!("Прямой доступ к ресурсам ОС/сети/динамической линковке `{path_str}` без абстракции"),
             );
         }
 

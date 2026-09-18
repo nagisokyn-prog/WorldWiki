@@ -106,7 +106,7 @@ impl ArchFixtureGenerator for MicrokernelFixture {
             "kernel-plugin-pdf",
             "plugin",
             per_crate_sloc,
-            false,
+            true,
         );
         all_files.extend(plugin_files);
 

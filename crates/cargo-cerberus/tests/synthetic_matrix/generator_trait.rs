@@ -30,6 +30,8 @@ pub struct BenchmarkScorecardEntry {
     pub f1_score: f64,
     pub testability_score: f64,
     pub testability_tier: String,
+    pub t_unit: f64,
+    pub t_integration: f64,
 }
 
 pub trait ArchFixtureGenerator: Send + Sync {

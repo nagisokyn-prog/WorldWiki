@@ -207,8 +207,16 @@ impl LayerTopologyMatrix {
         for (layer, patterns) in &self.layer_patterns {
             for pattern in patterns {
                 let clean_pattern = pattern.trim_matches('*').trim_matches('/').to_lowercase();
-                if !clean_pattern.is_empty() && normalized.contains(&clean_pattern) {
-                    return layer.clone();
+                if !clean_pattern.is_empty() {
+                    let seg_marker = format!("/{}/", clean_pattern);
+                    let end_marker = format!("/{}", clean_pattern);
+                    let start_marker = format!("{}/", clean_pattern);
+                    if normalized.contains(&seg_marker)
+                        || normalized.ends_with(&end_marker)
+                        || normalized.starts_with(&start_marker)
+                    {
+                        return layer.clone();
+                    }
                 }
             }
         }
@@ -218,10 +226,12 @@ impl LayerTopologyMatrix {
             for alias in aliases {
                 let marker = format!("/{}/", alias);
                 let start_marker = format!("{}/", alias);
-                let dash_marker = format!("{}-", alias);
+                let end_marker = format!("/{}", alias);
+                let dash_marker = format!("/{}-", alias);
                 let end_dash_marker = format!("-{}/", alias);
                 if normalized.contains(&marker)
                     || normalized.starts_with(&start_marker)
+                    || normalized.ends_with(&end_marker)
                     || normalized.contains(&end_dash_marker)
                     || normalized.contains(&dash_marker)
                 {
@@ -230,7 +240,11 @@ impl LayerTopologyMatrix {
             }
             let marker = format!("/{}/", layer);
             let start_marker = format!("{}/", layer);
-            if normalized.contains(&marker) || normalized.starts_with(&start_marker) {
+            let end_marker = format!("/{}", layer);
+            if normalized.contains(&marker)
+                || normalized.starts_with(&start_marker)
+                || normalized.ends_with(&end_marker)
+            {
                 return layer.clone();
             }
         }
@@ -239,7 +253,11 @@ impl LayerTopologyMatrix {
         for layer in self.allowed_deps.keys() {
             let marker = format!("/{}/", layer);
             let start_marker = format!("{}/", layer);
-            if normalized.contains(&marker) || normalized.starts_with(&start_marker) {
+            let end_marker = format!("/{}", layer);
+            if normalized.contains(&marker)
+                || normalized.starts_with(&start_marker)
+                || normalized.ends_with(&end_marker)
+            {
                 return layer.clone();
             }
         }

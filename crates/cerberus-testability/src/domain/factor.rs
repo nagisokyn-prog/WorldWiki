@@ -63,33 +63,40 @@ impl TestabilityFactor {
     #[must_use]
     pub fn base_weight(&self, layer: LayerContext) -> f64 {
         match (self, layer) {
-            (Self::F01HiddenAmbientIo, LayerContext::Domain) => 25.0,
-            (Self::F01HiddenAmbientIo, LayerContext::Application) => 15.0,
-            (Self::F01HiddenAmbientIo, _) => 5.0,
+            (Self::F01HiddenAmbientIo, LayerContext::Domain) => 28.0,
+            (Self::F01HiddenAmbientIo, LayerContext::Application) => 18.0,
+            (Self::F01HiddenAmbientIo, LayerContext::Infrastructure) => 10.0,
+            (Self::F01HiddenAmbientIo, LayerContext::Unknown) => 15.0,
 
-            (Self::F02DirectOsFsAccess, LayerContext::Domain) => 35.0,
-            (Self::F02DirectOsFsAccess, LayerContext::Application) => 20.0,
-            (Self::F02DirectOsFsAccess, _) => 0.0,
+            (Self::F02DirectOsFsAccess, LayerContext::Domain) => 40.0,
+            (Self::F02DirectOsFsAccess, LayerContext::Application) => 26.0,
+            (Self::F02DirectOsFsAccess, LayerContext::Infrastructure) => 12.0,
+            (Self::F02DirectOsFsAccess, LayerContext::Unknown) => 20.0,
 
-            (Self::F03SharedGlobalMutableState, LayerContext::Domain) => 60.0,
-            (Self::F03SharedGlobalMutableState, LayerContext::Application) => 45.0,
-            (Self::F03SharedGlobalMutableState, _) => 30.0,
+            (Self::F03SharedGlobalMutableState, LayerContext::Domain) => 65.0,
+            (Self::F03SharedGlobalMutableState, LayerContext::Application) => 48.0,
+            (Self::F03SharedGlobalMutableState, LayerContext::Infrastructure) => 35.0,
+            (Self::F03SharedGlobalMutableState, LayerContext::Unknown) => 40.0,
 
-            (Self::F04SideEffectingConstructor, LayerContext::Domain) => 30.0,
-            (Self::F04SideEffectingConstructor, LayerContext::Application) => 20.0,
-            (Self::F04SideEffectingConstructor, _) => 10.0,
+            (Self::F04SideEffectingConstructor, LayerContext::Domain) => 35.0,
+            (Self::F04SideEffectingConstructor, LayerContext::Application) => 24.0,
+            (Self::F04SideEffectingConstructor, LayerContext::Infrastructure) => 14.0,
+            (Self::F04SideEffectingConstructor, LayerContext::Unknown) => 20.0,
 
-            (Self::F05HeavyMultiLineClosure, LayerContext::Domain) => 15.0,
-            (Self::F05HeavyMultiLineClosure, LayerContext::Application) => 10.0,
-            (Self::F05HeavyMultiLineClosure, _) => 5.0,
+            (Self::F05HeavyMultiLineClosure, LayerContext::Domain) => 16.0,
+            (Self::F05HeavyMultiLineClosure, LayerContext::Application) => 12.0,
+            (Self::F05HeavyMultiLineClosure, LayerContext::Infrastructure) => 6.0,
+            (Self::F05HeavyMultiLineClosure, LayerContext::Unknown) => 9.0,
 
-            (Self::F06ConcreteCouplingInBoundary, LayerContext::Domain) => 25.0,
-            (Self::F06ConcreteCouplingInBoundary, LayerContext::Application) => 20.0,
-            (Self::F06ConcreteCouplingInBoundary, _) => 5.0,
+            (Self::F06ConcreteCouplingInBoundary, LayerContext::Domain) => 32.0,
+            (Self::F06ConcreteCouplingInBoundary, LayerContext::Application) => 22.0,
+            (Self::F06ConcreteCouplingInBoundary, LayerContext::Infrastructure) => 12.0,
+            (Self::F06ConcreteCouplingInBoundary, LayerContext::Unknown) => 16.0,
 
-            (Self::Conc002OrphanConcurrency, LayerContext::Domain) => 30.0,
-            (Self::Conc002OrphanConcurrency, LayerContext::Application) => 20.0,
-            (Self::Conc002OrphanConcurrency, _) => 15.0,
+            (Self::Conc002OrphanConcurrency, LayerContext::Domain) => 38.0,
+            (Self::Conc002OrphanConcurrency, LayerContext::Application) => 26.0,
+            (Self::Conc002OrphanConcurrency, LayerContext::Infrastructure) => 16.0,
+            (Self::Conc002OrphanConcurrency, LayerContext::Unknown) => 22.0,
         }
     }
 
@@ -99,23 +106,23 @@ impl TestabilityFactor {
             Self::F01HiddenAmbientIo => 1.0,
             Self::F02DirectOsFsAccess => 1.0,
             Self::F03SharedGlobalMutableState => 1.0,
-            Self::F04SideEffectingConstructor => 0.9,
-            Self::F05HeavyMultiLineClosure => 0.8,
-            Self::F06ConcreteCouplingInBoundary => 0.9,
-            Self::Conc002OrphanConcurrency => 0.8,
+            Self::F04SideEffectingConstructor => 0.95,
+            Self::F05HeavyMultiLineClosure => 0.85,
+            Self::F06ConcreteCouplingInBoundary => 0.90,
+            Self::Conc002OrphanConcurrency => 0.90,
         }
     }
 
     #[must_use]
     pub const fn integration_ratio(&self) -> f64 {
         match self {
-            Self::F01HiddenAmbientIo => 0.2,
-            Self::F02DirectOsFsAccess => 0.1,
-            Self::F03SharedGlobalMutableState => 1.0,
-            Self::F04SideEffectingConstructor => 0.4,
-            Self::F05HeavyMultiLineClosure => 0.1,
-            Self::F06ConcreteCouplingInBoundary => 0.2,
-            Self::Conc002OrphanConcurrency => 0.9,
+            Self::F01HiddenAmbientIo => 0.35,
+            Self::F02DirectOsFsAccess => 0.25,
+            Self::F03SharedGlobalMutableState => 0.95,
+            Self::F04SideEffectingConstructor => 0.50,
+            Self::F05HeavyMultiLineClosure => 0.20,
+            Self::F06ConcreteCouplingInBoundary => 0.40,
+            Self::Conc002OrphanConcurrency => 0.85,
         }
     }
 }

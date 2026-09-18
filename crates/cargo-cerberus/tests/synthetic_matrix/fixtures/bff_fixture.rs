@@ -43,7 +43,7 @@ impl ArchFixtureGenerator for BffFixture {
         builder.write_package_manifest("bff-gateway", "bff", &[]);
 
         let (mut files, _) =
-            ScaleHelper::generate_rust_modules("bff-gateway", "bff", target_sloc, false);
+            ScaleHelper::generate_rust_modules("bff-gateway", "bff", target_sloc, true);
 
         // Seeded Violation: BFF connects directly to database via sqlx (ARCH-001)
         files.push((

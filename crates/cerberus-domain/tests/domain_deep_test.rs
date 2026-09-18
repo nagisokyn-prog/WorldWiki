@@ -20,7 +20,8 @@ fn test_arch_layer_parsing_and_as_str() {
     assert_eq!(ArchLayer::Adapter.as_str(), "adapter");
     assert_eq!(ArchLayer::parse("cli"), ArchLayer::Cli);
     assert_eq!(ArchLayer::Cli.as_str(), "cli");
-    assert_eq!(ArchLayer::parse("random"), ArchLayer::Unknown);
+    assert_eq!(ArchLayer::parse("random"), ArchLayer::Custom("random".to_string()));
+    assert_eq!(ArchLayer::parse("unknown"), ArchLayer::Unknown);
     assert_eq!(ArchLayer::Unknown.as_str(), "unknown");
 }
 

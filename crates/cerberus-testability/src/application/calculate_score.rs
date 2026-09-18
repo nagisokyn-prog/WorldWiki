@@ -22,14 +22,19 @@ impl ComputeTestabilityUseCase {
             .count()
             .max(1);
 
-        let parsed = syn::parse_file(source_code);
-        let frictions = match parsed {
-            Ok(ref syn_file) => {
-                let mut visitor = TestabilityAstVisitor::new();
-                visitor.visit_file(syn_file);
-                visitor.frictions
+        let is_frontend = file_path.ends_with(".vue") || file_path.ends_with(".ts") || file_path.ends_with(".js");
+        let frictions = if is_frontend {
+            crate::infrastructure::frontend_visitor::FrontendTestabilityScanner::scan_source(source_code, file_path)
+        } else {
+            let parsed = syn::parse_file(source_code);
+            match parsed {
+                Ok(ref syn_file) => {
+                    let mut visitor = TestabilityAstVisitor::new();
+                    visitor.visit_file(syn_file);
+                    visitor.frictions
+                }
+                Err(_) => Vec::new(),
             }
-            Err(_) => Vec::new(),
         };
 
         // Подсчет количества каждого фактора
@@ -47,8 +52,12 @@ impl ComputeTestabilityUseCase {
             total_int_penalty += int_p;
         }
 
-        let t_unit = (100.0 - total_unit_penalty).clamp(0.0, 100.0);
-        let t_integration = (100.0 - total_int_penalty).clamp(0.0, 100.0);
+        let m_max = 80.0;
+        let saturated_unit_penalty = m_max * (1.0 - (-total_unit_penalty / m_max).exp());
+        let saturated_int_penalty = m_max * (1.0 - (-total_int_penalty / m_max).exp());
+
+        let t_unit = (100.0 - saturated_unit_penalty).clamp(0.0, 100.0);
+        let t_integration = (100.0 - saturated_int_penalty).clamp(0.0, 100.0);
 
         let t_composite = (0.70 * t_unit + 0.30 * t_integration).clamp(0.0, 100.0);
         let t_composite_rounded = (t_composite * 10.0).round() / 10.0;

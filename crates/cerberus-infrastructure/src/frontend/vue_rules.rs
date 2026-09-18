@@ -387,16 +387,22 @@ mod tests {
         };
 
         let violations = VueRuleChecker::check(&sfc, &comp_path);
-        assert_eq!(violations.len(), 1);
-        assert_eq!(violations[0].rule_id, "VUE-001");
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-001"));
+        assert!(violations.iter().any(|v| v.rule_id == "VUE-002"));
 
-        // Companion hook satisfies VUE-001
+        // Companion hook + clean glue code satisfies both VUE-001 and VUE-002
         std::fs::write(
             temp.path().join("useMyComponent.ts"),
             "export const useMyComponent = () => {};",
         )
         .unwrap();
-        let violations_with_hook = VueRuleChecker::check(&sfc, &comp_path);
+
+        let clean_glue_sfc = VueSfc {
+            script_setup: Some("import { useMyComponent } from './useMyComponent';\nconst { a, b } = useMyComponent();".into()),
+            script_setup_start_line: 1,
+            ..Default::default()
+        };
+        let violations_with_hook = VueRuleChecker::check(&clean_glue_sfc, &comp_path);
         assert!(violations_with_hook.is_empty());
     }
 }

@@ -24,11 +24,15 @@ impl AnalyzeWorkspaceTestabilityUseCase {
         for entry in WalkDir::new(root_path).follow_links(false).into_iter().flatten() {
             let path = entry.path();
             if path.is_file() {
-                if let Some(ext) = path.extension() {
-                    if ext == "rs" {
+                if let Some(ext) = path.extension().and_then(|e| e.to_str()) {
+                    if matches!(ext, "rs" | "vue" | "ts" | "js" | "tsx" | "jsx") {
                         let path_str = path.to_string_lossy();
-                        // Пропускаем target и сборки
-                        if path_str.contains("target") || path_str.contains(".git") {
+                        // Пропускаем target, node_modules и сборки
+                        if path_str.contains("target")
+                            || path_str.contains(".git")
+                            || path_str.contains("node_modules")
+                            || path_str.contains("dist")
+                        {
                             continue;
                         }
 

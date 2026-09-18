@@ -1,6 +1,6 @@
 mod synthetic_matrix;
 
-use cerberus_domain::{path_contains, path_ends_with, SlaConfig};
+use cerberus_domain::SlaConfig;
 use std::time::Instant;
 use synthetic_matrix::{
     ActorSystemFixture, ArchFixtureGenerator, BenchmarkScorecardEntry, BffFixture,
@@ -10,9 +10,102 @@ use synthetic_matrix::{
     SyntheticRepoBuilder, VueFsdFixture, VueLegacyFixture,
 };
 
+#[cfg(windows)]
+pub fn get_process_working_set_mb() -> f64 {
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    struct PROCESS_MEMORY_COUNTERS {
+        cb: u32,
+        PageFaultCount: u32,
+        PeakWorkingSetSize: usize,
+        WorkingSetSize: usize,
+        QuotaPeakPagedPoolUsage: usize,
+        QuotaPagedPoolUsage: usize,
+        QuotaPeakNonPagedPoolUsage: usize,
+        QuotaNonPagedPoolUsage: usize,
+        PagefileUsage: usize,
+        PeakPagefileUsage: usize,
+    }
+
+    #[link(name = "psapi")]
+    extern "system" {
+        fn GetProcessMemoryInfo(
+            process: *mut std::ffi::c_void,
+            ppsmc: *mut PROCESS_MEMORY_COUNTERS,
+            cb: u32,
+        ) -> i32;
+    }
+
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn GetCurrentProcess() -> *mut std::ffi::c_void;
+    }
+
+    unsafe {
+        let mut pmc = std::mem::zeroed::<PROCESS_MEMORY_COUNTERS>();
+        pmc.cb = std::mem::size_of::<PROCESS_MEMORY_COUNTERS>() as u32;
+        let handle = GetCurrentProcess();
+        if GetProcessMemoryInfo(handle, &mut pmc, pmc.cb) != 0 {
+            pmc.WorkingSetSize as f64 / (1024.0 * 1024.0)
+        } else {
+            0.0
+        }
+    }
+}
+
+#[cfg(target_os = "linux")]
+pub fn get_process_working_set_mb() -> f64 {
+    if let Ok(status) = std::fs::read_to_string("/proc/self/status") {
+        for line in status.lines() {
+            if line.starts_with("VmRSS:") {
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                if parts.len() >= 2 {
+                    if let Ok(kb) = parts[1].parse::<f64>() {
+                        return kb / 1024.0;
+                    }
+                }
+            }
+        }
+    }
+    0.0
+}
+
+#[cfg(not(any(windows, target_os = "linux")))]
+pub fn get_process_working_set_mb() -> f64 {
+    0.0
+}
+
+#[cfg(windows)]
+pub fn trim_process_working_set() {
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn GetCurrentProcess() -> *mut std::ffi::c_void;
+        fn SetProcessWorkingSetSize(
+            process: *mut std::ffi::c_void,
+            minimum_working_set_size: usize,
+            maximum_working_set_size: usize,
+        ) -> i32;
+    }
+
+    #[link(name = "psapi")]
+    extern "system" {
+        fn EmptyWorkingSet(process: *mut std::ffi::c_void) -> i32;
+    }
+
+    unsafe {
+        let handle = GetCurrentProcess();
+        EmptyWorkingSet(handle);
+        SetProcessWorkingSetSize(handle, usize::MAX, usize::MAX);
+    }
+}
+
+#[cfg(not(windows))]
+pub fn trim_process_working_set() {}
+
 fn matches_violation_target(violation_path: &std::path::Path, expected_suffix: &str) -> bool {
-    path_ends_with(violation_path, expected_suffix)
-        || path_contains(violation_path, expected_suffix)
+    let v_str = violation_path.to_string_lossy().replace('\\', "/");
+    let exp_norm = expected_suffix.replace('\\', "/");
+    v_str.ends_with(&exp_norm) || v_str.contains(&exp_norm)
 }
 
 fn assert_paradigm_sla(entry: &BenchmarkScorecardEntry, sla: &SlaConfig) {
@@ -37,64 +130,115 @@ fn evaluate_fixture(
     preset: Option<&str>,
     target_sloc: usize,
 ) -> BenchmarkScorecardEntry {
-    // 1. Phase 1: Clean Repo (verify 0 false positives)
-    let mut clean_builder = SyntheticRepoBuilder::new();
-    generator
-        .generate_clean(&mut clean_builder, target_sloc)
-        .expect("Clean repo generation failed");
-    let clean_res = clean_builder.execute_scan(preset);
-    let false_positives = clean_res.violations.len();
-    if false_positives > 0 {
-        eprintln!("[DEBUG FP for {}]: {} false positives:", generator.name(), false_positives);
-        for v in &clean_res.violations {
-            eprintln!("  -> FP: rule={}, file={}, msg={}", v.rule_id, v.file.display(), v.message);
-        }
-    }
+    // 1. Reset working set memory before test
+    trim_process_working_set();
 
-    // 2. Phase 2: Seeded Repo (verify fault detection recall & performance)
+    // 2. Phase 1: Clean Repo (verify 0 false positives)
+    let clean_fp = {
+        let mut clean_builder = SyntheticRepoBuilder::new();
+        generator
+            .generate_clean(&mut clean_builder, target_sloc)
+            .expect("Clean repo generation failed");
+        let clean_res = clean_builder.execute_scan(preset);
+        let fp = clean_res.violations.len();
+        assert!(
+            fp == 0,
+            "Paradigm '{}' produced {} false positives on CLEAN repository!\nDetails:\n{}",
+            generator.name(),
+            fp,
+            clean_res
+                .violations
+                .iter()
+                .map(|v| format!("  - [{}] {}: {}", v.rule_id, v.file.display(), v.message))
+                .collect::<Vec<_>>()
+                .join("\n")
+        );
+        fp
+    };
+
+    // Trim again after clean repo is dropped
+    trim_process_working_set();
+
+    // 3. Phase 2: Seeded Repo (verify fault detection recall & performance)
     let mut seeded_builder = SyntheticRepoBuilder::new();
     let manifest = generator
         .generate_seeded(&mut seeded_builder, target_sloc)
         .expect("Seeded repo generation failed");
 
-    let start = Instant::now();
+    // Pure Firewall Scan Measurement (excludes testability analysis to avoid misleading throughput)
+    let scan_start = Instant::now();
     let seeded_res = seeded_builder.execute_scan(preset);
-    let duration = start.elapsed();
-    let duration_ms = duration.as_secs_f64() * 1000.0;
+    let scan_duration = scan_start.elapsed();
+    let scan_duration_ms = scan_duration.as_secs_f64() * 1000.0;
 
-    // 3. Testability Analysis (cerberus-testability)
-    let (testability_score, testability_tier) =
+    // Measure working set RSS during active seeded scan
+    let peak_rss_mb = get_process_working_set_mb();
+
+    // 4. Testability Analysis (cerberus-testability) executed separately
+    let (testability_score, testability_tier, t_unit, t_integration) =
         match cerberus_testability::AnalyzeWorkspaceTestabilityUseCase::analyze_path(
             &seeded_builder.root_path,
         ) {
-            Ok(rep) => (rep.workspace_score, format!("{:?}", rep.workspace_tier)),
-            Err(_) => (100.0, "TierA".into()),
+            Ok(rep) => (
+                rep.workspace_score,
+                format!("{:?}", rep.workspace_tier),
+                rep.workspace_t_unit,
+                rep.workspace_t_integration,
+            ),
+            Err(_) => (100.0, "TierA".into(), 100.0, 100.0),
         };
 
-    let mut true_positives = 0;
-    let mut false_negatives = 0;
+    let mut matched_expected = vec![false; manifest.expected_violations.len()];
+    let mut matched_actual = vec![false; seeded_res.violations.len()];
 
-    for expected in &manifest.expected_violations {
-        let matched = seeded_res.violations.iter().any(|v| {
-            v.rule_id == expected.rule_id
+    for (e_idx, expected) in manifest.expected_violations.iter().enumerate() {
+        for (a_idx, v) in seeded_res.violations.iter().enumerate() {
+            if !matched_actual[a_idx]
+                && v.rule_id == expected.rule_id
                 && matches_violation_target(&v.file, &expected.target_file_suffix)
-        });
-        if matched {
-            true_positives += 1;
-        } else {
-            false_negatives += 1;
+            {
+                matched_expected[e_idx] = true;
+                matched_actual[a_idx] = true;
+                break;
+            }
         }
     }
 
+    let true_positives = matched_expected.iter().filter(|&&m| m).count();
+    let false_negatives = matched_expected.iter().filter(|&&m| !m).count();
+    let extra_seeded = matched_actual.iter().filter(|&&m| !m).count();
+    let total_false_positives = clean_fp + extra_seeded;
+
     if false_negatives > 0 {
-        eprintln!("[DEBUG FN for {}]: {} false negatives:", generator.name(), false_negatives);
-        for expected in &manifest.expected_violations {
-            let matched = seeded_res.violations.iter().any(|v| {
-                v.rule_id == expected.rule_id
-                    && matches_violation_target(&v.file, &expected.target_file_suffix)
-            });
-            if !matched {
-                eprintln!("  -> UNMATCHED FN: rule={}, target_suffix={}", expected.rule_id, expected.target_file_suffix);
+        eprintln!(
+            "[DEBUG FN for {}]: {} false negatives:",
+            generator.name(),
+            false_negatives
+        );
+        for (e_idx, expected) in manifest.expected_violations.iter().enumerate() {
+            if !matched_expected[e_idx] {
+                eprintln!(
+                    "  -> UNMATCHED FN: rule={}, target_suffix={}",
+                    expected.rule_id, expected.target_file_suffix
+                );
+            }
+        }
+    }
+
+    if extra_seeded > 0 {
+        eprintln!(
+            "[DEBUG Extra Violations in Seeded for {}]: {} extra:",
+            generator.name(),
+            extra_seeded
+        );
+        for (a_idx, v) in seeded_res.violations.iter().enumerate() {
+            if !matched_actual[a_idx] {
+                eprintln!(
+                    "  -> EXTRA: rule={}, file={}, msg={}",
+                    v.rule_id,
+                    v.file.display(),
+                    v.message
+                );
             }
         }
     }
@@ -105,8 +249,8 @@ fn evaluate_fixture(
         1.0
     };
 
-    let precision = if true_positives + false_positives > 0 {
-        true_positives as f64 / (true_positives + false_positives) as f64
+    let precision = if true_positives + total_false_positives > 0 {
+        true_positives as f64 / (true_positives + total_false_positives) as f64
     } else {
         1.0
     };
@@ -117,8 +261,8 @@ fn evaluate_fixture(
         0.0
     };
 
-    let throughput = if duration_ms > 0.0 {
-        (seeded_builder.total_sloc as f64 / duration_ms) * 1000.0
+    let throughput = if scan_duration_ms > 0.0 {
+        (seeded_builder.total_sloc as f64 / scan_duration_ms) * 1000.0
     } else {
         0.0
     };
@@ -127,17 +271,19 @@ fn evaluate_fixture(
         paradigm_name: generator.name().to_string(),
         total_files: seeded_builder.total_files,
         total_sloc: seeded_builder.total_sloc,
-        duration_ms,
+        duration_ms: scan_duration_ms,
         throughput_sloc_per_sec: throughput,
-        peak_rss_mb: 42.0 + (seeded_builder.total_files as f64 * 0.015),
+        peak_rss_mb,
         true_positives,
-        false_positives,
+        false_positives: total_false_positives,
         false_negatives,
         recall,
         precision,
         f1_score,
         testability_score,
         testability_tier,
+        t_unit,
+        t_integration,
     }
 }
 
@@ -320,3 +466,18 @@ fn test_bench_final_boss() {
     let entry = evaluate_fixture(&FinalBossCompositeFixture, Some("final_boss"), 500_000);
     assert_paradigm_sla(&entry, &sla);
 }
+
+#[test]
+fn test_determinism_two_runs_identical_ti() {
+    // Verify that two consecutive evaluations of the same fixture produce 100% bit-for-bit identical TI score, SLOC, and TP/FP counts
+    let run1 = evaluate_fixture(&HexagonalCleanFixture, Some("hexagonal"), 10_000);
+    let run2 = evaluate_fixture(&HexagonalCleanFixture, Some("hexagonal"), 10_000);
+
+    assert_eq!(run1.testability_score, run2.testability_score, "TI score must be deterministic!");
+    assert_eq!(run1.testability_tier, run2.testability_tier, "TI tier must be deterministic!");
+    assert_eq!(run1.true_positives, run2.true_positives, "True Positives must be deterministic!");
+    assert_eq!(run1.false_positives, run2.false_positives, "False Positives must be deterministic!");
+    assert_eq!(run1.total_files, run2.total_files, "Total files must be deterministic!");
+    assert_eq!(run1.total_sloc, run2.total_sloc, "Total SLOC must be deterministic!");
+}
+

@@ -1,4 +1,14 @@
 use regex::Regex;
+use std::sync::LazyLock;
+
+static SCRIPT_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<script([^>]*)>(.*?)</script>").unwrap());
+static TEMPLATE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<template[^>]*>(.*?)</template>").unwrap());
+static STYLE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?s)<style([^>]*)>(.*?)</style>").unwrap());
+static SRC_ATTR_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"src\s*=\s*["']([^"']+)["']"#).unwrap());
 
 #[derive(Debug, Clone, Default)]
 pub struct VueStyleBlock {
@@ -24,47 +34,41 @@ impl VueSfcParser {
         let mut sfc = VueSfc::default();
 
         // 1 & 2. Extract <script ...>...</script> blocks
-        if let Ok(script_re) = Regex::new(r"(?s)<script([^>]*)>(.*?)</script>") {
-            for caps in script_re.captures_iter(content) {
-                let attrs = caps.get(1).map_or("", |m| m.as_str());
-                if let Some(m) = caps.get(2) {
-                    let body = m.as_str().to_string();
-                    if attrs.contains("setup") {
-                        sfc.script_setup_start_line = line_number_at_offset(content, m.start());
-                        sfc.script_setup = Some(body);
-                    } else {
-                        sfc.script = Some(body);
-                    }
+        for caps in SCRIPT_RE.captures_iter(content) {
+            let attrs = caps.get(1).map_or("", |m| m.as_str());
+            if let Some(m) = caps.get(2) {
+                let body = m.as_str().to_string();
+                if attrs.contains("setup") {
+                    sfc.script_setup_start_line = line_number_at_offset(content, m.start());
+                    sfc.script_setup = Some(body);
+                } else {
+                    sfc.script = Some(body);
                 }
             }
         }
 
         // 3. Extract <template>...</template>
-        if let Ok(template_re) = Regex::new(r"(?s)<template[^>]*>(.*?)</template>") {
-            if let Some(caps) = template_re.captures(content) {
-                if let Some(m) = caps.get(1) {
-                    sfc.template = Some(m.as_str().to_string());
-                }
+        if let Some(caps) = TEMPLATE_RE.captures(content) {
+            if let Some(m) = caps.get(1) {
+                sfc.template = Some(m.as_str().to_string());
             }
         }
 
         // 4. Extract all <style ...>...</style> blocks
-        if let Ok(style_re) = Regex::new(r"(?s)<style([^>]*)>(.*?)</style>") {
-            for caps in style_re.captures_iter(content) {
-                let attrs = caps.get(1).map_or("", |m| m.as_str());
-                let body = caps.get(2).map_or("", |m| m.as_str());
-                let start_line = caps.get(2).map_or(1, |m| line_number_at_offset(content, m.start()));
+        for caps in STYLE_RE.captures_iter(content) {
+            let attrs = caps.get(1).map_or("", |m| m.as_str());
+            let body = caps.get(2).map_or("", |m| m.as_str());
+            let start_line = caps.get(2).map_or(1, |m| line_number_at_offset(content, m.start()));
 
-                let scoped = attrs.contains("scoped");
-                let src = extract_attr(attrs, "src");
+            let scoped = attrs.contains("scoped");
+            let src = extract_attr(attrs, "src");
 
-                sfc.styles.push(VueStyleBlock {
-                    content: body.to_string(),
-                    src,
-                    scoped,
-                    start_line,
-                });
-            }
+            sfc.styles.push(VueStyleBlock {
+                content: body.to_string(),
+                src,
+                scoped,
+                start_line,
+            });
         }
 
         sfc
@@ -76,9 +80,14 @@ fn line_number_at_offset(content: &str, offset: usize) -> usize {
 }
 
 fn extract_attr(attrs: &str, attr_name: &str) -> Option<String> {
-    let pattern = format!(r#"{}\s*=\s*["']([^"']+)["']"#, attr_name);
-    let re = Regex::new(&pattern).ok()?;
-    re.captures(attrs).and_then(|caps| caps.get(1).map(|m| m.as_str().to_string()))
+    if attr_name == "src" {
+        SRC_ATTR_RE.captures(attrs).and_then(|caps| caps.get(1).map(|m| m.as_str().to_string()))
+    } else {
+        let pattern = format!(r#"{}\s*=\s*["']([^"']+)["']"#, attr_name);
+        Regex::new(&pattern).ok().and_then(|re| {
+            re.captures(attrs).and_then(|caps| caps.get(1).map(|m| m.as_str().to_string()))
+        })
+    }
 }
 
 #[cfg(test)]

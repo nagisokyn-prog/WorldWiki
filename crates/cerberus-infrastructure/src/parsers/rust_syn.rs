@@ -60,11 +60,12 @@ impl RustSynParserAdapter {
         if let Some(matrix) = &self.matrix {
             import_checker = import_checker.with_matrix(matrix);
         }
-        for item in &syntax_tree.items {
-            if let syn::Item::Use(item_use) = item {
-                violations.extend(import_checker.check_use(item_use));
-            }
-        }
+        let mut import_visitor = ImportVisitor {
+            checker: import_checker,
+            violations: Vec::new(),
+        };
+        import_visitor.visit_file(&syntax_tree);
+        violations.extend(import_visitor.violations);
 
         // 2. ASYNC-001 / ASYNC-002 (MutexGuard across await, blocking sleep in async)
         let mut async_visitor = MutexGuardVisitor::new(path);
@@ -147,6 +148,18 @@ impl RustSynParserAdapter {
         }
 
         Ok(violations)
+    }
+}
+
+pub struct ImportVisitor<'a> {
+    pub checker: ImportChecker<'a>,
+    pub violations: Vec<Violation>,
+}
+
+impl<'ast, 'a> syn::visit::Visit<'ast> for ImportVisitor<'a> {
+    fn visit_item_use(&mut self, node: &'ast syn::ItemUse) {
+        self.violations.extend(self.checker.check_use(node));
+        syn::visit::visit_item_use(self, node);
     }
 }
 

@@ -118,7 +118,7 @@ impl ArchFixtureGenerator for LayeredNTierFixture {
 
         let per_crate_sloc = target_sloc / 4;
         let mut all_files = Vec::new();
-        let expected_violations = vec![
+        let mut expected_violations = vec![
             SeededViolation {
                 rule_id: "ARCH-020".into(),
                 target_file_suffix: "service-crate/Cargo.toml".into(),
@@ -131,29 +131,33 @@ impl ArchFixtureGenerator for LayeredNTierFixture {
             },
         ];
 
-        let (ent_files, _) =
-            ScaleHelper::generate_rust_modules("entity-crate", "entity", per_crate_sloc, false);
+        let (ent_files, mut ent_viol) =
+            ScaleHelper::generate_rust_modules("entity-crate", "entity", per_crate_sloc, true);
         all_files.extend(ent_files);
+        expected_violations.append(&mut ent_viol);
 
-        let (repo_files, _) = ScaleHelper::generate_rust_modules(
+        let (repo_files, mut repo_viol) = ScaleHelper::generate_rust_modules(
             "repository-crate",
             "repository",
             per_crate_sloc,
-            false,
+            true,
         );
         all_files.extend(repo_files);
+        expected_violations.append(&mut repo_viol);
 
-        let (svc_files, _) =
-            ScaleHelper::generate_rust_modules("service-crate", "service", per_crate_sloc, false);
+        let (svc_files, mut svc_viol) =
+            ScaleHelper::generate_rust_modules("service-crate", "service", per_crate_sloc, true);
         all_files.extend(svc_files);
+        expected_violations.append(&mut svc_viol);
 
-        let (ctrl_files, _) = ScaleHelper::generate_rust_modules(
+        let (ctrl_files, mut ctrl_viol) = ScaleHelper::generate_rust_modules(
             "controller-crate",
             "controller",
             per_crate_sloc,
-            false,
+            true,
         );
         all_files.extend(ctrl_files);
+        expected_violations.append(&mut ctrl_viol);
 
         builder.write_files_parallel(all_files);
 

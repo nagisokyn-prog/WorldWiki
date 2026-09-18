@@ -99,26 +99,28 @@ impl ArchFixtureGenerator for MicroservicesFixture {
             description: "Bounded context violation: service_auth cannot depend directly on service_billing".into(),
         }];
 
-        let (proto_files, _) = ScaleHelper::generate_rust_modules(
+        let (proto_files, mut proto_viol) = ScaleHelper::generate_rust_modules(
             "shared-proto",
             "shared_proto",
             per_crate_sloc,
-            false,
+            true,
         );
         all_files.extend(proto_files);
+        expected_violations.append(&mut proto_viol);
 
         let (auth_files, mut auth_viol) =
             ScaleHelper::generate_rust_modules("service-auth", "service_auth", per_crate_sloc, true);
         all_files.extend(auth_files);
         expected_violations.append(&mut auth_viol);
 
-        let (bill_files, _) = ScaleHelper::generate_rust_modules(
+        let (bill_files, mut bill_viol) = ScaleHelper::generate_rust_modules(
             "service-billing",
             "service_billing",
             per_crate_sloc,
-            false,
+            true,
         );
         all_files.extend(bill_files);
+        expected_violations.append(&mut bill_viol);
 
         builder.write_files_parallel(all_files);
 

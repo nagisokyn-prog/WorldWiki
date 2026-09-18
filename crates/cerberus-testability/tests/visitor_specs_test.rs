@@ -32,8 +32,8 @@ fn test_factor_metadata_and_weights() {
         let w_unk = factor.base_weight(LayerContext::Unknown);
 
         assert!(w_dom >= w_app);
-        assert!(w_app >= w_inf);
-        assert_eq!(w_inf, w_unk);
+        assert!(w_app >= w_unk);
+        assert!(w_unk >= w_inf);
 
         assert!(factor.unit_ratio() > 0.0);
         assert!(factor.integration_ratio() >= 0.0);

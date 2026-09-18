@@ -47,7 +47,7 @@ impl ArchFixtureGenerator for ServerlessFixture {
         builder.write_package_manifest("faas-app", "function", &[]);
 
         let (mut files, _) =
-            ScaleHelper::generate_rust_modules("faas-app", "function", target_sloc, false);
+            ScaleHelper::generate_rust_modules("faas-app", "serverless", target_sloc, true);
 
         files.push((
             "faas-app/src/handler/bad_state.rs".into(),

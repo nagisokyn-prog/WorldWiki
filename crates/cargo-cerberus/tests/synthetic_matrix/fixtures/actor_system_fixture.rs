@@ -47,7 +47,7 @@ impl ArchFixtureGenerator for ActorSystemFixture {
         builder.write_package_manifest("actor-app", "actor", &[]);
 
         let (mut files, _) =
-            ScaleHelper::generate_rust_modules("actor-app", "actor", target_sloc, false);
+            ScaleHelper::generate_rust_modules("actor-app", "actor", target_sloc, true);
 
         files.push((
             "actor-app/src/worker/leaky_state.rs".into(),

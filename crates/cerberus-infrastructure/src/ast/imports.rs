@@ -83,58 +83,77 @@ impl<'a> ImportChecker<'a> {
         let full_path_str = path_segments.join("::");
         let current_layer = self.detect_source_layer();
 
-        // 1. Check matrix-defined forbidden external dependencies (ARCH-001)
-        if let Some(matrix) = self.matrix {
-            if matrix.is_external_dep_forbidden(&current_layer, root_segment) {
+        // 1. Check Tauri framework imports first (ARCH-002, ARCH-005, ARCH-001)
+        if root_segment == "tauri" {
+            if self.is_application_crate()
+                || current_layer == "application"
+                || current_layer == "usecases"
+                || current_layer == "usecase"
+                || current_layer == "app"
+            {
                 violations.push(self.build_violation(
-                    "ARCH-001",
+                    "ARCH-002",
                     item_use,
-                    &format!(
-                        "Layer '{}' in crate '{}' forbids external dependency '{}'",
-                        current_layer, self.crate_name, root_segment
-                    ),
-                    "Remove external framework dependency and use abstract ports traits.",
+                    &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
+                    "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
                 ));
+            } else if !self.is_tauri_authorized_crate() {
+                if self.is_domain_crate()
+                    || current_layer == "domain"
+                    || current_layer == "core"
+                    || current_layer == "entities"
+                    || current_layer == "domain_core"
+                {
+                    violations.push(self.build_violation(
+                        "ARCH-001",
+                        item_use,
+                        &format!("Domain crate '{}' cannot import external framework 'tauri'", self.crate_name),
+                        "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                    ));
+                } else {
+                    violations.push(self.build_violation(
+                        "ARCH-005",
+                        item_use,
+                        &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
+                        "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
+                    ));
+                }
             }
-        } else if self.is_domain_crate() || current_layer == "domain" {
-            let default_forbidden_domain = [
-                "tauri", "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix", "sqlx",
-            ];
-            if default_forbidden_domain.contains(&root_segment.as_str()) {
-                violations.push(self.build_violation(
-                    "ARCH-001",
-                    item_use,
-                    &format!(
-                        "Domain crate '{}' cannot import external framework '{}'",
-                        self.crate_name, root_segment
-                    ),
-                    "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
-                ));
+        } else {
+            // 2. Check matrix-defined forbidden external dependencies (ARCH-001)
+            if let Some(matrix) = self.matrix {
+                if matrix.is_external_dep_forbidden(&current_layer, root_segment) {
+                    violations.push(self.build_violation(
+                        "ARCH-001",
+                        item_use,
+                        &format!(
+                            "Layer '{}' in crate '{}' forbids external dependency '{}'",
+                            current_layer, self.crate_name, root_segment
+                        ),
+                        "Remove external framework dependency and use abstract ports traits.",
+                    ));
+                }
+            } else if self.is_domain_crate()
+                || current_layer == "domain"
+                || current_layer == "core"
+                || current_layer == "entities"
+                || current_layer == "domain_core"
+            {
+                let default_forbidden_domain = [
+                    "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix", "sqlx",
+                ];
+                if default_forbidden_domain.contains(&root_segment.as_str()) {
+                    violations.push(self.build_violation(
+                        "ARCH-001",
+                        item_use,
+                        &format!(
+                            "Domain crate '{}' cannot import external framework '{}'",
+                            self.crate_name, root_segment
+                        ),
+                        "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                    ));
+                }
             }
-        }
-
-        // 2. ARCH-002: Application / UseCases cannot import Tauri
-        if (self.is_application_crate()
-            || current_layer == "application"
-            || current_layer == "usecases"
-            || current_layer == "usecase"
-            || current_layer == "app")
-            && root_segment == "tauri"
-        {
-            violations.push(self.build_violation(
-                "ARCH-002",
-                item_use,
-                &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
-                "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
-            ));
-        } else if !self.is_tauri_authorized_crate() && root_segment == "tauri" {
-            // 3. ARCH-005: Tauri SDK isolated strictly to adapters/tauri or worldwiki-tauri
-            violations.push(self.build_violation(
-                "ARCH-005",
-                item_use,
-                &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
-                "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
-            ));
         }
 
         // 4. MOD-001: Boundary Capsule / Module Encapsulation violation

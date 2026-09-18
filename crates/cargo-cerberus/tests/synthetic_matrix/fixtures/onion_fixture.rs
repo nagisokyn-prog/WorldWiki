@@ -96,17 +96,19 @@ impl ArchFixtureGenerator for OnionFixture {
         all_files.extend(core_files);
         expected_violations.append(&mut core_viol);
 
-        let (svc_files, _) = ScaleHelper::generate_rust_modules(
+        let (svc_files, mut svc_viol) = ScaleHelper::generate_rust_modules(
             "onion-services",
             "domain_services",
             per_crate_sloc,
-            false,
+            true,
         );
         all_files.extend(svc_files);
+        expected_violations.append(&mut svc_viol);
 
-        let (infra_files, _) =
-            ScaleHelper::generate_rust_modules("onion-infra", "infra", per_crate_sloc, false);
+        let (infra_files, mut infra_viol) =
+            ScaleHelper::generate_rust_modules("onion-infra", "infra", per_crate_sloc, true);
         all_files.extend(infra_files);
+        expected_violations.append(&mut infra_viol);
 
         builder.write_files_parallel(all_files);
 

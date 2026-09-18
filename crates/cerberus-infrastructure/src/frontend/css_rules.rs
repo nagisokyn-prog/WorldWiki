@@ -3,6 +3,14 @@ use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
 use crate::frontend::sfc_parser::VueSfc;
 use regex::Regex;
 use std::path::Path;
+use std::sync::LazyLock;
+
+static HEX_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"#(?:[0-9a-fA-F]{3,4}){1,2}\b").unwrap());
+static RGB_HSL_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)").unwrap());
+static BORDER_RADIUS_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"border-radius\s*:\s*\d+px").unwrap());
 
 pub struct CssRuleChecker;
 
@@ -96,17 +104,6 @@ impl CssRuleChecker {
         start_line_offset: usize,
         violations: &mut Vec<Violation>,
     ) {
-        let Ok(hex_re) = Regex::new(r"#(?:[0-9a-fA-F]{3,4}){1,2}\b") else {
-            return;
-        };
-        let Ok(rgb_hsl_re) = Regex::new(r"\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)") else {
-            return;
-        };
-        let Ok(border_radius_re) = Regex::new(r"border-radius\s*:\s*\d+px") else {
-            return;
-        };
-
-
         for (idx, line) in content.lines().enumerate() {
             let trimmed = line.trim();
             if trimmed.is_empty() || trimmed.starts_with("/*") || trimmed.starts_with("//") {
@@ -116,7 +113,7 @@ impl CssRuleChecker {
             let current_line = start_line_offset + idx;
 
             // Check Hex colors
-            if hex_re.is_match(trimmed) {
+            if HEX_RE.is_match(trimmed) {
                 let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_hex", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-004".into(),
@@ -135,7 +132,7 @@ impl CssRuleChecker {
             }
 
             // Check RGB/RGBA/HSL
-            if rgb_hsl_re.is_match(trimmed) {
+            if RGB_HSL_RE.is_match(trimmed) {
                 let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_rgb_hsl", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-004".into(),
@@ -154,7 +151,7 @@ impl CssRuleChecker {
             }
 
             // Check hardcoded pixel border-radius
-            if border_radius_re.is_match(trimmed) {
+            if BORDER_RADIUS_RE.is_match(trimmed) {
                 let fingerprint = compute_fingerprint("CSS-004", "1.0", "border_radius", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-004".into(),

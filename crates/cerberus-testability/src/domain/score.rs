@@ -70,6 +70,8 @@ pub struct WorkspaceTestabilityReport {
     pub schema_version: String,
     pub workspace_score: f64,
     pub workspace_tier: TestabilityTier,
+    pub workspace_t_unit: f64,
+    pub workspace_t_integration: f64,
     pub total_files: usize,
     pub tier_counts: HashMap<TestabilityTier, usize>,
     pub files: Vec<FileTestabilityReport>,
@@ -92,20 +94,27 @@ impl WorkspaceTestabilityReport {
                 schema_version: "2.0.0".to_string(),
                 workspace_score: 100.0,
                 workspace_tier: TestabilityTier::S,
+                workspace_t_unit: 100.0,
+                workspace_t_integration: 100.0,
                 total_files: 0,
                 tier_counts,
                 files,
             };
         }
 
-        let mut total_composite = 0.0;
+        let mut sum_sq_unit_pen = 0.0;
+        let mut sum_sq_int_pen = 0.0;
         let mut min_composite = 100.0;
         let mut defective_files = 0;
         let mut max_category_weight = 1.0f64;
 
         for file in &files {
             *tier_counts.entry(file.tier).or_insert(0) += 1;
-            total_composite += file.t_composite;
+            let u_pen = (100.0 - file.t_unit).max(0.0);
+            let i_pen = (100.0 - file.t_integration).max(0.0);
+            sum_sq_unit_pen += u_pen * u_pen;
+            sum_sq_int_pen += i_pen * i_pen;
+
             if file.t_composite < min_composite {
                 min_composite = file.t_composite;
             }
@@ -128,41 +137,52 @@ impl WorkspaceTestabilityReport {
             }
         }
 
-        let raw_workspace_score = if defective_files == 0 {
-            100.0
+        let (raw_workspace_score, raw_t_unit, raw_t_integration) = if defective_files == 0 {
+            (100.0, 100.0, 100.0)
         } else {
             let defect_rate = defective_files as f64 / total_files as f64;
-            let mean_score = total_composite / total_files as f64;
-            let base_penalty = 100.0 - mean_score;
+            let rms_unit_pen = (sum_sq_unit_pen / total_files as f64).sqrt();
+            let rms_int_pen = (sum_sq_int_pen / total_files as f64).sqrt();
 
-            let density_weight = if defect_rate >= 0.25 {
-                4.0
+            let density_weight = if defect_rate >= 0.70 {
+                1.4
+            } else if defect_rate >= 0.45 {
+                1.25
+            } else if defect_rate >= 0.25 {
+                1.15
             } else if defect_rate >= 0.10 {
-                2.5
-            } else if defect_rate >= 0.05 {
-                1.5
+                1.05
             } else {
                 1.0
             };
 
+            let mult = density_weight;
+
             if defect_rate < 0.01 && defective_files <= 3 {
                 // Isolated point defect in large repository: localized impact (Tier S: ~96.9)
                 let isolated_penalty = ((100.0 - min_composite) * 0.04 * max_category_weight).clamp(0.5, 3.1);
-                (100.0 - isolated_penalty).clamp(0.0, 100.0)
+                let score = (100.0 - isolated_penalty).clamp(0.0, 100.0);
+                (score, score, score)
             } else {
-                // Systemic defect density penalty
-                let scaled_penalty = base_penalty * density_weight * (0.8 + 0.2 * max_category_weight);
-                (100.0 - scaled_penalty).clamp(0.0, 100.0)
+                // Systemic defect density penalty with RMS power mean
+                let u_score = (100.0 - (rms_unit_pen * mult)).clamp(0.0, 100.0);
+                let i_score = (100.0 - (rms_int_pen * mult)).clamp(0.0, 100.0);
+                let score = (0.70 * u_score + 0.30 * i_score).clamp(0.0, 100.0);
+                (score, u_score, i_score)
             }
         };
 
         let workspace_score = (raw_workspace_score * 10.0).round() / 10.0;
         let workspace_tier = TestabilityTier::from_score(workspace_score);
+        let workspace_t_unit = (raw_t_unit * 10.0).round() / 10.0;
+        let workspace_t_integration = (raw_t_integration * 10.0).round() / 10.0;
 
         Self {
             schema_version: "2.0.0".to_string(),
             workspace_score,
             workspace_tier,
+            workspace_t_unit,
+            workspace_t_integration,
             total_files,
             tier_counts,
             files,

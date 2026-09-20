@@ -1,22 +1,21 @@
 import { ref, watch, onMounted, onUnmounted, nextTick, shallowRef } from 'vue';
-import * as api from '../../../services/api.client';
-import { useChapterStore } from '../../../stores/chapter.store';
-import type { EntitySchema } from '../../../types/generated/EntitySchema';
 import { settingsService } from '@worldwiki/components';
 import { useEntityHistory } from './hooks/useEntityHistory';
 import { useEntityHelpers } from './hooks/useEntityHelpers';
-import type { EntityEditorProps, SchemaConfig, SchemaSection, SchemaField, DynamicContainer } from './EntityEditor.model';
+import { useEntityPhoto } from './hooks/useEntityPhoto';
+import { useEntityDynamicOps } from './hooks/useEntityDynamicOps';
+import { useEntityConfigLoader } from './hooks/useEntityConfigLoader';
+import type { EntityEditorProps, SchemaConfig, SchemaSection, SchemaField } from './EntityEditor.model';
 
 export function useEntityEditor(props: EntityEditorProps, emit: (event: string, ...args: unknown[]) => void) {
   const loading = ref(true);
-  const isInitializing = ref(false); 
+  const isInitializing = ref(false);
   const config = shallowRef<SchemaConfig | null>(null);
   const formData = ref<Record<string, unknown>>(props.initialData ? JSON.parse(JSON.stringify(props.initialData)) : {});
   const lastEmittedData = ref<string | null>(null);
   const foreignUpdates = ref<Record<string, unknown>>({});
   const activeSection = ref('');
   const referenceData = ref<Record<string, Array<{ value: string; label: string }>>>({});
-  const photoInputs = ref<Record<string, HTMLInputElement>>({});
   const hoverState = ref(false);
   const scrollContainer = ref<HTMLElement | null>(null);
   const wheelHorizontal = ref(settingsService.getSettings()?.dropdowns?.wheelOrientation === 'horizontal');
@@ -26,10 +25,10 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
 
   const markModified = () => {
     if (isInitializing.value || historyHook.isPreviewingHistory.value) return;
-    
+
     const combinedData = { ...formData.value, __foreignUpdates: foreignUpdates.value };
     const currentSerialized = JSON.stringify(combinedData);
-    
+
     if (currentSerialized !== lastEmittedData.value) {
       emit('modified');
       emit('update:modelValue', combinedData);
@@ -38,200 +37,44 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     }
   };
 
-  const loadReferenceData = async () => {
-    const entityTypesToLoad = new Set<string>();
-    
-    // Always load current entity type list so myLabel and self-references work
-    if (props.entityType) {
-      entityTypesToLoad.add(props.entityType);
-    }
+  const {
+    photoInputs,
+    triggerPhotoUpload,
+    handlePhotoFile,
+    handlePhotoDrop,
+    removePhoto
+  } = useEntityPhoto((path, val) => helpers.setProp(path, val));
 
-    if (config.value?.sections) {
-      config.value.sections.forEach((sec: SchemaSection) => {
-        if (sec.fields) {
-          sec.fields.forEach((f: SchemaField) => {
-            if (f.entityType) {
-              entityTypesToLoad.add(f.entityType);
-            }
-          });
-        }
-        if (sec.dynamicContainers) {
-          sec.dynamicContainers.forEach((dc: DynamicContainer) => {
-            if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
-            const tplConf = dc.template && config.value?.templates ? config.value.templates[dc.template] : undefined;
-            if (tplConf?.foreign_type) {
-              entityTypesToLoad.add(tplConf.foreign_type);
-            }
-            if (dc.fields) {
-              dc.fields.forEach((f: SchemaField) => {
-                if (f.entityType) entityTypesToLoad.add(f.entityType);
-              });
-            }
-          });
-        }
-      });
-    }
+  const {
+    handleForeignUpdate,
+    onDynamicUpdate,
+    addDynamicItem,
+    removeDynamicItem
+  } = useEntityDynamicOps({
+    formData,
+    foreignUpdates,
+    config,
+    getDynamicList: helpers.getDynamicList,
+    setProp: helpers.setProp,
+    markModified
+  });
 
-    if (config.value?.templates) {
-      Object.keys(config.value.templates).forEach(tplKey => {
-        const tpl = config.value?.templates?.[tplKey];
-        if (tpl?.foreign_type) {
-          entityTypesToLoad.add(tpl.foreign_type);
-        }
-        if (tpl?.fields) {
-          tpl.fields.forEach((f: SchemaField) => {
-            if (f.entityType) {
-              entityTypesToLoad.add(f.entityType);
-            }
-          });
-        }
-        if (tpl?.dynamicContainers) {
-          tpl.dynamicContainers.forEach((dc: DynamicContainer) => {
-            if (dc.foreign_type) entityTypesToLoad.add(dc.foreign_type);
-            if (dc.fields) {
-              dc.fields.forEach((f: SchemaField) => {
-                if (f.entityType) {
-                  entityTypesToLoad.add(f.entityType);
-                }
-              });
-            }
-          });
-        }
-      });
-    }
-
-    const newRefData: Record<string, Array<{ value: string; label: string }>> = { ...referenceData.value };
-    for (const type of entityTypesToLoad) {
-      try {
-        const entities = await api.getEntities(props.project, type);
-        const mapped = entities.map((e) => {
-          const item = e as Record<string, unknown>;
-          return {
-            value: String(item.id || ''),
-            label: String(item.name || item.title || item.label || 'Без названия')
-          };
-        });
-        newRefData[`${type}_list`] = mapped;
-        newRefData[type] = mapped;
-      } catch (e) {
-        console.error(`Error loading ref data for ${type}:`, e);
-      }
-    }
-    referenceData.value = newRefData;
-  };
-
-  const loadConfigAndData = async () => {
-    loading.value = true;
-    isInitializing.value = true;
-    try {
-      const patchConfig = (cfg: SchemaConfig) => {
-        if (cfg?.sections) {
-          cfg.sections.forEach((sec: SchemaSection & { items?: Array<Record<string, unknown>> }) => {
-            if (sec.items && (!sec.fields || sec.fields.length === 0) && (!sec.dynamicContainers || sec.dynamicContainers.length === 0)) {
-              const fields: Array<SchemaField> = [];
-              const dynamicContainers: Array<DynamicContainer> = [];
-              sec.items.forEach((it: Record<string, unknown>) => {
-                if (it.template || it.dataPath || it.type === 'dynamic' || it.type === 'timeline') {
-                  dynamicContainers.push(it as unknown as DynamicContainer);
-                } else {
-                  fields.push(it as unknown as SchemaField);
-                }
-              });
-              sec.fields = fields;
-              sec.dynamicContainers = dynamicContainers;
-            }
-            if (sec.dynamicContainers) {
-              sec.dynamicContainers.forEach((dc: DynamicContainer, idx: number) => {
-                if (!dc.id) dc.id = dc.template ? `dyn_${dc.template}` : `dyn_${idx}`;
-                if (!dc.dataPath) dc.dataPath = dc.id;
-              });
-            }
-          });
-        }
-        return cfg;
-      };
-
-      const sandboxConfig = sessionStorage.getItem('sandbox_preview_config');
-      if (props.entityId === 'preview' && sandboxConfig) {
-        config.value = patchConfig(JSON.parse(sandboxConfig));
-      } else {
-        const schemas = await api.getEntitySchemas(props.project);
-        const foundSchema = schemas.find((s: EntitySchema) => s.type_key === props.entityType);
-        if (foundSchema && foundSchema.full_schema) {
-          config.value = patchConfig(JSON.parse(JSON.stringify(foundSchema.full_schema)));
-        } else {
-          try {
-            // Only fetch for known static schemas to prevent 404s for custom types
-            const staticTypes = ['character', 'location', 'event', 'fraction', 'item', 'ui_editor'];
-            if (staticTypes.includes(props.entityType)) {
-              const res = await fetch(`/struct/editor/${props.entityType}.json`);
-              if (res.ok) {
-                config.value = patchConfig(await res.json());
-              }
-            }
-          } catch (e) {
-            console.warn('Failed to load static schema', e);
-          }
-        }
-      }
-      
-      if (!config.value) {
-        config.value = { templates: {}, sections: [] };
-      }
-
-      try {
-        const uiRes = await fetch('/struct/editor/ui_editor.json');
-        if (uiRes.ok) {
-          const uiData = await uiRes.json();
-          if (!config.value.templates) {
-            config.value.templates = {};
-          }
-          if (uiData && uiData.templates) {
-            Object.assign(config.value.templates, uiData.templates);
-          }
-        }
-      } catch (e) {
-        console.warn('[EntityEditor] Failed to load ui_editor.json templates', e);
-      }
-
-       if (config.value && config.value.sections && config.value.sections.length > 0) {
-         if (props.initialSection && config.value.sections.some((s: SchemaSection) => s.id === props.initialSection)) {
-           activeSection.value = props.initialSection;
-         } else {
-           activeSection.value = config.value.sections[0].id;
-         }
-         emit('section-change', activeSection.value);
-       }
-       
-       formData.value = JSON.parse(JSON.stringify(props.initialData || {}));
-       foreignUpdates.value = {}; 
-       
-       lastEmittedData.value = JSON.stringify({ ...formData.value, __foreignUpdates: {} });
-       
-       await loadReferenceData();
-       
-    } catch (e) {
-      console.error('[EntityEditor] Error loading:', e);
-    } finally {
-      await nextTick();
-      loading.value = false;
-      isInitializing.value = false;
-
-      if ((props.initialScrollPos ?? 0) > 0) {
-        setTimeout(() => {
-          if (scrollContainer.value) scrollContainer.value.scrollTop = props.initialScrollPos ?? 0;
-        }, 100);
-      }
-      
-      nextTick(() => {
-        if (scrollContainer.value) {
-          scrollContainer.value.addEventListener('scroll', (e: Event) => {
-            emit('scroll-change', (e.target as HTMLElement).scrollTop);
-          });
-        }
-      });
-    }
-  };
+  const {
+    loadReferenceData,
+    loadConfigAndData
+  } = useEntityConfigLoader({
+    props,
+    config,
+    loading,
+    isInitializing,
+    activeSection,
+    formData,
+    foreignUpdates,
+    lastEmittedData,
+    referenceData,
+    scrollContainer,
+    emit
+  });
 
   const onSchemaUpdated = (e: Event) => {
     const customEvent = e as CustomEvent<{ entityType?: string }>;
@@ -240,12 +83,23 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
     }
   };
 
+  const handleToggleHistory = (e: CustomEvent) => {
+    if (e.detail.id === props.entityId || e.detail.id === `${props.entityType}:${props.entityId}`) {
+      historyHook.toggleHistory();
+    }
+  };
+
   onMounted(() => {
+    loadConfigAndData();
     window.addEventListener('ww:schema-updated', onSchemaUpdated);
+    window.addEventListener('ww:global-save-triggered', historyHook.loadHistory);
+    document.addEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
   });
 
   onUnmounted(() => {
     window.removeEventListener('ww:schema-updated', onSchemaUpdated);
+    window.removeEventListener('ww:global-save-triggered', historyHook.loadHistory);
+    document.removeEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
   });
 
   watch(() => config.value, (newConfig) => {
@@ -284,169 +138,6 @@ export function useEntityEditor(props: EntityEditorProps, emit: (event: string, 
   watch(activeSection, (newSec) => {
     if (newSec) emit('section-change', newSec);
   });
-
-  const handleToggleHistory = (e: CustomEvent) => {
-    if (e.detail.id === props.entityId || e.detail.id === `${props.entityType}:${props.entityId}`) {
-      historyHook.toggleHistory();
-    }
-  };
-
-  onMounted(() => {
-    loadConfigAndData();
-    window.addEventListener('ww:global-save-triggered', historyHook.loadHistory);
-    document.addEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
-  });
-  
-  onUnmounted(() => {
-    window.removeEventListener('ww:global-save-triggered', historyHook.loadHistory);
-    document.removeEventListener('ww:toggle-entity-history', handleToggleHistory as EventListener);
-  });
-
-  const uploadPhoto = async (file: File) => {
-    try {
-      const path = await api.uploadPhoto(Array.from(new Uint8Array(await file.arrayBuffer())), file.name);
-      return path;
-    } catch (e) {
-      console.error('Photo upload failed:', e);
-      throw e;
-    }
-  };
-
-  const triggerPhotoUpload = (fieldClass: string) => {
-    if (photoInputs.value[fieldClass]) {
-      photoInputs.value[fieldClass].click();
-    }
-  };
-
-  const handlePhotoFile = async (event: Event, fieldClass: string) => {
-    const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (file) {
-      try {
-        const path = await uploadPhoto(file);
-        helpers.setProp(fieldClass, path);
-      } catch {
-        const { appAlert } = await import('@worldwiki/components');
-        appAlert('Ошибка загрузки фото');
-      }
-    }
-  };
-
-  const handlePhotoDrop = async (event: DragEvent, fieldClass: string) => {
-    const file = event.dataTransfer?.files[0];
-    if (file && file.type.startsWith('image/')) {
-      try {
-        const path = await uploadPhoto(file);
-        helpers.setProp(fieldClass, path);
-      } catch {
-        const { appAlert } = await import('@worldwiki/components');
-        appAlert('Ошибка загрузки фото');
-      }
-    }
-  };
-
-  const removePhoto = (fieldClass: string) => {
-    helpers.setProp(fieldClass, '');
-  };
-
-  const handleForeignUpdate = (e: { foreignPath?: string; value?: unknown; entityType?: string; entityId?: string; [key: string]: unknown }) => {
-    if (e.foreignPath) {
-      const parts = e.foreignPath.split('.');
-      let current: Record<string, unknown> = foreignUpdates.value;
-      for (let i = 0; i < parts.length - 1; i++) {
-        if (!current[parts[i]]) current[parts[i]] = {};
-        current = current[parts[i]] as Record<string, unknown>;
-      }
-      current[parts[parts.length - 1]] = e.value;
-      markModified();
-    } else if (e.entityType && e.entityId) {
-      const updateKey = `${e.entityType}:${e.entityId}`;
-      foreignUpdates.value = {
-        ...foreignUpdates.value,
-        [updateKey]: e
-      };
-      markModified();
-    }
-  };
-
-  const onDynamicUpdate = (e: { localPath?: string; foreignPath?: string; value?: unknown; entityType?: string; entityId?: string; [key: string]: unknown }) => {
-    if (e.localPath) {
-      helpers.setProp(e.localPath, e.value);
-    } else if (e.foreignPath) {
-      handleForeignUpdate(e);
-    }
-  };
-
-  const addDynamicItem = (path: string, templateNameOrObj: string | { fields?: SchemaField[]; [key: string]: unknown }) => {
-    if (!path) {
-        console.warn('addDynamicItem: path is undefined, container lacks dataPath and id in schema');
-        return;
-    }
-    const arr = helpers.getDynamicList(path);
-    const tpl = typeof templateNameOrObj === 'string' ? config.value?.templates?.[templateNameOrObj] : templateNameOrObj;
-    if (!tpl) return;
-    const newItem: Record<string, unknown> = {};
-    if (tpl.fields) {
-      tpl.fields.forEach((f: SchemaField & { default?: unknown }) => {
-        if (f.class) {
-          newItem[f.class] = f.default !== undefined ? f.default : '';
-        }
-      });
-    }
-
-    // Эстафета этапов для timeline-модулей (начальная_глава / конечная_глава)
-    const lastItem = arr.length > 0 ? arr[arr.length - 1] : null;
-    if (lastItem && lastItem['конечная_глава']) {
-      const prevEnd = typeof lastItem['конечная_глава'] === 'object' && lastItem['конечная_глава'] !== null
-        ? JSON.parse(JSON.stringify(lastItem['конечная_глава']))
-        : { chapter_id: String(lastItem['конечная_глава']) };
-
-      newItem['начальная_глава'] = { ...prevEnd, is_auto_extend: false };
-      const hadAutoExtend = Boolean(prevEnd.is_auto_extend);
-      newItem['конечная_глава'] = { ...prevEnd, is_auto_extend: hadAutoExtend };
-
-      if (typeof lastItem['конечная_глава'] === 'object' && lastItem['конечная_глава'] !== null) {
-        (lastItem['конечная_глава'] as Record<string, unknown>).is_auto_extend = false;
-      }
-    } else if (newItem['начальная_глава'] !== undefined || newItem['конечная_глава'] !== undefined) {
-      try {
-        const chapterStore = useChapterStore();
-        const hier = chapterStore.hierarchy;
-        if (hier?.chapters && hier.chapters.length > 0) {
-          const lastCh = hier.chapters[hier.chapters.length - 1];
-          const initialPoint = {
-            chapter_id: lastCh.id,
-            volume_id: lastCh.volume_id || null,
-            is_auto_extend: true
-          };
-          if (newItem['начальная_глава'] !== undefined) newItem['начальная_глава'] = { ...initialPoint, is_auto_extend: false };
-          if (newItem['конечная_глава'] !== undefined) newItem['конечная_глава'] = { ...initialPoint, is_auto_extend: true };
-        }
-      } catch {
-        // Игнорируем вне контекста Pinia
-      }
-    }
-
-    helpers.setProp(formData.value, path, [...arr, newItem]);
-    markModified();
-  };
-
-  const removeDynamicItem = (path: string, idx: number | string) => {
-    if (!path) return;
-    const currentList = helpers.getDynamicList(path);
-    const nextArr = [...currentList];
-    const numIdx = typeof idx === 'number' ? idx : parseInt(String(idx), 10);
-
-    if (!isNaN(numIdx) && numIdx >= 0 && numIdx < nextArr.length) {
-      nextArr.splice(numIdx, 1);
-      helpers.setProp(formData.value, path, nextArr);
-      markModified();
-    } else if (nextArr.length <= 1) {
-      // Если это был одиночный объект или невалидный индекс — сбрасываем в пустой массив
-      helpers.setProp(formData.value, path, []);
-      markModified();
-    }
-  };
 
   const getOptionsFor = (field: SchemaField) => {
     if (field.entityType && referenceData.value[`${field.entityType}_list`]) {

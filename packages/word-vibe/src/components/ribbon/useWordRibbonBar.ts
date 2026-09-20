@@ -74,7 +74,9 @@ export function useWordRibbonBar(props: RibbonProps, _emit: RibbonEmit) {
     closeDropdown();
   };
 
-  const applyPageNumberPosition = (position: string) => {
+  const applyPageNumberPosition = (
+    position: 'header-left' | 'header-center' | 'header-right' | 'footer-left' | 'footer-center' | 'footer-right'
+  ) => {
     props.commands.updateHeaderText?.('', '');
     props.commands.updateFooterText?.('', '');
     if (position === 'header-left') props.commands.updateHeaderText?.('{page}', '');

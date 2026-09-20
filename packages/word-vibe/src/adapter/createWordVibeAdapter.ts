@@ -19,74 +19,15 @@ import {
   type PaginationTextOptions,
 } from '../editor/rkPaginationBridge';
 import { GOST_MARGINS_MM, type PaginationGeometry } from '../editor/geometryHelper';
-import { normalizeWordContent, MARGIN_PRESETS_MM } from '../editor/useRkWordEditor';
-import { insertGostFigureCaption } from '../editor/extensions/GostFigureCaption';
-import { insertGostTableCaption } from '../editor/extensions/GostTableCaption';
-import { insertSectionLandscape, insertSectionPortrait } from '../editor/extensions/SectionOrientation';
+import { normalizeWordContent } from '../editor/useRkWordEditor';
 import { SceneBreakExtension } from '../editor/extensions/SceneBreakExtension';
 import { EntityReferenceExtension } from '../editor/extensions/EntityReferenceExtension';
 import { CrossReferenceExtension } from '../editor/extensions/CrossReferenceExtension';
 import { UnsupportedBlockExtension } from '../editor/extensions/UnsupportedBlockExtension';
 import { semanticASTToV2Doc, type V2NodeJson } from '../converter/ASTToV2Converter';
 import { v2DocToSemanticAST } from '../converter/V2ToASTConverter';
-
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    rkExtraCommands: {
-      bold: () => ReturnType;
-      italic: () => ReturnType;
-      underline: () => ReturnType;
-      strike: () => ReturnType;
-      subscript: () => ReturnType;
-      superscript: () => ReturnType;
-      setHighlight: (color: string) => ReturnType;
-      heading: (level: number) => ReturnType;
-      blockquote: () => ReturnType;
-      bulletList: () => ReturnType;
-      orderedList: () => ReturnType;
-      align: (align: 'left' | 'center' | 'right' | 'justify') => ReturnType;
-      fontFamily: (font: string) => ReturnType;
-      fontSize: (size: string) => ReturnType;
-      lineHeight: (height: string) => ReturnType;
-      outdent: () => ReturnType;
-      indent: () => ReturnType;
-      pageBreak: () => ReturnType;
-      insertImage: (src: string) => ReturnType;
-      insertTable: (opts: { rows: number; cols: number; withHeaderRow?: boolean }) => ReturnType;
-      insertLink: (url: string) => ReturnType;
-      footnote: () => ReturnType;
-      insertMathBlock: (latex: string) => ReturnType;
-      insertTableOfContents: (opts: Record<string, unknown>) => ReturnType;
-      insertTextBox: () => ReturnType;
-      sectionBreak: () => ReturnType;
-      clearFormatting: () => ReturnType;
-      spacing: (before: string, after: string) => ReturnType;
-      setTableStyle: (style: string) => ReturnType;
-      addRowBefore: () => ReturnType;
-      addRowAfter: () => ReturnType;
-      addColumnBefore: () => ReturnType;
-      addColumnAfter: () => ReturnType;
-      deleteRow: () => ReturnType;
-      deleteColumn: () => ReturnType;
-      deleteTable: () => ReturnType;
-      mergeCells: () => ReturnType;
-      splitCell: () => ReturnType;
-    };
-  }
-}
-
-interface WordEditorHost {
-  instance?: Editor;
-  commands?: Editor['commands'];
-  destroy?: () => void;
-  setDocument?: (doc: unknown) => void;
-  getHTML?: () => string;
-  focus?: () => void;
-  setPageLayout?: (layout: unknown) => void;
-  exportDocx?: (filename: string) => Promise<void>;
-  printPdf?: (opts: { title: string }) => void;
-  [key: string]: unknown;
-}
+import { buildSelectionDTO, type WordEditorHost } from './createWordVibeSelection';
+import { executeWordVibeCommand } from './createWordVibeCommands';
 
 export function createWordVibeAdapter(): WordVibeAdapter {
   type AnyListener = (payload?: unknown) => void;
@@ -137,9 +78,6 @@ export function createWordVibeAdapter(): WordVibeAdapter {
     characterCount: 0,
   };
 
-  const PX_PER_CM = 37.82;
-  const INDENT_STEP_PX = 40;
-
   const toRkPageSize = (size: PageSize) => {
     return (size === 'B5' ? 'Custom' : size) as 'A3' | 'A4' | 'A5' | 'Letter' | 'Legal' | 'Tabloid' | 'Custom';
   };
@@ -170,75 +108,8 @@ export function createWordVibeAdapter(): WordVibeAdapter {
     return v2DocToSemanticAST(json, currentDocumentMeta, currentProfileId, currentDocId);
   };
 
-  const buildSelectionDTO = (): WordSelectionDTO => {
-    const ed = activeTiptapEditor || ((wordEditor as unknown as WordEditorHost)?.instance);
-    if (!ed || !ed.state) {
-      return {
-        empty: true,
-        isInsideTable: false,
-        firstLineIndentCm: 1.25,
-        leftIndentCm: 0,
-        rightIndentCm: 17,
-      };
-    }
-
-    const { selection } = ed.state;
-    const empty = selection ? selection.empty : true;
-    const isInsideTable = Boolean(ed.isActive?.('table'));
-
-    let firstLineIndentCm = 1.25;
-    let leftIndentCm = 0;
-    const rightIndentCm = 17;
-
-    let alignment: 'left' | 'center' | 'right' | 'justify' | undefined;
-    if (ed.isActive?.({ textAlign: 'center' })) alignment = 'center';
-    else if (ed.isActive?.({ textAlign: 'right' })) alignment = 'right';
-    else if (ed.isActive?.({ textAlign: 'justify' })) alignment = 'justify';
-    else if (ed.isActive?.({ textAlign: 'left' })) alignment = 'left';
-
-    try {
-      const { $from } = selection;
-      for (let d = $from.depth; d >= 0; d--) {
-        const node = $from.node(d);
-        if (node.type.name === 'paragraph') {
-          const indentLevel = typeof node.attrs.indent === 'number' ? node.attrs.indent : 0;
-          leftIndentCm = (indentLevel * INDENT_STEP_PX) / PX_PER_CM;
-
-          const rawFirstLine = node.attrs.firstLineIndent;
-          if (rawFirstLine && typeof rawFirstLine === 'string') {
-            const parsed = parseFloat(rawFirstLine);
-            if (!isNaN(parsed)) {
-              if (rawFirstLine.endsWith('mm')) firstLineIndentCm = parsed / 10;
-              else if (rawFirstLine.endsWith('pt')) firstLineIndentCm = parsed * 0.0352778;
-              else firstLineIndentCm = parsed;
-            }
-          }
-          break;
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-    return {
-      empty,
-      isInsideTable,
-      firstLineIndentCm,
-      leftIndentCm,
-      rightIndentCm,
-      alignment,
-      isBold: Boolean(ed.isActive?.('bold')),
-      isItalic: Boolean(ed.isActive?.('italic')),
-      isUnderline: Boolean(ed.isActive?.('underline')),
-      isStrike: Boolean(ed.isActive?.('strike')),
-      isSubscript: Boolean(ed.isActive?.('subscript')),
-      isSuperscript: Boolean(ed.isActive?.('superscript')),
-      isHighlight: Boolean(ed.isActive?.('highlight')),
-      isBlockquote: Boolean(ed.isActive?.('blockquote')),
-      isBulletList: Boolean(ed.isActive?.('bulletList')),
-      isOrderedList: Boolean(ed.isActive?.('orderedList')),
-      headingLevel: ed.isActive?.('heading', { level: 1 }) ? 1 : ed.isActive?.('heading', { level: 2 }) ? 2 : ed.isActive?.('heading', { level: 3 }) ? 3 : undefined,
-    };
+  const getSelectionDTO = (): WordSelectionDTO => {
+    return buildSelectionDTO(activeTiptapEditor, wordEditor);
   };
 
   const adapter: WordVibeAdapter = {
@@ -300,7 +171,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
           emit('stats-change', { ...currentStats });
         },
         onSelectionChange: () => {
-          emit('selection-change', buildSelectionDTO());
+          emit('selection-change', getSelectionDTO());
         },
         imageUploadHandler: options.imageUploadHandler || ((file: File) =>
           new Promise<string>((resolve, reject) => {
@@ -334,7 +205,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
           emit('stats-change', { ...currentStats });
         },
         onSelectionChange: () => {
-          emit('selection-change', buildSelectionDTO());
+          emit('selection-change', getSelectionDTO());
         },
         onHeaderClick: () => emit('open-header-footer-dialog', { tab: 'header' }),
         onFooterClick: () => emit('open-header-footer-dialog', { tab: 'footer' }),
@@ -374,7 +245,7 @@ export function createWordVibeAdapter(): WordVibeAdapter {
       emit('ready');
       emit('layout-change', { ...currentLayout });
       emit('stats-change', { ...currentStats });
-      emit('selection-change', buildSelectionDTO());
+      emit('selection-change', getSelectionDTO());
     },
 
     isReady(): boolean {
@@ -449,168 +320,28 @@ export function createWordVibeAdapter(): WordVibeAdapter {
         'setHeading', 'toggleBlockquote', 'toggleBulletList', 'toggleOrderedList',
         'setTextAlign', 'setFontFamily', 'setFontSize', 'setLineHeight',
         'decreaseIndent', 'increaseIndent', 'setFirstLineIndent', 'setLeftIndent',
-        'insertPageBreak', 'insertImage', 'insertImageWithCaption',
-        'insertTable', 'insertTableWithCaption', 'insertLink', 'insertLinkUrl',
-        'insertFootnote', 'insertEquation', 'insertEquationLatex',
-        'insertTableOfContents', 'insertTextBox', 'insertSectionBreak',
-        'insertSectionLandscape', 'insertSectionPortrait', 'clearFormatting',
-        'togglePageOrientation', 'setPageSize', 'setMarginPreset', 'setCustomMargins',
-        'setParagraphSpacing', 'setTableStyle', 'addRowBefore', 'addRowAfter',
-        'addColumnBefore', 'addColumnAfter', 'deleteRow', 'deleteColumn', 'deleteTable',
+        'insertPageBreak', 'insertImage', 'insertTable', 'insertLink',
+        'insertFootnote', 'insertEquation', 'insertTableOfContents', 'insertTextBox',
+        'insertSectionBreak', 'clearFormatting', 'setParagraphSpacing',
+        'addRowBefore', 'addRowAfter', 'addColumnBefore', 'addColumnAfter',
+        'deleteRow', 'deleteColumn', 'deleteTable',
         'mergeCells', 'splitCell', 'insertSceneBreak', 'insertEntityReference', 'insertCrossReference',
       ];
     },
 
     execCommand(name: string, ...args: unknown[]): boolean {
-      const ed = activeTiptapEditor || ((wordEditor as unknown as WordEditorHost)?.instance);
-      const commands = ((wordEditor as unknown as WordEditorHost)?.commands) || ed?.commands;
-
-      if (!ed && !commands) return false;
-
-      try {
-        if (ed && !ed.isFocused && !ed.state?.selection?.empty) {
-          ed.commands?.focus?.();
-        }
-      } catch {
-        // ignore
-      }
-
-      switch (name) {
-        case 'toggleBold': commands?.bold?.(); return true;
-        case 'toggleItalic': commands?.italic?.(); return true;
-        case 'toggleUnderline': commands?.underline?.(); return true;
-        case 'toggleStrike': commands?.strike?.(); return true;
-        case 'toggleSubscript': commands?.subscript?.(); return true;
-        case 'toggleSuperscript': commands?.superscript?.(); return true;
-        case 'toggleHighlight': commands?.setHighlight?.(String(args[0] || '#ffff00')); return true;
-        case 'setHeading': commands?.heading?.(Number(args[0])); return true;
-        case 'toggleBlockquote': commands?.blockquote?.(); return true;
-        case 'toggleBulletList': commands?.bulletList?.(); return true;
-        case 'toggleOrderedList': commands?.orderedList?.(); return true;
-        case 'setTextAlign': commands?.align?.(args[0] as 'left' | 'center' | 'right' | 'justify'); return true;
-        case 'setFontFamily': commands?.fontFamily?.(String(args[0])); return true;
-        case 'setFontSize': commands?.fontSize?.(String(args[0])); return true;
-        case 'setLineHeight': commands?.lineHeight?.(String(args[0])); return true;
-        case 'decreaseIndent': commands?.outdent?.(); return true;
-        case 'increaseIndent': commands?.indent?.(); return true;
-        case 'setFirstLineIndent': {
-          const cm = Number(args[0]) || 0;
-          const val = cm <= 0 ? '0' : `${cm.toFixed(3)}cm`;
-          ed?.chain()?.focus()?.updateAttributes('paragraph', { firstLineIndent: val })?.run();
-          emit('selection-change', buildSelectionDTO());
-          return true;
-        }
-        case 'setLeftIndent': {
-          const cm = Number(args[0]) || 0;
-          const level = Math.max(0, Math.min(8, Math.round((cm * PX_PER_CM) / INDENT_STEP_PX)));
-          ed?.chain()?.focus()?.updateAttributes('paragraph', { indent: level })?.run();
-          emit('selection-change', buildSelectionDTO());
-          return true;
-        }
-        case 'insertPageBreak': commands?.pageBreak?.(); return true;
-        case 'insertSceneBreak':
-          ed?.chain()?.focus()?.insertContent({ type: 'sceneBreak', attrs: { variant: args[0] || 'asterisms' } })?.run();
-          return true;
-        case 'insertEntityReference':
-          ed?.chain()?.focus()?.insertContent({
-            type: 'entityReference',
-            attrs: {
-              id: args[0],
-              entityType: args[1] || 'character',
-              name: args[2] || 'Сущность',
-              url: args[3],
-            },
-          })?.run();
-          return true;
-        case 'insertCrossReference':
-          ed?.chain()?.focus()?.insertContent({
-            type: 'crossReference',
-            attrs: {
-              targetId: args[0],
-              kind: args[1] || 'heading',
-              displayMode: args[2] || 'full',
-            },
-          })?.run();
-          return true;
-        case 'insertImage': emit('open-image-dialog'); return true;
-        case 'insertImageWithCaption': {
-          const src = String(args[0]);
-          const caption = args[1] ? String(args[1]) : undefined;
-          commands?.insertImage?.(src);
-          insertGostFigureCaption(ed, caption);
-          return true;
-        }
-        case 'insertTable': emit('open-table-picker'); return true;
-        case 'insertTableWithCaption': {
-          const rows = Number(args[0]) || 2;
-          const cols = Number(args[1]) || 2;
-          const title = args[2] ? String(args[2]) : undefined;
-          commands?.insertTable?.({ rows, cols, withHeaderRow: true });
-          insertGostTableCaption(ed, title);
-          return true;
-        }
-        case 'insertLink': emit('open-link-dialog'); return true;
-        case 'insertLinkUrl': commands?.insertLink?.(String(args[0])); return true;
-        case 'insertFootnote': commands?.footnote?.(); return true;
-        case 'insertEquation': emit('open-equation-dialog'); return true;
-        case 'insertEquationLatex': commands?.insertMathBlock?.(String(args[0])); return true;
-        case 'insertTableOfContents': commands?.insertTableOfContents?.({ minLevel: 1, maxLevel: 3, title: 'Содержание', showPageNumbers: true }); return true;
-        case 'insertTextBox': commands?.insertTextBox?.(); return true;
-        case 'insertSectionBreak': commands?.sectionBreak?.(); return true;
-        case 'insertSectionLandscape':
-          insertSectionLandscape(ed, (o) => adapter.setLayout({ orientation: o }));
-          return true;
-        case 'insertSectionPortrait':
-          insertSectionPortrait(ed, (o) => adapter.setLayout({ orientation: o }));
-          return true;
-        case 'clearFormatting': commands?.clearFormatting?.(); return true;
-        case 'togglePageOrientation':
-          adapter.setLayout({ orientation: currentLayout.orientation === 'portrait' ? 'landscape' : 'portrait' });
-          return true;
-        case 'setPageSize':
-          adapter.setLayout({ pageSize: args[0] as PageSize });
-          return true;
-        case 'setMarginPreset': {
-          const presetName = args[0] as keyof typeof MARGIN_PRESETS_MM;
-          if (MARGIN_PRESETS_MM[presetName]) {
-            adapter.setLayout({ marginsMm: { ...MARGIN_PRESETS_MM[presetName] } });
-          }
-          return true;
-        }
-        case 'setCustomMargins':
-          adapter.setLayout({
-            marginsMm: {
-              top: Number(args[0]),
-              bottom: Number(args[1]),
-              left: Number(args[2]),
-              right: Number(args[3]),
-            },
-          });
-          return true;
-        case 'setParagraphSpacing':
-          commands?.spacing?.(`${String(args[0])}pt`, `${String(args[1])}pt`);
-          return true;
-        // Табличные команды
-        case 'addRowBefore': ed?.chain()?.focus()?.addRowBefore?.()?.run(); return true;
-        case 'addRowAfter': ed?.chain()?.focus()?.addRowAfter?.()?.run(); return true;
-        case 'addColumnBefore': ed?.chain()?.focus()?.addColumnBefore?.()?.run(); return true;
-        case 'addColumnAfter': ed?.chain()?.focus()?.addColumnAfter?.()?.run(); return true;
-        case 'deleteRow': ed?.chain()?.focus()?.deleteRow?.()?.run(); return true;
-        case 'deleteColumn': ed?.chain()?.focus()?.deleteColumn?.()?.run(); return true;
-        case 'deleteTable': ed?.chain()?.focus()?.deleteTable?.()?.run(); return true;
-        case 'mergeCells': ed?.chain()?.focus()?.mergeCells?.()?.run(); return true;
-        case 'splitCell': ed?.chain()?.focus()?.splitCell?.()?.run(); return true;
-        case 'setTableStyle':
-          commands?.setTableStyle?.(String(args[0]));
-          return true;
-        default:
-          console.warn(`[WordVibeAdapter] Unknown command: "${name}"`);
-          return false;
-      }
+      return executeWordVibeCommand(name, args, {
+        activeTiptapEditor,
+        wordEditor,
+        currentLayout,
+        setLayout: (layout) => this.setLayout(layout),
+        emit,
+        buildSelectionDTO: getSelectionDTO,
+      });
     },
 
     getSelection(): WordSelectionDTO | null {
-      return buildSelectionDTO();
+      return getSelectionDTO();
     },
 
     setLayout(layout: Partial<WordLayoutDTO>): void {

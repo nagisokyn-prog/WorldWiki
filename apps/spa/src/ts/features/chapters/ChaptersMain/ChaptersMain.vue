@@ -58,9 +58,9 @@
       
       <!-- History Drawer Component -->
       <ChaptersHistoryDrawer
+        v-model:max-saves="maxSaves"
         :is-open="showHistory"
         :is-loading="isLoadingHistory"
-        v-model:max-saves="maxSaves"
         :revisions="revisions"
         :previewing-rev-id="previewingRevId"
         :get-diff-summary="getDiffSummary"

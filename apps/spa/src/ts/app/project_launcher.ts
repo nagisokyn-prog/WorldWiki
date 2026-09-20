@@ -15,12 +15,12 @@ import '@worldwiki/resources/styles/components/Settings.css';
 
 import { createApp, ref, computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import { projectService, type ProjectStats } from '../services/project.service';
-
 import { settingsService, XboxWheel } from '@worldwiki/components';
 import CalendarsPanel from '../features/timeline/CalendarsPanel/CalendarsPanel.vue';
 import CloudSyncModalVue from '../features/sync/CloudSyncModal.vue';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import { MotionPlugin } from '@vueuse/motion';
+import { projectTypes, genres } from '../features/shell/projectLauncher.constants';
 
 // Export Vue globally for components that use window.Vue
 if (typeof window !== 'undefined') {
@@ -29,7 +29,6 @@ if (typeof window !== 'undefined') {
 
 const app = createApp({
   setup() {
-    // ✅ ОПТИМИЗАЦИЯ: shallowRef для больших массивов проектов
     const projects = shallowRef<Array<{ name: string; icon: string; stats: ProjectStats | Record<string, unknown> }>>([]);
     const modalVisible = ref(false);
     const isEditing = ref(false);
@@ -48,164 +47,6 @@ const app = createApp({
       perfLevel: 'auto'
     });
 
-    const projectTypes = [
-      { value: 'book', label: 'Книга' },
-      { value: 'story', label: 'Рассказ' },
-      { value: 'novel', label: 'Роман' },
-      { value: 'series', label: 'Серия' },
-      { value: 'world', label: 'Мир' },
-      { value: 'other', label: 'Другое' }
-    ];
-
-    const genres = [
-      { value: 'avant-garde', label: 'Авангард' },
-      { value: 'autobiography', label: 'Автобиография' },
-      { value: 'alternative-history', label: 'Альтернативная история' },
-      { value: 'alternate-universe', label: 'AU (Альтернативная вселенная)' },
-      { value: 'anime', label: 'Аниме' },
-      { value: 'anthology-series', label: 'Антология' },
-      { value: 'anti-war', label: 'Антивоенный' },
-      { value: 'anti-detective', label: 'Антидетектив' },
-      { value: 'art-house', label: 'Артхаус' },
-      { value: 'fable', label: 'Басня' },
-      { value: 'bizarro', label: 'Бизарро' },
-      { value: 'biography', label: 'Биография' },
-      { value: 'action', label: 'Боевик' },
-      { value: 'web-novel', label: 'Веб-новелла' },
-      { value: 'webtoon', label: 'Вебтун' },
-      { value: 'western', label: 'Вестерн' },
-      { value: 'video-game', label: 'Видеоигра' },
-      { value: 'adult', label: 'Взрослая литература' },
-      { value: 'coming-of-age', label: 'Взросление' },
-      { value: 'visual-novel', label: 'Визуальная новелла' },
-      { value: 'war', label: 'Военный' },
-      { value: 'military-scifi', label: 'Военная НФ' },
-      { value: 'high-fantasy', label: 'Высокое фэнтези' },
-      { value: 'survival', label: 'Выживание' },
-      { value: 'gangster', label: 'Гангстерский' },
-      { value: 'heroic-fantasy', label: 'Героическое фэнтези' },
-      { value: 'urban-fantasy', label: 'Городское фэнтези' },
-      { value: 'gothic-horror', label: 'Готические ужасы' },
-      { value: 'childrens', label: 'Для детей' },
-      { value: 'detective', label: 'Детектив' },
-      { value: 'children', label: 'Детская литература' },
-      { value: 'dieselpunk', label: 'Дизельпанк' },
-      { value: 'josei', label: 'Дзёсэй' },
-      { value: 'documentary', label: 'Документалистика' },
-      { value: 'road-trip', label: 'Дорожное приключение' },
-      { value: 'drama', label: 'Драма' },
-      { value: 'drama-play', label: 'Драма (пьеса)' },
-      { value: 'ancient-history', label: 'Древний мир' },
-      { value: 'life-story', label: 'Жизнеописание' },
-      { value: 'zombie', label: 'Зомби' },
-      { value: 'gamebook', label: 'Книга-игра' },
-      { value: 'picture-book', label: 'Книжка-картинка' },
-      { value: 'classic', label: 'Классическая литература' },
-      { value: 'classic-detective', label: 'Классический детектив' },
-      { value: 'climate-fiction', label: 'Климатическая фантастика' },
-      { value: 'comedy', label: 'Комедия' },
-      { value: 'short-film', label: 'Короткометражка' },
-      { value: 'space-opera', label: 'Космоопера' },
-      { value: 'space-western', label: 'Космический вестерн' },
-      { value: 'crime', label: 'Криминал' },
-      { value: 'crossover', label: 'Кроссовер' },
-      { value: 'cultivation', label: 'Культивация' },
-      { value: 'cyberpunk', label: 'Киберпанк' },         // первый
-      { value: 'lovecraftian-horror', label: 'Лавкрафтовские ужасы' },
-      { value: 'litrpg', label: 'ЛитРПГ' },
-      { value: 'magical-realism', label: 'Магический реализм' },
-      { value: 'manga', label: 'Манга' },
-      { value: 'manhwa', label: 'Манхва' },
-      { value: 'manhua', label: 'Маньхуа' },
-      { value: 'mafia', label: 'Мафия' },
-      { value: 'melodrama', label: 'Мелодрама' },
-      { value: 'memoir', label: 'Мемуары' },
-      { value: 'mini-series', label: 'Мини-сериал' },
-      { value: 'mystery', label: 'Мистика' },
-      { value: 'mythology', label: 'Мифология' },
-      { value: 'young-adult', label: 'Молодёжная литература' },
-      { value: 'musical', label: 'Мюзикл' },
-      { value: 'soft-scifi', label: 'Мягкая НФ' },
-      { value: 'silent-film', label: 'Немое кино' },
-      { value: 'low-fantasy', label: 'Низкое фэнтези' },
-      { value: 'educational', label: 'Образовательное' },
-      { value: 'occult', label: 'Оккультизм' },
-      { value: 'original', label: 'Оригинальное произведение' },
-      { value: 'heist', label: 'Ограбление' },
-      { value: 'workplace-drama', label: 'Офисная драма' },
-      { value: 'paranormal-romance', label: 'Паранормальная романтика' },
-      { value: 'parody', label: 'Пародия' },
-      { value: 'first-contact', label: 'Первый контакт' },
-      { value: 'slice-of-life', label: 'Повседневность' },
-      { value: 'novella', label: 'Повесть' },
-      { value: 'teen-drama', label: 'Подростковая драма' },
-      { value: 'feature-film', label: 'Полный метр' },
-      { value: 'post-apocalyptic', label: 'Постапокалипсис' },
-      { value: 'adventure', label: 'Приключения' },
-      { value: 'adventure-story', label: 'Приключенческий роман' },
-      { value: 'parable', label: 'Притча' },
-      { value: 'progression-fantasy', label: 'Прогрессивное фэнтези' },
-      { value: 'psychological', label: 'Психологическое' },
-      { value: 'psychological-horror', label: 'Психологические ужасы' },
-      { value: 'psychological-thriller', label: 'Психологический триллер' },
-      { value: 'journey', label: 'Путешествия' },
-      { value: 'time-travel', label: 'Путешествия во времени' },
-      { value: 'light-novel', label: 'Ранобэ' },
-      { value: 'short-story', label: 'Рассказ' },
-      { value: 'renaissance', label: 'Ренессанс' },
-      { value: 'retro-futurism', label: 'Ретрофутуризм' },
-      { value: 'role-playing', label: 'Ролевая игра' },
-      { value: 'romance', label: 'Романтика' },
-      { value: 'romantic-comedy', label: 'Романтическая комедия' },
-      { value: 'romantic-fantasy', label: 'Романтическое фэнтези' },
-      { value: 'saga', label: 'Сага' },
-      { value: 'satire', label: 'Сатира' },
-      { value: 'supernatural', label: 'Сверхъестественное' },
-      { value: 'family-drama', label: 'Семейная драма' },
-      { value: 'serial', label: 'Серийная публикация' },
-      { value: 'fairy-tale', label: 'Сказка' },
-      { value: 'slasher', label: 'Слэшер' },
-      { value: 'slipstream', label: 'Слипстрим' },
-      { value: 'solarpunk', label: 'Соларпанк' },
-      { value: 'sports', label: 'Спорт' },
-      { value: 'steampunk', label: 'Стимпанк' },
-      { value: 'contemporary-romance', label: 'Современный любовный роман' },
-      { value: 'contemporary', label: 'Современная проза' },
-      { value: 'medieval', label: 'Средневековье' },
-      { value: 'surrealism', label: 'Сюрреализм' },
-      { value: 'seinen', label: 'Сэйнэн' },
-      { value: 'hard-scifi', label: 'Твёрдая НФ' },
-      { value: 'theatre-of-absurd', label: 'Театр абсурда' },
-      { value: 'dark-fantasy', label: 'Тёмное фэнтези' },
-      { value: 'dark-romance', label: 'Тёмная романтика' },
-      { value: 'tragedy', label: 'Трагедия' },
-      { value: 'tragicomedy', label: 'Трагикомедия' },
-      { value: 'transgressive', label: 'Трансгрессивная литература' },
-      { value: 'thriller', label: 'Триллер' },
-      { value: 'horror', label: 'Ужасы' },
-      { value: 'wuxia', label: 'Уся' },
-      { value: 'utopian', label: 'Утопия' },
-      { value: 'fanfiction', label: 'Фанфикшн' },
-      { value: 'fan-made', label: 'Фан-контент' },
-      { value: 'fantasy', label: 'Фэнтези' },             // первый
-      { value: 'fantasy-romance', label: 'Фэнтези-романтика' },
-      { value: 'fantasy-of-manners', label: 'Фэнтези этикета' },
-      { value: 'philosophical', label: 'Философское' },
-      { value: 'film', label: 'Кино' },
-      { value: 'folk-horror', label: 'Фольклорные ужасы' },
-      { value: 'historical-fiction', label: 'Исторический роман' },
-      { value: 'historical-fantasy', label: 'Историческое фэнтези' },
-      { value: 'historical-romance', label: 'Исторический любовный роман' },
-      { value: 'cold-war', label: 'Холодная война' },
-      { value: 'chronicle', label: 'Хроника' },
-      { value: 'epic', label: 'Эпос' },
-      { value: 'erotica', label: 'Эротика' },
-      { value: 'erotic-romance', label: 'Эротический роман' },
-      { value: 'esoteric', label: 'Эзотерика' },
-      { value: 'exploitation', label: 'Эксплуатационное кино' },
-      { value: 'prose-poetry', label: 'Верлибр' }
-    ];
-
     const sortedProjects = computed(() => {
       return [...projects.value].sort((a, b) => a.name.localeCompare(b.name));
     });
@@ -218,11 +59,9 @@ const app = createApp({
       return isEditing.value ? 'Сохранить' : 'Создать';
     });
 
-
     async function loadProjects() {
       try {
         const list = await projectService.getProjects();
-        // ✅ ОПТИМИЗАЦИЯ: Обновляем значение shallowRef чтобы Vue заметил изменение
         projects.value = list.map(p => ({
           name: p.name,
           icon: String(p.icon) || '📁',
@@ -246,7 +85,6 @@ const app = createApp({
       modalVisible.value = true;
     }
 
-
     async function openProject(name: string) {
       window.location.href = `app.html?project=${encodeURIComponent(name)}`;
     }
@@ -261,7 +99,6 @@ const app = createApp({
           formData.value.type = (config.type as string) || 'book';
           formData.value.genres = (config.genres as string[]) || [];
           formData.value.perfLevel = (config.perfLevel as string) || 'auto';
-
         }
       } catch (e) {
         console.error('Ошибка загрузки конфигурации:', e);
@@ -284,7 +121,6 @@ const app = createApp({
     async function submitForm() {
       try {
         if (isEditing.value) {
-          console.log('Updating project:', formData.value);
           await projectService.saveProjectConfig(editingProjectName.value, {
             type: formData.value.type,
             genres: formData.value.genres,
@@ -304,7 +140,6 @@ const app = createApp({
           if (calendarsPanelRef.value && calendarsPanelRef.value.saveAll) {
             await calendarsPanelRef.value.saveAll();
           }
-          
           await loadProjects();
           closeModal();
         }
@@ -317,7 +152,6 @@ const app = createApp({
     function closeModal() {
       modalVisible.value = false;
     }
-
 
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === 'F11') {
@@ -345,13 +179,11 @@ const app = createApp({
     const cloudSyncMode = ref<'import' | 'export'>('export');
 
     function openCloudSync(mode: 'import' | 'export') {
-      console.log('Button clicked! Mode:', mode);
       cloudSyncMode.value = mode;
       window.dispatchEvent(new CustomEvent('open-cloud-sync', { detail: mode }));
     }
 
     function showToast(toast: string | { message: string }) {
-      // Implement toast or reuse existing logic
       console.log('Toast:', toast);
     }
 
@@ -391,5 +223,3 @@ if (appEl) {
   app.use(MotionPlugin as unknown as Parameters<typeof app.use>[0]);
   app.mount('#app');
 }
-
-

@@ -1,0 +1,55 @@
+<template>
+  <div>
+    <div class="ww-inspector-section-title">{{ sectionTitle }}</div>
+    <div v-if="items.length === 0" class="ww-inspector-empty">
+      {{ emptyMessage }}
+    </div>
+    <ul v-else class="ww-inspector-list">
+      <li
+        v-for="item in items"
+        :key="item.id"
+        class="ww-inspector-item"
+        :style="item.level ? { paddingLeft: `${((item.level || 1) - 1) * 12 + 8}px` } : undefined"
+      >
+        <div class="ww-inspector-item-content" @click="$emit('jump', item.id)">
+          <span class="ww-inspector-num">
+            {{ formatNumber ? formatNumber(item.number) : item.number }}
+          </span>
+          <span class="ww-inspector-label" :title="item.title">{{ item.title }}</span>
+        </div>
+        <div class="ww-inspector-actions">
+          <button
+            type="button"
+            class="ww-inspector-insert-btn"
+            title="Вставить ссылку в текст"
+            @click="$emit('insert', item)"
+          >
+            + Ссылка
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</template>
+
+<script setup lang="ts">
+export interface AcademicItem {
+  id: string;
+  number?: string | number;
+  title: string;
+  level?: number;
+  [key: string]: unknown;
+}
+
+defineProps<{
+  sectionTitle: string;
+  emptyMessage: string;
+  items: AcademicItem[];
+  formatNumber?: (num?: string | number) => string;
+}>();
+
+defineEmits<{
+  (e: 'jump', id: string): void;
+  (e: 'insert', item: AcademicItem): void;
+}>();
+</script>

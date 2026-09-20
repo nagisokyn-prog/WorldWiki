@@ -97,71 +97,28 @@
       </main>
 
       <!-- SIDEBAR (Catalog) -->
-      <div v-if="showCatalog" class="schema-resizer" @mousedown="startResize"></div>
-      <aside v-show="showCatalog" class="schema-catalog" :style="{ '--catalog-w': catalogWidth + 'px' }">
-        <div class="catalog-section-title">БАЗОВЫЕ ПОЛЯ</div>
-        <div class="flex-col gap-2 p-2">
-          <div v-for="brick in atomicBricks" :key="brick.val" class="catalog-item interactive-el" draggable="true" @dragstart="handleDragStartPalette($event, 'atomic', brick.val, brick.label)">
-            <span class="text-lg">{{ brick.icon }}</span>
-            <span class="text-xs font-bold">{{ brick.label }}</span>
-          </div>
-        </div>
-
-        <div class="catalog-section-title mt-2">⏱️ TIMELINE-МОДУЛИ</div>
-        <div class="flex-col gap-2 p-2">
-          <div v-for="(tpl, key) in timelineTemplates" :key="key" class="catalog-item interactive-el flex justify-between items-center" draggable="true" @dragstart="handleDragStartPalette($event, 'module', String(key), String(key))">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">⏱️</span>
-              <span class="text-xs font-bold">{{ key }}</span>
-            </div>
-            <ModuleHelpPreview :template-key="String(key)" />
-          </div>
-        </div>
-
-        <div class="catalog-section-title mt-2">📋 DYNAMIC-МОДУЛИ</div>
-        <div class="flex-col gap-2 p-2">
-          <div v-for="(tpl, key) in dynamicTemplates" :key="key" class="catalog-item interactive-el flex justify-between items-center" draggable="true" @dragstart="handleDragStartPalette($event, 'module', String(key), String(key))">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">{{ tpl.isBidirectional ? '🤝' : '📋' }}</span>
-              <span class="text-xs font-bold">{{ key }}</span>
-            </div>
-            <ModuleHelpPreview :template-key="String(key)" />
-          </div>
-        </div>
-      </aside>
+      <SchemaCatalogSidebar
+        v-if="showCatalog"
+        :catalog-width="catalogWidth"
+        :atomic-bricks="atomicBricks"
+        :timeline-templates="timelineTemplates"
+        :dynamic-templates="dynamicTemplates"
+        @start-resize="startResize"
+        @drag-start-palette="handleDragStartPalette"
+      />
 
       <!-- RIGHT SIDEBAR (HISTORY) -->
-      <aside v-if="showHistory" class="schema-catalog history-sidebar-drawer">
-        <div class="flex justify-between items-center p-3 border-b text-xs font-bold">
-          <span>История изменений</span>
-          <button class="cursor-pointer text-muted" @click="showHistory = false">✕</button>
-        </div>
-        
-        <div class="p-3 border-b">
-          <label class="text-xs text-muted">Хранить последних версий:</label>
-          <input v-model="maxSaves" type="number" class="input-base text-xs w-full mt-1">
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-3 flex-col gap-2">
-          <div v-if="schemaHistory.length === 0" class="text-xs text-muted text-center">Нет сохраненных версий</div>
-          <div
-            v-for="h in schemaHistory" :key="h.id" 
-            class="catalog-item interactive-el" 
-            :class="{ 'is-previewing': historyPreviewId === h.id }"
-            @click="previewHistory(h)">
-            <div class="flex justify-between items-center w-full">
-              <span class="text-xs font-bold">{{ h.formattedDate }}</span>
-              <button class="cursor-pointer text-sm text-accent" :title="h.is_pinned ? 'Открепить' : 'Закрепить от удаления'" @click.stop="togglePin(h)">
-                {{ h.is_pinned ? '📌' : '📍' }}
-              </button>
-            </div>
-            <div v-if="historyPreviewId === h.id" class="mt-1">
-              <span class="text-xs text-warning">Режим предпросмотра</span>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <SchemaHistoryDrawer
+        v-if="showHistory"
+        v-model:max-saves="maxSaves"
+        :history="schemaHistory"
+        :preview-id="historyPreviewId"
+        @close="showHistory = false"
+        @preview="previewHistory"
+        @toggle-pin="togglePin"
+      />
     </div>
+
     <!-- JSON ПРЕВЬЮ -->
     <div v-if="showJsonPreview" class="glass-modal-overlay visible" @click="setShowJsonPreview(false)">
       <div class="glass-modal glass-panel flex-col json-preview-modal" @click.stop>
@@ -180,7 +137,8 @@
 <script setup lang="ts">
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
-import ModuleHelpPreview from './ModuleHelpPreview.vue';
+import SchemaCatalogSidebar from './components/SchemaCatalogSidebar.vue';
+import SchemaHistoryDrawer from './components/SchemaHistoryDrawer.vue';
 import { useSchemaEditorMain } from './useSchemaEditorMain';
 
 const props = withDefaults(defineProps<{

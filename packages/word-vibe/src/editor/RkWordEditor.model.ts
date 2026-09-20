@@ -10,17 +10,20 @@ export interface RkWordEditorProps {
   initialPageSize?: PageSize;
 }
 
-export interface RkWordEditorEmits {
-  (e: 'update:content', content: string): void;
-  (e: 'change'): void;
-  (e: 'save'): void;
-  (e: 'open-image-dialog'): void;
-  (e: 'open-table-picker'): void;
-  (e: 'open-link-dialog'): void;
-  (e: 'open-equation-dialog'): void;
-  (e: 'open-page-setup'): void;
-  (e: 'open-header-footer-dialog', tab?: 'header' | 'footer'): void;
-}
+export type RkWordEditorEmits =
+  & ((e: 'update:content', content: string) => void)
+  & ((e: 'open-header-footer-dialog', tab?: 'header' | 'footer') => void)
+  & ((e:
+      | 'change'
+      | 'save'
+      | 'open-image-dialog'
+      | 'open-table-picker'
+      | 'open-link-dialog'
+      | 'open-equation-dialog'
+      | 'open-page-setup'
+      | 'open-font-dialog'
+      | 'open-paragraph-dialog'
+    ) => void);
 
 import type { WordEditor } from '@raazkhnl/rk-editor-core';
 

@@ -20,22 +20,16 @@ src-tauri/crates/
 
 ---
 
-## 2. Кодекс Архитектурных Инвариантов (ARCH Rules)
+## 2. Архитектурные Инварианты (ARCH Rules)
+ 
+Все архитектурные границы слоёв (`ARCH-001..ARCH-012`, `CQRS-001`, `MOD-001`, `EVT-001`) принудительно проверяются компилятором Rust и **Cerberus Architectural Firewall** (`cargo cerberus check`).
 
-| Код | Инвариант | Уровень контроля |
-|---|---|---|
-| **ARCH-001** | `worldwiki-domain` не содержит внешних SDK (`tauri`, `surrealdb`, `reqwest`, `tokio`). | **Компилятор Rust (Cargo)** |
-| **ARCH-002** | `worldwiki-application` зависит только от `domain` и `ports` (никакого `tauri`). | **Компилятор Rust (Cargo)** |
-| **ARCH-003** | `worldwiki-ports` содержит только трейты и абстракции портов. | **Компилятор Rust (Cargo)** |
-| **ARCH-004** | `worldwiki-infrastructure` реализует трейты портов, не определяя бизнес-правил. | **Компилятор Rust (Cargo)** |
-| **ARCH-005** | `worldwiki-tauri` — **ЕДИНСТВЕННЫЙ** крейт, которому разрешено зависеть от `tauri`. | **Компилятор Rust (Cargo)** |
-| **ARCH-006** | Доменные события диспатчатся только через `EventPublisherPort` / `TransactionalOutbox`. | **Linter & Code Review** |
-| **ARCH-007** | Никакие типы `tauri::*` (`State`, `AppHandle`, `Window`) не проникают в `application` или `domain`. | **Компилятор Rust (Cargo)** |
-| **ARCH-008** | Конкретные типы БД (`Surreal<Db>`) не появляются в публичных сигнатурах Use Cases. | **Компилятор Rust (Cargo)** |
-| **ARCH-009** | Границы модулей Bounded Contexts изолированы: межмодульное общение только через публичные DTO. | **Rust Visibility (`pub(crate)`)** |
-| **ARCH-010** | Все тяжелые асинхронные задачи (AI, Export, Embeddings) обязаны принимать `CancellationToken`. | **Code Review & Tests** |
-| **ARCH-011** | Мутирующие Use Cases обязаны быть идемпотентными по `operation_id`. | **Integration Tests** |
-| **ARCH-012** | AI-инструменты имеют доступ к системе **СТРОГО** через Application Use Cases. | **Code Review** |
+Для просмотра карточки конкретного правила с примерами хорошего/плохого кода и рецептами ремедиации:
+```bash
+cargo cerberus rule explain ARCH-001
+cargo cerberus rule explain ARCH-002
+cargo cerberus rule explain ARCH-005
+```
 
 ---
 

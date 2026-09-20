@@ -10,7 +10,7 @@
         :key="item.id"
         class="nav-item"
         :class="{ 'is-active': activeTab === item.id }"
-        @click="$emit('update:activeTab', item.id); $emit('update:active-tab', item.id)"
+        @click="handleSelectTab(item.id)"
       >
         <div class="nav-item-icon">{{ item.icon }}</div>
         <div class="nav-item-label">{{ item.label }}</div>
@@ -22,28 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import type { SettingsNavRailProps, SettingsNavRailEmits } from './SettingsNavRail.model';
+import { useSettingsNavRail } from './useSettingsNavRail';
 
-const { t } = useI18n();
+const props = defineProps<SettingsNavRailProps>();
+const emit = defineEmits<SettingsNavRailEmits>();
 
-defineProps<{
-  activeTab: string;
-}>();
-
-defineEmits<{
-  (e: 'update:activeTab', tab: string): void;
-  (e: 'update:active-tab', tab: string): void;
-}>();
-
-const items = computed(() => [
-  { id: 'appearance', icon: '✦', label: t('settings.scenes.appearance.title') },
-  { id: 'interface', icon: '◇', label: t('settings.scenes.interface.title') },
-  { id: 'motion', icon: '◌', label: t('settings.scenes.motion.title') },
-  { id: 'typography', icon: 'Aa', label: t('settings.scenes.typography.title') },
-  { id: 'editor', icon: '◫', label: t('settings.scenes.editor.title') },
-  { id: 'performance', icon: '⚡', label: t('settings.scenes.performance.title') }
-]);
+const { t, items, handleSelectTab } = useSettingsNavRail(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/SettingsNavRail.css"></style>

@@ -20,8 +20,11 @@ impl LifecycleRuleChecker {
         if has_event_listener || has_interval || has_tauri_listen {
             let has_unmounted = content.contains("onUnmounted(")
                 || content.contains("onBeforeUnmount(")
+                || content.contains("onScopeDispose(")
                 || content.contains("tryOnScopeDispose(")
-                || content.contains("tryOnUnmounted(");
+                || content.contains("tryOnUnmounted(")
+                || content.contains("unmounted(")
+                || content.contains("beforeUnmount(");
 
             if !has_unmounted {
                 let trigger = if has_tauri_listen {

@@ -20,8 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import type { AiResearchProgressProps } from './AiResearchProgress.model';
+import { useAiResearchProgress } from './useAiResearchProgress';
 
 const props = withDefaults(defineProps<AiResearchProgressProps>(), {
   stage: 'idle',
@@ -30,22 +30,7 @@ const props = withDefaults(defineProps<AiResearchProgressProps>(), {
   evidenceCount: 0,
 });
 
-const stageLabel = computed(() => {
-  switch (props.stage) {
-    case 'planning':
-      return 'Формирование плана исследования...';
-    case 'searching':
-      return props.query ? `Поиск: «${props.query}»` : 'Поиск источников...';
-    case 'reading':
-      return 'Чтение и анализ страниц...';
-    case 'synthesizing':
-      return 'Синтез ответа и проверка цитат...';
-    case 'completed':
-      return 'Исследование завершено';
-    default:
-      return '';
-  }
-});
+const { stageLabel } = useAiResearchProgress(props);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiResearchProgress.css"></style>

@@ -12,7 +12,7 @@
       :citation="citation"
       :is-open="isPopoverOpen"
       :anchor-el="badgeRef"
-      @close="isPopoverOpen = false"
+      @close="closePopover"
       @ask-source="onAskSource"
     />
   </span>

@@ -46,31 +46,62 @@ const rippleEffect = (e: MouseEvent, el: HTMLElement) => {
   }, 600);
 };
 
+interface GlassHandlers {
+  interactive?: {
+    enter: () => void;
+    leave: () => void;
+    down: () => void;
+    up: () => void;
+  };
+  ripple?: (e: MouseEvent) => void;
+  pushpull?: {
+    enter: () => void;
+    leave: () => void;
+    down: () => void;
+    up: () => void;
+  };
+}
+
+const handlersMap = new WeakMap<HTMLElement, GlassHandlers>();
+
 export const vGlass: ObjectDirective = {
   mounted(el: HTMLElement, binding: DirectiveBinding) {
     const modifiers = binding.modifiers;
+    const handlers: GlassHandlers = {};
     
     // v-glass.interactive
     if (modifiers.interactive) {
-      el.addEventListener('mouseenter', () => interactiveEffects.mouseenter(el));
-      el.addEventListener('mouseleave', () => interactiveEffects.mouseleave(el));
-      el.addEventListener('mousedown', () => interactiveEffects.mousedown(el));
-      el.addEventListener('mouseup', () => interactiveEffects.mouseup(el));
+      const enter = () => interactiveEffects.mouseenter(el);
+      const leave = () => interactiveEffects.mouseleave(el);
+      const down = () => interactiveEffects.mousedown(el);
+      const up = () => interactiveEffects.mouseup(el);
+      el.addEventListener('mouseenter', enter);
+      el.addEventListener('mouseleave', leave);
+      el.addEventListener('mousedown', down);
+      el.addEventListener('mouseup', up);
+      handlers.interactive = { enter, leave, down, up };
     }
     
     // v-glass.ripple
     if (modifiers.ripple) {
       el.style.position = el.style.position || 'relative';
       el.style.overflow = 'hidden';
-      el.addEventListener('mousedown', (e) => rippleEffect(e, el));
+      const ripple = (e: MouseEvent) => rippleEffect(e, el);
+      el.addEventListener('mousedown', ripple);
+      handlers.ripple = ripple;
     }
     
     // v-glass.pushpull
     if (modifiers.pushpull) {
-      el.addEventListener('mouseenter', () => el.classList.add('is-pulled'));
-      el.addEventListener('mouseleave', () => el.classList.remove('is-pulled'));
-      el.addEventListener('mousedown', () => el.classList.add('is-pushed'));
-      el.addEventListener('mouseup', () => el.classList.remove('is-pushed'));
+      const enter = () => el.classList.add('is-pulled');
+      const leave = () => el.classList.remove('is-pulled');
+      const down = () => el.classList.add('is-pushed');
+      const up = () => el.classList.remove('is-pushed');
+      el.addEventListener('mouseenter', enter);
+      el.addEventListener('mouseleave', leave);
+      el.addEventListener('mousedown', down);
+      el.addEventListener('mouseup', up);
+      handlers.pushpull = { enter, leave, down, up };
     }
     
     // v-glass.breathe
@@ -85,6 +116,30 @@ export const vGlass: ObjectDirective = {
         }
       }
     }
+
+    handlersMap.set(el, handlers);
+  },
+
+  unmounted(el: HTMLElement) {
+    const handlers = handlersMap.get(el);
+    if (!handlers) return;
+
+    if (handlers.interactive) {
+      el.removeEventListener('mouseenter', handlers.interactive.enter);
+      el.removeEventListener('mouseleave', handlers.interactive.leave);
+      el.removeEventListener('mousedown', handlers.interactive.down);
+      el.removeEventListener('mouseup', handlers.interactive.up);
+    }
+    if (handlers.ripple) {
+      el.removeEventListener('mousedown', handlers.ripple);
+    }
+    if (handlers.pushpull) {
+      el.removeEventListener('mouseenter', handlers.pushpull.enter);
+      el.removeEventListener('mouseleave', handlers.pushpull.leave);
+      el.removeEventListener('mousedown', handlers.pushpull.down);
+      el.removeEventListener('mouseup', handlers.pushpull.up);
+    }
+    handlersMap.delete(el);
   }
 };
 

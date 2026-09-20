@@ -3,7 +3,7 @@
  * @description Управление геометрией экрана, сайдбаром, ресайзерами и системными панелями
  */
 
-import { ref } from 'vue';
+import { ref, onScopeDispose } from 'vue';
 import { settingsService, type AppSettings } from '@worldwiki/components';
 import type { EditorGroup } from './shell.types';
 
@@ -24,12 +24,18 @@ export function useShellLayout(options?: {
   const isWowilonOpen = ref(false);
   const settings = ref<AppSettings>(settingsService.getSettings());
 
-  settingsService.onChange((s: AppSettings) => {
+  const unregSettings = settingsService.onChange((s: AppSettings) => {
     settings.value = s;
     if (s.spacing?.sidebarWidth) sidebarWidth.value = s.spacing.sidebarWidth;
     if (s.spacing?.panelHeight) panelHeight.value = s.spacing.panelHeight;
     if (s.layout?.focusMode !== undefined) {
       sidebarVisible.value = !s.layout.focusMode;
+    }
+  });
+
+  onScopeDispose(() => {
+    if (typeof unregSettings === 'function') {
+      (unregSettings as () => void)();
     }
   });
 

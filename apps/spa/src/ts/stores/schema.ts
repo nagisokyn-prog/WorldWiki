@@ -3,7 +3,7 @@
  * @description Pinia store для кеша схем сущностей
  */
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { onScopeDispose, ref } from 'vue';
 import { getValueByPath } from '@/utils/path';
 
 export interface EntitySchema {
@@ -83,9 +83,14 @@ export const useSchemaStore = defineStore('schema', () => {
   };
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('ww:schema-updated', ((e: CustomEvent<{ entityType?: string }>) => {
+    const handleSchemaUpdated = ((e: CustomEvent<{ entityType?: string }>) => {
       invalidateSchema(e.detail?.entityType);
-    }) as EventListener);
+    }) as EventListener;
+
+    window.addEventListener('ww:schema-updated', handleSchemaUpdated);
+    onScopeDispose(() => {
+      window.removeEventListener('ww:schema-updated', handleSchemaUpdated);
+    });
   }
 
   return {

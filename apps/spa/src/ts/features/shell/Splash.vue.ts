@@ -1,4 +1,4 @@
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -11,6 +11,21 @@ export default defineComponent({
         const perfBadgeRef = ref<HTMLElement | null>(null);
         const perfDetailsRef = ref<HTMLElement | null>(null);
         const asciiArtRef = ref<HTMLElement | null>(null);
+
+        const handleKeydown = (e: KeyboardEvent) => {
+            if (e.code === 'F11') {
+                e.preventDefault();
+                invoke('toggle_fullscreen').catch(() => { });
+            }
+        };
+
+        onMounted(() => {
+            window.addEventListener('keydown', handleKeydown, true);
+        });
+
+        onUnmounted(() => {
+            window.removeEventListener('keydown', handleKeydown, true);
+        });
 
         onMounted(() => {
     function setProgress(percent: number, text: string) {
@@ -57,13 +72,6 @@ export default defineComponent({
     if (asciiArtRef.value) asciiArtRef.value.textContent = worldAscii;
 
     async function runStartup() {
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'F11') {
-                e.preventDefault();
-                invoke('toggle_fullscreen').catch(() => { });
-            }
-        }, true);
-
         try {
             setProgress(10, 'Подготовка базы данных...');
             await new Promise(r => setTimeout(r, 300));

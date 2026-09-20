@@ -32,15 +32,15 @@
     </div>
 
     <div class="wowilon-actions">
-      <button class="action-btn" title="Настройки ИИ" @click="$emit('open-settings')">
+      <button class="action-btn" title="Настройки ИИ" @click="handleOpenSettings">
         <i class="fas fa-cog"></i>
       </button>
       
       <!-- Show detach only if we are not already detached -->
-      <button v-if="!isDetached" class="action-btn" title="Открепить окно" @click="$emit('detach')">
+      <button v-if="!isDetached" class="action-btn" title="Открепить окно" @click="handleDetach">
         <i class="fas fa-external-link-alt"></i>
       </button>
-      <button v-if="!isDetached" class="action-btn close-btn" title="Закрыть" @click="$emit('close')">
+      <button v-if="!isDetached" class="action-btn close-btn" title="Закрыть" @click="handleClose">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -48,26 +48,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import type { AiHeaderProps, AiHeaderEmits } from './AiHeader.model';
+import { useAiHeader } from './useAiHeader';
 
-withDefaults(defineProps<{
-  isDetached?: boolean;
-}>(), {
+const props = withDefaults(defineProps<AiHeaderProps>(), {
   isDetached: false
 });
 
-defineEmits<{
-  (e: 'close'): void;
-  (e: 'detach'): void;
-  (e: 'open-settings'): void;
-}>();
+const emit = defineEmits<AiHeaderEmits>();
 
-const currentMode = ref('chat');
-
-const setMode = (mode: string) => {
-  currentMode.value = mode;
-  // TODO: Trigger agent mode change
-};
+const { currentMode, setMode, handleOpenSettings, handleDetach, handleClose } = useAiHeader(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiHeader.css"></style>

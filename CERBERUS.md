@@ -31,10 +31,10 @@ cargo cerberus rule explain VUE-007 --markdown    # Output explain card as Markd
 cargo cerberus rule explain CSS-001 --json        # Output explain card as JSON
 
 # 4. Realistic Testability Index (TI)
-cargo cerberus testability calculate              # Calculate TI score across workspace
-cargo cerberus testability calculate --strict --min-score 85 # Enforce minimum 85% SLA in CI
-cargo cerberus testability explain src/domain/user.rs        # Inspect archetype breakdown for file
-cargo cerberus testability baseline capture       # Capture current TI scores to baseline
+cargo cerberus testability                            # Calculate TI score across workspace
+cargo cerberus testability --threshold 85             # Enforce minimum score threshold
+cargo cerberus testability --json report.json         # Export TI analysis to JSON
+cargo cerberus testability --calibrate               # Run synthetic calibration suite
 
 # 5. Cryptographic Ledger & Suppressions
 cargo cerberus ledger sign --rule ARCH-001 --file src/legacy.rs --reason "Planned refactoring" # Sign suppression with HMAC
@@ -43,6 +43,12 @@ cargo cerberus ledger re-sign-all                 # Batch resign valid suppressi
 
 # 6. Baseline Reconcile & Ratchet
 cargo cerberus baseline reconcile                 # Automatically purge resolved violations from baseline
+
+# 7. Vector Intelligence & Neural Models (CodeBERTa ONNX)
+cargo cerberus model download                     # Download and cache CodeBERTa-small-v1 ONNX model & tokenizer
+cargo cerberus model status                       # Display neural model cache status and ONNX runtime availability
+cargo cerberus model clean                        # Purge cached local models
+cargo cerberus explain --clusters                 # Group codebase violations into semantic clusters via vector embeddings
 ```
 
 ### 💚 Frontend AST & Scoped CSS (`@worldwiki/cerberus-sfc`)
@@ -141,3 +147,12 @@ Legacy technical debt is isolated using cryptographic HMAC-SHA256 signatures:
 1. Violations can be grandfathered using `cerberus-baseline.json`.
 2. New violations will fail CI immediately.
 3. Once a violation is resolved, running `cargo cerberus baseline reconcile` permanently ratchets down the baseline so debt can never be re-introduced.
+
+---
+
+## 6. 🧠 VECTOR INTELLIGENCE & NEURAL ARCHITECTURAL EXPLAINABILITY
+
+Cerberus integrates an embedded local CodeBERTa ONNX neural engine to analyze architectural semantics without cloud dependencies:
+1. **Semantic Debt Clustering**: `cargo cerberus explain --clusters` embeds violations into a dense vector space and clusters related architectural debt (e.g. grouped state leaks, async deadlocks, god-class clusters).
+2. **100% Offline & Private**: Neural inference runs entirely locally on CPU/GPU via ONNX Runtime without external network telemetry.
+3. **Model Management**: Managed via `cargo cerberus model download`, `status`, and `clean`.

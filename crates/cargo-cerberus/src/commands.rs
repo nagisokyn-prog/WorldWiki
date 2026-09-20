@@ -58,7 +58,7 @@ pub fn execute_command(command: Commands, rules_path: Option<&PathBuf>) -> Resul
         } => handle_init(&path, adopt, force, frontend_only, backend_only, hooks, models),
         Commands::Rule { action } => handle_rule(action),
         Commands::Model { action } => handle_model(action),
-        Commands::Explain { path, clusters } => handle_explain(&path, clusters),
+        Commands::Explain { path, clusters } => handle_explain(&path, clusters, &rules_repo),
         Commands::Tree {
             path,
             json,

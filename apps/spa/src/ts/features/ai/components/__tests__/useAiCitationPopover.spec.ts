@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAiCitationPopover } from '../useAiCitationPopover';
 import type { AiCitationPopoverProps } from '../AiCitation.model';
 
 describe('useAiCitationPopover', () => {
-  let emit: any;
+  let emit: ReturnType<typeof vi.fn>;
   let props: AiCitationPopoverProps;
 
   beforeEach(() => {

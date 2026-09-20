@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { onScopeDispose } from 'vue';
 import { useShellStore } from './shell';
 import { useZoomStore } from './zoom';
 
@@ -186,6 +187,10 @@ export const useHotkeysStore = defineStore('hotkeys', () => {
   const unregister = () => {
     window.removeEventListener('keydown', handleKeydown);
   };
+
+  onScopeDispose(() => {
+    unregister();
+  });
 
   return { register, unregister };
 });

@@ -1,4 +1,4 @@
-import { ref, shallowRef, computed, onMounted } from 'vue';
+import { ref, shallowRef, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
 import { projectService } from '../../services/project.service';
@@ -306,17 +306,23 @@ export function useProjectLauncher() {
     console.log('Toast:', toast);
   }
 
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.code === 'F11') {
+      e.preventDefault();
+      invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
+    }
+  };
+
   onMounted(async () => {
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'F11') {
-        e.preventDefault();
-        invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
-      }
-    }, true);
+    window.addEventListener('keydown', handleKeydown, true);
 
     await settingsService.loadSettings();
     settingsService.applySettings();
     await loadProjects();
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown, true);
   });
 
   return {

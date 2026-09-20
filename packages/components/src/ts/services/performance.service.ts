@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, onScopeDispose } from 'vue';
 import { settingsService } from './settings.service.js';
 
 export type PerformanceStatus = 'Good' | 'Limited' | 'Poor';
@@ -19,6 +19,8 @@ export class PerformanceManager {
   private lastTimestamp = 0;
   private rafId: number | null = null;
   private aggregationInterval: ReturnType<typeof setInterval> | null = null;
+  private batteryTarget: (EventTarget & { charging: boolean }) | null = null;
+  private batteryListener: (() => void) | null = null;
 
   // Гистерезис
   private consecutivePoorAggregations = 0;

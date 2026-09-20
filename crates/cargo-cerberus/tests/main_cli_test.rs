@@ -451,7 +451,8 @@ fn test_cli_deep_coverage_branches() {
         )
         .unwrap();
     }
-    let _ = cargo_cerberus::model_commands::handle_explain(temp.path(), true);
+    let repo = std::sync::Arc::new(cargo_cerberus::RulesJsonRepository::default());
+    let _ = cargo_cerberus::model_commands::handle_explain(temp.path(), true, &repo);
 
     // Baseline error path (directory instead of file causes read_to_string error)
     let invalid_dir = temp.path().join("invalid_dir_baseline");

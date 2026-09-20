@@ -2,83 +2,37 @@
 trigger: always_on
 ---
 
-# 🛑 ПРАВИЛО 01: АВТОМАТИЗИРОВАННЫЕ СКРИПТЫ-ИНКВИЗИТОРЫ И ЛИНТЕРЫ
+# 🛑 ПРАВИЛО 01: АРХИТЕКТУРНЫЙ ФАЙРВОЛ CERBERUS И ЛИНТЕРЫ
 
-> **ОБЛАСТЬ ДЕЙСТВИЯ**: Все файлы монорепозитория (`apps/spa`, `packages/*`, `src-tauri`).
+> **ОБЛАСТЬ ДЕЙСТВИЯ**: Все файлы монорепозитория (`apps/spa`, `packages/*`, `src-tauri`, `crates/*`).
 > **СТАТУС**: КРИТИЧЕСКИЙ (Блокирует коммит и сдачу задачи).
 
 ---
 
-## 1. Реестр Скриптов-Аудиторов
+## 1. Реестр Проверок Cerberus
 
-Каждый ИИ-агент перед рапортом пользователю обязан убедиться, что его код проходит проверки следующими скриптами:
+Каждый ИИ-агент перед сдачей задачи обязан убедиться, что код проходит проверки встроенными инструментами контроля качества:
 
-### 1.1. `node analyze_vue_monoliths.js` (Аудит монолитов и чистоты Vue SFC)
+### 1.1. `cargo cerberus check --ci` (Комплексный архитектурный файрвол)
+- 🦀 **Rust Core**: контроль границ гексагональных слоёв (`domain`, `application`, `ports`, `infrastructure`, `tauri`), несанкционированных паник (`panic!`, `.unwrap()`), блокирующего I/O и макросов.
+- ⚡ **Vue 3 SFC & TypeScript**: проверка FSD, ограничений на вес компонентов, утечек реактивности и хуков.
+- 🔒 **Криптографический Ledger**: проверка подписей подавления нарушений (HMAC-SHA256).
 
-- 🔴 **CRITICAL ERROR: Тяжелая логика в `<script setup>`**
-  - Запрещено объявлять в `<script setup>` сырые `ref()`, `reactive()`, `computed()`, сложные функции или методы вызова API/Store.
-  - **Порог**: не более **15-30 чистых строк** связующего клея (Glue Code: импорт хука `const { ... } = useFeature()`, проброс `props` и `emit`). ВНИМАНИЕ!!! ЕСЛИ БУДЕТ БОЛЬШЕ, ТО НИЧЕГО СТРАШНОГО!!! 31 и больше будут лишь просто подозрения вызывать, что бизнес логика случайно просочилась, но это НЕ АКСИОМА!!!
-- 🔴 **ERROR: Отсутствие хука-компаньона `use<Component>.ts`**
-  - Любой нетривиальный компонент **ОБЯЗАН** иметь рядом файл бизнес-логики `use<Component>.ts` (или в папке `hooks/`).
-- 🔴 **ERROR: Объявление типов внутри `.vue`**
-  - Все `interface Props`, `interface Emits`, DTO и сложные структуры данных выносятся в `<Component>.model.ts` или `<Component>.types.ts`.
+### 1.2. `cerberus-sfc check` (Специализированный фронтенд-инспектор)
+- 🎨 **CSS Design Tokens**: запрет Hex-цветов (`#fff`, `#000`), именованных цветов, RGB/HSL и хардкода радиусов без CSS Custom Properties.
+- 🧩 **SFC Purity**: запрет тяжелой бизнес-логики в `<script setup>` (предел 15–30 строк клея), контроль обязательного наличия хука `use<Component>.ts` и типов в `*.model.ts`.
+- 📦 **UI-Kit**: запрет дублирования компонентов из `@worldwiki/components` внутри `apps/spa`.
 
----
-
-### 1.2. `node find_css_hardcode.js` & `node deep_css_inspector.js` (Охотники за хардкодом CSS)
-
-- 🔴 **ERROR: Прямые Hex-цвета** (`#fff`, `#000000`, `#3b82f6`, `#0f1218` и любые `#RRGGBB` / `#RGB`).
-- 🔴 **ERROR: Именованные HTML-цвета** (`color: red`, `background: black`, `white`, `blue`, `gray`).
-- 🔴 **ERROR: Прямые RGB/RGBA/HSL вызовы** (`rgba(0, 0, 0, 0.5)`, `rgba(255, 255, 255, 0.1)`).
-- 🔴 **ERROR: Захардкоженные радиусы скругления** (`border-radius: 8px`, `border-radius: 4px`).
-- 🔴 **ERROR: Инлайн-стили с цветами** (`<div style="color: #fff; background: ...">`).
-- ✅ **ЕДИНСТВЕННОЕ РАЗРЕШЕННОЕ РЕШЕНИЕ**: Использовать **СТРОГО** дизайн-токены:
-  ```css
-  /* ПРАВИЛЬНО: */
-  color: var(--color-text-primary);
-  background: var(--color-bg-primary);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: var(--glass-blur);
-  border-radius: var(--border-radius-md);
-  transition: all var(--transition-normal);
-  ```
+### 1.3. `pnpm typecheck` & `cargo check` (Строгая проверка типов)
+- 🔴 **Zero `any`**: строгий режим TypeScript (`strict: true`, `noImplicitAny: true`).
+- 🔴 **Zero `@ts-ignore` / `@ts-nocheck`**: без документированного архитектурного исключения.
+- 🔴 **Чистая компиляция Rust**: `cargo check --all-targets` без ошибок и предупреждений.
 
 ---
 
-### 1.3. `node check_components_duplicates.js` (Детектор дублирования UI-компонентов)
+## 2. Управление техдолгом и Baseline
 
-- 🔴 **CRITICAL ERROR: Клонирование базового UI в `apps/spa`**
-  - Запрещено писать свои кнопки, диалоги (`AppDialog`), тулбары, инпуты, теги (`TagsField`), переключатели тем, колёса прокрутки (`XboxWheel`), деревья (`ExplorerTree`) и вкладки внутри `apps/spa`.
-  - **Правило**: Все базовые UI-элементы берутся **СТРОГО** из `@worldwiki/components`. Если компонента не хватает — он создается в `packages/components`, экспортируется в `src/index.ts` и только затем импортируется в `apps/spa`.
+1. **Новый код**: обязан иметь **0 новых `[DENY]` нарушений**.
+2. **Легаси-долг**: фиксируется в `cerberus-baseline.json` и `cerberus-baseline-front.json`.
+3. **Подавление предупреждений**: оформляется строго через `cargo cerberus ledger sign` с указанием причины, автора и срока действия.
 
----
-
-### 1.4. `node analyze_css_bloat.js` & `node analyze_css.js` (Контроль раздувания стилей)
-
-- 🔴 **ERROR: Простыни стилей в `<style>`**: Запрещены блоки `<style>` более 50-70 строк. Стили обязаны декомпозироваться вместе с атомарными подкомпонентами.
-- 🔴 **ERROR: Запрет TailwindCSS**: Только чистый **Scoped Vanilla CSS** с CSS Custom Properties дизайн-системы.
-
----
-
-### 1.5. `node scripts/verify_codebase_integrity.js` & `npx knip` (Аудит мертвого кода и экспортов)
-
-- 🔴 **ERROR: Дубликаты экспортов** (например, одновременный `export const x` и `export default x`).
-- 🔴 **ERROR: Мертвые неиспользуемые файлы / брошенные ветки**.
-- 🔴 **ERROR: Неразрешенные импорты и сломанные алиасы**.
-
----
-
-### 1.6. `pnpm typecheck` & `cargo check` (Бескомпромиссная проверка типов)
-
-- 🔴 **ERROR: Любое использование `any`** (`strict: true`, `noImplicitAny: true`).
-- 🔴 **ERROR: Использование `// @ts-ignore` или `// @ts-nocheck`** без железобетонного объяснения архитектурной невозможности типизации сторонней библиотеки.
-- 🔴 **ERROR: Ошибки типизации шаблонов `.vue` файлов** (`vue-tsc -b`).
-- 🔴 **ERROR: Ошибки компиляции Rust** (`cargo check --all-targets`).
-
----
-
-### 1.7. `node detect_god_files.js` (Детектор божественных монолитов и спагетти)
-
-- 🔴 **CRITICAL ERROR: Файлы свыше 500-800 строк** (Rust / TypeScript / Vue).
-- 🔴 **ERROR: Смешивание слоёв** (прямой SQL/HTTP внутри UI, IPC внутри бизнес-домена).
-- 🔴 **ERROR: Перегруженные структуры / классы** (> 15-20 методов в одном модуле).

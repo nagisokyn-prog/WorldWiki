@@ -5,6 +5,8 @@
  * @note DOM-зависимый, не rust-ready
  */
 
+import { onScopeDispose } from 'vue';
+
 // ==========================================================================
 // 1. GSAP АНИМАЦИИ (PUSH/PULL ЭФФЕКТЫ)
 // ==========================================================================
@@ -28,7 +30,7 @@ export interface InteractiveOptions {
 export function initInteractiveElements(
   selector: string | HTMLElement = '.interactive-el',
   options: InteractiveOptions = {}
-): void {
+): () => void {
   const {
     pullScale = 1.05,
     pushScale = 0.98,
@@ -41,27 +43,33 @@ export function initInteractiveElements(
     ? Array.from(document.querySelectorAll(selector)) as HTMLElement[]
     : [selector];
 
+  const cleanups: Array<() => void> = [];
+
   elements.forEach(el => {
     if (!el) return;
 
     if (typeof gsap === 'undefined') {
       el.style.transition = `transform ${duration}s ease`;
-      el.addEventListener('mouseenter', () => {
-        el.style.transform = `scale(${pullScale})`;
-      });
-      el.addEventListener('mouseleave', () => {
-        el.style.transform = 'scale(1)';
-      });
-      el.addEventListener('mousedown', () => {
-        el.style.transform = `scale(${pushScale})`;
-      });
-      el.addEventListener('mouseup', () => {
-        el.style.transform = `scale(${pullScale})`;
+      const onEnter = () => { el.style.transform = `scale(${pullScale})`; };
+      const onLeave = () => { el.style.transform = 'scale(1)'; };
+      const onDown = () => { el.style.transform = `scale(${pushScale})`; };
+      const onUp = () => { el.style.transform = `scale(${pullScale})`; };
+
+      el.addEventListener('mouseenter', onEnter);
+      el.addEventListener('mouseleave', onLeave);
+      el.addEventListener('mousedown', onDown);
+      el.addEventListener('mouseup', onUp);
+
+      cleanups.push(() => {
+        el.removeEventListener('mouseenter', onEnter);
+        el.removeEventListener('mouseleave', onLeave);
+        el.removeEventListener('mousedown', onDown);
+        el.removeEventListener('mouseup', onUp);
       });
       return;
     }
 
-    el.addEventListener('mouseenter', () => {
+    const onEnter = () => {
       gsap?.to(el, {
         scale: pullScale,
         duration,
@@ -69,9 +77,9 @@ export function initInteractiveElements(
         zIndex: 20,
         overwrite: true
       });
-    });
+    };
 
-    el.addEventListener('mouseleave', () => {
+    const onLeave = () => {
       gsap?.to(el, {
         scale: 1,
         duration,
@@ -79,24 +87,51 @@ export function initInteractiveElements(
         zIndex: 10,
         overwrite: true
       });
-    });
+    };
 
-    el.addEventListener('mousedown', () => {
+    const onDown = () => {
       gsap?.to(el, {
         scale: pushScale,
         duration: pushDuration,
         overwrite: true
       });
-    });
+    };
 
-    el.addEventListener('mouseup', () => {
+    const onUp = () => {
       gsap?.to(el, {
         scale: pullScale,
         duration: pushDuration,
         overwrite: true
       });
+    };
+
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
+    el.addEventListener('mousedown', onDown);
+    el.addEventListener('mouseup', onUp);
+
+    cleanups.push(() => {
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+      el.removeEventListener('mousedown', onDown);
+      el.removeEventListener('mouseup', onUp);
     });
   });
+
+  return () => {
+    cleanups.forEach(fn => fn());
+  };
+}
+
+export function useInteractiveElements(
+  selector: string | HTMLElement = '.interactive-el',
+  options: InteractiveOptions = {}
+): () => void {
+  const cleanup = initInteractiveElements(selector, options);
+  onScopeDispose(() => {
+    cleanup();
+  });
+  return cleanup;
 }
 
 export interface AnimateOptions {

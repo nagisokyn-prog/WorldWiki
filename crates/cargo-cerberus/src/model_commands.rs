@@ -97,7 +97,11 @@ pub fn handle_model_with_downloader(
     }
 }
 
-pub fn handle_explain(path: &Path, _clusters: bool) -> Result<(), String> {
+pub fn handle_explain(
+    path: &Path,
+    _clusters: bool,
+    rules_repo: &Arc<RulesJsonRepository>,
+) -> Result<(), String> {
     println!(
         "{}",
         "🧠 Analyzing architectural debt & semantic clusters..."
@@ -135,28 +139,15 @@ pub fn handle_explain(path: &Path, _clusters: bool) -> Result<(), String> {
         Arc::new(cerberus_infrastructure::VueSfcParserAdapter),
     ];
     let scanner: Arc<dyn cerberus_ports::FileSystemScannerPort> =
-        Arc::new(cerberus_infrastructure::WalkDirScannerAdapter::new());
-    let rules_path = RulesJsonRepository::find_rules_path(None);
-    let rules_repo: Arc<dyn cerberus_ports::RulesRepositoryPort> =
-        match RulesJsonRepository::load_from_file(&rules_path) {
-            Ok(repo) => Arc::new(repo),
-            Err(_) => Arc::new(RulesJsonRepository {
-                config: cerberus_domain::RulesConfig {
-                    schema: None,
-                    version: "1.0".into(),
-                    ignore: Vec::new(),
-                    rules: cerberus_domain::BuiltinRuleRegistry::all_rules(),
-                },
-                cerberus_config: None,
-                rules_by_id: cerberus_domain::BuiltinRuleRegistry::rule_map(),
-            }),
-        };
+        Arc::new(cerberus_infrastructure::WalkDirScannerAdapter::new().with_ignores(rules_repo.config.ignore.clone()));
+
+    let rules_repo_port: Arc<dyn cerberus_ports::RulesRepositoryPort> = Arc::clone(rules_repo) as Arc<dyn cerberus_ports::RulesRepositoryPort>;
     let scan_use_case = cerberus_application::ScanWorkspaceUseCase::new(
         scanner,
         Arc::new(cerberus_infrastructure::ParallelAstEngineAdapter::new(
             parsers,
         )),
-        rules_repo,
+        rules_repo_port,
         cerberus_application::ScanScope::All,
     );
     let scan_result = scan_use_case.execute(path);

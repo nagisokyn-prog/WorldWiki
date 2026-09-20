@@ -13,7 +13,11 @@
     "**/*.prod.js",
     "vendor/**",
     "crates/**",
-    "src/dist-check/**"
+    "src/dist-check/**",
+    "__tests__/**",
+    "**/tests/**",
+    "**/test/",
+    "**/*test.ts"
   ],
   "extends": [
     "cerberus:rust-hexagonal",
@@ -44,12 +48,12 @@
     }
   },
   "limits": {
-    "max_sloc_warn": 500,
-    "max_sloc_deny": 800,
+    "max_sloc_warn": 300,
+    "max_sloc_deny": 500,
     "max_pressure_warn": 200.0,
     "max_pressure_deny": 400.0,
-    "max_style_lines": 25,
-    "max_script_setup_lines": 35
+    "max_style_lines": 0,
+    "max_script_setup_lines": 0
   },
   "rules": {
     "arch/domain-purity": "deny",

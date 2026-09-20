@@ -17,14 +17,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/ai/__tests__/useWowilonPanel.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (337) exceeds recommended limit (250)",
-    "fingerprint": "0c854b0c7161c60238a75f8bcde2d3bc56999cb6bb7004f0e9c46a7db1247e4d"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/ai/components/AiMessageList.vue",
     "line": 1,
     "symbol": "component",
@@ -57,14 +49,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/chapters/ChapterTree/__tests__/useChapterTree.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (286) exceeds recommended limit (250)",
-    "fingerprint": "a5489ea9190822fef31a302819255aa8661b0d7bd138f90f11738c4af33d2ca1"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts",
     "line": 1,
     "symbol": "component",
@@ -89,11 +73,11 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/__tests__/useTiptapEditor.spec.ts",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEditorCoreTiptap.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (412) exceeds recommended limit (250)",
-    "fingerprint": "34c744921762164b4a6d55ce541b05d8cf8d557e7e07537ff3d9d5826ba21d64"
+    "message": "Frontend file SLOC (337) exceeds recommended limit (250)",
+    "fingerprint": "0c854b0c7161c60238a75f8bcde2d3bc56999cb6bb7004f0e9c46a7db1247e4d"
   },
   {
     "rule": "ARCH-031",
@@ -126,14 +110,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (348) exceeds strict limit (250)",
     "fingerprint": "7402c9d0f6097ac36af8e6fb8d50b01430bfcaa8d332106bdf17835c4de07042"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/__tests__/useEntityEditor.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (402) exceeds recommended limit (250)",
-    "fingerprint": "c801fe9f9dfbb881f485ebf64f0e54b0b4e8f49b39cadbc801128b4b4c13c8b8"
   },
   {
     "rule": "ARCH-031",
@@ -209,14 +185,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/sync/__tests__/useCloudSyncModal.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (300) exceeds recommended limit (250)",
-    "fingerprint": "7dc727cf4f9f3bb585f9f1c3e1d72fd5567041726fe103ac30ebcf71f2057110"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarTimezones/CalendarTimezones.vue",
     "line": 1,
     "symbol": "component",
@@ -249,14 +217,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/__tests__/useTimelinePanel.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (328) exceeds recommended limit (250)",
-    "fingerprint": "1be0b8c9ac16176a85c44c075b012e5ef5781c187daddb73cb1a781180f8f99b"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts",
     "line": 1,
     "symbol": "component",
@@ -265,35 +225,11 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/UniversalDatePicker/__tests__/useUniversalDatePicker.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (340) exceeds recommended limit (250)",
-    "fingerprint": "996101466615fa64d9962365bdf21b6bb1b550233c9644888820433501e081a1"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/UniversalDatePicker/useUniversalDatePicker.ts",
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (277) exceeds recommended limit (250)",
     "fingerprint": "fd5f16a4a400b4a54b2798e4bbbc41076be2ecdd436f5f516e9634e881cebc4f"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Calendars/__tests__/calendar.math.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (498) exceeds recommended limit (300)",
-    "fingerprint": "1070f3caab337128282a11789a6dce8bec284a263e8676df758ed53809a16fc9"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Calendars/__tests__/timeline-panel.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (381) exceeds recommended limit (300)",
-    "fingerprint": "8e36bf2962358c7c4fbad992b49748163c38e48bbb44187dd323889136fc505c"
   },
   {
     "rule": "ARCH-031",
@@ -313,27 +249,11 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Entity/__tests__/useRelationshipBlock.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (346) exceeds recommended limit (250)",
-    "fingerprint": "b3221f1d238013ac203eb0630eb747e5116b00223ef0f6875bcf3eca8ef4f773"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/services/Entity/useRelationshipBlock.ts",
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (417) exceeds recommended limit (250)",
     "fingerprint": "9a395843ce9bded2f58de4545db30a1096ac4940ea33cc3744de4aaf2430f043"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/__tests__/api.client.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (497) exceeds recommended limit (300)",
-    "fingerprint": "0a82dc6662d7fca0c9581dc741131d64077285dadd7a7ca7f4e5672c5038b044"
   },
   {
     "rule": "ARCH-031",
@@ -350,30 +270,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (505) exceeds strict limit (500)",
     "fingerprint": "dd28d0fd64b376ade16b0ad46fb4be457a33505c0a2d7c572084e449a1e6b585"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (435) exceeds recommended limit (300)",
-    "fingerprint": "5bfb9f9dcf274720b04973e17ad05f1c60df238cdbe8c204e6f518de1383f0ed"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/stores/__tests__/shell.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (754) exceeds strict limit (500)",
-    "fingerprint": "8a9b5284c6560c87b80bba1e2ed009f30f7032eecc199d80b13e6c34d6487630"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/stores/__tests__/timeline.store.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (314) exceeds recommended limit (300)",
-    "fingerprint": "e842fc1e74626fb193b31ef3d7fdab5fafced2bc1d1e241a60860b86f22e40e4"
   },
   {
     "rule": "ARCH-031",
@@ -422,30 +318,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (428) exceeds recommended limit (300)",
     "fingerprint": "05e3fc440bb6bc768406aab92fc959bbfa04bae2cbaa139bbe242b58f80e3159"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./packages/components/test/component/Settings.test.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (421) exceeds recommended limit (300)",
-    "fingerprint": "04b2aa1564c3dd9ae304db91fd590c6192b7d2eaab4d9ab154935df95a2431b0"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./packages/components/test/unit/composables/useShellApp.test.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (313) exceeds recommended limit (250)",
-    "fingerprint": "fcb91b4a60ae57bf3ae6edab93295a4a43f09844309e79da39c28398bbabc4af"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./packages/components/test/unit/services/settings.service.test.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (681) exceeds strict limit (500)",
-    "fingerprint": "10db89262a937896fb81d802adbb4c57cf892d02cae62dab1f610ee43c0b4311"
   },
   {
     "rule": "ARCH-031",

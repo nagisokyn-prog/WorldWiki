@@ -3,7 +3,7 @@
   <div
     class="editor-group-pane"
     :class="{ 'is-active': isActive }"
-    @mousedown.capture="$emit('focus')"
+    @mousedown.capture="handleFocus"
   >
     <!-- Tab bar для этой группы -->
     <EditorTabBar
@@ -12,12 +12,12 @@
       :active-tab-id="group.activeTabId"
       :is-active-group="isActive"
       :can-close="canClose"
-      @activate="id => $emit('activate-tab', group.id, id)"
-      @close="id => $emit('close-tab', group.id, id)"
-      @split="$emit('split', group.id)"
-      @close-group="$emit('close-group', group.id)"
-      @move-tab="$emit('move-tab', $event)"
-      @reorder-tab="$emit('reorder-tab', $event)"
+      @activate="id => handleActivateTab(id)"
+      @close="id => handleCloseTab(id)"
+      @split="handleSplit"
+      @close-group="handleCloseGroup"
+      @move-tab="handleMoveTab"
+      @reorder-tab="handleReorderTab"
     />
 
     <!-- Content area -->
@@ -62,51 +62,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import EditorTabBar from './EditorTabBar.vue';
+import type { EditorGroupPaneProps, EditorGroupPaneEmits } from './EditorGroupPane.model';
+import { useEditorGroupPane } from './useEditorGroupPane';
 
-interface EditorTab {
-  id: string;
-  rawId: string;
-  title: string;
-  entityType: string;
-  tabType: 'entity' | 'chapter' | 'schema-editor';
-  data: Record<string, unknown>;
-  unsaved: boolean;
-  scrollPos?: number;
-  activeSection?: string;
-}
+const props = defineProps<EditorGroupPaneProps>();
+const emit = defineEmits<EditorGroupPaneEmits>();
 
-interface EditorGroup {
-  id: string;
-  tabs: EditorTab[];
-  activeTabId: string | null;
-  flexBasis: number;
-}
-
-const props = defineProps<{
-  group: EditorGroup;
-  isActive: boolean;
-  canClose: boolean;
-  isSandbox?: boolean;
-}>();
-
-defineEmits<{
-  focus: [];
-  'activate-tab': [groupId: string, tabId: string];
-  'close-tab': [groupId: string, tabId: string];
-  split: [groupId: string];
-  'close-group': [groupId: string];
-  'move-tab': [payload: { tabId: string; toGroupId: string; toIndex: number }];
-  'reorder-tab': [payload: { groupId: string; fromIdx: number; toIdx: number }];
-}>();
-
-const { t } = useI18n();
-
-const activeTab = computed(() =>
-  props.group.tabs.find(t => t.id === props.group.activeTabId) ?? null
-);
+const {
+  t,
+  activeTab,
+  handleFocus,
+  handleActivateTab,
+  handleCloseTab,
+  handleSplit,
+  handleCloseGroup,
+  handleMoveTab,
+  handleReorderTab
+} = useEditorGroupPane(props, emit);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/EditorGroupPane.css"></style>

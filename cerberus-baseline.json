@@ -41,30 +41,6 @@
   },
   {
     "rule": "AI-013",
-    "file": "./src-tauri/src/tests/common.rs",
-    "line": 1,
-    "symbol": "create_test_services",
-    "message": "Unauthorized compiler warning suppression '#[allow(dead_code)]' on 'create_test_services'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "2dcacca6d579af12fcd7668685b1573e43a6e9fbc7d9b59df6cae0625ae6aad9"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/src/tests/common.rs",
-    "line": 1,
-    "symbol": "seed_chapter",
-    "message": "Unauthorized compiler warning suppression '#[allow(dead_code)]' on 'seed_chapter'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "1b03eda672b67e7be7c168667d6dd5f82af766b1154e2fb6c0ed21279a5e63aa"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/src/tests/common.rs",
-    "line": 1,
-    "symbol": "seed_project",
-    "message": "Unauthorized compiler warning suppression '#[allow(dead_code)]' on 'seed_project'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "05372d6d05e65cac97f9ebfd70bbf8310c2c46cf85fdabd956024605479ba868"
-  },
-  {
-    "rule": "AI-013",
     "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
     "line": 1,
     "symbol": "clear_data_dir_provider",
@@ -94,38 +70,6 @@
     "symbol": "use",
     "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
     "fingerprint": "6fe5f47b4c38eeeb6ebbcf7b7b7fc11d47265df5656bf391d1bb29cea1ada4a2"
-  },
-  {
-    "rule": "ARCH-001",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/common.rs",
-    "line": 1,
-    "symbol": "use",
-    "message": "Domain crate 'surreal_domain' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "e83f14dd289bc8695bcd8a856bd1dcfd6aaf3417a305370e8a182059c0c09f36"
-  },
-  {
-    "rule": "ARCH-001",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/common.rs",
-    "line": 1,
-    "symbol": "use",
-    "message": "Domain crate 'surreal_domain' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "f763735d0638e7bb0921e671f177560d38c8f6b6aab206993a666f552c05ea88"
-  },
-  {
-    "rule": "ARCH-001",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "use",
-    "message": "Domain crate 'surreal_domain' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "3044b96e4b5a3797d8d041a0db53ce7e0d65b8a9fe93c1a24f7e9744e08488c2"
-  },
-  {
-    "rule": "ARCH-001",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "use",
-    "message": "Domain crate 'surreal_domain' cannot import external framework or I/O dependency 'tokio'",
-    "fingerprint": "14a3d7ade4762af90d559be31753c67f9898942293e9dd5a0b613bef70ca0a90"
   },
   {
     "rule": "ARCH-030",
@@ -201,14 +145,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/ai/__tests__/useWowilonPanel.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (337) exceeds recommended limit (250)",
-    "fingerprint": "0c854b0c7161c60238a75f8bcde2d3bc56999cb6bb7004f0e9c46a7db1247e4d"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/ai/components/AiMessageList.vue",
     "line": 1,
     "symbol": "component",
@@ -241,14 +177,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/chapters/ChapterTree/__tests__/useChapterTree.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (286) exceeds recommended limit (250)",
-    "fingerprint": "a5489ea9190822fef31a302819255aa8661b0d7bd138f90f11738c4af33d2ca1"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts",
     "line": 1,
     "symbol": "component",
@@ -273,11 +201,11 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/__tests__/useTiptapEditor.spec.ts",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEditorCoreTiptap.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (412) exceeds recommended limit (250)",
-    "fingerprint": "34c744921762164b4a6d55ce541b05d8cf8d557e7e07537ff3d9d5826ba21d64"
+    "message": "Frontend file SLOC (337) exceeds recommended limit (250)",
+    "fingerprint": "0c854b0c7161c60238a75f8bcde2d3bc56999cb6bb7004f0e9c46a7db1247e4d"
   },
   {
     "rule": "ARCH-031",
@@ -310,14 +238,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (348) exceeds strict limit (250)",
     "fingerprint": "7402c9d0f6097ac36af8e6fb8d50b01430bfcaa8d332106bdf17835c4de07042"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/__tests__/useEntityEditor.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (402) exceeds recommended limit (250)",
-    "fingerprint": "c801fe9f9dfbb881f485ebf64f0e54b0b4e8f49b39cadbc801128b4b4c13c8b8"
   },
   {
     "rule": "ARCH-031",
@@ -393,14 +313,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/sync/__tests__/useCloudSyncModal.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (300) exceeds recommended limit (250)",
-    "fingerprint": "7dc727cf4f9f3bb585f9f1c3e1d72fd5567041726fe103ac30ebcf71f2057110"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarTimezones/CalendarTimezones.vue",
     "line": 1,
     "symbol": "component",
@@ -433,14 +345,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/__tests__/useTimelinePanel.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (328) exceeds recommended limit (250)",
-    "fingerprint": "1be0b8c9ac16176a85c44c075b012e5ef5781c187daddb73cb1a781180f8f99b"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts",
     "line": 1,
     "symbol": "component",
@@ -449,35 +353,11 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/UniversalDatePicker/__tests__/useUniversalDatePicker.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (340) exceeds recommended limit (250)",
-    "fingerprint": "996101466615fa64d9962365bdf21b6bb1b550233c9644888820433501e081a1"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/timeline/UniversalDatePicker/useUniversalDatePicker.ts",
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (277) exceeds recommended limit (250)",
     "fingerprint": "fd5f16a4a400b4a54b2798e4bbbc41076be2ecdd436f5f516e9634e881cebc4f"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Calendars/__tests__/calendar.math.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (498) exceeds recommended limit (300)",
-    "fingerprint": "1070f3caab337128282a11789a6dce8bec284a263e8676df758ed53809a16fc9"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Calendars/__tests__/timeline-panel.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (381) exceeds recommended limit (300)",
-    "fingerprint": "8e36bf2962358c7c4fbad992b49748163c38e48bbb44187dd323889136fc505c"
   },
   {
     "rule": "ARCH-031",
@@ -497,27 +377,11 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Entity/__tests__/useRelationshipBlock.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (346) exceeds recommended limit (250)",
-    "fingerprint": "b3221f1d238013ac203eb0630eb747e5116b00223ef0f6875bcf3eca8ef4f773"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/services/Entity/useRelationshipBlock.ts",
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (417) exceeds recommended limit (250)",
     "fingerprint": "9a395843ce9bded2f58de4545db30a1096ac4940ea33cc3744de4aaf2430f043"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/__tests__/api.client.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (497) exceeds recommended limit (300)",
-    "fingerprint": "0a82dc6662d7fca0c9581dc741131d64077285dadd7a7ca7f4e5672c5038b044"
   },
   {
     "rule": "ARCH-031",
@@ -534,30 +398,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (505) exceeds strict limit (500)",
     "fingerprint": "dd28d0fd64b376ade16b0ad46fb4be457a33505c0a2d7c572084e449a1e6b585"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/stores/__tests__/shell.additional.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (435) exceeds recommended limit (300)",
-    "fingerprint": "5bfb9f9dcf274720b04973e17ad05f1c60df238cdbe8c204e6f518de1383f0ed"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/stores/__tests__/shell.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (754) exceeds strict limit (500)",
-    "fingerprint": "8a9b5284c6560c87b80bba1e2ed009f30f7032eecc199d80b13e6c34d6487630"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/stores/__tests__/timeline.store.spec.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (314) exceeds recommended limit (300)",
-    "fingerprint": "e842fc1e74626fb193b31ef3d7fdab5fafced2bc1d1e241a60860b86f22e40e4"
   },
   {
     "rule": "ARCH-031",
@@ -606,30 +446,6 @@
     "symbol": "component",
     "message": "Frontend file SLOC (428) exceeds recommended limit (300)",
     "fingerprint": "05e3fc440bb6bc768406aab92fc959bbfa04bae2cbaa139bbe242b58f80e3159"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./packages/components/test/component/Settings.test.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (421) exceeds recommended limit (300)",
-    "fingerprint": "04b2aa1564c3dd9ae304db91fd590c6192b7d2eaab4d9ab154935df95a2431b0"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./packages/components/test/unit/composables/useShellApp.test.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (313) exceeds recommended limit (250)",
-    "fingerprint": "fcb91b4a60ae57bf3ae6edab93295a4a43f09844309e79da39c28398bbabc4af"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./packages/components/test/unit/services/settings.service.test.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (681) exceeds strict limit (500)",
-    "fingerprint": "10db89262a937896fb81d802adbb4c57cf892d02cae62dab1f610ee43c0b4311"
   },
   {
     "rule": "ARCH-031",
@@ -694,126 +510,6 @@
     "symbol": "file",
     "message": "File SLOC (338) exceeds recommended limit (300)",
     "fingerprint": "40928f3b42337a803551a7c76b84f01fda7f5f72b9d8c4f63c638b6f5da1ec7a"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/src/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "0fe66fafd7fef9a92a37e29f4482a7b5f524614405479d7bf79daa3bc2175c55"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/src/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "7426f174f020ce9e526090c8bf720ade12f297680ef3f4b1c6468ec34fcc3b88"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "2730712ef3dd1e9eb809260e0933f9c6dad3d855d2e568ac82eee971e42dd4c1"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "48fc2bf0ba2ba729d0ad17110375c1bfd29be60d43fa4e56e5e9a08d078b2c10"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "8ab2f7d8b99286e05266bc1329a9518a25fe606a3b143868251df8635dabdf38"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "b075776a62f1c62e4270543201b9120268674a33d90a845aedc687dfdefcf9d1"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/tests/gpu_smoke.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "407d57540d3cfb88a3bca3fc7a303f71c7e7346d2d845429aa94898a358efd93"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "8feb6615b3a0b4b36e39170f574b2adcabd6dd76679c2df7bc4af08a148a05cc"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "c56370d7a9b9f97fb1bce9e4d790d0c5e466660bc890f49b921308a5a02b4525"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "2bbc48ff924012e05ede50cc0bbcad7f73b56f34e0e27e5a6cc49e3b594de3fc"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "7114f42644e2df5f2000ffe72df47cad64fa90217c54593da74e1f7e511a3d80"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "7b53749f0d4b3a6db9df8306fc10a44891142787cb6e5e9342df2d398cb0d5d3"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "c6c5e54d7dcc5c5895624b4849dfa2bccdb5e9e64f41cfbd73d586640e3753f8"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "ebff2a266671132a176fbcc7cdb8f3005381f9e286c283337a044e4dc9594722"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/tests/negative_system_integration.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "4aed2e4cebfaae5f9f9dea68a7083ab2de072dbf437e348f90f08ecc009b770f"
   },
   {
     "rule": "CSS-002",
@@ -1736,214 +1432,6 @@
     "fingerprint": "44d76d1aefc53f976d7e4e9457dbe03dcc6e8c1d1cd4d598cb8dabede184a55c"
   },
   {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/EntityEditor-D2BrHarT.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "b2dbdd8b187d83cd3f918a080944b6f98a45865aa2d7b8985fe35326356f3b3f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/EntityEditor-D2BrHarT.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "687511b2fb4c9b7d76ccd2e686c1a6eb24f38cf006d2e7939cda011e86d557d8"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/EntityEditor-D2BrHarT.css",
-    "line": 1,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "04c05d38feed610730e7ccd98004b456df6df4f53f074bfd1ef84e1b00a5c009"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/RedactSandbox-Czi4TBWV.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "80aa9a1f13de9bba9ade318d0e85b954ca7a5e40ce6782f86d15ac7b8982fa5b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/RedactSandbox-Czi4TBWV.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "2db29df215a09c31d954ae3cb75a36ad8cac46bf2d86a530544872f59790c083"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/TagsManagerModal-C2ol4AEN.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "608d8cf56067b2a822bb99a2e438f01a69e8863ed1e58c9e37ea91f1bfce65e8"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/TagsManagerModal-C2ol4AEN.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "d7b7ab6d9f55553b2f9b1e2d11802245d9dde8b47a2905ed195b352b7b3d0f49"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/TagsManagerModal-C2ol4AEN.css",
-    "line": 1,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2ca74dc7eb006ec527caf018fae43554e478728351209b060c9d0fcf2f9b510b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/_plugin-vue_export-helper-D6vV6Oqc.css",
-    "line": 5,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "3b000d23a87dae7cab0fb49bdff31b70614ac1d8db44feb4ec52738abc640136"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/_plugin-vue_export-helper-D6vV6Oqc.css",
-    "line": 5,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "b0359022739ffa42f722ff428a45f96aa65b9d54666dbf8e5812a3943d306f9a"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/_plugin-vue_export-helper-D6vV6Oqc.css",
-    "line": 5,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "272c849e1c358d86fede668c3ce959bdd3144590a968732bff9ad7d5682ab805"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/app-DJzoZDjB.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "bfa17a989cf1f5affb007edd7ee8b4457c63f29f057af42170e9fb942facf378"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/app-DJzoZDjB.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "85980e58f71bd443b6f06b531f6bccd201061d66b86214273020091f1ba8044a"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/app-DJzoZDjB.css",
-    "line": 1,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "e80b3826ba03f3367ca105ff02988f54102c05292331fa7ac3f8815cf9a2c640"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/calendar-Bq1qvpJr.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "e49d0d4b2ce766179f7677302fc5e51e313c9145e6796f8d1d5709cb42bd8ec0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/calendar-Bq1qvpJr.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "81be9d166939a3dae4868dd0c7fc7e4e11094e98ac90a3e7826e596e8059d78c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/calendar-Bq1qvpJr.css",
-    "line": 1,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "9001ef83d0ef86ec7651226ad99b427075973c88001b4ec821f38d8d144a860b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/glass-animations-BCfVn99s.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "c84c6e6423627d3cf5357dec500e1d87ba88b6cc142c3ad0a786291f1518b764"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/project_launcher-gYJb0V5K.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "f6c4a231683bbee27b4bb25a7f3fa02a135af0e1343f05dbc83b1c49bbcd571b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/project_launcher-gYJb0V5K.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "57c60e5ce703dd3e9e2512d98db191eb90213719b268135f7fd1311d453357e4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/project_launcher-gYJb0V5K.css",
-    "line": 1,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "00a3e775db73ab21a3e7f2c2b10929b9ac96b47b1ad53dede911daba23e04ac4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/settings-BznEOFbB.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "da95b0a29191a3c14e060e89b0c1ad0e22ec50b9407d890f6bebb705011a7a9d"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/settings-BznEOFbB.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "f640e8f300a9ae2b87de60f6931c126c0cb39db306ac21aa79150a2ea4aab118"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/settings-pQC1Q9Gq.css",
-    "line": 1,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "545c51b23f89584745d9650849ad647b3727d2e363c01f2951b49849f56d33f2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/settings-pQC1Q9Gq.css",
-    "line": 1,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "e222f374e588d0f265a787ab211d6d91c78d71c37932c1ffc72bbbc9ee5dda33"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./src/dist-check/assets/settings-pQC1Q9Gq.css",
-    "line": 1,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "0b5597f5c2e220bd47ed885fb076d09d5552209cfe683f59029fb05c9336e41b"
-  },
-  {
     "rule": "CSS-006",
     "file": "./packages/resources/src/styles/base/layout.css",
     "line": 70,
@@ -2710,118 +2198,6 @@
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
     "fingerprint": "d55802681e4979577b7d934768eee2355a59619bca352b7af80e851509c101f6"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/RedactSandbox-Czi4TBWV.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "ee721297a22389e199459a124aeca61ced6a5a718e0ec587488d25eb3abb96c6"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/_plugin-vue_export-helper-D6vV6Oqc.css",
-    "line": 5,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "fc8e2c6c85e08eaf8da13fa2749f72a96d297176b72ec9386ca7a38b32597726"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/app-DJzoZDjB.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "b2c0f0678ede2e10080822e3cc09a9d61a593e273807c2d7c362ddd3f5ad4baa"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/calendar-Bq1qvpJr.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "9cf79e2f91492e67ca0282d3f93502088ee1012a5a8c79bc3394e86806c59b2f"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/glass-animations-BCfVn99s.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "c63f3e36501667a191b249463ccdf640f7904f5beead39056b818c648d58c5c7"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/project_launcher-gYJb0V5K.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "47d5b1b82e5efd041a8a9d903370d8829beff78d944eacdc9e8ac253502dbb0d"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/settings-BznEOFbB.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "427c40f1b352ac9cbd5a720dafa298b2fb36d046ebccf4a1876176d2b8f05121"
-  },
-  {
-    "rule": "CSS-006",
-    "file": "./src/dist-check/assets/settings-pQC1Q9Gq.css",
-    "line": 1,
-    "symbol": "important_abuse",
-    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7b3bf6157bb97b30bf572d528699dcaeea04daef08ac39bc910ad24bda220348"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "48ab71c1cafb00182dbba64f842fd97ea3acaea8db9650a95726d4fcf5502a90"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "7080aaa5513c0acecfb85d0259d6cd56a20f67a01a6f40b60fb20e392251d263"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "7f6a5ddcd6acf08e726b4a048b07ee5cdf9c7ac966c27e1b046c4da720ecafdb"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/tests/agent_pipeline.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "f83add1818fc4be0cf3dd73a4ae2e1a855224826066a1b9787f01d56888010ed"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/repository_branches_integration.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "a77ea26d388fedc54302d335006408e9c622a147cebc1d296e291cff7074dfe6"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "6cd7ffbe51feb38b86fc07c9060de64b9b0ed340f759ed79da37f036df2c0519"
   },
   {
     "rule": "ERR-001",
@@ -3664,14 +3040,6 @@
     "fingerprint": "0652810e17dc30686772c1f27288d606441fc443772e9eac9773bbc53f792965"
   },
   {
-    "rule": "ERR-003",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/tests/common.rs",
-    "line": 1,
-    "symbol": "list_images",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "3dec98abfac388497c9b5ce0c9520d1b8e47815272c5accab3e5e5f8a119f07f"
-  },
-  {
     "rule": "ERR-005",
     "file": "./src-tauri/llama-sys/build.rs",
     "line": 1,
@@ -3934,78 +3302,6 @@
     "symbol": "useWordRuler",
     "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
     "fingerprint": "317560dbd20e5196091598b210c979bdd7d058c543f9c9c231259c6370cc9a05"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/EntityEditor-CufCHzud.js",
-    "line": 1,
-    "symbol": "EntityEditor-CufCHzud",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "c9cb98a33e9e3e5ffb2d6e21f434191acae5fb3782f15a16edc72be33a8fb041"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/RedactSandbox-CjCLVhZb.js",
-    "line": 1,
-    "symbol": "RedactSandbox-CjCLVhZb",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "b82c19f7a25ea7d49d8bb626a6f1e08f424270a229bdb2d4556f3c35e7ee8141"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/_plugin-vue_export-helper-4QX4Hymy.js",
-    "line": 1,
-    "symbol": "_plugin-vue_export-helper-4QX4Hymy",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "62b5db892bdf1e5eaafb050ac9094643c2cafb580a6c4e1d9386b98c9b7bd8a7"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/app-Gd0EM_Z3.js",
-    "line": 1,
-    "symbol": "app-Gd0EM_Z3",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "d19096b7091c4d1b8e79d886668a2fdf5aef3b8caaabd843a08049becbfbc64e"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/calendar.service-ChdCg3ES.js",
-    "line": 1,
-    "symbol": "calendar.service-ChdCg3ES",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "1f86eba9478716ef025b099729ea3113286fafcf95f178b8d81408dbc004af65"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/project_launcher-DnTyqtLS.js",
-    "line": 1,
-    "symbol": "project_launcher-DnTyqtLS",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "dd2726bfd365ccbae4d88c7e9985163cf866e930213254295bf1b8d684181e0d"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./src/dist-check/assets/settings-BkaIfW55.js",
-    "line": 1,
-    "symbol": "settings-BkaIfW55",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "71470fbe20656df6d40ee54c756ff28be51752f217397cfd448781d88c7c28bb"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/tests/common.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'std::fs::read_dir' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "3d396f6a3d1963ff88178af6c22adb4c0b7d6a06a888c2040ee3b1b7befcb742"
-  },
-  {
-    "rule": "PERF-012",
-    "file": "./src-tauri/tests/gpu_smoke.rs",
-    "line": 1,
-    "symbol": "unbounded_channel",
-    "message": "Unbounded channel 'mpsc::unbounded_channel()' risks uncontrolled memory exhaustion under high throughput.",
-    "fingerprint": "87812ebf07ef9555385b2afdab892f0e6d05b661d4ad5beb05394f17f8a78aa3"
   },
   {
     "rule": "ROB-001",
@@ -4502,30 +3798,6 @@
     "symbol": "DATA_DIR_PROVIDER",
     "message": "Mutable global static state hinders deterministic isolated testing and parallel test execution.",
     "fingerprint": "d764ba2322cf17cda9cb3c787cf458447796be9ad728d034716b5934f771ce8f"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/common.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'chrono::Utc::now' invoked directly inside domain crate 'surreal_domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "ec76546dfc57d4df81b77bb86f2f31187cd26ad8cec0b8d3abbf6471e498d0ac"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'std::thread::sleep' invoked directly inside domain crate 'surreal_domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "8c8a50559abfda9e9cf757661fd2b31699ab235f5c84e33f5231d2f6580882cc"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./tauri-surreal-kit/backend/surreal_domain/tests/stress_integration.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'std::time::Instant::now' invoked directly inside domain crate 'surreal_domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "d97b580ed0e6d8ae3c6462daaf5de421e8e353e5ee03389fd60ea49aaae98b36"
   },
   {
     "rule": "VUE-001",

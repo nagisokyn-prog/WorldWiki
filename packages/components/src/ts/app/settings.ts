@@ -7,7 +7,10 @@ import { MotionPlugin } from '@vueuse/motion';
 
 const cfg = window.__APP_CONFIG__ || {};
 
-document.addEventListener('DOMContentLoaded', () => {
+let appInstance: ReturnType<typeof createApp> | null = null;
+let saveBtnHandler: (() => Promise<void>) | null = null;
+
+export function initSettingsApp(): void {
   const container = document.getElementById('settingsContent');
   if (!container) {
     console.warn('[settings.ts] settingsContent element not found');
@@ -17,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const root = document.createElement('div');
   container.appendChild(root);
 
-  const app = createApp({
+  appInstance = createApp({
     render() {
       return h(Settings, {
         onClose: () => {
@@ -30,18 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     },
   });
 
-  app.use(autoAnimatePlugin as Plugin);
-  app.use(MotionPlugin as unknown as Plugin);
-  app.use(i18n).mount(root);
+  appInstance.use(autoAnimatePlugin as Plugin);
+  appInstance.use(MotionPlugin as unknown as Plugin);
+  appInstance.use(i18n).mount(root);
 
-  document.getElementById('saveBtn')?.addEventListener('click', async () => {
+  saveBtnHandler = async () => {
     try {
       await settingsService.saveSettings(null, true);
       const btn = document.getElementById('saveBtn');
       if (btn) {
         const orig = btn.textContent;
         btn.textContent = '✅ Saved';
-        btn.style.background = '#22c55e';
+        btn.style.background = 'var(--accent-active, #22c55e)';
         setTimeout(() => {
           btn.textContent = orig;
           btn.style.background = '';
@@ -50,5 +53,26 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('[settings.ts] save failed:', e);
     }
-  });
-});
+  };
+
+  document.getElementById('saveBtn')?.addEventListener('click', saveBtnHandler);
+}
+
+export function disposeSettingsApp(): void {
+  if (saveBtnHandler) {
+    document.getElementById('saveBtn')?.removeEventListener('click', saveBtnHandler);
+    saveBtnHandler = null;
+  }
+  if (appInstance) {
+    appInstance.unmount();
+    appInstance = null;
+  }
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSettingsApp, { once: true });
+  } else {
+    initSettingsApp();
+  }
+}

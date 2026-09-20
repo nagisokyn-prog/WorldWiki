@@ -13,19 +13,10 @@
  *   - Settings toggle                                 ← toggleSettings
  *   - Keyboard shortcuts (Ctrl+S, Ctrl+W, F11, etc.)
  *   - State persistence (editorGroups → localStorage)
- *
- * HOW TO USE:
- *   const shell = useShellApp({
- *     storagePrefix: 'my-app',       // localStorage key prefix
- *     onSave: async () => { ... },   // your domain save logic
- *     serializeExtra: () => ({ ... }),         // extra state fields to persist
- *     restoreExtra: async (saved) => { ... },  // restore domain state
- *     quickOpenRef, commandPaletteRef,
- *   });
  */
 
 import {
-  ref, shallowRef, watch, onMounted,
+  ref, shallowRef, watch, onMounted, onUnmounted,
   triggerRef, type Ref
 } from 'vue';
 import { useEditorGroups } from './useEditorGroups';
@@ -170,12 +161,10 @@ export function useShellApp(config: ShellAppConfig) {
       const state = JSON.parse(saved);
       activePanelTab.value = state.activePanelTab ?? '';
 
-      // Restore editor groups skeleton (tab data loaded by domain via restoreExtra)
       if (state.editorGroups) {
         eg.restoreState(state.editorGroups, new Map());
       }
 
-      // Domain-specific state (entities, chapters, etc.)
       if (config.restoreExtra) {
         await config.restoreExtra(state);
       }
@@ -317,126 +306,128 @@ export function useShellApp(config: ShellAppConfig) {
   }
 
   // ── Keyboard shortcuts ────────────────────────────────────────────────────
-  const initKeyboardShortcuts = () => {
-    window.addEventListener('keydown', async (e: KeyboardEvent) => {
-      // Block browser defaults for all Ctrl keys we handle
-      if (e.ctrlKey) {
-        const OVERRIDES = new Set([
-          'KeyS', 'KeyP', 'KeyN', 'KeyW', 'KeyF', 'KeyB',
-          'Comma', 'Minus', 'Equal', 'Digit0', 'Backquote',
-          'Tab', 'Backslash',
-          'Digit1','Digit2','Digit3','Digit4','Digit5',
-          'Digit6','Digit7','Digit8','Digit9', 'KeyT',
-        ]);
-        if (OVERRIDES.has(e.code)) e.preventDefault();
-      }
+  const handleKeydown = async (e: KeyboardEvent) => {
+    // Block browser defaults for all Ctrl keys we handle
+    if (e.ctrlKey) {
+      const OVERRIDES = new Set([
+        'KeyS', 'KeyP', 'KeyN', 'KeyW', 'KeyF', 'KeyB',
+        'Comma', 'Minus', 'Equal', 'Digit0', 'Backquote',
+        'Tab', 'Backslash',
+        'Digit1','Digit2','Digit3','Digit4','Digit5',
+        'Digit6','Digit7','Digit8','Digit9', 'KeyT',
+      ]);
+      if (OVERRIDES.has(e.code)) e.preventDefault();
+    }
 
-      // F11 — fullscreen
-      if (e.code === 'F11') {
-        e.preventDefault();
-        const tauri = window.__TAURI__;
-        if (tauri?.core) {
-          tauri.core.invoke('toggle_fullscreen').catch(console.error);
+    // F11 — fullscreen
+    if (e.code === 'F11') {
+      e.preventDefault();
+      const tauri = window.__TAURI__;
+      if (tauri?.core) {
+        tauri.core.invoke('toggle_fullscreen').catch(console.error);
+      } else {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen?.()?.catch(console.warn);
         } else {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen?.()?.catch(console.warn);
-          } else {
-            document.exitFullscreen?.();
-          }
-        }
-        return;
-      }
-
-      // Escape — close settings overlay
-      if (e.code === 'Escape') {
-        if (showSettings.value) { showSettings.value = false; return; }
-        return;
-      }
-
-      // ── Ctrl (no Shift, no Alt) ──
-      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-        switch (e.code) {
-          case 'KeyS':
-            await config.onSave?.();
-            return;
-          case 'Comma':
-            toggleSettings();
-            return;
-          case 'KeyB':
-            sidebarVisible.value = !sidebarVisible.value;
-            return;
-          case 'KeyW': {
-            // Close active tab — app must handle via eg API
-            const activeId = eg.activeGroup.value?.activeTabId;
-            if (activeId) eg.closeTab(activeId);
-            return;
-          }
-          case 'KeyP':
-            config.quickOpenRef?.value?.open();
-            return;
-          case 'Equal':
-            applyZoom(zoomLevel.value + 0.1);
-            return;
-          case 'Minus':
-            applyZoom(zoomLevel.value - 0.1);
-            return;
-          case 'Digit0':
-            applyZoom(1);
-            return;
-          case 'Backquote':
-            activePanelTab.value = activePanelTab.value === '' ? 'console' : '';
-            return;
-          case 'Backslash':
-            eg.splitRight();
-            addLog(`Layout → Split added (groups: ${eg.groups.value.length})`, 'info');
-            return;
-          case 'Tab': {
-            const all = eg.allTabs.value;
-            if (all.length > 1) {
-              const idx = all.findIndex((t) => t.id === eg.activeGroup.value?.activeTabId);
-              const next = all[(idx + 1) % all.length];
-              const g = eg.findGroupByTab(next.id);
-              if (g) { g.activeTabId = next.id; eg.activeGroupId.value = g.id; }
-            }
-            return;
-          }
-          default: {
-            const n = parseInt(e.code.replace('Digit', ''));
-            if (n >= 1 && n <= 9) {
-              const tab = eg.allTabs.value[n - 1];
-              if (tab) {
-                const g = eg.findGroupByTab(tab.id);
-                if (g) { g.activeTabId = tab.id; eg.activeGroupId.value = g.id; }
-              }
-            }
-          }
+          document.exitFullscreen?.();
         }
       }
+      return;
+    }
 
-      // ── Ctrl+Shift ──
-      if (e.ctrlKey && e.shiftKey && !e.altKey) {
-        if (['KeyP', 'KeyS', 'Tab'].includes(e.code)) e.preventDefault();
-        switch (e.code) {
-          case 'KeyP':
-            config.commandPaletteRef?.value?.open();
-            return;
-          case 'KeyS':
-            await config.onSave?.();
-            return;
-          case 'Tab': {
-            const all = eg.allTabs.value;
-            if (all.length > 1) {
-              const idx  = all.findIndex((t) => t.id === eg.activeGroup.value?.activeTabId);
-              const prev = (idx - 1 + all.length) % all.length;
-              const tab  = all[prev];
-              const g    = eg.findGroupByTab(tab.id);
+    // Escape — close settings overlay
+    if (e.code === 'Escape') {
+      if (showSettings.value) { showSettings.value = false; return; }
+      return;
+    }
+
+    // ── Ctrl (no Shift, no Alt) ──
+    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+      switch (e.code) {
+        case 'KeyS':
+          await config.onSave?.();
+          return;
+        case 'Comma':
+          toggleSettings();
+          return;
+        case 'KeyB':
+          sidebarVisible.value = !sidebarVisible.value;
+          return;
+        case 'KeyW': {
+          // Close active tab — app must handle via eg API
+          const activeId = eg.activeGroup.value?.activeTabId;
+          if (activeId) eg.closeTab(activeId);
+          return;
+        }
+        case 'KeyP':
+          config.quickOpenRef?.value?.open();
+          return;
+        case 'Equal':
+          applyZoom(zoomLevel.value + 0.1);
+          return;
+        case 'Minus':
+          applyZoom(zoomLevel.value - 0.1);
+          return;
+        case 'Digit0':
+          applyZoom(1);
+          return;
+        case 'Backquote':
+          activePanelTab.value = activePanelTab.value === '' ? 'console' : '';
+          return;
+        case 'Backslash':
+          eg.splitRight();
+          addLog(`Layout → Split added (groups: ${eg.groups.value.length})`, 'info');
+          return;
+        case 'Tab': {
+          const all = eg.allTabs.value;
+          if (all.length > 1) {
+            const idx = all.findIndex((t) => t.id === eg.activeGroup.value?.activeTabId);
+            const next = all[(idx + 1) % all.length];
+            const g = eg.findGroupByTab(next.id);
+            if (g) { g.activeTabId = next.id; eg.activeGroupId.value = g.id; }
+          }
+          return;
+        }
+        default: {
+          const n = parseInt(e.code.replace('Digit', ''));
+          if (n >= 1 && n <= 9) {
+            const tab = eg.allTabs.value[n - 1];
+            if (tab) {
+              const g = eg.findGroupByTab(tab.id);
               if (g) { g.activeTabId = tab.id; eg.activeGroupId.value = g.id; }
             }
-            return;
           }
         }
       }
-    });
+    }
+
+    // ── Ctrl+Shift ──
+    if (e.ctrlKey && e.shiftKey && !e.altKey) {
+      if (['KeyP', 'KeyS', 'Tab'].includes(e.code)) e.preventDefault();
+      switch (e.code) {
+        case 'KeyP':
+          config.commandPaletteRef?.value?.open();
+          return;
+        case 'KeyS':
+          await config.onSave?.();
+          return;
+        case 'Tab': {
+          const all = eg.allTabs.value;
+          if (all.length > 1) {
+            const idx  = all.findIndex((t) => t.id === eg.activeGroup.value?.activeTabId);
+            const prev = (idx - 1 + all.length) % all.length;
+            const tab  = all[prev];
+            const g    = eg.findGroupByTab(tab.id);
+            if (g) { g.activeTabId = tab.id; eg.activeGroupId.value = g.id; }
+          }
+          return;
+        }
+      }
+    }
+  };
+
+  const initKeyboardShortcuts = () => {
+    window.addEventListener('keydown', handleKeydown);
   };
 
   // ── onMounted ─────────────────────────────────────────────────────────────
@@ -452,6 +443,10 @@ export function useShellApp(config: ShellAppConfig) {
     addLog('System → Shell initialized', 'success');
 
     await restoreState();
+  });
+
+  onUnmounted(() => {
+    window.removeEventListener('keydown', handleKeydown);
   });
 
   // ── Watchers ──────────────────────────────────────────────────────────────

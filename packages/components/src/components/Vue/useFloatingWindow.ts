@@ -1,4 +1,4 @@
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 export interface FloatingWindowProps {
@@ -100,6 +100,11 @@ export function useFloatingWindow(
   const updateZIndex = (val: number) => {
     zIndex.value = val;
   };
+
+  onUnmounted(() => {
+    stopDrag();
+    stopResize();
+  });
 
   return {
     t,

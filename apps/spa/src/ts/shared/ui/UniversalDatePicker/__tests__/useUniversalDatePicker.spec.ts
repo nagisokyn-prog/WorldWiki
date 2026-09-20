@@ -6,7 +6,7 @@ import { useUniversalDatePicker } from '../useUniversalDatePicker';
 let mockGetCalendars: any;
 let mockSettingsOnChange: any;
 
-vi.mock('@/stores/calendar.store', () => ({
+vi.mock('../../../../stores/calendar.store', () => ({
   useCalendarStore: () => ({
     getCalendars: (...args: any[]) => mockGetCalendars(...args),
   }),

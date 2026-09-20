@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { reactive, nextTick } from 'vue';
 import { useRelationshipBlock } from '../useRelationshipBlock';
-import { entityApi } from '@/services/Entity/entity.api';
+import { entityApi } from '../../../../services/Entity/entity.api';
 
-vi.mock('@/services/Entity/entity.api', () => ({
+vi.mock('../../../../services/Entity/entity.api', () => ({
   entityApi: {
     getEntity: vi.fn(),
   },

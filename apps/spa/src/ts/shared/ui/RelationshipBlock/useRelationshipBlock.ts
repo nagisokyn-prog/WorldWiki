@@ -1,6 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { entityApi } from '@/services/Entity/entity.api';
-import { settingsService } from '@worldwiki/components';
+import { invoke, processIds, settingsService } from '@worldwiki/components';
 import type { TemplateField, SubConf, RelationshipBlockProps } from './RelationshipBlock.model';
 
 export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event: string, ...args: unknown[]) => void) {
@@ -161,7 +160,8 @@ export function useRelationshipBlock(props: RelationshipBlockProps, emit: (event
     foreignModified.value = false;
 
     try {
-      const targetData = await entityApi.getEntity(props.project, targetEntityType, String(targetId));
+      const detail = await invoke<Record<string, unknown>>('get_entity', { id: String(targetId) });
+      const targetData = processIds(detail);
       if (!targetData) {
         throw new Error(`Entity ${targetId} not found or returned null`);
       }

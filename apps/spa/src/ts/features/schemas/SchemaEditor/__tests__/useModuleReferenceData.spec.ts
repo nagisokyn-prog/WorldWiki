@@ -1,27 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useModuleReferenceData } from '../useModuleReferenceData';
-import * as api from '@/services/api.client';
-import { useShellStore } from '@/stores/shell';
-
-vi.mock('@/services/api.client', () => ({
-  getEntitySchemas: vi.fn(),
-}));
+import * as api from '../../../../services/api.client';
 
 vi.mock('../../../../services/api.client', () => ({
   getEntitySchemas: vi.fn(),
-}));
-
-vi.mock('@/stores/shell', () => ({
-  useShellStore: () => ({
-    projectName: 'my_proj',
-  }),
-}));
-
-vi.mock('../../../../stores/shell', () => ({
-  useShellStore: () => ({
-    projectName: 'my_proj',
-  }),
 }));
 
 describe('useModuleReferenceData', () => {
@@ -31,9 +14,6 @@ describe('useModuleReferenceData', () => {
   });
 
   it('loads schemas from DB when project is active', async () => {
-    const shell = useShellStore();
-    shell.projectName = 'my_proj';
-
     const mockDbSchemas = [
       {
         type_name: 'character',
@@ -76,7 +56,7 @@ describe('useModuleReferenceData', () => {
 
     vi.mocked(api.getEntitySchemas).mockResolvedValue(mockDbSchemas as any);
 
-    const helper = useModuleReferenceData();
+    const helper = useModuleReferenceData('my_proj');
     await helper.loadDbSchemas();
 
     const info = helper.getModuleUsageInfo('Двунаправленная связь');
@@ -98,9 +78,6 @@ describe('useModuleReferenceData', () => {
   });
 
   it('matches all template categories: timeline, single parameter, and dynamic element', async () => {
-    const shell = useShellStore();
-    shell.projectName = 'my_proj';
-
     const mockDbSchemas = [
       {
         full_schema: {
@@ -119,7 +96,7 @@ describe('useModuleReferenceData', () => {
     ];
     vi.mocked(api.getEntitySchemas).mockResolvedValue(mockDbSchemas as any);
 
-    const helper = useModuleReferenceData();
+    const helper = useModuleReferenceData('my_proj');
     await helper.loadDbSchemas();
 
     const timeInfo = helper.getModuleUsageInfo('Базовая хронология');
@@ -133,7 +110,7 @@ describe('useModuleReferenceData', () => {
   });
 
   it('provides fallback default example for unknown canonicalKey', () => {
-    const helper = useModuleReferenceData();
+    const helper = useModuleReferenceData('my_proj');
     const info = helper.getModuleUsageInfo('Неизвестный шаблон xyz');
     expect(info.examples).toHaveLength(1);
     expect(info.examples[0].id).toBe('fallback_default');
@@ -141,11 +118,9 @@ describe('useModuleReferenceData', () => {
   });
 
   it('handles DB fetch error and falls back to static schemas without crashing', async () => {
-    const shell = useShellStore();
-    shell.projectName = 'my_proj';
     vi.mocked(api.getEntitySchemas).mockRejectedValueOnce(new Error('DB failure'));
 
-    const helper = useModuleReferenceData();
+    const helper = useModuleReferenceData('my_proj');
     await helper.loadDbSchemas();
     expect(helper.getModuleUsageInfo('Базовая хронология')).toBeDefined();
   });

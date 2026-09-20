@@ -249,14 +249,6 @@
   },
   {
     "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/services/Entity/useRelationshipBlock.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (417) exceeds recommended limit (250)",
-    "fingerprint": "d7a16b69854abf56d19fd4cbea6cc8c11d6f7fdd9945522fcfd3d7f6813f9d23"
-  },
-  {
-    "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/services/api.client.ts",
     "line": 1,
     "symbol": "component",
@@ -278,6 +270,14 @@
     "symbol": "component",
     "message": "Frontend file SLOC (207) exceeds recommended limit (150)",
     "fingerprint": "96f3aa0c0ebdf277b8b49fe3ac9b03ea6e65a3c8097f130fe0d31701afb3c7a8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/useRelationshipBlock.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (374) exceeds recommended limit (250)",
+    "fingerprint": "d056a7f6dbbc01cbed5a8b172764a78f82f9608b352cd849d78cf618ebacf74b"
   },
   {
     "rule": "ARCH-031",
@@ -382,21 +382,5 @@
     "symbol": "component",
     "message": "Frontend file SLOC (400) exceeds recommended limit (250)",
     "fingerprint": "3d0c222244e2ef09891cb0d12345d6f75d7bbb6225e5b45aee2fb1a11f48b2b1"
-  },
-  {
-    "rule": "FSD-001",
-    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
-    "line": 197,
-    "symbol": "@/services/Entity/useRelationshipBlock",
-    "message": "FSD Layer Violation: layer 'shared' is forbidden from importing from upper layer 'entities' ('@/services/Entity/useRelationshipBlock')",
-    "fingerprint": "49891cc6932b82aecc7b5dab8fe966ad3e1d9723bdd6d850118b8631eec3232a"
-  },
-  {
-    "rule": "FSD-001",
-    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
-    "line": 198,
-    "symbol": "@/services/Entity/useRelationshipBlock",
-    "message": "FSD Layer Violation: layer 'shared' is forbidden from importing from upper layer 'entities' ('@/services/Entity/useRelationshipBlock')",
-    "fingerprint": "dc6da8a4c90de93c3558faf68928dd2f6e3131f2b1e7aa7a5dde2e077b3b32b7"
   }
 ]

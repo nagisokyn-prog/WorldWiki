@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue';
-import * as api from '@/services/api.client';
+import * as api from '../../../services/api.client';
 
 export interface SchemaFieldDef {
     class?: string;

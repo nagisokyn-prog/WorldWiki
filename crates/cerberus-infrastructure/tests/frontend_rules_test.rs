@@ -120,7 +120,7 @@ fn test_fsd_and_vue_sfc_deep_coverage() {
     assert!(FsdLayer::Features.can_import(FsdLayer::Unknown));
 
     // 2. UIKit purity checks for pinia, app, features, entities
-    let uikit_file = Path::new("@worldwiki/components/src/Button.vue");
+    let uikit_file = Path::new("packages/components/src/Button.vue");
     let code_pinia = "import { defineStore } from 'pinia';";
     let code_app = "import { router } from '@/app/router';";
     let code_feat = "import { auth } from '@/features/auth';";
@@ -140,7 +140,7 @@ fn test_fsd_and_vue_sfc_deep_coverage() {
     assert_eq!(v_internals.iter().filter(|v| v.rule_id == "FSD-002").count(), 2);
 
     // 4. VueSfcParserAdapter .js, SLOC warn & deny for use*.ts and helpers
-    let adapter = VueSfcParserAdapter;
+    let adapter = VueSfcParserAdapter::default();
     let temp = tempdir().unwrap();
 
     // JS file
@@ -188,4 +188,235 @@ fn test_fsd_and_vue_sfc_deep_coverage() {
     std::fs::write(&vue_warn, &vue_warn_code).unwrap();
     let vue_warn_violations = adapter.parse_file(&vue_warn, "spa").unwrap();
     assert!(vue_warn_violations.iter().any(|v| v.rule_id == "ARCH-031" && v.severity == cerberus_domain::Severity::Warn));
+}
+
+#[test]
+fn test_custom_frontend_layers_matrix() {
+    use cerberus_domain::{CerberusConfig, FrontendLayerConfig};
+    use std::collections::HashMap;
+
+    let mut frontend_layers = HashMap::new();
+    frontend_layers.insert(
+        "views".into(),
+        FrontendLayerConfig {
+            order: Some(5),
+            aliases: vec!["screens".into()],
+            allowed_deps: vec!["modules".into(), "shared".into()],
+            is_orchestrator: true,
+            allow_cross_slice: true,
+        },
+    );
+    frontend_layers.insert(
+        "modules".into(),
+        FrontendLayerConfig {
+            order: Some(3),
+            aliases: vec![],
+            allowed_deps: vec!["shared".into()],
+            is_orchestrator: false,
+            allow_cross_slice: false,
+        },
+    );
+    frontend_layers.insert(
+        "shared".into(),
+        FrontendLayerConfig {
+            order: Some(1),
+            aliases: vec![],
+            allowed_deps: vec![],
+            is_orchestrator: false,
+            allow_cross_slice: true,
+        },
+    );
+
+    let config = CerberusConfig {
+        frontend_layers,
+        ..Default::default()
+    };
+
+    // 1. View importing modules should be allowed
+    let view_file = Path::new("src/views/Dashboard.vue");
+    let view_code = "import { UserModule } from '@/modules/user';";
+    let v1 = FsdRulesChecker::check_source_with_config(view_code, view_file, Some(&config));
+    assert_eq!(v1.len(), 0);
+
+    // 2. Module importing view should violate hierarchy
+    let module_file = Path::new("src/modules/user/useUser.ts");
+    let module_code = "import { Dashboard } from '@/views/Dashboard.vue';";
+    let v2 = FsdRulesChecker::check_source_with_config(module_code, module_file, Some(&config));
+    assert_eq!(v2.len(), 1);
+    assert_eq!(v2[0].rule_id, "FSD-001");
+
+    // 3. External package should NOT trigger FSD violations
+    let external_code = "import { ref } from '@tiptap/pm/view';";
+    let v3 = FsdRulesChecker::check_source_with_config(external_code, module_file, Some(&config));
+    assert_eq!(v3.len(), 0);
+}
+
+#[test]
+fn test_frontend_layers_transitive_closure_and_cycle_prevention() {
+    use cerberus_domain::{CerberusConfig, FrontendLayerConfig};
+    use std::collections::HashMap;
+
+    let mut frontend_layers = HashMap::new();
+    frontend_layers.insert(
+        "app".into(),
+        FrontendLayerConfig {
+            order: Some(4),
+            aliases: vec![],
+            allowed_deps: vec!["features".into(), "entities".into(), "shared".into()],
+            is_orchestrator: true,
+            allow_cross_slice: true,
+        },
+    );
+    frontend_layers.insert(
+        "features".into(),
+        FrontendLayerConfig {
+            order: Some(3),
+            aliases: vec![],
+            allowed_deps: vec!["entities".into(), "shared".into()],
+            is_orchestrator: false,
+            allow_cross_slice: false,
+        },
+    );
+    frontend_layers.insert(
+        "entities".into(),
+        FrontendLayerConfig {
+            order: Some(2),
+            aliases: vec![],
+            allowed_deps: vec!["shared".into()],
+            is_orchestrator: false,
+            allow_cross_slice: false,
+        },
+    );
+    frontend_layers.insert(
+        "shared".into(),
+        FrontendLayerConfig {
+            order: Some(1),
+            aliases: vec![],
+            allowed_deps: vec![],
+            is_orchestrator: false,
+            allow_cross_slice: true,
+        },
+    );
+
+    let config = CerberusConfig {
+        frontend_layers,
+        ..Default::default()
+    };
+
+    // Transitive flow test: App -> Features -> Entities -> Shared
+    // 1. Shared cannot import Entities (Cycle Attempt 1)
+    let shared_file = Path::new("src/shared/ui/Button.vue");
+    let code_shared_illegal = "import { userModel } from '@/entities/user';";
+    let v_shared = FsdRulesChecker::check_source_with_config(code_shared_illegal, shared_file, Some(&config));
+    assert_eq!(v_shared.len(), 1);
+    assert_eq!(v_shared[0].rule_id, "FSD-001");
+
+    // 2. Entities cannot import Features (Cycle Attempt 2)
+    let ent_file = Path::new("src/entities/user/useUser.ts");
+    let code_ent_illegal = "import { checkout } from '@/features/cart';";
+    let v_ent = FsdRulesChecker::check_source_with_config(code_ent_illegal, ent_file, Some(&config));
+    assert_eq!(v_ent.len(), 1);
+    assert_eq!(v_ent[0].rule_id, "FSD-001");
+
+    // 3. Features cannot import App (Cycle Attempt 3)
+    let feat_file = Path::new("src/features/cart/useCart.ts");
+    let code_feat_illegal = "import { router } from '@/app/router';";
+    let v_feat = FsdRulesChecker::check_source_with_config(code_feat_illegal, feat_file, Some(&config));
+    assert_eq!(v_feat.len(), 1);
+    assert_eq!(v_feat[0].rule_id, "FSD-001");
+
+    // 4. Features cannot import sibling Features (Cross-slice)
+    let code_cross_feat = "import { auth } from '@/features/auth';";
+    let v_cross = FsdRulesChecker::check_source_with_config(code_cross_feat, feat_file, Some(&config));
+    assert_eq!(v_cross.len(), 1);
+    assert_eq!(v_cross[0].rule_id, "FSD-004");
+}
+
+#[test]
+fn test_shell_orchestrator_allowed_cross_slice_and_composition() {
+    use cerberus_domain::{CerberusConfig, FrontendLayerConfig};
+    use std::collections::HashMap;
+
+    let mut frontend_layers = HashMap::new();
+    frontend_layers.insert(
+        "shell".into(),
+        FrontendLayerConfig {
+            order: Some(6),
+            aliases: vec![],
+            allowed_deps: vec!["features".into(), "chapters".into(), "entities".into(), "timeline".into(), "ai".into(), "shared".into()],
+            is_orchestrator: true,
+            allow_cross_slice: true,
+        },
+    );
+    frontend_layers.insert(
+        "features".into(),
+        FrontendLayerConfig {
+            order: Some(3),
+            aliases: vec![],
+            allowed_deps: vec!["entities".into(), "shared".into()],
+            is_orchestrator: false,
+            allow_cross_slice: false,
+        },
+    );
+
+    let config = CerberusConfig {
+        frontend_layers,
+        ..Default::default()
+    };
+
+    // Shell can orchestrate multiple slices
+    let shell_file = Path::new("apps/spa/src/ts/features/shell/EditorView.vue");
+    let shell_code = r#"
+        import { ChapterTree } from '@/features/chapters/ChapterTree';
+        import { EntityEditor } from '@/features/entities/EntityEditor';
+        import { WowilonPanel } from '@/features/ai/WowilonPanel';
+        import { GlobalTimeViewer } from '@/features/timeline/Calendars';
+    "#;
+    let v_shell = FsdRulesChecker::check_source_with_config(shell_code, shell_file, Some(&config));
+    assert_eq!(v_shell.len(), 0, "Shell orchestrator must be allowed to import features without FSD-004 violations");
+}
+
+#[test]
+fn test_vue_sfc_parser_adapter_with_custom_config() {
+    use cerberus_domain::{CerberusConfig, FrontendLayerConfig};
+    use cerberus_infrastructure::VueSfcParserAdapter;
+    use cerberus_ports::AstParserPort;
+    use std::collections::HashMap;
+    use tempfile::tempdir;
+
+    let mut frontend_layers = HashMap::new();
+    frontend_layers.insert(
+        "shell".into(),
+        FrontendLayerConfig {
+            order: Some(6),
+            aliases: vec![],
+            allowed_deps: vec!["features".into(), "shared".into()],
+            is_orchestrator: true,
+            allow_cross_slice: true,
+        },
+    );
+
+    let config = CerberusConfig {
+        frontend_layers,
+        ..Default::default()
+    };
+
+    let adapter = VueSfcParserAdapter::with_config(Some(config));
+    let temp = tempdir().unwrap();
+    let shell_vue = temp.path().join("shell").join("EditorView.vue");
+    std::fs::create_dir_all(shell_vue.parent().unwrap()).unwrap();
+
+    let content = r#"
+<template>
+  <div>Editor</div>
+</template>
+<script setup lang="ts">
+import { AuthFeature } from '@/features/auth';
+</script>
+"#;
+    std::fs::write(&shell_vue, content).unwrap();
+
+    let violations = adapter.parse_file(&shell_vue, "spa").unwrap();
+    let fsd_violations: Vec<_> = violations.iter().filter(|v| v.rule_id.starts_with("FSD-")).collect();
+    assert_eq!(fsd_violations.len(), 0);
 }

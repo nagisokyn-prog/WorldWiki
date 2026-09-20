@@ -1,3 +1,5 @@
+import { onScopeDispose } from 'vue';
+
 export const appConfirm = async (message: string, title: string = 'Подтверждение'): Promise<boolean> => {
     return new Promise<boolean>(resolve => {
         const overlay = document.createElement('div');
@@ -21,13 +23,36 @@ export const appConfirm = async (message: string, title: string = 'Подтве�
         const cancelBtn = modal.querySelector('#app-confirm-cancel');
         const okBtn = modal.querySelector('#app-confirm-ok');
         
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                cleanup();
+                resolve(false);
+            }
+        };
+
         const cleanup = () => {
+            window.removeEventListener('keydown', onKeyDown);
             if (document.body.contains(overlay)) {
                 document.body.removeChild(overlay);
             }
         };
+
+        window.addEventListener('keydown', onKeyDown);
         
-        cancelBtn?.addEventListener('click', () => { cleanup(); resolve(false); });
-        okBtn?.addEventListener('click', () => { cleanup(); resolve(true); });
+        cancelBtn?.addEventListener('click', () => { cleanup(); resolve(false); }, { once: true });
+        okBtn?.addEventListener('click', () => { cleanup(); resolve(true); }, { once: true });
     });
 };
+
+export function useAppConfirm() {
+    let activeCleanup: (() => void) | null = null;
+    onScopeDispose(() => {
+        if (activeCleanup) {
+            activeCleanup();
+            activeCleanup = null;
+        }
+    });
+    return {
+        confirm: (msg: string, title?: string) => appConfirm(msg, title)
+    };
+}

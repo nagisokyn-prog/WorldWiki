@@ -7,7 +7,7 @@
 
 ## 1. 🚀 CLI CHEATSHEET & COMMAND REFERENCE
 
-Cerberus provides unified CLI tools for Rust backend (`cargo-cerberus`) and Vue 3 frontend (`@worldwiki/cerberus-sfc`).
+Cerberus provides unified CLI tools for Rust backend (`cargo-cerberus`) and Vue 3 frontend (`cerberus-sfc`).
 
 ### 🦀 Rust & Fullstack Backend (`cargo-cerberus`)
 
@@ -45,7 +45,7 @@ cargo cerberus ledger re-sign-all                 # Batch resign valid suppressi
 cargo cerberus baseline reconcile                 # Automatically purge resolved violations from baseline
 ```
 
-### 💚 Frontend AST & Scoped CSS (`@worldwiki/cerberus-sfc`)
+### 💚 Frontend AST & Scoped CSS (`cerberus-sfc`)
 
 ```bash
 # 1. Vue SFC & CSS Verification

@@ -59,14 +59,22 @@ impl ScanWorkspaceUseCase {
 
         violations.retain_mut(|v| {
             if let Some(def) = self.rules_repo.get_rule(&v.rule_id) {
-                if def.severity == cerberus_domain::Severity::Off {
+                if def.severity == cerberus_domain::Severity::Off || v.rule_version != def.version {
                     return false;
                 }
                 v.severity = def.severity;
-                v.rule_version == def.version
-            } else {
-                true
             }
+
+            let rel_file = v.file.strip_prefix(root_dir).unwrap_or(&v.file);
+            let file_str = rel_file.to_string_lossy().replace('\\', "/");
+            v.fingerprint = cerberus_domain::compute_location_fingerprint(
+                &v.rule_id,
+                &v.rule_version,
+                &file_str,
+                &v.symbol,
+                &v.snippet,
+            );
+            true
         });
 
         ScanResult {

@@ -13,14 +13,6 @@ vi.mock('../../../../../stores/calendar.store', () => ({
 
 const mockProjectName = ref('proj1');
 
-vi.mock('../../../../../stores/shell', () => ({
-  useShellStore: () => ({
-    get projectName() { return mockProjectName.value; },
-    set projectName(v) { mockProjectName.value = v; }
-  }),
-}));
-
-
 vi.mock('@worldwiki/components', () => ({
   invoke: vi.fn().mockResolvedValue({ year: 100, month: 1, day: 5 }),
 }));
@@ -84,7 +76,7 @@ describe('useGlobalTimeViewer', () => {
   it('reloads calendars when projectName changes while visible and ignores when hidden', async () => {
     const TestComp = defineComponent({
       setup() {
-        return useGlobalTimeViewer();
+        return useGlobalTimeViewer(mockProjectName);
       },
       template: '<div></div>',
     });
@@ -116,7 +108,7 @@ describe('useGlobalTimeViewer', () => {
 
     const TestComp2 = defineComponent({
       setup() {
-        return useGlobalTimeViewer();
+        return useGlobalTimeViewer(mockProjectName);
       },
       template: '<div></div>',
     });
@@ -148,7 +140,7 @@ describe('useGlobalTimeViewer', () => {
       { id: 'cal_bare', name: 'Bare Cal' } as any,
     ]);
 
-    const viewer = useGlobalTimeViewer();
+    const viewer = useGlobalTimeViewer(mockProjectName);
     viewer.open();
     mockProjectName.value = 'proj_bare_reload';
     await new Promise(r => setTimeout(r, 20));

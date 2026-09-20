@@ -91,7 +91,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import UniversalDatePicker from '../../UniversalDatePicker/UniversalDatePicker.vue';
+import { UniversalDatePicker } from '@/shared/ui';
 import { useTimelinePanel, type TimelineEvent } from './useTimelinePanel';
 
 const props = withDefaults(defineProps<{

@@ -330,10 +330,7 @@
 
 <script setup lang="ts">
 import { XboxWheel, TagsField, SafeHtml } from '@worldwiki/components';
-import UniversalDatePicker from '../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
-import RelationshipBlock from '../../../features/schemas/SchemaEditor/RelationshipBlock.vue';
-import ManuscriptPointPicker from '../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.vue';
-import type { ManuscriptPoint } from '../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.model';
+import { UniversalDatePicker, RelationshipBlock, ManuscriptPointPicker, type ManuscriptPoint } from '@/shared/ui';
 import { useEntityEditor } from './useEntityEditor';
 import type { EntityEditorProps } from './EntityEditor.model';
 

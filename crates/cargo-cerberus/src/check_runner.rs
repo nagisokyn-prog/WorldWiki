@@ -44,7 +44,9 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
 
     let parsers: Vec<Arc<dyn AstParserPort>> = vec![
         Arc::new(RustSynParserAdapter::default()),
-        Arc::new(VueSfcParserAdapter),
+        Arc::new(VueSfcParserAdapter::with_config(
+            options.rules_repo.cerberus_config.clone(),
+        )),
     ];
 
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
@@ -95,31 +97,16 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
 
     if options.record_baseline {
         let mut entries: Vec<BaselineEntry> = Vec::new();
-        let mut seen_fps = std::collections::HashSet::new();
-
-        if let Ok(Some(existing_content)) = baseline_storage.read(&baseline_path) {
-            if let Ok(existing_entries) = serde_json::from_str::<Vec<BaselineEntry>>(&existing_content) {
-                for entry in existing_entries {
-                    let fp = entry.fingerprint.to_lowercase();
-                    if seen_fps.insert(fp.clone()) {
-                        entries.push(entry);
-                    }
-                }
-            }
-        }
 
         for v in &scan_result.violations {
-            let fp = v.fingerprint.to_lowercase();
-            if seen_fps.insert(fp.clone()) {
-                entries.push(BaselineEntry {
-                    rule: v.rule_id.clone(),
-                    file: v.file.to_string_lossy().replace('\\', "/"),
-                    line: v.line,
-                    symbol: v.symbol.clone(),
-                    message: v.message.clone(),
-                    fingerprint: fp,
-                });
-            }
+            entries.push(BaselineEntry {
+                rule: v.rule_id.clone(),
+                file: v.file.to_string_lossy().replace('\\', "/"),
+                line: v.line,
+                symbol: v.symbol.clone(),
+                message: v.message.clone(),
+                fingerprint: v.fingerprint.to_lowercase(),
+            });
         }
 
         entries.sort();

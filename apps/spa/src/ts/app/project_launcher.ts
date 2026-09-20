@@ -13,7 +13,7 @@ import '@worldwiki/resources/styles/glass-animations.css';
 import '@worldwiki/resources/styles/features/shell/ProjectLauncher.css';
 import '@worldwiki/resources/styles/components/Settings.css';
 
-import { createApp, ref, computed, onMounted, shallowRef } from 'vue';
+import { createApp, ref, computed, onMounted, onUnmounted, shallowRef } from 'vue';
 import { projectService, type ProjectStats } from '../services/project.service';
 
 import { settingsService, XboxWheel } from '@worldwiki/components';
@@ -319,20 +319,26 @@ const app = createApp({
     }
 
 
-    onMounted(async () => {
-      window.addEventListener('keydown', (e) => {
-        if (e.code === 'F11') {
-          e.preventDefault();
-          const tauri = window.__TAURI__;
-          if (tauri) {
-            tauri.core.invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
-          }
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.code === 'F11') {
+        e.preventDefault();
+        const tauri = window.__TAURI__;
+        if (tauri) {
+          tauri.core.invoke('toggle_fullscreen').catch((err: unknown) => console.error(err));
         }
-      }, true);
+      }
+    };
+
+    onMounted(async () => {
+      window.addEventListener('keydown', handleKeydown, true);
 
       await settingsService.loadSettings();
       settingsService.applySettings();
       loadProjects();
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener('keydown', handleKeydown, true);
     });
 
     const cloudSyncModalRef = ref<{ open: (mode: 'import' | 'export') => void } | null>(null);

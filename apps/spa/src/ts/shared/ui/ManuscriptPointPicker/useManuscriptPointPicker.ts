@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import { useChapterStore } from '../../../../stores/chapter.store';
+import { useChapterStore } from '@/stores/chapter.store';
 import type { ManuscriptPoint, ManuscriptPointPickerProps } from './ManuscriptPointPicker.model';
 
 export function useManuscriptPointPicker(

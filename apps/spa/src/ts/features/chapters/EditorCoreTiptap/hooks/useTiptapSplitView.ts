@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import type { Ref, ShallowRef } from 'vue';
 import type { Editor, JSONContent } from '@tiptap/vue-3';
 
@@ -19,6 +19,13 @@ export function useTiptapSplitView(
   const rightPanelWidth = ref(35);
   const resizing = ref<'left' | 'middle' | null>(null);
   const selectedBlockIdx = ref(-1);
+  let activeResizeCleanup: (() => void) | null = null;
+
+  onUnmounted(() => {
+    if (typeof activeResizeCleanup === 'function') {
+      activeResizeCleanup();
+    }
+  });
 
   // Load saved widths
   const savedLeftWidth = localStorage.getItem('split-view-left-width');
@@ -47,8 +54,14 @@ export function useTiptapSplitView(
       localStorage.setItem('split-view-left-width', leftPanelWidth.value.toString());
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      activeResizeCleanup = null;
     };
     
+    activeResizeCleanup = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };
@@ -74,8 +87,14 @@ export function useTiptapSplitView(
       localStorage.setItem('split-view-right-width', rightPanelWidth.value.toString());
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      activeResizeCleanup = null;
     };
     
+    activeResizeCleanup = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };

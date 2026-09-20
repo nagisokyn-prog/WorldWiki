@@ -45,7 +45,7 @@ impl CssRuleChecker {
                             "Vue SFC contains large inline <style> ({} lines). Raw CSS blocks in SFC are prohibited.",
                             active_lines.len()
                         ),
-                        remediation: "Extract styles into @worldwiki/resources/src/styles/ and link via <style scoped src=\"...\">.".into(),
+                        remediation: "Extract styles into styles package or external CSS file and link via <style scoped src=\"...\">.".into(),
                         fingerprint,
                     });
                 }
@@ -63,9 +63,9 @@ impl CssRuleChecker {
     pub fn validate_css_file(content: &str, file_path: &Path) -> Vec<Violation> {
         let mut violations = Vec::new();
 
-        // CSS-002: Check mirroring stylesheet taxonomy in @worldwiki/resources
+        // CSS-002: Check mirroring stylesheet taxonomy
         let path_str = file_path.to_string_lossy().replace('\\', "/");
-        if path_str.contains("packages/resources/src/styles") {
+        if path_str.contains("/styles/") || path_str.contains("src/styles") {
             let is_valid_taxonomy = path_str.contains("styles/tokens")
                 || path_str.contains("styles/components")
                 || path_str.contains("styles/features")

@@ -20,10 +20,10 @@ impl BuiltinRuleRegistry {
     pub fn all_rules() -> Vec<RuleDefinition> {
         vec![
             // 1. Rust & Hexagonal Backend Rules
-            r("ARCH-001", Category::Architecture, Severity::Deny, "Domain crate cannot import external frameworks", "worldwiki-domain must remain pure without dependencies on tauri, tokio, surrealdb, or reqwest.", "Move infrastructure dependencies to ports and adapter traits in infrastructure."),
-            r("ARCH-002", Category::Architecture, Severity::Deny, "Application layer cannot import Tauri", "worldwiki-application use cases must not depend on tauri::* types.", "Pass UI parameters as clean DTOs into use case methods."),
+            r("ARCH-001", Category::Architecture, Severity::Deny, "Domain crate cannot import external frameworks", "Domain layer must remain pure without dependencies on framework SDKs (tauri, tokio, surrealdb, reqwest).", "Move infrastructure dependencies to ports and adapter traits in infrastructure."),
+            r("ARCH-002", Category::Architecture, Severity::Deny, "Application layer cannot import Tauri", "Application use cases must not depend on UI/IPC framework types (tauri::*).", "Pass UI parameters as clean DTOs into use case methods."),
             r("ARCH-003", Category::Architecture, Severity::Deny, "Ports layer cannot depend on infrastructure SDKs", "Ports layer defines pure traits and interfaces only.", "Move concrete client SDKs to infrastructure adapters."),
-            r("ARCH-005", Category::Architecture, Severity::Deny, "Only adapters/tauri crate is authorized to import Tauri", "Tauri IPC commands and dependencies are strictly isolated to adapter layer.", "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri)."),
+            r("ARCH-005", Category::Architecture, Severity::Deny, "Only adapters/tauri crate is authorized to import Tauri", "UI/IPC framework commands and dependencies are strictly isolated to authorized adapter layer.", "Move UI/IPC commands and dependencies to authorized adapter layer (adapters/tauri)."),
             r("ARCH-020", Category::Architecture, Severity::Deny, "Layer Dependency Hierarchy Violation in Cargo.toml", "Crate dependencies in Cargo.toml must strictly comply with the allowed dependency matrix.", "Invert dependency direction: pure domain/ports layers cannot depend on outer layers."),
             r("ARCH-013", Category::Architecture, Severity::Warn, "Package entered Zone of Pain (High Coupling with Zero Abstraction)", "Package has high afferent coupling (Ca > 3) with low instability (I < 0.2) and low abstractness (A < 0.2).", "Introduce abstract traits and interfaces to reduce direct coupling to concrete types."),
             r("ARCH-021", Category::Architecture, Severity::Warn, "Missing Architectural Layer Metadata", "Every workspace crate should explicitly declare [package.metadata.cerberus] layer = \"...\" in Cargo.toml.", "Add [package.metadata.cerberus] layer = \"domain|ports|application|infrastructure|adapter\" to Cargo.toml."),
@@ -58,7 +58,7 @@ impl BuiltinRuleRegistry {
             // 4. Feature-Sliced Design (FSD) Rules
             r("FSD-001", Category::Architecture, Severity::Deny, "FSD Layer Boundary Violation", "Lower FSD layer cannot import from upper layers.", "Follow FSD hierarchy: app -> pages -> widgets -> features -> entities -> shared."),
             r("FSD-002", Category::Architecture, Severity::Deny, "FSD Public API bypass", "Cross-slice import must strictly go through slice index.ts Public API.", "Export module via index.ts and import from slice root."),
-            r("FSD-003", Category::Architecture, Severity::Deny, "UI-Kit package cannot import business stores", "@worldwiki/components UI kit must remain pure and cannot import business stores/Pinia.", "Pass callbacks and props into UI-Kit components from host application."),
+            r("FSD-003", Category::Architecture, Severity::Deny, "UI-Kit package cannot import business stores", "Pure UI kit packages cannot import business stores or application domain state.", "Pass callbacks and props into UI-Kit components from host application."),
             r("FSD-004", Category::Architecture, Severity::Deny, "FSD Cross-slice direct dependency", "Sibling slices at the same level cannot directly depend on each other.", "Compose slices at widgets or pages level."),
 
             // 5. Performance & Reactive Rules

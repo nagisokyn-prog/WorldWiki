@@ -13,4 +13,3 @@ export interface ManuscriptPointPickerProps {
   disabled?: boolean;
   project?: string;
 }
-

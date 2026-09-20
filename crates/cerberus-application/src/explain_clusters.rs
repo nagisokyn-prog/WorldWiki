@@ -113,7 +113,31 @@ fn build_cluster_summaries(mut cluster_map: HashMap<usize, Vec<Violation>>) -> V
         let mut rule_ids: Vec<String> = rule_counts.into_keys().collect();
         rule_ids.sort();
 
-        let sample_violations = items.iter().take(3).cloned().collect();
+        let mut sample_violations = Vec::new();
+        let mut sampled_rules = std::collections::HashSet::new();
+
+        // 1. Pick at least one representative sample for each distinct rule in the cluster
+        for v in &items {
+            if sampled_rules.insert(v.rule_id.clone()) {
+                sample_violations.push(v.clone());
+                if sample_violations.len() >= 5 {
+                    break;
+                }
+            }
+        }
+
+        // 2. If we have fewer than 3 samples, fill up to 3 with remaining violations
+        if sample_violations.len() < 3 {
+            for v in &items {
+                if !sample_violations.iter().any(|s| s.fingerprint == v.fingerprint && s.line == v.line && s.file == v.file) {
+                    sample_violations.push(v.clone());
+                    if sample_violations.len() >= 3 {
+                        break;
+                    }
+                }
+            }
+        }
+
         let primary_rule = rule_ids.first().cloned().unwrap_or_default();
         let label = format!("Cluster #{}: {} ({})", c_id, primary_rule, count);
         let explanation = format!(

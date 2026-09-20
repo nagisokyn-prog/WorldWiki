@@ -1,18 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { reactive } from 'vue';
 import { useCalendarMonths } from '../useCalendarMonths';
+import type { CalendarMonthsProps } from '../useCalendarMonths';
 
 describe('useCalendarMonths', () => {
-  let props: any;
+  let props: CalendarMonthsProps;
 
   beforeEach(() => {
-    props = {
+    props = reactive({
       modelValue: {
         месяцы: [
           { название: 'Январь', дней: 31 },
           { название: 'Февраль', дней: 28 },
         ],
       },
-    };
+    });
   });
 
   it('handles addMonth and removeMonth when modelValue has no months array', () => {

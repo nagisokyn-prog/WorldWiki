@@ -1,6 +1,5 @@
 import { ref, computed } from 'vue';
 import * as api from '@/services/api.client';
-import { useShellStore } from '@/stores/shell';
 
 export interface SchemaFieldDef {
     class?: string;
@@ -81,7 +80,7 @@ interface RawSchema {
 const loadedProjectSchemas = ref<RawSchema[]>([]);
 const isLoaded = ref(false);
 
-export function useModuleReferenceData() {
+export function useModuleReferenceData(projectName?: string) {
     const rawStaticSchemas = import.meta.glob<Record<string, { default?: RawSchema } | RawSchema>>(
         '../../../../../public/struct/editor/*.json',
         { eager: true }
@@ -99,12 +98,11 @@ export function useModuleReferenceData() {
         return list;
     };
 
-    const loadDbSchemas = async () => {
+    const loadDbSchemas = async (project?: string) => {
         try {
-            const shell = useShellStore();
-            const project = shell.projectName;
-            if (project) {
-                const dbSchemas = await api.getEntitySchemas(project);
+            const targetProject = project || projectName;
+            if (targetProject) {
+                const dbSchemas = await api.getEntitySchemas(targetProject);
                 if (Array.isArray(dbSchemas) && dbSchemas.length > 0) {
                     const list: RawSchema[] = [];
                     for (const s of dbSchemas) {

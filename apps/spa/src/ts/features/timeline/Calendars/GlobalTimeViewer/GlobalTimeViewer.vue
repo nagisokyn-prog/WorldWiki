@@ -37,13 +37,15 @@
 <script setup lang="ts">
 import { useGlobalTimeViewer } from './useGlobalTimeViewer';
 
+const props = defineProps<{ projectName?: string }>();
+
 const {
   isVisible,
   minute,
   localDates,
   loading,
   close
-} = useGlobalTimeViewer();
+} = useGlobalTimeViewer(() => props.projectName);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/GlobalTimeViewer.css"></style>

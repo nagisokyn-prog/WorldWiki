@@ -54,7 +54,7 @@ fn test_mega_scale_1_2m_sloc_enterprise_stress_benchmark() {
     let scanner = Arc::new(WalkDirScannerAdapter::new());
     let matrix = cerberus_domain::LayerTopologyMatrix::preset_matrix("final_boss");
     let rust_parser = RustSynParserAdapter::with_matrix(matrix);
-    let parsers: Vec<Arc<dyn AstParserPort>> = vec![Arc::new(rust_parser), Arc::new(VueSfcParserAdapter)];
+    let parsers: Vec<Arc<dyn AstParserPort>> = vec![Arc::new(rust_parser), Arc::new(VueSfcParserAdapter::default())];
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
     let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
     let rules_repo = Arc::new(RulesJsonRepository::default());

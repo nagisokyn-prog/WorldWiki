@@ -47,6 +47,43 @@
       "allowed_deps": ["domain", "application", "ports"]
     }
   },
+  "frontend_layers": {
+    "shared": {
+      "order": 1,
+      "allowed_deps": []
+    },
+    "entities": {
+      "order": 2,
+      "aliases": ["entity"],
+      "allowed_deps": ["shared"]
+    },
+    "features": {
+      "order": 3,
+      "aliases": ["feature"],
+      "allowed_deps": ["entities", "shared"]
+    },
+    "widgets": {
+      "order": 4,
+      "aliases": ["widget"],
+      "allowed_deps": ["features", "entities", "shared"]
+    },
+    "pages": {
+      "order": 5,
+      "aliases": ["page", "views", "view", "screens", "screen"],
+      "allowed_deps": ["widgets", "features", "entities", "shared"]
+    },
+    "app": {
+      "order": 6,
+      "aliases": ["application"],
+      "allowed_deps": ["shell", "pages", "widgets", "features", "entities", "shared"]
+    },
+    "shell": {
+      "order": 6,
+      "is_orchestrator": true,
+      "allow_cross_slice": true,
+      "allowed_deps": ["pages", "widgets", "features", "entities", "shared", "app"]
+    }
+  },
   "limits": {
     "max_sloc_warn": 300,
     "max_sloc_deny": 500,

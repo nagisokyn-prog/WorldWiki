@@ -71,4 +71,3 @@ const {
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/schemas/ManuscriptPointPicker.css"></style>
-

@@ -241,7 +241,7 @@
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
-import ManuscriptPointPicker from './ManuscriptPointPicker/ManuscriptPointPicker.vue';
+import { ManuscriptPointPicker } from '@/shared/ui';
 import { useSchemaContainer } from './useSchemaContainer';
 import type { SchemaContainerItem } from './useSchemaContainer';
 

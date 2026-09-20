@@ -61,19 +61,31 @@ export class PerformanceManager {
       (navigator as unknown as { getBattery: () => Promise<BatteryManagerType> })
         .getBattery()
         .then((battery: BatteryManagerType) => {
-          const updateBattery = () => {
+          this.batteryTarget = battery;
+          this.batteryListener = () => {
             this.batteryStatus.value = battery.charging ? 'settings.perf.optimizedAC' : 'settings.perf.batteryPower';
           };
-          updateBattery();
-          battery.addEventListener('chargingchange', updateBattery);
+          this.batteryListener();
+          battery.addEventListener('chargingchange', this.batteryListener);
         })
         .catch((e: unknown) => console.warn('Battery API error:', e));
     }
   }
 
   public stopTelemetry() {
-    if (this.rafId !== null) cancelAnimationFrame(this.rafId);
-    if (this.aggregationInterval !== null) clearInterval(this.aggregationInterval);
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+    if (this.aggregationInterval !== null) {
+      clearInterval(this.aggregationInterval);
+      this.aggregationInterval = null;
+    }
+    if (this.batteryTarget && this.batteryListener) {
+      this.batteryTarget.removeEventListener('chargingchange', this.batteryListener);
+      this.batteryTarget = null;
+      this.batteryListener = null;
+    }
   }
 
   private aggregateMetrics() {
@@ -324,3 +336,11 @@ export class PerformanceManager {
 }
 
 export const performanceManager = PerformanceManager.getInstance();
+
+export function usePerformanceTelemetry(): PerformanceManager {
+  const manager = PerformanceManager.getInstance();
+  onScopeDispose(() => {
+    // Retain singleton lifecycle
+  });
+  return manager;
+}

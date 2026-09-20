@@ -164,10 +164,10 @@
                     <label class="nested-field-label text-info">{{ nField.label || formatLabel(nField.class || '') }}</label>
                     <XboxWheel 
                       v-if="nField.type === 'select'" 
-                      :model-value="(nItem[nField.class] as string | number) || ''"
-                      :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
-                      placeholder="-- Не указано --"
-                      @update:model-value="(val: unknown) => updateForeignNestedField(nItem, nField.class, val)"
+                      :model-value="(nItem[nField.class] as string | number) || ''" 
+                      :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
+                      placeholder="-- Не указано --" 
+                      @update:model-value="(val: unknown) => updateForeignNestedField(nItem, nField.class, val)" 
                     />
                     <textarea v-else-if="nField.type === 'textarea'" :value="(nItem[nField.class] as string) || ''" class="input-base interactive-el w-full text-xs p-1" rows="2" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))"></textarea>
                     <input v-else-if="nField.type === 'number' || nField.type === 'range'" :value="(nItem[nField.class] as number) || 0" :type="nField.type" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputNumber(e))">
@@ -194,10 +194,10 @@
 </template>
 
 <script setup lang="ts">
-import { useRelationshipBlock } from '../../../services/Entity/useRelationshipBlock';
-import type { RelationshipBlockProps } from '../../../services/Entity/useRelationshipBlock';
+import { useRelationshipBlock } from './useRelationshipBlock';
+import type { RelationshipBlockProps } from './RelationshipBlock.model';
 import { XboxWheel } from '@worldwiki/components';
-import ManuscriptPointPicker from './ManuscriptPointPicker/ManuscriptPointPicker.vue';
+import ManuscriptPointPicker from '../ManuscriptPointPicker/ManuscriptPointPicker.vue';
 
 const props = withDefaults(defineProps<RelationshipBlockProps>(), {
     sandboxMode: false

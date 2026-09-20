@@ -4,8 +4,8 @@
     "file": "./apps/spa/src/ts/app/project_launcher.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (344) exceeds recommended limit (300)",
-    "fingerprint": "6ff8c321b17703aa369a31f1a5bc3551f81ff63c956c2013adb775114dc812ea"
+    "message": "Frontend file SLOC (348) exceeds recommended limit (300)",
+    "fingerprint": "00e72d5fdcc6f020382daf2731f2748a9b146c198b4edde2c39a81bd6d93d684"
   },
   {
     "rule": "ARCH-031",
@@ -13,7 +13,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (220) exceeds recommended limit (150)",
-    "fingerprint": "2ff294c036a53eb1d21e662b9f99f15b993713efa498f418225c4cefd42ce48e"
+    "fingerprint": "7f8ab8732dff0883f27ef1ca30dc9bd59dd44f7b50bdbbcab66a5fc4fe3e3c10"
   },
   {
     "rule": "ARCH-031",
@@ -21,7 +21,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (186) exceeds recommended limit (150)",
-    "fingerprint": "311a4fb6dc1327eddf77530031cd162a1bb4fc972a4eec5a6d462fe882e354ae"
+    "fingerprint": "7c3e004af641d062300e8c8e6cf4ff17f8904397db3af3c742a5a2df99015383"
   },
   {
     "rule": "ARCH-031",
@@ -29,7 +29,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (162) exceeds recommended limit (150)",
-    "fingerprint": "18da555439d0def73908f0ee7faa09bcb9758eab881abdcd14618d399ec3c4f7"
+    "fingerprint": "bccb5e5045192d431fd532b1da2a7f53ca65cb21b947b9eb60b23340414044a8"
   },
   {
     "rule": "ARCH-031",
@@ -37,7 +37,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (268) exceeds strict limit (250)",
-    "fingerprint": "76884d4a7a58899cd022d1bdaeca218793d2f4f7cbb021ce2c94a7d1dde365d7"
+    "fingerprint": "880e3fdc52f8c96f26403437076a0e105c881a85349c158756e834423cb7a217"
   },
   {
     "rule": "ARCH-031",
@@ -45,7 +45,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (852) exceeds strict limit (450)",
-    "fingerprint": "48fb3bec372b6f5d403bba842fe4d75fbb55dccb3c65f08b3bf01e7eab256b83"
+    "fingerprint": "67a3e857277002c1e04e9bce3b7a62e3a830c59bb35be4775ece65561aacdb2a"
   },
   {
     "rule": "ARCH-031",
@@ -53,7 +53,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (375) exceeds recommended limit (250)",
-    "fingerprint": "234e7863c90c046159fa0065d23f2a5acf475fcad5e4fc072eef1e9ec611f902"
+    "fingerprint": "9c18abee975ecbcae53fcf9be015bdb0e0ee0786098bed1cbf9d90105f6bf586"
   },
   {
     "rule": "ARCH-031",
@@ -61,7 +61,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (254) exceeds strict limit (250)",
-    "fingerprint": "3bab7c96c67a99a94dabebe601a312964fe259de95187f32ecc1ea8ea87fc0e9"
+    "fingerprint": "d49ec536502ccbf507cb24b1cdc79709c9669788282fc96aaa7900717b1e64df"
   },
   {
     "rule": "ARCH-031",
@@ -69,7 +69,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (229) exceeds recommended limit (150)",
-    "fingerprint": "f39e21aac02002141c76ded703979667c9d8510a4e7874ebcb77ec78ccfcf31c"
+    "fingerprint": "13a1c8e307437db77f115334da19d25beb8172b1efd0b29262ac95999990b2ad"
   },
   {
     "rule": "ARCH-031",
@@ -77,7 +77,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (337) exceeds recommended limit (250)",
-    "fingerprint": "0c854b0c7161c60238a75f8bcde2d3bc56999cb6bb7004f0e9c46a7db1247e4d"
+    "fingerprint": "0be61245f4d2921c35a4c0a7ec9d308ce20bf886ea0ae5ae91d8ae7e888654d1"
   },
   {
     "rule": "ARCH-031",
@@ -85,7 +85,15 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (358) exceeds recommended limit (250)",
-    "fingerprint": "49363bb15f8444adc602c291e421d5be3721275d4d8edc3be6dd0e220b23da47"
+    "fingerprint": "b83e7a878309b1c0f792e42c4610cb3e3cff236733ad62880c504ecb00ead3b1"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/PromisesPanel.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (268) exceeds strict limit (250)",
+    "fingerprint": "6aa6b07734d8f0df9f86ccc2ce4f2b465328929e1bb8542dabdf76f00aef5349"
   },
   {
     "rule": "ARCH-031",
@@ -93,7 +101,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (294) exceeds recommended limit (250)",
-    "fingerprint": "ab74714d23199b94c4ba5094611acaa5b9a4afb9263da024d3ec2084591e19a4"
+    "fingerprint": "a059b0e0a69564a1db9af1e3f559b198862e414149cc74f432f807a0864d7cb5"
   },
   {
     "rule": "ARCH-031",
@@ -101,15 +109,15 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (193) exceeds recommended limit (150)",
-    "fingerprint": "3f9c4129e3d8df61c12df002919f04a076c41a73bc5d1271214efc78da17c1fb"
+    "fingerprint": "95e1840f5b6184953fde15e7863695c75c1a8fab80969b6e2127ec4cc50257be"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (348) exceeds strict limit (250)",
-    "fingerprint": "7402c9d0f6097ac36af8e6fb8d50b01430bfcaa8d332106bdf17835c4de07042"
+    "message": "Frontend file SLOC (345) exceeds strict limit (250)",
+    "fingerprint": "52562cabf8b242a8c266aa85038e708da217de8afff2c752abd2b6c9db4a7384"
   },
   {
     "rule": "ARCH-031",
@@ -117,7 +125,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (433) exceeds recommended limit (250)",
-    "fingerprint": "de36dcdf99851888c3f97078c11a36624e6298de0e1d85327ef20d70db4b4ece"
+    "fingerprint": "1c18562bcbb0cf5d3be170ab934630ec4130e61f3ed9ca7fbcc6d507d62464e1"
   },
   {
     "rule": "ARCH-031",
@@ -125,15 +133,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (289) exceeds strict limit (250)",
-    "fingerprint": "357e6cad5af070cee2131781b3ca17f883e9b0906578d5c74aa50cdfcbd41a20"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/RelationshipBlock.vue",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (207) exceeds recommended limit (150)",
-    "fingerprint": "9d740d7b99f0d0d95d19f71018bdd9bb4987b3607fc9d0372564a1c84c0b7fe4"
+    "fingerprint": "7e469f696f4d8b591d5d7b9df436934a697abeba3e04cf5253cb7a6c6708b647"
   },
   {
     "rule": "ARCH-031",
@@ -141,23 +141,23 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (257) exceeds strict limit (250)",
-    "fingerprint": "f4f5f16ab7c8a0d3df1d1bcf29b2ff87c77acb6191e8e27daf0edc7942eeb2eb"
+    "fingerprint": "e45e1215fd4d4be96e1536107d3a535d9841380603e07521734558400a83b3b9"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (221) exceeds recommended limit (150)",
-    "fingerprint": "db54975ddd97166058d9d918c938f727c194c0ca6ec919c1f2f31bd7cfeb8f01"
+    "message": "Frontend file SLOC (220) exceeds recommended limit (150)",
+    "fingerprint": "90b5fc60f3093d2de10f5e18dbe321f89825f48cdf99d6d9b27fbcf60cde31a4"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/useModuleReferenceData.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (289) exceeds recommended limit (250)",
-    "fingerprint": "06a1c3891c31ce9dacbcbee33cf05365616ee7c51065bb3ff658d38662be5892"
+    "message": "Frontend file SLOC (287) exceeds recommended limit (250)",
+    "fingerprint": "325452dbb0229d74e918f8acf3de43155b350a38fd387b9e8977372738586292"
   },
   {
     "rule": "ARCH-031",
@@ -165,7 +165,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (264) exceeds strict limit (250)",
-    "fingerprint": "22eb65e0580a81c58017071488440692fb8f590567f4028662e60aab67a37a10"
+    "fingerprint": "0c9b9fbb473ace99fac5e2a6ed339a4d13ccaafb6e8aceb09cfbbba569bfb9ef"
   },
   {
     "rule": "ARCH-031",
@@ -173,15 +173,15 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (173) exceeds recommended limit (150)",
-    "fingerprint": "24287a6b5600894b96d99fc32545c81e38ca7986c4a18489ee945cc4d103fd45"
+    "fingerprint": "7e205b0e1c6e315dcfe6b8019e5a8c5d43e6080df3d4eae6ebb007028ed758c0"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/features/shell/useProjectLauncher.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (323) exceeds recommended limit (250)",
-    "fingerprint": "842bb4ab566ed216fde16f02cfad33684e998c03f21e541d2f29a61ce7b72a81"
+    "message": "Frontend file SLOC (327) exceeds recommended limit (250)",
+    "fingerprint": "d079f626f865674cb3bfc83d856e135186013269d705730cff472b69b524ab57"
   },
   {
     "rule": "ARCH-031",
@@ -189,7 +189,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (161) exceeds recommended limit (150)",
-    "fingerprint": "ed94ee29c4c3376fc3afeeaf81cc7c8d889ccd33dbfc915a466582390361ec70"
+    "fingerprint": "cad6249771ceacc7e5c71abe1aee8d41f51a66527d32a3ec89f1860920fcc970"
   },
   {
     "rule": "ARCH-031",
@@ -197,7 +197,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (185) exceeds recommended limit (150)",
-    "fingerprint": "3e2af9a4aa344c37319e56ae921387a25c509e5cc79523dce2890e02d84cc011"
+    "fingerprint": "262177bc5d408b571a539a4d80fe308cd272be3b9cffca5f21ba1e5fdfc32bdd"
   },
   {
     "rule": "ARCH-031",
@@ -205,7 +205,15 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (152) exceeds recommended limit (150)",
-    "fingerprint": "b2a605ec4598d2e18621bae614653ddbd405a2a5b94024db191becbdbe12c0c4"
+    "fingerprint": "7d0ec7cce0c2633c9bf323e5abf8dcf68e02c1f61c77bb2914d4775691f262cc"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/TimeAtlasBridgeTab.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (207) exceeds recommended limit (150)",
+    "fingerprint": "7e40872bba71e00a7957fcf59abcb5e6875a65e9c9e2bcf286af26cbe48e8bb8"
   },
   {
     "rule": "ARCH-031",
@@ -213,7 +221,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (370) exceeds recommended limit (250)",
-    "fingerprint": "9b3f5b21dad9cb2696add29fbc02fcc43b2d522a0de4204089c52e8a4c43196b"
+    "fingerprint": "f50e1172e708246d3cbecefaa42280670d75d591c9c45327f71db2b226bbb2e6"
   },
   {
     "rule": "ARCH-031",
@@ -221,15 +229,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (485) exceeds strict limit (450)",
-    "fingerprint": "845ef04459ff28f515eddb69db06b54212dbc345a7acef9e6b297103215df5ce"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./apps/spa/src/ts/features/timeline/UniversalDatePicker/useUniversalDatePicker.ts",
-    "line": 1,
-    "symbol": "component",
-    "message": "Frontend file SLOC (277) exceeds recommended limit (250)",
-    "fingerprint": "fd5f16a4a400b4a54b2798e4bbbc41076be2ecdd436f5f516e9634e881cebc4f"
+    "fingerprint": "4b57ebf1625d48d8938ed8d6641fade4a06a3c44cb2b1163a6fd95a9d2c8fd81"
   },
   {
     "rule": "ARCH-031",
@@ -237,7 +237,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (720) exceeds strict limit (500)",
-    "fingerprint": "952ca6d727940883673a32171814c18deceb35b4ae8b9ad6eac5c0b4fadc3f10"
+    "fingerprint": "6a42c1c1f6de2b46aea296e4a753015f4a015f5f7cf1316bf89001792a0c269e"
   },
   {
     "rule": "ARCH-031",
@@ -245,7 +245,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (406) exceeds recommended limit (300)",
-    "fingerprint": "3258fcee4c86a0733132c91253c5d50252c6671c2a9b71c70dae6c2f17e26339"
+    "fingerprint": "83a5877b1be73ca717f2bc8f91ca62d026348f9f900ff32483df2305c6396a8f"
   },
   {
     "rule": "ARCH-031",
@@ -253,7 +253,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (417) exceeds recommended limit (250)",
-    "fingerprint": "9a395843ce9bded2f58de4545db30a1096ac4940ea33cc3744de4aaf2430f043"
+    "fingerprint": "d7a16b69854abf56d19fd4cbea6cc8c11d6f7fdd9945522fcfd3d7f6813f9d23"
   },
   {
     "rule": "ARCH-031",
@@ -261,7 +261,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (588) exceeds strict limit (500)",
-    "fingerprint": "7d8b86bbd5391014911b2e70a92b6f13f23dacf944eebee7d221bcf97ecf57f6"
+    "fingerprint": "43f7e553f018450b3515f5fa1f4d1d2501d684d3e7b72389bcf5ca985c2f7163"
   },
   {
     "rule": "ARCH-031",
@@ -269,7 +269,23 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (505) exceeds strict limit (500)",
-    "fingerprint": "dd28d0fd64b376ade16b0ad46fb4be457a33505c0a2d7c572084e449a1e6b585"
+    "fingerprint": "011b7e0e879df414983ae388c817cb0cb5dfcab5a8646d2664ecb552299d1e7a"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (207) exceeds recommended limit (150)",
+    "fingerprint": "96f3aa0c0ebdf277b8b49fe3ac9b03ea6e65a3c8097f130fe0d31701afb3c7a8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/shared/ui/UniversalDatePicker/useUniversalDatePicker.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (277) exceeds recommended limit (250)",
+    "fingerprint": "83856e7ae3c75356f0ac3fe21453e8936060953929d4ecfa7fbf0cb04c636e1c"
   },
   {
     "rule": "ARCH-031",
@@ -277,7 +293,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (371) exceeds recommended limit (300)",
-    "fingerprint": "f84682651fbbf4091452a2d9efbfb095d43af05674322bfdd55d84ab4a6289d6"
+    "fingerprint": "d25d645cb8bf79695806e6a2667a39e63a1e69e0128af8ace873f73ea54ea6b4"
   },
   {
     "rule": "ARCH-031",
@@ -285,23 +301,23 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (427) exceeds recommended limit (300)",
-    "fingerprint": "daa20db3976d4d9a64158a6d8af9ff3810fcf6a9e73577e3318f3dcaccca6933"
+    "fingerprint": "10767e2663b0666a4634a4094c71cb845c4a85542c04dcb5a71045921f75a7cb"
   },
   {
     "rule": "ARCH-031",
     "file": "./apps/spa/src/ts/utils/ui-helpers.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (416) exceeds recommended limit (300)",
-    "fingerprint": "407cbfeed8462d9e3267d0d5dbbce73ef82c47da5a19b8aeea490f656a606951"
+    "message": "Frontend file SLOC (443) exceeds recommended limit (300)",
+    "fingerprint": "8b647b02d66e3658b963090d192300893776f775e5669b6da9754295f61b17d2"
   },
   {
     "rule": "ARCH-031",
     "file": "./packages/components/src/ts/composables/useShellApp.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (394) exceeds recommended limit (250)",
-    "fingerprint": "34d4dceb3f8b7eb5362314d726264b239a929f1bd7cb7271be7d36b49c835499"
+    "message": "Frontend file SLOC (398) exceeds recommended limit (250)",
+    "fingerprint": "f3e82226ef717636029a3bec99b72f0cc1f3ab2773fba0b0c5d4efe3f371473e"
   },
   {
     "rule": "ARCH-031",
@@ -309,15 +325,15 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (395) exceeds recommended limit (300)",
-    "fingerprint": "04e60beeeb5effbade89831d1b01c95de024edf6532a6432f246acf414dc5f24"
+    "fingerprint": "48fd7d4279d02fa460c9df4df1bbd869b00ecbe12ae3b30423f0f579f5f22215"
   },
   {
     "rule": "ARCH-031",
     "file": "./packages/components/src/ts/services/settings.service.ts",
     "line": 1,
     "symbol": "component",
-    "message": "Frontend file SLOC (428) exceeds recommended limit (300)",
-    "fingerprint": "05e3fc440bb6bc768406aab92fc959bbfa04bae2cbaa139bbe242b58f80e3159"
+    "message": "Frontend file SLOC (455) exceeds recommended limit (300)",
+    "fingerprint": "ae777c3e0b234a169df7105edcd5e2d74b5017bc2d9625533c3b46ae20d7624a"
   },
   {
     "rule": "ARCH-031",
@@ -325,7 +341,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (622) exceeds strict limit (500)",
-    "fingerprint": "0392695c50dcab7d255a08e330a100cc619476b53c4ded3c2c173ad2e5e47b0e"
+    "fingerprint": "40f5b4f09c8f58e868443c444f9d37bdf2ddc64fa75aab9a2e1d7a55bed3e7a8"
   },
   {
     "rule": "ARCH-031",
@@ -333,7 +349,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (155) exceeds recommended limit (150)",
-    "fingerprint": "9ebe1c699d70c7e71b0eb8d9e76a7bac52354ad688319f8c4e60f4fb538e709b"
+    "fingerprint": "c60fbc6dddc00cce412ef91f2faa6c5a809384ab1816516e84ac08caf2fff5be"
   },
   {
     "rule": "ARCH-031",
@@ -341,7 +357,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (696) exceeds strict limit (250)",
-    "fingerprint": "7e20586b3b081eb742aa8f86e941808c007fbf2b140ec36436e26c07728db800"
+    "fingerprint": "caac360443632ec205d7931170e2d7677d56fca89b520dd372cf222063e0b735"
   },
   {
     "rule": "ARCH-031",
@@ -349,7 +365,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (264) exceeds recommended limit (250)",
-    "fingerprint": "7f829264a1f3b8b82ddc3f7c85852224bf095e2446975c10e9ff2bc5eda11765"
+    "fingerprint": "cc68f8cecc109994a3249a9ce58d5bd1243b93790718069665f0b9744c0bf4e1"
   },
   {
     "rule": "ARCH-031",
@@ -357,7 +373,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (369) exceeds recommended limit (300)",
-    "fingerprint": "2aa8dd6b93e28ae32c36e26d7713f4b9696bbbb439e340578afcd792fc1d1dbd"
+    "fingerprint": "030dd1511385fb4a290f247230d2705f62506c89c1aaece9f662fd0311eaa345"
   },
   {
     "rule": "ARCH-031",
@@ -365,7 +381,7 @@
     "line": 1,
     "symbol": "component",
     "message": "Frontend file SLOC (400) exceeds recommended limit (250)",
-    "fingerprint": "6c3685e24f7b3815a91c69b93ba5d1e473505c56efa2b26a5d8cb03466bac0c4"
+    "fingerprint": "3d0c222244e2ef09891cb0d12345d6f75d7bbb6225e5b45aee2fb1a11f48b2b1"
   },
   {
     "rule": "CSS-002",
@@ -373,7 +389,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "8c4812bf77dd0a1457f6ee25cc948f455154565b17c6e5ccd43804de8664c9f9"
+    "fingerprint": "acc6df7ae52ea866a482849796272819f181b8750824e6b412c16a6bf5235401"
   },
   {
     "rule": "CSS-002",
@@ -381,7 +397,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "9a36aee3b871a2df693832096076f9d5caf9abb12d31d89879510d4ae8dbf9a6"
+    "fingerprint": "f9d6e6791a2b010f833ff0d831bfa272e8cedf340e7eab5cdf551468041a460e"
   },
   {
     "rule": "CSS-002",
@@ -389,7 +405,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "9fcc69046801c1e99d4c1280ce480ff27fff74f61556c6f6473156f1dffdc885"
+    "fingerprint": "10c6861a867346b0d8c61773fb2ad920c4f02e16471f2fce647d126f2532ac65"
   },
   {
     "rule": "CSS-002",
@@ -397,7 +413,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "c38acf0df245618529b56115303c1784759e307f441d25695c28cba81159cd63"
+    "fingerprint": "f9c559ae45598516c40ccd96287b7500b24e8c20acbfd48855e983dc15709db8"
   },
   {
     "rule": "CSS-002",
@@ -405,7 +421,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "c9282a2e80c2dcf3c6b363958073236ada5333b69761b89c8c8d257e85a94ef3"
+    "fingerprint": "71012f2766f2a88d8b6730a74b157344cf17ffc63c02acd5890c4bccbd22b8c7"
   },
   {
     "rule": "CSS-002",
@@ -413,7 +429,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "1a046aad7a7567a9ae3e1f2dc4c5ef40c970b9131f6ae92418ff2da14a752cf5"
+    "fingerprint": "9adb44e3835d346da556010ec6b5d2489b11bf85549f373c99af97c798f03b28"
   },
   {
     "rule": "CSS-002",
@@ -421,7 +437,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "90d51564fa70e2a097a2ddb7d9e9e6f78d749bca9d5977e9e51a0a30dddedfbf"
+    "fingerprint": "b576d1169cf712f462c58cbada6aacc99d746964980228411360864138d6cd58"
   },
   {
     "rule": "CSS-002",
@@ -429,7 +445,7 @@
     "line": 1,
     "symbol": "stylesheet_taxonomy",
     "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-    "fingerprint": "35519e3cb885a97f539503ca6b81f6776e1084e8c5b62a44cf0f384822077299"
+    "fingerprint": "c95d80adcdebb92b6f504329d290ecfee94fb0e900c3482d16cdc1a5476a27d1"
   },
   {
     "rule": "CSS-004",
@@ -437,7 +453,7 @@
     "line": 422,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "3d3044040d023a84f627589b973c9d4f0b6fcc018bd04eb337c30d32d3fa567a"
+    "fingerprint": "c9e06d97499fd89d60ef7b0fd90bee3052a895689d411a831e11c328be50dd7b"
   },
   {
     "rule": "CSS-004",
@@ -445,7 +461,15 @@
     "line": 485,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "26c74885dfde7d5c359c2bf2159bd55f3f007eeca555fda86df259d2ebe93e8b"
+    "fingerprint": "97077deaf1f117d5349a1014b35dc53861f171442077268466aa3d76df803006"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 513,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "c9e06d97499fd89d60ef7b0fd90bee3052a895689d411a831e11c328be50dd7b"
   },
   {
     "rule": "CSS-004",
@@ -453,7 +477,7 @@
     "line": 559,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c33250ccbfc99e9c44c8346aada1a09f2f591d7c8754fabd00f16002aa357f25"
+    "fingerprint": "fb9d99a27305011499bba97285435ac6ad74632aaabbdf42868ee3fd34dae41d"
   },
   {
     "rule": "CSS-004",
@@ -461,7 +485,7 @@
     "line": 564,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "ecfc2fb6aa4b5d1a22c7047223bb8836ba58e43b53f2c21e3ea9a9a4d25ed961"
+    "fingerprint": "cfbc4bf012331689997914f7f55a31678156ea3dfd9b709f642d014b5f779753"
   },
   {
     "rule": "CSS-004",
@@ -469,7 +493,7 @@
     "line": 49,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "367bfc6d973fa072846aae6dc7145936189a9f386f01f0f4485674cf6584f637"
+    "fingerprint": "3b60f7deb42ce2bca268581debeb1dc77f5a4c6d21d89f28be92b1a925ddbd52"
   },
   {
     "rule": "CSS-004",
@@ -477,7 +501,15 @@
     "line": 105,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2ced56e151efcd718b0b505ae8f34cdf6001d8075b4d8373946cc1fb678c5932"
+    "fingerprint": "a49a280925214624c1421d753175cd69e328c242340d6701f782295d9c2a34a1"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 115,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "59ceab5f6015af9c50484c22f57e504414a48d42edb743a5a9a80d4f0750d723"
   },
   {
     "rule": "CSS-004",
@@ -485,7 +517,7 @@
     "line": 299,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "b064df053832a98fb8e296001a59f93589d26d0c93ad4bba9fb5d36c9e261f50"
+    "fingerprint": "969be45997d5d6660849d6fab2bd527cf8502bb77ee0062111a32b71b133a87e"
   },
   {
     "rule": "CSS-004",
@@ -493,7 +525,7 @@
     "line": 301,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "0844a7303e79226db8648fa351d7f095f2c4f95048db18c33beb9866573e9457"
+    "fingerprint": "85600ca27bbe4143e47ce1c363e4bdadc33bb70143a642ae1bfd2de23e6ad718"
   },
   {
     "rule": "CSS-004",
@@ -501,7 +533,7 @@
     "line": 305,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f7f241619caf41259da2b13be590408c81b5f23d088155a2d347c444edda3a03"
+    "fingerprint": "437244400b409db6fca2ca1e783c3c19572f9ac7ae77b8a8a65950787422d1f0"
   },
   {
     "rule": "CSS-004",
@@ -509,7 +541,15 @@
     "line": 307,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "374e63ef8be450b305f58384ac11c16ee3abf5f34daa8a20e9b5d88dcbdb4e8d"
+    "fingerprint": "19e5c502af6e3399261193c98104d3349ccfd2825810f010cb1e1da4bc0a0efe"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 311,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "59ceab5f6015af9c50484c22f57e504414a48d42edb743a5a9a80d4f0750d723"
   },
   {
     "rule": "CSS-004",
@@ -517,7 +557,7 @@
     "line": 313,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a6bfead752ff856e1aa732297c82b5104d97bfd79a9ba4cbea8d5e68aff3713f"
+    "fingerprint": "fc52f07c1d2a63434258fb8e031c5e9857b0e60443425a0e641501e2c316a304"
   },
   {
     "rule": "CSS-004",
@@ -525,7 +565,7 @@
     "line": 382,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f8537dd85e72f8a2f8dda401b46a46ca563baa8a249b97de239d00c2b99c82bf"
+    "fingerprint": "58cd000d9161a8c4aca3dd40791c98bb50cc09b676239c5c7e7a3c5ce18db69f"
   },
   {
     "rule": "CSS-004",
@@ -533,7 +573,7 @@
     "line": 24,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "7288ba47ff98a417689845c112a67c5ff0dc704e0091a431faca0ae38e85109d"
+    "fingerprint": "7ee20233a54bda2669bfabf7e059a7bf4b3294b283b4feb9b19e52097c61ef03"
   },
   {
     "rule": "CSS-004",
@@ -541,7 +581,7 @@
     "line": 31,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "323f4c079a37be18a5c34a7130cd5b136233541bff34696d24a3ebb4ae14696a"
+    "fingerprint": "b887be99bd1351161a4758cecd4d3b358413c51cc9dd404e7a07e0a9240a66e8"
   },
   {
     "rule": "CSS-004",
@@ -549,7 +589,7 @@
     "line": 36,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "5519bc1d9947025ab905b91b6ae60ece6fcda8340a3cfbbad67c9c1a5607fc60"
+    "fingerprint": "cd63d0cb929754d0de1745e00cf71bc8f0bc81fad597fccdc5464df0deec0d3e"
   },
   {
     "rule": "CSS-004",
@@ -557,7 +597,7 @@
     "line": 83,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c7fa4ba017ab895540681d049c041c6244c93b66d3a0f728bb6c3452a98c9d2d"
+    "fingerprint": "31c87a8c452a9cef6afd6ed569e4e9c51641bdf31de4c126d500100fe58d200d"
   },
   {
     "rule": "CSS-004",
@@ -565,7 +605,7 @@
     "line": 92,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "4108ba9b6de7084d543badf2350bda0be2ed86ff19819e42f0f24daae46e21e7"
+    "fingerprint": "e3947aa962ce1c458c509e5098b687c5aca1ad2fa8087c67b6f85843ba9095f4"
   },
   {
     "rule": "CSS-004",
@@ -573,7 +613,7 @@
     "line": 100,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "6c8009febfefb25bbd004339c30cd577e525da0c38ecbfdce8f353582f7ad8f3"
+    "fingerprint": "c860a5a7b97d2bf753bb8f5abe99f01863b1eac1b2586b26206200d8039d19bb"
   },
   {
     "rule": "CSS-004",
@@ -581,7 +621,7 @@
     "line": 8,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "dde22b0e9200aefe5851c53cb447a1c202c2a0ab20dbfd1c62956f5f4a7a8efa"
+    "fingerprint": "2bd6c93b8044b80068dc1da8ce77e656f98dabc50ea787f2e470f436b29c4468"
   },
   {
     "rule": "CSS-004",
@@ -589,7 +629,15 @@
     "line": 21,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d02e86f5bce6a5d3398f281675b2121230fdac95f2a8924297345b41924c623d"
+    "fingerprint": "4d32bbbb9396daf4f45d7817668ea4110babb74e4206c1d8f6e44e25df926b1f"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/components/GlassComponents.css",
+    "line": 60,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "2bd6c93b8044b80068dc1da8ce77e656f98dabc50ea787f2e470f436b29c4468"
   },
   {
     "rule": "CSS-004",
@@ -597,7 +645,7 @@
     "line": 130,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "b36fecda6aab093ee168325e40b9d7a0cd664b5038fc3e18601401128f53519f"
+    "fingerprint": "20944ce7ec111670d5c86e2adc4b3a3d59d71d57eb28b5ec74a8b028fa904388"
   },
   {
     "rule": "CSS-004",
@@ -605,7 +653,7 @@
     "line": 32,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "6113aabab734d9ded0f86942df3a123d5e5c032a464eecc34a7d96addc08e401"
+    "fingerprint": "f8a7f2b7db0b5bd193fe8b4bb8f75edf46636faeeb01fc80c204b602b9088691"
   },
   {
     "rule": "CSS-004",
@@ -613,7 +661,7 @@
     "line": 42,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "a4439cbff1a22d0befe79720973e9d0d8d8b71e7fd0da4f3827a4a2f9cfd5905"
+    "fingerprint": "eac791a51198e2fe297710919e3b1f73df41677ed2e968a5ad68cb9de60d2dec"
   },
   {
     "rule": "CSS-004",
@@ -621,7 +669,7 @@
     "line": 46,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "da389127e08dba93e0dc8edc56b5690d7e6cc6be61eb8b4b51028f97c7ef3eb6"
+    "fingerprint": "4978bfdaa7a3449eacbc6a72e60cdee2d91b45082fc6f56b7a9db6fc175590a0"
   },
   {
     "rule": "CSS-004",
@@ -629,7 +677,7 @@
     "line": 119,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "3ef28a73f872fee0b4b10b174af88fb7ac15e6eeef1b12d19b2292f9dd1104aa"
+    "fingerprint": "d9da496fe86c02b20bb1ee6824c6c8e1adbe1388fac8bf4f85325bef4b93211a"
   },
   {
     "rule": "CSS-004",
@@ -637,7 +685,7 @@
     "line": 74,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "787e8010a1f75fa13dc2ebb4b17f400ed3394fb2eaa9f689aff63a9ef09134a2"
+    "fingerprint": "4d1b8cabc2fac9c4e843168d996fb7ea99c150f995d16f83b4f497b7b9d218f7"
   },
   {
     "rule": "CSS-004",
@@ -645,7 +693,7 @@
     "line": 79,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "57c292ea234884ce0045bdc28f69a6712e4996d5103a52382553fe0926d8a65e"
+    "fingerprint": "3e8a1a41805260de85cf948922792fd73c911e845ee4a4fa54d68fd9e0d6b9f0"
   },
   {
     "rule": "CSS-004",
@@ -653,7 +701,7 @@
     "line": 76,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "a58473f301f0f6bed562bb32a9163b708651fccdeda6be16388eccbe25aa51ce"
+    "fingerprint": "21ac6a82141f1a8296a63bd2e8d2def11d5f088218db29b21f7721de36ae0f7c"
   },
   {
     "rule": "CSS-004",
@@ -661,7 +709,7 @@
     "line": 30,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "cde019e0260c6ead4dc409b23152f9a5e303178b6bbba98ecb74da7fb8db29c8"
+    "fingerprint": "c19e19721adcece3ae7073fd0b48a9113ade988725442cb4dfe8208b43214274"
   },
   {
     "rule": "CSS-004",
@@ -669,7 +717,7 @@
     "line": 34,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "9d1b5607b198498e5200b5bb531319b572df323a78f432e1d282e6b9f6181da4"
+    "fingerprint": "167522f4764e96a4dbbe2d46297e19949849c91f00db869817e133797077cfdf"
   },
   {
     "rule": "CSS-004",
@@ -677,7 +725,15 @@
     "line": 44,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1af7cad693817f53eb910ea9ddd8d5ac81ce1c6c7212a5bea645e8eb52277530"
+    "fingerprint": "88052b72d4321ed7d7ab63f5062352292b16d93a972aaf075d72d1315bcfbe9e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiApp.css",
+    "line": 82,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "5326f1232bfa6a64c745452c40a1cf16ece1ba2f2b83ed2fe70492f9d9d1ca52"
   },
   {
     "rule": "CSS-004",
@@ -685,7 +741,7 @@
     "line": 91,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "092c99f3d14f4e89158e9e723508c1d577a3e842bd4d686fcdd969cdd8f6a146"
+    "fingerprint": "f19b3acfb675e52c3d96f51700bbaa6407f001f7697c73f08b57633719bc80cf"
   },
   {
     "rule": "CSS-004",
@@ -693,7 +749,23 @@
     "line": 92,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "616e8a5dcf70e3139e7d52f2cf8f784449458230612a9fb758fc8e4671b51f27"
+    "fingerprint": "f7626f85519711940e88dd3793b98b9024d3e1e5a50e835604fee28f00dc3900"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiChatHistory.css",
+    "line": 65,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "c1ee01b1f0265b2a446814d72e96732386e09aecd0f9d603403ceabbe9c03ba5"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiChatInput.css",
+    "line": 4,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "da7fcd0c800f4f70c7e6e2499060ea9ef7a2e49f43011f4957c5debe8d457c8c"
   },
   {
     "rule": "CSS-004",
@@ -701,7 +773,15 @@
     "line": 14,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "e7999414b764b4b57026fe39ecfb758c72b1c2175e62f8005fa425f59fb816e0"
+    "fingerprint": "cf100fc7ceb9455118303d4a9d9dfcc5128946966f6fae1da444f692c4a5dc7d"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
+    "line": 59,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "566d1dbc2b13697865ae3c7bfad49350727e9675a9852cf6ce6cd11bef285fd0"
   },
   {
     "rule": "CSS-004",
@@ -709,7 +789,7 @@
     "line": 73,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "7a9e976304fde450822a1a67cf0f2fa0bb23643bf475ecf5c8cfb641dc700416"
+    "fingerprint": "23363f5334f9298b8e47c5a91f233e8a487e2080e905e5a5425f3ce131a8b292"
   },
   {
     "rule": "CSS-004",
@@ -717,7 +797,7 @@
     "line": 99,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "5210cf77e26140b382ec600d49993b5db9fdad85e7adf7bacbefbd93141b966f"
+    "fingerprint": "f2082ef3544e3b3526393791fc57e4348e43962c47b0fd5dfbcfb3708afb07f5"
   },
   {
     "rule": "CSS-004",
@@ -725,7 +805,39 @@
     "line": 74,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "db3b2882a5bcff47a82276def81ecb9233c9e4bf8ed818c62f51933283062c5e"
+    "fingerprint": "cd83a9789047549bacc65db2d0820e67f2a0f2e82c27988a5f6091f1a28fc6d5"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiContextSelector.css",
+    "line": 122,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "ec6e060e6c3f13e22863ac14ddcdb480e60d7306bc44d60800c4eb4cea0381cf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+    "line": 31,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "c59c58292db6f01f8620c03ec248a6d24e6325e2d1c2fa5afd2bfb8625758f6c"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+    "line": 41,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "2caeab6bdfd8728191c1d82feeb64a4e5dd6a0fb03762bf141408e2b185ca3ce"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+    "line": 67,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "2caeab6bdfd8728191c1d82feeb64a4e5dd6a0fb03762bf141408e2b185ca3ce"
   },
   {
     "rule": "CSS-004",
@@ -733,7 +845,39 @@
     "line": 81,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d5edff975ecfb36310b49f5a625944213778707bb677d4973f10ce6ad14d3c08"
+    "fingerprint": "3375e7b7f166433f1901023d0166df37b61fefdedadaa37240251a9b7a80d412"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
+    "line": 191,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "cb0478feafbbd9e1dbdb0bc8e61a1e76251a991bdb06f38d98d735689cda26b7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 167,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "1041fffe6f1163616336c0247d1f50e310dd72030313a3396eb02f967ac5bbd7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 199,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "1041fffe6f1163616336c0247d1f50e310dd72030313a3396eb02f967ac5bbd7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 201,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "393084164010e84410d7c313366d1e07af2b735dce589b8348b27f36db71b769"
   },
   {
     "rule": "CSS-004",
@@ -741,7 +885,7 @@
     "line": 259,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "fb4cc944ca5dab2813dc384cb0294044d77f572f1a58fba194f83e91a5b263eb"
+    "fingerprint": "10e19a91d1f7f9530fb9018061c1fcc827ce34fc9e8538bbc17b4f45d13ce1c6"
   },
   {
     "rule": "CSS-004",
@@ -749,7 +893,63 @@
     "line": 261,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2892a611e3c7d443b91f311857313eefe4f918efd0dfa279ffdba70a3b1247ce"
+    "fingerprint": "c612dbcc91ceec3b10ace7f7629fc0f47785b420bfe02da86d3200be90df2fef"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 277,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "1041fffe6f1163616336c0247d1f50e310dd72030313a3396eb02f967ac5bbd7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 281,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "09cd9752e0c14c0e4b827066086be845a0ea5d182bc0d64e3d84280c36a5d6cf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 285,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "10e19a91d1f7f9530fb9018061c1fcc827ce34fc9e8538bbc17b4f45d13ce1c6"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 293,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3c71b7d82f66f8503f171ac82b174828dcd02642668c024e28616c12821e4a65"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+    "line": 130,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "9460c71cac244a88993a2a4f162b2c861647181f95a2a000ed05ebea3704f482"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+    "line": 134,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "09123433e58d7bb202887a0d9d7e75986ce0668518fbafb26e6c923d5b156ffb"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+    "line": 138,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "41270f43fada10a2d73927466990bfefaa2433c54df1d7fa204ce9db0992ec0e"
   },
   {
     "rule": "CSS-004",
@@ -757,7 +957,23 @@
     "line": 142,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "226681d964778524660295bda1e9ad3972c0d04222efa91486d6e422c2c39300"
+    "fingerprint": "32f56e4bab5c0ad24f6d0fc53ab7a85cebc354744799bb2238c1ffed5ee0f244"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsView.css",
+    "line": 104,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "ecb4351fc2af13d599e7cf22a66f093aead9271722b158739cff9c2a4dfb069e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 4,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "79ec8372c38bcae124ba3b5347e4e86ae2532637d42d460c448b44c4893f2705"
   },
   {
     "rule": "CSS-004",
@@ -765,7 +981,15 @@
     "line": 7,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "5d04d4ffac39eac69002a05ef027c423e4cca73588e5160234f72345a285019f"
+    "fingerprint": "b7e32c843090127bcaa1bbad1f50e179e62eef5e92257412f3578d9ed0533f36"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 11,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "4dccc4006a37f811f0dfb2ef2b9473ad241915fac02c9178de962a88191288e1"
   },
   {
     "rule": "CSS-004",
@@ -773,7 +997,63 @@
     "line": 16,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2fe11a2b4a49ea512a2fb781940c17dd63dd00b7a9315537d895a55d100ee7d7"
+    "fingerprint": "de1cee75b7f562ebe91e8f5b80a460f6cc731386b1e53a5dd933f08eb6c80b13"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 36,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "8632ccdc8eef977bca5a1a64368b85a0a2912b7d0901452a41f13f8f7f7c5661"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 51,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 87,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 104,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 122,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "56f690a6f487d4a898018e0bfcd484d321c082e4ed124050b5155267308cdb67"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 136,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 146,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "4dccc4006a37f811f0dfb2ef2b9473ad241915fac02c9178de962a88191288e1"
   },
   {
     "rule": "CSS-004",
@@ -781,7 +1061,15 @@
     "line": 148,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a940f69be4efd16b3815e8873a5f44bb04ebded865ef76512b2472a07cc99a5d"
+    "fingerprint": "998e6fa65c2c5e9ecdee623465f420daec8ee8c261f405d59ed1df181cf8248e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 152,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "56f690a6f487d4a898018e0bfcd484d321c082e4ed124050b5155267308cdb67"
   },
   {
     "rule": "CSS-004",
@@ -789,7 +1077,23 @@
     "line": 154,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a3d531fbad0f1cce538d12eb4d3d485a588825115b9c456fbeb40de0fb78b216"
+    "fingerprint": "133642b1c1aaa7bc909ac9ceaaf3841c7c4aa3627cc6ad8ece67d03bd9641678"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/HardwareMonitorChart.css",
+    "line": 30,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3ef38b3ac26134cc4c707a62d1786542d0b8ff71d74e83217a9ea0fbe0db617b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+    "line": 41,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "cc4af3bba67a3f2a81d8d901fcf74eab100bacde327f53a9883192d19a7f1bb0"
   },
   {
     "rule": "CSS-004",
@@ -797,7 +1101,47 @@
     "line": 48,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "23755b1e4898c93b67416db34b52d65f0118f8bf268cc67ea58fdccc85db4557"
+    "fingerprint": "c294f0fb551b27aa9c7533b6646f30846f1d1b75cd95329f78ca931837a76a55"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+    "line": 88,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "9d116b5c2ecbf9b59224c6d78d4363b4e88492ed431ccdacabfa51e2e724d0c4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+    "line": 110,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "9d116b5c2ecbf9b59224c6d78d4363b4e88492ed431ccdacabfa51e2e724d0c4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 136,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "0beef05d815245963f55ba455dc25cce00721ff13e78ae653791379d4dfef375"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 168,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "0beef05d815245963f55ba455dc25cce00721ff13e78ae653791379d4dfef375"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 218,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "2e1dbbef052c24ae081e4e3f98594f4f849a1c0995d98205d3181de2250c75b7"
   },
   {
     "rule": "CSS-004",
@@ -805,7 +1149,7 @@
     "line": 245,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "0c7948b3989dc005568ca406de7d8c5b39d4005cc890ec98ad25422334065d21"
+    "fingerprint": "29cb720c36dcca145883518a44328c9d7f634c9189fc8195091fffcd21204d06"
   },
   {
     "rule": "CSS-004",
@@ -813,7 +1157,15 @@
     "line": 246,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "86d7dfc3be821a096dafb39e5584f04dae83b32550b66364044d7dc1beb3c501"
+    "fingerprint": "3d6cb6acdc892dcd2905074d1fc14ef8be2e1386fe9e36249ae96e6ad7da8cbb"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 247,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "2e1dbbef052c24ae081e4e3f98594f4f849a1c0995d98205d3181de2250c75b7"
   },
   {
     "rule": "CSS-004",
@@ -821,7 +1173,7 @@
     "line": 256,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f7855547daff9e83e537001ba0a63331558cde88342fea9f59c4ae30afec2c80"
+    "fingerprint": "6020d8deb20d84c1e4f7387e66bb08298f4dece1ca6c2cfd71476a161ae48a51"
   },
   {
     "rule": "CSS-004",
@@ -829,7 +1181,31 @@
     "line": 17,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "7142d7c6d99e5cf9b7aa2c523edb331b494ba49b5f30a9951e289b67a1e6583d"
+    "fingerprint": "f95604c2158142ed8393172928401b830581f57f7802959b17db597291070a5d"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+    "line": 61,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "952888520e2d43e5e73b049e5fe86946a8c53f2b0d075ccd6b6fd011d0eddfb2"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+    "line": 73,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "5288bdcf0d79cbf5cec8e5bd662b25dee30fbc74a4eb32bcedda8cde12915fb5"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+    "line": 117,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "ffcfd55c38458c918e778c02c05e689945474742e8bc9400db72cb932615d246"
   },
   {
     "rule": "CSS-004",
@@ -837,7 +1213,31 @@
     "line": 49,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "50c5a3ea205cddb38c26fc5b5012bb6188e2e3839248c4fa55506c0ef75282cd"
+    "fingerprint": "ace1ede2bf1bd7e21d616331befce896a280ec9f2256167365c01f1b53b85535"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
+    "line": 151,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "e878e997f1ac710d6e92a0901266b7d103f938777d600c5cbb88d41fbb8066b4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 154,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "da9eed3947299c3851f89f70c905106ef723e6a8072900afb5712fb5fc578da4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 206,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "19c5558343c3dae5a00336d0b6c6cbcb6bcb6d9f4e3ab17e30747981947b1094"
   },
   {
     "rule": "CSS-004",
@@ -845,7 +1245,39 @@
     "line": 208,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "b4099b47c7aa556a2d073688632f374d98533699bea432b6cb9e32c716173606"
+    "fingerprint": "38c90d561b3f0051b21ba261422f8f2658e1ad8a9d8310ae52c3e19c6bd00cb1"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 216,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "15d4c2cef995ea7e465018eb33dbd4b1bba0fb5a1ddd924149deb0cd6a7342c8"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 218,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "f9754d08816647da1bad09edff2330b7c659834fbc507bf4eeef6e721bc799f5"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 59,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "496a4e721ce9aee8ec8dc425a07c888e74a768d50cc7a41d17be00a8dc636809"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 151,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "978e171d51922bd080f753a01375cc8d35b2c5b03a5bd8e713438a46752c0fb0"
   },
   {
     "rule": "CSS-004",
@@ -853,7 +1285,23 @@
     "line": 215,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a1f5e5ae31221178aebdbcd13ab6559a7a2ab18cdc6e716ccfca1abd4a5b8b4a"
+    "fingerprint": "d4ccc255246fd2bab3cb0b446f79e1e95667f08fa079b6335c459ac1ceb6184e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 262,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "5ad3155107a469f335280519d7d0771488702b48dd18cc5af7d664675224cc95"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 266,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "978e171d51922bd080f753a01375cc8d35b2c5b03a5bd8e713438a46752c0fb0"
   },
   {
     "rule": "CSS-004",
@@ -861,7 +1309,47 @@
     "line": 303,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "290f2089ea34d6dfd094e317b8b2d2627b23e07b3034ee1483a79d2c7ab26c20"
+    "fingerprint": "88a2de0c4e5247b87aa090be1b0bc622401733bab434921d4ab924fe76aa7aec"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 367,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "0cd823d72ba7d1b1d905254e4c92cee0ebbe964b692e493db350a87694c0741f"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 369,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "a3500ba918a769fc6d8d6671aacd91094222f60ea30009499cea4807e3b511d5"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 377,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "5ad3155107a469f335280519d7d0771488702b48dd18cc5af7d664675224cc95"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 379,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "2f3182ffbfbc6bb301c35e81e619b37d03c591a1f03b8e0ecb5444d52dff4007"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/chapters/WordRibbonBar.css",
+    "line": 217,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "dda6e5908741030e9b5201fd1111a321a2f71d0a10da000f67ab1436d6b78af8"
   },
   {
     "rule": "CSS-004",
@@ -869,7 +1357,7 @@
     "line": 249,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "682f634cd88cd2ef4fdcad5c67d704b2f19092890741871ae55b236ce4939208"
+    "fingerprint": "e4133f019178bf61b63e25f6123b99e1d51ab67b69217586596218936d9d0b3c"
   },
   {
     "rule": "CSS-004",
@@ -877,7 +1365,23 @@
     "line": 254,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6746aa6173fae711d01f0cceadff5d275387594913f5b1fb61f0d3caa791d962"
+    "fingerprint": "922d541858db62b1ed5762b0d4b38ef1116004aaa7295cafdb2e33ac0ad0c418"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
+    "line": 62,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "060c190eed9e8c4ac9832c51d09cb1dd367d096ec91b850f7d0add6fb790540e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
+    "line": 67,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "060c190eed9e8c4ac9832c51d09cb1dd367d096ec91b850f7d0add6fb790540e"
   },
   {
     "rule": "CSS-004",
@@ -885,7 +1389,23 @@
     "line": 239,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "ada14bd6be367ce0a96b28a2238aa9a4ff2c2bcb235e5d544d00abac3ea17461"
+    "fingerprint": "61906c7a2d358be242518e9c8edbd1d370edff237d186b0167b083d54864d313"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+    "line": 240,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "29fbcd15204170612cfff3c6499b3b855116e6ee4d885284202ea10a2ffd71b3"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+    "line": 45,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3287409bf24e6a4bb8a75477451c91efd17c9260fbdc0ad0f2067fa523dbde87"
   },
   {
     "rule": "CSS-004",
@@ -893,7 +1413,23 @@
     "line": 46,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "108077c4b8830b8a05fa4154d5c0a41c2593714864e5afe6e506d9f0b0784791"
+    "fingerprint": "afe260f2bf3aea6e3ea71d62bebe30052393fde3f7a79874ce8ea001106700fd"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+    "line": 193,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3a33d28c4c4cec4dd5723875fd209c4c14a03c7f381641206cc7b19a6a290c1b"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+    "line": 198,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "01a9051cfd176af6401b895987d5b99f64ccd5d378e2e72687b05a9d822f4244"
   },
   {
     "rule": "CSS-004",
@@ -901,7 +1437,15 @@
     "line": 87,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "dc1c2b87d2eb7b1e305129bd752c238d772b7e6f15e42a92b258dccc235d956f"
+    "fingerprint": "0fbd4156de6ac49db1817f4cbfe1be25c9978687c739f9b736160d71048b3c09"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/CloudSyncModal.css",
+    "line": 111,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "0fbd4156de6ac49db1817f4cbfe1be25c9978687c739f9b736160d71048b3c09"
   },
   {
     "rule": "CSS-004",
@@ -909,7 +1453,7 @@
     "line": 117,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "4e02eb39fa1cf87ae378bc3506e4a63d0f13c4be05ba299fe5669f185a0701df"
+    "fingerprint": "23fb7518fbe42e33b5639e6a1a0340a0b93cb01496aea2d569874ff5cab61d58"
   },
   {
     "rule": "CSS-004",
@@ -917,7 +1461,7 @@
     "line": 124,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d752fcf0a48f502496c05a169e8c086eb709d6f2cce2f31e0f8bd14ba68148c9"
+    "fingerprint": "13c72f87510548cb5661e9523b94f01369ff37477e5c584f836b4bb3db2a9122"
   },
   {
     "rule": "CSS-004",
@@ -925,7 +1469,7 @@
     "line": 125,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "4e5181df4c6a6ae0331cfab0a67a2e5c2f1f5a9143470bf62d9346e2728cb21c"
+    "fingerprint": "00d986605051e2ea082a3cd3002a4ff141fd8bbf020700f888bdb2d444aa8f46"
   },
   {
     "rule": "CSS-004",
@@ -933,7 +1477,7 @@
     "line": 43,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f9cd138a28ec55ba5dda63c4651b7e8ae6b369e5176a957ac0553828ea112091"
+    "fingerprint": "fd59c5bd87d335021722b2e695221ae765d855eee867b02c332dc3be721a04eb"
   },
   {
     "rule": "CSS-004",
@@ -941,7 +1485,31 @@
     "line": 297,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "73950f88b05a4a84f3bd5e5fc012cfd3793297d25826cffce290ccd669b38a86"
+    "fingerprint": "7ba6613816596fe4e76c16830ad482815124ef9b41b2b2417058e85da28392ec"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 490,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "c42186b0c1bce62b38fcfdf4b019f9ef2f7e1f8dbd94252e272523bea7076599"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 496,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "c42186b0c1bce62b38fcfdf4b019f9ef2f7e1f8dbd94252e272523bea7076599"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 512,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "c52ac5da7ca1955450c12433a54d0fad9d7a7a2debc7fe7945b823edb9d69e0e"
   },
   {
     "rule": "CSS-004",
@@ -949,7 +1517,7 @@
     "line": 518,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6d0f5aafde30759825e714c70a5190452770065fe88c916ad5b7de60bc79b9ee"
+    "fingerprint": "f8ba8e800bbc7bdebcccccfc062e950e540b5639f7794be0d10378c4a78f3b06"
   },
   {
     "rule": "CSS-004",
@@ -957,7 +1525,55 @@
     "line": 523,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "24bb7e0e29c5d186d6543b14bec6d6d4ecb4a30521179b3eca39a52e37705801"
+    "fingerprint": "83eef19f7d6e585c1b9f096ef340f0e9d86d18787de5954c4456247337b88930"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 528,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "2facdaffe672f4a0cd5b3cf1cde575f81f7b31a184de628aa8483abc95630018"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/Splash.css",
+    "line": 95,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d95015f0a16987c857a679b4797fa40c81cbcf162e0c7c3926ba5fd5be6bee6d"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/Splash.css",
+    "line": 103,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "19c2f336e63f2ae5e362d486ed5a4e542b8f83ea08fb9fb1222f72662f4b08c6"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/Splash.css",
+    "line": 108,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "f8f0fcb54315965e3ce6d687e3728e61c6d19f14014225ae780d71a500327fbe"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/shell/Splash.css",
+    "line": 113,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "6bb889acb85508e072d53f62fbba0f9b2611adf815d9edb4e5ad3503961a3ef7"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCommon.css",
+    "line": 137,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "4ab6441c364158148e1b16a5992999505bebdbab09e0fd333ab10dc3c85e23ec"
   },
   {
     "rule": "CSS-004",
@@ -965,7 +1581,95 @@
     "line": 142,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "b5c02b160a8e432cd8ff337b02565f691e64c70c093728af39504e24e3ae2b3f"
+    "fingerprint": "d34728ae09901490c5dafd94065aac5794d358ebd8e458e22a313989a6e8bc2e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
+    "line": 156,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "3cdb1fa04e7debdcf15874fb98a019f117f46f5fe03ec37af2665e26605fee33"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
+    "line": 158,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "06d2e8532a9c81b00431dcbad70a55c70366d15c3911789b89a79259dde17500"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 153,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 173,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 190,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 217,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 267,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "0ca95566ea8cff3f4918d99bb9d0aa764ef2cfc2a7043cf89a5afa16081d6e73"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 272,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "37aae6fded59121bce380494b4f5676f2653a5b424de73718e9b051b09520375"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 274,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "01c3710b006dd188eaebf45c03ae7a424889474e697482ce62a6259a6935fbc3"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 437,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
+    "line": 8,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "f998a21528bfdd0d7bd11261e663aa216aea298a00d92d9054bbc37d82e7f0bb"
   },
   {
     "rule": "CSS-004",
@@ -973,7 +1677,31 @@
     "line": 21,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "b1b5f8d07e90983a4d9759cbb765ffc5b8de7129b41f8474a7532e58e5a681b3"
+    "fingerprint": "fb612d13c908deb68b05f9c69947444fc6bf332b9d6fb7a1a197565ebf5491e2"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
+    "line": 60,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "360fd0bd2c294e7a633497f46367ac37b22569fc3d9eeeb5809ac625b77b7a1c"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 45,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 95,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
   },
   {
     "rule": "CSS-004",
@@ -981,7 +1709,71 @@
     "line": 110,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d7776052a9649da2e37bf67b3b98397014297216068b282fc745cb494c7a028d"
+    "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 111,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 145,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 160,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 180,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "696d45d7f5359e13faeddf53622dbb5ea06dd4175f0755fd6baeee4e5e985b8d"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 198,
+    "symbol": "color_rgb_hsl",
+    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+    "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 200,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "696d45d7f5359e13faeddf53622dbb5ea06dd4175f0755fd6baeee4e5e985b8d"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 218,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+  },
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 256,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "ae17a466653669b67e189250c6da21078d4ca3acbda0e8a79e2d56b171e68142"
   },
   {
     "rule": "CSS-004",
@@ -989,7 +1781,7 @@
     "line": 6,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "c27cc97765b059238e8e4341e6101f3d33f89dd87f4c01aaf1b09d4affe0daba"
+    "fingerprint": "7d68acd62ba497c5ff01ad173d9f28e14e077441045fafaaf45075c21600cfd5"
   },
   {
     "rule": "CSS-004",
@@ -997,7 +1789,7 @@
     "line": 5,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "44a402361b25cd463a2987b8e2c145111750db3d593af330c7e80b098af2b3ef"
+    "fingerprint": "48e7a2d2d4c4d00d0d16dfa899e7d998512522ab7e6cae8c86f17d7d680f3400"
   },
   {
     "rule": "CSS-004",
@@ -1005,7 +1797,7 @@
     "line": 6,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "ce917ba013727b56e60c78fdf7bac9acf9a50f7127c0bea9b4d350090c340a1f"
+    "fingerprint": "87780e71d19bb2213b6bb7197aec0a3ccd0b9ce1793f871e67a1e6339147c62b"
   },
   {
     "rule": "CSS-004",
@@ -1013,7 +1805,7 @@
     "line": 7,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1cd22cc9cac45f983da937972755130ac3b8bf91bbc8e65de778632cc0d62c66"
+    "fingerprint": "cf7583ee95f7f65f99f2d1af02d45abe5c21d0463833fdf5746f78dcb9ceaaeb"
   },
   {
     "rule": "CSS-004",
@@ -1021,7 +1813,7 @@
     "line": 8,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6ec5362af6b463e1dcbbcd744b899fb1a0af4b25655cf593ad772244c6b3caa6"
+    "fingerprint": "dd67303c591d3195a9b7d9e5bef8745b227e3bd131f6cd7319e6fee38abcc496"
   },
   {
     "rule": "CSS-004",
@@ -1029,7 +1821,7 @@
     "line": 9,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "de28853aaf9bd137ebc1ae9bd12b7cd76c0a85ae476ad9115ea06946b29a795a"
+    "fingerprint": "18d8f28593be3b89b62284e8d35b404f7779c3f1047604c2c3fb8d54d60ec506"
   },
   {
     "rule": "CSS-004",
@@ -1037,7 +1829,7 @@
     "line": 10,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1a661a8576927515e46c4fcc16b4ae23377d424b0700e802f61975b9286f3712"
+    "fingerprint": "d5a609b2ede8999105d2b6454945c3db4642a44e4688b87c6058b358f8274ae7"
   },
   {
     "rule": "CSS-004",
@@ -1045,7 +1837,7 @@
     "line": 11,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "63f352133db7cc70dccb2b83403e4dbb4c60890e1df4124c3ac87ff8523264a6"
+    "fingerprint": "bf04c9f2b76ddbc8d2edc7712914f7fb772a2dca9ccd2c073e17cae9b6b89608"
   },
   {
     "rule": "CSS-004",
@@ -1053,7 +1845,7 @@
     "line": 12,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "edeb053ef1478a20e079af309555e5731a2e11ef4ee0b81fb9d33b68af65e214"
+    "fingerprint": "a9e403790b561bdaee3f0e5cdf6118590ae9e9cc2c0ad71fbc8db1c38a366b1c"
   },
   {
     "rule": "CSS-004",
@@ -1061,7 +1853,7 @@
     "line": 13,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "36b596110480913dadf8751074d4a414a66338ee826aa4886cdf42895349f064"
+    "fingerprint": "5637451c53ff1a9a935a52d6babcfd186124f201821bea0277bcae371f6637a4"
   },
   {
     "rule": "CSS-004",
@@ -1069,7 +1861,7 @@
     "line": 14,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c36fcc9e7126ed40b3d50ea263d4f83fe652c10054ff5e94d85f0e52eb8f3455"
+    "fingerprint": "0a5c38dcb4e68f46ab059887336f6e0a16f1f91135936428fc6e399537a7d973"
   },
   {
     "rule": "CSS-004",
@@ -1077,7 +1869,7 @@
     "line": 17,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "afeb1d683c3126f7f7cac4ddaf6d4d7b39200964b86859730a5e35425c214869"
+    "fingerprint": "06d7b9d4321d86a4d61192c8c948d2479673b6c0a8317c793f60612e2e1c8813"
   },
   {
     "rule": "CSS-004",
@@ -1085,7 +1877,7 @@
     "line": 18,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "880d63f048c56df50b571d07238b6e571424cbbca9cbde80c96876c2899e1324"
+    "fingerprint": "cad015315f69f24f9b3c56e780ca601683841d1d03f7c821bc3ab691ddd09ff0"
   },
   {
     "rule": "CSS-004",
@@ -1093,7 +1885,7 @@
     "line": 19,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2a6fefe0211a77f2c566d2f0dc956fe90a5fd7f22ccd2c8e8e770a884da6567a"
+    "fingerprint": "c1aa6528ecd61bd3b27d383ed63ab8d396f274461aebcc4081e1def14f3f5318"
   },
   {
     "rule": "CSS-004",
@@ -1101,7 +1893,7 @@
     "line": 20,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1ea303df95bcfb1ebcaf575d785fc07ccbafb6b77fcfbd9243dc979d8db6255f"
+    "fingerprint": "a151cc2c67e723f494681ba5b7db439ab209a1a2348f08c211c2176362a46899"
   },
   {
     "rule": "CSS-004",
@@ -1109,7 +1901,7 @@
     "line": 21,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "0c2f38d19bd09b3c41a510ed59620aacc3e81f778076ec68468e4de4d50784f0"
+    "fingerprint": "c2efb4e5b72a890a3159ddb58462f7f7aab345ae2a168af94458ffe4324cd11f"
   },
   {
     "rule": "CSS-004",
@@ -1117,7 +1909,7 @@
     "line": 26,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "0f3f2546c38345dfe161e926c8854b2a0e44894f5bbcac71ea6409fd2edec732"
+    "fingerprint": "e9f480f349d4cc6228c7a941a1dcea624b3d128016bfb2abbbff214e8bc619c2"
   },
   {
     "rule": "CSS-004",
@@ -1125,7 +1917,7 @@
     "line": 27,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "d47661424e3444cfa5b8b2d1c7e7c1a3ca9446bcc2ec908d3b8d74287e731673"
+    "fingerprint": "9491b324afcdcd292682382adca0bb300ee4ceef861b349bc6fe42b687e53536"
   },
   {
     "rule": "CSS-004",
@@ -1133,7 +1925,7 @@
     "line": 28,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "4ab25b7d9982dbcd563f1e22f9db62a383ca4f2c7ad26c6f9d2bb8494a3fb969"
+    "fingerprint": "c2835a682ce1faec23ee5bef899953c575af71ace6f0303284cec9e9e5c49fbb"
   },
   {
     "rule": "CSS-004",
@@ -1141,7 +1933,7 @@
     "line": 29,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "c14bf20c86f6a3a5cc8e9b4b6343ab222040a66b7e3b078fe5a0c5a4000e0d03"
+    "fingerprint": "b002309e52093a4e919432d133fbb28dea5be7867b07c4dd205266daf6c0672a"
   },
   {
     "rule": "CSS-004",
@@ -1149,7 +1941,7 @@
     "line": 30,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2faf948ec58d60da2a70f31aecd13222e1e95fa1a0e4d3ee15bcda15ad3389c8"
+    "fingerprint": "3b49d930a2e6ce8bbe91bf83de67f1a52897993d7a7d4952da33bbcb0db38d5f"
   },
   {
     "rule": "CSS-004",
@@ -1157,7 +1949,7 @@
     "line": 31,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "a71a339b3b82e2767fac45fd8722882ea151ba1b90517f6d1dce2a9da5ea8c84"
+    "fingerprint": "f6adda68968d595bb3b60bc4415e6d559882a8f7920feba1415dc33fad7efa94"
   },
   {
     "rule": "CSS-004",
@@ -1165,7 +1957,7 @@
     "line": 34,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "52d12b8e649d5fa0739b4cf065e83abf8f100c5f8b9396259f9dfa670542687e"
+    "fingerprint": "6749a0c69dcc481798881cdc096ffec555d37a23468fba95c73bc37f918bd1bb"
   },
   {
     "rule": "CSS-004",
@@ -1173,7 +1965,7 @@
     "line": 35,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "c2220ebfa7b0f9f3dfb5c0617eda1827f5539f7c37896c008ba6942f223c4715"
+    "fingerprint": "a7ed4f99d8d60c5c78f423564efb39b3063e3212ca6064a2d17982617e3915a4"
   },
   {
     "rule": "CSS-004",
@@ -1181,7 +1973,7 @@
     "line": 36,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "174220507bcc772c6566d78f7f8a037fd63c56822f38f5155f0d03a0ed4b19a3"
+    "fingerprint": "e44b818a258fe5f1a014abc125901d80616af8a3a2821b7605324f23be358790"
   },
   {
     "rule": "CSS-004",
@@ -1189,7 +1981,7 @@
     "line": 37,
     "symbol": "color_hex",
     "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "9ca59fcfce8af2e199399a8967f9e13d0784be8bdd65ef299826fed51b37a198"
+    "fingerprint": "28a67c766887ebe9ff888d0b664885cd23944e666ccb1ceb835f2332df40efdb"
   },
   {
     "rule": "CSS-004",
@@ -1197,7 +1989,7 @@
     "line": 40,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "e4a5f33c06d78ac1fd18f8e9250d7054b30b75bc441cf8e15f7d912620c72c71"
+    "fingerprint": "e1347d310f6b4791f5683f2e85e0838a42e721b97653675219db4e524a4e85bb"
   },
   {
     "rule": "CSS-004",
@@ -1205,7 +1997,7 @@
     "line": 41,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "46c2b4bf84d4e77746180c8434761e35b4cd6a367bd8c2594de65878f7994608"
+    "fingerprint": "c60f3a255beea1b5d03a9470d984caa0826ba7b8ffcc6fee5cdb391e85cda9af"
   },
   {
     "rule": "CSS-004",
@@ -1213,7 +2005,7 @@
     "line": 42,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "eaaf7673604a258410b120ab4d45cebc43587f3a3fc50142db235df6eb559eda"
+    "fingerprint": "baaa73546676c96af4285a1eed917f3cfe088a78e2dedd55b7247eed80b470bb"
   },
   {
     "rule": "CSS-004",
@@ -1221,7 +2013,7 @@
     "line": 43,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6ae4f7055fbe31a3f809253d1990e62ad11eec684a1207f649ca5e49bce4e332"
+    "fingerprint": "94fc31794d18a9b03a61dc7379cd46ed9df5a59f259e9274bcdefb3f948d00b5"
   },
   {
     "rule": "CSS-004",
@@ -1229,7 +2021,7 @@
     "line": 44,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f31e8eac04966783a5bcd8da3f3e99fd0f061a9a8cde819716ee829b3667b72a"
+    "fingerprint": "c7aeeb4295e0e8322e6356d1ecd8856558d20b845af7aa23f3b37e051cf28088"
   },
   {
     "rule": "CSS-004",
@@ -1237,7 +2029,7 @@
     "line": 45,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c52c6a281afd7388416bc85fde2fc1afb7cfd418210917d7e695ccb99334f8a5"
+    "fingerprint": "6304d5887783cf125e1f39b2e9baead5bd698605cbcb096113f467f8a0795c01"
   },
   {
     "rule": "CSS-004",
@@ -1245,7 +2037,7 @@
     "line": 46,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "b2dadd5ad9c88b92e793448aa4ebbc4798d85dd44590e26d26b282afeefe505e"
+    "fingerprint": "ce956296c1323afa0c6847b21f401aba58266502b5e3b3fe00fdbfb0113d1486"
   },
   {
     "rule": "CSS-004",
@@ -1253,7 +2045,7 @@
     "line": 12,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c1b834fc9bb21ecdcea37e5f42857530cee9b6a3e5f20416d7dc493c027862ec"
+    "fingerprint": "2cb7ac916f38a02fd145e61e67b4e64e565cfbb791886fc9053b2506cd56c1cb"
   },
   {
     "rule": "CSS-004",
@@ -1261,7 +2053,7 @@
     "line": 13,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f5ade3d9b03692b87f3e1eafc90248c999ccf3fc6dfaa497d741aa189d1b3144"
+    "fingerprint": "c9bd76e4cd60582acaa73e9b2b78d83739411654e4f78b669872b4cfd460495c"
   },
   {
     "rule": "CSS-004",
@@ -1269,7 +2061,7 @@
     "line": 14,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "9681276927e677f5b0a1e99157cdb001c05d3dbaa4faf914e7039949317bd7b9"
+    "fingerprint": "1ddf998fbd193886e2fb9913873a853c4842ea4d2c7fb4530db3ab7c0e0ee526"
   },
   {
     "rule": "CSS-004",
@@ -1277,7 +2069,7 @@
     "line": 16,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6770691d7121bd127a820e658ef60501edcf1911264f11a2b1e203d333826596"
+    "fingerprint": "dbbb560e3f4640f5e860e2090415b9169334fa6ac96aaea3cd0b2a588db42725"
   },
   {
     "rule": "CSS-004",
@@ -1285,7 +2077,7 @@
     "line": 17,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "44d76d1aefc53f976d7e4e9457dbe03dcc6e8c1d1cd4d598cb8dabede184a55c"
+    "fingerprint": "147f4e5b0e418a8b32871ae0448b046d5b453cdf0fd5eb3a279d28a396805dcd"
   },
   {
     "rule": "CSS-006",
@@ -1293,7 +2085,7 @@
     "line": 70,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "6969489602080ce4dc0d35a10cb6a7205d9a22f83e1d15068f9b81aae331d226"
+    "fingerprint": "7f54d16fee8f876b46ae27f718c6194ac4a71d0848671b90f44be45426475717"
   },
   {
     "rule": "CSS-006",
@@ -1301,7 +2093,7 @@
     "line": 71,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "5e8e5d6617dff970c6bf1034d5adcd7695e3c5ccfabb8a972efed281ec5d8e29"
+    "fingerprint": "b99e10d824d98eaac007167c0de1713223fccd2c54ca73126eaecbdb126e819d"
   },
   {
     "rule": "CSS-006",
@@ -1309,7 +2101,7 @@
     "line": 12,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "9ec12eabb7e121c84e8888b4c7e13510788d458b1cd1e5469773a6f953f2bd54"
+    "fingerprint": "f2f6c6b2626c88baa0f47ae5d97e580a6c373efcc4deff2f273060de5857137b"
   },
   {
     "rule": "CSS-006",
@@ -1317,7 +2109,7 @@
     "line": 382,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "ec93d4b8a5a0db8d71f98414c0b059b4a2ef2a1cacc5946b364b4fd984170b0d"
+    "fingerprint": "1c68f6062306e91f2be6954df60f447f25c79cabea8cf0661ecdbc6c5c4f7e9e"
   },
   {
     "rule": "CSS-006",
@@ -1325,7 +2117,15 @@
     "line": 16,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "d0014db06febf6b734ead5bb1dde5e4aabbaf8faf73d74bfee5175a45231760b"
+    "fingerprint": "bdf8ea1ec7a73837a6fde62a53a94c1fc23df365074150df8eeb0c4b04dc6960"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/components/GlassComponents.css",
+    "line": 17,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "ddfda9be103755c5f6fe55a9e560643d0c57cbf16584c6d1b34e7e86fe0f501c"
   },
   {
     "rule": "CSS-006",
@@ -1333,7 +2133,7 @@
     "line": 300,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "444110c50bf70650407c750839d87e27cb9d7a2575a8422efbada070c0c1b632"
+    "fingerprint": "5ef60a988a00307a31a5fa184186b49f569f02b4aa0ef8958323c47be242583d"
   },
   {
     "rule": "CSS-006",
@@ -1341,7 +2141,7 @@
     "line": 301,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "1d230cadd527cf1b9684fca11bd28ff1cfa3ccedf877a9ee47af750519d0941d"
+    "fingerprint": "81c1cad9395c25f0ae79ae20695cd4c27a0843b8a9a4447e6a6f4f0536c87a15"
   },
   {
     "rule": "CSS-006",
@@ -1349,7 +2149,7 @@
     "line": 302,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "f79762e6d6e0f26d3fa0af4f021809dd1c739aabd7de5ab248709f5e7f8a26a8"
+    "fingerprint": "cfabdca0b1fc848bc19600d07d5f9a00e0c62d44eb57f23b7ddf95f7a4c0e8e1"
   },
   {
     "rule": "CSS-006",
@@ -1357,7 +2157,7 @@
     "line": 310,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "6fecf3755c4de68450caf4262b5d93e43640cf61e7b0a6192cb418d1c5ace9fa"
+    "fingerprint": "e03ac4409176ca363023e25a4048e9e433f28082ced8b5523e1d26f6fd0caf10"
   },
   {
     "rule": "CSS-006",
@@ -1365,7 +2165,7 @@
     "line": 311,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "9bfbb1fb07352ca85647e7337cbcd107a504fee87d066bdeb4cc14fb408cb24e"
+    "fingerprint": "1c052511e6fa139e34b312c2dae7e8a3fcc192297b191cf334ee4a8c457cdf53"
   },
   {
     "rule": "CSS-006",
@@ -1373,7 +2173,7 @@
     "line": 312,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "ece425d89c1d474e9a27faa8c6e223fa213a1a06fc406fcec1fbadb07d1397ea"
+    "fingerprint": "4e88deee10561d6d4be78f40c3db3614927d8669a74ab1011127dbe1316385c6"
   },
   {
     "rule": "CSS-006",
@@ -1381,7 +2181,7 @@
     "line": 313,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7e689333321639fa89bdde34b70ab0b8b883eaf2a7acaf170303c2f520a73776"
+    "fingerprint": "2495da2cf716b967bb53be53d5d5e2fa08a6ebb82ba04698fd2c103cf3cf226a"
   },
   {
     "rule": "CSS-006",
@@ -1389,7 +2189,7 @@
     "line": 314,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7e04ab0fe00e0586f5db02b2bbc24dd8b2aceff4cf5d3fc6ed6c3e304fcb9d79"
+    "fingerprint": "700de860954f602678772c6c001441bd63e3eeb16e0c405980693f97d80bfed4"
   },
   {
     "rule": "CSS-006",
@@ -1397,7 +2197,7 @@
     "line": 315,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "cc6281567e34a4e7a8ea9a5d3790955d5ff2c412ba4749168ea1fc0911a170bd"
+    "fingerprint": "15f80d8a8f66efa0c7c30fff0e826215696751c8fcc79077d330cd67d8cd1359"
   },
   {
     "rule": "CSS-006",
@@ -1405,7 +2205,7 @@
     "line": 316,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "028a0c3cd3b0fb983477290a5759dbf4937ad578ba903a029c0d3881a840a7cd"
+    "fingerprint": "5dae4d8a2d9dc74ab5261e2a9e0b8b595b61a4298aa6952a9d7439bf4ba06e2c"
   },
   {
     "rule": "CSS-006",
@@ -1413,7 +2213,7 @@
     "line": 317,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "b3d3fce54dab921ab03ed504d17a17df5ac9b3a0b843a930f5438e642924c4ef"
+    "fingerprint": "bf17b838f128e3a887201e37c919b330fe93ec1019a34016a5dbc5ffb25889f1"
   },
   {
     "rule": "CSS-006",
@@ -1421,7 +2221,7 @@
     "line": 125,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "4ee96b871721f81e84e799a2ebef3cb913b63270a67e81f960a9fd1562fd56f0"
+    "fingerprint": "5fae7b699cb5e43d88ac27d2e90c9d616faa221fd1fd69c9c08b5b3d33d35cc5"
   },
   {
     "rule": "CSS-006",
@@ -1429,7 +2229,7 @@
     "line": 128,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "437c755654f371ca99b1287bd53702fb814bb45941120cf60fd796996b68f550"
+    "fingerprint": "6fc79c055fc9e3ea42c896b7325ae8b6307b6c6e4aaa5d2befafe1f04fa5a046"
   },
   {
     "rule": "CSS-006",
@@ -1437,7 +2237,7 @@
     "line": 129,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "ad38fa90ffb747e8112e2a978096eed43ee9418b5fe0462d842b690eca725a42"
+    "fingerprint": "e3ff2d5f0eafaaf1a78aebcad7aefadf7f77d013f70f89b00d2ddbc165a496f1"
   },
   {
     "rule": "CSS-006",
@@ -1445,7 +2245,7 @@
     "line": 130,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "f04d3af6e5aa80d8abe2f4f5d3e59c0c15ded38364ed1e619bab410ec9d08722"
+    "fingerprint": "9335dcbfd09e9f38f843cef2b64d30e543a4fe170224cc0a8adc74c16b02e5ee"
   },
   {
     "rule": "CSS-006",
@@ -1453,7 +2253,7 @@
     "line": 131,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "30ace1c14a1ef2e5c29584ada16d630654f7bf22f3206a4250cf1545dfb6c05f"
+    "fingerprint": "e5afaa0f6abe6ec988876bde9a6b6e273fca312c880463bc20e5215923b3e16d"
   },
   {
     "rule": "CSS-006",
@@ -1461,7 +2261,7 @@
     "line": 132,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "e7d30e9ffb603348b6a12ef2ac6d64a9d3a2f6586e1715ef9af96149fcaa83f7"
+    "fingerprint": "f3244f0681da276b2b086149df825683ee802d96ac1ea2aeaaa294070899a75b"
   },
   {
     "rule": "CSS-006",
@@ -1469,7 +2269,7 @@
     "line": 133,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "231872ad44c93827f085eeab209ab7bb748a32e3144a85b4e7496ba27ae44e9c"
+    "fingerprint": "18a9506a4196245ff53282e8c29558477b31f9f82c1b827f3f0ffafea2a31d3d"
   },
   {
     "rule": "CSS-006",
@@ -1477,7 +2277,7 @@
     "line": 134,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "c886a08fb54bcf552c7b9316ab295fe2e243e1ac94418a1aa4ae1d544cf3ab8b"
+    "fingerprint": "f8fd6c86d99e9fd3b31d0837061b42057c88dbbfdd57e9a2d7a8e8ef2d79af00"
   },
   {
     "rule": "CSS-006",
@@ -1485,7 +2285,7 @@
     "line": 135,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "66e12badbbc23b56766d5f138af8ab92c24103bcebc260360f2caea2085c81c8"
+    "fingerprint": "38bf653741fa4b94cf705edafdc9bf4d8eb31ec643adbbb6c166ab1ce2609188"
   },
   {
     "rule": "CSS-006",
@@ -1493,7 +2293,7 @@
     "line": 136,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "b2145db6746563c0a0cc180f9b42f567a907a2e176d4728538e85a0b22df46dc"
+    "fingerprint": "3e4e8c11a5b81a7415afb9cbb609fe0b3432963ab97ea16474f547de5903a4b1"
   },
   {
     "rule": "CSS-006",
@@ -1501,7 +2301,7 @@
     "line": 137,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "5af8658f94f114c93298d416bf626b3f4e8dacd887f8cae3678d221ea934074b"
+    "fingerprint": "5e51b33b28506206aa2258b88c83a15a2f20158baeaf4948b0640dcdb7e18095"
   },
   {
     "rule": "CSS-006",
@@ -1509,7 +2309,7 @@
     "line": 138,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "c132ae4edc6daeed64dc51eaaded5527991ffd80240e31b6ed5b07bb06d0a9f3"
+    "fingerprint": "7ce0782409f738440448b203d725e7b685f14058de3fbbb034da3b6a1acbcca1"
   },
   {
     "rule": "CSS-006",
@@ -1517,7 +2317,7 @@
     "line": 141,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "a3f445b3afb85bb4139a88183fe40c9fe1a4e8a8e5f6f42c821ee9270be9b61c"
+    "fingerprint": "5e5c216896bda530774a35e53d9895480b2915f65dff2efdf71b778c78c3b05d"
   },
   {
     "rule": "CSS-006",
@@ -1525,7 +2325,15 @@
     "line": 118,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "93d88565497ec5738c33482423e40dc755df203776a6c5c85cd0428cc318ba86"
+    "fingerprint": "a86d8cb70587f1840d9aaef68c464205c38bf38dc086601166e2ef4a72eb6966"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/ai/HardwareMonitorChart.css",
+    "line": 92,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "157d1a39e97d577169faf49c5873deea6308cad07ff995b20cc2f68118de944a"
   },
   {
     "rule": "CSS-006",
@@ -1533,7 +2341,7 @@
     "line": 40,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "22179c9d69c28e31738a48223d6250167cbc46e400065d2f7f485b9f018936b3"
+    "fingerprint": "ec5b08814727e925307e11ce3981370a51db2068ecc6ad10c78a89c67946b7a4"
   },
   {
     "rule": "CSS-006",
@@ -1541,7 +2349,7 @@
     "line": 109,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "ee1b1c54bb691a46519631ba08fc3b5a502ce0a2a2935fb4351269adbd6fa06d"
+    "fingerprint": "c44036cee6393900869f0c725d3984e03c3e3706592564ccb7a0775f73020346"
   },
   {
     "rule": "CSS-006",
@@ -1549,7 +2357,15 @@
     "line": 188,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "d435c2ff2fe8d7da9c8b807e37002093eccd38b9c3a314f68b1aaa7c722d3e9b"
+    "fingerprint": "78562d6cb12c66e2c0c254f87724e216c18eb52d494311b7af8708cb75f8b09c"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 197,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "3d4b5e706285121a472fd8d35ed1faa75225b3ed24b0c7e5e338a96e995b08f5"
   },
   {
     "rule": "CSS-006",
@@ -1557,7 +2373,7 @@
     "line": 201,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "6621d564d7da7fac9d7de80a53b2f16502c87d5757c9aed5e79fe3fdfc411e21"
+    "fingerprint": "8f957d2ba1c93b067b4d712b05d95b60461a4e092cd06a6b5f4f38d4bad6e7cc"
   },
   {
     "rule": "CSS-006",
@@ -1565,7 +2381,7 @@
     "line": 204,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "e4039e460059bc429b2c5886a0585abc3614bd3ac3396537adae41a7d6730939"
+    "fingerprint": "3740b7e8552c2fd9e9719946a27a6c09d71ebf626415d918579dcce7e835f4ca"
   },
   {
     "rule": "CSS-006",
@@ -1573,7 +2389,7 @@
     "line": 208,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7a3ce5966391be353ff9119003c1c34464d76a101bbd7a4602a3827d156fc32b"
+    "fingerprint": "ebda8e69e23363ef5b2aed16f35f5c3b07a7a9707b029ce964d3c14f6d54c012"
   },
   {
     "rule": "CSS-006",
@@ -1581,7 +2397,7 @@
     "line": 225,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7214e9bcfef0cb33f38098a74198c93dc6ace5ca369e45715ff5adf5c31c32fa"
+    "fingerprint": "58e97f7f5da2b021b575897d716fc090701260ff6ffe78dceac0873ec9d30069"
   },
   {
     "rule": "CSS-006",
@@ -1589,7 +2405,15 @@
     "line": 226,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "94da78dd5b4db39e8c89e3c236139a054f6d906dcd3ea228e751825a195e470b"
+    "fingerprint": "d1f4cba908171e892cf10d7070bbaf72a69ac51b1388988c4d2fca13a35c169d"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 235,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "58e97f7f5da2b021b575897d716fc090701260ff6ffe78dceac0873ec9d30069"
   },
   {
     "rule": "CSS-006",
@@ -1597,7 +2421,15 @@
     "line": 162,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "e2eb5f802e3d8deafb7b249622b3cba7d3384fd347a842662e46a08aa198e988"
+    "fingerprint": "81d3b09a623539ed2a15f2135e5c41de30dae998823590bcb1048896cbe55015"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 178,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "673f690e8ee3d0b83363ae3487ca1f11f46f7bcbd97b8db2c7bd12cee77bf83d"
   },
   {
     "rule": "CSS-006",
@@ -1605,7 +2437,7 @@
     "line": 184,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "379e97b9a4aa3ca10781f8821109bbdc7a0e54048648555b961222f5fb482321"
+    "fingerprint": "e9413d554b2a8537c143eca6a2bff348a6d60964908244f2661b1e5952ac71db"
   },
   {
     "rule": "CSS-006",
@@ -1613,7 +2445,15 @@
     "line": 204,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "db288f25e4727e59761813d7a805c4776be5ef4b3211ca5642855ab3aaf85460"
+    "fingerprint": "1b52fcf4d8c99264dfb7f39ee778fd3bc1670063cb17f755c5601b848af4edc6"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 205,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "f7c97147dd54e42e07b9c8ba3ebe4ce6d79f4117e05c640dc4e9477f92400577"
   },
   {
     "rule": "CSS-006",
@@ -1621,7 +2461,15 @@
     "line": 215,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "ed8ffa071b843fdf22ed0b27a290bb8c903c6d36c9852671fd559827d00c3d91"
+    "fingerprint": "7f524564f8d71aad255c9a30c817226c2ed804d6f04f6dfb578383c00f80b62d"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 232,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "7f524564f8d71aad255c9a30c817226c2ed804d6f04f6dfb578383c00f80b62d"
   },
   {
     "rule": "CSS-006",
@@ -1629,7 +2477,15 @@
     "line": 240,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "509bdfe1545f0baf8ae59246fb6b45b6777c85232ae74ea6798d83d29e4b8ec1"
+    "fingerprint": "b38a3640fbacad3c9b45dc99d8104f044e0351903c4e7e89a9abded927cf9dc1"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 244,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "e9413d554b2a8537c143eca6a2bff348a6d60964908244f2661b1e5952ac71db"
   },
   {
     "rule": "CSS-006",
@@ -1637,7 +2493,23 @@
     "line": 254,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "498c64e609bdc09e9d41eef59288739a0a82b0f819bbf699daf1332009caaae3"
+    "fingerprint": "48df2cf69648991e5f899fa6ad1df909223764aea12e4eb4dfe064359eaea0f5"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 255,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "f7c97147dd54e42e07b9c8ba3ebe4ce6d79f4117e05c640dc4e9477f92400577"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 261,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "81d3b09a623539ed2a15f2135e5c41de30dae998823590bcb1048896cbe55015"
   },
   {
     "rule": "CSS-006",
@@ -1645,7 +2517,39 @@
     "line": 372,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "21cc8bedc2f334fc3e46b8c8f13f1086dbc43d19d96e9bb4d38a187f3e074e09"
+    "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 382,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 389,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 398,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 414,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "4ab3961a9d88ac0eb2b1a852206ead834468559954e6a75b56e675548aaa3d86"
   },
   {
     "rule": "CSS-006",
@@ -1653,7 +2557,15 @@
     "line": 419,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "34cbfe7a2be8676bce472fe4b2d86603465264ffffca197e3dd6b4c49801ee66"
+    "fingerprint": "91d00d3295cc6ee95101bcd18dedbb6b56bdfc2dc27bbb0592c06c58ff77b655"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 452,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
   },
   {
     "rule": "CSS-006",
@@ -1661,7 +2573,47 @@
     "line": 453,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "e48af6b0b546eb1655291e9328fb3682119e2b26665477c54ce25de69bd53981"
+    "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 464,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 465,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 474,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 475,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorToolbar.css",
+    "line": 120,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "1ae2d661967a6a44f30e11fa4657a21853f32b274de708820227b26689b2decf"
   },
   {
     "rule": "CSS-006",
@@ -1669,7 +2621,15 @@
     "line": 121,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "3fb839a6b9e1ed30c5b1b4f159a9cc3f37cc1921ae803c054850baa8f7abd79b"
+    "fingerprint": "6b3b209e702f633188fc731f33d801b75c8548bc37181f23bf702e3dea2ac378"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/chapters/EditorToolbar.css",
+    "line": 122,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "c1670e4e96a66992980fff3900044238736d1b1e5a420faded66ce65c2a79939"
   },
   {
     "rule": "CSS-006",
@@ -1677,7 +2637,7 @@
     "line": 123,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "6f77158004e9464cdc6c1a2bf53697890f694d9bbed54e7a743a18470e593a0a"
+    "fingerprint": "83a960f3a6deb95b537c728ba3b85ae840f2d150b888df7b530c0587dfca1da4"
   },
   {
     "rule": "CSS-006",
@@ -1685,7 +2645,7 @@
     "line": 128,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "63891124d3231989d6ea03c8e31888650536e499573714cfda2ce4fe8a69f8d5"
+    "fingerprint": "71e98222175f1b559a3e5c645451e53fe617ca0f4a45ae6fbd99fc361d1c9f83"
   },
   {
     "rule": "CSS-006",
@@ -1693,7 +2653,7 @@
     "line": 129,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "0e261f438d24b61dc2dc39075928b2a84bbefd9571f34e4bc60aba3ac422f850"
+    "fingerprint": "b25fcc459eaa5943a3ec350daea8520cfcc6b7b05f7e57214e70ef3da5e95d65"
   },
   {
     "rule": "CSS-006",
@@ -1701,7 +2661,31 @@
     "line": 130,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "b797f730de196344e2d15ec0678ba6b95978c6f3741f4b620b23f08d801431cc"
+    "fingerprint": "3afe83a4d3242fd0482b548f8aab58f4689e6298f347ca2d129e499af8123e08"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
+    "line": 99,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "11e7ee73b5bf785ae708953a2dee586b59850471a53ff1a64348323f6dd810e3"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
+    "line": 100,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "48432d2d7e163c369d2dbe4f4195f4ba073fbf8b762687f4c2f8a30303471bb2"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
+    "line": 101,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "8646fdf94c6bc31484f1b8a949c24f5301aae928b11b6badb776188621c46e31"
   },
   {
     "rule": "CSS-006",
@@ -1709,7 +2693,7 @@
     "line": 249,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "a849db77e6ca6dfbb8ee70a8259c5f7375687efb765ff352901278b212c8784b"
+    "fingerprint": "c1512acf79b51a6d13869db6b39283a1c6badc2b54bfad7402a9f4e4fd0b98e6"
   },
   {
     "rule": "CSS-006",
@@ -1717,7 +2701,7 @@
     "line": 36,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "5b83445c667b0c3aa3f447dbfcc2f4abd8635058cf2b369b4e7bbaa6b5103b56"
+    "fingerprint": "2f2dc0185fff2fa1331e053801656099d3c2d2e844936c78e6e0704083f707a2"
   },
   {
     "rule": "CSS-006",
@@ -1725,7 +2709,7 @@
     "line": 44,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7e23cc348cfd55516f10cb7b0bf600225cb537762a8d51649418346a31bd4130"
+    "fingerprint": "7202d57dce0076b44f4f8c8c2506bb9b9333b6eb17f75b108b566e52e5393648"
   },
   {
     "rule": "CSS-006",
@@ -1733,7 +2717,15 @@
     "line": 50,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "05c3467490846f70a870385bcac20fc79cd18cea7b52152cf9940370356dc7f0"
+    "fingerprint": "217e662233026ad3b55ae02d32667c4826a371119b10891bee1a2dcad30811d2"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+    "line": 140,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "70308d88b0f695e316171a7b95b2e676b8b0d54d5b5c574b48a5fd1ecdd70d38"
   },
   {
     "rule": "CSS-006",
@@ -1741,7 +2733,7 @@
     "line": 186,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "b4d124218748911208d593cf193d91f0d10bf0efa41ddaa115f9ae1379c30ea1"
+    "fingerprint": "d049a095796c57d476a80efafc6b1168654210c45597d564ce1daf5ec1a140b6"
   },
   {
     "rule": "CSS-006",
@@ -1749,7 +2741,7 @@
     "line": 187,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "6ad230f9a3fe6b36069bae8b4a10baa6eef0e93f5e3a7286883551093a627c53"
+    "fingerprint": "ed06368aa4f12d40ff6f78b1fc249e37547e20c519713d6f0005994c154fe148"
   },
   {
     "rule": "CSS-006",
@@ -1757,7 +2749,7 @@
     "line": 102,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "bc0e2f2d122cc7548dda4d378cd793411afbf9cb0c1428d9a5d9424c7d73248f"
+    "fingerprint": "5eb18b31c88d50c61f33c62ed4473df75190d5e3a4e3f1c74bd34d3b28fa809e"
   },
   {
     "rule": "CSS-006",
@@ -1765,7 +2757,7 @@
     "line": 10,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "523336b08865bb2a3ee5e6d2cf414002b1fe4574f2def6181dc140b0df0b3d62"
+    "fingerprint": "c5c3a5cb9e0431c785d6778b408eef7d7706af34d11a8c1b60d881b633bcfbcb"
   },
   {
     "rule": "CSS-006",
@@ -1773,7 +2765,7 @@
     "line": 17,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "8e05dc73aff80e7e2330aa04b87380ff59140b292f404f7fece5b49176be9502"
+    "fingerprint": "3376dcb338de229ae8356b3e81d6e3162d042b75c8c70f37b78bdc0da7ec30eb"
   },
   {
     "rule": "CSS-006",
@@ -1781,7 +2773,7 @@
     "line": 23,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "62af45caa60705cfe0d04d1154c708456fb855514358271a4372348bb69deb0f"
+    "fingerprint": "b410a4f166217cfcf24383d3bb626b7a4b930998054f2ba52746cd20d3a7ec23"
   },
   {
     "rule": "CSS-006",
@@ -1789,7 +2781,7 @@
     "line": 34,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "56fdbd18e4b5cb02c166bdcae4945db2f2eacabb6cd48a7438018a0ce160a4b9"
+    "fingerprint": "8276f425245290c8948cee59296ebd4a530e36d86d0f217a680a70684529dcc8"
   },
   {
     "rule": "CSS-006",
@@ -1797,7 +2789,7 @@
     "line": 43,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "9924a51d0f312a66aa9be764fccfd67636cfc8483bbb7150e895ab126d2b7aa0"
+    "fingerprint": "30ba326d13af2017a9dadcb205a93d9aee61869a638372b5e1ca54fc80eb419f"
   },
   {
     "rule": "CSS-006",
@@ -1805,7 +2797,31 @@
     "line": 44,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "6f91b20b758a2624001de45252c4beb5030c4250b5cbde960fee72f61e0b798f"
+    "fingerprint": "463da686ceb76a86a48fde0b2832c9a366e67bf821e65dc02ae3bbdd125c0e55"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 52,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "eb907df86dbcff90c878e0531e6483c2b008efa2733a82da7267d2238c294df6"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 53,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "0ef1bb2e472aa36ac5fe8048b22f88d04d62ab2451f49c528a60597177206573"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 61,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "6bfd454fb30df2e84ab56725542536a14d41dd054ccdae7268d03e4972db226f"
   },
   {
     "rule": "CSS-006",
@@ -1813,7 +2829,15 @@
     "line": 62,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "4acd8818ffd92a1877180a6cf15c0815d1c5978b2cd4311bd1465f302e46fcaf"
+    "fingerprint": "e5d0986bca3230d2d81bc3cfda2d15451e74a282b0817ee6e37a1fede0504cae"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 70,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "eb907df86dbcff90c878e0531e6483c2b008efa2733a82da7267d2238c294df6"
   },
   {
     "rule": "CSS-006",
@@ -1821,7 +2845,7 @@
     "line": 71,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7f90c1d996c5824617bd33848c02a1d192d98107616950b3686263f42dbda0c9"
+    "fingerprint": "ea250ba1e011e6ed78e330af0987d23049e59f940e20636451e54c67cfd64e7d"
   },
   {
     "rule": "CSS-006",
@@ -1829,7 +2853,7 @@
     "line": 79,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "bbccc87ae10c3c7991ea80a9823a3eedd63282366739a313a0d13b3915fb713b"
+    "fingerprint": "66d68bd2d779c0d6b73e392753b7b617754546864b2624e45a9b0bd4bdde1003"
   },
   {
     "rule": "CSS-006",
@@ -1837,7 +2861,7 @@
     "line": 86,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "973129753570922d533075b9c83540237fe0e1ffb3eddcd560c71f7c89e3fd00"
+    "fingerprint": "dfdebe1e9d4ed5e944cc27ee7661a35d6c568b77d0a67d41c623df8ea9ac9b82"
   },
   {
     "rule": "CSS-006",
@@ -1845,7 +2869,7 @@
     "line": 95,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "7c25e7edc2b9c9ab84efa9e582237324340a7f51baf4f92c567f3e7da7225cc3"
+    "fingerprint": "8557e4525e5730d3f4477d31a983103170a6374455d8eef6bc03df5146d3bb2e"
   },
   {
     "rule": "CSS-006",
@@ -1853,7 +2877,7 @@
     "line": 102,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "aedd41d396a6232af2ba879215fbcec5805362aa071ab8db6ce94e2d864d7186"
+    "fingerprint": "e3678aa1eb7a2dc12581a022ac950b6e3ff6f3782214c9bc59e35b15e865fda1"
   },
   {
     "rule": "CSS-006",
@@ -1861,7 +2885,7 @@
     "line": 109,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "8b7e44369763a97fbee4c88655ce0196b40c67a3846e22218bb9a7e46d8e2498"
+    "fingerprint": "4c1856e93d5dcf42d5852fbb2f3c5c1c53e0eedce9bf06ba0b5473c00ade4d9b"
   },
   {
     "rule": "CSS-006",
@@ -1869,7 +2893,7 @@
     "line": 118,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "cd93bf1d659bfbce827f83bb36f344bcd0902e4821d6db51af5c3f7e4b03a15e"
+    "fingerprint": "e72feb7a83ed1af91190c24d8b0104bb20b0cfa6b02bff051d1fbb1080b5c987"
   },
   {
     "rule": "CSS-006",
@@ -1877,7 +2901,7 @@
     "line": 119,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "3428c48d6f23eb95fa429cb97acf776263a14c2a6210a579edaf1c740157d863"
+    "fingerprint": "f05de452c9c06ebdaa1c605c8d7e040c3e71cbe734107c94ade178859ebe44f2"
   },
   {
     "rule": "CSS-006",
@@ -1885,7 +2909,23 @@
     "line": 120,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "c9cd1fd373cc285f5ee4e8e11af607bafc8f0649e3aad793f0567845512a3f58"
+    "fingerprint": "6a2350d32a973de0f7f79e68306e3e5ba90af1db54cf8be655c7b80234a175ce"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 128,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "995477a6076e128fdd8fd0dc6d53ffb27139ec0968696cc5d7db0fd2677b5681"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 134,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "fda98cde4b43846000ffad650fe2047632d0d5ad55f133206e05462e654a9e5f"
   },
   {
     "rule": "CSS-006",
@@ -1893,7 +2933,7 @@
     "line": 135,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "4e0c5635c3750e24e0a04cad3b02ffa6effbed449839f0bfe4edb38adf4934c9"
+    "fingerprint": "57ea984058feeb05f1ed2dd85aa593a57cede862e22ba7626f2df4c482ce4f86"
   },
   {
     "rule": "CSS-006",
@@ -1901,7 +2941,7 @@
     "line": 136,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "4424219f9e414ba87ddef5075209433b4ca6d3984384a23158b930d817e43a50"
+    "fingerprint": "97a024c89c0329a3e6c59f8089c666b79855e8926797f40eff681d356476146d"
   },
   {
     "rule": "CSS-006",
@@ -1909,7 +2949,7 @@
     "line": 137,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "fb29cee35beedf2417306c401200ae4eb9c3090a0ddb77dfd0574b34c7057504"
+    "fingerprint": "155246c692fa1ee424532710dd39ccb9633f210ea35fd2d96e1df817fa66de6f"
   },
   {
     "rule": "CSS-006",
@@ -1917,7 +2957,7 @@
     "line": 138,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "f3bfed3b544d138b9d34680b8372b8e2bd8d8c885312b8351de0e19880663099"
+    "fingerprint": "869d15aacddcd196108975f85dc3990f7827d0f0c64d3f9dd9e7479c44c0cbcc"
   },
   {
     "rule": "CSS-006",
@@ -1925,7 +2965,7 @@
     "line": 143,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "07cb0a1fa32657fddbc44c49461db5f496f2c0adc7f49f2820fa515112e0181a"
+    "fingerprint": "a257bf9a3e54db3f7dfc8845f6d92b60fe892d742ab14c0eb23a513777cf1bd5"
   },
   {
     "rule": "CSS-006",
@@ -1933,7 +2973,7 @@
     "line": 144,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "3f5ad2f44098279c62cebdd0aaae7c8a1e510361e0f791a7633804e16d091619"
+    "fingerprint": "9a19a51ee71774d8d48bd3ff21af1949bf321e7639724f34cd484aec5a5771fd"
   },
   {
     "rule": "CSS-006",
@@ -1941,7 +2981,7 @@
     "line": 145,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "eb53fca910610b514b7c62201fd32dbcee98c2bc1f522fe7688f6a9e4a50061e"
+    "fingerprint": "e5c4845d79da78ad55e680279ce751736d4ba1a4889316e65b149cc332e7e045"
   },
   {
     "rule": "CSS-006",
@@ -1949,7 +2989,23 @@
     "line": 146,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "9934996926b2e91ecf5f0eb9ecf335fedf290cddf934f52319a830a139824809"
+    "fingerprint": "d965105fc5e54498ab1398d9f0b97d897c2da2380c07b9ad9bd117dea7fa03d8"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 147,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "3376dcb338de229ae8356b3e81d6e3162d042b75c8c70f37b78bdc0da7ec30eb"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 152,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "a257bf9a3e54db3f7dfc8845f6d92b60fe892d742ab14c0eb23a513777cf1bd5"
   },
   {
     "rule": "CSS-006",
@@ -1957,7 +3013,15 @@
     "line": 153,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "26de8c7cbcf33b0e6019222ef0de44bb6a7449a954451077ed778edc84282534"
+    "fingerprint": "5cb1eee514379e82ed26322dd679286c5835194b89eeaa423d18831187e57da5"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 154,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "e5c4845d79da78ad55e680279ce751736d4ba1a4889316e65b149cc332e7e045"
   },
   {
     "rule": "CSS-006",
@@ -1965,7 +3029,15 @@
     "line": 155,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "dddde4c58753e1490a3a96107367788c189574e4601066396cabaf42c4666508"
+    "fingerprint": "6570cd9d2215cd8d560d850eaedd251e95af77bd07de9d5e69031b9e9adfffa5"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 156,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "3376dcb338de229ae8356b3e81d6e3162d042b75c8c70f37b78bdc0da7ec30eb"
   },
   {
     "rule": "CSS-006",
@@ -1973,7 +3045,15 @@
     "line": 161,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "e7ab5999654c6017406d77ef45f5f7e5e795c3a985128995df3cc3a9d048cab4"
+    "fingerprint": "af14c8986cc457f4d4fe461340663eec48a2f473b2cac059c23c714e093c9706"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 162,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "9a19a51ee71774d8d48bd3ff21af1949bf321e7639724f34cd484aec5a5771fd"
   },
   {
     "rule": "CSS-006",
@@ -1981,7 +3061,15 @@
     "line": 163,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "e07c829ff0c33af6224a0e0b648feceaa9513743dc9d1aafcda5275c3060dced"
+    "fingerprint": "46055666a3c218a61cec2f7c58170b057b5db76eef8e2915f116aa9a8d203633"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 164,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "d965105fc5e54498ab1398d9f0b97d897c2da2380c07b9ad9bd117dea7fa03d8"
   },
   {
     "rule": "CSS-006",
@@ -1989,7 +3077,47 @@
     "line": 165,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "fdeaa79d2bcacaec168a2c20f0fa8b0f57a1843569373160977493709337208a"
+    "fingerprint": "1a154a73bb82d58447b47860b4ed0fbda5990637a56bd8ddbe5dd9cbaaf4fd41"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 170,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "af14c8986cc457f4d4fe461340663eec48a2f473b2cac059c23c714e093c9706"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 171,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "5cb1eee514379e82ed26322dd679286c5835194b89eeaa423d18831187e57da5"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 172,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "46055666a3c218a61cec2f7c58170b057b5db76eef8e2915f116aa9a8d203633"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 173,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "6570cd9d2215cd8d560d850eaedd251e95af77bd07de9d5e69031b9e9adfffa5"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 174,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "1a154a73bb82d58447b47860b4ed0fbda5990637a56bd8ddbe5dd9cbaaf4fd41"
   },
   {
     "rule": "CSS-006",
@@ -1997,7 +3125,7 @@
     "line": 185,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "0ce8dabb7c610494169ae89b0692306da31b8a1357427bfe1f3cec2bc14770fb"
+    "fingerprint": "e6cdfb2d951c3d6c979e1db1d70313caa46d1a674e847bf1137351fc33cb92d4"
   },
   {
     "rule": "CSS-006",
@@ -2005,7 +3133,7 @@
     "line": 186,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "dc12c04cfd1c66da0f2c0e5ab70b1b92fb75ea2211989c3015ba21f74c8cb784"
+    "fingerprint": "ccb223df5614767d9b06f87a50c943f60d8c07cc8d332eb1882aa803e3429eb7"
   },
   {
     "rule": "CSS-006",
@@ -2013,7 +3141,7 @@
     "line": 187,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "57cf6a8adfd6acb222d4a42bc1b99ccc26c9a315b9a893dc58696ccd3081c3aa"
+    "fingerprint": "7334a5c05df1a3bae905c77cc0c09fdc30d3020cfe36fee30322753edbd5b95f"
   },
   {
     "rule": "CSS-006",
@@ -2021,7 +3149,7 @@
     "line": 209,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "d6a2eeaddedb1bf60286486e875680130e19ef47c6c2841bf90f01d5a6e2f1cd"
+    "fingerprint": "4f3a45fad2ac9e37d1006d7ace6ded8fd2110e43b7af9703b2f729fff393bb11"
   },
   {
     "rule": "CSS-006",
@@ -2029,7 +3157,7 @@
     "line": 280,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "2b31efc708c31bacf8583b5f1658bf03d8333d5df2589d9520f4407d74ae6155"
+    "fingerprint": "f48a343791751a531b269aac46fec663468535a3c433004a9cd0fbf68460e999"
   },
   {
     "rule": "CSS-006",
@@ -2037,7 +3165,15 @@
     "line": 2,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "4b4ed2e1b141499142469e3351b8b35914b6f1be2d528cbbf59b7ff7bbbe30a9"
+    "fingerprint": "d557c229c32be638f9870e807408a7f57a7ac296272cdd270dd7bd5ba5efab0a"
+  },
+  {
+    "rule": "CSS-006",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
+    "line": 130,
+    "symbol": "important_abuse",
+    "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+    "fingerprint": "19f51ca7a0b3d43894fd8041f338ca834149a37b5dba2338d133c2ed82ea95e1"
   },
   {
     "rule": "CSS-006",
@@ -2045,7 +3181,7 @@
     "line": 224,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "5cc243a6aefda6bd56a9afab7ffe60e9d11ddf31defa94ea76f97a0e5d2e4665"
+    "fingerprint": "cdb3a55074067e7db9e9508b5a73b99868504416f20cafc429445ba7f6c7e56f"
   },
   {
     "rule": "CSS-006",
@@ -2053,343 +3189,31 @@
     "line": 46,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "d55802681e4979577b7d934768eee2355a59619bca352b7af80e851509c101f6"
+    "fingerprint": "450c7887170a2f4f24d849b9debd37f5dde7868bd40f0812b8aa411bff2e33cb"
   },
   {
     "rule": "FSD-001",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-    "line": 333,
-    "symbol": "../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue",
-    "message": "FSD Layer Violation: layer 'entities' is forbidden from importing from upper layer 'features' ('../../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue')",
-    "fingerprint": "4cf8d91a9adf93420fef45dbf30dcd676d890c784291fecff58309a4aea99eac"
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 197,
+    "symbol": "@/services/Entity/useRelationshipBlock",
+    "message": "FSD Layer Violation: layer 'shared' is forbidden from importing from upper layer 'entities' ('@/services/Entity/useRelationshipBlock')",
+    "fingerprint": "49891cc6932b82aecc7b5dab8fe966ad3e1d9723bdd6d850118b8631eec3232a"
   },
   {
     "rule": "FSD-001",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-    "line": 334,
-    "symbol": "../../../features/schemas/SchemaEditor/RelationshipBlock.vue",
-    "message": "FSD Layer Violation: layer 'entities' is forbidden from importing from upper layer 'features' ('../../../features/schemas/SchemaEditor/RelationshipBlock.vue')",
-    "fingerprint": "8a2584e4e0b656930af6cba7086a896aa1bdc6c21b2e9571ebc514142eadd6f2"
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 198,
+    "symbol": "@/services/Entity/useRelationshipBlock",
+    "message": "FSD Layer Violation: layer 'shared' is forbidden from importing from upper layer 'entities' ('@/services/Entity/useRelationshipBlock')",
+    "fingerprint": "dc6da8a4c90de93c3558faf68928dd2f6e3131f2b1e7aa7a5dde2e077b3b32b7"
   },
   {
-    "rule": "FSD-001",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-    "line": 335,
-    "symbol": "../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.vue",
-    "message": "FSD Layer Violation: layer 'entities' is forbidden from importing from upper layer 'features' ('../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.vue')",
-    "fingerprint": "f5e4932de97081acee3fb62adab0a4ad2281c12925a06a57000ec13dbd48afe7"
-  },
-  {
-    "rule": "FSD-001",
-    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
-    "line": 336,
-    "symbol": "../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.model",
-    "message": "FSD Layer Violation: layer 'entities' is forbidden from importing from upper layer 'features' ('../../../features/schemas/SchemaEditor/ManuscriptPointPicker/ManuscriptPointPicker.model')",
-    "fingerprint": "8644f3617217eccde75f51cf8b3be18da91076b81eab0ada142cd5e7370fd2cd"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/EditorView.vue.ts",
-    "line": 10,
-    "symbol": "@/features/chapters/ChapterTree/ChapterTree.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'chapters'",
-    "fingerprint": "4ee4c0cf59553da8de374e158211a438145b54884781e9c49b9697bacf8b3860"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/EditorView.vue.ts",
+    "rule": "VUE-008",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue",
     "line": 13,
-    "symbol": "@/features/chapters/ChaptersMain/ChaptersMain.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'chapters'",
-    "fingerprint": "c413906bbdbb9e078ffb804f3a27a1fb112a2ac8049b565f5aef1edd9803a69d"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/EditorView.vue.ts",
-    "line": 15,
-    "symbol": "@/features/schemas/SchemaEditor/SchemaEditorMain.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'schemas'",
-    "fingerprint": "5b4a415dad104cf413d0e60fb263a3f10dbb72260638a7ac9ffed661cf6773ea"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/EditorView.vue.ts",
-    "line": 18,
-    "symbol": "@/features/ai/WowilonPanel.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'ai'",
-    "fingerprint": "2c6b203bde9a3b547d8173ed82434d9ed1a7aa80eda024f4842ad46bb34b0fa3"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/ProjectLauncher.vue",
-    "line": 166,
-    "symbol": "../../features/timeline/CalendarsPanel/CalendarsPanel.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'timeline'",
-    "fingerprint": "099a1d102c2cd691563a0a62e01ce30212d1b53198de9ece153c7ca7ffa65852"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/ProjectLauncher.vue",
-    "line": 167,
-    "symbol": "../../features/sync/CloudSyncModal.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'sync'",
-    "fingerprint": "9b0d80872dab8064b1c2abbd0942ba3c13de3f5d38360c84f696f80e50075455"
-  },
-  {
-    "rule": "FSD-004",
-    "file": "./apps/spa/src/ts/features/shell/ProjectLauncher.vue",
-    "line": 168,
-    "symbol": "../../features/timeline/Calendars/GlobalTimeViewer/GlobalTimeViewer.vue",
-    "message": "FSD Cross-Slice Violation: slice 'shell' cannot directly depend on sibling slice 'timeline'",
-    "fingerprint": "52922e1805a976c0cb61c7b0137970f6c7979d8f96fdc96943ad64509604e145"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/app/app.ts",
-    "line": 1,
-    "symbol": "app",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "543158888d998159a95456063073b0ebf39d3d2a4c09883b2354ffd144e541f2"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/app/chapters.ts",
-    "line": 1,
-    "symbol": "chapters",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "c08ef1f45bb1bc6b161edc9cece3f155beb5410eadc454f0b5d36c8a4f7879fd"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/app/project_launcher.ts",
-    "line": 1,
-    "symbol": "project_launcher",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "9fff90ada91793109d8b31280d2ea17114eac3cf6360bd4351f3cfbbfb5595be"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/app/settings.ts",
-    "line": 1,
-    "symbol": "settings",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "30c259ba80bb72555c1fb69293d5567a19658d049586875a95461fb07228c514"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/features/ai/components/useAiChatHistory.ts",
-    "line": 1,
-    "symbol": "useAiChatHistory",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "01556df08299b1b5c92c7c1db49b002047ae5d42d545388861770fc7b2f0568b"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/hooks/useTiptapSplitView.ts",
-    "line": 1,
-    "symbol": "useTiptapSplitView",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "4637ea31a9e18a479ea299a1e26b0501b86608c9d47e30636122d8c55f8eeb54"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/features/documents/nodes/FigureNode/useFigureNodeView.ts",
-    "line": 1,
-    "symbol": "useFigureNodeView",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "bca1209d4322595a61aafceaea1a9d18e2ddc9d1a53b15af7208c00ee8b29177"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/features/shell/Splash.vue.ts",
-    "line": 1,
-    "symbol": "Splash.vue",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "ae3f172ee08438166f01fc366a9c7900a77e55750a43cdc083532d06df822b08"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/features/shell/useProjectLauncher.ts",
-    "line": 1,
-    "symbol": "useProjectLauncher",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "481cbb89ae404e04635a5ef8c5b11f7ae1607c22c1871b81565244e18b1b051d"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/stores/hotkeys.ts",
-    "line": 1,
-    "symbol": "hotkeys",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "0a0dc88964eea33f628084710aa3062592088a701f78892df7cae107fc976941"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/stores/schema.ts",
-    "line": 1,
-    "symbol": "schema",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "6c9edbc5dc5303bee7a8a0e7a47800b095b2b75adbcf07126a606cebb8846173"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/stores/shell/shell.layout.ts",
-    "line": 1,
-    "symbol": "shell.layout",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "5709562cbbe6892095553d05584e62c9860a0715d71f6895040daf4773540e89"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/utils/ui-helpers.ts",
-    "line": 1,
-    "symbol": "ui-helpers",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "aca271d291c9c44542fdf5626bcb8b1858b6986e8ca877700de9fd111fcf3c4d"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./apps/spa/src/ts/utils/v-glass.ts",
-    "line": 1,
-    "symbol": "v-glass",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "9c2b28cff673d51b31d53755cf6f249d45e545cf03d7066af91d0a57b541dd15"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/components/src/components/Vue/useFloatingWindow.ts",
-    "line": 1,
-    "symbol": "useFloatingWindow",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "9828cda7a123a339467b59cea7d89350df11fe94ac912c957b2e8701fd055cee"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/components/src/ts/app/settings.ts",
-    "line": 1,
-    "symbol": "settings",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "15ee828a931450fb153f30fa4794c2513a53ccbb7194f8ebced8fe82690d411f"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/components/src/ts/composables/useShellApp.ts",
-    "line": 1,
-    "symbol": "useShellApp",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "9477e7d98e64cd9a0cc27154329c77dead1f38f10cc6ac74607fe36a08bf3ab3"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/components/src/ts/services/performance.service.ts",
-    "line": 1,
-    "symbol": "performance.service",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "2446c7c4f9420abeef7cadace0295ae458b392c81247f0c2383dfc9aabe241be"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/components/src/ts/services/settings.service.ts",
-    "line": 1,
-    "symbol": "settings.service",
-    "message": "Tauri event listener 'listen()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "0e3d7fcb1edf50f17606d927fce7af10edd34e06b762dd4fb980a4be0e9c7de6"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/components/src/ts/utils/dialogs.ts",
-    "line": 1,
-    "symbol": "dialogs",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "15e96b2e79af543568a09a43daf3934a432569351ef8bf0a79e3cdb6d445f6aa"
-  },
-  {
-    "rule": "LEAK-001",
-    "file": "./packages/word-vibe/src/components/ruler/useWordRuler.ts",
-    "line": 1,
-    "symbol": "useWordRuler",
-    "message": "DOM listener 'addEventListener()' registered without symmetric onUnmounted cleanup hook.",
-    "fingerprint": "317560dbd20e5196091598b210c979bdd7d058c543f9c9c231259c6370cc9a05"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./apps/spa/src/ts/features/ai/components/AiActionButtons.vue",
-    "line": 18,
-    "symbol": "AiActionButtons",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\ai\\components\\AiActionButtons.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "3d4cd6dd43a932ad627430993cd07c913bc91516c37cb0724cc51b4f124aab00"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./apps/spa/src/ts/features/ai/components/AiHeader.vue",
-    "line": 50,
-    "symbol": "AiHeader",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\ai\\components\\AiHeader.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "ec6a57ab3b38b8318d4f04b66b295e98a886e6f21335ba93d2ea648943346836"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./apps/spa/src/ts/features/ai/components/AiResearchProgress.vue",
-    "line": 22,
-    "symbol": "AiResearchProgress",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\ai\\components\\AiResearchProgress.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "dab9e930d245839ff6bfc37ed95a65a835335ebfe9e9d400252b33d6713709f7"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./packages/components/src/components/Vue/EditorGroupPane.vue",
-    "line": 64,
-    "symbol": "EditorGroupPane",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\EditorGroupPane.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "ae15048cacfa9509941cf00890acd10c32257a4649f23f94d46b5ceed0afed6f"
-  },
-  {
-    "rule": "VUE-001",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsNavRail.vue",
-    "line": 24,
-    "symbol": "SettingsNavRail",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\Settings\\SettingsNavRail.vue' contains raw business logic (functions, state, computed/watch) in <script setup>. <script setup> must contain only glue code (props, emits, hook calls).",
-    "fingerprint": "14e983f51c67e7fd89c838440f6b7aa75dade411df1159413cabed396bcec6c4"
-  },
-  {
-    "rule": "VUE-002",
-    "file": "./apps/spa/src/ts/features/ai/components/AiActionButtons.vue",
-    "line": 18,
-    "symbol": "AiActionButtons",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\ai\\components\\AiActionButtons.vue' is missing required companion hook useAiActionButtons.ts",
-    "fingerprint": "f00782c6803f9b374cd5bd819c0f2fcdb3ec8ef14da6fa5d8b8d8153afbfbc14"
-  },
-  {
-    "rule": "VUE-002",
-    "file": "./apps/spa/src/ts/features/ai/components/AiHeader.vue",
-    "line": 50,
-    "symbol": "AiHeader",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\ai\\components\\AiHeader.vue' is missing required companion hook useAiHeader.ts",
-    "fingerprint": "3447225e2758f1b32a69bca5ef35a3668fc289d8936b026392d4db4cdbf754fa"
-  },
-  {
-    "rule": "VUE-002",
-    "file": "./apps/spa/src/ts/features/ai/components/AiResearchProgress.vue",
-    "line": 22,
-    "symbol": "AiResearchProgress",
-    "message": "Vue component '.\\apps\\spa\\src\\ts\\features\\ai\\components\\AiResearchProgress.vue' is missing required companion hook useAiResearchProgress.ts",
-    "fingerprint": "124a88429032a09330bacf4284831d3bd03b93c8da005a118bf26d28010644ad"
-  },
-  {
-    "rule": "VUE-002",
-    "file": "./packages/components/src/components/Vue/EditorGroupPane.vue",
-    "line": 64,
-    "symbol": "EditorGroupPane",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\EditorGroupPane.vue' is missing required companion hook useEditorGroupPane.ts",
-    "fingerprint": "c7a6bac78d8e03d8f5c0dea96681caa5e3cfbdd58392608bfb14d3f6725a1c16"
-  },
-  {
-    "rule": "VUE-002",
-    "file": "./packages/components/src/components/Vue/Settings/SettingsNavRail.vue",
-    "line": 24,
-    "symbol": "SettingsNavRail",
-    "message": "Vue component '.\\packages\\components\\src\\components\\Vue\\Settings\\SettingsNavRail.vue' is missing required companion hook useSettingsNavRail.ts",
-    "fingerprint": "f6864746a792f85e9aa74c125d39b7f762f660e08178c4b475a1eb955c3b46d5"
+    "symbol": "prop_mutation",
+    "message": "Directly mutating props breaks Vue one-way data flow and parent state isolation.",
+    "fingerprint": "789467a31a9140ba167de7e4c486fcbd12c5b5bb2d9cd7d755b216d531f21785"
   },
   {
     "rule": "VUE-008",
@@ -2397,6 +3221,6 @@
     "line": 19,
     "symbol": "prop_mutation",
     "message": "Directly mutating props breaks Vue one-way data flow and parent state isolation.",
-    "fingerprint": "a6e202aa16a25c7c2d854011037b1efe7c8806bfc3b15d1089521c6cf1d74515"
+    "fingerprint": "900ad0f72e6f6cf3b1db04027644b53f55829d594e9a182aa3731b3c8ffd9579"
   }
 ]

@@ -1,10 +1,17 @@
-import { computed, ref } from 'vue';
+import { computed, ref, onUnmounted } from 'vue';
 import type { FigureNodeViewProps } from './FigureNodeView.model';
 
 export function useFigureNodeView(props: FigureNodeViewProps) {
   const isResizing = ref(false);
   const startX = ref(0);
   const startWidth = ref(0);
+  let resizeCleanup: (() => void) | null = null;
+
+  onUnmounted(() => {
+    if (typeof resizeCleanup === 'function') {
+      resizeCleanup();
+    }
+  });
 
   const src = computed(() => props.node.attrs.src || '');
   const caption = computed(() => props.node.attrs.caption || '');
@@ -47,6 +54,12 @@ export function useFigureNodeView(props: FigureNodeViewProps) {
 
     const onMouseUp = () => {
       isResizing.value = false;
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      resizeCleanup = null;
+    };
+
+    resizeCleanup = () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };

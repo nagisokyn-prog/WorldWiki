@@ -189,7 +189,7 @@ fn test_scan_workspace_use_case_orchestration() {
         let repo = Arc::new(RulesJsonRepository::load_from_file(&rules_path).unwrap());
         let parsers: Vec<Arc<dyn AstParserPort>> = vec![
             Arc::new(RustSynParserAdapter::default()),
-            Arc::new(VueSfcParserAdapter),
+            Arc::new(VueSfcParserAdapter::default()),
         ];
         let ast_engine = Arc::new(cargo_cerberus::infrastructure::ParallelAstEngineAdapter::new(parsers));
 

@@ -1,7 +1,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue';
+import type { Ref } from 'vue';
 import { invoke } from '@worldwiki/components';
 import { useCalendarStore } from '../../../../stores/calendar.store';
-import { useShellStore } from '../../../../stores/shell';
 
 import type { CalendarRecord } from '../../../../stores/calendar.store';
 
@@ -11,14 +11,18 @@ export interface LocalDateItem {
   date: Record<string, unknown>;
 }
 
-export function useGlobalTimeViewer() {
+export function useGlobalTimeViewer(projectNameInput?: string | Ref<string | undefined> | (() => string | undefined)) {
   const isVisible = ref(false);
   const minute = ref(0);
   const calendars = ref<CalendarRecord[]>([]);
   const localDates = ref<LocalDateItem[]>([]);
   const loading = ref(false);
 
-  const shellStore = useShellStore();
+  const getProjectName = (): string | undefined => {
+    if (typeof projectNameInput === 'function') return projectNameInput();
+    if (projectNameInput && typeof projectNameInput === 'object' && 'value' in projectNameInput) return projectNameInput.value;
+    return typeof projectNameInput === 'string' ? projectNameInput : undefined;
+  };
 
   const open = () => { isVisible.value = true; };
   const close = () => { isVisible.value = false; };
@@ -31,8 +35,10 @@ export function useGlobalTimeViewer() {
   };
 
   const loadCalendars = async () => {
+    const proj = getProjectName();
+    if (!proj) return;
     loading.value = true;
-    calendars.value = await useCalendarStore().getCalendars(shellStore.projectName!);
+    calendars.value = await useCalendarStore().getCalendars(proj);
     loading.value = false;
     await updateLocalDates();
   };
@@ -54,7 +60,7 @@ export function useGlobalTimeViewer() {
 
   onMounted(async () => {
     window.addEventListener('keydown', handleKeydown);
-    if (shellStore.projectName) {
+    if (getProjectName()) {
       await loadCalendars();
     }
   });
@@ -67,7 +73,7 @@ export function useGlobalTimeViewer() {
     updateLocalDates();
   });
 
-  watch(() => shellStore.projectName, async (newVal) => {
+  watch(() => getProjectName(), async (newVal) => {
     if (newVal && isVisible.value) {
       await loadCalendars();
     }

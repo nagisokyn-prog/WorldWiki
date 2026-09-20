@@ -1,4 +1,4 @@
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import type { PageSize } from '../../types/dto';
 
 export interface WordRulerProps {
@@ -118,15 +118,26 @@ export function useWordRuler(props: WordRulerProps, emit: WordRulerEmit) {
       }
     };
 
+    let dragCleanup: (() => void) | null = null;
+
     const onMouseUp = () => {
       activeDrag.value = null;
       guidelineX.value = null;
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+      dragCleanup = null;
     };
+
+    dragCleanup = onMouseUp;
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
+
+    onUnmounted(() => {
+      if (dragCleanup) {
+        dragCleanup();
+      }
+    });
   };
 
   const resetToGost = () => {

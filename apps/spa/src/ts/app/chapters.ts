@@ -14,7 +14,9 @@ import PlanningPanelVue from '../features/chapters/PlanningPanel/PlanningPanel.v
 import ExportModalVue from '../features/chapters/Export/ExportModal.vue';
 
 
-document.addEventListener('DOMContentLoaded', () => {
+let appInstance: ReturnType<typeof createApp> | null = null;
+
+export function initChapters(): void {
   const urlParams = new URLSearchParams(window.location.search);
   const project = urlParams.get('project');
 
@@ -23,28 +25,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!project) {
     console.error('Проект не указан в URL - используем "default"');
-    // Используем default проект для тестирования
   }
 
   const projectId = project || 'default';
 
   // Создаем Vue приложение с ChaptersMain
-  const app = createApp(ChaptersMainVue, { project: projectId });
+  appInstance = createApp(ChaptersMainVue, { project: projectId });
 
   // Регистрируем компоненты глобально
-  app.component('ChapterTree', ChapterTreeVue);
-  app.component('EditorCore', EditorCoreVue);
-  app.component('TimelinePanel', TimelinePanelVue);
-  app.component('ParticipantsPanel', ParticipantsPanelVue);
-  app.component('PlanningPanel', PlanningPanelVue);
-  app.component('ExportModal', ExportModalVue);
-
+  appInstance.component('ChapterTree', ChapterTreeVue);
+  appInstance.component('EditorCore', EditorCoreVue);
+  appInstance.component('TimelinePanel', TimelinePanelVue);
+  appInstance.component('ParticipantsPanel', ParticipantsPanelVue);
+  appInstance.component('PlanningPanel', PlanningPanelVue);
+  appInstance.component('ExportModal', ExportModalVue);
 
   const appContainer = document.getElementById('app');
   if (appContainer) {
-    app.mount(appContainer);
+    appInstance.mount(appContainer);
     console.log('✅ ChaptersMain Vue приложение монтировано, проект:', projectId);
   } else {
     console.error('❌ Контейнер #app не найден');
   }
-});
+}
+
+export function disposeChapters(): void {
+  if (appInstance) {
+    appInstance.unmount();
+    appInstance = null;
+  }
+}
+
+export function unmounted(): void {
+  disposeChapters();
+}
+
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initChapters, { once: true });
+  } else {
+    initChapters();
+  }
+}

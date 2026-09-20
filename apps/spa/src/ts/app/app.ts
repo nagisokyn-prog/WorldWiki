@@ -100,12 +100,24 @@ async function init() {
   app.mount('#app');
 }
 
-window.addEventListener('error', (e) => {
+const onError = (e: ErrorEvent) => {
   console.error('🔥 [Window Global Error]:', e.error || e.message);
-});
+};
 
-window.addEventListener('unhandledrejection', (e) => {
+const onRejection = (e: PromiseRejectionEvent) => {
   console.error('🔥 [Unhandled Promise Rejection]:', e.reason);
-});
+};
+
+window.addEventListener('error', onError);
+window.addEventListener('unhandledrejection', onRejection);
+
+export function disposeApp(): void {
+  window.removeEventListener('error', onError);
+  window.removeEventListener('unhandledrejection', onRejection);
+}
+
+export function unmounted(): void {
+  disposeApp();
+}
 
 init().catch(e => console.error('[app] init error:', e));

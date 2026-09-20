@@ -181,7 +181,6 @@
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
 import ModuleHelpPreview from './ModuleHelpPreview.vue';
-import EntityEditorVue from '../../../features/entities/EntityEditor/EntityEditor.vue';
 import { useSchemaEditorMain } from './useSchemaEditorMain';
 
 const props = withDefaults(defineProps<{

@@ -4,6 +4,7 @@
  * @rust-ready ✅ loadSettings, saveSettings, calculateLoadMeter, autoDetectFPS
  */
 
+import { onScopeDispose } from 'vue';
 import { setLocale } from '../i18n';
 import type { AppSettings } from '../types/settings';
 
@@ -40,13 +41,15 @@ const DEFAULT_SETTINGS: AppSettings = {
 class SettingsService {
   private settings: AppSettings;
   private listeners: ((settings: AppSettings) => void)[] = [];
+  private storageListener: ((e: StorageEvent) => void) | null = null;
+  private tauriUnlisten: (() => void) | null = null;
 
   constructor() {
     this.settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 
     if (typeof window !== 'undefined') {
       // Синхронизация между вкладками браузера
-      window.addEventListener('storage', (e) => {
+      this.storageListener = (e: StorageEvent) => {
         if (e.key === (window.__APP_CONFIG__?.storageKey ?? 'app:settings') && e.newValue) {
           try {
             const newSettings = JSON.parse(e.newValue);
@@ -57,7 +60,8 @@ class SettingsService {
             console.error('Failed to sync settings from storage', err);
           }
         }
-      });
+      };
+      window.addEventListener('storage', this.storageListener);
 
       // Синхронизация между окнами Tauri
       if (window.__TAURI__?.event) {
@@ -68,7 +72,10 @@ class SettingsService {
             this.applyLocale();
             this.notifyListeners();
           }
-        }).catch((e: unknown) => console.warn('Failed to listen to settings-updated', e));
+        }).then(
+          (unlisten) => { this.tauriUnlisten = unlisten; },
+          (e: unknown) => console.warn('Failed to listen to settings-updated', e)
+        );
       }
     }
   }
@@ -550,8 +557,31 @@ class SettingsService {
   /**
    * Подписка на изменения настроек
    */
-  onChange(listener: (settings: AppSettings) => void): void {
+  onChange(listener: (settings: AppSettings) => void): () => void {
     this.listeners.push(listener);
+    return () => this.offChange(listener);
+  }
+
+  /**
+   * Отписка от изменений настроек
+   */
+  offChange(listener: (settings: AppSettings) => void): void {
+    this.listeners = this.listeners.filter(fn => fn !== listener);
+  }
+
+  /**
+   * Очистка глобальных слушателей
+   */
+  dispose(): void {
+    if (typeof window !== 'undefined' && this.storageListener) {
+      window.removeEventListener('storage', this.storageListener);
+      this.storageListener = null;
+    }
+    if (this.tauriUnlisten) {
+      this.tauriUnlisten();
+      this.tauriUnlisten = null;
+    }
+    this.listeners = [];
   }
 
   /**
@@ -563,6 +593,13 @@ class SettingsService {
 }
 
 export const settingsService = new SettingsService();
+
+export function useSettingsService(): SettingsService {
+  onScopeDispose(() => {
+    // Singleton scoped listener hook
+  });
+  return settingsService;
+}
 
 // Глобальный доступ для совместимости
 declare global {

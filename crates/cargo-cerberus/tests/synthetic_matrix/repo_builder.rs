@@ -113,7 +113,7 @@ impl SyntheticRepoBuilder {
             None => RustSynParserAdapter::default(),
         };
         let parsers: Vec<Arc<dyn AstParserPort>> =
-            vec![Arc::new(rust_parser), Arc::new(VueSfcParserAdapter)];
+            vec![Arc::new(rust_parser), Arc::new(VueSfcParserAdapter::default())];
         let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
         let manifest_parser = Arc::new(CargoMetadataManifestAdapter::new());
         let rules_repo = Arc::new(RulesJsonRepository::default());

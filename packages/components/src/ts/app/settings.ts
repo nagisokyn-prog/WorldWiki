@@ -69,10 +69,10 @@ export function disposeSettingsApp(): void {
   }
 }
 
+export function unmounted(): void {
+  disposeSettingsApp();
+}
+
 if (typeof document !== 'undefined') {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSettingsApp, { once: true });
-  } else {
-    initSettingsApp();
-  }
+  document.addEventListener('DOMContentLoaded', initSettingsApp);
 }

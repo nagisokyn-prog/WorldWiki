@@ -140,6 +140,20 @@ impl Default for LimitsConfig {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+pub struct FrontendLayerConfig {
+    #[serde(default)]
+    pub order: Option<u32>,
+    #[serde(default)]
+    pub aliases: Vec<String>,
+    #[serde(default)]
+    pub allowed_deps: Vec<String>,
+    #[serde(default)]
+    pub is_orchestrator: bool,
+    #[serde(default)]
+    pub allow_cross_slice: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CerberusConfig {
     #[serde(rename = "$schema", default)]
@@ -156,6 +170,8 @@ pub struct CerberusConfig {
     pub rules: HashMap<String, Severity>,
     #[serde(default)]
     pub overrides: Vec<RuleOverride>,
+    #[serde(default)]
+    pub frontend_layers: HashMap<String, FrontendLayerConfig>,
 }
 
 impl Default for CerberusConfig {
@@ -168,6 +184,7 @@ impl Default for CerberusConfig {
             limits: LimitsConfig::default(),
             rules: HashMap::new(),
             overrides: Vec::new(),
+            frontend_layers: HashMap::new(),
         }
     }
 }
@@ -212,6 +229,29 @@ pub fn compute_fingerprint(
     hasher.update(rule_id.as_bytes());
     hasher.update(b":");
     hasher.update(rule_version.as_bytes());
+    hasher.update(b":");
+    hasher.update(symbol.as_bytes());
+    hasher.update(b":");
+    let normalized = snippet.split_whitespace().collect::<Vec<_>>().join(" ");
+    hasher.update(normalized.as_bytes());
+    let hash_bytes = hasher.finalize();
+    hash_bytes.iter().map(|b| format!("{:02x}", b)).collect()
+}
+
+pub fn compute_location_fingerprint(
+    rule_id: &str,
+    rule_version: &str,
+    file_path: &str,
+    symbol: &str,
+    snippet: &str,
+) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(rule_id.as_bytes());
+    hasher.update(b":");
+    hasher.update(rule_version.as_bytes());
+    hasher.update(b":");
+    let norm_path = file_path.replace('\\', "/");
+    hasher.update(norm_path.as_bytes());
     hasher.update(b":");
     hasher.update(symbol.as_bytes());
     hasher.update(b":");
@@ -338,6 +378,12 @@ mod tests {
         let fp2 = compute_fingerprint("ARCH-001", "1.0", "tauri::*", "use   tauri::State;");
         assert_eq!(fp1, fp2);
         assert!(!fp1.is_empty());
+
+        let lfp1 = compute_location_fingerprint("ARCH-001", "1.0", "src/domain/a.rs", "tauri::*", "use tauri::State;");
+        let lfp2 = compute_location_fingerprint("ARCH-001", "1.0", "src/domain/b.rs", "tauri::*", "use tauri::State;");
+        let lfp3 = compute_location_fingerprint("ARCH-001", "1.0", "src\\domain\\a.rs", "tauri::*", "use   tauri::State;");
+        assert_ne!(lfp1, lfp2);
+        assert_eq!(lfp1, lfp3);
 
         let violation = Violation {
             rule_id: "ARCH-001".into(),

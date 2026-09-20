@@ -102,7 +102,7 @@ impl<'a> ImportChecker<'a> {
                             "Domain crate '{}' cannot perform direct I/O via 'std::{}'",
                             self.crate_name, sub_mod
                         ),
-                        "Move filesystem/network/process operations to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                        "Move filesystem/network/process operations to ports traits or infrastructure adapters.",
                     ));
                     return;
                 }
@@ -126,7 +126,7 @@ impl<'a> ImportChecker<'a> {
                     "ARCH-002",
                     item_use,
                     &format!("Application crate '{}' cannot import 'tauri'", self.crate_name),
-                    "Pass UI parameters as clean DTOs into application use cases; isolate Tauri IPC in worldwiki-tauri.",
+                    "Pass UI parameters as clean DTOs into application use cases; isolate UI/IPC framework in adapter layer.",
                 ));
             } else if !self.is_tauri_authorized_crate() {
                 if self.is_domain_crate()
@@ -140,14 +140,14 @@ impl<'a> ImportChecker<'a> {
                         "ARCH-001",
                         item_use,
                         &format!("Domain crate '{}' cannot import external framework 'tauri'", self.crate_name),
-                        "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                        "Move infrastructure dependencies to ports traits or infrastructure adapters.",
                     ));
                 } else {
                     violations.push(self.build_violation(
                         "ARCH-005",
                         item_use,
                         &format!("Crate '{}' is not authorized to import 'tauri'", self.crate_name),
-                        "Move Tauri IPC commands and dependencies to worldwiki-tauri (adapters/tauri).",
+                        "Move UI/IPC framework commands and dependencies to authorized adapter layer (e.g. adapters/tauri).",
                     ));
                 }
             }
@@ -209,7 +209,7 @@ impl<'a> ImportChecker<'a> {
                             "Domain crate '{}' cannot import external framework or I/O dependency '{}'",
                             self.crate_name, root_segment
                         ),
-                        "Move infrastructure dependencies to ports traits in worldwiki-ports or adapters in worldwiki-infrastructure.",
+                        "Move infrastructure dependencies to ports traits or infrastructure adapters.",
                     ));
                 }
             }
@@ -487,16 +487,14 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn is_domain_crate(&self) -> bool {
-        self.crate_name == "worldwiki-domain"
-            || self.crate_name.contains("domain")
+        self.crate_name.contains("domain")
             || self.crate_name.contains("core")
             || self.crate_name.contains("entity")
             || self.crate_name.contains("entities")
     }
 
     fn is_application_crate(&self) -> bool {
-        self.crate_name == "worldwiki-application"
-            || self.crate_name.contains("application")
+        self.crate_name.contains("application")
             || self.crate_name.contains("usecase")
             || self.crate_name.contains("usecases")
             || self.crate_name.contains("service")
@@ -504,12 +502,10 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn is_tauri_authorized_crate(&self) -> bool {
-        self.crate_name == "worldwiki-tauri"
-            || self.crate_name.contains("adapter")
-            || self.crate_name == "world-wiki"
+        self.crate_name.contains("adapter")
             || self.crate_name.contains("tauri")
             || path_contains(self.current_file, "adapters/tauri")
-            || path_contains(self.current_file, "crates/worldwiki-tauri")
+            || path_contains(self.current_file, "adapters\\tauri")
     }
 
     fn build_violation(

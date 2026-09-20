@@ -1,0 +1,402 @@
+[
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/app/project_launcher.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (348) exceeds recommended limit (300)",
+    "fingerprint": "00e72d5fdcc6f020382daf2731f2748a9b146c198b4edde2c39a81bd6d93d684"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/ai/WowilonPanel.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (220) exceeds recommended limit (150)",
+    "fingerprint": "7f8ab8732dff0883f27ef1ca30dc9bd59dd44f7b50bdbbcab66a5fc4fe3e3c10"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/ai/components/AiMessageList.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (186) exceeds recommended limit (150)",
+    "fingerprint": "7c3e004af641d062300e8c8e6cf4ff17f8904397db3af3c742a5a2df99015383"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/ai/settings/AiSettingsSkillsTab.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (162) exceeds recommended limit (150)",
+    "fingerprint": "bccb5e5045192d431fd532b1da2a7f53ca65cb21b947b9eb60b23340414044a8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/AiSettingsModelsTab.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (268) exceeds strict limit (250)",
+    "fingerprint": "880e3fdc52f8c96f26403437076a0e105c881a85349c158756e834423cb7a217"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/ai/useWowilonPanel.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (852) exceeds strict limit (450)",
+    "fingerprint": "67a3e857277002c1e04e9bce3b7a62e3a830c59bb35be4775ece65561aacdb2a"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/ChapterTree/useChapterTree.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (375) exceeds recommended limit (250)",
+    "fingerprint": "9c18abee975ecbcae53fcf9be015bdb0e0ee0786098bed1cbf9d90105f6bf586"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/ChaptersMain/ChaptersMain.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (254) exceeds strict limit (250)",
+    "fingerprint": "d49ec536502ccbf507cb24b1cdc79709c9669788282fc96aaa7900717b1e64df"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/EditorCoreTiptap.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (229) exceeds recommended limit (150)",
+    "fingerprint": "13a1c8e307437db77f115334da19d25beb8172b1efd0b29262ac95999990b2ad"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/useEditorCoreTiptap.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (337) exceeds recommended limit (250)",
+    "fingerprint": "0be61245f4d2921c35a4c0a7ec9d308ce20bf886ea0ae5ae91d8ae7e888654d1"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/EditorCoreTiptap/useTiptapEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (358) exceeds recommended limit (250)",
+    "fingerprint": "b83e7a878309b1c0f792e42c4610cb3e3cff236733ad62880c504ecb00ead3b1"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/PromisesPanel.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (268) exceeds strict limit (250)",
+    "fingerprint": "6aa6b07734d8f0df9f86ccc2ce4f2b465328929e1bb8542dabdf76f00aef5349"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/chapters/PromisesPanel/usePromisesPanel.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (294) exceeds recommended limit (250)",
+    "fingerprint": "a059b0e0a69564a1db9af1e3f559b198862e414149cc74f432f807a0864d7cb5"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/documents/AcademicInspector/AcademicInspector.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (193) exceeds recommended limit (150)",
+    "fingerprint": "95e1840f5b6184953fde15e7863695c75c1a8fab80969b6e2127ec4cc50257be"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditor/EntityEditor.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (345) exceeds strict limit (250)",
+    "fingerprint": "52562cabf8b242a8c266aa85038e708da217de8afff2c752abd2b6c9db4a7384"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/entities/EntityEditor/useEntityEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (433) exceeds recommended limit (250)",
+    "fingerprint": "1c18562bcbb0cf5d3be170ab934630ec4130e61f3ed9ca7fbcc6d507d62464e1"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/ModuleHelpPreview.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (289) exceeds strict limit (250)",
+    "fingerprint": "7e469f696f4d8b591d5d7b9df436934a697abeba3e04cf5253cb7a6c6708b647"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaContainer.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (257) exceeds strict limit (250)",
+    "fingerprint": "e45e1215fd4d4be96e1536107d3a535d9841380603e07521734558400a83b3b9"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/SchemaEditorMain.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (220) exceeds recommended limit (150)",
+    "fingerprint": "90b5fc60f3093d2de10f5e18dbe321f89825f48cdf99d6d9b27fbcf60cde31a4"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/useModuleReferenceData.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (287) exceeds recommended limit (250)",
+    "fingerprint": "325452dbb0229d74e918f8acf3de43155b350a38fd387b9e8977372738586292"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/shell/EditorView.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (264) exceeds strict limit (250)",
+    "fingerprint": "0c9b9fbb473ace99fac5e2a6ed339a4d13ccaafb6e8aceb09cfbbba569bfb9ef"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/shell/ProjectLauncher.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (173) exceeds recommended limit (150)",
+    "fingerprint": "7e205b0e1c6e315dcfe6b8019e5a8c5d43e6080df3d4eae6ebb007028ed758c0"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/shell/useProjectLauncher.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (327) exceeds recommended limit (250)",
+    "fingerprint": "d079f626f865674cb3bfc83d856e135186013269d705730cff472b69b524ab57"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarTimezones/CalendarTimezones.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (161) exceeds recommended limit (150)",
+    "fingerprint": "cad6249771ceacc7e5c71abe1aee8d41f51a66527d32a3ec89f1860920fcc970"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/GlobalCalendarWidget/GlobalCalendarWidget.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (185) exceeds recommended limit (150)",
+    "fingerprint": "262177bc5d408b571a539a4d80fe308cd272be3b9cffca5f21ba1e5fdfc32bdd"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/TimeAtlasModal.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (152) exceeds recommended limit (150)",
+    "fingerprint": "7d0ec7cce0c2633c9bf323e5abf8dcf68e02c1f61c77bb2914d4775691f262cc"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/tabs/TimeAtlasBridgeTab.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (207) exceeds recommended limit (150)",
+    "fingerprint": "7e40872bba71e00a7957fcf59abcb5e6875a65e9c9e2bcf286af26cbe48e8bb8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimeAtlas/useTimeAtlasModal.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (370) exceeds recommended limit (250)",
+    "fingerprint": "f50e1172e708246d3cbecefaa42280670d75d591c9c45327f71db2b226bbb2e6"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/TimelinePanel/useTimelinePanel.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (485) exceeds strict limit (450)",
+    "fingerprint": "4b57ebf1625d48d8938ed8d6641fade4a06a3c44cb2b1163a6fd95a9d2c8fd81"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/services/Calendars/calendar.math.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (720) exceeds strict limit (500)",
+    "fingerprint": "6a42c1c1f6de2b46aea296e4a753015f4a015f5f7cf1316bf89001792a0c269e"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/services/Calendars/timeline-panel.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (406) exceeds recommended limit (300)",
+    "fingerprint": "83a5877b1be73ca717f2bc8f91ca62d026348f9f900ff32483df2305c6396a8f"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/services/Entity/useRelationshipBlock.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (417) exceeds recommended limit (250)",
+    "fingerprint": "d7a16b69854abf56d19fd4cbea6cc8c11d6f7fdd9945522fcfd3d7f6813f9d23"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/services/api.client.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (588) exceeds strict limit (500)",
+    "fingerprint": "43f7e553f018450b3515f5fa1f4d1d2501d684d3e7b72389bcf5ca985c2f7163"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/services/document/ast/ASTAdapter.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (505) exceeds strict limit (500)",
+    "fingerprint": "011b7e0e879df414983ae388c817cb0cb5dfcab5a8646d2664ecb552299d1e7a"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (207) exceeds recommended limit (150)",
+    "fingerprint": "96f3aa0c0ebdf277b8b49fe3ac9b03ea6e65a3c8097f130fe0d31701afb3c7a8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/shared/ui/UniversalDatePicker/useUniversalDatePicker.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (277) exceeds recommended limit (250)",
+    "fingerprint": "83856e7ae3c75356f0ac3fe21453e8936060953929d4ecfa7fbf0cb04c636e1c"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/stores/shell.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (371) exceeds recommended limit (300)",
+    "fingerprint": "d25d645cb8bf79695806e6a2667a39e63a1e69e0128af8ace873f73ea54ea6b4"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/stores/shell/shell.entityOps.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (427) exceeds recommended limit (300)",
+    "fingerprint": "10767e2663b0666a4634a4094c71cb845c4a85542c04dcb5a71045921f75a7cb"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./apps/spa/src/ts/utils/ui-helpers.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (443) exceeds recommended limit (300)",
+    "fingerprint": "8b647b02d66e3658b963090d192300893776f775e5669b6da9754295f61b17d2"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/components/src/ts/composables/useShellApp.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (398) exceeds recommended limit (250)",
+    "fingerprint": "f3e82226ef717636029a3bec99b72f0cc1f3ab2773fba0b0c5d4efe3f371473e"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/components/src/ts/i18n.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (395) exceeds recommended limit (300)",
+    "fingerprint": "48fd7d4279d02fa460c9df4df1bbd869b00ecbe12ae3b30423f0f579f5f22215"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/components/src/ts/services/settings.service.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (455) exceeds recommended limit (300)",
+    "fingerprint": "ae777c3e0b234a169df7105edcd5e2d74b5017bc2d9625533c3b46ae20d7624a"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/word-vibe/src/adapter/createWordVibeAdapter.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (622) exceeds strict limit (500)",
+    "fingerprint": "40f5b4f09c8f58e868443c444f9d37bdf2ddc64fa75aab9a2e1d7a55bed3e7a8"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/word-vibe/src/components/WordVibeEditor.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (155) exceeds recommended limit (150)",
+    "fingerprint": "c60fbc6dddc00cce412ef91f2faa6c5a809384ab1816516e84ac08caf2fff5be"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/word-vibe/src/components/ribbon/WordRibbonBar.vue",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (696) exceeds strict limit (250)",
+    "fingerprint": "caac360443632ec205d7931170e2d7677d56fca89b520dd372cf222063e0b735"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/word-vibe/src/components/useWordVibeEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (264) exceeds recommended limit (250)",
+    "fingerprint": "cc68f8cecc109994a3249a9ce58d5bd1243b93790718069665f0b9744c0bf4e1"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/word-vibe/src/converter/V2ToASTConverter.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (369) exceeds recommended limit (300)",
+    "fingerprint": "030dd1511385fb4a290f247230d2705f62506c89c1aaece9f662fd0311eaa345"
+  },
+  {
+    "rule": "ARCH-031",
+    "file": "./packages/word-vibe/src/editor/useRkWordEditor.ts",
+    "line": 1,
+    "symbol": "component",
+    "message": "Frontend file SLOC (400) exceeds recommended limit (250)",
+    "fingerprint": "3d0c222244e2ef09891cb0d12345d6f75d7bbb6225e5b45aee2fb1a11f48b2b1"
+  },
+  {
+    "rule": "FSD-001",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 197,
+    "symbol": "@/services/Entity/useRelationshipBlock",
+    "message": "FSD Layer Violation: layer 'shared' is forbidden from importing from upper layer 'entities' ('@/services/Entity/useRelationshipBlock')",
+    "fingerprint": "49891cc6932b82aecc7b5dab8fe966ad3e1d9723bdd6d850118b8631eec3232a"
+  },
+  {
+    "rule": "FSD-001",
+    "file": "./apps/spa/src/ts/shared/ui/RelationshipBlock/RelationshipBlock.vue",
+    "line": 198,
+    "symbol": "@/services/Entity/useRelationshipBlock",
+    "message": "FSD Layer Violation: layer 'shared' is forbidden from importing from upper layer 'entities' ('@/services/Entity/useRelationshipBlock')",
+    "fingerprint": "dc6da8a4c90de93c3558faf68928dd2f6e3131f2b1e7aa7a5dde2e077b3b32b7"
+  }
+]

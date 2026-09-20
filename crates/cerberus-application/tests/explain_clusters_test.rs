@@ -164,3 +164,73 @@ fn test_explain_clusters_with_noise() {
     assert_eq!(report.total_clusters, 1);
     assert_eq!(report.noise_count, 1);
 }
+
+#[test]
+fn test_explain_clusters_samples_include_all_dominant_rules() {
+    let violations = vec![
+        Violation {
+            rule_id: "CSS-002".into(),
+            rule_version: "1.0".into(),
+            category: Category::Convention,
+            severity: Severity::Deny,
+            file: PathBuf::from("app.css"),
+            line: 1,
+            column: 1,
+            symbol: "taxonomy".into(),
+            snippet: "tax".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "fp1".into(),
+        },
+        Violation {
+            rule_id: "CSS-002".into(),
+            rule_version: "1.0".into(),
+            category: Category::Convention,
+            severity: Severity::Deny,
+            file: PathBuf::from("app.css"),
+            line: 2,
+            column: 1,
+            symbol: "taxonomy".into(),
+            snippet: "tax2".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "fp2".into(),
+        },
+        Violation {
+            rule_id: "CSS-004".into(),
+            rule_version: "1.0".into(),
+            category: Category::Convention,
+            severity: Severity::Deny,
+            file: PathBuf::from("app.css"),
+            line: 3,
+            column: 1,
+            symbol: "color".into(),
+            snippet: "col".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "fp3".into(),
+        },
+        Violation {
+            rule_id: "CSS-006".into(),
+            rule_version: "1.0".into(),
+            category: Category::Convention,
+            severity: Severity::Deny,
+            file: PathBuf::from("app.css"),
+            line: 4,
+            column: 1,
+            symbol: "important".into(),
+            snippet: "!imp".into(),
+            message: "msg".into(),
+            remediation: "rem".into(),
+            fingerprint: "fp4".into(),
+        },
+    ];
+
+    let use_case = ExplainClustersUseCase::new(Arc::new(DummyEmbedder), Arc::new(DummyClusterer));
+    let report = use_case.execute(&violations).unwrap();
+    assert_eq!(report.clusters.len(), 1);
+    let sample_rules: Vec<String> = report.clusters[0].sample_violations.iter().map(|s| s.rule_id.clone()).collect();
+    assert!(sample_rules.contains(&"CSS-002".to_string()));
+    assert!(sample_rules.contains(&"CSS-004".to_string()));
+    assert!(sample_rules.contains(&"CSS-006".to_string()));
+}

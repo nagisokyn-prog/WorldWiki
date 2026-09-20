@@ -6,7 +6,7 @@ import { CalendarMath } from './calendar.math';
 import type { CalendarData, CalendarEra, CalendarMonth } from './calendar.types';
 
 import { XboxWheel, settingsService } from '@worldwiki/components';
-import UniversalDatePicker from '../../features/timeline/UniversalDatePicker/UniversalDatePicker.vue';
+import { UniversalDatePicker } from '@/shared/ui';
 
 export interface TimelineEvent {
   date: {

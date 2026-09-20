@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import type { AiChatTreeNode } from '../composables/useAiChats';
 
 export interface HistoryTreeNode {
@@ -36,6 +36,7 @@ export function useAiChatHistory(
     return saved ? Math.max(180, Math.min(500, parseInt(saved, 10))) : 250;
   };
   const sidebarWidth = ref<number>(getInitialWidth());
+  let resizeCleanup: (() => void) | null = null;
 
   const startSidebarResize = (e: MouseEvent) => {
     const startX = e.clientX;
@@ -51,11 +52,20 @@ export function useAiChatHistory(
     const onMouseUp = () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      resizeCleanup = null;
     };
+
+    resizeCleanup = onMouseUp;
 
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };
+
+  onUnmounted(() => {
+    if (resizeCleanup) {
+      resizeCleanup();
+    }
+  });
 
   const buildTreeNodes = (nodes: AiChatTreeNode[]): HistoryTreeNode[] => {
     return nodes.map(node => ({

@@ -205,7 +205,7 @@ fn test_enterprise_monorepo_stress_and_performance_benchmark() {
         Arc::new(RulesJsonRepository::load_from_file(&root.join("cerberus.json")).unwrap());
     let parsers: Vec<Arc<dyn AstParserPort>> = vec![
         Arc::new(RustSynParserAdapter::default()),
-        Arc::new(VueSfcParserAdapter),
+        Arc::new(VueSfcParserAdapter::default()),
     ];
     let ast_engine = Arc::new(ParallelAstEngineAdapter::new(parsers));
     let scanner =

@@ -128,41 +128,15 @@
         </button>
       </div>
 
-      <!-- Всплывающая панель быстрых действий -->
-      <div class="message-actions-hover">
-        <button class="icon-btn" title="Копировать текст" @click="copyText(group.activeMessage.content)">
-          <i class="fas fa-copy"></i>
-        </button>
-        <button 
-          v-if="group.activeMessage.role === 'user'" 
-          class="icon-btn" 
-          title="Редактировать сообщение" 
-          @click="$emit('start-edit', group.activeMessage)"
-        >
-          <i class="fas fa-pencil-alt"></i>
-        </button>
-        <button 
-          v-if="group.activeMessage.role === 'assistant'" 
-          class="icon-btn" 
-          title="Перегенерировать ответ" 
-          @click="$emit('regenerate', group.activeMessage.parent_id as string)"
-        >
-          <i class="fas fa-sync-alt"></i>
-        </button>
-        <button class="icon-btn" title="Создать ветку отсюда (Fork)" @click="$emit('branch', group.activeMessage.id)">
-          <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="13" width="13" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-            <path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-            <path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path>
-            <path d="M7 8l0 8"></path>
-            <path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path>
-            <path d="M14 14l3 -3l3 3"></path>
-          </svg>
-        </button>
-        <button class="icon-btn danger" title="Удалить сообщение" @click="$emit('delete', group.activeMessage.id as string)">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </div>
+      <!-- Панель быстрых действий -->
+      <AiMessageActionsBar
+        :role="group.activeMessage.role"
+        @copy="copyText(group.activeMessage.content)"
+        @start-edit="$emit('start-edit', group.activeMessage)"
+        @regenerate="$emit('regenerate', group.activeMessage.parent_id as string)"
+        @branch="$emit('branch', group.activeMessage.id)"
+        @delete="$emit('delete', group.activeMessage.id as string)"
+      />
 
       <!-- Карточка запроса подтверждения инструмента -->
       <AiToolApproval 
@@ -180,6 +154,7 @@ import { SafeHtml } from '@worldwiki/components';
 import AiToolApproval from '../../tools/AiToolApproval/AiToolApproval.vue';
 import AiMermaidDiagram from '../../visuals/AiMermaidDiagram/AiMermaidDiagram.vue';
 import AiCitationBadge from '../../citations/AiCitationBadge/AiCitationBadge.vue';
+import AiMessageActionsBar from './AiMessageActionsBar.vue';
 import type { AiMessageItemProps, AiMessageItemEmits } from './AiMessageItem.model';
 import { useAiMessageList } from '../AiMessageList/useAiMessageList';
 

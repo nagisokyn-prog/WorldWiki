@@ -48,9 +48,18 @@ impl AstParserPort for VueSfcParserAdapter {
                     self.config.as_ref(),
                 ));
 
-                // Check SFC SLOC limits (warn: 150, deny: 250)
-                let sloc = SlocCalculator::count_sloc(&content, path);
-                Self::check_sloc_limits(path, sloc, 150, 250, &mut violations);
+                // Check SFC Effective SLOC limits (excluding boilerplate glue)
+                let (warn_sloc, deny_sloc, max_destructure) = if let Some(cfg) = &self.config {
+                    (
+                        cfg.limits.max_vue_sloc_logic_warn + cfg.limits.sloc_grace_lines,
+                        cfg.limits.max_vue_sloc_logic_deny + cfg.limits.sloc_grace_lines,
+                        cfg.limits.max_destructure_fields,
+                    )
+                } else {
+                    (150 + 15, 250 + 15, 3)
+                };
+                let sloc = SlocCalculator::count_vue_sfc_effective_sloc(&sfc, max_destructure);
+                Self::check_sloc_limits(path, sloc, warn_sloc, deny_sloc, &mut violations);
             }
             "css" => {
                 violations.extend(CssRuleChecker::validate_css_file(&content, path));
@@ -65,10 +74,25 @@ impl AstParserPort for VueSfcParserAdapter {
 
                 let sloc = SlocCalculator::count_sloc(&content, path);
                 let filename = path.file_name().and_then(|f| f.to_str()).unwrap_or("");
-                let (warn_sloc, deny_sloc) = if filename.starts_with("use") {
-                    (250, 450) // Composables limit
+                let (warn_sloc, deny_sloc) = if let Some(cfg) = &self.config {
+                    let grace = cfg.limits.sloc_grace_lines;
+                    if filename.starts_with("use") {
+                        (
+                            cfg.limits.max_composable_sloc_warn + grace,
+                            cfg.limits.max_composable_sloc_deny + grace,
+                        )
+                    } else {
+                        (
+                            cfg.limits.max_sloc_warn + grace,
+                            cfg.limits.max_sloc_deny + grace,
+                        )
+                    }
                 } else {
-                    (300, 500)
+                    if filename.starts_with("use") {
+                        (250 + 15, 450 + 15)
+                    } else {
+                        (300 + 15, 500 + 15)
+                    }
                 };
                 Self::check_sloc_limits(path, sloc, warn_sloc, deny_sloc, &mut violations);
             }
@@ -203,9 +227,9 @@ mod tests {
         let violations_deny = adapter.parse_file(&vue_path, "spa").unwrap();
         assert!(violations_deny.iter().any(|v| v.rule_id == "ARCH-031" && v.severity == Severity::Deny));
 
-        // 2. SFC Warn SLOC (151..250)
+        // 2. SFC Warn SLOC (151+15..250+15)
         let mut warn_vue = String::from("<template>\n<div>\n");
-        for _ in 0..160 {
+        for _ in 0..180 {
             warn_vue.push_str("<span>Row</span>\n");
         }
         warn_vue.push_str("</div>\n</template>\n");
@@ -214,9 +238,9 @@ mod tests {
         let violations_warn = adapter.parse_file(&warn_vue_path, "spa").unwrap();
         assert!(violations_warn.iter().any(|v| v.rule_id == "ARCH-031" && v.severity == Severity::Warn));
 
-        // 3. Regular TS Warn (> 300) & Deny (> 500)
+        // 3. Regular TS Warn (> 300+15) & Deny (> 500+15)
         let mut warn_ts = String::new();
-        for _ in 0..320 {
+        for _ in 0..340 {
             warn_ts.push_str("export const x = 1;\n");
         }
         let warn_ts_path = temp.path().join("service.ts");

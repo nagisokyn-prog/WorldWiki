@@ -1,3 +1,6 @@
+export { default as AiMainChatView } from './chat/AiMainChatView/AiMainChatView.vue';
+export * from './chat/AiMainChatView/AiMainChatView.model';
+
 export { default as AiMessageList } from './chat/AiMessageList/AiMessageList.vue';
 export * from './chat/AiMessageList/useAiMessageList';
 export * from './chat/AiMessageList/AiMessageList.model';

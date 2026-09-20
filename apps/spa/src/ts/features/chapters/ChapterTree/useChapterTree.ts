@@ -1,41 +1,20 @@
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, triggerRef } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, triggerRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import * as api from '@/services/api.client';
 import { useEntityTree } from '@/services/Entity/entity.tree';
 import { useChapterStore } from '@/stores/chapter.store';
 import type { ChapterTreeProps } from './ChapterTree.model';
+import { useCalendarResize } from './composables/useCalendarResize';
+import {
+    useChapterTreeSections,
+    compareIds,
+    type ExplorerNode,
+    type ExplorerNodeData,
+    type ExplorerSection
+} from './composables/useChapterTreeSections';
+import { useChapterTreeOps } from './composables/useChapterTreeOps';
 
-export interface ExplorerNodeData {
-    type?: string;
-    isEntity?: boolean;
-    original?: Record<string, unknown>;
-    section?: Record<string, unknown>;
-    [key: string]: unknown;
-}
-
-export interface ExplorerNode {
-    id: string;
-    label: string;
-    emoji?: string;
-    icon?: string;
-    isGroup?: boolean;
-    canAdd?: boolean;
-    addLabel?: string;
-    data?: unknown;
-    children?: ExplorerNode[];
-}
-
-export interface ExplorerSection {
-    id: string;
-    title: string;
-    icon?: string;
-    canAdd?: boolean;
-    canAddInline?: boolean;
-    canEdit?: boolean;
-    itemLabel?: string;
-    nodes: ExplorerNode[];
-}
+export type { ExplorerNode, ExplorerNodeData, ExplorerSection };
 
 export function useChapterTree(
     props: ChapterTreeProps,
@@ -45,112 +24,26 @@ export function useChapterTree(
     const store = useChapterStore();
     const { hierarchy } = storeToRefs(store);
 
-    // Entity tree handles fetching characters, locations, etc.
     const {
         entities, entitySections, loadEntities, getEntityName, entityKey
     } = useEntityTree(props.project, emit);
 
-    // ID Helper
-    const compareIds = (id1: unknown, id2: unknown) => {
-        if (!id1 || !id2) return false;
-        const s1 = typeof id1 === 'string' ? id1 : ((id1 as { id?: { String?: string } | string }).id || JSON.stringify(id1));
-        const s2 = typeof id2 === 'string' ? id2 : ((id2 as { id?: { String?: string } | string }).id || JSON.stringify(id2));
-        const parts1 = String(s1).split(':');
-        const parts2 = String(s2).split(':');
-        const clean1 = parts1[parts1.length - 1] || String(s1);
-        const clean2 = parts2[parts2.length - 1] || String(s2);
-        return clean1.replace(/"/g, '') === clean2.replace(/"/g, '');
-    };
+    const { calendarHeight, startResizeCalendar } = useCalendarResize();
 
-    const getRootChapters = () => hierarchy.value.chapters.filter(c => !c.volume_id);
+    const sectionsHelper = useChapterTreeSections({
+        hierarchy,
+        entitySections,
+        entities,
+        getEntityName,
+        entityKey
+    });
 
     const activeId = computed(() => {
-        // if entity is open, use activeEditorId
         if (props.activeEditorId) return props.activeEditorId;
-        // if chapter is open, use activeNode id
         if (props.activeNode && (props.activeNode as { node?: { id?: string } }).node) {
             return String((props.activeNode as { node: { id: string } }).node.id);
         }
         return undefined;
-    });
-
-    const explorerSections = computed<ExplorerSection[]>(() => {
-        const sections: ExplorerSection[] = [];
-
-        // --- 1. MANUSCRIPT SECTION ---
-        const msNodes: ExplorerNode[] = [];
-
-        // Volumes
-        for (const vol of hierarchy.value.volumes) {
-            const chapters = hierarchy.value.chapters.filter(c => compareIds(c.volume_id, vol.id));
-            const volNode: ExplorerNode = {
-                id: String(vol.id),
-                label: vol.title || 'Без названия',
-                emoji: '📚',
-                isGroup: true,
-                canAdd: true,
-                addLabel: 'Глава',
-                data: { type: 'volume', original: vol as unknown as Record<string, unknown> },
-                children: []
-            };
-
-            for (const ch of chapters) {
-                volNode.children?.push({
-                    id: String(ch.id),
-                    label: ch.title || 'Без названия',
-                    emoji: '📖',
-                    data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
-                });
-            }
-            msNodes.push(volNode);
-        }
-
-        // Root chapters
-        for (const ch of getRootChapters()) {
-            msNodes.push({
-                id: String(ch.id),
-                label: ch.title || 'Без названия',
-                emoji: '📖',
-                data: { type: 'chapter', original: ch as unknown as Record<string, unknown> }
-            });
-        }
-
-        sections.push({
-            id: 'manuscript',
-            title: 'ПРОИЗВЕДЕНИЕ',
-            canAdd: true,
-            itemLabel: 'Том',
-            nodes: msNodes
-        });
-
-        // --- 2. ENTITY SECTIONS ---
-        for (const sect of entitySections.value) {
-            const entNodes: ExplorerNode[] = [];
-            const entList = entities.value[sect.type] || [];
-
-            for (const ent of entList) {
-                entNodes.push({
-                    id: entityKey(sect.type, String(ent.id)),
-                    label: getEntityName(ent, sect.type),
-                    emoji: sect.emoji,
-                    icon: (sect as { icon?: string }).icon,
-                    data: { isEntity: true, type: sect.type, original: ent as Record<string, unknown>, section: sect as unknown as Record<string, unknown> }
-                });
-            }
-
-            sections.push({
-                id: sect.type,
-                title: sect.title,
-                icon: (sect as { icon?: string }).icon || sect.emoji,
-                canAdd: true,
-                canAddInline: true,
-                canEdit: true,
-                itemLabel: sect.title,
-                nodes: entNodes
-            });
-        }
-
-        return sections;
     });
 
     const load = async () => {
@@ -171,7 +64,7 @@ export function useChapterTree(
         if (entities.value[type]) {
             const ent = entities.value[type].find((en) => String(en.id) === String(id) || String(en.id).endsWith(`:${id}`));
             if (ent) {
-                const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
+                const titleField = Object.keys(ent).find((k) => k.toLowerCase() === 'name') || Object.keys(ent)[0];
                 if (titleField) ent[titleField] = name;
                 triggerRef(entities);
             }
@@ -192,6 +85,7 @@ export function useChapterTree(
         document.addEventListener('ww:entity-saved', entitySavedHandler);
         window.addEventListener('ww:schema-updated', schemaUpdatedHandler as EventListener);
     });
+
     onUnmounted(() => {
         document.removeEventListener('ww:hierarchy-changed', hierarchyChangedHandler);
         document.removeEventListener('ww:entity-renamed', entityRenamedHandler as EventListener);
@@ -199,7 +93,6 @@ export function useChapterTree(
         window.removeEventListener('ww:schema-updated', schemaUpdatedHandler as EventListener);
     });
 
-    // ─── Actions ────────────────────────────────────────────────────────────────
     const goBack = () => {
         router.push('/launcher');
     };
@@ -233,204 +126,42 @@ export function useChapterTree(
         }
     };
 
-    const explorerTreeRef = ref<{ startRename: (node: { id: string }) => void; expandNode: (id: string) => void; startCreate: (sectionId: string) => void } | null>(null);
+    const explorerTreeRef = ref<{
+        startRename: (node: { id: string }) => void;
+        expandNode: (id: string) => void;
+        startCreate: (sectionId: string) => void;
+    } | null>(null);
 
-    const startRename = (node: { id: string }, closeCtx: () => void) => {
-        closeCtx();
-        explorerTreeRef.value?.startRename(node);
-    };
-
-    const handleDeleteSection = async (sectionId: string) => {
-        const { appConfirm } = await import('@worldwiki/components');
-        const confirmed = await appConfirm('Вы уверены, что хотите полностью удалить этот тип сущностей (и все связанные данные)? Это действие необратимо!', 'Удаление схемы');
-        
-        if (confirmed) {
-            try {
-                await api.deleteEntitySchema(props.project, sectionId);
-                setTimeout(() => {
-                    window.location.reload();
-                }, 500);
-            } catch (e) {
-                console.error('Failed to delete schema:', e);
-                const { appAlert } = await import('@worldwiki/components');
-                appAlert('Ошибка при удалении схемы. Проверьте консоль.');
-            }
-        }
-    };
-
-    const handleCreate = async ({ sectionId, parentId, name }: { sectionId: string, parentId?: string, name?: string }) => {
-        if (sectionId === 'manuscript') {
-            if (!parentId) {
-                const tempId = '__new_volume__';
-                hierarchy.value.volumes.push({ id: tempId, project_id: props.project, title: 'Новый том', sort_order: 999, description: null, created_at: null });
-                await nextTick();
-                const node = findNodeById(tempId);
-                if (node) explorerTreeRef.value?.startRename(node);
-            } else {
-                emit('create-chapter-in', { volumeId: parentId });
-            }
-        } else if (name) {
-            emit('add-entity', sectionId, name);
-        }
-    };
-
-    const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string, parentId?: string }) => {
-        if (sectionId === 'manuscript') {
-            if (parentId) {
-                emit('create-chapter-in', { volumeId: parentId });
-            } else {
-                emit('create-chapter-in', { volumeId: null });
-            }
-        } else {
-            explorerTreeRef.value?.startCreate(sectionId);
-        }
-    };
-
-    const handleRename = async (node: { id: string; data?: unknown }, newName: string) => {
-        if (!newName.trim()) return;
-        const data = node.data as ExplorerNodeData | undefined;
-        try {
-            if (String(node.id).startsWith('__new_volume__')) {
-                await api.createVolume(props.project, newName);
-                await load();
-            } else if (data?.type === 'volume' && data.original) {
-                const volId = String(data.original.id);
-                const vol = hierarchy.value.volumes.find((v) => String(v.id) === volId);
-                if (vol) vol.title = newName;
-                await api.updateVolume(props.project, volId, newName);
-                await load();
-            } else if (data?.type === 'chapter' && data.original) {
-                const chId = String(data.original.id);
-                const ch = hierarchy.value.chapters.find((c) => String(c.id) === chId);
-                if (ch) ch.title = newName;
-                hierarchy.value = {
-                    ...hierarchy.value,
-                    chapters: [...hierarchy.value.chapters]
-                };
-                document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: data.original.id, title: newName } }));
-                emit('rename-chapter', data.original, newName);
-            } else if (data?.isEntity && data.original) {
-                const entityType = data.type || '';
-                const originalId = data.original.id;
-                const idToUpdate = String(originalId).split(':').pop()!;
-
-                if (entities.value[entityType]) {
-                    const ent = entities.value[entityType].find((en) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate));
-                    if (ent) {
-                        const titleField = Object.keys(ent).find(k => k.toLowerCase() === 'name') || Object.keys(ent)[0];
-                        if (titleField) ent[titleField] = newName;
-                    }
-                }
-
-                emit('rename-entity', entityType, idToUpdate, newName);
-            }
-        } catch (e) {
-            console.error('Rename error:', e);
-            await load(); // Reload to restore previous state
-        }
-    };
-
-    const handleCancelRename = async (node: { id: string }) => {
-        if (String(node.id).startsWith('__new_volume__')) {
-            await load(); // Just reload from server to wipe out temp object
-        }
-    };
-
-    const handleDelete = async (ids: string[]) => {
-        for (const id of ids) {
-            const node = findNodeById(id);
-            if (!node || !node.data) continue;
-
-            const data = node.data as ExplorerNodeData;
-            const type = data.type;
-            const original = data.original || {};
-
-            if (type === 'volume') {
-                const chapters = hierarchy.value.chapters.filter((c) => compareIds((c as unknown as { volumeId?: string }).volumeId || c.volume_id, original.id));
-                emit('delete-volume', original, chapters, ids.length > 1);
-            } else if (type === 'chapter') {
-                emit('delete-chapter', original, ids.length > 1);
-            } else if (data.isEntity && type) {
-                emit('delete-entity', entityKey(type, String(original.id)), type, ids.length > 1);
-            }
-        }
-        await load();
-    };
-
-    const findNodeById = (id: string): ExplorerNode | null => {
-        for (const sect of explorerSections.value) {
-            for (const node of sect.nodes) {
-                if (node.id === id) return node;
-                if (node.children) {
-                    for (const child of node.children) {
-                        if (child.id === id) return child;
-                        if (child.children) {
-                            for (const gchild of child.children) {
-                                if (gchild.id === id) return gchild;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    };
-
-    const calendarHeight = ref(
-        typeof window !== 'undefined'
-            ? Number(localStorage.getItem('worldwiki-calendar-widget-height')) || 170
-            : 170
-    );
-
-    const startResizeCalendar = (e: MouseEvent) => {
-        e.preventDefault();
-        const startY = e.clientY;
-        const startHeight = calendarHeight.value;
-
-        const onMouseMove = (moveEvent: MouseEvent) => {
-            const deltaY = moveEvent.clientY - startY;
-            const newHeight = Math.max(70, Math.min(500, startHeight + deltaY));
-            calendarHeight.value = newHeight;
-        };
-
-        const onMouseUp = () => {
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('worldwiki-calendar-widget-height', String(calendarHeight.value));
-            }
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-        };
-
-        window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('mouseup', onMouseUp);
-    };
-
-    const isNodeType = (node: { data?: unknown }, type: string) => {
-        return (node.data as { type?: string } | undefined)?.type === type;
-    };
-
-    const isEntityNode = (node: { data?: unknown }) => {
-        return Boolean((node.data as { isEntity?: boolean } | undefined)?.isEntity);
-    };
+    const ops = useChapterTreeOps({
+        project: props.project,
+        hierarchy,
+        entities,
+        entityKey,
+        findNodeById: sectionsHelper.findNodeById,
+        compareIds,
+        load,
+        emit,
+        explorerTreeRef
+    });
 
     return {
         calendarHeight,
         startResizeCalendar,
-        isNodeType,
-        isEntityNode,
-        explorerSections,
+        isNodeType: sectionsHelper.isNodeType,
+        isEntityNode: sectionsHelper.isEntityNode,
+        explorerSections: sectionsHelper.explorerSections,
         activeId,
         explorerTreeRef,
         goBack,
         handleSelect,
         handleOpen,
-        startRename,
-        handleCreate,
-        handleCreateInline,
-        handleRename,
-        handleCancelRename,
-        handleDelete,
-        handleDeleteSection,
+        startRename: ops.startRename,
+        handleCreate: ops.handleCreate,
+        handleCreateInline: ops.handleCreateInline,
+        handleRename: ops.handleRename,
+        handleCancelRename: ops.handleCancelRename,
+        handleDelete: ops.handleDelete,
+        handleDeleteSection: ops.handleDeleteSection,
         load
     };
 }

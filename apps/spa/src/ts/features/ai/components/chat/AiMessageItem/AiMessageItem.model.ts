@@ -1,5 +1,4 @@
 import type { MessageVariantGroup, ChatMessage } from '../../../types/aiPanel.model';
-import type { ToolCallPayload } from '../../tools/AiToolApproval/useAiToolApproval';
 import type { CitationItem } from '../../citations/AiCitation.model';
 
 export interface AiMessageItemProps {

@@ -8,8 +8,9 @@
     <div class="form-group">
       <label class="toggle-row">
         <input 
-          v-model="localSettings.enable_auto_rag" 
           type="checkbox" 
+          :checked="Boolean(localSettings.enable_auto_rag)"
+          @change="$emit('update-setting', 'enable_auto_rag', ($event.target as HTMLInputElement).checked)"
         />
         <div class="toggle-text">
           <span class="toggle-title">Включить автоматический контекстный поиск (Auto-RAG)</span>
@@ -21,8 +22,9 @@
     <div class="form-group">
       <label class="toggle-row">
         <input 
-          v-model="localSettings.enable_semantic_search" 
           type="checkbox" 
+          :checked="Boolean(localSettings.enable_semantic_search)"
+          @change="$emit('update-setting', 'enable_semantic_search', ($event.target as HTMLInputElement).checked)"
         />
         <div class="toggle-text">
           <span class="toggle-title">Гибридный векторный поиск (HNSW + BM25)</span>
@@ -34,8 +36,9 @@
     <div class="form-group mt-2">
       <label>Модель эмбеддингов для лора</label>
       <select 
-        v-model="localSettings.embed_model_path" 
+        :value="localSettings.embed_model_path || ''"
         class="input-base"
+        @change="$emit('update-setting', 'embed_model_path', ($event.target as HTMLSelectElement).value)"
       >
         <option value="">-- Выберите модель эмбеддингов --</option>
         <optgroup v-if="installedModels && installedModels.length > 0" label="Скачанные локальные модели (GGUF)">
@@ -53,7 +56,7 @@
 
       <input 
         v-if="isCustomEmbedPath" 
-        v-model="customEmbedInput" 
+        :value="customEmbedInput" 
         type="text" 
         class="input-base mt-1" 
         placeholder="Путь к локальному .gguf или имя модели в API" 
@@ -64,16 +67,17 @@
 </template>
 
 <script setup lang="ts">
-import type { AiSettings, LocalGgufModel } from '../../../types/ai.types';
+import type { AiProfileSettings, InstalledModelInfo } from '../../../types/ai.types';
 
 defineProps<{
-  localSettings: AiSettings;
-  installedModels?: LocalGgufModel[];
+  localSettings: AiProfileSettings;
+  installedModels?: InstalledModelInfo[];
   isCustomEmbedPath?: boolean;
   customEmbedInput?: string;
 }>();
 
 defineEmits<{
+  (e: 'update-setting', key: keyof AiProfileSettings, val: unknown): void;
   (e: 'custom-embed-input', val: string): void;
 }>();
 </script>

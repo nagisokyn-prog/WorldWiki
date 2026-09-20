@@ -98,6 +98,18 @@ pub struct LimitsConfig {
     pub max_sloc_warn: usize,
     #[serde(default = "default_max_sloc_deny")]
     pub max_sloc_deny: usize,
+    #[serde(default = "default_max_vue_sloc_logic_warn", alias = "max_vue_sloc_warn")]
+    pub max_vue_sloc_logic_warn: usize,
+    #[serde(default = "default_max_vue_sloc_logic_deny", alias = "max_vue_sloc_deny")]
+    pub max_vue_sloc_logic_deny: usize,
+    #[serde(default = "default_max_composable_sloc_warn")]
+    pub max_composable_sloc_warn: usize,
+    #[serde(default = "default_max_composable_sloc_deny")]
+    pub max_composable_sloc_deny: usize,
+    #[serde(default = "default_sloc_grace_lines")]
+    pub sloc_grace_lines: usize,
+    #[serde(default = "default_max_destructure_fields")]
+    pub max_destructure_fields: usize,
     #[serde(default = "default_max_pressure_warn")]
     pub max_pressure_warn: f64,
     #[serde(default = "default_max_pressure_deny")]
@@ -113,6 +125,24 @@ fn default_max_sloc_warn() -> usize {
 }
 fn default_max_sloc_deny() -> usize {
     800
+}
+fn default_max_vue_sloc_logic_warn() -> usize {
+    150
+}
+fn default_max_vue_sloc_logic_deny() -> usize {
+    250
+}
+fn default_max_composable_sloc_warn() -> usize {
+    250
+}
+fn default_max_composable_sloc_deny() -> usize {
+    450
+}
+fn default_sloc_grace_lines() -> usize {
+    15
+}
+fn default_max_destructure_fields() -> usize {
+    3
 }
 fn default_max_pressure_warn() -> f64 {
     200.0
@@ -132,6 +162,12 @@ impl Default for LimitsConfig {
         Self {
             max_sloc_warn: default_max_sloc_warn(),
             max_sloc_deny: default_max_sloc_deny(),
+            max_vue_sloc_logic_warn: default_max_vue_sloc_logic_warn(),
+            max_vue_sloc_logic_deny: default_max_vue_sloc_logic_deny(),
+            max_composable_sloc_warn: default_max_composable_sloc_warn(),
+            max_composable_sloc_deny: default_max_composable_sloc_deny(),
+            sloc_grace_lines: default_sloc_grace_lines(),
+            max_destructure_fields: default_max_destructure_fields(),
             max_pressure_warn: default_max_pressure_warn(),
             max_pressure_deny: default_max_pressure_deny(),
             max_style_lines: default_max_style_lines(),
@@ -408,6 +444,12 @@ mod tests {
         let default_limits = LimitsConfig::default();
         assert_eq!(default_limits.max_sloc_warn, 500);
         assert_eq!(default_limits.max_sloc_deny, 800);
+        assert_eq!(default_limits.max_vue_sloc_logic_warn, 150);
+        assert_eq!(default_limits.max_vue_sloc_logic_deny, 250);
+        assert_eq!(default_limits.max_composable_sloc_warn, 250);
+        assert_eq!(default_limits.max_composable_sloc_deny, 450);
+        assert_eq!(default_limits.sloc_grace_lines, 15);
+        assert_eq!(default_limits.max_destructure_fields, 3);
         assert_eq!(default_limits.max_pressure_warn, 200.0);
         assert_eq!(default_limits.max_pressure_deny, 400.0);
         assert_eq!(default_limits.max_style_lines, 25);
@@ -416,6 +458,12 @@ mod tests {
         let from_empty_json: LimitsConfig = serde_json::from_str("{}").unwrap();
         assert_eq!(from_empty_json.max_sloc_warn, 500);
         assert_eq!(from_empty_json.max_sloc_deny, 800);
+        assert_eq!(from_empty_json.max_vue_sloc_logic_warn, 150);
+        assert_eq!(from_empty_json.max_vue_sloc_logic_deny, 250);
+        assert_eq!(from_empty_json.max_composable_sloc_warn, 250);
+        assert_eq!(from_empty_json.max_composable_sloc_deny, 450);
+        assert_eq!(from_empty_json.sloc_grace_lines, 15);
+        assert_eq!(from_empty_json.max_destructure_fields, 3);
         assert_eq!(from_empty_json.max_pressure_warn, 200.0);
         assert_eq!(from_empty_json.max_pressure_deny, 400.0);
         assert_eq!(from_empty_json.max_style_lines, 25);

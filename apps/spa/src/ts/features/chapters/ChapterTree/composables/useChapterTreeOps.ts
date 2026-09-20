@@ -1,0 +1,164 @@
+import { nextTick } from 'vue';
+import type { Ref } from 'vue';
+import * as api from '@/services/api.client';
+import { appAlert, appConfirm } from '@worldwiki/components';
+import type { ChapterHierarchy } from '@/stores/chapter.store';
+import type { ExplorerNode, ExplorerNodeData } from './useChapterTreeSections';
+
+export interface UseChapterTreeOpsOptions {
+    project: string;
+    hierarchy: Ref<ChapterHierarchy>;
+    entities: Ref<Record<string, Array<Record<string, unknown>>>>;
+    entityKey: (type: string, id: string) => string;
+    findNodeById: (id: string) => ExplorerNode | null;
+    compareIds: (id1: unknown, id2: unknown) => boolean;
+    load: () => Promise<void>;
+    emit: (event: string, ...args: unknown[]) => void;
+    explorerTreeRef: Ref<{ startRename: (node: { id: string }) => void; expandNode: (id: string) => void; startCreate: (sectionId: string) => void } | null>;
+}
+
+export function useChapterTreeOps(options: UseChapterTreeOpsOptions) {
+    const startRename = (node: { id: string }, closeCtx: () => void) => {
+        closeCtx();
+        options.explorerTreeRef.value?.startRename(node);
+    };
+
+    const handleDeleteSection = async (sectionId: string) => {
+        const confirmed = await appConfirm(
+            'Вы уверены, что хотите полностью удалить этот тип сущностей (и все связанные данные)? Это действие необратимо!',
+            'Удаление схемы'
+        );
+
+        if (confirmed) {
+            try {
+                await api.deleteEntitySchema(options.project, sectionId);
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            } catch (e) {
+                console.error('Failed to delete schema:', e);
+                appAlert('Ошибка при удалении схемы. Проверьте консоль.');
+            }
+        }
+    };
+
+    const handleCreate = async ({ sectionId, parentId, name }: { sectionId: string; parentId?: string; name?: string }) => {
+        if (sectionId === 'manuscript') {
+            if (!parentId) {
+                const tempId = '__new_volume__';
+                options.hierarchy.value.volumes.push({
+                    id: tempId,
+                    project_id: options.project,
+                    title: 'Новый том',
+                    sort_order: 999,
+                    description: null,
+                    created_at: null
+                });
+                await nextTick();
+                const node = options.findNodeById(tempId);
+                if (node) options.explorerTreeRef.value?.startRename(node);
+            } else {
+                options.emit('create-chapter-in', { volumeId: parentId });
+            }
+        } else if (name) {
+            options.emit('add-entity', sectionId, name);
+        }
+    };
+
+    const handleCreateInline = async ({ sectionId, parentId }: { sectionId: string; parentId?: string }) => {
+        if (sectionId === 'manuscript') {
+            if (parentId) {
+                options.emit('create-chapter-in', { volumeId: parentId });
+            } else {
+                options.emit('create-chapter-in', { volumeId: null });
+            }
+        } else {
+            options.explorerTreeRef.value?.startCreate(sectionId);
+        }
+    };
+
+    const handleRename = async (node: { id: string; data?: unknown }, newName: string) => {
+        if (!newName.trim()) return;
+        const data = node.data as ExplorerNodeData | undefined;
+        try {
+            if (String(node.id).startsWith('__new_volume__')) {
+                await api.createVolume(options.project, newName);
+                await options.load();
+            } else if (data?.type === 'volume' && data.original) {
+                const volId = String(data.original.id);
+                const vol = options.hierarchy.value.volumes.find((v) => String(v.id) === volId);
+                if (vol) vol.title = newName;
+                await api.updateVolume(options.project, volId, newName);
+                await options.load();
+            } else if (data?.type === 'chapter' && data.original) {
+                const chId = String(data.original.id);
+                const ch = options.hierarchy.value.chapters.find((c) => String(c.id) === chId);
+                if (ch) ch.title = newName;
+                options.hierarchy.value = {
+                    ...options.hierarchy.value,
+                    chapters: [...options.hierarchy.value.chapters]
+                };
+                document.dispatchEvent(new CustomEvent('ww:chapter-renamed', { detail: { id: data.original.id, title: newName } }));
+                options.emit('rename-chapter', data.original, newName);
+            } else if (data?.isEntity && data.original) {
+                const entityType = data.type || '';
+                const originalId = data.original.id;
+                const idToUpdate = String(originalId).split(':').pop()!;
+
+                if (options.entities.value[entityType]) {
+                    const ent = options.entities.value[entityType].find(
+                        (en) => String(en.id) === String(originalId) || String(en.id) === String(idToUpdate)
+                    );
+                    if (ent) {
+                        const titleField = Object.keys(ent).find((k) => k.toLowerCase() === 'name') || Object.keys(ent)[0];
+                        if (titleField) ent[titleField] = newName;
+                    }
+                }
+
+                options.emit('rename-entity', entityType, idToUpdate, newName);
+            }
+        } catch (e) {
+            console.error('Rename error:', e);
+            await options.load();
+        }
+    };
+
+    const handleCancelRename = async (node: { id: string }) => {
+        if (String(node.id).startsWith('__new_volume__')) {
+            await options.load();
+        }
+    };
+
+    const handleDelete = async (ids: string[]) => {
+        for (const id of ids) {
+            const node = options.findNodeById(id);
+            if (!node || !node.data) continue;
+
+            const data = node.data as ExplorerNodeData;
+            const type = data.type;
+            const original = (data.original || {}) as { id?: unknown };
+
+            if (type === 'volume') {
+                const chapters = options.hierarchy.value.chapters.filter((c) =>
+                    options.compareIds((c as { volumeId?: string }).volumeId || c.volume_id, original.id)
+                );
+                options.emit('delete-volume', original, chapters, ids.length > 1);
+            } else if (type === 'chapter') {
+                options.emit('delete-chapter', original, ids.length > 1);
+            } else if (data.isEntity && type) {
+                options.emit('delete-entity', options.entityKey(type, String(original.id)), type, ids.length > 1);
+            }
+        }
+        await options.load();
+    };
+
+    return {
+        startRename,
+        handleDeleteSection,
+        handleCreate,
+        handleCreateInline,
+        handleRename,
+        handleCancelRename,
+        handleDelete
+    };
+}

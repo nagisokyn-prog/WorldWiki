@@ -13,6 +13,7 @@ import type { AiSkillItem } from './skills/aiSkills.model';
 import { DEFAULT_BUILTIN_SKILLS } from './skills/defaultBuiltinSkills';
 
 export type { ChatMessage, MessageVariantGroup, WowilonPanelProps, WowilonPanelEmits };
+export type UseWowilonPanelReturn = ReturnType<typeof useWowilonPanel>;
 
 export function useWowilonPanel(
   props: WowilonPanelProps,

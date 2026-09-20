@@ -12,12 +12,13 @@
           <span class="slider-value">{{ localSettings.temperature }}</span>
         </div>
         <input 
-          v-model.number="localSettings.temperature" 
+          :value="localSettings.temperature" 
           type="range" 
           min="0" 
           max="2" 
           step="0.05" 
           class="range-slider" 
+          @input="$emit('update-setting', 'temperature', Number(($event.target as HTMLInputElement).value))"
         />
         <div class="slider-marks">
           <span>0.0 (Факты)</span>
@@ -32,12 +33,13 @@
           <span class="slider-value">{{ localSettings.top_p }}</span>
         </div>
         <input 
-          v-model.number="localSettings.top_p" 
+          :value="localSettings.top_p" 
           type="range" 
           min="0" 
           max="1" 
           step="0.05" 
           class="range-slider" 
+          @input="$emit('update-setting', 'top_p', Number(($event.target as HTMLInputElement).value))"
         />
         <div class="slider-marks">
           <span>0.1 (Строго)</span>
@@ -51,23 +53,25 @@
       <div class="form-group">
         <label>Максимум токенов ответа (Max Output Tokens)</label>
         <input 
-          v-model.number="localSettings.max_tokens" 
+          :value="localSettings.max_tokens" 
           type="number" 
           class="input-base" 
           placeholder="Например: 4096 (Оставьте пустым для авто)" 
+          @input="$emit('update-setting', 'max_tokens', ($event.target as HTMLInputElement).value ? Number(($event.target as HTMLInputElement).value) : undefined)"
         />
       </div>
 
       <div class="form-group">
         <label>Штраф за повторы (Presence / Frequency Penalty)</label>
         <input 
-          v-model.number="localSettings.frequency_penalty" 
+          :value="localSettings.frequency_penalty" 
           type="number" 
           step="0.1" 
           min="-2" 
           max="2" 
           class="input-base" 
           placeholder="0.0" 
+          @input="$emit('update-setting', 'frequency_penalty', ($event.target as HTMLInputElement).value ? Number(($event.target as HTMLInputElement).value) : 0)"
         />
       </div>
     </div>
@@ -75,8 +79,9 @@
     <div class="form-group mt-2">
       <label>Уровень размышлений (Reasoning Effort)</label>
       <select 
-        v-model="localSettings.reasoning_effort" 
+        :value="localSettings.reasoning_effort || 'none'"
         class="input-base"
+        @change="$emit('update-setting', 'reasoning_effort', ($event.target as HTMLSelectElement).value)"
       >
         <option value="none">Отключено (без мыслей)</option>
         <option value="low">Минимальный (low)</option>
@@ -90,8 +95,9 @@
     <div class="form-group mt-1">
       <label class="toggle-row">
         <input 
-          v-model="localSettings.enable_streaming" 
           type="checkbox" 
+          :checked="Boolean(localSettings.enable_streaming)"
+          @change="$emit('update-setting', 'enable_streaming', ($event.target as HTMLInputElement).checked)"
         />
         <div class="toggle-text">
           <span class="toggle-title">Потоковая генерация ответов (Streaming)</span>
@@ -103,9 +109,13 @@
 </template>
 
 <script setup lang="ts">
-import type { AiSettings } from '../../../types/ai.types';
+import type { AiProfileSettings } from '../../../types/ai.types';
 
 defineProps<{
-  localSettings: AiSettings;
+  localSettings: AiProfileSettings;
+}>();
+
+defineEmits<{
+  (e: 'update-setting', key: keyof AiProfileSettings, val: unknown): void;
 }>();
 </script>

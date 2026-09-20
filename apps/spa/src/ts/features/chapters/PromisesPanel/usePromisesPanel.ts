@@ -1,6 +1,16 @@
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import * as api from '@/services/api.client';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
+import {
+  usePromiseFiltering,
+  cleanId,
+  PROMISE_KINDS,
+  PROMISE_STATUSES,
+  type ChapterMetaItem
+} from './composables/usePromiseFiltering';
+
+export type { ChapterMetaItem };
+export { PROMISE_KINDS, PROMISE_STATUSES };
 
 export interface PromiseMilestone {
   id: string;
@@ -11,12 +21,6 @@ export interface PromiseMilestone {
   created_at?: string | null;
 }
 
-export interface ChapterMetaItem {
-  id: string | null;
-  title: string;
-  [key: string]: unknown;
-}
-
 export interface PromisesPanelProps {
   project: string;
   chapterId?: string | null;
@@ -24,19 +28,6 @@ export interface PromisesPanelProps {
   currentVolumeId?: string | null;
   allChapters?: ChapterMetaItem[];
 }
-
-export const PROMISE_KINDS: Record<string, { label: string; icon: string }> = {
-  gun: { label: 'Чеховское ружьё', icon: '🔫' },
-  foreshadowing: { label: 'Предзнаменование', icon: '🔮' },
-  mystery: { label: 'Тайна', icon: '🗝️' },
-  question: { label: 'Нераскрытый вопрос', icon: '❓' }
-};
-
-export const PROMISE_STATUSES: Array<{ id: string; label: string; icon: string }> = [
-  { id: 'planted', label: 'Посажено', icon: '🌱' },
-  { id: 'developed', label: 'Развито', icon: '🌿' },
-  { id: 'resolved', label: 'Отстреляно', icon: '🎯' }
-];
 
 export function usePromisesPanel(
   props: PromisesPanelProps,
@@ -49,15 +40,14 @@ export function usePromisesPanel(
   const loading = ref(false);
   const editingNoteId = ref<string | null>(null);
   const noteDraft = ref('');
-  const scopeFilter = ref<'all' | 'current'>('all');
-  const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
+  const isCollapsed = ref(false);
 
-  const cleanId = (id: unknown): string => {
-    if (!id) return '';
-    const s = typeof id === 'string' ? id : ((id as { id?: { String?: string } | string }).id || JSON.stringify(id));
-    const parts = String(s).split(':');
-    return (parts[parts.length - 1] || String(s)).replace(/["'`]/g, '').trim();
-  };
+  const filtering = usePromiseFiltering({
+    promises,
+    chapterId: props.chapterId,
+    chapterTitle: props.chapterTitle,
+    allChapters: props.allChapters
+  });
 
   const loadPromises = async () => {
     if (!props.project) return;
@@ -66,7 +56,6 @@ export function usePromisesPanel(
       const list = await api.getPlotPromises(props.project);
       promises.value = Array.isArray(list) ? list : [];
     } catch {
-      // Тихий fallback на localStorage, пока бэкенд не перезапущен
       const localKey = `ww_plot_promises_${props.project}`;
       try {
         const stored = localStorage.getItem(localKey);
@@ -84,42 +73,6 @@ export function usePromisesPanel(
     try {
       localStorage.setItem(`ww_plot_promises_${props.project}`, JSON.stringify(promises.value));
     } catch { /* ignore */ }
-  };
-
-  const isCurrentChapterPromise = (promiseChapterId: string) => {
-    if (!props.chapterId) return false;
-    return cleanId(props.chapterId) === cleanId(promiseChapterId);
-  };
-
-  const chapterPromises = computed(() => {
-    if (!props.chapterId) return [];
-    return promises.value.filter((p) => isCurrentChapterPromise(p.chapter_id));
-  });
-
-  const filteredPromises = computed(() => {
-    let list = promises.value;
-
-    if (scopeFilter.value === 'current') {
-      list = chapterPromises.value;
-    }
-
-    if (statusFilter.value !== 'all') {
-      list = list.filter((p) => p.status === statusFilter.value);
-    }
-
-    return list;
-  });
-
-  const getChapterTitle = (chapterId: string) => {
-    if (!chapterId) return 'Глава';
-    if (props.chapterId && isCurrentChapterPromise(chapterId) && props.chapterTitle) {
-      return props.chapterTitle;
-    }
-    const targetClean = cleanId(chapterId);
-    const found = props.allChapters?.find((c) => {
-      return cleanId(c.id) === targetClean;
-    });
-    return found?.title || `Глава ${targetClean}`;
   };
 
   const addPromise = async (payload: {
@@ -282,13 +235,8 @@ export function usePromisesPanel(
     });
   };
 
-  const getKindInfo = (kind: string) => {
-    return PROMISE_KINDS[kind] || { label: kind, icon: '📌' };
-  };
-
   watch(() => props.project, loadPromises);
   onMounted(loadPromises);
-  const isCollapsed = ref(false);
 
   const promptAttachMilestone = (item: PlotPromise, stage: 'progression' | 'resolution') => {
     if (!item.id) return;
@@ -308,13 +256,13 @@ export function usePromisesPanel(
   return {
     isCollapsed,
     promises,
-    chapterPromises,
-    filteredPromises,
+    chapterPromises: filtering.chapterPromises,
+    filteredPromises: filtering.filteredPromises,
     loading,
     editingNoteId,
     noteDraft,
-    scopeFilter,
-    statusFilter,
+    scopeFilter: filtering.scopeFilter,
+    statusFilter: filtering.statusFilter,
     loadPromises,
     addPromise,
     addMilestone,
@@ -325,9 +273,9 @@ export function usePromisesPanel(
     cancelEditNote,
     removePromise,
     locateSource,
-    getKindInfo,
-    getChapterTitle,
-    isCurrentChapterPromise,
+    getKindInfo: filtering.getKindInfo,
+    getChapterTitle: filtering.getChapterTitle,
+    isCurrentChapterPromise: filtering.isCurrentChapterPromise,
     promptAttachMilestone
   };
 }

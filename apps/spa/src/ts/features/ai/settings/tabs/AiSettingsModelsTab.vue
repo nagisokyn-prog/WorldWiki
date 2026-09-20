@@ -15,6 +15,7 @@
         :is-fetching-models="isFetchingModels"
         :fetch-error="fetchError"
         :active-profile="activeProfile"
+        @update-setting="onUpdateSetting"
         @fetch-models="$emit('fetch-models', $event)"
       />
 
@@ -24,12 +25,14 @@
         :installed-models="installedModels"
         :is-custom-embed-path="isCustomEmbedPath"
         :custom-embed-input="customEmbedInput"
+        @update-setting="onUpdateSetting"
         @custom-embed-input="onCustomEmbedInput"
       />
 
       <!-- Блок 3: Параметры генерации -->
       <AiInferenceParamsCard
         :local-settings="localSettings"
+        @update-setting="onUpdateSetting"
       />
 
       <div class="form-actions">
@@ -45,6 +48,7 @@
 import AiPrimaryModelCard from './components/AiPrimaryModelCard.vue';
 import AiRagConfigCard from './components/AiRagConfigCard.vue';
 import AiInferenceParamsCard from './components/AiInferenceParamsCard.vue';
+import type { AiProfileSettings } from '../../types/ai.types';
 import { 
   useAiSettingsModelsTab, 
   type AiSettingsModelsTabProps, 
@@ -56,12 +60,19 @@ const emit = defineEmits<AiSettingsModelsTabEmits>();
 
 const {
   localSettings,
+  installedModels,
   availableModelOptions,
   isCustomEmbedPath,
   customEmbedInput,
   onCustomEmbedInput,
   handleSave
 } = useAiSettingsModelsTab(props, emit);
+
+const onUpdateSetting = <K extends keyof AiProfileSettings>(key: K, val: unknown) => {
+  if (localSettings.value) {
+    localSettings.value[key] = val as AiProfileSettings[K];
+  }
+};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsModelsTab.css"></style>

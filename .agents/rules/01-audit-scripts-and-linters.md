@@ -20,7 +20,7 @@ trigger: always_on
 
 ### 1.2. `cerberus-sfc check` (Специализированный фронтенд-инспектор)
 - 🎨 **CSS Design Tokens**: запрет Hex-цветов (`#fff`, `#000`), именованных цветов, RGB/HSL и хардкода радиусов без CSS Custom Properties.
-- 🧩 **SFC Purity**: запрет тяжелой бизнес-логики в `<script setup>` (предел 15–30 строк клея), контроль обязательного наличия хука `use<Component>.ts` и типов в `*.model.ts`.
+- 🧩 **SFC Purity**: запрет тяжелой бизнес-логики в `<script setup>` (вынесение логики в хук `use<Component>.ts` и типов в `*.model.ts`).
 - 📦 **UI-Kit**: запрет дублирования компонентов из `@worldwiki/components` внутри `apps/spa`.
 
 ### 1.3. `pnpm typecheck` & `cargo check` (Строгая проверка типов)

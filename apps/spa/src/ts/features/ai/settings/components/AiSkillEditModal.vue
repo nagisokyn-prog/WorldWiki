@@ -12,20 +12,22 @@
         <div class="form-group">
           <label>Название навыка:</label>
           <input
-            v-model="editingSkill.name"
+            :value="editingSkill.name"
             type="text"
             class="form-input"
             placeholder="Например: Генератор диалогов"
+            @input="$emit('update-field', 'name', ($event.target as HTMLInputElement).value)"
           >
         </div>
 
         <div class="form-group">
           <label>Краткое описание:</label>
           <input
-            v-model="editingSkill.description"
+            :value="editingSkill.description"
             type="text"
             class="form-input"
             placeholder="Для чего предназначен этот навык..."
+            @input="$emit('update-field', 'description', ($event.target as HTMLInputElement).value)"
           >
         </div>
 
@@ -33,9 +35,10 @@
           <div class="checkbox-row">
             <input
               id="skill-auto-trigger"
-              v-model="editingSkill.is_auto_trigger"
+              :checked="Boolean(editingSkill.is_auto_trigger)"
               type="checkbox"
               class="form-checkbox"
+              @change="$emit('update-field', 'is_auto_trigger', ($event.target as HTMLInputElement).checked)"
             >
             <label for="skill-auto-trigger" class="checkbox-label">
               Автоматически подключать при наличии фраз-триггеров в сообщении
@@ -70,9 +73,10 @@
         <div class="form-group">
           <label>Инструкции / Промпт навыка (Markdown):</label>
           <textarea
-            v-model="editingSkill.prompt_text"
+            :value="editingSkill.prompt_text"
             class="form-textarea"
             placeholder="Опишите шаги, правила и ограничения для ИИ при вызове этого навыка..."
+            @input="$emit('update-field', 'prompt_text', ($event.target as HTMLTextAreaElement).value)"
           ></textarea>
         </div>
       </div>
@@ -96,6 +100,7 @@ defineProps<{
 
 defineEmits<{
   (e: 'update:newTriggerInput', value: string): void;
+  (e: 'update-field', field: keyof AiSkillItem, value: unknown): void;
   (e: 'close'): void;
   (e: 'add-trigger'): void;
   (e: 'remove-trigger', trig: string): void;

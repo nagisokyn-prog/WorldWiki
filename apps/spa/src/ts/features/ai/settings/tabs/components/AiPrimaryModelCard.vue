@@ -13,7 +13,7 @@
             :model-value="localSettings.model"
             :options="availableModelOptions"
             placeholder="Выберите или введите название модели"
-            @update:model-value="val => localSettings.model = val"
+            @update:model-value="$emit('update-setting', 'model', $event)"
           />
         </div>
         <button 
@@ -39,9 +39,11 @@
           :class="{ active: (localSettings.execution_policy || 'agentic') === 'direct' }"
         >
           <input 
-            v-model="localSettings.execution_policy" 
             type="radio" 
+            name="execution_policy"
             value="direct" 
+            :checked="(localSettings.execution_policy || 'agentic') === 'direct'"
+            @change="$emit('update-setting', 'execution_policy', 'direct')"
           />
           <div class="policy-info">
             <span class="policy-title"><i class="fas fa-comment-dots"></i> Прямой ответ</span>
@@ -54,9 +56,11 @@
           :class="{ active: localSettings.execution_policy === 'tool_assisted' }"
         >
           <input 
-            v-model="localSettings.execution_policy" 
             type="radio" 
+            name="execution_policy"
             value="tool_assisted" 
+            :checked="localSettings.execution_policy === 'tool_assisted'"
+            @change="$emit('update-setting', 'execution_policy', 'tool_assisted')"
           />
           <div class="policy-info">
             <span class="policy-title"><i class="fas fa-tools"></i> С инструментами</span>
@@ -69,9 +73,11 @@
           :class="{ active: localSettings.execution_policy === 'agentic' }"
         >
           <input 
-            v-model="localSettings.execution_policy" 
             type="radio" 
+            name="execution_policy"
             value="agentic" 
+            :checked="localSettings.execution_policy === 'agentic'"
+            @change="$emit('update-setting', 'execution_policy', 'agentic')"
           />
           <div class="policy-info">
             <span class="policy-title"><i class="fas fa-robot"></i> Автономный агент</span>
@@ -85,17 +91,18 @@
 
 <script setup lang="ts">
 import { AiSelect } from '../../../components';
-import type { AiProfile, AiSettings } from '../../../types/ai.types';
+import type { AiProfile, AiProfileSettings } from '../../../types/ai.types';
 
 defineProps<{
-  localSettings: AiSettings;
-  availableModelOptions: Array<{ value: string; label: string; group?: string }>;
+  localSettings: AiProfileSettings;
+  availableModelOptions: Array<{ value: string; label: string; description?: string }>;
   isFetchingModels?: boolean;
-  fetchError?: string;
+  fetchError?: string | null;
   activeProfile?: AiProfile | null;
 }>();
 
 defineEmits<{
+  (e: 'update-setting', key: keyof AiProfileSettings, val: unknown): void;
   (e: 'fetch-models', force: boolean): void;
 }>();
 </script>

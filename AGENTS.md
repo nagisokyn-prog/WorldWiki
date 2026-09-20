@@ -32,7 +32,7 @@ cargo check --all-targets
 
 ```
 MyFeature/
-├── MyFeature.vue              # 🟢 ТОЛЬКО декларативный <template> + 15 строк клея в <script setup>
+├── MyFeature.vue              # 🟢 Декларативный <template> + клей в <script setup> (без бизнес-логики)
 ├── useMyFeature.ts            # 🧠 ВСЯ бизнес-логика, ref, computed, методы, обработчики, сервисы
 ├── MyFeature.model.ts         # 🏷️ ТОЛЬКО TypeScript-интерфейсы Props, Emits, DTO, Enums
 ├── MyFeature.spec.ts          # 🧪 ОБЯЗАТЕЛЬНЫЕ Unit-тесты для useMyFeature.ts

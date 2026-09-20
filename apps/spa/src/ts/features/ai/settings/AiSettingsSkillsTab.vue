@@ -70,6 +70,7 @@
       :editing-skill="editingSkill"
       :new-trigger-input="newTriggerInput"
       @update:new-trigger-input="newTriggerInput = $event"
+      @update-field="onUpdateSkillField"
       @close="closeModal"
       @add-trigger="addTrigger"
       @remove-trigger="removeTrigger"
@@ -80,6 +81,7 @@
 
 <script setup lang="ts">
 import AiSkillEditModal from './components/AiSkillEditModal.vue';
+import type { AiSkillItem } from '../skills/aiSkills.model';
 import type { AiSettingsSkillsTabProps, AiSettingsSkillsTabEmits } from './AiSettingsSkillsTab.model';
 import { useAiSettingsSkillsTab } from './useAiSettingsSkillsTab';
 
@@ -101,6 +103,10 @@ const {
   saveSkill,
   deleteSkill
 } = useAiSettingsSkillsTab(props, emit);
+
+const onUpdateSkillField = <K extends keyof AiSkillItem>(field: K, val: unknown) => {
+  editingSkill.value[field] = val as AiSkillItem[K];
+};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/ai/AiSettingsSkillsTab.css"></style>

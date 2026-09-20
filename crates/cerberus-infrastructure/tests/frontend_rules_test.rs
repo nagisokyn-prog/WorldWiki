@@ -148,40 +148,40 @@ fn test_fsd_and_vue_sfc_deep_coverage() {
     std::fs::write(&js_path, "export const x = 1;").unwrap();
     assert!(adapter.parse_file(&js_path, "spa").is_ok());
 
-    // useComposable.ts with warn SLOC (260 lines)
+    // useComposable.ts with warn SLOC (280 lines > 250 + 15 grace)
     let use_ts = temp.path().join("useCustom.ts");
     let mut use_code = String::new();
-    for _ in 0..260 {
+    for _ in 0..280 {
         use_code.push_str("const a = 1;\n");
     }
     std::fs::write(&use_ts, &use_code).unwrap();
     let use_violations = adapter.parse_file(&use_ts, "spa").unwrap();
     assert!(use_violations.iter().any(|v| v.rule_id == "ARCH-031" && v.severity == cerberus_domain::Severity::Warn));
 
-    // useComposable.ts with deny SLOC (460 lines)
+    // useComposable.ts with deny SLOC (480 lines > 450 + 15 grace)
     let use_deny_ts = temp.path().join("useHeavy.ts");
     let mut use_deny_code = String::new();
-    for _ in 0..460 {
+    for _ in 0..480 {
         use_deny_code.push_str("const a = 1;\n");
     }
     std::fs::write(&use_deny_ts, &use_deny_code).unwrap();
     let use_deny_violations = adapter.parse_file(&use_deny_ts, "spa").unwrap();
     assert!(use_deny_violations.iter().any(|v| v.rule_id == "ARCH-031" && v.severity == cerberus_domain::Severity::Deny));
 
-    // Regular helper.ts with warn SLOC (310 lines)
+    // Regular helper.ts with warn SLOC (330 lines > 300 + 15 grace)
     let helper_ts = temp.path().join("helper.ts");
     let mut helper_code = String::new();
-    for _ in 0..310 {
+    for _ in 0..330 {
         helper_code.push_str("const a = 1;\n");
     }
     std::fs::write(&helper_ts, &helper_code).unwrap();
     let helper_violations = adapter.parse_file(&helper_ts, "spa").unwrap();
     assert!(helper_violations.iter().any(|v| v.rule_id == "ARCH-031" && v.severity == cerberus_domain::Severity::Warn));
 
-    // Vue SFC with warn SLOC (160 lines)
+    // Vue SFC with warn SLOC (180 lines > 150 + 15 grace)
     let vue_warn = temp.path().join("Medium.vue");
     let mut vue_warn_code = String::from("<template>\n<div>\n");
-    for _ in 0..160 {
+    for _ in 0..180 {
         vue_warn_code.push_str("<span>row</span>\n");
     }
     vue_warn_code.push_str("</div>\n</template>\n");

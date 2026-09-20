@@ -87,6 +87,12 @@
   "limits": {
     "max_sloc_warn": 300,
     "max_sloc_deny": 500,
+    "max_vue_sloc_logic_warn": 150,
+    "max_vue_sloc_logic_deny": 250,
+    "max_composable_sloc_warn": 250,
+    "max_composable_sloc_deny": 450,
+    "sloc_grace_lines": 15,
+    "max_destructure_fields": 3,
     "max_pressure_warn": 200.0,
     "max_pressure_deny": 400.0,
     "max_style_lines": 0,

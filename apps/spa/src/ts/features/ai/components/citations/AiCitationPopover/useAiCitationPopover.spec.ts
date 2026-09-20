@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useAiCitationPopover } from '../useAiCitationPopover';
+import { useAiCitationPopover } from './useAiCitationPopover';
 import type { AiCitationPopoverProps } from '../AiCitation.model';
 
 describe('useAiCitationPopover', () => {

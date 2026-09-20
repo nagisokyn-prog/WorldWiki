@@ -1,6 +1,6 @@
-import type { ChatMessage, MessageVariantGroup } from '../useWowilonPanel';
-import type { ToolCallPayload } from './AiToolApproval.vue';
-import type { CitationItem } from './AiCitation.model';
+import type { ChatMessage, MessageVariantGroup } from '../../../useWowilonPanel';
+import type { ToolCallPayload } from '../../tools/AiToolApproval/AiToolApproval.vue';
+import type { CitationItem } from '../../citations/AiCitation.model';
 
 export interface AttachedSkill {
   name: string;

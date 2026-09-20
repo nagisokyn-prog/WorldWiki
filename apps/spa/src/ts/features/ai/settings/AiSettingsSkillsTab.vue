@@ -65,93 +65,21 @@
     </div>
 
     <!-- Модалка создания/редактирования навыка -->
-    <div v-if="isEditing" class="modal-overlay" @click.self="closeModal">
-      <div class="skill-edit-modal">
-        <div class="modal-header-row">
-          <span>{{ editingSkill.id ? 'Редактирование навыка' : 'Создание нового навыка' }}</span>
-          <button class="btn-icon-action" @click="closeModal">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-
-        <div class="modal-form-body">
-          <div class="form-group">
-            <label>Название навыка:</label>
-            <input
-              v-model="editingSkill.name"
-              type="text"
-              class="form-input"
-              placeholder="Например: Генератор диалогов"
-            >
-          </div>
-
-          <div class="form-group">
-            <label>Краткое описание:</label>
-            <input
-              v-model="editingSkill.description"
-              type="text"
-              class="form-input"
-              placeholder="Для чего предназначен этот навык..."
-            >
-          </div>
-
-          <div class="form-group">
-            <div class="checkbox-row">
-              <input
-                id="skill-auto-trigger"
-                v-model="editingSkill.is_auto_trigger"
-                type="checkbox"
-                class="form-checkbox"
-              >
-              <label for="skill-auto-trigger" class="checkbox-label">
-                Автоматически подключать при наличии фраз-триггеров в сообщении
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>🎯 Фразы-триггеры (нажмите Enter для добавления):</label>
-            <div class="triggers-input-box">
-              <div class="triggers-chip-container">
-                <span
-                  v-for="trig in editingSkill.triggers || []"
-                  :key="trig"
-                  class="trigger-chip"
-                >
-                  {{ trig }}
-                  <i class="fas fa-times trigger-chip-remove" @click.stop="removeTrigger(trig)"></i>
-                </span>
-              </div>
-              <input
-                v-model="newTriggerInput"
-                type="text"
-                class="form-input trigger-field-input"
-                placeholder="Введите фразу (например, 'сделай главным героем') и нажмите Enter..."
-                @keydown.enter.prevent="addTrigger"
-              >
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Инструкции / Промпт навыка (Markdown):</label>
-            <textarea
-              v-model="editingSkill.prompt_text"
-              class="form-textarea"
-              placeholder="Опишите шаги, правила и ограничения для ИИ при вызове этого навыка..."
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="modal-actions-row">
-          <button class="btn-icon-action" @click="closeModal">Отмена</button>
-          <button class="btn-create-skill" @click="saveSkill">Сохранить</button>
-        </div>
-      </div>
-    </div>
+    <AiSkillEditModal
+      :is-editing="isEditing"
+      :editing-skill="editingSkill"
+      :new-trigger-input="newTriggerInput"
+      @update:new-trigger-input="newTriggerInput = $event"
+      @close="closeModal"
+      @add-trigger="addTrigger"
+      @remove-trigger="removeTrigger"
+      @save="saveSkill"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import AiSkillEditModal from './components/AiSkillEditModal.vue';
 import type { AiSettingsSkillsTabProps, AiSettingsSkillsTabEmits } from './AiSettingsSkillsTab.model';
 import { useAiSettingsSkillsTab } from './useAiSettingsSkillsTab';
 

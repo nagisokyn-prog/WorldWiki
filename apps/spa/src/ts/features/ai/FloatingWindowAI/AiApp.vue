@@ -46,8 +46,7 @@
 
 <script setup lang="ts">
 import { AppDialog, SafeHtml } from '@worldwiki/components';
-import AiChatInput from '../components/AiChatInput.vue';
-import AiHeader from '../components/AiHeader.vue';
+import { AiChatInput, AiHeader } from '../components';
 import AiSettingsView from '../settings/AiSettingsView.vue';
 import { useAiApp } from './useAiApp';
 

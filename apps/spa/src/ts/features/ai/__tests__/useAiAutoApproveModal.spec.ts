@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useAiAutoApproveModal } from '../components/useAiAutoApproveModal';
+import { useAiAutoApproveModal } from '../components';
 
 describe('useAiAutoApproveModal', () => {
   beforeEach(() => {

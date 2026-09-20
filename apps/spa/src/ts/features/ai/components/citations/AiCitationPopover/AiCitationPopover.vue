@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { useAiCitationPopover } from './useAiCitationPopover';
-import type { AiCitationPopoverProps, AiCitationPopoverEmits } from './AiCitation.model';
+import type { AiCitationPopoverProps, AiCitationPopoverEmits } from '../AiCitation.model';
 
 const props = defineProps<AiCitationPopoverProps>();
 const emit = defineEmits<AiCitationPopoverEmits>();

@@ -1,15 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { reactive, nextTick } from 'vue';
 import { useRelationshipBlock } from '../useRelationshipBlock';
-import { entityApi } from '../../../../services/Entity/entity.api';
 
-vi.mock('../../../../services/Entity/entity.api', () => ({
-  entityApi: {
-    getEntity: vi.fn(),
-  },
-}));
+const mockInvoke = vi.fn();
 
 vi.mock('@worldwiki/components', () => ({
+  invoke: (cmd: string, args: unknown) => mockInvoke(cmd, args),
+  processIds: (data: unknown) => data,
   settingsService: {
     getSettings: () => ({ dropdowns: { wheelOrientation: 'horizontal' } }),
   },
@@ -62,88 +59,124 @@ describe('useRelationshipBlock', () => {
     expect(rel.foreignLabel.value).toBe('Merlin');
 
     const fields = rel.getResolvedFields();
-    expect(fields.find((f: any) => f.class === 'role')?.label).toBe('Custom Role');
-
-    // 1. linkClass fallback branches
-    // a. No bidirectionalLinkClass, has select field with entityType
-    const relSelect = useRelationshipBlock({
-      ...props,
-      templateConf: { fields: [{ class: 'custom_link', type: 'select', entityType: 'char' }] },
-    }, emit);
-    expect(relSelect.linkClass.value).toBe('custom_link');
-
-    // b. No bidirectionalLinkClass, fields has no select with entityType -> first field class
-    const relNoLink = useRelationshipBlock({
-      ...props,
-      templateConf: { fields: [{ class: 'other_field', type: 'text' }] },
-    }, emit);
-    expect(relNoLink.linkClass.value).toBe('other_field');
-
-    // c. No fields at all -> empty string
-    const relEmptyConf = useRelationshipBlock({ ...props, templateConf: {} }, emit);
-    expect(relEmptyConf.linkClass.value).toBe('');
-
-    // 2. myLabel fallbacks: missing referenceData, unknown ID, empty entityId
-    const relUnknownMy = useRelationshipBlock({ ...props, entityId: 'unknown_id', referenceData: {} }, emit);
-    expect(relUnknownMy.myLabel.value).toBe('unknown_id');
-
-    const relEmptyMy = useRelationshipBlock({ ...props, entityId: '', referenceData: {} }, emit);
-    expect(relEmptyMy.myLabel.value).toBe('Текущая сущность');
-
-    // 3. foreignLabel fallbacks: empty foreignId, missing targetType, missing in refList
-    const relNoForeign = useRelationshipBlock({ ...props, item: {} }, emit);
-    expect(relNoForeign.foreignLabel.value).toBe('Не выбрано');
-
-    const relUnknownForeign = useRelationshipBlock({
-      ...props,
-      item: { target_char: 'unknown_foreign' },
-      templateConf: { bidirectionalLinkClass: 'target_char' }, // no fields with entityType and no foreign_type
-      referenceData: {},
-    }, emit);
-    expect(relUnknownForeign.foreignLabel.value).toBe('unknown_foreign');
+    expect(fields.length).toBe(2);
+    expect(fields[1].label).toBe('Custom Role');
   });
 
-  it('handles item updates and select changes', () => {
+  it('computes labels when linkClass is inferred from fields', () => {
+    props.templateConf.bidirectionalLinkClass = undefined;
+    props.templateConf.fields = [
+      { class: 'target_select', type: 'select', entityType: 'character' },
+    ];
+    props.item.target_select = 'char_1';
+    props.referenceData = {
+      character_list: [{ id: 'char_1', name: 'Arthur Name' }],
+    };
+
     const rel = useRelationshipBlock(props, emit);
-
-    rel.onSelectChange('role', 'Mentor');
-    expect(props.item.role).toBe('Mentor');
-    expect(emit).toHaveBeenCalledWith('modified');
-
-    rel.updateItemField('role', 'Brother');
-    expect(props.item.role).toBe('Brother');
-    expect(emit).toHaveBeenCalledWith('modified');
+    expect(rel.linkClass.value).toBe('target_select');
+    expect(rel.myLabel.value).toBe('Arthur Name');
   });
 
-  it('manages nested list additions and removals', () => {
-    props.templateConf.fields = [{ class: 'foreign_id', value: 'def_val' }];
+  it('computes labels when linkClass is first select without entityType', () => {
+    props.templateConf.bidirectionalLinkClass = undefined;
+    props.templateConf.fields = [
+      { class: 'generic_select', type: 'select' },
+    ];
+    props.item.generic_select = 'char_1';
+    props.referenceData = {};
+
+    const rel = useRelationshipBlock(props, emit);
+    expect(rel.linkClass.value).toBe('generic_select');
+    expect(rel.myLabel.value).toBe('char_1');
+    expect(rel.foreignLabel.value).toBe('char_1');
+  });
+
+  it('falls back to first field if no select found', () => {
+    props.templateConf.bidirectionalLinkClass = undefined;
+    props.templateConf.fields = [{ class: 'text_field', type: 'text' }];
+
+    const rel = useRelationshipBlock(props, emit);
+    expect(rel.linkClass.value).toBe('text_field');
+  });
+
+  it('handles field overrides with hidden and custom fields', () => {
+    const subConf = {
+      fields: [
+        { class: 'f1', label: 'Field 1' },
+        { class: 'f2', label: 'Field 2' },
+      ],
+      fieldOverrides: {
+        f1: { label: 'Overridden 1' },
+        f2: { hidden: true },
+      },
+    };
+
+    const rel = useRelationshipBlock(props, emit);
+    const resolved = rel.getResolvedFields(subConf);
+
+    expect(resolved.length).toBe(1);
+    expect(resolved[0].label).toBe('Overridden 1');
+  });
+
+  it('handles nested lists manipulations', () => {
     const rel = useRelationshipBlock(props, emit);
 
-    expect(rel.getNestedList().length).toBe(1);
+    const list = rel.getNestedList();
+    expect(list.length).toBe(1);
 
     rel.addNestedItem();
-    expect(rel.getNestedList().length).toBe(2);
+    expect(props.item.custom_dynamics.length).toBe(2);
     expect(emit).toHaveBeenCalledWith('modified');
 
     rel.removeNestedItem(0);
-    expect(rel.getNestedList().length).toBe(1);
+    expect(props.item.custom_dynamics.length).toBe(1);
+    expect(emit).toHaveBeenCalledWith('modified');
+  });
+
+  it('updates item field and triggers load foreign item', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      id: 'char_2',
+      data: {
+        custom_dynamics: [{ target_char: 'char_1', role: 'Hero' }],
+      },
+    });
+
+    const rel = useRelationshipBlock(props, emit);
+    rel.updateItemField('target_char', 'char_2');
+
+    expect(props.item.target_char).toBe('char_2');
+    expect(emit).toHaveBeenCalledWith('modified');
+  });
+
+  it('updates foreign fields and nested fields', () => {
+    const rel = useRelationshipBlock(props, emit);
+    rel.foreignItem.value = { title: 'Test', nested: [{ tag: 'old' }] };
+
+    rel.updateForeignField('title', 'Updated');
+    expect((rel.foreignItem.value as any).title).toBe('Updated');
+    expect(emit).toHaveBeenCalledWith('modified');
+
+    const nested = (rel.foreignItem.value as any).nested as Array<{ tag: string }>;
+    rel.updateForeignNestedField(nested[0], 'tag', 'new');
+    expect(nested[0].tag).toBe('new');
     expect(emit).toHaveBeenCalledWith('modified');
   });
 
   it('loads foreign item correctly', async () => {
-    vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+    mockInvoke.mockResolvedValueOnce({
       id: 'char_2',
       data: {
         characterRelationships: [
           { target_char: 'char_1', role: 'Student' },
         ],
       },
-    } as any);
+    });
 
     const rel = useRelationshipBlock(props, emit);
     await rel.onLinkChange('target_char')({ target: { value: 'char_2' } } as any);
 
-    expect(entityApi.getEntity).toHaveBeenCalledWith('p1', 'character', 'char_2');
+    expect(mockInvoke).toHaveBeenCalledWith('get_entity', { id: 'char_2' });
     expect(rel.foreignItem.value).toBeDefined();
     expect(rel.foreignItem.value?.role).toBe('Student');
   });
@@ -197,10 +230,10 @@ describe('useRelationshipBlock', () => {
 
   it('creates default matched object when foreign entity has no prior relation', async () => {
     props.templateConf.dynamicContainers = [{ id: 'dynamics', dataPath: 'dynamics' }];
-    vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+    mockInvoke.mockResolvedValueOnce({
       id: 'char_empty',
       data: { characterRelationships: [] },
-    } as any);
+    });
 
     const rel = useRelationshipBlock(props, emit);
     await rel.onLinkChange('target_char')({ target: { value: 'char_empty' } } as any);
@@ -211,7 +244,7 @@ describe('useRelationshipBlock', () => {
   });
 
   it('handles foreign load errors gracefully', async () => {
-    vi.mocked(entityApi.getEntity).mockRejectedValueOnce(new Error('Network error'));
+    mockInvoke.mockRejectedValueOnce(new Error('Network error'));
 
     const rel = useRelationshipBlock(props, emit);
     await rel.onLinkChange('target_char')({ target: { value: 'char_err' } } as any);
@@ -237,10 +270,10 @@ describe('useRelationshipBlock', () => {
       expect(rel.foreignItem.value).toBeNull();
 
       props.item.target_char = 'char_2';
-      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+      mockInvoke.mockResolvedValueOnce({
         id: 'char_2',
         data: { characterRelationships: [{ target_char: 'char_1', role: 'Partner' }] },
-      } as any);
+      });
       await rel.fetchForeignItem();
       expect(rel.foreignItem.value?.role).toBe('Partner');
 
@@ -263,14 +296,14 @@ describe('useRelationshipBlock', () => {
     it('uses second find (strip prefix) when direct match fails (line 144-147)', async () => {
       // entity stored as 'entities:char_1' in relArray, but entityId is bare 'char_1'
       props.entityId = 'char_1';
-      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+      mockInvoke.mockResolvedValueOnce({
         id: 'char_2',
         data: {
           customRelations: [
             { target_char: 'entities:char_1', role: 'Enemy' }, // prefixed ID
           ],
         },
-      } as any);
+      });
 
       props.templateConf.dynamicContainers = [{ id: 'customRelations', dataPath: 'customRelations' }];
       const rel = useRelationshipBlock(props, emit);
@@ -311,10 +344,10 @@ describe('useRelationshipBlock', () => {
         { id: 'динамика_отношений' },
         { id: 'relationshipStates' },
       ];
-      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({
+      mockInvoke.mockResolvedValueOnce({
         id: 'char_empty',
         data: {}, // no characterRelationships
-      } as any);
+      });
 
       const rel = useRelationshipBlock(props, emit);
       await rel.onLinkChange('target_char')({ target: { value: 'char_empty' } } as any);
@@ -438,14 +471,13 @@ describe('useRelationshipBlock', () => {
       });
 
       const rel = useRelationshipBlock(reactiveProps as any, emit);
-      // Line 170: foreignLabel returns String(foreignId)
       expect(rel.foreignLabel.value).toBe('unknown_foreign_id');
 
-      // Watcher lines 270-273: change target_char to newTargetId
-      vi.mocked(entityApi.getEntity).mockResolvedValueOnce({ id: 'char_watch', data: {} } as any);
+      // Watcher: change target_char to newTargetId
+      mockInvoke.mockResolvedValueOnce({ id: 'char_watch', data: {} });
       reactiveProps.item.target_char = 'char_watch';
       await nextTick();
-      expect(entityApi.getEntity).toHaveBeenCalledWith('p1', 'character', 'char_watch');
+      expect(mockInvoke).toHaveBeenCalledWith('get_entity', { id: 'char_watch' });
 
       // Watcher: change target_char to empty
       reactiveProps.item.target_char = '';

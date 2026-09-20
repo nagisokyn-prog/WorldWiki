@@ -1,4 +1,4 @@
-import type { AiSkillItem } from './AiSkillAutocomplete.model';
+import type { AiSkillItem } from '../../tools/AiSkillAutocomplete/AiSkillAutocomplete.model';
 
 export interface AiChatInputProps {
   loading?: boolean;

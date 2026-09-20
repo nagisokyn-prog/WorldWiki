@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { EditorContent } from '@tiptap/vue-3';
-import AiSkillAutocomplete from './AiSkillAutocomplete.vue';
+import AiSkillAutocomplete from '../../tools/AiSkillAutocomplete/AiSkillAutocomplete.vue';
 import type { AiChatInputProps, AiChatInputEmits } from './AiChatInput.model';
 import { useAiChatInput } from './useAiChatInput';
 

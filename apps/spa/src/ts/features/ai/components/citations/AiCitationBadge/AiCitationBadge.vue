@@ -19,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import type { AiCitationBadgeProps, CitationItem } from './AiCitation.model';
+import type { AiCitationBadgeProps, CitationItem } from '../AiCitation.model';
 import { useAiCitationBadge } from './useAiCitationBadge';
-import AiCitationPopover from './AiCitationPopover.vue';
+import AiCitationPopover from '../AiCitationPopover/AiCitationPopover.vue';
 
 defineProps<AiCitationBadgeProps>();
 const emit = defineEmits<{

@@ -1,5 +1,5 @@
 import { ref, computed, onUnmounted } from 'vue';
-import type { AiChatTreeNode } from '../composables/useAiChats';
+import type { AiChatTreeNode } from '../../../composables/useAiChats';
 
 export interface HistoryTreeNode {
   id: string;

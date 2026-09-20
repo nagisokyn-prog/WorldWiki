@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useAiHeader } from '../useAiHeader';
+import { useAiHeader } from './useAiHeader';
 
 describe('useAiHeader', () => {
   it('manages current mode reactivity', () => {

@@ -1,7 +1,7 @@
 import { ref, onBeforeUnmount } from 'vue';
 import { useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
-import type { AiSkillItem } from './AiSkillAutocomplete.model';
+import type { AiSkillItem } from '../../tools/AiSkillAutocomplete/AiSkillAutocomplete.model';
 import type { AiChatInputProps, AiChatInputEmits } from './AiChatInput.model';
 
 export { type AiChatInputProps, type AiChatInputEmits };

@@ -1,11 +1,16 @@
-// Chat components
 export { default as AiMessageList } from './chat/AiMessageList/AiMessageList.vue';
 export * from './chat/AiMessageList/useAiMessageList';
 export * from './chat/AiMessageList/AiMessageList.model';
 
+export { default as AiMessageItem } from './chat/AiMessageItem/AiMessageItem.vue';
+export * from './chat/AiMessageItem/AiMessageItem.model';
+
 export { default as AiChatInput } from './chat/AiChatInput/AiChatInput.vue';
 export * from './chat/AiChatInput/useAiChatInput';
 export * from './chat/AiChatInput/AiChatInput.model';
+
+export { default as AiChatInputArea } from './chat/AiChatInputArea/AiChatInputArea.vue';
+export * from './chat/AiChatInputArea/AiChatInputArea.model';
 
 export { default as AiChatTopBar } from './chat/AiChatTopBar/AiChatTopBar.vue';
 export * from './chat/AiChatTopBar/useAiChatTopBar';

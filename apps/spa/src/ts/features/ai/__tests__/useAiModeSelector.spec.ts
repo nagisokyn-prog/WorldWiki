@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useAiModeSelector } from '../components/useAiModeSelector';
+import { useAiModeSelector } from '../components';
 
 describe('useAiModeSelector', () => {
   it('initializes with default modes and normalizes activeModeSlug', () => {

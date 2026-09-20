@@ -1,4 +1,4 @@
-import type { AiSkillItem } from '../skills/aiSkills.model';
+import type { AiSkillItem } from '../../../skills/aiSkills.model';
 
 export type { AiSkillItem };
 

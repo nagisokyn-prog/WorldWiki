@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useAiCitationBadge } from '../useAiCitationBadge';
+import { useAiCitationBadge } from './useAiCitationBadge';
 import type { CitationItem } from '../AiCitation.model';
 
 describe('useAiCitationBadge', () => {

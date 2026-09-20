@@ -1,5 +1,5 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import type { AiCitationPopoverProps, AiCitationPopoverEmits } from './AiCitation.model';
+import type { AiCitationPopoverProps, AiCitationPopoverEmits } from '../AiCitation.model';
 
 export function useAiCitationPopover(
   props: AiCitationPopoverProps,

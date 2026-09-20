@@ -1,12 +1,10 @@
 import { ref } from 'vue';
+import type { AttachedSkill } from './AiMessageList.model';
+
+export type { AttachedSkill };
 
 export interface MessageContentSegment {
   type: 'markdown' | 'mermaid';
-  content: string;
-}
-
-export interface AttachedSkill {
-  name: string;
   content: string;
 }
 

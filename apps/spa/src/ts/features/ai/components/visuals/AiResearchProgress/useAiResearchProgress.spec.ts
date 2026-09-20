@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { useAiResearchProgress } from '../useAiResearchProgress';
+import { useAiResearchProgress } from './useAiResearchProgress';
 
 describe('useAiResearchProgress', () => {
   it('computes correct stage labels', () => {

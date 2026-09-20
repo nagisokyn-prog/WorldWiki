@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useAiSkillAutocomplete } from '../components/useAiSkillAutocomplete';
-import type { AiSkillItem } from '../components/AiSkillAutocomplete.model';
+import { useAiSkillAutocomplete, type AiSkillItem } from '../components';
 
 describe('useAiSkillAutocomplete', () => {
   const sampleSkills: AiSkillItem[] = [

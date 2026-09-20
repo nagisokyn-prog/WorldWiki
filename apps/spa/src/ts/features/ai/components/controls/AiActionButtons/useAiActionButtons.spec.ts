@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { useAiActionButtons } from '../useAiActionButtons';
+import { useAiActionButtons } from './useAiActionButtons';
 import type { AiActionButtonsProps } from '../AiActionButtons.model';
 
 describe('useAiActionButtons', () => {

@@ -89,7 +89,13 @@
   "design_tokens": {
     "tokens_roots": [
       "packages/resources/src/styles/tokens/**",
-      "packages/tokens/**"
+      "packages/tokens/**",
+      "**/settings.defaults.ts",
+      "**/settings.dom.ts",
+      "**/useSettingsAppearance.ts",
+      "**/palette.ts",
+      "**/*tokens.ts",
+      "apps/spa/src/ts/services/document/profiles/defaults.ts"
     ]
   },
   "css_perf": {

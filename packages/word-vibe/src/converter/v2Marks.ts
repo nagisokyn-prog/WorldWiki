@@ -1,5 +1,6 @@
 import type { WordTextMarkDTO } from '../types/dto';
 import type { V2MarkJson } from './ASTToV2Converter';
+import { EDITOR_DEFAULT_COLORS } from '../tokens/editor.tokens';
 
 export function convertMarksFromV2(marks?: V2MarkJson[]): WordTextMarkDTO[] | undefined {
   if (!marks || marks.length === 0) return undefined;
@@ -29,7 +30,7 @@ export function convertMarksFromV2(marks?: V2MarkJson[]): WordTextMarkDTO[] | un
         result.push({ type: 'superscript' });
         break;
       case 'highlight':
-        result.push({ type: 'highlight', color: String(m.attrs?.color || '#ffff00') });
+        result.push({ type: 'highlight', color: String(m.attrs?.color || EDITOR_DEFAULT_COLORS.highlight) });
         break;
       case 'link':
         result.push({ type: 'link', href: String(m.attrs?.href || ''), title: m.attrs?.title ? String(m.attrs.title) : undefined });

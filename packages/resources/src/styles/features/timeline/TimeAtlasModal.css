@@ -84,7 +84,7 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -113,7 +113,7 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xs);
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .atlas-close-btn:hover {
@@ -221,7 +221,7 @@
 
 .pinned-card {
   box-shadow: 0 4px 20px var(--accent-glow);
-  border: 1px solid var(--border-active) !important;
+  border: 1px solid var(--border-active);
 }
 
 .badge-pinned-tag {
@@ -432,7 +432,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .matrix-btn:hover {
@@ -464,7 +464,7 @@
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .matrix-day-cell:hover {
@@ -564,7 +564,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: transform var(--anim-speed-fast, 0.15s) ease, box-shadow var(--anim-speed-fast, 0.15s) ease;
+  transition: transform var(--anim-speed-fast, 0.15s) ease, 0.15s) ease;
 }
 
 .region-card:hover {
@@ -757,7 +757,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .copy-btn:hover {

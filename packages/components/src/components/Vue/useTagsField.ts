@@ -168,7 +168,7 @@ export function useTagsField(
     if (!selectedTags.value.includes(val)) {
       if (!allTags.value.some(t => t.name.toLowerCase() === val.toLowerCase())) {
         try {
-          await apiService.saveTag(props.project, { name: val, color: '#7c3aed' });
+          await apiService.saveTag(props.project, { name: val, color: 'var(--accent)' });
           await loadAllTags();
         } catch (e) {
           console.error('[TagsField] Failed to create tag:', e);

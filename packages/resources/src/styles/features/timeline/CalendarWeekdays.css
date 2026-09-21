@@ -9,7 +9,7 @@
   color: var(--text-main);
   padding: 4px 6px;
   border-radius: var(--radius-xs);
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
 }
 
 .weekday-input:hover,

@@ -54,7 +54,7 @@ export function useWordRibbonCommands(ctx: UseWordRibbonCommandsContext) {
     toggleStrike: () => cmd()?.strike(),
     toggleSubscript: () => cmd()?.subscript(),
     toggleSuperscript: () => cmd()?.superscript(),
-    toggleHighlight: () => cmd()?.setHighlight('#ffff00'),
+    toggleHighlight: () => cmd()?.setHighlight(EDITOR_DEFAULT_COLORS.highlight),
     setHeading: (lvl: number) => cmd()?.heading(lvl as 1 | 2 | 3 | 4 | 5 | 6),
     toggleBlockquote: () => cmd()?.blockquote(),
     toggleBulletList: () => cmd()?.bulletList(),

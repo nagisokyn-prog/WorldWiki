@@ -53,7 +53,7 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--transition-normal, 0.2s ease);
+  transition: opacity var(--transition-normal, 0.2s ease), transform var(--transition-normal, 0.2s ease), background-color var(--transition-normal, 0.2s ease), border-color var(--transition-normal, 0.2s ease), color var(--transition-normal, 0.2s ease);
 }
 
 .btn-create-skill:hover {
@@ -75,7 +75,7 @@
   background: var(--color-bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-md, 6px);
-  transition: all var(--transition-normal, 0.2s ease);
+  transition: opacity var(--transition-normal, 0.2s ease), transform var(--transition-normal, 0.2s ease), background-color var(--transition-normal, 0.2s ease), border-color var(--transition-normal, 0.2s ease), color var(--transition-normal, 0.2s ease);
 }
 
 .skill-card:hover {
@@ -191,7 +191,7 @@
   font-size: 11px;
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-normal, 0.2s ease);
+  transition: opacity var(--transition-normal, 0.2s ease), transform var(--transition-normal, 0.2s ease), background-color var(--transition-normal, 0.2s ease), border-color var(--transition-normal, 0.2s ease), color var(--transition-normal, 0.2s ease);
 }
 
 .btn-icon-action:hover {

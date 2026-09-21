@@ -13,16 +13,14 @@ static RGB_HSL_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)").unwrap());
 static BORDER_RADIUS_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"border-radius\s*:\s*\d+px").unwrap());
-static URL_SVG_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"url\(#[^)]*\)").unwrap());
-static CSS_COMMENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"/\*.*?\*/").unwrap());
-static TS_COMMENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"//.*$").unwrap());
+static URL_SVG_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"url\(#[^)]*\)").unwrap());
+static CSS_COMMENT_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"/\*.*?\*/").unwrap());
+static TS_COMMENT_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"//.*$").unwrap());
 static TS_REGEX_LITERAL_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"/[^/\n\r]+/[gimsuy]*").unwrap());
-static TS_STRING_LITERAL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)"#).unwrap());
+static TS_STRING_LITERAL_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)"#).unwrap()
+});
 
 pub struct CssRuleChecker;
 
@@ -33,14 +31,20 @@ impl CssRuleChecker {
         for style in &sfc.styles {
             // 1. CSS-001: Excessive inline styles in SFC without external src
             if style.src.is_none() && !style.content.trim().is_empty() {
-                let active_lines: Vec<&str> = style.content
+                let active_lines: Vec<&str> = style
+                    .content
                     .lines()
                     .map(|l| l.trim())
                     .filter(|l| !l.is_empty() && !l.starts_with("/*"))
                     .collect();
 
                 if active_lines.len() > 25 {
-                    let snippet = active_lines.iter().take(5).copied().collect::<Vec<_>>().join("\n");
+                    let snippet = active_lines
+                        .iter()
+                        .take(5)
+                        .copied()
+                        .collect::<Vec<_>>()
+                        .join("\n");
                     let fingerprint = compute_fingerprint("CSS-001", "1.0", "style", &snippet);
 
                     violations.push(Violation {
@@ -65,7 +69,13 @@ impl CssRuleChecker {
 
             // 2. CSS-004: Validate design tokens inside style content
             if !style.content.is_empty() {
-                Self::validate_css_content(&style.content, file_path, style.start_line, None, &mut violations);
+                Self::validate_css_content(
+                    &style.content,
+                    file_path,
+                    style.start_line,
+                    None,
+                    &mut violations,
+                );
             }
         }
 
@@ -95,7 +105,8 @@ impl CssRuleChecker {
                 || path_str.ends_with("styles.css");
 
             if !is_valid_taxonomy {
-                let fingerprint = compute_fingerprint("CSS-002", "1.0", "stylesheet_taxonomy", &path_str);
+                let fingerprint =
+                    compute_fingerprint("CSS-002", "1.0", "stylesheet_taxonomy", &path_str);
                 violations.push(Violation {
                     rule_id: "CSS-002".into(),
                     rule_version: "1.0".into(),
@@ -147,7 +158,9 @@ impl CssRuleChecker {
         };
 
         // Check PERF-005: prefers-reduced-motion presence across stylesheet
-        violations.extend(CssPerfRuleChecker::check_reduced_motion_presence(content, file_path));
+        violations.extend(CssPerfRuleChecker::check_reduced_motion_presence(
+            content, file_path,
+        ));
 
         let mut current_selector = String::new();
         let mut in_keyframes = false;
@@ -173,22 +186,30 @@ impl CssRuleChecker {
             }
 
             // Отслеживание контекста селектора и @keyframes
+            let open_braces = line_clean.chars().filter(|&c| c == '{').count();
+            let close_braces = line_clean.chars().filter(|&c| c == '}').count();
+
             if line_clean.contains("@keyframes") {
-                in_keyframes = true;
+                in_keyframes = open_braces > close_braces;
+            } else if in_keyframes && close_braces >= open_braces {
+                in_keyframes = false;
             }
+
             if line_clean.ends_with('{') {
                 let sel_part = line_clean.trim_end_matches('{').trim();
                 current_selector = sel_part.to_string();
             }
-            if line_clean.contains('}') {
-                if in_keyframes && !line_clean.contains('{') {
-                    in_keyframes = false;
-                }
+            if close_braces > 0 {
                 current_selector.clear();
             }
 
             // DS-002: Запрет локальных переопределений тем
-            if let Some(v) = DesignSystemRuleChecker::check_local_theme_override(line_clean, is_token_file, current_line, file_path) {
+            if let Some(v) = DesignSystemRuleChecker::check_local_theme_override(
+                line_clean,
+                is_token_file,
+                current_line,
+                file_path,
+            ) {
                 violations.push(v);
             }
 
@@ -202,28 +223,51 @@ impl CssRuleChecker {
             ));
 
             // PERF-004: Запрет transition: all
-            if let Some(v) = CssPerfRuleChecker::check_transition_all(line_clean, current_line, file_path) {
+            if let Some(v) =
+                CssPerfRuleChecker::check_transition_all(line_clean, current_line, file_path)
+            {
                 violations.push(v);
             }
 
             // PERF-003: Проверка композиторных анимаций
-            if let Some(v) = CssPerfRuleChecker::check_compositor_animation(line_clean, in_keyframes, current_line, file_path) {
+            if let Some(v) = CssPerfRuleChecker::check_compositor_animation(
+                line_clean,
+                in_keyframes,
+                current_line,
+                file_path,
+            ) {
                 violations.push(v);
             }
 
             // PERF-002: Бюджет размытия и фильтров
-            if let Some(v) = CssPerfRuleChecker::check_blur_and_filter_budget(line_clean, max_blur_px, max_filter_fns, current_line, file_path) {
+            if let Some(v) = CssPerfRuleChecker::check_blur_and_filter_budget(
+                line_clean,
+                max_blur_px,
+                max_filter_fns,
+                current_line,
+                file_path,
+            ) {
                 violations.push(v);
             }
 
             // PERF-001: will-change overuse
-            if let Some(v) = CssPerfRuleChecker::check_will_change_usage(&current_selector, line_clean, current_line, file_path) {
+            if let Some(v) = CssPerfRuleChecker::check_will_change_usage(
+                &current_selector,
+                line_clean,
+                current_line,
+                file_path,
+            ) {
                 violations.push(v);
             }
 
             // DS-003: Таксономия ролей токенов (color vs background)
             if let Some((prop, val)) = line_clean.split_once(':') {
-                if let Some(v) = DesignSystemRuleChecker::check_token_role_taxonomy(prop, val.trim_end_matches(';'), current_line, file_path) {
+                if let Some(v) = DesignSystemRuleChecker::check_token_role_taxonomy(
+                    prop,
+                    val.trim_end_matches(';'),
+                    current_line,
+                    file_path,
+                ) {
                     violations.push(v);
                 }
             }
@@ -264,7 +308,9 @@ impl CssRuleChecker {
                     symbol: "color_rgb_hsl".into(),
                     snippet: trimmed.to_string(),
                     message: "Direct rgb()/rgba()/hsl() call found in stylesheet.".into(),
-                    remediation: "Use semantic design tokens from design system CSS Custom Properties.".into(),
+                    remediation:
+                        "Use semantic design tokens from design system CSS Custom Properties."
+                            .into(),
                     fingerprint,
                 });
             }
@@ -333,7 +379,9 @@ impl CssRuleChecker {
             // 1. Стриппаем строчные комментарии
             let line_no_comment = TS_COMMENT_RE.replace(trimmed, "").to_string();
             // 2. Стриппаем RegExp-литералы (например, /\brgba?\(/)
-            let line_no_regex = TS_REGEX_LITERAL_RE.replace_all(&line_no_comment, "").to_string();
+            let line_no_regex = TS_REGEX_LITERAL_RE
+                .replace_all(&line_no_comment, "")
+                .to_string();
 
             // 3. Ищем только внутри строковых литералов
             for cap in TS_STRING_LITERAL_RE.find_iter(&line_no_regex) {
@@ -351,7 +399,11 @@ impl CssRuleChecker {
                 let rgb_matches = RGB_HSL_RE.is_match(str_val);
 
                 if hex_matches || rgb_matches {
-                    let symbol = if hex_matches { "ts_color_hex" } else { "ts_color_rgb_hsl" };
+                    let symbol = if hex_matches {
+                        "ts_color_hex"
+                    } else {
+                        "ts_color_rgb_hsl"
+                    };
                     let fingerprint = compute_fingerprint("CSS-005", "1.0", symbol, str_val);
                     violations.push(Violation {
                         rule_id: "CSS-005".into(),
@@ -448,4 +500,3 @@ mod tests {
         assert_eq!(violations[0].rule_id, "CSS-002");
     }
 }
-

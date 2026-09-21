@@ -71,7 +71,7 @@ export const EntityReferenceExtension = Node.create<EntityReferenceOptions>({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-type': 'entity-reference',
         class: `word-entity-badge word-entity-${type}`,
-        style: 'display: inline-flex; align-items: center; padding: 1px 6px; margin: 0 2px; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #2563eb; font-weight: 500; cursor: pointer; text-decoration: none; user-select: all;',
+        style: 'display: inline-flex; align-items: center; padding: 1px 6px; margin: 0 2px; border-radius: var(--radius-xs); background: var(--info-bg); color: var(--info); font-weight: 500; cursor: pointer; text-decoration: none; user-select: all;',
       }),
       name,
     ];

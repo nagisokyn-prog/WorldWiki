@@ -36,7 +36,7 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .ww-layout-segmented-btn:hover {
@@ -61,7 +61,7 @@
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .ww-layout-ruler-btn:hover,

@@ -5,7 +5,7 @@
   padding: 8px;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s;
   position: relative;
 }
 
@@ -70,7 +70,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btn-send:hover:not(:disabled) {

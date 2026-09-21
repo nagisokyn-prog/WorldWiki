@@ -115,7 +115,7 @@
   color: var(--text-main);
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
 }
 
 .btn-add:hover {
@@ -136,7 +136,7 @@
   padding: 10px 12px;
   border-radius: var(--radius-md) ;
   border: 1px solid var(--border-color);
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .timeline-event-item:hover {

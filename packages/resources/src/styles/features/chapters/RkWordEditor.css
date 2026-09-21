@@ -60,7 +60,7 @@
   box-shadow: var(--shadow-xl);
   outline: none;
   box-sizing: border-box;
-  transition: width 0.2s ease, min-height 0.2s ease;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 /* Пагинация tiptap-pagination-plus инжектит собственные стили листов
@@ -132,7 +132,7 @@
   cursor: pointer;
   padding: 2px 6px;
   border-radius: var(--radius-xs);
-  transition: all 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   display: flex;
   align-items: center;
   gap: 4px;

@@ -106,7 +106,7 @@
 }
 
 .btn-icon:hover {
-  color: var(--accent) !important;
+  color: var(--accent);
 }
 
 /* ── Ресайзеры ──────────────────────────────────────── */
@@ -135,7 +135,7 @@
   height: 48px;
   border-radius: var(--radius-xs) ;
   background: transparent;
-  transition: background 0.15s, height 0.15s;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 .chapters-sidebar-resize:hover {
@@ -167,7 +167,7 @@
   height: 48px;
   border-radius: var(--radius-xs) ;
   background: transparent;
-  transition: background 0.15s, height 0.15s;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 .panel-resize-handle:hover {
@@ -185,7 +185,7 @@
 
 /* ZEN MODE STYLES */
 .zen-mode-active {
-  background: var(--bg-base) !important;
+  background: var(--bg-base);
 }
 
 .zen-mode-active .chapters-sidebar-resize,
@@ -194,18 +194,18 @@
 .zen-mode-active .wowilon-toggle-btn,
 .zen-mode-active .quick-link-hint-circle,
 .zen-mode-active .quick-link-info-panel {
-  display: none !important;
+  display: none;
 }
 
 .zen-mode-active .chapters-sidebar {
-  width: 60px !important;
+  width: 60px;
   opacity: 0.3;
-  transition: width 0.5s ease, opacity 0.5s ease;
-  border-right: 1px solid var(--border-color) !important;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
+  border-right: 1px solid var(--border-color);
 }
 
 .zen-mode-active .chapters-sidebar:hover {
-  width: 280px !important;
+  width: 280px;
   opacity: 1;
 }
 
@@ -222,8 +222,8 @@
 .zen-mode-active :deep(.editor-container) {
   max-width: 900px;
   margin: 0 auto;
-  border: none !important;
-  background: transparent !important;
+  border: none;
+  background: transparent;
 }
 
 .debug-error-message {
@@ -232,7 +232,7 @@
 }
 
 .zen-mode-active :deep(.toastui-editor-defaultUI) {
-  border: none !important;
+  border: none;
 }
 
 .panel-collapsible-wrapper {

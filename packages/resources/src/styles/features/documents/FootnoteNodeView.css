@@ -16,7 +16,7 @@
   border-radius: var(--radius-xs);
   background: var(--bg-selected);
   border: 1px solid var(--border-color);
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .ww-footnote-node:hover .ww-footnote-badge,

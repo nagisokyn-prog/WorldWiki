@@ -73,7 +73,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
 }
 
 .gc-step-btn.is-active {
@@ -100,7 +100,7 @@
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  transition: all var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
+  transition: opacity var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), transform var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), background-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), border-color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease), color var(--anim-speed-fast, 0.15s) var(--anim-ease, ease);
   margin-left: 2px;
 }
 

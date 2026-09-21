@@ -46,7 +46,7 @@
   font-size: 13px;
   padding: 0 4px;
   border-radius: var(--radius-xs);
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
 }
 
 .settings-help-btn:hover {

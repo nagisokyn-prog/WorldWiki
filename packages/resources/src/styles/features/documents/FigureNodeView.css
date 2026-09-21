@@ -24,7 +24,7 @@
   max-width: 100%;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  transition: box-shadow var(--anim-speed) ease;
+  transition: opacity var(--duration-fast, 0.2s), transform var(--duration-fast, 0.2s);
 }
 
 .ww-figure-wrapper.is-selected {

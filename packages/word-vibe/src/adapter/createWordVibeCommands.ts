@@ -6,6 +6,7 @@ import { insertGostFigureCaption } from '../editor/extensions/GostFigureCaption'
 import { insertGostTableCaption } from '../editor/extensions/GostTableCaption';
 import { insertSectionLandscape, insertSectionPortrait } from '../editor/extensions/SectionOrientation';
 import { PX_PER_CM, INDENT_STEP_PX, type WordEditorHost } from './createWordVibeSelection';
+import { EDITOR_DEFAULT_COLORS } from '../tokens/editor.tokens';
 
 interface ChainRunner {
   focus: () => ChainRunner;
@@ -63,7 +64,7 @@ export function executeWordVibeCommand(
     case 'toggleStrike': commands?.strike?.(); return true;
     case 'toggleSubscript': commands?.subscript?.(); return true;
     case 'toggleSuperscript': commands?.superscript?.(); return true;
-    case 'toggleHighlight': commands?.setHighlight?.(String(args[0] || '#ffff00')); return true;
+    case 'toggleHighlight': commands?.setHighlight?.(String(args[0] || EDITOR_DEFAULT_COLORS.highlight)); return true;
     case 'setHeading': commands?.heading?.(Number(args[0])); return true;
     case 'toggleBlockquote': commands?.blockquote?.(); return true;
     case 'toggleBulletList': commands?.bulletList?.(); return true;

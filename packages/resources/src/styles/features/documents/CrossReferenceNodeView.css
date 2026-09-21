@@ -9,7 +9,7 @@
   text-decoration: none;
   cursor: pointer;
   user-select: none;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   background: var(--bg-selected);
   color: var(--accent);
   border: 1px solid var(--border-color);

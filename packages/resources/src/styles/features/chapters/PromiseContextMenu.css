@@ -69,7 +69,7 @@
   padding: 3px 6px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.12s) ease;
+  transition: opacity var(--anim-speed-fast, 0.12s) ease, transform var(--anim-speed-fast, 0.12s) ease, background-color var(--anim-speed-fast, 0.12s) ease, border-color var(--anim-speed-fast, 0.12s) ease, color var(--anim-speed-fast, 0.12s) ease;
   font-family: inherit;
 }
 
@@ -96,7 +96,7 @@
   padding: 8px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.12s) ease;
+  transition: opacity var(--anim-speed-fast, 0.12s) ease, transform var(--anim-speed-fast, 0.12s) ease, background-color var(--anim-speed-fast, 0.12s) ease, border-color var(--anim-speed-fast, 0.12s) ease, color var(--anim-speed-fast, 0.12s) ease;
   user-select: none;
 }
 
@@ -198,7 +198,7 @@
   border-radius: var(--radius-xs);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--anim-speed-fast, 0.12s) ease;
+  transition: opacity var(--anim-speed-fast, 0.12s) ease, transform var(--anim-speed-fast, 0.12s) ease, background-color var(--anim-speed-fast, 0.12s) ease, border-color var(--anim-speed-fast, 0.12s) ease, color var(--anim-speed-fast, 0.12s) ease;
   font-family: inherit;
 }
 

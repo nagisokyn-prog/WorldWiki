@@ -31,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   color: var(--text-main);
 }
 .preset-btn:hover {

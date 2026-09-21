@@ -64,7 +64,7 @@
   height: 100%;
   width: var(--progress-w, 0%);
   background: var(--accent);
-  transition: width 0.3s ease;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 .cost-badge {
@@ -102,7 +102,7 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
 }
 
 .action-pill-btn:hover:not(:disabled) {

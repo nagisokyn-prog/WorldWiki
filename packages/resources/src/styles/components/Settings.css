@@ -286,7 +286,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
   font-weight: 500;
   color: var(--color-text-muted, var(--text-muted));
   cursor: pointer;
-  transition: all var(--transition-fast, 0.15s) ease;
+  transition: opacity var(--transition-fast, 0.15s) ease, transform var(--transition-fast, 0.15s) ease, background-color var(--transition-fast, 0.15s) ease, border-color var(--transition-fast, 0.15s) ease, color var(--transition-fast, 0.15s) ease;
   user-select: none;
 }
 
@@ -297,9 +297,9 @@ input[type="range"]::-webkit-slider-thumb:hover {
 }
 
 .radio-btn.active {
-  background: var(--color-accent, var(--accent)) !important;
-  border-color: var(--color-accent, var(--accent)) !important;
-  color: var(--accent-text) !important;
+  background: var(--color-accent, var(--accent));
+  border-color: var(--color-accent, var(--accent));
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -307,14 +307,14 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 44px !important;
-  min-width: 44px !important;
-  max-width: 44px !important;
-  height: 24px !important;
-  min-height: 24px !important;
-  max-height: 24px !important;
-  flex: 0 0 44px !important;
-  flex-shrink: 0 !important;
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  height: 24px;
+  min-height: 24px;
+  max-height: 24px;
+  flex: 0 0 44px;
+  flex-shrink: 0;
   margin-left: auto;
   cursor: pointer;
   box-sizing: border-box;

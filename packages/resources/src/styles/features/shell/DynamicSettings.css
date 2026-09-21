@@ -7,20 +7,20 @@
 .workspace-root,
 .main-content,
 .split-layout-wrapper {
-  flex-direction: var(--sidebar-pos, row) !important;
+  flex-direction: var(--sidebar-pos, row);
 }
 
 /* Изолируем ProjectLauncher от изменений компоновки */
 .project-launcher,
 .launcher-root,
 .launcher-container {
-  flex-direction: column !important;
+  flex-direction: column;
 }
 
 .sidebar,
 .sidebar-new,
 .workspace-sidebar {
-  width: var(--sidebar-width, 280px) !important;
+  width: var(--sidebar-width, 280px);
 }
 
 .activity-bar {
@@ -31,7 +31,7 @@
 .editor-tabs-new,
 .workspace-tabbar,
 .editor-tab-bar {
-  flex-direction: var(--tab-pos, row) !important;
+  flex-direction: var(--tab-pos, row);
 }
 
 /* 2. Стили инпутов (Inputs style) */
@@ -40,8 +40,8 @@ body[data-input-style="filled"] textarea,
 body[data-input-style="filled"] select,
 body[data-input-style="filled"] .input-base,
 body[data-input-style="filled"] .input-control {
-  background: var(--bg-input, var(--bg-card)) !important;
-  border: 1px solid transparent !important;
+  background: var(--bg-input, var(--bg-card));
+  border: 1px solid transparent;
 }
 
 body[data-input-style="filled"] input:focus,
@@ -49,8 +49,8 @@ body[data-input-style="filled"] textarea:focus,
 body[data-input-style="filled"] select:focus,
 body[data-input-style="filled"] .input-base:focus,
 body[data-input-style="filled"] .input-control:focus {
-  border-color: var(--accent) !important;
-  background: var(--bg-hover) !important;
+  border-color: var(--accent);
+  background: var(--bg-hover);
 }
 
 body[data-input-style="outline"] input,
@@ -58,8 +58,8 @@ body[data-input-style="outline"] textarea,
 body[data-input-style="outline"] select,
 body[data-input-style="outline"] .input-base,
 body[data-input-style="outline"] .input-control {
-  background: transparent !important;
-  border: 1px solid var(--border-color) !important;
+  background: transparent;
+  border: 1px solid var(--border-color);
 }
 
 body[data-input-style="outline"] input:focus,
@@ -67,8 +67,8 @@ body[data-input-style="outline"] textarea:focus,
 body[data-input-style="outline"] select:focus,
 body[data-input-style="outline"] .input-base:focus,
 body[data-input-style="outline"] .input-control:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 2px var(--accent-glow) !important;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 /* Анимация фокуса инпутов */
@@ -76,14 +76,14 @@ body.input-focus-anim input,
 body.input-focus-anim textarea,
 body.input-focus-anim select,
 body.input-focus-anim .input-base {
-  transition: transform var(--anim-speed) var(--anim-ease), border-color var(--anim-speed), box-shadow var(--anim-speed) !important;
+  transition: transform var(--anim-speed) var(--anim-ease), border-color var(--anim-speed);
 }
 
 body.input-focus-anim input:focus,
 body.input-focus-anim textarea:focus,
 body.input-focus-anim select:focus,
 body.input-focus-anim .input-base:focus {
-  transform: scale(1.015) !important;
+  transform: scale(1.015);
 }
 
 /* 3. Кнопки: Эффект наведения и нажатия (Buttons) */
@@ -92,21 +92,21 @@ body.btn-hover-scale .btn-new,
 body.btn-hover-scale .create-btn,
 body.btn-hover-scale button:not(.no-anim),
 body.btn-hover-scale .interactive-el {
-  transition: transform var(--anim-speed) var(--anim-ease), background var(--anim-speed), box-shadow var(--anim-speed) !important;
+  transition: transform var(--anim-speed) var(--anim-ease), background var(--anim-speed);
 }
 
 body.btn-hover-scale .btn:hover,
 body.btn-hover-scale .btn-new:hover,
 body.btn-hover-scale .create-btn:hover,
 body.btn-hover-scale button:not(.no-anim):hover {
-  transform: scale(var(--scale-pull, 1.05)) !important;
+  transform: scale(var(--scale-pull, 1.05));
 }
 
 body.btn-click-press .btn:active,
 body.btn-click-press .btn-new:active,
 body.btn-click-press .create-btn:active,
 body.btn-click-press button:not(.no-anim):active {
-  transform: scale(var(--scale-push, 0.95)) !important;
+  transform: scale(var(--scale-push, 0.95));
 }
 
 /* 4. Карточки и списки (Cards & Lists) */
@@ -115,9 +115,9 @@ body.cards-compact .sidebar-item,
 body.cards-compact .chapter-item,
 body.cards-compact .tree-node,
 body.cards-compact .tree-node-row {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
-  min-height: 26px !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  min-height: 26px;
 }
 
 body:not(.cards-show-icons) .list-item-icon,
@@ -125,53 +125,53 @@ body:not(.cards-show-icons) .sidebar-item-icon,
 body:not(.cards-show-icons) .chapter-item-icon,
 body:not(.cards-show-icons) .tree-node-icon,
 body:not(.cards-show-icons) .node-icon {
-  display: none !important;
+  display: none;
 }
 
 /* 5. Уведомления (Toast / Notification position) */
 .toast-container,
 .toast-container-new {
-  position: fixed !important;
-  z-index: 10000 !important;
-  display: flex !important;
-  gap: 12px !important;
-  pointer-events: none !important;
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  gap: 12px;
+  pointer-events: none;
 }
 
 body[data-toast-pos="top-left"] .toast-container,
 body[data-toast-pos="top-left"] .toast-container-new {
-  top: 24px !important;
-  left: 24px !important;
-  bottom: auto !important;
-  right: auto !important;
-  flex-direction: column !important;
+  top: 24px;
+  left: 24px;
+  bottom: auto;
+  right: auto;
+  flex-direction: column;
 }
 
 body[data-toast-pos="top-right"] .toast-container,
 body[data-toast-pos="top-right"] .toast-container-new {
-  top: 24px !important;
-  right: 24px !important;
-  bottom: auto !important;
-  left: auto !important;
-  flex-direction: column !important;
+  top: 24px;
+  right: 24px;
+  bottom: auto;
+  left: auto;
+  flex-direction: column;
 }
 
 body[data-toast-pos="bottom-left"] .toast-container,
 body[data-toast-pos="bottom-left"] .toast-container-new {
-  bottom: 24px !important;
-  left: 24px !important;
-  top: auto !important;
-  right: auto !important;
-  flex-direction: column-reverse !important;
+  bottom: 24px;
+  left: 24px;
+  top: auto;
+  right: auto;
+  flex-direction: column-reverse;
 }
 
 body[data-toast-pos="bottom-right"] .toast-container,
 body[data-toast-pos="bottom-right"] .toast-container-new {
-  bottom: 24px !important;
-  right: 24px !important;
-  top: auto !important;
-  left: auto !important;
-  flex-direction: column-reverse !important;
+  bottom: 24px;
+  right: 24px;
+  top: auto;
+  left: auto;
+  flex-direction: column-reverse;
 }
 
 /* 6. Колонки ИСКЛЮЧИТЕЛЬНО для полей редактора сущностей */
@@ -182,8 +182,7 @@ body[data-toast-pos="bottom-right"] .toast-container-new {
 .schema-fields-grid,
 .form-fields-grid,
 .editor-fields-dynamic {
-  display: grid !important;
-  grid-template-columns: repeat(var(--layout-columns, 2), 1fr) !important;
-  gap: var(--gap-elements, 16px) !important;
+  display: grid;
+  grid-template-columns: repeat(var(--layout-columns, 2), 1fr);
+  gap: var(--gap-elements, 16px);
 }
-

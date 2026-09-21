@@ -109,13 +109,13 @@
   align-items: center;
   gap: 6px;
   border: none;
-  transition: all 0.2s;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btn-reject {
   background: transparent;
   color: var(--danger);
-  border: 1px solid var(--danger) !important;
+  border: 1px solid var(--danger);
 }
 
 .btn-reject:hover {
@@ -151,5 +151,5 @@
 .response-status.rejected {
   background: var(--error-bg);
   color: var(--danger);
-  border: 1px solid rgba(250, 82, 82, 0.2);
+  border: 1px solid var(--error-border);
 }

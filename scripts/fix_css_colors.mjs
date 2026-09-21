@@ -1,9 +1,57 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const STYLES_DIR = path.resolve('packages/resources/src/styles');
+function loadIgnorePatterns() {
+  const configPath = path.resolve('cerberus.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return cfg.ignore || [];
+    } catch (e) {
+      console.warn('⚠️ Ошибка чтения cerberus.json:', e.message);
+    }
+  }
+  return [];
+}
 
-const RGBA_MAP = [
+function globToRegex(glob) {
+  let normalized = glob.replace(/\\/g, '/');
+  let regexStr = normalized
+    .replace(/\./g, '\\.')
+    .replace(/\*\*\//g, '(.+/)?')
+    .replace(/\*\*/g, '.*')
+    .replace(/\*/g, '[^/]*');
+  return new RegExp(`(^|/)${regexStr}($|/)`);
+}
+
+function createIgnoreMatcher(patterns) {
+  const regexes = patterns.map(globToRegex);
+  return function isIgnored(filePath) {
+    const normalized = filePath.replace(/\\/g, '/');
+    return regexes.some((re) => re.test(normalized));
+  };
+}
+
+function collectFiles(rootDir, extensions, isIgnored, fileList = []) {
+  if (!fs.existsSync(rootDir)) return fileList;
+  const entries = fs.readdirSync(rootDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(rootDir, entry.name);
+    const relPath = path.relative(process.cwd(), fullPath).replace(/\\/g, '/');
+
+    if (isIgnored(relPath)) continue;
+
+    if (entry.isDirectory()) {
+      collectFiles(fullPath, extensions, isIgnored, fileList);
+    } else if (entry.isFile() && extensions.some((ext) => entry.name.endsWith(ext))) {
+      fileList.push(fullPath);
+    }
+  }
+  return fileList;
+}
+
+const COLOR_MAP = [
   // Статусные цвета
   { pattern: /rgba\(\s*239\s*,\s*68\s*,\s*68\s*,\s*(?:0\.15|0\.2|0\.1)\s*\)/g, token: 'var(--error-bg)' },
   { pattern: /rgba\(\s*239\s*,\s*68\s*,\s*68\s*,\s*0\.3\s*\)/g, token: 'var(--error-border)' },
@@ -36,28 +84,26 @@ const RGBA_MAP = [
   { pattern: /rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\.65\s*\)/g, token: 'var(--modal-backdrop)' },
 ];
 
-function getAllCssFiles(dir, fileList = []) {
-  const files = fs.readdirSync(dir);
-  for (const file of files) {
-    const fullPath = path.join(dir, file);
-    const stat = fs.statSync(fullPath);
-    if (stat.isDirectory()) {
-      getAllCssFiles(fullPath, fileList);
-    } else if (file.endsWith('.css')) {
-      fileList.push(fullPath);
-    }
-  }
-  return fileList;
-}
+export function runFixColors() {
+  console.log('🚀 Запуск автоматической миграции hardcoded цветов/rgba на токены...\n');
+  const ignorePatterns = loadIgnorePatterns();
+  const isIgnored = createIgnoreMatcher(ignorePatterns);
 
-function run() {
-  console.log('🚀 Запуск автоматической миграции hardcoded цветов/rgba на токены...');
-  const files = getAllCssFiles(STYLES_DIR);
+  const searchDirs = [
+    path.resolve('packages/resources/src/styles'),
+    path.resolve('packages/components/src'),
+    path.resolve('apps/spa/src'),
+  ];
+
+  const files = [];
+  for (const dir of searchDirs) {
+    collectFiles(dir, ['.css', '.vue'], isIgnored, files);
+  }
+
   let totalFixedFiles = 0;
   let totalReplacements = 0;
 
   for (const filePath of files) {
-    // Пропускаем сам файл токенов
     const relPath = path.relative(process.cwd(), filePath).replace(/\\/g, '/');
     if (relPath.includes('styles/tokens/')) {
       continue;
@@ -67,8 +113,8 @@ function run() {
     let newContent = content;
     let fileReplacements = 0;
 
-    for (const rule of RGBA_MAP) {
-      newContent = newContent.replace(rule.pattern, (match) => {
+    for (const rule of COLOR_MAP) {
+      newContent = newContent.replace(rule.pattern, () => {
         fileReplacements++;
         totalReplacements++;
         return rule.token;
@@ -84,8 +130,10 @@ function run() {
 
   console.log('\n=============================================');
   console.log(`🎯 Исправлено файлов с цветами: ${totalFixedFiles}`);
-  console.log(`🪄 Всего заменено RGBA на токены: ${totalReplacements}`);
+  console.log(`🪄 Всего заменено цветов на токены: ${totalReplacements}`);
   console.log('=============================================\n');
 }
 
-run();
+if (process.argv[1] && process.argv[1].endsWith('fix_css_colors.mjs')) {
+  runFixColors();
+}

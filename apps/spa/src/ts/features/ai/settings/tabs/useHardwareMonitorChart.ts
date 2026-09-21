@@ -55,6 +55,15 @@ export function useHardwareMonitorChart(props: HardwareMonitorChartProps) {
 
     const maxVal = Math.max(totalRam.value, totalVram.value, 16);
 
+    const rootStyle = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+    const colorText = rootStyle?.getPropertyValue('--text-main').trim() || 'var(--text-main)';
+    const colorMuted = rootStyle?.getPropertyValue('--text-muted').trim() || 'var(--text-muted)';
+    const colorBorder = rootStyle?.getPropertyValue('--border-color').trim() || 'var(--border-color)';
+    const colorInfo = rootStyle?.getPropertyValue('--info').trim() || 'var(--info)';
+    const colorAccent = rootStyle?.getPropertyValue('--accent').trim() || 'var(--accent)';
+    const colorInfoBg = rootStyle?.getPropertyValue('--info-bg').trim() || 'var(--info-bg)';
+    const colorAccentGlow = rootStyle?.getPropertyValue('--accent-glow').trim() || 'var(--accent-glow)';
+
     const opts: uPlot.Options = {
       width: chartContainer.value.clientWidth || 600,
       height: 140,
@@ -63,7 +72,7 @@ export function useHardwareMonitorChart(props: HardwareMonitorChartProps) {
         points: {
           show: true,
           size: 6,
-          stroke: '#ffffff'
+          stroke: colorText
         }
       },
       scales: {
@@ -77,9 +86,9 @@ export function useHardwareMonitorChart(props: HardwareMonitorChartProps) {
       },
       axes: [
         {
-          stroke: '#8b949e',
-          grid: { stroke: 'rgba(255, 255, 255, 0.05)', width: 1 },
-          ticks: { stroke: 'rgba(255, 255, 255, 0.1)', width: 1 },
+          stroke: colorMuted,
+          grid: { stroke: colorBorder, width: 1 },
+          ticks: { stroke: colorBorder, width: 1 },
           values: (_self, ticks) => ticks.map(rawValue => {
             const d = new Date(rawValue * 1000);
             return `${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`;
@@ -88,9 +97,9 @@ export function useHardwareMonitorChart(props: HardwareMonitorChartProps) {
           size: 20
         },
         {
-          stroke: '#8b949e',
-          grid: { stroke: 'rgba(255, 255, 255, 0.05)', width: 1 },
-          ticks: { stroke: 'rgba(255, 255, 255, 0.1)', width: 1 },
+          stroke: colorMuted,
+          grid: { stroke: colorBorder, width: 1 },
+          ticks: { stroke: colorBorder, width: 1 },
           values: (_self, ticks) => ticks.map(rawValue => `${Math.round(rawValue)} ГБ`),
           space: 30,
           size: 45
@@ -100,16 +109,16 @@ export function useHardwareMonitorChart(props: HardwareMonitorChartProps) {
         {},
         {
           label: 'RAM (ОЗУ)',
-          stroke: '#58a6ff',
+          stroke: colorInfo,
           width: 2,
-          fill: 'rgba(88, 166, 255, 0.15)',
+          fill: colorInfoBg,
           points: { show: false }
         },
         {
           label: 'VRAM (Видео)',
-          stroke: '#bc8cff',
+          stroke: colorAccent,
           width: 2,
-          fill: 'rgba(188, 140, 255, 0.15)',
+          fill: colorAccentGlow,
           points: { show: false }
         }
       ]

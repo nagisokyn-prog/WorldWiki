@@ -61,7 +61,7 @@
   background: var(--bg-base);
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   text-align: left;
 }
 
@@ -123,7 +123,7 @@
   border: none;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .ww-export-btn-primary:hover:not(:disabled) {

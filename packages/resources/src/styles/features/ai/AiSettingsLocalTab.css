@@ -26,7 +26,7 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 .chart-toggle-btn:hover,
 .chart-toggle-btn.active {
@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 .local-nav-btn:hover {
   color: var(--text-main);
@@ -188,7 +188,7 @@
   height: 100%;
   width: var(--rec-progress, 0%);
   background: var(--accent);
-  transition: width var(--anim-speed) ease;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 .progress-text {
   font-size: 12px;
@@ -258,7 +258,7 @@
 .active-pill.embed-pill {
   background: var(--bg-selected);
   color: var(--accent-light);
-  border-color: rgba(196, 181, 253, 0.3);
+  border-color: var(--accent-glow);
 }
 .installed-meta {
   font-size: 12px;
@@ -382,7 +382,7 @@
   padding: 3px 7px;
   cursor: pointer;
   font-size: 11px;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 .chip-btn:hover:not(:disabled) {
   background: var(--accent-hover);
@@ -413,7 +413,7 @@
   height: 100%;
   width: var(--dl-progress, 0%);
   background: var(--accent);
-  transition: width 0.2s ease;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 .chip-progress-text {
   font-size: 11px;

@@ -109,7 +109,7 @@
   height: 2px;
   border-radius: var(--radius-xs) ;
   background: var(--accent);
-  transition: background 0.15s, width 0.15s;
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 .panel-resize-handle-h:hover {

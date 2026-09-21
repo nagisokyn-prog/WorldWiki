@@ -1,5 +1,5 @@
 .playground-section {
-  background: var(--bg-sunken) !important;
+  background: var(--bg-sunken);
   border: 1px solid var(--border-color);
   padding: 16px;
   border-radius: var(--radius-card);
@@ -122,12 +122,12 @@
   background-color: var(--season-color, transparent);
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   display: flex;
   flex-direction: column;
 }
 .day-cell:hover:not(.empty-cell) {
-  background: var(--bg-hover) !important;
+  background: var(--bg-hover);
 }
 .empty-cell {
   background: var(--bg-sunken);

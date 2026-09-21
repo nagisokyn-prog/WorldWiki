@@ -89,5 +89,5 @@
 }
 
 :deep(.u-legend) {
-  display: none !important;
+  display: none;
 }

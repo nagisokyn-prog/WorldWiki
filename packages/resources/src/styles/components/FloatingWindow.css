@@ -11,9 +11,8 @@
   /* Убираем задержку при перетаскивании */
   will-change: left, top, width, height;
   backface-visibility: hidden;
-  transform: translateZ(0);
-  /* ВАЖНО: Отключаем transition из glass-panel */
-  transition: none !important;
+  /* Отключаем transition при drag */
+  transition: none;
 }
 
 .window-header {
@@ -60,7 +59,7 @@
 .close-btn:hover {
   color: var(--error);
   transform: scale(1.1);
-  transition: all 0.2s;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .window-content {

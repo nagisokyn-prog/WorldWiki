@@ -84,7 +84,7 @@
   padding: 4px 6px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   font-family: inherit;
   white-space: nowrap;
 }
@@ -121,7 +121,7 @@
   padding: 2px 6px;
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   white-space: nowrap;
   font-family: inherit;
 }
@@ -208,7 +208,7 @@
   cursor: pointer;
   padding: 2px 4px;
   border-radius: var(--radius-xs);
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .btn-delete:hover {
@@ -316,7 +316,7 @@
   cursor: pointer;
   padding: 1px 4px;
   border-radius: var(--radius-xs);
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .btn-locate-step:hover {
@@ -359,7 +359,7 @@
   border-radius: var(--radius-xs);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   font-family: inherit;
 }
 
@@ -413,7 +413,7 @@
   border-radius: var(--radius-xs);
   cursor: pointer;
   text-align: left;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
   font-family: inherit;
 }
 
@@ -490,7 +490,7 @@
   border-radius: var(--radius-round) ;
   display: inline-block;
   position: relative;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .status-radio-label.active {

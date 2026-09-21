@@ -24,9 +24,7 @@
 }
 
 .card-interactive {
-    transition: transform var(--anim-speed) var(--anim-ease),
-                border-color var(--anim-speed) var(--anim-ease),
-                box-shadow var(--anim-speed) var(--anim-ease);
+    transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 .card-interactive:hover {
@@ -43,4 +41,4 @@
 .border-t { border-top: 1px solid var(--border-color); }
 .border-l { border-left: 1px solid var(--border-color); }
 .border-r { border-right: 1px solid var(--border-color); }
-.border-none { border: none !important; }
+.border-none { border: none; }

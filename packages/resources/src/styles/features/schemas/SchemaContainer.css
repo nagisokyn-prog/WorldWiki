@@ -1,7 +1,7 @@
 /* SchemaContainer.css - Стили для карточек и блоков редактора схем */
 
 .schema-container {
-    transition: all var(--anim-speed) var(--anim-ease);
+    transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
 }
 
 .schema-container-card {

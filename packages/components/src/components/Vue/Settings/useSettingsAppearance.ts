@@ -1,8 +1,9 @@
 import type { AppSettings } from '../../../ts/types/settings.js';
+import { DEFAULT_THEME_PALETTE } from '../../../ts/tokens/theme.tokens.js';
 
 export function useSettingsAppearance(getSettings: () => AppSettings, save?: () => Promise<void> | void) {
   const toHex = (colorStr: string) => {
-    if (!colorStr) return '#000000';
+    if (!colorStr) return DEFAULT_THEME_PALETTE.fallbackBlack;
     if (colorStr.startsWith('#')) return colorStr.substring(0, 7);
     if (colorStr.startsWith('rgba')) {
       const parts = colorStr.match(/[\d.]+/g);
@@ -13,7 +14,7 @@ export function useSettingsAppearance(getSettings: () => AppSettings, save?: () 
         return `#${r}${g}${b}`;
       }
     }
-    return '#000000';
+    return DEFAULT_THEME_PALETTE.fallbackBlack;
   };
 
   const updateColorAlpha = (colorKey: keyof AppSettings['colors'], hexCode: string) => {

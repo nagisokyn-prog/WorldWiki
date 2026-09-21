@@ -68,7 +68,7 @@ export const CrossReferenceExtension = Node.create<CrossReferenceOptions>({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-type': 'cross-reference',
         class: 'word-cross-reference',
-        style: 'display: inline; color: #0284c7; cursor: pointer; text-decoration: underline dotted; font-style: italic;',
+        style: 'display: inline; color: var(--accent); cursor: pointer; text-decoration: underline dotted; font-style: italic;',
       }),
       label,
     ];

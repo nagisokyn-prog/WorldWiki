@@ -37,7 +37,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xs);
   outline: none;
-  transition: all 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .chapter-title-input-inline:focus {
@@ -98,7 +98,7 @@
   font-weight: 500;
   cursor: pointer;
   user-select: none;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
 }
 
@@ -117,15 +117,15 @@
 
 /* Активное состояние кнопки (когда стиль включен в тексте) */
 .toolbar-btn.is-active {
-  background: var(--accent) !important;
-  border-color: var(--accent) !important;
-  color: var(--accent-text) !important;
-  box-shadow: 0 0 10px var(--accent-glow) !important;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* Акцент для кнопки сброса форматирования */
 .toolbar-btn-danger:hover {
-  background: var(--bg-hover) !important;
-  border-color: var(--danger) !important;
-  color: var(--danger) !important;
+  background: var(--bg-hover);
+  border-color: var(--danger);
+  color: var(--danger);
 }

@@ -1,6 +1,7 @@
 import { PaginationPlus } from 'tiptap-pagination-plus';
 import type { Editor, AnyExtension } from '@tiptap/core';
 import { getPageGeometry, type PaginationGeometry } from './geometryHelper';
+import { EDITOR_DEFAULT_COLORS } from '../tokens/editor.tokens';
 
 export type { PaginationGeometry };
 
@@ -113,8 +114,8 @@ export function attachPaginationPlus(
           marginLeft: geo.marginLeft,
           marginRight: geo.marginRight,
           pageGap: 40,
-          pageBreakBackground: '#c0c0c0',
-          pageGapBorderColor: '#c0c0c0',
+          pageBreakBackground: EDITOR_DEFAULT_COLORS.pageBreak,
+          pageGapBorderColor: EDITOR_DEFAULT_COLORS.pageGapBorder,
           headerLeft: text.headerLeft ?? '',
           headerRight: text.headerRight ?? '',
           footerLeft: text.footerLeft ?? '',

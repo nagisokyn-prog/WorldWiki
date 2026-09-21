@@ -5,20 +5,20 @@
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid rgba(255, 255, 255, var(--glass-border-alpha, 0.1));
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-card);
     overflow: hidden;
-    transition: border-color var(--anim-speed) var(--anim-ease), box-shadow var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease);
+    transition: border-color var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease);
 }
 
 .glass-panel::before,
 .glass-card::before,
 .glass-card-bg {
-    display: none !important;
+    display: none;
 }
 
 .glass-card:hover {
-    border-color: rgba(255, 255, 255, calc(var(--glass-border-alpha, 0.1) + 0.1));
+    border-color: var(--border-hover);
     box-shadow: var(--shadow-card-hover);
     transform: translateY(-4px);
 }
@@ -57,14 +57,14 @@
     background: var(--glass-bg);
     backdrop-filter: blur(calc(var(--glass-blur) * 0.5));
     -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.5));
-    border: 1px solid rgba(255, 255, 255, var(--glass-border-alpha, 0.1));
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-btn);
     color: var(--text-main);
     font-family: var(--font-family);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
     cursor: pointer;
-    transition: all var(--anim-speed) var(--anim-ease);
+    transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
     overflow: hidden;
 }
 
@@ -132,7 +132,7 @@
     color: var(--text-main);
     font-family: var(--font-family);
     font-size: var(--font-size-base);
-    transition: all var(--anim-speed) var(--anim-ease);
+    transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
     outline: none;
 }
 
@@ -263,7 +263,7 @@
     font-family: inherit;
     font-size: 13px;
     outline: none;
-    transition: border-color var(--anim-speed, 0.2s) ease, box-shadow var(--anim-speed, 0.2s) ease, background var(--anim-speed, 0.2s) ease;
+    transition: border-color var(--anim-speed, 0.2s) ease, 0.2s) ease, background var(--anim-speed, 0.2s) ease;
     box-sizing: border-box;
 }
 

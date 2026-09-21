@@ -92,7 +92,7 @@
     background: var(--bg-sunken);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xs);
-    transition: all 0.2s;
+    transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .tag-manage-card:hover {

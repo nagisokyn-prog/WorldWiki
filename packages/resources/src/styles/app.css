@@ -57,7 +57,7 @@
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-right: 1px solid var(--border-color);
   z-index: 100;
-  transition: width var(--anim-speed);
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
 }
 
 .activity-icon {
@@ -73,7 +73,7 @@
   border: 1px solid transparent;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
   position: relative;
 }
 
@@ -100,7 +100,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: width var(--anim-speed);
+  transition: opacity var(--anim-speed-normal, 0.2s) ease, transform var(--anim-speed-normal, 0.2s) ease, background-color var(--anim-speed-normal, 0.2s) ease, border-color var(--anim-speed-normal, 0.2s) ease, color var(--anim-speed-normal, 0.2s) ease;
   position: relative;
   height: 100%;
 }
@@ -134,7 +134,7 @@
   color: var(--text-main);
   font-size: 13px;
   outline: none;
-  transition: all var(--anim-speed);
+  transition: opacity var(--anim-speed), transform var(--anim-speed), background-color var(--anim-speed), border-color var(--anim-speed), color var(--anim-speed);
   font-family: inherit;
 }
 
@@ -155,7 +155,7 @@
   margin-bottom: 4px;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -188,7 +188,7 @@
   color: var(--accent);
   border: 1px dashed var(--border-active);
   background: transparent;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
   flex-shrink: 0;
 }
 
@@ -342,7 +342,7 @@
   cursor: pointer;
   color: var(--text-muted);
   border-bottom: 2px solid transparent;
-  transition: all var(--anim-speed);
+  transition: opacity var(--anim-speed), transform var(--anim-speed), background-color var(--anim-speed), border-color var(--anim-speed), color var(--anim-speed);
   background: transparent;
   border: none;
 }
@@ -428,7 +428,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .settings-close:hover {
@@ -470,7 +470,7 @@
   font-size: 14px;
   outline: none;
   font-family: inherit;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .form-control:focus {
@@ -514,7 +514,7 @@ select.form-control { cursor: pointer; }
   border: none;
   cursor: pointer;
   font-size: 13px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   font-family: inherit;
   font-weight: 100%;
   display: inline-flex;
@@ -555,19 +555,6 @@ select.form-control { cursor: pointer; }
   border-color: var(--border-hover);
 }
 
-.btn-danger {
-  background: var(--error-bg);
-  color: var(--error);
-}
-
-.btn-danger:hover {
-  background: rgba(239, 68, 68, 0.25);
-}
-
-.btn-small {
-  padding: 4px 8px;
-  font-size: 12px;
-}
 
 .btn-add {
   background: transparent;
@@ -578,7 +565,7 @@ select.form-control { cursor: pointer; }
   border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 13px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .btn-add:hover {
@@ -595,7 +582,7 @@ select.form-control { cursor: pointer; }
   border-radius: var(--radius-md);
   padding: 8px;
   margin-bottom: 8px;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .timeline-item:hover,
@@ -637,7 +624,7 @@ select.form-control { cursor: pointer; }
   justify-content: center;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .photo-preview:hover {

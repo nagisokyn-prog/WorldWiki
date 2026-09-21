@@ -2,7 +2,7 @@
 @import "../timeline/DateWheels.css";
 
 .schema-field-editor {
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
 }
 
 .schema-field-header {
@@ -57,7 +57,7 @@
   font-size: var(--font-size-xs);
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed) var(--anim-ease);
+  transition: opacity var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease), background-color var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease), color var(--anim-speed) var(--anim-ease);
   color: var(--text-main);
   background: var(--bg-panel);
   border: 1px solid var(--border-color);

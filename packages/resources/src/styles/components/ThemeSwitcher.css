@@ -38,7 +38,7 @@
   border-radius: var(--radius-card);
   background: transparent;
   cursor: pointer;
-  transition: all 0.3s var(--anim-ease);
+  transition: opacity 0.3s var(--anim-ease), transform 0.3s var(--anim-ease), background-color 0.3s var(--anim-ease), border-color 0.3s var(--anim-ease), color 0.3s var(--anim-ease);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,12 +71,12 @@
 }
 
 .dark-preview {
-  background: linear-gradient(135deg, hsl(230, 25%, 12%) 0%, hsl(230, 25%, 18%) 100%);
+  background: linear-gradient(135deg, var(--bg-base) 0%, var(--bg-card) 100%);
   border: 1px solid var(--border-color);
 }
 
 .light-preview {
-  background: linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(210, 20%, 94%) 100%);
+  background: linear-gradient(135deg, var(--bg-hover) 0%, var(--bg-selected) 100%);
   border: 1px solid var(--border-color);
 }
 

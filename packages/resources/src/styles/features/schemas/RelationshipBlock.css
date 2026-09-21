@@ -73,7 +73,7 @@
   cursor: pointer;
   font-size: 10px;
   padding: 0 4px;
-  transition: all 0.2s;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 .btn-edit-options-tiny:hover { background: var(--bg-hover); }
 
@@ -207,7 +207,7 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: var(--radius-xs);
-  transition: all 0.2s;
+  transition: opacity 0.2s, transform 0.2s, background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 .btn-small-add:hover {
   border-color: var(--accent);

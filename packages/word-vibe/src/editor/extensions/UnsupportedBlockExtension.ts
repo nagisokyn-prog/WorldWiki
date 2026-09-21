@@ -93,9 +93,9 @@ export const UnsupportedBlockExtension = Node.create<UnsupportedBlockOptions>({
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
         'data-type': 'unsupported-block',
         class: 'word-unsupported-block',
-        style: 'margin: 1em 0; padding: 10px 14px; border: 1px dashed #94a3b8; border-radius: 6px; background: rgba(148, 163, 184, 0.08); font-size: 0.9em; color: #64748b; user-select: none;',
+        style: 'margin: 1em 0; padding: 10px 14px; border: 1px dashed var(--border-color); border-radius: var(--radius-xs); background: var(--bg-sunken); font-size: 0.9em; color: var(--text-muted); user-select: none;',
       }),
-      ['span', { style: 'font-weight: 600; color: #475569;' }, `⚠️ Блок «${origType}»`],
+      ['span', { style: 'font-weight: 600; color: var(--text-main);' }, `⚠️ Блок «${origType}»`],
       ['span', { style: 'margin-left: 8px; opacity: 0.8;' }, '— доступен для редактирования в основном WYSIWYG'],
     ];
   },

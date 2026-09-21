@@ -1,6 +1,7 @@
 import type { AppSettings } from '../types/settings';
 import { withAlpha } from './settings.defaults';
 import { applyCustomBackground } from './settings.background';
+import { DEFAULT_THEME_PALETTE } from '../tokens/theme.tokens';
 
 export function applySettingsToDOM(settings: AppSettings): void {
   const root = document.documentElement;
@@ -19,7 +20,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
   const inputBgWithAlpha = (s.colors.bgInput && s.colors.bgInput.startsWith('rgba'))
     ? s.colors.bgInput
     : withAlpha(s.colors.bgInput, cardOpacity);
-  const borderWithAlpha = withAlpha(s.colors.borderColor || '#ffffff', borderOpacity);
+  const borderWithAlpha = withAlpha(s.colors.borderColor || DEFAULT_THEME_PALETTE.fallbackWhite, borderOpacity);
 
   // Определяем семантические токены оверлея и подложек
   const bgBaseStr = (s.colors.bgBase || '').toLowerCase();
@@ -43,7 +44,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
   root.style.setProperty('--accent-active', s.colors.accentActive);
   root.style.setProperty('--accent-disabled', s.colors.accentDisabled);
   root.style.setProperty('--accent-glow', s.colors.accentGlow);
-  root.style.setProperty('--accent-text', s.colors.accentText || '#ffffff');
+  root.style.setProperty('--accent-text', s.colors.accentText || DEFAULT_THEME_PALETTE.fallbackWhite);
   root.style.setProperty('--border-color', borderWithAlpha);
   root.style.setProperty('--border-active', s.colors.borderActive);
   root.style.setProperty('--shadow-color', s.colors.shadowColor);
@@ -107,7 +108,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
   // Dropdowns
   const dropdownTransparency = s.dropdowns?.transparency ?? 0;
   const dropdownOpacity = +(Math.max(0, Math.min(1, 1 - dropdownTransparency / 100))).toFixed(2);
-  const dropdownBgWithAlpha = withAlpha(s.colors.bgPanel || s.colors.bgBase || '#0f0f14', dropdownOpacity);
+  const dropdownBgWithAlpha = withAlpha(s.colors.bgPanel || s.colors.bgBase || DEFAULT_THEME_PALETTE.dropdownFallback, dropdownOpacity);
 
   root.style.setProperty('--dropdown-transparency', `${dropdownTransparency}%`);
   root.style.setProperty('--dropdown-opacity', String(dropdownOpacity));

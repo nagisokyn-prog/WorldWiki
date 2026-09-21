@@ -99,7 +99,7 @@
 }
 
 .text-success {
-    color: var(--success) !important;
+    color: var(--success);
 }
 
 .text-error {
@@ -108,21 +108,21 @@
 }
 
 .btn-yandex {
-    background: var(--brand-yandex, hsl(10, 98%, 55%));
+    background: var(--brand-yandex, var(--warning));
     color: var(--accent-text);
     border: none;
 }
 
 .btn-yandex:hover {
-    background: var(--brand-yandex-hover, hsl(10, 81%, 49%));
+    background: var(--brand-yandex-hover, var(--warning-hover, var(--warning)));
 }
 
 .auth-code-section {
     margin-top: 16px;
     padding: 16px;
     border-radius: var(--radius-sm);
-    background: rgba(252, 63, 29, 0.05);
-    border: 1px dashed rgba(252, 63, 29, 0.3);
+    background: var(--error-bg);
+    border: 1px dashed var(--error-border);
 }
 
 .code-input-group {
@@ -136,7 +136,7 @@
     padding: 8px 12px;
     border-radius: var(--radius-xs);
     border: 1px solid var(--border-color);
-    background: var(--bg-main);
+    background: var(--bg-input);
     color: var(--text-main);
 }
 

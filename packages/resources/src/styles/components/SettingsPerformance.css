@@ -74,7 +74,7 @@
   color: var(--text-muted);
   border-radius: var(--radius-xs);
   cursor: pointer;
-  transition: all var(--anim-speed-fast) ease;
+  transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 .profile-tab:hover {
   background: var(--bg-hover);

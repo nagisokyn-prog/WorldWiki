@@ -272,66 +272,69 @@ impl CssRuleChecker {
                 }
             }
 
-            // Исключаем SVG-ссылки вида url(#gradient) из проверки Hex
-            let line_no_svg_url = URL_SVG_RE.replace_all(line_clean, "").to_string();
+            // Check CSS-004 only in non-token files
+            if !is_token_file {
+                // Исключаем SVG-ссылки вида url(#gradient) из проверки Hex
+                let line_no_svg_url = URL_SVG_RE.replace_all(line_clean, "").to_string();
 
-            // Check Hex colors
-            if HEX_RE.is_match(&line_no_svg_url) {
-                let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_hex", trimmed);
-                violations.push(Violation {
-                    rule_id: "CSS-004".into(),
-                    rule_version: "1.0".into(),
-                    category: Category::Convention,
-                    severity: Severity::Deny,
-                    file: file_path.to_path_buf(),
-                    line: current_line,
-                    column: 1,
-                    symbol: "color_hex".into(),
-                    snippet: trimmed.to_string(),
-                    message: "Hardcoded hex color found in stylesheet.".into(),
-                    remediation: "Replace hardcoded hex color with CSS Custom Property (e.g., var(--color-text-primary)).".into(),
-                    fingerprint,
-                });
-            }
+                // Check Hex colors
+                if HEX_RE.is_match(&line_no_svg_url) {
+                    let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_hex", trimmed);
+                    violations.push(Violation {
+                        rule_id: "CSS-004".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Convention,
+                        severity: Severity::Deny,
+                        file: file_path.to_path_buf(),
+                        line: current_line,
+                        column: 1,
+                        symbol: "color_hex".into(),
+                        snippet: trimmed.to_string(),
+                        message: "Hardcoded hex color found in stylesheet.".into(),
+                        remediation: "Replace hardcoded hex color with CSS Custom Property (e.g., var(--color-text-primary)).".into(),
+                        fingerprint,
+                    });
+                }
 
-            // Check RGB/RGBA/HSL
-            if RGB_HSL_RE.is_match(line_clean) {
-                let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_rgb_hsl", trimmed);
-                violations.push(Violation {
-                    rule_id: "CSS-004".into(),
-                    rule_version: "1.0".into(),
-                    category: Category::Convention,
-                    severity: Severity::Deny,
-                    file: file_path.to_path_buf(),
-                    line: current_line,
-                    column: 1,
-                    symbol: "color_rgb_hsl".into(),
-                    snippet: trimmed.to_string(),
-                    message: "Direct rgb()/rgba()/hsl() call found in stylesheet.".into(),
-                    remediation:
-                        "Use semantic design tokens from design system CSS Custom Properties."
-                            .into(),
-                    fingerprint,
-                });
-            }
+                // Check RGB/RGBA/HSL
+                if RGB_HSL_RE.is_match(line_clean) {
+                    let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_rgb_hsl", trimmed);
+                    violations.push(Violation {
+                        rule_id: "CSS-004".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Convention,
+                        severity: Severity::Deny,
+                        file: file_path.to_path_buf(),
+                        line: current_line,
+                        column: 1,
+                        symbol: "color_rgb_hsl".into(),
+                        snippet: trimmed.to_string(),
+                        message: "Direct rgb()/rgba()/hsl() call found in stylesheet.".into(),
+                        remediation:
+                            "Use semantic design tokens from design system CSS Custom Properties."
+                                .into(),
+                        fingerprint,
+                    });
+                }
 
-            // Check hardcoded pixel border-radius
-            if BORDER_RADIUS_RE.is_match(line_clean) {
-                let fingerprint = compute_fingerprint("CSS-004", "1.0", "border_radius", trimmed);
-                violations.push(Violation {
-                    rule_id: "CSS-004".into(),
-                    rule_version: "1.0".into(),
-                    category: Category::Convention,
-                    severity: Severity::Deny,
-                    file: file_path.to_path_buf(),
-                    line: current_line,
-                    column: 1,
-                    symbol: "border_radius".into(),
-                    snippet: trimmed.to_string(),
-                    message: "Hardcoded pixel border-radius found in stylesheet.".into(),
-                    remediation: "Use design token var(--border-radius-sm), var(--border-radius-md), or var(--border-radius-lg).".into(),
-                    fingerprint,
-                });
+                // Check hardcoded pixel border-radius
+                if BORDER_RADIUS_RE.is_match(line_clean) {
+                    let fingerprint = compute_fingerprint("CSS-004", "1.0", "border_radius", trimmed);
+                    violations.push(Violation {
+                        rule_id: "CSS-004".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Convention,
+                        severity: Severity::Deny,
+                        file: file_path.to_path_buf(),
+                        line: current_line,
+                        column: 1,
+                        symbol: "border_radius".into(),
+                        snippet: trimmed.to_string(),
+                        message: "Hardcoded pixel border-radius found in stylesheet.".into(),
+                        remediation: "Use design token var(--border-radius-sm), var(--border-radius-md), or var(--border-radius-lg).".into(),
+                        fingerprint,
+                    });
+                }
             }
 
             // Check CSS-006: !important abuse (только в активном коде, не в комментариях)

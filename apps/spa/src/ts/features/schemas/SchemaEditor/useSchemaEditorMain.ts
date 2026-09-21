@@ -101,7 +101,7 @@ export function useSchemaEditorMain(props: SchemaEditorMainProps, emit: (event: 
                 type_key: targetTypeKey,
                 type_name: targetTypeName,
                 icon: schemaCopy.icon || '📄',
-                color: schemaCopy.color || '#333333',
+                color: schemaCopy.color || 'var(--color-bg-tertiary)',
                 fields_schema: [],
                 full_schema: schemaCopy,
                 created_at: null

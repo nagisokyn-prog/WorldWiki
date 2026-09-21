@@ -6,10 +6,10 @@
 
 import * as Vue from 'vue';
 
-import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/tokens/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/app.css';
-import '@worldwiki/resources/styles/glass-animations.css';
+import '@worldwiki/resources/styles/styles.css';
+import '@worldwiki/resources/styles/base/glass-animations.css';
 import '@worldwiki/resources/styles/features/shell/ProjectLauncher.css';
 import '@worldwiki/resources/styles/components/Settings.css';
 

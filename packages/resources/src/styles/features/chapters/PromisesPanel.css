@@ -300,7 +300,7 @@
 
 .quote-resolution {
   border-left-color: var(--success);
-  background: rgba(16, 185, 129, 0.05);
+  background: var(--success-bg);
 }
 
 .step-actions {

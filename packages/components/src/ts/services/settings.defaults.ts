@@ -39,21 +39,4 @@ export const DEFAULT_SETTINGS: AppSettings = {
   background: { type: 'none', opacity: 1, blur: 0, fit: 'cover', fpsLimit: 30 }
 };
 
-export function withAlpha(colorStr: string, alpha: number): string {
-  const clampedAlpha = Math.max(0, Math.min(1, alpha));
-  if (!colorStr) return `rgba(255, 255, 255, ${clampedAlpha})`;
-
-  if (colorStr.startsWith('#')) {
-    let hex = colorStr.slice(1);
-    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
-    const r = parseInt(hex.slice(0, 2), 16) || 0;
-    const g = parseInt(hex.slice(2, 4), 16) || 0;
-    const b = parseInt(hex.slice(4, 6), 16) || 0;
-    return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
-  }
-  const match = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  if (match) {
-    return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${clampedAlpha})`;
-  }
-  return colorStr;
-}
+export { withAlpha } from '../tokens/theme.tokens';

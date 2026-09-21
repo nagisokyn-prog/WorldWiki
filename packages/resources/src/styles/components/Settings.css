@@ -142,7 +142,7 @@
 }
 
 .settings-grid::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted, var(--border-active));
+  background: var(--border-active);
 }
 
 /* Settings Group (Cards) */

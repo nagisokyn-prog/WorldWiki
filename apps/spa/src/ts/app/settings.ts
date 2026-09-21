@@ -5,10 +5,10 @@
 
 import { createApp, type Plugin } from 'vue';
 
-import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/tokens/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/app.css';
-import '@worldwiki/resources/styles/glass-animations.css';
+import '@worldwiki/resources/styles/styles.css';
+import '@worldwiki/resources/styles/base/glass-animations.css';
 
 
 
@@ -45,7 +45,7 @@ async function init() {
       if (btn) {
         const orig = btn.textContent;
         btn.textContent = '✅ Сохранено!';
-        btn.style.background = 'var(--accent-active, #22c55e)';
+        btn.style.background = 'var(--accent-active, var(--color-success))';
         setTimeout(() => {
           btn.textContent = orig;
           btn.style.background = '';

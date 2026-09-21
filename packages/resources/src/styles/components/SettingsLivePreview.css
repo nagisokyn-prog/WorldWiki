@@ -34,7 +34,7 @@
 
 .preview-sidebar-header {
   height: 12px;
-  background: var(--text-muted);
+  background: var(--bg-hover);
   opacity: 0.3;
   border-radius: var(--radius-xs);
   margin-bottom: 8px;
@@ -42,7 +42,7 @@
 
 .preview-sidebar-item {
   height: 16px;
-  background: var(--text-muted);
+  background: var(--bg-hover);
   opacity: 0.2;
   border-radius: var(--radius-xs);
 }
@@ -96,7 +96,7 @@
 
 .preview-text-line {
   height: 8px;
-  background: var(--text-muted);
+  background: var(--bg-hover);
   opacity: 0.4;
   border-radius: var(--radius-xs);
   width: 100%;

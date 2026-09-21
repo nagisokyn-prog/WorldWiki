@@ -1,6 +1,7 @@
 import { computed, type CSSProperties } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { AppSettings } from '../../../ts/types/settings.js';
+import { DEFAULT_THEME_PALETTE } from '../../../ts/tokens/theme.tokens.js';
 
 export function useSettingsLivePreview(getSettings: () => AppSettings) {
   const { t } = useI18n();
@@ -15,7 +16,7 @@ export function useSettingsLivePreview(getSettings: () => AppSettings) {
       '--text-main': c?.textMain || 'var(--color-text-primary)',
       '--text-muted': c?.textMuted || 'var(--color-text-muted)',
       '--border-color': c?.borderColor || 'var(--color-border)',
-      '--shadow-color': c?.shadowColor || 'rgba(0, 0, 0, 0.3)',
+      '--shadow-color': c?.shadowColor || DEFAULT_THEME_PALETTE.previewShadowFallback,
       '--accent-color': c?.accent || 'var(--color-accent)',
       '--accent-text': c?.accentText || 'var(--color-text-primary)',
       '--preview-font': s?.fonts?.family || 'inherit',

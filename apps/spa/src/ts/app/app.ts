@@ -7,10 +7,10 @@ import { createApp, defineAsyncComponent, type Plugin } from 'vue';
 import { createPinia } from 'pinia';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 
-import '@worldwiki/resources/styles/fonts.css';
+import '@worldwiki/resources/styles/tokens/fonts.css';
 import '@worldwiki/resources/styles/font-awesome.min.css';
-import '@worldwiki/resources/styles/app.css';
-import '@worldwiki/resources/styles/glass-animations.css';
+import '@worldwiki/resources/styles/styles.css';
+import '@worldwiki/resources/styles/base/glass-animations.css';
 
 import * as api from '../services/api.client';;
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';

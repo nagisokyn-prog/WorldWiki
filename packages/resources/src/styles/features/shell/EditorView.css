@@ -294,7 +294,7 @@ body.focus-mode .sidebar-universal:hover {
 }
 
 .btn-danger-action {
-  background: rgba(239, 68, 68, 0.4);
+  background: var(--error-bg);
 }
 
 .btn-split-action {

@@ -120,7 +120,7 @@ export const entityApi = {
               type_key: type,
               type_name: schemaData.name || type,
               icon: schemaData.iconEmoji || '📄',
-              color: schemaData.color || '#444444',
+              color: schemaData.color || 'var(--color-bg-tertiary)',
               fields_schema: [],
               full_schema: schemaData
             };

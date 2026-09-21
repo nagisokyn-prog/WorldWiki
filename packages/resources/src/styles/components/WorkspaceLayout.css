@@ -75,17 +75,27 @@
   flex-shrink: 0;
 }
 .workspace-tab__close {
-  background: none; border: none; color: inherit;
-  font-size: 14px; cursor: pointer; padding: 0 2px;
-  opacity: 0; transition: opacity 0.1s;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  opacity: 0;
+  transition: opacity 0.1s;
   line-height: 1;
 }
 .workspace-tab:hover .workspace-tab__close { opacity: 1; }
 
 .workspace-tabbar__spacer { flex: 1; }
 .workspace-btn {
-  background: none; border: none; color: var(--text-muted);
-  font-size: 14px; cursor: pointer; padding: 0 6px; height: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 6px;
+  height: 100%;
   transition: color 0.1s;
 }
 .workspace-btn:hover { color: var(--text-main); }

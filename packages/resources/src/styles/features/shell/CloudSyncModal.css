@@ -84,7 +84,7 @@
 }
 
 .yandex-icon {
-    background: var(--brand-yandex, hsl(10, 98%, 55%));
+    background: var(--brand-yandex, var(--error));
 }
 
 .provider-details h4 {

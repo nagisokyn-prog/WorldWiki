@@ -7,7 +7,7 @@ export function useTagsManagerModal(props: { project: string }) {
     const loading = ref(false);
     const tags = ref<Tag[]>([]);
     const newTagName = ref('');
-    const newTagColor = ref('#7c3aed');
+    const newTagColor = ref('var(--accent-hover)');
 
     const loadTags = async () => {
         loading.value = true;

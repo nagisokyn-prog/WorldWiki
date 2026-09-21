@@ -63,3 +63,11 @@
 .breathe {
     animation: breathe var(--anim-breathe) infinite ease-in-out;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}

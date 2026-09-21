@@ -253,7 +253,7 @@
 .ProseMirror a.footnote-ref:hover {
   background: var(--warning);
   color: var(--accent-text);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.4);
+  box-shadow: var(--shadow-glow);
 }
 
 /* 5. Режим Link Lock (Ctrl нажат или замок активен) */
@@ -526,4 +526,11 @@
 .promise-highlight-target {
   animation: promisePulse 2.2s ease-out forwards;
   border-radius: var(--radius-xs);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
 }

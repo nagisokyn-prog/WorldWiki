@@ -28,7 +28,7 @@ export function useCalendarSeasons(props: CalendarSeasonsProps, _emit?: (event: 
     props.modelValue.сезоны.push({
       название: `Сезон ${props.modelValue.сезоны.length + 1}`,
       месяцы: available.slice(0, 3),
-      цвет: '#3b82f6',
+      цвет: 'var(--info)',
     });
   };
 

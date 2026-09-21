@@ -61,7 +61,7 @@
 
 .ruler-tick.tick-cm {
   height: 10px;
-  background: var(--text-muted);
+  background: var(--border-color);
 }
 
 .ruler-tick.tick-half {
@@ -133,7 +133,7 @@
 .marker-rectangle-base {
   width: 10px;
   height: 4px;
-  background: var(--text-main);
+  background: var(--accent);
   margin-top: 1px;
 }
 

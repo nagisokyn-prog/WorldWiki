@@ -107,7 +107,7 @@
 
 .time-selector {
   padding: 8px;
-  background: rgba(139, 92, 246, 0.05);
+  background: var(--accent-glow);
   border-radius: var(--radius-xs) ;
   margin-bottom: 10px;
   display: flex;
@@ -220,7 +220,7 @@
   gap: 12px;
   margin-bottom: 12px;
   padding: 10px 12px;
-  background: rgba(139, 92, 246, 0.05);
+  background: var(--accent-glow);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm) ;
 }

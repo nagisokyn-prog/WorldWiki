@@ -44,7 +44,7 @@ export function initSettingsApp(): void {
       if (btn) {
         const orig = btn.textContent;
         btn.textContent = '✅ Saved';
-        btn.style.background = 'var(--accent-active, #22c55e)';
+        btn.style.background = 'var(--accent-active, var(--color-success))';
         setTimeout(() => {
           btn.textContent = orig;
           btn.style.background = '';

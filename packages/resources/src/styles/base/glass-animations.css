@@ -81,3 +81,10 @@ input[type="range"].interactive-el:active {
 .modal-fade-leave-to {
     opacity: 0;
 }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}

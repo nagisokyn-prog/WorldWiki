@@ -1,102 +1,50 @@
 {
-  "total": 120,
+  "total": 11,
   "byRule": {
-    "CSS-002": 7,
-    "CSS-004": 9,
-    "CSS-005": 42,
-    "CSS-006": 27,
-    "CSS-PERF-003": 19,
-    "CSS-PERF-005": 7,
-    "DS-003": 9
+    "CSS-002": 4,
+    "CSS-005": 4,
+    "DS-003": 3
   },
   "topFiles": [
     [
-      "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-      28
-    ],
-    [
       "./packages/components/src/ts/services/settings.defaults.ts",
-      20
-    ],
-    [
-      "./packages/components/src/ts/services/settings.dom.ts",
-      7
-    ],
-    [
-      "./packages/resources/src/styles/app.css",
       3
     ],
     [
-      "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-      3
+      "./packages/resources/src/styles/utilities/cards.css",
+      1
+    ],
+    [
+      "./packages/resources/src/styles/utilities/flex.css",
+      1
+    ],
+    [
+      "./packages/resources/src/styles/utilities/position.css",
+      1
+    ],
+    [
+      "./packages/resources/src/styles/utilities/text.css",
+      1
     ],
     [
       "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
-      3
+      1
     ],
     [
-      "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
-      3
+      "./packages/resources/src/styles/components/Settings.css",
+      1
     ],
     [
-      "./packages/resources/src/styles/components/SettingsLivePreview.css",
-      3
+      "./packages/resources/src/styles/components/WorkspaceLayout.css",
+      1
     ],
     [
-      "./packages/resources/src/styles/glass-animations.css",
-      2
-    ],
-    [
-      "./packages/resources/src/styles/features/shell/EditorView.css",
-      2
-    ],
-    [
-      "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-      2
-    ],
-    [
-      "./packages/word-vibe/src/editor/rkPaginationBridge.ts",
-      2
-    ],
-    [
-      "./packages/resources/src/styles/base/layout.css",
-      2
-    ],
-    [
-      "./packages/resources/src/styles/components/HistorySidebar.css",
-      2
-    ],
-    [
-      "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-      2
+      "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+      1
     ]
   ],
   "rules": {
     "CSS-002": [
-      {
-        "rule": "CSS-002",
-        "file": "./packages/resources/src/styles/app.css",
-        "line": 1,
-        "symbol": "stylesheet_taxonomy",
-        "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-        "fingerprint": "acc6df7ae52ea866a482849796272819f181b8750824e6b412c16a6bf5235401"
-      },
-      {
-        "rule": "CSS-002",
-        "file": "./packages/resources/src/styles/fonts.css",
-        "line": 1,
-        "symbol": "stylesheet_taxonomy",
-        "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-        "fingerprint": "10c6861a867346b0d8c61773fb2ad920c4f02e16471f2fce647d126f2532ac65"
-      },
-      {
-        "rule": "CSS-002",
-        "file": "./packages/resources/src/styles/glass-animations.css",
-        "line": 1,
-        "symbol": "stylesheet_taxonomy",
-        "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
-        "fingerprint": "f9c559ae45598516c40ccd96287b7500b24e8c20acbfd48855e983dc15709db8"
-      },
       {
         "rule": "CSS-002",
         "file": "./packages/resources/src/styles/utilities/cards.css",
@@ -130,301 +78,19 @@
         "fingerprint": "c95d80adcdebb92b6f504329d290ecfee94fb0e900c3482d16cdc1a5476a27d1"
       }
     ],
-    "CSS-004": [
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 256,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "6020d8deb20d84c1e4f7387e66bb08298f4dece1ca6c2cfd71476a161ae48a51"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-        "line": 303,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "88a2de0c4e5247b87aa090be1b0bc622401733bab434921d4ab924fe76aa7aec"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
-        "line": 240,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "29fbcd15204170612cfff3c6499b3b855116e6ee4d885284202ea10a2ffd71b3"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/shell/CloudSyncModal.css",
-        "line": 87,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "0fbd4156de6ac49db1817f4cbfe1be25c9978687c739f9b736160d71048b3c09"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/shell/EditorView.css",
-        "line": 297,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "7ba6613816596fe4e76c16830ad482815124ef9b41b2b2417058e85da28392ec"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-        "line": 518,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "f8ba8e800bbc7bdebcccccfc062e950e540b5639f7794be0d10378c4a78f3b06"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-        "line": 523,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "83eef19f7d6e585c1b9f096ef340f0e9d86d18787de5954c4456247337b88930"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-        "line": 110,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
-      },
-      {
-        "rule": "CSS-004",
-        "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-        "line": 223,
-        "symbol": "color_rgb_hsl",
-        "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-        "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
-      }
-    ],
     "CSS-005": [
       {
         "rule": "CSS-005",
-        "file": "./apps/spa/src/ts/app/settings.ts",
-        "line": 48,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal 'var(--accent-active, #22c55e)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "c96d126ac2b3a181433425492c0c2869ef7fa9442364817177dff8f10ee1435d"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./apps/spa/src/ts/features/entities/useTagsManagerModal.ts",
-        "line": 10,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#7c3aed' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "e59c5aa5423e38ef8d016521f82ef1bdb30f1b7201a4073812920ed90dea5bab"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/useSchemaEditorMain.ts",
-        "line": 104,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#333333' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "64278d2b300945dd1310d8479109c13bd53561a3cdc8158ac68a87d30b0b3e5f"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSeasons/useCalendarSeasons.ts",
-        "line": 31,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#3b82f6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "ac161c89ca4dba6939890dde02daa308577077ff5ea21d4a819fa535c452f65e"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./apps/spa/src/ts/services/Entity/entity.api.ts",
-        "line": 123,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#444444' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "4902bdd1a53c83b99018f52ff21c0725b1b8536633945a18f41a123791edcf68"
-      },
-      {
-        "rule": "CSS-005",
         "file": "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
-        "line": 5,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#000000' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "c130ae4a6e56f03642aedd7b919bbf31790c022a9972db120c297dc87ee60e7d"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
-        "line": 16,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#000000' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "276af9ba98ef3dc97d3f62a2e67175d463b4dfdbcc4a7652bea55cc705ea9fd6"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
-        "line": 32,
+        "line": 33,
         "symbol": "ts_color_rgb_hsl",
         "message": "Raw color literal `rgba(${r}, ${g}, ${b}, ${alpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
         "fingerprint": "cb5400d735b013f6ebb08c82f75a509f29b064ec875dd2976da154dbc75b66ce"
       },
       {
         "rule": "CSS-005",
-        "file": "./packages/components/src/components/Vue/Settings/useSettingsLivePreview.ts",
-        "line": 18,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(0, 0, 0, 0.3)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "4fa996101bb8573b7cf3085355fea8d859c60f4a677a62b28f4155fc2ca270eb"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/app/settings.ts",
-        "line": 47,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal 'var(--accent-active, #22c55e)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "9e93e581142d9a75d13bfbd3b84f84c9feb76c4da12a931d5c6ab7382930f3d7"
-      },
-      {
-        "rule": "CSS-005",
         "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 6,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#09090b' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "6d2f179eef92fff1ba40bb0a872d827392d98ae2eb5b6f6f23017adf6fca12e0"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 7,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#121214' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "2ded6da192aef9720f4658b6aa42bbd9e51282946040934aa7dc965d59ff88f2"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 8,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(15,15,18,0.7)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "6d4eced8cc9dfaed15f1935524ec4124784f8675de1c0ae09f0a0dd3e67d174f"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 9,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(22,22,26,0.6)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "3644c3c1b5463bac4e2fe1cfe6f5b8c40a303e22abbca671f03b2046a0cecc1d"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 10,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "6b1d96bd063a52ea975989fd04a2bea04161c4aeeffb30cf69fd290f439b6345"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 11,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(255,255,255,0.65)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "41bb8ca5779ee1285cacf80495f7ef5c9fb5b5543e7002850a1a97651560697b"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 12,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "6eb09a1ac07c8b108f9d0c503a2d8c687d49de49abeae02c757879a3dc77858f"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 13,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#8b5cf6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "8d9eecca48c62b78e7dd21ebf9b2ae9dd65d5952450aa1b5af28b0c59df383e0"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 14,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#7c3aed' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "ba36cf014b5abd91ba005429b23630e76467b43c16c793cd597c6cd23f40dae5"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 15,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#6d28d9' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "45ab8e2b108262c4ad7ae46dedfdbeca76ad428f39dad6e971a5e5d09ab7b93d"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 16,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#4c1d95' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "77d58951c8ddf75cf0bfd1769c32431bdd75cfe488b5add399fe28e1bf1ab7d4"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 17,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(139,92,246,0.3)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "8067a33d6a9cff4c78832a45c3db327a4e6f56280f62574e2f8cf5fccc83c7e1"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 18,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "a7cb3229cc22040affc86db33f3db3e7480b2fd47716bd5eed98dd49c2c66b57"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 19,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(255,255,255,0.1)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "f14131605278a19818300bfa3bfc6e3e417302875adeba126f6b767ce8d27fe0"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 20,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(139,92,246,0.5)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "024c5346ede86a9a6a175bdd3586787bb03c81e055426d012ed85ca7beb4335c"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 21,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(0,0,0,0.5)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "782858c2e7618417b079f8e6eb1bcc84109b7789c6527a8e22899b09a9a31ba9"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 23,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(255,255,255,0.08)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "d0c84d2d79ebea75b523bdacde10df5acc3e75c945cc46bc1ada7c7e3abc2cfd"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 43,
+        "line": 44,
         "symbol": "ts_color_rgb_hsl",
         "message": "Raw color literal `rgba(255, 255, 255, ${clampedAlpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
         "fingerprint": "d0cd0ad3d918b94d2c8a32e4327c095f880daeaced5dd0b1139b5e97fb592e0f"
@@ -432,7 +98,7 @@
       {
         "rule": "CSS-005",
         "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 51,
+        "line": 52,
         "symbol": "ts_color_rgb_hsl",
         "message": "Raw color literal `rgba(${r}, ${g}, ${b}, ${clampedAlpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
         "fingerprint": "3c1defcf744d71521a840abf41dabf338cf8c58f239792092b53bd245120f454"
@@ -440,536 +106,10 @@
       {
         "rule": "CSS-005",
         "file": "./packages/components/src/ts/services/settings.defaults.ts",
-        "line": 55,
+        "line": 56,
         "symbol": "ts_color_rgb_hsl",
         "message": "Raw color literal `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${clampedAlpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
         "fingerprint": "40b89b87bb62fd3779c3cc0ec50ffceabb5d8b3fb1cd9a304487e4cc74d0eaa1"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 22,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "0c68b01b7e6198f88cee506bdca51a396cc7b30253517e2c4c6f71f3631ade9b"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 27,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(0, 0, 0, 0.65)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "c46426c035ff67a6e14e8193f59a9dca54fa0480ee10b50abf02f55d31f953d0"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 27,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(15, 23, 42, 0.45)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "c46426c035ff67a6e14e8193f59a9dca54fa0480ee10b50abf02f55d31f953d0"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 28,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(0, 0, 0, 0.04)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "894f85f5f0db194b439b8027fd4714bd9045299ddf9536a3c735de9b35318fa5"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 28,
-        "symbol": "ts_color_rgb_hsl",
-        "message": "Raw color literal 'rgba(0, 0, 0, 0.25)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "894f85f5f0db194b439b8027fd4714bd9045299ddf9536a3c735de9b35318fa5"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 46,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "50d8b5d393bfc542e88bdfde0522551754ee70685cf3b672abfe7d0b5e9f17dd"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/components/src/ts/services/settings.dom.ts",
-        "line": 110,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#0f0f14' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "8e70dfd4a24a55e2078ef4ca2f54beeb5b901d764a01cd391ff8f7f037275b6e"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/word-vibe/src/adapter/createWordVibeCommands.ts",
-        "line": 66,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffff00' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "9ecc9b1d00529539749d366da6695032b40831f56315e393a6179e2fcdd7fe51"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/word-vibe/src/converter/v2Marks.ts",
-        "line": 32,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffff00' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "9126a954fe793dbd960b864df551037031866062b1de80bbc2f6c7f20b7f100a"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/word-vibe/src/editor/rkPaginationBridge.ts",
-        "line": 116,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#c0c0c0' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "e72051ee4c2743a0b0f876fb4a49844a2b49555f84ae3a73794b9b08de8dc634"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/word-vibe/src/editor/rkPaginationBridge.ts",
-        "line": 117,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#c0c0c0' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "005546b22107388e7a947e88ba77b60f1536ffb50c580869c84615a63ab0e9e5"
-      },
-      {
-        "rule": "CSS-005",
-        "file": "./packages/word-vibe/src/editor/useWordRibbonCommands.ts",
-        "line": 57,
-        "symbol": "ts_color_hex",
-        "message": "Raw color literal '#ffff00' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
-        "fingerprint": "58e3a845673b4353c3a41b3cf7a89ca2662458bbc397b816c635a5904a4b74cf"
-      }
-    ],
-    "CSS-006": [
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/base/layout.css",
-        "line": 70,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "7f54d16fee8f876b46ae27f718c6194ac4a71d0848671b90f44be45426475717"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/base/layout.css",
-        "line": 71,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "b99e10d824d98eaac007167c0de1713223fccd2c54ca73126eaecbdb126e819d"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/base/reset.css",
-        "line": 12,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "f2f6c6b2626c88baa0f47ae5d97e580a6c373efcc4deff2f273060de5857137b"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 162,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "81d3b09a623539ed2a15f2135e5c41de30dae998823590bcb1048896cbe55015"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 178,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "673f690e8ee3d0b83363ae3487ca1f11f46f7bcbd97b8db2c7bd12cee77bf83d"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 184,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "e9413d554b2a8537c143eca6a2bff348a6d60964908244f2661b1e5952ac71db"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 204,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "1b52fcf4d8c99264dfb7f39ee778fd3bc1670063cb17f755c5601b848af4edc6"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 205,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "f7c97147dd54e42e07b9c8ba3ebe4ce6d79f4117e05c640dc4e9477f92400577"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 215,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "7f524564f8d71aad255c9a30c817226c2ed804d6f04f6dfb578383c00f80b62d"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 232,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "7f524564f8d71aad255c9a30c817226c2ed804d6f04f6dfb578383c00f80b62d"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 240,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "b38a3640fbacad3c9b45dc99d8104f044e0351903c4e7e89a9abded927cf9dc1"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 244,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "e9413d554b2a8537c143eca6a2bff348a6d60964908244f2661b1e5952ac71db"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 254,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "48df2cf69648991e5f899fa6ad1df909223764aea12e4eb4dfe064359eaea0f5"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 255,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "f7c97147dd54e42e07b9c8ba3ebe4ce6d79f4117e05c640dc4e9477f92400577"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 261,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "81d3b09a623539ed2a15f2135e5c41de30dae998823590bcb1048896cbe55015"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 372,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 382,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 389,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 398,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "e1424431be00f6cb81951101cff9066510e19ff088aae64d94c4148377a536b1"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 414,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "4ab3961a9d88ac0eb2b1a852206ead834468559954e6a75b56e675548aaa3d86"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 419,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "91d00d3295cc6ee95101bcd18dedbb6b56bdfc2dc27bbb0592c06c58ff77b655"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 452,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 453,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 464,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 465,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 474,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "067160395182ca7a7318501e04da9d353ba3c414b5460f1143c2b0e60d2e79a2"
-      },
-      {
-        "rule": "CSS-006",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 475,
-        "symbol": "important_abuse",
-        "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-        "fingerprint": "241ab03bd96da7d31f95f7a6475e3e66082cced1b43ea13316260be44b60d44e"
-      }
-    ],
-    "CSS-PERF-003": [
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/app.css",
-        "line": 60,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "0bac8a5d554ff1c04c700dcab2c2e20d40bcab5f43cd5637bb422bbfd4c47e4a"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/app.css",
-        "line": 103,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "0bac8a5d554ff1c04c700dcab2c2e20d40bcab5f43cd5637bb422bbfd4c47e4a"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/components/HistorySidebar.css",
-        "line": 59,
-        "symbol": "compositor_keyframes_layout",
-        "message": "Non-composited layout property `padding` animated in @keyframes causes continuous CPU/GPU main-thread reflows.",
-        "fingerprint": "cf5510524d3854a7bc2b215f63fd5b8a25ba5da3fd9985af0d59f7c4ee333b7b"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
-        "line": 67,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "60fc4d50e91290585b4d8a353166722214b0ff46ab993aba8cf00412f6211504"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-        "line": 191,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "7de29dbce24b1ec13da6b6dd159584d7040cc5cb6ce0bdb1f122514e8954981c"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-        "line": 416,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "b18b124793583f1eb53bda2cfde8bbae8b9d5a60ba6b3d1155f314b06056d0ed"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/ai/WowilonPanel.css",
-        "line": 35,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "5572f66cd99399470dab5020899fc5971fc81930670b500db71526151983ace9"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
-        "line": 112,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "4d6df7f7cd499a3b4667aee6763ba3985c5cab3de7bbd2e7f81798b81ba4c1ac"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
-        "line": 138,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `height` in transition triggers expensive layout recalculations.",
-        "fingerprint": "cdf172bf0902d7445270f1a17d3e6d867e74a122064eff3bc07185079f458e1a"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
-        "line": 170,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `height` in transition triggers expensive layout recalculations.",
-        "fingerprint": "cdf172bf0902d7445270f1a17d3e6d867e74a122064eff3bc07185079f458e1a"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
-        "line": 203,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "b3a031b54f9ed6ea5e40e6b194a6786e2073ea7926de450d1ed4bc18f53c3ab1"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 267,
-        "symbol": "compositor_keyframes_layout",
-        "message": "Non-composited layout property `box-shadow` animated in @keyframes causes continuous CPU/GPU main-thread reflows.",
-        "fingerprint": "bdc78552fa7a8fc99b20eed61d4e7de5c41249f5834b4bdf8f140530b808ae80"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 528,
-        "symbol": "compositor_keyframes_layout",
-        "message": "Non-composited layout property `box-shadow` animated in @keyframes causes continuous CPU/GPU main-thread reflows.",
-        "fingerprint": "6df1c8128455f5b1e320ae8377fd59c65ef86119ed12ebcef443843672b2384b"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
-        "line": 58,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "0e270e50df6e3f1c799bcd9ea7b0414d1c5f0c0848f090626981abd82de0778e"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/chapters/RkWordEditor.css",
-        "line": 63,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "65393e22dc9b29d2012196fbb5773ff1d07db84f3acce64d4f89c35923945cec"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/documents/DocumentProcessorView.css",
-        "line": 94,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "406f0ea104510b89aef37d8aa68b60c6454524663362c669ad7f4c120508df13"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/shell/EditorView.css",
-        "line": 176,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `height` in transition triggers expensive layout recalculations.",
-        "fingerprint": "141f5c972f794eb4ba95348a9c1d6931e331489a2764006065fa3a6d7324e369"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-        "line": 497,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "277b3a5ea90894d8c0bc82e07a23903ecd3d7cf95e697f2125632a25724d001b"
-      },
-      {
-        "rule": "CSS-PERF-003",
-        "file": "./packages/resources/src/styles/features/shell/Splash.css",
-        "line": 81,
-        "symbol": "compositor_transition_layout",
-        "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
-        "fingerprint": "f2d6a2df2b6c7920c4101aed4e72d184b54bd006a4e6c4387a7a67703f654e4f"
-      }
-    ],
-    "CSS-PERF-005": [
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/components/HistorySidebar.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "121fd8f8d6e1b6a2d4be5c5ba154e3d90688210374a5a7b178baf99891253cc9"
-      },
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/features/ai/AiResearchProgress.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "cd02ef7085d9c5dd4dba23ae60bf1cf627b818d030280ac5e2d80a2a707228d9"
-      },
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/features/ai/HardwareMonitorChart.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "6035254e88854fdc01b777c6556494b2488cf600c7f686a76d0974d9788a32af"
-      },
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "d551043821dd552fa2d48da8284ca2199594bda4961635cb7436a681d19657cf"
-      },
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "7e11e00b54d33bad9c1b93a39d089049cc12327ab49561c728009577330a7bc3"
-      },
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/glass-animations.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "c6bb9645b77ac3ca0a4677e1a9c0b1f0466f1efbe14d39d826d2abf247fe54de"
-      },
-      {
-        "rule": "CSS-PERF-005",
-        "file": "./packages/resources/src/styles/tokens/theme-glass.css",
-        "line": 1,
-        "symbol": "require_reduced_motion",
-        "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
-        "fingerprint": "aa43966ca2467f9d2c605f799767f62fd70033e2823b247d3563d613379099d7"
       }
     ],
     "DS-003": [
@@ -983,30 +123,6 @@
       },
       {
         "rule": "DS-003",
-        "file": "./packages/resources/src/styles/components/SettingsLivePreview.css",
-        "line": 37,
-        "symbol": "token_role_mismatch_bg",
-        "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
-        "fingerprint": "d96cd502cf41a8e14b0c5bc50471fa18c72e878067e14874cf8c44d14343614e"
-      },
-      {
-        "rule": "DS-003",
-        "file": "./packages/resources/src/styles/components/SettingsLivePreview.css",
-        "line": 45,
-        "symbol": "token_role_mismatch_bg",
-        "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
-        "fingerprint": "d96cd502cf41a8e14b0c5bc50471fa18c72e878067e14874cf8c44d14343614e"
-      },
-      {
-        "rule": "DS-003",
-        "file": "./packages/resources/src/styles/components/SettingsLivePreview.css",
-        "line": 99,
-        "symbol": "token_role_mismatch_bg",
-        "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
-        "fingerprint": "d96cd502cf41a8e14b0c5bc50471fa18c72e878067e14874cf8c44d14343614e"
-      },
-      {
-        "rule": "DS-003",
         "file": "./packages/resources/src/styles/components/WorkspaceLayout.css",
         "line": 87,
         "symbol": "token_role_mismatch_bg",
@@ -1016,34 +132,10 @@
       {
         "rule": "DS-003",
         "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
-        "line": 185,
-        "symbol": "token_role_mismatch_bg",
-        "message": "Text token `--color-text-primary` used in `background` property. This breaks contrast ratio on theme inversion.",
-        "fingerprint": "3a5aa93e28af95b14db3a99b9c86675b1e76757a1370c5f99284fd0630e2b5be"
-      },
-      {
-        "rule": "DS-003",
-        "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
         "line": 195,
         "symbol": "token_role_mismatch_bg",
         "message": "Text token `--color-text-on-accent` used in `background` property. This breaks contrast ratio on theme inversion.",
         "fingerprint": "79750e68a3289081defb9d5d660ffc7df1c354d3574bc80ce757e426dae6996c"
-      },
-      {
-        "rule": "DS-003",
-        "file": "./packages/resources/src/styles/features/chapters/WordRuler.css",
-        "line": 64,
-        "symbol": "token_role_mismatch_bg",
-        "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
-        "fingerprint": "6f011f3827d716c57f33c64a574a10af56f48e03a0e46a9205e36afa56d8cd88"
-      },
-      {
-        "rule": "DS-003",
-        "file": "./packages/resources/src/styles/features/chapters/WordRuler.css",
-        "line": 136,
-        "symbol": "token_role_mismatch_bg",
-        "message": "Text token `--text-main` used in `background` property. This breaks contrast ratio on theme inversion.",
-        "fingerprint": "de4492ce5d5b7d5b03f956ec433b7ed4cbb29d9123513a045eed976e62900a16"
       }
     ]
   }

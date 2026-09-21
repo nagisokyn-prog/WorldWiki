@@ -9,6 +9,55 @@ pub mod errors;
 pub use commands::*;
 pub use errors::*;
 
+pub async fn get_chapters_inner(
+    db: &Surreal<Db>,
+    project: &str,
+) -> Result<Vec<Chapter>, ChapterError> {
+    let proj_id = if project.contains(':') {
+        project.to_string()
+    } else {
+        format!("projects:{}", project)
+    };
+    let chapters = Chapter::find_all(db, &proj_id).await?;
+    Ok(chapters)
+}
+
+pub async fn get_chapter_inner(
+    db: &Surreal<Db>,
+    id: &str,
+) -> Result<Option<Chapter>, ChapterError> {
+    let chapter = Chapter::find_by_id(db, id).await?;
+    Ok(chapter)
+}
+
+pub async fn create_chapter_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    mut chapter: Chapter,
+) -> Result<Chapter, ChapterError> {
+    let proj_id = if project.contains(':') {
+        project.to_string()
+    } else {
+        format!("projects:{}", project)
+    };
+    chapter.project_id = Some(serde_json::json!(proj_id));
+    let created = Chapter::create(db, chapter).await?;
+    Ok(created)
+}
+
+pub async fn save_chapter_inner(
+    db: &Surreal<Db>,
+    chapter: Chapter,
+) -> Result<Chapter, ChapterError> {
+    let saved = Chapter::save(db, &chapter).await?;
+    Ok(saved)
+}
+
+pub async fn delete_chapter_inner(db: &Surreal<Db>, id: &str) -> Result<(), ChapterError> {
+    Chapter::delete(db, id).await?;
+    Ok(())
+}
+
 pub async fn get_global_timeline_inner(
     db: &Surreal<Db>,
     project: &str,
@@ -18,15 +67,25 @@ pub async fn get_global_timeline_inner(
     Ok(json!(chapters))
 }
 
+pub async fn save_global_timeline_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    data: Value,
+) -> Result<Value, ChapterError> {
+    Chapter::save_global_timeline_inner(db, project, data).await
+}
+
 impl Chapter {
     pub async fn save_global_timeline_inner(
         db: &Surreal<Db>,
         project: &str,
         data: Value,
     ) -> Result<Value, ChapterError> {
-        let arr = data
-            .as_array()
-            .ok_or_else(|| ChapterError::InvalidData("save_global_timeline: expected a JSON array of chapter timelines".to_string()))?;
+        let arr = data.as_array().ok_or_else(|| {
+            ChapterError::InvalidData(
+                "save_global_timeline: expected a JSON array of chapter timelines".to_string(),
+            )
+        })?;
 
         if arr.is_empty() {
             return Ok(json!({ "success": true, "updated": 0 }));
@@ -39,7 +98,11 @@ impl Chapter {
             let cid = item
                 .get("chapter_id")
                 .and_then(|v| v.as_str())
-                .ok_or_else(|| ChapterError::InvalidData("save_global_timeline: each item must have chapter_id".to_string()))?;
+                .ok_or_else(|| {
+                    ChapterError::InvalidData(
+                        "save_global_timeline: each item must have chapter_id".to_string(),
+                    )
+                })?;
             let title = item
                 .get("chapter_title")
                 .and_then(|v| v.as_str())
@@ -165,9 +228,11 @@ pub async fn save_text_blocks_inner(
 
     let mut res = q.await?;
     let errs = res.take_errors();
-    if !errs.is_empty() {
-        let e = errs.values().next().unwrap();
-        return Err(ChapterError::Transaction(format!("save_text_blocks error: {}", e)));
+    if let Some(e) = errs.values().next() {
+        return Err(ChapterError::Transaction(format!(
+            "save_text_blocks error: {}",
+            e
+        )));
     }
 
     Ok(())
@@ -179,7 +244,11 @@ pub async fn get_chapter_revisions_inner(
     chapter_id: &str,
 ) -> Result<Vec<Value>, ChapterError> {
     let parts: Vec<&str> = chapter_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { chapter_id };
+    let actual_id = if parts.len() == 2 {
+        parts[1]
+    } else {
+        chapter_id
+    };
     let full_id = format!("chapters:{}", actual_id);
 
     let mut result = db
@@ -197,7 +266,11 @@ pub async fn toggle_chapter_history_pin_inner(
     is_pinned: bool,
 ) -> Result<(), ChapterError> {
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { history_id };
+    let actual_id = if parts.len() == 2 {
+        parts[1]
+    } else {
+        history_id
+    };
 
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("chapter_revisions:{}", actual_id)))
@@ -223,4 +296,3 @@ mod tests {
         assert_eq!(inv.to_string(), "Invalid chapter data: bad json");
     }
 }
-

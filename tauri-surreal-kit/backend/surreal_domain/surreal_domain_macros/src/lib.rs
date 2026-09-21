@@ -4,9 +4,15 @@ use proc_macro::TokenStream;
 use syn::{parse_macro_input, DeriveInput};
 
 mod entity;
-mod relation;
-mod schema;
 mod entity_commands;
+mod entity_parser;
+mod entity_search;
+mod entity_tauri;
+mod macro_helpers;
+mod relation;
+mod relation_parser;
+mod relation_tauri;
+mod schema;
 
 #[proc_macro]
 pub fn surreal_entity(input: TokenStream) -> TokenStream {

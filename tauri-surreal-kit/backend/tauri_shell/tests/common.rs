@@ -8,8 +8,6 @@
 //! NOTE: Tauri v2 не предоставляет app.invoke() — команды тестируются
 //! напрямую как обычные async-функции через DataDirProvider.
 
-#![allow(dead_code)]
-
 use std::path::PathBuf;
 use tempfile::TempDir;
 use tauri_shell::logic::system::DataDirProvider;
@@ -94,13 +92,11 @@ impl TestEnv {
     /// Список всех файлов в user_images/
     pub fn list_images(&self) -> std::io::Result<Vec<String>> {
         let mut files = Vec::new();
-        for entry in std::fs::read_dir(&self.user_images_dir)? {
-            if let Ok(entry) = entry {
-                if let Ok(ft) = entry.file_type() {
-                    if ft.is_file() {
-                        if let Some(name) = entry.file_name().into_string().ok() {
-                            files.push(name);
-                        }
+        for entry in std::fs::read_dir(&self.user_images_dir)?.flatten() {
+            if let Ok(ft) = entry.file_type() {
+                if ft.is_file() {
+                    if let Ok(name) = entry.file_name().into_string() {
+                        files.push(name);
                     }
                 }
             }
@@ -116,13 +112,6 @@ impl TestEnv {
         std::fs::write(&path, content)?;
         Ok(path)
     }
-}
-
-/// Установить провайдер для текущего теста.
-pub fn init_provider(data_dir: PathBuf) {
-    tauri_shell::logic::system::set_data_dir_provider(
-        Box::new(TestDataDirProvider::new(data_dir))
-    );
 }
 
 #[cfg(test)]

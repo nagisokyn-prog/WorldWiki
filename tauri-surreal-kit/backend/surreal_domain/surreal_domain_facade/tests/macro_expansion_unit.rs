@@ -83,7 +83,7 @@ fn unit_entity_implements_surreal_repository_trait() {
 
     assert_eq!(book.get_id(), None);
     book.set_id("custom_books:1".to_string());
-    assert_eq!(book.get_id(), Some("custom_books:1".to_string()));
+    assert_eq!(book.get_id(), Some("custom_books:1"));
 }
 
 #[test]

@@ -58,10 +58,10 @@ fn unit_entity_implements_surreal_repository_trait() {
     };
 
     // These method calls verify that SurrealRepository trait is implemented
-    assert_eq!(entity.get_id(), Some("test:123".to_string()));
+    assert_eq!(entity.get_id(), Some("test:123"));
 
     entity.set_id("test:456".to_string());
-    assert_eq!(entity.get_id(), Some("test:456".to_string()));
+    assert_eq!(entity.get_id(), Some("test:456"));
 }
 
 #[test]
@@ -236,5 +236,5 @@ fn unit_macro_generated_code_structure() {
     // SurrealRepository methods
     assert!(instance.get_id().is_some());
     instance.set_id("test:2".to_string());
-    assert_eq!(instance.get_id(), Some("test:2".to_string()));
+    assert_eq!(instance.get_id(), Some("test:2"));
 }

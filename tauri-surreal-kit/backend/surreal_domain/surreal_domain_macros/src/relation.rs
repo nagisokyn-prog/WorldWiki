@@ -1,109 +1,41 @@
+use crate::relation_parser::parse_relation_config;
+use crate::relation_tauri::build_relation_commands_module;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, Data, Fields, Meta};
+use syn::DeriveInput;
 
-pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
+pub(crate) fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
     let name = &ast.ident;
-    
-    let mut edge_name = name.to_string().to_lowercase();
-    let mut from_type = String::new();
-    let mut to_type = String::new();
-    let mut _is_project_scoped = false;
-    let mut generate_commands = false;
-
-    for attr in &ast.attrs {
-        if attr.path().is_ident("edge") {
-            if let Meta::NameValue(nv) = &attr.meta {
-                if let syn::Expr::Lit(expr_lit) = &nv.value {
-                    if let syn::Lit::Str(lit_str) = &expr_lit.lit {
-                        edge_name = lit_str.value();
-                    }
-                }
-            }
-        }
-        if attr.path().is_ident("from") {
-            if let Meta::NameValue(nv) = &attr.meta {
-                 if let syn::Expr::Path(expr_path) = &nv.value {
-                     from_type = expr_path.path.segments.first().unwrap().ident.to_string();
-                 }
-            }
-        }
-        if attr.path().is_ident("to") {
-            if let Meta::NameValue(nv) = &attr.meta {
-                 if let syn::Expr::Path(expr_path) = &nv.value {
-                     to_type = expr_path.path.segments.first().unwrap().ident.to_string();
-                 }
-            }
-        }
-        if attr.path().is_ident("project_scoped") {
-            _is_project_scoped = true;
-        }
-        if attr.path().is_ident("tauri_commands") {
-            generate_commands = true;
-        }
-    }
+    let config = parse_relation_config(ast);
+    let edge_name = &config.edge_name;
+    let from_table = &config.from_table;
+    let to_table = &config.to_table;
+    let struct_fields = &config.struct_fields;
 
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
-    
-    let mut struct_fields = Vec::new();
-    // Defaulting to "entities" for MVP if from/to are empty
-    let from_table = if from_type.is_empty() { "entities".to_string() } else { from_type.to_lowercase() };
-    let to_table = if to_type.is_empty() { "entities".to_string() } else { to_type.to_lowercase() };
-
-    if let Data::Struct(data_struct) = &ast.data {
-        if let Fields::Named(fields_named) = &data_struct.fields {
-            for field in &fields_named.named {
-                let _f_name = field.ident.as_ref().unwrap();
-                let _f_type = &field.ty;
-                
-                let mut is_flexible = false;
-                
-                let mut clean_field = field.clone();
-                clean_field.attrs.retain(|attr| {
-                    if let Some(ident) = attr.path().get_ident() {
-                        let i = ident.to_string();
-                        if i == "flexible" { is_flexible = true; return false; }
-                        if i == "fulltext" { return false; }
-                        if i == "hnsw" { return false; }
-                    }
-                    true
-                });
-                
-                if is_flexible {
-                    let ts_attr: syn::Attribute = syn::parse_quote!(#[ts(type = "any")]);
-                    clean_field.attrs.push(ts_attr);
-                }
-                
-                struct_fields.push(quote! { #clean_field });
-            }
-        }
-    }
 
     let crud_methods = quote! {
         pub async fn relate<Db: surrealdb::Connection>(
-            db: &surrealdb::Surreal<Db>, 
-            from_id: &str, 
-            to_id: &str, 
+            db: &surrealdb::Surreal<Db>,
+            from_id: &str,
+            to_id: &str,
             data: Self
-        ) -> Result<String, surrealdb::Error> {
-            let from_parts: Vec<&str> = from_id.split(':').collect();
-            let to_parts: Vec<&str> = to_id.split(':').collect();
-            let actual_from = if from_parts.len() == 2 { from_parts[1] } else { from_id };
-            let actual_to = if to_parts.len() == 2 { to_parts[1] } else { to_id };
-            
-            let mut val = serde_json::to_value(&data).unwrap();
-            let map = if let Some(map) = val.as_object_mut() {
-                map.remove("id");
-                map.remove("in");
-                map.remove("out");
-                map.retain(|_, v| !v.is_null());
-                map.clone()
-            } else {
-                serde_json::Map::new()
+        ) -> Result<String, surreal_domain::SurrealDomainError> {
+            let actual_from = from_id.split_once(':').map(|(_, id)| id).unwrap_or(from_id);
+            let actual_to = to_id.split_once(':').map(|(_, id)| id).unwrap_or(to_id);
+
+            let val = serde_json::to_value(&data)?;
+            let mut map = match val {
+                serde_json::Value::Object(m) => m,
+                _ => serde_json::Map::new(),
             };
+            map.remove("id");
+            map.remove("in");
+            map.remove("out");
+            map.retain(|_, v| !v.is_null());
 
             let from_rec = surrealdb::types::RecordId::new(#from_table, actual_from);
-                        let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
+            let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
 
             let query = format!("RELATE $from_rec->{}->$to_rec CONTENT $data", Self::TABLE);
             let mut res = db.query(query)
@@ -121,20 +53,18 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
                     Ok(String::new())
                 }
             } else {
-                Err(surrealdb::Error::thrown("Failed to create relation".to_string()))
+                Err(surreal_domain::SurrealDomainError::constraint_violation("Failed to create relation"))
             }
         }
 
         pub async fn find_between<Db: surrealdb::Connection>(
-            db: &surrealdb::Surreal<Db>, 
-            from_id: &str, 
+            db: &surrealdb::Surreal<Db>,
+            from_id: &str,
             to_id: &str
-        ) -> Result<Vec<Self>, surrealdb::Error> {
-            let from_parts: Vec<&str> = from_id.split(':').collect();
-            let to_parts: Vec<&str> = to_id.split(':').collect();
-            let actual_from = if from_parts.len() == 2 { from_parts[1] } else { from_id };
-            let actual_to = if to_parts.len() == 2 { to_parts[1] } else { to_id };
-            
+        ) -> Result<Vec<Self>, surreal_domain::SurrealDomainError> {
+            let actual_from = from_id.split_once(':').map(|(_, id)| id).unwrap_or(from_id);
+            let actual_to = to_id.split_once(':').map(|(_, id)| id).unwrap_or(to_id);
+
             let from_rec = surrealdb::types::RecordId::new(#from_table, actual_from);
             let to_rec = surrealdb::types::RecordId::new(#to_table, actual_to);
 
@@ -149,9 +79,12 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
                 .collect();
             Ok(mapped)
         }
-        
-        pub async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surrealdb::Error> {
-            let pid_raw = project_id.split(':').last().unwrap_or(project_id);
+
+        pub async fn find_all<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, project_id: &str) -> Result<Vec<Self>, surreal_domain::SurrealDomainError> {
+            let pid_raw = match project_id.split_once(':') {
+                Some((_, id)) => id,
+                None => project_id,
+            };
             let mut res = db.query(format!("SELECT * FROM {} WHERE project_id = $pid OR project_id = type::record('projects', $pid_raw)", Self::TABLE))
                 .bind(("pid", project_id.to_string()))
                 .bind(("pid_raw", pid_raw.to_string()))
@@ -162,64 +95,16 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
                 .collect();
             Ok(mapped)
         }
-        
-        pub async fn delete<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, edge_id: &str) -> Result<(), surrealdb::Error> {
-            let parts: Vec<&str> = edge_id.split(':').collect();
-            let actual_id = if parts.len() == 2 { parts[1] } else { edge_id };
+
+        pub async fn delete<Db: surrealdb::Connection>(db: &surrealdb::Surreal<Db>, edge_id: &str) -> Result<(), surreal_domain::SurrealDomainError> {
+            let actual_id = edge_id.split_once(':').map(|(_, id)| id).unwrap_or(edge_id);
             let _: Option<serde_json::Value> = db.delete((Self::TABLE, actual_id)).await?;
             Ok(())
         }
     };
 
-    let _edge_name_str = edge_name.to_string();
-    let tauri_commands_module = if generate_commands {
-        let struct_name = name.to_string();
-        let mod_name_str = format!("{}_commands", struct_name);
-        let mod_name = syn::Ident::new(&mod_name_str, proc_macro2::Span::call_site());
-        let get_all_fn = syn::Ident::new(&format!("get_{}s", struct_name.to_lowercase().trim_end_matches('s')), proc_macro2::Span::call_site());
-        let create_fn = syn::Ident::new(&format!("create_{}", struct_name.to_lowercase().trim_end_matches('s')), proc_macro2::Span::call_site());
-        let delete_fn = syn::Ident::new(&format!("delete_{}", struct_name.to_lowercase().trim_end_matches('s')), proc_macro2::Span::call_site());
-
-        quote! {
-            pub mod #mod_name {
-                use super::*;
-                use surreal_domain::SurrealDb;
-
-                #[tauri::command]
-                pub async fn #get_all_fn(
-                    from_id: String,
-                    to_id: String,
-                    state: tauri::State<'_, crate::AppState>
-                ) -> Result<serde_json::Value, String> {
-                    let items = #name::find_between(state.surreal_db(), &from_id, &to_id)
-                        .await.map_err(|e| e.to_string())?;
-                    Ok(serde_json::json!(items))
-                }
-
-                #[tauri::command]
-                pub async fn #create_fn(
-                    from_id: String,
-                    to_id: String,
-                    data: serde_json::Value,
-                    state: tauri::State<'_, crate::AppState>
-                ) -> Result<serde_json::Value, String> {
-                    let rel: #name = serde_json::from_value(data).map_err(|e| e.to_string())?;
-                    let saved_id = #name::relate(state.surreal_db(), &from_id, &to_id, rel)
-                        .await.map_err(|e| e.to_string())?;
-                    Ok(serde_json::json!({"success": true, "id": saved_id}))
-                }
-
-                #[tauri::command]
-                pub async fn #delete_fn(
-                    id: String,
-                    state: tauri::State<'_, crate::AppState>
-                ) -> Result<serde_json::Value, String> {
-                    #name::delete(state.surreal_db(), &id)
-                        .await.map_err(|e| e.to_string())?;
-                    Ok(serde_json::json!({"success": true}))
-                }
-            }
-        }
+    let tauri_commands_module = if config.generate_commands {
+        build_relation_commands_module(name)
     } else {
         quote! {}
     };
@@ -229,7 +114,7 @@ pub fn impl_surreal_relation(ast: &DeriveInput) -> TokenStream {
         #[ts(export, export_to = "../../apps/spa/src/ts/types/generated/")]
         pub struct #name {
             pub id: Option<String>,
-            pub r#in: Option<String>, // IN is keyword in rust
+            pub r#in: Option<String>,
             pub out: Option<String>,
             #[serde(skip_serializing_if = "Option::is_none")]
             #[ts(type = "string | null")]

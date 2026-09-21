@@ -194,7 +194,6 @@ surreal_entity! {
 surreal_entity! {
     #[table = "chapters"]
     #[project_scoped]
-    #[tauri_commands]
     pub struct Chapter {
         pub title: String,
         pub content: String,
@@ -265,12 +264,12 @@ pub struct Entity {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(default)]
-    #[ts(type = "Record<string, any>")]
+    #[ts(type = "Record<string, unknown>")]
     pub attributes: serde_json::Value,
     #[serde(default)]
     pub tags: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "any")]
+    #[ts(type = "Record<string, unknown> | null")]
     pub embeddings: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
@@ -288,7 +287,7 @@ pub struct EntitySchema {
     pub icon: String,
     pub color: String,
     pub fields_schema: Vec<FieldDef>,
-    #[ts(type = "any")]
+    #[ts(type = "Record<string, unknown> | null")]
     pub full_schema: Option<serde_json::Value>,
     pub created_at: Option<String>,
 }
@@ -302,7 +301,7 @@ pub struct FieldDef {
     pub required: bool,
     pub options: Option<Vec<String>>,
     pub ref_entity_type: Option<String>,
-    #[ts(type = "any")]
+    #[ts(type = "unknown")]
     pub default_value: Option<serde_json::Value>,
 }
 
@@ -318,7 +317,7 @@ pub struct EntityRel {
     #[ts(type = "number")]
     pub strength: Option<i64>,
     #[serde(default)]
-    #[ts(type = "Record<string, any>")]
+    #[ts(type = "Record<string, unknown>")]
     pub attributes: serde_json::Value,
     pub start_chapter: Option<String>,
     pub end_chapter: Option<String>,

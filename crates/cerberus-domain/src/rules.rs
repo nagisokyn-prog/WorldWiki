@@ -106,6 +106,10 @@ pub struct LimitsConfig {
     pub max_composable_sloc_warn: usize,
     #[serde(default = "default_max_composable_sloc_deny")]
     pub max_composable_sloc_deny: usize,
+    #[serde(default = "default_max_functions_warn")]
+    pub max_functions_warn: usize,
+    #[serde(default = "default_max_functions_deny")]
+    pub max_functions_deny: usize,
     #[serde(default = "default_sloc_grace_lines")]
     pub sloc_grace_lines: usize,
     #[serde(default = "default_max_destructure_fields")]
@@ -138,6 +142,12 @@ fn default_max_composable_sloc_warn() -> usize {
 fn default_max_composable_sloc_deny() -> usize {
     450
 }
+fn default_max_functions_warn() -> usize {
+    20
+}
+fn default_max_functions_deny() -> usize {
+    35
+}
 fn default_sloc_grace_lines() -> usize {
     15
 }
@@ -166,6 +176,8 @@ impl Default for LimitsConfig {
             max_vue_sloc_logic_deny: default_max_vue_sloc_logic_deny(),
             max_composable_sloc_warn: default_max_composable_sloc_warn(),
             max_composable_sloc_deny: default_max_composable_sloc_deny(),
+            max_functions_warn: default_max_functions_warn(),
+            max_functions_deny: default_max_functions_deny(),
             sloc_grace_lines: default_sloc_grace_lines(),
             max_destructure_fields: default_max_destructure_fields(),
             max_pressure_warn: default_max_pressure_warn(),

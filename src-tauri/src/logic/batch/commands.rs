@@ -10,10 +10,8 @@ pub async fn get_entities_batch(
     project: String,
     entity_types: Vec<String>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Map<String, Value>, String> {
-    get_entities_batch_inner(&state.db, &project, entity_types)
-        .await
-        .map_err(Into::into)
+) -> Result<Map<String, Value>, BatchError> {
+    get_entities_batch_inner(&state.db, &project, entity_types).await
 }
 
 #[tauri::command]
@@ -23,10 +21,8 @@ pub async fn upsert_connections_batch(
     source_id: String,
     connections: Vec<EntityRel>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    upsert_connections_batch_inner(&state.db, &project, &source_type, &source_id, connections)
-        .await
-        .map_err(Into::into)
+) -> Result<(), BatchError> {
+    upsert_connections_batch_inner(&state.db, &project, &source_type, &source_id, connections).await
 }
 
 #[tauri::command]
@@ -35,9 +31,6 @@ pub async fn save_entity_with_relations(
     entity: Entity,
     foreign_updates: Vec<Entity>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Entity, String> {
-    save_entity_with_relations_inner(&state.db, &project, entity, foreign_updates)
-        .await
-        .map_err(Into::into)
+) -> Result<Entity, BatchError> {
+    save_entity_with_relations_inner(&state.db, &project, entity, foreign_updates).await
 }
-

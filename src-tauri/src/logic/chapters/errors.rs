@@ -39,6 +39,24 @@ impl From<surrealdb::Error> for ChapterError {
     }
 }
 
+impl From<surreal_domain::SurrealDomainError> for ChapterError {
+    fn from(err: surreal_domain::SurrealDomainError) -> Self {
+        match err {
+            surreal_domain::SurrealDomainError::Database(e) => ChapterError::Database(e),
+            surreal_domain::SurrealDomainError::Serialization(e) => ChapterError::Serialization(e),
+            surreal_domain::SurrealDomainError::NotFound { table, id } => {
+                ChapterError::NotFound(format!("{}:{}", table, id))
+            }
+            surreal_domain::SurrealDomainError::ConstraintViolation(msg) => {
+                ChapterError::InvalidData(msg)
+            }
+            surreal_domain::SurrealDomainError::InvalidParameter(msg) => {
+                ChapterError::InvalidData(msg)
+            }
+        }
+    }
+}
+
 impl From<serde_json::Error> for ChapterError {
     fn from(err: serde_json::Error) -> Self {
         ChapterError::Serialization(err)
@@ -48,5 +66,14 @@ impl From<serde_json::Error> for ChapterError {
 impl From<ChapterError> for String {
     fn from(err: ChapterError) -> Self {
         err.to_string()
+    }
+}
+
+impl serde::Serialize for ChapterError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
     }
 }

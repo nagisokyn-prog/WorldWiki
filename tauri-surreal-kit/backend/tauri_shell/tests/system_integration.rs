@@ -40,7 +40,7 @@ async fn test_upload_photo_saves_file_with_timestamp_prefix() {
     let filename = "vacation.png".to_string();
 
     // Устанавливаем провайдер для этого теста
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -64,7 +64,7 @@ async fn test_upload_photo_creates_user_images_dir() {
     fs::remove_dir_all(&env.user_images_dir).ok();
     assert!(!env.user_images_dir.exists());
 
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -84,7 +84,7 @@ async fn test_copy_background_file_preserves_binary_content() {
         .create_source_file("source_bg.png", source_content)
         .expect("Should create source file");
 
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -140,7 +140,7 @@ async fn test_settings_save_and_load_roundtrip() {
         "language": "en"
     });
 
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -162,7 +162,7 @@ async fn test_settings_save_and_load_roundtrip() {
 async fn test_load_settings_returns_null_if_missing() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -181,7 +181,7 @@ async fn test_custom_themes_scan_and_load() {
 
     let env = make_env();
 
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -239,7 +239,7 @@ async fn test_load_theme_builtin_light_dark() {
     )
     .expect("Should write dark theme");
 
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -259,7 +259,7 @@ async fn test_load_theme_builtin_light_dark() {
 async fn test_load_theme_invalid_name_returns_null() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -277,7 +277,7 @@ async fn test_save_custom_theme_persists_file() {
     tauri_shell::logic::system::clear_data_dir_provider();
 
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -307,7 +307,7 @@ async fn test_get_custom_themes_nonexistent_data_dir() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
     let nonexistent = env.data_dir.join("never_created_dir");
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(nonexistent),
     ));
 
@@ -322,7 +322,7 @@ async fn test_get_custom_themes_nonexistent_data_dir() {
 async fn test_load_custom_theme_from_theme_prefix_file() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -356,7 +356,7 @@ async fn test_default_data_dir_provider_without_mock() {
 async fn test_get_custom_themes_with_mixed_directory_contents() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -393,7 +393,7 @@ async fn test_get_custom_themes_with_mixed_directory_contents() {
 async fn test_load_theme_with_corrupted_json_files() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -413,7 +413,7 @@ async fn test_load_theme_with_corrupted_json_files() {
 async fn test_system_core_direct_functions() {
     tauri_shell::logic::system_core::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -463,7 +463,7 @@ async fn test_system_facade_and_core_debug_coverage() {
 
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -534,7 +534,7 @@ async fn test_system_core_io_error_closures() {
     // 1. upload_photo_core error: data_dir is a file, blocking creation of user_images
     let blocking_file = env.data_dir.join("data_is_a_file");
     fs::write(&blocking_file, "blocking").ok();
-    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(blocking_file),
     ));
     let upload_err = tauri_shell::logic::system_core::upload_photo_core(b"bytes".to_vec(), "photo.png".into()).await;
@@ -543,7 +543,7 @@ async fn test_system_core_io_error_closures() {
     // 2. save_settings_core error: settings.json is a directory
     let env2 = make_env();
     fs::create_dir_all(env2.data_dir.join("settings.json")).ok();
-    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env2.data_dir.clone()),
     ));
     let save_err = tauri_shell::logic::system_core::save_settings_core(json!({})).await;
@@ -580,7 +580,7 @@ async fn test_upload_photo_write_error() {
     let blocking_file = env.data_dir.join("data_is_a_file");
     fs::write(&blocking_file, "blocking").ok();
 
-    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(blocking_file),
     ));
 
@@ -624,7 +624,7 @@ async fn test_get_custom_themes_legacy_style() {
     tauri_shell::logic::system_core::clear_data_dir_provider();
     let env = make_env();
 
-    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 
@@ -656,7 +656,7 @@ async fn test_load_theme_builtin() {
     tauri_shell::logic::system_core::clear_data_dir_provider();
     let env = make_env();
 
-    let _ = tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
+    tauri_shell::logic::system_core::set_data_dir_provider(Box::new(
         common::TestDataDirProvider::new(env.data_dir.clone()),
     ));
 

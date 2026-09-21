@@ -12,7 +12,13 @@
     "**/*.min.js",
     "**/*.prod.js",
     "vendor/**",
-    "crates/**",
+    "crates/cargo-cerberus/**",
+    "crates/cerberus-application/**",
+    "crates/cerberus-domain/**",
+    "crates/cerberus-infrastructure/**",
+    "crates/cerberus-ports/**",
+    "crates/cerberus-sfc/**",
+    "crates/cerberus-testability/**",
     "src/dist-check/**",
     "__tests__/**",
     "**/tests/**",
@@ -30,30 +36,42 @@
   ],
   "layers": {
     "domain": {
-      "patterns": ["crates/worldwiki-domain/**"],
+      "patterns": [
+        "src-tauri/crates/worldwiki-domain/**",
+        "tauri-surreal-kit/backend/surreal_domain/surreal_domain_macros/**"
+      ],
       "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
       "allowed_deps": []
     },
     "application": {
-      "patterns": ["crates/worldwiki-application/**"],
+      "patterns": [
+        "src-tauri/crates/worldwiki-application/**",
+        "tauri-surreal-kit/backend/surreal_domain/surreal_domain_facade/**"
+      ],
       "forbidden_external": ["tauri"],
-      "allowed_deps": ["domain", "ports"]
+      "allowed_deps": ["domain", "ports", "infrastructure"]
     },
     "ports": {
-      "patterns": ["crates/worldwiki-ports/**"],
+      "patterns": [
+        "src-tauri/crates/worldwiki-ports/**"
+      ],
       "forbidden_external": ["tauri", "surrealdb"],
       "allowed_deps": ["domain"]
     },
     "infrastructure": {
-      "patterns": ["crates/worldwiki-infrastructure/**"],
+      "patterns": [
+        "src-tauri/crates/worldwiki-infrastructure/**",
+        "tauri-surreal-kit/backend/surreal_domain/surreal_domain_core/**",
+        "src-tauri/llama-sys/**"
+      ],
       "allowed_deps": ["domain", "ports", "application"]
     },
     "adapters_tauri": {
       "aliases": ["adapter", "adapters", "tauri"],
       "patterns": [
         "src-tauri/**",
-        "crates/worldwiki-tauri/**",
-        "tauri-surreal-kit/**"
+        "src-tauri/crates/worldwiki-tauri/**",
+        "tauri-surreal-kit/backend/tauri_shell/**"
       ],
       "allowed_external": ["tauri", "surrealdb"],
       "allowed_deps": ["domain", "application", "ports", "infrastructure"]
@@ -119,6 +137,8 @@
     "max_vue_sloc_logic_deny": 250,
     "max_composable_sloc_warn": 250,
     "max_composable_sloc_deny": 450,
+    "max_functions_warn": 20,
+    "max_functions_deny": 35,
     "sloc_grace_lines": 15,
     "max_destructure_fields": 3,
     "max_pressure_warn": 200.0,

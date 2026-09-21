@@ -38,11 +38,11 @@ cerberus-application ──(зависит от трейтов)──► cerberu
 ```
 crates/cerberus-ports/src/
 ├── lib.rs            # 📚 Корневой модуль, реэкспорт всех трейтов портов
-├── scanner.rs        # 🔍 SourceScannerPort (Обход файловой системы)
-├── parser.rs         # 🧩 FileParserPort & AstParserPort (Парсинг Rust/Vue)
-├── reporter.rs       # 📑 ReporterPort & TreeReporterPort (Генерация отчетов)
-├── storage.rs        # 💾 StoragePort, BaselineStoragePort, RulesRepositoryPort
-├── embedder.rs       # 🧠 CodeEmbedderPort (Векторизация сниппетов кода)
+├── scanner.rs        # 🔍 FileSystemScannerPort, ScannedSourceFile, ScanScope
+├── parser.rs         # 🧩 AstParserPort & AstEnginePort (Парсинг Rust/Vue)
+├── reporter.rs       # 📑 ReportPublisherPort (Генерация отчетов)
+├── storage.rs        # 💾 KeyStoragePort, BaselineStoragePort, RulesRepositoryPort
+├── embedder.rs       # 🧠 VectorEmbedderPort (Векторизация сниппетов кода)
 ├── clusterer.rs      # 📊 ClustererPort (Кластеризация векторов DBSCAN)
 ├── downloader.rs     # ⬇️ ModelDownloaderPort (Загрузка весов моделей по сети)
 └── manifest.rs       # 📦 ManifestParserPort (Анализ Cargo.toml / package.json)
@@ -52,47 +52,44 @@ crates/cerberus-ports/src/
 
 ## 📋 Контракты портов и сигнатуры методов
 
-### 1. [`scanner.rs`](./src/scanner.rs) — `SourceScannerPort`
-- **Назначение**: Абстракция рекурсивного обнаружения файлов в рабочей директории.
+### 1. [`scanner.rs`](./src/scanner.rs) — `FileSystemScannerPort`
+- **Назначение**: Абстракция рекурсивного обнаружения файлов в рабочей директории с учетом `.gitignore` и фильтрации `ScanScope`.
 - **Сигнатура**:
   ```rust
-  pub trait SourceScannerPort: Send + Sync {
-      fn scan_files(&self, root: &Path) -> Result<Vec<PathBuf>, String>;
+  pub trait FileSystemScannerPort: Send + Sync {
+      fn scan_workspace(&self, root: &Path, scope: &ScanScope) -> Result<Vec<ScannedSourceFile>, String>;
   }
   ```
 
-### 2. [`parser.rs`](./src/parser.rs) — `FileParserPort` & `AstParserPort`
-- **Назначение**: Абстракция синтаксического разбора файлов и извлечения нарушений/метрик.
+### 2. [`parser.rs`](./src/parser.rs) — `AstParserPort` & `AstEnginePort`
+- **Назначение**: Абстракция синтаксического разбора файлов и параллельного пакетного анализа.
 - **Сигнатура**:
   ```rust
-  pub trait FileParserPort: Send + Sync {
-      fn parse_and_validate(
-          &self,
-          file_path: &Path,
-          rules_repo: &dyn RulesRepositoryPort,
-      ) -> Result<Vec<Violation>, String>;
+  pub trait AstParserPort: Send + Sync {
+      fn can_parse(&self, path: &Path) -> bool;
+      fn parse_file(&self, path: &Path, crate_name: &str) -> Result<Vec<Violation>, String>;
+  }
+
+  pub trait AstEnginePort: Send + Sync {
+      fn parse_batch(&self, files: &[ScannedSourceFile]) -> (Vec<Violation>, Vec<String>);
   }
   ```
 
-### 3. [`reporter.rs`](./src/reporter.rs) — `ReporterPort` & `TreeReporterPort`
+### 3. [`reporter.rs`](./src/reporter.rs) — `ReportPublisherPort`
 - **Назначение**: Абстракция форматирования и публикации отчетов анализатора.
 - **Сигнатура**:
   ```rust
-  pub trait ReporterPort {
-      fn report(&self, violations: &[Violation]) -> Result<(), String>;
-  }
-
-  pub trait TreeReporterPort {
-      fn render_tree(&self, root: &ComponentNode) -> Result<String, String>;
+  pub trait ReportPublisherPort {
+      fn publish(&self, violations: &[Violation]) -> Result<(), String>;
   }
   ```
 
-### 4. [`storage.rs`](./src/storage.rs) — `StoragePort`, `BaselineStoragePort`, `RulesRepositoryPort`
+### 4. [`storage.rs`](./src/storage.rs) — `KeyStoragePort`, `BaselineStoragePort`, `RulesRepositoryPort`
 - **Назначение**: Абстракция долговременного хранения данных.
 - **Сигнатуры**:
   ```rust
-  // Хранилище криптографических записей подавлений
-  pub trait StoragePort: Send + Sync {
+  // Хранилище криптографических записей подавлений и ключей
+  pub trait KeyStoragePort: Send + Sync {
       fn load_suppressions(&self) -> Result<Vec<SuppressionRecord>, String>;
       fn save_suppression(&self, record: &SuppressionRecord) -> Result<(), String>;
       fn get_master_key(&self) -> Result<Vec<u8>, String>;
@@ -100,8 +97,8 @@ crates/cerberus-ports/src/
 
   // Хранилище baseline-хэшей
   pub trait BaselineStoragePort: Send + Sync {
-      fn read(&self, path: &Path) -> Result<Option<String>, String>;
-      fn write(&self, path: &Path, content: &str) -> Result<(), String>;
+      fn read_baseline(&self, path: &Path) -> Result<Option<String>, String>;
+      fn write_baseline(&self, path: &Path, content: &str) -> Result<(), String>;
   }
 
   // Репозиторий правил конфигурации
@@ -112,11 +109,12 @@ crates/cerberus-ports/src/
   }
   ```
 
-### 5. [`embedder.rs`](./src/embedder.rs) — `CodeEmbedderPort`
+### 5. [`embedder.rs`](./src/embedder.rs) — `VectorEmbedderPort`
 - **Назначение**: Абстракция векторизатора исходного кода.
 - **Сигнатура**:
   ```rust
-  pub trait CodeEmbedderPort: Send + Sync {
+  pub trait VectorEmbedderPort: Send + Sync {
+      fn embed(&self, text: &str) -> Result<Vec<f32>, String>;
       fn embed_batch(&self, texts: &[&str]) -> Result<Vec<Vec<f32>>, String>;
   }
   ```

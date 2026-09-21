@@ -93,8 +93,8 @@ crates/cerberus-application/src/
   - Рекурсивно обходит узлы снизу вверх (post-order traversal).
   - Суммирует физические строки кода (LOC) и чистый код (SLOC).
   - Рассчитывает интегральное архитектурное давление:
-    $$S_{\text{arch}} = (N_{\text{functions}} \times 1.5) + (\text{Cyclomatic} \times 2.0) + (\text{MaxDepth} \times 3.0)$$
-  - Помечает узлы с высоким риском регрессий.
+    $$S_{\text{arch}} = 0.1 \cdot \text{SLOC} + 2.0 \cdot N_{\text{functions}} + 3.0 \cdot \text{Cyclomatic} + 1.5 \cdot \text{Deps} + 4.0 \cdot \text{Depth} + 20.0 \cdot D$$
+  - Помечает узлы с высоким риском регрессий (`ARCH-030`).
 
 ### 6. [`sign_suppression.rs`](./src/sign_suppression.rs) — `SignSuppressionUseCase`
 - **Назначение**: Криптографическое подписание подавления нарушения.

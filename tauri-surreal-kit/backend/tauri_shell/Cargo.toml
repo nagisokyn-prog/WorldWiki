@@ -27,6 +27,8 @@ surrealdb  = { version = "3.2.4", features = ["kv-surrealkv"] }
 chrono     = { version = "0.4", features = ["serde"] }
 uuid       = { version = "1.24.1", features = ["v4"] }
 open       = "5.4.1"
+thiserror  = "2.0"
+
 
 # Point to the local surreal_domain crate (adjust the path when using as a dependency)
 surreal_domain = { path = "../surreal_domain/surreal_domain_facade" }

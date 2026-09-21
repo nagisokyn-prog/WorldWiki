@@ -2,11 +2,13 @@
 
 pub mod commands;
 pub mod errors;
-pub mod executor;
+pub mod reader;
+pub mod writer;
 
 pub use commands::*;
 pub use errors::*;
-pub use executor::*;
+pub use reader::*;
+pub use writer::*;
 
 // Re-export common helpers from entities for backward compatibility
 pub use crate::logic::entities::{deserialize_list, flatten_thing, safe_id, safe_pid};

@@ -46,9 +46,10 @@ impl SurrealRepository for BranchEntity {
         &["project_id", "description"]
     }
 
-    fn get_id(&self) -> Option<String> {
-        self.id.clone()
+    fn get_id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
+
 
     fn set_id(&mut self, id: String) {
         self.id = Some(id);
@@ -288,8 +289,8 @@ impl SurrealRepository for BrokenFieldEntity {
         &["value"]
     }
 
-    fn get_id(&self) -> Option<String> {
-        self.id.clone()
+    fn get_id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
     fn set_id(&mut self, id: String) {
         self.id = Some(id);
@@ -354,8 +355,8 @@ impl SurrealRepository for WeirdTableEntity {
         &["name"]
     }
 
-    fn get_id(&self) -> Option<String> {
-        self.id.clone()
+    fn get_id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
     fn set_id(&mut self, id: String) {
         self.id = Some(id);
@@ -424,8 +425,8 @@ impl SurrealRepository for BadSqlEntity {
         &["name"]
     }
 
-    fn get_id(&self) -> Option<String> {
-        self.id.clone()
+    fn get_id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
     fn set_id(&mut self, id: String) {
         self.id = Some(id);
@@ -467,8 +468,8 @@ impl SurrealRepository for SaveBreakEntity {
         &[] // намеренно пусто → null-ветка ("null" literal)
     }
 
-    fn get_id(&self) -> Option<String> {
-        self.id.clone()
+    fn get_id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
     fn set_id(&mut self, id: String) {
         self.id = Some(id);

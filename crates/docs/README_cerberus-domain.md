@@ -51,11 +51,12 @@ crates/cerberus-domain/src/
 - **Ответственность**: Входная точка доменного ядра, декларация модулей и открытый экспорт типов.
 
 ### 2. [`rules.rs`](./src/rules.rs)
-- **Ответственность**: Доменное представление архитектурного правила и зафиксированного нарушения.
+- **Ответственность**: Доменное представление архитектурного правила, зафиксированного нарушения и пороговых лимитов (`LimitsConfig`).
 - **Ключевые типы**:
   - `Severity`: уровни строгости (`Allow`, `Warn`, `Deny`).
-  - `Category`: категории правил (`Architecture`, `Frontend`, `Css`, `Taint`, `Async`, `Security`).
+  - `Category`: категории правил (`Architecture`, `Frontend`, `Css`, `Taint`, `Async`, `Security`, `AI`, `ErrorHandling`, `Performance`, `Concurrency`, `Testability`).
   - `Rule`: описание правила (ID, имя, категория, severity по умолчанию, сообщение об ошибке, совет по исправлению `remediation`).
+  - `LimitsConfig`: пороговые лимиты на SLOC (`max_sloc_warn`, `max_sloc_deny`), давление $S_{\text{arch}}$ (`max_pressure_warn`, `max_pressure_deny`) и жесткое количество функций на модуль (`max_functions_warn`, `max_functions_deny` — правило `ARCH-032`).
   - `Violation`: конкретное зафиксированное нарушение (ID правила, файл, строка, колонка, имя символа, фрагмент кода, отпечаток `fingerprint`).
 - **Как работает `compute_fingerprint`**:
   - Принимает `rule_id`, `version`, `symbol` и `code_snippet`.
@@ -67,8 +68,8 @@ crates/cerberus-domain/src/
 ### 3. [`registry.rs`](./src/registry.rs)
 - **Ответственность**: Единый источник правды (Single Source of Truth) для встроенных правил Cerberus.
 - **Как работает**:
-  - Содержит каталог всех эталонных правил (`ARCH-001`..`ARCH-033`, `VUE-001`..`VUE-008`, `CSS-001`..`CSS-005`, `TAINT-001`..`TAINT-003`, `SLOP-001`..`SLOP-002`, `ASYNC-001`..`ASYNC-003`).
-  - Поддерживает канонические алиасы (например, `arch/domain-purity` $\to$ `ARCH-001`).
+  - Содержит каталог всех эталонных правил (`ARCH-001..ARCH-032`, `MOD-001`, `CQRS-001`, `EVT-001`, `VUE-001..VUE-009`, `CSS-001..CSS-006`, `DS-001..DS-003`, `CSS-PERF-001..005`, `SEC-001..009`, `ERR-001..005`, `CONC-002..008`, `AI-001..013`, `TEST-002..005`).
+  - Поддерживает канонические алиасы (например, `arch/domain-purity` $\to$ `ARCH-001`, `code/max-functions` $\to$ `ARCH-032`).
   - Выполняет метод `validate_registered_rules(...)` для защиты от опечаток в пользовательских файлах конфигурации.
 
 ### 4. [`suppression.rs`](./src/suppression.rs)
@@ -83,12 +84,12 @@ crates/cerberus-domain/src/
 ### 5. [`metrics.rs`](./src/metrics.rs)
 - **Ответственность**: Моделирование метрик сложности и архитектурного давления кодовой базы.
 - **Ключевые типы**:
-  - `AstComplexity`: количество функций, цикломатическая сложность (Cyclomatic Complexity), максимальная глубина вложенности AST (Max Nesting Depth).
+  - `AstComplexity`: количество функций ($N_{\text{functions}}$), цикломатическая сложность (Cyclomatic Complexity), максимальная глубина вложенности AST (Max Nesting Depth).
   - `SlocMetrics`: физические строки (LOC), чистый код (SLOC), комментарии, пустые строки.
   - `PackageMetrics`: входящие зависимости (Afferent Coupling $C_a$), исходящие зависимости (Efferent Coupling $C_e$), нестабильность ($I = \frac{C_e}{C_a + C_e}$).
 - **Формула архитектурного давления $S_{\text{arch}}$**:
-  $$S_{\text{arch}} = (N_{\text{functions}} \times 1.5) + (\text{Cyclomatic} \times 2.0) + (\text{MaxDepth} \times 3.0)$$
-  При превышении $S_{\text{arch}} > 150.0$ генерируется предупреждение `ARCH-030` о высоком давлении на модуль.
+  $$S_{\text{arch}} = 0.1 \cdot \text{SLOC} + 2.0 \cdot N_{\text{functions}} + 3.0 \cdot \text{Cyclomatic} + 1.5 \cdot \text{Deps} + 4.0 \cdot \text{Depth} + 20.0 \cdot D$$
+  При превышении порога генерируется предупреждение `ARCH-030` о высоком архитектурном давлении на модуль. Лимит физического размера контролируется правилом `ARCH-031`, а количество функций — правилом `ARCH-032`.
 
 ### 6. [`layer.rs`](./src/layer.rs)
 - **Ответственность**: Моделирование гексагональных слоев и слоев Feature-Sliced Design (FSD).

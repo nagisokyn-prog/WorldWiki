@@ -321,6 +321,10 @@ fn validate_external_dependency(
                 "rust_decimal",
                 "unicode-segmentation",
                 "unicode-width",
+                "ts-rs",
+                "syn",
+                "quote",
+                "proc-macro2",
             ];
             if !domain_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {
@@ -367,6 +371,7 @@ fn validate_external_dependency(
                 "rust_decimal",
                 "unicode-segmentation",
                 "unicode-width",
+                "ts-rs",
             ];
             if !ports_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {
@@ -417,6 +422,7 @@ fn validate_external_dependency(
                 "rust_decimal",
                 "unicode-segmentation",
                 "unicode-width",
+                "ts-rs",
             ];
             if !app_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {

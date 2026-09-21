@@ -3,6 +3,9 @@ name = "surreal_domain"
 version = "0.85.0"
 edition = "2021"
 
+[package.metadata.cerberus]
+layer = "application"
+
 [features]
 # Enable RocksDB backend for HNSW vector search tests
 # Requires pre-built RocksDB (rocksdb.lib + rocksdb.dll) on Windows

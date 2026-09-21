@@ -16,7 +16,7 @@ use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
 use tauri::Manager;
 
-mod logic;
+use tauri_shell::logic;
 
 // ─── App State ───────────────────────────────────────────────────────────────
 
@@ -44,13 +44,17 @@ async fn init_database(
     let db_path = logic::system_core::get_data_dir().join("surreal_db");
     fs::create_dir_all(&db_path).ok();
 
-    let conn = Surreal::new::<SurrealKv>(db_path)
-        .await
-        .expect("Failed to start SurrealDB");
-    conn.use_ns(ns)
-        .use_db(db)
-        .await
-        .expect("Failed to use NS/DB");
+    let conn = match Surreal::new::<SurrealKv>(db_path).await {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Failed to start SurrealDB: {:?}", e);
+            std::process::exit(1);
+        }
+    };
+    if let Err(e) = conn.use_ns(ns).use_db(db).await {
+        eprintln!("Failed to use NS/DB: {:?}", e);
+        std::process::exit(1);
+    }
 
     // ── Apply DDL schema if you have one ──────────────────────────────────
     // Uncomment and customise:
@@ -75,7 +79,7 @@ async fn init_database(
 fn main() {
     use logic::system::*;
 
-    tauri::Builder::<tauri::test::MockRuntime>::default()
+    if let Err(e) = tauri::Builder::<tauri::test::MockRuntime>::default()
         .invoke_handler(surreal_domain::entity_commands![
             // ── System commands (always included) ──────────────────────────
             upload_photo,
@@ -104,5 +108,8 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    {
+        eprintln!("error while running tauri application: {:?}", e);
+        std::process::exit(1);
+    }
 }

@@ -56,6 +56,8 @@ fn test_threshold_violations() {
         350,
         150.0,
         300.0,
+        50,
+        100,
     );
 
     assert_eq!(violations.len(), 2);
@@ -81,6 +83,8 @@ fn test_threshold_violations() {
         350,
         150.0,
         300.0,
+        50,
+        100,
     );
 
     assert_eq!(warn_violations.len(), 2);

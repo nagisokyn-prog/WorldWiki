@@ -54,7 +54,7 @@ async fn negative_get_local_file_path_traversal() {
 #[serial_test::serial]
 async fn negative_load_theme_invalid_name_returns_null() {
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -69,7 +69,7 @@ async fn negative_load_theme_invalid_name_returns_null() {
 #[serial_test::serial]
 async fn negative_theme_name_with_path_traversal() {
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -100,7 +100,7 @@ async fn negative_theme_name_with_path_traversal() {
 async fn negative_empty_theme_file() {
     let env = make_env();
     fs::write(env.builtin_theme_path("empty"), "").expect("Should write empty file");
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -119,7 +119,7 @@ async fn negative_theme_file_with_bom() {
     // UTF-8 BOM + valid JSON
     let bom_json = b"\xef\xbb\xbf{\"name\": \"theme\"}";
     fs::write(env.builtin_theme_path("bom"), bom_json).expect("Should write BOM JSON");
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -137,7 +137,7 @@ async fn negative_theme_file_with_bom() {
 #[serial_test::serial]
 async fn negative_very_large_file_upload() {
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -152,7 +152,7 @@ async fn negative_very_large_file_upload() {
 #[serial_test::serial]
 async fn negative_upload_photo_empty_bytes() {
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -165,7 +165,7 @@ async fn negative_upload_photo_empty_bytes() {
 #[serial_test::serial]
 async fn negative_filename_special_characters() {
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -198,7 +198,7 @@ async fn negative_copy_background_file_missing_source() {
 #[serial_test::serial]
 async fn negative_settings_malformed_json_not_panic() {
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 
@@ -216,7 +216,7 @@ async fn negative_settings_malformed_json_not_panic() {
 async fn negative_concurrent_uploads_produce_unique_files() {
     tauri_shell::logic::system::clear_data_dir_provider();
     let env = make_env();
-    let _ = tauri_shell::logic::system::set_data_dir_provider(
+    tauri_shell::logic::system::set_data_dir_provider(
         Box::new(common::TestDataDirProvider::new(env.data_dir.clone()))
     );
 

@@ -6162,6 +6162,7 @@ dependencies = [
  "serde",
  "serde_json",
  "surrealdb",
+ "thiserror 2.0.20",
  "tokio",
  "ts-rs",
 ]
@@ -6894,6 +6895,7 @@ dependencies = [
  "surrealdb",
  "tauri",
  "tauri-build",
+ "thiserror 2.0.20",
  "uuid",
 ]
 

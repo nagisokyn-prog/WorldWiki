@@ -9,7 +9,8 @@ use super::{
     get_entity_relations_inner, get_entity_revisions_inner, get_entity_schemas_inner,
     get_relation_schemas_inner, get_schema_history_inner, save_entity_inner,
     save_entity_schema_inner, save_relation_schema_inner, search_entities_inner,
-    toggle_entity_history_pin_inner, toggle_schema_history_pin_inner, SchemaHistoryEntry,
+    toggle_entity_history_pin_inner, toggle_schema_history_pin_inner, EntityError,
+    SchemaHistoryEntry,
 };
 use crate::logic::models::{Entity, EntityRel, EntitySchema, RelationSchema};
 use serde_json::Value;
@@ -19,18 +20,16 @@ pub async fn get_entities(
     project: String,
     entity_type: Option<String>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Entity>, String> {
-    get_entities_inner(&state.db, &project, entity_type)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<Entity>, EntityError> {
+    get_entities_inner(&state.db, &project, entity_type).await
 }
 
 #[tauri::command]
 pub async fn get_entity(
     id: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Option<Entity>, String> {
-    get_entity_inner(&state.db, &id).await.map_err(Into::into)
+) -> Result<Option<Entity>, EntityError> {
+    get_entity_inner(&state.db, &id).await
 }
 
 #[tauri::command]
@@ -38,20 +37,16 @@ pub async fn save_entity(
     project: String,
     entity: Entity,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Entity, String> {
-    save_entity_inner(&state.db, &project, entity)
-        .await
-        .map_err(Into::into)
+) -> Result<Entity, EntityError> {
+    save_entity_inner(&state.db, &project, entity).await
 }
 
 #[tauri::command]
 pub async fn delete_entity(
     id: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    delete_entity_inner(&state.db, &id)
-        .await
-        .map_err(Into::into)
+) -> Result<(), EntityError> {
+    delete_entity_inner(&state.db, &id).await
 }
 
 #[tauri::command]
@@ -60,20 +55,16 @@ pub async fn search_entities(
     query: String,
     entity_type: Option<String>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Entity>, String> {
-    search_entities_inner(&state.db, &project, &query, entity_type)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<Entity>, EntityError> {
+    search_entities_inner(&state.db, &project, &query, entity_type).await
 }
 
 #[tauri::command]
 pub async fn get_entity_schemas(
     project: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<EntitySchema>, String> {
-    get_entity_schemas_inner(&state.db, &project)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<EntitySchema>, EntityError> {
+    get_entity_schemas_inner(&state.db, &project).await
 }
 
 #[tauri::command]
@@ -82,10 +73,8 @@ pub async fn save_entity_schema(
     schema: EntitySchema,
     max_saves: Option<usize>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<EntitySchema, String> {
-    save_entity_schema_inner(&state.db, &project, schema, max_saves)
-        .await
-        .map_err(Into::into)
+) -> Result<EntitySchema, EntityError> {
+    save_entity_schema_inner(&state.db, &project, schema, max_saves).await
 }
 
 #[tauri::command]
@@ -93,10 +82,8 @@ pub async fn delete_entity_schema(
     project: String,
     type_key: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    delete_entity_schema_inner(&state.db, &project, &type_key)
-        .await
-        .map_err(Into::into)
+) -> Result<(), EntityError> {
+    delete_entity_schema_inner(&state.db, &project, &type_key).await
 }
 
 #[tauri::command]
@@ -104,10 +91,8 @@ pub async fn get_schema_history(
     project: String,
     type_key: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<SchemaHistoryEntry>, String> {
-    get_schema_history_inner(&state.db, &project, &type_key)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<SchemaHistoryEntry>, EntityError> {
+    get_schema_history_inner(&state.db, &project, &type_key).await
 }
 
 #[tauri::command]
@@ -115,10 +100,8 @@ pub async fn toggle_schema_history_pin(
     history_id: String,
     is_pinned: bool,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    toggle_schema_history_pin_inner(&state.db, &history_id, is_pinned)
-        .await
-        .map_err(Into::into)
+) -> Result<(), EntityError> {
+    toggle_schema_history_pin_inner(&state.db, &history_id, is_pinned).await
 }
 
 #[tauri::command]
@@ -126,10 +109,8 @@ pub async fn get_entity_relations(
     project: String,
     entity_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<EntityRel>, String> {
-    get_entity_relations_inner(&state.db, &project, entity_id)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<EntityRel>, EntityError> {
+    get_entity_relations_inner(&state.db, &project, entity_id).await
 }
 
 #[tauri::command]
@@ -139,30 +120,24 @@ pub async fn create_entity_relation(
     to_id: String,
     rel: EntityRel,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<EntityRel, String> {
-    create_entity_relation_inner(&state.db, &project, &from_id, &to_id, rel)
-        .await
-        .map_err(Into::into)
+) -> Result<EntityRel, EntityError> {
+    create_entity_relation_inner(&state.db, &project, &from_id, &to_id, rel).await
 }
 
 #[tauri::command]
 pub async fn delete_entity_relation(
     id: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    delete_entity_relation_inner(&state.db, &id)
-        .await
-        .map_err(Into::into)
+) -> Result<(), EntityError> {
+    delete_entity_relation_inner(&state.db, &id).await
 }
 
 #[tauri::command]
 pub async fn get_relation_schemas(
     project: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<RelationSchema>, String> {
-    get_relation_schemas_inner(&state.db, &project)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<RelationSchema>, EntityError> {
+    get_relation_schemas_inner(&state.db, &project).await
 }
 
 #[tauri::command]
@@ -170,10 +145,8 @@ pub async fn save_relation_schema(
     project: String,
     schema: RelationSchema,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<RelationSchema, String> {
-    save_relation_schema_inner(&state.db, &project, schema)
-        .await
-        .map_err(Into::into)
+) -> Result<RelationSchema, EntityError> {
+    save_relation_schema_inner(&state.db, &project, schema).await
 }
 
 #[tauri::command]
@@ -181,10 +154,8 @@ pub async fn delete_relation_schema(
     project: String,
     rel_key: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    delete_relation_schema_inner(&state.db, &project, &rel_key)
-        .await
-        .map_err(Into::into)
+) -> Result<(), EntityError> {
+    delete_relation_schema_inner(&state.db, &project, &rel_key).await
 }
 
 #[tauri::command]
@@ -192,10 +163,8 @@ pub async fn get_entity_revisions(
     _project: String,
     entity_id: String,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<Vec<Value>, String> {
-    get_entity_revisions_inner(&state.db, &entity_id)
-        .await
-        .map_err(Into::into)
+) -> Result<Vec<Value>, EntityError> {
+    get_entity_revisions_inner(&state.db, &entity_id).await
 }
 
 #[tauri::command]
@@ -203,8 +172,6 @@ pub async fn toggle_entity_history_pin(
     history_id: String,
     is_pinned: bool,
     state: tauri::State<'_, crate::AppState>,
-) -> Result<(), String> {
-    toggle_entity_history_pin_inner(&state.db, &history_id, is_pinned)
-        .await
-        .map_err(Into::into)
+) -> Result<(), EntityError> {
+    toggle_entity_history_pin_inner(&state.db, &history_id, is_pinned).await
 }

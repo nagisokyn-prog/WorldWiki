@@ -62,7 +62,8 @@ async fn test_repository_find_by_id_with_and_without_prefix() {
         .await
         .expect("create should succeed");
     let full_id = created.id.expect("ID should exist");
-    let raw_key = full_id.split(':').last().unwrap();
+    let raw_key = full_id.split(':').next_back().unwrap();
+
 
     // Find by full "characters:id"
     let found_by_full = Character::find_by_id(&db, &full_id)

@@ -15,6 +15,7 @@ use syn::visit::Visit;
 #[derive(Default, Clone)]
 pub struct RustSynParserAdapter {
     pub matrix: Option<cerberus_domain::LayerTopologyMatrix>,
+    pub config: Option<cerberus_domain::CerberusConfig>,
 }
 
 impl AstParserPort for RustSynParserAdapter {
@@ -31,12 +32,26 @@ impl AstParserPort for RustSynParserAdapter {
 
 impl RustSynParserAdapter {
     pub fn new() -> Self {
-        Self { matrix: None }
+        Self {
+            matrix: None,
+            config: None,
+        }
     }
 
     pub fn with_matrix(matrix: cerberus_domain::LayerTopologyMatrix) -> Self {
         Self {
             matrix: Some(matrix),
+            config: None,
+        }
+    }
+
+    pub fn with_matrix_and_config(
+        matrix: cerberus_domain::LayerTopologyMatrix,
+        config: Option<cerberus_domain::CerberusConfig>,
+    ) -> Self {
+        Self {
+            matrix: Some(matrix),
+            config,
         }
     }
 
@@ -124,18 +139,28 @@ impl RustSynParserAdapter {
                 || path_str.ends_with("_test.rs")
                 || path_str.ends_with("_spec.rs");
 
-            let (warn_sloc, deny_sloc, warn_pressure, deny_pressure) = if is_test_file {
-                (1500, 3000, 800.0, 1500.0)
-            } else if path_str.contains("domain") {
-                (300, 500, 150.0, 300.0)
-            } else if path_str.contains("application") {
-                (400, 600, 200.0, 400.0)
-            } else if path_str.contains("infrastructure") {
-                (500, 800, 250.0, 500.0)
-            } else {
-                (500, 800, 200.0, 400.0)
-            };
+            let default_warn_fns = self
+                .config
+                .as_ref()
+                .map(|c| c.limits.max_functions_warn)
+                .unwrap_or(20);
+            let default_deny_fns = self
+                .config
+                .as_ref()
+                .map(|c| c.limits.max_functions_deny)
+                .unwrap_or(35);
 
+            let (warn_sloc, deny_sloc, warn_pressure, deny_pressure, warn_functions, deny_functions) = if is_test_file {
+                (1500, 3000, 800.0, 1500.0, 100, 200)
+            } else if path_str.contains("domain") {
+                (300, 500, 150.0, 300.0, default_warn_fns.min(15), default_deny_fns.min(25))
+            } else if path_str.contains("application") {
+                (400, 600, 200.0, 400.0, default_warn_fns, default_deny_fns)
+            } else if path_str.contains("infrastructure") {
+                (500, 800, 250.0, 500.0, default_warn_fns + 5, default_deny_fns + 10)
+            } else {
+                (500, 800, 200.0, 400.0, default_warn_fns, default_deny_fns)
+            };
 
             let complexity_violations = AstComplexityAnalyzer::check_thresholds(
                 &metrics,
@@ -143,6 +168,8 @@ impl RustSynParserAdapter {
                 deny_sloc,
                 warn_pressure,
                 deny_pressure,
+                warn_functions,
+                deny_functions,
             );
             violations.extend(complexity_violations);
         }

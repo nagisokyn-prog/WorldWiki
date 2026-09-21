@@ -74,7 +74,10 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     };
 
     let parsers: Vec<Arc<dyn AstParserPort>> = vec![
-        Arc::new(RustSynParserAdapter::with_matrix(matrix)),
+        Arc::new(RustSynParserAdapter::with_matrix_and_config(
+            matrix,
+            options.rules_repo.cerberus_config.clone(),
+        )),
         Arc::new(VueSfcParserAdapter::with_config(
             options.rules_repo.cerberus_config.clone(),
         )),
@@ -762,8 +765,33 @@ mod tests {
         assert!(error_rate_fail_run.is_err());
         assert!(error_rate_fail_run.unwrap_err().contains("Parse error rate"));
 
-        // Test scope All on a clean workspace
+        // Test scope All on a clean workspace with workspace metadata
         let clean_ws = tempdir().unwrap();
+        let ws_cargo = clean_ws.path().join("Cargo.toml");
+        std::fs::write(&ws_cargo, r#"
+            [package]
+            name = "clean_pkg"
+            version = "0.1.0"
+            edition = "2021"
+
+            [package.metadata.cerberus]
+            layer = "tauri"
+
+            [workspace]
+            members = ["."]
+
+            [workspace.metadata.cerberus]
+            preset = "hexagonal"
+
+            [lib]
+            path = "src/lib.rs"
+        "#).unwrap();
+        let ws_src = clean_ws.path().join("src");
+        std::fs::create_dir_all(&ws_src).unwrap();
+        std::fs::write(ws_src.join("lib.rs"), "pub fn lib() {}").unwrap();
+        std::fs::write(ws_src.join("comp.vue"), "<template><div>Hello</div></template>").unwrap();
+        std::fs::write(ws_src.join("note.txt"), "some notes").unwrap();
+
         let clean_scope_run = run_check(CheckExecutionOptions {
             rules_repo: Arc::clone(&rules_repo),
             path: clean_ws.path(),
@@ -777,6 +805,24 @@ mod tests {
             baseline_path: None,
         });
         assert!(clean_scope_run.is_ok());
+
+        // Test broken Cargo.toml triggering metadata parse error branch in run_check
+        let broken_ws = tempdir().unwrap();
+        let broken_cargo = broken_ws.path().join("Cargo.toml");
+        std::fs::write(&broken_cargo, "[broken toml").unwrap();
+        let broken_scope_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: broken_ws.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+        });
+        assert!(broken_scope_run.is_ok());
 
         // 13. Positive and negative tests for process_expanded_code
         let mut macro_violations = Vec::new();

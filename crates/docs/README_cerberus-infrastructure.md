@@ -61,31 +61,42 @@ crates/cerberus-infrastructure/src/
 ### 3.1. AST & Rust Analysis (`ast/`)
 
 - [`visitor.rs`](./src/ast/visitor.rs) — `AstVisitor`: базовый обходчик синтаксического дерева `syn::File`. Собирает декларации функций, вызовы макросов, блоки `unsafe`, операторы паники и конструкции `use`.
-- [`imports.rs`](./src/ast/imports.rs) — `ImportsChecker`: инспектирует деревья `syn::UseTree`, проверяя правила изоляции слоев `ARCH-001`..`ARCH-008`. Предотвращает импорт внешних SDK (`tauri`, `tokio`, `surrealdb`) в чистый домен.
-- [`panic_vector.rs`](./src/ast/panic_vector.rs) — `PanicVectorAnalyzer`: находит неконтролируемые вызовы `panic!`, `.unwrap()`, `.expect()`, `unreachable!()` (правило `ARCH-021`), требуя перехода на типизированные `Result<T, E>`.
-- [`ai_slop.rs`](./src/ast/ai_slop.rs) — `AiSlopVisitor`: выявляет оставленные артефакты генерации кода (`todo!()`, `unimplemented!()`, пустые заглушки структур, правила `SLOP-001`..`SLOP-002`).
-- [`macros.rs`](./src/ast/macros.rs) — `MacroValidator`: валидирует использование макросов, запрещая опасные глобальные состояния (`lazy_static!`, `ARCH-023`).
-- [`async_rules.rs`](./src/ast/async_rules.rs) — `AsyncRulesChecker`: проверяет асинхронный код на блокирующие вызовы (`std::thread::sleep` вместо `tokio::time::sleep`) и удержание `std::sync::Mutex` через точки прерывания `.await` (`ASYNC-001`..`ASYNC-003`).
-- [`capabilities.rs`](./src/ast/capabilities.rs) — `CapabilityAnalyzer`: анализирует прямой доступ к системным возможностям (FS, Sockets, Processes) в недопустимых слоях.
+- [`imports.rs`](./src/ast/imports.rs) — `ImportsChecker`: инспектирует деревья `syn::UseTree`, проверяя правила изоляции слоев `ARCH-001`..`ARCH-008`, `MOD-001`, `CQRS-001`, `EVT-001`. Предотвращает импорт внешних SDK (`tauri`, `tokio`, `surrealdb`) в чистый домен.
+- [`panic_vector.rs`](./src/ast/panic_vector.rs) — `PanicVectorVisitor`: находит неконтролируемые вызовы `panic!`, `.unwrap()`, `.expect()`, `unreachable!()` (правило `ROB-001`), требуя перехода на безопасные методы и типизированные `Result<T, E>`.
+- [`ai_defense.rs`](./src/ast/ai_defense.rs) — `AiDefenseChecker`: защита от деструктивных действий AI (`AI-001` подделка правил, `AI-003` зондирование среды, `AI-008` недоказанный `unsafe`, `AI-009` нерегламентированные `TODO`, `AI-013` неавторизованные `#[allow(...)]`).
+- [`ai_slop.rs`](./src/ast/ai_slop.rs) — `AiSlopVisitor`: выявляет оставленные артефакты генерации кода и чрезмерный оверхед (`todo!()`, `unimplemented!()`, правило `SLOP-001`).
+- [`error_rules.rs`](./src/ast/error_rules.rs) — `ErrorRulesChecker`: контроль качества обработки ошибок (`ERR-001` тихое подавление `let _ = result;`, `ERR-002` паника в `Drop`, `ERR-003` нетипизированный `Result<T, String>`, `ERR-005` паника в библиотеке).
+- [`concurrency_rules.rs`](./src/ast/concurrency_rules.rs) — `ConcurrencyRulesChecker`: предотвращение `CONC-002` (брошенные `tokio::spawn`), `CONC-006` (Double Lock Deadlock), `CONC-008` (`static mut`).
+- [`rust_perf.rs`](./src/ast/rust_perf.rs) — `RustPerfChecker`: правила производительности бэкенда (`PERF-006` блокирующий I/O в `Drop`, `PERF-011` I/O в циклах N+1, `PERF-012` unbounded mpsc channels).
+- [`testability.rs`](./src/ast/testability.rs) — `TestabilityChecker`: проверка детерминизма и чистоты домена (`TEST-002` глобальное состояние, `TEST-003` инфраструктурные адаптеры в домене, `TEST-005` `SystemTime::now()`/`Instant::now()`/`Uuid::new_v4()` в домене).
+- [`macros.rs`](./src/ast/macros.rs) — `MacroVisitor`: валидирует использование макросов, запрещая опасные глобальные состояния (`lazy_static!`).
+- [`async_rules.rs`](./src/ast/async_rules.rs) — `MutexGuardVisitor`: проверяет асинхронный код на удержание `std::sync::MutexGuard` через точки прерывания `.await` (`ASYNC-001`) и блокирующий сон в async (`ASYNC-002`).
+- [`capabilities.rs`](./src/ast/capabilities.rs) — `CapabilitiesVisitor`: анализирует прямой доступ к системным возможностям (FS, Sockets, Processes) в недопустимых слоях.
 
 ---
 
 ### 3.2. Frontend & Vue SFC (`frontend/`)
 
-- [`sfc_parser.rs`](./src/frontend/sfc_parser.rs) — `VueSfcParser`: надежный парсер компонентов Vue 3 Single File Component (.vue). Извлекает секции `<template>`, `<script setup>`, `<style>` и их атрибуты (`lang="ts"`, `scoped`).
+- [`sfc_parser.rs`](./src/frontend/sfc_parser.rs) — `VueSfcParser`: потоковый Zero-DOM лексер компонентов Vue 3 Single File Component (.vue). Извлекает секции `<template>`, `<script setup>`, `<style>` и их атрибуты (`lang="ts"`, `scoped`).
 - [`vue_rules.rs`](./src/frontend/vue_rules.rs) — `VueRulesChecker`:
   - `VUE-001`: аудит монолитов в `<script setup>` (порог: не более 15–30 строк связующего клея).
   - `VUE-002`: контроль наличия хука-компаньона `use<Component>.ts`.
   - `VUE-003`: запрет объявления интерфейсов типов внутри шаблона `.vue`.
-- [`css_rules.rs`](./src/frontend/css_rules.rs) — `CssRulesChecker`:
-  - `CSS-001`: обнаружение прямых Hex-цветов (`#fff`, `#0f1218`).
-  - `CSS-002`: обнаружение именованных HTML-цветов (`red`, `black`, `white`).
-  - `CSS-003`: обнаружение прямых вызовов `rgb()`, `rgba()`, `hsl()`.
-  - `CSS-004`: обнаружение захардкоженных `border-radius: 8px`.
-  - `CSS-005`: контроль раздувания CSS (блоки `<style>` > 50–70 строк).
-- [`fsd_rules.rs`](./src/frontend/fsd_rules.rs) — `FsdRulesChecker`: проверка архитектурных границ Feature-Sliced Design (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`).
-- [`perf_rules.rs`](./src/frontend/perf_rules.rs) — `PerfRulesChecker`: проверка правил реактивности (`VUE-004` shallowRef, `VUE-005` deep watch, `VUE-006` unlisten в Tauri IPC).
-- [`lifecycle_rules.rs`](./src/frontend/lifecycle_rules.rs) — `LifecycleRulesChecker`: проверка симметричной очистки таймеров и DOM-слушателей в `onUnmounted`.
+  - `VUE-007`: предотвращение разрушения реактивности (деструктуризация `props`/`store`).
+  - `VUE-008`: запрет мутации входных `props`.
+  - `VUE-009`: вызовы тяжелых функций внутри `v-for`.
+- [`css_rules.rs`](./src/frontend/css_rules.rs) & [`design_system_rules.rs`](./src/frontend/design_system_rules.rs):
+  - `CSS-001`: запрет Hex/RGB/HSL и именованных HTML-цветов (строго токены дизайн-системы).
+  - `CSS-002`: запрет захардкоженных радиусов и таймингов.
+  - `CSS-004`: контроль раздувания CSS (блоки `<style>` > 50–70 строк).
+  - `CSS-005`: запрет строковых Hex/RGB литералов в коде TS/Composable.
+  - `CSS-006`: запрет `!important` в scoped-стилях.
+  - `DS-001..DS-003`: контроль ролей семантических токенов и запрет локальных переопределений тем.
+- [`css_perf_rules.rs`](./src/frontend/css_perf_rules.rs):
+  - `CSS-PERF-001..005`: контроль GPU-бюджета `will-change`, тяжелых `backdrop-filter`, layout animations и `transition: all`.
+- [`fsd_rules.rs`](./src/frontend/fsd_rules.rs) — `FsdRulesChecker`: проверка архитектурных границ Feature-Sliced Design (`app` $\to$ `pages` $\to$ `widgets` $\to$ `features` $\to$ `entities` $\to$ `shared`, `FSD-001..FSD-004`).
+- [`perf_rules.rs`](./src/frontend/perf_rules.rs) — `PerfRulesChecker`: проверка правил реактивности (`PERF-001` `shallowRef`, `PERF-002` `markRaw` для Canvas/Monaco, `PERF-003` `requestAnimationFrame`, `PERF-004` вызовы в шаблоне, `PERF-005` глубокие `watch`).
+- [`lifecycle_rules.rs`](./src/frontend/lifecycle_rules.rs) — `LifecycleRulesChecker`: проверка симметричной очистки слушателей Tauri IPC, таймеров и DOM-слушателей в `onUnmounted` (`LEAK-001` / `FE-RAII-001`).
 
 ---
 

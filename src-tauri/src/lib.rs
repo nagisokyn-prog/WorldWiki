@@ -49,10 +49,14 @@ async fn init_database() -> Surreal<Db> {
 
 pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), String> {
     // 1. БАЗОВОЕ ЯДРО (NO-AI / BASE EDITION)
-    const DDL_NOAI_00_ANALYZERS: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
-    const DDL_NOAI_01_TABLES: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/01_tables.surql");
-    const DDL_NOAI_02_INDEXES: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/02_indexes.surql");
-    const DDL_NOAI_03_EVENTS: &str = include_str!("../../apps/spa/src/logic/schema/no_ai/03_events.surql");
+    const DDL_NOAI_00_ANALYZERS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
+    const DDL_NOAI_01_TABLES: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/01_tables.surql");
+    const DDL_NOAI_02_INDEXES: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/02_indexes.surql");
+    const DDL_NOAI_03_EVENTS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/03_events.surql");
 
     apply_ddl_module(db, "no_ai/00_analyzers", DDL_NOAI_00_ANALYZERS).await?;
     apply_ddl_module(db, "no_ai/01_tables", DDL_NOAI_01_TABLES).await?;
@@ -60,12 +64,18 @@ pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), String> {
     apply_ddl_module(db, "no_ai/03_events", DDL_NOAI_03_EVENTS).await?;
 
     // 2. ИИ-ПРОСТРАНСТВО (AI / ULTRA EDITION)
-    const DDL_AI_01_WORKSPACE: &str = include_str!("../../apps/spa/src/logic/schema/ai/01_workspace_tables.surql");
-    const DDL_AI_02_WEB_RESEARCH: &str = include_str!("../../apps/spa/src/logic/schema/ai/02_web_research_tables.surql");
-    const DDL_AI_03_EMBEDDINGS: &str = include_str!("../../apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql");
-    const DDL_AI_04_INDEXES: &str = include_str!("../../apps/spa/src/logic/schema/ai/04_indexes.surql");
-    const DDL_AI_05_EVENTS: &str = include_str!("../../apps/spa/src/logic/schema/ai/05_events.surql");
-    const DDL_AI_06_FUNCTIONS: &str = include_str!("../../apps/spa/src/logic/schema/ai/06_functions.surql");
+    const DDL_AI_01_WORKSPACE: &str =
+        include_str!("../../apps/spa/src/logic/schema/ai/01_workspace_tables.surql");
+    const DDL_AI_02_WEB_RESEARCH: &str =
+        include_str!("../../apps/spa/src/logic/schema/ai/02_web_research_tables.surql");
+    const DDL_AI_03_EMBEDDINGS: &str =
+        include_str!("../../apps/spa/src/logic/schema/ai/03_embeddings_hnsw.surql");
+    const DDL_AI_04_INDEXES: &str =
+        include_str!("../../apps/spa/src/logic/schema/ai/04_indexes.surql");
+    const DDL_AI_05_EVENTS: &str =
+        include_str!("../../apps/spa/src/logic/schema/ai/05_events.surql");
+    const DDL_AI_06_FUNCTIONS: &str =
+        include_str!("../../apps/spa/src/logic/schema/ai/06_functions.surql");
 
     apply_ddl_module(db, "ai/01_workspace_tables", DDL_AI_01_WORKSPACE).await?;
     apply_ddl_module(db, "ai/02_web_research_tables", DDL_AI_02_WEB_RESEARCH).await?;
@@ -103,8 +113,11 @@ pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result
 fn setup_application(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let raw_db = tauri::async_runtime::block_on(init_database());
     let db = std::sync::Arc::new(raw_db);
-    let event_publisher = std::sync::Arc::new(worldwiki_tauri::TauriEventPublisher::new(app.handle().clone()));
-    let services = bootstrap::services::build_surreal_app_services(Arc::clone(&db), event_publisher);
+    let event_publisher = std::sync::Arc::new(worldwiki_tauri::TauriEventPublisher::new(
+        app.handle().clone(),
+    ));
+    let services =
+        bootstrap::services::build_surreal_app_services(Arc::clone(&db), event_publisher);
     app.manage(worldwiki_tauri::AppState::new(services));
     app.manage(AppState { db: (*db).clone() });
     app.manage(AgentTasks::default());
@@ -180,6 +193,11 @@ pub fn run() {
             load_theme,
             save_custom_theme,
             // --- Главы / Тома ---
+            get_chapters,
+            get_chapter,
+            create_chapter,
+            save_chapter,
+            delete_chapter,
             get_chapter_hierarchy,
             create_volume,
             update_volume,
@@ -192,7 +210,7 @@ pub fn run() {
             save_connections,
             upsert_connections_batch,
             remove_connections_by_source,
-                        get_global_timeline,
+            get_global_timeline,
             save_global_timeline,
             // --- Экспорт и История ---
             worldwiki_tauri::commands::export_chapters,
@@ -274,7 +292,7 @@ pub fn run() {
             worldwiki_tauri::commands::ai_audit_consistency,
             worldwiki_tauri::commands::ai_delegate_task,
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [Chapter, Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
+            @entities: [Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
             @relations: [Cites]
 ])

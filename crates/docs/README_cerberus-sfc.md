@@ -70,19 +70,41 @@ crates/cerberus-sfc/src/
 
 ## 📋 Поддерживаемые правила и проверки
 
-| Код Правила | Название | Описание |
-|---|---|---|
-| `VUE-001` | Vue Script Setup Monolith | Запрет тяжелой логики в `<script setup>` (предел 15–30 строк клея). |
-| `VUE-002` | Missing Composable Companion | Обязательное наличие хука-компаньона `use<Component>.ts`. |
-| `VUE-003` | Types Inside Vue SFC | Запрет объявления типов и интерфейсов внутри `.vue` (вынос в `*.model.ts`). |
-| `VUE-004` | Deep Reactive on Heavy Data | Запрет `reactive()` / `ref()` на тяжелых структурах (требуется `shallowRef`). |
-| `VUE-005` | Unconstrained Deep Watch | Запрет глубоких `watch(..., { deep: true })` без явного ограничения глубины. |
-| `VUE-006` | Tauri IPC Listener Leak | Обязательная очистка слушателей Tauri IPC Events в `onUnmounted`. |
-| `CSS-001` | Hex Color Hardcode | Полный запрет Hex-цветов (`#fff`, `#0f1218`) — строго дизайн-токены. |
-| `CSS-002` | Named Color Hardcode | Запрет именованных цветов (`red`, `black`, `white`, `blue`). |
-| `CSS-003` | Direct RGB/RGBA/HSL | Запрет прямых вызовов функций цвета в обход токенов. |
-| `CSS-004` | Hardcoded Border Radius | Запрет прямого указания радиусов (`border-radius: 8px`). |
-| `CSS-005` | CSS Style Bloat | Блоки `<style>` не должны превышать 50–70 строк. |
+### Vue 3 SFC & Реактивность
+| Код Правила | Название | Уровень | Описание |
+|---|---|:---:|---|
+| `VUE-001` | Vue Script Setup Monolith | 🛑 Deny | Запрет тяжелой логики в `<script setup>` (предел 15–30 строк связующего клея). |
+| `VUE-002` | Missing Composable Companion | 🛑 Deny | Обязательное наличие хука-компаньона `use<Component>.ts` для бизнес-компонентов. |
+| `VUE-003` | Types Inside Vue SFC | 🛑 Deny | Запрет объявления типов и интерфейсов внутри `.vue` (вынос в `*.model.ts`). |
+| `VUE-007` | Reactivity Loss | 🛑 Deny | Запрет деструктуризации реактивных `props` или Pinia store без `toRefs()`. |
+| `VUE-008` | Direct Props Mutation | 🛑 Deny | Запрет прямой мутации входных `props` (мутирование полей, `.push()` и т.д.). |
+| `VUE-009` | Heavy Function in v-for | 🛑 Deny | Запрет вызова некэшируемых тяжелых методов внутри директивы `v-for`. |
+| `PERF-001` | Deep Reactive on Heavy Data | 🛑 Deny | Запрет `reactive()` / `ref()` на тяжелых структурах данных (требуется `shallowRef`). |
+| `PERF-002` | Proxy on External Instances | 🛑 Deny | Оборачивание инстансов Canvas, Three.js, Monaco в Proxy (требуется `markRaw`). |
+| `PERF-005` | Unconstrained Deep Watch | 🛑 Deny | Запрет глубоких `watch(..., { deep: true })` без явного ограничения глубины. |
+| `LEAK-001` | Event Listener Leak | 🛑 Deny | Обязательная симметричная очистка слушателей Tauri IPC, таймеров и DOM в `onUnmounted`. |
+
+### CSS Design Tokens & Дизайн-Система
+| Код Правила | Название | Уровень | Описание |
+|---|---|:---:|---|
+| `CSS-001` | Hex Color Hardcode | 🛑 Deny | Полный запрет Hex-цветов (`#fff`, `#0f1218`) — строго токены дизайн-системы. |
+| `CSS-002` | Named & Hardcoded Units | 🛑 Deny | Запрет именованных цветов (`red`, `black`) и захардкоженных радиусов (`8px`). |
+| `CSS-003` | Direct RGB/RGBA/HSL | 🛑 Deny | Запрет прямых вызовов функций цвета в обход CSS Custom Properties. |
+| `CSS-004` | CSS Style Bloat | 🛑 Deny | Блоки `<style>` не должны превышать 50–70 строк. |
+| `CSS-005` | String Color in TS | 🛑 Deny | Запрет строковых литералов цветов (Hex/RGB) в TypeScript и коде Composable. |
+| `CSS-006` | Important Overuse | 🛑 Deny | Запрет использования `!important` в scoped-стилях компонентов. |
+| `DS-001` | Spectral Tokens Tier-1 | 🛑 Deny | Запрет прямого использования спектральных токенов (`--blue-500`) в UI-компонентах. |
+| `DS-002` | Local Theme Override | 🛑 Deny | Запрет локальных переопределений тем в листовых CSS файлах. |
+| `DS-003` | Token Role Mismatch | 🛑 Deny | Запрет фоновых токенов в `color:` и текстовых токенов в `background:`. |
+
+### Производительность Рендеринга & FSD
+| Код Правила | Название | Уровень | Описание |
+|---|---|:---:|---|
+| `CSS-PERF-001` | Excessive will-change | ⚠️ Warn | Превышение лимита GPU-слоев и статических `will-change`. |
+| `CSS-PERF-002` | Heavy Filter/Blur | ⚠️ Warn | Превышение порога радиуса размытия `blur > 30px` или вложенности фильтров. |
+| `CSS-PERF-003` | Layout Animation | 🛑 Deny | Запрет анимации геометрических свойств (`width`, `height`, `margin`, `box-shadow`). |
+| `CSS-PERF-004` | Transition All | 🛑 Deny | Полный запрет `transition: all` (требуется явное перечисление анимируемых свойств). |
+| `FSD-001..004` | Feature-Sliced Design | 🛑 Deny | Контроль иерархии FSD-слоев (`app -> pages -> widgets -> features -> entities -> shared`). |
 
 ---
 

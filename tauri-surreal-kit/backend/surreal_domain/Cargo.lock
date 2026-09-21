@@ -1066,19 +1066,6 @@ dependencies = [
 
 [[package]]
 name = "dashmap"
-version = "5.5.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "978747c1d849a7d2ee5e8adc0159961c48fb7e5db2f06af6723b80123bb53856"
-dependencies = [
- "cfg-if",
- "hashbrown 0.14.5",
- "lock_api",
- "once_cell",
- "parking_lot_core",
-]
-
-[[package]]
-name = "dashmap"
 version = "6.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6361d5c062261c78a176addb82d4c821ae42bed6089de0e12603cd25de2059c"
@@ -4919,27 +4906,27 @@ dependencies = [
 
 [[package]]
 name = "serial_test"
-version = "2.0.0"
+version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e56dd856803e253c8f298af3f4d7eb0ae5e23a737252cd90bb4f3b435033b2d"
+checksum = "a6df5ed973ad8d834e09f824f9e9f449af6b9a3745f78dec7cc752770bd3bf11"
 dependencies = [
- "dashmap 5.5.3",
- "futures",
- "lazy_static",
+ "futures-executor",
+ "futures-util",
  "log",
+ "once_cell",
  "parking_lot",
  "serial_test_derive",
 ]
 
 [[package]]
 name = "serial_test_derive"
-version = "2.0.0"
+version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "91d129178576168c589c9ec973feedf7d3126c01ac2bf08795109aa35b69fb8f"
+checksum = "a22144e767da4ddd8416dbf383700542ffd8a5dc493dfecedfe1fe3ad03c98ae"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.118",
+ "syn 3.0.3",
 ]
 
 [[package]]
@@ -5224,7 +5211,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 
 [[package]]
 name = "surreal_domain"
-version = "0.1.0"
+version = "0.85.0"
 dependencies = [
  "chrono",
  "serde",
@@ -5242,12 +5229,13 @@ dependencies = [
 
 [[package]]
 name = "surreal_domain_core"
-version = "0.1.0"
+version = "0.85.0"
 dependencies = [
  "serde",
  "serde_json",
  "surrealdb",
  "tempfile",
+ "thiserror 2.0.18",
  "tokio",
  "ts-rs",
  "uuid",
@@ -5255,7 +5243,7 @@ dependencies = [
 
 [[package]]
 name = "surreal_domain_macros"
-version = "0.1.0"
+version = "0.85.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5331,7 +5319,7 @@ dependencies = [
  "bytes",
  "chrono",
  "ciborium",
- "dashmap 6.2.1",
+ "dashmap",
  "deunicode",
  "diskann",
  "diskann-utils",

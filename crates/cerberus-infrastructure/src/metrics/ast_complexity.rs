@@ -188,6 +188,8 @@ impl AstComplexityAnalyzer {
         deny_sloc: usize,
         warn_pressure: f64,
         deny_pressure: f64,
+        warn_functions: usize,
+        deny_functions: usize,
     ) -> Vec<Violation> {
         let mut violations = Vec::new();
 
@@ -223,6 +225,42 @@ impl AstComplexityAnalyzer {
                 snippet,
                 message: format!("File SLOC ({}) exceeds recommended limit ({})", metrics.sloc, warn_sloc),
                 remediation: "Consider decomposing large modules before they become unmaintainable.".into(),
+                fingerprint,
+            });
+        }
+
+        if metrics.functions > deny_functions {
+            let snippet = format!("Functions: {} (strict limit: {})", metrics.functions, deny_functions);
+            let fingerprint = compute_fingerprint("ARCH-032", "1.0", "file", &snippet);
+            violations.push(Violation {
+                rule_id: "ARCH-032".into(),
+                rule_version: "1.0".into(),
+                category: Category::Architecture,
+                severity: Severity::Deny,
+                file: metrics.file_path.clone(),
+                line: 1,
+                column: 1,
+                symbol: "file".into(),
+                snippet,
+                message: format!("Function count ({}) exceeds strict limit ({})", metrics.functions, deny_functions),
+                remediation: "Decompose this file into cohesive submodules with dedicated responsibilities.".into(),
+                fingerprint,
+            });
+        } else if metrics.functions > warn_functions {
+            let snippet = format!("Functions: {} (warn limit: {})", metrics.functions, warn_functions);
+            let fingerprint = compute_fingerprint("ARCH-032", "1.0", "file", &snippet);
+            violations.push(Violation {
+                rule_id: "ARCH-032".into(),
+                rule_version: "1.0".into(),
+                category: Category::Architecture,
+                severity: Severity::Warn,
+                file: metrics.file_path.clone(),
+                line: 1,
+                column: 1,
+                symbol: "file".into(),
+                snippet,
+                message: format!("Function count ({}) exceeds recommended limit ({})", metrics.functions, warn_functions),
+                remediation: "Consider decomposing large modules with too many functions into focused submodules.".into(),
                 fingerprint,
             });
         }
@@ -326,27 +364,39 @@ mod tests {
         assert!(metrics.cyclomatic > 5);
 
         // Deny pressure
-        let v1 = AstComplexityAnalyzer::check_thresholds(&metrics, 1000, 2000, 0.1, 0.2);
+        let v1 = AstComplexityAnalyzer::check_thresholds(&metrics, 1000, 2000, 0.1, 0.2, 100, 200);
         assert!(!v1.is_empty());
         assert_eq!(v1[0].rule_id, "ARCH-030");
         assert_eq!(v1[0].severity, Severity::Deny);
 
         // Warn pressure
-        let v2 = AstComplexityAnalyzer::check_thresholds(&metrics, 1000, 2000, 0.001, 1000.0);
+        let v2 = AstComplexityAnalyzer::check_thresholds(&metrics, 1000, 2000, 0.001, 1000.0, 100, 200);
         assert!(!v2.is_empty());
         assert_eq!(v2[0].severity, Severity::Warn);
 
         // SLOC deny & warn
         let mut heavy_metrics = metrics.clone();
         heavy_metrics.sloc = 3000;
-        let v3 = AstComplexityAnalyzer::check_thresholds(&heavy_metrics, 1000, 2000, 1000.0, 2000.0);
+        let v3 = AstComplexityAnalyzer::check_thresholds(&heavy_metrics, 1000, 2000, 1000.0, 2000.0, 100, 200);
         assert_eq!(v3[0].rule_id, "ARCH-031");
         assert_eq!(v3[0].severity, Severity::Deny);
 
         heavy_metrics.sloc = 1500;
-        let v4 = AstComplexityAnalyzer::check_thresholds(&heavy_metrics, 1000, 2000, 1000.0, 2000.0);
+        let v4 = AstComplexityAnalyzer::check_thresholds(&heavy_metrics, 1000, 2000, 1000.0, 2000.0, 100, 200);
         assert_eq!(v4[0].rule_id, "ARCH-031");
         assert_eq!(v4[0].severity, Severity::Warn);
+
+        // Functions count deny & warn
+        let mut many_fns_metrics = metrics.clone();
+        many_fns_metrics.functions = 50;
+        let v5 = AstComplexityAnalyzer::check_thresholds(&many_fns_metrics, 1000, 2000, 1000.0, 2000.0, 20, 35);
+        assert_eq!(v5[0].rule_id, "ARCH-032");
+        assert_eq!(v5[0].severity, Severity::Deny);
+
+        many_fns_metrics.functions = 25;
+        let v6 = AstComplexityAnalyzer::check_thresholds(&many_fns_metrics, 1000, 2000, 1000.0, 2000.0, 20, 35);
+        assert_eq!(v6[0].rule_id, "ARCH-032");
+        assert_eq!(v6[0].severity, Severity::Warn);
 
         // Parse error
         assert!(AstComplexityAnalyzer::analyze_rust_file("invalid syntax {{{{", path, 0.0, &weights).is_err());

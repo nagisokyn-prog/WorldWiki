@@ -5,3 +5,13 @@ members = [
     "surreal_domain_facade"
 ]
 resolver = "2"
+
+[workspace.metadata.cerberus]
+preset = "hexagonal"
+
+[workspace.metadata.cerberus.layers]
+domain = { allowed_dependencies = [] }
+ports = { allowed_dependencies = ["domain"] }
+infrastructure = { allowed_dependencies = ["domain", "ports"] }
+application = { allowed_dependencies = ["domain", "ports", "infrastructure"] }
+

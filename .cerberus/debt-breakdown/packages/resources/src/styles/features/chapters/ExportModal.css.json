@@ -1,0 +1,41 @@
+{
+  "targetFile": "packages/resources/src/styles/features/chapters/ExportModal.css",
+  "totalViolations": 4,
+  "rulesDistribution": {
+    "CSS-004": 4
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+      "line": 17,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "f95604c2158142ed8393172928401b830581f57f7802959b17db597291070a5d"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+      "line": 61,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "952888520e2d43e5e73b049e5fe86946a8c53f2b0d075ccd6b6fd011d0eddfb2"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+      "line": 73,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "5288bdcf0d79cbf5cec8e5bd662b25dee30fbc74a4eb32bcedda8cde12915fb5"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+      "line": 117,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "ffcfd55c38458c918e778c02c05e689945474742e8bc9400db72cb932615d246"
+    }
+  ]
+}

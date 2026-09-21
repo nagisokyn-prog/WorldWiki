@@ -8,7 +8,7 @@
   margin-bottom: 10px;
   background: var(--bg-sunken);
   padding: 8px;
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-xs);
   min-width: 0;
 }
 

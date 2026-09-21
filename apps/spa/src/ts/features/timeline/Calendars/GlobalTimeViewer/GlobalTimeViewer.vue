@@ -10,9 +10,9 @@
       <div class="master-clock">
         <label>Абсолютная минута (Master Clock)</label>
         <div class="clock-input-group">
-          <button @click="minute -= 1000">-</button>
-          <input v-model.number="minute" type="number" />
-          <button @click="minute += 1000">+</button>
+          <button @click="handlePrevMinute">-</button>
+          <input :value="minute" type="number" @input="handleMinuteInput" />
+          <button @click="handleNextMinute">+</button>
         </div>
       </div>
 
@@ -44,8 +44,23 @@ const {
   minute,
   localDates,
   loading,
-  close
+  close,
+  stepMinute,
+  setMinute
 } = useGlobalTimeViewer(() => props.projectName);
+
+const handlePrevMinute = () => {
+  stepMinute(-1000);
+};
+
+const handleNextMinute = () => {
+  stepMinute(1000);
+};
+
+const handleMinuteInput = (event: Event) => {
+  const val = (event.target as HTMLInputElement).valueAsNumber;
+  setMinute(val);
+};
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/timeline/GlobalTimeViewer.css"></style>

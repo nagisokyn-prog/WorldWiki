@@ -1,0 +1,17 @@
+{
+  "targetFile": "packages/resources/src/styles/features/shell/EditorView.css",
+  "totalViolations": 1,
+  "rulesDistribution": {
+    "CSS-004": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/EditorView.css",
+      "line": 297,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "7ba6613816596fe4e76c16830ad482815124ef9b41b2b2417058e85da28392ec"
+    }
+  ]
+}

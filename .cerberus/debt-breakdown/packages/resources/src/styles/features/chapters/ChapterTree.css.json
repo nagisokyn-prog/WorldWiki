@@ -1,0 +1,41 @@
+{
+  "targetFile": "packages/resources/src/styles/features/chapters/ChapterTree.css",
+  "totalViolations": 4,
+  "rulesDistribution": {
+    "CSS-004": 4
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+      "line": 41,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "cc4af3bba67a3f2a81d8d901fcf74eab100bacde327f53a9883192d19a7f1bb0"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+      "line": 48,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "c294f0fb551b27aa9c7533b6646f30846f1d1b75cd95329f78ca931837a76a55"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+      "line": 88,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "9d116b5c2ecbf9b59224c6d78d4363b4e88492ed431ccdacabfa51e2e724d0c4"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+      "line": 110,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "9d116b5c2ecbf9b59224c6d78d4363b4e88492ed431ccdacabfa51e2e724d0c4"
+    }
+  ]
+}

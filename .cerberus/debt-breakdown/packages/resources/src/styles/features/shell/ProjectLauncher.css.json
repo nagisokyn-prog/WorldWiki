@@ -1,0 +1,74 @@
+{
+  "targetFile": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+  "totalViolations": 8,
+  "rulesDistribution": {
+    "CSS-006": 2,
+    "CSS-004": 6
+  },
+  "violations": [
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 209,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "4f3a45fad2ac9e37d1006d7ace6ded8fd2110e43b7af9703b2f729fff393bb11"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 280,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "f48a343791751a531b269aac46fec663468535a3c433004a9cd0fbf68460e999"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 490,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c42186b0c1bce62b38fcfdf4b019f9ef2f7e1f8dbd94252e272523bea7076599"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 496,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c42186b0c1bce62b38fcfdf4b019f9ef2f7e1f8dbd94252e272523bea7076599"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 512,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c52ac5da7ca1955450c12433a54d0fad9d7a7a2debc7fe7945b823edb9d69e0e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 518,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "f8ba8e800bbc7bdebcccccfc062e950e540b5639f7794be0d10378c4a78f3b06"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 523,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "83eef19f7d6e585c1b9f096ef340f0e9d86d18787de5954c4456247337b88930"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "line": 528,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "2facdaffe672f4a0cd5b3cf1cde575f81f7b31a184de628aa8483abc95630018"
+    }
+  ]
+}

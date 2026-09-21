@@ -222,6 +222,7 @@ export function useTimelineEventConversion(
     getMonthOptions,
     getHourOptions,
     getMinuteOptions,
+    getDisplayCalendarIds,
     getConvertedDateInfo,
     convertedDateInfoMap
   };

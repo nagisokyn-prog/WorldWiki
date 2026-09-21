@@ -1,46 +1,22 @@
 /**
  * @file useShellApp.ts — tauri-surreal-kit
  * @description Framework-level VS Code-style shell composable.
- *
- * Provides the full UI infrastructure layer for any Tauri + SurrealDB app:
- *   - Split-pane editor groups (VS Code style)        ← useEditorGroups
- *   - Toast notifications                             ← addToast
- *   - Console log panel                               ← addLog
- *   - Zoom controls                                   ← applyZoom
- *   - Sidebar / panel resize handlers                 ← startResize, startSidebarResize
- *   - Group resize handler                            ← startGroupResize
- *   - Floating windows                                ← openFloatingEditor
- *   - Settings toggle                                 ← toggleSettings
- *   - Keyboard shortcuts (Ctrl+S, Ctrl+W, F11, etc.)
- *   - State persistence (editorGroups → localStorage)
  */
 
 import {
-  ref, shallowRef, watch, onMounted, onUnmounted,
-  triggerRef, type Ref
+  ref, watch, onMounted, onUnmounted, type Ref
 } from 'vue';
 import { useEditorGroups } from './useEditorGroups';
 import { settingsService } from '../services/settings.service';
 import { useShellFloating, type FloatingEditor } from './shell/useShellFloating';
 import { useShellResize } from './shell/useShellResize';
 import { createShellKeydownHandler } from './shell/useShellShortcuts';
+import { useShellLogging, type Toast, type ConsoleLog } from './shell/useShellLogging';
+import { useShellPersistence } from './shell/useShellPersistence';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type { FloatingEditor };
-
-export interface Toast {
-  id: number;
-  text: string;
-  type: 'success' | 'warn' | 'error' | 'info';
-}
-
-export interface ConsoleLog {
-  id: number;
-  text: string;
-  type: 'info' | 'warn' | 'error' | 'success';
-  timestamp: string;
-}
+export type { FloatingEditor, Toast, ConsoleLog };
 
 export interface ShellAppConfig {
   storagePrefix: string;
@@ -57,7 +33,6 @@ export interface ShellAppConfig {
 
 export function useShellApp(config: ShellAppConfig) {
   const prefix = config.storagePrefix;
-  const STATE_KEY = `${prefix}:state`;
 
   // ── Editor Groups ─────────────────────────────────────────────────────────
   const eg = useEditorGroups();
@@ -65,110 +40,33 @@ export function useShellApp(config: ShellAppConfig) {
   // ── Settings reactive ref ─────────────────────────────────────────────────
   const settings = ref(settingsService.getSettings());
 
-  // ── Layout state ──────────────────────────────────────────────────────────
-  const showSettings = ref(false);
-  const sidebarVisible = ref(true);
-  const panelHeight = ref(parseInt(localStorage.getItem(`${prefix}:panel-height`) || '150'));
-  const sidebarWidth = ref(parseInt(localStorage.getItem(`${prefix}:sidebar-width`) || '280'));
-  const activePanelTab = ref('');
-  const zoomLevel = ref(parseFloat(localStorage.getItem(`${prefix}:zoom`) || '1'));
+  // ── Persistence, Layout & Zoom ────────────────────────────────────────────
+  const {
+    showSettings,
+    sidebarVisible,
+    panelHeight,
+    sidebarWidth,
+    activePanelTab,
+    zoomLevel,
+    applyZoom,
+    saveState,
+    restoreState
+  } = useShellPersistence({
+    storagePrefix: prefix,
+    eg,
+    serializeExtra: config.serializeExtra,
+    restoreExtra: config.restoreExtra
+  });
 
   // ── Floating windows ──────────────────────────────────────────────────────
   const floating = useShellFloating(config.appId ?? 'app');
 
-  // ── Toasts ────────────────────────────────────────────────────────────────
-  const toasts = ref<Toast[]>([]);
-  let toastId = 0;
-  const toastDuration = config.toastDuration ?? 3000;
+  // ── Logging & Toasts ──────────────────────────────────────────────────────
+  const { toasts, addToast, getToastIcon, consoleLogs, addLog } = useShellLogging(config.toastDuration ?? 3000);
 
-  const addToast = (text: string, type: Toast['type'] = 'info') => {
-    const id = ++toastId;
-    toasts.value.push({ id, text, type });
-    setTimeout(() => {
-      toasts.value = toasts.value.filter(t => t.id !== id);
-    }, toastDuration);
-  };
-
-  const getToastIcon = (type: Toast['type']) => {
-    switch (type) {
-      case 'success': return 'fas fa-check-circle';
-      case 'warn': return 'fas fa-exclamation-triangle';
-      case 'error': return 'fas fa-times-circle';
-      default: return 'fas fa-info-circle';
-    }
-  };
-
-  // ── Console log ───────────────────────────────────────────────────────────
-  const consoleLogs = shallowRef<ConsoleLog[]>([]);
-  let logCounter = 0;
-
-  const addLog = (text: string, type: ConsoleLog['type'] = 'info') => {
-    const logs = consoleLogs.value;
-    logs.unshift({ id: ++logCounter, text, type, timestamp: new Date().toLocaleTimeString() });
-    if (logs.length > 100) logs.splice(100);
-    triggerRef(consoleLogs);
-  };
-
-  // ── Zoom ──────────────────────────────────────────────────────────────────
-  const applyZoom = (level: number) => {
-    const clamped = Math.max(0.5, Math.min(2, level));
-    zoomLevel.value = clamped;
-    document.documentElement.style.setProperty('--app-zoom', String(clamped));
-    const appEl = document.getElementById('app');
-    if (appEl) {
-      appEl.style.transform = `scale(${clamped})`;
-      appEl.style.transformOrigin = 'top left';
-      appEl.style.width = `${100 / clamped}%`;
-      appEl.style.height = `${100 / clamped}%`;
-    }
-    localStorage.setItem(`${prefix}:zoom`, String(clamped));
-  };
-
-  // ── Settings ──────────────────────────────────────────────────────────────
+  // ── Settings actions ──────────────────────────────────────────────────────
   const toggleSettings = () => { showSettings.value = !showSettings.value; };
   const resetSettings = () => { settingsService.resetSettings(); addLog('Settings → Reset', 'warn'); };
-
-  // ── State persistence ─────────────────────────────────────────────────────
-  let isRestoring = false;
-
-  const saveState = () => {
-    if (isRestoring) return;
-    const state: Record<string, unknown> = {
-      activePanelTab: activePanelTab.value,
-      editorGroups: eg.serializeState(),
-      activeGroupId: eg.activeGroupId.value,
-      ...(config.serializeExtra?.() ?? {}),
-    };
-    localStorage.setItem(STATE_KEY, JSON.stringify(state));
-  };
-
-  const restoreState = async (): Promise<boolean> => {
-    const saved = localStorage.getItem(STATE_KEY);
-    if (!saved) return false;
-    isRestoring = true;
-    try {
-      const state = JSON.parse(saved);
-      activePanelTab.value = state.activePanelTab ?? '';
-
-      if (state.editorGroups) {
-        eg.restoreState(state.editorGroups, new Map());
-      }
-
-      if (config.restoreExtra) {
-        await config.restoreExtra(state);
-      }
-
-      isRestoring = false;
-      return true;
-    } catch (e) {
-      console.warn('[useShellApp] Failed to restore state', e);
-      isRestoring = false;
-      return false;
-    }
-  };
-
-  watch(activePanelTab, () => { if (!isRestoring) saveState(); });
-  watch(eg.groups, saveState, { deep: true });
 
   // ── Resizers ──────────────────────────────────────────────────────────────
   const resizers = useShellResize({

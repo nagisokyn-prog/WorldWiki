@@ -1,0 +1,17 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+  "totalViolations": 1,
+  "rulesDistribution": {
+    "CSS-004": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "line": 65,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c1ee01b1f0265b2a446814d72e96732386e09aecd0f9d603403ceabbe9c03ba5"
+    }
+  ]
+}

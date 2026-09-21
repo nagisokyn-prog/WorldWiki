@@ -46,7 +46,7 @@
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-dropdown, 8px);
+  border-radius: var(--radius-dropdown);
   box-shadow: var(--shadow-dropdown);
   z-index: 1000;
   max-height: 250px;

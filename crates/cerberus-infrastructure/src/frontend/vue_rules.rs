@@ -175,20 +175,7 @@ impl VueRuleChecker {
             }
 
             // 4. VUE-008: Direct Prop Mutation
-            if (trimmed.starts_with("props.") || trimmed.contains(" props."))
-                && (trimmed.contains(" = ")
-                    || trimmed.contains(" += ")
-                    || trimmed.contains(" -= ")
-                    || trimmed.contains(".push(")
-                    || trimmed.contains(".splice(")
-                    || trimmed.contains(".pop()"))
-                && !trimmed.starts_with("const ")
-                && !trimmed.starts_with("let ")
-                && !trimmed.starts_with("if (")
-                && !trimmed.starts_with("if(")
-                && !trimmed.contains("==")
-                && !trimmed.contains("===")
-            {
+            if Self::is_prop_mutation(trimmed) {
                 let fingerprint = compute_fingerprint("VUE-008", "1.0", file_stem, trimmed);
                 violations.push(Violation {
                     rule_id: "VUE-008".into(),
@@ -233,6 +220,77 @@ impl VueRuleChecker {
 
         // 6. TS-MATCH-001: Tagged Union Exhaustive Match
         Self::check_exhaustive_switch(content, file_path, violations);
+    }
+
+    pub fn is_prop_mutation(trimmed: &str) -> bool {
+        if trimmed.is_empty()
+            || trimmed.starts_with("//")
+            || trimmed.starts_with("/*")
+            || trimmed.starts_with('*')
+        {
+            return false;
+        }
+
+        // Variable declarations, control flow statements and closing braces are not mutations
+        if trimmed.starts_with("const ")
+            || trimmed.starts_with("let ")
+            || trimmed.starts_with("var ")
+            || trimmed.starts_with("if (")
+            || trimmed.starts_with("if(")
+            || trimmed.starts_with('}')
+            || trimmed.starts_with("return ")
+        {
+            return false;
+        }
+
+        // 1. Mutating array method calls: props.<item>.push(...), props.<list>.splice(...)
+        let mutating_methods = [
+            ".push(", ".splice(", ".pop(", ".shift(", ".unshift(", ".reverse(", ".sort(",
+        ];
+        for method in mutating_methods {
+            if let Some(idx) = trimmed.find(method) {
+                let before = &trimmed[..idx];
+                let target = before
+                    .split([';', '{', '(', ',', '&', '|'])
+                    .next_back()
+                    .unwrap_or("")
+                    .trim();
+                if target.starts_with("props.") || target.contains(" props.") {
+                    return true;
+                }
+            }
+        }
+
+        // 2. Direct assignments into props: props.<field> = ..., props.<field> += ...
+        let assign_ops = [" += ", " -= ", " = "];
+        for op in assign_ops {
+            if let Some(idx) = trimmed.find(op) {
+                let left_side = trimmed[..idx].trim();
+                // Exclude comparison operators and arrow functions
+                if left_side.ends_with('=')
+                    || left_side.ends_with('!')
+                    || left_side.ends_with('<')
+                    || left_side.ends_with('>')
+                {
+                    continue;
+                }
+                if trimmed.contains("==") || trimmed.contains("===") {
+                    continue;
+                }
+
+                let target = left_side
+                    .split([';', '{', '('])
+                    .next_back()
+                    .unwrap_or("")
+                    .trim();
+
+                if target.starts_with("props.") || target.contains(" props.") {
+                    return true;
+                }
+            }
+        }
+
+        false
     }
 
     fn check_exhaustive_switch(content: &str, file_path: &Path, violations: &mut Vec<Violation>) {
@@ -342,6 +400,66 @@ mod tests {
     }
 
     #[test]
+    fn test_is_prop_mutation_positive() {
+        assert!(VueRuleChecker::is_prop_mutation("props.chapter.title = 'New'"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.push('draft')"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.splice(0, 1)"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.pop()"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.shift()"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.unshift('x')"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.reverse()"));
+        assert!(VueRuleChecker::is_prop_mutation("props.tags.sort()"));
+        assert!(VueRuleChecker::is_prop_mutation("props.count += 1"));
+        assert!(VueRuleChecker::is_prop_mutation("props.count -= 1"));
+        assert!(VueRuleChecker::is_prop_mutation("doAction(); props.active = true"));
+        assert!(VueRuleChecker::is_prop_mutation("{ props.selected = id }"));
+        assert!(VueRuleChecker::is_prop_mutation("props.items[0].name = 'test'"));
+    }
+
+    #[test]
+    fn test_is_prop_mutation_negative() {
+        assert!(!VueRuleChecker::is_prop_mutation(""));
+        assert!(!VueRuleChecker::is_prop_mutation("// props.title = 'New'"));
+        assert!(!VueRuleChecker::is_prop_mutation("/* props.title = 'New' */"));
+        assert!(!VueRuleChecker::is_prop_mutation("* props.title = 'New'"));
+        assert!(!VueRuleChecker::is_prop_mutation("const { title } = props.panel;"));
+        assert!(!VueRuleChecker::is_prop_mutation("let x = props.value;"));
+        assert!(!VueRuleChecker::is_prop_mutation("var y = props.title;"));
+        assert!(!VueRuleChecker::is_prop_mutation("if (props.isValid) {"));
+        assert!(!VueRuleChecker::is_prop_mutation("if(props.isValid) {"));
+        assert!(!VueRuleChecker::is_prop_mutation("} = props.panel;"));
+        assert!(!VueRuleChecker::is_prop_mutation("} = useGlobalTimeViewer(() => props.projectName);"));
+        assert!(!VueRuleChecker::is_prop_mutation("return props.count;"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count === 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count == 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count != 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count <= 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("props.count >= 1"));
+        assert!(!VueRuleChecker::is_prop_mutation("const flag = props.val == 2;"));
+    }
+
+    #[test]
+    fn test_vue_rule_checker_multiline_destructuring_and_props_arg_no_vue008() {
+        let code = r#"
+            const {
+                isVisible,
+                minute
+            } = useGlobalTimeViewer(() => props.projectName);
+
+            const {
+                a,
+                b
+            } = props.panel;
+        "#;
+        let sfc = VueSfc {
+            script_setup: Some(code.into()),
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
+        assert!(violations.is_empty());
+    }
+
+    #[test]
     fn test_vue_rule_checker_exhaustive_match_tsmatch001() {
         let code = r#"
             switch (node.type) {
@@ -374,6 +492,60 @@ mod tests {
     }
 
     #[test]
+    fn test_vue_rule_checker_exhaustive_match_other_discriminants_and_throw() {
+        let kind_code = r#"
+            switch (item.kind) {
+                case 'a': return 1;
+                case 'b': return 2;
+                case 'c': return 3;
+            }
+        "#;
+        let sfc_kind = VueSfc {
+            script_setup: Some(kind_code.into()),
+            ..Default::default()
+        };
+        assert!(!VueRuleChecker::check(&sfc_kind, Path::new("src/Component.vue")).is_empty());
+
+        let status_code = r#"
+            switch (task.status) {
+                case 'pending': return 1;
+                case 'running': return 2;
+                case 'completed': return 3;
+            }
+        "#;
+        let sfc_status = VueSfc {
+            script_setup: Some(status_code.into()),
+            ..Default::default()
+        };
+        assert!(!VueRuleChecker::check(&sfc_status, Path::new("src/Component.vue")).is_empty());
+
+        let discriminant_code = r#"
+            switch (action.discriminant) {
+                case 'open': return 1;
+                case 'close': return 2;
+                case 'toggle': return 3;
+                default: throw new Error('Unhandled');
+            }
+        "#;
+        let sfc_throw = VueSfc {
+            script_setup: Some(discriminant_code.into()),
+            ..Default::default()
+        };
+        assert!(VueRuleChecker::check(&sfc_throw, Path::new("src/Component.vue")).is_empty());
+    }
+
+    #[test]
+    fn test_vue_rule_checker_store_aliasing() {
+        let code = "store.settings.state.enabled = false;";
+        let sfc = VueSfc {
+            script_setup: Some(code.into()),
+            ..Default::default()
+        };
+        let violations = VueRuleChecker::check(&sfc, Path::new("src/Component.vue"));
+        assert!(violations.iter().any(|v| v.rule_id == "TS-BORROW-001"));
+    }
+
+    #[test]
     fn test_vue_rule_checker_bloated_script_setup_vue001() {
         let temp = tempdir().unwrap();
         let comp_path = temp.path().join("MyComponent.vue");
@@ -389,6 +561,10 @@ mod tests {
         let violations = VueRuleChecker::check(&sfc, &comp_path);
         assert!(violations.iter().any(|v| v.rule_id == "VUE-001"));
         assert!(violations.iter().any(|v| v.rule_id == "VUE-002"));
+
+        // When component has no parent directory
+        let standalone_violations = VueRuleChecker::check(&sfc, Path::new("Component.vue"));
+        assert!(standalone_violations.iter().any(|v| v.rule_id == "VUE-002"));
 
         // Companion hook + clean glue code satisfies both VUE-001 and VUE-002
         std::fs::write(

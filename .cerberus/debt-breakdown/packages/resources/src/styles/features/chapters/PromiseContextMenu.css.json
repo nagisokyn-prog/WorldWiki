@@ -1,0 +1,49 @@
+{
+  "targetFile": "packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+  "totalViolations": 5,
+  "rulesDistribution": {
+    "CSS-004": 5
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "line": 154,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "da9eed3947299c3851f89f70c905106ef723e6a8072900afb5712fb5fc578da4"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "line": 206,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "19c5558343c3dae5a00336d0b6c6cbcb6bcb6d9f4e3ab17e30747981947b1094"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "line": 208,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "38c90d561b3f0051b21ba261422f8f2658e1ad8a9d8310ae52c3e19c6bd00cb1"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "line": 216,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "15d4c2cef995ea7e465018eb33dbd4b1bba0fb5a1ddd924149deb0cd6a7342c8"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "line": 218,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "f9754d08816647da1bad09edff2330b7c659834fbc507bf4eeef6e721bc799f5"
+    }
+  ]
+}

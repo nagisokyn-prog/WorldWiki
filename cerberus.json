@@ -17,7 +17,9 @@
     "__tests__/**",
     "**/tests/**",
     "**/test/",
-    "**/*test.ts"
+    "**/*test.ts",
+    "**/font-awesome.min.css",
+    "**/*assets/**"
   ],
   "extends": [
     "cerberus:rust-hexagonal",

@@ -1,0 +1,97 @@
+{
+  "targetFile": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
+  "totalViolations": 11,
+  "rulesDistribution": {
+    "CSS-004": 11
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 45,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 95,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 110,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 111,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 145,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 160,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 180,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "696d45d7f5359e13faeddf53622dbb5ea06dd4175f0755fd6baeee4e5e985b8d"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 198,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 200,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "696d45d7f5359e13faeddf53622dbb5ea06dd4175f0755fd6baeee4e5e985b8d"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 218,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "line": 256,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "ae17a466653669b67e189250c6da21078d4ca3acbda0e8a79e2d56b171e68142"
+    }
+  ]
+}

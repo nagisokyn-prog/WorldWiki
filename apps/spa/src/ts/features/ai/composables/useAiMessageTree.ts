@@ -216,12 +216,17 @@ export function useAiMessageTree(options: {
     }
   };
 
+  const updateEditDraft = (val: string) => {
+    editDraft.value = val;
+  };
+
   return {
     allMessages,
     messages: allMessages,
     hasError,
     editingMessageId,
     editDraft,
+    updateEditDraft,
     renderedMessages,
     loadMessages,
     deleteMessage,

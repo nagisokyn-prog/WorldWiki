@@ -15,7 +15,7 @@
   padding: 8px 12px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-input, 10px);
+  border-radius: var(--radius-input);
   min-height: 42px;
   cursor: text;
   transition: all 0.2s;
@@ -34,7 +34,7 @@
   padding: 2px 10px;
   background: var(--bg-selected);
   border: 1px solid var(--tag-color, var(--accent));
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-xs);
   animation: tagIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -72,7 +72,7 @@
   background: var(--dropdown-bg);
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-dropdown, 12px);
+  border-radius: var(--radius-dropdown);
   box-shadow: var(--shadow-dropdown);
 }
 
@@ -81,7 +81,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-xs);
   cursor: pointer;
 }
 
@@ -96,7 +96,7 @@
 .tag-color-dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--radius-round) ;
   background: var(--tag-dot-color, var(--accent));
 }
 
@@ -116,7 +116,7 @@
   color: var(--text-muted);
   padding: 2px 6px;
   background: var(--bg-sunken);
-  border-radius: 4px;
+  border-radius: var(--radius-xs) ;
   border: 1px solid var(--border-color);
 }
 

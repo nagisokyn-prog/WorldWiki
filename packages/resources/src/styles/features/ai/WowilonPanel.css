@@ -4,7 +4,7 @@
   right: 20px;
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-round) ;
   background: var(--accent);
   color: var(--accent-text);
   border: none;

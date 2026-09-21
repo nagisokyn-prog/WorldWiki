@@ -33,23 +33,19 @@
 </template>
 
 <script setup lang="ts">
-export interface AcademicItem {
-  id: string;
-  number?: string | number;
-  title: string;
-  level?: number;
-  [key: string]: unknown;
-}
+import type { InspectorItem } from '../AcademicInspector.model';
+
+export type AcademicItem = InspectorItem;
 
 defineProps<{
   sectionTitle: string;
   emptyMessage: string;
-  items: AcademicItem[];
+  items: InspectorItem[];
   formatNumber?: (num?: string | number) => string;
 }>();
 
 defineEmits<{
   (e: 'jump', id: string): void;
-  (e: 'insert', item: AcademicItem): void;
+  (e: 'insert', item: InspectorItem): void;
 }>();
 </script>

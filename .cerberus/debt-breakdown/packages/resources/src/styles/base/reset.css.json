@@ -1,0 +1,17 @@
+{
+  "targetFile": "packages/resources/src/styles/base/reset.css",
+  "totalViolations": 1,
+  "rulesDistribution": {
+    "CSS-006": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/base/reset.css",
+      "line": 12,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "f2f6c6b2626c88baa0f47ae5d97e580a6c373efcc4deff2f273060de5857137b"
+    }
+  ]
+}

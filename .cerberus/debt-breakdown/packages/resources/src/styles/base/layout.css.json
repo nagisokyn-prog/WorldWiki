@@ -1,0 +1,34 @@
+{
+  "targetFile": "packages/resources/src/styles/base/layout.css",
+  "totalViolations": 3,
+  "rulesDistribution": {
+    "CSS-004": 1,
+    "CSS-006": 2
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/base/layout.css",
+      "line": 49,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "3b60f7deb42ce2bca268581debeb1dc77f5a4c6d21d89f28be92b1a925ddbd52"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/base/layout.css",
+      "line": 70,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "7f54d16fee8f876b46ae27f718c6194ac4a71d0848671b90f44be45426475717"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/base/layout.css",
+      "line": 71,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "b99e10d824d98eaac007167c0de1713223fccd2c54ca73126eaecbdb126e819d"
+    }
+  ]
+}

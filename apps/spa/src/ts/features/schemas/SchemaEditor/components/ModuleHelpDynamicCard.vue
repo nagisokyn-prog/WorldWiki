@@ -89,19 +89,12 @@
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
 import { ManuscriptPointPicker } from '@/shared/ui';
-import type { SchemaField, DynamicContainer } from './ModuleHelpCards.model';
-
-export interface ModuleHelpExampleItem {
-  id: string;
-  fields?: SchemaField[];
-  dynamicContainers?: DynamicContainer[];
-  [key: string]: unknown;
-}
+import type { SchemaFieldDef, ModuleExample } from '../schemaReference.types';
 
 defineProps<{
-  example: ModuleHelpExampleItem;
-  isChapterField: (field: SchemaField) => boolean;
-  isEntityOrChapterSelect: (field: SchemaField) => boolean;
-  getSelectOptions: (field: SchemaField) => Array<{ value: string; label: string }>;
+  example: ModuleExample;
+  isChapterField: (field: SchemaFieldDef) => boolean;
+  isEntityOrChapterSelect: (field: SchemaFieldDef) => boolean;
+  getSelectOptions: (field: SchemaFieldDef) => Array<{ value: string; label: string }>;
 }>();
 </script>

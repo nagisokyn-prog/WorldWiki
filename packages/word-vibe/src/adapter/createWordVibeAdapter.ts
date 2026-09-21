@@ -1,4 +1,4 @@
-import { WordEditor } from '@raazkhnl/rk-editor-core';
+import type { WordEditor } from '@raazkhnl/rk-editor-core';
 import type { Editor } from '@tiptap/core';
 import type {
   WordDocumentDTO,
@@ -11,23 +11,18 @@ import type {
 import type { WordVibeAdapter, WordVibeOptions } from './WordVibeAdapter';
 import type { WordVibeEventMap } from './events';
 import {
-  attachPaginationPlus,
   updatePaginationLayout,
   updatePaginationText,
   readPageCount,
-  syncDocumentPageCount,
   type PaginationTextOptions,
 } from '../editor/rkPaginationBridge';
 import { GOST_MARGINS_MM, type PaginationGeometry } from '../editor/geometryHelper';
 import { normalizeWordContent } from '../editor/useRkWordEditor';
-import { SceneBreakExtension } from '../editor/extensions/SceneBreakExtension';
-import { EntityReferenceExtension } from '../editor/extensions/EntityReferenceExtension';
-import { CrossReferenceExtension } from '../editor/extensions/CrossReferenceExtension';
-import { UnsupportedBlockExtension } from '../editor/extensions/UnsupportedBlockExtension';
 import { semanticASTToV2Doc, type V2NodeJson } from '../converter/ASTToV2Converter';
 import { v2DocToSemanticAST } from '../converter/V2ToASTConverter';
 import { buildSelectionDTO, type WordEditorHost } from './createWordVibeSelection';
 import { executeWordVibeCommand } from './createWordVibeCommands';
+import { mountWordVibeEditor } from './createWordVibeMounter';
 
 export function createWordVibeAdapter(): WordVibeAdapter {
   type AnyListener = (payload?: unknown) => void;
@@ -114,138 +109,38 @@ export function createWordVibeAdapter(): WordVibeAdapter {
 
   const adapter: WordVibeAdapter = {
     mount(options: WordVibeOptions): void {
-      if (wordEditor) {
-        this.unmount();
-      }
-
-      if (options.initialLayout) {
-        currentLayout = {
-          pageSize: options.initialLayout.pageSize || currentLayout.pageSize,
-          orientation: options.initialLayout.orientation || currentLayout.orientation,
-          marginsMm: options.initialLayout.marginsMm || currentLayout.marginsMm,
-        };
-      }
-
-      if (options.initialHeaderFooter) {
-        currentHeaderFooter = {
-          ...currentHeaderFooter,
-          ...options.initialHeaderFooter,
-        };
-      }
-
-      let initialDocOrHtml: string | Record<string, unknown> = '<p></p>';
-      if (options.initialDocument) {
-        currentDocumentMeta = options.initialDocument.metadata;
-        currentProfileId = options.initialDocument.profileId;
-        currentDocId = options.initialDocument.id;
-        initialDocOrHtml = semanticASTToV2Doc(options.initialDocument);
-      } else if (options.initialContent) {
-        initialDocOrHtml = normalizeWordContent(options.initialContent) || '<p></p>';
-      }
-
-      wordEditor = new WordEditor({
-        element: options.host,
-        initialContent: initialDocOrHtml as string,
-        editable: options.editable !== false,
-        pageLayout: {
-          pageSize: toRkPageSize(currentLayout.pageSize),
-          orientation: currentLayout.orientation,
-          margins: {
-            top: `${currentLayout.marginsMm.top}mm`,
-            bottom: `${currentLayout.marginsMm.bottom}mm`,
-            left: `${currentLayout.marginsMm.left}mm`,
-            right: `${currentLayout.marginsMm.right}mm`,
-          },
+      const res = mountWordVibeEditor(
+        options,
+        {
+          get wordEditor() { return wordEditor; },
+          get activeTiptapEditor() { return activeTiptapEditor; },
+          get pageObserver() { return pageObserver; },
+          get ready() { return ready; },
+          set ready(val) { ready = val; },
+          get currentDocumentMeta() { return currentDocumentMeta; },
+          set currentDocumentMeta(val) { currentDocumentMeta = val; },
+          get currentProfileId() { return currentProfileId; },
+          set currentProfileId(val) { currentProfileId = val; },
+          get currentDocId() { return currentDocId; },
+          set currentDocId(val) { currentDocId = val; },
+          get currentLayout() { return currentLayout; },
+          set currentLayout(val) { currentLayout = val; },
+          get currentHeaderFooter() { return currentHeaderFooter; },
+          set currentHeaderFooter(val) { currentHeaderFooter = val; },
+          get currentStats() { return currentStats; },
+          set currentStats(val) { currentStats = val; },
+          toRkPageSize,
+          getPaginationGeometry,
+          getHeaderFooterHtml,
+          buildCurrentDocumentAST,
+          getSelectionDTO,
+          emit,
         },
-        onUpdate: (_json, rawEditor) => {
-          const html = rawEditor.getHTML();
-          const document = buildCurrentDocumentAST();
-          emit('change', { html, document });
-        },
-        onWordCount: (stats) => {
-          currentStats = {
-            pageCount: stats.pages || 1,
-            wordCount: stats.words || 0,
-            characterCount: stats.characters || 0,
-          };
-          emit('stats-change', { ...currentStats });
-        },
-        onSelectionChange: () => {
-          emit('selection-change', getSelectionDTO());
-        },
-        imageUploadHandler: options.imageUploadHandler || ((file: File) =>
-          new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result));
-            reader.onerror = () => reject(reader.error);
-            reader.readAsDataURL(file);
-          })),
-      });
-
-      activeTiptapEditor = (wordEditor as unknown as WordEditorHost).instance ?? null;
-
-      const paginated = attachPaginationPlus(wordEditor, {
-        geometry: getPaginationGeometry(),
-        text: getHeaderFooterHtml(),
-        extraExtensions: [
-          SceneBreakExtension,
-          EntityReferenceExtension,
-          CrossReferenceExtension,
-          UnsupportedBlockExtension,
-        ],
-        onUpdate: (updated) => {
-          const html = updated.getHTML();
-          const document = buildCurrentDocumentAST();
-          emit('change', { html, document });
-          const newPages = readPageCount(updated);
-          if (newPages !== currentStats.pageCount) {
-            currentStats.pageCount = newPages;
-            updatePaginationText(updated, getHeaderFooterHtml());
-          }
-          emit('stats-change', { ...currentStats });
-        },
-        onSelectionChange: () => {
-          emit('selection-change', getSelectionDTO());
-        },
-        onHeaderClick: () => emit('open-header-footer-dialog', { tab: 'header' }),
-        onFooterClick: () => emit('open-header-footer-dialog', { tab: 'footer' }),
-      });
-
-      if (paginated) {
-        activeTiptapEditor = paginated;
-      }
-
-      let syncScheduled = false;
-      const syncNow = () => {
-        syncScheduled = false;
-        const total = syncDocumentPageCount(activeTiptapEditor);
-        if (total !== currentStats.pageCount) {
-          currentStats.pageCount = total;
-          emit('stats-change', { ...currentStats });
-        }
-      };
-
-      if (typeof MutationObserver !== 'undefined' && options.host) {
-        pageObserver = new MutationObserver(() => {
-          if (!syncScheduled) {
-            syncScheduled = true;
-            requestAnimationFrame(syncNow);
-          }
-        });
-        pageObserver.observe(options.host, { childList: true, subtree: true });
-      }
-
-      setTimeout(syncNow, 50);
-      setTimeout(syncNow, 200);
-      setTimeout(syncNow, 500);
-      setTimeout(syncNow, 1200);
-
-      ready = true;
-      emit('mounted');
-      emit('ready');
-      emit('layout-change', { ...currentLayout });
-      emit('stats-change', { ...currentStats });
-      emit('selection-change', getSelectionDTO());
+        () => this.unmount()
+      );
+      wordEditor = res.wordEditor;
+      activeTiptapEditor = res.activeTiptapEditor;
+      pageObserver = res.pageObserver;
     },
 
     isReady(): boolean {

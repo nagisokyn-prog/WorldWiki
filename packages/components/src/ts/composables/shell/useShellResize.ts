@@ -1,4 +1,4 @@
-import type { Ref } from 'vue';
+import { type Ref, onUnmounted } from 'vue';
 import type { useEditorGroups } from '../useEditorGroups';
 import type { AppSettings } from '../../types/settings';
 
@@ -12,7 +12,12 @@ export interface ShellResizeDeps {
 }
 
 export function useShellResize(deps: ShellResizeDeps) {
+  let activeCleanup: (() => void) | null = null;
+
   const startResize = (e: MouseEvent) => {
+    if (activeCleanup) {
+      activeCleanup();
+    }
     const startY = e.clientY;
     const startH = deps.panelHeight.value;
     document.body.style.userSelect = 'none';
@@ -23,6 +28,12 @@ export function useShellResize(deps: ShellResizeDeps) {
       localStorage.setItem(`${deps.prefix}:panel-height`, String(deps.panelHeight.value));
     };
     const onUp = () => {
+      if (activeCleanup) {
+        activeCleanup();
+        activeCleanup = null;
+      }
+    };
+    activeCleanup = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
@@ -34,6 +45,9 @@ export function useShellResize(deps: ShellResizeDeps) {
   };
 
   const startSidebarResize = (e: MouseEvent) => {
+    if (activeCleanup) {
+      activeCleanup();
+    }
     const startX = e.clientX;
     const startW = deps.sidebarWidth.value;
     document.body.style.userSelect = 'none';
@@ -46,6 +60,12 @@ export function useShellResize(deps: ShellResizeDeps) {
       localStorage.setItem(`${deps.prefix}:sidebar-width`, String(deps.sidebarWidth.value));
     };
     const onUp = () => {
+      if (activeCleanup) {
+        activeCleanup();
+        activeCleanup = null;
+      }
+    };
+    activeCleanup = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
@@ -57,6 +77,9 @@ export function useShellResize(deps: ShellResizeDeps) {
   };
 
   const startGroupResize = (e: MouseEvent, groupIdx: number) => {
+    if (activeCleanup) {
+      activeCleanup();
+    }
     const container = (e.currentTarget as HTMLElement).closest('.editor-groups-container') as HTMLElement;
     if (!container) return;
     const totalW = container.getBoundingClientRect().width;
@@ -78,15 +101,28 @@ export function useShellResize(deps: ShellResizeDeps) {
       right.flexBasis = nr;
     };
     const onUp = () => {
+      if (activeCleanup) {
+        activeCleanup();
+        activeCleanup = null;
+      }
+      deps.saveState();
+    };
+    activeCleanup = () => {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      deps.saveState();
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
   };
+
+  onUnmounted(() => {
+    if (activeCleanup) {
+      activeCleanup();
+      activeCleanup = null;
+    }
+  });
 
   return {
     startResize,

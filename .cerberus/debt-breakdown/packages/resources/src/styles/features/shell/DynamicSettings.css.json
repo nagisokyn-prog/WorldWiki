@@ -1,0 +1,410 @@
+{
+  "targetFile": "packages/resources/src/styles/features/shell/DynamicSettings.css",
+  "totalViolations": 50,
+  "rulesDistribution": {
+    "CSS-006": 49,
+    "CSS-004": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 10,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "c5c3a5cb9e0431c785d6778b408eef7d7706af34d11a8c1b60d881b633bcfbcb"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 17,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "3376dcb338de229ae8356b3e81d6e3162d042b75c8c70f37b78bdc0da7ec30eb"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 23,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "b410a4f166217cfcf24383d3bb626b7a4b930998054f2ba52746cd20d3a7ec23"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 34,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "8276f425245290c8948cee59296ebd4a530e36d86d0f217a680a70684529dcc8"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 43,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "fd59c5bd87d335021722b2e695221ae765d855eee867b02c332dc3be721a04eb"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 43,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "30ba326d13af2017a9dadcb205a93d9aee61869a638372b5e1ca54fc80eb419f"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 44,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "463da686ceb76a86a48fde0b2832c9a366e67bf821e65dc02ae3bbdd125c0e55"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 52,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "eb907df86dbcff90c878e0531e6483c2b008efa2733a82da7267d2238c294df6"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 53,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "0ef1bb2e472aa36ac5fe8048b22f88d04d62ab2451f49c528a60597177206573"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 61,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "6bfd454fb30df2e84ab56725542536a14d41dd054ccdae7268d03e4972db226f"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 62,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e5d0986bca3230d2d81bc3cfda2d15451e74a282b0817ee6e37a1fede0504cae"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 70,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "eb907df86dbcff90c878e0531e6483c2b008efa2733a82da7267d2238c294df6"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 71,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "ea250ba1e011e6ed78e330af0987d23049e59f940e20636451e54c67cfd64e7d"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 79,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "66d68bd2d779c0d6b73e392753b7b617754546864b2624e45a9b0bd4bdde1003"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 86,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "dfdebe1e9d4ed5e944cc27ee7661a35d6c568b77d0a67d41c623df8ea9ac9b82"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 95,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "8557e4525e5730d3f4477d31a983103170a6374455d8eef6bc03df5146d3bb2e"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 102,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e3678aa1eb7a2dc12581a022ac950b6e3ff6f3782214c9bc59e35b15e865fda1"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 109,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "4c1856e93d5dcf42d5852fbb2f3c5c1c53e0eedce9bf06ba0b5473c00ade4d9b"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 118,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e72feb7a83ed1af91190c24d8b0104bb20b0cfa6b02bff051d1fbb1080b5c987"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 119,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "f05de452c9c06ebdaa1c605c8d7e040c3e71cbe734107c94ade178859ebe44f2"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 120,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "6a2350d32a973de0f7f79e68306e3e5ba90af1db54cf8be655c7b80234a175ce"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 128,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "995477a6076e128fdd8fd0dc6d53ffb27139ec0968696cc5d7db0fd2677b5681"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 134,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "fda98cde4b43846000ffad650fe2047632d0d5ad55f133206e05462e654a9e5f"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 135,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "57ea984058feeb05f1ed2dd85aa593a57cede862e22ba7626f2df4c482ce4f86"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 136,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "97a024c89c0329a3e6c59f8089c666b79855e8926797f40eff681d356476146d"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 137,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "155246c692fa1ee424532710dd39ccb9633f210ea35fd2d96e1df817fa66de6f"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 138,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "869d15aacddcd196108975f85dc3990f7827d0f0c64d3f9dd9e7479c44c0cbcc"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 143,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "a257bf9a3e54db3f7dfc8845f6d92b60fe892d742ab14c0eb23a513777cf1bd5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 144,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "9a19a51ee71774d8d48bd3ff21af1949bf321e7639724f34cd484aec5a5771fd"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 145,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e5c4845d79da78ad55e680279ce751736d4ba1a4889316e65b149cc332e7e045"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 146,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "d965105fc5e54498ab1398d9f0b97d897c2da2380c07b9ad9bd117dea7fa03d8"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 147,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "3376dcb338de229ae8356b3e81d6e3162d042b75c8c70f37b78bdc0da7ec30eb"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 152,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "a257bf9a3e54db3f7dfc8845f6d92b60fe892d742ab14c0eb23a513777cf1bd5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 153,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "5cb1eee514379e82ed26322dd679286c5835194b89eeaa423d18831187e57da5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 154,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e5c4845d79da78ad55e680279ce751736d4ba1a4889316e65b149cc332e7e045"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 155,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "6570cd9d2215cd8d560d850eaedd251e95af77bd07de9d5e69031b9e9adfffa5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 156,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "3376dcb338de229ae8356b3e81d6e3162d042b75c8c70f37b78bdc0da7ec30eb"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 161,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "af14c8986cc457f4d4fe461340663eec48a2f473b2cac059c23c714e093c9706"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 162,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "9a19a51ee71774d8d48bd3ff21af1949bf321e7639724f34cd484aec5a5771fd"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 163,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "46055666a3c218a61cec2f7c58170b057b5db76eef8e2915f116aa9a8d203633"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 164,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "d965105fc5e54498ab1398d9f0b97d897c2da2380c07b9ad9bd117dea7fa03d8"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 165,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "1a154a73bb82d58447b47860b4ed0fbda5990637a56bd8ddbe5dd9cbaaf4fd41"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 170,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "af14c8986cc457f4d4fe461340663eec48a2f473b2cac059c23c714e093c9706"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 171,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "5cb1eee514379e82ed26322dd679286c5835194b89eeaa423d18831187e57da5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 172,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "46055666a3c218a61cec2f7c58170b057b5db76eef8e2915f116aa9a8d203633"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 173,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "6570cd9d2215cd8d560d850eaedd251e95af77bd07de9d5e69031b9e9adfffa5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 174,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "1a154a73bb82d58447b47860b4ed0fbda5990637a56bd8ddbe5dd9cbaaf4fd41"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 185,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e6cdfb2d951c3d6c979e1db1d70313caa46d1a674e847bf1137351fc33cb92d4"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 186,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "ccb223df5614767d9b06f87a50c943f60d8c07cc8d332eb1882aa803e3429eb7"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "line": 187,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "7334a5c05df1a3bae905c77cc0c09fdc30d3020cfe36fee30322753edbd5b95f"
+    }
+  ]
+}

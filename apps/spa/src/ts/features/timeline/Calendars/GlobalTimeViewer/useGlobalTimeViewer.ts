@@ -79,12 +79,24 @@ export function useGlobalTimeViewer(projectNameInput?: string | Ref<string | und
     }
   });
 
+  const stepMinute = (delta: number) => {
+    minute.value += delta;
+  };
+
+  const setMinute = (val: number) => {
+    if (!Number.isNaN(val)) {
+      minute.value = val;
+    }
+  };
+
   return {
     isVisible,
     minute,
     localDates,
     loading,
     open,
-    close
+    close,
+    stepMinute,
+    setMinute
   };
 }

@@ -1,0 +1,89 @@
+{
+  "targetFile": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+  "totalViolations": 10,
+  "rulesDistribution": {
+    "CSS-004": 10
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 59,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "496a4e721ce9aee8ec8dc425a07c888e74a768d50cc7a41d17be00a8dc636809"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 151,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "978e171d51922bd080f753a01375cc8d35b2c5b03a5bd8e713438a46752c0fb0"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 215,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "d4ccc255246fd2bab3cb0b446f79e1e95667f08fa079b6335c459ac1ceb6184e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 262,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "5ad3155107a469f335280519d7d0771488702b48dd18cc5af7d664675224cc95"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 266,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "978e171d51922bd080f753a01375cc8d35b2c5b03a5bd8e713438a46752c0fb0"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 303,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "88a2de0c4e5247b87aa090be1b0bc622401733bab434921d4ab924fe76aa7aec"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 367,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "0cd823d72ba7d1b1d905254e4c92cee0ebbe964b692e493db350a87694c0741f"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 369,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "a3500ba918a769fc6d8d6671aacd91094222f60ea30009499cea4807e3b511d5"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 377,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "5ad3155107a469f335280519d7d0771488702b48dd18cc5af7d664675224cc95"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "line": 379,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "2f3182ffbfbc6bb301c35e81e619b37d03c591a1f03b8e0ecb5444d52dff4007"
+    }
+  ]
+}

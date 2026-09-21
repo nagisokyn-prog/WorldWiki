@@ -18,7 +18,7 @@
         @move-chat="updateChatParent"
         @rename-chat="renameChat"
         @delete-chats="deleteChats"
-        @toggle="toggleSidebar"
+        @toggle="onToggleSidebar"
       />
 
       <div class="wowilon-chat-area">
@@ -28,21 +28,22 @@
           :modes="modes"
           :active-mode-slug="activeModeSlug"
           :current-project="currentProject"
-          @change-mode="handleModeChange"
-          @toggle-sidebar="toggleSidebar"
-          @restart-session="cancelGeneration"
+          @change-mode="onChangeMode"
+          @toggle-sidebar="onToggleSidebar"
+          @restart-session="onCancelGeneration"
         />
         
         <AiMessageList 
-          ref="messagesListRef"
-          v-model:edit-draft="editDraft"
+          :ref="handleMessagesListRef"
           :messages="messages"
           :rendered-messages="renderedMessages"
           :active-chat-id="activeChatId"
           :chat-title="getChatTitle(activeChatId)"
           :editing-message-id="editingMessageId"
+          :edit-draft="editDraft"
           :render-markdown="renderMarkdown"
           :is-generating="isGenerating"
+          @update:edit-draft="updateEditDraft"
           @scroll="saveScroll"
           @switch-variant="switchVariant"
           @start-edit="startEdit"
@@ -66,7 +67,7 @@
         />
 
         <AiChatInputArea
-          ref="chatInputRef"
+          :ref="handleChatInputRef"
           :is-generating="isGenerating"
           :has-error="hasError"
           :selected-context="selectedContext"
@@ -76,15 +77,15 @@
           :is-web-search-enabled="isWebSearchEnabled"
           :active-quote="activeQuote"
           :skills="skills"
-          @cancel="cancelGeneration"
-          @retry="retryLastMessage"
-          @unload-models="unloadModels"
-          @context-selected="handleContextSelected"
-          @remove-context="removeContext"
-          @change-mode="handleModeChange"
-          @toggle-web-search="toggleWebSearch"
-          @clear-quote="handleClearQuote"
-          @submit="sendMessage"
+          @cancel="onCancelGeneration"
+          @retry="onRetryLastMessage"
+          @unload-models="onUnloadModels"
+          @context-selected="onContextSelected"
+          @remove-context="onRemoveContext"
+          @change-mode="onChangeMode"
+          @toggle-web-search="onToggleWebSearch"
+          @clear-quote="onClearQuote"
+          @submit="onSendMessage"
         />
       </div>
     </div>
@@ -105,6 +106,25 @@ import type { AiMainChatViewProps, AiMainChatViewEmits } from './AiMainChatView.
 const props = defineProps<AiMainChatViewProps>();
 const emit = defineEmits<AiMainChatViewEmits>();
 
+const handleMessagesListRef = (el: unknown) => {
+  props.panel.setMessagesListRef(el);
+};
+
+const handleChatInputRef = (el: unknown) => {
+  props.panel.setChatInputRef(el);
+};
+
+const onChangeMode = (mode: string) => props.panel.handleModeChange(mode);
+const onToggleSidebar = () => props.panel.toggleSidebar();
+const onToggleWebSearch = () => props.panel.toggleWebSearch();
+const onClearQuote = () => props.panel.handleClearQuote();
+const onSendMessage = (text: string) => props.panel.sendMessage(text);
+const onCancelGeneration = () => props.panel.cancelGeneration();
+const onRetryLastMessage = () => props.panel.retryLastMessage();
+const onUnloadModels = () => props.panel.unloadModels();
+const onContextSelected = (ctx: any) => props.panel.handleContextSelected(ctx);
+const onRemoveContext = (ctx: any) => props.panel.removeContext(ctx);
+
 const {
   showSidebar,
   selectedContext,
@@ -123,17 +143,11 @@ const {
   hasError,
   editingMessageId,
   editDraft,
-  messagesListRef,
-  chatInputRef,
+  updateEditDraft,
   activeQuote,
   isWebSearchEnabled,
-  toggleWebSearch,
   researchProgress,
-  handleClearQuote,
   handleAskSource,
-  handleModeChange,
-  toggleSidebar,
-  cancelGeneration,
   createNewChat,
   updateChatParent,
   renameChat,
@@ -147,15 +161,10 @@ const {
   cancelEdit,
   saveEdit,
   regenerateMessage,
-  retryLastMessage,
-  unloadModels,
   handleBranch,
   deleteMessage,
   handleToolApproval,
   handleToolRejection,
-  sendMessage,
-  handleContextSelected,
-  removeContext,
   closePanel,
   detachWindow
 } = props.panel;

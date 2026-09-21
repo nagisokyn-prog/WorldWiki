@@ -1,0 +1,90 @@
+{
+  "targetFile": "packages/resources/src/styles/components/BaseUI.css",
+  "totalViolations": 10,
+  "rulesDistribution": {
+    "CSS-004": 9,
+    "CSS-006": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 105,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "a49a280925214624c1421d753175cd69e328c242340d6701f782295d9c2a34a1"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 115,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "59ceab5f6015af9c50484c22f57e504414a48d42edb743a5a9a80d4f0750d723"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 299,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "969be45997d5d6660849d6fab2bd527cf8502bb77ee0062111a32b71b133a87e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 301,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "85600ca27bbe4143e47ce1c363e4bdadc33bb70143a642ae1bfd2de23e6ad718"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 305,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "437244400b409db6fca2ca1e783c3c19572f9ac7ae77b8a8a65950787422d1f0"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 307,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "19e5c502af6e3399261193c98104d3349ccfd2825810f010cb1e1da4bc0a0efe"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 311,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "59ceab5f6015af9c50484c22f57e504414a48d42edb743a5a9a80d4f0750d723"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 313,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "fc52f07c1d2a63434258fb8e031c5e9857b0e60443425a0e641501e2c316a304"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 382,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "58cd000d9161a8c4aca3dd40791c98bb50cc09b676239c5c7e7a3c5ce18db69f"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/BaseUI.css",
+      "line": 382,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "1c68f6062306e91f2be6954df60f447f25c79cabea8cf0661ecdbc6c5c4f7e9e"
+    }
+  ]
+}

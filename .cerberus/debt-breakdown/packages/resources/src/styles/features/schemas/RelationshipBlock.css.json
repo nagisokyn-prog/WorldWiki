@@ -1,0 +1,25 @@
+{
+  "targetFile": "packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+  "totalViolations": 2,
+  "rulesDistribution": {
+    "CSS-004": 2
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+      "line": 239,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "61906c7a2d358be242518e9c8edbd1d370edff237d186b0167b083d54864d313"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+      "line": 240,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "29fbcd15204170612cfff3c6499b3b855116e6ee4d885284202ea10a2ffd71b3"
+    }
+  ]
+}

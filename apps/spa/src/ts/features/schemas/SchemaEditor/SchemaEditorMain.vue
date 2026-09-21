@@ -1,24 +1,17 @@
 <template>
   <div class="schema-editor-main glass-theme">
     
-    <header class="schema-header">
-      <div class="flex items-center gap-6">
-        <div class="schema-header-title">
-          ⚙️ СХЕМА:
-          <input :value="localEntityType" class="input-base schema-header-input" placeholder="ИМЯ СХЕМЫ" @input="setLocalEntityType(($event.target as HTMLInputElement).value)" />
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button v-if="isHistoryPreviewMode" class="btn-new btn-warning-outline text-xs" @click="exitPreviewMode">Вернуться к текущей</button>
-        <button class="btn-new btn-danger-outline text-xs" @click="loadSchema(true)">Сбросить изменения</button>
-        <button class="btn-new btn-outline-new text-xs" @click="openPreview">ПРЕДПРОСМОТР</button>
-        <button class="btn-new btn-outline-new text-xs" @click="setShowJsonPreview(true)">Схема</button>
-        <button class="btn-new btn-primary text-xs" @click="saveSchema">Сохранить</button>
-        <button class="btn-new btn-outline-new p-1" title="История изменений" @click="toggleHistoryPanel">
-          <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="16" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 18m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M17 6m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"></path><path d="M7 8l0 8"></path><path d="M9 18h6a2 2 0 0 0 2 -2v-5"></path><path d="M14 14l3 -3l3 3"></path></svg>
-        </button>
-      </div>
-    </header>
+    <SchemaEditorToolbar
+      :local-entity-type="localEntityType"
+      :is-history-preview-mode="isHistoryPreviewMode"
+      @update:local-entity-type="setLocalEntityType"
+      @exit-preview="exitPreviewMode"
+      @reset-changes="loadSchema(true)"
+      @open-preview="openPreview"
+      @open-json="setShowJsonPreview(true)"
+      @save="saveSchema"
+      @toggle-history="toggleHistoryPanel"
+    />
 
     <div class="flex-1 flex overflow-hidden">
       <!-- ПРЕДПРОСМОТР -->
@@ -137,6 +130,7 @@
 <script setup lang="ts">
 import SchemaFieldEditor from './SchemaFieldEditor.vue';
 import SchemaContainer from './SchemaContainer.vue';
+import SchemaEditorToolbar from './components/SchemaEditorToolbar.vue';
 import SchemaCatalogSidebar from './components/SchemaCatalogSidebar.vue';
 import SchemaHistoryDrawer from './components/SchemaHistoryDrawer.vue';
 import { useSchemaEditorMain } from './useSchemaEditorMain';
@@ -178,27 +172,25 @@ const {
   dynamicTemplates,
   startResize,
   handleScroll,
-  openPreview,
-  loadSchema,
   saveSchema,
-  toggleHistoryPanel,
-  togglePin,
+  loadSchema,
   previewHistory,
   exitPreviewMode,
-  addNewPage,
-  deleteSection,
-  removeItem,
-  handleDragStartPalette,
-  handleItemDragStart,
-  handleDragOverCanvas,
-  handleDropNew,
-  handleItemDrop,
-  handleDropIntoModule,
-  setLocalEntityType,
+  togglePin,
+  toggleHistoryPanel,
+  openPreview,
   setShowJsonPreview,
   setIsPreviewMode,
-  isAtomicField
+  setLocalEntityType,
+  deleteSection,
+  addNewPage,
+  removeItem,
+  isAtomicField,
+  handleDragOverCanvas,
+  handleDropNew,
+  handleItemDragStart,
+  handleItemDrop,
+  handleDropIntoModule,
+  handleDragStartPalette
 } = hook;
 </script>
-
-<style scoped src="@worldwiki/resources/styles/features/schemas/SchemaEditorMain.css"></style>

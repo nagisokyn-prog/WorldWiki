@@ -1,0 +1,504 @@
+{
+  "generatedAt": "2026-09-21T07:00:11.500Z",
+  "totalViolations": 349,
+  "totalFiles": 60,
+  "files": [
+    {
+      "file": "packages/resources/src/styles/features/shell/DynamicSettings.css",
+      "count": 50,
+      "rules": {
+        "CSS-006": 49,
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\shell\\DynamicSettings.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/tokens/theme-dark.css",
+      "count": 32,
+      "rules": {
+        "CSS-004": 32
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\tokens\\theme-dark.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+      "count": 29,
+      "rules": {
+        "CSS-006": 24,
+        "CSS-004": 5
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\EditorCoreTiptap.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "count": 15,
+      "rules": {
+        "CSS-004": 14,
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiToolApproval.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/XboxWheel.css",
+      "count": 14,
+      "rules": {
+        "CSS-004": 1,
+        "CSS-006": 13
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\XboxWheel.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "count": 11,
+      "rules": {
+        "CSS-006": 9,
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\ChaptersMain.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/TimelinePanel.css",
+      "count": 11,
+      "rules": {
+        "CSS-004": 11
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\timeline\\TimelinePanel.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/Settings.css",
+      "count": 11,
+      "rules": {
+        "CSS-006": 11
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\Settings.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/BaseUI.css",
+      "count": 10,
+      "rules": {
+        "CSS-004": 9,
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\BaseUI.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromisesPanel.css",
+      "count": 10,
+      "rules": {
+        "CSS-004": 10
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\PromisesPanel.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+      "count": 9,
+      "rules": {
+        "CSS-004": 9
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiSettingsLocalTab.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/ProjectLauncher.css",
+      "count": 8,
+      "rules": {
+        "CSS-006": 2,
+        "CSS-004": 6
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\shell\\ProjectLauncher.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+      "count": 8,
+      "rules": {
+        "CSS-004": 8
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\timeline\\GlobalCalendarWidget.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+      "count": 7,
+      "rules": {
+        "CSS-004": 4,
+        "CSS-006": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\schemas\\SchemaEditorMain.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/EditorToolbar.css",
+      "count": 7,
+      "rules": {
+        "CSS-006": 7
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\EditorToolbar.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/app.css",
+      "count": 6,
+      "rules": {
+        "CSS-002": 1,
+        "CSS-004": 5
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\app.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/entities/EntityEditor.css",
+      "count": 6,
+      "rules": {
+        "CSS-006": 4,
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\entities\\EntityEditor.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/CloudSyncModal.css",
+      "count": 6,
+      "rules": {
+        "CSS-004": 5,
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\shell\\CloudSyncModal.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+      "count": 5,
+      "rules": {
+        "CSS-004": 5
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\PromiseContextMenu.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
+      "count": 5,
+      "rules": {
+        "CSS-006": 3,
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\schemas\\ModuleHelpPreview.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarPlayground.css",
+      "count": 5,
+      "rules": {
+        "CSS-006": 2,
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\timeline\\CalendarPlayground.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/tokens/theme-glass.css",
+      "count": 5,
+      "rules": {
+        "CSS-004": 5
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\tokens\\theme-glass.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/GlassComponents.css",
+      "count": 4,
+      "rules": {
+        "CSS-004": 3,
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\GlassComponents.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiHeader.css",
+      "count": 4,
+      "rules": {
+        "CSS-004": 4
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiHeader.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+      "count": 4,
+      "rules": {
+        "CSS-004": 4
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiSettingsPermissionsTab.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ChapterTree.css",
+      "count": 4,
+      "rules": {
+        "CSS-004": 4
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\ChapterTree.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/ExportModal.css",
+      "count": 4,
+      "rules": {
+        "CSS-004": 4
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\ExportModal.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/Splash.css",
+      "count": 4,
+      "rules": {
+        "CSS-004": 4
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\shell\\Splash.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/base/layout.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 1,
+        "CSS-006": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\base\\layout.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/CommandPalette.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\CommandPalette.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/EditorTabBar.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\EditorTabBar.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/QuickOpen.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\QuickOpen.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiActionButtons.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiApp.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiApp.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatTopBar.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiChatTopBar.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
+      "count": 3,
+      "rules": {
+        "CSS-004": 3
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\timeline\\GlobalTimeViewer.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/utilities/cards.css",
+      "count": 2,
+      "rules": {
+        "CSS-002": 1,
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\utilities\\cards.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/ThemeSwitcher.css",
+      "count": 2,
+      "rules": {
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\ThemeSwitcher.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatInput.css",
+      "count": 2,
+      "rules": {
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiChatInput.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "count": 2,
+      "rules": {
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiContextSelector.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/HardwareMonitorChart.css",
+      "count": 2,
+      "rules": {
+        "CSS-004": 1,
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\HardwareMonitorChart.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/PlanningPanel.css",
+      "count": 2,
+      "rules": {
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\PlanningPanel.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+      "count": 2,
+      "rules": {
+        "CSS-004": 2
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\schemas\\RelationshipBlock.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/fonts.css",
+      "count": 1,
+      "rules": {
+        "CSS-002": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\fonts.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/glass-animations.css",
+      "count": 1,
+      "rules": {
+        "CSS-002": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\glass-animations.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/utilities/flex.css",
+      "count": 1,
+      "rules": {
+        "CSS-002": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\utilities\\flex.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/utilities/position.css",
+      "count": 1,
+      "rules": {
+        "CSS-002": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\utilities\\position.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/utilities/text.css",
+      "count": 1,
+      "rules": {
+        "CSS-002": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\utilities\\text.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/HistorySidebar.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\HistorySidebar.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/TagsField.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\TagsField.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiChatHistory.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiChatHistory.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiMessageList.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiMessageList.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/AiSettingsView.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\AiSettingsView.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/chapters/WordRibbonBar.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\chapters\\WordRibbonBar.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/shell/EditorView.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\shell\\EditorView.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/CalendarCommon.css",
+      "count": 1,
+      "rules": {
+        "CSS-004": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\timeline\\CalendarCommon.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/base/reset.css",
+      "count": 1,
+      "rules": {
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\base\\reset.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/components/FloatingWindow.css",
+      "count": 1,
+      "rules": {
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\components\\FloatingWindow.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/ai/WowilonPanel.css",
+      "count": 1,
+      "rules": {
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\ai\\WowilonPanel.css.json"
+    },
+    {
+      "file": "packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+      "count": 1,
+      "rules": {
+        "CSS-006": 1
+      },
+      "jsonPath": ".cerberus\\debt-breakdown\\packages\\resources\\src\\styles\\features\\timeline\\TimeAtlasModal.css.json"
+    }
+  ]
+}

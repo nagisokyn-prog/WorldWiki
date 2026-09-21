@@ -3,14 +3,15 @@
  * @description Операции над сущностями: загрузка списков, создание, удаление, сохранение и синхронизация
  */
 
-import { ref, triggerRef, type Ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import type { useEditorGroups } from '@worldwiki/components';
-import * as api from '../../services/api.client';
 import { entityApi } from '../../services/Entity/entity.api';
 import type { Chapter } from '../../types/generated/Chapter';
 import type { useSchemaStore } from '../schema';
 import type { EditorTab } from './shell.types';
 import { executeSaveAll } from './shell.saveAll';
+import { useShellEntityCrud } from './shell.entityCrud';
+import { performUpdateData } from './shell.dataMerge';
 
 export interface EntityOpsDeps {
   projectName: Ref<string>;
@@ -53,68 +54,26 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
   };
 
   const handleUpdateData = (tabId: string, newData: Record<string, unknown>, fromLiveSync = false) => {
-    const tabsToUpdate = deps.eg.allTabs.value.filter((t) => t.id === tabId || t.rawId === tabId.replace('entities:', ''));
-    if (tabsToUpdate.length === 0) return;
-
-    const merge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
-      for (const key in source) {
-        if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-          if (!target[key] || typeof target[key] !== 'object') target[key] = {};
-          merge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
-        } else if (Array.isArray(source[key])) {
-          if (!Array.isArray(target[key])) target[key] = [];
-          const targetArr = target[key] as unknown[];
-          const sourceArr = source[key] as unknown[];
-          for (let i = 0; i < sourceArr.length; i++) {
-            if (i < targetArr.length) {
-              if (typeof sourceArr[i] === 'object' && sourceArr[i] !== null) {
-                merge(targetArr[i] as Record<string, unknown>, sourceArr[i] as Record<string, unknown>);
-              } else {
-                targetArr[i] = sourceArr[i];
-              }
-            } else {
-              targetArr.push(sourceArr[i]);
-            }
+    performUpdateData({
+      tabId,
+      newData,
+      fromLiveSync,
+      allTabs: deps.eg.allTabs.value as EditorTab[],
+      getEntityDisplayName: deps.schema.getEntityDisplayName,
+      isLiveSyncing,
+      onEmitLiveSync: (type, id, data) => {
+        if (liveSyncTimer) clearTimeout(liveSyncTimer);
+        liveSyncTimer = setTimeout(async () => {
+          try {
+            console.log('[LiveSync] Emitting ww-entity-live-sync from shell', { type, id });
+            const { emit } = await import('@tauri-apps/api/event');
+            await emit('ww-entity-live-sync', { type, id, data });
+          } catch (e) {
+            console.error('[LiveSync] Error emitting from shell', e);
           }
-          targetArr.length = sourceArr.length;
-        } else {
-          target[key] = source[key];
-        }
+        }, 150);
       }
-    };
-
-    let updatedEntityType: string | null = null;
-    let updatedRawId: string | null = null;
-
-    for (const tab of tabsToUpdate) {
-      const { __foreignUpdates, ...dataToMerge } = newData as Record<string, unknown> & { __foreignUpdates?: Record<string, unknown> };
-      const oldTitle = tab.title;
-      merge(tab.data, dataToMerge);
-      if (__foreignUpdates && Object.keys(__foreignUpdates).length > 0) {
-        (tab as EditorTab)._foreignUpdates = __foreignUpdates;
-      }
-
-      const newTitle = deps.schema.getEntityDisplayName(tab.data as Record<string, unknown>, tab.entityType);
-      if (newTitle && newTitle !== oldTitle) {
-        tab.title = newTitle;
-      }
-
-      updatedEntityType = tab.entityType;
-      updatedRawId = tab.rawId;
-    }
-
-    if (!fromLiveSync && !isLiveSyncing && updatedEntityType && updatedRawId) {
-      if (liveSyncTimer) clearTimeout(liveSyncTimer);
-      liveSyncTimer = setTimeout(async () => {
-        try {
-          console.log('[LiveSync] Emitting ww-entity-live-sync from shell', { type: updatedEntityType, id: updatedRawId });
-          const { emit } = await import('@tauri-apps/api/event');
-          await emit('ww-entity-live-sync', { type: updatedEntityType, id: updatedRawId, data: newData });
-        } catch (e) {
-          console.error('[LiveSync] Error emitting from shell', e);
-        }
-      }, 150);
-    }
+    });
   };
 
   const saveAll = async () => {
@@ -131,132 +90,25 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
     });
   };
 
-  const deleteEntity = async (tabId: string, entityType: string, silent = false) => {
-    if (!silent) {
-      const { appConfirm } = await import('@worldwiki/components');
-      const confirmed = await appConfirm('Вы уверены, что хотите безвозвратно удалить эту запись?', 'Удаление записи');
-      if (!confirmed) return;
-    }
-    const colonIdx = tabId.indexOf(':');
-    const rawId = colonIdx > -1 ? tabId.slice(colonIdx + 1) : tabId;
-
-    try {
-      await api.deleteEntity(rawId);
-      await deps.closeEditor(tabId, true);
-      if (deps.activeTreeNode.value && deps.activeTreeNode.value.type === entityType && deps.activeTreeNode.value.node.id === rawId) {
-        deps.activeTreeNode.value = null;
-      }
-      if (deps.currentSidebarTab.value) await loadEntityList(deps.currentSidebarTab.value);
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-      deps.addToast('Запись удалена', 'warn');
-    } catch (e) {
-      console.error(`[deleteEntity] ERROR:`, e);
-      deps.addLog(`Entity -> Delete error: ${e}`, 'error');
-      const { appAlert } = await import('@worldwiki/components');
-      appAlert(`Ошибка при удалении сущности: ${e}`);
-    }
-  };
-
-  const renameEntity = async (entityType: string, idToUpdate: string, newName: string) => {
-    try {
-      const detail = await entityApi.getEntity(deps.projectName.value, entityType, idToUpdate) as Record<string, unknown> | null;
-      const sch = await deps.schema.loadSchema(entityType);
-      const schemaTitleField = sch?.titleField || (sch?.sections?.[0]?.fields as Array<{ isTitle?: boolean; path?: string }> | undefined)?.find((f: { isTitle?: boolean; path?: string }) => f.isTitle)?.path;
-      const titleField = schemaTitleField || (detail ? (Object.keys(detail).find((k) => k.toLowerCase() === 'name') || Object.keys(detail)[0]) : 'name');
-
-      if (titleField && detail) {
-        detail[titleField] = newName;
-        await entityApi.saveEntity(deps.projectName.value, entityType, detail, idToUpdate, newName);
-
-        const actualTabId = deps.eg.findTabGlobal(idToUpdate) ? idToUpdate : null;
-        if (actualTabId) {
-          deps.eg.updateTabData(actualTabId, { title: newName });
-          handleUpdateData(actualTabId, { [titleField]: newName });
-        }
-
-        if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-        if (deps.currentSidebarTab.value === entityType) await loadEntityList(entityType);
-
-        document.dispatchEvent(new CustomEvent('ww:entity-renamed', {
-          detail: { id: idToUpdate, type: entityType, name: newName }
-        }));
-      }
-    } catch (e) {
-      console.error('[renameEntity] Error:', e);
-      deps.addLog(`Error renaming entity: ${e}`, 'error');
-    }
-  };
-
-  const addNewEntity = async (entityType: string, preDefinedName?: string) => {
-    if (!entityType || isCreatingEntity.value) return;
-    isCreatingEntity.value = true;
-    try {
-      if (entityType === 'chapters') {
-        const newChapterTitle = preDefinedName || prompt('Введите название новой главы:', 'Новая глава');
-        if (newChapterTitle === null) return;
-        const newChapter: Chapter = {
-          id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          project_id: `projects:${deps.projectName.value}`,
-          title: newChapterTitle || 'Новая глава',
-          content: '# Начните писать\n\n',
-          summary: undefined,
-          word_count: 0 as unknown as bigint,
-          embeddings: {},
-          footnotes: {},
-          timeline_events: [],
-          participants: [],
-          volume_id: null,
-        } as unknown as Chapter;
-        await api.saveChapter(deps.projectName.value, newChapter);
-        deps.addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
-        deps.addToast(`Глава "${newChapter.title}" создана`, 'success');
-        deps.chapters.value.push(newChapter);
-        triggerRef(deps.chapters);
-        if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-        deps.openChapterTab(newChapter);
-        return;
-      }
-
-      const sch = await deps.schema.loadSchema(entityType);
-      const titleFieldPath: string = sch?.titleField || sch?.sections?.[0]?.fields?.[0]?.path || 'name';
-      const initialData: Record<string, unknown> = {};
-      const nameToSet = preDefinedName || prompt(`Введите название для нового элемента:`, 'Без названия');
-      if (nameToSet === null) return;
-      if (nameToSet) {
-        const parts = titleFieldPath.split('.');
-        let current = initialData;
-        for (let i = 0; i < parts.length - 1; i++) {
-          current[parts[i]] = {};
-          current = current[parts[i]] as Record<string, unknown>;
-        }
-        current[parts[parts.length - 1]] = nameToSet;
-      }
-
-      const saveResult = await entityApi.saveEntity(deps.projectName.value, entityType, initialData, undefined, nameToSet);
-      const newEntityId = saveResult.id;
-      if (!newEntityId) {
-        deps.addLog(`Entity -> Error: не удалось сохранить сущность`, 'error');
-        return;
-      }
-
-      const newEntity = await entityApi.getEntity(deps.projectName.value, entityType, newEntityId as string);
-      if (!newEntity) {
-        deps.addLog(`Entity -> Error: не удалось загрузить только что созданную сущность`, 'error');
-        return;
-      }
-
-      deps.addLog(`Entity -> Created`, 'success');
-      await loadEntityList(entityType);
-      if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();
-
-      const entityToOpen = { ...(newEntity as Record<string, unknown>), entityType };
-      deps.openEntity(entityToOpen);
-    } catch (e) {
-      deps.addLog(`Entity -> Error: ${e}`, 'error');
-    } finally {
-      isCreatingEntity.value = false;
-    }
-  };
+  const crud = useShellEntityCrud(
+    {
+      projectName: deps.projectName,
+      eg: deps.eg,
+      schema: deps.schema,
+      activeTreeNode: deps.activeTreeNode,
+      currentSidebarTab: deps.currentSidebarTab,
+      chapterTreeRef: deps.chapterTreeRef,
+      chapters: deps.chapters,
+      addLog: deps.addLog,
+      addToast: deps.addToast,
+      closeEditor: deps.closeEditor,
+      openEntity: deps.openEntity,
+      openChapterTab: deps.openChapterTab,
+      loadEntityList,
+      handleUpdateData
+    },
+    isCreatingEntity
+  );
 
   const setIsLiveSyncing = (val: boolean) => {
     isLiveSyncing = val;
@@ -269,9 +121,9 @@ export function useShellEntityOps(deps: EntityOpsDeps) {
     toggleEntityHistory,
     handleUpdateData,
     saveAll,
-    deleteEntity,
-    renameEntity,
-    addNewEntity,
+    deleteEntity: crud.deleteEntity,
+    renameEntity: crud.renameEntity,
+    addNewEntity: crud.addNewEntity,
     setIsLiveSyncing
   };
 }

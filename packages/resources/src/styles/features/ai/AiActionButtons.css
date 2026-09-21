@@ -15,7 +15,7 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 6px 12px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;

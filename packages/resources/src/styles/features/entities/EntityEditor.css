@@ -34,7 +34,7 @@
 .dynamic-container-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-card, 12px);
+  border-radius: var(--radius-card);
   padding: 16px 20px;
   margin-bottom: 20px;
   backdrop-filter: blur(var(--glass-blur, 0px));
@@ -227,7 +227,7 @@
   right: 8px;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--radius-round) ;
   background: var(--error);
   border: none;
   color: var(--accent-text);

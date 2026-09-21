@@ -1,0 +1,17 @@
+{
+  "targetFile": "packages/resources/src/styles/components/FloatingWindow.css",
+  "totalViolations": 1,
+  "rulesDistribution": {
+    "CSS-006": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/FloatingWindow.css",
+      "line": 16,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "bdf8ea1ec7a73837a6fde62a53a94c1fc23df365074150df8eeb0c4b04dc6960"
+    }
+  ]
+}

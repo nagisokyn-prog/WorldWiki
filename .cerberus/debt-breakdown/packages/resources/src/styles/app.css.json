@@ -1,0 +1,58 @@
+{
+  "targetFile": "packages/resources/src/styles/app.css",
+  "totalViolations": 6,
+  "rulesDistribution": {
+    "CSS-002": 1,
+    "CSS-004": 5
+  },
+  "violations": [
+    {
+      "rule": "CSS-002",
+      "file": "./packages/resources/src/styles/app.css",
+      "line": 1,
+      "symbol": "stylesheet_taxonomy",
+      "message": "Orphan or misplaced stylesheet outside standard design taxonomy.",
+      "fingerprint": "acc6df7ae52ea866a482849796272819f181b8750824e6b412c16a6bf5235401"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/app.css",
+      "line": 422,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c9e06d97499fd89d60ef7b0fd90bee3052a895689d411a831e11c328be50dd7b"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/app.css",
+      "line": 485,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "97077deaf1f117d5349a1014b35dc53861f171442077268466aa3d76df803006"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/app.css",
+      "line": 513,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c9e06d97499fd89d60ef7b0fd90bee3052a895689d411a831e11c328be50dd7b"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/app.css",
+      "line": 559,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "fb9d99a27305011499bba97285435ac6ad74632aaabbdf42868ee3fd34dae41d"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/app.css",
+      "line": 564,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "cfbc4bf012331689997914f7f55a31678156ea3dfd9b709f642d014b5f779753"
+    }
+  ]
+}

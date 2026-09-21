@@ -7,7 +7,7 @@
 .item-row {
   background: var(--bg-sunken);
   padding: 6px 10px;
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-xs);
 }
 
 .glass-label {

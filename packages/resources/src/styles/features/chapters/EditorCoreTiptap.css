@@ -43,7 +43,7 @@
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  border-radius: var(--radius-card, 8px);
+  border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   color: var(--text-main);
@@ -76,7 +76,7 @@
   background: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   padding: 16px;
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-base, 14px);
@@ -95,7 +95,7 @@
   height: 100%;
   display: flex;
   overflow: hidden;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   min-height: 0;
@@ -215,7 +215,7 @@
   color: var(--info) !important;
   text-decoration-color: var(--info);
   padding: 0 3px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs) ;
 }
 
 .ProseMirror a[href^="http://"]::after,
@@ -244,7 +244,7 @@
   text-decoration: none !important;
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.25);
-  border-radius: 3px;
+  border-radius: var(--radius-xs) ;
   padding: 0 4px;
   margin: 0 1px;
 }
@@ -539,5 +539,5 @@
 
 .promise-highlight-target {
   animation: promisePulse 2.2s ease-out forwards;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
 }

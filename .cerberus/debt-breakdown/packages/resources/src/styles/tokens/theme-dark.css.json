@@ -1,0 +1,265 @@
+{
+  "targetFile": "packages/resources/src/styles/tokens/theme-dark.css",
+  "totalViolations": 32,
+  "rulesDistribution": {
+    "CSS-004": 32
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 5,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "48e7a2d2d4c4d00d0d16dfa899e7d998512522ab7e6cae8c86f17d7d680f3400"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 6,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "87780e71d19bb2213b6bb7197aec0a3ccd0b9ce1793f871e67a1e6339147c62b"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 7,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "cf7583ee95f7f65f99f2d1af02d45abe5c21d0463833fdf5746f78dcb9ceaaeb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 8,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "dd67303c591d3195a9b7d9e5bef8745b227e3bd131f6cd7319e6fee38abcc496"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 9,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "18d8f28593be3b89b62284e8d35b404f7779c3f1047604c2c3fb8d54d60ec506"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 10,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "d5a609b2ede8999105d2b6454945c3db4642a44e4688b87c6058b358f8274ae7"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 11,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "bf04c9f2b76ddbc8d2edc7712914f7fb772a2dca9ccd2c073e17cae9b6b89608"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 12,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "a9e403790b561bdaee3f0e5cdf6118590ae9e9cc2c0ad71fbc8db1c38a366b1c"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 13,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "5637451c53ff1a9a935a52d6babcfd186124f201821bea0277bcae371f6637a4"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 14,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "0a5c38dcb4e68f46ab059887336f6e0a16f1f91135936428fc6e399537a7d973"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 17,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "06d7b9d4321d86a4d61192c8c948d2479673b6c0a8317c793f60612e2e1c8813"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 18,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "cad015315f69f24f9b3c56e780ca601683841d1d03f7c821bc3ab691ddd09ff0"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 19,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "c1aa6528ecd61bd3b27d383ed63ab8d396f274461aebcc4081e1def14f3f5318"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 20,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "a151cc2c67e723f494681ba5b7db439ab209a1a2348f08c211c2176362a46899"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 21,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "c2efb4e5b72a890a3159ddb58462f7f7aab345ae2a168af94458ffe4324cd11f"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 26,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "e9f480f349d4cc6228c7a941a1dcea624b3d128016bfb2abbbff214e8bc619c2"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 27,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "9491b324afcdcd292682382adca0bb300ee4ceef861b349bc6fe42b687e53536"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 28,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "c2835a682ce1faec23ee5bef899953c575af71ace6f0303284cec9e9e5c49fbb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 29,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "b002309e52093a4e919432d133fbb28dea5be7867b07c4dd205266daf6c0672a"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 30,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "3b49d930a2e6ce8bbe91bf83de67f1a52897993d7a7d4952da33bbcb0db38d5f"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 31,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "f6adda68968d595bb3b60bc4415e6d559882a8f7920feba1415dc33fad7efa94"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 34,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "6749a0c69dcc481798881cdc096ffec555d37a23468fba95c73bc37f918bd1bb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 35,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "a7ed4f99d8d60c5c78f423564efb39b3063e3212ca6064a2d17982617e3915a4"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 36,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "e44b818a258fe5f1a014abc125901d80616af8a3a2821b7605324f23be358790"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 37,
+      "symbol": "color_hex",
+      "message": "Hardcoded hex color found in stylesheet.",
+      "fingerprint": "28a67c766887ebe9ff888d0b664885cd23944e666ccb1ceb835f2332df40efdb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 40,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "e1347d310f6b4791f5683f2e85e0838a42e721b97653675219db4e524a4e85bb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 41,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "c60f3a255beea1b5d03a9470d984caa0826ba7b8ffcc6fee5cdb391e85cda9af"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 42,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "baaa73546676c96af4285a1eed917f3cfe088a78e2dedd55b7247eed80b470bb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 43,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "94fc31794d18a9b03a61dc7379cd46ed9df5a59f259e9274bcdefb3f948d00b5"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 44,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "c7aeeb4295e0e8322e6356d1ecd8856558d20b845af7aa23f3b37e051cf28088"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 45,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "6304d5887783cf125e1f39b2e9baead5bd698605cbcb096113f467f8a0795c01"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+      "line": 46,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "ce956296c1323afa0c6847b21f401aba58266502b5e3b3fe00fdbfb0113d1486"
+    }
+  ]
+}

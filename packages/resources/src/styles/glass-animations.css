@@ -61,7 +61,7 @@ input[type="range"].interactive-el:active {
 
 .ripple {
     position: absolute;
-    border-radius: 50%;
+    border-radius: var(--radius-round) ;
     background: var(--bg-hover);
     transform: scale(0);
     animation: rippleEffect 0.6s linear;

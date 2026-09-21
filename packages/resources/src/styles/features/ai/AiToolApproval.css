@@ -1,7 +1,7 @@
 .tool-approval-card {
   background: var(--bg-panel);
   border: 1px solid var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius-sm) ;
   overflow: hidden;
   margin: 10px 0;
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
@@ -33,7 +33,7 @@
   font-family: monospace;
   background: var(--bg-surface);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs) ;
   font-size: 12px;
   color: var(--accent);
   border: 1px solid var(--border-color);
@@ -48,7 +48,7 @@
 
 .args-viewer {
   background: var(--bg-input);
-  border-radius: 6px;
+  border-radius: var(--radius-xs) ;
   border: 1px solid var(--border-color);
   overflow: hidden;
 }
@@ -84,7 +84,7 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs) ;
   font-size: 13px;
 }
 
@@ -101,7 +101,7 @@
 
 .buttons-row button {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs) ;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -133,7 +133,7 @@
 
 .response-status {
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs) ;
   font-size: 13px;
   font-weight: 500;
   display: flex;

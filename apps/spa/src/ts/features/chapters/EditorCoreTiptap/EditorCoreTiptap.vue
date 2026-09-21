@@ -92,37 +92,24 @@
       :editor-mode="editorMode"
     />
 
-    <!-- Quick Entity Selector -->
-    <EntityLinkSelector
+    <!-- Editor Modals & Overlays -->
+    <EditorModals
       :project="project"
-      :is-open="isEntitySelectorOpen"
-      @close="isEntitySelectorOpen = false"
-      @insert="handleEntityInsert"
-    />
-
-    <!-- Promise Context Menu -->
-    <PromiseContextMenu
-      :is-open="isPromiseMenuOpen"
-      :position="promiseMenuPos"
+      :is-entity-selector-open="isEntitySelectorOpen"
+      :is-promise-menu-open="isPromiseMenuOpen"
+      :promise-menu-pos="promiseMenuPos"
       :existing-promises="existingPromises"
-      @close="isPromiseMenuOpen = false"
-      @select="handlePromiseSelect"
+      :is-export-modal-open="isExportModalOpen"
+      :current-semantic-document="currentSemanticDocument"
+      :is-paragraph-modal-open="isParagraphModalOpen"
+      @close-entity-selector="isEntitySelectorOpen = false"
+      @insert-entity="handleEntityInsert"
+      @close-promise-menu="isPromiseMenuOpen = false"
+      @select-promise="handlePromiseSelect"
       @link-milestone="handleMilestoneSelect"
-    />
-
-    <!-- Document Export Modal -->
-    <DocumentExportModal
-      :is-open="isExportModalOpen"
-      :document="currentSemanticDocument"
-      :project-name="project"
-      @close="isExportModalOpen = false"
-    />
-
-    <!-- Paragraph Format Modal -->
-    <ParagraphFormatModal
-      :is-open="isParagraphModalOpen"
-      @close="isParagraphModalOpen = false"
-      @apply="handleParagraphFormatApply"
+      @close-export-modal="isExportModalOpen = false"
+      @close-paragraph-modal="isParagraphModalOpen = false"
+      @apply-paragraph-format="handleParagraphFormatApply"
     />
   </div>
 </template>
@@ -132,10 +119,8 @@ import { EditorContent } from '@tiptap/vue-3';
 import EditorToolbar from './EditorToolbar.vue';
 import EditorSplitView from './components/EditorSplitView.vue';
 import EditorStatusBar from './components/EditorStatusBar.vue';
-import { WordVibeEditor, ParagraphFormatModal } from '@worldwiki/word-vibe';
-import EntityLinkSelector from './EntityLinkSelector.vue';
-import PromiseContextMenu from './PromiseContextMenu.vue';
-import { DocumentExportModal } from '../../documents';
+import EditorModals from './components/EditorModals.vue';
+import { WordVibeEditor } from '@worldwiki/word-vibe';
 import { useEditorCoreTiptap } from './useEditorCoreTiptap';
 import type { EditorCoreTiptapProps, EditorCoreTiptapEmits } from './EditorCoreTiptap.model';
 
@@ -178,37 +163,35 @@ const {
   insertTable,
   clearFormatting,
   switchEditorMode,
-  toggleLinkLock,
-  analyzeText,
   handleScroll,
-  scrollToBlock,
-  cycleGlobalTag,
+  handleContextMenu,
   startResizeLeft,
   startResizeRight,
-  isExportModalOpen,
+  scrollToBlock,
+  cycleGlobalTag,
+  currentSemanticDocument,
+  isCurrentPageLandscape,
+  currentPageSize,
   isEntitySelectorOpen,
   isPromiseMenuOpen,
   promiseMenuPos,
-  markdownTextareaRef,
+  isExportModalOpen,
   isParagraphModalOpen,
-  isCurrentPageLandscape,
-  currentPageSize,
-  currentSemanticDocument,
-  onWordDocumentUpdate,
-  onWordContentUpdate,
-  onWordChange,
-  handleContextMenu,
+  openExportModal,
+  handleEntityInsert,
   handlePromiseSelect,
   handleMilestoneSelect,
-  scrollToParagraph,
-  handleEntityInsert,
-  openExportModal,
-  handleParagraphFormatApply
+  handleParagraphFormatApply,
+  onWordContentUpdate,
+  onWordDocumentUpdate,
+  onWordChange,
+  toggleLinkLock,
+  analyzeText,
+  markdownTextareaRef
 } = useEditorCoreTiptap(props, emit);
 
 defineExpose({
-  scrollToParagraph
+  getEditor: () => editor.value,
+  insertEntity: handleEntityInsert
 });
 </script>
-
-<style src="@worldwiki/resources/styles/features/chapters/EditorCoreTiptap.css"></style>

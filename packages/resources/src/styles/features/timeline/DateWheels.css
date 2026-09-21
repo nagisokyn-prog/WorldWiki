@@ -4,7 +4,7 @@
     align-items: center;
     background: var(--bg-card);
     padding: 4px;
-    border-radius: var(--radius-card, 12px);
+    border-radius: var(--radius-card);
     border: 1px solid var(--border-color);
 }
 .date-wheel-group {
@@ -43,7 +43,7 @@
 .input-base {
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-input, 8px);
+    border-radius: var(--radius-input);
     color: var(--text-main);
     outline: none;
     transition: all 0.2s ease;

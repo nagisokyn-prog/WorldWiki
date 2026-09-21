@@ -1,6 +1,6 @@
 import { ref, computed, type ComputedRef, type Ref } from 'vue';
 import { CalendarMath } from '../../../../services/Calendars/calendar.math';
-import type { CalendarData, CalendarDate } from '../../../../services/Calendars/calendar.types';
+import type { CalendarData, CalendarDate, MoonPhaseResult } from '../../../../services/Calendars/calendar.types';
 
 export function useTimeAtlasMatrix(
   getCalendarById: (id: string) => CalendarData | null,
@@ -9,6 +9,7 @@ export function useTimeAtlasMatrix(
   getDateMeta: (cal: CalendarData, date: CalendarDate['original_input']) => {
     season: string;
     holiday: string | null;
+    moons: MoonPhaseResult[];
   }
 ) {
   const matrixBaseCalId = ref<string>('');

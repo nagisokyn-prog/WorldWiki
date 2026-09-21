@@ -1,4 +1,4 @@
-import { ref } from 'vue';
+import { ref, onUnmounted } from 'vue';
 
 export function useCalendarResize() {
     const calendarHeight = ref(
@@ -7,7 +7,12 @@ export function useCalendarResize() {
             : 170
     );
 
+    let cleanupResize: (() => void) | null = null;
+
     const startResizeCalendar = (e: MouseEvent) => {
+        if (cleanupResize) {
+            cleanupResize();
+        }
         e.preventDefault();
         const startY = e.clientY;
         const startHeight = calendarHeight.value;
@@ -22,6 +27,13 @@ export function useCalendarResize() {
             if (typeof localStorage !== 'undefined') {
                 localStorage.setItem('worldwiki-calendar-widget-height', String(calendarHeight.value));
             }
+            if (cleanupResize) {
+                cleanupResize();
+                cleanupResize = null;
+            }
+        };
+
+        cleanupResize = () => {
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
         };
@@ -29,6 +41,13 @@ export function useCalendarResize() {
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
     };
+
+    onUnmounted(() => {
+        if (cleanupResize) {
+            cleanupResize();
+            cleanupResize = null;
+        }
+    });
 
     return {
         calendarHeight,

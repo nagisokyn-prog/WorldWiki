@@ -1,4 +1,4 @@
-import { ref, watch } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import type { Ref } from 'vue';
 
@@ -14,6 +14,8 @@ export function useAiPanelLayout(options: {
   const isSettingsOpen = ref(localStorage.getItem('worldwiki_ai_settings_open') === 'true');
   const isToolInspectorOpen = ref(false);
 
+  let cleanupResize: (() => void) | null = null;
+
   watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_width', String(w)));
   watch(showSidebar, (v) => localStorage.setItem('worldwiki_ai_show_sidebar', String(v)));
   watch(isSettingsOpen, (v) => {
@@ -28,6 +30,9 @@ export function useAiPanelLayout(options: {
   };
 
   const startResize = (e: MouseEvent) => {
+    if (cleanupResize) {
+      cleanupResize();
+    }
     const startX = e.clientX;
     const startWidth = panelWidth.value;
 
@@ -38,6 +43,13 @@ export function useAiPanelLayout(options: {
     };
 
     const onMouseUp = () => {
+      if (cleanupResize) {
+        cleanupResize();
+        cleanupResize = null;
+      }
+    };
+
+    cleanupResize = () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
@@ -45,6 +57,13 @@ export function useAiPanelLayout(options: {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   };
+
+  onUnmounted(() => {
+    if (cleanupResize) {
+      cleanupResize();
+      cleanupResize = null;
+    }
+  });
 
   const detachWindow = async () => {
     options.emitClose();

@@ -1,0 +1,130 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiToolApproval.css",
+  "totalViolations": 15,
+  "rulesDistribution": {
+    "CSS-004": 14,
+    "CSS-006": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 4,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "79ec8372c38bcae124ba3b5347e4e86ae2532637d42d460c448b44c4893f2705"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 7,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "b7e32c843090127bcaa1bbad1f50e179e62eef5e92257412f3578d9ed0533f36"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 11,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "4dccc4006a37f811f0dfb2ef2b9473ad241915fac02c9178de962a88191288e1"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 16,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "de1cee75b7f562ebe91e8f5b80a460f6cc731386b1e53a5dd933f08eb6c80b13"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 36,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "8632ccdc8eef977bca5a1a64368b85a0a2912b7d0901452a41f13f8f7f7c5661"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 51,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 87,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 104,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 118,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "a86d8cb70587f1840d9aaef68c464205c38bf38dc086601166e2ef4a72eb6966"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 122,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "56f690a6f487d4a898018e0bfcd484d321c082e4ed124050b5155267308cdb67"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 136,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 146,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "4dccc4006a37f811f0dfb2ef2b9473ad241915fac02c9178de962a88191288e1"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 148,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "998e6fa65c2c5e9ecdee623465f420daec8ee8c261f405d59ed1df181cf8248e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 152,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "56f690a6f487d4a898018e0bfcd484d321c082e4ed124050b5155267308cdb67"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+      "line": 154,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "133642b1c1aaa7bc909ac9ceaaf3841c7c4aa3627cc6ad8ece67d03bd9641678"
+    }
+  ]
+}

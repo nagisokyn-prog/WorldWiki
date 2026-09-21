@@ -53,6 +53,7 @@ export interface RibbonCommands {
   updateFooterText?: (left: string, right: string) => void | boolean | undefined;
   openHeaderFooterDialog?: (tab?: 'header' | 'footer') => void | boolean | undefined;
   openPageSetup?: () => void | boolean | undefined;
+  openPageSetupDialog?: () => void | boolean | undefined;
   insertTextBox?: () => void | boolean | undefined;
   insertTableOfContents?: (opts?: Record<string, unknown>) => void | boolean | undefined;
   togglePageOrientation?: () => void | boolean | undefined;

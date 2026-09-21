@@ -9,7 +9,7 @@
     top: 2px;
     width: 30px;
     height: 22px;
-    border-radius: var(--radius-xs, 6px);
+    border-radius: var(--radius-xs);
     display: flex;
     align-items: center;
     justify-content: center;

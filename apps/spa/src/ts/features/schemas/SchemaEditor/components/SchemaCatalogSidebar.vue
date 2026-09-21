@@ -53,12 +53,13 @@
 
 <script setup lang="ts">
 import ModuleHelpPreview from '../ModuleHelpPreview.vue';
+import type { SchemaTemplateItem } from '../hooks/useSchemaTemplates';
 
 defineProps<{
   catalogWidth: number;
   atomicBricks: Array<{ val: string; label: string; icon: string }>;
-  timelineTemplates: Record<string, unknown>;
-  dynamicTemplates: Record<string, { isBidirectional?: boolean }>;
+  timelineTemplates: Record<string, SchemaTemplateItem>;
+  dynamicTemplates: Record<string, SchemaTemplateItem>;
 }>();
 
 defineEmits<{

@@ -19,7 +19,7 @@
   padding: 10px 16px;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-dropdown, 12px);
+  border-radius: var(--radius-dropdown);
   color: var(--text-main);
   font-size: 14px;
   transition: border-color var(--anim-speed, 0.2s) var(--anim-ease, ease), box-shadow var(--anim-speed, 0.2s) var(--anim-ease, ease);
@@ -56,7 +56,7 @@
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-dropdown, 12px);
+  border-radius: var(--radius-dropdown);
   box-shadow: var(--shadow-dropdown);
   outline: none;
   z-index: 99999;
@@ -73,7 +73,7 @@
   border-top: 1px solid var(--glass-highlight);
   border-bottom: 1px solid var(--glass-highlight);
   background: var(--accent-glow);
-  border-radius: 8px;
+  border-radius: var(--radius-sm) ;
   pointer-events: none;
   box-shadow: 0 0 20px var(--accent-glow);
   z-index: 5;

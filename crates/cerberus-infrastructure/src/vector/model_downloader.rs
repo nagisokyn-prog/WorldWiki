@@ -53,9 +53,9 @@ impl ModelDownloaderPort for NativeModelDownloaderAdapter {
             }
         }
 
-        // Try curl first with timeout
+        // Try curl first with realistic timeout (connect 10s, max 300s for ~130MB model)
         let curl_res = Command::new("curl")
-            .args(["-L", "-s", "-f", "--connect-timeout", "2", "-m", "10", "-o"])
+            .args(["-L", "-s", "-f", "--connect-timeout", "10", "-m", "300", "-o"])
             .arg(dest_path)
             .arg(url)
             .output();
@@ -63,9 +63,9 @@ impl ModelDownloaderPort for NativeModelDownloaderAdapter {
         match curl_res {
             Ok(out) if out.status.success() && dest_path.exists() => Ok(()),
             _ => {
-                // Fallback to PowerShell on Windows with timeout
+                // Fallback to PowerShell on Windows with 300s timeout
                 let ps_script = format!(
-                    "Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 -Uri '{}' -OutFile '{}'",
+                    "Invoke-WebRequest -UseBasicParsing -TimeoutSec 300 -Uri '{}' -OutFile '{}'",
                     url,
                     dest_path.display()
                 );

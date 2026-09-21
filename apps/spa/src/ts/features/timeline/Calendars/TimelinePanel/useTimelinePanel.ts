@@ -43,7 +43,9 @@ export function useTimelinePanel(
     getMonthOptions,
     getHourOptions,
     getMinuteOptions,
-    getConvertedDateInfo
+    getConvertedDateInfo,
+    getDisplayCalendarIds,
+    convertedDateInfoMap
   } = useTimelineEventConversion(eventsRef, availableCalendars, selectedCalendarIds);
 
   const {
@@ -209,6 +211,8 @@ export function useTimelinePanel(
     toggleExpand,
     removeEvent,
     getConvertedDateInfo,
+    getDisplayCalendarIds,
+    convertedDateInfoMap,
     getEraOptions,
     getMonthOptions,
     getHourOptions,

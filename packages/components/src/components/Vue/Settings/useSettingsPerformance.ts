@@ -5,24 +5,56 @@ import { performanceManager } from '../../../ts/services/performance.service.js'
 
 export function useSettingsPerformance(
   getSettings: () => AppSettings,
-  save: () => Promise<void>
+  save: () => Promise<void> | void
 ) {
   const { t } = useI18n();
   const showAdvanced = ref(false);
 
+  const status = computed(() => performanceManager.status.value);
+  const lastP95 = computed(() => performanceManager.lastP95.value);
+  const batteryStatus = computed(() => performanceManager.batteryStatus.value);
+  const activeLevel = computed(() => getSettings().perf?.level ?? 'Balanced');
+
   const statusColorClass = computed(() => {
-    const status = performanceManager.status.value;
-    if (status === 'Good') return 'text-success';
-    if (status === 'Limited') return 'text-warning';
-    if (status === 'Poor') return 'text-error';
+    const s = status.value;
+    if (s === 'Good') return 'text-success';
+    if (s === 'Limited') return 'text-warning';
+    if (s === 'Poor') return 'text-error';
     return 'text-success';
   });
 
   const recommendedProfile = computed<'Eco' | 'Balanced' | 'Quality' | 'Max'>(() => {
-    const status = performanceManager.status.value;
-    if (status === 'Poor') return 'Eco';
-    if (status === 'Limited') return 'Balanced';
+    const s = status.value;
+    if (s === 'Poor') return 'Eco';
+    if (s === 'Limited') return 'Balanced';
     return 'Quality';
+  });
+
+  const autoDowngrade = computed({
+    get: () => Boolean(getSettings().perf?.autoDowngrade),
+    set: (v: boolean) => {
+      const s = getSettings();
+      if (s.perf) s.perf.autoDowngrade = v;
+      void save();
+    }
+  });
+
+  const limitAnimations = computed({
+    get: () => Boolean(getSettings().perf?.limitAnimations),
+    set: (v: boolean) => {
+      const s = getSettings();
+      if (s.perf) s.perf.limitAnimations = v;
+      void save();
+    }
+  });
+
+  const limitGlass = computed({
+    get: () => Boolean(getSettings().perf?.limitGlass),
+    set: (v: boolean) => {
+      const s = getSettings();
+      if (s.perf) s.perf.limitGlass = v;
+      void save();
+    }
   });
 
   const setProfile = (level: 'Eco' | 'Balanced' | 'Quality' | 'Max') => {
@@ -36,10 +68,16 @@ export function useSettingsPerformance(
 
   return {
     t,
-    performanceManager,
+    status,
+    lastP95,
+    batteryStatus,
+    activeLevel,
     showAdvanced,
     statusColorClass,
     recommendedProfile,
+    autoDowngrade,
+    limitAnimations,
+    limitGlass,
     setProfile
   };
 }

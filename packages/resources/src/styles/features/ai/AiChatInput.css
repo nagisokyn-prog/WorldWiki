@@ -1,7 +1,7 @@
 .ai-chat-input-wrapper {
   background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm) ;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -65,7 +65,7 @@
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;

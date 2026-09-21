@@ -33,7 +33,7 @@
           <template v-if="cf.class === linkClass">
             <XboxWheel 
               :model-value="String(item[cf.class] || '').replace(/^entities:/, '')"
-              :options="getOptions(cf).map((o) => ({ value: String(o.value || '').replace(/^entities:/, ''), label: o.label || String(o.value || '') }))"
+              :options="getOptions(cf).map((o: { value?: unknown; label?: string }) => ({ value: String(o.value || '').replace(/^entities:/, ''), label: o.label || String(o.value || '') }))"
               placeholder="-- Выберите сущность --"
               @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
@@ -42,7 +42,7 @@
             <XboxWheel 
               v-if="cf.type === 'select'" 
               :model-value="(item[cf.class] as string | number) || ''"
-              :options="(cf.options || []).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
+              :options="(cf.options || []).map((o: { value?: unknown; label?: string }) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
               placeholder="-- Не указано --"
               @update:model-value="(val: unknown) => updateItemField(cf.class, val)"
             />
@@ -78,7 +78,7 @@
                   <XboxWheel 
                     v-if="nField.type === 'select'" 
                     :model-value="(nItem[nField.class] as string | number) || ''" 
-                    :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
+                    :options="getOptions(nField).map((o: { value?: unknown; label?: string }) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
                     placeholder="-- Не указано --" 
                     @update:model-value="(val: unknown) => { nItem[nField.class] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }" 
                   />
@@ -130,7 +130,7 @@
               <XboxWheel 
                 v-if="cf.type === 'select'" 
                 :model-value="foreignItem ? String(foreignItem[cf.class] || '') : ''"
-                :options="(cf.options || []).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
+                :options="(cf.options || []).map((o: { value?: unknown; label?: string }) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))"
                 placeholder="-- Не указано --"
                 @update:model-value="(val) => updateForeignField(cf.class, val)"
               />
@@ -165,7 +165,7 @@
                     <XboxWheel 
                       v-if="nField.type === 'select'" 
                       :model-value="(nItem[nField.class] as string | number) || ''" 
-                      :options="getOptions(nField).map((o) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
+                      :options="getOptions(nField).map((o: { value?: unknown; label?: string }) => ({ value: String(o.value || ''), label: o.label || String(o.value || '') }))" 
                       placeholder="-- Не указано --" 
                       @update:model-value="(val: unknown) => updateForeignNestedField(nItem, nField.class, val)" 
                     />

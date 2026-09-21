@@ -133,7 +133,7 @@
   transform: translate(-50%, -50%);
   width: 2px;
   height: 48px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs) ;
   background: transparent;
   transition: background 0.15s, height 0.15s;
 }
@@ -165,7 +165,7 @@
   transform: translate(-50%, -50%);
   width: 2px;
   height: 48px;
-  border-radius: 2px;
+  border-radius: var(--radius-xs) ;
   background: transparent;
   transition: background 0.15s, height 0.15s;
 }
@@ -286,7 +286,7 @@
 
 .panel-body-box::-webkit-scrollbar-thumb {
   background: var(--border-color);
-  border-radius: var(--radius-round, 9999px);
+  border-radius: var(--radius-round);
 }
 
 .panel-body-box::-webkit-scrollbar-thumb:hover {
@@ -305,7 +305,7 @@
   right: 20px;
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-round) ;
   background: var(--accent);
   color: var(--accent-text);
   font-size: 26px;

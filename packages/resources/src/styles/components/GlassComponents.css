@@ -29,7 +29,7 @@
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    border-radius: var(--radius-card, 16px);
+    border-radius: var(--radius-card);
     overflow: hidden;
     border: 1px solid var(--border-color);
     background: var(--bg-card);
@@ -247,7 +247,7 @@
     backdrop-filter: blur(var(--glass-blur, 24px));
     -webkit-backdrop-filter: blur(var(--glass-blur, 24px));
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-dropdown, 12px);
+    border-radius: var(--radius-dropdown);
     box-shadow: var(--shadow-dropdown);
     transition: opacity var(--anim-speed, 0.2s) var(--anim-ease, ease), transform var(--anim-speed, 0.2s) var(--anim-ease, ease);
 }
@@ -258,7 +258,7 @@
     padding: 10px 14px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-input, 10px);
+    border-radius: var(--radius-input);
     color: var(--text-main);
     font-family: inherit;
     font-size: 13px;

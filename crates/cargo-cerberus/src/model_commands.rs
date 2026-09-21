@@ -136,7 +136,9 @@ pub fn handle_explain(
 
     let parsers: Vec<Arc<dyn cerberus_ports::AstParserPort>> = vec![
         Arc::new(cerberus_infrastructure::RustSynParserAdapter::default()),
-        Arc::new(cerberus_infrastructure::VueSfcParserAdapter::default()),
+        Arc::new(cerberus_infrastructure::VueSfcParserAdapter::with_config(
+            rules_repo.cerberus_config.clone(),
+        )),
     ];
     let scanner: Arc<dyn cerberus_ports::FileSystemScannerPort> =
         Arc::new(cerberus_infrastructure::WalkDirScannerAdapter::new().with_ignores(rules_repo.config.ignore.clone()));

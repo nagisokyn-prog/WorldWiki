@@ -1,0 +1,33 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiActionButtons.css",
+  "totalViolations": 3,
+  "rulesDistribution": {
+    "CSS-004": 3
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 30,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "c19e19721adcece3ae7073fd0b48a9113ade988725442cb4dfe8208b43214274"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 34,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "167522f4764e96a4dbbe2d46297e19949849c91f00db869817e133797077cfdf"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
+      "line": 44,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "88052b72d4321ed7d7ab63f5062352292b16d93a972aaf075d72d1315bcfbe9e"
+    }
+  ]
+}

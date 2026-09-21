@@ -1,0 +1,17 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiSettingsView.css",
+  "totalViolations": 1,
+  "rulesDistribution": {
+    "CSS-004": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiSettingsView.css",
+      "line": 104,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "ecb4351fc2af13d599e7cf22a66f093aead9271722b158739cff9c2a4dfb069e"
+    }
+  ]
+}

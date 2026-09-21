@@ -1,0 +1,41 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiHeader.css",
+  "totalViolations": 4,
+  "rulesDistribution": {
+    "CSS-004": 4
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+      "line": 31,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "c59c58292db6f01f8620c03ec248a6d24e6325e2d1c2fa5afd2bfb8625758f6c"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+      "line": 41,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "2caeab6bdfd8728191c1d82feeb64a4e5dd6a0fb03762bf141408e2b185ca3ce"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+      "line": 67,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "2caeab6bdfd8728191c1d82feeb64a4e5dd6a0fb03762bf141408e2b185ca3ce"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+      "line": 81,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "3375e7b7f166433f1901023d0166df37b61fefdedadaa37240251a9b7a80d412"
+    }
+  ]
+}

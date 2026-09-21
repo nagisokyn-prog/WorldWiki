@@ -43,23 +43,20 @@
 </template>
 
 <script setup lang="ts">
-export interface SchemaHistoryItem {
-  id: string;
-  formattedDate?: string;
-  is_pinned?: boolean;
-  [key: string]: unknown;
-}
+import type { SchemaHistoryRecord } from '../hooks/useSchemaHistory';
+
+export type SchemaHistoryItem = SchemaHistoryRecord;
 
 defineProps<{
   maxSaves: number;
-  history: SchemaHistoryItem[];
+  history: SchemaHistoryRecord[];
   previewId: string | null;
 }>();
 
 defineEmits<{
   (e: 'close'): void;
   (e: 'update:maxSaves', val: number): void;
-  (e: 'preview', item: SchemaHistoryItem): void;
-  (e: 'toggle-pin', item: SchemaHistoryItem): void;
+  (e: 'preview', item: SchemaHistoryRecord): void;
+  (e: 'toggle-pin', item: SchemaHistoryRecord): void;
 }>();
 </script>

@@ -1,4 +1,4 @@
-import { type Ref, type ShallowRef, nextTick } from 'vue';
+import { type Ref, type ShallowRef, nextTick, onUnmounted } from 'vue';
 import * as api from '../../../../services/api.client';
 import type { EntitySchema } from '../../../../types/generated/EntitySchema';
 import type {
@@ -197,14 +197,30 @@ export function useEntityConfigLoader(ctx: UseEntityConfigLoaderContext) {
       }
 
       nextTick(() => {
+        cleanupScroll();
         if (ctx.scrollContainer.value) {
-          ctx.scrollContainer.value.addEventListener('scroll', (e: Event) => {
-            ctx.emit('scroll-change', (e.target as HTMLElement).scrollTop);
-          });
+          scrollElement = ctx.scrollContainer.value;
+          scrollElement.addEventListener('scroll', onScroll);
         }
       });
     }
   };
+
+  let scrollElement: HTMLElement | null = null;
+  const onScroll = (e: Event) => {
+    ctx.emit('scroll-change', (e.target as HTMLElement).scrollTop);
+  };
+
+  const cleanupScroll = () => {
+    if (scrollElement) {
+      scrollElement.removeEventListener('scroll', onScroll);
+      scrollElement = null;
+    }
+  };
+
+  onUnmounted(() => {
+    cleanupScroll();
+  });
 
   return {
     loadReferenceData,

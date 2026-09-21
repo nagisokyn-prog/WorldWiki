@@ -155,7 +155,7 @@
   color: var(--warning);
   background: rgba(245, 158, 11, 0.15);
   padding: 2px 4px;
-  border-radius: 3px;
+  border-radius: var(--radius-xs) ;
   margin-top: auto;
   line-height: 1.2;
   word-break: break-word;
@@ -170,7 +170,7 @@
 .moon-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--radius-round) ;
   box-shadow: var(--shadow-sm);
 }
 .moon-dot-white {

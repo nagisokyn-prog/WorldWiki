@@ -1,0 +1,33 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiApp.css",
+  "totalViolations": 3,
+  "rulesDistribution": {
+    "CSS-004": 3
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiApp.css",
+      "line": 82,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "5326f1232bfa6a64c745452c40a1cf16ece1ba2f2b83ed2fe70492f9d9d1ca52"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiApp.css",
+      "line": 91,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "f19b3acfb675e52c3d96f51700bbaa6407f001f7697c73f08b57633719bc80cf"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiApp.css",
+      "line": 92,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "f7626f85519711940e88dd3793b98b9024d3e1e5a50e835604fee28f00dc3900"
+    }
+  ]
+}

@@ -15,8 +15,8 @@
             <div class="status-info">
               <div class="status-label">{{ t('settings.perf.rendering') }}</div>
               <div class="status-value" :class="statusColorClass">
-                {{ performanceManager.status.value }}
-                <span class="text-xs text-muted"> (95th: {{ performanceManager.lastP95.value }}ms)</span>
+                {{ status }}
+                <span class="text-xs text-muted"> (95th: {{ lastP95 }}ms)</span>
               </div>
             </div>
           </div>
@@ -24,7 +24,7 @@
             <span class="status-icon">⚡</span>
             <div class="status-info">
               <div class="status-label">{{ t('settings.perf.powerMode') }}</div>
-              <div class="status-value text-success">{{ t(performanceManager.batteryStatus.value) }}</div>
+              <div class="status-value text-success">{{ t(batteryStatus) }}</div>
             </div>
           </div>
         </div>
@@ -63,10 +63,10 @@
 
         <div class="control-row mt-4"><label>{{ t('settings.perf.activeProfile') }}</label></div>
         <div class="profile-tabs">
-          <div class="profile-tab" :class="{ active: settings.perf?.level === 'Eco' }" @click="setProfile('Eco')">Eco</div>
-          <div class="profile-tab" :class="{ active: settings.perf?.level === 'Balanced' || settings.perf?.level === 'Automatic' || !settings.perf?.level }" @click="setProfile('Balanced')">Balanced</div>
-          <div class="profile-tab" :class="{ active: settings.perf?.level === 'Quality' }" @click="setProfile('Quality')">Quality</div>
-          <div class="profile-tab" :class="{ active: settings.perf?.level === 'Max' }" @click="setProfile('Max')">Max</div>
+          <div class="profile-tab" :class="{ active: activeLevel === 'Eco' }" @click="setProfile('Eco')">Eco</div>
+          <div class="profile-tab" :class="{ active: activeLevel === 'Balanced' || activeLevel === 'Automatic' }" @click="setProfile('Balanced')">Balanced</div>
+          <div class="profile-tab" :class="{ active: activeLevel === 'Quality' }" @click="setProfile('Quality')">Quality</div>
+          <div class="profile-tab" :class="{ active: activeLevel === 'Max' }" @click="setProfile('Max')">Max</div>
         </div>
       </div>
 
@@ -80,17 +80,17 @@
         <div v-show="showAdvanced" class="advanced-content">
           <div class="control-row">
             <label>{{ t('settings.perf.autoDowngrade') }}</label>
-            <label class="toggle-switch"><input v-model="settings.perf!.autoDowngrade" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label>
+            <label class="toggle-switch"><input v-model="autoDowngrade" type="checkbox" class="interactive-el"><span class="slider"></span></label>
           </div>
           
           <div class="control-row mt-3">
             <label>{{ t('settings.perf.limitAnimations') }}</label>
-            <label class="toggle-switch"><input v-model="settings.perf!.limitAnimations" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label>
+            <label class="toggle-switch"><input v-model="limitAnimations" type="checkbox" class="interactive-el"><span class="slider"></span></label>
           </div>
 
           <div class="control-row mt-3">
             <label>{{ t('settings.perf.limitGlass') }}</label>
-            <label class="toggle-switch"><input v-model="settings.perf!.limitGlass" type="checkbox" class="interactive-el" @change="save()"><span class="slider"></span></label>
+            <label class="toggle-switch"><input v-model="limitGlass" type="checkbox" class="interactive-el"><span class="slider"></span></label>
           </div>
 
           <p class="text-xs text-muted mt-3">
@@ -108,18 +108,24 @@ import { useSettingsPerformance } from './useSettingsPerformance';
 
 const settings = defineModel<AppSettings>('settings', { required: true });
 
-const props = defineProps<{
-  save: () => Promise<void>;
+const emit = defineEmits<{
+  (e: 'save'): void;
 }>();
 
 const {
   t,
-  performanceManager,
+  status,
+  lastP95,
+  batteryStatus,
+  activeLevel,
   showAdvanced,
   statusColorClass,
   recommendedProfile,
+  autoDowngrade,
+  limitAnimations,
+  limitGlass,
   setProfile
-} = useSettingsPerformance(() => settings.value, props.save);
+} = useSettingsPerformance(() => settings.value, () => emit('save'));
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/SettingsPerformance.css"></style>

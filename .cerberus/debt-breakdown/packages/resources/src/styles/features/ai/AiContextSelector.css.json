@@ -1,0 +1,25 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiContextSelector.css",
+  "totalViolations": 2,
+  "rulesDistribution": {
+    "CSS-004": 2
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "line": 74,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "cd83a9789047549bacc65db2d0820e67f2a0f2e82c27988a5f6091f1a28fc6d5"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiContextSelector.css",
+      "line": 122,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "ec6e060e6c3f13e22863ac14ddcdb480e60d7306bc44d60800c4eb4cea0381cf"
+    }
+  ]
+}

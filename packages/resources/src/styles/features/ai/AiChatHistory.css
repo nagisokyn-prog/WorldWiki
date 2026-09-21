@@ -62,7 +62,7 @@
   color: var(--accent);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--radius-xs) ;
   transition: opacity 0.2s;
 }
 
@@ -117,7 +117,7 @@
   opacity: 0.5;
   background: var(--bg-hover);
   padding: 2px 4px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
 }
 .ctx-danger .ctx-icon {
   color: var(--error);

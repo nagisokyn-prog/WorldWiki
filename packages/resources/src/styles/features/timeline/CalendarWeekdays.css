@@ -8,7 +8,7 @@
   border: 1px solid transparent;
   color: var(--text-main);
   padding: 4px 6px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   transition: all var(--anim-speed) var(--anim-ease);
 }
 

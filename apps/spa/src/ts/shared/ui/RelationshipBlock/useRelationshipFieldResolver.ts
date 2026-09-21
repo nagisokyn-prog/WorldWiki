@@ -50,7 +50,7 @@ export function useRelationshipFieldResolver(props: RelationshipBlockProps) {
     return [];
   };
 
-  const getOptions = (field: TemplateField): unknown[] => {
+  const getOptions = (field: TemplateField): Array<{ value: unknown; label?: string }> => {
     if (field?.options && field.options.length > 0) return field.options;
     const type = field?.entityType || (props.templateConf.foreign_type as string | undefined);
     if (type) {

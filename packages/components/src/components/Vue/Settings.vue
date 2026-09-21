@@ -17,6 +17,7 @@
                 :is="activeComponent" 
                 :settings="settings" 
                 :save="save" 
+                @save="save"
                 @pick-background-file="pickBackgroundFile"
               />
             </Transition>

@@ -92,7 +92,7 @@
     display: inline-block;
     margin-top: 15px;
     padding: 6px 16px;
-    border-radius: 20px;
+    border-radius: var(--radius-card) ;
     font-size: 12px;
     font-weight: 600;
     opacity: 0;

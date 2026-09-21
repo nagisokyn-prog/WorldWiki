@@ -5,7 +5,7 @@
   width: 350px;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-sm) ;
   box-shadow: var(--shadow-dropdown);
   z-index: 10000;
   display: flex;
@@ -57,7 +57,7 @@
 .calendar-card {
   background: var(--bg-alt);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius-xs) ;
   padding: 10px;
   margin-bottom: 10px;
 }

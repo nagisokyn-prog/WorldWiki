@@ -1,0 +1,41 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+  "totalViolations": 4,
+  "rulesDistribution": {
+    "CSS-004": 4
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+      "line": 130,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "9460c71cac244a88993a2a4f162b2c861647181f95a2a000ed05ebea3704f482"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+      "line": 134,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "09123433e58d7bb202887a0d9d7e75986ce0668518fbafb26e6c923d5b156ffb"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+      "line": 138,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "41270f43fada10a2d73927466990bfefaa2433c54df1d7fa204ce9db0992ec0e"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+      "line": 142,
+      "symbol": "color_rgb_hsl",
+      "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
+      "fingerprint": "32f56e4bab5c0ad24f6d0fc53ab7a85cebc354744799bb2238c1ffed5ee0f244"
+    }
+  ]
+}

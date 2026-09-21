@@ -26,6 +26,13 @@ impl TractOnnxEmbedderAdapter {
     }
 
     pub fn default_cache_dir() -> PathBuf {
+        if let Ok(custom) = std::env::var("CERBERUS_CACHE_DIR") {
+            let p = PathBuf::from(custom);
+            if !p.as_os_str().is_empty() {
+                return p;
+            }
+        }
+
         let home = match std::env::var("HOME") {
             Ok(h) => h,
             Err(_) => match std::env::var("USERPROFILE") {
@@ -189,8 +196,13 @@ mod tests {
 
     #[test]
     fn test_tract_onnx_zero_norm_and_cache_dir() {
+        let temp = tempdir().unwrap();
+        std::env::set_var("CERBERUS_CACHE_DIR", temp.path());
+        assert_eq!(TractOnnxEmbedderAdapter::default_cache_dir(), temp.path());
+        std::env::remove_var("CERBERUS_CACHE_DIR");
+
         let cache_dir = TractOnnxEmbedderAdapter::default_cache_dir();
-        assert!(cache_dir.to_string_lossy().contains("archguard"));
+        assert!(cache_dir.to_string_lossy().contains("archguard") || cache_dir.to_string_lossy().contains("cerberus"));
 
         let mut zero_vec = vec![0.0f32; 10];
         TractOnnxEmbedderAdapter::l2_normalize(&mut zero_vec);

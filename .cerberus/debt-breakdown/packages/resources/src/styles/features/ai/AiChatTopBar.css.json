@@ -1,0 +1,33 @@
+{
+  "targetFile": "packages/resources/src/styles/features/ai/AiChatTopBar.css",
+  "totalViolations": 3,
+  "rulesDistribution": {
+    "CSS-004": 3
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
+      "line": 59,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "566d1dbc2b13697865ae3c7bfad49350727e9675a9852cf6ce6cd11bef285fd0"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
+      "line": 73,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "23363f5334f9298b8e47c5a91f233e8a487e2080e905e5a5425f3ce131a8b292"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
+      "line": 99,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "f2082ef3544e3b3526393791fc57e4348e43962c47b0fd5dfbcfb3708afb07f5"
+    }
+  ]
+}

@@ -14,7 +14,7 @@
 .modal-content {
     background: var(--bg-panel);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--radius-md) ;
     width: 90%;
     max-width: 600px;
     max-height: 90vh;
@@ -58,7 +58,7 @@
     align-items: center;
     padding: 15px;
     border: 2px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm) ;
     cursor: pointer;
     background: var(--bg-input);
     transition: all 0.2s;
@@ -114,7 +114,7 @@
 
 .btn {
     padding: 8px 16px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs) ;
     border: none;
     cursor: pointer;
     font-weight: 500;

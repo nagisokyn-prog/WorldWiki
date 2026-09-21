@@ -1,0 +1,17 @@
+{
+  "targetFile": "packages/resources/src/styles/features/chapters/WordRibbonBar.css",
+  "totalViolations": 1,
+  "rulesDistribution": {
+    "CSS-004": 1
+  },
+  "violations": [
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/WordRibbonBar.css",
+      "line": 217,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "dda6e5908741030e9b5201fd1111a321a2f71d0a10da000f67ab1436d6b78af8"
+    }
+  ]
+}

@@ -12,7 +12,7 @@
     font-weight: 800;
     font-size: 9px;
     padding: 2px 4px;
-    border-radius: var(--radius-xs, 3px);
+    border-radius: var(--radius-xs);
     cursor: pointer;
     user-select: none;
     transition: all var(--anim-speed) var(--anim-ease);

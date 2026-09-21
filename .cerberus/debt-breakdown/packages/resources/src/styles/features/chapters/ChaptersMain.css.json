@@ -1,0 +1,98 @@
+{
+  "targetFile": "packages/resources/src/styles/features/chapters/ChaptersMain.css",
+  "totalViolations": 11,
+  "rulesDistribution": {
+    "CSS-006": 9,
+    "CSS-004": 2
+  },
+  "violations": [
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 109,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "c44036cee6393900869f0c725d3984e03c3e3706592564ccb7a0775f73020346"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 136,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "0beef05d815245963f55ba455dc25cce00721ff13e78ae653791379d4dfef375"
+    },
+    {
+      "rule": "CSS-004",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 168,
+      "symbol": "border_radius",
+      "message": "Hardcoded pixel border-radius found in stylesheet.",
+      "fingerprint": "0beef05d815245963f55ba455dc25cce00721ff13e78ae653791379d4dfef375"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 188,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "78562d6cb12c66e2c0c254f87724e216c18eb52d494311b7af8708cb75f8b09c"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 197,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "3d4b5e706285121a472fd8d35ed1faa75225b3ed24b0c7e5e338a96e995b08f5"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 201,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "8f957d2ba1c93b067b4d712b05d95b60461a4e092cd06a6b5f4f38d4bad6e7cc"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 204,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "3740b7e8552c2fd9e9719946a27a6c09d71ebf626415d918579dcce7e835f4ca"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 208,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "ebda8e69e23363ef5b2aed16f35f5c3b07a7a9707b029ce964d3c14f6d54c012"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 225,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "58e97f7f5da2b021b575897d716fc090701260ff6ffe78dceac0873ec9d30069"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 226,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "d1f4cba908171e892cf10d7070bbaf72a69ac51b1388988c4d2fca13a35c169d"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+      "line": 235,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "58e97f7f5da2b021b575897d716fc090701260ff6ffe78dceac0873ec9d30069"
+    }
+  ]
+}

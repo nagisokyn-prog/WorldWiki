@@ -101,7 +101,7 @@
 .profiles-section {
   background: var(--bg-surface-alt);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: var(--radius-sm) ;
   padding: 20px;
   margin-bottom: 25px;
 }

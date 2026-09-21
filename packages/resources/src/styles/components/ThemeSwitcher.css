@@ -111,7 +111,7 @@
   height: 20px;
   background: var(--accent);
   color: var(--accent-text);
-  border-radius: 50%;
+  border-radius: var(--radius-round) ;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -149,7 +149,7 @@
 .save-theme-btn {
   width: 100%;
   margin-bottom: 16px;
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--radius-sm);
   padding: 10px;
 }
 

@@ -16,7 +16,7 @@
     width: 500px;
     background: var(--bg-main);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-card, 12px);
+    border-radius: var(--radius-card);
     box-shadow: var(--shadow-dropdown);
     display: flex;
     flex-direction: column;
@@ -29,7 +29,7 @@
     padding: 16px 24px;
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-secondary);
-    border-radius: var(--radius-card, 12px) var(--radius-card, 12px) 0 0;
+    border-radius: var(--radius-card) var(--radius-card, 12px) 0 0;
 }
 
 .cloud-sync-header h3 {
@@ -61,7 +61,7 @@
     justify-content: space-between;
     padding: 16px;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm, 8px);
+    border-radius: var(--radius-sm);
     background: var(--bg-input);
 }
 
@@ -74,7 +74,7 @@
 .provider-icon {
     width: 40px;
     height: 40px;
-    border-radius: var(--radius-sm, 8px);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -120,7 +120,7 @@
 .auth-code-section {
     margin-top: 16px;
     padding: 16px;
-    border-radius: var(--radius-sm, 8px);
+    border-radius: var(--radius-sm);
     background: rgba(252, 63, 29, 0.05);
     border: 1px dashed rgba(252, 63, 29, 0.3);
 }
@@ -134,7 +134,7 @@
 .code-input-group input {
     flex: 1;
     padding: 8px 12px;
-    border-radius: var(--radius-xs, 6px);
+    border-radius: var(--radius-xs);
     border: 1px solid var(--border-color);
     background: var(--bg-main);
     color: var(--text-main);
@@ -166,7 +166,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm, 8px);
+    border-radius: var(--radius-sm);
 }
 
 .sync-loading-spinner {
@@ -182,5 +182,5 @@
     padding: 10px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-xs, 6px);
+    border-radius: var(--radius-xs);
 }

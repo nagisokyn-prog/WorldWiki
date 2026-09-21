@@ -36,5 +36,5 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 8px 12px;
-  border-radius: var(--radius-xs, 6px);
+  border-radius: var(--radius-xs);
 }

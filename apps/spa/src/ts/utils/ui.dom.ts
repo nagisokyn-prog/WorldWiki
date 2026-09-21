@@ -92,7 +92,7 @@ export interface StateHandlers {
 /**
  * Добавить обработчики состояний для элемента
  */
-export function addStateHandlers(element: HTMLElement, handlers: StateHandlers = {}): void {
+export function addStateHandlers(element: HTMLElement, handlers: StateHandlers = {}): () => void {
   const {
     onHover,
     onLeave,
@@ -102,12 +102,29 @@ export function addStateHandlers(element: HTMLElement, handlers: StateHandlers =
     onBlur
   } = handlers;
 
-  if (onHover) element.addEventListener('mouseenter', onHover);
-  if (onLeave) element.addEventListener('mouseleave', onLeave);
-  if (onActive) element.addEventListener('mousedown', onActive);
-  if (onRelease) element.addEventListener('mouseup', onRelease);
-  if (onFocus) element.addEventListener('focus', onFocus);
-  if (onBlur) element.addEventListener('blur', onBlur);
+  const toHandler = (h?: EventListener) => (h ? ((e: Event) => {
+    if (typeof h === 'function') {
+      (h as (evt: Event) => void)(e);
+    } else if (h && typeof (h as EventListenerObject).handleEvent === 'function') {
+      (h as EventListenerObject).handleEvent(e);
+    }
+  }) : null);
+
+  if (onHover) element.onmouseenter = toHandler(onHover);
+  if (onLeave) element.onmouseleave = toHandler(onLeave);
+  if (onActive) element.onmousedown = toHandler(onActive);
+  if (onRelease) element.onmouseup = toHandler(onRelease);
+  if (onFocus) element.onfocus = toHandler(onFocus);
+  if (onBlur) element.onblur = toHandler(onBlur);
+
+  return () => {
+    if (onHover) element.onmouseenter = null;
+    if (onLeave) element.onmouseleave = null;
+    if (onActive) element.onmousedown = null;
+    if (onRelease) element.onmouseup = null;
+    if (onFocus) element.onfocus = null;
+    if (onBlur) element.onblur = null;
+  };
 }
 
 /**
@@ -195,10 +212,18 @@ export function createButton(options: ButtonOptions = {}): HTMLButtonElement {
     btn.appendChild(textNode);
   }
 
-  if (onClick) btn.addEventListener('click', onClick);
-
-  // Добавляем ripple эффект
-  btn.addEventListener('click', (e: MouseEvent) => createRipple(btn, e));
+  if (onClick) {
+    btn.onclick = (e) => {
+      createRipple(btn, e);
+      if (typeof onClick === 'function') {
+        onClick(e);
+      } else if (onClick && typeof (onClick as EventListenerObject).handleEvent === 'function') {
+        (onClick as EventListenerObject).handleEvent(e);
+      }
+    };
+  } else {
+    btn.onclick = (e) => createRipple(btn, e);
+  }
 
   return btn;
 }
@@ -258,20 +283,20 @@ export function createProjectCard(options: ProjectCardOptions = {}): HTMLElement
   }
 
   if (onClick) {
-    card.addEventListener('click', (e: Event) => {
+    card.onclick = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest('.project-actions')) {
         onClick();
       }
-    });
+    };
   }
 
-  const openBtn = card.querySelector('.btn-open');
-  const editBtn = card.querySelector('.btn-edit');
-  const deleteBtn = card.querySelector('.btn-delete');
+  const openBtn = card.querySelector('.btn-open') as HTMLButtonElement | null;
+  const editBtn = card.querySelector('.btn-edit') as HTMLButtonElement | null;
+  const deleteBtn = card.querySelector('.btn-delete') as HTMLButtonElement | null;
 
-  if (onEdit && editBtn) editBtn.addEventListener('click', (e: Event) => { e.stopPropagation(); onEdit(); });
-  if (onDelete && deleteBtn) deleteBtn.addEventListener('click', (e: Event) => { e.stopPropagation(); onDelete(); });
-  if (onClick && openBtn) openBtn.addEventListener('click', (e: Event) => { e.stopPropagation(); onClick(); });
+  if (onEdit && editBtn) editBtn.onclick = (e: MouseEvent) => { e.stopPropagation(); onEdit(); };
+  if (onDelete && deleteBtn) deleteBtn.onclick = (e: MouseEvent) => { e.stopPropagation(); onDelete(); };
+  if (onClick && openBtn) openBtn.onclick = (e: MouseEvent) => { e.stopPropagation(); onClick(); };
 
   return card;
 }

@@ -236,6 +236,14 @@ export function useWowilonPanel(
     }
   });
 
+  const setMessagesListRef = (el: unknown) => {
+    messagesListRef.value = el as { containerRef: HTMLElement | null } | null;
+  };
+
+  const setChatInputRef = (el: unknown) => {
+    chatInputRef.value = el as { unlock: () => void; focus: () => void } | null;
+  };
+
   return {
     ...layout,
     ...contextSelection,
@@ -252,6 +260,8 @@ export function useWowilonPanel(
     currentProject,
     messagesListRef,
     chatInputRef,
+    setMessagesListRef,
+    setChatInputRef,
     handleModeChange,
     createNewChat,
     updateChatParent,

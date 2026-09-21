@@ -482,7 +482,7 @@
 textarea.form-control {
   min-height: 100px;
   resize: vertical;
-  border-radius: 20px;
+  border-radius: var(--radius-card) ;
   line-height: 1.6;
 }
 

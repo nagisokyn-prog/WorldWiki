@@ -1,0 +1,97 @@
+{
+  "targetFile": "packages/resources/src/styles/components/Settings.css",
+  "totalViolations": 11,
+  "rulesDistribution": {
+    "CSS-006": 11
+  },
+  "violations": [
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 300,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "5ef60a988a00307a31a5fa184186b49f569f02b4aa0ef8958323c47be242583d"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 301,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "81c1cad9395c25f0ae79ae20695cd4c27a0843b8a9a4447e6a6f4f0536c87a15"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 302,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "cfabdca0b1fc848bc19600d07d5f9a00e0c62d44eb57f23b7ddf95f7a4c0e8e1"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 310,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "e03ac4409176ca363023e25a4048e9e433f28082ced8b5523e1d26f6fd0caf10"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 311,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "1c052511e6fa139e34b312c2dae7e8a3fcc192297b191cf334ee4a8c457cdf53"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 312,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "4e88deee10561d6d4be78f40c3db3614927d8669a74ab1011127dbe1316385c6"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 313,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "2495da2cf716b967bb53be53d5d5e2fa08a6ebb82ba04698fd2c103cf3cf226a"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 314,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "700de860954f602678772c6c001441bd63e3eeb16e0c405980693f97d80bfed4"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 315,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "15f80d8a8f66efa0c7c30fff0e826215696751c8fcc79077d330cd67d8cd1359"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 316,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "5dae4d8a2d9dc74ab5261e2a9e0b8b595b61a4298aa6952a9d7439bf4ba06e2c"
+    },
+    {
+      "rule": "CSS-006",
+      "file": "./packages/resources/src/styles/components/Settings.css",
+      "line": 317,
+      "symbol": "important_abuse",
+      "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
+      "fingerprint": "bf17b838f128e3a887201e37c919b330fe93ec1019a34016a5dbc5ffb25889f1"
+    }
+  ]
+}

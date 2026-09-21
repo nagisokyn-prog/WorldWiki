@@ -11,7 +11,7 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 4px 6px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
 }
 
 .month-days-input {
@@ -21,7 +21,7 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 4px 6px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
 }
 
 .months-header-title {
@@ -33,7 +33,7 @@
 .months-sum-badge {
   font-size: 11px;
   padding: 2px 6px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
   font-weight: 500;
   border: 1px solid var(--border-color);
 }

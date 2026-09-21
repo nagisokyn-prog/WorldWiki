@@ -17,7 +17,7 @@ export interface EntitySelectorItem {
 export interface InsertEntityPayload {
   type: string;
   id: string;
-  name: string;
+  name?: string;
 }
 
 export interface EntityLinkSelectorProps {

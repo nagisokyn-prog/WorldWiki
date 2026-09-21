@@ -194,25 +194,30 @@ describe('ui-helpers', () => {
       const onFocus = vi.fn();
       const onBlur = vi.fn();
 
-      addStateHandlers(el, { onHover, onLeave, onActive, onRelease, onFocus, onBlur });
+      const cleanup = addStateHandlers(el, { onHover, onLeave, onActive, onRelease, onFocus, onBlur });
 
       el.dispatchEvent(new MouseEvent('mouseenter'));
-      expect(onHover).toHaveBeenCalled();
+      expect(onHover).toHaveBeenCalledTimes(1);
 
       el.dispatchEvent(new MouseEvent('mouseleave'));
-      expect(onLeave).toHaveBeenCalled();
+      expect(onLeave).toHaveBeenCalledTimes(1);
 
       el.dispatchEvent(new MouseEvent('mousedown'));
-      expect(onActive).toHaveBeenCalled();
+      expect(onActive).toHaveBeenCalledTimes(1);
 
       el.dispatchEvent(new MouseEvent('mouseup'));
-      expect(onRelease).toHaveBeenCalled();
+      expect(onRelease).toHaveBeenCalledTimes(1);
 
       el.dispatchEvent(new FocusEvent('focus'));
-      expect(onFocus).toHaveBeenCalled();
+      expect(onFocus).toHaveBeenCalledTimes(1);
 
       el.dispatchEvent(new FocusEvent('blur'));
-      expect(onBlur).toHaveBeenCalled();
+      expect(onBlur).toHaveBeenCalledTimes(1);
+
+      cleanup();
+
+      el.dispatchEvent(new MouseEvent('mouseenter'));
+      expect(onHover).toHaveBeenCalledTimes(1);
     });
 
     it('creates ripple effect on click and cleans up with timer', () => {

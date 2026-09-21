@@ -18,15 +18,12 @@
 </template>
 
 <script setup lang="ts">
-export interface AcademicProfile {
-  id: string;
-  name: string;
-  description?: string;
-  [key: string]: unknown;
-}
+import type { DocumentProfile } from '../../../../services/document/profiles/types';
+
+export type AcademicProfile = DocumentProfile;
 
 defineProps<{
-  profiles: AcademicProfile[];
+  profiles: DocumentProfile[];
   activeProfileId: string;
 }>();
 

@@ -19,6 +19,9 @@ fn test_cli_parsing_helpers() {
 #[test]
 fn test_run_app_all_subcommands() {
     let temp = tempdir().unwrap();
+    let test_cache = temp.path().join("test_model_cache");
+    std::env::set_var("CERBERUS_CACHE_DIR", &test_cache);
+
     let src_dir = temp.path().join("src");
     std::fs::create_dir_all(&src_dir).unwrap();
     std::fs::write(src_dir.join("lib.rs"), "pub fn ok() {}").unwrap();
@@ -315,6 +318,8 @@ fn test_run_app_all_subcommands() {
         }),
     })
     .is_ok());
+
+    std::env::remove_var("CERBERUS_CACHE_DIR");
 }
 
 #[test]
@@ -554,9 +559,13 @@ fn test_cli_deep_coverage_branches() {
     )
     .is_ok());
 
-    // Model status and clean direct
+    // Model status and clean direct with isolated test cache
+    let model_temp = tempdir().unwrap();
+    let isolated_cache = model_temp.path().join("model_cache");
+    std::env::set_var("CERBERUS_CACHE_DIR", &isolated_cache);
     assert!(cargo_cerberus::model_commands::handle_model(ModelCommands::Status).is_ok());
     assert!(cargo_cerberus::model_commands::handle_model(ModelCommands::Clean).is_ok());
+    std::env::remove_var("CERBERUS_CACHE_DIR");
 
     // Test main binary execution
     let bin = PathBuf::from(env!("CARGO_BIN_EXE_cargo-cerberus"));

@@ -42,5 +42,5 @@
   border: 1px solid var(--border-color);
   color: var(--text-main);
   padding: 4px 8px;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
 }

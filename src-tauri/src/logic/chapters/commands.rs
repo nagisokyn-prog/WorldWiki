@@ -8,7 +8,9 @@ pub async fn get_global_timeline(
     project: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Value, String> {
-    get_global_timeline_inner(&state.db, &project).await
+    get_global_timeline_inner(&state.db, &project)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -17,7 +19,9 @@ pub async fn save_global_timeline(
     data: Value,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Value, String> {
-    Chapter::save_global_timeline_inner(&state.db, &project, data).await
+    Chapter::save_global_timeline_inner(&state.db, &project, data)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -27,7 +31,9 @@ pub async fn save_text_blocks(
     html: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    save_text_blocks_inner(&state.db, &project, &chapter_id, &html).await
+    save_text_blocks_inner(&state.db, &project, &chapter_id, &html)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -36,7 +42,9 @@ pub async fn get_chapter_revisions(
     chapter_id: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Vec<Value>, String> {
-    get_chapter_revisions_inner(&state.db, &project, &chapter_id).await
+    get_chapter_revisions_inner(&state.db, &project, &chapter_id)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -45,5 +53,8 @@ pub async fn toggle_chapter_history_pin(
     is_pinned: bool,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    toggle_chapter_history_pin_inner(&state.db, &history_id, is_pinned).await
+    toggle_chapter_history_pin_inner(&state.db, &history_id, is_pinned)
+        .await
+        .map_err(Into::into)
 }
+

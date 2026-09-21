@@ -8,9 +8,6 @@ edition = "2021"
 [package.metadata.cerberus]
 layer = "adapter"
 
-[package.metadata.arch-guard]
-layer = "adapter"
-
 [lib]
 name = "tauri_shell"
 path = "src/lib.rs"

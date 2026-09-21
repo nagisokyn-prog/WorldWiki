@@ -8,9 +8,6 @@ edition = "2021"
 [package.metadata.cerberus]
 layer = "tauri"
 
-[package.metadata.arch-guard]
-layer = "tauri"
-
 [workspace]
 members = [
     ".",

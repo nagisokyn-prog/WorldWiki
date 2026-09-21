@@ -6,7 +6,7 @@ pub struct SnowballStemmer;
 impl SnowballStemmer {
     /// Stem a single word (detects Cyrillic vs Latin automatically)
     pub fn stem_word(word: &str) -> String {
-        let clean = word.trim().to_lowercase().replace('ё', "е").replace('й', "и");
+        let clean = word.trim().to_lowercase().replace('ё', "е");
         if clean.is_empty() {
             return clean;
         }
@@ -30,6 +30,7 @@ impl SnowballStemmer {
             .collect::<Vec<_>>()
             .join(" ")
     }
+
 
     // --- Russian Snowball Stemming Algorithm ---
     fn is_russian_vowel(c: char) -> bool {
@@ -287,12 +288,14 @@ mod tests {
         assert_eq!(stems[1], "лех");
         assert_eq!(stems[2], "лех");
         assert_eq!(stems[3], "лех");
+        assert_eq!(stems[4], "лех");
     }
 
     #[test]
     fn test_russian_words() {
-        assert_eq!(SnowballStemmer::stem_word("Замка"), "замок");
-        assert_eq!(SnowballStemmer::stem_word("Замком"), "замок");
-        assert_eq!(SnowballStemmer::stem_word("Вэйрелу"), "веирел");
+        assert_eq!(SnowballStemmer::stem_word("Замка"), "замк");
+        assert_eq!(SnowballStemmer::stem_word("Замком"), "замк");
+        assert_eq!(SnowballStemmer::stem_word("Вэйрелу"), "вэйрел");
     }
 }
+

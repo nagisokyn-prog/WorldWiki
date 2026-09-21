@@ -3,7 +3,7 @@ name = "worldwiki-ports"
 version = "0.85.0"
 edition = "2021"
 description = "Ports and interfaces (Secondary Ports) for WorldWiki architecture"
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "ports"
 
 [dependencies]

@@ -1,6 +1,6 @@
+use cargo_metadata::MetadataCommand;
 use cerberus_domain::{ArchLayer, Category, Severity, Violation};
 use cerberus_ports::ManifestParserPort;
-use cargo_metadata::MetadataCommand;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -41,7 +41,8 @@ impl CargoMetadataManifestAdapter {
             if metadata.workspace_members.contains(&pkg.id) {
                 let name = pkg.name.to_string();
                 package_names.push(name.clone());
-                package_manifest_paths.insert(name.clone(), pkg.manifest_path.clone().into_std_path_buf());
+                package_manifest_paths
+                    .insert(name.clone(), pkg.manifest_path.clone().into_std_path_buf());
 
                 let mut internal_deps = Vec::new();
                 for dep in &pkg.dependencies {
@@ -51,7 +52,11 @@ impl CargoMetadataManifestAdapter {
                 }
                 dependencies_map.insert(name.clone(), internal_deps);
 
-                let pkg_root = pkg.manifest_path.parent().map(|p| p.as_std_path()).unwrap_or(Path::new("."));
+                let pkg_root = pkg
+                    .manifest_path
+                    .parent()
+                    .map(|p| p.as_std_path())
+                    .unwrap_or(Path::new("."));
                 let src_dir = pkg_root.join("src");
                 let mut sources = Vec::new();
                 if src_dir.exists() {
@@ -74,7 +79,8 @@ impl CargoMetadataManifestAdapter {
             &type_counts,
         );
 
-        let violations = PackageTopologyAnalyzer::check_zone_of_pain(&metrics, &package_manifest_paths);
+        let violations =
+            PackageTopologyAnalyzer::check_zone_of_pain(&metrics, &package_manifest_paths);
 
         Ok((metrics, violations))
     }
@@ -104,7 +110,9 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             Ok(m) => m,
             Err(e) => {
                 let err_msg = e.to_string();
-                if err_msg.contains("cyclic package dependency") || err_msg.contains("cyclic dependency") {
+                if err_msg.contains("cyclic package dependency")
+                    || err_msg.contains("cyclic dependency")
+                {
                     violations.push(Violation {
                         rule_id: "ARCH-022".into(),
                         rule_version: "1.0".into(),
@@ -133,7 +141,6 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
         let ws_arch: cerberus_domain::WorkspaceArchMetadata = metadata
             .workspace_metadata
             .get("cerberus")
-            .or_else(|| metadata.workspace_metadata.get("arch-guard"))
             .and_then(|v| serde_json::from_value(v.clone()).ok())
             .unwrap_or_default();
 
@@ -146,14 +153,14 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                 let declared_layer = pkg
                     .metadata
                     .get("cerberus")
-                    .or_else(|| pkg.metadata.get("arch-guard"))
                     .and_then(|m| m.get("layer"))
                     .and_then(|l| l.as_str());
 
                 let (layer_str, arch_layer) = match declared_layer {
                     Some(l_str) => (l_str.to_string(), ArchLayer::parse(l_str)),
                     None => {
-                        let detected = topology.detect_layer(pkg.manifest_path.as_str(), Some(&pkg_name_str));
+                        let detected =
+                            topology.detect_layer(pkg.manifest_path.as_str(), Some(&pkg_name_str));
                         if detected != "unknown" {
                             (detected.clone(), ArchLayer::parse(&detected))
                         } else {
@@ -181,7 +188,8 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
 
                 package_layers.insert(pkg_name_str.clone(), layer_str);
                 package_arch_layers.insert(pkg_name_str.clone(), arch_layer);
-                package_manifests.insert(pkg_name_str, pkg.manifest_path.clone().into_std_path_buf());
+                package_manifests
+                    .insert(pkg_name_str, pkg.manifest_path.clone().into_std_path_buf());
             }
         }
 
@@ -192,9 +200,18 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
             }
 
             let pkg_name_str = pkg.name.as_str();
-            let current_layer_str = package_layers.get(pkg_name_str).cloned().unwrap_or_default();
-            let current_arch_layer = package_arch_layers.get(pkg_name_str).cloned().unwrap_or(ArchLayer::Unknown);
-            let manifest_file = package_manifests.get(pkg_name_str).cloned().unwrap_or_default();
+            let current_layer_str = package_layers
+                .get(pkg_name_str)
+                .cloned()
+                .unwrap_or_default();
+            let current_arch_layer = package_arch_layers
+                .get(pkg_name_str)
+                .cloned()
+                .unwrap_or(ArchLayer::Unknown);
+            let manifest_file = package_manifests
+                .get(pkg_name_str)
+                .cloned()
+                .unwrap_or_default();
 
             for dep in &pkg.dependencies {
                 if dep.kind != cargo_metadata::DependencyKind::Normal {
@@ -253,7 +270,13 @@ impl ManifestParserPort for CargoMetadataManifestAdapter {
                     || (!topology.allowed_external.contains_key(&current_layer_str)
                         && (topology.preset_name == "hexagonal" || topology.preset_name.is_empty()))
                 {
-                    validate_external_dependency(&current_arch_layer, pkg_name_str, dep, &manifest_file, &mut violations);
+                    validate_external_dependency(
+                        &current_arch_layer,
+                        pkg_name_str,
+                        dep,
+                        &manifest_file,
+                        &mut violations,
+                    );
                 }
             }
         }
@@ -279,8 +302,17 @@ fn validate_external_dependency(
     match current_layer {
         ArchLayer::Domain => {
             let domain_whitelist = [
-                "serde", "serde_json", "sha2", "chrono", "thiserror", "uuid",
-                "num-traits", "bitflags", "zeroize", "regex", "derive_more",
+                "serde",
+                "serde_json",
+                "sha2",
+                "chrono",
+                "thiserror",
+                "uuid",
+                "num-traits",
+                "bitflags",
+                "zeroize",
+                "regex",
+                "derive_more",
             ];
             if !domain_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {
@@ -304,7 +336,12 @@ fn validate_external_dependency(
         }
         ArchLayer::Ports => {
             let ports_whitelist = [
-                "serde", "serde_json", "chrono", "thiserror", "uuid", "async-trait",
+                "serde",
+                "serde_json",
+                "chrono",
+                "thiserror",
+                "uuid",
+                "async-trait",
             ];
             if !ports_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {
@@ -328,8 +365,15 @@ fn validate_external_dependency(
         }
         ArchLayer::Application => {
             let app_whitelist = [
-                "serde", "serde_json", "chrono", "hmac", "sha2", "thiserror",
-                "uuid", "regex", "async-trait",
+                "serde",
+                "serde_json",
+                "chrono",
+                "hmac",
+                "sha2",
+                "thiserror",
+                "uuid",
+                "regex",
+                "async-trait",
             ];
             if !app_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {

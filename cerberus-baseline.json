@@ -1,91 +1,67 @@
 [
   {
-    "rule": "AI-003",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "reflection_probe",
-    "message": "Unauthorized environment probe 'env::current_dir' in crate 'world-wiki'. Probing platform environment is restricted to infrastructure adapters.",
-    "fingerprint": "a6d2af5858c0117f8b494dce6360d8bf60b11151f13e29b8aac4ec177e0c6f73"
-  },
-  {
-    "rule": "AI-003",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "reflection_probe",
-    "message": "Unauthorized environment probe 'std::env::current_dir' in crate 'world-wiki'. Probing platform environment is restricted to infrastructure adapters.",
-    "fingerprint": "e8a9f7a2930d8bcd8bf76f1f64b735e8f00f33ac222c39bc1a5aed0879d5ec87"
-  },
-  {
-    "rule": "AI-003",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
-    "line": 1,
-    "symbol": "reflection_probe",
-    "message": "Unauthorized environment probe 'env::current_dir' in crate 'tauri-shell'. Probing platform environment is restricted to infrastructure adapters.",
-    "fingerprint": "52ca8cde1ae0892927d15d8e7eadf97c7b4d89d8cdf7114e84a01ea7465fb9b8"
-  },
-  {
-    "rule": "AI-003",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
-    "line": 1,
-    "symbol": "reflection_probe",
-    "message": "Unauthorized environment probe 'env::current_exe' in crate 'tauri-shell'. Probing platform environment is restricted to infrastructure adapters.",
-    "fingerprint": "68fde2b89b61645dcdd9c5e27d6a2e00ea9357046c9fa5df6abc6cb6d4e9c6e1"
-  },
-  {
-    "rule": "AI-003",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/main.rs",
-    "line": 1,
-    "symbol": "reflection_probe",
-    "message": "Unauthorized environment probe 'env::current_dir' in crate 'tauri-shell'. Probing platform environment is restricted to infrastructure adapters.",
-    "fingerprint": "9ed421060fec3c86f0762debd2a17946ea2c5fd390c4fe16693dfa26885b8698"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "run",
-    "message": "Unauthorized compiler warning suppression '#[allow(clippy :: too_many_arguments)]' on 'run'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "87f69d36351e5e3f1d1713d3de028ba6a05a8c6d604d0f5f2c2b3b55e036cfc1"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/src/logic/schema.rs",
-    "line": 1,
-    "symbol": "sync_database_schema",
-    "message": "Unauthorized compiler warning suppression '#[allow(dead_code)]' on 'sync_database_schema'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "f1433abd69292984de77d01229e2b3d4cd2eebc0115ac986e791c348685816b5"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
-    "line": 1,
-    "symbol": "clear_data_dir_provider",
-    "message": "Unauthorized compiler warning suppression '#[allow(dead_code)]' on 'clear_data_dir_provider'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "c2bb5425d0b23c95011009abb2207c806f009354480b43b95da16676c44dce19"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
-    "line": 1,
-    "symbol": "set_data_dir_provider",
-    "message": "Unauthorized compiler warning suppression '#[allow(dead_code)]' on 'set_data_dir_provider'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "e2cb7594c0f54250b56fa1984808660e99cb0b6dda3ee238f6ba307e74d5607b"
-  },
-  {
     "rule": "ARCH-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "use",
     "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "8f47d958ee9ca66d4cb4b72dc928470316d4d956160087ecedc6e55028e5ffa6"
+    "fingerprint": "736a33658a9427c47107c0e73e8a8fb007f9f9fc9f67af778cbad2d022fd561b"
   },
   {
     "rule": "ARCH-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "use",
     "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "ad454d2cd7aec723bcc58a9f1444bd38f3dbe98c1100e9726513e4918859568b"
+    "fingerprint": "b2e041511346ead57418f3156ecfd068e2ab9436d3f43e2baf3af447f3b8be80"
+  },
+  {
+    "rule": "ARCH-001",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
+    "fingerprint": "6b1509af4229831d8d9ccc6ce59aef88c6732d51dd33212a4cf28a084bbd1747"
+  },
+  {
+    "rule": "ARCH-001",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
+    "fingerprint": "b881a95c6678ed833d13095b5517b3acf664db1528c520e255672d4d4554d967"
+  },
+  {
+    "rule": "ARCH-001",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
+    "fingerprint": "124db4dc1ad952c163fc6e5e54ab57ba47d0d853a50d99cabe5583a98f2d2afb"
+  },
+  {
+    "rule": "ARCH-001",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
+    "fingerprint": "3c1095c75407db4e11a97539ef1dcf15b2c891a79b41221ba8a2abcbf4594455"
+  },
+  {
+    "rule": "ARCH-001",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
+    "fingerprint": "a7d82a05416c923036c0dda2b76a6eb9e3a903cc0d16a2e6617f4ddf66c0fdab"
+  },
+  {
+    "rule": "ARCH-001",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
+    "fingerprint": "d6d6a574c5d2e4b0125d13e09ef242c8c03c78266b47174c8ca246bdc3867311"
   },
   {
     "rule": "ARCH-005",
@@ -113,27 +89,27 @@
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
+    "file": "./src-tauri/src/logic/batch/executor.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (304.1) exceeds warning limit (200.0)",
-    "fingerprint": "567fae172de47774cada07a73adb4bbfbb4b295c08cae07c62386f8d08dfe25f"
+    "message": "High Architectural Pressure S_arch (245.1) exceeds warning limit (200.0)",
+    "fingerprint": "266e96820788a7e24340f49ea22966c7e8840d94af05bc28ea1c0e074e0bf6ce"
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
     "line": 1,
     "symbol": "file",
-    "message": "Architectural Pressure S_arch (611.9) exceeds critical limit (400.0)",
-    "fingerprint": "3949e1c527f1f859899a490004db70eb77b25173aa67e856b8620a7c3d055913"
+    "message": "High Architectural Pressure S_arch (201.9) exceeds warning limit (200.0)",
+    "fingerprint": "a992c99c11673b3b14252fa5649da4d834b55ac8f57476466da3d9a1c29c1e4d"
   },
   {
     "rule": "ARCH-030",
     "file": "./src-tauri/src/logic/volumes/mod.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (305.6) exceeds warning limit (200.0)",
-    "fingerprint": "7897453d7466c037ff909ec9a1b3d308784d1822300bc045565b76d58931984b"
+    "message": "High Architectural Pressure S_arch (314.7) exceeds warning limit (200.0)",
+    "fingerprint": "458a126e19572fa20e970d3cd696be4810226e15fda72eaef91c06bec23731a8"
   },
   {
     "rule": "ARCH-030",
@@ -164,16 +140,8 @@
     "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system_core.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (213.9) exceeds warning limit (200.0)",
-    "fingerprint": "b5bd3eeabbd3b11001c6518c330802020fc66b70ed0c98a454dbedf4c4f4ffcc"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "File SLOC (759) exceeds recommended limit (500)",
-    "fingerprint": "a9163f7d8812f67a82855de9e72596237a957faa3f27a3193e25c85813da523a"
+    "message": "High Architectural Pressure S_arch (213.7) exceeds warning limit (200.0)",
+    "fingerprint": "f70c1f8700c964f407f83d9be7e5042ff7d54a9f11419eb796819ed217a7402a"
   },
   {
     "rule": "ARCH-031",
@@ -182,22 +150,6 @@
     "symbol": "file",
     "message": "File SLOC (338) exceeds recommended limit (300)",
     "fingerprint": "cdae42ced36d22d62e8c5fe65cfe349e2db74fefa415bd7f5f868d8508f6b2d1"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "47e1b70d19dadb6847f7dafd606d40876976d78d65b058790f88c5ee934b465f"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./tauri-surreal-kit/backend/tauri_shell/src/logic/system.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "760fe6e2544c5ff589c3e7eb85894ed1ec8776c0a8f73abd5f5eb40e189b2f69"
   },
   {
     "rule": "ERR-003",
@@ -221,7 +173,7 @@
     "line": 1,
     "symbol": "get_entities_batch",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "305fb3b14703a29e028ff6d2c1924491cd8c60342d767602e6cad521e8b521a0"
+    "fingerprint": "396ae2db20c61f40776e50a1d34c9d11954395ed1e19ba3233da4d1812f23ebe"
   },
   {
     "rule": "ERR-003",
@@ -229,7 +181,7 @@
     "line": 1,
     "symbol": "save_entity_with_relations",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "8d9efc5150d1c8dd9686af7e886896f9e771f3adf50b11baf1530eeaa5d3c0ae"
+    "fingerprint": "838c7ce1e53f3a5331919cdfed0cdf05593f26015f11c9d50ca1cd37b81543ed"
   },
   {
     "rule": "ERR-003",
@@ -237,31 +189,15 @@
     "line": 1,
     "symbol": "upsert_connections_batch",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cecbdc230d4c016acda1b45677d085b7b96e8b60839c7c024f2a13697d2dd995"
+    "fingerprint": "8c556731ea70414b85968ca7138b704da32eb5c0574fdf6b96ba329ef80bf40a"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
+    "file": "./src-tauri/src/logic/batch/executor.rs",
     "line": 1,
     "symbol": "get_entities_batch_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a05463faf58a326d1852f1e186380bf8efea9e94b349652e08f02c006104ab7b"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
-    "line": 1,
-    "symbol": "save_entity_with_relations_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "754acfc04d00a53e9d477b871039ba40640905bb42bfff8f7eeb8d60d455c428"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
-    "line": 1,
-    "symbol": "upsert_connections_batch_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "351373d28cfa07ae5a388389a655224fad576402f2ca253600021b7f258af5bf"
+    "fingerprint": "c8cedf537a56baff960c447e64e4a2ce50752e5d954704f344b6bd1fbe209af1"
   },
   {
     "rule": "ERR-003",
@@ -269,7 +205,7 @@
     "line": 1,
     "symbol": "get_chapter_revisions",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "ef40a02287366c4e70a74fe76c827459f5660b6d7421383591b109eaa6c09a95"
+    "fingerprint": "b0794415a5f06a8172a1f63cbc8ab534cedcc65fed2cbbbdb492867480e2d3b4"
   },
   {
     "rule": "ERR-003",
@@ -277,7 +213,7 @@
     "line": 1,
     "symbol": "get_global_timeline",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "84fceb0443b69e23e57de998add20c4f01b99aec09427b4fc5fef66439a7f38b"
+    "fingerprint": "81e6a69f187fee7918d90ed2e15de18ba9fb71ccfa51aa05cc6b4bd7049b0764"
   },
   {
     "rule": "ERR-003",
@@ -285,7 +221,7 @@
     "line": 1,
     "symbol": "save_global_timeline",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0022d6a752387294a4d0940d7201c2b245bac4006d43378ffc82e2d289391b84"
+    "fingerprint": "9d9d2864e874228b569f15a57e3159a8a2d3ba74fc45052dff286b57e4ce7520"
   },
   {
     "rule": "ERR-003",
@@ -293,7 +229,7 @@
     "line": 1,
     "symbol": "save_text_blocks",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "742b8105b5b2be3eeec645562384ae04ada00e04177ca2697ad7bff3e68bb50e"
+    "fingerprint": "092c4e76b443e59f60f1e483bb76472438f12e2dd1664cbd40483be2ba783b02"
   },
   {
     "rule": "ERR-003",
@@ -301,47 +237,7 @@
     "line": 1,
     "symbol": "toggle_chapter_history_pin",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "01067f9367e640c63e4a56b1e4567fc6f38709f3ccd778176d4f61659a9d3a49"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "get_chapter_revisions_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "4b6de96eb10d7ee894d5c207ced8a10e13da278adb31a8ee6a505eb05a713cd7"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "get_global_timeline_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cfee224585d25044b93bd64dfdea955f5325ffaf20f86392576a7d410a61c420"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "save_global_timeline_inner",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "86cb5c6f46d3213df585f32edcee9742a759ef6fb370e70d8b2dded84694e712"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "save_text_blocks_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "79ca67167dfde153afebf8c21bcb7452c44e6b885e6b2c37b6a0ab77cfd3f5be"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "toggle_chapter_history_pin_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "169f1ff740298997714c39f16404be3479850f391c85172f2a079058597bd950"
+    "fingerprint": "e0bcc25ea009856d4e0b831feff7ffac85bd1648fabe58c54f519e9a2ab89969"
   },
   {
     "rule": "ERR-003",
@@ -349,7 +245,7 @@
     "line": 1,
     "symbol": "get_connections",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "95c0f9b70f1752d66f1f7db1f1f776dd24715f49185eb6343f6d73864746eac5"
+    "fingerprint": "dd5baee2c072c5706c431158b44dbb4f9bfa7b22b656a6a9ab0512e4c47d9d7f"
   },
   {
     "rule": "ERR-003",
@@ -357,7 +253,7 @@
     "line": 1,
     "symbol": "remove_connections_by_source",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a00256c53f8f8d673aaa2802f8dba97126055df28c4ffb89da20f111a4e420a3"
+    "fingerprint": "8d6c7b2e6b4205fdf1b32effc908f249a3416c437977a831bab5f1d037b84767"
   },
   {
     "rule": "ERR-003",
@@ -365,7 +261,7 @@
     "line": 1,
     "symbol": "save_connections",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "bde2b18490773e0e109dd98a356e11db68ed53ec03e22f100db5f9ddd45ce468"
+    "fingerprint": "6a0eb5431c134a13a7169c7fde09f64d7fe6b10f878f0aa6f2600fde5582a54c"
   },
   {
     "rule": "ERR-003",
@@ -373,23 +269,7 @@
     "line": 1,
     "symbol": "get_connections_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "f1d750f7aabcd223d4f1e1afc82e7739d996aec761014009bcc1495a3ff6be8c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "remove_connections_by_source_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "efafe2efcee8fd6627e0cc84a516970659f6770b5221be08aec1b772204b5f08"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "save_connections_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e993260141bd203c204077d43da6e7512102a55e290a1a1c95d8ab88b9c1a147"
+    "fingerprint": "e962c3a83a5835a5ef5df55f86c2ee691a35151879e00d3f59025ff62a167083"
   },
   {
     "rule": "ERR-003",
@@ -397,7 +277,7 @@
     "line": 1,
     "symbol": "create_entity_relation",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cdfc00edeb024760e2942d789c400ea355cc2ba4561fc1aefa6e0e3b9d22aa68"
+    "fingerprint": "57b490c8e139907af4cff3164c8f9fe09fc2f075b8813200ff07e7b8c92d74bd"
   },
   {
     "rule": "ERR-003",
@@ -405,7 +285,7 @@
     "line": 1,
     "symbol": "delete_entity",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "68703771f327b0fc77cb04df344387d3cea48888d5b7cf95562b0332eaea0cf0"
+    "fingerprint": "b134e3f69c2505a24712c4fea6aebede0af632fd2b20d25b2ef47b35780c5776"
   },
   {
     "rule": "ERR-003",
@@ -413,7 +293,7 @@
     "line": 1,
     "symbol": "delete_entity_relation",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "87280ea37d0691b624224e4a15a33809e091960e1ed3851c63399dc1be4e7f24"
+    "fingerprint": "3ee5f83d534e437186f8299f1c96a6ed584e97be7290a88731d74d73d792e9aa"
   },
   {
     "rule": "ERR-003",
@@ -421,7 +301,7 @@
     "line": 1,
     "symbol": "delete_entity_schema",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "11aea334d78f03edf617dd11c75c67851a53356b5bfc943e0e0287de1bb11bbf"
+    "fingerprint": "a75071ce86d7f9b1f24d26cd39e1e15ae1914cc0c5fd646cd7e8d0cbaae3ff5e"
   },
   {
     "rule": "ERR-003",
@@ -429,7 +309,7 @@
     "line": 1,
     "symbol": "delete_relation_schema",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "6950aa316e1b416b100e4b76eb4390b5a3b8f9ca993baeeedfc5cde430473397"
+    "fingerprint": "c03437e72e01c84d0030bf11f09968bc7ddf863f8a95136dedc5426d36deebeb"
   },
   {
     "rule": "ERR-003",
@@ -437,7 +317,7 @@
     "line": 1,
     "symbol": "get_entities",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "29b2589772bbb1b59cd93a20c0140bef4058cd3091a97ee6ed37598c5501165a"
+    "fingerprint": "53472f6b061e44a92d1ab02109d244a8fe9380eec23bfb8cb7ceefdc3534ace3"
   },
   {
     "rule": "ERR-003",
@@ -445,7 +325,7 @@
     "line": 1,
     "symbol": "get_entity",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b4c9abfdc7e25efc1555df6726722ef7ae910c33888365c7f9378641fd7201b9"
+    "fingerprint": "8f6aad89175b333750603bd5ace63d91d286c2115710ae01b6e655c7d0d23bdb"
   },
   {
     "rule": "ERR-003",
@@ -453,7 +333,7 @@
     "line": 1,
     "symbol": "get_entity_relations",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e1a75347eff788b749139cb45bce932c0b57e9754c668d4b8d5d6a8e5f52f801"
+    "fingerprint": "446e5e7530724d5f0dcaaf64fd650e590db86fa688ad8ccd724183250eb3cec3"
   },
   {
     "rule": "ERR-003",
@@ -461,7 +341,7 @@
     "line": 1,
     "symbol": "get_entity_revisions",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cd3b0e46db226e3073ab008230c9269dea37f73c23bccf533716b51d4d8ba16b"
+    "fingerprint": "bcbd6f59f05ecc66b6a224a838164cd7337569bdec071db20675831be3dbb70c"
   },
   {
     "rule": "ERR-003",
@@ -469,7 +349,7 @@
     "line": 1,
     "symbol": "get_entity_schemas",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "fa2be2fa9ef284ed8c075eaa4d741cbf4c71d3b107d6b28295c7e9b097d9f7c1"
+    "fingerprint": "8389f01e3295ede1472aa61cefa73fdc5e51111e5865b26d5181835735e7d81b"
   },
   {
     "rule": "ERR-003",
@@ -477,7 +357,7 @@
     "line": 1,
     "symbol": "get_relation_schemas",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "4d62567937c40ef4e2503d5e8edd3cdeffeaafd7f26afafeffdd2cd20660a091"
+    "fingerprint": "a4cbb61b42bae68ecf76d2a6943bc5ab5377bea825ca4800ceb3d621df68cfb7"
   },
   {
     "rule": "ERR-003",
@@ -485,7 +365,7 @@
     "line": 1,
     "symbol": "get_schema_history",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0ce701e4c06c5f7806b8e725d12fff7e51497e3b68fa7d1655c446ef53e3d0ae"
+    "fingerprint": "eb231f803bc2ac0974a690ce1651430ae4614ebc96e37184c088648cdfc00039"
   },
   {
     "rule": "ERR-003",
@@ -493,7 +373,7 @@
     "line": 1,
     "symbol": "save_entity",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "49e48fa80b7808030f913d5b3a6676df453f05838616dae65aac86ee6a026b5a"
+    "fingerprint": "da6146d1678b3a60e598dc891979a51c36587e894ec396b8876424245ccaa57b"
   },
   {
     "rule": "ERR-003",
@@ -501,7 +381,7 @@
     "line": 1,
     "symbol": "save_entity_schema",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "02a8472c4b20b8182c5272c8ca6bd22d1e42594191aa7ee315670021fa2ddaee"
+    "fingerprint": "3ce12b3245c0dba5006396bbdf0698310591e154ce498f80b032c2da5cdce7f4"
   },
   {
     "rule": "ERR-003",
@@ -509,7 +389,7 @@
     "line": 1,
     "symbol": "save_relation_schema",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "976ad5e4af9d1a4767cdfff14c816ec59f3822fa090ccd208d85371a7984ae8c"
+    "fingerprint": "a3c0c6acc37b8e3ef18e50127048880c2cd4eb98532c74b105ad9d8db70d327d"
   },
   {
     "rule": "ERR-003",
@@ -517,7 +397,7 @@
     "line": 1,
     "symbol": "search_entities",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "26e4559bd0b89ca214a9fdadce470a9f865fe293518bcd095d960b0cc7e8488f"
+    "fingerprint": "c20075a75a87fe4a4d068b7153ae586af1e3c82cecd534eddf5e14174cf04dc7"
   },
   {
     "rule": "ERR-003",
@@ -525,7 +405,7 @@
     "line": 1,
     "symbol": "toggle_entity_history_pin",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "4eba1ecfa11fa5330cc6f82956025ed4c0de2362288ec224cd8427e30b3701f9"
+    "fingerprint": "bc5ebf9122de3666d1e6f58de627e30c1f1150b1c5669cc604061f67c8b080c1"
   },
   {
     "rule": "ERR-003",
@@ -533,151 +413,31 @@
     "line": 1,
     "symbol": "toggle_schema_history_pin",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "3fd90c9f17b2f6e6861d432901942f30f13598f907b6397eed3b208b81132768"
+    "fingerprint": "bffe576b5392e9013fab1660571117ca9109887cd846e687367c0104f7133359"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "create_entity_relation_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "27d8ec73ce9629204813a9aecf70b010ae3f889c6431c17d06bce1c1bc3a1653"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "delete_entity_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "bee36e170e0078aa7c7152bd9801daf3a56174c17cb15bf5024ef55a36bb9191"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "delete_entity_relation_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cd23f287ba071f641484e88d97f2388d771cf29ec5cf3ca5ae9b9706ea4b6fee"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "delete_entity_schema_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "fad8602b804aa0768616f652c8c37a4f8f62dd589a1b356544ae94d921a12da5"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "delete_relation_schema_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2dfe3fcbbc509db67538ad3f179de5c1e74ad5391af6314cd8f711b19c95f81c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "get_entities_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2a9fdfff1d8094638319e7014ff44cab757bbeb5c5bf01983e228ab8ae42e1ea"
+    "fingerprint": "c7f1b00f67fac4cc28bd24c0b06841d2a05dd53d9e65f07dc2f0b297a3d4bcfc"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "get_entity_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b9d090c2aab981847c54f95769d535b383c71f5d28ab3d48a0bf9627b5864077"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "get_entity_relations_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a970cba05afd96bfcc3a7e7f0c2cd7acd4881e669fffd3169e5536f7126ea007"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "get_entity_revisions_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e330b3c4dbaad6d2c8b7446e767571f6b3bcea8cf9558e12134c8f5ce69992fb"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "get_entity_schemas_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "7a639d016bce0b0263c943024e07b7cbbceb3541a7854aa85067925ffbafca15"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "get_relation_schemas_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "df2c8726c5dd6c4c0ee0eb3344b2c2aae443129405fbc5ce1905ca0998ad369b"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "get_schema_history_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "686a3aa9443a44d788a45b2a74fe3c774c4e01795b1f86a1483235ff848a2eaf"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "save_entity_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "1d5b254781db5a4929ea5f9b3b313cb9bf37180a0f64857dd962f3975da6305d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "save_entity_schema_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a422f86f0b615cd20d70e86fd283a39dfab60e5466e509f885c55647933f79cd"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "save_relation_schema_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "4065eeccc5e41a7d47e0a244158d8fa0e27df624e4873fa773660a0b04f3cb6d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "search_entities_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cd7ca6e65c0c265481fbe2314115c856ac8e318f3b151067acd9c6205a7a167a"
+    "fingerprint": "520b2cef67509290768de221eb3c3b33e99a8c09d2c0c644d825f83c66139514"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
     "line": 1,
-    "symbol": "toggle_entity_history_pin_inner",
+    "symbol": "get_entity_relations_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "6c160a1b30eb8542ca7d958b565866c5f9730c14c1bfcaba4b060e3e4d7259bb"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "toggle_schema_history_pin_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "fcefe7ceb282e33563cb32dfd83163b7778738857b14ab548612134f0ec9ca6c"
+    "fingerprint": "1252dce4fcf259149cbffee7276cfa59ed574f5cdf44a84e9750fe852970f86d"
   },
   {
     "rule": "ERR-003",
@@ -685,7 +445,7 @@
     "line": 1,
     "symbol": "create_project",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0c81c852653ee6d6e24713660899c873c408f897889ab611ddf24e43a928ad4b"
+    "fingerprint": "ec30cfbe80e696c5fd663359614b4fd76d6084f2263bac1dbd59f7a60cc7da48"
   },
   {
     "rule": "ERR-003",
@@ -693,7 +453,7 @@
     "line": 1,
     "symbol": "delete_project",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "9fa83810dc16b82c9ec11aab888b1a1d4b2bbffa8f47c992327882ba569a4117"
+    "fingerprint": "a792778f5584ba31662a686f6f4e66957ca3c863c2442443c316fedd562678c9"
   },
   {
     "rule": "ERR-003",
@@ -701,7 +461,7 @@
     "line": 1,
     "symbol": "get_project_config",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "786b9af757d82b425798225b9d3bf432e14ff2af53e533461a7a4c6de72c595d"
+    "fingerprint": "404a2512b9e9aace6bff015d0c94010234cbb4be9470871583c6a528a3f35748"
   },
   {
     "rule": "ERR-003",
@@ -709,7 +469,7 @@
     "line": 1,
     "symbol": "get_projects",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "823c286fe18790f18b8245134e43c408b20e1e73a11d50e4930e5c8dfc2f8fbc"
+    "fingerprint": "bb39c7134cab12e6dda74b15b300d5c328d58d5c3830d430950f97c96316e384"
   },
   {
     "rule": "ERR-003",
@@ -717,47 +477,7 @@
     "line": 1,
     "symbol": "save_project_config",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "9932e944c7ea49d4dd48970e1b3b3b4a83669b1668b2df68c14e4e004fb623dd"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "create_project_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "560d0dde7a478a0732b19ef4f553df74b0010082b3cd0f6e538db2647dafcab4"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "delete_project_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0acf30bc4adf46619cbe025ca1fdf21baf9779382208472d25f8cfd88b975d89"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "get_project_config_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "778276c5b02be720b501e302d0d44c23f83ffdb59b467497ac1640217d32c211"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "get_projects_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "c00ffa98f556a5ac841bb4e6744af8770c7e11b4efd7e8ff4ff1c4ab1193b512"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "save_project_config_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "1d6a92791959c5f66a75ebb5639f609499ee0370f760d80a81993a39b3fbdac4"
+    "fingerprint": "58318023d020587b86d4cb4d7e7eec580f8345767dac4f048a2849fd1b94c705"
   },
   {
     "rule": "ERR-003",
@@ -765,7 +485,7 @@
     "line": 1,
     "symbol": "assign_chapter",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cc507e20822bf8e586a22649505132cd811db468c7bdc1717ce93d8d430b9773"
+    "fingerprint": "6989e9da65898d92f89ff0d220e72da93b7677ad39d00f43417f0caeb288edd9"
   },
   {
     "rule": "ERR-003",
@@ -773,7 +493,7 @@
     "line": 1,
     "symbol": "auto_extend_timeline",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "f38dedcd50c02a315c06c37d483ae9e1ff1c090f06c16b2933858de5ad53399a"
+    "fingerprint": "47d770c1d4a9778356525f9319c43188d5313b84344c41a0dbe4dd16184a52c3"
   },
   {
     "rule": "ERR-003",
@@ -781,7 +501,7 @@
     "line": 1,
     "symbol": "create_volume",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "25f3f5f9f5d5819ee6f641b87dd6f460aaccc1473a445e6274bd2994ba4e26ad"
+    "fingerprint": "58cc4f3c1219daad5bb5c7df285f9a653a8bc474b7ad3a92025717f7f2eb1499"
   },
   {
     "rule": "ERR-003",
@@ -789,7 +509,7 @@
     "line": 1,
     "symbol": "get_chapter_hierarchy",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "1711c8c9f328888e5fabcc862b91baa849b6eddd8ba3bc04bed12837d42a2f22"
+    "fingerprint": "387f0954a4fe84b76fd8c0371f3faf4dacf6bf3ed74cbd714543ae0988a7560d"
   },
   {
     "rule": "ERR-003",
@@ -797,7 +517,7 @@
     "line": 1,
     "symbol": "heal_deleted_chapter",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "207510eba970d54391c6949f86dd731dd73027129574b2bf814fab204531eb99"
+    "fingerprint": "54110bbed980a8f69c8584f5e47b7f373dcfafff418242c85b2118e09dc6545e"
   },
   {
     "rule": "ERR-003",
@@ -805,7 +525,7 @@
     "line": 1,
     "symbol": "reorder_node",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "d7bbc21600b745c1a6c851ffdb2ce0a0b050b7ee8d0e59af3767123b87860fa9"
+    "fingerprint": "315a8018023a589bde0c1b37d926c321682d1f1b75da520f1175463b9d70500e"
   },
   {
     "rule": "ERR-003",
@@ -813,7 +533,7 @@
     "line": 1,
     "symbol": "update_volume",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cdbd4516a301715408eca1a49cc4fb3394e774fbf18d0194bd930bb8cc1edf38"
+    "fingerprint": "525210061af31842f4bfac4ade2803ee4b0aa33f24814e8fecf9c94e1b151ce1"
   },
   {
     "rule": "ERR-003",
@@ -821,7 +541,7 @@
     "line": 1,
     "symbol": "assign_chapter_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "359f9b86aa015742262b9adb97f675a8a8d0afb70e02e5754943de2be48228dc"
+    "fingerprint": "85959a1d68a5489826ac580d8d341a8cf8793ba5b4346f5bf70083c0e858b8f6"
   },
   {
     "rule": "ERR-003",
@@ -829,47 +549,7 @@
     "line": 1,
     "symbol": "auto_extend_entities_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "536491464802fbdf037cd1420dddf6629d310eee176313e18e5e5687cabbf47f"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "create_volume_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b43f588df61d9cff0ea06113be066ed26edaa8e9d8f641b698bdf19d24bf412d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "get_chapter_hierarchy_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "f2fad9662c333722816b067ee02cb584efe2cb5fe6f3206db65fad8f0d035610"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "heal_deleted_chapter_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a768d816bb8843080eb9d91c4c15b361da84d2caff0a3613765cc0080f572d9f"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "reorder_node_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2ee63537b2df141b4773c6afc931d73db948f54c977d2dbc166ebe8415b89f1d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "update_volume_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "39bb3f0f4b93356962c7933c881965e38558fc547f09576d031ca37d0db7f02e"
+    "fingerprint": "c8d41d4d365ec418c045b25ccb4a0369263dd3117c6af444afa79ec4ff903aaf"
   },
   {
     "rule": "ERR-003",
@@ -1101,6 +781,14 @@
     "line": 1,
     "symbol": "expect",
     "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
+    "fingerprint": "09d792e0c439dd2805788888c998ed20b197a598fd71b1ed6701e3be6360f8f9"
+  },
+  {
+    "rule": "ROB-001",
+    "file": "./src-tauri/src/lib.rs",
+    "line": 1,
+    "symbol": "expect",
+    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
     "fingerprint": "3aab37395fcabd53436c47833c247b8d40191d2bf601c22a7584a2923803ff0b"
   },
   {
@@ -1113,43 +801,19 @@
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "7edc98d5df4a99d35977dc1b5be4626e2e388969c36e06e466553d6bb55f6026"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
+    "file": "./src-tauri/src/logic/batch/executor.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2623513053bd161433ef9a415443c5632aa31c6e65e7f44a1271e5f67117836d"
+    "fingerprint": "2dfcebbe6aff4dae6b090bdc10ba6bb8050f0a7d1053002b855673cea4feabed"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
+    "file": "./src-tauri/src/logic/batch/executor.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "3fc252ffdbf625c1248e0c0134d8f9aa3e9c6aeba85f47b65d3d8b6273e3755f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "563b4e37ce9c91fb9832a058da202e04c3c54d4a8a4fd7a6ae590bafde87ed0f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "977ada3449dc237a258e380990593fbc0283e0a011e34c5880fe960531420905"
+    "fingerprint": "818d06e41f94e881071a77dc0064d63d33c0cae66bfa7841e32f069ca42db880"
   },
   {
     "rule": "ROB-001",
@@ -1174,14 +838,6 @@
     "symbol": "unwrap",
     "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
     "fingerprint": "783bc3812f78b6f0b0ccc1f3f4adabc1966676ccb2e06b0d63c1ce7f5e874099"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "87ceedb44b1c904faf13a5acd5bfdcda84d746d6d0f89bd0ceb34b2726b5432e"
   },
   {
     "rule": "ROB-001",
@@ -1297,99 +953,99 @@
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "71f0eeb9a6a95e77b0d198e8b9b2fcba45c5cae16c4650472a0007859b32922a"
+    "fingerprint": "7db3bb1aafd835788824f42c7bb93173ec283cb15cded0efedcf868cb8179552"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7d75e49011db3d2d1a8c2645aef48e7a3b89381508429cbcb63f83b8906c1ac9"
+    "fingerprint": "7db3bb1aafd835788824f42c7bb93173ec283cb15cded0efedcf868cb8179552"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "7db3bb1aafd835788824f42c7bb93173ec283cb15cded0efedcf868cb8179552"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "4d976f7c74b9b42338dba575cd34dc7bf59cbfdb9d972d2ae5d0d58731e58c66"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "4d976f7c74b9b42338dba575cd34dc7bf59cbfdb9d972d2ae5d0d58731e58c66"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/history_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "4d976f7c74b9b42338dba575cd34dc7bf59cbfdb9d972d2ae5d0d58731e58c66"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "179f965b08a303002f73a1920ea30ea544989c6dd8777ca96ae54a9f1d0aac03"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/relations.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "179f965b08a303002f73a1920ea30ea544989c6dd8777ca96ae54a9f1d0aac03"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "8d4e3423ddec215e8fe7ccd9b3f41f7ccadd5ead6f108e6503bbc168f5ce55aa"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "8d4e3423ddec215e8fe7ccd9b3f41f7ccadd5ead6f108e6503bbc168f5ce55aa"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/types.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "2fca0b47accd9d8e5425a1d5df97fbcfafba0993a333380be08b14300aa6a119"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
+    "file": "./src-tauri/src/logic/entities/types.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed68a4993254c3058716a02f4176e61b7d8c06ada3d59f05f2ea160e6aae2b9e"
+    "fingerprint": "e274fa6537f567294853c920004d9705590651ea1e10991a5f51b71bfaea75bd"
   },
   {
     "rule": "ROB-001",
@@ -1421,14 +1077,6 @@
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "1b5493c9fa983fddac93b99a936104a0d448e5bb077b4cd38c0ff59d32a2acbf"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
     "fingerprint": "583d7dcbc422526e9cb2d691a72293006475e1b5b533f35286e81c1677601b8e"
   },
   {
@@ -1446,22 +1094,6 @@
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
     "fingerprint": "d2b1572c96883b80731b72f7a9acf818cbd0925991b7c03e7d8f5ba271744d19"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "d7b1a428f2552492e50c523c77a1b562d13ac9236cbf76987369bc4eda1931e5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "d7b1a428f2552492e50c523c77a1b562d13ac9236cbf76987369bc4eda1931e5"
   },
   {
     "rule": "ROB-001",
@@ -1774,78 +1406,6 @@
     "symbol": "expect",
     "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
     "fingerprint": "ef580d29fca70a308003441730ae958e3d196bc9b07908ca7818331649103347"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/bootstrap/services.rs",
-    "line": 1,
-    "symbol": "build_app_services",
-    "message": "High .clone() density detected (24 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "d516fa2e78e87ee9ed866288e58228b54df6848cde9c3b1c7b42e20bda0856a4"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/bootstrap/services.rs",
-    "line": 1,
-    "symbol": "build_surreal_app_services",
-    "message": "High .clone() density detected (30 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "372389d27d4c2fa5f76990814c8ac3a2a34f2b22f31277a564a19ca22dc28cdd"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "run",
-    "message": "High .clone() density detected (4 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "7bbc37b2ea230881215799531d7f1a96c8075ce45fc63a42c973e1bbfd0216a3"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
-    "line": 1,
-    "symbol": "save_entity_with_relations_inner",
-    "message": "High .clone() density detected (15 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "575fcd53fe81154ac30f5e70cc4c7486a92b0929fcecf197ab485aa50a48871c"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/logic/batch/mod.rs",
-    "line": 1,
-    "symbol": "upsert_connections_batch_inner",
-    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "53cc93937421cc63aa7ff10f06579bc269aa22c404fe65213efce8dddae5f875"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "create_entity_relation_inner",
-    "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "f72c60a8c6b5c5f47f67dd9eaa1b352ee7dcb9c6fd9f4dec56345921665bee55"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "save_entity_inner",
-    "message": "High .clone() density detected (12 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "c0239708595e65c2e6be506e8291cb33cfa860434c0aca49941adcb2662f9757"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/logic/entities/mod.rs",
-    "line": 1,
-    "symbol": "save_entity_schema_inner",
-    "message": "High .clone() density detected (19 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "310769162903ee4367606ceb058c13965d98bb087a5cf424c2829a333f613b62"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "get_chapter_hierarchy_inner",
-    "message": "High .clone() density detected (12 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "da770a1a7fe88d7a3bdf4ccac12603b406def54daf33e98e4e491977e67d0cad"
   },
   {
     "rule": "SLOP-001",

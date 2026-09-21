@@ -100,6 +100,33 @@ pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result
     }
 }
 
+fn setup_application(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let raw_db = tauri::async_runtime::block_on(init_database());
+    let db = std::sync::Arc::new(raw_db);
+    let event_publisher = std::sync::Arc::new(worldwiki_tauri::TauriEventPublisher::new(app.handle().clone()));
+    let services = bootstrap::services::build_surreal_app_services(Arc::clone(&db), event_publisher);
+    app.manage(worldwiki_tauri::AppState::new(services));
+    app.manage(AppState { db: (*db).clone() });
+    app.manage(AgentTasks::default());
+    Ok(())
+}
+
+fn handle_window_event(window: &tauri::Window, event: &tauri::WindowEvent) {
+    if let tauri::WindowEvent::CloseRequested { .. } = event {
+        println!("[DEBUG] Emergency backup before close...");
+        let state = window.state::<AppState>();
+        let db = state.db.clone();
+        let backup_path = worldwiki_infrastructure::paths::get_backup_path();
+        tauri::async_runtime::block_on(async move {
+            if let Err(e) = db.export(backup_path).await {
+                eprintln!("[ERROR] Failed to export backup: {}", e);
+            } else {
+                println!("[DB] Backup completed successfully.");
+            }
+        });
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     use logic::batch::*;
@@ -254,28 +281,8 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
-        .setup(|app| {
-            let db = std::sync::Arc::new(tauri::async_runtime::block_on(init_database()));
-            let event_publisher = std::sync::Arc::new(worldwiki_tauri::TauriEventPublisher::new(app.handle().clone()));
-            let services = bootstrap::services::build_surreal_app_services(db.clone(), event_publisher);
-            app.manage(worldwiki_tauri::AppState::new(services));
-            app.manage(AppState { db: (*db).clone() });
-            app.manage(AgentTasks::default());
-            Ok(())
-        })
-        .on_window_event(|window, event| if let tauri::WindowEvent::CloseRequested { .. } = event {
-            println!("[DEBUG] Emergency backup before close...");
-            let state = window.state::<AppState>();
-            let db = state.db.clone();
-            let backup_path = worldwiki_infrastructure::paths::get_backup_path();
-            tauri::async_runtime::block_on(async move {
-                if let Err(e) = db.export(backup_path).await {
-                    eprintln!("[ERROR] Failed to export backup: {}", e);
-                } else {
-                    println!("[DB] Backup completed successfully.");
-                }
-            });
-        })
+        .setup(setup_application)
+        .on_window_event(handle_window_event)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

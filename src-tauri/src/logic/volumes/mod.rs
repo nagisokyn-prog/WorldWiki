@@ -2,14 +2,16 @@ use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
 use surrealdb::Surreal;
 
-mod commands;
+pub mod commands;
+pub mod errors;
+
 pub use commands::*;
+pub use errors::*;
 
 pub async fn get_chapter_hierarchy_inner(
     db: &Surreal<Db>,
     project: &str,
-) -> Result<serde_json::Value, String> {
-    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy CALLED! project='{}'", project);
+) -> Result<serde_json::Value, VolumeError> {
     let pid_raw = project.trim().replace("projects:", "");
     let proj_rec = RecordId::new("projects", pid_raw.as_str());
     let pid_val = format!("projects:{}", pid_raw);
@@ -17,38 +19,37 @@ pub async fn get_chapter_hierarchy_inner(
 
     let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
 
-    let mut volumes_res = db.query(format!("SELECT * FROM volumes WHERE {}", query_cond))
-        .bind(("proj", proj_rec.clone()))
-        .bind(("pid_val", pid_val.clone()))
-        .bind(("pid_literal", pid_literal.clone()))
-        .await.map_err(|e| e.to_string())?;
-    let mut volumes: Vec<serde_json::Value> = volumes_res.take(0).unwrap_or_default();
-    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} volumes", volumes.len());
-
-    let mut chapters_res = db.query(format!("SELECT * FROM chapters WHERE {}", query_cond))
-        .bind(("proj", proj_rec.clone()))
-        .bind(("pid_val", pid_val.clone()))
-        .bind(("pid_literal", pid_literal.clone()))
-        .await.map_err(|e| e.to_string())?;
-    let mut chapters: Vec<serde_json::Value> = chapters_res.take(0).unwrap_or_default();
-    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} chapters", chapters.len());
-
-    let mut edges_res = db.query(format!(r#"
+    let query = format!(
+        r#"
+        SELECT * FROM volumes WHERE {cond};
+        SELECT * FROM chapters WHERE {cond};
         SELECT in, out, sort_order FROM contains 
         WHERE out IN (SELECT VALUE id FROM volumes WHERE {cond})
-           OR out IN (SELECT VALUE id FROM chapters WHERE {cond})
-    "#, cond = query_cond))
-        .bind(("proj", proj_rec.clone()))
-        .bind(("pid_val", pid_val.clone()))
-        .bind(("pid_literal", pid_literal.clone()))
-        .await.map_err(|e| e.to_string())?;
-    let edges: Vec<serde_json::Value> = edges_res.take(0).unwrap_or_default();
-    println!("🔥🔥🔥 [BACKEND] get_chapter_hierarchy: found {} edges", edges.len());
+           OR out IN (SELECT VALUE id FROM chapters WHERE {cond});
+        "#,
+        cond = query_cond
+    );
+
+    let mut res = db
+        .query(query)
+        .bind(("proj", proj_rec))
+        .bind(("pid_val", pid_val))
+        .bind(("pid_literal", pid_literal))
+        .await?;
+
+    let mut volumes: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
+    let mut chapters: Vec<serde_json::Value> = res.take(1).unwrap_or_default();
+    let edges: Vec<serde_json::Value> = res.take(2).unwrap_or_default();
 
     for vol in &mut volumes {
         if let Some(id) = vol.get("id").and_then(|i| i.as_str()) {
-            if let Some(edge) = edges.iter().find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id)) {
-                vol["sort_order"] = edge["sort_order"].clone();
+            if let Some(edge) = edges
+                .iter()
+                .find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id))
+            {
+                if let Some(so) = edge.get("sort_order") {
+                    vol["sort_order"] = so.clone();
+                }
             }
         }
     }
@@ -67,14 +68,19 @@ pub async fn get_chapter_hierarchy_inner(
     for chap in &mut chapters {
         if let Some(id) = chap.get("id").and_then(|i| i.as_str()) {
             if let Some(edge) = edges.iter().find(|e| {
-                e.get("out").and_then(|o| o.as_str()).map(|o| compare_record_ids(o, id)).unwrap_or(false)
+                e.get("out")
+                    .and_then(|o| o.as_str())
+                    .map(|o| compare_record_ids(o, id))
+                    .unwrap_or(false)
             }) {
                 if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
                     if parent.starts_with("volumes:") {
-                        chap["volume_id"] = edge["in"].clone();
+                        chap["volume_id"] = serde_json::Value::String(parent.to_string());
                     }
                 }
-                chap["sort_order"] = edge["sort_order"].clone();
+                if let Some(so) = edge.get("sort_order") {
+                    chap["sort_order"] = so.clone();
+                }
             }
         }
     }
@@ -92,25 +98,39 @@ pub async fn create_volume_inner(
     db: &Surreal<Db>,
     project: &str,
     title: &str,
-) -> Result<serde_json::Value, String> {
+) -> Result<serde_json::Value, VolumeError> {
     let pid_raw = project.trim().replace("projects:", "");
     let proj_rec = RecordId::new("projects", pid_raw.as_str());
-    
-    let mut max_order_res = db.query(r#"
+
+    let mut max_order_res = db
+        .query(
+            r#"
         SELECT math::max(sort_order) AS max_order FROM contains WHERE in = $proj GROUP ALL
-    "#).bind(("proj", proj_rec.clone())).await.map_err(|e| e.to_string())?;
+    "#,
+        )
+        .bind(("proj", RecordId::new("projects", pid_raw.as_str())))
+        .await?;
     let max_orders: Vec<serde_json::Value> = max_order_res.take(0).unwrap_or_default();
-    let next_order = max_orders.first()
+    let next_order = max_orders
+        .first()
         .and_then(|v| v.get("max_order"))
         .and_then(|n| n.as_i64())
-        .unwrap_or(-1) + 1;
+        .unwrap_or(-1)
+        + 1;
 
-    let mut create_res = db.query(r#"
+    let mut create_res = db
+        .query(
+            r#"
         LET $vol = (CREATE volumes SET project_id = $proj, title = $title RETURN VALUE id)[0];
         RELATE $proj -> contains -> $vol SET sort_order = $order;
         SELECT id, title, project_id, $order AS sort_order FROM $vol;
-    "#).bind(("proj", proj_rec.clone())).bind(("title", title.to_string())).bind(("order", next_order)).await.map_err(|e| e.to_string())?;
-    
+    "#,
+        )
+        .bind(("proj", proj_rec))
+        .bind(("title", title))
+        .bind(("order", next_order))
+        .await?;
+
     let vols: Vec<serde_json::Value> = create_res.take(2).unwrap_or_default();
     Ok(serde_json::json!(vols.first()))
 }
@@ -119,12 +139,16 @@ pub async fn update_volume_inner(
     db: &Surreal<Db>,
     id: &str,
     title: &str,
-) -> Result<(), String> {
-    let clean_id = if id.contains(':') { id.to_string() } else { format!("volumes:{}", id) };
+) -> Result<(), VolumeError> {
+    let clean_id = if id.contains(':') {
+        id.to_string()
+    } else {
+        format!("volumes:{}", id)
+    };
     db.query("UPDATE type::record($id) SET title = $title")
         .bind(("id", clean_id))
         .bind(("title", title.to_string()))
-        .await.map_err(|e| e.to_string())?;
+        .await?;
     Ok(())
 }
 
@@ -140,13 +164,22 @@ pub async fn assign_chapter_inner(
     project: &str,
     chapter_id: &str,
     volume_id: Option<String>,
-) -> Result<AutoExtendResult, String> {
-    println!("\n\n🔥🔥🔥 [BACKEND] assign_chapter CALLED! project='{}', chapter_id='{}', volume_id={:?}", project, chapter_id, volume_id);
+) -> Result<AutoExtendResult, VolumeError> {
     let pid_raw = project.trim().replace("projects:", "");
-    let clean_chap = if chapter_id.contains(':') { chapter_id.to_string() } else { format!("chapters:{}", chapter_id) };
+    let clean_chap = if chapter_id.contains(':') {
+        chapter_id.to_string()
+    } else {
+        format!("chapters:{}", chapter_id)
+    };
 
     fn make_record(table: &str, full_id: &str) -> RecordId {
-        let raw = full_id.split(':').nth(1).unwrap_or(full_id).trim_matches('⟨').trim_matches('⟩').trim_matches('`');
+        let raw = full_id
+            .split(':')
+            .nth(1)
+            .unwrap_or(full_id)
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim_matches('`');
         RecordId::new(table, raw)
     }
 
@@ -156,25 +189,34 @@ pub async fn assign_chapter_inner(
         RecordId::new("projects", pid_raw.as_str())
     };
 
-    let chap_raw = clean_chap.split(':').nth(1).unwrap_or(&clean_chap).trim_matches('⟨').trim_matches('⟩').trim_matches('`');
+    let chap_raw = clean_chap
+        .split(':')
+        .nth(1)
+        .unwrap_or(&clean_chap)
+        .trim_matches('⟨')
+        .trim_matches('⟩')
+        .trim_matches('`');
     let chap_rec = RecordId::new("chapters", chap_raw);
 
-    let mut res = db.query(r#"
+    let mut res = db
+        .query(
+            r#"
         DELETE contains WHERE out = $chap;
         RELATE $parent -> contains -> $chap SET sort_order = 9999;
-    "#)
-    .bind(("chap", chap_rec))
-    .bind(("parent", new_parent))
-    .await.map_err(|e| e.to_string())?;
+    "#,
+        )
+        .bind(("chap", chap_rec))
+        .bind(("parent", new_parent))
+        .await?;
 
     let errs = res.take_errors();
     if !errs.is_empty() {
         let e = errs.values().next().unwrap();
-        eprintln!("[ERROR] assign_chapter error: {}", e);
-        return Err(e.to_string());
+        return Err(VolumeError::OperationFailed(format!("assign_chapter error: {}", e)));
     }
 
-    let updated_count = auto_extend_entities_inner(db, project, &clean_chap, volume_id.clone()).await?;
+    let updated_count =
+        auto_extend_entities_inner(db, project, &clean_chap, volume_id.clone()).await?;
 
     Ok(AutoExtendResult {
         chapter_id: clean_chap,
@@ -183,7 +225,10 @@ pub async fn assign_chapter_inner(
     })
 }
 
-fn update_point_if_auto_extend(val: &mut serde_json::Value, new_point: &serde_json::Value) -> bool {
+fn update_point_if_auto_extend(
+    val: &mut serde_json::Value,
+    new_point: &serde_json::Value,
+) -> bool {
     let mut modified = false;
     match val {
         serde_json::Value::Object(map) => {
@@ -221,13 +266,17 @@ pub async fn auto_extend_entities_inner(
     project: &str,
     chapter_id: &str,
     volume_id: Option<String>,
-) -> Result<u64, String> {
+) -> Result<u64, VolumeError> {
     let pid_raw = project.trim().replace("projects:", "");
     let proj_rec = RecordId::new("projects", pid_raw.as_str());
     let pid_val = format!("projects:{}", pid_raw);
     let pid_literal = format!("projects:`{}`", pid_raw);
 
-    let clean_chap = if chapter_id.contains(':') { chapter_id.to_string() } else { format!("chapters:{}", chapter_id) };
+    let clean_chap = if chapter_id.contains(':') {
+        chapter_id.to_string()
+    } else {
+        format!("chapters:{}", chapter_id)
+    };
 
     let new_point = serde_json::json!({
         "chapter_id": clean_chap,
@@ -236,23 +285,34 @@ pub async fn auto_extend_entities_inner(
     });
 
     let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
-    let mut res = db.query(format!("SELECT id, attributes FROM entities WHERE {}", query_cond))
+    let mut res = db
+        .query(format!(
+            "SELECT id, attributes FROM entities WHERE {}",
+            query_cond
+        ))
         .bind(("proj", proj_rec))
         .bind(("pid_val", pid_val))
         .bind(("pid_literal", pid_literal))
-        .await
-        .map_err(|e| e.to_string())?;
+        .await?;
 
     let mut entities: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
     let mut updated_count: u64 = 0;
 
     for entity in &mut entities {
-        let id_opt = entity.get("id").and_then(|i| i.as_str()).map(|s| s.to_string());
+        let id_opt = entity
+            .get("id")
+            .and_then(|i| i.as_str())
+            .map(|s| s.to_string());
         if let Some(id_str) = id_opt {
             if let Some(attr) = entity.get_mut("attributes") {
                 if update_point_if_auto_extend(attr, &new_point) {
-                    let clean_id = if id_str.contains(':') { id_str } else { format!("entities:{}", id_str) };
-                    let _ = db.query("UPDATE type::record($id) SET attributes = $attr")
+                    let clean_id = if id_str.contains(':') {
+                        id_str
+                    } else {
+                        format!("entities:{}", id_str)
+                    };
+                    let _ = db
+                        .query("UPDATE type::record($id) SET attributes = $attr")
                         .bind(("id", clean_id))
                         .bind(("attr", attr.clone()))
                         .await;
@@ -262,7 +322,6 @@ pub async fn auto_extend_entities_inner(
         }
     }
 
-    println!("🔥🔥🔥 [BACKEND] auto_extend_entities: updated {} entities with new chapter '{}'", updated_count, chapter_id);
     Ok(updated_count)
 }
 
@@ -314,30 +373,45 @@ pub async fn heal_deleted_chapter_inner(
     project: &str,
     deleted_chapter_id: &str,
     fallback_point: Option<AutoExtendResult>,
-) -> Result<u64, String> {
+) -> Result<u64, VolumeError> {
     let pid_raw = project.trim().replace("projects:", "");
     let proj_rec = RecordId::new("projects", pid_raw.as_str());
     let pid_val = format!("projects:{}", pid_raw);
     let pid_literal = format!("projects:`{}`", pid_raw);
 
     let query_cond = "project_id = $proj OR project_id = $pid_val OR project_id = $pid_literal";
-    let mut res = db.query(format!("SELECT id, attributes FROM entities WHERE {}", query_cond))
+    let mut res = db
+        .query(format!(
+            "SELECT id, attributes FROM entities WHERE {}",
+            query_cond
+        ))
         .bind(("proj", proj_rec))
         .bind(("pid_val", pid_val))
         .bind(("pid_literal", pid_literal))
-        .await
-        .map_err(|e| e.to_string())?;
+        .await?;
 
     let mut entities: Vec<serde_json::Value> = res.take(0).unwrap_or_default();
     let mut updated_count: u64 = 0;
 
     for entity in &mut entities {
-        let id_opt = entity.get("id").and_then(|i| i.as_str()).map(|s| s.to_string());
+        let id_opt = entity
+            .get("id")
+            .and_then(|i| i.as_str())
+            .map(|s| s.to_string());
         if let Some(id_str) = id_opt {
             if let Some(attr) = entity.get_mut("attributes") {
-                if heal_point_if_matches_chapter(attr, deleted_chapter_id, fallback_point.as_ref()) {
-                    let clean_id = if id_str.contains(':') { id_str } else { format!("entities:{}", id_str) };
-                    let _ = db.query("UPDATE type::record($id) SET attributes = $attr")
+                if heal_point_if_matches_chapter(
+                    attr,
+                    deleted_chapter_id,
+                    fallback_point.as_ref(),
+                ) {
+                    let clean_id = if id_str.contains(':') {
+                        id_str
+                    } else {
+                        format!("entities:{}", id_str)
+                    };
+                    let _ = db
+                        .query("UPDATE type::record($id) SET attributes = $attr")
                         .bind(("id", clean_id))
                         .bind(("attr", attr.clone()))
                         .await;
@@ -347,7 +421,6 @@ pub async fn heal_deleted_chapter_inner(
         }
     }
 
-    println!("🔥🔥🔥 [BACKEND] heal_deleted_chapter: updated {} entities from deleted '{}' to fallback {:?}", updated_count, deleted_chapter_id, fallback_point);
     Ok(updated_count)
 }
 
@@ -357,13 +430,35 @@ pub async fn reorder_node_inner(
     node_type: &str,
     id: &str,
     sort_order: i64,
-) -> Result<(), String> {
-    let clean_id = if id.contains(':') { id.to_string() } else { format!("{}s:{}", node_type, id) };
-    
+) -> Result<(), VolumeError> {
+    let clean_id = if id.contains(':') {
+        id.to_string()
+    } else {
+        format!("{}s:{}", node_type, id)
+    };
+
     db.query("UPDATE contains SET sort_order = $order WHERE out = type::record($id)")
         .bind(("id", clean_id))
         .bind(("order", sort_order))
-        .await.map_err(|e| e.to_string())?;
-        
+        .await?;
+
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn volume_error_formatting_and_conversion() {
+        let not_found = VolumeError::NotFound("v1".to_string());
+        assert_eq!(not_found.to_string(), "Volume not found: v1");
+
+        let err_str: String = not_found.into();
+        assert_eq!(err_str, "Volume not found: v1");
+
+        let op_fail = VolumeError::OperationFailed("lock error".to_string());
+        assert_eq!(op_fail.to_string(), "Volume operation failed: lock error");
+    }
+}
+

@@ -11,7 +11,9 @@ pub async fn get_entities_batch(
     entity_types: Vec<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Map<String, Value>, String> {
-    get_entities_batch_inner(&state.db, &project, entity_types).await
+    get_entities_batch_inner(&state.db, &project, entity_types)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -22,7 +24,9 @@ pub async fn upsert_connections_batch(
     connections: Vec<EntityRel>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    upsert_connections_batch_inner(&state.db, &project, &source_type, &source_id, connections).await
+    upsert_connections_batch_inner(&state.db, &project, &source_type, &source_id, connections)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -32,5 +36,8 @@ pub async fn save_entity_with_relations(
     foreign_updates: Vec<Entity>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<Entity, String> {
-    save_entity_with_relations_inner(&state.db, &project, entity, foreign_updates).await
+    save_entity_with_relations_inner(&state.db, &project, entity, foreign_updates)
+        .await
+        .map_err(Into::into)
 }
+

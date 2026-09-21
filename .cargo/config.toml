@@ -7,9 +7,9 @@ retry = 5
 git-fetch-with-cli = true
 
 [alias]
-cov = "llvm-cov --workspace"
-cov-html = "llvm-cov --workspace --html --open"
-test-all = "test --workspace"
+cov = "llvm-cov nextest --workspace"
+cov-html = "llvm-cov nextest --workspace --html --open"
+test-all = "nextest run --workspace"
 
 
 

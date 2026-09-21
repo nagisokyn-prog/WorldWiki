@@ -3,6 +3,8 @@ name = "worldwiki-infrastructure"
 version = "0.85.0"
 edition = "2021"
 description = "Driven Adapters for SurrealDB, llama.cpp, OpenXML, and FileSystem"
+[package.metadata.cerberus]
+layer = "infrastructure"
 
 [dependencies]
 worldwiki-domain = { path = "../worldwiki-domain" }

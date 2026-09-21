@@ -65,121 +65,73 @@ pub async fn save_entity_inner(
     project: &str,
     entity: Entity,
 ) -> Result<Entity, EntityError> {
-    let mut val = serde_json::to_value(&entity)?;
-    if let Some(obj) = val.as_object_mut() {
-        obj.remove("id");
-        obj.remove("created_at");
-        obj.remove("updated_at");
-        obj.remove("project_id");
-    }
+    let pid_val = safe_pid(project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
 
-    let result: Option<Value> = if let Some(id_str) = &entity.id {
+    let id_opt = entity.id;
+    let entity_type = entity.entity_type;
+    let name = entity.name;
+    let description = entity.description;
+    let attributes = entity.attributes;
+    let tags = entity.tags;
+    let embeddings = entity.embeddings;
+
+    let has_desc = description.is_some();
+    let has_attrs = !attributes.is_null();
+    let has_tags = !tags.is_empty();
+    let has_embeds = embeddings.is_some();
+
+    let mut query = if let Some(ref id_str) = id_opt {
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        let actual_id = if parts.len() == 2 {
-            parts[1]
-        } else {
-            id_str.as_str()
-        };
-        let pid_val = safe_pid(project);
-        let pid_raw = pid_val.replace("projects:", "");
-        let pid_literal = format!("projects:`{}`", pid_raw);
+        let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
         let id_val = safe_id("entities", actual_id);
-        let mut query = format!(
-            "
-            UPSERT type::record($id) SET
-                project_id = {},
-                entity_type = $entity_type,
-                name = $name
-        ",
-            pid_literal
-        );
-
-        if entity.description.is_some() {
-            query.push_str(", description = $desc");
-        }
-        if !entity.attributes.is_null() {
-            query.push_str(", attributes = $attrs");
-        }
-        if !entity.tags.is_empty() {
-            query.push_str(", tags = $tags");
-        }
-        if entity.embeddings.is_some() {
-            query.push_str(", embeddings = $embeds");
-        }
-
-        let mut q = db
-            .query(query)
-            .bind(("id", id_val))
-            .bind(("entity_type", entity.entity_type.clone()))
-            .bind(("name", entity.name.clone()));
-
-        if let Some(d) = &entity.description {
-            q = q.bind(("desc", d.clone()));
-        }
-        if !entity.attributes.is_null() {
-            q = q.bind(("attrs", entity.attributes.clone()));
-        }
-        if !entity.tags.is_empty() {
-            q = q.bind(("tags", entity.tags.clone()));
-        }
-        if let Some(e) = &entity.embeddings {
-            q = q.bind(("embeds", e.clone()));
-        }
-
-        let mut res = q.await?;
-        let saved: Option<Value> = res.take(0)?;
-        saved
+        format!(
+            "UPSERT type::record('{}') SET project_id = {}, entity_type = $entity_type, name = $name",
+            id_val, pid_literal
+        )
     } else {
-        let pid_val = safe_pid(project);
-        let pid_raw = pid_val.replace("projects:", "");
-        let pid_literal = format!("projects:`{}`", pid_raw);
-        let mut query = format!(
-            "
-            CREATE entities SET
-                project_id = {},
-                entity_type = $entity_type,
-                name = $name
-        ",
+        format!(
+            "CREATE entities SET project_id = {}, entity_type = $entity_type, name = $name",
             pid_literal
-        );
-
-        if entity.description.is_some() {
-            query.push_str(", description = $desc");
-        }
-        if !entity.attributes.is_null() {
-            query.push_str(", attributes = $attrs");
-        }
-        if !entity.tags.is_empty() {
-            query.push_str(", tags = $tags");
-        }
-        if entity.embeddings.is_some() {
-            query.push_str(", embeddings = $embeds");
-        }
-
-        let mut q = db
-            .query(query)
-            .bind(("entity_type", entity.entity_type.clone()))
-            .bind(("name", entity.name.clone()));
-
-        if let Some(d) = &entity.description {
-            q = q.bind(("desc", d.clone()));
-        }
-        if !entity.attributes.is_null() {
-            q = q.bind(("attrs", entity.attributes.clone()));
-        }
-        if !entity.tags.is_empty() {
-            q = q.bind(("tags", entity.tags.clone()));
-        }
-        if let Some(e) = &entity.embeddings {
-            q = q.bind(("embeds", e.clone()));
-        }
-
-        let mut res = q.await?;
-        let saved: Option<Value> = res.take(0)?;
-        saved
+        )
     };
 
-    match result {
+    if has_desc {
+        query.push_str(", description = $desc");
+    }
+    if has_attrs {
+        query.push_str(", attributes = $attrs");
+    }
+    if has_tags {
+        query.push_str(", tags = $tags");
+    }
+    if has_embeds {
+        query.push_str(", embeddings = $embeds");
+    }
+
+    let mut q = db
+        .query(query)
+        .bind(("entity_type", entity_type))
+        .bind(("name", name));
+
+    if let Some(d) = description {
+        q = q.bind(("desc", d));
+    }
+    if has_attrs {
+        q = q.bind(("attrs", attributes));
+    }
+    if has_tags {
+        q = q.bind(("tags", tags));
+    }
+    if let Some(e) = embeddings {
+        q = q.bind(("embeds", e));
+    }
+
+    let mut res = q.await?;
+    let saved: Option<Value> = res.take(0)?;
+
+    match saved {
         Some(mut v) => {
             flatten_thing(&mut v);
             let parsed: Entity = serde_json::from_value(v)?;

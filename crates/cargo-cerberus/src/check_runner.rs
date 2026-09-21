@@ -42,8 +42,29 @@ pub struct CheckExecutionOptions<'a> {
 pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
     let scope = resolve_scope(options.frontend_only, options.backend_only);
 
+    let manifest_path = if options.path.is_file() && options.path.ends_with("Cargo.toml") {
+        options.path.to_path_buf()
+    } else {
+        options.path.join("Cargo.toml")
+    };
+
+    let matrix = if manifest_path.exists() {
+        if let Ok(metadata) = cargo_metadata::MetadataCommand::new().manifest_path(&manifest_path).exec() {
+            let ws_arch: cerberus_domain::WorkspaceArchMetadata = metadata
+                .workspace_metadata
+                .get("cerberus")
+                .and_then(|v| serde_json::from_value(v.clone()).ok())
+                .unwrap_or_default();
+            cerberus_domain::LayerTopologyMatrix::from_workspace_metadata(&ws_arch)
+        } else {
+            cerberus_domain::LayerTopologyMatrix::default()
+        }
+    } else {
+        cerberus_domain::LayerTopologyMatrix::default()
+    };
+
     let parsers: Vec<Arc<dyn AstParserPort>> = vec![
-        Arc::new(RustSynParserAdapter::default()),
+        Arc::new(RustSynParserAdapter::with_matrix(matrix)),
         Arc::new(VueSfcParserAdapter::with_config(
             options.rules_repo.cerberus_config.clone(),
         )),

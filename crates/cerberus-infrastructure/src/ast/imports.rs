@@ -154,8 +154,18 @@ impl<'a> ImportChecker<'a> {
         } else {
             // 3. Pure Whitelist check (fast-path allow)
             const PURE_WHITELIST: &[&str] = &[
-                "serde", "thiserror", "derive_more", "bitflags", "smallvec", "tinyvec",
-                "rust_decimal", "itertools", "unicode_segmentation", "unicode_width", "strum", "strum_macros",
+                "serde",
+                "thiserror",
+                "derive_more",
+                "bitflags",
+                "smallvec",
+                "tinyvec",
+                "rust_decimal",
+                "itertools",
+                "unicode_segmentation",
+                "unicode_width",
+                "strum",
+                "strum_macros",
             ];
             let is_in_pure_whitelist = PURE_WHITELIST.contains(&root_segment.as_str());
 
@@ -177,18 +187,36 @@ impl<'a> ImportChecker<'a> {
             }
 
             // 5. Capability Fallback for pure domain layers when not matched by matrix
-            if !matrix_matched && !is_in_pure_whitelist && (
-                self.is_domain_crate()
+            if !matrix_matched
+                && !is_in_pure_whitelist
+                && (self.is_domain_crate()
                     || current_layer == "domain"
                     || current_layer == "core"
                     || current_layer == "entities"
                     || current_layer == "entity"
-                    || current_layer == "domain_core"
-            ) {
+                    || current_layer == "domain_core")
+            {
                 let default_forbidden_domain = [
-                    "tokio", "surrealdb", "reqwest", "hyper", "axum", "actix", "sqlx",
-                    "diesel", "sea_orm", "mongodb", "redis", "warp", "tonic", "ureq",
-                    "rusqlite", "postgres", "deadpool", "r2d2", "async_std", "smol",
+                    "tokio",
+                    "surrealdb",
+                    "reqwest",
+                    "hyper",
+                    "axum",
+                    "actix",
+                    "sqlx",
+                    "diesel",
+                    "sea_orm",
+                    "mongodb",
+                    "redis",
+                    "warp",
+                    "tonic",
+                    "ureq",
+                    "rusqlite",
+                    "postgres",
+                    "deadpool",
+                    "r2d2",
+                    "async_std",
+                    "smol",
                 ];
                 let root_lower = root_segment.to_lowercase();
                 let is_forbidden_sdk = default_forbidden_domain.contains(&root_lower.as_str());
@@ -222,7 +250,9 @@ impl<'a> ImportChecker<'a> {
             || self.crate_name.contains("monolith");
 
         if should_check_boundaries {
-            if let Some(mod_violation) = self.check_module_boundary_violation(path_segments, item_use) {
+            if let Some(mod_violation) =
+                self.check_module_boundary_violation(path_segments, item_use)
+            {
                 violations.push(mod_violation);
             }
         }
@@ -278,7 +308,9 @@ impl<'a> ImportChecker<'a> {
             if let Some(matrix) = self.matrix {
                 let target_layer = self.detect_target_layer(path_segments);
                 if let Some(target) = target_layer {
-                    if target != current_layer && !matrix.is_dependency_allowed(&current_layer, &target) {
+                    if target != current_layer
+                        && !matrix.is_dependency_allowed(&current_layer, &target)
+                    {
                         violations.push(self.build_violation(
                             "ARCH-007",
                             item_use,
@@ -425,7 +457,9 @@ impl<'a> ImportChecker<'a> {
 
         // 1. If the last segment is PascalCase (Struct/Trait/Enum/Type), drop it from layer candidates
         let candidates: &[String] = if path_segments.len() > 1
-            && path_segments.last().is_some_and(|s| s.chars().next().is_some_and(|c| c.is_uppercase()))
+            && path_segments
+                .last()
+                .is_some_and(|s| s.chars().next().is_some_and(|c| c.is_uppercase()))
         {
             &path_segments[..path_segments.len() - 1]
         } else {
@@ -435,7 +469,9 @@ impl<'a> ImportChecker<'a> {
         // 2. Query dynamic LayerTopologyMatrix if present
         if let Some(matrix) = self.matrix {
             for seg in candidates {
-                let seg_clean = seg.trim_start_matches("crate::").trim_start_matches("super::");
+                let seg_clean = seg
+                    .trim_start_matches("crate::")
+                    .trim_start_matches("super::");
                 let detected = matrix.detect_layer(seg_clean, Some(seg_clean));
                 if detected != "unknown" {
                     return Some(detected);
@@ -554,7 +590,10 @@ mod tests {
     fn test_import_checker_app_violations_arch002() {
         let code = "use tauri::command;";
         let item_use: ItemUse = syn::parse_str(code).unwrap();
-        let checker = ImportChecker::new(Path::new("src/application/use_case.rs"), "worldwiki-application");
+        let checker = ImportChecker::new(
+            Path::new("src/application/use_case.rs"),
+            "worldwiki-application",
+        );
         let violations = checker.check_use(&item_use);
         assert!(violations.iter().any(|v| v.rule_id == "ARCH-002"));
     }
@@ -563,7 +602,8 @@ mod tests {
     fn test_import_checker_unauthorized_tauri_arch005() {
         let code = "use tauri::AppHandle;";
         let item_use: ItemUse = syn::parse_str(code).unwrap();
-        let checker = ImportChecker::new(Path::new("src/infra/repo.rs"), "worldwiki-infrastructure");
+        let checker =
+            ImportChecker::new(Path::new("src/infra/repo.rs"), "worldwiki-infrastructure");
         let violations = checker.check_use(&item_use);
         assert!(violations.iter().any(|v| v.rule_id == "ARCH-005"));
     }
@@ -572,9 +612,15 @@ mod tests {
     fn test_import_checker_authorized_tauri_and_group_tree() {
         let code = "use tauri::{AppHandle, Manager};";
         let item_use: ItemUse = syn::parse_str(code).unwrap();
-        let checker = ImportChecker::new(Path::new("src/adapters/tauri/commands.rs"), "worldwiki-tauri");
+        let checker = ImportChecker::new(
+            Path::new("src/adapters/tauri/commands.rs"),
+            "worldwiki-tauri",
+        );
         let violations = checker.check_use(&item_use);
-        assert!(violations.is_empty(), "Tauri adapter is authorized to import tauri");
+        assert!(
+            violations.is_empty(),
+            "Tauri adapter is authorized to import tauri"
+        );
     }
 
     #[test]
@@ -595,20 +641,15 @@ mod tests {
         // CQRS Write importing Read model
         let code_cqrs = "use crate::read_db::UserQueryRepository;";
         let item_use_cqrs: ItemUse = syn::parse_str(code_cqrs).unwrap();
-        let checker_cqrs = ImportChecker::new(
-            Path::new("src/command/create_user.rs"),
-            "cqrs_app",
-        );
+        let checker_cqrs = ImportChecker::new(Path::new("src/command/create_user.rs"), "cqrs_app");
         let violations_cqrs = checker_cqrs.check_use(&item_use_cqrs);
         assert!(violations_cqrs.iter().any(|v| v.rule_id == "CQRS-001"));
 
         // Event-driven Producer importing Consumer
         let code_evt = "use crate::consumer::send_email_handler;";
         let item_use_evt: ItemUse = syn::parse_str(code_evt).unwrap();
-        let checker_evt = ImportChecker::new(
-            Path::new("src/producer/order_created.rs"),
-            "event_app",
-        );
+        let checker_evt =
+            ImportChecker::new(Path::new("src/producer/order_created.rs"), "event_app");
         let violations_evt = checker_evt.check_use(&item_use_evt);
         assert!(violations_evt.iter().any(|v| v.rule_id == "EVT-001"));
     }
@@ -633,11 +674,8 @@ mod tests {
         let matrix = LayerTopologyMatrix::preset_matrix("microkernel");
         let code = "use kernel_api::Plugin;";
         let item_use: ItemUse = syn::parse_str(code).unwrap();
-        let checker = ImportChecker::new(
-            Path::new("kernel-core/src/lib.rs"),
-            "kernel-core",
-        )
-        .with_matrix(&matrix);
+        let checker = ImportChecker::new(Path::new("kernel-core/src/lib.rs"), "kernel-core")
+            .with_matrix(&matrix);
 
         let violations = checker.check_use(&item_use);
         assert!(violations.is_empty(), "kernel-core importing trait Plugin from kernel_api must NOT trigger false positive ARCH-007");
@@ -647,7 +685,8 @@ mod tests {
     fn test_import_checker_glob_and_rename_and_std_fs() {
         let code_glob = "use std::fs::*;";
         let item_use_glob: ItemUse = syn::parse_str(code_glob).unwrap();
-        let checker_domain = ImportChecker::new(Path::new("src/domain/model.rs"), "worldwiki-domain");
+        let checker_domain =
+            ImportChecker::new(Path::new("src/domain/model.rs"), "worldwiki-domain");
         let violations = checker_domain.check_use(&item_use_glob);
         assert!(violations.iter().any(|v| v.rule_id == "ARCH-001"));
 
@@ -672,32 +711,53 @@ mod tests {
 
         let code_super = "use super::repository::UserRepository;";
         let item_use_super: ItemUse = syn::parse_str(code_super).unwrap();
-        let checker_service = ImportChecker::new(Path::new("src/controller/user.rs"), "layered_app");
+        let checker_service =
+            ImportChecker::new(Path::new("src/controller/user.rs"), "layered_app");
         let _ = checker_service.check_use(&item_use_super);
     }
 
     #[test]
     fn test_import_checker_target_layer_detection_and_fallback_closures() {
         let checker = ImportChecker::new(Path::new("src/infra/repo.rs"), "my_crate");
-        
+
         // Empty segments
         assert_eq!(checker.detect_target_layer(&[]), None);
 
         // Single lowercase candidate (not PascalCase)
         let single = vec!["domain".to_string()];
-        assert_eq!(checker.detect_target_layer(&single), Some("domain".to_string()));
+        assert_eq!(
+            checker.detect_target_layer(&single),
+            Some("domain".to_string())
+        );
 
         // crate::domain::MyStruct (fallback matching crate::* prefix and candidates.iter().any)
-        let segs = vec!["crate".to_string(), "domain".to_string(), "User".to_string()];
-        assert_eq!(checker.detect_target_layer(&segs), Some("domain".to_string()));
+        let segs = vec![
+            "crate".to_string(),
+            "domain".to_string(),
+            "User".to_string(),
+        ];
+        assert_eq!(
+            checker.detect_target_layer(&segs),
+            Some("domain".to_string())
+        );
 
         // super::service::Auth (fallback matching super::* prefix)
-        let segs_super = vec!["super".to_string(), "service".to_string(), "Auth".to_string()];
-        assert_eq!(checker.detect_target_layer(&segs_super), Some("service".to_string()));
+        let segs_super = vec![
+            "super".to_string(),
+            "service".to_string(),
+            "Auth".to_string(),
+        ];
+        assert_eq!(
+            checker.detect_target_layer(&segs_super),
+            Some("service".to_string())
+        );
 
         // candidates.iter().any matching
         let segs_any = vec!["nested".to_string(), "controller".to_string()];
-        assert_eq!(checker.detect_target_layer(&segs_any), Some("controller".to_string()));
+        assert_eq!(
+            checker.detect_target_layer(&segs_any),
+            Some("controller".to_string())
+        );
 
         // Unrecognized layer
         let segs_none = vec!["foo".to_string(), "bar".to_string()];
@@ -731,7 +791,13 @@ mod tests {
         }
 
         // CQRS with query_handler, read_repo, projection, read_model, read_service
-        for keyword in &["query_handler", "read_repo", "projection", "read_model", "read_service"] {
+        for keyword in &[
+            "query_handler",
+            "read_repo",
+            "projection",
+            "read_model",
+            "read_service",
+        ] {
             let code = format!("use crate::infra::{};", keyword);
             let item_use: ItemUse = syn::parse_str(&code).unwrap();
             let checker = ImportChecker::new(Path::new("src/command/handler.rs"), "app");
@@ -749,9 +815,9 @@ mod tests {
         // Boundary with module / private
         let code_priv = "use crate::module::auth::private::Key;";
         let item_use_priv: ItemUse = syn::parse_str(code_priv).unwrap();
-        let checker_mod = ImportChecker::new(Path::new("src/module/billing/handler.rs"), "monolith");
+        let checker_mod =
+            ImportChecker::new(Path::new("src/module/billing/handler.rs"), "monolith");
         let violations_mod = checker_mod.check_use(&item_use_priv);
         assert!(violations_mod.iter().any(|v| v.rule_id == "MOD-001"));
     }
 }
-

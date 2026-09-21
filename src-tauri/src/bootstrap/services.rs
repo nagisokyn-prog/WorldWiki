@@ -30,8 +30,7 @@ use worldwiki_infrastructure::surrealdb::skill_repo::SurrealSkillRepository;
 use worldwiki_ports::ai::RAGContextPort;
 use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_ports::repositories::{
-    ChapterRepository, EntityRepository, PlanRepository, PlotPromiseRepository,
-    RelationRepository,
+    ChapterRepository, EntityRepository, PlanRepository, PlotPromiseRepository, RelationRepository,
 };
 use worldwiki_tauri::state::AppServices;
 
@@ -51,12 +50,22 @@ fn build_core_domain(
     plan_repo: Arc<dyn PlanRepository>,
     events: Arc<dyn EventPublisherPort>,
 ) -> CoreDomainServices {
+    let manuscript = Arc::new(ManuscriptServices::new(chapter_repo, Arc::clone(&events)));
+    let knowledge = Arc::new(KnowledgeServices::new(
+        entity_repo,
+        relation_repo,
+        Arc::clone(&events),
+    ));
+    let calendar = Arc::new(CalendarServices::new());
+    let plot = Arc::new(PlotServices::new(promise_repo, plan_repo, events));
+    let job_manager = Arc::new(JobManager::new());
+
     CoreDomainServices {
-        manuscript: Arc::new(ManuscriptServices::new(chapter_repo, events.clone())),
-        knowledge: Arc::new(KnowledgeServices::new(entity_repo, relation_repo, events.clone())),
-        calendar: Arc::new(CalendarServices::new()),
-        plot: Arc::new(PlotServices::new(promise_repo, plan_repo, events)),
-        job_manager: Arc::new(JobManager::new()),
+        manuscript,
+        knowledge,
+        calendar,
+        plot,
+        job_manager,
     }
 }
 
@@ -71,18 +80,18 @@ fn build_workflows_and_tools(
     search_port: Arc<dyn RAGContextPort>,
 ) -> WorkflowsAndTools {
     let edit_workflow = Arc::new(EditManuscriptAtomicWorkflow::new(
-        core.manuscript.clone(),
-        core.plot.clone(),
+        Arc::clone(&core.manuscript),
+        Arc::clone(&core.plot),
     ));
     let search_workflow = Arc::new(HybridSemanticSearchWorkflow::new(search_port));
     let ai_tools = Arc::new(AiToolFacades::new(
-        core.manuscript.clone(),
-        core.knowledge.clone(),
-        core.calendar.clone(),
-        core.plot.clone(),
-        edit_workflow.clone(),
-        search_workflow.clone(),
-        core.job_manager.clone(),
+        Arc::clone(&core.manuscript),
+        Arc::clone(&core.knowledge),
+        Arc::clone(&core.calendar),
+        Arc::clone(&core.plot),
+        Arc::clone(&edit_workflow),
+        Arc::clone(&search_workflow),
+        Arc::clone(&core.job_manager),
     ));
 
     WorkflowsAndTools {
@@ -100,8 +109,36 @@ fn build_local_ai_layer() -> Arc<LocalAiServices> {
     Arc::new(LocalAiServices::new(hw, model_mgr, permissions))
 }
 
+struct SurrealRepos {
+    chapter: Arc<SurrealChapterRepository>,
+    entity: Arc<SurrealEntityRepository>,
+    relation: Arc<SurrealRelationRepository>,
+    promise: Arc<SurrealPlotPromiseRepository>,
+    plan: Arc<SurrealPlanRepository>,
+    rag: Arc<SurrealRAGAdapter>,
+    chat: Arc<SurrealChatRepository>,
+    profile: Arc<SurrealAiProfileRepository>,
+    skill: Arc<SurrealSkillRepository>,
+}
+
+impl SurrealRepos {
+    fn new(db: &Arc<Surreal<Db>>) -> Self {
+        Self {
+            chapter: Arc::new(SurrealChapterRepository::new(Arc::clone(db))),
+            entity: Arc::new(SurrealEntityRepository::new(Arc::clone(db))),
+            relation: Arc::new(SurrealRelationRepository::new(Arc::clone(db))),
+            promise: Arc::new(SurrealPlotPromiseRepository::new(Arc::clone(db))),
+            plan: Arc::new(SurrealPlanRepository::new(Arc::clone(db))),
+            rag: Arc::new(SurrealRAGAdapter::new(Arc::clone(db))),
+            chat: Arc::new(SurrealChatRepository::new(Arc::clone(db))),
+            profile: Arc::new(SurrealAiProfileRepository::new(Arc::clone(db))),
+            skill: Arc::new(SurrealSkillRepository::new(Arc::clone(db))),
+        }
+    }
+}
+
 pub fn build_app_services() -> AppServices {
-    let events = Arc::new(InMemoryEventPublisher);
+    let events: Arc<dyn EventPublisherPort> = Arc::new(InMemoryEventPublisher);
     let ai_adapter = Arc::new(MockAiAdapter);
 
     let core = build_core_domain(
@@ -110,23 +147,23 @@ pub fn build_app_services() -> AppServices {
         Arc::new(InMemoryRelationRepository::default()),
         Arc::new(InMemoryPlotPromiseRepository::default()),
         Arc::new(InMemoryPlanRepository::default()),
-        events.clone(),
+        Arc::clone(&events),
     );
 
-    let workflows = build_workflows_and_tools(&core, ai_adapter.clone());
+    let workflows =
+        build_workflows_and_tools(&core, Arc::clone(&ai_adapter) as Arc<dyn RAGContextPort>);
 
     let dummy_db = Arc::new(Surreal::init());
-    let chat_repo = Arc::new(SurrealChatRepository::new(dummy_db.clone()));
-    let profile_repo = Arc::new(SurrealAiProfileRepository::new(dummy_db.clone()));
-    let skill_repo = Arc::new(SurrealSkillRepository::new(dummy_db.clone()));
+    let repos = SurrealRepos::new(&dummy_db);
+
     let chat = Arc::new(ChatServices::new(
-        chat_repo,
-        profile_repo,
+        repos.chat,
+        repos.profile,
         ai_adapter,
         events,
         None,
-        Some(skill_repo),
-        Some(workflows.ai_tools.clone()),
+        Some(repos.skill),
+        Some(Arc::clone(&workflows.ai_tools)),
     ));
 
     let local_ai = build_local_ai_layer();
@@ -150,32 +187,30 @@ pub fn build_surreal_app_services(
     db: Arc<Surreal<Db>>,
     event_publisher: Arc<dyn EventPublisherPort>,
 ) -> AppServices {
-    let rag_adapter = Arc::new(SurrealRAGAdapter::new(db.clone()));
+    let repos = SurrealRepos::new(&db);
 
     let core = build_core_domain(
-        Arc::new(SurrealChapterRepository::new(db.clone())),
-        Arc::new(SurrealEntityRepository::new(db.clone())),
-        Arc::new(SurrealRelationRepository::new(db.clone())),
-        Arc::new(SurrealPlotPromiseRepository::new(db.clone())),
-        Arc::new(SurrealPlanRepository::new(db.clone())),
-        event_publisher.clone(),
+        repos.chapter,
+        repos.entity,
+        repos.relation,
+        repos.promise,
+        repos.plan,
+        Arc::clone(&event_publisher),
     );
 
-    let workflows = build_workflows_and_tools(&core, rag_adapter.clone());
+    let workflows =
+        build_workflows_and_tools(&core, Arc::clone(&repos.rag) as Arc<dyn RAGContextPort>);
 
-    let chat_repo = Arc::new(SurrealChatRepository::new(db.clone()));
-    let profile_repo = Arc::new(SurrealAiProfileRepository::new(db.clone()));
     let stream_adapter = Arc::new(worldwiki_infrastructure::ai::ClawStreamAdapter::new());
-    let skill_repo = Arc::new(SurrealSkillRepository::new(db.clone()));
 
     let chat = Arc::new(ChatServices::new(
-        chat_repo,
-        profile_repo,
+        repos.chat,
+        repos.profile,
         stream_adapter,
         event_publisher,
-        Some(rag_adapter),
-        Some(skill_repo),
-        Some(workflows.ai_tools.clone()),
+        Some(repos.rag),
+        Some(repos.skill),
+        Some(Arc::clone(&workflows.ai_tools)),
     ));
 
     let local_ai = build_local_ai_layer();

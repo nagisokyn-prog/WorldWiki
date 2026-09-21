@@ -273,7 +273,7 @@ async fn test_save_connections_rejects_non_array() {
     // data не массив — функция должна вернуть Err
     let res = save_connections_inner(&db, "p_saveconn2", "entities:e1", json!({ "nope": true })).await;
     assert!(res.is_err(), "не-массив должен вернуть Err");
-    assert!(res.unwrap_err().contains("Connections array expected"));
+    assert!(res.unwrap_err().to_string().contains("Connections array expected"));
 }
 
 #[tokio::test]

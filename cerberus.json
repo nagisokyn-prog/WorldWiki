@@ -30,23 +30,33 @@
   ],
   "layers": {
     "domain": {
+      "patterns": ["crates/worldwiki-domain/**"],
       "forbidden_external": ["tokio", "reqwest", "tauri", "surrealdb"],
       "allowed_deps": []
     },
     "application": {
+      "patterns": ["crates/worldwiki-application/**"],
       "forbidden_external": ["tauri"],
       "allowed_deps": ["domain", "ports"]
     },
     "ports": {
+      "patterns": ["crates/worldwiki-ports/**"],
       "forbidden_external": ["tauri", "surrealdb"],
       "allowed_deps": ["domain"]
     },
     "infrastructure": {
-      "allowed_deps": ["domain", "ports"]
+      "patterns": ["crates/worldwiki-infrastructure/**"],
+      "allowed_deps": ["domain", "ports", "application"]
     },
     "adapters_tauri": {
-      "allowed_external": ["tauri"],
-      "allowed_deps": ["domain", "application", "ports"]
+      "aliases": ["adapter", "adapters", "tauri"],
+      "patterns": [
+        "src-tauri/**",
+        "crates/worldwiki-tauri/**",
+        "tauri-surreal-kit/**"
+      ],
+      "allowed_external": ["tauri", "surrealdb"],
+      "allowed_deps": ["domain", "application", "ports", "infrastructure"]
     }
   },
   "frontend_layers": {

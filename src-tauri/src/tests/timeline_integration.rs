@@ -191,7 +191,7 @@ async fn save_global_timeline_requires_chapter_id() {
     let data = json!([{ "chapter_title": "Без id", "events": [] }]);
     let res = Chapter::save_global_timeline_inner(&db, "p1", data).await;
     assert!(res.is_err(), "отсутствие chapter_id должно давать Err");
-    assert!(res.unwrap_err().contains("chapter_id"));
+    assert!(res.unwrap_err().to_string().contains("chapter_id"));
 }
 
 #[tokio::test]

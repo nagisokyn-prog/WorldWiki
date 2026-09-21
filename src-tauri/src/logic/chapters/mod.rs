@@ -3,17 +3,18 @@ use serde_json::{json, Value};
 use surreal_domain::SurrealRepository;
 use surrealdb::{engine::local::Db, Surreal};
 
-mod commands;
+pub mod commands;
+pub mod errors;
+
 pub use commands::*;
+pub use errors::*;
 
 pub async fn get_global_timeline_inner(
     db: &Surreal<Db>,
     project: &str,
-) -> Result<Value, String> {
+) -> Result<Value, ChapterError> {
     let proj_id = format!("projects:{}", project);
-    let chapters = Chapter::find_all(db, &proj_id)
-        .await
-        .map_err(|e| e.to_string())?;
+    let chapters = Chapter::find_all(db, &proj_id).await?;
     Ok(json!(chapters))
 }
 
@@ -22,10 +23,10 @@ impl Chapter {
         db: &Surreal<Db>,
         project: &str,
         data: Value,
-    ) -> Result<Value, String> {
+    ) -> Result<Value, ChapterError> {
         let arr = data
             .as_array()
-            .ok_or_else(|| "save_global_timeline: expected a JSON array of chapter timelines".to_string())?;
+            .ok_or_else(|| ChapterError::InvalidData("save_global_timeline: expected a JSON array of chapter timelines".to_string()))?;
 
         if arr.is_empty() {
             return Ok(json!({ "success": true, "updated": 0 }));
@@ -38,7 +39,7 @@ impl Chapter {
             let cid = item
                 .get("chapter_id")
                 .and_then(|v| v.as_str())
-                .ok_or_else(|| "save_global_timeline: each item must have chapter_id".to_string())?;
+                .ok_or_else(|| ChapterError::InvalidData("save_global_timeline: each item must have chapter_id".to_string()))?;
             let title = item
                 .get("chapter_title")
                 .and_then(|v| v.as_str())
@@ -80,18 +81,15 @@ impl Chapter {
         for (k, v) in &bindings {
             q = q.bind((k.as_str(), v.clone()));
         }
-        let mut res = q.await.map_err(|e| e.to_string())?;
+        let mut res = q.await?;
         let errs = res.take_errors();
         if !errs.is_empty() {
-            for (k, e) in &errs {
-                eprintln!("[ERROR] save_global_timeline[{k}]: {e}");
-            }
-            return Err(
+            return Err(ChapterError::Transaction(
                 errs.into_values()
                     .next()
                     .map(|e| e.to_string())
                     .unwrap_or_else(|| "save_global_timeline: unknown error".to_string()),
-            );
+            ));
         }
 
         Ok(json!({ "success": true, "updated": arr.len() }))
@@ -103,7 +101,7 @@ pub async fn save_text_blocks_inner(
     project: &str,
     chapter_id: &str,
     html: &str,
-) -> Result<(), String> {
+) -> Result<(), ChapterError> {
     use scraper::{Html, Selector};
 
     let pid_safe = if project.contains(':') {
@@ -119,7 +117,8 @@ pub async fn save_text_blocks_inner(
 
     let blocks = {
         let document = Html::parse_document(html);
-        let selector = Selector::parse("p").unwrap();
+        let selector = Selector::parse("p")
+            .map_err(|e| ChapterError::InvalidData(format!("Failed to parse selector: {:?}", e)))?;
         let mut blocks: Vec<(String, String)> = Vec::new();
 
         for p in document.select(&selector) {
@@ -164,12 +163,11 @@ pub async fn save_text_blocks_inner(
         q = q.bind((k, v));
     }
 
-    let mut res = q.await.map_err(|e| e.to_string())?;
+    let mut res = q.await?;
     let errs = res.take_errors();
     if !errs.is_empty() {
         let e = errs.values().next().unwrap();
-        eprintln!("[ERROR] save_text_blocks transaction error: {}", e);
-        return Err(e.to_string());
+        return Err(ChapterError::Transaction(format!("save_text_blocks error: {}", e)));
     }
 
     Ok(())
@@ -179,7 +177,7 @@ pub async fn get_chapter_revisions_inner(
     db: &Surreal<Db>,
     _project: &str,
     chapter_id: &str,
-) -> Result<Vec<Value>, String> {
+) -> Result<Vec<Value>, ChapterError> {
     let parts: Vec<&str> = chapter_id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 { parts[1] } else { chapter_id };
     let full_id = format!("chapters:{}", actual_id);
@@ -187,10 +185,9 @@ pub async fn get_chapter_revisions_inner(
     let mut result = db
         .query("SELECT * FROM chapter_revisions WHERE target_id = type::record($target_id) ORDER BY created_at DESC")
         .bind(("target_id", full_id))
-        .await
-        .map_err(|e| e.to_string())?;
+        .await?;
 
-    let revisions: Vec<Value> = result.take(0).map_err(|e| e.to_string())?;
+    let revisions: Vec<Value> = result.take(0)?;
     Ok(revisions)
 }
 
@@ -198,15 +195,32 @@ pub async fn toggle_chapter_history_pin_inner(
     db: &Surreal<Db>,
     history_id: &str,
     is_pinned: bool,
-) -> Result<(), String> {
+) -> Result<(), ChapterError> {
     let parts: Vec<&str> = history_id.splitn(2, ':').collect();
     let actual_id = if parts.len() == 2 { parts[1] } else { history_id };
 
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("chapter_revisions:{}", actual_id)))
         .bind(("is_pinned", is_pinned))
-        .await
-        .map_err(|e| e.to_string())?;
+        .await?;
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn chapter_error_formatting_and_conversion() {
+        let not_found = ChapterError::NotFound("c1".to_string());
+        assert_eq!(not_found.to_string(), "Chapter not found: c1");
+
+        let err_str: String = not_found.into();
+        assert_eq!(err_str, "Chapter not found: c1");
+
+        let inv = ChapterError::InvalidData("bad json".to_string());
+        assert_eq!(inv.to_string(), "Invalid chapter data: bad json");
+    }
+}
+

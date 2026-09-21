@@ -55,7 +55,7 @@ async fn negative_create_project_missing_name_returns_err() {
     let res = create_project_inner(&db, invalid_data).await;
 
     assert!(res.is_err(), "create_project без 'name' должен возвращать Err");
-    assert!(res.unwrap_err().contains("No name"));
+    assert!(res.unwrap_err().to_string().contains("No name"));
 }
 
 #[tokio::test]

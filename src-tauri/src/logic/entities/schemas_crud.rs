@@ -33,17 +33,10 @@ pub async fn save_entity_schema_inner(
     max_saves: Option<usize>,
 ) -> Result<EntitySchema, EntityError> {
     let proj_id = format!("projects:{}", project);
-
-    let mut val = serde_json::to_value(&schema)?;
-    if let Some(obj) = val.as_object_mut() {
-        obj.remove("id");
-        obj.remove("created_at");
-        obj.remove("project_id");
-    }
-
     let pid_val = safe_pid(project);
     let pid_raw = pid_val.replace("projects:", "");
     let pid_literal = format!("projects:`{}`", pid_raw);
+    let safe_pid_rec = format!("projects:`{}`", pid_raw);
 
     // FIND EXISTING SCHEMA ID
     let query_find = format!(
@@ -52,7 +45,7 @@ pub async fn save_entity_schema_inner(
     );
     let mut res = db
         .query(query_find)
-        .bind(("t_key", schema.type_key.clone()))
+        .bind(("t_key", schema.type_key.as_str()))
         .await?;
 
     let mut existing_records: Vec<Value> = res.take(0).unwrap_or_default();
@@ -71,17 +64,17 @@ pub async fn save_entity_schema_inner(
                 id_string.to_string()
             }
         } else {
-            "".to_string()
+            String::new()
         }
-    } else if let Some(id_str) = &schema.id {
+    } else if let Some(ref id_str) = schema.id {
         let parts: Vec<&str> = id_str.splitn(2, ':').collect();
         let raw = if parts.len() == 2 {
-            parts[1].to_string()
+            parts[1]
         } else {
-            id_str.clone()
+            id_str.as_str()
         };
         if raw.contains(&pid_raw) {
-            raw
+            raw.to_string()
         } else {
             format!("{}_{}", pid_raw, raw)
         }
@@ -89,12 +82,15 @@ pub async fn save_entity_schema_inner(
         format!("{}_{}", pid_raw, schema.type_key)
     };
 
-    let result: Option<Value> = if !actual_id_str.is_empty() {
-        let actual_id = actual_id_str.as_str();
-        let safe_actual_id = format!("entity_schemas:`{}`", actual_id);
+    let target_id = if !actual_id_str.is_empty() {
+        format!("entity_schemas:`{}`", actual_id_str)
+    } else {
+        format!("entity_schemas:`{}_{}`", pid_raw, schema.type_key)
+    };
 
-        // --- BACKUP OLD SCHEMA ---
-        let old_res: Option<Value> = db.select(("entity_schemas", actual_id)).await?;
+    // --- BACKUP OLD SCHEMA IF IT ALREADY EXISTS ---
+    if !actual_id_str.is_empty() {
+        let old_res: Option<Value> = db.select(("entity_schemas", actual_id_str.as_str())).await?;
         if let Some(old_schema_val) = old_res {
             let max_limit = max_saves.unwrap_or(30);
 
@@ -121,12 +117,12 @@ pub async fn save_entity_schema_inner(
 
             let mut tx_res = db
                 .query(query_str)
-                .bind(("schema_id", safe_actual_id.clone()))
-                .bind(("type_key", schema.type_key.clone()))
-                .bind(("pid", proj_id.clone()))
+                .bind(("schema_id", target_id.as_str()))
+                .bind(("type_key", schema.type_key.as_str()))
+                .bind(("pid", proj_id.as_str()))
                 .bind(("snapshot", old_schema_val))
                 .bind(("saved_at", chrono::Utc::now().to_rfc3339()))
-                .bind(("id", safe_actual_id.clone()))
+                .bind(("id", target_id.as_str()))
                 .bind(("max_limit", max_limit))
                 .await?;
 
@@ -135,77 +131,52 @@ pub async fn save_entity_schema_inner(
                 eprintln!("[ERROR] Schema history transaction errors: {:?}", errors);
             }
         }
-        // -------------------------
+    }
+    // ----------------------------------------------
 
-        let pid_val = safe_pid(project);
-        let pid_raw = pid_val.replace("projects:", "");
-        let safe_pid = format!("projects:`{}`", pid_raw);
-        let mut query = "
-            UPSERT type::record($id) SET 
-                project_id = type::record($pid),
-                type_key = $t_key,
-                type_name = $t_name,
-                icon = $icon,
-                color = $color,
-                fields_schema = $fields_schema
-        "
-        .to_string();
-        if schema.full_schema.is_some() {
-            query.push_str(", full_schema = $full_schema");
-        }
+    let EntitySchema {
+        type_key,
+        type_name,
+        icon,
+        color,
+        fields_schema,
+        full_schema,
+        ..
+    } = schema;
 
-        let fields_val = serde_json::to_value(&schema.fields_schema).unwrap_or(Value::Array(vec![]));
-        let mut q = db
-            .query(query)
-            .bind(("id", safe_actual_id.clone()))
-            .bind(("pid", safe_pid.clone()))
-            .bind(("t_key", schema.type_key.clone()))
-            .bind(("t_name", schema.type_name.clone()))
-            .bind(("icon", schema.icon.clone()))
-            .bind(("color", schema.color.clone()))
-            .bind(("fields_schema", fields_val.clone()));
-        if let Some(ref fs) = schema.full_schema {
-            q = q.bind(("full_schema", fs.clone()));
-        }
+    let has_full = full_schema.is_some();
+    let mut query = "
+        UPSERT type::record($id) SET 
+            project_id = type::record($pid),
+            type_key = $t_key,
+            type_name = $t_name,
+            icon = $icon,
+            color = $color,
+            fields_schema = $fields_schema
+    "
+    .to_string();
 
-        let mut res = q.await?;
-        res.take(0)?
-    } else {
-        let pid_val = safe_pid(project);
-        let pid_raw = pid_val.replace("projects:", "");
-        let safe_pid = format!("projects:`{}`", pid_raw);
-        let new_id = format!("entity_schemas:`{}_{}`", pid_raw, schema.type_key);
-        let mut query = "
-            CREATE type::record($id) SET 
-                project_id = type::record($pid),
-                type_key = $t_key,
-                type_name = $t_name,
-                icon = $icon,
-                color = $color,
-                fields_schema = $fields_schema
-        "
-        .to_string();
-        if schema.full_schema.is_some() {
-            query.push_str(", full_schema = $full_schema");
-        }
+    if has_full {
+        query.push_str(", full_schema = $full_schema");
+    }
 
-        let fields_val = serde_json::to_value(&schema.fields_schema).unwrap_or(Value::Array(vec![]));
-        let mut q = db
-            .query(query)
-            .bind(("id", new_id))
-            .bind(("pid", safe_pid))
-            .bind(("t_key", schema.type_key.clone()))
-            .bind(("t_name", schema.type_name.clone()))
-            .bind(("icon", schema.icon.clone()))
-            .bind(("color", schema.color.clone()))
-            .bind(("fields_schema", fields_val));
-        if let Some(ref fs) = schema.full_schema {
-            q = q.bind(("full_schema", fs.clone()));
-        }
+    let fields_val = serde_json::to_value(&fields_schema).unwrap_or(Value::Array(vec![]));
+    let mut q = db
+        .query(query)
+        .bind(("id", target_id))
+        .bind(("pid", safe_pid_rec))
+        .bind(("t_key", type_key))
+        .bind(("t_name", type_name))
+        .bind(("icon", icon))
+        .bind(("color", color))
+        .bind(("fields_schema", fields_val));
 
-        let mut res = q.await?;
-        res.take(0)?
-    };
+    if let Some(fs) = full_schema {
+        q = q.bind(("full_schema", fs));
+    }
+
+    let mut res = q.await?;
+    let result: Option<Value> = res.take(0)?;
 
     match result {
         Some(val) => {

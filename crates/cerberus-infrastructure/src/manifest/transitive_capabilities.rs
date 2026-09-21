@@ -1,7 +1,5 @@
 use cargo_metadata::Metadata;
-use cerberus_domain::{
-    compute_fingerprint, ArchLayer, Category, Severity, Violation,
-};
+use cerberus_domain::{compute_fingerprint, ArchLayer, Category, Severity, Violation};
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
@@ -20,15 +18,26 @@ impl TransitiveCapabilityChecker {
         package_manifests: &HashMap<String, PathBuf>,
     ) -> Vec<Violation> {
         let prohibited_crates = [
-            "reqwest", "hyper", "ureq", "tungstenite", "tokio-native-tls", "native-tls",
-            "posix-spawn", "subprocess", "duct", "open",
+            "reqwest",
+            "hyper",
+            "ureq",
+            "tungstenite",
+            "tokio-native-tls",
+            "native-tls",
+            "posix-spawn",
+            "subprocess",
+            "duct",
+            "open",
         ];
 
         let mut violations = Vec::new();
 
         for pkg in &metadata.packages {
             let pkg_name = pkg.name.as_str();
-            let layer = package_layers.get(pkg_name).cloned().unwrap_or(ArchLayer::Unknown);
+            let layer = package_layers
+                .get(pkg_name)
+                .cloned()
+                .unwrap_or(ArchLayer::Unknown);
 
             if matches!(layer, ArchLayer::Domain | ArchLayer::Ports) {
                 let manifest_file = package_manifests
@@ -37,7 +46,8 @@ impl TransitiveCapabilityChecker {
                     .unwrap_or_else(|| PathBuf::from(format!("crates/{}/Cargo.toml", pkg_name)));
 
                 let mut visited: HashSet<String> = HashSet::new();
-                let mut queue: Vec<String> = pkg.dependencies.iter().map(|d| d.name.clone()).collect();
+                let mut queue: Vec<String> =
+                    pkg.dependencies.iter().map(|d| d.name.clone()).collect();
 
                 while let Some(dep_name) = queue.pop() {
                     if !visited.insert(dep_name.clone()) {
@@ -45,7 +55,8 @@ impl TransitiveCapabilityChecker {
                     }
 
                     if prohibited_crates.contains(&dep_name.as_str()) {
-                        let snippet = format!(
+                        let snippet =
+                            format!(
                             "Crate '{}' (layer: {}) pulls prohibited transitive dependency '{}'",
                             pkg_name, layer.as_str(), dep_name
                         );
@@ -70,7 +81,8 @@ impl TransitiveCapabilityChecker {
                         });
                     }
 
-                    if let Some(target_pkg) = metadata.packages.iter().find(|p| p.name == dep_name) {
+                    if let Some(target_pkg) = metadata.packages.iter().find(|p| p.name == dep_name)
+                    {
                         for child_dep in &target_pkg.dependencies {
                             if child_dep.kind == cargo_metadata::DependencyKind::Normal {
                                 queue.push(child_dep.name.clone());
@@ -106,11 +118,11 @@ impl TransitiveCapabilityChecker {
         for pkg in &metadata.packages {
             if metadata.workspace_members.contains(&pkg.id) {
                 let name = pkg.name.to_string();
-                package_manifests.insert(name.clone(), pkg.manifest_path.clone().into_std_path_buf());
+                package_manifests
+                    .insert(name.clone(), pkg.manifest_path.clone().into_std_path_buf());
                 let declared_layer = pkg
                     .metadata
                     .get("cerberus")
-                    .or_else(|| pkg.metadata.get("arch-guard"))
                     .and_then(|m| m.get("layer"))
                     .and_then(|l| l.as_str());
 
@@ -192,17 +204,23 @@ mod tests {
         std::fs::write(app_dir.join("Cargo.toml"), app_cargo).unwrap();
 
         // Audit from direct Cargo.toml file path
-        let violations = TransitiveCapabilityChecker::audit_from_workspace_root(&cargo_toml).unwrap();
+        let violations =
+            TransitiveCapabilityChecker::audit_from_workspace_root(&cargo_toml).unwrap();
         assert_eq!(violations.len(), 1);
         assert_eq!(violations[0].rule_id, "SEC-002");
 
         // Audit from workspace root directory path
-        let violations_dir = TransitiveCapabilityChecker::audit_from_workspace_root(temp.path()).unwrap();
+        let violations_dir =
+            TransitiveCapabilityChecker::audit_from_workspace_root(temp.path()).unwrap();
         assert_eq!(violations_dir.len(), 1);
 
         // Test non-existent path
         let missing = temp.path().join("missing/Cargo.toml");
-        assert!(TransitiveCapabilityChecker::audit_from_workspace_root(&missing).unwrap().is_empty());
+        assert!(
+            TransitiveCapabilityChecker::audit_from_workspace_root(&missing)
+                .unwrap()
+                .is_empty()
+        );
 
         // Test invalid/corrupted manifest path error
         let invalid_cargo = temp.path().join("invalid_dir");
@@ -219,9 +237,7 @@ mod tests {
             .exec()
             .unwrap();
         let fallback_violations = TransitiveCapabilityChecker::check_transitive_capabilities(
-            &metadata,
-            &layers,
-            &manifests,
+            &metadata, &layers, &manifests,
         );
         assert!(fallback_violations.is_empty());
 

@@ -52,6 +52,22 @@ pub async fn create_entity_relation_inner(
     let from_rec = make_record("entities", from_id);
     let to_rec = make_record("entities", to_id);
 
+    let EntityRel {
+        rel_type,
+        description,
+        strength,
+        attributes,
+        start_chapter,
+        end_chapter,
+        ..
+    } = rel;
+
+    let has_desc = description.is_some();
+    let has_strength = strength.is_some();
+    let has_attrs = !attributes.is_null();
+    let has_start = start_chapter.as_ref().map(|s| !s.is_empty()).unwrap_or(false);
+    let has_end = end_chapter.as_ref().map(|s| !s.is_empty()).unwrap_or(false);
+
     let mut query = "
         RELATE $from -> entity_rel -> $to SET
             project_id = type::record($pid),
@@ -59,24 +75,20 @@ pub async fn create_entity_relation_inner(
     "
     .to_string();
 
-    if rel.description.is_some() {
+    if has_desc {
         query.push_str(", description = $desc");
     }
-    if rel.strength.is_some() {
+    if has_strength {
         query.push_str(", strength = $strength");
     }
-    if !rel.attributes.is_null() {
+    if has_attrs {
         query.push_str(", attributes = $attrs");
     }
-    if let Some(ref sc) = rel.start_chapter {
-        if !sc.is_empty() {
-            query.push_str(", start_chapter = type::record($start_chapter)");
-        }
+    if has_start {
+        query.push_str(", start_chapter = type::record($start_chapter)");
     }
-    if let Some(ref ec) = rel.end_chapter {
-        if !ec.is_empty() {
-            query.push_str(", end_chapter = type::record($end_chapter)");
-        }
+    if has_end {
+        query.push_str(", end_chapter = type::record($end_chapter)");
     }
     query.push_str(" RETURN AFTER");
 
@@ -85,25 +97,25 @@ pub async fn create_entity_relation_inner(
         .bind(("from", from_rec))
         .bind(("to", to_rec))
         .bind(("pid", proj_id))
-        .bind(("rel_type", rel.rel_type.clone()));
+        .bind(("rel_type", rel_type));
 
-    if let Some(ref d) = rel.description {
-        q = q.bind(("desc", d.clone()));
+    if let Some(d) = description {
+        q = q.bind(("desc", d));
     }
-    if let Some(s) = rel.strength {
+    if let Some(s) = strength {
         q = q.bind(("strength", s));
     }
-    if !rel.attributes.is_null() {
-        q = q.bind(("attrs", rel.attributes.clone()));
+    if has_attrs {
+        q = q.bind(("attrs", attributes));
     }
-    if let Some(ref sc) = rel.start_chapter {
+    if let Some(sc) = start_chapter {
         if !sc.is_empty() {
-            q = q.bind(("start_chapter", sc.clone()));
+            q = q.bind(("start_chapter", sc));
         }
     }
-    if let Some(ref ec) = rel.end_chapter {
+    if let Some(ec) = end_chapter {
         if !ec.is_empty() {
-            q = q.bind(("end_chapter", ec.clone()));
+            q = q.bind(("end_chapter", ec));
         }
     }
 

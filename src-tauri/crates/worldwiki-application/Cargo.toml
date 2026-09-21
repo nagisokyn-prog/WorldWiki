@@ -3,7 +3,7 @@ name = "worldwiki-application"
 version = "0.85.0"
 edition = "2021"
 description = "CQRS Commands, Queries, Atomic Workflows, and 8 AI Facades for WorldWiki"
-[package.metadata.arch-guard]
+[package.metadata.cerberus]
 layer = "application"
 
 [dependencies]

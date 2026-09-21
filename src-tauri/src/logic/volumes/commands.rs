@@ -9,7 +9,9 @@ pub async fn get_chapter_hierarchy(
     project: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<serde_json::Value, String> {
-    get_chapter_hierarchy_inner(&state.db, &project).await
+    get_chapter_hierarchy_inner(&state.db, &project)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -18,7 +20,9 @@ pub async fn create_volume(
     title: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<serde_json::Value, String> {
-    create_volume_inner(&state.db, &project, &title).await
+    create_volume_inner(&state.db, &project, &title)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -28,7 +32,9 @@ pub async fn update_volume(
     title: String,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    update_volume_inner(&state.db, &id, &title).await
+    update_volume_inner(&state.db, &id, &title)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -39,7 +45,9 @@ pub async fn assign_chapter(
     volume_id: Option<String>,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<AutoExtendResult, String> {
-    let res = assign_chapter_inner(&state.db, &project, &chapter_id, volume_id).await?;
+    let res = assign_chapter_inner(&state.db, &project, &chapter_id, volume_id)
+        .await
+        .map_err(|e| e.to_string())?;
     let _res = app.emit("ww:timeline-auto-extended", &res);
     Ok(res)
 }
@@ -52,7 +60,9 @@ pub async fn reorder_node(
     sort_order: i64,
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<(), String> {
-    reorder_node_inner(&state.db, &project, &node_type, &id, sort_order).await
+    reorder_node_inner(&state.db, &project, &node_type, &id, sort_order)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -64,7 +74,9 @@ pub async fn auto_extend_timeline(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<AutoExtendResult, String> {
     let updated_count =
-        auto_extend_entities_inner(&state.db, &project, &chapter_id, volume_id.clone()).await?;
+        auto_extend_entities_inner(&state.db, &project, &chapter_id, volume_id.clone())
+            .await
+            .map_err(|e| e.to_string())?;
     let res = AutoExtendResult {
         chapter_id,
         volume_id,
@@ -88,7 +100,8 @@ pub async fn heal_deleted_chapter(
         &deleted_chapter_id,
         fallback_point.clone(),
     )
-    .await?;
+    .await
+    .map_err(|e| e.to_string())?;
     if let Some(ref fb) = fallback_point {
         let _res = app.emit("ww:timeline-auto-extended", fb);
     }
@@ -102,3 +115,4 @@ pub async fn heal_deleted_chapter(
     );
     Ok(updated_count)
 }
+

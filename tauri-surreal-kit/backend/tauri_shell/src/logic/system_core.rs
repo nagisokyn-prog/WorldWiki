@@ -37,7 +37,6 @@ impl DataDirProvider for DefaultDataDirProvider {
 static DATA_DIR_PROVIDER: RwLock<Option<Box<dyn DataDirProvider>>> = RwLock::new(None);
 
 /// Установить кастомный провайдер (для тестов).
-#[allow(dead_code)]
 pub fn set_data_dir_provider(provider: Box<dyn DataDirProvider>) {
     if let Ok(mut lock) = DATA_DIR_PROVIDER.write() {
         *lock = Some(provider);
@@ -45,7 +44,6 @@ pub fn set_data_dir_provider(provider: Box<dyn DataDirProvider>) {
 }
 
 /// Сбросить провайдер к дефолтному (для изоляции тестов).
-#[allow(dead_code)]
 pub fn clear_data_dir_provider() {
     if let Ok(mut lock) = DATA_DIR_PROVIDER.write() {
         *lock = None;

@@ -40,7 +40,7 @@ pub async fn assign_chapter(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<AutoExtendResult, String> {
     let res = assign_chapter_inner(&state.db, &project, &chapter_id, volume_id).await?;
-    let _ = app.emit("ww:timeline-auto-extended", &res);
+    let _res = app.emit("ww:timeline-auto-extended", &res);
     Ok(res)
 }
 
@@ -70,7 +70,7 @@ pub async fn auto_extend_timeline(
         volume_id,
         updated_count,
     };
-    let _ = app.emit("ww:timeline-auto-extended", &res);
+    let _res = app.emit("ww:timeline-auto-extended", &res);
     Ok(res)
 }
 
@@ -90,9 +90,9 @@ pub async fn heal_deleted_chapter(
     )
     .await?;
     if let Some(ref fb) = fallback_point {
-        let _ = app.emit("ww:timeline-auto-extended", fb);
+        let _res = app.emit("ww:timeline-auto-extended", fb);
     }
-    let _ = app.emit(
+    let _res = app.emit(
         "ww:timeline-healed",
         serde_json::json!({
             "deleted_chapter_id": deleted_chapter_id,

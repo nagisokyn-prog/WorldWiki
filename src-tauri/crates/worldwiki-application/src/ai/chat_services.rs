@@ -1352,7 +1352,7 @@ mod tests {
     #[tokio::test]
     async fn test_send_message_and_run_agent_loop() {
         let chat_repo = Arc::new(MockChatRepo::default());
-        let profile_repo = Arc::new(MockProfileRepo::default());
+        let profile_repo = Arc::new(MockProfileRepo);
         let stream_port = Arc::new(MockStream);
         let event_publisher = Arc::new(MockEventPublisher);
 
@@ -1393,7 +1393,7 @@ mod tests {
     #[tokio::test]
     async fn test_fork_chat_creates_new_chat_with_title() {
         let chat_repo = Arc::new(MockChatRepo::default());
-        let profile_repo = Arc::new(MockProfileRepo::default());
+        let profile_repo = Arc::new(MockProfileRepo);
         let stream_port = Arc::new(MockStream);
         let event_publisher = Arc::new(MockEventPublisher);
 

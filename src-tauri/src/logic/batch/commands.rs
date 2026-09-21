@@ -2,6 +2,8 @@
 //! All business logic lives in mod.rs (*_inner).
 
 use super::*;
+use crate::logic::models::{Entity, EntityRel};
+use serde_json::{Map, Value};
 
 #[tauri::command]
 pub async fn get_entities_batch(

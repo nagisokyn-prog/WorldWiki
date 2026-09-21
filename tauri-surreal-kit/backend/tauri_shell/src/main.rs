@@ -11,7 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{env, fs};
+use std::fs;
 use surrealdb::engine::local::{Db, SurrealKv};
 use surrealdb::Surreal;
 use tauri::Manager;
@@ -41,10 +41,7 @@ async fn init_database(
               // Optionally pass a DDL schema string:
               // schema_sql: Option<&str>,
 ) -> Surreal<Db> {
-    let db_path = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join("surreal_db");
+    let db_path = logic::system_core::get_data_dir().join("surreal_db");
     fs::create_dir_all(&db_path).ok();
 
     let conn = Surreal::new::<SurrealKv>(db_path)

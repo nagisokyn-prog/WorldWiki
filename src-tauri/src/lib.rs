@@ -1,5 +1,3 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use std::env;
 use std::fs;
 use std::sync::Arc;
 use surrealdb::engine::local::Db;
@@ -32,10 +30,7 @@ pub struct AgentTasks(
 // --- Инициализация БД ---
 
 async fn init_database() -> Surreal<Db> {
-    let db_path = env::current_dir()
-        .unwrap_or_default()
-        .join("data")
-        .join("surreal_db");
+    let db_path = worldwiki_infrastructure::paths::get_surreal_db_path();
     fs::create_dir_all(&db_path).ok();
     let db = Surreal::new::<SurrealKv>(db_path)
         .await
@@ -106,7 +101,6 @@ pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-#[allow(clippy::too_many_arguments)]
 pub fn run() {
     use logic::batch::*;
     use logic::chapters::*;
@@ -273,7 +267,7 @@ pub fn run() {
             println!("[DEBUG] Emergency backup before close...");
             let state = window.state::<AppState>();
             let db = state.db.clone();
-            let backup_path = std::env::current_dir().unwrap_or_default().join("data").join("backup_latest.surql");
+            let backup_path = worldwiki_infrastructure::paths::get_backup_path();
             tauri::async_runtime::block_on(async move {
                 if let Err(e) = db.export(backup_path).await {
                     eprintln!("[ERROR] Failed to export backup: {}", e);

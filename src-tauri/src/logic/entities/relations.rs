@@ -1,0 +1,207 @@
+use super::errors::EntityError;
+use super::types::*;
+use crate::logic::models::{EntityRel, RelationSchema};
+use serde_json::Value;
+use surrealdb::engine::local::Db;
+use surrealdb::Surreal;
+
+// =====================================================
+// ENTITY REL CRUD
+// =====================================================
+
+pub async fn get_entity_relations_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    entity_id: Option<String>,
+) -> Result<Vec<EntityRel>, EntityError> {
+    let pid_val = safe_pid(project);
+    let id_val = match &entity_id {
+        Some(e) => safe_id("entities", e),
+        None => "".to_string(),
+    };
+    let sql = match &entity_id {
+        Some(_) => "SELECT * FROM entity_rel WHERE (project_id = type::record($pid) OR project_id = $pid) AND (in = type::record($eid) OR out = type::record($eid))",
+        None => "SELECT * FROM entity_rel WHERE project_id = type::record($pid) OR project_id = $pid",
+    };
+
+    let mut q = db.query(sql).bind(("pid", pid_val));
+
+    if entity_id.is_some() {
+        q = q.bind(("eid", id_val));
+    }
+
+    let mut res = q.await?;
+    let values: Vec<Value> = res.take(0)?;
+    Ok(deserialize_list(values))
+}
+
+pub async fn create_entity_relation_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    from_id: &str,
+    to_id: &str,
+    rel: EntityRel,
+) -> Result<EntityRel, EntityError> {
+    let proj_id = format!("projects:{}", project);
+
+    fn make_record(table: &str, full_id: &str) -> surrealdb::types::RecordId {
+        let raw = full_id.split(':').nth(1).unwrap_or(full_id);
+        surrealdb::types::RecordId::new(table, raw)
+    }
+
+    let from_rec = make_record("entities", from_id);
+    let to_rec = make_record("entities", to_id);
+
+    let mut query = "
+        RELATE $from -> entity_rel -> $to SET
+            project_id = type::record($pid),
+            rel_type = $rel_type
+    "
+    .to_string();
+
+    if rel.description.is_some() {
+        query.push_str(", description = $desc");
+    }
+    if rel.strength.is_some() {
+        query.push_str(", strength = $strength");
+    }
+    if !rel.attributes.is_null() {
+        query.push_str(", attributes = $attrs");
+    }
+    if let Some(ref sc) = rel.start_chapter {
+        if !sc.is_empty() {
+            query.push_str(", start_chapter = type::record($start_chapter)");
+        }
+    }
+    if let Some(ref ec) = rel.end_chapter {
+        if !ec.is_empty() {
+            query.push_str(", end_chapter = type::record($end_chapter)");
+        }
+    }
+    query.push_str(" RETURN AFTER");
+
+    let mut q = db
+        .query(query)
+        .bind(("from", from_rec))
+        .bind(("to", to_rec))
+        .bind(("pid", proj_id))
+        .bind(("rel_type", rel.rel_type.clone()));
+
+    if let Some(ref d) = rel.description {
+        q = q.bind(("desc", d.clone()));
+    }
+    if let Some(s) = rel.strength {
+        q = q.bind(("strength", s));
+    }
+    if !rel.attributes.is_null() {
+        q = q.bind(("attrs", rel.attributes.clone()));
+    }
+    if let Some(ref sc) = rel.start_chapter {
+        if !sc.is_empty() {
+            q = q.bind(("start_chapter", sc.clone()));
+        }
+    }
+    if let Some(ref ec) = rel.end_chapter {
+        if !ec.is_empty() {
+            q = q.bind(("end_chapter", ec.clone()));
+        }
+    }
+
+    let mut res = q.await?;
+    let created: Option<Value> = res.take(0)?;
+    match created {
+        Some(v) => Ok(serde_json::from_value(v)?),
+        None => Err(EntityError::OperationFailed("EntityRel not created".to_string())),
+    }
+}
+
+pub async fn delete_entity_relation_inner(
+    db: &Surreal<Db>,
+    id: &str,
+) -> Result<(), EntityError> {
+    let parts: Vec<&str> = id.splitn(2, ':').collect();
+    let actual_id = if parts.len() == 2 { parts[1] } else { id };
+    let _: Option<Value> = db.delete(("entity_rel", actual_id)).await?;
+    Ok(())
+}
+
+// =====================================================
+// RELATION SCHEMA CRUD
+// =====================================================
+
+pub async fn get_relation_schemas_inner(
+    db: &Surreal<Db>,
+    project: &str,
+) -> Result<Vec<RelationSchema>, EntityError> {
+    let pid_val = safe_pid(project);
+    let pid_raw = pid_val.replace("projects:", "");
+    let pid_literal = format!("projects:`{}`", pid_raw);
+    let mut res = db
+        .query(format!(
+            "SELECT * FROM relation_schemas WHERE project_id = '{}' OR project_id = {}",
+            pid_val, pid_literal
+        ))
+        .await?;
+    let values: Vec<Value> = res.take(0)?;
+    Ok(deserialize_list(values))
+}
+
+pub async fn save_relation_schema_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    schema: RelationSchema,
+) -> Result<RelationSchema, EntityError> {
+    let proj_id = format!("projects:{}", project);
+    let mut val = serde_json::to_value(&schema)?;
+    if let Some(obj) = val.as_object_mut() {
+        obj.remove("id");
+        obj.insert("project_id".into(), Value::String(proj_id));
+    }
+
+    let result: Option<Value> = if let Some(id_str) = &schema.id {
+        let parts: Vec<&str> = id_str.splitn(2, ':').collect();
+        let actual_id = if parts.len() == 2 {
+            parts[1]
+        } else {
+            id_str.as_str()
+        };
+        db.upsert(("relation_schemas", actual_id))
+            .merge(val)
+            .await?
+    } else {
+        db.create("relation_schemas")
+            .content(val)
+            .await?
+    };
+
+    match result {
+        Some(v) => Ok(serde_json::from_value(v)?),
+        None => Err(EntityError::OperationFailed("RelationSchema not saved".to_string())),
+    }
+}
+
+pub async fn delete_relation_schema_inner(
+    db: &Surreal<Db>,
+    project: &str,
+    rel_key: &str,
+) -> Result<(), EntityError> {
+    let proj_id = format!("projects:{}", project);
+    let mut tx_res = db.query(
+        "
+        BEGIN TRANSACTION;
+        DELETE entity_rel WHERE project_id = $pid AND rel_type = $rel_key;
+        DELETE relation_schemas WHERE project_id = $pid AND rel_key = $rel_key;
+        COMMIT TRANSACTION;
+    ",
+    )
+    .bind(("pid", proj_id))
+    .bind(("rel_key", rel_key))
+    .await?;
+
+    let errors = tx_res.take_errors();
+    if !errors.is_empty() {
+        return Err(EntityError::Transaction(format!("{:?}", errors)));
+    }
+
+    Ok(())
+}

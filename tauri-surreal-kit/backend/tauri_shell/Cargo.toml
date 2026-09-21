@@ -1,9 +1,15 @@
 [package]
-name = "tauri-shell"
+name = "tauri-shell-adapter"
 version = "0.85.0"
-description = "tauri-surreal-kit shell template — domain-agnostic Tauri + SurrealDB bootstrap"
+description = "tauri-surreal-kit shell template — domain-agnostic Tauri + SurrealDB bootstrap adapter"
 authors = []
 edition = "2021"
+
+[package.metadata.cerberus]
+layer = "adapter"
+
+[package.metadata.arch-guard]
+layer = "adapter"
 
 [lib]
 name = "tauri_shell"

@@ -125,10 +125,10 @@ export function useCalendarPlayground(
   };
 
   const seasonColorsMap: Record<string, string> = {
-    'Зима': 'rgba(100, 150, 255, 0.1)',
-    'Весна': 'rgba(100, 255, 150, 0.1)',
-    'Лето': 'rgba(255, 200, 100, 0.1)',
-    'Осень': 'rgba(255, 150, 50, 0.1)',
+    'Зима': 'var(--info-bg)',
+    'Весна': 'var(--success-bg)',
+    'Лето': 'var(--warning-bg)',
+    'Осень': 'var(--error-bg)',
   };
 
   const gridDays = computed(() => {
@@ -150,7 +150,7 @@ export function useCalendarPlayground(
       if (filters.value.seasons) {
         seasonName = CalendarMath.getSeasonForDate(cal, inputDate.year, inputDate.month);
         const seasonObj = cal.сезоны?.find(s => s.название === seasonName);
-        seasonColor = seasonObj?.цвет || seasonColorsMap[seasonName] || 'rgba(255,255,255,0.03)';
+        seasonColor = seasonObj?.цвет || seasonColorsMap[seasonName] || 'var(--bg-sunken)';
       }
 
       let holiday = null;

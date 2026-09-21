@@ -127,4 +127,4 @@
 }
 .history-btn:hover { background: var(--bg-hover); color: var(--text-main); }
 .history-btn--ghost { background: transparent; border-color: transparent; }
-.history-btn--danger:hover { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
+.history-btn--danger:hover { background: var(--error-bg); border-color: var(--error); color: var(--error); }

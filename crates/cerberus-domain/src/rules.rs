@@ -190,6 +190,74 @@ pub struct FrontendLayerConfig {
     pub allow_cross_slice: bool,
 }
 
+fn default_primitive_prefixes() -> Vec<String> {
+    vec![
+        "--red-".into(),
+        "--blue-".into(),
+        "--green-".into(),
+        "--yellow-".into(),
+        "--purple-".into(),
+        "--pink-".into(),
+        "--indigo-".into(),
+        "--cyan-".into(),
+        "--teal-".into(),
+        "--orange-".into(),
+        "--slate-".into(),
+        "--gray-".into(),
+        "--zinc-".into(),
+        "--neutral-".into(),
+        "--stone-".into(),
+        "--amber-".into(),
+        "--emerald-".into(),
+        "--sky-".into(),
+        "--violet-".into(),
+        "--fuchsia-".into(),
+        "--rose-".into(),
+    ]
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DesignTokensConfig {
+    #[serde(default)]
+    pub tokens_roots: Vec<String>,
+    #[serde(default = "default_primitive_prefixes")]
+    pub primitive_prefixes: Vec<String>,
+}
+
+impl Default for DesignTokensConfig {
+    fn default() -> Self {
+        Self {
+            tokens_roots: Vec::new(),
+            primitive_prefixes: default_primitive_prefixes(),
+        }
+    }
+}
+
+fn default_max_blur_radius() -> u32 {
+    30
+}
+
+fn default_max_filter_functions() -> usize {
+    4
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CssPerfConfig {
+    #[serde(default = "default_max_blur_radius")]
+    pub max_blur_radius_px: u32,
+    #[serde(default = "default_max_filter_functions")]
+    pub max_filter_functions: usize,
+}
+
+impl Default for CssPerfConfig {
+    fn default() -> Self {
+        Self {
+            max_blur_radius_px: default_max_blur_radius(),
+            max_filter_functions: default_max_filter_functions(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CerberusConfig {
     #[serde(rename = "$schema", default)]
@@ -208,6 +276,10 @@ pub struct CerberusConfig {
     pub overrides: Vec<RuleOverride>,
     #[serde(default)]
     pub frontend_layers: HashMap<String, FrontendLayerConfig>,
+    #[serde(default)]
+    pub design_tokens: Option<DesignTokensConfig>,
+    #[serde(default)]
+    pub css_perf: Option<CssPerfConfig>,
 }
 
 impl Default for CerberusConfig {
@@ -221,6 +293,8 @@ impl Default for CerberusConfig {
             rules: HashMap::new(),
             overrides: Vec::new(),
             frontend_layers: HashMap::new(),
+            design_tokens: None,
+            css_perf: None,
         }
     }
 }
@@ -478,6 +552,22 @@ mod tests {
         assert_ne!(fp_sha, "xyzzy");
         assert_eq!(fp_sha.len(), 64);
 
+        // Test DesignTokensConfig & CssPerfConfig defaults
+        let dt = DesignTokensConfig::default();
+        assert!(dt.tokens_roots.is_empty());
+        assert!(dt.primitive_prefixes.contains(&"--blue-".to_string()));
+
+        let perf = CssPerfConfig::default();
+        assert_eq!(perf.max_blur_radius_px, 30);
+        assert_eq!(perf.max_filter_functions, 4);
+
+        let dt_from_json: DesignTokensConfig = serde_json::from_str("{}").unwrap();
+        assert!(dt_from_json.primitive_prefixes.contains(&"--red-".to_string()));
+
+        let perf_from_json: CssPerfConfig = serde_json::from_str("{}").unwrap();
+        assert_eq!(perf_from_json.max_blur_radius_px, 30);
+        assert_eq!(perf_from_json.max_filter_functions, 4);
+
         // Exercise Debug trait implementations
         let _ = format!("{:?}", Category::Architecture);
         let _ = format!("{:?}", Severity::Deny);
@@ -486,6 +576,8 @@ mod tests {
         let _ = format!("{:?}", CerberusConfig::default());
         let _ = format!("{:?}", parsed_cfg);
         let _ = format!("{:?}", parsed_v);
+        let _ = format!("{:?}", dt);
+        let _ = format!("{:?}", perf);
     }
 }
 

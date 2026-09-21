@@ -88,8 +88,8 @@
 }
 
 .message-user .message-content {
-  background: rgba(139, 92, 246, 0.1);
-  border-color: rgba(139, 92, 246, 0.2);
+  background: var(--bg-selected);
+  border-color: var(--accent-glow);
 }
 
 .chat-input-container {

@@ -40,7 +40,7 @@ body[data-input-style="filled"] textarea,
 body[data-input-style="filled"] select,
 body[data-input-style="filled"] .input-base,
 body[data-input-style="filled"] .input-control {
-  background: var(--bg-input, rgba(22, 22, 26, 0.6)) !important;
+  background: var(--bg-input, var(--bg-card)) !important;
   border: 1px solid transparent !important;
 }
 

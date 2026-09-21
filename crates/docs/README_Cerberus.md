@@ -354,13 +354,22 @@ flowchart TD
 - `VUE-008` [🛑 Deny]: Прямая мутация входных пропсов (`props.x = val` или `props.list.push()`).
 - `VUE-009` [🛑 Deny]: Вызовы тяжелых методов и функций внутри директивы `v-for` шаблона.
 
-### 4. CSS Design Tokens & Архитектура Стилей
-- `CSS-001` [🛑 Deny]: Полный запрет Hex/RGB/HSL и именованных HTML-цветов (строго токены `var(--color-*)`).
+### 4. CSS Design Tokens, Семантика и Архитектура Стилей
+- `CSS-001` [🛑 Deny]: Полный запрет Hex/RGB/HSL и именованных HTML-цветов в стилях (строго токены `var(--color-*)`).
 - `CSS-002` [🛑 Deny]: Запрет захардкоженных радиусов скругления и анимаций (`border-radius: 8px`).
 - `CSS-004` [🛑 Deny]: Контроль раздувания стилей (блоки `<style>` не более 50–70 строк).
+- `CSS-005` [🛑 Deny]: Запрет строковых литералов цветов (Hex/RGB/RGBA) в TypeScript/Composable кодовой базе.
 - `CSS-006` [🛑 Deny]: Злоупотребление `!important` в scoped-стилях компонентов.
+- `DS-001` [🛑 Deny]: Запрет прямого использования спектральных токенов Tier-1 (`--blue-500`, `--slate-900`) в UI-компонентах.
+- `DS-002` [🛑 Deny]: Запрет локальных переопределений тем (`html[data-theme]`, `body.dark`, `@media (prefers-color-scheme)`) в листовых CSS.
+- `DS-003` [🛑 Deny]: Проверка соответствия ролей токенов (запрет фоновых токенов в `color:` и текстовых токенов в `background:`).
 
-### 5. Производительность и Реактивность (Performance & Reactivity)
+### 5. Производительность Рендеринга и Реактивность (Rendering Performance & Reactivity)
+- `CSS-PERF-001` [⚠️ Warn]: Контроль бюджета GPU-слоев и злоупотребления `will-change` на статических селекторах.
+- `CSS-PERF-002` [⚠️ Warn]: Порог сложности фильтров и размытия (`blur` > 30px или > 4 вложенных функций фильтра).
+- `CSS-PERF-003` [🛑 Deny / ⚠️ Warn]: Запрет анимации layout-свойств (`width`, `height`, `margin`, `box-shadow`) в `@keyframes` и `transition`.
+- `CSS-PERF-004` [🛑 Deny]: Полный запрет `transition: all` и `transition: inherit` (обязательно явное перечисление свойств).
+- `CSS-PERF-005` [⚠️ Warn]: Обязательное наличие `@media (prefers-reduced-motion: reduce)` для тяжелых/бесконечных анимаций.
 - `PERF-001` [🛑 Deny]: Глубокая реактивность (`ref`/`reactive`) на тяжелых структурах данных (AST, логи, массивы).
 - `PERF-002` [🛑 Deny]: Оборачивание инстансов Three.js, Canvas, WebGL или Monaco Editor в Vue Proxy (требуется `markRaw`).
 - `PERF-003` [🛑 Deny]: Аллокация объектов и памяти внутри цикла `requestAnimationFrame`.
@@ -614,23 +623,25 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-infrastructure/src/ast/rust_perf.rs`** | **100.00%** (17/17) | 99.44% (178/179) | 97.51% (235/241) | ✅ Verified |
 | **`cerberus-infrastructure/src/ast/testability.rs`** | **100.00%** (14/14) | 98.82% (168/170) | 99.23% (257/259) | ✅ Verified |
 | **`cerberus-infrastructure/src/ast/visitor.rs`** | **100.00%** (5/5) | 98.08% (51/52) | 95.80% (114/119) | ✅ Verified |
-| **`cerberus-infrastructure/src/frontend/css_rules.rs`** | **100.00%** (13/13) | 99.47% (188/189) | 98.64% (291/295) | ✅ Verified |
-| **`cerberus-infrastructure/src/frontend/fsd_rules.rs`** | **100.00%** (10/10) | 96.26% (180/187) | 96.25% (282/293) | ✅ Verified |
-| **`cerberus-infrastructure/src/frontend/lifecycle_rules.rs`** | **100.00%** (4/4) | 100.00% (80/80) | 100.00% (162/162) | ✅ Verified |
-| **`cerberus-infrastructure/src/frontend/mod.rs`** | **100.00%** (4/4) | 100.00% (42/42) | 100.00% (111/111) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/css_perf_rules.rs`** | **100.00%** (12/12) | 99.12% (224/226) | 99.02% (304/307) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/css_rules.rs`** | **100.00%** (21/21) | 94.67% (320/338) | 92.96% (528/568) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/design_system_rules.rs`** | **100.00%** (7/7) | 100.00% (137/137) | 100.00% (193/193) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/fsd_rules.rs`** | **100.00%** (21/21) | 97.28% (357/367) | 97.24% (494/508) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/lifecycle_rules.rs`** | **100.00%** (4/4) | 100.00% (83/83) | 100.00% (168/168) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/mod.rs`** | **100.00%** (4/4) | 100.00% (43/43) | 100.00% (117/117) | ✅ Verified |
 | **`cerberus-infrastructure/src/frontend/perf_rules.rs`** | **100.00%** (17/17) | 97.20% (313/322) | 96.33% (472/490) | ✅ Verified |
 | **`cerberus-infrastructure/src/frontend/sfc_parser.rs`** | **100.00%** (18/18) | 99.01% (100/101) | 98.94% (186/188) | ✅ Verified |
-| **`cerberus-infrastructure/src/frontend/vue_rules.rs`** | **100.00%** (20/20) | 97.38% (335/344) | 96.28% (517/537) | ✅ Verified |
+| **`cerberus-infrastructure/src/frontend/vue_rules.rs`** | **100.00%** (28/28) | 98.98% (487/492) | 98.94% (746/754) | ✅ Verified |
 | **`cerberus-infrastructure/src/hooks/git_hooks.rs`** | **100.00%** (8/8) | 100.00% (77/77) | 100.00% (146/146) | ✅ Verified |
 | **`cerberus-infrastructure/src/manifest/cargo_manifest.rs`** | **100.00%** (13/13) | 87.54% (253/289) | 89.19% (396/444) | ✅ Verified |
 | **`cerberus-infrastructure/src/manifest/transitive_capabilities.rs`** | **100.00%** (11/11) | 96.59% (170/176) | 96.14% (274/285) | ✅ Verified |
 | **`cerberus-infrastructure/src/metrics/ast_complexity.rs`** | **100.00%** (24/24) | 100.00% (287/287) | 99.47% (374/376) | ✅ Verified |
 | **`cerberus-infrastructure/src/metrics/blast_radius.rs`** | **100.00%** (4/4) | 100.00% (77/77) | 100.00% (118/118) | ✅ Verified |
 | **`cerberus-infrastructure/src/metrics/package_topology.rs`** | **100.00%** (13/13) | 100.00% (191/191) | 100.00% (341/341) | ✅ Verified |
-| **`cerberus-infrastructure/src/metrics/sloc.rs`** | **100.00%** (5/5) | 93.51% (144/154) | 93.60% (234/250) | ✅ Verified |
+| **`cerberus-infrastructure/src/metrics/sloc.rs`** | **100.00%** (13/13) | 92.37% (327/354) | 90.61% (463/511) | ✅ Verified |
 | **`cerberus-infrastructure/src/parsers/parallel_engine.rs`** | **100.00%** (7/7) | 100.00% (67/67) | 100.00% (98/98) | ✅ Verified |
 | **`cerberus-infrastructure/src/parsers/rust_syn.rs`** | **100.00%** (12/12) | 98.52% (133/135) | 99.34% (302/304) | ✅ Verified |
-| **`cerberus-infrastructure/src/parsers/vue_sfc.rs`** | **100.00%** (10/10) | 98.43% (125/127) | 98.90% (269/272) | ✅ Verified |
+| **`cerberus-infrastructure/src/parsers/vue_sfc.rs`** | **100.00%** (14/14) | 91.58% (174/190) | 96.72% (383/396) | ✅ Verified |
 | **`cerberus-infrastructure/src/reporters/console.rs`** | **100.00%** (6/6) | 97.87% (92/94) | 97.58% (161/165) | ✅ Verified |
 | **`cerberus-infrastructure/src/reporters/json.rs`** | **100.00%** (7/7) | 98.41% (62/63) | 99.19% (123/124) | ✅ Verified |
 | **`cerberus-infrastructure/src/reporters/sarif.rs`** | **100.00%** (8/8) | 98.90% (90/91) | 99.28% (137/138) | ✅ Verified |
@@ -648,9 +659,9 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-infrastructure/src/vector/cache.rs`** | **100.00%** (7/7) | 100.00% (65/65) | 99.11% (111/112) | ✅ Verified |
 | **`cerberus-infrastructure/src/vector/dbscan.rs`** | **100.00%** (12/12) | 97.28% (143/147) | 96.92% (252/260) | ✅ Verified |
 | **`cerberus-infrastructure/src/vector/model_downloader.rs`** | **100.00%** (6/6) | 96.83% (61/63) | 90.71% (127/140) | ✅ Verified |
-| **`cerberus-infrastructure/src/vector/onnx_embedder.rs`** | **100.00%** (15/15) | 93.02% (120/129) | 93.25% (221/237) | ✅ Verified |
+| **`cerberus-infrastructure/src/vector/onnx_embedder.rs`** | **100.00%** (15/15) | 92.81% (129/139) | 93.02% (240/258) | ✅ Verified |
 | **`cerberus-infrastructure/src/vector/semantic_embedder.rs`** | **100.00%** (11/11) | 100.00% (75/75) | 98.76% (159/161) | ✅ Verified |
-| **`cerberus-sfc/src/app_runner.rs`** | **100.00%** (9/9) | 94.19% (438/465) | 93.15% (598/642) | ✅ Verified |
+| **`cerberus-sfc/src/app_runner.rs`** | **100.00%** (9/9) | 95.81% (435/454) | 95.46% (589/617) | ✅ Verified |
 | **`cerberus-sfc/src/cli.rs`** | **100.00%** (3/3) | 95.65% (22/23) | 91.67% (22/24) | ✅ Verified |
 | **`cerberus-sfc/src/main.rs`** | **100.00%** (1/1) | 88.89% (8/9) | 91.67% (11/12) | ✅ Verified |
 | **`cerberus-testability/src/application/analyze_ast.rs`** | **100.00%** (5/5) | 86.30% (63/73) | 88.06% (118/134) | ✅ Verified |
@@ -664,6 +675,6 @@ Paradigm                              Files     SLOC  Time(ms)     Throughput  R
 | **`cerberus-testability/src/infrastructure/console_renderer.rs`** | **100.00%** (2/2) | 95.18% (79/83) | 93.41% (156/167) | ✅ Verified |
 | **`cerberus-testability/src/infrastructure/frontend_visitor.rs`** | **100.00%** (2/2) | 89.47% (136/152) | 88.28% (211/239) | ✅ Verified |
 | **`cerberus-testability/src/infrastructure/syn_visitor.rs`** | **100.00%** (24/24) | 92.29% (371/402) | 92.84% (441/475) | ✅ Verified |
-| **🏆 TOTALS (Суммарно по всем 7 крейтам)** | **`100.00% (804/804)`** | **`96.74% (11849/12248)`** | **`97.05% (20470/21092)`** | **🥇 100% Green** |
+| **🏆 TOTALS (Суммарно по всем 7 крейтам)** | **`100.00% (876/876)`** | **`96.81% (13069/13499)`** | **`97.07% (22301/22973)`** | **🥇 100% Green** |
 
 

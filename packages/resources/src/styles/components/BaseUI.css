@@ -112,7 +112,7 @@
   transition: all var(--anim-speed-fast, 0.15s) ease;
 }
 .btn-danger-outline:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   border-color: var(--error);
 }
 .btn-danger-outline:active:not(:disabled) {
@@ -296,21 +296,21 @@
 }
 
 .badge-success {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid var(--success-border);
 }
 
 .badge-warning {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--warning-bg);
   color: var(--warning);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid var(--warning-border);
 }
 
 .badge-danger {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid var(--error-border);
 }
 
 .badge-muted {
@@ -379,7 +379,7 @@
 }
 
 .ctx-danger:hover {
-  background: rgba(239, 68, 68, 0.15) !important;
+  background: var(--error-bg) !important;
   color: var(--error);
 }
 

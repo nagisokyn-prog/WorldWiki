@@ -86,6 +86,16 @@
       "allowed_deps": ["pages", "widgets", "features", "entities", "shared", "app"]
     }
   },
+  "design_tokens": {
+    "tokens_roots": [
+      "packages/resources/src/styles/tokens/**",
+      "packages/tokens/**"
+    ]
+  },
+  "css_perf": {
+    "max_blur_radius_px": 30,
+    "max_filter_functions": 4
+  },
   "limits": {
     "max_sloc_warn": 300,
     "max_sloc_deny": 500,
@@ -127,7 +137,16 @@
 
     "css/no-hardcoded-colors": "deny",
     "css/require-design-tokens": "deny",
+    "css/no-raw-colors-in-ts": "deny",
     "css/max-style-lines": "warn",
+    "css/no-will-change-overuse": "warn",
+    "css/blur-budget-exceeded": "warn",
+    "css/compositor-only-animations": "warn",
+    "css/no-transition-all": "deny",
+    "css/require-reduced-motion": "warn",
+    "ds/no-primitive-spectral-tokens": "deny",
+    "ds/no-local-theme-overrides": "deny",
+    "ds/token-role-mismatch": "deny",
 
     "fsd/layer-imports-hierarchy": "deny",
     "fsd/public-api-only": "deny",

@@ -62,10 +62,19 @@ impl AstParserPort for VueSfcParserAdapter {
                 Self::check_sloc_limits(path, sloc, warn_sloc, deny_sloc, &mut violations);
             }
             "css" => {
-                violations.extend(CssRuleChecker::validate_css_file(&content, path));
+                violations.extend(CssRuleChecker::validate_css_file_with_config(
+                    &content,
+                    path,
+                    self.config.as_ref(),
+                ));
             }
             "ts" | "js" => {
                 violations.extend(LifecycleRuleChecker::check_typescript_file(&content, path));
+                violations.extend(CssRuleChecker::check_typescript_colors(
+                    &content,
+                    path,
+                    self.config.as_ref(),
+                ));
                 violations.extend(crate::frontend::fsd_rules::FsdRulesChecker::check_source_with_config(
                     &content,
                     path,

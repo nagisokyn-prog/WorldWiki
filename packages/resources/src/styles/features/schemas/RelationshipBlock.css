@@ -236,7 +236,7 @@
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-size: 11px;
-  background: rgba(245, 158, 11, 0.1);
+  background: var(--warning-bg);
   border: 1px solid rgba(245, 158, 11, 0.25);
   color: var(--warning);
 }

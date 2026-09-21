@@ -45,7 +45,7 @@
   transition: color 0.08s;
 }
 .ctx-item:hover .ctx-kbd { color: var(--text-main); }
-.ctx-kbd-danger { color: var(--error); border-color: rgba(239, 68, 68, 0.2); }
+.ctx-kbd-danger { color: var(--error); border-color: var(--error-bg); }
 .ctx-item:hover .ctx-kbd-danger { color: var(--error); }
 .ctx-danger .ctx-icon { opacity: 0.7; }
 .tree-action-btn {

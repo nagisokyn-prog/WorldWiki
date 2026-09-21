@@ -37,6 +37,20 @@ function getAllCssFiles(dir, fileList = []) {
   return fileList;
 }
 
+function getRadiusToken(pxStr) {
+  if (pxStr === '50%' || pxStr === '9999px' || pxStr === '999px') return 'var(--radius-round)';
+  const num = parseInt(pxStr, 10);
+  if (isNaN(num)) return null;
+  if (num <= 1) return 'var(--radius-xs)';
+  if (num <= 6) return 'var(--radius-xs)';
+  if (num <= 8) return 'var(--radius-sm)';
+  if (num <= 12) return 'var(--radius-md)';
+  if (num <= 16) return 'var(--radius-lg)';
+  if (num <= 24) return 'var(--radius-card)';
+  if (num <= 28) return 'var(--radius-island)';
+  return 'var(--radius-round)';
+}
+
 function processBorderRadius(line) {
   // Игнорируем комментарии
   const trimmed = line.trim();
@@ -49,7 +63,7 @@ function processBorderRadius(line) {
   let changed = false;
 
   let newLine = line.replace(singleRegex, (match, val, ending) => {
-    const token = RADIUS_MAP[val];
+    const token = getRadiusToken(val);
     if (token) {
       changed = true;
       return `border-radius: ${token}${ending.startsWith(' ') ? ending : ' ' + ending}`;

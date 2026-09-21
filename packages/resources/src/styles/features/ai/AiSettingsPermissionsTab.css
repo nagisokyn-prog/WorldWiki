@@ -127,19 +127,19 @@
   font-weight: 500;
 }
 .risk-low {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
 }
 .risk-medium {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--warning-bg);
   color: var(--warning);
 }
 .risk-high {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   color: var(--error);
 }
 .risk-critical {
-  background: rgba(239, 68, 68, 0.3);
+  background: var(--error-border);
   color: var(--error);
 }
 .tool-desc {

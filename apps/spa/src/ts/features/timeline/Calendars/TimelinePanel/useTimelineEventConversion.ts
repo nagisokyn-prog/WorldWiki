@@ -4,11 +4,14 @@ import type { CalendarData, CalendarEra, CalendarMonth } from '../../../../servi
 import type { CalendarRecord } from '../../../../stores/calendar.store';
 import type { TimelineEvent } from './useTimelinePanel';
 
+export type TimeOfDay = 'night' | 'morning' | 'day' | 'evening';
+
 export interface ConvertedDateInfo {
   seasonName: string;
   seasonColor: string;
   timeOfDayName: string;
-  timeOfDayColor: string;
+  timeOfDayType: TimeOfDay;
+  timeOfDayColor?: string;
   dateStr: string;
   calName: string;
   isNative: boolean;
@@ -67,28 +70,20 @@ export function useTimelineEventConversion(
   };
 
   const getDisplayCalendarIds = (event: TimelineEvent): string[] => {
-    const nativeId = event.calendar_id || availableCalendars.value[0]?.id;
     const list: string[] = [];
-    if (nativeId) {
-      list.push(nativeId);
+    if (event.calendar_id) {
+      list.push(event.calendar_id);
     }
-    for (const selId of selectedCalendarIds.value) {
-      if (selId && selId !== nativeId && !list.includes(selId)) {
-        list.push(selId);
+    selectedCalendarIds.value.forEach(id => {
+      if (!list.includes(id)) {
+        list.push(id);
       }
-    }
+    });
     return list;
   };
 
   const convertedDateInfoMap = computed(() => {
     const map = new Map<string, ConvertedDateInfo>();
-
-    const seasonColors: Record<string, string> = {
-      'Весна': 'rgba(34, 197, 94, 0.3)',
-      'Лето': 'rgba(245, 158, 11, 0.3)',
-      'Осень': 'rgba(239, 68, 68, 0.3)',
-      'Зима': 'rgba(59, 130, 246, 0.3)',
-    };
 
     events.value.forEach((event, evIdx) => {
       const sourceCal = getCalendar(event.calendar_id);
@@ -118,7 +113,7 @@ export function useTimelineEventConversion(
 
         const season = CalendarMath.getSeasonForDate(targetCal, localDate.year, localDate.month);
         const seasonObj = targetCal.сезоны?.find(s => s.название === season);
-        const seasonColor = seasonObj?.цвет || seasonColors[season] || 'rgba(139, 92, 246, 0.2)';
+        const seasonColor = seasonObj?.цвет || '';
 
         const era = targetCal.эпохи?.[localDate.era_index];
         const month = targetCal.месяцы?.[localDate.month];
@@ -131,17 +126,24 @@ export function useTimelineEventConversion(
 
         const hour = localDate.hour || 0;
         let timeOfDayName = '🌙 Ночь';
-        let timeOfDayColor = 'rgba(59, 130, 246, 0.3)';
+        let timeOfDayType: TimeOfDay = 'night';
 
-        if (hour >= 5 && hour < 12) { timeOfDayName = '🌅 Утро'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
-        else if (hour >= 12 && hour < 17) { timeOfDayName = '☀️ День'; timeOfDayColor = 'rgba(251, 191, 36, 0.3)'; }
-        else if (hour >= 17 && hour < 21) { timeOfDayName = '🌆 Вечер'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
+        if (hour >= 5 && hour < 12) {
+          timeOfDayName = '🌅 Утро';
+          timeOfDayType = 'morning';
+        } else if (hour >= 12 && hour < 17) {
+          timeOfDayName = '☀️ День';
+          timeOfDayType = 'day';
+        } else if (hour >= 17 && hour < 21) {
+          timeOfDayName = '🌆 Вечер';
+          timeOfDayType = 'evening';
+        }
 
         map.set(`${evIdx}:${targetCalId}`, {
           seasonName: season || 'Без сезона',
           seasonColor,
           timeOfDayName,
-          timeOfDayColor,
+          timeOfDayType,
           dateStr,
           calName: targetCal.название || 'Календарь',
           isNative: event.calendar_id === targetCalId
@@ -179,13 +181,8 @@ export function useTimelineEventConversion(
     );
 
     const season = CalendarMath.getSeasonForDate(targetCal, localDate.year, localDate.month);
-    const seasonColors: Record<string, string> = {
-      'Весна': 'rgba(34, 197, 94, 0.3)',
-      'Лето': 'rgba(245, 158, 11, 0.3)',
-      'Осень': 'rgba(239, 68, 68, 0.3)',
-      'Зима': 'rgba(59, 130, 246, 0.3)',
-    };
-    const seasonColor = seasonColors[season] || 'rgba(139, 92, 246, 0.2)';
+    const seasonObj = targetCal.сезоны?.find(s => s.название === season);
+    const seasonColor = seasonObj?.цвет || '';
 
     const era = targetCal.эпохи?.[localDate.era_index];
     const month = targetCal.месяцы?.[localDate.month];
@@ -198,17 +195,24 @@ export function useTimelineEventConversion(
 
     const hour = localDate.hour || 0;
     let timeOfDayName = '🌙 Ночь';
-    let timeOfDayColor = 'rgba(59, 130, 246, 0.3)';
+    let timeOfDayType: TimeOfDay = 'night';
 
-    if (hour >= 5 && hour < 12) { timeOfDayName = '🌅 Утро'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
-    else if (hour >= 12 && hour < 17) { timeOfDayName = '☀️ День'; timeOfDayColor = 'rgba(251, 191, 36, 0.3)'; }
-    else if (hour >= 17 && hour < 21) { timeOfDayName = '🌆 Вечер'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
+    if (hour >= 5 && hour < 12) {
+      timeOfDayName = '🌅 Утро';
+      timeOfDayType = 'morning';
+    } else if (hour >= 12 && hour < 17) {
+      timeOfDayName = '☀️ День';
+      timeOfDayType = 'day';
+    } else if (hour >= 17 && hour < 21) {
+      timeOfDayName = '🌆 Вечер';
+      timeOfDayType = 'evening';
+    }
 
     return {
       seasonName: season || 'Без сезона',
       seasonColor,
       timeOfDayName,
-      timeOfDayColor,
+      timeOfDayType,
       dateStr,
       calName: targetCal.название || 'Календарь',
       isNative: event.calendar_id === targetCalId

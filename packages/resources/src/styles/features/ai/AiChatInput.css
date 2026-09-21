@@ -11,7 +11,7 @@
 
 .ai-chat-input-wrapper.is-focused {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 .ai-chat-input-wrapper.is-loading {

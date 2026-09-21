@@ -70,7 +70,7 @@
 
 .format-option:has(input:checked) {
     border-color: var(--accent);
-    background: rgba(139, 92, 246, 0.1);
+    background: var(--bg-selected);
 }
 
 .format-icon {

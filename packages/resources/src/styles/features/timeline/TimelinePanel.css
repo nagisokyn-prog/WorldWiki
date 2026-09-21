@@ -142,13 +142,38 @@
 
 .time-of-day-badge {
   padding: 6px 12px;
-  border-radius: var(--radius-xs) ;
+  border-radius: var(--radius-xs);
   font-size: 12px;
   font-weight: 600;
   color: var(--text-main);
   text-align: center;
   align-self: flex-start;
-  background: var(--time-bg, var(--bg-sunken));
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+}
+
+.time-of-day-badge[data-time="night"] {
+  background: var(--info-bg);
+  border-color: var(--info-border);
+  color: var(--info-text);
+}
+
+.time-of-day-badge[data-time="morning"] {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+.time-of-day-badge[data-time="day"] {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+.time-of-day-badge[data-time="evening"] {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+  color: var(--error-text);
 }
 
 .event-description {

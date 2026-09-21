@@ -89,7 +89,7 @@
 }
 .editor-tab:hover .tab-close,
 .editor-tab.active .tab-close { opacity: 1; }
-.tab-close:hover { color: var(--error); background: rgba(239, 68, 68, 0.15); }
+.tab-close:hover { color: var(--error); background: var(--error-bg); }
 
 /* Drop indicator lines */
 .tab-drop-line {

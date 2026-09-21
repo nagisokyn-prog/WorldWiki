@@ -419,7 +419,7 @@
 .settings-close {
   width: 32px;
   height: 32px;
-  border-radius: 40px;
+  border-radius: var(--radius-round) ;
   border: none;
   background: transparent;
   color: var(--text-main);
@@ -510,7 +510,7 @@ select.form-control { cursor: pointer; }
 /* Buttons */
 .btn {
   padding: 8px 16px;
-  border-radius: 40px;
+  border-radius: var(--radius-round) ;
   border: none;
   cursor: pointer;
   font-size: 13px;
@@ -556,7 +556,7 @@ select.form-control { cursor: pointer; }
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   color: var(--error);
 }
 

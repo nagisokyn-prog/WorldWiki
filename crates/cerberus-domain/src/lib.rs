@@ -22,8 +22,9 @@ pub use path_utils::{
 pub use preset::Preset;
 pub use registry::BuiltinRuleRegistry;
 pub use rules::{
-    compute_fingerprint, compute_location_fingerprint, Category, CerberusConfig, FrontendLayerConfig,
-    LimitsConfig, RuleDefinition, RuleOverride, RulesConfig, Severity, Violation,
+    compute_fingerprint, compute_location_fingerprint, Category, CerberusConfig, CssPerfConfig,
+    DesignTokensConfig, FrontendLayerConfig, LimitsConfig, RuleDefinition, RuleOverride,
+    RulesConfig, Severity, Violation,
 };
 pub use sla::SlaConfig;
 pub use suppression::Suppression;

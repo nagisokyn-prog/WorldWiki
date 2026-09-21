@@ -110,7 +110,7 @@
 }
 
 .perf-badge.low {
-    background: rgba(239, 68, 68, 0.2);
+    background: var(--error-bg);
     color: var(--error);
 }
 

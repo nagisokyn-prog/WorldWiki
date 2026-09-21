@@ -42,8 +42,8 @@
 }
 
 .schema-history-banner {
-    background: rgba(245, 158, 11, 0.15);
-    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    background: var(--warning-bg);
+    border-bottom: 1px solid var(--warning-border);
     padding: 8px 24px;
     display: flex;
     justify-content: space-between;
@@ -190,12 +190,12 @@
 
 .btn-warning-outline {
     color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid var(--warning-border);
 }
 
 .btn-danger-outline {
     color: var(--error);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid var(--error-border);
 }
 
 .btn-add-page {

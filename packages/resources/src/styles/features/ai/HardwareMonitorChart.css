@@ -27,7 +27,7 @@
 
 .live-badge {
   font-size: 10px;
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
   padding: 2px 6px;
   border-radius: var(--radius-xs);

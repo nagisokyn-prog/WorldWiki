@@ -53,7 +53,7 @@
               <div class="date-text">
                 {{ convertedDateInfoMap.get(`${idx}:${calId}`)?.dateStr }}
               </div>
-              <div class="time-of-day-badge" :style="{ '--time-bg': convertedDateInfoMap.get(`${idx}:${calId}`)?.timeOfDayColor }">
+              <div class="time-of-day-badge" :data-time="convertedDateInfoMap.get(`${idx}:${calId}`)?.timeOfDayType">
                 {{ convertedDateInfoMap.get(`${idx}:${calId}`)?.timeOfDayName }}
               </div>
             </template>

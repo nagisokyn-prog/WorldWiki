@@ -214,7 +214,7 @@
   width: 12px;
   height: 3px;
   margin-top: 1px;
-  border-radius: 1px;
+  border-radius: var(--radius-xs) ;
 }
 
 /* =========================================================================

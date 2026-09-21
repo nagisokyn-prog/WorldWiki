@@ -46,7 +46,7 @@
     height: 2px;
     background: var(--border-color);
     margin: 0 14px 10px;
-    border-radius: 1px;
+    border-radius: var(--radius-xs) ;
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -148,7 +148,7 @@
     height: 18px;
     border-radius: var(--radius-round) ;
     border: none;
-    background: rgba(239, 68, 68, 0.15);
+    background: var(--error-bg);
     color: var(--error);
     cursor: pointer;
     display: flex;

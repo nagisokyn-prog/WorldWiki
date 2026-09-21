@@ -31,12 +31,12 @@ export function getLegacyConvertedDateInfo(
 
   const season = CalendarMath.getSeasonForDate(targetCal, localDate.year, localDate.month);
   const seasonColors: Record<string, string> = {
-    'Весна': 'rgba(34, 197, 94, 0.3)',
-    'Лето': 'rgba(245, 158, 11, 0.3)',
-    'Осень': 'rgba(239, 68, 68, 0.3)',
-    'Зима': 'rgba(59, 130, 246, 0.3)',
+    'Весна': 'var(--success-bg)',
+    'Лето': 'var(--warning-bg)',
+    'Осень': 'var(--error-bg)',
+    'Зима': 'var(--info-bg)',
   };
-  const seasonColor = seasonColors[season] || 'rgba(139, 92, 246, 0.2)';
+  const seasonColor = seasonColors[season] || 'var(--accent-glow)';
 
   const era = targetCal.эпохи?.[localDate.era_index];
   const month = targetCal.месяцы?.[localDate.month];
@@ -49,11 +49,11 @@ export function getLegacyConvertedDateInfo(
 
   const hour = localDate.hour || 0;
   let timeOfDayName = '🌙 Ночь';
-  let timeOfDayColor = 'rgba(59, 130, 246, 0.3)';
+  let timeOfDayColor = 'var(--info-bg)';
 
-  if (hour >= 5 && hour < 12) { timeOfDayName = '🌅 Утро'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
-  else if (hour >= 12 && hour < 17) { timeOfDayName = '☀️ День'; timeOfDayColor = 'rgba(251, 191, 36, 0.3)'; }
-  else if (hour >= 17 && hour < 21) { timeOfDayName = '🌆 Вечер'; timeOfDayColor = 'rgba(249, 115, 22, 0.3)'; }
+  if (hour >= 5 && hour < 12) { timeOfDayName = '🌅 Утро'; timeOfDayColor = 'var(--warning-bg)'; }
+  else if (hour >= 12 && hour < 17) { timeOfDayName = '☀️ День'; timeOfDayColor = 'var(--success-bg)'; }
+  else if (hour >= 17 && hour < 21) { timeOfDayName = '🌆 Вечер'; timeOfDayColor = 'var(--error-bg)'; }
 
   return {
     seasonName: season || 'Без сезона',

@@ -1,5 +1,7 @@
-use cerberus_domain::{compute_fingerprint, Category, Severity, Violation};
+use cerberus_domain::{compute_fingerprint, Category, CerberusConfig, Severity, Violation};
 
+use crate::frontend::css_perf_rules::CssPerfRuleChecker;
+use crate::frontend::design_system_rules::DesignSystemRuleChecker;
 use crate::frontend::sfc_parser::VueSfc;
 use regex::Regex;
 use std::path::Path;
@@ -11,6 +13,16 @@ static RGB_HSL_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\b(?:rgb|rgba|hsl|hsla)\s*\([^)]*\)").unwrap());
 static BORDER_RADIUS_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"border-radius\s*:\s*\d+px").unwrap());
+static URL_SVG_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"url\(#[^)]*\)").unwrap());
+static CSS_COMMENT_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"/\*.*?\*/").unwrap());
+static TS_COMMENT_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"//.*$").unwrap());
+static TS_REGEX_LITERAL_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"/[^/\n\r]+/[gimsuy]*").unwrap());
+static TS_STRING_LITERAL_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`)"#).unwrap());
 
 pub struct CssRuleChecker;
 
@@ -53,7 +65,7 @@ impl CssRuleChecker {
 
             // 2. CSS-004: Validate design tokens inside style content
             if !style.content.is_empty() {
-                Self::validate_css_content(&style.content, file_path, style.start_line, &mut violations);
+                Self::validate_css_content(&style.content, file_path, style.start_line, None, &mut violations);
             }
         }
 
@@ -61,6 +73,14 @@ impl CssRuleChecker {
     }
 
     pub fn validate_css_file(content: &str, file_path: &Path) -> Vec<Violation> {
+        Self::validate_css_file_with_config(content, file_path, None)
+    }
+
+    pub fn validate_css_file_with_config(
+        content: &str,
+        file_path: &Path,
+        config: Option<&CerberusConfig>,
+    ) -> Vec<Violation> {
         let mut violations = Vec::new();
 
         // CSS-002: Check mirroring stylesheet taxonomy
@@ -93,27 +113,126 @@ impl CssRuleChecker {
             }
         }
 
-        Self::validate_css_content(content, file_path, 1, &mut violations);
+        Self::validate_css_content(content, file_path, 1, config, &mut violations);
         violations
     }
-
 
     fn validate_css_content(
         content: &str,
         file_path: &Path,
         start_line_offset: usize,
+        config: Option<&CerberusConfig>,
         violations: &mut Vec<Violation>,
     ) {
+        let is_token_file = is_token_path(file_path, config);
+
+        let (max_blur_px, max_filter_fns) = if let Some(cfg) = config {
+            if let Some(perf) = &cfg.css_perf {
+                (perf.max_blur_radius_px, perf.max_filter_functions)
+            } else {
+                (30, 4)
+            }
+        } else {
+            (30, 4)
+        };
+
+        let primitive_prefixes = if let Some(cfg) = config {
+            if let Some(tokens) = &cfg.design_tokens {
+                tokens.primitive_prefixes.clone()
+            } else {
+                cerberus_domain::DesignTokensConfig::default().primitive_prefixes
+            }
+        } else {
+            cerberus_domain::DesignTokensConfig::default().primitive_prefixes
+        };
+
+        // Check PERF-005: prefers-reduced-motion presence across stylesheet
+        violations.extend(CssPerfRuleChecker::check_reduced_motion_presence(content, file_path));
+
+        let mut current_selector = String::new();
+        let mut in_keyframes = false;
+
         for (idx, line) in content.lines().enumerate() {
             let trimmed = line.trim();
             if trimmed.is_empty() || trimmed.starts_with("/*") || trimmed.starts_with("//") {
                 continue;
             }
 
+            // Внутри файлов tokens/ объявление CSS переменных (--var: ...) является легитимным определением токенов
+            if is_token_file && trimmed.starts_with("--") {
+                continue;
+            }
+
             let current_line = start_line_offset + idx;
 
+            // Стриппаем инлайн-комментарии перед проверкой правил
+            let line_no_comments = CSS_COMMENT_RE.replace_all(trimmed, "").to_string();
+            let line_clean = line_no_comments.trim();
+            if line_clean.is_empty() {
+                continue;
+            }
+
+            // Отслеживание контекста селектора и @keyframes
+            if line_clean.contains("@keyframes") {
+                in_keyframes = true;
+            }
+            if line_clean.ends_with('{') {
+                let sel_part = line_clean.trim_end_matches('{').trim();
+                current_selector = sel_part.to_string();
+            }
+            if line_clean.contains('}') {
+                if in_keyframes && !line_clean.contains('{') {
+                    in_keyframes = false;
+                }
+                current_selector.clear();
+            }
+
+            // DS-002: Запрет локальных переопределений тем
+            if let Some(v) = DesignSystemRuleChecker::check_local_theme_override(line_clean, is_token_file, current_line, file_path) {
+                violations.push(v);
+            }
+
+            // DS-001: Запрет прямого использования спектральных (Tier-1) токенов
+            violations.extend(DesignSystemRuleChecker::check_primitive_token_usage(
+                line_clean,
+                &primitive_prefixes,
+                is_token_file,
+                current_line,
+                file_path,
+            ));
+
+            // PERF-004: Запрет transition: all
+            if let Some(v) = CssPerfRuleChecker::check_transition_all(line_clean, current_line, file_path) {
+                violations.push(v);
+            }
+
+            // PERF-003: Проверка композиторных анимаций
+            if let Some(v) = CssPerfRuleChecker::check_compositor_animation(line_clean, in_keyframes, current_line, file_path) {
+                violations.push(v);
+            }
+
+            // PERF-002: Бюджет размытия и фильтров
+            if let Some(v) = CssPerfRuleChecker::check_blur_and_filter_budget(line_clean, max_blur_px, max_filter_fns, current_line, file_path) {
+                violations.push(v);
+            }
+
+            // PERF-001: will-change overuse
+            if let Some(v) = CssPerfRuleChecker::check_will_change_usage(&current_selector, line_clean, current_line, file_path) {
+                violations.push(v);
+            }
+
+            // DS-003: Таксономия ролей токенов (color vs background)
+            if let Some((prop, val)) = line_clean.split_once(':') {
+                if let Some(v) = DesignSystemRuleChecker::check_token_role_taxonomy(prop, val.trim_end_matches(';'), current_line, file_path) {
+                    violations.push(v);
+                }
+            }
+
+            // Исключаем SVG-ссылки вида url(#gradient) из проверки Hex
+            let line_no_svg_url = URL_SVG_RE.replace_all(line_clean, "").to_string();
+
             // Check Hex colors
-            if HEX_RE.is_match(trimmed) {
+            if HEX_RE.is_match(&line_no_svg_url) {
                 let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_hex", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-004".into(),
@@ -132,7 +251,7 @@ impl CssRuleChecker {
             }
 
             // Check RGB/RGBA/HSL
-            if RGB_HSL_RE.is_match(trimmed) {
+            if RGB_HSL_RE.is_match(line_clean) {
                 let fingerprint = compute_fingerprint("CSS-004", "1.0", "color_rgb_hsl", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-004".into(),
@@ -151,7 +270,7 @@ impl CssRuleChecker {
             }
 
             // Check hardcoded pixel border-radius
-            if BORDER_RADIUS_RE.is_match(trimmed) {
+            if BORDER_RADIUS_RE.is_match(line_clean) {
                 let fingerprint = compute_fingerprint("CSS-004", "1.0", "border_radius", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-004".into(),
@@ -169,8 +288,8 @@ impl CssRuleChecker {
                 });
             }
 
-            // Check CSS-006: !important abuse
-            if trimmed.contains("!important") {
+            // Check CSS-006: !important abuse (только в активном коде, не в комментариях)
+            if line_clean.contains("!important") {
                 let fingerprint = compute_fingerprint("CSS-006", "1.0", "important_abuse", trimmed);
                 violations.push(Violation {
                     rule_id: "CSS-006".into(),
@@ -189,6 +308,100 @@ impl CssRuleChecker {
             }
         }
     }
+
+    pub fn check_typescript_colors(
+        content: &str,
+        file_path: &Path,
+        config: Option<&CerberusConfig>,
+    ) -> Vec<Violation> {
+        let mut violations = Vec::new();
+
+        if is_token_path(file_path, config) {
+            return violations;
+        }
+
+        for (idx, line) in content.lines().enumerate() {
+            let trimmed = line.trim();
+            if trimmed.is_empty()
+                || trimmed.starts_with("//")
+                || trimmed.starts_with("/*")
+                || trimmed.starts_with("*")
+            {
+                continue;
+            }
+
+            // 1. Стриппаем строчные комментарии
+            let line_no_comment = TS_COMMENT_RE.replace(trimmed, "").to_string();
+            // 2. Стриппаем RegExp-литералы (например, /\brgba?\(/)
+            let line_no_regex = TS_REGEX_LITERAL_RE.replace_all(&line_no_comment, "").to_string();
+
+            // 3. Ищем только внутри строковых литералов
+            for cap in TS_STRING_LITERAL_RE.find_iter(&line_no_regex) {
+                let str_val = cap.as_str();
+
+                // Игнорируем ключевые слова семантики
+                if str_val.contains("transparent") || str_val.contains("currentColor") {
+                    continue;
+                }
+
+                // Игнорируем SVG ссылки url(#...)
+                let str_no_svg = URL_SVG_RE.replace_all(str_val, "").to_string();
+
+                let hex_matches = HEX_RE.is_match(&str_no_svg);
+                let rgb_matches = RGB_HSL_RE.is_match(str_val);
+
+                if hex_matches || rgb_matches {
+                    let symbol = if hex_matches { "ts_color_hex" } else { "ts_color_rgb_hsl" };
+                    let fingerprint = compute_fingerprint("CSS-005", "1.0", symbol, str_val);
+                    violations.push(Violation {
+                        rule_id: "CSS-005".into(),
+                        rule_version: "1.0".into(),
+                        category: Category::Convention,
+                        severity: Severity::Deny,
+                        file: file_path.to_path_buf(),
+                        line: idx + 1,
+                        column: 1,
+                        symbol: symbol.into(),
+                        snippet: trimmed.to_string(),
+                        message: format!(
+                            "Raw color literal {} detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+                            str_val
+                        ),
+                        remediation: "Extract color to CSS custom properties or return a semantic string variant to bind via data-* attributes.".into(),
+                        fingerprint,
+                    });
+                }
+            }
+        }
+
+        violations
+    }
+}
+
+fn is_token_path(file_path: &Path, config: Option<&CerberusConfig>) -> bool {
+    let path_str = file_path.to_string_lossy().replace('\\', "/");
+    if let Some(cfg) = config {
+        if let Some(tokens_cfg) = &cfg.design_tokens {
+            for pattern in &tokens_cfg.tokens_roots {
+                let clean_pat = pattern
+                    .trim_end_matches("/**")
+                    .trim_end_matches("/*")
+                    .trim_start_matches("./")
+                    .replace('\\', "/");
+                if path_str.contains(&clean_pat) {
+                    return true;
+                }
+            }
+        }
+    }
+    path_str.contains("tokens")
+        || path_str.ends_with(".spec.ts")
+        || path_str.ends_with(".test.ts")
+        || path_str.ends_with(".spec.js")
+        || path_str.ends_with(".test.js")
+        || path_str.contains("__tests__")
+        || path_str.ends_with(".stories.ts")
+        || path_str.ends_with(".stories.js")
 }
 
 #[cfg(test)]

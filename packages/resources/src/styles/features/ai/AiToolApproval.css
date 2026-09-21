@@ -4,16 +4,16 @@
   border-radius: var(--radius-sm) ;
   overflow: hidden;
   margin: 10px 0;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 4px 12px var(--bg-selected);
 }
 
 .tool-header {
-  background: rgba(139, 92, 246, 0.1);
+  background: var(--bg-selected);
   padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+  border-bottom: 1px solid var(--accent-glow);
 }
 
 .tool-title {
@@ -119,7 +119,7 @@
 }
 
 .btn-reject:hover {
-  background: rgba(250, 82, 82, 0.1);
+  background: var(--error-bg);
 }
 
 .btn-approve {
@@ -143,13 +143,13 @@
 }
 
 .response-status.approved {
-  background: rgba(139, 92, 246, 0.1);
+  background: var(--bg-selected);
   color: var(--accent);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid var(--accent-glow);
 }
 
 .response-status.rejected {
-  background: rgba(250, 82, 82, 0.1);
+  background: var(--error-bg);
   color: var(--danger);
   border: 1px solid rgba(250, 82, 82, 0.2);
 }

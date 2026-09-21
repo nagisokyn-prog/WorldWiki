@@ -11,7 +11,10 @@ pub mod taint;
 pub mod vector;
 
 pub use ast::MacroVisitor;
-pub use frontend::{FsdLayer, FsdRulesChecker, PerfRulesChecker};
+pub use frontend::{
+    CssPerfRuleChecker, CssRuleChecker, DesignSystemRuleChecker, FsdLayer, FsdRulesChecker,
+    PerfRulesChecker,
+};
 pub use hooks::GitHooksInstaller;
 pub use manifest::{CargoMetadataManifestAdapter, TransitiveCapabilityChecker};
 pub use metrics::{

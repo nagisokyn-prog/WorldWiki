@@ -164,7 +164,7 @@
 }
 .license-ok {
   color: var(--success);
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
 }
 .rec-footer {
   margin-top: 6px;
@@ -196,9 +196,9 @@
   font-weight: 600;
 }
 .btn-installed {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  border: 1px solid var(--success-border);
   padding: 8px 14px;
   border-radius: var(--radius-xs);
   font-size: 13px;
@@ -256,7 +256,7 @@
   font-weight: 500;
 }
 .active-pill.embed-pill {
-  background: rgba(196, 181, 253, 0.15);
+  background: var(--bg-selected);
   color: var(--accent-light);
   border-color: rgba(196, 181, 253, 0.3);
 }
@@ -274,15 +274,15 @@
   font-weight: 500;
 }
 .state-ready, .state-idle {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
 }
 .state-loading, .state-busy {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--warning-bg);
   color: var(--warning);
 }
 .state-sleeping {
-  background: rgba(196, 181, 253, 0.15);
+  background: var(--bg-selected);
   color: var(--accent-light);
 }
 .state-installed {
@@ -290,7 +290,7 @@
   color: var(--text-muted);
 }
 .state-error {
-  background: rgba(239, 68, 68, 0.15);
+  background: var(--error-bg);
   color: var(--error);
 }
 .installed-actions {

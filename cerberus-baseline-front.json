@@ -58,50 +58,10 @@
   {
     "rule": "CSS-004",
     "file": "./packages/resources/src/styles/app.css",
-    "line": 422,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c9e06d97499fd89d60ef7b0fd90bee3052a895689d411a831e11c328be50dd7b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/app.css",
-    "line": 485,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "97077deaf1f117d5349a1014b35dc53861f171442077268466aa3d76df803006"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/app.css",
-    "line": 513,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c9e06d97499fd89d60ef7b0fd90bee3052a895689d411a831e11c328be50dd7b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/app.css",
-    "line": 559,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "fb9d99a27305011499bba97285435ac6ad74632aaabbdf42868ee3fd34dae41d"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/app.css",
     "line": 564,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "cfbc4bf012331689997914f7f55a31678156ea3dfd9b709f642d014b5f779753"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/base/layout.css",
-    "line": 49,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "3b60f7deb42ce2bca268581debeb1dc77f5a4c6d21d89f28be92b1a925ddbd52"
   },
   {
     "rule": "CSS-004",
@@ -110,118 +70,6 @@
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "a49a280925214624c1421d753175cd69e328c242340d6701f782295d9c2a34a1"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 115,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "59ceab5f6015af9c50484c22f57e504414a48d42edb743a5a9a80d4f0750d723"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 299,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "969be45997d5d6660849d6fab2bd527cf8502bb77ee0062111a32b71b133a87e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 301,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "85600ca27bbe4143e47ce1c363e4bdadc33bb70143a642ae1bfd2de23e6ad718"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 305,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "437244400b409db6fca2ca1e783c3c19572f9ac7ae77b8a8a65950787422d1f0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 307,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "19e5c502af6e3399261193c98104d3349ccfd2825810f010cb1e1da4bc0a0efe"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 311,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "59ceab5f6015af9c50484c22f57e504414a48d42edb743a5a9a80d4f0750d723"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 313,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "fc52f07c1d2a63434258fb8e031c5e9857b0e60443425a0e641501e2c316a304"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/BaseUI.css",
-    "line": 382,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "58cd000d9161a8c4aca3dd40791c98bb50cc09b676239c5c7e7a3c5ce18db69f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/CommandPalette.css",
-    "line": 24,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "7ee20233a54bda2669bfabf7e059a7bf4b3294b283b4feb9b19e52097c61ef03"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/CommandPalette.css",
-    "line": 31,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "b887be99bd1351161a4758cecd4d3b358413c51cc9dd404e7a07e0a9240a66e8"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/CommandPalette.css",
-    "line": 36,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "cd63d0cb929754d0de1745e00cf71bc8f0bc81fad597fccdc5464df0deec0d3e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/EditorTabBar.css",
-    "line": 83,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "31c87a8c452a9cef6afd6ed569e4e9c51641bdf31de4c126d500100fe58d200d"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/EditorTabBar.css",
-    "line": 92,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "e3947aa962ce1c458c509e5098b687c5aca1ad2fa8087c67b6f85843ba9095f4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/EditorTabBar.css",
-    "line": 100,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c860a5a7b97d2bf753bb8f5abe99f01863b1eac1b2586b26206200d8039d19bb"
   },
   {
     "rule": "CSS-004",
@@ -249,46 +97,6 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/HistorySidebar.css",
-    "line": 130,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "20944ce7ec111670d5c86e2adc4b3a3d59d71d57eb28b5ec74a8b028fa904388"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/QuickOpen.css",
-    "line": 32,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "f8a7f2b7db0b5bd193fe8b4bb8f75edf46636faeeb01fc80c204b602b9088691"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/QuickOpen.css",
-    "line": 42,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "eac791a51198e2fe297710919e3b1f73df41677ed2e968a5ad68cb9de60d2dec"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/QuickOpen.css",
-    "line": 46,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "4978bfdaa7a3449eacbc6a72e60cdee2d91b45082fc6f56b7a9db6fc175590a0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/TagsField.css",
-    "line": 119,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d9da496fe86c02b20bb1ee6824c6c8e1adbe1388fac8bf4f85325bef4b93211a"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/components/ThemeSwitcher.css",
     "line": 74,
     "symbol": "color_rgb_hsl",
@@ -305,198 +113,6 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/components/XboxWheel.css",
-    "line": 76,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "21ac6a82141f1a8296a63bd2e8d2def11d5f088218db29b21f7721de36ae0f7c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
-    "line": 30,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c19e19721adcece3ae7073fd0b48a9113ade988725442cb4dfe8208b43214274"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
-    "line": 34,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "167522f4764e96a4dbbe2d46297e19949849c91f00db869817e133797077cfdf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
-    "line": 44,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "88052b72d4321ed7d7ab63f5062352292b16d93a972aaf075d72d1315bcfbe9e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiApp.css",
-    "line": 82,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "5326f1232bfa6a64c745452c40a1cf16ece1ba2f2b83ed2fe70492f9d9d1ca52"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiApp.css",
-    "line": 91,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f19b3acfb675e52c3d96f51700bbaa6407f001f7697c73f08b57633719bc80cf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiApp.css",
-    "line": 92,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f7626f85519711940e88dd3793b98b9024d3e1e5a50e835604fee28f00dc3900"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiChatHistory.css",
-    "line": 65,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c1ee01b1f0265b2a446814d72e96732386e09aecd0f9d603403ceabbe9c03ba5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiChatInput.css",
-    "line": 4,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "da7fcd0c800f4f70c7e6e2499060ea9ef7a2e49f43011f4957c5debe8d457c8c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiChatInput.css",
-    "line": 14,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "cf100fc7ceb9455118303d4a9d9dfcc5128946966f6fae1da444f692c4a5dc7d"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
-    "line": 59,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "566d1dbc2b13697865ae3c7bfad49350727e9675a9852cf6ce6cd11bef285fd0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
-    "line": 73,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "23363f5334f9298b8e47c5a91f233e8a487e2080e905e5a5425f3ce131a8b292"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
-    "line": 99,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "f2082ef3544e3b3526393791fc57e4348e43962c47b0fd5dfbcfb3708afb07f5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiContextSelector.css",
-    "line": 74,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "cd83a9789047549bacc65db2d0820e67f2a0f2e82c27988a5f6091f1a28fc6d5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiContextSelector.css",
-    "line": 122,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "ec6e060e6c3f13e22863ac14ddcdb480e60d7306bc44d60800c4eb4cea0381cf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
-    "line": 31,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c59c58292db6f01f8620c03ec248a6d24e6325e2d1c2fa5afd2bfb8625758f6c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
-    "line": 41,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "2caeab6bdfd8728191c1d82feeb64a4e5dd6a0fb03762bf141408e2b185ca3ce"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
-    "line": 67,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "2caeab6bdfd8728191c1d82feeb64a4e5dd6a0fb03762bf141408e2b185ca3ce"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
-    "line": 81,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3375e7b7f166433f1901023d0166df37b61fefdedadaa37240251a9b7a80d412"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
-    "line": 191,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "cb0478feafbbd9e1dbdb0bc8e61a1e76251a991bdb06f38d98d735689cda26b7"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 167,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1041fffe6f1163616336c0247d1f50e310dd72030313a3396eb02f967ac5bbd7"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 199,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1041fffe6f1163616336c0247d1f50e310dd72030313a3396eb02f967ac5bbd7"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 201,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "393084164010e84410d7c313366d1e07af2b735dce589b8348b27f36db71b769"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 259,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "10e19a91d1f7f9530fb9018061c1fcc827ce34fc9e8538bbc17b4f45d13ce1c6"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
     "line": 261,
     "symbol": "color_rgb_hsl",
@@ -505,251 +121,11 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 277,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1041fffe6f1163616336c0247d1f50e310dd72030313a3396eb02f967ac5bbd7"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 281,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "09cd9752e0c14c0e4b827066086be845a0ea5d182bc0d64e3d84280c36a5d6cf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 285,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "10e19a91d1f7f9530fb9018061c1fcc827ce34fc9e8538bbc17b4f45d13ce1c6"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
-    "line": 293,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3c71b7d82f66f8503f171ac82b174828dcd02642668c024e28616c12821e4a65"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
-    "line": 130,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "9460c71cac244a88993a2a4f162b2c861647181f95a2a000ed05ebea3704f482"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
-    "line": 134,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "09123433e58d7bb202887a0d9d7e75986ce0668518fbafb26e6c923d5b156ffb"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
-    "line": 138,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "41270f43fada10a2d73927466990bfefaa2433c54df1d7fa204ce9db0992ec0e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
-    "line": 142,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "32f56e4bab5c0ad24f6d0fc53ab7a85cebc354744799bb2238c1ffed5ee0f244"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiSettingsView.css",
-    "line": 104,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "ecb4351fc2af13d599e7cf22a66f093aead9271722b158739cff9c2a4dfb069e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 4,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "79ec8372c38bcae124ba3b5347e4e86ae2532637d42d460c448b44c4893f2705"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 7,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "b7e32c843090127bcaa1bbad1f50e179e62eef5e92257412f3578d9ed0533f36"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 11,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "4dccc4006a37f811f0dfb2ef2b9473ad241915fac02c9178de962a88191288e1"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 16,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "de1cee75b7f562ebe91e8f5b80a460f6cc731386b1e53a5dd933f08eb6c80b13"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 36,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "8632ccdc8eef977bca5a1a64368b85a0a2912b7d0901452a41f13f8f7f7c5661"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 51,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 87,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 104,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 122,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "56f690a6f487d4a898018e0bfcd484d321c082e4ed124050b5155267308cdb67"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 136,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "a5e1b10df1ef75971e2397e0cd0f188f80ffb125063a7d782ec3589c21c627a2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 146,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "4dccc4006a37f811f0dfb2ef2b9473ad241915fac02c9178de962a88191288e1"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 148,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "998e6fa65c2c5e9ecdee623465f420daec8ee8c261f405d59ed1df181cf8248e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
-    "line": 152,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "56f690a6f487d4a898018e0bfcd484d321c082e4ed124050b5155267308cdb67"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
     "line": 154,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "133642b1c1aaa7bc909ac9ceaaf3841c7c4aa3627cc6ad8ece67d03bd9641678"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/ai/HardwareMonitorChart.css",
-    "line": 30,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3ef38b3ac26134cc4c707a62d1786542d0b8ff71d74e83217a9ea0fbe0db617b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
-    "line": 41,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "cc4af3bba67a3f2a81d8d901fcf74eab100bacde327f53a9883192d19a7f1bb0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
-    "line": 48,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c294f0fb551b27aa9c7533b6646f30846f1d1b75cd95329f78ca931837a76a55"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
-    "line": 88,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "9d116b5c2ecbf9b59224c6d78d4363b4e88492ed431ccdacabfa51e2e724d0c4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
-    "line": 110,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "9d116b5c2ecbf9b59224c6d78d4363b4e88492ed431ccdacabfa51e2e724d0c4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
-    "line": 136,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "0beef05d815245963f55ba455dc25cce00721ff13e78ae653791379d4dfef375"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
-    "line": 168,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "0beef05d815245963f55ba455dc25cce00721ff13e78ae653791379d4dfef375"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-    "line": 218,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "2e1dbbef052c24ae081e4e3f98594f4f849a1c0995d98205d3181de2250c75b7"
   },
   {
     "rule": "CSS-004",
@@ -770,146 +146,10 @@
   {
     "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
-    "line": 247,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "2e1dbbef052c24ae081e4e3f98594f4f849a1c0995d98205d3181de2250c75b7"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
     "line": 256,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "6020d8deb20d84c1e4f7387e66bb08298f4dece1ca6c2cfd71476a161ae48a51"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
-    "line": 17,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "f95604c2158142ed8393172928401b830581f57f7802959b17db597291070a5d"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
-    "line": 61,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "952888520e2d43e5e73b049e5fe86946a8c53f2b0d075ccd6b6fd011d0eddfb2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
-    "line": 73,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "5288bdcf0d79cbf5cec8e5bd662b25dee30fbc74a4eb32bcedda8cde12915fb5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
-    "line": 117,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "ffcfd55c38458c918e778c02c05e689945474742e8bc9400db72cb932615d246"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
-    "line": 49,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "ace1ede2bf1bd7e21d616331befce896a280ec9f2256167365c01f1b53b85535"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
-    "line": 151,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "e878e997f1ac710d6e92a0901266b7d103f938777d600c5cbb88d41fbb8066b4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
-    "line": 154,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "da9eed3947299c3851f89f70c905106ef723e6a8072900afb5712fb5fc578da4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
-    "line": 206,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "19c5558343c3dae5a00336d0b6c6cbcb6bcb6d9f4e3ab17e30747981947b1094"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
-    "line": 208,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "38c90d561b3f0051b21ba261422f8f2658e1ad8a9d8310ae52c3e19c6bd00cb1"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
-    "line": 216,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "15d4c2cef995ea7e465018eb33dbd4b1bba0fb5a1ddd924149deb0cd6a7342c8"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
-    "line": 218,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "f9754d08816647da1bad09edff2330b7c659834fbc507bf4eeef6e721bc799f5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 59,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "496a4e721ce9aee8ec8dc425a07c888e74a768d50cc7a41d17be00a8dc636809"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 151,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "978e171d51922bd080f753a01375cc8d35b2c5b03a5bd8e713438a46752c0fb0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 215,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d4ccc255246fd2bab3cb0b446f79e1e95667f08fa079b6335c459ac1ceb6184e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 262,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "5ad3155107a469f335280519d7d0771488702b48dd18cc5af7d664675224cc95"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 266,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "978e171d51922bd080f753a01375cc8d35b2c5b03a5bd8e713438a46752c0fb0"
   },
   {
     "rule": "CSS-004",
@@ -921,46 +161,6 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 367,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "0cd823d72ba7d1b1d905254e4c92cee0ebbe964b692e493db350a87694c0741f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 369,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a3500ba918a769fc6d8d6671aacd91094222f60ea30009499cea4807e3b511d5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 377,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "5ad3155107a469f335280519d7d0771488702b48dd18cc5af7d664675224cc95"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
-    "line": 379,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2f3182ffbfbc6bb301c35e81e619b37d03c591a1f03b8e0ecb5444d52dff4007"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/chapters/WordRibbonBar.css",
-    "line": 217,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "dda6e5908741030e9b5201fd1111a321a2f71d0a10da000f67ab1436d6b78af8"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
     "line": 249,
     "symbol": "color_rgb_hsl",
@@ -969,75 +169,11 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
-    "line": 254,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "922d541858db62b1ed5762b0d4b38ef1116004aaa7295cafdb2e33ac0ad0c418"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
-    "line": 62,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "060c190eed9e8c4ac9832c51d09cb1dd367d096ec91b850f7d0add6fb790540e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
-    "line": 67,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "060c190eed9e8c4ac9832c51d09cb1dd367d096ec91b850f7d0add6fb790540e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
-    "line": 239,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "61906c7a2d358be242518e9c8edbd1d370edff237d186b0167b083d54864d313"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
     "line": 240,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "29fbcd15204170612cfff3c6499b3b855116e6ee4d885284202ea10a2ffd71b3"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
-    "line": 45,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3287409bf24e6a4bb8a75477451c91efd17c9260fbdc0ad0f2067fa523dbde87"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
-    "line": 46,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "afe260f2bf3aea6e3ea71d62bebe30052393fde3f7a79874ce8ea001106700fd"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
-    "line": 193,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3a33d28c4c4cec4dd5723875fd209c4c14a03c7f381641206cc7b19a6a290c1b"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
-    "line": 198,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "01a9051cfd176af6401b895987d5b99f64ccd5d378e2e72687b05a9d822f4244"
   },
   {
     "rule": "CSS-004",
@@ -1081,43 +217,11 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
-    "line": 43,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "fd59c5bd87d335021722b2e695221ae765d855eee867b02c332dc3be721a04eb"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/shell/EditorView.css",
     "line": 297,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "7ba6613816596fe4e76c16830ad482815124ef9b41b2b2417058e85da28392ec"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-    "line": 490,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c42186b0c1bce62b38fcfdf4b019f9ef2f7e1f8dbd94252e272523bea7076599"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-    "line": 496,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c42186b0c1bce62b38fcfdf4b019f9ef2f7e1f8dbd94252e272523bea7076599"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-    "line": 512,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "c52ac5da7ca1955450c12433a54d0fad9d7a7a2debc7fe7945b823edb9d69e0e"
   },
   {
     "rule": "CSS-004",
@@ -1137,22 +241,6 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
-    "line": 528,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2facdaffe672f4a0cd5b3cf1cde575f81f7b31a184de628aa8483abc95630018"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/Splash.css",
-    "line": 95,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d95015f0a16987c857a679b4797fa40c81cbcf162e0c7c3926ba5fd5be6bee6d"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/shell/Splash.css",
     "line": 103,
     "symbol": "color_rgb_hsl",
@@ -1169,147 +257,11 @@
   },
   {
     "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/shell/Splash.css",
-    "line": 113,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6bb889acb85508e072d53f62fbba0f9b2611adf815d9edb4e5ad3503961a3ef7"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/CalendarCommon.css",
-    "line": 137,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "4ab6441c364158148e1b16a5992999505bebdbab09e0fd333ab10dc3c85e23ec"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
-    "line": 142,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d34728ae09901490c5dafd94065aac5794d358ebd8e458e22a313989a6e8bc2e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
-    "line": 156,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3cdb1fa04e7debdcf15874fb98a019f117f46f5fe03ec37af2665e26605fee33"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
-    "line": 158,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "06d2e8532a9c81b00431dcbad70a55c70366d15c3911789b89a79259dde17500"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 153,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 173,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 190,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 217,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 267,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "0ca95566ea8cff3f4918d99bb9d0aa764ef2cfc2a7043cf89a5afa16081d6e73"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 272,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "37aae6fded59121bce380494b4f5676f2653a5b424de73718e9b051b09520375"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 274,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "01c3710b006dd188eaebf45c03ae7a424889474e697482ce62a6259a6935fbc3"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
-    "line": 437,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "120219b9e974bf116a8ef90789d642505b8975bac97ed999916d364d21492aaf"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
-    "line": 8,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "f998a21528bfdd0d7bd11261e663aa216aea298a00d92d9054bbc37d82e7f0bb"
-  },
-  {
-    "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
     "line": 21,
     "symbol": "border_radius",
     "message": "Hardcoded pixel border-radius found in stylesheet.",
     "fingerprint": "fb612d13c908deb68b05f9c69947444fc6bf332b9d6fb7a1a197565ebf5491e2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/GlobalTimeViewer.css",
-    "line": 60,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "360fd0bd2c294e7a633497f46367ac37b22569fc3d9eeeb5809ac625b77b7a1c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 45,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 95,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
   },
   {
     "rule": "CSS-004",
@@ -1322,362 +274,554 @@
   {
     "rule": "CSS-004",
     "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 111,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 145,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 160,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 180,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "696d45d7f5359e13faeddf53622dbb5ea06dd4175f0755fd6baeee4e5e985b8d"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 198,
+    "line": 223,
     "symbol": "color_rgb_hsl",
     "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
     "fingerprint": "58566e6f831b2e88cc44a2c3b417b5ce314876be65b8978a3e6d39a9d28275d4"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 200,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "696d45d7f5359e13faeddf53622dbb5ea06dd4175f0755fd6baeee4e5e985b8d"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/app/settings.ts",
+    "line": 48,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'var(--accent-active, #22c55e)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "c96d126ac2b3a181433425492c0c2869ef7fa9442364817177dff8f10ee1435d"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 218,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "d3b89daa84645dacf821f7811d2415d74d862fc01a8eb27d3a95c239b6deed7e"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 66,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "4c3680a74ac026f387b48345fc39b0b4a0e31e2bff69d6f1d37f892f1e36a00f"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
-    "line": 256,
-    "symbol": "border_radius",
-    "message": "Hardcoded pixel border-radius found in stylesheet.",
-    "fingerprint": "ae17a466653669b67e189250c6da21078d4ca3acbda0e8a79e2d56b171e68142"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 80,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#8b949e' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "4d94a18fa9b1222d40996b5962f710a3c0fa208f589292b0506b1a347a5656ce"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 5,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "48e7a2d2d4c4d00d0d16dfa899e7d998512522ab7e6cae8c86f17d7d680f3400"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 81,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255, 255, 255, 0.05)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "e37adeb7439041e477876e8fd042160d44cb73eaf3355eda95dc7931a583cd40"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 6,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "87780e71d19bb2213b6bb7197aec0a3ccd0b9ce1793f871e67a1e6339147c62b"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 82,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255, 255, 255, 0.1)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "044ecea15e44bb543cd7604f7368081b11b9c6dd2a742205ee6c76fb8bf3cde6"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 7,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "cf7583ee95f7f65f99f2d1af02d45abe5c21d0463833fdf5746f78dcb9ceaaeb"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 91,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#8b949e' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "4d94a18fa9b1222d40996b5962f710a3c0fa208f589292b0506b1a347a5656ce"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 8,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "dd67303c591d3195a9b7d9e5bef8745b227e3bd131f6cd7319e6fee38abcc496"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 92,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255, 255, 255, 0.05)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "e37adeb7439041e477876e8fd042160d44cb73eaf3355eda95dc7931a583cd40"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 9,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "18d8f28593be3b89b62284e8d35b404f7779c3f1047604c2c3fb8d54d60ec506"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 93,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255, 255, 255, 0.1)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "044ecea15e44bb543cd7604f7368081b11b9c6dd2a742205ee6c76fb8bf3cde6"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 103,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#58a6ff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "9dec8b4b65c119337a67b6688a19b7abf8c18c7a0cedce347f4dd9b4d473eb8b"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 105,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(88, 166, 255, 0.15)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "24be5b7ba0605434ece79c1a7eb87c9e37d36f3d075adb4d38fb31faddd95b9d"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 110,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#bc8cff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "9574d95643855d18a2e4dfa5ac8cb19003c41612dcfb1ec93205cc3153a7e7a3"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/ai/settings/tabs/useHardwareMonitorChart.ts",
+    "line": 112,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(188, 140, 255, 0.15)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "70b5ee8b606b663d95f8e3f2643c71fb1d24f06f1b6ee7de92992d467e732f82"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/entities/useTagsManagerModal.ts",
     "line": 10,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "d5a609b2ede8999105d2b6454945c3db4642a44e4688b87c6058b358f8274ae7"
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#7c3aed' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "e59c5aa5423e38ef8d016521f82ef1bdb30f1b7201a4073812920ed90dea5bab"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 11,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "bf04c9f2b76ddbc8d2edc7712914f7fb772a2dca9ccd2c073e17cae9b6b89608"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/schemas/SchemaEditor/useSchemaEditorMain.ts",
+    "line": 104,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#333333' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "64278d2b300945dd1310d8479109c13bd53561a3cdc8158ac68a87d30b0b3e5f"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 12,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a9e403790b561bdaee3f0e5cdf6118590ae9e9cc2c0ad71fbc8db1c38a366b1c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 13,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "5637451c53ff1a9a935a52d6babcfd186124f201821bea0277bcae371f6637a4"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 14,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "0a5c38dcb4e68f46ab059887336f6e0a16f1f91135936428fc6e399537a7d973"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 17,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "06d7b9d4321d86a4d61192c8c948d2479673b6c0a8317c793f60612e2e1c8813"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 18,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "cad015315f69f24f9b3c56e780ca601683841d1d03f7c821bc3ab691ddd09ff0"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 19,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c1aa6528ecd61bd3b27d383ed63ab8d396f274461aebcc4081e1def14f3f5318"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 20,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "a151cc2c67e723f494681ba5b7db439ab209a1a2348f08c211c2176362a46899"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 21,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "c2efb4e5b72a890a3159ddb58462f7f7aab345ae2a168af94458ffe4324cd11f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 26,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "e9f480f349d4cc6228c7a941a1dcea624b3d128016bfb2abbbff214e8bc619c2"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 27,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "9491b324afcdcd292682382adca0bb300ee4ceef861b349bc6fe42b687e53536"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 28,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "c2835a682ce1faec23ee5bef899953c575af71ace6f0303284cec9e9e5c49fbb"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 29,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "b002309e52093a4e919432d133fbb28dea5be7867b07c4dd205266daf6c0672a"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 30,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "3b49d930a2e6ce8bbe91bf83de67f1a52897993d7a7d4952da33bbcb0db38d5f"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/features/timeline/Calendars/CalendarSeasons/useCalendarSeasons.ts",
     "line": 31,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "f6adda68968d595bb3b60bc4415e6d559882a8f7920feba1415dc33fad7efa94"
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#3b82f6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "ac161c89ca4dba6939890dde02daa308577077ff5ea21d4a819fa535c452f65e"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 34,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "6749a0c69dcc481798881cdc096ffec555d37a23468fba95c73bc37f918bd1bb"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/services/Entity/entity.api.ts",
+    "line": 123,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#444444' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "4902bdd1a53c83b99018f52ff21c0725b1b8536633945a18f41a123791edcf68"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 35,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "a7ed4f99d8d60c5c78f423564efb39b3063e3212ca6064a2d17982617e3915a4"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/services/document/profiles/defaults.ts",
+    "line": 24,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#000000' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "533a4b89826dbf5a8f73887db780cf01678009410d5a390f9c15b00a47d5464b"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 36,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "e44b818a258fe5f1a014abc125901d80616af8a3a2821b7605324f23be358790"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/services/document/profiles/defaults.ts",
+    "line": 102,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#1a1a1a' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "20a519d0d3ec78ff38a57f8f827c30f36198fdaff3e62ad55c9d9c11741b56e5"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 37,
-    "symbol": "color_hex",
-    "message": "Hardcoded hex color found in stylesheet.",
-    "fingerprint": "28a67c766887ebe9ff888d0b664885cd23944e666ccb1ceb835f2332df40efdb"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/services/document/profiles/defaults.ts",
+    "line": 180,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'var(--text-primary, #e2e8f0)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "025aa2024052bdc3f867226f724d0e4648382f3d69b3ac26d51212d4e01eee22"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 40,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "e1347d310f6b4791f5683f2e85e0838a42e721b97653675219db4e524a4e85bb"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/stores/tags.store.ts",
+    "line": 50,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#3498db' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "b1174c73b36a2b1f3b0075c5b6510db3c74244c2c4d8bfc2a5f1883e511c62e5"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 41,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c60f3a255beea1b5d03a9470d984caa0826ba7b8ffcc6fee5cdb391e85cda9af"
+    "rule": "CSS-005",
+    "file": "./apps/spa/src/ts/stores/tags.store.ts",
+    "line": 52,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#3498db' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "aba48f34b89b496e0a646d81c76a32e58d96db88e7213886cd660ebe012606f2"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 42,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "baaa73546676c96af4285a1eed917f3cfe088a78e2dedd55b7247eed80b470bb"
+    "rule": "CSS-005",
+    "file": "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
+    "line": 5,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#000000' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "c130ae4a6e56f03642aedd7b919bbf31790c022a9972db120c297dc87ee60e7d"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 43,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "94fc31794d18a9b03a61dc7379cd46ed9df5a59f259e9274bcdefb3f948d00b5"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 44,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c7aeeb4295e0e8322e6356d1ecd8856558d20b845af7aa23f3b37e051cf28088"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 45,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "6304d5887783cf125e1f39b2e9baead5bd698605cbcb096113f467f8a0795c01"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-dark.css",
-    "line": 46,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "ce956296c1323afa0c6847b21f401aba58266502b5e3b3fe00fdbfb0113d1486"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-glass.css",
-    "line": 12,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "2cb7ac916f38a02fd145e61e67b4e64e565cfbb791886fc9053b2506cd56c1cb"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-glass.css",
-    "line": 13,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "c9bd76e4cd60582acaa73e9b2b78d83739411654e4f78b669872b4cfd460495c"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-glass.css",
-    "line": 14,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "1ddf998fbd193886e2fb9913873a853c4842ea4d2c7fb4530db3ab7c0e0ee526"
-  },
-  {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-glass.css",
+    "rule": "CSS-005",
+    "file": "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
     "line": 16,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "dbbb560e3f4640f5e860e2090415b9169334fa6ac96aaea3cd0b2a588db42725"
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#000000' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "276af9ba98ef3dc97d3f62a2e67175d463b4dfdbcc4a7652bea55cc705ea9fd6"
   },
   {
-    "rule": "CSS-004",
-    "file": "./packages/resources/src/styles/tokens/theme-glass.css",
+    "rule": "CSS-005",
+    "file": "./packages/components/src/components/Vue/Settings/useSettingsAppearance.ts",
+    "line": 32,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal `rgba(${r}, ${g}, ${b}, ${alpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "cb5400d735b013f6ebb08c82f75a509f29b064ec875dd2976da154dbc75b66ce"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/components/Vue/Settings/useSettingsLivePreview.ts",
+    "line": 18,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(0, 0, 0, 0.3)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "4fa996101bb8573b7cf3085355fea8d859c60f4a677a62b28f4155fc2ca270eb"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/components/Vue/useTagsField.ts",
+    "line": 171,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#7c3aed' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "70dd18a11a468ed41dfba7e58ded3376d315156eb583c1627c5f17afd7deb1fc"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/app/settings.ts",
+    "line": 47,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'var(--accent-active, #22c55e)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "9e93e581142d9a75d13bfbd3b84f84c9feb76c4da12a931d5c6ab7382930f3d7"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 6,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#09090b' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "6d2f179eef92fff1ba40bb0a872d827392d98ae2eb5b6f6f23017adf6fca12e0"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 7,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#121214' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "2ded6da192aef9720f4658b6aa42bbd9e51282946040934aa7dc965d59ff88f2"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 8,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(15,15,18,0.7)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "6d4eced8cc9dfaed15f1935524ec4124784f8675de1c0ae09f0a0dd3e67d174f"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 9,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(22,22,26,0.6)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "3644c3c1b5463bac4e2fe1cfe6f5b8c40a303e22abbca671f03b2046a0cecc1d"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 10,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "6b1d96bd063a52ea975989fd04a2bea04161c4aeeffb30cf69fd290f439b6345"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 11,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255,255,255,0.65)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "41bb8ca5779ee1285cacf80495f7ef5c9fb5b5543e7002850a1a97651560697b"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 12,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "6eb09a1ac07c8b108f9d0c503a2d8c687d49de49abeae02c757879a3dc77858f"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 13,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#8b5cf6' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "8d9eecca48c62b78e7dd21ebf9b2ae9dd65d5952450aa1b5af28b0c59df383e0"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 14,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#7c3aed' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "ba36cf014b5abd91ba005429b23630e76467b43c16c793cd597c6cd23f40dae5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 15,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#6d28d9' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "45ab8e2b108262c4ad7ae46dedfdbeca76ad428f39dad6e971a5e5d09ab7b93d"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 16,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#4c1d95' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "77d58951c8ddf75cf0bfd1769c32431bdd75cfe488b5add399fe28e1bf1ab7d4"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
     "line": 17,
-    "symbol": "color_rgb_hsl",
-    "message": "Direct rgb()/rgba()/hsl() call found in stylesheet.",
-    "fingerprint": "147f4e5b0e418a8b32871ae0448b046d5b453cdf0fd5eb3a279d28a396805dcd"
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(139,92,246,0.3)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "8067a33d6a9cff4c78832a45c3db327a4e6f56280f62574e2f8cf5fccc83c7e1"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 18,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "a7cb3229cc22040affc86db33f3db3e7480b2fd47716bd5eed98dd49c2c66b57"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 19,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255,255,255,0.1)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "f14131605278a19818300bfa3bfc6e3e417302875adeba126f6b767ce8d27fe0"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 20,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(139,92,246,0.5)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "024c5346ede86a9a6a175bdd3586787bb03c81e055426d012ed85ca7beb4335c"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 21,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(0,0,0,0.5)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "782858c2e7618417b079f8e6eb1bcc84109b7789c6527a8e22899b09a9a31ba9"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 23,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(255,255,255,0.08)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "d0c84d2d79ebea75b523bdacde10df5acc3e75c945cc46bc1ada7c7e3abc2cfd"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 43,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal `rgba(255, 255, 255, ${clampedAlpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "d0cd0ad3d918b94d2c8a32e4327c095f880daeaced5dd0b1139b5e97fb592e0f"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 51,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal `rgba(${r}, ${g}, ${b}, ${clampedAlpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "3c1defcf744d71521a840abf41dabf338cf8c58f239792092b53bd245120f454"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.defaults.ts",
+    "line": 55,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${clampedAlpha})` detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "40b89b87bb62fd3779c3cc0ec50ffceabb5d8b3fb1cd9a304487e4cc74d0eaa1"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 22,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "0c68b01b7e6198f88cee506bdca51a396cc7b30253517e2c4c6f71f3631ade9b"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 27,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(0, 0, 0, 0.65)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "c46426c035ff67a6e14e8193f59a9dca54fa0480ee10b50abf02f55d31f953d0"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 27,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(15, 23, 42, 0.45)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "c46426c035ff67a6e14e8193f59a9dca54fa0480ee10b50abf02f55d31f953d0"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 28,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(0, 0, 0, 0.04)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "894f85f5f0db194b439b8027fd4714bd9045299ddf9536a3c735de9b35318fa5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 28,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'rgba(0, 0, 0, 0.25)' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "894f85f5f0db194b439b8027fd4714bd9045299ddf9536a3c735de9b35318fa5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 46,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffffff' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "50d8b5d393bfc542e88bdfde0522551754ee70685cf3b672abfe7d0b5e9f17dd"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/services/settings.dom.ts",
+    "line": 110,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#0f0f14' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "8e70dfd4a24a55e2078ef4ca2f54beeb5b901d764a01cd391ff8f7f037275b6e"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/utils/dialogs.ts",
+    "line": 6,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999999;backdrop-filter:blur(4px);' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "e8d61e454b2ee8c4da19ec15cecdc284add3bb50f34637491dbf619cdae8d7d9"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/utils/dialogs.ts",
+    "line": 9,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'background:var(--bg-card, #1e1e1e);padding:24px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.5);border:1px solid var(--border-color, #333);max-width:400px;text-align:center;color:var(--text-main, #eee);font-family:inherit;' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "612fffc92789d8886c3e381a0f1f3e62c1ac8ee4416459a64008e16b64d97fc9"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/utils/dialogs.ts",
+    "line": 13,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal \"margin-bottom:24px;color:var(--text-muted, #aaa);font-size:14px;white-space:pre-wrap;\" detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "ef2da6724c2f3215fa6db2f1b6b26752460f07ab5433b69b8c0db27879e14640"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/utils/dialogs.ts",
+    "line": 15,
+    "symbol": "ts_color_rgb_hsl",
+    "message": "Raw color literal \"this.style.background='var(--bg-hover, rgba(255,255,255,0.1))'\" detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "fad403c78ef5469a13ba8a91bc44662563afe790e15bc80b9c2518d4ab968343"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/components/src/ts/utils/dialogs.ts",
+    "line": 16,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal \"padding:10px 20px;border-radius:8px;border:none;background:#ff5555;color:#fff;cursor:pointer;font-weight:bold;transition:0.2s;\" detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "894a1249fe29a92f5ab8046a8a9ef54e65c0f3ee84fa9ff53d7892346b0b8a8b"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/adapter/createWordVibeCommands.ts",
+    "line": 66,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffff00' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "9ecc9b1d00529539749d366da6695032b40831f56315e393a6179e2fcdd7fe51"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/converter/v2Marks.ts",
+    "line": 32,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffff00' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "9126a954fe793dbd960b864df551037031866062b1de80bbc2f6c7f20b7f100a"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/extensions/CrossReferenceExtension.ts",
+    "line": 71,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'display: inline; color: #0284c7; cursor: pointer; text-decoration: underline dotted; font-style: italic;' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "bdd974e8558f5bd757674978b5ec38f5a31fe1196fc9ea96836d2645f4592356"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/extensions/EntityReferenceExtension.ts",
+    "line": 74,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'display: inline-flex; align-items: center; padding: 1px 6px; margin: 0 2px; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #2563eb; font-weight: 500; cursor: pointer; text-decoration: none; user-select: all;' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "a84282970bcdd4de769c2749a7cf393d59aec41e75ed66bfe48a2963c843c2e5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/extensions/UnsupportedBlockExtension.ts",
+    "line": 96,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'margin: 1em 0; padding: 10px 14px; border: 1px dashed #94a3b8; border-radius: 6px; background: rgba(148, 163, 184, 0.08); font-size: 0.9em; color: #64748b; user-select: none;' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "8a1cda96eec7fc75f0864de1809a86765d0046878592cf8bcbbb831161252ed9"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/extensions/UnsupportedBlockExtension.ts",
+    "line": 98,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal 'font-weight: 600; color: #475569;' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "4d1900e59855a3394e494ded24406258ea9740fb2cd7d57d29197be5a1886ae5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/rkPaginationBridge.ts",
+    "line": 116,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#c0c0c0' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "e72051ee4c2743a0b0f876fb4a49844a2b49555f84ae3a73794b9b08de8dc634"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/rkPaginationBridge.ts",
+    "line": 117,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#c0c0c0' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "005546b22107388e7a947e88ba77b60f1536ffb50c580869c84615a63ab0e9e5"
+  },
+  {
+    "rule": "CSS-005",
+    "file": "./packages/word-vibe/src/editor/useWordRibbonCommands.ts",
+    "line": 57,
+    "symbol": "ts_color_hex",
+    "message": "Raw color literal '#ffff00' detected inside TypeScript logic. Use semantic variants (e.g. variant: 'morning') or CSS custom properties.",
+    "fingerprint": "58e3a845673b4353c3a41b3cf7a89ca2662458bbc397b816c635a5904a4b74cf"
   },
   {
     "rule": "CSS-006",
@@ -1709,7 +853,7 @@
     "line": 382,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "1c68f6062306e91f2be6954df60f447f25c79cabea8cf0661ecdbc6c5c4f7e9e"
+    "fingerprint": "72729ac056bbd2afc450982c4b5da9d61f8eff9c5e6f423ad07281497869796b"
   },
   {
     "rule": "CSS-006",
@@ -2389,7 +1533,7 @@
     "line": 43,
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
-    "fingerprint": "30ba326d13af2017a9dadcb205a93d9aee61869a638372b5e1ca54fc80eb419f"
+    "fingerprint": "4c9eec1091418a84c8e71ecf7e6a9d366cb8600345e659b3d57f92cfc94c6350"
   },
   {
     "rule": "CSS-006",
@@ -2790,5 +1934,1453 @@
     "symbol": "important_abuse",
     "message": "Use of !important in stylesheet breaks CSS cascade specificity.",
     "fingerprint": "450c7887170a2f4f24d849b9debd37f5dde7868bd40f0812b8aa411bff2e33cb"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 60,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "0bac8a5d554ff1c04c700dcab2c2e20d40bcab5f43cd5637bb422bbfd4c47e4a"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 103,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "0bac8a5d554ff1c04c700dcab2c2e20d40bcab5f43cd5637bb422bbfd4c47e4a"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/components/GlassComponents.css",
+    "line": 11,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "0e9f1781055e863b580ba0c2cefa44d273fe607c95a5b2d837dedbc740d5a5b5"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/components/GlassComponents.css",
+    "line": 266,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "239197d2a9e9134bfe060567f6b85fcba062fe6cbd327ca305e3d2667c04c73f"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/components/HistorySidebar.css",
+    "line": 59,
+    "symbol": "compositor_keyframes_layout",
+    "message": "Non-composited layout property `padding` animated in @keyframes causes continuous CPU/GPU main-thread reflows.",
+    "fingerprint": "cf5510524d3854a7bc2b215f63fd5b8a25ba5da3fd9985af0d59f7c4ee333b7b"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/components/XboxWheel.css",
+    "line": 25,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "91b606347c39cd76e08682cd1e6cb113feecd9f14e563e701f564241b52e4da3"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/ai/AiChatInput.css",
+    "line": 8,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "31365f33eee190d5dd44fd61b47f90bfa897f77e09e83aabe9df34a85f08e6b4"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
+    "line": 67,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "60fc4d50e91290585b4d8a353166722214b0ff46ab993aba8cf00412f6211504"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 191,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "7de29dbce24b1ec13da6b6dd159584d7040cc5cb6ce0bdb1f122514e8954981c"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 416,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "b18b124793583f1eb53bda2cfde8bbae8b9d5a60ba6b3d1155f314b06056d0ed"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/ai/WowilonPanel.css",
+    "line": 35,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "5572f66cd99399470dab5020899fc5971fc81930670b500db71526151983ace9"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/ChapterTree.css",
+    "line": 112,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "4d6df7f7cd499a3b4667aee6763ba3985c5cab3de7bbd2e7f81798b81ba4c1ac"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 138,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `height` in transition triggers expensive layout recalculations.",
+    "fingerprint": "cdf172bf0902d7445270f1a17d3e6d867e74a122064eff3bc07185079f458e1a"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 170,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `height` in transition triggers expensive layout recalculations.",
+    "fingerprint": "cdf172bf0902d7445270f1a17d3e6d867e74a122064eff3bc07185079f458e1a"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/ChaptersMain.css",
+    "line": 203,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "b3a031b54f9ed6ea5e40e6b194a6786e2073ea7926de450d1ed4bc18f53c3ab1"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 267,
+    "symbol": "compositor_keyframes_layout",
+    "message": "Non-composited layout property `box-shadow` animated in @keyframes causes continuous CPU/GPU main-thread reflows.",
+    "fingerprint": "bdc78552fa7a8fc99b20eed61d4e7de5c41249f5834b4bdf8f140530b808ae80"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 528,
+    "symbol": "compositor_keyframes_layout",
+    "message": "Non-composited layout property `box-shadow` animated in @keyframes causes continuous CPU/GPU main-thread reflows.",
+    "fingerprint": "6df1c8128455f5b1e320ae8377fd59c65ef86119ed12ebcef443843672b2384b"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
+    "line": 58,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "0e270e50df6e3f1c799bcd9ea7b0414d1c5f0c0848f090626981abd82de0778e"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/chapters/RkWordEditor.css",
+    "line": 63,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "65393e22dc9b29d2012196fbb5773ff1d07db84f3acce64d4f89c35923945cec"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/documents/DocumentProcessorView.css",
+    "line": 94,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "406f0ea104510b89aef37d8aa68b60c6454524663362c669ad7f4c120508df13"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/documents/FigureNodeView.css",
+    "line": 27,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "849bbcc17cebbf629527adc72c9fba8ce58c29ae7ead38fade54c0cfa36d6627"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 79,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "b89d43134700f42ae1fa2f7574f8ed0ab3be8ace9e77af0f0c9ceddb2f54aebf"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/shell/DynamicSettings.css",
+    "line": 95,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "e50afc4d3e50389e0d050b47302d6f347ca51fd5a34b78ab36e6e9c1e93743ca"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/shell/EditorView.css",
+    "line": 176,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `height` in transition triggers expensive layout recalculations.",
+    "fingerprint": "141f5c972f794eb4ba95348a9c1d6931e331489a2764006065fa3a6d7324e369"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 497,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "277b3a5ea90894d8c0bc82e07a23903ecd3d7cf95e697f2125632a25724d001b"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/shell/Splash.css",
+    "line": 81,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `width` in transition triggers expensive layout recalculations.",
+    "fingerprint": "f2d6a2df2b6c7920c4101aed4e72d184b54bd006a4e6c4387a7a67703f654e4f"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+    "line": 567,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "b5f528c42b6968f0bb455d7c32ca99b42b8a572fe44c6fc292093ca4c426f636"
+  },
+  {
+    "rule": "CSS-PERF-003",
+    "file": "./packages/resources/src/styles/glass-animations.css",
+    "line": 13,
+    "symbol": "compositor_transition_layout",
+    "message": "Layout/paint property `box-shadow` in transition triggers expensive layout recalculations.",
+    "fingerprint": "fdeedf67dcf0f3651112b1d5912355a38be2f4d7d058b457dc7fde54fd59eaeb"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 76,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a6fe94a6cbdf75877c91628c563b1fdc63d918e3d7e8f3221969ffede9e207b1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 137,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "03b280e17b23ab11fa4a4110efb910da201bea872a1a79a4e572d255ab77e72c"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 158,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a6fe94a6cbdf75877c91628c563b1fdc63d918e3d7e8f3221969ffede9e207b1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 191,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a6fe94a6cbdf75877c91628c563b1fdc63d918e3d7e8f3221969ffede9e207b1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 345,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "03b280e17b23ab11fa4a4110efb910da201bea872a1a79a4e572d255ab77e72c"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 431,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a7b06369301c1b696184de084efe61358afb6597a54b32a363a324d5c0c71886"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 473,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a7b06369301c1b696184de084efe61358afb6597a54b32a363a324d5c0c71886"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 517,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a7b06369301c1b696184de084efe61358afb6597a54b32a363a324d5c0c71886"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 581,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a7b06369301c1b696184de084efe61358afb6597a54b32a363a324d5c0c71886"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 598,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a7b06369301c1b696184de084efe61358afb6597a54b32a363a324d5c0c71886"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/app.css",
+    "line": 640,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a7b06369301c1b696184de084efe61358afb6597a54b32a363a324d5c0c71886"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 21,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cdfeb8dc25c1b8042cb8f47588196cc8a26ac0ef45fe0664fb317f553f405fa5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 52,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cdfeb8dc25c1b8042cb8f47588196cc8a26ac0ef45fe0664fb317f553f405fa5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 83,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cdfeb8dc25c1b8042cb8f47588196cc8a26ac0ef45fe0664fb317f553f405fa5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 112,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cdfeb8dc25c1b8042cb8f47588196cc8a26ac0ef45fe0664fb317f553f405fa5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 132,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cdfeb8dc25c1b8042cb8f47588196cc8a26ac0ef45fe0664fb317f553f405fa5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/BaseUI.css",
+    "line": 237,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cdfeb8dc25c1b8042cb8f47588196cc8a26ac0ef45fe0664fb317f553f405fa5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/ExplorerTree.css",
+    "line": 48,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "8843b5e1566f1bcbee3b9148fd1512991dc23d2b7f2c010c721ced3d87a7af98"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/FloatingWindow.css",
+    "line": 63,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "e4d19d0689a3ffdf71e5ce646b10b7048514e830652010817f64d44e0d5a2ad2"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/GlassComponents.css",
+    "line": 67,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "2a277558bf1e6390864adc1dede31838fe17aacb55c030b5a6ace8639cdf7f14"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/GlassComponents.css",
+    "line": 135,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "2a277558bf1e6390864adc1dede31838fe17aacb55c030b5a6ace8639cdf7f14"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/HistorySidebar.css",
+    "line": 126,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "5c8063c8cf0565c82e1758911a91925710c9197b1cfef063edcbc6fdef584cdb"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/Settings.css",
+    "line": 289,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "0c6b8cc3e902c816d3d61ea66c7cc33b2ff300031b23fae75d7ea2fae3fb82b2"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/SettingsNavRail.css",
+    "line": 39,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "5199832c32a69a93a4598d8612bb0de6046e15b5d92c3e185ac26df96ba379ca"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/SettingsPerformance.css",
+    "line": 77,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "14675c05b6d72c6f5de0929e722fb89308b23139dfb1d161413a303d4baaa365"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/TagsField.css",
+    "line": 21,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "d4c5729d89954622bf3312d93d60a41596702d30662baaab0747dd8fef7eb686"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/components/ThemeSwitcher.css",
+    "line": 41,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "650f464cf026c17884965bc083d987048faef0c14a321dc6c332bb72cb6a230e"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiActionButtons.css",
+    "line": 21,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "73a8ae088b6f41f9c517ee3726ab9c559e91c6d18137364835fb6da9242bf981"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+    "line": 18,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b9f7f1d7854ed0e2b8810af70832223ff6734c98ecbd35030fb44c95876abac6"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+    "line": 99,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b9f7f1d7854ed0e2b8810af70832223ff6734c98ecbd35030fb44c95876abac6"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+    "line": 143,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b9f7f1d7854ed0e2b8810af70832223ff6734c98ecbd35030fb44c95876abac6"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiChatInput.css",
+    "line": 73,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "1bb34277a7d6fe68b99cd23a9591320b7625b7e3d11a98e2612da71364163a35"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiChatTopBar.css",
+    "line": 105,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "9e33a9cf64623dbc31f448521eaf4efe4752c4eabafab3560aee51ef611f8ecb"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiCitationBadge.css",
+    "line": 21,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "327a659186c4b921a947250cd13248a618065151d156acad1fc01c0aa09cc83a"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiCitationPopover.css",
+    "line": 79,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "ebce6ffa71acd9b4bb1a2d75ae72c5843c49df56f555171315505f99f5b1a5cb"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiContextSelector.css",
+    "line": 16,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "86e46a17b5a074879bf6feac72c6357c45554e7e872d36c2cb58011c1fac7550"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiHeader.css",
+    "line": 43,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "c8dedc4a00e60dcbd73150fbfdb63e46d66f95ef941a3f658e8355f4dfb658d1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMermaidDiagram.css",
+    "line": 44,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3935bcc15756180cb0931c37f79df06e64146de6a06c3f2d05978175787c8a72"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
+    "line": 212,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "6d9b67e897e635a9de92141a98dcf8bc5d7caf1e5f9b1cefe5abf93e66a6059d"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
+    "line": 247,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "6d9b67e897e635a9de92141a98dcf8bc5d7caf1e5f9b1cefe5abf93e66a6059d"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
+    "line": 365,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "6f593e616dbd6f6dcd0735340c63f3b18a99ea91b696447fcdda8afa7520e9fd"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
+    "line": 382,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "6f593e616dbd6f6dcd0735340c63f3b18a99ea91b696447fcdda8afa7520e9fd"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiMessageList.css",
+    "line": 436,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "6f593e616dbd6f6dcd0735340c63f3b18a99ea91b696447fcdda8afa7520e9fd"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiModeSelector.css",
+    "line": 18,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "814b55edda86ca610724063b19e2e478fd9d10244339a144029ef0d816837e88"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiModeSelector.css",
+    "line": 89,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "814b55edda86ca610724063b19e2e478fd9d10244339a144029ef0d816837e88"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiQuoteReplyBanner.css",
+    "line": 52,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "71fc94c9aeb724d93b5e71dbc1afab983085cdf48b6e06aa2adcfb621c442c02"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSelectionToolbar.css",
+    "line": 29,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "18ad0dc109e777c2ace8da3ac2075c0a1f63a492ce63449d262adcfff58f558c"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsConnectionsTab.css",
+    "line": 45,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "1b15670f7b8431c356bfe1d046736ef79c7890f772f81f8cba4ef1a9e87e6df8"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 29,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b46581b978b3074a4017822af940e8dc20ee14c5e3c4d63096bc5fea80cf3546"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 83,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b46581b978b3074a4017822af940e8dc20ee14c5e3c4d63096bc5fea80cf3546"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsLocalTab.css",
+    "line": 385,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b46581b978b3074a4017822af940e8dc20ee14c5e3c4d63096bc5fea80cf3546"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsModelsTab.css",
+    "line": 26,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "7d5f80966d761d311389c2d3340e6db2e4ac55a6bbd2d407e98739071602a296"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsPermissionsTab.css",
+    "line": 34,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "02b26933fa97ed5f91c59a2df717ac790c94e84f6f41fea2923be1de8327c795"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+    "line": 56,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cfe1558248c00211cacea7d0a515d001f5b48810a761108a731c96d0963c52a5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+    "line": 78,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cfe1558248c00211cacea7d0a515d001f5b48810a761108a731c96d0963c52a5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+    "line": 194,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cfe1558248c00211cacea7d0a515d001f5b48810a761108a731c96d0963c52a5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsView.css",
+    "line": 46,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "64047f3b29a6937cb7a5875170607f79a73d0a55e893312c5dc1d4043299b059"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSkillAutocomplete.css",
+    "line": 42,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "481f36082a34a12b22fcea5ea52bd9b0e673b57cae1bea01ddab031d921bc190"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/AiToolApproval.css",
+    "line": 112,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "ccde3b7242f01a8caee1f193d4dd11edd2e9289cb7570daa7fe43259b8df9862"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/ai/WowilonPanel.css",
+    "line": 98,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "7db16e9d0e56ca1e05960f5724778bf933fd34abf219ec1ca7c21a3f8423bcd2"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 130,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a8a92e1eaaefb1e1ad2abb55e739b77e2640963150aff28da824fd8abf09219f"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 166,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "57b04df589b7c91f7c5e6f56c9c128eed0b51db1ca5f0f8c0c422dc334be5898"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/EditorToolbar.css",
+    "line": 40,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "f6022d4b29a9ae59b79347365fb7b7115d018edff08e02935e27fbacd49dec30"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/EditorToolbar.css",
+    "line": 101,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "562be0fd5c93e3001867cf05d069fddf68bbdb43fa2c3eb03d265abff88a1b07"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/EntityLinkSelector.css",
+    "line": 68,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "5030aac9b35183d31f534190cccc8d581207ac67a9e4349885a8cf0ff431d936"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/ExportModal.css",
+    "line": 64,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "7707a1ac51790a054bbf950bcd0fb48175eca86d0497fd127e915b8bc4c74f8c"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
+    "line": 99,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cf3aa232ddd16d794388cefee9b6200a9fb64be7b47095470eca18deb41973f4"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PlanningPanel.css",
+    "line": 196,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cf3aa232ddd16d794388cefee9b6200a9fb64be7b47095470eca18deb41973f4"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 72,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a06e310ee06b93a67404a33c5cff4f81bc964f047942f292feab8a38a4233b6e"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 99,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a06e310ee06b93a67404a33c5cff4f81bc964f047942f292feab8a38a4233b6e"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromiseContextMenu.css",
+    "line": 201,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a06e310ee06b93a67404a33c5cff4f81bc964f047942f292feab8a38a4233b6e"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 87,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 124,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 211,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 319,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 362,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 416,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/PromisesPanel.css",
+    "line": 493,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3adbfe86990b71af58f1b77e5c97382000afc4b31b38887116d9c8ff3989751b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/RkWordEditor.css",
+    "line": 135,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "c99badae95e88c971330b35729f9e50cb814173635ff77fafb21d05b359b1f1f"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/SemanticParagraph.css",
+    "line": 20,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "9135d13e5910919d8ed3b9a1eeff5bdb0fecb43dcd143f95c768abab177a3884"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/SemanticParagraphNode.css",
+    "line": 18,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "95621dbc771cb6e64d423e62f76a7d43496b9ee0faf24451339f2739499aa14f"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/WordDialogs.css",
+    "line": 190,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "3414b738aac2dee318b15c989ad6090d56216887f3ee8c4b494da5e809f137e1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/WordRibbonBar.css",
+    "line": 35,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "9faccf3423cfa9ae01bb3d9fe01dc4be08faeb8d6d472f3c8357e983db150d1b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/chapters/WordRibbonBar.css",
+    "line": 144,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "584e484e5371676be084a2c5c374ce8be7f591b22ac0d09bf25a4b132aed9602"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/AcademicInspector.css",
+    "line": 32,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "486e0ba061edb158867326ff385b0501e6ad409bd56adbcd3a39e4d5223d8576"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/AcademicInspector.css",
+    "line": 77,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "486e0ba061edb158867326ff385b0501e6ad409bd56adbcd3a39e4d5223d8576"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/AcademicInspector.css",
+    "line": 123,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "486e0ba061edb158867326ff385b0501e6ad409bd56adbcd3a39e4d5223d8576"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/AcademicInspector.css",
+    "line": 146,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "486e0ba061edb158867326ff385b0501e6ad409bd56adbcd3a39e4d5223d8576"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/CrossReferenceNodeView.css",
+    "line": 12,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "4098f82727b2f88d81fe6d225289368f10a2279575f5eba049d478f5aca2c07c"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/DocumentExportModal.css",
+    "line": 64,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "2cb98600294c7ac2c5cf30be7bccd780b1e71e82a476a74f7064a99930e530e6"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/DocumentExportModal.css",
+    "line": 126,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "2cb98600294c7ac2c5cf30be7bccd780b1e71e82a476a74f7064a99930e530e6"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/DocumentLayoutBar.css",
+    "line": 39,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "088291e89de923af0b0dc31fdbbc1cbf2e89c303d1920780c32788b8dcc7691e"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/DocumentLayoutBar.css",
+    "line": 64,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "088291e89de923af0b0dc31fdbbc1cbf2e89c303d1920780c32788b8dcc7691e"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/DocumentProcessorView.css",
+    "line": 40,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a0eb587db5266b27e1c64bfaf7f422eec5a724daf1acc4a6f98b960d77b92433"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/documents/FootnoteNodeView.css",
+    "line": 19,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "cd874a205fb5e9f8798aa3367edd7a4714297cd077301719778f97f4f8ec9386"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
+    "line": 87,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b46285eabe0393777d3d77fcc7d0a24c1f42689c8438140df1184bb6ae1b8091"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/entities/EntityEditor.css",
+    "line": 255,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b33214e43bc95c3b0dec644339b2b3487abe6ea0c2e91deed3b1bc35609e961a"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/entities/TagsManagerModal.css",
+    "line": 95,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b9bb4a986c1741e1cfd46e2233d5f5a398ed9ea78b97d92069df9045e1dc77ca"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/ManuscriptPointPicker.css",
+    "line": 40,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "86e652969d34c0898805a955a7add1033d01e1aef89917ceada3f8683e2e8b56"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
+    "line": 22,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "bf9d59909493bf03387e2c1db49480acc5e4d51b045bb2c6ecb13cf5da3e7aa7"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/ModuleHelpPreview.css",
+    "line": 111,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "0bdaca0616b65ff4d849f2d75e76be8373f39e24accf04027819c0cfe62299a5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+    "line": 76,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "8e4d5078610566ede15fd5734a8bc2cdb45f5345741212398a1cc2e75609cfee"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/RelationshipBlock.css",
+    "line": 210,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "8e4d5078610566ede15fd5734a8bc2cdb45f5345741212398a1cc2e75609cfee"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaContainer.css",
+    "line": 4,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "73c34333cde76bc737c42c8050d67d5785b84bab461c8ea2693e64dbfae94cd5"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+    "line": 136,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b4edf14e4d6f46b3f28baf2fd9da92159274db535f0000113821fe8792adc833"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaEditorMain.css",
+    "line": 182,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "b4edf14e4d6f46b3f28baf2fd9da92159274db535f0000113821fe8792adc833"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaFieldEditor.css",
+    "line": 5,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "1ce2c00e569e61a92114ebfb5c4423b2a3bc287124305efc033b3c1432d5eed4"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/schemas/SchemaFieldEditor.css",
+    "line": 60,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "1ce2c00e569e61a92114ebfb5c4423b2a3bc287124305efc033b3c1432d5eed4"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/EditorView.css",
+    "line": 135,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "61b88435a3f336bdd41b7640f68fde048aaf3c9128ed4ad78af4827b57e6cca1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/EditorView.css",
+    "line": 155,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "61b88435a3f336bdd41b7640f68fde048aaf3c9128ed4ad78af4827b57e6cca1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/EditorView.css",
+    "line": 208,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "61b88435a3f336bdd41b7640f68fde048aaf3c9128ed4ad78af4827b57e6cca1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/EditorView.css",
+    "line": 289,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "61b88435a3f336bdd41b7640f68fde048aaf3c9128ed4ad78af4827b57e6cca1"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 306,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "d5252045ed6e44da31194a9fe4010ad41352567da95e467324f98997ad113f79"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 337,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "d5252045ed6e44da31194a9fe4010ad41352567da95e467324f98997ad113f79"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/shell/ProjectLauncher.css",
+    "line": 438,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "d5252045ed6e44da31194a9fe4010ad41352567da95e467324f98997ad113f79"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCommon.css",
+    "line": 118,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "fc3fc067aa110110335b27a08d61fb595889bb1abf3a7d37b3f9fe8dc7256375"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarCommon.css",
+    "line": 139,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "1191d46ac1b738eb2ae414b629a76a2dd1dc831cfeb575628fc08b31554bda22"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarHolidays.css",
+    "line": 18,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "d800eb851bb004d961757982561826adf13f91955437857ce86c637b1c6a4432"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarPlayground.css",
+    "line": 125,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "f1ed76c90b2a8fbeec0e53234b9634ed5506f2d7c55c743fc4bbf5afbe85069a"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarSeasons.css",
+    "line": 33,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a0083da43f55d87b0e17f93703718b41dff80f627c16cb18d3362fae0e49dc6f"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarSeasons.css",
+    "line": 58,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "a0083da43f55d87b0e17f93703718b41dff80f627c16cb18d3362fae0e49dc6f"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarSettings.css",
+    "line": 49,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "4b9b3a75fbf5831b1fa465e49fd70a392cbf1acf9ec1fc95f2cfd92d859ea74d"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarTimezones.css",
+    "line": 94,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "bce7a801a008afda14bbe462c374fabbe3c894e5c77d940a501a2767f2fc1cc9"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/CalendarWeekdays.css",
+    "line": 12,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "61e956a1dc8f1c136bb76f47b4bc8f447910116f51aea18d4a9600e6d336ef8f"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/DateWheels.css",
+    "line": 49,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "57b5bf21593aef6068e16fd5d39bd510558e90c16227f80141fb26737738e995"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 76,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "06ee0fefa6599189d586de6446863eb68cdfc0b2a23ac3f10b33c9e87804506b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/GlobalCalendarWidget.css",
+    "line": 103,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "06ee0fefa6599189d586de6446863eb68cdfc0b2a23ac3f10b33c9e87804506b"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+    "line": 87,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "e38d6a4512c6d5ffdab403725491f089f2b9d4debc07e7da58d00ec7d3a48086"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+    "line": 116,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "e38d6a4512c6d5ffdab403725491f089f2b9d4debc07e7da58d00ec7d3a48086"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+    "line": 435,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "e38d6a4512c6d5ffdab403725491f089f2b9d4debc07e7da58d00ec7d3a48086"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+    "line": 467,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "e38d6a4512c6d5ffdab403725491f089f2b9d4debc07e7da58d00ec7d3a48086"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimeAtlasModal.css",
+    "line": 760,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "e38d6a4512c6d5ffdab403725491f089f2b9d4debc07e7da58d00ec7d3a48086"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 97,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "ef06edc3374aa96e406282a9e8766ed0dde751bdfba2015bb5f8802300604e65"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 190,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "ef06edc3374aa96e406282a9e8766ed0dde751bdfba2015bb5f8802300604e65"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 207,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "5950c1ce4930b6f6b2eed96b7f952ccce6d8d1a6e644967f0b2e8c59a94e7fc4"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 247,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "ef06edc3374aa96e406282a9e8766ed0dde751bdfba2015bb5f8802300604e65"
+  },
+  {
+    "rule": "CSS-PERF-004",
+    "file": "./packages/resources/src/styles/features/timeline/TimelinePanel.css",
+    "line": 287,
+    "symbol": "no_transition_all",
+    "message": "Wildcard `transition: all` detected. This causes layout recalculation on every animated property.",
+    "fingerprint": "5950c1ce4930b6f6b2eed96b7f952ccce6d8d1a6e644967f0b2e8c59a94e7fc4"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/components/HistorySidebar.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "121fd8f8d6e1b6a2d4be5c5ba154e3d90688210374a5a7b178baf99891253cc9"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/features/ai/AiResearchProgress.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "cd02ef7085d9c5dd4dba23ae60bf1cf627b818d030280ac5e2d80a2a707228d9"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/features/ai/HardwareMonitorChart.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "6035254e88854fdc01b777c6556494b2488cf600c7f686a76d0974d9788a32af"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/features/chapters/EditorCoreTiptap.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "d551043821dd552fa2d48da8284ca2199594bda4961635cb7436a681d19657cf"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/features/entities/FloatingEntityEditor.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "7e11e00b54d33bad9c1b93a39d089049cc12327ab49561c728009577330a7bc3"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/glass-animations.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "c6bb9645b77ac3ca0a4677e1a9c0b1f0466f1efbe14d39d826d2abf247fe54de"
+  },
+  {
+    "rule": "CSS-PERF-005",
+    "file": "./packages/resources/src/styles/tokens/theme-glass.css",
+    "line": 1,
+    "symbol": "require_reduced_motion",
+    "message": "Continuous or long animations present without `@media (prefers-reduced-motion: reduce)` accessibility override.",
+    "fingerprint": "aa43966ca2467f9d2c605f799767f62fd70033e2823b247d3563d613379099d7"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/components/Settings.css",
+    "line": 145,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--color-text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "d6cf88f747bab5ce0e77890167fc6367c01d2040b1dcedc10a7afd71d94d8939"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/components/SettingsLivePreview.css",
+    "line": 37,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "d96cd502cf41a8e14b0c5bc50471fa18c72e878067e14874cf8c44d14343614e"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/components/SettingsLivePreview.css",
+    "line": 45,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "d96cd502cf41a8e14b0c5bc50471fa18c72e878067e14874cf8c44d14343614e"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/components/SettingsLivePreview.css",
+    "line": 99,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "d96cd502cf41a8e14b0c5bc50471fa18c72e878067e14874cf8c44d14343614e"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/components/WorkspaceLayout.css",
+    "line": 87,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "856e7b9d7dca534a600f5126d11d4cf4221d08ada00617e02cceb390f9b10593"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+    "line": 185,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--color-text-primary` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "3a5aa93e28af95b14db3a99b9c86675b1e76757a1370c5f99284fd0630e2b5be"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/ai/AiAutoApproveModal.css",
+    "line": 195,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--color-text-on-accent` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "79750e68a3289081defb9d5d660ffc7df1c354d3574bc80ce757e426dae6996c"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/chapters/WordRuler.css",
+    "line": 64,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--text-muted` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "6f011f3827d716c57f33c64a574a10af56f48e03a0e46a9205e36afa56d8cd88"
+  },
+  {
+    "rule": "DS-003",
+    "file": "./packages/resources/src/styles/features/chapters/WordRuler.css",
+    "line": 136,
+    "symbol": "token_role_mismatch_bg",
+    "message": "Text token `--text-main` used in `background` property. This breaks contrast ratio on theme inversion.",
+    "fingerprint": "de4492ce5d5b7d5b03f956ec433b7ed4cbb29d9123513a045eed976e62900a16"
   }
 ]

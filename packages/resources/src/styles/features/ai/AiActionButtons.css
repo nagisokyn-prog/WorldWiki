@@ -27,11 +27,11 @@
 
 .action-btn.cancel {
   color: var(--error);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: var(--error-border);
 }
 
 .action-btn.cancel:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--error-bg);
 }
 
 .action-btn.retry {
@@ -41,5 +41,5 @@
 
 .action-btn.resume {
   color: var(--success);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: var(--success-border);
 }

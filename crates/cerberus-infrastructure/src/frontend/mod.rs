@@ -1,4 +1,6 @@
+pub mod css_perf_rules;
 pub mod css_rules;
+pub mod design_system_rules;
 pub mod fsd_rules;
 pub mod lifecycle_rules;
 pub mod perf_rules;
@@ -7,7 +9,9 @@ pub mod vue_rules;
 
 use cerberus_domain::Violation;
 
+pub use crate::frontend::css_perf_rules::CssPerfRuleChecker;
 pub use crate::frontend::css_rules::CssRuleChecker;
+pub use crate::frontend::design_system_rules::DesignSystemRuleChecker;
 pub use crate::frontend::fsd_rules::{FsdLayer, FsdRulesChecker};
 pub use crate::frontend::lifecycle_rules::LifecycleRuleChecker;
 pub use crate::frontend::perf_rules::PerfRulesChecker;
@@ -41,6 +45,7 @@ impl FrontendAnalyzer {
             }
             "ts" | "js" => {
                 violations.extend(LifecycleRuleChecker::check_typescript_file(&content, path));
+                violations.extend(CssRuleChecker::check_typescript_colors(&content, path, None));
             }
             _ => {}
         }

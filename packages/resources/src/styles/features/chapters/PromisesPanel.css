@@ -212,7 +212,7 @@
 }
 
 .btn-delete:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--error-bg);
   color: var(--error);
 }
 
@@ -259,7 +259,7 @@
 }
 
 .badge-current-chapter {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
   font-size: 9px;
   padding: 1px 4px;
@@ -364,9 +364,9 @@
 }
 
 .btn-quick-progress {
-  background: rgba(245, 158, 11, 0.15);
+  background: var(--warning-bg);
   color: var(--warning);
-  border-color: rgba(245, 158, 11, 0.3);
+  border-color: var(--warning-border);
 }
 .btn-quick-progress:hover {
   background: var(--warning);
@@ -374,9 +374,9 @@
 }
 
 .btn-quick-resolve {
-  background: rgba(16, 185, 129, 0.15);
+  background: var(--success-bg);
   color: var(--success);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-color: var(--success-border);
 }
 .btn-quick-resolve:hover {
   background: var(--success);

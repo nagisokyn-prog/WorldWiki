@@ -313,6 +313,14 @@ fn validate_external_dependency(
                 "zeroize",
                 "regex",
                 "derive_more",
+                "strum",
+                "strum_macros",
+                "itertools",
+                "smallvec",
+                "tinyvec",
+                "rust_decimal",
+                "unicode-segmentation",
+                "unicode-width",
             ];
             if !domain_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {
@@ -342,6 +350,23 @@ fn validate_external_dependency(
                 "thiserror",
                 "uuid",
                 "async-trait",
+                "tokio",
+                "futures",
+                "futures-util",
+                "futures-core",
+                "tracing",
+                "log",
+                "num-traits",
+                "bitflags",
+                "derive_more",
+                "strum",
+                "strum_macros",
+                "itertools",
+                "smallvec",
+                "tinyvec",
+                "rust_decimal",
+                "unicode-segmentation",
+                "unicode-width",
             ];
             if !ports_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {
@@ -374,6 +399,24 @@ fn validate_external_dependency(
                 "uuid",
                 "regex",
                 "async-trait",
+                "tokio",
+                "futures",
+                "futures-util",
+                "futures-core",
+                "tracing",
+                "log",
+                "num-traits",
+                "bitflags",
+                "zeroize",
+                "derive_more",
+                "strum",
+                "strum_macros",
+                "itertools",
+                "smallvec",
+                "tinyvec",
+                "rust_decimal",
+                "unicode-segmentation",
+                "unicode-width",
             ];
             if !app_whitelist.contains(&dep.name.as_str()) {
                 violations.push(Violation {

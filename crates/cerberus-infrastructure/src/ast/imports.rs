@@ -155,17 +155,27 @@ impl<'a> ImportChecker<'a> {
             // 3. Pure Whitelist check (fast-path allow)
             const PURE_WHITELIST: &[&str] = &[
                 "serde",
+                "serde_json",
                 "thiserror",
                 "derive_more",
                 "bitflags",
                 "smallvec",
                 "tinyvec",
                 "rust_decimal",
+                "num_traits",
                 "itertools",
                 "unicode_segmentation",
                 "unicode_width",
                 "strum",
                 "strum_macros",
+                "chrono",
+                "uuid",
+                "futures",
+                "futures_util",
+                "futures_core",
+                "tracing",
+                "log",
+                "regex",
             ];
             let is_in_pure_whitelist = PURE_WHITELIST.contains(&root_segment.as_str());
 
@@ -187,14 +197,19 @@ impl<'a> ImportChecker<'a> {
             }
 
             // 5. Capability Fallback for pure domain layers when not matched by matrix
-            if !matrix_matched
-                && !is_in_pure_whitelist
-                && (self.is_domain_crate()
+            let is_pure_domain = if let Some(matrix) = self.matrix {
+                let detected = matrix.detect_layer(&normalize_path(self.current_file), Some(self.crate_name));
+                detected == "domain" || detected == "core" || detected == "domain_core"
+            } else {
+                self.is_domain_crate()
                     || current_layer == "domain"
                     || current_layer == "core"
-                    || current_layer == "entities"
-                    || current_layer == "entity"
-                    || current_layer == "domain_core")
+                    || current_layer == "domain_core"
+            };
+
+            if !matrix_matched
+                && !is_in_pure_whitelist
+                && is_pure_domain
             {
                 let default_forbidden_domain = [
                     "tokio",
@@ -418,17 +433,11 @@ impl<'a> ImportChecker<'a> {
             "controller",
             "service",
             "repository",
-            "entity",
             "usecase",
             "producer",
             "consumer",
             "plugin",
             "core",
-            "pages",
-            "widgets",
-            "features",
-            "entities",
-            "shared",
             "domain",
             "ports",
             "application",
@@ -492,18 +501,12 @@ impl<'a> ImportChecker<'a> {
             "controller",
             "service",
             "repository",
-            "entity",
             "usecase",
             "producer",
             "consumer",
             "plugin_api",
             "plugin",
             "core",
-            "pages",
-            "widgets",
-            "features",
-            "entities",
-            "shared",
             "domain",
             "ports",
             "application",
@@ -523,13 +526,26 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn is_domain_crate(&self) -> bool {
+        if let Some(matrix) = self.matrix {
+            let pkg_layer = matrix.detect_layer("", Some(self.crate_name));
+            if pkg_layer != "unknown" {
+                return pkg_layer == "domain" || pkg_layer == "core" || pkg_layer == "domain_core";
+            }
+        }
         self.crate_name.contains("domain")
             || self.crate_name.contains("core")
-            || self.crate_name.contains("entity")
-            || self.crate_name.contains("entities")
     }
 
     fn is_application_crate(&self) -> bool {
+        if let Some(matrix) = self.matrix {
+            let pkg_layer = matrix.detect_layer("", Some(self.crate_name));
+            if pkg_layer != "unknown" {
+                return pkg_layer == "application"
+                    || pkg_layer == "app"
+                    || pkg_layer == "usecase"
+                    || pkg_layer == "usecases";
+            }
+        }
         self.crate_name.contains("application")
             || self.crate_name.contains("usecase")
             || self.crate_name.contains("usecases")
@@ -538,6 +554,16 @@ impl<'a> ImportChecker<'a> {
     }
 
     fn is_tauri_authorized_crate(&self) -> bool {
+        let current_layer = self.detect_source_layer();
+        if current_layer == "tauri" || current_layer == "adapter" || current_layer == "adapters" {
+            return true;
+        }
+        if let Some(matrix) = self.matrix {
+            let pkg_layer = matrix.detect_layer("", Some(self.crate_name));
+            if pkg_layer == "tauri" || pkg_layer == "adapter" || pkg_layer == "adapters" {
+                return true;
+            }
+        }
         self.crate_name.contains("adapter")
             || self.crate_name.contains("tauri")
             || path_contains(self.current_file, "adapters/tauri")

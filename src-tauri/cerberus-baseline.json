@@ -113,14 +113,6 @@
   },
   {
     "rule": "ARCH-021",
-    "file": "C:/Users/Kuzma/Desktop/WorldWiki/src-tauri/crates/worldwiki-infrastructure/Cargo.toml",
-    "line": 1,
-    "symbol": "worldwiki-infrastructure",
-    "message": "Crate 'worldwiki-infrastructure' is missing architectural layer metadata [package.metadata.cerberus].layer in Cargo.toml",
-    "fingerprint": "9e4a4b81de0e4ad661fd692a74713c50b1c70233ed1cc86b78417146bee3d8b7"
-  },
-  {
-    "rule": "ARCH-021",
     "file": "C:/Users/Kuzma/Desktop/WorldWiki/src-tauri/llama-sys/Cargo.toml",
     "line": 1,
     "symbol": "llama-sys",
@@ -132,40 +124,24 @@
     "file": "./src/logic/batch/executor.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (259.1) exceeds warning limit (200.0)",
-    "fingerprint": "2cfef625b2289f59dc06652833d55eaa4b8ead657fd53615cf182a53a27181ce"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (224.7) exceeds warning limit (200.0)",
-    "fingerprint": "9d56b013d4bcadb88e44641ebff8f53a11db829e305cb8907dfd6e6ffbded743"
+    "message": "High Architectural Pressure S_arch (245.1) exceeds warning limit (200.0)",
+    "fingerprint": "2168ed7703ac5a090cd5a75385ef2cb61b621e08eb164149849bce59d9a7bfad"
   },
   {
     "rule": "ARCH-030",
     "file": "./src/logic/entities/relations.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (206.9) exceeds warning limit (200.0)",
-    "fingerprint": "12b83782ecef5af5208603eb82862e02c116ca76f1c82ffd46f738d324fc12e3"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src/logic/entities/schemas_crud.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (205.2) exceeds warning limit (200.0)",
-    "fingerprint": "5372b89c6bcd9a8d41c1b36f8ea895c1dd944d91bbff82e5264687dbcf365d43"
+    "message": "High Architectural Pressure S_arch (201.9) exceeds warning limit (200.0)",
+    "fingerprint": "2a9aff5c43f6229a343b7a5232ebdab8b2e7316e8d9ff2ab0e1ec6c8157ef2a3"
   },
   {
     "rule": "ARCH-030",
     "file": "./src/logic/volumes/mod.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (315.2) exceeds warning limit (200.0)",
-    "fingerprint": "c08a50bde174afa9262b7aaaf14552ae2c1df5fe7db62e6d1f93faec34785930"
+    "message": "High Architectural Pressure S_arch (314.7) exceeds warning limit (200.0)",
+    "fingerprint": "bcf4876197666a5d0f2b03187d3b5bb7198a70d60d697890abdcefa527b80f5c"
   },
   {
     "rule": "ERR-003",
@@ -213,7 +189,7 @@
     "line": 1,
     "symbol": "get_entities_batch_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "da0f90ac84dc6b4f9dc9da494122a824371156b7aabd354094112623262aaaec"
+    "fingerprint": "c9ed5ca32bc34ccff35d3b19338bddb349677a37664e01b8886d65324e0e768a"
   },
   {
     "rule": "ERR-003",
@@ -653,7 +629,7 @@
     "line": 1,
     "symbol": "expect",
     "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "4da0a68b0c3ef6d41883063067186739f4a0da087a8456a11d1e85c633cba160"
+    "fingerprint": "5edb43e6eae64a850d850109ba35bf7877f53d2cd41154d71e04af978a84b1aa"
   },
   {
     "rule": "ROB-001",
@@ -941,14 +917,6 @@
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "88d7d0380ff681f8efb932d66845b596541bbef2c8cd19176dbc5403d8622a94"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
     "fingerprint": "8c1013f1a548c447aa1ecb1bcdb44a835b3fbf10731d5b39e16badefeead2d06"
   },
   {
@@ -971,104 +939,8 @@
     "rule": "ROB-001",
     "file": "./src/logic/volumes/mod.rs",
     "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "f8473c8e67c6290ceb92d533367393f5d2632c3a9a8ba1b5fa69bef8a9419256"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "f8473c8e67c6290ceb92d533367393f5d2632c3a9a8ba1b5fa69bef8a9419256"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
     "symbol": "unwrap",
     "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
     "fingerprint": "5d58b047d8fa13d95774a31b12efdbb0a5a46f89cdc00c7c73c58371fad39e2a"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/bootstrap/services.rs",
-    "line": 1,
-    "symbol": "build_app_services",
-    "message": "High .clone() density detected (6 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "35360bf830878b6049b65041077f9463e29c551d1717e02011c435ff7c3f0478"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/bootstrap/services.rs",
-    "line": 1,
-    "symbol": "build_surreal_app_services",
-    "message": "High .clone() density detected (12 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "689d29ec6f5694147c5dcb445f25f52fb0356e168773dadcf8913635bc02d62d"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/bootstrap/services.rs",
-    "line": 1,
-    "symbol": "build_workflows_and_tools",
-    "message": "High .clone() density detected (9 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "a89eee38cf6c520873584219768374d70e4533abe78e5c665814f06d564fc60d"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/lib.rs",
-    "line": 1,
-    "symbol": "run",
-    "message": "High .clone() density detected (4 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "a6f810d3591b11625dd15ec5ba289403b151e9b6b58f958d7ec5ca15f2b0527c"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/logic/batch/executor.rs",
-    "line": 1,
-    "symbol": "save_entity_with_relations_inner",
-    "message": "High .clone() density detected (15 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "3e81df961092ebd8a5a523b56a54fef2a253947c92eca378276c6c65d3549c66"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/logic/batch/executor.rs",
-    "line": 1,
-    "symbol": "upsert_connections_batch_inner",
-    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "97126c06433570c3617a137643a43a7f5c7db16d35ebe3355cec059d98cdeea3"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "save_entity_inner",
-    "message": "High .clone() density detected (12 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "74d1a20780e69ad415646427b01353dff2de8084a981b277f22b75d9d1e7ac41"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/logic/entities/relations.rs",
-    "line": 1,
-    "symbol": "create_entity_relation_inner",
-    "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "2052f76aad473d22d7b28db7a5518adcad8697c4e555606bc46dced79979b74a"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/logic/entities/schemas_crud.rs",
-    "line": 1,
-    "symbol": "save_entity_schema_inner",
-    "message": "High .clone() density detected (19 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "9868ff5eb075d362e63880edeb1ea91c899fb234b94fa9afc1f0343e37ef36cf"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "get_chapter_hierarchy_inner",
-    "message": "High .clone() density detected (12 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "22c1d18eb48c17d4e953a089f35b31bc1def0f5fae1bdad2856e9e7aafe21836"
   }
 ]

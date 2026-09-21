@@ -118,7 +118,7 @@ fn test_cargo_metadata_layer_violations_arch001_arch002_arch020() {
         layer = "ports"
 
         [dependencies]
-        tokio = { version = "1.0", optional = true }
+        reqwest = { version = "0.11", optional = true }
     "#;
     std::fs::write(ports_dir.join("Cargo.toml"), ports_cargo).unwrap();
 
@@ -128,7 +128,7 @@ fn test_cargo_metadata_layer_violations_arch001_arch002_arch020() {
     assert!(violations.iter().any(|v| v.rule_id == "ARCH-001" && v.symbol.contains("tokio")));
     assert!(violations.iter().any(|v| v.rule_id == "ARCH-020" && v.symbol.contains("domain-crate -> infra-crate")));
     assert!(violations.iter().any(|v| v.rule_id == "ARCH-002" && v.symbol.contains("tauri")));
-    assert!(violations.iter().any(|v| v.rule_id == "ARCH-020" && v.symbol.contains("ports-crate -> tokio")));
+    assert!(violations.iter().any(|v| v.rule_id == "ARCH-020" && v.symbol.contains("ports-crate -> reqwest")));
 }
 
 #[test]

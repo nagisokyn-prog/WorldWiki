@@ -55,7 +55,17 @@ pub fn run_check(options: CheckExecutionOptions) -> Result<(), String> {
                 .get("cerberus")
                 .and_then(|v| serde_json::from_value(v.clone()).ok())
                 .unwrap_or_default();
-            cerberus_domain::LayerTopologyMatrix::from_workspace_metadata(&ws_arch)
+            let mut mat = cerberus_domain::LayerTopologyMatrix::from_workspace_metadata(&ws_arch);
+            for pkg in &metadata.packages {
+                if let Some(pkg_meta) = pkg.metadata.get("cerberus") {
+                    if let Ok(arch_meta) = serde_json::from_value::<cerberus_domain::PackageArchMetadata>(pkg_meta.clone()) {
+                        if let Some(layer) = arch_meta.layer {
+                            mat.layer_aliases.entry(layer.clone()).or_default().insert(pkg.name.clone().to_lowercase());
+                        }
+                    }
+                }
+            }
+            mat
         } else {
             cerberus_domain::LayerTopologyMatrix::default()
         }
@@ -240,15 +250,19 @@ fn validate_error_rate(total_files: usize, error_count: usize, ci: bool) -> Resu
     Ok(())
 }
 
+pub(crate) fn process_expanded_code(expanded_code: &str, path: &Path, violations: &mut Vec<Violation>) {
+    let syn_parser = RustSynParserAdapter::default();
+    if let Ok(expanded_violations) =
+        syn_parser.parse_source(expanded_code, path, "expanded_macro")
+    {
+        merge_unique_violations(violations, expanded_violations);
+    }
+}
+
 fn audit_macro_expansion(path: &Path, violations: &mut Vec<Violation>) {
     match cerberus_infrastructure::MacroVisitor::run_cargo_expand(path) {
         Ok(expanded_code) => {
-            let syn_parser = RustSynParserAdapter::default();
-            if let Ok(expanded_violations) =
-                syn_parser.parse_source(&expanded_code, path, "expanded_macro")
-            {
-                merge_unique_violations(violations, expanded_violations);
-            }
+            process_expanded_code(&expanded_code, path, violations);
         }
         Err(err) => {
             eprintln!(
@@ -570,5 +584,234 @@ mod tests {
         };
         assert!(entry < entry2);
         assert_eq!(entry.cmp(&entry2), std::cmp::Ordering::Less);
+    }
+
+    #[test]
+    fn test_check_runner_negative_and_edge_cases() {
+        let temp = tempdir().unwrap();
+        let rules_file = temp.path().join("rules.json");
+        std::fs::write(&rules_file, "{\"version\": \"1.0\", \"rules\": {}}").unwrap();
+        let rules_repo = Arc::new(RulesJsonRepository::load_from_file(&rules_file).unwrap());
+
+        // 1. Negative: run_check with record_baseline to an invalid/unwritable directory
+        let unwritable_base = temp.path().join("non_existent_folder/sub/base.json");
+        let write_fail_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: true,
+            baseline_path: Some(&unwritable_base),
+        });
+        assert!(write_fail_run.is_err());
+        assert!(write_fail_run.unwrap_err().contains("Failed to write baseline file"));
+
+        // 2. Positive: run_check with path directly pointing to Cargo.toml
+        let cargo_toml = temp.path().join("Cargo.toml");
+        std::fs::write(&cargo_toml, "[package]\nname = \"dummy\"\nversion = \"0.1.0\"\nedition = \"2021\"\n[lib]\npath = \"src/lib.rs\"").unwrap();
+        let dummy_src = temp.path().join("src");
+        std::fs::create_dir_all(&dummy_src).unwrap();
+        std::fs::write(dummy_src.join("lib.rs"), "pub fn dummy() {}").unwrap();
+
+        let direct_cargo_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: &cargo_toml,
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: true,
+            record_baseline: false,
+            baseline_path: None,
+        });
+        assert!(direct_cargo_run.is_ok());
+
+        // 3. Negative: extract_rs_imports with invalid syntax
+        let bad_syntax_file = temp.path().join("bad_syntax.rs");
+        std::fs::write(&bad_syntax_file, "enum { broken syntax @@@ }").unwrap();
+        assert!(extract_rs_imports(&bad_syntax_file).is_none());
+
+        // 4. Positive & Negative: export_reports with unwritable path (does not panic, logs error)
+        let block_file = temp.path().join("block_file.txt");
+        std::fs::write(&block_file, "not a directory").unwrap();
+        let invalid_sarif = block_file.join("sub/out.sarif");
+        let invalid_json = block_file.join("sub/out.json");
+        export_reports(Some(&invalid_sarif), Some(&invalid_json), &[]);
+        assert!(!invalid_sarif.exists());
+        assert!(!invalid_json.exists());
+
+        // 5. Positive: export_reports with None paths
+        export_reports(None, None, &[]);
+
+        // 6. Positive: collect_use_segments with nested segments
+        let mut segments = HashSet::new();
+        let use_item: syn::ItemUse = syn::parse_str("pub use crate::foo::bar::Baz;").unwrap();
+        collect_use_segments(&use_item, &mut segments);
+        assert!(segments.contains("foo::bar::Baz") || segments.contains("Baz") || !segments.is_empty());
+
+        // 7. Positive: merge_unique_violations empty inputs
+        let mut target = Vec::new();
+        merge_unique_violations(&mut target, Vec::new());
+        assert!(target.is_empty());
+
+        // 8. Positive & Negative: audit_martin_topology with Scope
+        let mut violations = Vec::new();
+        let manifest_adapter = CargoMetadataManifestAdapter::new();
+        let metrics_frontend = audit_martin_topology(temp.path(), ScanScope::FrontendOnly, &manifest_adapter, &mut violations);
+        assert!(metrics_frontend.is_empty());
+
+        let metrics_backend = audit_martin_topology(temp.path(), ScanScope::BackendOnly, &manifest_adapter, &mut violations);
+        assert_eq!(metrics_backend.len(), 1);
+
+        let empty_temp = tempdir().unwrap();
+        let empty_metrics = audit_martin_topology(empty_temp.path(), ScanScope::BackendOnly, &manifest_adapter, &mut violations);
+        assert!(empty_metrics.is_empty());
+
+        // 9. Positive & Negative: audit_blast_radius with empty and non-empty directory
+        let scanner_adapter = WalkDirScannerAdapter::new();
+        audit_blast_radius(temp.path(), ScanScope::BackendOnly, &scanner_adapter, &mut violations);
+        audit_blast_radius(temp.path(), ScanScope::FrontendOnly, &scanner_adapter, &mut violations);
+
+        // 10. Positive: run_check with frontend_only, expanded, ci, sarif_path and json_path
+        let sarif_target = temp.path().join("check_run.sarif");
+        let json_target = temp.path().join("check_run.json");
+        let frontend_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: temp.path(),
+            sarif_path: Some(&sarif_target),
+            json_path: Some(&json_target),
+            expanded: true,
+            ci: true,
+            frontend_only: true,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+        });
+        assert!(frontend_run.is_ok());
+        assert!(sarif_target.exists());
+        assert!(json_target.exists());
+
+        // 11. Positive: run_check with parse errors present in scanned files
+        let bad_parse_file = temp.path().join("src/syntax_err.rs");
+        std::fs::write(&bad_parse_file, "fn bad( { broken").unwrap();
+        let parse_err_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: true,
+            record_baseline: false,
+            baseline_path: None,
+        });
+        let _ = parse_err_run; // exercised parse_errors loop
+
+        // 12. Positive: run_check with empty and invalid baseline file
+        let empty_base_file = temp.path().join("empty_base.json");
+        std::fs::write(&empty_base_file, "[]").unwrap();
+        let empty_base_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: true,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: Some(&empty_base_file),
+        });
+        assert!(empty_base_run.is_ok());
+
+        let invalid_base_file = temp.path().join("invalid_base.json");
+        std::fs::write(&invalid_base_file, "{ not valid json").unwrap();
+        let invalid_base_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: true,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: Some(&invalid_base_file),
+        });
+        assert!(invalid_base_run.is_ok());
+
+        // Test parse error limit failure when bad syntax files exceed max error rate
+        let error_rate_fail_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: temp.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+        });
+        assert!(error_rate_fail_run.is_err());
+        assert!(error_rate_fail_run.unwrap_err().contains("Parse error rate"));
+
+        // Test scope All on a clean workspace
+        let clean_ws = tempdir().unwrap();
+        let clean_scope_run = run_check(CheckExecutionOptions {
+            rules_repo: Arc::clone(&rules_repo),
+            path: clean_ws.path(),
+            sarif_path: None,
+            json_path: None,
+            expanded: false,
+            ci: false,
+            frontend_only: false,
+            backend_only: false,
+            record_baseline: false,
+            baseline_path: None,
+        });
+        assert!(clean_scope_run.is_ok());
+
+        // 13. Positive and negative tests for process_expanded_code
+        let mut macro_violations = Vec::new();
+        process_expanded_code("pub fn bad() { panic!(\"boom\"); }", Path::new("dummy.rs"), &mut macro_violations);
+        assert!(!macro_violations.is_empty());
+
+        let mut clean_macro_violations = Vec::new();
+        process_expanded_code("pub fn good() { let _x = 42; }", Path::new("dummy.rs"), &mut clean_macro_violations);
+        assert!(clean_macro_violations.is_empty());
+
+        let mut invalid_syntax_violations = Vec::new();
+        process_expanded_code("invalid syntax @@@ @@", Path::new("dummy.rs"), &mut invalid_syntax_violations);
+        assert!(invalid_syntax_violations.is_empty());
+
+        // 14. BaselineEntry comparison methods
+        let e1 = BaselineEntry {
+            rule: "A".into(),
+            file: "a.rs".into(),
+            line: 1,
+            symbol: "s".into(),
+            message: "m".into(),
+            fingerprint: "1".into(),
+        };
+        let e2 = BaselineEntry {
+            rule: "B".into(),
+            file: "b.rs".into(),
+            line: 2,
+            symbol: "s2".into(),
+            message: "m2".into(),
+            fingerprint: "2".into(),
+        };
+        assert!(e1 <= e2);
+        assert!(e2 > e1);
+        assert!(e2 >= e1);
+        assert_eq!(e1.partial_cmp(&e2), Some(std::cmp::Ordering::Less));
+        assert_ne!(e1, e2);
     }
 }

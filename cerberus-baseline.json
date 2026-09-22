@@ -10,15 +10,7 @@
   {
     "rule": "AI-008",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 57,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "713221053cd4bf1806e03c828bdbd302078b915c4dfb37f6896803d072196bfd"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 75,
+    "line": 78,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
     "fingerprint": "e2c29955d89762342c34b0bcc1950df5bd1f1c89f2282a7de5403dc2ad68124c"
@@ -26,7 +18,7 @@
   {
     "rule": "AI-008",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 86,
+    "line": 89,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
     "fingerprint": "12fadd8c422e6f3b100c5fac5acf064aa4062159913a7826f452ad4e7bd10119"
@@ -34,7 +26,7 @@
   {
     "rule": "AI-008",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 107,
+    "line": 110,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
     "fingerprint": "a598cc1503b12f631dc05fff0fde68e08edb76319a81c4fdcdb0bbab3bf0e395"
@@ -42,474 +34,50 @@
   {
     "rule": "AI-008",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 112,
+    "line": 115,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
     "fingerprint": "b5105d6ddee2e71ff42137df58554df5700fc80c83b1699a019f8713c2f3cb31"
   },
   {
     "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 157,
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/sampler.rs",
+    "line": 44,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "713221053cd4bf1806e03c828bdbd302078b915c4dfb37f6896803d072196bfd"
+    "fingerprint": "2e12adbd24f1af3f0f5bd1809a79de51d6d219f51268f0ceabb7075bcd21828e"
   },
   {
     "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 72,
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/tokenizer.rs",
+    "line": 31,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "f4e1ace1e066e8298bcd2741330adfa14522e8fbb64f106df960535186f4ec44"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 74,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "4f967031ffdf75682fae7a7a9ab7fe40ead275b82eed5d228f409c7bc5a2ac8b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 110,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "33468c6531ff218020ab5abada8c0a4827824b20e4889ebd8b2a8b7cbb698466"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 117,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "2225378851e91f3b5d903de7386a5a0e1ea739289f2ed86bd413e5a7ad78a17d"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 122,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "5339212088500d9d24fffc93151c344ac2a2cfbea95de397621cc45594f0719f"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 124,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "d0067f51db5a6a21d69ebcbb817ea1da8903c0ef0736e99145c4a61e2f1cc5f8"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 127,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c128b93f74fbfd1e44581f72c8442ef37620001e8562c57a8aeb8db021440f06"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 129,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c99ab00aa1c9d8871ea92007177010d85a541d2e5a0e62a9c7d2e95bfdbb9540"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 136,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "518cc48decf0ce16ca7223ace594acb27a3a621ab03e5323907713aec0c3579c"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 138,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "d0067f51db5a6a21d69ebcbb817ea1da8903c0ef0736e99145c4a61e2f1cc5f8"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 142,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "b2db895d78c11994c53fc4e931adee9426c02a209b9c1d0defef6a36dd90eab0"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 143,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "ac165136264d1adad1f4f1771f18bf90edbf70bd8900d28c2b02b9fcddcd617d"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 145,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 152,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 175,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "33468c6531ff218020ab5abada8c0a4827824b20e4889ebd8b2a8b7cbb698466"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 181,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "2225378851e91f3b5d903de7386a5a0e1ea739289f2ed86bd413e5a7ad78a17d"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 186,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "5339212088500d9d24fffc93151c344ac2a2cfbea95de397621cc45594f0719f"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 187,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c128b93f74fbfd1e44581f72c8442ef37620001e8562c57a8aeb8db021440f06"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 189,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "bd01eb86da599cdabda66a259695ef00aff2d55702e1384ab188ccee33ff0a4c"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 199,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c99ab00aa1c9d8871ea92007177010d85a541d2e5a0e62a9c7d2e95bfdbb9540"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 205,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "518cc48decf0ce16ca7223ace594acb27a3a621ab03e5323907713aec0c3579c"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 207,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "d0067f51db5a6a21d69ebcbb817ea1da8903c0ef0736e99145c4a61e2f1cc5f8"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 229,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "f36c835bd5287d4c6deb26d2ca1afc33284471ca79601db5d66d83633c03a2c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 257,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "f36c835bd5287d4c6deb26d2ca1afc33284471ca79601db5d66d83633c03a2c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 278,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "f36c835bd5287d4c6deb26d2ca1afc33284471ca79601db5d66d83633c03a2c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 299,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "b9032fa470b548dd8bbb7f55feaedc135c3bb061f48ed8935b77666cbdd262be"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 313,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "21fa82201a680742f5c29e0385932ce9d1b24cc78add706c33620f5702a15e7b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 352,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c2fd1cd7f09a3041514e93b175c1ec63eba8c355925696ac70a27cb09fd7562c"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 356,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "0d33e0bc304559ffb8192a51faae7db27d0eecc4b736382f90a8d026a8bf26c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 369,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 378,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "5a49e046c8ddef47938b13fcdbcabb8ff707a20c91268e852272d6b87bcd44b0"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 380,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "0d33e0bc304559ffb8192a51faae7db27d0eecc4b736382f90a8d026a8bf26c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 384,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "0d33e0bc304559ffb8192a51faae7db27d0eecc4b736382f90a8d026a8bf26c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 403,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "3185c0a4403a5a7bbf1f49e00dac1eb8f87f238fba5956cd1a36bce1d2399545"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 404,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "a391937028368cfcb342ade8e0a1bb9402016a3919da3ac22d114d87a34d3bd8"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 406,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "100b72c413f5ad8bf4fbb7495ad0a07cef141b2702f4b12ef4a58fffd292231a"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 415,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "32fe500e761b44e262b206e5eb994d646a45d3d4e0b0a4a76038f372e6fc2ba7"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 459,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "00e13e6747a73f1ad13696dcdcab13ac989aba8c8ca0b8b769ef5537ae9f7c35"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 461,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 469,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "a452a9bba821aed5d04237db4c1b69ad3fad308a9c32aa5f800e5564d057acec"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 470,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "ef6c063d15d8c0f8552eb78942b0c85031c31260221757ae4d2bcd3c037be0b3"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 498,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c3c6b562da761fa420dac8f677e036c974c7598f171187ed89a7dc69d79b28e6"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 501,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 510,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "93997ef023502cfb7a87b3e6c3ba7f55d28f2aea0d3ec49e553c6c07f8a8cc01"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 511,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "0d33e0bc304559ffb8192a51faae7db27d0eecc4b736382f90a8d026a8bf26c5"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 516,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "9f8397537a0d25d2a7254c95b0b77c85c10d6246f6526a8ab0d7b65a64325e42"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 518,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "c498e695f7eedd8afd01f19712bb726c880a5918d4568973e7709bf97f293f9d"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 527,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "cfab11d70212ea1ec4b136039e343cf4b1b238d403c54d862b0a5aaa55ac5281"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 529,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 546,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 610,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "06d26c0b9fcfc4effb36f32e48a50a97406e23538f367950ab39b2dbd154733b"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/crates/worldwiki-application/src/calendar/mod.rs",
-    "line": 1,
-    "symbol": "convert_calendar_date",
-    "message": "Unauthorized compiler warning suppression '#[allow(clippy :: too_many_arguments)]' on 'convert_calendar_date'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "55ee7f11b61d1e4c2a62236eaba3657ca1feeee75b5e630e17f06002b841c620"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/crates/worldwiki-domain/src/calendar/math.rs",
-    "line": 1,
-    "symbol": "convert_between_calendars",
-    "message": "Unauthorized compiler warning suppression '#[allow(clippy :: too_many_arguments)]' on 'convert_between_calendars'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "5c6d0e661432dec99ca1f5f02792452c3249d09ae0c62740c26480c892d20fea"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/crates/worldwiki-domain/src/calendar/math.rs",
-    "line": 1,
-    "symbol": "local_to_master_minute",
-    "message": "Unauthorized compiler warning suppression '#[allow(clippy :: too_many_arguments)]' on 'local_to_master_minute'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "cc1c77c28649e6dfcadcdd04111c48703136636887f8e844d6ecc7e7734572d1"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 1,
-    "symbol": "win_mem",
-    "message": "Unauthorized compiler warning suppression '#[allow(non_snake_case , non_camel_case_types , clippy :: upper_case_acronyms)]' on 'win_mem'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "79d10ed4e999c0f3a122ecf75582f5331e7bb110e6dcbad50c613f9cbffb65ee"
-  },
-  {
-    "rule": "AI-013",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/calendar.rs",
-    "line": 1,
-    "symbol": "convert_calendar_date",
-    "message": "Unauthorized compiler warning suppression '#[allow(clippy :: too_many_arguments)]' on 'convert_calendar_date'. Suppressions must be cryptographically signed in cerberus ledger.",
-    "fingerprint": "2f0d861cf8b31eceda9f47c6494a4f8fe811ba0cf8db5b7ccfc97fd7d79bc96a"
+    "fingerprint": "5cb1f3f6cb31b38e548b76d21e0488a10f2db2c30f8fe1f51574919cf3581f96"
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/agent_loop.rs",
     "line": 1,
     "symbol": "file",
-    "message": "Architectural Pressure S_arch (680.9) exceeds critical limit (400.0)",
-    "fingerprint": "e8cd6dfb287bdd12a4f8d1d3d86571e578eb49324a4e9c4b5f1df90b0a126e9a"
+    "message": "High Architectural Pressure S_arch (242.0) exceeds warning limit (200.0)",
+    "fingerprint": "de6ae48e3ca39017eda43a4f336dfd808c8f5961cb48c210d54fc03bd020c33a"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (225.3) exceeds warning limit (200.0)",
+    "fingerprint": "d8407820433fb7891ae52e547d8c4c750a6d2178d4b3511ea71f9af1e26b8b6c"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/tool_dispatcher.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (207.7) exceeds warning limit (200.0)",
+    "fingerprint": "0c769b68400575fa2d423f9590d13670cbad1d1b7820ebd7b4bc794a89485727"
   },
   {
     "rule": "ARCH-030",
@@ -521,27 +89,35 @@
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
     "line": 1,
     "symbol": "file",
-    "message": "Architectural Pressure S_arch (567.7) exceeds critical limit (400.0)",
-    "fingerprint": "774b3d10c42808237abe4f337d928e9a38bd245b3f670d2ff2a03b32e8bb3a08"
+    "message": "High Architectural Pressure S_arch (300.7) exceeds warning limit (200.0)",
+    "fingerprint": "90401283e93da17e269e91c6504fa444bfba96564b14d80aa12576c6f924d39d"
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/validator.rs",
     "line": 1,
     "symbol": "file",
-    "message": "Architectural Pressure S_arch (466.9) exceeds critical limit (400.0)",
-    "fingerprint": "5330b2e3a5b200c0598b40d22d3a995731e4183ab74702afe3a1e450b852893a"
+    "message": "High Architectural Pressure S_arch (204.5) exceeds warning limit (200.0)",
+    "fingerprint": "61c5c944eedfebaaa00a41cb95af2628566cb5604190fbcc1efcf440391dcf5f"
+  },
+  {
+    "rule": "ARCH-030",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools.rs",
+    "line": 1,
+    "symbol": "file",
+    "message": "High Architectural Pressure S_arch (282.7) exceeds warning limit (200.0)",
+    "fingerprint": "b2a329aa7300e42f9fdbcc14695b20ed39c4acee786849a06b3c36bdd8697cc3"
   },
   {
     "rule": "ARCH-030",
     "file": "./src-tauri/crates/worldwiki-domain/src/calendar/math.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (198.5) exceeds warning limit (150.0)",
-    "fingerprint": "7f14bb29230c6a638042f7a0c3fd4fea1d7ed02f1bf232348ff1ec54a1256836"
+    "message": "High Architectural Pressure S_arch (197.8) exceeds warning limit (150.0)",
+    "fingerprint": "b84ebf4bb130fb41acc1ffb23c023a1028943e870e660f653093011e9b4800c0"
   },
   {
     "rule": "ARCH-030",
@@ -553,14 +129,6 @@
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (358.9) exceeds warning limit (250.0)",
-    "fingerprint": "8f0b7a509549a29121854b3b41d6b6fc6f4d079095a2bd8854d3eaeba4d83aa9"
-  },
-  {
-    "rule": "ARCH-030",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs",
     "line": 1,
     "symbol": "file",
@@ -569,35 +137,19 @@
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/router.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (272.8) exceeds warning limit (250.0)",
-    "fingerprint": "e5b4e7e464c8448917b328ea9d2c93f8be5687383e89a7909bbe5beb10502116"
-  },
-  {
-    "rule": "ARCH-030",
     "file": "./src-tauri/crates/worldwiki-infrastructure/src/documents/docx.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (307.6) exceeds warning limit (250.0)",
-    "fingerprint": "a6553df1637c3ba9b1e6f8ac004756d01ab1fdf4d76823fde4e068c5d232b575"
+    "message": "High Architectural Pressure S_arch (282.0) exceeds warning limit (250.0)",
+    "fingerprint": "11fda1b4edf31c5e8ea429001c50adfe37b35d7de84087fcea32845cc4eec795"
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/documents/epub.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (295.0) exceeds warning limit (250.0)",
-    "fingerprint": "039dfc9237f72e81506b16f56a2704651ac35cae5a260ef10dcc86b8104d16f8"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "Architectural Pressure S_arch (804.0) exceeds critical limit (500.0)",
-    "fingerprint": "b3614c8241e3f0a059d55b8826930637050b51cc707c816d206137c9ef1d699f"
+    "message": "High Architectural Pressure S_arch (381.0) exceeds warning limit (250.0)",
+    "fingerprint": "a03e567ea56d5cf4734e783067bb2e22682bbfd0bed8a52fd681bacdd7f342db"
   },
   {
     "rule": "ARCH-030",
@@ -606,14 +158,6 @@
     "symbol": "file",
     "message": "High Architectural Pressure S_arch (295.2) exceeds warning limit (250.0)",
     "fingerprint": "52a29eeb49bd199360121bc38d4e52fa62bc277a0fc2f0767c16fe684d458d1e"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (359.8) exceeds warning limit (250.0)",
-    "fingerprint": "486fd5beb21f04bed6569352a030f06733f0326113bf1cd15fc17de5ce0d6270"
   },
   {
     "rule": "ARCH-030",
@@ -630,46 +174,6 @@
     "symbol": "file",
     "message": "High Architectural Pressure S_arch (206.0) exceeds warning limit (200.0)",
     "fingerprint": "0b182eda2e9885b21cc5dc4c8369b10a216493eaff51349c07b7063d38efe8bb"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "File SLOC (1044) exceeds strict limit (600)",
-    "fingerprint": "67b48462ebb59a94a3633a6126e947da82f9327999cbccc29f77c3f4b0fa6a86"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "File SLOC (612) exceeds strict limit (600)",
-    "fingerprint": "76d8b6592edee22896277268fe96f4150730c853cc9982759f32bed6d0500b20"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "File SLOC (549) exceeds recommended limit (400)",
-    "fingerprint": "95c6c88c384d6fb7407b8344043afbf5a431a3b76933e0edd4610060b6edefb9"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "File SLOC (534) exceeds recommended limit (500)",
-    "fingerprint": "50b7ed242f41d1ce38f04bca036106090510183c1058e457038279e97f9612b0"
-  },
-  {
-    "rule": "ARCH-031",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "File SLOC (1100) exceeds strict limit (800)",
-    "fingerprint": "99fe2ac04d7705bbf31906406be6a987d88dabd66c3309fd9397509b5220f66e"
   },
   {
     "rule": "CONC-002",
@@ -721,75 +225,75 @@
   },
   {
     "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
     "line": 1,
     "symbol": "orphan_spawn",
     "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "58c116e57dd3615e534e209c0f2d504215bca750b6409183185b81646a10e24f"
+    "fingerprint": "3b74127ff88bbbe5d249fb5876ab49228882613762d5b33fcf31add1b8c41808"
   },
   {
     "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "orphan_spawn",
     "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "63effcf023e822f49a0f277cc029b38961266d6546dd84ec7ff1db6cace36def"
+    "fingerprint": "a774d3eaf8b48c8f4b227381b9057d3a16d95ccb04505d39c2e9a723fb7a3e63"
   },
   {
     "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "orphan_spawn",
     "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "63effcf023e822f49a0f277cc029b38961266d6546dd84ec7ff1db6cace36def"
+    "fingerprint": "a774d3eaf8b48c8f4b227381b9057d3a16d95ccb04505d39c2e9a723fb7a3e63"
   },
   {
     "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "orphan_spawn",
     "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "63effcf023e822f49a0f277cc029b38961266d6546dd84ec7ff1db6cace36def"
+    "fingerprint": "a774d3eaf8b48c8f4b227381b9057d3a16d95ccb04505d39c2e9a723fb7a3e63"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/agent_loop.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "37ad9da65b07794ce3fbbb2b21e0810caa1477b6652ec73a2106ebc8b95f6695"
+    "fingerprint": "ffe0dffd25a7035133697f2c13d2adeea4cc9544dc2a135d71e08620a9ffac0b"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/agent_loop.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "47108fd14ac2d9165ff87e9fabf769fa52493af908b909befef4167f889b5c96"
+    "fingerprint": "ffe0dffd25a7035133697f2c13d2adeea4cc9544dc2a135d71e08620a9ffac0b"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/mod.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "47108fd14ac2d9165ff87e9fabf769fa52493af908b909befef4167f889b5c96"
+    "fingerprint": "3fb22d90a7ae093c6e33811e3b77e2de1ecf2a943ad2be0b71fd84307ce45ee9"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/mod.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "e42ff5d29a19386aa99fb2b8274b035692267847578b3e0c5784b77125cc0c88"
+    "fingerprint": "efd7fcc9445fa8abbe8a23ed9623160c5da83391c11204bf25e536736293fee9"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b8ddeac5436711b802f0f4b174d351e37ec3753aa8622a60351cbec2b259458d"
+    "fingerprint": "d5fa762244804e894a09a42ba28161797cc0ddc795dccf308d852e75cd597510"
   },
   {
     "rule": "ERR-001",
@@ -865,51 +369,51 @@
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b119c488e232bf336c6ac2b3265f2640b13bd0f237732b5707038d71bf91cf7a"
+    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b119c488e232bf336c6ac2b3265f2640b13bd0f237732b5707038d71bf91cf7a"
+    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b119c488e232bf336c6ac2b3265f2640b13bd0f237732b5707038d71bf91cf7a"
+    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b119c488e232bf336c6ac2b3265f2640b13bd0f237732b5707038d71bf91cf7a"
+    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/mod.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b119c488e232bf336c6ac2b3265f2640b13bd0f237732b5707038d71bf91cf7a"
+    "fingerprint": "e6d1277842aa124bbe16642f4bd23ad8bc31ee27a54b1f78f4f10d78619125d3"
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/mod.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b119c488e232bf336c6ac2b3265f2640b13bd0f237732b5707038d71bf91cf7a"
+    "fingerprint": "e6d1277842aa124bbe16642f4bd23ad8bc31ee27a54b1f78f4f10d78619125d3"
   },
   {
     "rule": "ERR-001",
@@ -945,19 +449,19 @@
   },
   {
     "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
     "line": 1,
     "symbol": "wildcard_let",
     "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "b5b91b1785dcdb8b911c949ec40d7c40236f6a65e360a3a447e342fdd6409379"
+    "fingerprint": "449fdb0b025dc854b9b721b092b12f4388a6000266c17207da9bfaf6a8c6de51"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
     "line": 1,
     "symbol": "fork_chat",
     "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "272d379aced3042fb1aa248d9a3f8a3e4ce0dcb973df9511d87e3d5ac465238f"
+    "fingerprint": "51caaf0452a2551c23aac91882da7d1ed7a8c42359e297d4bcd861219a5c3c8d"
   },
   {
     "rule": "ERR-003",
@@ -977,11 +481,11 @@
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/system_tools.rs",
     "line": 1,
     "symbol": "delegate_task",
     "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "c54754bc04428b8719da77e5bacac25fa0d1eb8b805c937032c288d628e5830f"
+    "fingerprint": "a7c0154f1e7f46421fe91c7656c94300bff4c56984b64f2565a4e3b51548a084"
   },
   {
     "rule": "ERR-003",
@@ -998,86 +502,6 @@
     "symbol": "fetch_hf_models_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
     "fingerprint": "5dcd0681022b558f16456c4768580265b4954b0b8f9b37495911baf350097a92"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "enable_triattention",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "fee58ce5ede686b48e38c27070f05218d3f5c641de4bd9afc26d1615d460f241"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "generate_stream",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "36195c4b6562e8682de7d41ddaee84d8b7ac0d58233ca8db05e2d7c769611ab1"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "get_embeddings",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "698763c451ffde9567e063fb98549256768530bfbef37594323531cdbe4b9010"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "load_checkpoint",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "4d2ef97712a73a29d538534a1df66ded4a2807f41837082525ae27620db994b8"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "load_embedding_model",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "d8dd43f364a0b26e97ce573a0b51643b5395f5ce9f1956dec094339f8bb20dec"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "load_model",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "22fb33a7e0a44f82f4209546849cbfae3a235cc7ce45354d48de2ddb4189441d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "reset_context",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "de7aa3837001de1389e5464d8492d45cd93a7b850b5a71acfe0f837ea920236f"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "save_checkpoint",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "a585b61b1ec6a374492413eef9e80d8c0ae925a938bf859515c39e50460cadf6"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
-    "line": 1,
-    "symbol": "tokenize",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "5e47f96c985b72c616b215d7a538db072eada7e8ab99a5f911defead7d975067"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/model_discovery.rs",
-    "line": 1,
-    "symbol": "fetch_provider_models",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "9baa18aab1dc72ceedc579927a642d263e8c9bf88278a8c5bacf6d2fa56f268d"
   },
   {
     "rule": "ERR-003",
@@ -1153,35 +577,35 @@
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs",
-    "line": 1,
-    "symbol": "download_yandex_file_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "6c836a031659a185f63ae03f998c174f35b451b3661c2871a00569c8166f6aab"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/auth.rs",
     "line": 1,
     "symbol": "exchange_yandex_token_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "772864864774c02d9bc0cb6aabef4084659a40bee97ead0bcf04f85ff9cad62b"
+    "fingerprint": "3aa0fa2c3c6d7b0cd1ae904cbc5a123278ba222ed7897d5207076ba1195d2388"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
+    "line": 1,
+    "symbol": "download_yandex_file_inner",
+    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
+    "fingerprint": "0587c5669827a60c45ddfe3186b2859d63525b943521557835c9faeb9e8e74c8"
+  },
+  {
+    "rule": "ERR-003",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
     "line": 1,
     "symbol": "list_yandex_disk_backups_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "fb7635aa2dbcd3f4e0de4617b1662600a8ce06a8f13a0dd241d38af7f5017e07"
+    "fingerprint": "092851d587159caf365a829bd30efb30ca76e07592e17fac448617210d18610c"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
     "line": 1,
     "symbol": "upload_to_yandex_disk_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e686e745a0b0b311781fc107e475423fdc2d29b261529fb26e222eae9ec9317b"
+    "fingerprint": "df44358ebf7dd4d2e3ab594725385d037143dc9ffca8ae75fc32ff6b69a32ebf"
   },
   {
     "rule": "ERR-003",
@@ -1265,43 +689,43 @@
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "edit_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e6a7da372a980161ac96523b28690b6c55f72ee2713f839033d38eadd05856d5"
+    "fingerprint": "13f07a607e9f3fc2eee90977f155d8561006fa8bdcbe4373b18d87a53fa2cd45"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
-    "line": 1,
-    "symbol": "fetch_ai_models",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "506b24256e03205d6e06fa06f8a1212674bbf3b9b06160de36f04634deac4345"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "regenerate_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e5f45147aefa680b7a1589d12d604d5660c9534250637472664e52e701b66c0a"
+    "fingerprint": "10b31425247308251685e9da1e9ec65f5e987253d42b9604d598db5c798ae9cf"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "send_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "8508a6f2b9b9159d36c9e08da3ed4125745d7c86cfbf65adaa7fd6df5314ae25"
+    "fingerprint": "102d553da5b0e05044950dd8ae85fbc0683d17f90fcf4f7ce1135a062c79afd1"
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/profiles.rs",
+    "line": 1,
+    "symbol": "fetch_ai_models",
+    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
+    "fingerprint": "7d42675c0ed1641fbba71061fa6f4c1998ab3de3d816b345cf398ddf740f3d05"
+  },
+  {
+    "rule": "ERR-003",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/sessions.rs",
     "line": 1,
     "symbol": "update_chat_parent",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "1a26fe204a0aa244eb31acd92fc7c81ea396ec030dbcc16fdff46a5c68ef9c45"
+    "fingerprint": "4e2a59eba174ef447a59c9688a68d84a49241f86a9e56070906fe735b072b2fb"
   },
   {
     "rule": "ERR-003",
@@ -1481,19 +905,19 @@
   },
   {
     "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/loader.rs",
     "line": 1,
     "symbol": "loop_io",
     "message": "Blocking I/O operation 'std::fs::read_to_string' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "e7a8debb4439176623d5465c180a01514cdb2483ed6c43acf4de31183b5ba335"
+    "fingerprint": "d9cbd36aca0989bdfb0a8a6d3a57bcf6f59b0694ee0401238b917443bbd1b204"
   },
   {
     "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/loader.rs",
     "line": 1,
     "symbol": "loop_io",
     "message": "Blocking I/O operation 'std::fs::read_to_string' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "e7a8debb4439176623d5465c180a01514cdb2483ed6c43acf4de31183b5ba335"
+    "fingerprint": "d9cbd36aca0989bdfb0a8a6d3a57bcf6f59b0694ee0401238b917443bbd1b204"
   },
   {
     "rule": "PERF-011",
@@ -1553,147 +977,43 @@
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/error_parser.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "21b64821ac6a224b49827342e852ee21e44e7e3f2df08b15e8d93144438ed6b7"
+    "fingerprint": "a50ccfe341fba4a5afed3ea8347577bca7f18c1364bec020adb6e15effd94a97"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "624731fd155ffb0c38c22ae077d9cdda321c93a924d1c62ca90e7c1b6475b914"
+    "fingerprint": "5c264035bc8cb90bacb6774c2edb816d2cede98ae1f9ce1fd9e11e94205cd190"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "757c98fafe001b2171121b715ac90d1813da9c7c2a4f97036e716cb60bdcafec"
+    "fingerprint": "6cf781efb841273f738e80c74ba5309c56cc294e8b302b48ba3b530d1b203683"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "798ef3645cf41ef9b16231a3637daebbf14344c3b9b9b174c49a23d80546aa2b"
+    "fingerprint": "917d2c9fcc61708cdf0ec46fb94cda2cdf4cceec30b13fafb4db76274cf34f5a"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "41a28ad5f12e71efa9a6b017dcb3d6a8b556ab7e914c03a3499a122170a59f63"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "485a544832c81bf8055aa42f9e55d82e4a4268002a093d26ee2ecdec054d709f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4c9f0ed91aa4ab68b4c80fa99dba3231044ab382877ad3a102f1360c7af1c506"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "57939022dc840cff3b4d551cd3510aaf7c55394110df7d896e33fb6071db9a2d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "763e56be42d50fcc50fde83200b598fd4392bf82ba44e4a3c9af326a573b65bc"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "763e56be42d50fcc50fde83200b598fd4392bf82ba44e4a3c9af326a573b65bc"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7e03a1fa84319cee962ff744b2aba4f4f9152697c5bb53a31f763420ed2b2375"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "85b0b19adc393dbe8d3f779d7f0fa60e9fc2eb205efcd3576cde73b3faab2e52"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "a4541c8f497042861d55166d9e165bd2db1cc27e310dcf3583115c438d05e2b3"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ccda571765eda1bbb6592f7c1b2ea54fc43de75ef9e9ddff55bb3b1695db0ce7"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "d9a95c0583490583d63252dd8ff9ca90b1663540efce21e81b5a6827279bc7aa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "d9a95c0583490583d63252dd8ff9ca90b1663540efce21e81b5a6827279bc7aa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "e06abad55c933dae15e09957380fab53c06cdefae3419e65491834f5fb5fd37d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "e202041a411608a8a84a1f539a7c39ceb5b675955508d758bc618d77f0fbdfe2"
+    "fingerprint": "0c54c7a9c7c38434209c296eef36508b0dddd2d571612ff3304aa7df947faf24"
   },
   {
     "rule": "ROB-001",
@@ -1769,19 +1089,19 @@
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/checkpoint.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "79c7e720ea7aa5c0d441db9e5b03a58e9042c6a0d883853ad3d3b17466a668ca"
+    "fingerprint": "6fa519c2da9b2e629cfdc092c7b96aac2b6422d587c9a88fb65de3e06a8062cc"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "9faf9d7fd6c8a79c056d8c4f2d1519e5ec82f674c11af5ebb219d9111c92492e"
+    "fingerprint": "f27f6f41440a377b44cfa50fcf1c38eb5969d7abdee61f134bfb9134ea7377d9"
   },
   {
     "rule": "ROB-001",
@@ -1849,115 +1169,19 @@
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/helpers.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "13e64190cc5ebfcc177954b9abe9ab8ff53cf7006ec09bf5f056d68edd75eb28"
+    "fingerprint": "a8de3faab5451e29b32634bb155df8d3b66471c8e3f7841cf3f33e1f30b47aa8"
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/helpers.rs",
     "line": 1,
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "160a7afbf9b9dbc5bee57cb2bd27944cd1cc22100047a3e00705535848b5a0cb"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "6374e99cb00be0446c76445fbfd3ba057ddfe75f18aa543362ba17e214a83b25"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "74c928df721a0d5956f0d4770168fcc2dc2443b611e7db270d01906096cbb435"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "967d31cfaca1086d6ca5a4da32494abbe8d914f9616253ff77634de65543a049"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "98fdb26323c590a80cdc5c70561e471c5abb1c8be75de8387292b201a451cf4d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "aa2dfef3586a044fa3c30868fd3bba77383038b81e8b5e78c90e6856ef7a9fea"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b9586021a650e113ecee6f7c7b6c864b32ea271d21054bb28cc1b8ad2c1e053c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c9207e238745f52ac018873a53c2fd2e1b34d947aedd8c7a6edb658aa728af19"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c9207e238745f52ac018873a53c2fd2e1b34d947aedd8c7a6edb658aa728af19"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cadf1ccc1a5a1e278570d519eff74a74133d71fb63fe221bed70240b1b20a9e9"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cadf1ccc1a5a1e278570d519eff74a74133d71fb63fe221bed70240b1b20a9e9"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "e56671450b8833ef97f518ed42088db3f83c17f89d5ea63646207a13acc14208"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "f52fd914d3459dbe67e3dd450b08960812b7c52722c1c7248f5476dd9b7f7da7"
+    "fingerprint": "c0868da210f7cdd4ce1b0e352b96a340d28bbd01daba59ba855b5d7d9a71a194"
   },
   {
     "rule": "ROB-001",
@@ -2038,198 +1262,6 @@
     "symbol": "slice_index",
     "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
     "fingerprint": "ee259cba57d8ac5f40f344a111e9886c327e6ce23d6a20aa9c9b8fcecae508ae"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "0dcf98390207e1015b7ffea79964fa6cede343be5be52c7c5560726de8ca96f3"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "0dcf98390207e1015b7ffea79964fa6cede343be5be52c7c5560726de8ca96f3"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "0dcf98390207e1015b7ffea79964fa6cede343be5be52c7c5560726de8ca96f3"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "1ccb1306f162f4ca0b78c68c34809d7af1284dbd4cf093a3572e17ab5c010d74"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "1ccb1306f162f4ca0b78c68c34809d7af1284dbd4cf093a3572e17ab5c010d74"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "1ced4b3ec032c52345487af4b87a24fb06dae20b8c59170cdfcf7d1d301626af"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2b1e96b333763391df6dc264dd7fd8f5cf8cf071c795d4ca9f19130ae65b0d8e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2b1e96b333763391df6dc264dd7fd8f5cf8cf071c795d4ca9f19130ae65b0d8e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2fd2a89e31ea7d955fc62844edf9e324245e60c798eb01fed4fa9522765bf7aa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "585125215c22c52b735c78bc6141ff98cef982fc2fa7f2587a59c75c9b2787d9"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "60b0b0c9762a899d921287d720c66eff611234eaa5ff4a2a59257a1cafbf737e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "629a0a813f83a7498631687a53e1c817676077e1fe55d27fd6942a1e77b9d5c0"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "629a0a813f83a7498631687a53e1c817676077e1fe55d27fd6942a1e77b9d5c0"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7531db2a95cc081a89aa724a958db3724a96a9e53b2f9c649e0cdc6959093c94"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7b34e2c2e928c1e12f0fc5e6cf92718908b10d7f0e22d220a011bbcca4d54e3b"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8a789dc8d9af76c9af083cc14d19f9f9b9c8481063d132e9bec04c9983c8052b"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b78c5a8ac6dd3db4dcf60185c17ac80c28803e220434b8fec9e71e9062631fe7"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b78c5a8ac6dd3db4dcf60185c17ac80c28803e220434b8fec9e71e9062631fe7"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b78c5a8ac6dd3db4dcf60185c17ac80c28803e220434b8fec9e71e9062631fe7"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "bb14b482bd68a816c3b53273c6787d58c748df111395ea59853f2732692f90e4"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cf66a2cecea76550ecc9e19f6522cc44cdfefc05a671846585d1906f9acb4de3"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "fe4eb1b8d852b18454ed51b54b60ed1f11045a6761547ce6384efb6c26f168f5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "fe4eb1b8d852b18454ed51b54b60ed1f11045a6761547ce6384efb6c26f168f5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/web/scraper.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "fe4eb1b8d852b18454ed51b54b60ed1f11045a6761547ce6384efb6c26f168f5"
   },
   {
     "rule": "ROB-001",
@@ -2617,6 +1649,22 @@
   },
   {
     "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
+    "line": 1,
+    "symbol": "normalize",
+    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "646814c05bfebf21bfd3f2f44fa884c97aa0b66861e6eea3af65f17a08bb4073"
+  },
+  {
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
+    "line": 1,
+    "symbol": "parse_dynamic_container",
+    "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "6355153212e843080e0be38477fb8c624f0543ea4806031b55654759a20b78c2"
+  },
+  {
+    "rule": "SLOP-001",
     "file": "./src-tauri/crates/worldwiki-application/src/lib.rs",
     "line": 1,
     "symbol": "setup_test_services",
@@ -2625,19 +1673,19 @@
   },
   {
     "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
     "line": 1,
     "symbol": "LOADED_EMBED",
     "message": "Global mutable lock (static Mutex/RwLock) detected. Risk of hidden side-effects and deadlocks.",
-    "fingerprint": "0e013ac7a3db1acb56911c4578bb9fe38cc09bf7c31d67a96c9b48171511b013"
+    "fingerprint": "0b7fcb3bc24d6a6aadcae02e2ad4352d03e0c0114ee7714d337844566b66742e"
   },
   {
     "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
     "line": 1,
     "symbol": "LOADED_MODEL",
     "message": "Global mutable lock (static Mutex/RwLock) detected. Risk of hidden side-effects and deadlocks.",
-    "fingerprint": "815300dcd68066271f79e3edc6e4443f4f675305cc3ece2d243c59d6ff212e78"
+    "fingerprint": "74bee89d13a18b9dc4ece8c38e3d4b779351bf7b48953d561cbd2433dbced61c"
   },
   {
     "rule": "SLOP-001",
@@ -2649,19 +1697,11 @@
   },
   {
     "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/model_discovery.rs",
-    "line": 1,
-    "symbol": "fetch_provider_models",
-    "message": "High .clone() density detected (6 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "9126894200ccebecfce466df7d99ad4f2eb57ca51a22d07dc2163402ea4e2ee1"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat.rs",
+    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "send_chat_message",
     "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "769c8e16b4940a15983f7672313420aa0386882faf4192d471ae930caa7ae785"
+    "fingerprint": "af20238a2bb9e61fca09a1310263562a4144d13bf09a623238c70b7fa719cc20"
   },
   {
     "rule": "SLOP-001",
@@ -2673,19 +1713,19 @@
   },
   {
     "rule": "TEST-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
     "line": 1,
     "symbol": "LOADED_EMBED",
     "message": "Mutable global static state hinders deterministic isolated testing and parallel test execution.",
-    "fingerprint": "4de5981b280211896f4b5d05db562ab271cbf028258312ff76698d6d95b7e1b4"
+    "fingerprint": "4460fd73e932e3eb347f5b3ddcfb319977de9568ce044297e9588223c9b63187"
   },
   {
     "rule": "TEST-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
     "line": 1,
     "symbol": "LOADED_MODEL",
     "message": "Mutable global static state hinders deterministic isolated testing and parallel test execution.",
-    "fingerprint": "56522f19ab5bc3eb2b12c78a0e08f2ab2de84c00b86c3c202326c2e070a14f4e"
+    "fingerprint": "ed139ea5608a532f89dcfaddb29faef90f3b159c79757a05f3bca384a595e8ef"
   },
   {
     "rule": "TEST-002",

@@ -2,23 +2,23 @@ use worldwiki_domain::ai::{HardwareInfo, MemoryEstimation, RecommendedModelCard}
 use worldwiki_ports::ai::HardwareDetectorPort;
 
 #[cfg(target_os = "windows")]
-#[allow(non_snake_case, non_camel_case_types, clippy::upper_case_acronyms)]
 mod win_mem {
     #[repr(C)]
-    pub struct MEMORYSTATUSEX {
-        pub dwLength: u32,
-        pub dwMemoryLoad: u32,
-        pub ullTotalPhys: u64,
-        pub ullAvailPhys: u64,
-        pub ullTotalPageFile: u64,
-        pub ullAvailPageFile: u64,
-        pub ullTotalVirtual: u64,
-        pub ullAvailVirtual: u64,
-        pub ullAvailExtendedVirtual: u64,
+    pub struct MemoryStatusEx {
+        pub dw_length: u32,
+        pub dw_memory_load: u32,
+        pub ull_total_phys: u64,
+        pub ull_avail_phys: u64,
+        pub ull_total_page_file: u64,
+        pub ull_avail_page_file: u64,
+        pub ull_total_virtual: u64,
+        pub ull_avail_virtual: u64,
+        pub ull_avail_extended_virtual: u64,
     }
 
     extern "system" {
-        pub fn GlobalMemoryStatusEx(lpBuffer: *mut MEMORYSTATUSEX) -> i32;
+        #[link_name = "GlobalMemoryStatusEx"]
+        pub fn global_memory_status_ex(lp_buffer: *mut MemoryStatusEx) -> i32;
     }
 }
 
@@ -27,7 +27,7 @@ mod win_gpu {
     use std::ffi::c_void;
 
     #[repr(C)]
-    pub struct DXGI_ADAPTER_DESC {
+    pub struct DxgiAdapterDesc {
         pub description: [u16; 128],
         pub vendor_id: u32,
         pub device_id: u32,
@@ -40,13 +40,23 @@ mod win_gpu {
     }
 
     extern "system" {
-        pub fn LoadLibraryA(lpLibFileName: *const u8) -> *mut c_void;
-        pub fn GetProcAddress(hModule: *mut c_void, lpProcName: *const u8) -> *mut c_void;
-        pub fn FreeLibrary(hLibModule: *mut c_void) -> i32;
+        pub fn LoadLibraryA(lp_lib_file_name: *const u8) -> *mut c_void;
+        pub fn GetProcAddress(h_module: *mut c_void, lp_proc_name: *const u8) -> *mut c_void;
+        pub fn FreeLibrary(h_lib_module: *mut c_void) -> i32;
     }
 
+    // SAFETY: IDXGIFactory instantiation function pointer type matching Windows DXGI ABI.
     type CreateDXGIFactoryFn =
         unsafe extern "system" fn(riid: *const [u8; 16], pp_factory: *mut *mut c_void) -> i32;
+
+    // SAFETY: IDXGIFactory::EnumAdapters COM slot function pointer type.
+    type EnumAdaptersFn = unsafe extern "system" fn(*mut c_void, u32, *mut *mut c_void) -> i32;
+
+    // SAFETY: IDXGIAdapter::GetDesc COM slot function pointer type.
+    type GetDescFn = unsafe extern "system" fn(*mut c_void, *mut DxgiAdapterDesc) -> i32;
+
+    // SAFETY: IUnknown::Release COM slot function pointer type.
+    type ReleaseFn = unsafe extern "system" fn(*mut c_void) -> u32;
 
     const IID_IDXGI_FACTORY: [u8; 16] = [
         0xec, 0x66, 0x71, 0x7b, 0xc7, 0x21, 0xae, 0x44, 0xb2, 0x1a, 0xc9, 0xae, 0x32, 0x1a, 0xe3,
@@ -54,6 +64,9 @@ mod win_gpu {
     ];
 
     pub fn query_dxgi_gpu() -> Option<(String, f32)> {
+        // SAFETY: Загрузка стандартной системной библиотеки dxgi.dll и вызов CreateDXGIFactory
+        // через валидный указатель интерфейса IID_IDXGI_FACTORY. Дескрипторы и COM-указатели
+        // освобождаются симметрично через FreeLibrary и release-методы vtable.
         unsafe {
             let h_dxgi = LoadLibraryA(c"dxgi.dll".as_ptr().cast());
             if h_dxgi.is_null() {
@@ -72,23 +85,16 @@ mod win_gpu {
             }
 
             let vtable = *(factory_ptr as *mut *mut usize);
-            let enum_adapters: unsafe extern "system" fn(
-                *mut c_void,
-                u32,
-                *mut *mut c_void,
-            ) -> i32 = std::mem::transmute(*vtable.add(7));
+            let enum_adapters: EnumAdaptersFn = std::mem::transmute(*vtable.add(7));
 
             let mut adapter_ptr: *mut c_void = std::ptr::null_mut();
             let mut result = None;
 
             if enum_adapters(factory_ptr, 0, &mut adapter_ptr) == 0 && !adapter_ptr.is_null() {
                 let adapter_vtable = *(adapter_ptr as *mut *mut usize);
-                let get_desc: unsafe extern "system" fn(
-                    *mut c_void,
-                    *mut DXGI_ADAPTER_DESC,
-                ) -> i32 = std::mem::transmute(*adapter_vtable.add(8));
+                let get_desc: GetDescFn = std::mem::transmute(*adapter_vtable.add(8));
 
-                let mut desc: DXGI_ADAPTER_DESC = std::mem::zeroed();
+                let mut desc: DxgiAdapterDesc = std::mem::zeroed();
                 if get_desc(adapter_ptr, &mut desc) == 0 {
                     let len = desc
                         .description
@@ -104,13 +110,11 @@ mod win_gpu {
                         result = Some((name, vram_gb));
                     }
                 }
-                let release_adapter: unsafe extern "system" fn(*mut c_void) -> u32 =
-                    std::mem::transmute(*adapter_vtable.add(2));
+                let release_adapter: ReleaseFn = std::mem::transmute(*adapter_vtable.add(2));
                 release_adapter(adapter_ptr);
             }
 
-            let release_factory: unsafe extern "system" fn(*mut c_void) -> u32 =
-                std::mem::transmute(*vtable.add(2));
+            let release_factory: ReleaseFn = std::mem::transmute(*vtable.add(2));
             release_factory(factory_ptr);
             FreeLibrary(h_dxgi);
 
@@ -154,21 +158,23 @@ impl HardwareDetectorPort for WinApiHardwareDetector {
         let mut free_ram_gb = 8.0f32;
 
         #[cfg(target_os = "windows")]
+        // SAFETY: Структура MemoryStatusEx аллоцирована на стеке, dw_length строго инициализирована
+        // размером структуры sizeof(MemoryStatusEx). WinAPI GlobalMemoryStatusEx выполняет только запись.
         unsafe {
-            let mut status = win_mem::MEMORYSTATUSEX {
-                dwLength: std::mem::size_of::<win_mem::MEMORYSTATUSEX>() as u32,
-                dwMemoryLoad: 0,
-                ullTotalPhys: 0,
-                ullAvailPhys: 0,
-                ullTotalPageFile: 0,
-                ullAvailPageFile: 0,
-                ullTotalVirtual: 0,
-                ullAvailVirtual: 0,
-                ullAvailExtendedVirtual: 0,
+            let mut status = win_mem::MemoryStatusEx {
+                dw_length: std::mem::size_of::<win_mem::MemoryStatusEx>() as u32,
+                dw_memory_load: 0,
+                ull_total_phys: 0,
+                ull_avail_phys: 0,
+                ull_total_page_file: 0,
+                ull_avail_page_file: 0,
+                ull_total_virtual: 0,
+                ull_avail_virtual: 0,
+                ull_avail_extended_virtual: 0,
             };
-            if win_mem::GlobalMemoryStatusEx(&mut status) != 0 {
-                total_ram_gb = (status.ullTotalPhys as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
-                free_ram_gb = (status.ullAvailPhys as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
+            if win_mem::global_memory_status_ex(&mut status) != 0 {
+                total_ram_gb = (status.ull_total_phys as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
+                free_ram_gb = (status.ull_avail_phys as f64 / (1024.0 * 1024.0 * 1024.0)) as f32;
             }
         }
 
@@ -227,7 +233,7 @@ impl HardwareDetectorPort for WinApiHardwareDetector {
                 }
             })
             .collect()
-    }
+        }
 
     fn get_recommended_local_models(&self) -> Vec<RecommendedModelCard> {
         vec![

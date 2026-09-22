@@ -1,4 +1,5 @@
 use tauri::State;
+use worldwiki_application::calendar::ConvertCalendarDateParams;
 use worldwiki_domain::calendar::CalendarData;
 use crate::error::IpcError;
 use crate::state::AppState;
@@ -17,35 +18,14 @@ pub fn convert_absolute_to_local(
         .map_err(IpcError::from)
 }
 
-#[allow(clippy::too_many_arguments)]
 #[tauri::command]
 pub fn convert_calendar_date(
     state: State<'_, AppState>,
-    from_calendar: CalendarData,
-    to_calendar: CalendarData,
-    master_calendar: Option<CalendarData>,
-    era_index: usize,
-    year: i32,
-    month: i32,
-    day: i32,
-    hour: i32,
-    minute: i32,
-    target_era_index: Option<usize>,
+    params: ConvertCalendarDateParams,
 ) -> Result<serde_json::Value, IpcError> {
     state
         .services
         .calendar
-        .convert_calendar_date(
-            &from_calendar,
-            &to_calendar,
-            master_calendar.as_ref(),
-            era_index,
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            target_era_index,
-        )
+        .convert_calendar_date(&params)
         .map_err(IpcError::from)
 }

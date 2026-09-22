@@ -10,15 +10,30 @@
 tauri-surreal-kit/backend/
 ├── surreal_domain/
 │   ├── Cargo.toml                    # Workspace для surreal_domain
-│   ├── surreal_domain_core/          # Core трейты и DTO
+│   ├── surreal_domain_core/          # Core трейты, операции и DTO
 │   │   ├── Cargo.toml
-│   │   └── src/lib.rs                # SurrealDb, SurrealRepository, SearchResult, GraphEdge, ...
+│   │   └── src/
+│   │       ├── lib.rs                # Реэкспорт доменного API
+│   │       ├── types.rs              # SearchResult, SimilarResult, GraphEdge, ChapterRange, ...
+│   │       ├── error.rs              # SurrealDomainError, Result<T>
+│   │       ├── repo.rs               # SurrealDb trait, SurrealRepository trait
+│   │       ├── read_ops.rs           # find_by_id_op, find_all_op, normalize_raw_records
+│   │       ├── write_ops.rs          # create_op, save_op, delete_op
+│   │       ├── bind_helpers.rs       # bind_record_id, bind_params, bind_patch_fields
+│   │       ├── id_helpers.rs         # parse_record_id, ensure_table_prefix, id_to_string
+│   │       └── mock.rs               # MockSurrealDb, MockSurrealRepository для юнит-тестов
 │   ├── surreal_domain_macros/        # Proc-макросы кодогенерации
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs                # Экспорт макросов
-│   │       ├── entity.rs             # surreal_entity! — генерация структур, CRUD, команд
-│   │       ├── relation.rs           # surreal_relation! — генерация ребер, CRUD, команд
+│   │       ├── macro_helpers.rs      # pluralize, singularize, extract_doc_comments
+│   │       ├── entity.rs             # surreal_entity! — генерация структур и CRUD
+│   │       ├── entity_parser.rs      # Парсинг атрибутов сущности и полей (fulltext, hnsw)
+│   │       ├── entity_search.rs      # Генерация search_fulltext / search_similar
+│   │       ├── entity_tauri.rs       # Генерация Tauri команд для сущностей
+│   │       ├── relation.rs           # surreal_relation! — генерация ребер графа
+│   │       ├── relation_parser.rs    # Парсинг атрибутов ребер (edge, from, to)
+│   │       ├── relation_tauri.rs     # Генерация Tauri команд для ребер
 │   │       ├── schema.rs             # surreal_schema! — регистрация для кодогенерации
 │   │       └── entity_commands.rs    # entity_commands! — сборка tauri::generate_handler!
 │   └── surreal_domain_facade/        # Реэкспорт core + macros
@@ -33,32 +48,35 @@ tauri-surreal-kit/backend/
         ├── main.rs                   # Bootstrap, init_database, регистрация системных команд
         ├── lib.rs                    # pub mod logic
         └── logic/
-            ├── mod.rs                # pub mod performance; pub mod system;
-            ├── system.rs             # Файловая система, настройки, темы, окно, производительность
-            └── performance.rs        # Бенчмарк CPU/памяти, адаптивный CSS
+            ├── mod.rs                # pub mod error; performance; system; system_core; theme;
+            ├── error.rs              # Типизированные ошибки оболочки TauriShellError
+            ├── system_core.rs        # Низкоуровневая работа с FS, JSON, директориями
+            ├── system.rs             # Tauri IPC команды файловой системы, окна, настроек
+            ├── performance.rs        # Бенчмарк CPU/памяти, адаптивный CSS
+            └── theme.rs              # Управление темами и кастомными настройками
 ```
 
 ---
 
 ## 📄 Описание каждого crate/файла
 
-### surreal_domain_core (`surreal_domain/surreal_domain_core/src/lib.rs`)
+### surreal_domain_core (`surreal_domain/surreal_domain_core/src/`)
 
-**Назначение**: Фундаментальные трейты и DTO, независимые от макросов. Используются и макросами, и пользовательским кодом.
+**Назначение**: Фундаментальные трейты, операции и DTO, независимые от макросов. Используются и макросами, и пользовательским кодом.
 
-**Экспорты**:
+**Модули и ответственность**:
 
-| Элемент             | Тип    | Описание                                                                              |
-| ------------------- | ------ | ------------------------------------------------------------------------------------- |
-| `SurrealDb`         | Trait  | Трейт, который должен реализовать `AppState` пользователя для доступа к `Surreal<Db>` |
-| `SurrealRepository` | Trait  | CRUD трейт, реализуется макросом `surreal_entity!` для каждой сущности                |
-| `SearchKind`        | Enum   | `Fulltext \| Vector \| Hybrid` — вид поиска                                           |
-| `SearchResult<T>`   | Struct | Результат поиска: `entity`, `score`, `kind`                                           |
-| `SimilarResult<T>`  | Struct | Результат векторного поиска: `entity`, `similarity`                                   |
-| `EdgeDirection`     | Enum   | `Outgoing \| Incoming \| Both` — направление ребра                                    |
-| `GraphEdge<E, T>`   | Struct | Ребро графа: `edge_id`, `edge_data`, `node`, `direction`                              |
-| `GraphNeighborhood` | Struct | Окрестность графа: `center_id`, `nodes[]`, `edges[]`, `depth`                         |
-| `ChapterRange`      | Struct | Диапазон глав: `start_chapter`, `end_chapter`                                         |
+| Файл | Ответственность |
+|---|---|
+| `lib.rs` | Корневой модуль, экспорт публичного API |
+| `types.rs` | DTO поиска, графовых связей и диапазонов (`SearchResult`, `SimilarResult`, `GraphEdge`, `GraphNeighborhood`, `ChapterRange`, `SearchKind`, `EdgeDirection`) |
+| `error.rs` | Доменные ошибки `SurrealDomainError` (DatabaseError, DeserializationError, NotFound, RecordIdError, InvalidQuery) |
+| `repo.rs` | Базовые трейты `SurrealDb` и `SurrealRepository` |
+| `read_ops.rs` | Алгоритмы чтения `find_by_id_op`, `find_all_op` и нормализация сырых записей SurrealDB |
+| `write_ops.rs` | Алгоритмы записи `create_op`, `save_op` (UPSERT) и `delete_op` |
+| `bind_helpers.rs` | Безопасная 100% параметризация запросов: `bind_record_id`, `bind_params`, `bind_patch_fields` |
+| `id_helpers.rs` | Парсинг и форматирование RecordId: `parse_record_id`, `ensure_table_prefix`, `id_to_string` |
+| `mock.rs` | `MockSurrealDb` и `MockSurrealRepository` для изоляции доменных юнит-тестов без реальной БД |
 
 **SurrealDb trait**:
 
@@ -90,35 +108,15 @@ pub trait SurrealDb: Send + Sync + 'static {
 - `surreal_schema!` → `schema::impl_surreal_schema`
 - `entity_commands!` → `entity_commands::impl_entity_commands`
 
-#### `entity.rs` — `surreal_entity!` макрос
+#### Модули кодогенератора:
 
-**Назначение**: Генерация структуры сущности + CRUD + Tauri-команд + TS типов.
-
-**Атрибуты структуры**:
-| Атрибут | Описание |
-|---------|----------|
-| `#[table = "name"]` | Имя таблицы (по умолчанию lowercase имени структуры) |
-| `#[project_scoped]` | Маркер (не используется в коде, для семантики) |
-| `#[tauri_commands]` | Включает генерацию Tauri-команд |
-
-**Атрибуты полей**:
-| Атрибут | Описание |
-|---------|----------|
-| `#[fulltext]` | Поле добавляется в полнотекстовый поиск |
-| `#[hnsw]` | Поле добавляется в векторный поиск (HNSW) |
-| `#[flexible]` | Тип в TS = `any`, поле пропускается при сериализации null |
-
-**Генерирует**:
-
-1. **Struct** с полями + `id`, `project_id`, `serde`/`ts_rs` деривами
-2. **Impl блок** с `TABLE` константой + `search_fulltext` / `search_similar` методы (если есть атрибуты)
-3. **SurrealRepository impl** — дефолтный CRUD через trait
-4. **Модуль `{Name}_commands`** (если `#[tauri_commands]`) с командами:
-   - `get_{name}s(project, state)` → `find_all`
-   - `get_{name}(id, state)` → `find_by_id`
-   - `save_{name}(data, state)` → десериализация + `save` + нормализация RecordId
-   - `delete_{name}(id, state)` → `delete`
-   - `search_{name}s(project, query, state)` → `search_fulltext` (если `#[fulltext]`)
+- [`macro_helpers.rs`](./surreal_domain/surreal_domain_macros/src/macro_helpers.rs) — утилиты работы со строками (плюрализация, сингуляризация) и извлечение документации из AST.
+- [`entity.rs`](./surreal_domain/surreal_domain_macros/src/entity.rs) & [`entity_parser.rs`](./surreal_domain/surreal_domain_macros/src/entity_parser.rs) — парсинг структуры сущности, сборка DTO со всеми `serde`/`ts_rs` деривами и реализация `SurrealRepository`.
+- [`entity_search.rs`](./surreal_domain/surreal_domain_macros/src/entity_search.rs) — генерация методов полнотекстового поиска `search_fulltext` (при `#[fulltext]`) и векторного поиска `search_similar` (при `#[hnsw]`).
+- [`entity_tauri.rs`](./surreal_domain/surreal_domain_macros/src/entity_tauri.rs) — генерация изолированного модуля `{Name}_commands` с командами Tauri (`get_*`, `save_*`, `delete_*`, `search_*`).
+- [`relation.rs`](./surreal_domain/surreal_domain_macros/src/relation.rs), [`relation_parser.rs`](./surreal_domain/surreal_domain_macros/src/relation_parser.rs) & [`relation_tauri.rs`](./surreal_domain/surreal_domain_macros/src/relation_tauri.rs) — генерация структуры ребра графа (`surreal_relation!`), графовых методов `relate`, `find_between`, `find_all`, `delete` и соответствующих Tauri-команд.
+- [`schema.rs`](./surreal_domain/surreal_domain_macros/src/schema.rs) — реестр сущностей для генерации TS-типов через `ts_rs`.
+- [`entity_commands.rs`](./surreal_domain/surreal_domain_macros/src/entity_commands.rs) — сборка единого макроса `tauri::generate_handler![...]`.
 
 **Нормализация RecordId в save\_**: Преобразует `{"tb": "...", "id": "..."}` объекты в строки `"table:id"`, массивы рекурсивно.
 
@@ -238,13 +236,25 @@ pub mod logic;
 #### `logic/mod.rs` — Реэкспорт подмодулей
 
 ```rust
+pub mod error;
 pub mod performance;
 pub mod system;
+pub mod system_core;
+pub mod theme;
 ```
+
+#### `logic/system_core.rs` — Чистая инфраструктурная логика
+
+**Назначение**: Изолированная работа с файловой системой, каталогами данных и чтением/записью JSON без прямой привязки к `tauri::*`.
+- `get_data_dir()` — безопасное разрешение пути к каталогу данных `data/` (различает dev-режим от `target/` и prod-режим от `cwd`).
+- `get_user_images_dir()` — путь к директории картинок пользователя `data/user_images/`.
+- `read_local_file(path)` — чтение бинарных данных файла.
+- `save_file_bytes(dir, filename, bytes)` — атомарное сохранение файла с timestamp-префиксом.
+- `read_json_file(path)` & `write_json_file(path, data)` — безопасная сериализация/десериализация JSON.
 
 #### `logic/system.rs` — Системные Tauri-команды
 
-**Назначение**: Доменно-независимые утилиты для любого Tauri+SurrealDB приложения.
+**Назначение**: Тонкие `#[tauri::command]` хэндлеры для любого Tauri + SurrealDB приложения.
 
 **Команды — Файловая система**:
 | Команда | Описание |
@@ -253,31 +263,20 @@ pub mod system;
 | `copy_background_file(source_path)` | Копирование в `data/user_images/` с timestamp |
 | `get_local_file(path)` | Чтение файла → `Vec<u8>` (для сервировки картинок в webview) |
 
-**Команды — Производительность**:
+**Команды — Настройки и Окно**:
 | Команда | Описание |
 |---------|----------|
-| `run_performance_benchmark()` → `PerformanceInfo` | CPU (DOM-like), Memory (20MB alloc), Cores |
-| `get_performance_styles(level)` → `String` | CSS overrides для Low/Medium/High |
-
-**Команды — Настройки**:
-| Команда | Описание |
-|---------|----------|
-| `save_settings(Value)` | Запись в `data/settings.json` |
+| `save_settings(Value)` | Запись в `data/settings.json` через `system_core` |
 | `load_settings()` → `Value` | Чтение из `data/settings.json` или `Null` |
-
-**Команды — Окно**:
-| Команда | Описание |
-|---------|----------|
 | `toggle_fullscreen(window)` | Переключение полноэкранного режима |
 
-**Команды — Темы**:
+#### `logic/theme.rs` — Управление темами оформления
+
 | Команда | Описание |
 |---------|----------|
 | `get_custom_themes()` → `Vec<String>` | Сканирует `data/settings-*.json`, `data/settings-theme-*.json` |
 | `load_theme(name)` → `Value` | Загружает `settings-{name}.json` или `settings-theme-{name}.json` |
 | `save_custom_theme(name, Value)` | Сохраняет в `data/settings-theme-{name}.json` |
-
-**Хелпер**: `get_data_dir()` — определяет папку `data/` (dev: от `target/`, prod: `cwd/data/`)
 
 #### `logic/performance.rs` — Бенчмарк и адаптивный CSS
 

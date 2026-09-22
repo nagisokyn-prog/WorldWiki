@@ -34,15 +34,19 @@ export async function convertCalendarDate(
   targetEraIndex: number | null
 ): Promise<unknown> {
   return await invoke('convert_calendar_date', {
-    fromCalendar,
-    toCalendar,
-    masterCalendar,
-    eraIndex,
-    year,
-    month,
-    day,
-    hour,
-    minute,
-    targetEraIndex
+    params: {
+      fromCalendar,
+      toCalendar,
+      masterCalendar,
+      date: {
+        eraIndex,
+        year,
+        month,
+        day,
+        hour,
+        minute,
+      },
+      targetEraIndex,
+    },
   });
 }

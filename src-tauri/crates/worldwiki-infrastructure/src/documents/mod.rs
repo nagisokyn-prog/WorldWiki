@@ -1,10 +1,12 @@
 pub mod docx;
 pub mod epub;
 pub mod fb2;
+pub mod utils;
 
 pub use docx::generate_docx;
 pub use epub::generate_epub;
 pub use fb2::generate_fb2;
+pub use utils::*;
 
 use async_trait::async_trait;
 use worldwiki_domain::document::{ExportConfig, SemanticDocument};

@@ -1,6 +1,17 @@
-use worldwiki_domain::calendar::{CalendarData, CalendarMath};
-use crate::errors::ApplicationError;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use worldwiki_domain::calendar::{CalendarData, CalendarMath, DateCoordinate};
+use crate::errors::ApplicationError;
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ConvertCalendarDateParams {
+    pub from_calendar: CalendarData,
+    pub to_calendar: CalendarData,
+    pub master_calendar: Option<CalendarData>,
+    pub date: DateCoordinate,
+    pub target_era_index: Option<usize>,
+}
 
 pub struct CalendarServices;
 
@@ -32,32 +43,17 @@ impl CalendarServices {
         }))
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub fn convert_calendar_date(
         &self,
-        from_calendar: &CalendarData,
-        to_calendar: &CalendarData,
-        master_calendar: Option<&CalendarData>,
-        era_index: usize,
-        year: i32,
-        month: i32,
-        day: i32,
-        hour: i32,
-        minute: i32,
-        target_era_index: Option<usize>,
+        params: &ConvertCalendarDateParams,
     ) -> Result<Value, ApplicationError> {
         let (res_year, res_month, res_day, res_hour, res_minute) =
             CalendarMath::convert_between_calendars(
-                from_calendar,
-                to_calendar,
-                master_calendar,
-                era_index,
-                year,
-                month,
-                day,
-                hour,
-                minute,
-                target_era_index.unwrap_or(0),
+                &params.from_calendar,
+                &params.to_calendar,
+                params.master_calendar.as_ref(),
+                &params.date,
+                params.target_era_index.unwrap_or(0),
             );
 
         Ok(serde_json::json!({

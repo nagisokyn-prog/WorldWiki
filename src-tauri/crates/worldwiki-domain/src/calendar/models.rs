@@ -86,6 +86,8 @@ pub struct SyncAnchorDate {
     pub minute: i32,
 }
 
+pub type DateCoordinate = SyncAnchorDate;
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default, PartialEq, Eq)]
 pub struct SyncAnchor {
     pub master_calendar_id: Option<String>,

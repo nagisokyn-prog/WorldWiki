@@ -235,6 +235,10 @@ export function useEditorCoreTiptap(
     handleOpenEntitySelector,
     scrollToParagraph,
     handleEntityInsert,
+    getEditor: () => tiptap.editor.value,
+    setMarkdownTextarea: (el: HTMLTextAreaElement | null) => {
+      markdownTextareaRef.value = el;
+    },
     openExportModal: () => { isExportModalOpen.value = true; }
   };
 }

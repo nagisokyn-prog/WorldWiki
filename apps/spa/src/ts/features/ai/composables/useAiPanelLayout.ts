@@ -16,7 +16,6 @@ export function useAiPanelLayout(options: {
 
   let cleanupResize: (() => void) | null = null;
 
-  watch(panelWidth, (w) => localStorage.setItem('worldwiki_ai_panel_width', String(w)));
   watch(showSidebar, (v) => localStorage.setItem('worldwiki_ai_show_sidebar', String(v)));
   watch(isSettingsOpen, (v) => {
     localStorage.setItem('worldwiki_ai_settings_open', String(v));
@@ -35,14 +34,32 @@ export function useAiPanelLayout(options: {
     }
     const startX = e.clientX;
     const startWidth = panelWidth.value;
+    let latestWidth = startWidth;
+    let rafId: number | null = null;
+
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'ew-resize';
 
     const onMouseMove = (moveEvent: MouseEvent) => {
       const delta = startX - moveEvent.clientX;
-      const newWidth = Math.max(300, Math.min(800, startWidth + delta));
-      panelWidth.value = newWidth;
+      latestWidth = Math.max(300, Math.min(800, startWidth + delta));
+      panelWidth.value = latestWidth;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+        });
+      }
     };
 
     const onMouseUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      panelWidth.value = latestWidth;
+      localStorage.setItem('worldwiki_ai_panel_width', String(latestWidth));
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
       if (cleanupResize) {
         cleanupResize();
         cleanupResize = null;
@@ -50,6 +67,12 @@ export function useAiPanelLayout(options: {
     };
 
     cleanupResize = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };

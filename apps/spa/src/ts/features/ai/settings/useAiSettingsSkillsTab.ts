@@ -10,6 +10,18 @@ function generateSkillId(): string {
   return `ai_skills:usr_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
+async function fetchSkillContent(filePath: string): Promise<string> {
+  try {
+    const res = await fetch(filePath);
+    if (res.ok) {
+      return await res.text();
+    }
+  } catch (e) {
+    console.warn(`Failed to fetch skill file content from ${filePath}:`, e);
+  }
+  return '';
+}
+
 export function useAiSettingsSkillsTab(
   props: AiSettingsSkillsTabProps,
   emit: AiSettingsSkillsTabEmits
@@ -93,9 +105,18 @@ export function useAiSettingsSkillsTab(
     isEditing.value = true;
   };
 
-  const openEditModal = (skill: AiSkillItem) => {
+  const openEditModal = async (skill: AiSkillItem) => {
+    let prompt = skill.prompt_text || '';
+    if (skill.file_path && (!prompt || prompt.length < 300 || prompt.startsWith('Ты используешь эталонный навык'))) {
+      const fullText = await fetchSkillContent(skill.file_path);
+      if (fullText) {
+        prompt = fullText;
+      }
+    }
+
     editingSkill.value = {
       ...skill,
+      prompt_text: prompt,
       triggers: skill.triggers ? [...skill.triggers] : []
     };
     newTriggerInput.value = '';

@@ -15,25 +15,33 @@ describe('zoom store', () => {
     store = useZoomStore();
   });
 
-  it('clamps zoom level between 0.5 and 2', () => {
-    store.applyZoom(3.5);
+  it('clamps zoom level between 0.5 and 2', async () => {
+    await store.applyZoom(3.5);
     expect(store.zoomLevel).toBe(2);
     expect(localStorage.getItem('app-zoom')).toBe('2');
 
-    store.applyZoom(0.1);
+    await store.applyZoom(0.1);
     expect(store.zoomLevel).toBe(0.5);
     expect(localStorage.getItem('app-zoom')).toBe('0.5');
 
-    store.applyZoom(1.25);
+    await store.applyZoom(1.25);
     expect(store.zoomLevel).toBe(1.25);
     expect(localStorage.getItem('app-zoom')).toBe('1.25');
   });
 
-  it('applies styles and CSS variables on document and app element', () => {
-    store.applyZoom(1.5);
+  it('applies styles and CSS variables on document in web mode', async () => {
+    delete (window as unknown as { __TAURI__?: unknown }).__TAURI__;
+    await store.applyZoom(1.5);
 
     expect(document.documentElement.style.getPropertyValue('--app-zoom')).toBe('1.5');
-    expect(appEl.style.transform).toBe('scale(1.5)');
-    expect(appEl.style.transformOrigin).toBe('top left');
+    expect((document.documentElement.style as unknown as Record<string, string>).zoom).toBe('1.5');
+  });
+
+  it('calls native webview setZoom when running in Tauri', async () => {
+    (window as unknown as { __TAURI__: unknown }).__TAURI__ = { core: {} };
+    await store.applyZoom(1.3);
+
+    expect(store.zoomLevel).toBe(1.3);
+    expect((document.documentElement.style as unknown as Record<string, string>).zoom).toBe('');
   });
 });

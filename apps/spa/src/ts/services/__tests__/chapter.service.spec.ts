@@ -45,7 +45,6 @@ describe('chapterService', () => {
 
       expect(returnedId).toBe('chapters:chapter_123');
       expect(api.saveChapter).toHaveBeenCalledWith(
-        'my_world',
         expect.objectContaining({
           id: 'chapters:chapter_123',
           project_id: 'projects:my_world',
@@ -62,7 +61,6 @@ describe('chapterService', () => {
 
       expect(returnedId).toMatch(/^chapters:chapter_\d+_/);
       expect(api.saveChapter).toHaveBeenCalledWith(
-        'projects:my_world',
         expect.objectContaining({
           id: returnedId,
           project_id: 'projects:my_world',
@@ -77,7 +75,6 @@ describe('chapterService', () => {
 
       expect(returnedId).toBe('chapters:existing_123');
       expect(api.saveChapter).toHaveBeenCalledWith(
-        'projects:my_world',
         expect.objectContaining({
           id: 'chapters:existing_123',
           project_id: 'projects:my_world',
@@ -102,7 +99,6 @@ describe('chapterService', () => {
       await chapterService.save('my_world', data);
 
       expect(api.saveChapter).toHaveBeenCalledWith(
-        'my_world',
         expect.objectContaining({
           participants: [
             'direct_string',

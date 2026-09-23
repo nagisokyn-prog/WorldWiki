@@ -31,6 +31,10 @@ export function useTiptapEditor(
   const editor = useEditor({
     extensions: createTiptapExtensions(props.project),
     content: props.content || '',
+    onCreate: () => {
+      stateHook.updateStats();
+      mdHook.syncMarkdownFromEditor();
+    },
     onUpdate: () => {
       if (stateHook.editorMode.value === 'word') return;
       if (editor.value) {
@@ -77,6 +81,26 @@ export function useTiptapEditor(
   const handleScroll = (e: Event) => {
     emit('scroll-change', (e.target as HTMLElement).scrollTop);
   };
+
+  watch(
+    () => editor.value,
+    (ed) => {
+      if (ed) {
+        stateHook.updateStats();
+        mdHook.syncMarkdownFromEditor();
+      }
+    },
+    { immediate: true }
+  );
+
+  watch(
+    () => stateHook.editorMode.value,
+    (mode) => {
+      if (mode === 'split' || mode === 'markdown') {
+        mdHook.syncMarkdownFromEditor();
+      }
+    }
+  );
 
   watch(
     () => props.content,

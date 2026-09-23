@@ -124,5 +124,5 @@ defineExpose({
 });
 </script>
 
-<style src="@worldwiki/resources/styles/features/chapters/PromisesPanel.css" scoped></style>
-<style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css" scoped></style>
+<style src="@worldwiki/resources/styles/features/chapters/PromisesPanel.css"></style>
+<style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css"></style>

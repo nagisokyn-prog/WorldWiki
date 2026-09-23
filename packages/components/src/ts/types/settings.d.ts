@@ -36,7 +36,7 @@ export interface ColorSettings {
 // Glass эффекты
 export interface GlassSettings {
   islandAlpha: number;      // Прозрачность островков (0-1)
-  cardAlpha: number;        // Прозрачность карточек (0-0.5)
+  cardAlpha: number;        // Прозрачность карточек (0-1)
   blur: number;             // Размытие (0-100px)
   borderAlpha: number;      // Прозрачность границ (0-1)
   highlight: string;        // Подсветка стекла

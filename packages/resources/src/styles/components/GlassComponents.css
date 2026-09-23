@@ -3,18 +3,23 @@
 .glass-panel {
     position: relative;
     background: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -webkit-backdrop-filter: blur(var(--glass-blur));
+    backdrop-filter: blur(var(--glass-blur, 0px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 0px));
     border: 1px solid var(--border-color);
     border-radius: var(--radius-card);
     overflow: hidden;
     transition: border-color var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease);
 }
 
-.glass-panel::before,
-.glass-card::before,
-.glass-card-bg {
-    display: none;
+.glass-card {
+    position: relative;
+    background: var(--bg-card);
+    backdrop-filter: blur(var(--glass-blur, 0px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 0px));
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    transition: border-color var(--anim-speed) var(--anim-ease), transform var(--anim-speed) var(--anim-ease);
 }
 
 .glass-card:hover {

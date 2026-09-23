@@ -52,14 +52,29 @@ export function useShellLayout(options?: {
   const startResize = (e: MouseEvent) => {
     const startY = e.clientY;
     const startH = panelHeight.value;
+    let latestH = startH;
+    let rafId: number | null = null;
+
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ns-resize';
     document.body.classList.add('resizing');
+
     const onMove = (ev: MouseEvent) => {
-      panelHeight.value = Math.max(80, Math.min(600, startH - (ev.clientY - startY)));
-      localStorage.setItem('app-panel-height', panelHeight.value.toString());
+      latestH = Math.max(80, Math.min(600, startH - (ev.clientY - startY)));
+      panelHeight.value = latestH;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+        });
+      }
     };
     const onUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      panelHeight.value = latestH;
+      localStorage.setItem('app-panel-height', latestH.toString());
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
@@ -73,16 +88,31 @@ export function useShellLayout(options?: {
   const startSidebarResize = (e: MouseEvent) => {
     const startX = e.clientX;
     const startW = sidebarWidth.value;
+    let latestW = startW;
+    let rafId: number | null = null;
+
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ew-resize';
     document.body.classList.add('resizing');
+
     const onMove = (ev: MouseEvent) => {
       const isReverse = settings.value.layout?.sidebarPos === 'row-reverse';
       const delta = isReverse ? (startX - ev.clientX) : (ev.clientX - startX);
-      sidebarWidth.value = Math.max(180, Math.min(600, startW + delta));
-      localStorage.setItem('app-sidebar-width', sidebarWidth.value.toString());
+      latestW = Math.max(180, Math.min(600, startW + delta));
+      sidebarWidth.value = latestW;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+        });
+      }
     };
     const onUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      sidebarWidth.value = latestW;
+      localStorage.setItem('app-sidebar-width', latestW.toString());
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
@@ -97,15 +127,30 @@ export function useShellLayout(options?: {
     const container = document.getElementById('shellMainSplit');
     if (!container) return;
     const rect = container.getBoundingClientRect();
+    let latestPct = splitLeftWidth.value;
+    let rafId: number | null = null;
+
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ew-resize';
     document.body.classList.add('resizing');
+
     const onMove = (ev: MouseEvent) => {
-      const pct = ((ev.clientX - rect.left) / rect.width) * 100;
-      splitLeftWidth.value = Math.max(20, Math.min(80, pct));
-      localStorage.setItem('app-split-width', splitLeftWidth.value.toString());
+      latestPct = Math.max(20, Math.min(80, ((ev.clientX - rect.left) / rect.width) * 100));
+      splitLeftWidth.value = latestPct;
+      localStorage.setItem('app-split-width', latestPct.toString());
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+        });
+      }
     };
     const onUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      splitLeftWidth.value = latestPct;
+      localStorage.setItem('app-split-width', latestPct.toString());
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';

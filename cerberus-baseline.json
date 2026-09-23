@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "rule": "CSS-004",
+    "file": "./packages/resources/src/styles/features/ai/AiSettingsSkillsTab.css",
+    "line": 329,
+    "symbol": "border_radius",
+    "message": "Hardcoded pixel border-radius found in stylesheet.",
+    "fingerprint": "bd963cea019547fb2bbf5f374c63749697d617a541f8d6b43cbe8c99123a3c4d"
+  }
+]

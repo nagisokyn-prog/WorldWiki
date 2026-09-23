@@ -52,7 +52,11 @@ export function useAiSettingsModelsTab(
 
   watch(() => props.activeProfile?.settings, (newSettings) => {
     if (newSettings) {
-      localSettings.value = { ...newSettings };
+      localSettings.value = { 
+        ...newSettings,
+        enable_auto_rag: true,
+        enable_semantic_search: true,
+      };
       if (isCustomEmbedPath.value) {
         customEmbedInput.value = localSettings.value.embed_model_path || '';
       }
@@ -72,6 +76,8 @@ export function useAiSettingsModelsTab(
       if (localSettings.value.embed_model_path === 'custom') {
         localSettings.value.embed_model_path = customEmbedInput.value;
       }
+      localSettings.value.enable_auto_rag = true;
+      localSettings.value.enable_semantic_search = true;
       emit('save-profile', { settings: localSettings.value });
     }
   };

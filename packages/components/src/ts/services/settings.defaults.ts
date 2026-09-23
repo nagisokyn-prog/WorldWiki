@@ -21,11 +21,11 @@ export const DEFAULT_SETTINGS: AppSettings = {
     borderActive: DEFAULT_THEME_PALETTE.borderActive,
     shadowColor: DEFAULT_THEME_PALETTE.shadowColor
   },
-  glass: { islandAlpha: 0.55, cardAlpha: 0.95, blur: 24, borderAlpha: 0.9, highlight: DEFAULT_THEME_PALETTE.glassHighlight },
+  glass: { islandAlpha: 0.45, cardAlpha: 0.6, blur: 24, borderAlpha: 0.1, highlight: DEFAULT_THEME_PALETTE.glassHighlight },
   radii: { island: 28, card: 20, btn: 40, input: 16, dropdown: 16 },
   shadows: { islandY: 20, islandBlur: 35, useInset: false },
   animations: { enabled: true, speed: 0.3, ease: 'cubic-bezier(0.2,0.8,0.2,1)', entrance: 0.4, pulse: true, scalePush: 0.98, scalePull: 1.05 },
-  fonts: { family: 'Inter', size: 14, weight: 400, weightBold: 600, lineHeight: 1.5, letterSpacing: 0 },
+  fonts: { family: 'Inter, system-ui, sans-serif', size: 14, weight: 400, weightBold: 600, lineHeight: 1.5, letterSpacing: 0 },
   spacing: { density: 1, sidebarWidth: 280, panelHeight: 250, activityBarWidth: 60, toolbarHeight: 48, gap: 16 },
   layout: { columns: 2, sidebarPos: 'row', tabPos: 'row', focusMode: false },
   inputs: { style: 'outline', focusAnim: true },

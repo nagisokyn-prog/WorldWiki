@@ -51,12 +51,18 @@
           <div class="triggers-input-box">
             <div class="triggers-chip-container">
               <span
-                v-for="trig in editingSkill.triggers || []"
-                :key="trig"
+                v-for="(trig, idx) in (editingSkill.triggers || [])"
+                :key="idx"
                 class="trigger-chip"
               >
-                {{ trig }}
-                <i class="fas fa-times trigger-chip-remove" @click.stop="$emit('remove-trigger', trig)"></i>
+                <span class="trigger-chip-text">
+                  {{ trig }}
+                </span>
+                <i 
+                  class="fas fa-times trigger-chip-remove" 
+                  title="Удалить триггер"
+                  @click.stop="$emit('remove-trigger', trig)"
+                ></i>
               </span>
             </div>
             <input

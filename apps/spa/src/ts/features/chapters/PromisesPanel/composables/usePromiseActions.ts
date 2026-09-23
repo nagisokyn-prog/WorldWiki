@@ -18,9 +18,10 @@ export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution'> &
 };
 
 export interface UsePromiseActionsParams {
-  project: string;
+  project?: string;
   chapterId?: string | null;
   currentVolumeId?: string | null;
+  props?: { project?: string; chapterId?: string | null; currentVolumeId?: string | null };
   promises: Ref<RichPlotPromise[]>;
   emit: {
     (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
@@ -33,10 +34,14 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
   const editingNoteId = ref<string | null>(null);
   const noteDraft = ref('');
 
+  const getProject = () => params.props?.project ?? params.project ?? '';
+  const getChapterId = () => (params.props?.chapterId !== undefined ? params.props.chapterId : params.chapterId) ?? null;
+
   const syncLocalBackup = () => {
-    if (!params.project) return;
+    const proj = getProject();
+    if (!proj) return;
     try {
-      localStorage.setItem(`ww_plot_promises_${params.project}`, JSON.stringify(promises.value));
+      localStorage.setItem(`ww_plot_promises_${proj}`, JSON.stringify(promises.value));
     } catch { /* ignore */ }
   };
 
@@ -46,12 +51,14 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     paragraph_index: number;
     block_id?: string | null;
   }) => {
-    if (!params.project || !params.chapterId) return;
+    const project = getProject();
+    const chapterId = getChapterId();
+    if (!project || !chapterId) return;
 
     const newPromise: RichPlotPromise = {
       id: `plot_promises:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-      project_id: params.project,
-      chapter_id: params.chapterId,
+      project_id: project,
+      chapter_id: chapterId,
       kind: payload.kind,
       quote: payload.quote,
       paragraph_index: payload.paragraph_index,

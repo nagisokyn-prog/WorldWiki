@@ -76,7 +76,7 @@ export function usePromiseFiltering<T extends { chapter_id: string; status: stri
   };
 
   const getKindInfo = (kind: string) => {
-    return PROMISE_KINDS[kind] || { label: 'Обещание', icon: '📌' };
+    return PROMISE_KINDS[kind] || { label: kind || 'Обещание', icon: '📌' };
   };
 
   return {

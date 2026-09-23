@@ -404,8 +404,8 @@ describe('api.client (Tauri invoke contract tests)', () => {
       expect(await api.getChapter('ch1')).toEqual(ch);
       expect(invoke).toHaveBeenCalledWith('get_chapter', { id: 'ch1' });
 
-      expect(await api.saveChapter('proj_1', ch)).toEqual(ch);
-      expect(invoke).toHaveBeenCalledWith('save_chapter', { project: 'proj_1', data: ch });
+      expect(await api.saveChapter(ch)).toEqual(ch);
+      expect(invoke).toHaveBeenCalledWith('save_chapter', { chapter: ch });
 
       await api.deleteChapter('ch1');
       expect(invoke).toHaveBeenCalledWith('delete_chapter', { id: 'ch1' });

@@ -19,10 +19,10 @@
         <h3 class="form-label settings-group-title">Фон</h3>
         <div class="control-row"><label>Тип фона</label></div>
         <div class="radio-group flex-wrap gap-2">
-          <div class="radio-btn" :class="{ active: settings.background?.type === 'none' }" @click="settings.background!.type = 'none'; save()">Нет</div>
-          <div class="radio-btn" :class="{ active: settings.background?.type === 'color' }" @click="settings.background!.type = 'color'; save()">Цвет</div>
-          <div class="radio-btn" :class="{ active: settings.background?.type === 'image' }" @click="settings.background!.type = 'image'; save()">Изображение</div>
-          <div class="radio-btn" :class="{ active: settings.background?.type === 'video' }" @click="settings.background!.type = 'video'; save()">Видео</div>
+          <div class="radio-btn" :class="{ active: settings.background?.type === 'none' }" @click="setBackgroundType('none')">Нет</div>
+          <div class="radio-btn" :class="{ active: settings.background?.type === 'color' }" @click="setBackgroundType('color')">Цвет</div>
+          <div class="radio-btn" :class="{ active: settings.background?.type === 'image' }" @click="setBackgroundType('image')">Изображение</div>
+          <div class="radio-btn" :class="{ active: settings.background?.type === 'video' }" @click="setBackgroundType('video')">Видео</div>
         </div>
         
         <div v-if="settings.background?.type === 'image' || settings.background?.type === 'video'" class="mt-3">
@@ -31,8 +31,8 @@
           <div v-if="settings.background.type === 'video' && settings.background.videoPath" class="text-xs text-muted mt-1">{{ settings.background.videoPath }}</div>
         </div>
 
-        <div class="control-row mt-3"><label>Прозрачность</label><span class="val-badge">{{ Math.round((settings.background?.opacity || 0) * 100) }}%</span></div>
-        <input v-model.number="settings.background!.opacity" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
+        <div class="control-row mt-3"><label>Прозрачность</label><span class="val-badge">{{ getTransparencyPercent(settings.background?.opacity, 1) }}%</span></div>
+        <input :value="getTransparencyValue(settings.background?.opacity, 1)" type="range" min="0" max="1" step="0.01" class="interactive-el" @input="e => setBackgroundOpacity(Number((e.target as HTMLInputElement).value))">
         
         <div class="control-row">
           <label>Размытие <span class="impact-badge cost-high">Cost: High</span></label>
@@ -45,11 +45,11 @@
       <div class="settings-group">
         <h3 class="form-label settings-group-title">{{ t('settings.groupTitles.glass', 'Прозрачность и стекло') }}</h3>
         
-        <div class="control-row"><label>{{ t('settings.fields.islandAlpha', 'Прозрачность панелей') }}</label><span class="val-badge">{{ Math.round(settings.glass.islandAlpha * 100) }}%</span></div>
-        <input v-model.number="settings.glass.islandAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
+        <div class="control-row"><label>{{ t('settings.fields.islandAlpha', 'Прозрачность панелей') }}</label><span class="val-badge">{{ getTransparencyPercent(settings.glass.islandAlpha, 0.7) }}%</span></div>
+        <input :value="getTransparencyValue(settings.glass.islandAlpha, 0.7)" type="range" min="0" max="1" step="0.01" class="interactive-el" @input="e => setTransparency(a => { settings.glass.islandAlpha = a; }, Number((e.target as HTMLInputElement).value))">
         
-        <div class="control-row"><label>{{ t('settings.fields.cardAlpha', 'Прозрачность карточек') }}</label><span class="val-badge">{{ Math.round(settings.glass.cardAlpha * 100) }}%</span></div>
-        <input v-model.number="settings.glass.cardAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
+        <div class="control-row"><label>{{ t('settings.fields.cardAlpha', 'Прозрачность карточек') }}</label><span class="val-badge">{{ getTransparencyPercent(settings.glass.cardAlpha, 0.6) }}%</span></div>
+        <input :value="getTransparencyValue(settings.glass.cardAlpha, 0.6)" type="range" min="0" max="1" step="0.01" class="interactive-el" @input="e => setTransparency(a => { settings.glass.cardAlpha = a; }, Number((e.target as HTMLInputElement).value))">
 
         <div class="control-row">
           <label>{{ t('settings.fields.blur', 'Размытие интерфейса') }} <span class="impact-badge cost-high">Cost: High</span> <span class="impact-badge visual-high">Visual: High</span></label>
@@ -57,8 +57,8 @@
         </div>
         <input v-model.number="settings.glass.blur" type="range" min="0" max="60" step="1" class="interactive-el" @input="save()">
         
-        <div class="control-row"><label>{{ t('settings.fields.borderAlpha', 'Прозрачность рамок') }}</label><span class="val-badge">{{ Math.round(settings.glass.borderAlpha * 100) }}%</span></div>
-        <input v-model.number="settings.glass.borderAlpha" type="range" min="0" max="1" step="0.02" class="interactive-el" @input="save()">
+        <div class="control-row"><label>{{ t('settings.fields.borderAlpha', 'Прозрачность рамок') }}</label><span class="val-badge">{{ getTransparencyPercent(settings.glass.borderAlpha, 0.12) }}%</span></div>
+        <input :value="getTransparencyValue(settings.glass.borderAlpha, 0.12)" type="range" min="0" max="1" step="0.01" class="interactive-el" @input="e => setTransparency(a => { settings.glass.borderAlpha = a; }, Number((e.target as HTMLInputElement).value))">
       </div>
 
       <!-- ЦВЕТОВАЯ СХЕМА -->
@@ -99,7 +99,15 @@ defineEmits<{
   (e: 'pick-background-file'): void;
 }>();
 
-const { toHex, updateColorAlpha } = useSettingsAppearance(() => settings.value, props.save);
+const {
+  toHex,
+  updateColorAlpha,
+  getTransparencyPercent,
+  getTransparencyValue,
+  setTransparency,
+  setBackgroundType,
+  setBackgroundOpacity
+} = useSettingsAppearance(() => settings.value, props.save);
 </script>
 
 <style scoped src="@worldwiki/resources/styles/components/SettingsAppearance.css"></style>

@@ -350,7 +350,7 @@ describe('shell store', () => {
       vi.mocked(api.saveChapter).mockResolvedValue({ id: 'ch_3' } as unknown as Chapter);
 
       await shell.createChapterIn();
-      expect(api.saveChapter).toHaveBeenCalledWith('default', expect.objectContaining({
+      expect(api.saveChapter).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Глава 3',
       }));
     });
@@ -371,7 +371,7 @@ describe('shell store', () => {
 
       await shell.renameChapter({ id: 'ch_1' }, 'Renamed Title');
       expect(shell.chapters[0].title).toBe('Renamed Title');
-      expect(api.saveChapter).toHaveBeenCalledWith('default', expect.objectContaining({
+      expect(api.saveChapter).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Renamed Title',
       }));
     });

@@ -63,7 +63,7 @@
           <div v-for="tool in getToolsByCategory(cat.key)" :key="tool.id" class="tool-row">
             <div class="tool-info">
               <div class="tool-name-wrap">
-                <span class="tool-name">{{ tool.name }}</span>
+                <span class="tool-name">{{ getToolDisplayName(tool) }}</span>
                 <span class="risk-badge" :class="'risk-' + tool.risk">
                   {{ getRiskLabel(tool.risk) }}
                 </span>
@@ -103,6 +103,7 @@ const {
   categories,
   currentPreset,
   getToolsByCategory,
+  getToolDisplayName,
   getRiskLabel,
   applyPreset,
   handlePermissionChange

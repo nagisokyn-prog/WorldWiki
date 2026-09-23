@@ -46,6 +46,7 @@ export function usePromisesPanel(
   });
 
   const actions = usePromiseActions({
+    props,
     project: props.project,
     chapterId: props.chapterId,
     currentVolumeId: props.currentVolumeId,

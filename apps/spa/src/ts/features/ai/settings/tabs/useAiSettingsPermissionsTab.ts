@@ -1,4 +1,4 @@
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { PermissionLevel, RiskLevel, ToolCategory, ToolPermissionConfig } from '../../types/ai.types';
 
@@ -6,18 +6,22 @@ export interface AiSettingsPermissionsTabEmits {
   (e: 'save-permissions', permissions: Record<string, PermissionLevel>): void;
 }
 
+const ALL_CATEGORIES: { key: ToolCategory; title: string; icon: string }[] = [
+  { key: 'read', title: 'Чтение данных и лора проекта', icon: 'fa-book-open text-primary' },
+  { key: 'edit', title: 'Редактирование сущностей и глав', icon: 'fa-pen-nib text-warning' },
+];
+
 export function useAiSettingsPermissionsTab(emit: AiSettingsPermissionsTabEmits) {
   const isLoading = ref(true);
   const tools = ref<ToolPermissionConfig[]>([]);
   const permissionsMap = ref<Record<string, PermissionLevel>>({});
   const currentPreset = ref<string | null>('balanced');
 
-  const categories: { key: ToolCategory; title: string; icon: string }[] = [
-    { key: 'read', title: 'Чтение данных и лора проекта', icon: 'fa-book-open text-primary' },
-    { key: 'analytics', title: 'Аналитика и поиск противоречий', icon: 'fa-chart-line text-accent' },
-    { key: 'edit', title: 'Редактирование сущностей и глав', icon: 'fa-pen-nib text-warning' },
-    { key: 'system', title: 'Системные операции', icon: 'fa-terminal text-danger' },
-  ];
+  const categories = computed(() => {
+    return ALL_CATEGORIES.filter((cat) => 
+      tools.value.some((t: ToolPermissionConfig) => t.category === cat.key)
+    );
+  });
 
   const loadToolsCatalog = async () => {
     isLoading.value = true;
@@ -41,6 +45,11 @@ export function useAiSettingsPermissionsTab(emit: AiSettingsPermissionsTabEmits)
     return tools.value.filter((t: ToolPermissionConfig) => t.category === cat);
   };
 
+  const getToolDisplayName = (tool: ToolPermissionConfig) => {
+    if (!tool.name) return tool.id;
+    return tool.name.replace(/\s*\([^)]*\)/g, '').trim();
+  };
+
   const getRiskLabel = (risk: RiskLevel) => {
     const map: Record<RiskLevel, string> = {
       low: 'Низкий риск',
@@ -57,17 +66,9 @@ export function useAiSettingsPermissionsTab(emit: AiSettingsPermissionsTabEmits)
       if (preset === 'strict') {
         permissionsMap.value[t.id] = t.category === 'read' ? 'allow' : 'ask';
       } else if (preset === 'balanced') {
-        if (t.category === 'read' || t.category === 'analytics') {
-          permissionsMap.value[t.id] = 'allow';
-        } else {
-          permissionsMap.value[t.id] = 'ask';
-        }
+        permissionsMap.value[t.id] = t.category === 'read' ? 'allow' : 'ask';
       } else if (preset === 'full_auto') {
-        if (t.category === 'system') {
-          permissionsMap.value[t.id] = 'ask';
-        } else {
-          permissionsMap.value[t.id] = 'allow';
-        }
+        permissionsMap.value[t.id] = 'allow';
       }
     }
 
@@ -100,6 +101,7 @@ export function useAiSettingsPermissionsTab(emit: AiSettingsPermissionsTabEmits)
     categories,
     currentPreset,
     getToolsByCategory,
+    getToolDisplayName,
     getRiskLabel,
     applyPreset,
     handlePermissionChange

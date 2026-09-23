@@ -6,34 +6,6 @@
     </div>
 
     <div class="form-group">
-      <label class="toggle-row">
-        <input 
-          type="checkbox" 
-          :checked="Boolean(localSettings.enable_auto_rag)"
-          @change="$emit('update-setting', 'enable_auto_rag', ($event.target as HTMLInputElement).checked)"
-        />
-        <div class="toggle-text">
-          <span class="toggle-title">Включить автоматический контекстный поиск (Auto-RAG)</span>
-          <span class="toggle-desc">WorldWiki сам найдёт релевантные факты из энциклопедии перед отправкой запроса нейросети.</span>
-        </div>
-      </label>
-    </div>
-
-    <div class="form-group">
-      <label class="toggle-row">
-        <input 
-          type="checkbox" 
-          :checked="Boolean(localSettings.enable_semantic_search)"
-          @change="$emit('update-setting', 'enable_semantic_search', ($event.target as HTMLInputElement).checked)"
-        />
-        <div class="toggle-text">
-          <span class="toggle-title">Гибридный векторный поиск (HNSW + BM25)</span>
-          <span class="toggle-desc">Объединяет точный поиск по словам и глубокий поиск по смыслу через эмбеддинги.</span>
-        </div>
-      </label>
-    </div>
-
-    <div class="form-group mt-2">
       <label>Модель эмбеддингов для лора</label>
       <select 
         :value="localSettings.embed_model_path || ''"
@@ -67,7 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import type { AiProfileSettings, InstalledModelInfo } from '../../../types/ai.types';
+import type { 
+  AiProfileSettings, 
+  InstalledModelInfo 
+} from '../../../types/ai.types';
 
 defineProps<{
   localSettings: AiProfileSettings;

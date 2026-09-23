@@ -32,86 +32,140 @@ export interface SchemaSection {
 export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx: Ref<number>) {
     const draggedOverIdx = ref(-1);
     let draggedItemInfo: DraggedItemInfo | null = null;
+    let lastDropTimestamp = 0;
+
+    const isDuplicateDrop = (): boolean => {
+        const now = Date.now();
+        if (now - lastDropTimestamp < 100) {
+            return true;
+        }
+        lastDropTimestamp = now;
+        return false;
+    };
+
+    const getDraggedInfo = (e?: DragEvent): DraggedItemInfo | null => {
+        if (draggedItemInfo) {
+            const info = draggedItemInfo;
+            draggedItemInfo = null;
+            return info;
+        }
+        if (e?.dataTransfer) {
+            try {
+                const raw = e.dataTransfer.getData('application/json');
+                if (raw) return JSON.parse(raw);
+            } catch {
+                // ignore
+            }
+        }
+        return null;
+    };
 
     const handleDragStartPalette = (e: DragEvent, kind: string, val: string, label: string, template?: string) => {
+        lastDropTimestamp = 0;
         draggedItemInfo = { source: 'palette', kind, val, label, template: template || val };
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'copy';
             e.dataTransfer.setData('text/plain', kind);
+            try {
+                e.dataTransfer.setData('application/json', JSON.stringify(draggedItemInfo));
+            } catch {
+                // ignore
+            }
         }
     };
 
     const handleItemDragStart = (e: DragEvent, idx: number) => {
         if (activeSectionIdx.value === 0 && idx === 0) {
-            e.preventDefault();
+            if (e?.preventDefault) e.preventDefault();
             return;
         }
+        lastDropTimestamp = 0;
         draggedItemInfo = { source: 'canvas', idx };
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', 'canvasItem');
+            try {
+                e.dataTransfer.setData('application/json', JSON.stringify(draggedItemInfo));
+            } catch {
+                // ignore
+            }
         }
     };
 
     const handleDragOverCanvas = (e: DragEvent) => {
-        if (e.dataTransfer) e.dataTransfer.dropEffect = draggedItemInfo?.source === 'palette' ? 'copy' : 'move';
+        if (e?.preventDefault) e.preventDefault();
+        if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = draggedItemInfo?.source === 'palette' ? 'copy' : 'move';
+        }
     };
 
-    const handleDropNew = (_e: DragEvent) => {
+    const handleDropNew = (e?: DragEvent) => {
+        if (e?.preventDefault) e.preventDefault();
         draggedOverIdx.value = -1;
-        if (!draggedItemInfo) return;
+        if (isDuplicateDrop()) return;
+        const info = getDraggedInfo(e);
+        if (!info) return;
         if (!activeSection.value.items) activeSection.value.items = [];
-        if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'atomic') {
+
+        if (info.source === 'palette' && info.kind === 'atomic') {
             activeSection.value.items.push({
-                type: draggedItemInfo.val,
+                type: info.val,
                 class: `field_${Date.now()}`,
-                label: (draggedItemInfo.label || '').toUpperCase(),
+                label: (info.label || '').toUpperCase(),
                 placeholder: '...'
             });
-        } else if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'module') {
+        } else if (info.source === 'palette' && info.kind === 'module') {
             const modId = `module_${Date.now()}`;
             activeSection.value.items.push({
                 id: modId,
                 dataPath: modId,
-                type: draggedItemInfo.template?.includes('timeline') ? 'timeline' : 'dynamic',
-                template: draggedItemInfo.val,
+                type: info.template?.includes('timeline') ? 'timeline' : 'dynamic',
+                template: info.val,
                 title: 'НОВЫЙ МОДУЛЬ',
                 emptyMessage: 'Пусто...',
                 customFields: []
             });
+        } else if (info.source === 'canvas') {
+            const srcIdx = info.idx ?? -1;
+            if (srcIdx >= 0 && srcIdx < activeSection.value.items.length) {
+                const item = activeSection.value.items.splice(srcIdx, 1)[0];
+                activeSection.value.items.push(item);
+            }
         }
         draggedItemInfo = null;
     };
 
-    const handleItemDrop = (targetIdx: number) => {
+    const handleItemDrop = (targetIdx: number, e?: DragEvent) => {
+        if (e?.preventDefault) e.preventDefault();
         draggedOverIdx.value = -1;
-        if (!draggedItemInfo) return;
+        if (isDuplicateDrop()) return;
+        const info = getDraggedInfo(e);
+        if (!info) return;
         if (targetIdx === 0 && activeSectionIdx.value === 0) {
             targetIdx = 1;
         }
         if (!activeSection.value.items) activeSection.value.items = [];
 
-        if (draggedItemInfo.source === 'canvas') {
-            const srcIdx = draggedItemInfo.idx ?? -1;
-            if (srcIdx === targetIdx || srcIdx < 0) return;
+        if (info.source === 'canvas') {
+            const srcIdx = info.idx ?? -1;
+            if (srcIdx === targetIdx || srcIdx < 0 || srcIdx >= activeSection.value.items.length) return;
             const item = activeSection.value.items.splice(srcIdx, 1)[0];
-            const insertIdx = srcIdx < targetIdx ? targetIdx : targetIdx;
-            activeSection.value.items.splice(insertIdx, 0, item);
-        } else if (draggedItemInfo.source === 'palette') {
-            if (draggedItemInfo.kind === 'atomic') {
+            activeSection.value.items.splice(targetIdx, 0, item);
+        } else if (info.source === 'palette') {
+            if (info.kind === 'atomic') {
                 activeSection.value.items.splice(targetIdx, 0, {
-                    type: draggedItemInfo.val,
+                    type: info.val,
                     class: `field_${Date.now()}`,
-                    label: (draggedItemInfo.label || '').toUpperCase(),
+                    label: (info.label || '').toUpperCase(),
                     placeholder: '...'
                 });
-            } else if (draggedItemInfo.kind === 'module') {
+            } else if (info.kind === 'module') {
                 const modId = `module_${Date.now()}`;
                 activeSection.value.items.splice(targetIdx, 0, {
                     id: modId,
                     dataPath: modId,
-                    type: draggedItemInfo.template?.includes('timeline') ? 'timeline' : 'dynamic',
-                    template: draggedItemInfo.val,
+                    type: info.template?.includes('timeline') ? 'timeline' : 'dynamic',
+                    template: info.val,
                     title: 'НОВЫЙ МОДУЛЬ',
                     emptyMessage: 'Пусто...',
                     customFields: []
@@ -121,16 +175,18 @@ export function useSchemaDnD(activeSection: Ref<SchemaSection>, activeSectionIdx
         draggedItemInfo = null;
     };
 
-    const handleDropIntoModule = (moduleIdx: number) => {
-        if (!draggedItemInfo) return;
-        if (draggedItemInfo.source === 'palette' && draggedItemInfo.kind === 'atomic') {
+    const handleDropIntoModule = (moduleIdx: number, e?: DragEvent) => {
+        if (e?.preventDefault) e.preventDefault();
+        const info = getDraggedInfo(e);
+        if (!info) return;
+        if (info.source === 'palette' && info.kind === 'atomic') {
             const mod = activeSection.value.items[moduleIdx];
             if (mod) {
                 if (!mod.customFields) mod.customFields = [];
-                mod.customFields.push({
-                    type: draggedItemInfo.val,
+                (mod.customFields as Array<Record<string, unknown>>).push({
+                    type: info.val,
                     class: `custom_${Date.now()}`,
-                    label: (draggedItemInfo.label || '').toUpperCase(),
+                    label: (info.label || '').toUpperCase(),
                     placeholder: '...',
                     sourceType: '',
                     targetType: ''

@@ -183,7 +183,7 @@ describe('useCalendarPlayground', () => {
     const days = hook.gridDays.value;
 
     expect(days[0].holidayText).toBe('3-Month Festival');
-    expect(days[0].seasonColor).toBe('rgba(255,255,255,0.03)'); // fallback color
+    expect(days[0].seasonColor).toBe('var(--bg-sunken)'); // fallback color
 
     // Holiday on end month (month 2, day 5 in, day 16 out)
     const endCal = {

@@ -40,9 +40,9 @@ export function useChapterLayout() {
 
     const onMove = (ev: MouseEvent) => {
       latestWidth = Math.max(180, Math.min(520, startW + (ev.clientX - startX)));
+      chaptersSidebarWidth.value = latestWidth;
       if (rafId === null) {
         rafId = requestAnimationFrame(() => {
-          chaptersSidebarWidth.value = latestWidth;
           rafId = null;
         });
       }
@@ -117,9 +117,9 @@ export function useChapterLayout() {
     if (!isDragging) return;
     const delta = startX - e.clientX;
     latestRightWidth = Math.max(200, Math.min(600, startWidth + delta));
+    rightPanelWidth.value = latestRightWidth;
     if (rightRafId === null) {
       rightRafId = requestAnimationFrame(() => {
-        rightPanelWidth.value = latestRightWidth;
         rightRafId = null;
       });
     }

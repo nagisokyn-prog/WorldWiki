@@ -113,8 +113,11 @@ export function useWordRibbonCommands(ctx: UseWordRibbonCommandsContext) {
     },
     openHeaderFooterDialog: (tab?: 'header' | 'footer') =>
       ctx.emit('open-header-footer-dialog', tab),
+    updateHeaderText: (_left?: string, _right?: string) => {},
+    updateFooterText: (_left?: string, _right?: string) => {},
     openFontDialog: () => ctx.emit('open-font-dialog'),
     openParagraphDialog: () => ctx.emit('open-paragraph-dialog'),
+    openPageSetup: () => ctx.emit('open-page-setup'),
     openPageSetupDialog: () => ctx.emit('open-page-setup'),
     addRowBefore: () => (ctx.tiptapEditor.value?.chain() as unknown as ChainRunner | undefined)?.focus().addRowBefore?.().run(),
     addRowAfter: () => (ctx.tiptapEditor.value?.chain() as unknown as ChainRunner | undefined)?.focus().addRowAfter?.().run(),

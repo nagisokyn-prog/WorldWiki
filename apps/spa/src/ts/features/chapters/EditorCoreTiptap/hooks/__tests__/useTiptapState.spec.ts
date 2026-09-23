@@ -172,18 +172,18 @@ describe('useTiptapState', () => {
     vi.advanceTimersByTime(200);
   });
 
-  it('switches modes and calls syncMarkdown only when coming from markdown/split', () => {
+  it('switches modes and calls syncMarkdown when switching to markdown or split', () => {
     const state = useTiptapState(props, emit, editor, editorUpdateKey, documentStructure);
     const syncMarkdown = vi.fn();
 
     // From WYSIWYG to markdown
     state.editorMode.value = 'wysiwyg';
     state.switchEditorMode('markdown', syncMarkdown);
-    expect(syncMarkdown).not.toHaveBeenCalled();
+    expect(syncMarkdown).toHaveBeenCalledTimes(1);
 
     // From markdown to split
     state.switchEditorMode('split', syncMarkdown);
-    expect(syncMarkdown).toHaveBeenCalledTimes(1);
+    expect(syncMarkdown).toHaveBeenCalledTimes(2);
   });
 
   it('toggles link lock setting and initializes editor object if missing', () => {

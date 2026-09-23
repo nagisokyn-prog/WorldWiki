@@ -291,13 +291,12 @@
 /* ===== Genres Grid ===== */
 .genres-grid {
     position: relative;
-    overflow: visible;
-}
-
-.genres-grid .glass-card-bg {
+    overflow: hidden;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-card);
+    backdrop-filter: blur(var(--glass-blur, 0px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 0px));
 }
 
 .genres-grid-inner {

@@ -130,10 +130,10 @@ export function useTiptapState(
   };
 
   const switchEditorMode = (newMode: EditorMode, syncMarkdownFromEditor: () => void) => {
-    if (editorMode.value === 'markdown' || editorMode.value === 'split') {
+    editorMode.value = newMode;
+    if (newMode === 'markdown' || newMode === 'split') {
       syncMarkdownFromEditor();
     }
-    editorMode.value = newMode;
     localStorage.setItem('default-editor-mode', newMode);
     savePositionState();
   };

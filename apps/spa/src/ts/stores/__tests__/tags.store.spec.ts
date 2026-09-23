@@ -54,7 +54,7 @@ describe('tags.store', () => {
 
       expect(api.saveTag).toHaveBeenCalledWith(
         'proj_1',
-        expect.objectContaining({ name: 'New Tag', color: '#3498db' })
+        expect.objectContaining({ name: 'New Tag', color: 'var(--accent)' })
       );
       expect(store.globalTags).toHaveLength(2);
       expect(store.globalTags[1].name).toBe('New Tag');

@@ -105,6 +105,13 @@ vi.mock('@tauri-apps/api/window', () => ({
   getAllWebviewWindows: vi.fn(() => []),
 }));
 
+// Mock @tauri-apps/api/webview
+vi.mock('@tauri-apps/api/webview', () => ({
+  getCurrentWebview: vi.fn(() => ({
+    setZoom: vi.fn().mockResolvedValue(undefined),
+  })),
+}));
+
 // Mock @tauri-apps/api/dialog
 vi.mock('@tauri-apps/api/dialog', () => ({
   open: vi.fn(),

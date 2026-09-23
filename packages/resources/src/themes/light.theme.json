@@ -1,0 +1,49 @@
+{
+  "id": "light",
+  "name": "Светлая",
+  "isBuiltin": true,
+  "colors": {
+    "bgBase": "#f8fafc",
+    "bgSecondary": "#f1f5f9",
+    "bgPanel": "rgba(241, 245, 249, 0.8)",
+    "bgCard": "rgba(255, 255, 255, 0.85)",
+    "bgInput": "rgba(241, 245, 249, 0.9)",
+    "bgSunken": "rgba(0, 0, 0, 0.05)",
+    "bgHover": "rgba(0, 0, 0, 0.04)",
+    "bgActive": "rgba(0, 0, 0, 0.08)",
+    "bgSelected": "rgba(124, 58, 237, 0.12)",
+    "textMain": "#0f172a",
+    "textHeading": "#0f172a",
+    "textMuted": "rgba(15, 23, 42, 0.65)",
+    "textDisabled": "rgba(15, 23, 42, 0.35)",
+    "accent": "#7c3aed",
+    "accentHover": "#6d28d9",
+    "accentActive": "#5b21b6",
+    "accentDisabled": "#c4b5fd",
+    "accentGlow": "rgba(124, 58, 237, 0.2)",
+    "accentText": "#ffffff",
+    "borderColor": "rgba(15, 23, 42, 0.1)",
+    "borderHover": "rgba(15, 23, 42, 0.2)",
+    "borderActive": "rgba(124, 58, 237, 0.5)",
+    "shadowColor": "rgba(0, 0, 0, 0.15)"
+  },
+  "glass": {
+    "cardAlpha": 0.85,
+    "islandAlpha": 0.8,
+    "blur": 20,
+    "borderAlpha": 0.15,
+    "highlight": "rgba(0, 0, 0, 0.04)"
+  },
+  "radii": {
+    "island": 28,
+    "card": 20,
+    "btn": 40,
+    "input": 16,
+    "dropdown": 16
+  },
+  "shadows": {
+    "islandY": 15,
+    "islandBlur": 25,
+    "useInset": false
+  }
+}

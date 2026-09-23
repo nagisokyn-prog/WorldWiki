@@ -26,6 +26,8 @@ export function createTiptapExtensions(project: string): AnyExtension[] {
   return [
     StarterKit.configure({
       paragraph: false,
+      link: false,
+      underline: false,
       dropcursor: { color: 'var(--color-accent)', width: 2 }
     }),
     SemanticParagraph,

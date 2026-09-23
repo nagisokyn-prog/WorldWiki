@@ -5,9 +5,12 @@
     --bg-base: #09090b;
     --bg-main: var(--bg-base);
     --bg-secondary: #121214;
-    --bg-panel: rgba(15, 15, 18, 0.7);
-    --bg-card: rgba(22, 22, 26, 0.6);
-    --bg-input: rgba(22, 22, 26, 0.6);
+    --bg-card-rgb: 22, 22, 26;
+    --bg-panel-rgb: 15, 15, 18;
+    --bg-input-rgb: 22, 22, 26;
+    --bg-panel: rgba(var(--bg-panel-rgb), var(--glass-island-alpha, 0.7));
+    --bg-card: rgba(var(--bg-card-rgb), var(--glass-card-alpha, 0.6));
+    --bg-input: rgba(var(--bg-input-rgb), 0.6);
     --bg-sunken: rgba(0, 0, 0, 0.25);
     --bg-hover: rgba(255, 255, 255, 0.05);
     --bg-active: rgba(255, 255, 255, 0.1);

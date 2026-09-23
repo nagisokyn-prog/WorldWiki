@@ -69,7 +69,19 @@
   outline: none;
   color: var(--text-main);
   box-sizing: border-box;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base, 14px);
+  line-height: var(--line-height-base, 1.5);
+  letter-spacing: var(--letter-spacing-base, 0px);
 }
+
+.editor-content .ProseMirror p,
+.editor-content-split .ProseMirror p {
+  font-size: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
 .status-bar {
   display: flex;
   justify-content: space-between;
@@ -98,7 +110,8 @@
   padding: 16px;
   font-family: var(--font-mono, monospace);
   font-size: var(--font-size-base, 14px);
-  line-height: 1.6;
+  line-height: var(--line-height-base, 1.5);
+  letter-spacing: var(--letter-spacing-base, 0px);
   resize: none;
   outline: none;
   box-sizing: border-box;

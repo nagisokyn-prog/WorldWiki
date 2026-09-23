@@ -166,7 +166,7 @@ describe('useSchemaEditorMain', () => {
         project_id: null,
         type_name: 'location',
         icon: '📄',
-        color: '#333333',
+        color: 'var(--color-bg-tertiary)',
       }),
       expect.anything()
     );

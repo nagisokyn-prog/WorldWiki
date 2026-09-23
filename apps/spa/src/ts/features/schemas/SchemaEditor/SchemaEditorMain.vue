@@ -53,8 +53,8 @@
           </button>
         </div>
 
-        <div ref="scrollContainer" class="schema-canvas" @dragenter.prevent @dragover.prevent="handleDragOverCanvas" @drop="handleDropNew" @scroll="handleScroll">
-          <div v-if="activeSection" class="schema-canvas-inner">
+        <div ref="scrollContainer" class="schema-canvas" @dragenter.prevent @dragover.prevent="handleDragOverCanvas" @drop.stop.prevent="handleDropNew" @scroll="handleScroll">
+          <div v-if="activeSection" class="schema-canvas-inner" @dragenter.prevent @dragover.prevent="handleDragOverCanvas">
             <div class="schema-page-title-row">
               <input v-model="activeSection.title" class="input-base interactive-el schema-page-title-input" placeholder="ИМЯ СТРАНИЦЫ" :class="{ 'is-hidden-page': activeSection.hidden }">
               <button
@@ -66,12 +66,12 @@
               </button>
             </div>
             
-            <div v-if="activeSection.items.length === 0" class="empty-canvas-state">
+            <div v-if="activeSection.items.length === 0" class="empty-canvas-state" @dragenter.prevent @dragover.prevent="handleDragOverCanvas">
               ПЕРЕТАЩИТЕ ЭЛЕМЕНТЫ СЮДА
             </div>
 
             <!-- ЭЛЕМЕНТЫ -->
-            <div v-for="(item, iIdx) in activeSection.items" :key="iIdx" class="schema-item-card" :draggable="!(activeSectionIdx === 0 && Number(iIdx) === 0)" :class="{ 'is-dragging-over': draggedOverIdx === Number(iIdx), 'is-pinned-first': activeSectionIdx === 0 && Number(iIdx) === 0 }" @dragstart="handleItemDragStart($event, Number(iIdx))" @dragenter.prevent="draggedOverIdx = Number(iIdx)" @dragover.prevent @drop.stop="handleItemDrop(Number(iIdx))">
+            <div v-for="(item, iIdx) in activeSection.items" :key="iIdx" class="schema-item-card" :draggable="!(activeSectionIdx === 0 && Number(iIdx) === 0)" :class="{ 'is-dragging-over': draggedOverIdx === Number(iIdx), 'is-pinned-first': activeSectionIdx === 0 && Number(iIdx) === 0 }" @dragstart="handleItemDragStart($event, Number(iIdx))" @dragenter.prevent="draggedOverIdx = Number(iIdx)" @dragover.prevent="handleDragOverCanvas" @drop.stop.prevent="handleItemDrop(Number(iIdx), $event)">
               <SchemaFieldEditor
                 v-if="isAtomicField(item)"
                 :item="item"
@@ -82,7 +82,7 @@
                 v-else
                 :item="item"
                 @remove="removeItem(Number(iIdx))"
-                @drop-custom="handleDropIntoModule(Number(iIdx))"
+                @drop-custom="handleDropIntoModule(Number(iIdx), $event)"
               />
             </div>
           </div>

@@ -32,12 +32,13 @@
 .parent-plans-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 0;
-  margin-top: 4px;
-  background: transparent;
-  border-top: none;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border-color);
   flex-shrink: 0;
+  margin-top: auto;
+  z-index: 5;
 }
 
 .parent-plan-accordion {

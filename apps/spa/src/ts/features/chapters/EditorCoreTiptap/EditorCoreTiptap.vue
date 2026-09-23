@@ -1,6 +1,5 @@
 <template>
   <div class="editor-core" :class="{ 'word-mode-active': editorMode === 'word' }">
-    <!-- Toolbar with inline chapter title -->
     <EditorToolbar 
       :editor="editor"
       :editor-mode="editorMode"
@@ -21,78 +20,45 @@
       @export="openExportModal"
     />
 
-    <!-- Editor Container -->
-    <div 
-      class="editor-container" 
-      :class="{ 'history-changed': changedFields.includes('content') }"
+    <EditorBody
+      :editor="editor"
+      :editor-mode="editorMode"
+      :markdown-content="markdownContent"
+      :changed-fields="changedFields"
+      :left-panel-width="leftPanelWidth"
+      :right-panel-width="rightPanelWidth"
+      :show-structure="showStructure"
+      :selected-block-idx="selectedBlockIdx"
+      :document-structure="documentStructure"
+      :current-semantic-document="currentSemanticDocument"
+      :content="content"
+      :title="title"
+      :is-current-page-landscape="isCurrentPageLandscape"
+      :current-page-size="currentPageSize"
+      @update:markdown-content="markdownContent = $event"
+      @textarea-mounted="setMarkdownTextarea"
+      @scroll="handleScroll"
+      @markdown-input="onMarkdownInput"
+      @markdown-keydown="onMarkdownKeydown"
       @contextmenu="handleContextMenu"
-    >
-      <div v-if="changedFields.includes('content')" class="changed-indicator changed-indicator-content" title="Текст был изменен">
-        <span class="badge badge-accent">Изменено</span>
-      </div>
-      
-      <!-- WYSIWYG Mode -->
-      <div v-if="editorMode === 'wysiwyg'" class="editor-wrapper">
-        <EditorContent :editor="editor" class="editor-content" @scroll="handleScroll" />
-      </div>
-
-      <!-- Markdown Mode -->
-      <div v-else-if="editorMode === 'markdown'" class="editor-wrapper markdown-mode-wrapper flex-1 flex flex-col h-full w-full min-h-0">
-        <textarea 
-          ref="markdownTextareaRef"
-          v-model="markdownContent" 
-          placeholder="# Напишите markdown..."
-          class="markdown-editor-textarea"
-          @input="onMarkdownInput"
-          @keydown="onMarkdownKeydown"
-          @contextmenu="handleContextMenu"
-        ></textarea>
-      </div>
-
-      <!-- Split View -->
-      <EditorSplitView
-        v-else-if="editorMode === 'split'"
-        v-model:markdown-content="markdownContent"
-        :editor="editor"
-        :left-panel-width="leftPanelWidth"
-        :right-panel-width="rightPanelWidth"
-        :show-structure="showStructure"
-        :selected-block-idx="selectedBlockIdx"
-        :document-structure="documentStructure"
-        @input="onMarkdownInput"
-        @keydown="onMarkdownKeydown"
-        @start-resize-left="startResizeLeft"
-        @start-resize-right="startResizeRight"
-        @scroll-to-block="scrollToBlock"
-        @cycle-tag="cycleGlobalTag"
-        @contextmenu="handleContextMenu"
-        @open-entity-selector="$emit('open-entity-selector')"
-      />
-
-      <!-- Word Mode -->
-      <WordVibeEditor
-        v-else-if="editorMode === 'word'"
-        :document="currentSemanticDocument"
-        :content="content"
-        :chapter-title="title"
-        :orientation="isCurrentPageLandscape ? 'landscape' : 'portrait'"
-        :page-size="currentPageSize"
-        @update:content="onWordContentUpdate"
-        @update:document="onWordDocumentUpdate"
-        @change="onWordChange"
-      />
-    </div>
+      @start-resize-left="startResizeLeft"
+      @start-resize-right="startResizeRight"
+      @scroll-to-block="scrollToBlock"
+      @cycle-tag="cycleGlobalTag"
+      @open-entity-selector="$emit('open-entity-selector')"
+      @word-content-update="onWordContentUpdate"
+      @word-document-update="onWordDocumentUpdate"
+      @word-change="onWordChange"
+    />
     
-    <!-- Status Bar -->
     <EditorStatusBar 
       v-if="editorMode !== 'word'"
       :word-count="wordCount"
       :char-count="charCount"
-      :block-count="documentStructure.length"
+      :block-count="documentStructure?.length ?? 0"
       :editor-mode="editorMode"
     />
 
-    <!-- Editor Modals & Overlays -->
     <EditorModals
       :project="project"
       :is-entity-selector-open="isEntitySelectorOpen"
@@ -115,12 +81,10 @@
 </template>
 
 <script setup lang="ts">
-import { EditorContent } from '@tiptap/vue-3';
 import EditorToolbar from './EditorToolbar.vue';
-import EditorSplitView from './components/EditorSplitView.vue';
+import EditorBody from './components/EditorBody.vue';
 import EditorStatusBar from './components/EditorStatusBar.vue';
 import EditorModals from './components/EditorModals.vue';
-import { WordVibeEditor } from '@worldwiki/word-vibe';
 import { useEditorCoreTiptap } from './useEditorCoreTiptap';
 import type { EditorCoreTiptapProps, EditorCoreTiptapEmits } from './EditorCoreTiptap.model';
 
@@ -167,6 +131,7 @@ const {
   handleContextMenu,
   startResizeLeft,
   startResizeRight,
+  scrollToParagraph,
   scrollToBlock,
   cycleGlobalTag,
   currentSemanticDocument,
@@ -187,11 +152,15 @@ const {
   onWordChange,
   toggleLinkLock,
   analyzeText,
-  markdownTextareaRef
+  getEditor,
+  setMarkdownTextarea
 } = useEditorCoreTiptap(props, emit);
 
 defineExpose({
-  getEditor: () => editor.value,
-  insertEntity: handleEntityInsert
+  getEditor,
+  insertEntity: handleEntityInsert,
+  scrollToParagraph,
+  scrollToBlock,
+  analyzeText
 });
 </script>

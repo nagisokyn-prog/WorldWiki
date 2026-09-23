@@ -114,6 +114,7 @@ class SettingsService {
 
   applySettings(): void {
     applySettingsToDOM(this.settings);
+    this.applyBackground();
   }
 
   async switchTheme(themeName: 'dark' | 'light'): Promise<void> {
@@ -147,6 +148,10 @@ class SettingsService {
       this.tauriUnlisten = null;
     }
     this.listeners = [];
+  }
+
+  private deepMerge(target: any, source: any): any {
+    return deepMergeSettings(target, source);
   }
 
   private notifyListeners(): void {

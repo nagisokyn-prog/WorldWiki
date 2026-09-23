@@ -42,6 +42,15 @@ export function useTiptapKeyboard(options: UseTiptapKeyboardOptions) {
     downHandler = (e: KeyboardEvent) => {
       if (e.key === 'Control' || e.key === 'Meta') options.ctrlPressed.value = true;
 
+      if ((e.ctrlKey || e.metaKey) && e.altKey && (e.code === 'KeyB' || e.key === 'b' || e.key === 'B' || e.key === 'и' || e.key === 'И')) {
+        e.preventDefault();
+        const current = localStorage.getItem('chapters-right-panel-visible') === 'true';
+        const next = !current;
+        localStorage.setItem('chapters-right-panel-visible', String(next));
+        document.dispatchEvent(new CustomEvent('ww:toggle-right-panel', { detail: { visible: next } }));
+        return;
+      }
+
       if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && (e.key === 'r' || e.key === 'R'))) {
         e.preventDefault();
         options.onSavePosition();
@@ -66,22 +75,37 @@ export function useTiptapKeyboard(options: UseTiptapKeyboardOptions) {
       if (options.onToggleStructure) options.onToggleStructure();
     };
     document.addEventListener('ww:toggle-split-structure', toggleStructureHandler);
+    document.addEventListener('ww:toggle-structure', toggleStructureHandler);
 
     upHandler = (e: KeyboardEvent) => {
       if (e.key === 'Control' || e.key === 'Meta') options.ctrlPressed.value = false;
     };
 
+    const blurHandler = () => {
+      options.ctrlPressed.value = false;
+    };
+
+    window.addEventListener('blur', blurHandler);
     window.addEventListener('keydown', downHandler);
     window.addEventListener('keyup', upHandler);
+    document.addEventListener('keydown', downHandler);
+    document.addEventListener('keyup', upHandler);
   });
 
   onUnmounted(() => {
     if (autoSaveTimer) clearInterval(autoSaveTimer);
     window.removeEventListener('beforeunload', options.onBeforeUnload);
-    if (downHandler) window.removeEventListener('keydown', downHandler);
-    if (upHandler) window.removeEventListener('keyup', upHandler);
+    if (downHandler) {
+      window.removeEventListener('keydown', downHandler);
+      document.removeEventListener('keydown', downHandler);
+    }
+    if (upHandler) {
+      window.removeEventListener('keyup', upHandler);
+      document.removeEventListener('keyup', upHandler);
+    }
     if (toggleStructureHandler) {
       document.removeEventListener('ww:toggle-split-structure', toggleStructureHandler);
+      document.removeEventListener('ww:toggle-structure', toggleStructureHandler);
     }
   });
 }

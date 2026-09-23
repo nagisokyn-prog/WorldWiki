@@ -1,9 +1,11 @@
-/**
- * @file settings.theme.ts
- * @description Управление темами оформления (dark / light) и глубокое слияние объектов настроек
- */
-
 import type { AppSettings } from '../types/settings';
+import darkThemeJson from '@worldwiki/resources/themes/dark.theme.json';
+import lightThemeJson from '@worldwiki/resources/themes/light.theme.json';
+
+const BUILTIN_THEMES: Record<string, Partial<AppSettings>> = {
+  dark: darkThemeJson as unknown as Partial<AppSettings>,
+  light: lightThemeJson as unknown as Partial<AppSettings>,
+};
 
 export function deepMergeSettings(target: AppSettings, source: Partial<AppSettings>): AppSettings {
   const result = { ...target } as unknown as Record<string, unknown>;
@@ -12,7 +14,7 @@ export function deepMergeSettings(target: AppSettings, source: Partial<AppSettin
     const sourceValue = sourceObj[key];
     if (sourceValue && typeof sourceValue === 'object' && !Array.isArray(sourceValue)) {
       result[key] = deepMergeSettings(
-        result[key] as AppSettings,
+        (result[key] || {}) as AppSettings,
         sourceValue as Partial<AppSettings>
       ) as unknown;
     } else if (sourceValue !== undefined) {
@@ -22,8 +24,8 @@ export function deepMergeSettings(target: AppSettings, source: Partial<AppSettin
   return result as unknown as AppSettings;
 }
 
-export async function loadThemeSettings(themeName: 'dark' | 'light'): Promise<Partial<AppSettings> | null> {
-  let loaded: Partial<AppSettings> | null = null;
+export async function loadThemeSettings(themeName: 'dark' | 'light' | string): Promise<Partial<AppSettings> | null> {
+  let loaded: Partial<AppSettings> | null = BUILTIN_THEMES[themeName] ? JSON.parse(JSON.stringify(BUILTIN_THEMES[themeName])) : null;
 
   if (window.__TAURI__?.core) {
     try {
@@ -32,7 +34,7 @@ export async function loadThemeSettings(themeName: 'dark' | 'light'): Promise<Pa
         { theme: themeName }
       );
       if (themeSettings) {
-        loaded = themeSettings;
+        loaded = loaded ? deepMergeSettings(loaded as AppSettings, themeSettings) : themeSettings;
       }
     } catch (e) {
       console.warn(`Tauri theme load failed for ${themeName}:`, e);
@@ -52,3 +54,4 @@ export async function loadThemeSettings(themeName: 'dark' | 'light'): Promise<Pa
 
   return loaded;
 }
+

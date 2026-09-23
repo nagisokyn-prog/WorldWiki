@@ -5,17 +5,16 @@
     --glass-blur-sm: 12px;
     --glass-blur-lg: 36px;
 
-    --glass-island-alpha: 0.45;
-    --glass-card-alpha: 0.04;
+    --glass-island-alpha: 0.7;
+    --glass-card-alpha: 0.6;
     --glass-border-alpha: 0.12;
 
-    --glass-island-base: 20, 20, 25;
-    --glass-bg: rgba(var(--glass-island-base), var(--glass-island-alpha));
-    --glass-card: rgba(255, 255, 255, var(--glass-card-alpha));
+    --glass-bg: var(--bg-panel, rgba(15, 15, 18, var(--glass-island-alpha)));
+    --glass-card: var(--bg-card, rgba(22, 22, 26, var(--glass-card-alpha)));
     --glass-highlight: rgba(255, 255, 255, 0.08);
 
-    --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.03) 100%);
-    --glass-shine-subtle: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+    --glass-shine: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.02) 100%);
+    --glass-shine-subtle: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
 
     --dropdown-transparency: 0%;
     --dropdown-opacity: 1;

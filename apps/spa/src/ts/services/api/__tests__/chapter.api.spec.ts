@@ -61,7 +61,7 @@ describe('chapterApi', () => {
 
       const res = await chapterApi.saveChapter('my-proj', input);
 
-      expect(api.saveChapter).toHaveBeenCalledWith('my-proj', {
+      expect(api.saveChapter).toHaveBeenCalledWith({
         ...input,
         project_id: 'projects:my-proj',
       });

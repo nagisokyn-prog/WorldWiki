@@ -42,22 +42,39 @@ export function useTiptapSplitView(
     const startX = e.clientX;
     const startLeftWidth = leftPanelWidth.value;
     const containerWidth = container.offsetWidth;
+    let latestLeftWidth = startLeftWidth;
+    let rafId: number | null = null;
     
     const onMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - startX;
       const deltaPercent = (deltaX / containerWidth) * 100;
-      leftPanelWidth.value = Math.max(20, Math.min(60, startLeftWidth + deltaPercent));
+      latestLeftWidth = Math.max(20, Math.min(60, startLeftWidth + deltaPercent));
+      leftPanelWidth.value = latestLeftWidth;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+        });
+      }
     };
     
     const onMouseUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       resizing.value = null;
-      localStorage.setItem('split-view-left-width', leftPanelWidth.value.toString());
+      leftPanelWidth.value = latestLeftWidth;
+      localStorage.setItem('split-view-left-width', latestLeftWidth.toString());
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       activeResizeCleanup = null;
     };
     
     activeResizeCleanup = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
@@ -75,22 +92,39 @@ export function useTiptapSplitView(
     const startX = e.clientX;
     const startRightWidth = rightPanelWidth.value;
     const containerWidth = container.offsetWidth;
+    let latestRightWidth = startRightWidth;
+    let rafId: number | null = null;
     
     const onMouseMove = (moveEvent: MouseEvent) => {
       const deltaX = moveEvent.clientX - startX;
       const deltaPercent = (deltaX / containerWidth) * 100;
-      rightPanelWidth.value = Math.max(20, Math.min(60, startRightWidth + deltaPercent));
+      latestRightWidth = Math.max(20, Math.min(60, startRightWidth + deltaPercent));
+      rightPanelWidth.value = latestRightWidth;
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+        });
+      }
     };
     
     const onMouseUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       resizing.value = null;
-      localStorage.setItem('split-view-right-width', rightPanelWidth.value.toString());
+      rightPanelWidth.value = latestRightWidth;
+      localStorage.setItem('split-view-right-width', latestRightWidth.toString());
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       activeResizeCleanup = null;
     };
     
     activeResizeCleanup = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };

@@ -16,6 +16,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
+        "label": "main",
         "title": "World Wiki",
         "width": 1400,
         "height": 900,

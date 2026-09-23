@@ -3,13 +3,22 @@ import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
 import AiMainChatView from '../AiMainChatView.vue';
 
+vi.mock('../../../index', () => ({
+  AiHeader: { name: 'AiHeader', template: '<div class="mock-ai-header" />' },
+  AiChatHistory: { name: 'AiChatHistory', template: '<div class="mock-ai-history" />' },
+  AiChatTopBar: { name: 'AiChatTopBar', template: '<div class="mock-ai-topbar" />' },
+  AiMessageList: { name: 'AiMessageList', template: '<div class="mock-ai-messages" />' },
+  AiChatInputArea: { name: 'AiChatInputArea', template: '<div class="mock-ai-input" />' },
+  AiResearchProgress: { name: 'AiResearchProgress', template: '<div class="mock-ai-research" />' }
+}));
+
 vi.mock('../../index', () => ({
-  AiHeader: { template: '<div class="mock-ai-header" />' },
-  AiChatHistory: { template: '<div class="mock-ai-history" />' },
-  AiChatTopBar: { template: '<div class="mock-ai-topbar" />' },
-  AiMessageList: { template: '<div class="mock-ai-messages" />' },
-  AiChatInputArea: { template: '<div class="mock-ai-input" />' },
-  AiResearchProgress: { template: '<div class="mock-ai-research" />' }
+  AiHeader: { name: 'AiHeader', template: '<div class="mock-ai-header" />' },
+  AiChatHistory: { name: 'AiChatHistory', template: '<div class="mock-ai-history" />' },
+  AiChatTopBar: { name: 'AiChatTopBar', template: '<div class="mock-ai-topbar" />' },
+  AiMessageList: { name: 'AiMessageList', template: '<div class="mock-ai-messages" />' },
+  AiChatInputArea: { name: 'AiChatInputArea', template: '<div class="mock-ai-input" />' },
+  AiResearchProgress: { name: 'AiResearchProgress', template: '<div class="mock-ai-research" />' }
 }));
 
 describe('AiMainChatView.vue', () => {
@@ -83,6 +92,16 @@ describe('AiMainChatView.vue', () => {
     const wrapper = mount(AiMainChatView, {
       props: {
         panel: mockPanel as any
+      },
+      global: {
+        stubs: {
+          AiHeader: { template: '<div class="mock-ai-header" />' },
+          AiChatHistory: { template: '<div class="mock-ai-history" />' },
+          AiChatTopBar: { template: '<div class="mock-ai-topbar" />' },
+          AiMessageList: { template: '<div class="mock-ai-messages" />' },
+          AiChatInputArea: { template: '<div class="mock-ai-input" />' },
+          AiResearchProgress: { template: '<div class="mock-ai-research" />' }
+        }
       }
     });
 

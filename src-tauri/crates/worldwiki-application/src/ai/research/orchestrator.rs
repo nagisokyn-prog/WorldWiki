@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 use std::sync::Arc;
-use tokio::task::JoinSet;
 use worldwiki_domain::ai::{
     CitationItem, ResearchClaim, ResearchEvent, ResearchMode, ResearchPolicy,
     WebEvidence, WebPageEntity,
@@ -71,18 +70,9 @@ impl ResearchOrchestrator {
                 break;
             }
 
-            // Параллельная загрузка найденных страниц
-            let mut join_set = JoinSet::new();
-            for hit in hits {
-                let port = self.web_port.clone();
-                join_set.spawn(async move {
-                    port.fetch_page(&hit.url).await
-                });
-            }
-
             let mut fetched_pages = Vec::new();
-            while let Some(res) = join_set.join_next().await {
-                if let Ok(Ok(page)) = res {
+            for hit in hits {
+                if let Ok(page) = self.web_port.fetch_page(&hit.url).await {
                     seen_domains.insert(page.domain.clone());
                     fetched_pages.push(page);
                 }

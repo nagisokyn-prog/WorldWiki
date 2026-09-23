@@ -1,15 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
-use std::sync::{Mutex, OnceLock};
 use worldwiki_domain::ai::{InstalledModelInfo, ModelKind, ModelLifecycleState};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::ai::LocalModelManagerPort;
-
-static MODEL_STATES: OnceLock<Mutex<HashMap<String, ModelLifecycleState>>> = OnceLock::new();
-
-fn get_states_map() -> &'static Mutex<HashMap<String, ModelLifecycleState>> {
-    MODEL_STATES.get_or_init(|| Mutex::new(HashMap::new()))
-}
 
 #[derive(Clone)]
 pub struct FsLocalModelManager {

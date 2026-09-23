@@ -32,7 +32,7 @@ pub struct AgentTasks(
 async fn init_database() -> Surreal<Db> {
     let db_path = worldwiki_infrastructure::paths::get_surreal_db_path();
     let _ = fs::create_dir_all(&db_path);
-    let db = match Surreal::new::<SurrealKv>(&db_path).await {
+    let db = match Surreal::new::<SurrealKv>(db_path).await {
         Ok(d) => d,
         Err(e) => {
             eprintln!("[CRITICAL] Failed to start SurrealDB: {}", e);
@@ -50,7 +50,9 @@ async fn init_database() -> Surreal<Db> {
     db
 }
 
-pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), worldwiki_domain::errors::DomainError> {
+pub async fn apply_schema_pipeline(
+    db: &Surreal<Db>,
+) -> Result<(), worldwiki_domain::errors::DomainError> {
     // 1. БАЗОВОЕ ЯДРО (NO-AI / BASE EDITION)
     const DDL_NOAI_00_ANALYZERS: &str =
         include_str!("../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
@@ -158,7 +160,7 @@ pub fn run() {
     use logic::volumes::*;
     use tauri_shell::logic::system::*;
 
-    tauri::Builder::default()
+    if let Err(e) = tauri::Builder::default()
         .invoke_handler(surreal_domain::entity_commands![
 // --- Проекты ---
             get_projects,

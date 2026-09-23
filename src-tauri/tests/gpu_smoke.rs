@@ -11,8 +11,7 @@
 //! нужно реальное железо и последовательное выполнение (общие VRAM-слоты).
 
 use world_wiki_lib::logic::ai::local_llm::{
-    get_loaded_embed_slot, get_loaded_model_slot, trigger_cancel_local_gen, LocalLlm, ModelParams,
-    TokenEvent,
+    trigger_cancel_local_gen, LocalLlm, ModelParams, TokenEvent,
 };
 
 fn gen_model() -> String {
@@ -63,9 +62,6 @@ async fn smoke_1_embedding_roundtrip() {
 
     // Выгрузка
     drop(m);
-    if let Ok(mut slot) = get_loaded_embed_slot().lock() {
-        *slot = None;
-    }
 }
 
 /// Smoke 2: generation-модель → несколько токенов → выгрузить.
@@ -94,10 +90,6 @@ async fn smoke_2_generation_produces_tokens() {
     }
     let _ = handle.await;
     assert!(received >= 3, "минимум 3 токена, пришло {received}");
-
-    if let Ok(mut slot) = get_loaded_model_slot().lock() {
-        *slot = None;
-    }
 }
 
 /// Smoke 3: swap — embedder загрузился/выгрузился → generation загрузилась.
@@ -111,9 +103,6 @@ async fn smoke_3_swap_embedder_then_generation() {
         let v = e.get_embeddings("тест").expect("embedding ок");
         assert!(!v.is_empty());
         drop(e);
-        if let Ok(mut slot) = get_loaded_embed_slot().lock() {
-            *slot = None;
-        }
     }
 
     // Фаза B: generation на освободившейся памяти
@@ -134,9 +123,6 @@ async fn smoke_3_swap_embedder_then_generation() {
         }
         let _ = h.await;
         assert!(got_any, "после swap генерация всё ещё работает");
-        if let Ok(mut slot) = get_loaded_model_slot().lock() {
-            *slot = None;
-        }
     }
 }
 
@@ -177,10 +163,6 @@ async fn smoke_4_cancel_stops_generation() {
     }
     assert!(got_first, "до отмены должен прийти хотя бы один токен");
     let _ = handle.await;
-
-    if let Ok(mut slot) = get_loaded_model_slot().lock() {
-        *slot = None;
-    }
 }
 
 /// Smoke 5 (безопасная часть): битые/отсутствующие модели дают понятный Err.

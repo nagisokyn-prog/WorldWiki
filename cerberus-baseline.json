@@ -1,85 +1,5 @@
 [
   {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/text_block.rs",
-    "line": 33,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "871ef2bc1eeb3d63f7d288191221f9d0edd382e376023d8e501bf12f5409bccf"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (263.5) exceeds warning limit (250.0)",
-    "fingerprint": "a8376a15a9837d810505cbe4a897d58dad358fe98ec471ab15b3a9dabb7c2325"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/helpers.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (255.8) exceeds warning limit (250.0)",
-    "fingerprint": "66a8b921c3e5b073fce7691af0cda06bc64efce70fa6b62beaf269207134ea81"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/research/orchestrator.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "c62d9b012463d6ab492b4af884b7e0a231c5b987b29eda4a92fb0e2fa686a48e"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/research/orchestrator.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "c8d6538f7b5f8e881672ab1e1c8b144e0c5c28683785062744a88d1d3704fd13"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/research/orchestrator.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "ddddf5f4876610557acd1c38af54e648d1b835e015d52a86b6be55be7ef85287"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "5f3814aaedb9b2f252c21508ecc8ad8ad6c75edef16795701274d71bbac40088"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "75c139d2ca112afcfaa5c7607958c513cf69faad47bb31601813bc174f4f2727"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "d246f88614f32368bc7dd50f7d0e7071c39b214c783425e289c5620b51047824"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service/session_ops.rs",
-    "line": 1,
-    "symbol": "fork_chat",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "706f3cdc1718cc1fbd53da246da467e2c7b03298fe8bf727283541fa64e4f70d"
-  },
-  {
     "rule": "ERR-003",
     "file": "./src-tauri/crates/worldwiki-application/src/ai/local_services.rs",
     "line": 1,
@@ -93,7 +13,7 @@
     "line": 1,
     "symbol": "execute_research",
     "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "fdf620eb6d3f20052a4195413327c32da763302c075155127b35d6eea12d22ef"
+    "fingerprint": "0ae891bd9ae60214935a049c7ba9bd4c1ef360c1c34f763c9c09496b409fd85f"
   },
   {
     "rule": "ERR-003",
@@ -133,7 +53,7 @@
     "line": 1,
     "symbol": "edit_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e5480fe76bb8da0c12b1ba5d7109ec3b4e0ccfa45ad93f8fc14abfb2309b01ea"
+    "fingerprint": "46c189ffa56330a171318604c538f80a293c1b7ebda063bae001ed5b5d3e8530"
   },
   {
     "rule": "ERR-003",
@@ -141,7 +61,7 @@
     "line": 1,
     "symbol": "regenerate_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b1c372d7077a55abc76e518920b48d16a5a2fe63f2d7f3160cf6f9debadc859d"
+    "fingerprint": "98d4f71590cac51aa195846a7b528b20ef10ac18c4fd5fc9a1d63b7b0afc87a9"
   },
   {
     "rule": "ERR-003",
@@ -149,7 +69,7 @@
     "line": 1,
     "symbol": "send_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e4c0f9e025194fb87d2aa0ab81db515f594b4130ba9270870654f9c873e920cc"
+    "fingerprint": "b1abebf45c7eb8fe4396419ec9ae1191a5193b041b85efe5ca17400c0e59d1f3"
   },
   {
     "rule": "ERR-003",
@@ -173,7 +93,7 @@
     "line": 1,
     "symbol": "download_hf_model",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "471c18a3275fb39c65c3b78c140ad72850d2b2f71cb8160adfa47c9987f36767"
+    "fingerprint": "827ef4dee5bdb959b89a235eb80e26f7f010ed2b8bb476f61b804212751ad7f5"
   },
   {
     "rule": "ERR-003",
@@ -310,317 +230,5 @@
     "symbol": "assign_chapter_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
     "fingerprint": "4f3e408148c7fa8afdb5e47c4261a42b19d62381183ed7d8d23f60ac5320a02e"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/loader.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'std::fs::read_to_string' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "d9cbd36aca0989bdfb0a8a6d3a57bcf6f59b0694ee0401238b917443bbd1b204"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/loader.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'std::fs::read_to_string' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "d9cbd36aca0989bdfb0a8a6d3a57bcf6f59b0694ee0401238b917443bbd1b204"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'std::fs::read_dir' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "2eb24a86ceb8409d15a2f6b526d5c8b6693df1cfec630684a215e5c395e61d04"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'fs::File::create' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "b1446b7926aacf702a904464674ff771be6bbac209465b73bebf6f0017037a8d"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'fs::File::create' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "b1446b7926aacf702a904464674ff771be6bbac209465b73bebf6f0017037a8d"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'fs::File::create' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "b1446b7926aacf702a904464674ff771be6bbac209465b73bebf6f0017037a8d"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'fs::read' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "d608b36e9207d4787c780fece71218cfb43d296dbe9a56ee697f27554155353d"
-  },
-  {
-    "rule": "PERF-011",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "loop_io",
-    "message": "Blocking I/O operation 'fs::read' invoked inside iteration loop causing N+1 performance bottleneck.",
-    "fingerprint": "d608b36e9207d4787c780fece71218cfb43d296dbe9a56ee697f27554155353d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "51be06543b003af4cdf5b60e4060847912c295c72791b877335d37f73576a7ac"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service/message_ops.rs",
-    "line": 1,
-    "symbol": "send_message",
-    "message": "High .clone() density detected (7 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "85cc249f20a50f9bf99143add92298fe8d379474d0a429828fcd5a7bb28a173a"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service/session_ops.rs",
-    "line": 1,
-    "symbol": "fork_chat",
-    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "4e0eb93b9a78b6a811cbb020e9a00369ab8222433c82258408532c4058296f92"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/lineage.rs",
-    "line": 1,
-    "symbol": "resolve_neighborhood",
-    "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "0b2172dd2639bf25e3b1770e3782fb1f25e54b652db7145dd19b371336e243d5"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer/container_parser.rs",
-    "line": 1,
-    "symbol": "parse_dynamic_container",
-    "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "af8fe509a4b74419e3c4e557417ab2bf24a0f39484c4513ed054c874bde6b2a7"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer/mod.rs",
-    "line": 1,
-    "symbol": "normalize",
-    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "fe4e68560de90b6e9bb85e2a996ecb648518ea86488362f59d0ba5b409c5e017"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools/mutator/mod.rs",
-    "line": 1,
-    "symbol": "upsert_entity",
-    "message": "High .clone() density detected (9 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "c137ad15b1e6e7390664b09b581cdb4395ebb7e7de5a56376d6a8ac3d030bc12"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/lib.rs",
-    "line": 1,
-    "symbol": "setup_test_services",
-    "message": "High .clone() density detected (11 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "9679fc3a6ccd7cf040ecdb128ccdabc595665ca12235cf3eced6984e894836e9"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
-    "line": 1,
-    "symbol": "LOADED_EMBED",
-    "message": "Global mutable lock (static Mutex/RwLock) detected. Risk of hidden side-effects and deadlocks.",
-    "fingerprint": "0b7fcb3bc24d6a6aadcae02e2ad4352d03e0c0114ee7714d337844566b66742e"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
-    "line": 1,
-    "symbol": "LOADED_MODEL",
-    "message": "Global mutable lock (static Mutex/RwLock) detected. Risk of hidden side-effects and deadlocks.",
-    "fingerprint": "74bee89d13a18b9dc4ece8c38e3d4b779351bf7b48953d561cbd2433dbced61c"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "MODEL_STATES",
-    "message": "Global mutable lock (static Mutex/RwLock) detected. Risk of hidden side-effects and deadlocks.",
-    "fingerprint": "17877288899a59f6339054fbf698eea96d484e586acabbda1ba7307339cf60fb"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
-    "line": 1,
-    "symbol": "send_chat_message",
-    "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "af20238a2bb9e61fca09a1310263562a4144d13bf09a623238c70b7fa719cc20"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/local_ai.rs",
-    "line": 1,
-    "symbol": "download_hf_model",
-    "message": "High .clone() density detected (6 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "7a63977d43b36b969f6d3498c856fdf59aad86db95013fbd257a3c7041356ca1"
-  },
-  {
-    "rule": "TEST-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
-    "line": 1,
-    "symbol": "LOADED_EMBED",
-    "message": "Mutable global static state hinders deterministic isolated testing and parallel test execution.",
-    "fingerprint": "4460fd73e932e3eb347f5b3ddcfb319977de9568ce044297e9588223c9b63187"
-  },
-  {
-    "rule": "TEST-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/slot.rs",
-    "line": 1,
-    "symbol": "LOADED_MODEL",
-    "message": "Mutable global static state hinders deterministic isolated testing and parallel test execution.",
-    "fingerprint": "ed139ea5608a532f89dcfaddb29faef90f3b159c79757a05f3bca384a595e8ef"
-  },
-  {
-    "rule": "TEST-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "MODEL_STATES",
-    "message": "Mutable global static state hinders deterministic isolated testing and parallel test execution.",
-    "fingerprint": "30c6ef5cd7d39bbe25104236467376bc1b0712e70f985fbb41258888ea23ca2b"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/knowledge/entity.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "a471d0e52c7bcec40e15b28241889828be6156ca647bf40273cd58b0a499310c"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/knowledge/entity.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "facfb6ae710ece6eba449a9a1ce20750cf8f0b34032bb6703a37572966df18f8"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/knowledge/relation.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "34397e5cc656d1b3d1363cff8b00e533e6d173c88b2211587241b25b04ac5771"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/chapter.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "07de8c8c2d0a6a72fdbdd1c7a29e8175065f50c6423c7df403b11e2c1684ab60"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/chapter.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "07de8c8c2d0a6a72fdbdd1c7a29e8175065f50c6423c7df403b11e2c1684ab60"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/chapter.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "36df6b6e29f01dc86bdd825f962c38a18f721faa70bb1c1f53df82b342fd70d1"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/text_block.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "ea71d8c3e7e8ee03f420ff2ee92abb3a83956379bd7bcabbbc918d4b242d6ca1"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/volume.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "052128f3337ea56752263d671b9e4fa3b22a92bd69535be33b8a559adce4daf2"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/volume.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "6bc8c79d1c8e47a3cd11b3c3fb4f69e95c6e8f6bf1a511fd231977cc08b74044"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/plot/plan.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "7a0a9e9618ebfdf7ee9fc07f44c5f51561adfefeacf13db9743bda27f0aa752b"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/plot/plan.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "7a0a9e9618ebfdf7ee9fc07f44c5f51561adfefeacf13db9743bda27f0aa752b"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/plot/plan.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "730decfa467e7f454ea2c784a692242af520acb043f2a143d580d706915a289f"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/plot/promise.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "7e7a406f31398bfd6b63d1627e9d79adcec251e2788bc8bd2353ebac1dd09ce0"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/plot/promise.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'Utc::now' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "7e7a406f31398bfd6b63d1627e9d79adcec251e2788bc8bd2353ebac1dd09ce0"
-  },
-  {
-    "rule": "TEST-005",
-    "file": "./src-tauri/crates/worldwiki-domain/src/plot/promise.rs",
-    "line": 1,
-    "symbol": "system_call",
-    "message": "Non-deterministic system call 'uuid::Uuid::new_v4' invoked directly inside domain crate 'worldwiki-domain'. Domain logic must remain 100% deterministic and pure.",
-    "fingerprint": "9f66f5352dc7707ad64459aa02bb24eaf2113f8915919bb55bb54ea33ff17cc2"
   }
 ]

@@ -133,7 +133,7 @@ async fn restore_from_backup_missing_file_returns_err() {
 
     let res = restore_from_backup_inner(&db, missing.to_str().unwrap()).await;
     assert!(res.is_err(), "несуществующий файл должен вернуть Err");
-    assert!(res.unwrap_err().contains("does not exist"));
+    assert!(res.unwrap_err().to_string().contains("does not exist"));
 }
 
 #[tokio::test]
@@ -152,7 +152,7 @@ async fn restore_from_backup_zip_without_database_surql_returns_err() {
 
     let res = restore_from_backup_inner(&db, zip_path.to_str().unwrap()).await;
     assert!(res.is_err(), "zip без database.surql должен вернуть Err");
-    assert!(res.unwrap_err().contains("database.surql not found"));
+    assert!(res.unwrap_err().to_string().contains("database.surql not found"));
 }
 
 #[test]

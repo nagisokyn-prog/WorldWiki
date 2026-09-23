@@ -35,7 +35,7 @@ fn apply_override_field(
 
 pub(crate) fn parse_dynamic_container(
     dc: &Value,
-    templates: &HashMap<String, Value>,
+    templates: &HashMap<&str, &Value>,
 ) -> Option<NormalizedDynamicListDef> {
     let data_path = dc
         .get("dataPath")

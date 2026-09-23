@@ -18,7 +18,7 @@ pub use error::LlmError;
 pub use generator::{trigger_cancel_local_gen, CANCEL_LOCAL_GEN, LlmGenerator};
 pub use model::{resolve_model_path, ModelParams, TokenEvent};
 pub use sampler::LlmSampler;
-pub use slot::{get_loaded_embed_slot, get_loaded_model_slot, LoadedModelSlot};
+pub use slot::LoadedModelSlot;
 pub use tokenizer::LlmTokenizer;
 
 use std::sync::mpsc;

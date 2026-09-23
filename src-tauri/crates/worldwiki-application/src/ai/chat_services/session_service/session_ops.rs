@@ -60,6 +60,68 @@ fn build_message_branch(all_msgs: &[ChatMessage], target_idx: usize) -> Vec<&Cha
     branch
 }
 
+async fn find_target_chat(
+    chat_repo: &Arc<dyn ChatRepository>,
+    project_id: &str,
+    is_match: impl Fn(&ChatMessage) -> bool,
+) -> (Option<String>, Vec<ChatMessage>) {
+    let chats = chat_repo.get_chat_tree(project_id).await.unwrap_or_default();
+    for mut c in chats {
+        let msgs = chat_repo.get_messages(&c.id).await.unwrap_or_default();
+        if msgs.iter().any(&is_match) {
+            return (Some(std::mem::take(&mut c.id)), msgs);
+        }
+    }
+    for cid in &[
+        "chats:main",
+        "chats:original",
+        "chats:c_main",
+        "main",
+        "original",
+        "c_main",
+    ] {
+        let msgs = chat_repo.get_messages(cid).await.unwrap_or_default();
+        if msgs.iter().any(&is_match) {
+            return (Some((*cid).to_string()), msgs);
+        }
+    }
+    (None, Vec::new())
+}
+
+async fn copy_message_branch(
+    chat_repo: &Arc<dyn ChatRepository>,
+    branch: Vec<&ChatMessage>,
+    project_id: &str,
+    new_chat_id: &str,
+) -> Result<(), ApplicationError> {
+    let mut id_map: HashMap<&str, String> = HashMap::new();
+    for old_msg in branch {
+        let new_id = format!("chat_messages:{}", uuid::Uuid::new_v4());
+        let mapped_parent = old_msg.parent_id.as_deref().and_then(|p| id_map.get(p)).cloned();
+        let mut new_msg = ChatMessage::new(
+            new_id.clone(),
+            project_id,
+            new_chat_id,
+            old_msg.role,
+            &old_msg.content,
+        );
+        new_msg.parent_id = mapped_parent;
+        new_msg.is_active = old_msg.is_active;
+
+        id_map.insert(old_msg.id.as_str(), new_id.clone());
+        id_map.insert(
+            old_msg.id.trim_start_matches("chat_messages:"),
+            new_id,
+        );
+
+        chat_repo
+            .save_message(&new_msg)
+            .await
+            .map_err(ApplicationError::from)?;
+    }
+    Ok(())
+}
+
 pub async fn fork_chat(
     chat_repo: &Arc<dyn ChatRepository>,
     project_id: &str,
@@ -80,39 +142,7 @@ pub async fn fork_chat(
             || m.id.trim_start_matches("chat_messages:") == raw_id
     };
 
-    let chats = chat_repo
-        .get_chat_tree(project_id)
-        .await
-        .unwrap_or_default();
-    let mut target_chat_id = None;
-    let mut all_msgs = Vec::new();
-
-    for c in &chats {
-        let msgs = chat_repo.get_messages(&c.id).await.unwrap_or_default();
-        if msgs.iter().any(is_match) {
-            target_chat_id = Some(c.id.clone());
-            all_msgs = msgs;
-            break;
-        }
-    }
-
-    if target_chat_id.is_none() {
-        for cid in &[
-            "chats:main",
-            "chats:original",
-            "chats:c_main",
-            "main",
-            "original",
-            "c_main",
-        ] {
-            let msgs = chat_repo.get_messages(cid).await.unwrap_or_default();
-            if msgs.iter().any(is_match) {
-                target_chat_id = Some((*cid).to_string());
-                all_msgs = msgs;
-                break;
-            }
-        }
-    }
+    let (target_chat_id, all_msgs) = find_target_chat(chat_repo, project_id, is_match).await;
 
     let new_chat_id = format!("chats:{}", uuid::Uuid::new_v4());
     let title = if new_title.trim().is_empty() {
@@ -121,9 +151,7 @@ pub async fn fork_chat(
         new_title.to_string()
     };
     let mut chat = Chat::new(&new_chat_id, project_id, title);
-    if let Some(ref orig_chat_id) = target_chat_id {
-        chat.parent_chat_id = Some(orig_chat_id.clone());
-    }
+    chat.parent_chat_id = target_chat_id.clone();
 
     let saved = chat_repo
         .save_chat(&chat)
@@ -138,32 +166,7 @@ pub async fn fork_chat(
 
     if let Some(target_idx) = all_msgs.iter().position(is_match) {
         let branch = build_message_branch(&all_msgs, target_idx);
-
-        let mut id_map: HashMap<String, String> = HashMap::new();
-        for old_msg in branch {
-            let new_uuid = uuid::Uuid::new_v4().to_string();
-            let new_id = format!("chat_messages:{}", new_uuid);
-            id_map.insert(old_msg.id.clone(), new_id.clone());
-            id_map.insert(
-                old_msg.id.trim_start_matches("chat_messages:").to_string(),
-                new_id.clone(),
-            );
-
-            let mapped_parent = old_msg.parent_id.as_deref().and_then(|p| id_map.get(p)).cloned();
-            let mut new_msg = ChatMessage::new(
-                new_id,
-                project_id,
-                &new_chat_id,
-                old_msg.role.clone(),
-                &old_msg.content,
-            );
-            new_msg.parent_id = mapped_parent;
-            new_msg.is_active = old_msg.is_active;
-            chat_repo
-                .save_message(&new_msg)
-                .await
-                .map_err(ApplicationError::from)?;
-        }
+        copy_message_branch(chat_repo, branch, project_id, &new_chat_id).await?;
     }
 
     Ok(saved)

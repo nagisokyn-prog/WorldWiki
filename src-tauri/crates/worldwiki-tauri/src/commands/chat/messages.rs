@@ -26,14 +26,12 @@ pub async fn send_chat_message(
         .map_err(IpcError::from)?;
 
     let chat_svc = state.services.chat.clone();
-    let p_id = project.clone();
     let c_id = res.chat_id.clone();
     let a_id = res.assistant_msg_id.clone();
-    let u_text = text.clone();
 
     let _agent_task = tokio::spawn(async move {
         chat_svc
-            .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
+            .run_agent_loop(&project, &c_id, &a_id, &text, mode_slug)
             .await;
     });
 
@@ -96,12 +94,10 @@ pub async fn edit_chat_message(
         .map_err(IpcError::from)?;
 
     let chat_svc = state.services.chat.clone();
-    let p_id = project.clone();
-    let u_text = new_text.clone();
 
     let _agent_task = tokio::spawn(async move {
         chat_svc
-            .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
+            .run_agent_loop(&project, &c_id, &a_id, &new_text, mode_slug)
             .await;
     });
 
@@ -124,11 +120,10 @@ pub async fn regenerate_chat_message(
         .map_err(IpcError::from)?;
 
     let chat_svc = state.services.chat.clone();
-    let p_id = project.clone();
 
     let _agent_task = tokio::spawn(async move {
         chat_svc
-            .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
+            .run_agent_loop(&project, &c_id, &a_id, &u_text, mode_slug)
             .await;
     });
 

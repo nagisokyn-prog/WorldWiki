@@ -142,9 +142,9 @@ impl<'a> ErrorRulesChecker<'a> {
         }
 
         if let Visibility::Public(_) = &item_fn.vis {
-            let ret_str = quote::quote!(#item_fn.sig.output).to_string();
-            if ret_str.contains("Result <") && ret_str.contains("String >") {
+            if is_untyped_result_error(&item_fn.sig.output) {
                 let name = item_fn.sig.ident.to_string();
+                let ret_str = quote::quote!(#item_fn.sig.output).to_string();
                 let snippet = format!("pub fn {}(...) -> {}", name, ret_str);
                 let fp = compute_fingerprint("ERR-003", "1.0", &name, &snippet);
 
@@ -259,27 +259,29 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
 
     fn visit_impl_item(&mut self, item: &syn::ImplItem) {
         if let syn::ImplItem::Fn(method) = item {
-            if let Visibility::Public(_) = &method.vis {
-                let ret_str = quote::quote!(#method.sig.output).to_string();
-                if ret_str.contains("Result <") && ret_str.contains("String >") {
-                    let name = method.sig.ident.to_string();
-                    let snippet = format!("pub fn {}(...) -> {}", name, ret_str);
-                    let fp = compute_fingerprint("ERR-003", "1.0", &name, &snippet);
+            if self.checker.is_rule_enabled("ERR-003") {
+                if let Visibility::Public(_) = &method.vis {
+                    if is_untyped_result_error(&method.sig.output) {
+                        let name = method.sig.ident.to_string();
+                        let ret_str = quote::quote!(#method.sig.output).to_string();
+                        let snippet = format!("pub fn {}(...) -> {}", name, ret_str);
+                        let fp = compute_fingerprint("ERR-003", "1.0", &name, &snippet);
 
-                    self.violations.push(Violation {
-                        rule_id: "ERR-003".into(),
-                        rule_version: "1.0".into(),
-                        category: Category::ErrorHandling,
-                        severity: self.checker.get_severity("ERR-003", Severity::Warn),
-                        file: PathBuf::from(self.checker.file_path),
-                        line: 1,
-                        column: 1,
-                        symbol: name,
-                        message: "Public method returns untyped 'Result<T, String>'.".into(),
-                        snippet,
-                        remediation: "Define domain-specific typed error enum using thiserror.".into(),
-                        fingerprint: fp,
-                    });
+                        self.violations.push(Violation {
+                            rule_id: "ERR-003".into(),
+                            rule_version: "1.0".into(),
+                            category: Category::ErrorHandling,
+                            severity: self.checker.get_severity("ERR-003", Severity::Warn),
+                            file: PathBuf::from(self.checker.file_path),
+                            line: 1,
+                            column: 1,
+                            symbol: name,
+                            message: "Public method returns untyped 'Result<T, String>'.".into(),
+                            snippet,
+                            remediation: "Define domain-specific typed error enum using thiserror.".into(),
+                            fingerprint: fp,
+                        });
+                    }
                 }
             }
         }
@@ -290,6 +292,32 @@ impl<'a, 'b> Visit<'_> for ErrorRulesVisitor<'a, 'b> {
         self.checker.check_library_panic(item, self.violations);
         syn::visit::visit_expr(self, item);
     }
+}
+
+fn is_untyped_result_error(output: &syn::ReturnType) -> bool {
+    if let syn::ReturnType::Type(_, ty) = output {
+        if let syn::Type::Path(type_path) = ty.as_ref() {
+            if let Some(seg) = type_path.path.segments.last() {
+                if seg.ident == "Result" {
+                    if let syn::PathArguments::AngleBracketed(args) = &seg.arguments {
+                        if let Some(syn::GenericArgument::Type(err_ty)) = args.args.iter().nth(1) {
+                            return is_string_type(err_ty);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+fn is_string_type(ty: &syn::Type) -> bool {
+    if let syn::Type::Path(type_path) = ty {
+        if let Some(seg) = type_path.path.segments.last() {
+            return seg.ident == "String";
+        }
+    }
+    false
 }
 
 #[cfg(test)]
@@ -332,5 +360,225 @@ mod tests {
         assert!(violations.iter().any(|v| v.rule_id == "ERR-002"));
         assert!(violations.iter().any(|v| v.rule_id == "ERR-003"));
         assert!(violations.iter().any(|v| v.rule_id == "ERR-005"));
+    }
+
+    #[test]
+    fn test_err_003_no_false_positive_for_typed_errors_with_string_payload() {
+        let code = r#"
+            pub struct MyService;
+
+            impl MyService {
+                pub fn get_string(&self) -> Result<String, MyTypedError> {
+                    Ok("ok".to_string())
+                }
+                pub fn get_option_string(&self) -> Result<Option<String>, MyTypedError> {
+                    Ok(Some("ok".to_string()))
+                }
+                pub fn get_vec_string(&self) -> Result<Vec<String>, MyTypedError> {
+                    Ok(vec![])
+                }
+                pub fn get_map(&self) -> Result<std::collections::HashMap<String, String>, MyTypedError> {
+                    Ok(Default::default())
+                }
+            }
+
+            pub fn standalone_valid_string_result() -> Result<String, MyTypedError> {
+                Ok("ok".to_string())
+            }
+        "#;
+
+        let syntax = syn::parse_file(code).unwrap();
+        let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-application", &[]);
+        let violations = checker.check_file(&syntax);
+
+        assert!(
+            violations.is_empty(),
+            "Expected 0 violations for typed error with string payload, got: {:?}",
+            violations
+        );
+    }
+
+    #[test]
+    fn test_error_rules_disabled_via_severity_off() {
+        let code = r#"
+            pub struct MyStruct;
+
+            impl MyStruct {
+                pub fn method_returning_string_err(&self) -> Result<(), String> {
+                    Ok(())
+                }
+            }
+
+            impl Drop for MyStruct {
+                fn drop(&mut self) {
+                    let _ = std::fs::read("file");
+                    panic!("Drop panic");
+                }
+            }
+
+            pub fn pub_fn_returning_string_err() -> Result<u32, String> {
+                panic!("expr panic");
+            }
+        "#;
+
+        let syntax = syn::parse_file(code).unwrap();
+        let off_rules = vec![
+            RuleDefinition {
+                id: "ERR-001".into(),
+                version: "1.0".into(),
+                category: Category::ErrorHandling,
+                severity: Severity::Off,
+                title: "Wildcard".into(),
+                description: "".into(),
+                remediation: "".into(),
+            },
+            RuleDefinition {
+                id: "ERR-002".into(),
+                version: "1.0".into(),
+                category: Category::ErrorHandling,
+                severity: Severity::Off,
+                title: "Drop panic".into(),
+                description: "".into(),
+                remediation: "".into(),
+            },
+            RuleDefinition {
+                id: "ERR-003".into(),
+                version: "1.0".into(),
+                category: Category::ErrorHandling,
+                severity: Severity::Off,
+                title: "String err".into(),
+                description: "".into(),
+                remediation: "".into(),
+            },
+            RuleDefinition {
+                id: "ERR-005".into(),
+                version: "1.0".into(),
+                category: Category::ErrorHandling,
+                severity: Severity::Off,
+                title: "Lib panic".into(),
+                description: "".into(),
+                remediation: "".into(),
+            },
+        ];
+
+        let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &off_rules);
+        let violations = checker.check_file(&syntax);
+        assert!(violations.is_empty(), "Expected 0 violations when all error rules are Off");
+    }
+
+    #[test]
+    fn test_error_rules_binary_crate_allows_panic() {
+        let code = r#"
+            fn main() {
+                let _ = std::fs::write("test.txt", b"hi");
+                panic!("Fatal CLI crash");
+            }
+
+            fn helper() {
+                unimplemented!("cli unimpl");
+            }
+        "#;
+
+        let syntax = syn::parse_file(code).unwrap();
+        let checker = ErrorRulesChecker::new("src/bin/main.rs", "my-cli-bin", &[]);
+        let violations = checker.check_file(&syntax);
+
+        assert!(
+            violations.iter().all(|v| v.rule_id != "ERR-005"),
+            "Binary target must not trigger ERR-005 for panic!/unimplemented!"
+        );
+    }
+
+    #[test]
+    fn test_error_rules_private_items_and_diverse_return_types() {
+        let code = r#"
+            pub struct Foo;
+
+            impl std::fmt::Display for Foo {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    write!(f, "Foo")
+                }
+            }
+
+            impl Foo {
+                // Private method returning String error is not part of public API
+                fn private_method(&self) -> Result<(), String> {
+                    Ok(())
+                }
+
+                pub fn returns_ref(&self) -> &'static str {
+                    "hello"
+                }
+
+                pub fn returns_tuple(&self) -> (i32, i32) {
+                    (1, 2)
+                }
+
+                pub fn returns_unit(&self) {}
+
+                pub fn returns_single_arg_result(&self) -> Result<()> {
+                    Ok(())
+                }
+
+                pub fn returns_str_error(&self) -> Result<(), &'static str> {
+                    Ok(())
+                }
+
+                pub fn returns_tuple_error(&self) -> Result<(), (i32, i32)> {
+                    Ok(())
+                }
+
+                pub fn returns_unit_error(&self) -> Result<(), ()> {
+                    Ok(())
+                }
+            }
+
+            // Private function returning String error
+            fn private_fn() -> Result<u32, String> {
+                let _uninit;
+                let _ = 42;
+                Ok(0)
+            }
+        "#;
+
+        let syntax = syn::parse_file(code).unwrap();
+        let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &[]);
+        let violations = checker.check_file(&syntax);
+
+        let err003_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "ERR-003").collect();
+        assert!(
+            err003_violations.is_empty(),
+            "Private methods/functions or non-String error types must not trigger ERR-003: {:?}",
+            err003_violations
+        );
+    }
+
+    #[test]
+    fn test_err_001_and_002_additional_triggers() {
+        let code = r#"
+            pub struct DropTester;
+
+            impl Drop for DropTester {
+                fn drop(&mut self) {
+                    let _ = self.send();
+                    let _ = self.execute();
+                    let _ = self.flush();
+                    let opt: Option<i32> = None;
+                    let _ = opt.unwrap();
+                    let res: Result<i32, ()> = Ok(1);
+                    let _ = res.expect("failed");
+                }
+            }
+        "#;
+
+        let syntax = syn::parse_file(code).unwrap();
+        let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &[]);
+        let violations = checker.check_file(&syntax);
+
+        let err001_count = violations.iter().filter(|v| v.rule_id == "ERR-001").count();
+        let err002_count = violations.iter().filter(|v| v.rule_id == "ERR-002").count();
+
+        assert_eq!(err001_count, 3, "Expected 3 ERR-001 violations (send, execute, flush)");
+        assert_eq!(err002_count, 2, "Expected 2 ERR-002 violations (unwrap, expect)");
     }
 }

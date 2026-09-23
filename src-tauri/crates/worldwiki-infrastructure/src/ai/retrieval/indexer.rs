@@ -6,7 +6,6 @@ use std::sync::Arc;
 use surrealdb::engine::local::Db;
 use surrealdb::types::RecordId;
 use surrealdb::Surreal;
-use tokio::task::JoinSet;
 
 #[derive(Clone, Debug)]
 pub struct PendingChunk {
@@ -162,32 +161,17 @@ pub async fn reindex_project_lore_inner(
 
     let is_embedder_alive = embedder.embed_passage("test").await.is_ok();
     if is_embedder_alive {
-        println!("[INDEXER] Сервер эмбеддингов доступен. Запуск параллельной векторизации (Tokio Pool)...");
-        let mut join_set = JoinSet::new();
-        let semaphore = Arc::new(tokio::sync::Semaphore::new(16));
-
+        println!("[INDEXER] Сервер эмбеддингов доступен. Запуск векторизации...");
         for chunk in pending_chunks {
-            let emb_svc = Arc::clone(&embedder);
-            let sem = Arc::clone(&semaphore);
-
-            join_set.spawn(async move {
-                let _permit = sem.acquire().await.ok();
-                let embedding = emb_svc.embed_passage(&chunk.content).await.ok();
-                ProcessedChunk {
-                    chapter_id: chunk.chapter_id,
-                    entity_id: chunk.entity_id,
-                    title: chunk.title,
-                    content: chunk.content,
-                    chunk_index: chunk.chunk_index,
-                    embedding,
-                }
+            let embedding = embedder.embed_passage(&chunk.content).await.ok();
+            processed_chunks.push(ProcessedChunk {
+                chapter_id: chunk.chapter_id,
+                entity_id: chunk.entity_id,
+                title: chunk.title,
+                content: chunk.content,
+                chunk_index: chunk.chunk_index,
+                embedding,
             });
-        }
-
-        while let Some(res) = join_set.join_next().await {
-            if let Ok(processed) = res {
-                processed_chunks.push(processed);
-            }
         }
     } else {
         println!(

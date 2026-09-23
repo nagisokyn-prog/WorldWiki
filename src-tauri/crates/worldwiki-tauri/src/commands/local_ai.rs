@@ -187,6 +187,17 @@ pub async fn download_hf_model(
         )));
     }
 
+    #[derive(serde::Serialize)]
+    struct BorrowedProgressEvent<'a> {
+        repo_id: &'a str,
+        filename: &'a str,
+        downloaded_bytes: u64,
+        total_bytes: u64,
+        percent: f32,
+        is_done: bool,
+        error: Option<&'a str>,
+    }
+
     let total_bytes = resp.content_length().unwrap_or(0);
     let mut file = tokio::fs::File::create(&dest_path)
         .await
@@ -200,14 +211,14 @@ pub async fn download_hf_model(
         let err_msg = format!("Chunk stream error: {e}");
         let _ = app.emit(
             "model_download_progress",
-            DownloadProgressEvent {
-                repo_id: repo_id.clone(),
-                filename: filename.clone(),
+            BorrowedProgressEvent {
+                repo_id: &repo_id,
+                filename: &filename,
                 downloaded_bytes,
                 total_bytes,
                 percent: 0.0,
                 is_done: false,
-                error: Some(err_msg.clone()),
+                error: Some(&err_msg),
             },
         );
         err_msg
@@ -230,9 +241,9 @@ pub async fn download_hf_model(
 
             let _ = app.emit(
                 "model_download_progress",
-                DownloadProgressEvent {
-                    repo_id: repo_id.clone(),
-                    filename: filename.clone(),
+                BorrowedProgressEvent {
+                    repo_id: &repo_id,
+                    filename: &filename,
                     downloaded_bytes,
                     total_bytes,
                     percent,
@@ -249,9 +260,9 @@ pub async fn download_hf_model(
 
     let _ = app.emit(
         "model_download_progress",
-        DownloadProgressEvent {
-            repo_id,
-            filename: filename.clone(),
+        BorrowedProgressEvent {
+            repo_id: &repo_id,
+            filename: &filename,
             downloaded_bytes,
             total_bytes,
             percent: 100.0,

@@ -10,6 +10,24 @@ use worldwiki_domain::knowledge::{
     NormalizedDynamicListDef, NormalizedEntitySchema, NormalizedFieldDef,
 };
 
+fn insert_flat_field(flat_fields: &mut HashMap<String, NormalizedFieldDef>, val: &Value) {
+    if let Some(fd) = parse_field_def(val) {
+        let key = fd.key.clone();
+        flat_fields.insert(key, fd);
+    }
+}
+
+fn insert_dynamic_container(
+    dynamic_lists: &mut HashMap<String, NormalizedDynamicListDef>,
+    val: &Value,
+    templates: &HashMap<&str, &Value>,
+) {
+    if let Some(dld) = parse_dynamic_container(val, templates) {
+        let key = dld.data_path.clone();
+        dynamic_lists.insert(key, dld);
+    }
+}
+
 /// Нормализует сырой full_schema (с секциями, dynamicContainers, templates, fieldOverrides)
 /// в чистый `NormalizedEntitySchema` без UI-мусора.
 pub fn normalize(full_schema: &Value, ui_templates: Option<&Value>) -> NormalizedEntitySchema {
@@ -32,15 +50,15 @@ pub fn normalize(full_schema: &Value, ui_templates: Option<&Value>) -> Normalize
     let mut dynamic_lists: HashMap<String, NormalizedDynamicListDef> = HashMap::new();
 
     // Сбор шаблонов (локальных и глобальных ui_editor.json)
-    let mut all_templates: HashMap<String, Value> = HashMap::new();
+    let mut all_templates: HashMap<&str, &Value> = HashMap::new();
     if let Some(Value::Object(t_map)) = ui_templates.and_then(|v| v.get("templates")) {
         for (k, v) in t_map {
-            all_templates.insert(k.clone(), v.clone());
+            all_templates.insert(k.as_str(), v);
         }
     }
     if let Some(Value::Object(t_map)) = full_schema.get("templates") {
         for (k, v) in t_map {
-            all_templates.insert(k.clone(), v.clone());
+            all_templates.insert(k.as_str(), v);
         }
     }
 
@@ -50,9 +68,7 @@ pub fn normalize(full_schema: &Value, ui_templates: Option<&Value>) -> Normalize
             // 1. Плоские поля
             if let Some(fields) = sec.get("fields").and_then(|v| v.as_array()) {
                 for f in fields {
-                    if let Some(fd) = parse_field_def(f) {
-                        flat_fields.insert(fd.key.clone(), fd);
-                    }
+                    insert_flat_field(&mut flat_fields, f);
                 }
             }
 
@@ -65,9 +81,9 @@ pub fn normalize(full_schema: &Value, ui_templates: Option<&Value>) -> Normalize
                         || it.get("type").and_then(|s| s.as_str()) == Some("timeline");
 
                     if !is_dyn {
-                        if let Some(fd) = parse_field_def(it) {
-                            flat_fields.insert(fd.key.clone(), fd);
-                        }
+                        insert_flat_field(&mut flat_fields, it);
+                    } else {
+                        insert_dynamic_container(&mut dynamic_lists, it, &all_templates);
                     }
                 }
             }
@@ -75,24 +91,7 @@ pub fn normalize(full_schema: &Value, ui_templates: Option<&Value>) -> Normalize
             // 2. Динамические контейнеры
             if let Some(dyn_containers) = sec.get("dynamicContainers").and_then(|v| v.as_array()) {
                 for dc in dyn_containers {
-                    if let Some(dld) = parse_dynamic_container(dc, &all_templates) {
-                        dynamic_lists.insert(dld.data_path.clone(), dld);
-                    }
-                }
-            }
-
-            if let Some(items) = sec.get("items").and_then(|v| v.as_array()) {
-                for it in items {
-                    let is_dyn = it.get("template").is_some()
-                        || it.get("dataPath").is_some()
-                        || it.get("type").and_then(|s| s.as_str()) == Some("dynamic")
-                        || it.get("type").and_then(|s| s.as_str()) == Some("timeline");
-
-                    if is_dyn {
-                        if let Some(dld) = parse_dynamic_container(it, &all_templates) {
-                            dynamic_lists.insert(dld.data_path.clone(), dld);
-                        }
-                    }
+                    insert_dynamic_container(&mut dynamic_lists, dc, &all_templates);
                 }
             }
         }

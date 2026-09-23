@@ -10,6 +10,20 @@ use worldwiki_domain::errors::DomainError;
 use zip::write::SimpleFileOptions;
 use zip::ZipWriter;
 
+fn copy_file_to_zip(
+    zip: &mut ZipWriter<fs::File>,
+    path: &Path,
+    zip_entry_name: &str,
+    options: SimpleFileOptions,
+) -> std::io::Result<()> {
+    if let Ok(mut src_file) = fs::File::open(path) {
+        zip.start_file(zip_entry_name, options)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        std::io::copy(&mut src_file, zip)?;
+    }
+    Ok(())
+}
+
 fn add_directory_files_to_zip<F>(
     zip: &mut ZipWriter<fs::File>,
     dir: &Path,
@@ -45,12 +59,8 @@ fn add_directory_files_to_zip<F>(
         if !filter(fname) {
             continue;
         }
-        if let Ok(content) = fs::read(&path) {
-            let zip_entry_name = format!("{}/{}", prefix, fname);
-            if zip.start_file(zip_entry_name, options).is_ok() {
-                let _res = zip.write_all(&content);
-            }
-        }
+        let zip_entry_name = format!("{}/{}", prefix, fname);
+        let _ = copy_file_to_zip(zip, &path, &zip_entry_name, options);
     }
 }
 
@@ -79,10 +89,10 @@ pub async fn create_cloud_backup_inner(
         .compression_method(zip::CompressionMethod::Deflated);
 
     // 1. Add database dump
-    if let Ok(dump_content) = fs::read(&temp_surql_path) {
+    if let Ok(mut dump_file) = fs::File::open(&temp_surql_path) {
         zip.start_file("database.surql", options)
             .map_err(|e| DomainError::Validation(e.to_string()))?;
-        zip.write_all(&dump_content)
+        std::io::copy(&mut dump_file, &mut zip)
             .map_err(|e| DomainError::Validation(e.to_string()))?;
     }
 

@@ -39,6 +39,27 @@ pub async fn delete_chat(
     chat_repo.delete_chat(chat_id).await.map_err(ApplicationError::from)
 }
 
+fn build_message_branch(all_msgs: &[ChatMessage], target_idx: usize) -> Vec<&ChatMessage> {
+    let mut branch = Vec::new();
+    let mut curr = all_msgs.get(target_idx);
+    while let Some(msg) = curr {
+        branch.push(msg);
+        curr = msg.parent_id.as_deref().and_then(|p| {
+            let p_raw = p.trim_start_matches("chat_messages:");
+            all_msgs
+                .iter()
+                .find(|m| m.id == p || m.id.trim_start_matches("chat_messages:") == p_raw)
+        });
+    }
+    branch.reverse();
+    if branch.is_empty() {
+        if let Some(slice) = all_msgs.get(..=target_idx) {
+            branch = slice.iter().collect();
+        }
+    }
+    branch
+}
+
 pub async fn fork_chat(
     chat_repo: &Arc<dyn ChatRepository>,
     project_id: &str,
@@ -99,7 +120,7 @@ pub async fn fork_chat(
     } else {
         new_title.to_string()
     };
-    let mut chat = Chat::new(new_chat_id.clone(), project_id, title);
+    let mut chat = Chat::new(&new_chat_id, project_id, title);
     if let Some(ref orig_chat_id) = target_chat_id {
         chat.parent_chat_id = Some(orig_chat_id.clone());
     }
@@ -110,32 +131,13 @@ pub async fn fork_chat(
         .map_err(ApplicationError::from)?;
 
     if let Some(ref orig_chat_id) = target_chat_id {
-        let _ = chat_repo
+        let _res = chat_repo
             .update_chat_parent(&new_chat_id, Some(orig_chat_id))
             .await;
     }
 
     if let Some(target_idx) = all_msgs.iter().position(is_match) {
-        let mut branch = Vec::new();
-        let mut curr = Some(all_msgs[target_idx].clone());
-        while let Some(msg) = curr {
-            let pid = msg.parent_id.clone();
-            branch.push(msg);
-            curr = pid.and_then(|p| {
-                let p_raw = p.trim_start_matches("chat_messages:");
-                all_msgs
-                    .iter()
-                    .find(|m| m.id == p || m.id.trim_start_matches("chat_messages:") == p_raw)
-                    .cloned()
-            });
-        }
-        branch.reverse();
-
-        if branch.is_empty() {
-            if let Some(slice) = all_msgs.get(..=target_idx) {
-                branch = slice.to_vec();
-            }
-        }
+        let branch = build_message_branch(&all_msgs, target_idx);
 
         let mut id_map: HashMap<String, String> = HashMap::new();
         for old_msg in branch {
@@ -147,13 +149,13 @@ pub async fn fork_chat(
                 new_id.clone(),
             );
 
-            let mapped_parent = old_msg.parent_id.and_then(|p| id_map.get(&p).cloned());
+            let mapped_parent = old_msg.parent_id.as_deref().and_then(|p| id_map.get(p)).cloned();
             let mut new_msg = ChatMessage::new(
                 new_id,
                 project_id,
-                new_chat_id.clone(),
-                old_msg.role,
-                old_msg.content,
+                &new_chat_id,
+                old_msg.role.clone(),
+                &old_msg.content,
             );
             new_msg.parent_id = mapped_parent;
             new_msg.is_active = old_msg.is_active;

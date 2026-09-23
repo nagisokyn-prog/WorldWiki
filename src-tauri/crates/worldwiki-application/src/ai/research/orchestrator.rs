@@ -6,6 +6,7 @@ use worldwiki_domain::ai::{
     WebEvidence, WebPageEntity,
 };
 use worldwiki_ports::ai::WebResearchPort;
+use crate::errors::ApplicationError;
 use super::ranker::SourceRanker;
 use super::stopping::StoppingCriteriaEvaluator;
 
@@ -31,7 +32,7 @@ impl ResearchOrchestrator {
         objective: &str,
         mode: ResearchMode,
         mut on_event: F,
-    ) -> Result<(Vec<WebEvidence>, Vec<CitationItem>), String>
+    ) -> Result<(Vec<WebEvidence>, Vec<CitationItem>), ApplicationError>
     where
         F: FnMut(ResearchEvent),
     {

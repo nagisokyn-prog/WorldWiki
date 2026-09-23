@@ -2,24 +2,25 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::Path;
 use worldwiki_domain::document::{ExportDocumentRequest, ExportDocumentResponse};
+use worldwiki_domain::errors::DomainError;
 use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
 
 use super::utils::{
-    escape_html, extract_inline_text, extract_inline_text_with_footnotes, sanitize_filename,
+    escape_html, extract_inline_text, extract_inline_text_html_with_footnotes, sanitize_filename,
 };
 
 pub fn generate_epub(
     request: &ExportDocumentRequest,
     target_dir: &Path,
-) -> Result<ExportDocumentResponse, String> {
-    fs::create_dir_all(target_dir).map_err(|e| e.to_string())?;
+) -> Result<ExportDocumentResponse, DomainError> {
+    fs::create_dir_all(target_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     let safe_title = sanitize_filename(&request.title);
     let file_name = format!("{}.epub", safe_title);
     let output_path = target_dir.join(&file_name);
 
-    let file = File::create(&output_path).map_err(|e| e.to_string())?;
+    let file = File::create(&output_path).map_err(|e| DomainError::Validation(e.to_string()))?;
     let mut zip = zip::ZipWriter::new(file);
 
     // 1. mimetype (Must be first, uncompressed)
@@ -27,9 +28,9 @@ pub fn generate_epub(
         .compression_method(CompressionMethod::Stored)
         .unix_permissions(0o644);
     zip.start_file("mimetype", stored_options)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
     zip.write_all(b"application/epub+zip")
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
 
     let deflated_options = SimpleFileOptions::default()
         .compression_method(CompressionMethod::Deflated)
@@ -37,7 +38,7 @@ pub fn generate_epub(
 
     // 2. META-INF/container.xml
     zip.start_file("META-INF/container.xml", deflated_options)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
     let container_xml = r#"<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <rootfiles>
@@ -45,11 +46,11 @@ pub fn generate_epub(
   </rootfiles>
 </container>"#;
     zip.write_all(container_xml.as_bytes())
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
 
     // 3. OEBPS/style.css
     zip.start_file("OEBPS/style.css", deflated_options)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
     let css = r#"
 body { font-family: serif; margin: 5%; line-height: 1.5; }
 h1, h2, h3 { font-family: sans-serif; text-align: center; }
@@ -58,11 +59,11 @@ figure { text-align: center; margin: 1em 0; }
 figcaption { font-size: 0.9em; color: #555; }
 .footnote { font-size: 0.85em; border-top: 1px solid #ccc; margin-top: 2em; padding-top: 0.5em; }
 "#;
-    zip.write_all(css.as_bytes()).map_err(|e| e.to_string())?;
+    zip.write_all(css.as_bytes()).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     // 4. OEBPS/chapter1.xhtml
     zip.start_file("OEBPS/chapter1.xhtml", deflated_options)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
 
     let mut html = String::with_capacity(16384);
     html.push_str("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
@@ -94,7 +95,7 @@ figcaption { font-size: 0.9em; color: #555; }
             }
             "paragraph" => {
                 let p_text =
-                    extract_inline_text_with_footnotes(block.get("content"), &mut footnotes);
+                    extract_inline_text_html_with_footnotes(block.get("content"), &mut footnotes);
                 html.push_str(&format!("  <p>{}</p>\n", p_text));
             }
             "figure" => {
@@ -159,11 +160,11 @@ figcaption { font-size: 0.9em; color: #555; }
     }
 
     html.push_str("</body>\n</html>\n");
-    zip.write_all(html.as_bytes()).map_err(|e| e.to_string())?;
+    zip.write_all(html.as_bytes()).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     // 5. OEBPS/toc.xhtml (EPUB 3 Navigation)
     zip.start_file("OEBPS/toc.xhtml", deflated_options)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
     let toc_xhtml = format!(
         r#"<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html>
@@ -181,11 +182,11 @@ figcaption { font-size: 0.9em; color: #555; }
         escape_html(&request.title)
     );
     zip.write_all(toc_xhtml.as_bytes())
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
 
     // 6. OEBPS/content.opf
     zip.start_file("OEBPS/content.opf", deflated_options)
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| DomainError::Validation(e.to_string()))?;
     let doc_uuid = uuid::Uuid::new_v4().to_string();
     let authors_meta = request
         .authors
@@ -217,11 +218,11 @@ figcaption { font-size: 0.9em; color: #555; }
         escape_html(&request.title),
         authors_meta
     );
-    zip.write_all(opf.as_bytes()).map_err(|e| e.to_string())?;
+    zip.write_all(opf.as_bytes()).map_err(|e| DomainError::Validation(e.to_string()))?;
 
-    zip.finish().map_err(|e| e.to_string())?;
+    zip.finish().map_err(|e| DomainError::Validation(e.to_string()))?;
 
-    let metadata = fs::metadata(&output_path).map_err(|e| e.to_string())?;
+    let metadata = fs::metadata(&output_path).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     Ok(ExportDocumentResponse {
         success: true,

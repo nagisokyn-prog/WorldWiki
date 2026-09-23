@@ -29,23 +29,29 @@ mod tests {
     use worldwiki_infrastructure::events::InMemoryEventPublisher;
 
     fn setup_test_services() -> AiToolFacades {
-        let chapter_repo = Arc::new(InMemoryChapterRepository::default());
-        let entity_repo = Arc::new(InMemoryEntityRepository::default());
-        let relation_repo = Arc::new(InMemoryRelationRepository::default());
-        let promise_repo = Arc::new(InMemoryPlotPromiseRepository::default());
-        let plan_repo = Arc::new(InMemoryPlanRepository::default());
-
-        let events = Arc::new(InMemoryEventPublisher);
-        let ai_adapter = Arc::new(MockAiAdapter);
-
-        let manuscript = Arc::new(ManuscriptServices::new(chapter_repo.clone(), events.clone()));
-        let knowledge = Arc::new(KnowledgeServices::new(entity_repo.clone(), relation_repo.clone(), events.clone()));
+        let events: Arc<dyn worldwiki_ports::EventPublisherPort> = Arc::new(InMemoryEventPublisher);
+        let manuscript = Arc::new(ManuscriptServices::new(
+            Arc::new(InMemoryChapterRepository::default()),
+            Arc::clone(&events),
+        ));
+        let knowledge = Arc::new(KnowledgeServices::new(
+            Arc::new(InMemoryEntityRepository::default()),
+            Arc::new(InMemoryRelationRepository::default()),
+            Arc::clone(&events),
+        ));
         let calendar = Arc::new(CalendarServices::new());
-        let plot = Arc::new(PlotServices::new(promise_repo.clone(), plan_repo.clone(), events.clone()));
+        let plot = Arc::new(PlotServices::new(
+            Arc::new(InMemoryPlotPromiseRepository::default()),
+            Arc::new(InMemoryPlanRepository::default()),
+            events,
+        ));
         let job_manager = Arc::new(JobManager::new());
 
-        let edit_workflow = Arc::new(EditManuscriptAtomicWorkflow::new(manuscript.clone(), plot.clone()));
-        let search_workflow = Arc::new(HybridSemanticSearchWorkflow::new(ai_adapter.clone()));
+        let edit_workflow = Arc::new(EditManuscriptAtomicWorkflow::new(
+            Arc::clone(&manuscript),
+            Arc::clone(&plot),
+        ));
+        let search_workflow = Arc::new(HybridSemanticSearchWorkflow::new(Arc::new(MockAiAdapter)));
 
         AiToolFacades::new(
             manuscript,

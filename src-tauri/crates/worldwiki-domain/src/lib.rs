@@ -1,19 +1,19 @@
-pub mod errors;
-pub mod manuscript;
-pub mod knowledge;
-pub mod calendar;
-pub mod plot;
-pub mod document;
 pub mod ai;
+pub mod calendar;
+pub mod document;
+pub mod errors;
+pub mod knowledge;
+pub mod manuscript;
+pub mod plot;
 pub mod storage;
 
 pub use errors::DomainError;
 
 #[cfg(test)]
 mod tests {
-    use crate::manuscript::{Chapter, TextBlock, ManuscriptStatus};
-    use crate::plot::{PlotPromise, PromiseKind, PromiseStatus, Plan, PlanParentType};
     use crate::knowledge::Entity;
+    use crate::manuscript::{Chapter, ManuscriptStatus, TextBlock};
+    use crate::plot::{Plan, PlanParentType, PlotPromise, PromiseKind, PromiseStatus};
 
     #[test]
     fn test_extract_entity_mentions() {
@@ -33,16 +33,31 @@ mod tests {
 
     #[test]
     fn test_plot_promise_resolution() {
-        let mut promise = PlotPromise::new("proj_1", "ch_1", PromiseKind::Gun, "Старинный револьвер на стене");
+        let mut promise = PlotPromise::new(
+            "proj_1",
+            "ch_1",
+            PromiseKind::Gun,
+            "Старинный револьвер на стене",
+        );
         assert_eq!(promise.status, PromiseStatus::Planted);
-        promise.resolve("ch_5".to_string(), Some("vol_1".to_string()), Some("Выстрелил в финале".to_string()));
+        promise.resolve(
+            "ch_5",
+            Some("vol_1".to_string()),
+            Some(serde_json::json!("Выстрелил в финале")),
+        );
         assert_eq!(promise.status, PromiseStatus::Resolved);
         assert_eq!(promise.resolved_in_chapter.as_deref(), Some("ch_5"));
     }
 
     #[test]
     fn test_plan_completion() {
-        let mut plan = Plan::new("proj_1", "Побег из замка", PlanParentType::Chapter, Some("ch_1".to_string()), 1);
+        let mut plan = Plan::new(
+            "proj_1",
+            "Побег из замка",
+            PlanParentType::Chapter,
+            Some("ch_1".to_string()),
+            1,
+        );
         assert!(!plan.completed);
         plan.complete();
         assert!(plan.completed);

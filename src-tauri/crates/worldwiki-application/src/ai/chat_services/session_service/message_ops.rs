@@ -26,12 +26,12 @@ pub async fn send_message(
         let c_id = format!("chats:{new_uuid}");
         let title: String = text.chars().take(40).collect();
         let title = if title.trim().is_empty() {
-            "Новый чат".to_string()
+            "Новый чат"
         } else {
-            title
+            &title
         };
 
-        let chat = worldwiki_domain::ai::Chat::new(c_id.clone(), project_id, title);
+        let chat = worldwiki_domain::ai::Chat::new(&c_id, project_id, title);
         chat_repo
             .save_chat(&chat)
             .await
@@ -46,30 +46,27 @@ pub async fn send_message(
         .await
         .unwrap_or_default();
 
-    let last_msg_id = existing_messages.last().map(|m| m.id.clone());
+    let user_msg_id = format!("chat_messages:{}", uuid::Uuid::new_v4());
+    let asst_msg_id = format!("chat_messages:{}", uuid::Uuid::new_v4());
 
-    let user_uuid = uuid::Uuid::new_v4().to_string();
-    let user_msg_id = format!("chat_messages:{user_uuid}");
     let mut user_msg = ChatMessage::new(
-        user_msg_id.clone(),
+        &user_msg_id,
         project_id,
-        actual_chat_id.clone(),
+        &actual_chat_id,
         MessageRole::User,
         text,
     );
-    user_msg.parent_id = last_msg_id;
+    user_msg.parent_id = existing_messages.last().map(|m| m.id.clone());
 
     chat_repo
         .save_message(&user_msg)
         .await
         .map_err(ApplicationError::from)?;
 
-    let asst_uuid = uuid::Uuid::new_v4().to_string();
-    let asst_msg_id = format!("chat_messages:{asst_uuid}");
     let mut asst_msg = ChatMessage::new(
-        asst_msg_id.clone(),
+        &asst_msg_id,
         project_id,
-        actual_chat_id.clone(),
+        &actual_chat_id,
         MessageRole::Assistant,
         "",
     );

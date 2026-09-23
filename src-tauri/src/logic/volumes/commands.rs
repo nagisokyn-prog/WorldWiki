@@ -40,7 +40,9 @@ pub async fn assign_chapter(
     state: tauri::State<'_, crate::AppState>,
 ) -> Result<AutoExtendResult, VolumeError> {
     let res = assign_chapter_inner(&state.db, &project, &chapter_id, volume_id).await?;
-    let _res = app.emit("ww:timeline-auto-extended", &res);
+    if let Err(e) = app.emit("ww:timeline-auto-extended", &res) {
+        eprintln!("[VOLUMES IPC] Emit error: {e}");
+    }
     Ok(res)
 }
 
@@ -70,7 +72,9 @@ pub async fn auto_extend_timeline(
         volume_id,
         updated_count,
     };
-    let _res = app.emit("ww:timeline-auto-extended", &res);
+    if let Err(e) = app.emit("ww:timeline-auto-extended", &res) {
+        eprintln!("[VOLUMES IPC] Emit error: {e}");
+    }
     Ok(res)
 }
 
@@ -90,15 +94,19 @@ pub async fn heal_deleted_chapter(
     )
     .await?;
     if let Some(ref fb) = fallback_point {
-        let _res = app.emit("ww:timeline-auto-extended", fb);
+        if let Err(e) = app.emit("ww:timeline-auto-extended", fb) {
+            eprintln!("[VOLUMES IPC] Emit error: {e}");
+        }
     }
-    let _res = app.emit(
+    if let Err(e) = app.emit(
         "ww:timeline-healed",
         serde_json::json!({
             "deleted_chapter_id": deleted_chapter_id,
             "fallback_point": fallback_point,
             "updated_count": updated_count
         }),
-    );
+    ) {
+        eprintln!("[VOLUMES IPC] Emit error: {e}");
+    }
     Ok(updated_count)
 }

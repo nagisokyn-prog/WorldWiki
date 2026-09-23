@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn main() {
-    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
     let vendor_dir = Path::new(&manifest_dir).join("../../vendor/llama-turboquant-cpp");
     // Постоянный кэш вне target/: переживает cargo clean.
     let cache_dir = Path::new(&manifest_dir).join("prebuilt-libs");
@@ -58,7 +58,9 @@ fn main() {
             .arg("--config").arg("Release")
             .arg("--parallel"));
 
-        std::fs::write(&marker_file, "ok").expect("failed to write build marker");
+        if let Err(e) = std::fs::write(&marker_file, "ok") {
+            eprintln!("[llama-sys] Warning: failed to write build marker: {e}");
+        }
     }
 
     let dst = &cache_dir;
@@ -107,8 +109,9 @@ fn main() {
     let include_dir = vendor_dir.join("include");
     let ggml_include_dir = vendor_dir.join("ggml/include");
 
+    let header_str = header_path.to_str().unwrap_or("include/llama.h");
     let mut builder = bindgen::Builder::default()
-        .header(header_path.to_str().unwrap())
+        .header(header_str)
         .clang_arg(format!("-I{}", include_dir.display()))
         .clang_arg(format!("-I{}", ggml_include_dir.display()))
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
@@ -134,24 +137,30 @@ fn main() {
         }
     }
 
-    let bindings = builder
-        .generate()
-        .expect("Unable to generate bindings");
-
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("bindings.rs"))
-        .expect("Couldn't write bindings!");
+    if let Ok(bindings) = builder.generate() {
+        let out_dir = env::var("OUT_DIR").unwrap_or_else(|_| ".".to_string());
+        let out_path = PathBuf::from(out_dir);
+        if let Err(e) = bindings.write_to_file(out_path.join("bindings.rs")) {
+            eprintln!("[llama-sys] Warning: couldn't write bindings: {e}");
+        }
+    }
 }
 
-/// Запускает команду, наследуя stdout/stderr; паникует при ошибке.
+/// Запускает команду, наследуя stdout/stderr.
 fn run(cmd: &mut Command) {
-    let status = cmd
+    let status = match cmd
         .stdout(std::process::Stdio::inherit())
         .stderr(std::process::Stdio::inherit())
         .status()
-        .unwrap_or_else(|e| panic!("failed to spawn {:?}: {}", cmd.get_program(), e));
+    {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("failed to spawn {:?}: {}", cmd.get_program(), e);
+            std::process::exit(1);
+        }
+    };
     if !status.success() {
-        panic!("command failed with {}: {:?}", status, cmd);
+        eprintln!("command failed with {}: {:?}", status, cmd);
+        std::process::exit(1);
     }
 }

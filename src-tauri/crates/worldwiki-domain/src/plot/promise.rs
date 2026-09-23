@@ -49,9 +49,8 @@ impl PlotPromise {
         kind: PromiseKind,
         quote: impl Into<String>,
     ) -> Self {
-        let now = Utc::now();
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: String::new(),
             project_id: project_id.into(),
             chapter_id: chapter_id.into(),
             kind,
@@ -64,19 +63,20 @@ impl PlotPromise {
             resolution: None,
             resolved_in_volume: None,
             resolved_in_chapter: None,
-            created_at: now,
-            updated_at: now,
+            created_at: DateTime::UNIX_EPOCH,
+            updated_at: DateTime::UNIX_EPOCH,
         }
     }
 
-    pub fn resolve(&mut self, chapter_id: String, volume_id: Option<String>, note: Option<String>) {
+    pub fn resolve(
+        &mut self,
+        chapter_id: impl Into<String>,
+        volume_id: Option<String>,
+        resolution: Option<Value>,
+    ) {
         self.status = PromiseStatus::Resolved;
-        self.resolved_in_chapter = Some(chapter_id);
+        self.resolved_in_chapter = Some(chapter_id.into());
         self.resolved_in_volume = volume_id;
-        self.resolution = Some(serde_json::json!({
-            "note": note,
-            "resolved_at": Utc::now(),
-        }));
-        self.updated_at = Utc::now();
+        self.resolution = resolution;
     }
 }

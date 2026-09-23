@@ -37,8 +37,8 @@ impl LlmStreamPort for ClawStreamAdapter {
     ) -> Result<(), DomainError> {
         #[cfg(not(feature = "ai-cloud"))]
         {
-            let _ = request;
-            let _ = sender;
+            drop(request);
+            drop(sender);
             return Err(DomainError::ConstraintViolation(
                 "ai-cloud feature is disabled".to_string(),
             ));
@@ -57,8 +57,7 @@ impl LlmStreamPort for ClawStreamAdapter {
                 ));
             }
 
-            let provider_client = build_provider_client(provider, api_key, base_url)
-                .map_err(DomainError::ConstraintViolation)?;
+            let provider_client = build_provider_client(provider, api_key, base_url)?;
 
             let message_req = ClawPayloadBuilder::build_message_request(request);
 

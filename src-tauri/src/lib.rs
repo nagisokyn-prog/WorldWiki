@@ -31,14 +31,17 @@ pub struct AgentTasks(
 
 async fn init_database() -> Surreal<Db> {
     let db_path = worldwiki_infrastructure::paths::get_surreal_db_path();
-    fs::create_dir_all(&db_path).ok();
-    let db = Surreal::new::<SurrealKv>(db_path)
-        .await
-        .expect("Failed to start SurrealDB");
-    db.use_ns("worldwriter")
-        .use_db("worldwriter")
-        .await
-        .expect("Failed to use NS/DB");
+    let _ = fs::create_dir_all(&db_path);
+    let db = match Surreal::new::<SurrealKv>(&db_path).await {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("[CRITICAL] Failed to start SurrealDB: {}", e);
+            Surreal::init()
+        }
+    };
+    if let Err(e) = db.use_ns("worldwriter").use_db("worldwriter").await {
+        eprintln!("[CRITICAL] Failed to use NS/DB: {}", e);
+    }
 
     if let Err(e) = apply_schema_pipeline(&db).await {
         eprintln!("[CRITICAL] Failed to apply schema pipeline: {}", e);
@@ -47,7 +50,7 @@ async fn init_database() -> Surreal<Db> {
     db
 }
 
-pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), String> {
+pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), worldwiki_domain::errors::DomainError> {
     // 1. БАЗОВОЕ ЯДРО (NO-AI / BASE EDITION)
     const DDL_NOAI_00_ANALYZERS: &str =
         include_str!("../../apps/spa/src/logic/schema/no_ai/00_analyzers.surql");
@@ -87,7 +90,11 @@ pub async fn apply_schema_pipeline(db: &Surreal<Db>) -> Result<(), String> {
     Ok(())
 }
 
-pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result<(), String> {
+pub async fn apply_ddl_module(
+    db: &Surreal<Db>,
+    name: &str,
+    ddl: &str,
+) -> Result<(), worldwiki_domain::errors::DomainError> {
     if ddl.trim().is_empty() {
         return Ok(());
     }
@@ -97,7 +104,7 @@ pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result
             if !errors.is_empty() {
                 let err_msg = format!("DDL Error in module '{}': {:?}", name, errors);
                 eprintln!("{}", err_msg);
-                return Err(err_msg);
+                return Err(worldwiki_domain::errors::DomainError::Validation(err_msg));
             }
             println!("[DB] Schema module '{}' applied successfully.", name);
             Ok(())
@@ -105,7 +112,7 @@ pub async fn apply_ddl_module(db: &Surreal<Db>, name: &str, ddl: &str) -> Result
         Err(e) => {
             let err_msg = format!("Failed to execute DDL module '{}': {:?}", name, e);
             eprintln!("{}", err_msg);
-            Err(err_msg)
+            Err(worldwiki_domain::errors::DomainError::Validation(err_msg))
         }
     }
 }
@@ -298,11 +305,12 @@ pub fn run() {
 ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(setup_application)
         .on_window_event(handle_window_event)
         .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    {
+        eprintln!("[CRITICAL] Error while running tauri application: {e}");
+    }
 }
 
 #[cfg(test)]

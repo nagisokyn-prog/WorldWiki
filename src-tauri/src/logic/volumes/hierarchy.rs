@@ -54,7 +54,9 @@ pub async fn get_chapter_hierarchy_inner(
                 .find(|e| e.get("out").and_then(|o| o.as_str()) == Some(id))
             {
                 if let Some(so) = edge.get("sort_order") {
-                    vol["sort_order"] = so.clone();
+                    if let Some(obj) = vol.as_object_mut() {
+                        obj.insert("sort_order".to_string(), so.clone());
+                    }
                 }
             }
         }
@@ -68,20 +70,22 @@ pub async fn get_chapter_hierarchy_inner(
                     .map(|o| compare_record_ids(o, id))
                     .unwrap_or(false)
             }) {
-                if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
-                    if parent.starts_with("volumes:") {
-                        chap["volume_id"] = serde_json::Value::String(parent.to_string());
+                if let Some(obj) = chap.as_object_mut() {
+                    if let Some(parent) = edge.get("in").and_then(|i| i.as_str()) {
+                        if parent.starts_with("volumes:") {
+                            obj.insert("volume_id".to_string(), serde_json::Value::String(parent.to_string()));
+                        }
                     }
-                }
-                if let Some(so) = edge.get("sort_order") {
-                    chap["sort_order"] = so.clone();
+                    if let Some(so) = edge.get("sort_order") {
+                        obj.insert("sort_order".to_string(), so.clone());
+                    }
                 }
             }
         }
     }
 
-    volumes.sort_by_key(|v| v["sort_order"].as_i64().unwrap_or(0));
-    chapters.sort_by_key(|a| a["sort_order"].as_i64().unwrap_or(0));
+    volumes.sort_by_key(|v| v.get("sort_order").and_then(|s| s.as_i64()).unwrap_or(0));
+    chapters.sort_by_key(|a| a.get("sort_order").and_then(|s| s.as_i64()).unwrap_or(0));
 
     Ok(serde_json::json!({
         "volumes": volumes,

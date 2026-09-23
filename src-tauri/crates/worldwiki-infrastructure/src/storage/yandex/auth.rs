@@ -1,3 +1,5 @@
+use worldwiki_domain::errors::DomainError;
+
 pub const YANDEX_CLIENT_ID: &str = "200295d252b44387a21ec64a80d7d124";
 pub const YANDEX_CLIENT_SECRET: &str = "2c1d8dd57f5e4271a74249f6c4b58895";
 
@@ -10,7 +12,7 @@ pub(crate) fn oauth_base(base_override: Option<&str>) -> String {
 pub async fn exchange_yandex_token_inner(
     code: &str,
     base_override: Option<&str>,
-) -> Result<String, String> {
+) -> Result<String, DomainError> {
     let client = reqwest::Client::new();
     let params = [
         ("grant_type", "authorization_code"),
@@ -24,9 +26,9 @@ pub async fn exchange_yandex_token_inner(
         .form(&params)
         .send()
         .await
-        .map_err(|e| format!("Network error: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Network error: {e}")))?;
 
-    let json: serde_json::Value = res.json().await.map_err(|e| format!("JSON error: {e}"))?;
+    let json: serde_json::Value = res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
 
     if let Some(token) = json.get("access_token").and_then(|v| v.as_str()) {
         Ok(token.to_string())
@@ -36,6 +38,6 @@ pub async fn exchange_yandex_token_inner(
             .or_else(|| json.get("error"))
             .and_then(|v| v.as_str())
             .unwrap_or("Invalid confirmation code");
-        Err(err_desc.to_string())
+        Err(DomainError::Validation(err_desc.to_string()))
     }
 }

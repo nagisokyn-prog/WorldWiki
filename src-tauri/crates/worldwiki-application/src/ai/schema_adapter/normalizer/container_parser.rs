@@ -3,6 +3,36 @@ use serde_json::Value;
 use std::collections::HashMap;
 use worldwiki_domain::knowledge::{NormalizedDynamicListDef, NormalizedFieldDef};
 
+fn apply_override_field(
+    item_fields: &mut HashMap<String, NormalizedFieldDef>,
+    f_key: &str,
+    ov_obj: &serde_json::Map<String, Value>,
+) {
+    if ov_obj.get("hidden").and_then(|v| v.as_bool()).unwrap_or(false) {
+        item_fields.remove(f_key);
+        return;
+    }
+    if let Some(existing) = item_fields.get_mut(f_key) {
+        if let Some(lbl) = ov_obj.get("label").and_then(|v| v.as_str()) {
+            existing.label = lbl.to_string();
+        }
+        if let Some(pl) = ov_obj.get("placeholder").and_then(|v| v.as_str()) {
+            existing.description = Some(pl.to_string());
+        }
+        if let Some(et) = ov_obj.get("entityType").and_then(|v| v.as_str()) {
+            existing.entity_type_ref = Some(et.to_string());
+            existing.field_type = "entity_ref".to_string();
+        }
+    } else {
+        let mut synthetic_map = ov_obj.clone();
+        synthetic_map.insert("path".to_string(), Value::String(f_key.to_string()));
+        let synthetic = Value::Object(synthetic_map);
+        if let Some(fd) = parse_field_def(&synthetic) {
+            item_fields.insert(f_key.to_string(), fd);
+        }
+    }
+}
+
 pub(crate) fn parse_dynamic_container(
     dc: &Value,
     templates: &HashMap<String, Value>,
@@ -52,29 +82,7 @@ pub(crate) fn parse_dynamic_container(
     if let Some(overrides) = dc.get("fieldOverrides").and_then(|v| v.as_object()) {
         for (f_key, ov_val) in overrides {
             if let Some(ov_obj) = ov_val.as_object() {
-                if ov_obj.get("hidden").and_then(|v| v.as_bool()).unwrap_or(false) {
-                    item_fields.remove(f_key);
-                    continue;
-                }
-                if let Some(existing) = item_fields.get_mut(f_key) {
-                    if let Some(lbl) = ov_obj.get("label").and_then(|v| v.as_str()) {
-                        existing.label = lbl.to_string();
-                    }
-                    if let Some(pl) = ov_obj.get("placeholder").and_then(|v| v.as_str()) {
-                        existing.description = Some(pl.to_string());
-                    }
-                    if let Some(et) = ov_obj.get("entityType").and_then(|v| v.as_str()) {
-                        existing.entity_type_ref = Some(et.to_string());
-                        existing.field_type = "entity_ref".to_string();
-                    }
-                } else {
-                    // Новое переопределенное поле
-                    let mut synthetic = Value::Object(ov_obj.clone());
-                    synthetic["path"] = Value::String(f_key.clone());
-                    if let Some(fd) = parse_field_def(&synthetic) {
-                        item_fields.insert(f_key.clone(), fd);
-                    }
-                }
+                apply_override_field(&mut item_fields, f_key, ov_obj);
             }
         }
     }

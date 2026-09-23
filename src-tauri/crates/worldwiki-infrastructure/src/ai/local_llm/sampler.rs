@@ -35,14 +35,13 @@ impl LlmSampler {
     }
 
     /// Safely samples a single next token from the context logits.
-    // SAFETY:
-    // 1. Caller guarantees `sampler` is a valid, initialized non-null pointer to a sampler chain.
-    // 2. Caller guarantees `ctx` is a valid llama_context pointer with evaluated logits.
-    // 3. Position -1 samples the token at the output of the sequence.
-    pub(crate) unsafe fn sample_token(sampler: *mut llama_sampler, ctx: *mut llama_context) -> llama_token {
-        let token = llama_sampler_sample(sampler, ctx, -1);
-        llama_sampler_accept(sampler, token);
-        token
+    pub(crate) fn sample_token(sampler: *mut llama_sampler, ctx: *mut llama_context) -> llama_token {
+        // SAFETY: Caller guarantees valid non-null pointers `sampler` and `ctx`.
+        unsafe {
+            let token = llama_sampler_sample(sampler, ctx, -1);
+            llama_sampler_accept(sampler, token);
+            token
+        }
     }
 
     /// Safely frees a sampler chain pointer if non-null.

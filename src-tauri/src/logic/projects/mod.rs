@@ -19,8 +19,9 @@ pub async fn create_project_inner(
     db: &Surreal<Db>,
     project_data: Value,
 ) -> Result<String, ProjectError> {
-    let name = project_data["name"]
-        .as_str()
+    let name = project_data
+        .get("name")
+        .and_then(|v| v.as_str())
         .ok_or_else(|| ProjectError::InvalidData("No name provided".to_string()))?
         .to_string();
     let mut data = project_data.clone();

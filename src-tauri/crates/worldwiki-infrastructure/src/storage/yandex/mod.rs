@@ -28,7 +28,7 @@ mod tests {
     ) {
         let listener = tokio::net::TcpListener::bind(("127.0.0.1", port)).await.unwrap();
         let queue = Arc::new(tokio::sync::Mutex::new(responses));
-        tokio::spawn(async move {
+        let _server_task = tokio::spawn(async move {
             for _ in 0..10 {
                 let mut s = match listener.accept().await {
                     Ok((s, _)) => s,
@@ -61,7 +61,9 @@ mod tests {
                     "HTTP/1.1 {status} {reason}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
                     body.len()
                 );
-                let _ = s.write_all(resp.as_bytes()).await;
+                if let Err(e) = s.write_all(resp.as_bytes()).await {
+                    eprintln!("[MOCK SERVER] Write error: {e}");
+                }
                 drop(s);
             }
         });
@@ -113,7 +115,7 @@ mod tests {
         let err = exchange_yandex_token_inner("BAD", Some(&base))
             .await
             .expect_err("ошибка OAuth -> Err");
-        assert_eq!(err, "Код подтверждения неверен");
+        assert_eq!(err.to_string(), "Validation error: Код подтверждения неверен");
     }
 
     #[tokio::test(flavor = "multi_thread")]
@@ -150,6 +152,8 @@ mod tests {
         assert!(req.to_ascii_lowercase().contains("put /put-target"), "PUT файла: {req}");
         assert!(req.contains("ZIPBYTES"), "байты файла отправлены");
 
-        let _ = fs::remove_dir_all(dir);
+        if let Err(e) = fs::remove_dir_all(&dir) {
+            eprintln!("[TEST CLEANUP] Error removing test dir: {e}");
+        }
     }
 }

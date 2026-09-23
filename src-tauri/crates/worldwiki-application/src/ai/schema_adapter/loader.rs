@@ -2,6 +2,12 @@ use serde_json::{json, Value};
 use worldwiki_domain::knowledge::NormalizedEntitySchema;
 use super::normalizer::normalize;
 
+fn read_first_json_file<P: AsRef<std::path::Path>>(paths: &[P]) -> Option<Value> {
+    let existing = paths.iter().find(|p| p.as_ref().is_file())?;
+    let content = std::fs::read_to_string(existing).ok()?;
+    serde_json::from_str::<Value>(&content).ok()
+}
+
 pub(crate) fn load_schema_impl(type_key: &str) -> NormalizedEntitySchema {
     let clean_type = type_key
         .trim()
@@ -22,22 +28,10 @@ pub(crate) fn load_schema_impl(type_key: &str) -> NormalizedEntitySchema {
         "../../apps/spa/public/struct/editor/ui_editor.json",
     ];
 
-    let mut ui_val = None;
-    for p in &ui_paths {
-        if let Ok(content) = std::fs::read_to_string(p) {
-            if let Ok(parsed) = serde_json::from_str::<Value>(&content) {
-                ui_val = Some(parsed);
-                break;
-            }
-        }
-    }
+    let ui_val = read_first_json_file(&ui_paths);
 
-    for p in &search_paths {
-        if let Ok(content) = std::fs::read_to_string(p) {
-            if let Ok(parsed) = serde_json::from_str::<Value>(&content) {
-                return normalize(&parsed, ui_val.as_ref());
-            }
-        }
+    if let Some(parsed) = read_first_json_file(&search_paths) {
+        return normalize(&parsed, ui_val.as_ref());
     }
 
     // Канонический фоллбек для стандартных типов

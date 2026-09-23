@@ -43,8 +43,7 @@ pub async fn get_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<Option<Entity>, EntityError> {
-    let parts: Vec<&str> = id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { id };
+    let actual_id = id.split_once(':').map(|(_, rest)| rest).unwrap_or(id);
     let res: Option<Value> = db.select(("entities", actual_id)).await?;
 
     if let Some(mut val) = res {
@@ -83,8 +82,7 @@ pub async fn save_entity_inner(
     let has_embeds = embeddings.is_some();
 
     let mut query = if let Some(ref id_str) = id_opt {
-        let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        let actual_id = if parts.len() == 2 { parts[1] } else { id_str.as_str() };
+        let actual_id = id_str.split_once(':').map(|(_, rest)| rest).unwrap_or(id_str.as_str());
         let id_val = safe_id("entities", actual_id);
         format!(
             "UPSERT type::record('{}') SET project_id = {}, entity_type = $entity_type, name = $name",
@@ -145,12 +143,7 @@ pub async fn delete_entity_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<(), EntityError> {
-    let parts: Vec<&str> = id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 {
-        parts[1]
-    } else {
-        id
-    };
+    let actual_id = id.split_once(':').map(|(_, rest)| rest).unwrap_or(id);
     let full_id = safe_id("entities", actual_id);
 
     let mut tx_res = db

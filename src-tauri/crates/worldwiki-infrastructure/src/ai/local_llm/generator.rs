@@ -126,22 +126,25 @@ impl LlmGenerator {
 
         while n_decode < max_tokens {
             if CANCEL_LOCAL_GEN.load(Ordering::SeqCst) {
-                let _ = tx.send(TokenEvent {
+                if let Err(e) = tx.send(TokenEvent {
                     token: String::new(),
                     is_done: true,
-                });
+                }) {
+                    eprintln!("[LLM GENERATOR] Cancel send error: {e}");
+                }
                 break;
             }
 
-            // SAFETY: `sampler` and `ctx` are valid pointers.
-            let token = unsafe { LlmSampler::sample_token(sampler, ctx) };
+            let token = LlmSampler::sample_token(sampler, ctx);
 
             // SAFETY: `vocab` is a valid pointer.
             if unsafe { LlmTokenizer::is_eog(vocab, token) } {
-                let _ = tx.send(TokenEvent {
+                if let Err(e) = tx.send(TokenEvent {
                     token: String::new(),
                     is_done: true,
-                });
+                }) {
+                    eprintln!("[LLM GENERATOR] EOG send error: {e}");
+                }
                 break;
             }
 
@@ -149,14 +152,19 @@ impl LlmGenerator {
             // SAFETY: `vocab` is valid and `buf` is a mutable slice.
             let n = unsafe { LlmTokenizer::token_to_piece(vocab, token, &mut buf) };
             if n > 0 {
-                let piece = std::str::from_utf8(&buf[..n as usize]).unwrap_or("");
+                let piece = buf
+                    .get(..n as usize)
+                    .and_then(|s| std::str::from_utf8(s).ok())
+                    .unwrap_or("");
                 generated_buffer.push_str(piece);
 
                 if LlmTokenizer::is_stop_sequence(piece, &generated_buffer) {
-                    let _ = tx.send(TokenEvent {
+                    if let Err(e) = tx.send(TokenEvent {
                         token: String::new(),
                         is_done: true,
-                    });
+                    }) {
+                        eprintln!("[LLM GENERATOR] Stop seq send error: {e}");
+                    }
                     break;
                 }
 
@@ -180,10 +188,12 @@ impl LlmGenerator {
             n_decode += 1;
         }
 
-        let _ = tx.send(TokenEvent {
+        if let Err(e) = tx.send(TokenEvent {
             token: String::new(),
             is_done: true,
-        });
+        }) {
+            eprintln!("[LLM GENERATOR] Final token send error: {e}");
+        }
         Ok(())
     }
 }

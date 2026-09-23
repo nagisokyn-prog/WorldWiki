@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::sync::Mutex;
+use worldwiki_domain::errors::DomainError;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct EmbedderConfig {
@@ -48,17 +49,17 @@ impl EmbedderService {
         *cfg = new_config;
     }
 
-    pub async fn embed_query(&self, text: &str) -> Result<Vec<f32>, String> {
+    pub async fn embed_query(&self, text: &str) -> Result<Vec<f32>, DomainError> {
         let prefixed = format!("query: {}", text.trim());
         self.embed_text(&prefixed).await
     }
 
-    pub async fn embed_passage(&self, text: &str) -> Result<Vec<f32>, String> {
+    pub async fn embed_passage(&self, text: &str) -> Result<Vec<f32>, DomainError> {
         let prefixed = format!("passage: {}", text.trim());
         self.embed_text(&prefixed).await
     }
 
-    async fn embed_text(&self, text: &str) -> Result<Vec<f32>, String> {
+    async fn embed_text(&self, text: &str) -> Result<Vec<f32>, DomainError> {
         let cfg = self.config.lock().await.clone();
 
         let mut req = self
@@ -78,18 +79,18 @@ impl EmbedderService {
         let resp = req
             .send()
             .await
-            .map_err(|e| format!("Embedding service request error: {e}"))?;
+            .map_err(|e| DomainError::Validation(format!("Embedding service request error: {e}")))?;
 
         if !resp.status().is_success() {
             let status = resp.status();
             let err_text = resp.text().await.unwrap_or_default();
-            return Err(format!("Embedding service error ({status}): {err_text}"));
+            return Err(DomainError::Validation(format!("Embedding service error ({status}): {err_text}")));
         }
 
         let body: serde_json::Value = resp
             .json()
             .await
-            .map_err(|e| format!("Invalid embedding response: {e}"))?;
+            .map_err(|e| DomainError::Validation(format!("Invalid embedding response: {e}")))?;
 
         if let Some(vec_val) = body.get("data")
             .and_then(|d| d.get(0))
@@ -104,7 +105,7 @@ impl EmbedderService {
             }
             Ok(emb)
         } else {
-            Err("Failed to parse embedding array from response".to_string())
+            Err(DomainError::Validation("Failed to parse embedding array from response".to_string()))
         }
     }
 }

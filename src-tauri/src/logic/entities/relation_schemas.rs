@@ -35,12 +35,7 @@ pub async fn save_relation_schema_inner(
     }
 
     let result: Option<Value> = if let Some(id_str) = &schema.id {
-        let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        let actual_id = if parts.len() == 2 {
-            parts[1]
-        } else {
-            id_str.as_str()
-        };
+        let actual_id = id_str.split_once(':').map(|(_, b)| b).unwrap_or(id_str.as_str());
         db.upsert(("relation_schemas", actual_id))
             .merge(val)
             .await?

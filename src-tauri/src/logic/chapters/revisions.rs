@@ -7,12 +7,7 @@ pub async fn get_chapter_revisions_inner(
     _project: &str,
     chapter_id: &str,
 ) -> Result<Vec<Value>, ChapterError> {
-    let parts: Vec<&str> = chapter_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 {
-        parts[1]
-    } else {
-        chapter_id
-    };
+    let actual_id = chapter_id.split_once(':').map(|(_, b)| b).unwrap_or(chapter_id);
     let full_id = format!("chapters:{}", actual_id);
 
     let mut result = db
@@ -29,12 +24,7 @@ pub async fn toggle_chapter_history_pin_inner(
     history_id: &str,
     is_pinned: bool,
 ) -> Result<(), ChapterError> {
-    let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 {
-        parts[1]
-    } else {
-        history_id
-    };
+    let actual_id = history_id.split_once(':').map(|(_, b)| b).unwrap_or(history_id);
 
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("chapter_revisions:{}", actual_id)))

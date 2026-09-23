@@ -16,8 +16,8 @@ pub(crate) fn stem_russian(word: &str) -> String {
         return word.to_string();
     }
 
-    let mut rv: String = chars[rv_pos..].iter().collect();
-    let prefix: String = chars[..rv_pos].iter().collect();
+    let mut rv: String = chars.get(rv_pos..).map(|s| s.iter().collect()).unwrap_or_default();
+    let prefix: String = chars.get(..rv_pos).map(|s| s.iter().collect()).unwrap_or_default();
 
     // Step 1: Remove perfective gerund, adjective, participle, reflexive, verb, or noun endings
     if !strip_russian_perfective_gerund(&mut rv) {

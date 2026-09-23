@@ -2,6 +2,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use chrono::{DateTime, Utc};
 
+fn default_epoch() -> DateTime<Utc> {
+    DateTime::UNIX_EPOCH
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Entity {
     pub id: String,
@@ -18,25 +22,24 @@ pub struct Entity {
     pub attributes: Value,
     #[serde(default)]
     pub tags: Vec<String>,
-    #[serde(default = "chrono::Utc::now")]
+    #[serde(default = "default_epoch")]
     pub created_at: DateTime<Utc>,
-    #[serde(default = "chrono::Utc::now")]
+    #[serde(default = "default_epoch")]
     pub updated_at: DateTime<Utc>,
 }
 
 impl Entity {
     pub fn new(project_id: impl Into<String>, type_key: impl Into<String>, name: impl Into<String>) -> Self {
-        let now = Utc::now();
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: String::new(),
             project_id: project_id.into(),
             type_key: type_key.into(),
             name: name.into(),
             description: None,
             attributes: Value::Object(serde_json::Map::new()),
             tags: Vec::new(),
-            created_at: now,
-            updated_at: now,
+            created_at: DateTime::UNIX_EPOCH,
+            updated_at: DateTime::UNIX_EPOCH,
         }
     }
 }

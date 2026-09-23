@@ -118,10 +118,12 @@ impl LocalLlm {
         generator::CANCEL_LOCAL_GEN.store(false, std::sync::atomic::Ordering::SeqCst);
         let tokens = self.tokenize(prompt, false, true)?;
         if tokens.is_empty() {
-            let _ = tx.send(TokenEvent {
+            if let Err(e) = tx.send(TokenEvent {
                 token: String::new(),
                 is_done: true,
-            });
+            }) {
+                eprintln!("[LOCAL LLM] Empty prompt send error: {e}");
+            }
             return Ok(());
         }
 
@@ -129,10 +131,12 @@ impl LocalLlm {
         // SAFETY: `self.ctx` is valid.
         if let Err(e) = unsafe { LlmGenerator::prefill(self.ctx, &tokens, self.n_past, n_batch) } {
             if e == LlmError::Cancelled {
-                let _ = tx.send(TokenEvent {
+                if let Err(send_err) = tx.send(TokenEvent {
                     token: String::new(),
                     is_done: true,
-                });
+                }) {
+                    eprintln!("[LOCAL LLM] Cancel send error: {send_err}");
+                }
                 return Ok(());
             }
             return Err(e);

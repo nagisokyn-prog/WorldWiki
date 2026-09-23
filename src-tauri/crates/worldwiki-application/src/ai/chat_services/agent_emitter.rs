@@ -22,12 +22,15 @@ impl AgentEmitter {
             is_done,
             chunk_type: chunk_type.to_string(),
         };
-        let _ = event_publisher
+        if let Err(e) = event_publisher
             .publish_raw(
                 "chat_stream_chunk",
                 serde_json::to_value(&event).unwrap_or_default(),
             )
-            .await;
+            .await
+        {
+            eprintln!("[AgentEmitter] Failed to publish stream chunk: {e}");
+        }
     }
 
     pub async fn emit_tool(
@@ -43,12 +46,15 @@ impl AgentEmitter {
             tool_name,
             tool_args,
         };
-        let _ = event_publisher
+        if let Err(e) = event_publisher
             .publish_raw(
                 "agent_tool",
                 serde_json::to_value(&event).unwrap_or_default(),
             )
-            .await;
+            .await
+        {
+            eprintln!("[AgentEmitter] Failed to publish tool event: {e}");
+        }
     }
 
     pub async fn save_assistant_text(
@@ -78,7 +84,9 @@ impl AgentEmitter {
                 m.content = content.to_string();
                 m.reasoning = reasoning.map(|s| s.to_string());
                 m.tool_logs = tool_logs.map(|l| l.to_vec());
-                let _ = chat_repo.save_message(&m).await;
+                if let Err(e) = chat_repo.save_message(&m).await {
+                    eprintln!("[AgentEmitter] Failed to save updated assistant message: {e}");
+                }
             } else {
                 let m = ChatMessage {
                     id: format!("chat_messages:{clean_target}"),
@@ -96,7 +104,9 @@ impl AgentEmitter {
                     created_at: None,
                     updated_at: None,
                 };
-                let _ = chat_repo.save_message(&m).await;
+                if let Err(e) = chat_repo.save_message(&m).await {
+                    eprintln!("[AgentEmitter] Failed to save new assistant message: {e}");
+                }
             }
         }
     }

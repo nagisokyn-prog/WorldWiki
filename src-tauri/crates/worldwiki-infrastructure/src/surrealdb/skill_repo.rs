@@ -32,9 +32,8 @@ impl SkillRepositoryPort for SurrealSkillRepository {
         }
 
         // 1. Детерминированный явный вызов !"Название Навыка"
-        if let Some(start) = trimmed_query.find("!\"") {
-            if let Some(end) = trimmed_query[start + 2..].find('"') {
-                let manual_name = &trimmed_query[start + 2..start + 2 + end];
+        if let Some((_, after_bang)) = trimmed_query.split_once("!\"") {
+            if let Some((manual_name, _)) = after_bang.split_once('"') {
                 let mut res = self
                     .db
                     .query("SELECT * FROM ai_skills WHERE string::lowercase(name) = string::lowercase($name) LIMIT 1")

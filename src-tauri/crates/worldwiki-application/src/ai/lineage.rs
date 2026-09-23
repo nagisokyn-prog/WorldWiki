@@ -15,8 +15,8 @@ pub fn resolve_neighborhood(
         .trim_matches('⟩');
 
     // Индексируем сообщения по очищенному ID
-    let mut by_id = HashMap::new();
-    let mut by_parent = HashMap::new();
+    let mut by_id: HashMap<&str, &ChatMessage> = HashMap::new();
+    let mut by_parent: HashMap<&str, Vec<&str>> = HashMap::new();
     let mut target_msg = None;
 
     for m in messages {
@@ -27,7 +27,7 @@ pub fn resolve_neighborhood(
             .trim_matches('⟨')
             .trim_matches('⟩');
 
-        by_id.insert(m_clean.to_string(), m.clone());
+        by_id.insert(m_clean, m);
 
         if let Some(ref p) = m.parent_id {
             let p_clean = p
@@ -36,40 +36,38 @@ pub fn resolve_neighborhood(
                 .trim_matches('⟨')
                 .trim_matches('⟩');
             by_parent
-                .entry(p_clean.to_string())
-                .or_insert_with(Vec::new)
-                .push(m_clean.to_string());
+                .entry(p_clean)
+                .or_default()
+                .push(m_clean);
         }
 
         if m_clean == clean_target {
-            target_msg = Some(m.clone());
+            target_msg = Some(m);
         }
     }
 
-    let target = target_msg?;
+    let target = (*target_msg?).clone();
 
     // 1. Обход предков (Ancestors) по цепочке parent_id к корню
     let mut before = Vec::new();
-    let mut curr_parent = target.parent_id.as_ref().map(|p| {
+    let mut curr_parent = target.parent_id.as_deref().map(|p| {
         p.trim_start_matches("chat_messages:")
             .trim_matches('`')
             .trim_matches('⟨')
             .trim_matches('⟩')
-            .to_string()
     });
 
     while let Some(parent_id) = curr_parent {
         if before.len() >= depth_before {
             break;
         }
-        if let Some(parent_msg) = by_id.get(&parent_id) {
-            before.push(parent_msg.clone());
-            curr_parent = parent_msg.parent_id.as_ref().map(|p| {
+        if let Some(parent_msg) = by_id.get(parent_id) {
+            before.push((*parent_msg).clone());
+            curr_parent = parent_msg.parent_id.as_deref().map(|p| {
                 p.trim_start_matches("chat_messages:")
                     .trim_matches('`')
                     .trim_matches('⟨')
                     .trim_matches('⟩')
-                    .to_string()
             });
         } else {
             break;
@@ -81,15 +79,15 @@ pub fn resolve_neighborhood(
 
     // 2. Обход потомков (Descendants) по активной ветке
     let mut after = Vec::new();
-    let mut curr_child = clean_target.to_string();
+    let mut curr_child = clean_target;
 
     while after.len() < depth_after {
-        if let Some(children) = by_parent.get(&curr_child) {
+        if let Some(children) = by_parent.get(curr_child) {
             // Берем активного ребенка (по умолчанию последнего созданного)
             if let Some(next_id) = children.last() {
                 if let Some(child_msg) = by_id.get(next_id) {
-                    after.push(child_msg.clone());
-                    curr_child = next_id.clone();
+                    after.push((*child_msg).clone());
+                    curr_child = next_id;
                 } else {
                     break;
                 }

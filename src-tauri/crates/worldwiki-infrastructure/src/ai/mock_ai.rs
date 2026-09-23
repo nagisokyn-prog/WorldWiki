@@ -23,7 +23,7 @@ impl LlmStreamPort for MockAiAdapter {
         _request: StreamRequest,
         sender: tokio::sync::mpsc::Sender<StreamEventDto>,
     ) -> Result<(), DomainError> {
-        let _ = sender
+        if let Err(e) = sender
             .send(StreamEventDto {
                 text_delta: Some("Mock AI stream response".to_string()),
                 reasoning_delta: None,
@@ -31,8 +31,11 @@ impl LlmStreamPort for MockAiAdapter {
                 usage: Some(serde_json::json!({ "total_tokens": 10 })),
                 is_done: false,
             })
-            .await;
-        let _ = sender
+            .await
+        {
+            eprintln!("[MockAiAdapter] Stream send error: {e}");
+        }
+        if let Err(e) = sender
             .send(StreamEventDto {
                 text_delta: None,
                 reasoning_delta: None,
@@ -40,7 +43,10 @@ impl LlmStreamPort for MockAiAdapter {
                 usage: None,
                 is_done: true,
             })
-            .await;
+            .await
+        {
+            eprintln!("[MockAiAdapter] Stream send final error: {e}");
+        }
         Ok(())
     }
 }

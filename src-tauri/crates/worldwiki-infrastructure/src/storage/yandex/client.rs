@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use worldwiki_domain::errors::DomainError;
 use worldwiki_domain::storage::YandexBackupFile;
 
 /// Базовый URL REST API Яндекс.Диска.
@@ -13,10 +14,10 @@ pub async fn upload_to_yandex_disk_inner(
     token: &str,
     file_path: &str,
     base_override: Option<&str>,
-) -> Result<(), String> {
+) -> Result<(), DomainError> {
     let path = std::path::Path::new(file_path);
     if !path.exists() {
-        return Err("Backup file does not exist".to_string());
+        return Err(DomainError::Validation("Backup file does not exist".to_string()));
     }
 
     let file_name = path.file_name().unwrap_or_default().to_string_lossy();
@@ -32,27 +33,27 @@ pub async fn upload_to_yandex_disk_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| format!("Failed to get upload URL: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to get upload URL: {e}")))?;
 
     if url_res.status() == 401 {
-        return Err("Token expired or invalid".to_string());
+        return Err(DomainError::Validation("Token expired or invalid".to_string()));
     }
 
     let url_json: serde_json::Value =
-        url_res.json().await.map_err(|e| format!("JSON error: {e}"))?;
+        url_res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
     let upload_url = url_json
         .get("href")
         .and_then(|v| v.as_str())
         .ok_or_else(|| {
-            url_json
+            let msg = url_json
                 .get("message")
                 .and_then(|v| v.as_str())
-                .unwrap_or("Failed to get upload link")
-                .to_string()
+                .unwrap_or("Failed to get upload link");
+            DomainError::Validation(msg.to_string())
         })?;
 
     // 2. Upload file
-    let file_content = fs::read(file_path).map_err(|e| format!("Failed to read file: {e}"))?;
+    let file_content = fs::read(file_path).map_err(|e| DomainError::Validation(format!("Failed to read file: {e}")))?;
 
     let upload_res = client
         .put(upload_url)
@@ -60,12 +61,12 @@ pub async fn upload_to_yandex_disk_inner(
         .body(file_content)
         .send()
         .await
-        .map_err(|e| format!("Failed to upload file: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to upload file: {e}")))?;
 
     if upload_res.status().is_success() {
         Ok(())
     } else {
-        Err(format!("Upload failed with status: {}", upload_res.status()))
+        Err(DomainError::Validation(format!("Upload failed with status: {}", upload_res.status())))
     }
 }
 
@@ -73,7 +74,7 @@ pub async fn upload_to_yandex_disk_inner(
 pub async fn list_yandex_disk_backups_inner(
     token: &str,
     base_override: Option<&str>,
-) -> Result<Vec<YandexBackupFile>, String> {
+) -> Result<Vec<YandexBackupFile>, DomainError> {
     let client = reqwest::Client::new();
     let url_res = client
         .get(format!(
@@ -83,18 +84,18 @@ pub async fn list_yandex_disk_backups_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| format!("Failed to get directory listing: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to get directory listing: {e}")))?;
 
     if url_res.status() == 404 {
         return Ok(vec![]);
     }
 
     if !url_res.status().is_success() {
-        return Err(format!("Yandex API error: {}", url_res.status()));
+        return Err(DomainError::Validation(format!("Yandex API error: {}", url_res.status())));
     }
 
     let json: serde_json::Value =
-        url_res.json().await.map_err(|e| format!("JSON error: {e}"))?;
+        url_res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
 
     let items = json
         .get("_embedded")
@@ -131,7 +132,7 @@ pub async fn download_yandex_file_inner(
     token: &str,
     file_name: &str,
     base_override: Option<&str>,
-) -> Result<PathBuf, String> {
+) -> Result<PathBuf, DomainError> {
     let client = reqwest::Client::new();
 
     // 1. Get download URL
@@ -144,44 +145,44 @@ pub async fn download_yandex_file_inner(
         .header("Authorization", format!("OAuth {token}"))
         .send()
         .await
-        .map_err(|e| format!("Failed to get download URL: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to get download URL: {e}")))?;
 
     if !url_res.status().is_success() {
-        return Err(format!("Download URL request failed: {}", url_res.status()));
+        return Err(DomainError::Validation(format!("Download URL request failed: {}", url_res.status())));
     }
 
     let url_json: serde_json::Value =
-        url_res.json().await.map_err(|e| format!("JSON error: {e}"))?;
+        url_res.json().await.map_err(|e| DomainError::Validation(format!("JSON error: {e}")))?;
     let download_url = url_json
         .get("href")
         .and_then(|v| v.as_str())
-        .ok_or_else(|| "Failed to get download link".to_string())?;
+        .ok_or_else(|| DomainError::Validation("Failed to get download link".to_string()))?;
 
     // 2. Download file contents
     let file_res = client
         .get(download_url)
         .send()
         .await
-        .map_err(|e| format!("Failed to download file: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to download file: {e}")))?;
     if !file_res.status().is_success() {
-        return Err(format!("Download failed: {}", file_res.status()));
+        return Err(DomainError::Validation(format!("Download failed: {}", file_res.status())));
     }
 
     let file_bytes = file_res
         .bytes()
         .await
-        .map_err(|e| format!("Failed to read downloaded bytes: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to read downloaded bytes: {e}")))?;
 
     // 3. Save to temp file
     let temp_dir = env::temp_dir().join(format!(
         "wwiki_download_{}",
         chrono::Local::now().timestamp_millis() + std::process::id() as i64
     ));
-    fs::create_dir_all(&temp_dir).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&temp_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     let temp_file_path = temp_dir.join(file_name);
     fs::write(&temp_file_path, file_bytes)
-        .map_err(|e| format!("Failed to save temp file: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to save temp file: {e}")))?;
 
     Ok(temp_file_path)
 }

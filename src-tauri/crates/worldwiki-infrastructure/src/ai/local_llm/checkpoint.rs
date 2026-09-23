@@ -103,7 +103,10 @@ impl LlmCheckpoint {
         }
 
         let actual_count = n_token_count.min(tokens_out.len());
-        let tokens = tokens_out[..actual_count].to_vec();
+        let tokens = tokens_out
+            .get(..actual_count)
+            .map(|s| s.to_vec())
+            .unwrap_or_else(|| tokens_out.clone());
         let n_past = actual_count as i32;
 
         Ok((tokens, n_past))

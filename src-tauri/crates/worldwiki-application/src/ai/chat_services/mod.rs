@@ -67,8 +67,7 @@ impl ChatServices {
     pub fn respond_tool_approval(&self, call_id: &str, approved: bool) -> bool {
         if let Ok(mut map) = self.pending_approvals.write() {
             if let Some(tx) = map.remove(call_id) {
-                let _ = tx.send(approved);
-                return true;
+                return tx.send(approved).is_ok();
             }
         }
         false
@@ -418,7 +417,7 @@ mod tests {
             _request: StreamRequest,
             sender: tokio::sync::mpsc::Sender<StreamEventDto>,
         ) -> Result<(), DomainError> {
-            let _ = sender
+            if let Err(e) = sender
                 .send(StreamEventDto {
                     text_delta: Some("Ответ от модели".to_string()),
                     reasoning_delta: None,
@@ -426,7 +425,10 @@ mod tests {
                     usage: None,
                     is_done: true,
                 })
-                .await;
+                .await
+            {
+                eprintln!("[MockStream] send error: {e}");
+            }
             Ok(())
         }
     }

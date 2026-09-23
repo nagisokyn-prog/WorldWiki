@@ -28,13 +28,7 @@ pub async fn toggle_schema_history_pin_inner(
     history_id: &str,
     is_pinned: bool,
 ) -> Result<(), EntityError> {
-    let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 {
-        parts[1]
-    } else {
-        history_id
-    };
-
+    let actual_id = history_id.split_once(':').map(|(_, b)| b).unwrap_or(history_id);
     let id_val = safe_id("schema_history", actual_id);
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", id_val))
@@ -47,12 +41,7 @@ pub async fn get_entity_revisions_inner(
     db: &Surreal<Db>,
     entity_id: &str,
 ) -> Result<Vec<Value>, EntityError> {
-    let parts: Vec<&str> = entity_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 {
-        parts[1]
-    } else {
-        entity_id
-    };
+    let actual_id = entity_id.split_once(':').map(|(_, b)| b).unwrap_or(entity_id);
     let full_id = format!("entities:⟨{}⟩", actual_id);
 
     let mut result = db
@@ -69,12 +58,7 @@ pub async fn toggle_entity_history_pin_inner(
     history_id: &str,
     is_pinned: bool,
 ) -> Result<(), EntityError> {
-    let parts: Vec<&str> = history_id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 {
-        parts[1]
-    } else {
-        history_id
-    };
+    let actual_id = history_id.split_once(':').map(|(_, b)| b).unwrap_or(history_id);
 
     db.query("UPDATE type::record($id) SET is_pinned = $is_pinned")
         .bind(("id", format!("entity_revisions:{}", actual_id)))

@@ -1,4 +1,4 @@
-//! Provider client construction for LLM providers (Anthropic, OpenAI, Gemini, OpenRouter, DeepSeek).
+use worldwiki_domain::errors::DomainError;
 
 #[cfg(feature = "ai-cloud")]
 use claw_api::{AnthropicClient, AuthSource, OpenAiCompatClient, OpenAiCompatConfig, ProviderClient};
@@ -8,7 +8,7 @@ pub fn build_provider_client(
     provider: &str,
     api_key: &str,
     base_url: Option<String>,
-) -> Result<ProviderClient, String> {
+) -> Result<ProviderClient, DomainError> {
     let api_key = api_key.trim().to_string();
 
     let base_url = base_url.and_then(|s| {
@@ -37,7 +37,7 @@ pub fn build_provider_client(
     let http_client = reqwest::Client::builder()
         .default_headers(headers)
         .build()
-        .map_err(|e| format!("Failed to build HTTP client: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Failed to build HTTP client: {e}")))?;
 
     match provider {
         "anthropic" => {
@@ -59,7 +59,7 @@ pub fn build_provider_client(
                 .with_http_client(http_client);
             Ok(ProviderClient::OpenAi(client))
         }
-        other => Err(format!("unsupported provider: {other}")),
+        other => Err(DomainError::Validation(format!("unsupported provider: {other}"))),
     }
 }
 
@@ -88,7 +88,7 @@ mod provider_client_tests {
     fn unsupported_provider_errs() {
         let res = build_provider_client("hal9000", "key", None);
         assert!(res.is_err());
-        assert!(res.unwrap_err().contains("unsupported provider"));
+        assert!(res.unwrap_err().to_string().contains("unsupported provider"));
     }
 
     #[test]

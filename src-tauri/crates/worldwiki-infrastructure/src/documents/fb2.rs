@@ -1,16 +1,17 @@
 use std::fs;
 use std::path::Path;
 use worldwiki_domain::document::{ExportDocumentRequest, ExportDocumentResponse};
+use worldwiki_domain::errors::DomainError;
 
 use super::utils::{
-    escape_xml, extract_inline_text, extract_inline_text_with_footnotes, sanitize_filename,
+    escape_xml, extract_inline_text, extract_inline_text_fb2_with_footnotes, sanitize_filename,
 };
 
 pub fn generate_fb2(
     request: &ExportDocumentRequest,
     target_dir: &Path,
-) -> Result<ExportDocumentResponse, String> {
-    fs::create_dir_all(target_dir).map_err(|e| e.to_string())?;
+) -> Result<ExportDocumentResponse, DomainError> {
+    fs::create_dir_all(target_dir).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     let safe_title = sanitize_filename(&request.title);
     let file_name = format!("{}.fb2", safe_title);
@@ -61,7 +62,7 @@ pub fn generate_fb2(
                 xml.push_str(&format!("      <title><p>{}</p></title>\n", escape_xml(&title_text)));
             }
             "paragraph" => {
-                let p_text = extract_inline_text_with_footnotes(block.get("content"), &mut footnotes);
+                let p_text = extract_inline_text_fb2_with_footnotes(block.get("content"), &mut footnotes);
                 xml.push_str(&format!("      <p>{}</p>\n", p_text));
             }
             "figure" => {
@@ -104,8 +105,8 @@ pub fn generate_fb2(
 
     xml.push_str("</FictionBook>\n");
 
-    fs::write(&output_path, xml.as_bytes()).map_err(|e| e.to_string())?;
-    let metadata = fs::metadata(&output_path).map_err(|e| e.to_string())?;
+    fs::write(&output_path, xml.as_bytes()).map_err(|e| DomainError::Validation(e.to_string()))?;
+    let metadata = fs::metadata(&output_path).map_err(|e| DomainError::Validation(e.to_string()))?;
 
     Ok(ExportDocumentResponse {
         success: true,

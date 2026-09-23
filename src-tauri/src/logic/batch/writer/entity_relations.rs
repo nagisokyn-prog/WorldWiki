@@ -30,12 +30,7 @@ pub async fn save_entity_with_relations_inner(
     } = entity;
 
     let main_entity_id = if let Some(ref id_str) = entity_id_opt {
-        let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        let actual_id = if parts.len() == 2 {
-            parts[1]
-        } else {
-            id_str.as_str()
-        };
+        let actual_id = id_str.split_once(':').map(|(_, b)| b).unwrap_or(id_str.as_str());
         safe_id("entities", actual_id)
     } else {
         let new_id = uuid::Uuid::new_v4().to_string();
@@ -96,12 +91,7 @@ pub async fn save_entity_with_relations_inner(
         } = foreign;
 
         if let Some(fid) = fid_opt {
-            let fparts: Vec<&str> = fid.splitn(2, ':').collect();
-            let factual_id = if fparts.len() == 2 {
-                fparts[1]
-            } else {
-                fid.as_str()
-            };
+            let factual_id = fid.split_once(':').map(|(_, b)| b).unwrap_or(fid.as_str());
             let foreign_full_id = safe_id("entities", factual_id);
 
             let var_name = format!("foreign_data_{}", i);

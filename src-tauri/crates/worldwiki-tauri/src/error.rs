@@ -64,3 +64,23 @@ impl From<DomainError> for IpcError {
         }
     }
 }
+
+impl From<String> for IpcError {
+    fn from(msg: String) -> Self {
+        Self {
+            code: "INTERNAL_ERROR".to_string(),
+            message: msg,
+            details: None,
+        }
+    }
+}
+
+impl From<&str> for IpcError {
+    fn from(msg: &str) -> Self {
+        Self {
+            code: "INTERNAL_ERROR".to_string(),
+            message: msg.to_string(),
+            details: None,
+        }
+    }
+}

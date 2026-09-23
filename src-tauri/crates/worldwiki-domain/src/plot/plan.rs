@@ -30,22 +30,20 @@ impl Plan {
         parent_ref: Option<String>,
         sort_order: i32,
     ) -> Self {
-        let now = Utc::now();
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: String::new(),
             project_id: project_id.into(),
             title: title.into(),
             parent_ref,
             parent_type,
             sort_order,
             completed: false,
-            created_at: now,
-            updated_at: now,
+            created_at: DateTime::UNIX_EPOCH,
+            updated_at: DateTime::UNIX_EPOCH,
         }
     }
 
     pub fn complete(&mut self) {
         self.completed = true;
-        self.updated_at = Utc::now();
     }
 }

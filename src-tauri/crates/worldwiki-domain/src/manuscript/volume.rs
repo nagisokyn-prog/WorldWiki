@@ -2,6 +2,10 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 use super::status::ManuscriptStatus;
 
+fn default_epoch() -> DateTime<Utc> {
+    DateTime::UNIX_EPOCH
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Volume {
     pub id: String,
@@ -13,25 +17,24 @@ pub struct Volume {
     #[serde(default)]
     pub status: ManuscriptStatus,
     pub target_word_count: Option<usize>,
-    #[serde(default = "chrono::Utc::now")]
+    #[serde(default = "default_epoch")]
     pub created_at: DateTime<Utc>,
-    #[serde(default = "chrono::Utc::now")]
+    #[serde(default = "default_epoch")]
     pub updated_at: DateTime<Utc>,
 }
 
 impl Volume {
     pub fn new(project_id: impl Into<String>, title: impl Into<String>, sort_order: i32) -> Self {
-        let now = Utc::now();
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: String::new(),
             project_id: project_id.into(),
             title: title.into(),
             description: None,
             sort_order,
             status: ManuscriptStatus::Draft,
             target_word_count: None,
-            created_at: now,
-            updated_at: now,
+            created_at: DateTime::UNIX_EPOCH,
+            updated_at: DateTime::UNIX_EPOCH,
         }
     }
 }

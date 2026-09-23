@@ -14,12 +14,7 @@ pub async fn export_document_docx(
         .download_dir()
         .unwrap_or_else(|_| PathBuf::from("."));
 
-    docx::generate_docx(&request, &download_dir)
-        .map_err(|e| IpcError {
-            code: "EXPORT_FAILED".to_string(),
-            message: e,
-            details: None,
-        })
+    docx::generate_docx(&request, &download_dir).map_err(IpcError::from)
 }
 
 #[tauri::command]
@@ -32,12 +27,7 @@ pub async fn export_document_epub(
         .download_dir()
         .unwrap_or_else(|_| PathBuf::from("."));
 
-    epub::generate_epub(&request, &download_dir)
-        .map_err(|e| IpcError {
-            code: "EXPORT_FAILED".to_string(),
-            message: e,
-            details: None,
-        })
+    epub::generate_epub(&request, &download_dir).map_err(IpcError::from)
 }
 
 #[tauri::command]
@@ -50,12 +40,7 @@ pub async fn export_document_fb2(
         .download_dir()
         .unwrap_or_else(|_| PathBuf::from("."));
 
-    fb2::generate_fb2(&request, &download_dir)
-        .map_err(|e| IpcError {
-            code: "EXPORT_FAILED".to_string(),
-            message: e,
-            details: None,
-        })
+    fb2::generate_fb2(&request, &download_dir).map_err(IpcError::from)
 }
 
 #[tauri::command]

@@ -16,16 +16,15 @@ pub fn flatten_thing(val: &mut Value) {
     if let Some(obj) = val.as_object_mut() {
         for v in obj.values_mut() {
             if v.is_object() {
-                let is_thing = v.get("tb").is_some() && v.get("id").is_some();
-                if is_thing {
-                    let tb = v["tb"].as_str().unwrap_or("").to_string();
-                    let id_field = &v["id"];
-                    let id_str = id_field
+                let tb_opt = v.get("tb").and_then(|t| t.as_str()).map(|s| s.to_string());
+                let id_opt = v.get("id").and_then(|id_field| {
+                    id_field
                         .get("String")
                         .and_then(|s| s.as_str())
                         .or_else(|| id_field.as_str())
-                        .unwrap_or("")
-                        .to_string();
+                        .map(|s| s.to_string())
+                });
+                if let (Some(tb), Some(id_str)) = (tb_opt, id_opt) {
                     if !tb.is_empty() && !id_str.is_empty() {
                         *v = Value::String(format!("{}:{}", tb, id_str));
                     }

@@ -1,179 +1,27 @@
 [
   {
     "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 49,
+    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/text_block.rs",
+    "line": 33,
     "symbol": "unsafe_block",
     "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "7698342b2eb1546fb27a30f2fa248df4ef40701faac1aa6b61d92240391fd409"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 78,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "e2c29955d89762342c34b0bcc1950df5bd1f1c89f2282a7de5403dc2ad68124c"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 89,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "12fadd8c422e6f3b100c5fac5acf064aa4062159913a7826f452ad4e7bd10119"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 110,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "a598cc1503b12f631dc05fff0fde68e08edb76319a81c4fdcdb0bbab3bf0e395"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 115,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "b5105d6ddee2e71ff42137df58554df5700fc80c83b1699a019f8713c2f3cb31"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/sampler.rs",
-    "line": 44,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "2e12adbd24f1af3f0f5bd1809a79de51d6d219f51268f0ceabb7075bcd21828e"
-  },
-  {
-    "rule": "AI-008",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/tokenizer.rs",
-    "line": 31,
-    "symbol": "unsafe_block",
-    "message": "Unverified 'unsafe' block without mandatory '// SAFETY: <rationale>' comment immediately preceding it.",
-    "fingerprint": "5cb1f3f6cb31b38e548b76d21e0488a10f2db2c30f8fe1f51574919cf3581f96"
+    "fingerprint": "871ef2bc1eeb3d63f7d288191221f9d0edd382e376023d8e501bf12f5409bccf"
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/agent_loop.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (242.0) exceeds warning limit (200.0)",
-    "fingerprint": "de6ae48e3ca39017eda43a4f336dfd808c8f5961cb48c210d54fc03bd020c33a"
+    "message": "High Architectural Pressure S_arch (263.5) exceeds warning limit (250.0)",
+    "fingerprint": "a8376a15a9837d810505cbe4a897d58dad358fe98ec471ab15b3a9dabb7c2325"
   },
   {
     "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
+    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/helpers.rs",
     "line": 1,
     "symbol": "file",
-    "message": "High Architectural Pressure S_arch (225.3) exceeds warning limit (200.0)",
-    "fingerprint": "d8407820433fb7891ae52e547d8c4c750a6d2178d4b3511ea71f9af1e26b8b6c"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/tool_dispatcher.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (207.7) exceeds warning limit (200.0)",
-    "fingerprint": "0c769b68400575fa2d423f9590d13670cbad1d1b7820ebd7b4bc794a89485727"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/prompt.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (230.5) exceeds warning limit (200.0)",
-    "fingerprint": "81560ff09568ba4dca6ab1dd21c86346efe21f60358f3da69fc7cca047e64b81"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (300.7) exceeds warning limit (200.0)",
-    "fingerprint": "90401283e93da17e269e91c6504fa444bfba96564b14d80aa12576c6f924d39d"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/validator.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (204.5) exceeds warning limit (200.0)",
-    "fingerprint": "61c5c944eedfebaaa00a41cb95af2628566cb5604190fbcc1efcf440391dcf5f"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (282.7) exceeds warning limit (200.0)",
-    "fingerprint": "b2a329aa7300e42f9fdbcc14695b20ed39c4acee786849a06b3c36bdd8697cc3"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-domain/src/calendar/math.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (197.8) exceeds warning limit (150.0)",
-    "fingerprint": "b84ebf4bb130fb41acc1ffb23c023a1028943e870e660f653093011e9b4800c0"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (287.8) exceeds warning limit (250.0)",
-    "fingerprint": "f25454e4f8e3ec9637280e46e9721d19d74792c8a770bed0b95aa184537e93d6"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (355.8) exceeds warning limit (250.0)",
-    "fingerprint": "72fde7710994aaaf74b4dca15d9220e13e4f22b746cd6f00a8cf2dbe255311ef"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/documents/docx.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (282.0) exceeds warning limit (250.0)",
-    "fingerprint": "11fda1b4edf31c5e8ea429001c50adfe37b35d7de84087fcea32845cc4eec795"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/rag_repo.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (381.0) exceeds warning limit (250.0)",
-    "fingerprint": "a03e567ea56d5cf4734e783067bb2e22682bbfd0bed8a52fd681bacdd7f342db"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (295.2) exceeds warning limit (250.0)",
-    "fingerprint": "52a29eeb49bd199360121bc38d4e52fa62bc277a0fc2f0767c16fe684d458d1e"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/src/logic/batch/writer.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (219.1) exceeds warning limit (200.0)",
-    "fingerprint": "198de58be867bb38ca23359baf3ccd3fa926b70a2825d1e03ddc9b24a84dcd55"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (206.0) exceeds warning limit (200.0)",
-    "fingerprint": "0b182eda2e9885b21cc5dc4c8369b10a216493eaff51349c07b7063d38efe8bb"
+    "message": "High Architectural Pressure S_arch (255.8) exceeds warning limit (250.0)",
+    "fingerprint": "66a8b921c3e5b073fce7691af0cda06bc64efce70fa6b62beaf269207134ea81"
   },
   {
     "rule": "CONC-002",
@@ -224,244 +72,12 @@
     "fingerprint": "d246f88614f32368bc7dd50f7d0e7071c39b214c783425e289c5620b51047824"
   },
   {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "3b74127ff88bbbe5d249fb5876ab49228882613762d5b33fcf31add1b8c41808"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "a774d3eaf8b48c8f4b227381b9057d3a16d95ccb04505d39c2e9a723fb7a3e63"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "a774d3eaf8b48c8f4b227381b9057d3a16d95ccb04505d39c2e9a723fb7a3e63"
-  },
-  {
-    "rule": "CONC-002",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
-    "line": 1,
-    "symbol": "orphan_spawn",
-    "message": "Unbounded 'tokio::spawn' executed without storing JoinHandle or attaching CancellationToken.",
-    "fingerprint": "a774d3eaf8b48c8f4b227381b9057d3a16d95ccb04505d39c2e9a723fb7a3e63"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/agent_loop.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "ffe0dffd25a7035133697f2c13d2adeea4cc9544dc2a135d71e08620a9ffac0b"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/agent_loop.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "ffe0dffd25a7035133697f2c13d2adeea4cc9544dc2a135d71e08620a9ffac0b"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/mod.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "3fb22d90a7ae093c6e33811e3b77e2de1ecf2a943ad2be0b71fd84307ce45ee9"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/mod.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "efd7fcc9445fa8abbe8a23ed9623160c5da83391c11204bf25e536736293fee9"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "d5fa762244804e894a09a42ba28161797cc0ddc795dccf308d852e75cd597510"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "0fa4185dce1e28bc12e154965ec7e7a64f609d31c158a97057e2922d68f357f2"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "8459cb0f1905e42372957b06e702e630fa82353471924525b410b30405f5ed0b"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "877268dcefa6edcad298b040eb0c89cf1c996d75f94ced966ef1d3f20b1061aa"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "877268dcefa6edcad298b040eb0c89cf1c996d75f94ced966ef1d3f20b1061aa"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "f059aeaa778ac4df40c3d6d4452d6b3aa81d27b90343fd01f72263186458efca"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "f75c4312da9401404a59778921173e0efad811061578a399f5f98cb4eb0f3293"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "f75c4312da9401404a59778921173e0efad811061578a399f5f98cb4eb0f3293"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "fd6d0fd5d20dc5842733546c9ceeb5710a5b569c9b7bdf1ce3fc82a85f3e29e7"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/claw_adapter.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "fd6d0fd5d20dc5842733546c9ceeb5710a5b569c9b7bdf1ce3fc82a85f3e29e7"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "1c13d698e13f48c730067c82e045e441140ebe1ad4f46c71de6b16a75729a531"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/mod.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "e6d1277842aa124bbe16642f4bd23ad8bc31ee27a54b1f78f4f10d78619125d3"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/mod.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "e6d1277842aa124bbe16642f4bd23ad8bc31ee27a54b1f78f4f10d78619125d3"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/mock_ai.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "062cdc888c62caddc7130278a83940c8a54723620684eea78e9bf7bc5a136e85"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/mock_ai.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "adc012773c3945acbae5c126ddfe0d3ff56bb46ef44fc4bab3319293f54ab775"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "4538dd80f5c1a4bd9e1e0e66738731249e62f05d85aa2af4c2c5ef69d3f16d62"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "4538dd80f5c1a4bd9e1e0e66738731249e62f05d85aa2af4c2c5ef69d3f16d62"
-  },
-  {
-    "rule": "ERR-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
-    "line": 1,
-    "symbol": "wildcard_let",
-    "message": "Silent error suppression 'let _ = ...' drops critical operation errors.",
-    "fingerprint": "449fdb0b025dc854b9b721b092b12f4388a6000266c17207da9bfaf6a8c6de51"
-  },
-  {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service/session_ops.rs",
     "line": 1,
     "symbol": "fork_chat",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "51caaf0452a2551c23aac91882da7d1ed7a8c42359e297d4bcd861219a5c3c8d"
+    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
+    "fingerprint": "706f3cdc1718cc1fbd53da246da467e2c7b03298fe8bf727283541fa64e4f70d"
   },
   {
     "rule": "ERR-003",
@@ -477,7 +93,7 @@
     "line": 1,
     "symbol": "execute_research",
     "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "e8d65bedec063e105e77c699f637338ca9ff9ebd5e20f68ff4bd2d8e689393ea"
+    "fingerprint": "fdf620eb6d3f20052a4195413327c32da763302c075155127b35d6eea12d22ef"
   },
   {
     "rule": "ERR-003",
@@ -493,119 +109,7 @@
     "line": 1,
     "symbol": "build_provider_client",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "78329204c574eb494acfaff8356dded82549306c1ef9f7cbbfe7f4bf3f9409cb"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hub.rs",
-    "line": 1,
-    "symbol": "fetch_hf_models_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "5dcd0681022b558f16456c4768580265b4954b0b8f9b37495911baf350097a92"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/embedder.rs",
-    "line": 1,
-    "symbol": "embed_passage",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "eef7ed2858e803794edb5ce3adc12b8b96015c88100829907364f9cc07191765"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/embedder.rs",
-    "line": 1,
-    "symbol": "embed_query",
-    "message": "Public method returns untyped 'Result<T, String>'.",
-    "fingerprint": "971bdae5960cf610d6a3af2574482d3b15adbd8ed0797e07191dd6abb84ce215"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/indexer.rs",
-    "line": 1,
-    "symbol": "reindex_project_lore_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0e66c2ed977436628ccb2a8de8533dc7ce1c41c7441c941109c13132fd9b93f1"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/documents/docx.rs",
-    "line": 1,
-    "symbol": "generate_docx",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "7bd7fe8f3e16dfc5ad035b7f9457bf822fa640dc14b4bd711f6fe09b1d9ece22"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/documents/epub.rs",
-    "line": 1,
-    "symbol": "generate_epub",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2fafea804090f433f411165166f98d62393b6d79da52a48f2e3b33f9fbfd1958"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/documents/fb2.rs",
-    "line": 1,
-    "symbol": "generate_fb2",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b893a9944c06b3a39f9f38755c70eaf3884877d5dc94ae0632b1158a21226692"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "create_cloud_backup_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "ca3571f5a5c0180dd8bb18c18be8b1198bb5f58fb1cfe2ba81c5b97b2bdebf3b"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "export_chapters_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "bb0f279d8b2ae96469b9e3afd5eacd20ad8b72fe98305079684e76ab84f1e9dc"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "restore_from_backup_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0acdb313b0e7dbbc3c6afc03b52a77482a447955d0e40d20c9520ee45d171887"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/auth.rs",
-    "line": 1,
-    "symbol": "exchange_yandex_token_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "3aa0fa2c3c6d7b0cd1ae904cbc5a123278ba222ed7897d5207076ba1195d2388"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
-    "line": 1,
-    "symbol": "download_yandex_file_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "0587c5669827a60c45ddfe3186b2859d63525b943521557835c9faeb9e8e74c8"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
-    "line": 1,
-    "symbol": "list_yandex_disk_backups_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "092851d587159caf365a829bd30efb30ca76e07592e17fac448617210d18610c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/yandex/client.rs",
-    "line": 1,
-    "symbol": "upload_to_yandex_disk_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "df44358ebf7dd4d2e3ab594725385d037143dc9ffca8ae75fc32ff6b69a32ebf"
+    "fingerprint": "af08ab0f03b8bb18995e0d0718f63988898ba82b9987f5e34011581e212ffd0b"
   },
   {
     "rule": "ERR-003",
@@ -625,75 +129,11 @@
   },
   {
     "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/ai.rs",
-    "line": 1,
-    "symbol": "reindex_project_lore",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "68d421f9928a589724c725f1e6b4186eb6233604a5a67d181c58a8b1f88ab1ce"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "create_cloud_backup",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "d5ed34cdb4fc1cb6abc5a72b6a39aeb19d1ddb9fdba131c7c3a1ee01257e14b3"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "download_and_restore_yandex",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "7d5366afb809b21fa0d0c832fa7d4a8623768b342f0b2eda4e3de751f1a1b001"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "exchange_yandex_token",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "dd711e3b4a5f81e7657cad20433d8a862df7ba413bd9ceab84032296ae8a0b3c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "export_chapters",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2c24b2cbc1483922de26b143508ed7966e138a190ebe26d11cf7d379b19d9d17"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "list_yandex_disk_backups",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "fa2d9830278f8f3bc0b295afab29a53b58be4be7d3dc1d479cda14843093ca58"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "restore_from_backup",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "5fc40b6b8d903bb303a765cbcf41ffd75c93eb558ceb1fcb4f6ec0ba6f78eafa"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "upload_to_yandex_disk",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "aa66df62a625906bd9200845b7373bf0f016ef674c764a430a40bb758848fcad"
-  },
-  {
-    "rule": "ERR-003",
     "file": "./src-tauri/crates/worldwiki-tauri/src/commands/chat/messages.rs",
     "line": 1,
     "symbol": "edit_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "13f07a607e9f3fc2eee90977f155d8561006fa8bdcbe4373b18d87a53fa2cd45"
+    "fingerprint": "e5480fe76bb8da0c12b1ba5d7109ec3b4e0ccfa45ad93f8fc14abfb2309b01ea"
   },
   {
     "rule": "ERR-003",
@@ -701,7 +141,7 @@
     "line": 1,
     "symbol": "regenerate_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "10b31425247308251685e9da1e9ec65f5e987253d42b9604d598db5c798ae9cf"
+    "fingerprint": "b1c372d7077a55abc76e518920b48d16a5a2fe63f2d7f3160cf6f9debadc859d"
   },
   {
     "rule": "ERR-003",
@@ -709,7 +149,7 @@
     "line": 1,
     "symbol": "send_chat_message",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "102d553da5b0e05044950dd8ae85fbc0683d17f90fcf4f7ce1135a062c79afd1"
+    "fingerprint": "e4c0f9e025194fb87d2aa0ab81db515f594b4130ba9270870654f9c873e920cc"
   },
   {
     "rule": "ERR-003",
@@ -733,7 +173,7 @@
     "line": 1,
     "symbol": "download_hf_model",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "295ef6c5f2ee20543dbb581757c6309735812765ae8bdee6c60ca1d831d50601"
+    "fingerprint": "471c18a3275fb39c65c3b78c140ad72850d2b2f71cb8160adfa47c9987f36767"
   },
   {
     "rule": "ERR-003",
@@ -741,7 +181,7 @@
     "line": 1,
     "symbol": "fetch_hf_models",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a2d5c85c15627fd395ce9f2c8d182759f3e316b050ba1cb1fcb8bd7c1f664d43"
+    "fingerprint": "c1db000e690cbaea9963015c5993ffc82173d1a4b2bbec35f65b21a7b4444f37"
   },
   {
     "rule": "ERR-003",
@@ -758,22 +198,6 @@
     "symbol": "save_all_tool_permissions",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
     "fingerprint": "243491e63219d5c944aa1870a27137308c89bc3ff1fd5de2a65558f05f5c2e67"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "apply_ddl_module",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2a5c1769ddf12ecc902c3f7480a32d4d5e3eec7244dfc67ce544114575f3360c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "apply_schema_pipeline",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "77d6a537ba2fcae4d69a47f9b5c9ae0e927b3d5045daffc39de95476341fb743"
   },
   {
     "rule": "ERR-003",
@@ -805,7 +229,7 @@
     "line": 1,
     "symbol": "get_connections_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e962c3a83a5835a5ef5df55f86c2ee691a35151879e00d3f59025ff62a167083"
+    "fingerprint": "92172ae4dbe55acc6d405cbca05d6fcbe2eb903be16865d994cd90ca939995d1"
   },
   {
     "rule": "ERR-003",
@@ -869,7 +293,7 @@
     "line": 1,
     "symbol": "assign_chapter",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "38ca3ca5b6ce9e047e4dab02bb5daa23dc1672939915694cf6111b2042da87e6"
+    "fingerprint": "6eda537d0a80c2d89346b5f70e3c683a1626cebc26cc8165c55df577b2558b15"
   },
   {
     "rule": "ERR-003",
@@ -877,7 +301,7 @@
     "line": 1,
     "symbol": "auto_extend_timeline",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "37cec75bf1bab58d9c7b196052b2527ac306e1ead96df24c1659d48bcde192c7"
+    "fingerprint": "df89d4dcd677041a1ac79814ea0cf9895fc9802fd0f2f56551417062db1950c7"
   },
   {
     "rule": "ERR-003",
@@ -886,22 +310,6 @@
     "symbol": "assign_chapter_inner",
     "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
     "fingerprint": "4f3e408148c7fa8afdb5e47c4261a42b19d62381183ed7d8d23f60ac5320a02e"
-  },
-  {
-    "rule": "ERR-005",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "panic",
-    "message": "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.",
-    "fingerprint": "31354ebb216533f7a657487428e0e435ddf460d6edfe9db7c754321295b3cc1d"
-  },
-  {
-    "rule": "ERR-005",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "panic",
-    "message": "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.",
-    "fingerprint": "31354ebb216533f7a657487428e0e435ddf460d6edfe9db7c754321295b3cc1d"
   },
   {
     "rule": "PERF-011",
@@ -969,374 +377,6 @@
   },
   {
     "rule": "ROB-001",
-    "file": "./src-tauri/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "5902a2ce2dbc1a65ea2210bfa3198f3a7616bd0c255c4fea00d02a818009203f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/error_parser.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "a50ccfe341fba4a5afed3ea8347577bca7f18c1364bec020adb6e15effd94a97"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "5c264035bc8cb90bacb6774c2edb816d2cede98ae1f9ce1fd9e11e94205cd190"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "6cf781efb841273f738e80c74ba5309c56cc294e8b302b48ba3b530d1b203683"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "917d2c9fcc61708cdf0ec46fb94cda2cdf4cceec30b13fafb4db76274cf34f5a"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "0c54c7a9c7c38434209c296eef36508b0dddd2d571612ff3304aa7df947faf24"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-domain/src/calendar/math.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b8ce45ecfcb9892912a6d7515b0439933a03cc2f900ad991735ca2980444be64"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/text_block.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "521070dcadc0c5b4cd4eb430413973491f4d1e8f42e90f5fc736deb95862da4c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/text_block.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "97a96615abbe17dff42d4850812d6f335ac03951fe5019b10df829ec4102f7fb"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-domain/src/manuscript/text_block.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ed1700467866f3188b4935138c5da531f23c15a710dd6665568480e9d32e6725"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/chunker.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "17b1714c4be7f49c7dca48c43d073ed60f761ea9b899cc31359d6eee7f2d011d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/chunker.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2589dc4c114bb9fe702df9176ba07b9ed4d821ce4c2de5241d33eb519e681cfa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/chunker.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "5e71887178d04da630252396111d94eec0ab1bdabf87fbf52554ac06c8c26e46"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/chunker.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "95d9bc67e388ecf3e554c1d9a85672e1cb2f3e02cc64ada6edf1af74a943eea7"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/hardware.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "282c524d8f8c63d408db649defcf684d47b713fc88daee55500e9f32dcf2b811"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/checkpoint.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "6fa519c2da9b2e629cfdc092c7b96aac2b6422d587c9a88fb65de3e06a8062cc"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "f27f6f41440a377b44cfa50fcf1c38eb5969d7abdee61f134bfb9134ea7377d9"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "0d40954b1ad474f3f747448bc6ac8d8e051db97e377cc38ca1f9bd874e10887c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "0d40954b1ad474f3f747448bc6ac8d8e051db97e377cc38ca1f9bd874e10887c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "0d40954b1ad474f3f747448bc6ac8d8e051db97e377cc38ca1f9bd874e10887c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/local_manager.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "0d40954b1ad474f3f747448bc6ac8d8e051db97e377cc38ca1f9bd874e10887c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "5add81883ea4d446747a42e94e7b8eda87607bf88c0c700cd50c3ed3c7fbdb74"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cbf612b4b6378f76175489f2f46449b70e2dc9f49c4b750257ffdc08ed9d18d8"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "58e599d9001be48870b8fcdbace3d70b9dab2642e6ed66dc8aaa43f18ab2d137"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/storage/backup.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "9ac60fce08189aa003b2d42fcf71f2c030e20e81178130757ed1ee47581bd6b3"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/helpers.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "a8de3faab5451e29b32634bb155df8d3b66471c8e3f7841cf3f33e1f30b47aa8"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/repos/helpers.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c0868da210f7cdd4ce1b0e352b96a340d28bbd01daba59ba855b5d7d9a71a194"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "50e0b06fdfe2ed82f5c100ac50179e3ea5a076e0321b167702a9bcd96e91fe3d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "87f267f873b8189dba4a3ff437a54e0b870d93b5082aac5e72b66099f9fe10f4"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "1aa52c2378669012b78be358ee7e2260321cfc77ea39ad4f37aaa2bdd95201db"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2c62b2c31cd310d463121a9a5092aa00c30573e0c4398f894b1809ee207b981a"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2c8d1bce81656791935eb487e621fd6958314b0c92b739c3c0315468b1f09258"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cb6b708dd8769eb80a4e0102a98e688b24721d87cedffeacdabf5598dca6e740"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cd93334d8372a02cd82d7473497d9c3d8a37c4fd5fe5674c73aac98d5869742b"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cd93334d8372a02cd82d7473497d9c3d8a37c4fd5fe5674c73aac98d5869742b"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "cd93334d8372a02cd82d7473497d9c3d8a37c4fd5fe5674c73aac98d5869742b"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-infrastructure/src/surrealdb/stemmer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ee259cba57d8ac5f40f344a111e9886c327e6ce23d6a20aa9c9b8fcecae508ae"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "50caaa4fc580283605122dc898899489bb88b283c96ff359e142150c975d3d6c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/crates/worldwiki-tauri/src/commands/backup.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "50caaa4fc580283605122dc898899489bb88b283c96ff359e142150c975d3d6c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "626cb7d1ce24413b3d86372c1f75dbabe3c88ea1de848716002d0c27f311ea26"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "d5d3b28ba57b843a97636fbd1b735837fdb956eba683c9d92d55566030b93c0f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "f44da9a593cdefa2083576e915c69534bcd11c561016d139c023e0cc30f4e80d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "18ab30abe8666b36eff6a6908be2c1725441aa9ff9ef2683a7cf6a356dde8d6e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "647654ae4fbc164dec30f394ff52dba75cb27067e9f9a7b29a8cac30a1732b4f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/llama-sys/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "d8f2bbb09f63b4ec73b51602f88b632ba042eaf4d83092296b89d521378e5a6d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/lib.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "3aab37395fcabd53436c47833c247b8d40191d2bf601c22a7584a2923803ff0b"
-  },
-  {
-    "rule": "ROB-001",
     "file": "./src-tauri/src/lib.rs",
     "line": 1,
     "symbol": "expect",
@@ -1344,300 +384,20 @@
     "fingerprint": "51be06543b003af4cdf5b60e4060847912c295c72791b877335d37f73576a7ac"
   },
   {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/lib.rs",
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service/message_ops.rs",
     "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "5d7db6d2e3a93612ab5de67f1eef3e5d7d2a4b6ea77c1c88c13f4b432f4f856f"
+    "symbol": "send_message",
+    "message": "High .clone() density detected (7 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "85cc249f20a50f9bf99143add92298fe8d379474d0a429828fcd5a7bb28a173a"
   },
   {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/batch/writer.rs",
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/chat_services/session_service/session_ops.rs",
     "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c48ba124e328141bb037bc38d097cf458a80a90678869c0e9338013a909a0e97"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/batch/writer.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "dca49185958ff69b8ee331e2ff3fad9051629c5ae3584025bdfc27a91da59d53"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "164ebb4a2b7832e973e9e18f782358db0887d31e69279f154023ae89395bd9bc"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "164ebb4a2b7832e973e9e18f782358db0887d31e69279f154023ae89395bd9bc"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2e1ff94226492cc7c169ef8db7ea97da9a5fcd1e1423a7c6eb679a119914b882"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2e1ff94226492cc7c169ef8db7ea97da9a5fcd1e1423a7c6eb679a119914b882"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2e1ff94226492cc7c169ef8db7ea97da9a5fcd1e1423a7c6eb679a119914b882"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "783e4cef4517cce4d3ec05ce167400e5a27956e3e27218c2a3a820b6eac67a96"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "83fb4598f2a620202de90f43f02176f4e8fb6c11246e7be41b3d2046966a261f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "a4975362767c393535149e74d898e3511fac0b87601f930a0fcefa71e384246c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "a5db6f49269e7e2613f3b7e6296614f9ffe3d2ad0112dbdcceea578623adbf9c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "a5db6f49269e7e2613f3b7e6296614f9ffe3d2ad0112dbdcceea578623adbf9c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b5ee72ea704d7c56d7000524c8c4116ec92d0198afae5a78346985fd6db977d6"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b94cdc92f022ab812a05ee95ab4f064bc5cd953ad0c78a4278615bf0b80a57d2"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c1466e99608ecc2557ab6a966c0de6dd95fc88fd338775f2d9d593ef104212c1"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c5e3a44da50e58056f85ca7bcbb4496857f8682bc28b235e9fdae6884c6747f5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c5e3a44da50e58056f85ca7bcbb4496857f8682bc28b235e9fdae6884c6747f5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c5e3a44da50e58056f85ca7bcbb4496857f8682bc28b235e9fdae6884c6747f5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7db3bb1aafd835788824f42c7bb93173ec283cb15cded0efedcf868cb8179552"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7db3bb1aafd835788824f42c7bb93173ec283cb15cded0efedcf868cb8179552"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7db3bb1aafd835788824f42c7bb93173ec283cb15cded0efedcf868cb8179552"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/history_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4d976f7c74b9b42338dba575cd34dc7bf59cbfdb9d972d2ae5d0d58731e58c66"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/history_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4d976f7c74b9b42338dba575cd34dc7bf59cbfdb9d972d2ae5d0d58731e58c66"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/history_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4d976f7c74b9b42338dba575cd34dc7bf59cbfdb9d972d2ae5d0d58731e58c66"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/relation_schemas.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "0f30a4557f31edcd910bd9450b709223a4d72ec1f00855fc5d9c46e914c0a976"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/relations.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "179f965b08a303002f73a1920ea30ea544989c6dd8777ca96ae54a9f1d0aac03"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8d4e3423ddec215e8fe7ccd9b3f41f7ccadd5ead6f108e6503bbc168f5ce55aa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/schemas_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8d4e3423ddec215e8fe7ccd9b3f41f7ccadd5ead6f108e6503bbc168f5ce55aa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/types.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2fca0b47accd9d8e5425a1d5df97fbcfafba0993a333380be08b14300aa6a119"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/entities/types.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "e274fa6537f567294853c920004d9705590651ea1e10991a5f51b71bfaea75bd"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "1c8667fe84c2228884e33473e504d864c03a5750b867fe6c55c1467a8e387eb2"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "0784cdf8881d1bb1666ac67f157511cb019ee89ebc18b4b0311848388305fe40"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "25aa401fffbc70cfbde851ec7ff815abf9388d8544d7d114bd47f7cccf057bc4"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "2dccd5590ade89ea23b7cec6e958178bca0a2ebb23b73c25e050e701b69fbf58"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4d2dc969e8b9c8aff09d3aecfda397beec0ae33736be5bdc9584f53ac6ad3ae6"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src-tauri/src/logic/volumes/hierarchy.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "d10d615dbc0b681b35e8da12e0bbcc20b9cced4d9dc8ea605605b27c11b67f3d"
+    "symbol": "fork_chat",
+    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "4e0eb93b9a78b6a811cbb020e9a00369ab8222433c82258408532c4058296f92"
   },
   {
     "rule": "SLOP-001",
@@ -1649,19 +409,27 @@
   },
   {
     "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
-    "line": 1,
-    "symbol": "normalize",
-    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "646814c05bfebf21bfd3f2f44fa884c97aa0b66861e6eea3af65f17a08bb4073"
-  },
-  {
-    "rule": "SLOP-001",
-    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer.rs",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer/container_parser.rs",
     "line": 1,
     "symbol": "parse_dynamic_container",
     "message": "High .clone() density detected (5 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
-    "fingerprint": "6355153212e843080e0be38477fb8c624f0543ea4806031b55654759a20b78c2"
+    "fingerprint": "af8fe509a4b74419e3c4e557417ab2bf24a0f39484c4513ed054c874bde6b2a7"
+  },
+  {
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/schema_adapter/normalizer/mod.rs",
+    "line": 1,
+    "symbol": "normalize",
+    "message": "High .clone() density detected (8 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "fe4e68560de90b6e9bb85e2a996ecb648518ea86488362f59d0ba5b409c5e017"
+  },
+  {
+    "rule": "SLOP-001",
+    "file": "./src-tauri/crates/worldwiki-application/src/ai/tools/entity_tools/mutator/mod.rs",
+    "line": 1,
+    "symbol": "upsert_entity",
+    "message": "High .clone() density detected (9 clones in a single function). Possible borrow checker circumvention (Memory Tax).",
+    "fingerprint": "c137ad15b1e6e7390664b09b581cdb4395ebb7e7de5a56376d6a8ac3d030bc12"
   },
   {
     "rule": "SLOP-001",

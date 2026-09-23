@@ -7,7 +7,8 @@ fn main() {
         // TaskDialogIndirect (его тянет tauri/mock-runtime) ->
         // краш загрузки 0xc0000139 (STATUS_ENTRYPOINT_NOT_FOUND).
         // Встраиваем манифест ТОЛЬКО в тестовые таргеты (-tests не пересекается с -bins).
-        let manifest = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
+        let manifest = std::path::PathBuf::from(manifest_dir)
             .join("tests.manifest");
         println!("cargo:rerun-if-changed={}", manifest.display());
         println!("cargo:rustc-link-arg-tests=/MANIFEST:EMBED");

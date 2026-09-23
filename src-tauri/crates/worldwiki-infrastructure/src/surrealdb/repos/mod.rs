@@ -2,6 +2,7 @@
 
 pub mod chapter_repo;
 pub mod entity_repo;
+pub mod fuzzy;
 pub mod helpers;
 pub mod plot_repo;
 pub mod rag_repo;

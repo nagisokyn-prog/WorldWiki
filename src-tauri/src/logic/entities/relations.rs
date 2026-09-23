@@ -45,7 +45,7 @@ pub async fn create_entity_relation_inner(
     let proj_id = format!("projects:{}", project);
 
     fn make_record(table: &str, full_id: &str) -> surrealdb::types::RecordId {
-        let raw = full_id.split(':').nth(1).unwrap_or(full_id);
+        let raw = full_id.split_once(':').map(|(_, b)| b).unwrap_or(full_id);
         surrealdb::types::RecordId::new(table, raw)
     }
 
@@ -131,8 +131,7 @@ pub async fn delete_entity_relation_inner(
     db: &Surreal<Db>,
     id: &str,
 ) -> Result<(), EntityError> {
-    let parts: Vec<&str> = id.splitn(2, ':').collect();
-    let actual_id = if parts.len() == 2 { parts[1] } else { id };
+    let actual_id = id.split_once(':').map(|(_, b)| b).unwrap_or(id);
     let _: Option<Value> = db.delete(("entity_rel", actual_id)).await?;
     Ok(())
 }

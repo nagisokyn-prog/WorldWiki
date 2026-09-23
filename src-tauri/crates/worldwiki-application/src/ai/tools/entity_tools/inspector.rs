@@ -77,10 +77,16 @@ pub async fn inspect_entity(
     } else if search_res.len() == 1
         || search_res.iter().any(|e| e.name.eq_ignore_ascii_case(query))
     {
-        let exact_match = search_res
+        let exact_match = match search_res
             .iter()
             .find(|e| e.name.eq_ignore_ascii_case(query))
-            .unwrap_or(&search_res[0]);
+        {
+            Some(m) => m,
+            None => match search_res.first() {
+                Some(f) => f,
+                None => return Ok(serde_json::json!({"error": "Entity not found"})),
+            },
+        };
         let card = knowledge.get_full_card(&exact_match.id).await?;
         Ok(serde_json::to_value(card).unwrap_or_default())
     } else {

@@ -13,21 +13,21 @@ pub async fn get_connections_inner(
     project: &str,
     chapter: Option<String>,
 ) -> Result<Value, ConnectionError> {
-    let proj_id = format!("projects:{}", project.trim().replace("projects:", ""));
-    let proj_raw = project.trim().replace("projects:", "");
-    let proj_literal = format!("projects:`{}`", proj_raw);
-    let mut sql = format!(
-        "SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id FROM entity_rel WHERE project_id = '{}' OR project_id = {}",
-        proj_id, proj_literal
+    let proj_clean = project.trim().trim_start_matches("projects:");
+    let proj_id = format!("projects:{}", proj_clean);
+
+    let mut sql = String::from(
+        "SELECT *, type::string(in) AS source, type::string(out) AS target, type::string(id) AS id \
+         FROM entity_rel WHERE project_id = type::record($proj)",
     );
 
     if chapter.is_some() {
         sql.push_str(" AND (start_chapter = type::record($ch) OR end_chapter = type::record($ch))");
     }
 
-    let mut q = db.query(sql).bind(json!({ "proj": proj_id }));
+    let mut q = db.query(sql).bind(("proj", proj_id));
     if let Some(ch) = chapter {
-        q = q.bind(json!({ "ch": ch }));
+        q = q.bind(("ch", ch));
     }
 
     let mut res = q.await?;
@@ -36,18 +36,26 @@ pub async fn get_connections_inner(
     let formatted: Vec<Value> = connections
         .into_iter()
         .map(|mut c| {
-            if let Some(s) = c["source"].as_str() {
-                let parts: Vec<&str> = s.split(':').collect();
-                if parts.len() >= 2 {
-                    c["source"] = json!({ "entityType": parts[0], "entityId": parts[1] });
+            let source_replacement = c.get("source").and_then(|v| v.as_str()).and_then(|s| {
+                s.split_once(':')
+                    .map(|(e_type, e_id)| json!({ "entityType": e_type, "entityId": e_id }))
+            });
+            if let Some(src_val) = source_replacement {
+                if let Some(obj) = c.as_object_mut() {
+                    obj.insert("source".to_string(), src_val);
                 }
             }
-            if let Some(t) = c["target"].as_str() {
-                let parts: Vec<&str> = t.split(':').collect();
-                if parts.len() >= 2 {
-                    c["target"] = json!({ "entityType": parts[0], "entityId": parts[1] });
+
+            let target_replacement = c.get("target").and_then(|v| v.as_str()).and_then(|t| {
+                t.split_once(':')
+                    .map(|(e_type, e_id)| json!({ "entityType": e_type, "entityId": e_id }))
+            });
+            if let Some(tgt_val) = target_replacement {
+                if let Some(obj) = c.as_object_mut() {
+                    obj.insert("target".to_string(), tgt_val);
                 }
             }
+
             c
         })
         .collect();
@@ -61,10 +69,10 @@ pub async fn remove_connections_by_source_inner(
     _e_type: &str,
     e_id: &str,
 ) -> Result<usize, ConnectionError> {
-    let rid = format!("entities:{}", e_id.strip_prefix("entities:").unwrap_or(e_id));
+    let rid = format!("entities:{}", e_id.trim_start_matches("entities:"));
     let mut res = db
         .query("DELETE entity_rel WHERE in = type::record($rid) RETURN BEFORE")
-        .bind(json!({ "rid": rid }))
+        .bind(("rid", rid))
         .await?;
 
     let deleted: Vec<Value> = res.take(0)?;
@@ -80,28 +88,31 @@ pub async fn save_connections_inner(
     let connections_arr = data
         .as_array()
         .ok_or_else(|| ConnectionError::InvalidData("Connections array expected".to_string()))?;
-    let proj_id = format!("projects:{}", project.trim().replace("projects:", ""));
-    let src_rid = format!("entities:{}", source_id.strip_prefix("entities:").unwrap_or(source_id));
+    let proj_clean = project.trim().trim_start_matches("projects:");
+    let proj_id = format!("projects:{}", proj_clean);
+    let src_rid = format!("entities:{}", source_id.trim_start_matches("entities:"));
 
-    let proj_raw = project.trim().replace("projects:", "");
-    let proj_literal = format!("projects:`{}`", proj_raw);
-    db.query(format!(
-        "DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND (project_id = '{}' OR project_id = {})",
-        proj_id, proj_literal
-    ))
-    .bind(json!({ "proj": proj_id.clone(), "src": src_rid }))
+    db.query(
+        "DELETE entity_rel WHERE (in = type::record($src) OR out = type::record($src)) AND project_id = type::record($proj)",
+    )
+    .bind(("proj", proj_id.clone()))
+    .bind(("src", src_rid))
     .await?;
 
     for c in connections_arr {
-        let mut s_id = c["source"]["entityId"].as_str().unwrap_or("").to_string();
-        let mut t_id = c["target"]["entityId"].as_str().unwrap_or("").to_string();
+        let s_id_raw = c
+            .get("source")
+            .and_then(|v| v.get("entityId"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        let t_id_raw = c
+            .get("target")
+            .and_then(|v| v.get("entityId"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
 
-        if s_id.starts_with("entities:") {
-            s_id = s_id.replace("entities:", "");
-        }
-        if t_id.starts_with("entities:") {
-            t_id = t_id.replace("entities:", "");
-        }
+        let s_id = s_id_raw.trim_start_matches("entities:");
+        let t_id = t_id_raw.trim_start_matches("entities:");
 
         if s_id.is_empty() || t_id.is_empty() {
             continue;
@@ -114,8 +125,16 @@ pub async fn save_connections_inner(
             "created_at = time::now()".to_string(),
         ];
 
-        let start = c["period"]["start_chapter"].as_str().unwrap_or("");
-        let end = c["period"]["end_chapter"].as_str().unwrap_or("");
+        let start = c
+            .get("period")
+            .and_then(|v| v.get("start_chapter"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        let end = c
+            .get("period")
+            .and_then(|v| v.get("end_chapter"))
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
         if !start.is_empty() {
             set_clauses.push("start_chapter = type::record($start)".to_string());
         }
@@ -123,26 +142,30 @@ pub async fn save_connections_inner(
             set_clauses.push("end_chapter = type::record($end)".to_string());
         }
 
+        let role_val = c.get("role").and_then(|v| v.as_str()).unwrap_or("");
+        let desc_val = c.get("description").and_then(|v| v.as_str()).unwrap_or("");
+
         let sql = format!(
-            "RELATE entities:{} -> entity_rel -> entities:{} SET {}",
-            s_id,
-            t_id,
+            "RELATE type::record($src_node) -> entity_rel -> type::record($tgt_node) SET {}",
             set_clauses.join(", ")
         );
 
-        let mut bind = json!({
-            "proj": proj_id.clone(),
-            "role": c["role"].as_str().unwrap_or(""),
-            "desc": c["description"].as_str().unwrap_or("")
-        });
+        let mut q = db
+            .query(sql)
+            .bind(("src_node", format!("entities:{}", s_id)))
+            .bind(("tgt_node", format!("entities:{}", t_id)))
+            .bind(("proj", proj_id.clone()))
+            .bind(("role", role_val))
+            .bind(("desc", desc_val));
+
         if !start.is_empty() {
-            bind["start"] = Value::String(start.to_string());
+            q = q.bind(("start", start));
         }
         if !end.is_empty() {
-            bind["end"] = Value::String(end.to_string());
+            q = q.bind(("end", end));
         }
 
-        let mut res = db.query(sql).bind(bind).await?;
+        let mut res = q.await?;
         let errs = res.take_errors();
         if !errs.is_empty() {
             return Err(ConnectionError::Transaction(format!(
@@ -171,4 +194,3 @@ mod tests {
         assert_eq!(inv.to_string(), "Invalid connection data: no array");
     }
 }
-

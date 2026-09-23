@@ -7,18 +7,20 @@ pub fn parse_llm_error_to_human(raw_err: &str) -> String {
     let mut extracted_remedy: Option<String> = None;
 
     if let Some(json_start) = raw_err.find('{') {
-        if let Ok(val) = serde_json::from_str::<Value>(&raw_err[json_start..]) {
-            if let Some(err_obj) = val.get("error") {
-                if let Some(msg) = err_obj.get("message").and_then(|m| m.as_str()) {
+        if let Some(sub) = raw_err.get(json_start..) {
+            if let Ok(val) = serde_json::from_str::<Value>(sub) {
+                if let Some(err_obj) = val.get("error") {
+                    if let Some(msg) = err_obj.get("message").and_then(|m| m.as_str()) {
+                        extracted_msg = Some(msg.to_string());
+                    }
+                    if let Some(meta) = err_obj.get("metadata") {
+                        if let Some(remedy) = meta.get("remedy_hint").and_then(|r| r.as_str()) {
+                            extracted_remedy = Some(remedy.to_string());
+                        }
+                    }
+                } else if let Some(msg) = val.get("message").and_then(|m| m.as_str()) {
                     extracted_msg = Some(msg.to_string());
                 }
-                if let Some(meta) = err_obj.get("metadata") {
-                    if let Some(remedy) = meta.get("remedy_hint").and_then(|r| r.as_str()) {
-                        extracted_remedy = Some(remedy.to_string());
-                    }
-                }
-            } else if let Some(msg) = val.get("message").and_then(|m| m.as_str()) {
-                extracted_msg = Some(msg.to_string());
             }
         }
     }

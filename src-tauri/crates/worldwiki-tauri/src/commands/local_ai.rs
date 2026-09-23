@@ -128,8 +128,10 @@ pub async fn get_ai_completion(
 pub async fn fetch_hf_models(
     query: Option<String>,
     token: Option<String>,
-) -> Result<Vec<worldwiki_domain::ai::types::HfModelCard>, String> {
-    worldwiki_infrastructure::ai::fetch_hf_models_inner(query.as_deref(), token.as_deref(), None).await
+) -> Result<Vec<worldwiki_domain::ai::types::HfModelCard>, IpcError> {
+    worldwiki_infrastructure::ai::fetch_hf_models_inner(query.as_deref(), token.as_deref(), None)
+        .await
+        .map_err(IpcError::from)
 }
 
 #[tauri::command]
@@ -138,7 +140,7 @@ pub async fn download_hf_model(
     repo_id: String,
     filename: String,
     token: Option<String>,
-) -> Result<String, String> {
+) -> Result<String, IpcError> {
     use tauri::{Emitter, Manager};
     use tokio::io::AsyncWriteExt;
     use std::path::PathBuf;
@@ -175,14 +177,14 @@ pub async fn download_hf_model(
         .map_err(|e| format!("Ошибка запроса на скачивание: {e}"))?;
 
     if resp.status().as_u16() == 401 {
-        return Err("Ошибка 401 (Нет доступа): Модель требует авторизации через HF Token или файл не найден в репозитории.".to_string());
+        return Err(IpcError::from("Ошибка 401 (Нет доступа): Модель требует авторизации через HF Token или файл не найден в репозитории."));
     } else if resp.status().as_u16() == 404 {
-        return Err("Ошибка 404: Файл модели не найден на сервере Hugging Face.".to_string());
+        return Err(IpcError::from("Ошибка 404: Файл модели не найден на сервере Hugging Face."));
     } else if !resp.status().is_success() {
-        return Err(format!(
+        return Err(IpcError::from(format!(
             "Загрузка завершилась со статусом: {}",
             resp.status()
-        ));
+        )));
     }
 
     let total_bytes = resp.content_length().unwrap_or(0);

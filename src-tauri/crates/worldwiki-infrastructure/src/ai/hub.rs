@@ -1,6 +1,7 @@
 use reqwest::Client;
 use serde::Deserialize;
 use worldwiki_domain::ai::types::{GgufFileInfo, HfModelCard};
+use worldwiki_domain::errors::DomainError;
 
 #[derive(Debug, Deserialize)]
 struct HfApiResponseItem {
@@ -51,7 +52,7 @@ pub async fn fetch_hf_models_inner(
     query: Option<&str>,
     token: Option<&str>,
     base_override: Option<&str>,
-) -> Result<Vec<HfModelCard>, String> {
+) -> Result<Vec<HfModelCard>, DomainError> {
     let search_part = if let Some(q) = query {
         if !q.trim().is_empty() {
             let encoded: String = q
@@ -89,15 +90,15 @@ pub async fn fetch_hf_models_inner(
     let resp = req
         .send()
         .await
-        .map_err(|e| format!("Ошибка подключения к Hugging Face: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Ошибка подключения к Hugging Face: {e}")))?;
     if !resp.status().is_success() {
-        return Err(format!("Hugging Face вернул ошибку: {}", resp.status()));
+        return Err(DomainError::Validation(format!("Hugging Face вернул ошибку: {}", resp.status())));
     }
 
     let items: Vec<HfApiResponseItem> = resp
         .json()
         .await
-        .map_err(|e| format!("Ошибка парсинга ответа Hugging Face: {e}"))?;
+        .map_err(|e| DomainError::Validation(format!("Ошибка парсинга ответа Hugging Face: {e}")))?;
 
     let mut result = Vec::new();
     for item in items {

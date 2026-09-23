@@ -27,11 +27,13 @@ pub struct ProcessedChunk {
     pub embedding: Option<Vec<f32>>,
 }
 
+use worldwiki_domain::errors::DomainError;
+
 /// Core high-performance indexing logic (callable from tests and commands)
 pub async fn reindex_project_lore_inner(
     db: &Surreal<Db>,
     project_id: &str,
-) -> Result<usize, String> {
+) -> Result<usize, DomainError> {
     let start = std::time::Instant::now();
     let p_raw = project_id.to_string();
     let p_clean = project_id

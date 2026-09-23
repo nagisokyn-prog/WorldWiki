@@ -57,22 +57,12 @@ pub async fn save_entity_schema_inner(
     let actual_id_str = if let Some(first) = existing_records.first() {
         if let Some(id_val) = first.get("id") {
             let id_string = id_val.as_str().unwrap_or("");
-            let parts: Vec<&str> = id_string.splitn(2, ':').collect();
-            if parts.len() == 2 {
-                parts[1].to_string()
-            } else {
-                id_string.to_string()
-            }
+            id_string.split_once(':').map(|(_, b)| b).unwrap_or(id_string).to_string()
         } else {
             String::new()
         }
     } else if let Some(ref id_str) = schema.id {
-        let parts: Vec<&str> = id_str.splitn(2, ':').collect();
-        let raw = if parts.len() == 2 {
-            parts[1]
-        } else {
-            id_str.as_str()
-        };
+        let raw = id_str.split_once(':').map(|(_, b)| b).unwrap_or(id_str.as_str());
         if raw.contains(&pid_raw) {
             raw.to_string()
         } else {

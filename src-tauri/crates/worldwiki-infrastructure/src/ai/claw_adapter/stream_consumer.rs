@@ -48,8 +48,8 @@ impl ClawStreamConsumer {
                     content_block: OutputContentBlock::Thinking { thinking, .. },
                     ..
                 }) => {
-                    if !thinking.is_empty() {
-                        let _res = sender
+                    if !thinking.is_empty()
+                        && sender
                             .send(StreamEventDto {
                                 text_delta: None,
                                 reasoning_delta: Some(thinking),
@@ -57,16 +57,16 @@ impl ClawStreamConsumer {
                                 usage: None,
                                 is_done: false,
                             })
-                            .await;
-                        if _res.is_err() {
-                            break;
-                        }
+                            .await
+                            .is_err()
+                    {
+                        break;
                     }
                 }
                 StreamEvent::ContentBlockDelta(ContentBlockDeltaEvent { delta, .. }) => match delta
                 {
                     ContentBlockDelta::TextDelta { text } => {
-                        let _res = sender
+                        if sender
                             .send(StreamEventDto {
                                 text_delta: Some(text),
                                 reasoning_delta: None,
@@ -74,13 +74,14 @@ impl ClawStreamConsumer {
                                 usage: None,
                                 is_done: false,
                             })
-                            .await;
-                        if _res.is_err() {
+                            .await
+                            .is_err()
+                        {
                             break;
                         }
                     }
                     ContentBlockDelta::ThinkingDelta { thinking } => {
-                        let _res = sender
+                        if sender
                             .send(StreamEventDto {
                                 text_delta: None,
                                 reasoning_delta: Some(thinking),
@@ -88,8 +89,9 @@ impl ClawStreamConsumer {
                                 usage: None,
                                 is_done: false,
                             })
-                            .await;
-                        if _res.is_err() {
+                            .await
+                            .is_err()
+                        {
                             break;
                         }
                     }
@@ -104,7 +106,7 @@ impl ClawStreamConsumer {
                     if let Some(a) = assembler.take() {
                         let input = serde_json::from_str(&a.input_buf)
                             .unwrap_or_else(|_| json!({ "raw": a.input_buf }));
-                        let _res = sender
+                        if sender
                             .send(StreamEventDto {
                                 text_delta: None,
                                 reasoning_delta: None,
@@ -116,8 +118,9 @@ impl ClawStreamConsumer {
                                 usage: None,
                                 is_done: false,
                             })
-                            .await;
-                        if _res.is_err() {
+                            .await
+                            .is_err()
+                        {
                             break;
                         }
                     }
@@ -129,7 +132,7 @@ impl ClawStreamConsumer {
                         "output_tokens": u.output_tokens,
                         "total_tokens": u.total_tokens()
                     });
-                    let _res = sender
+                    if sender
                         .send(StreamEventDto {
                             text_delta: None,
                             reasoning_delta: None,
@@ -137,8 +140,9 @@ impl ClawStreamConsumer {
                             usage: Some(u_json),
                             is_done: false,
                         })
-                        .await;
-                    if _res.is_err() {
+                        .await
+                        .is_err()
+                    {
                         break;
                     }
                 }
@@ -150,7 +154,7 @@ impl ClawStreamConsumer {
                             "output_tokens": u.output_tokens,
                             "total_tokens": u.total_tokens()
                         });
-                        let _res = sender
+                        if sender
                             .send(StreamEventDto {
                                 text_delta: None,
                                 reasoning_delta: None,
@@ -158,8 +162,9 @@ impl ClawStreamConsumer {
                                 usage: Some(u_json),
                                 is_done: false,
                             })
-                            .await;
-                        if _res.is_err() {
+                            .await
+                            .is_err()
+                        {
                             break;
                         }
                     }
@@ -172,7 +177,7 @@ impl ClawStreamConsumer {
         if let Some(a) = assembler.take() {
             let input = serde_json::from_str(&a.input_buf)
                 .unwrap_or_else(|_| json!({ "raw": a.input_buf }));
-            let _ = sender
+            if let Err(e) = sender
                 .send(StreamEventDto {
                     text_delta: None,
                     reasoning_delta: None,
@@ -184,10 +189,13 @@ impl ClawStreamConsumer {
                     usage: None,
                     is_done: false,
                 })
-                .await;
+                .await
+            {
+                eprintln!("[ClawStreamConsumer] Failed to send final tool assembler event: {e}");
+            }
         }
 
-        let _ = sender
+        if let Err(e) = sender
             .send(StreamEventDto {
                 text_delta: None,
                 reasoning_delta: None,
@@ -195,7 +203,10 @@ impl ClawStreamConsumer {
                 usage: None,
                 is_done: true,
             })
-            .await;
+            .await
+        {
+            eprintln!("[ClawStreamConsumer] Failed to send is_done event: {e}");
+        }
 
         Ok(())
     }

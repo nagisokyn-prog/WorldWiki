@@ -123,75 +123,89 @@ impl FsLocalModelManager {
     }
 }
 
+fn scan_gguf_files_in_dir(
+    dir: &std::path::Path,
+    states: &HashMap<String, ModelLifecycleState>,
+    seen_filenames: &mut HashSet<String>,
+    installed: &mut Vec<InstalledModelInfo>,
+) {
+    if !dir.exists() {
+        return;
+    }
+
+    let entries = match std::fs::read_dir(dir) {
+        Ok(read_dir) => read_dir.flatten().collect::<Vec<_>>(),
+        Err(_) => return,
+    };
+
+    for entry in entries {
+        let path = entry.path();
+        if path.is_file() {
+            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
+            if ext.eq_ignore_ascii_case("gguf") {
+                let filename = path
+                    .file_name()
+                    .and_then(|s| s.to_str())
+                    .unwrap_or("")
+                    .to_string();
+
+                if filename.is_empty() || !seen_filenames.insert(filename.clone()) {
+                    continue;
+                }
+
+                let metadata = std::fs::metadata(&path).ok();
+                let size_bytes = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
+                let size_gb = ((size_bytes as f64 / (1024.0 * 1024.0 * 1024.0)) * 10.0)
+                    .round() as f32
+                    / 10.0;
+
+                let is_embed = filename.to_lowercase().contains("embed")
+                    || filename.to_lowercase().contains("nomic")
+                    || filename.to_lowercase().contains("bge");
+                let kind = if is_embed {
+                    ModelKind::Embedding
+                } else {
+                    ModelKind::Generation
+                };
+
+                let state = states
+                    .get(&filename)
+                    .cloned()
+                    .unwrap_or(ModelLifecycleState::Installed);
+
+                let name = filename
+                    .trim_end_matches(".gguf")
+                    .trim_end_matches(".GGUF")
+                    .to_string();
+
+                installed.push(InstalledModelInfo {
+                    id: filename.clone(),
+                    name,
+                    filename: filename.clone(),
+                    full_path: path.to_string_lossy().to_string(),
+                    size_bytes,
+                    size_gb,
+                    kind,
+                    state,
+                    memory_used_mb: None,
+                });
+            }
+        }
+    }
+}
+
 impl LocalModelManagerPort for FsLocalModelManager {
     fn list_installed(&self) -> Result<Vec<InstalledModelInfo>, DomainError> {
-        let states = get_states_map().lock().unwrap().clone();
+        let states = get_states_map()
+            .lock()
+            .map(|g| g.clone())
+            .unwrap_or_default();
         let mut installed = Vec::new();
         let mut seen_filenames = HashSet::new();
 
         let dirs = self.candidate_dirs();
         for dir in dirs {
-            if !dir.exists() {
-                continue;
-            }
-
-            if let Ok(entries) = std::fs::read_dir(&dir) {
-                for entry in entries.flatten() {
-                    let path = entry.path();
-                    if path.is_file() {
-                        let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
-                        if ext.eq_ignore_ascii_case("gguf") {
-                            let filename = path
-                                .file_name()
-                                .and_then(|s| s.to_str())
-                                .unwrap_or("")
-                                .to_string();
-
-                            if filename.is_empty() || !seen_filenames.insert(filename.clone()) {
-                                continue;
-                            }
-
-                            let metadata = std::fs::metadata(&path).ok();
-                            let size_bytes = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
-                            let size_gb = ((size_bytes as f64 / (1024.0 * 1024.0 * 1024.0))
-                                * 10.0)
-                                .round()
-                                as f32
-                                / 10.0;
-
-                            let is_embed = filename.to_lowercase().contains("embed")
-                                || filename.to_lowercase().contains("nomic")
-                                || filename.to_lowercase().contains("bge");
-                            let kind = if is_embed {
-                                ModelKind::Embedding
-                            } else {
-                                ModelKind::Generation
-                            };
-
-                            let state = states
-                                .get(&filename)
-                                .cloned()
-                                .unwrap_or(ModelLifecycleState::Installed);
-
-                            let name = filename
-                                .trim_end_matches(".gguf")
-                                .replace(['-', '_'], " ");
-
-                            installed.push(InstalledModelInfo {
-                                id: filename.clone(),
-                                name,
-                                filename: filename.clone(),
-                                full_path: path.to_string_lossy().to_string(),
-                                size_bytes,
-                                size_gb,
-                                kind,
-                                state,
-                                memory_used_mb: None,
-                            });
-                        }
-                    }
-                }
-            }
+            scan_gguf_files_in_dir(&dir, &states, &mut seen_filenames, &mut installed);
         }
 
         installed.sort_by(|a, b| a.name.cmp(&b.name));
@@ -206,25 +220,25 @@ impl LocalModelManagerPort for FsLocalModelManager {
             )));
         }
 
-        get_states_map()
-            .lock()
-            .unwrap()
-            .insert(filename.to_string(), ModelLifecycleState::Ready);
+        if let Ok(mut lock) = get_states_map().lock() {
+            lock.insert(filename.to_string(), ModelLifecycleState::Ready);
+        }
 
         Ok(format!("Модель {filename} успешно загружена в память"))
     }
 
     fn unload_model(&self, filename: &str) -> Result<String, DomainError> {
-        get_states_map()
-            .lock()
-            .unwrap()
-            .insert(filename.to_string(), ModelLifecycleState::Installed);
+        if let Ok(mut lock) = get_states_map().lock() {
+            lock.insert(filename.to_string(), ModelLifecycleState::Installed);
+        }
 
         Ok(format!("Модель {filename} успешно выгружена из памяти"))
     }
 
     fn unload_all(&self) -> Result<String, DomainError> {
-        get_states_map().lock().unwrap().clear();
+        if let Ok(mut lock) = get_states_map().lock() {
+            lock.clear();
+        }
         Ok("Все локальные модели выгружены".to_string())
     }
 
@@ -262,18 +276,19 @@ mod tests {
     #[test]
     fn test_list_installed_empty_or_valid() {
         let temp_dir = std::env::temp_dir().join(format!("test_models_{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(&temp_dir).unwrap();
+        std::fs::create_dir_all(&temp_dir).expect("Failed to create temp dir for tests");
 
         let test_model = temp_dir.join("test-model-q4.gguf");
-        std::fs::write(&test_model, b"GGUF test content").unwrap();
+        std::fs::write(&test_model, b"GGUF test content").expect("Failed to write test model file");
 
         let mgr = FsLocalModelManager::new(temp_dir.clone());
-        let installed = mgr.list_installed().unwrap();
+        let installed = mgr.list_installed().expect("list_installed must succeed");
 
         assert!(installed.iter().any(|m| m.filename == "test-model-q4.gguf"));
-        let found = installed.iter().find(|m| m.filename == "test-model-q4.gguf").unwrap();
-        assert_eq!(found.kind, ModelKind::Generation);
+        let found = installed.iter().find(|m| m.filename == "test-model-q4.gguf");
+        assert!(found.is_some());
+        assert_eq!(found.unwrap().kind, ModelKind::Generation);
 
-        std::fs::remove_dir_all(&temp_dir).unwrap();
+        let _ = std::fs::remove_dir_all(&temp_dir);
     }
 }

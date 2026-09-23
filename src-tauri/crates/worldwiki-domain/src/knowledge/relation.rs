@@ -26,7 +26,7 @@ impl EntityRelation {
         rel_type: impl Into<String>,
     ) -> Self {
         Self {
-            id: uuid::Uuid::new_v4().to_string(),
+            id: String::new(),
             project_id: project_id.into(),
             from_entity_id: from.into(),
             to_entity_id: to.into(),

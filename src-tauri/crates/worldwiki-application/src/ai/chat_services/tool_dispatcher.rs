@@ -77,7 +77,7 @@ impl ChatToolDispatcher {
             )
             .await
             {
-                return (msg, true);
+                return (msg.to_string(), true);
             }
         }
 

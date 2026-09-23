@@ -31,7 +31,7 @@ pub async fn send_chat_message(
     let a_id = res.assistant_msg_id.clone();
     let u_text = text.clone();
 
-    tokio::spawn(async move {
+    let _agent_task = tokio::spawn(async move {
         chat_svc
             .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
             .await;
@@ -99,7 +99,7 @@ pub async fn edit_chat_message(
     let p_id = project.clone();
     let u_text = new_text.clone();
 
-    tokio::spawn(async move {
+    let _agent_task = tokio::spawn(async move {
         chat_svc
             .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
             .await;
@@ -126,7 +126,7 @@ pub async fn regenerate_chat_message(
     let chat_svc = state.services.chat.clone();
     let p_id = project.clone();
 
-    tokio::spawn(async move {
+    let _agent_task = tokio::spawn(async move {
         chat_svc
             .run_agent_loop(&p_id, &c_id, &a_id, &u_text, mode_slug)
             .await;

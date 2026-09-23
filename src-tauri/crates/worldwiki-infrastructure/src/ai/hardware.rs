@@ -16,6 +16,7 @@ mod win_mem {
         pub ull_avail_extended_virtual: u64,
     }
 
+    // SAFETY: FFI declaration for WinAPI GlobalMemoryStatusEx.
     extern "system" {
         #[link_name = "GlobalMemoryStatusEx"]
         pub fn global_memory_status_ex(lp_buffer: *mut MemoryStatusEx) -> i32;
@@ -39,6 +40,7 @@ mod win_gpu {
         pub adapter_luid: u64,
     }
 
+    // SAFETY: FFI declarations for kernel32 DLL loading APIs.
     extern "system" {
         pub fn LoadLibraryA(lp_lib_file_name: *const u8) -> *mut c_void;
         pub fn GetProcAddress(h_module: *mut c_void, lp_proc_name: *const u8) -> *mut c_void;
@@ -46,8 +48,7 @@ mod win_gpu {
     }
 
     // SAFETY: IDXGIFactory instantiation function pointer type matching Windows DXGI ABI.
-    type CreateDXGIFactoryFn =
-        unsafe extern "system" fn(riid: *const [u8; 16], pp_factory: *mut *mut c_void) -> i32;
+    type CreateDXGIFactoryFn = unsafe extern "system" fn(riid: *const [u8; 16], pp_factory: *mut *mut c_void) -> i32;
 
     // SAFETY: IDXGIFactory::EnumAdapters COM slot function pointer type.
     type EnumAdaptersFn = unsafe extern "system" fn(*mut c_void, u32, *mut *mut c_void) -> i32;
@@ -101,7 +102,8 @@ mod win_gpu {
                         .iter()
                         .position(|&c| c == 0)
                         .unwrap_or(desc.description.len());
-                    let name = String::from_utf16_lossy(&desc.description[..len])
+                    let slice = desc.description.get(..len).unwrap_or(&desc.description);
+                    let name = String::from_utf16_lossy(slice)
                         .trim()
                         .to_string();
                     let vram_gb =

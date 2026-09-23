@@ -1,4 +1,5 @@
 import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel';
 
 export interface EditorCoreTiptapProps {
   project: string;
@@ -8,7 +9,7 @@ export interface EditorCoreTiptapProps {
   footnotesData?: Record<string, { id: string; text: string }>;
   initialScrollPos?: number;
   changedFields?: string[];
-  existingPromises?: PlotPromise[];
+  existingPromises?: (PlotPromise | RichPlotPromise)[];
 }
 
 export interface EditorCoreTiptapEmits {

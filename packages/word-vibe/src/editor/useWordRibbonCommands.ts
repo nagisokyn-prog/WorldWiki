@@ -6,6 +6,7 @@ import type { MarginPresetName } from './useWordLayoutState';
 import { insertGostTableCaption } from './extensions/GostTableCaption';
 import { insertGostFigureCaption } from './extensions/GostFigureCaption';
 import { insertSectionLandscape, insertSectionPortrait } from './extensions/SectionOrientation';
+import { EDITOR_DEFAULT_COLORS } from '../tokens/editor.tokens';
 
 interface ChainRunner {
   focus: () => ChainRunner;

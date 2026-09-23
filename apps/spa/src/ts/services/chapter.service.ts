@@ -7,6 +7,7 @@
 import * as api from './api.client';;
 
 import type { Chapter } from '../types/generated/Chapter';
+import type { ChapterWithHierarchy } from '../stores/chapter.store';
 
 class ChapterService {
   async list(project: string): Promise<Chapter[]> {
@@ -17,7 +18,7 @@ class ChapterService {
     return await api.getChapter(id) as Chapter;
   }
 
-  async save(project: string, data: Partial<Chapter> & Record<string, unknown>): Promise<string> {
+  async save(project: string, data: (Partial<Chapter> | Partial<ChapterWithHierarchy>) & Record<string, unknown>): Promise<string> {
     if (!data.id) {
       data.id = `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
@@ -59,7 +60,7 @@ class ChapterService {
       word_count: 0 as unknown as bigint,
       embeddings: {},
       footnotes: {},
-      timeline_events: [],
+      timeline_events: [] as unknown as Record<string, unknown>,
       participants: []
     };
   }

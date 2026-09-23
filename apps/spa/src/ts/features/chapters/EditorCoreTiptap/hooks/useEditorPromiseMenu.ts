@@ -2,6 +2,7 @@ import { ref } from 'vue';
 import type { Ref } from 'vue';
 import type { Editor } from '@tiptap/vue-3';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel';
 import type { PromiseTypeOption } from '../usePromiseContextMenu';
 
 export interface UseEditorPromiseMenuOptions {
@@ -85,7 +86,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
     });
   };
 
-  const handleMilestoneSelect = (payload: { promise: PlotPromise; stage: 'progression' | 'resolution' }) => {
+  const handleMilestoneSelect = (payload: { promise: PlotPromise | RichPlotPromise; stage: 'progression' | 'resolution' }) => {
     isPromiseMenuOpen.value = false;
     if (!payload.promise.id) return;
     options.onLinkMilestone({

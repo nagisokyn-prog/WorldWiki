@@ -99,7 +99,8 @@ import {
   AiChatTopBar,
   AiMessageList,
   AiChatInputArea,
-  AiResearchProgress
+  AiResearchProgress,
+  type ContextItem
 } from '../../index';
 import type { AiMainChatViewProps, AiMainChatViewEmits } from './AiMainChatView.model';
 
@@ -122,8 +123,8 @@ const onSendMessage = (text: string) => props.panel.sendMessage(text);
 const onCancelGeneration = () => props.panel.cancelGeneration();
 const onRetryLastMessage = () => props.panel.retryLastMessage();
 const onUnloadModels = () => props.panel.unloadModels();
-const onContextSelected = (ctx: any) => props.panel.handleContextSelected(ctx);
-const onRemoveContext = (ctx: any) => props.panel.removeContext(ctx);
+const onContextSelected = (ctx: ContextItem[]) => props.panel.handleContextSelected(ctx);
+const onRemoveContext = (ctx: ContextItem) => props.panel.removeContext(ctx);
 
 const {
   showSidebar,

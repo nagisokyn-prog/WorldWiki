@@ -26,7 +26,7 @@ import type { ParticipantItem } from './useParticipantsPanel';
 
 const props = withDefaults(defineProps<{
   project: string;
-  participants?: ParticipantItem[] | string[] | null;
+  participants?: (ParticipantItem | string)[] | null;
 }>(), {
   participants: () => []
 });

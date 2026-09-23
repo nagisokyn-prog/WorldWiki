@@ -1,12 +1,37 @@
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+import * as fs from 'node:fs';
+
+const compilerFs = {
+  fileExists: (file: string) => fs.existsSync(file),
+  readFile: (file: string) => {
+    try {
+      return fs.readFileSync(file, 'utf-8');
+    } catch {
+      return undefined;
+    }
+  },
+  realpath: (file: string) => {
+    try {
+      return fs.realpathSync(file);
+    } catch {
+      return file;
+    }
+  }
+};
 
 // dts временно отключен из-за несовместимости с TypeScript 7
 // Используем tsconfig paths для типизации
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue({
+      script: {
+        fs: compilerFs
+      }
+    })
+  ],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

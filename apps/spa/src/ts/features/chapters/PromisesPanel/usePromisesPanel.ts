@@ -21,6 +21,11 @@ export interface PromiseMilestone {
   created_at?: string | null;
 }
 
+export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution'> & {
+  progressions?: PromiseMilestone[] | null;
+  resolution?: PromiseMilestone | null;
+};
+
 export interface PromisesPanelProps {
   project: string;
   chapterId?: string | null;
@@ -36,13 +41,13 @@ export function usePromisesPanel(
     (e: 'change'): void;
   }
 ) {
-  const promises = ref<PlotPromise[]>([]);
+  const promises = ref<RichPlotPromise[]>([]);
   const loading = ref(false);
   const editingNoteId = ref<string | null>(null);
   const noteDraft = ref('');
   const isCollapsed = ref(false);
 
-  const filtering = usePromiseFiltering({
+  const filtering = usePromiseFiltering<RichPlotPromise>({
     promises,
     chapterId: props.chapterId,
     chapterTitle: props.chapterTitle,
@@ -54,7 +59,7 @@ export function usePromisesPanel(
     loading.value = true;
     try {
       const list = await api.getPlotPromises(props.project);
-      promises.value = Array.isArray(list) ? list : [];
+      promises.value = Array.isArray(list) ? (list as unknown as RichPlotPromise[]) : [];
     } catch {
       const localKey = `ww_plot_promises_${props.project}`;
       try {
@@ -83,7 +88,7 @@ export function usePromisesPanel(
   }) => {
     if (!props.project || !props.chapterId) return;
 
-    const newPromise: PlotPromise = {
+    const newPromise: RichPlotPromise = {
       id: `plot_promises:${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       project_id: props.project,
       chapter_id: props.chapterId,
@@ -100,9 +105,9 @@ export function usePromisesPanel(
     };
 
     try {
-      const created = await api.savePlotPromise(props.project, newPromise);
+      const created = await api.savePlotPromise(props.project, newPromise as unknown as PlotPromise);
       if (created) {
-        promises.value.push(created);
+        promises.value.push(created as unknown as RichPlotPromise);
       } else {
         promises.value.push(newPromise);
       }
@@ -150,14 +155,14 @@ export function usePromisesPanel(
     }
 
     try {
-      await api.savePlotPromise(props.project, target);
+      await api.savePlotPromise(props.project, target as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
 
   const removeMilestone = async (
-    promise: PlotPromise,
+    promise: RichPlotPromise,
     milestoneId: string,
     stage: 'progression' | 'resolution'
   ) => {
@@ -174,13 +179,13 @@ export function usePromisesPanel(
     }
 
     try {
-      await api.savePlotPromise(props.project, promise);
+      await api.savePlotPromise(props.project, promise as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
 
-  const updateStatus = async (item: PlotPromise, newStatus: string) => {
+  const updateStatus = async (item: RichPlotPromise, newStatus: string) => {
     if (!item.id || item.status === newStatus) return;
     item.status = newStatus;
 
@@ -190,22 +195,22 @@ export function usePromisesPanel(
     }
 
     try {
-      await api.savePlotPromise(props.project, item);
+      await api.savePlotPromise(props.project, item as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
   };
 
-  const startEditNote = (item: PlotPromise) => {
+  const startEditNote = (item: RichPlotPromise) => {
     editingNoteId.value = item.id;
     noteDraft.value = item.note || '';
   };
 
-  const saveNote = async (item: PlotPromise) => {
+  const saveNote = async (item: RichPlotPromise) => {
     item.note = noteDraft.value.trim() || null;
     editingNoteId.value = null;
     try {
-      await api.savePlotPromise(props.project, item);
+      await api.savePlotPromise(props.project, item as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
@@ -216,7 +221,7 @@ export function usePromisesPanel(
     noteDraft.value = '';
   };
 
-  const removePromise = async (item: PlotPromise) => {
+  const removePromise = async (item: RichPlotPromise) => {
     if (!item.id) return;
     try {
       await api.deletePlotPromise(item.id);
@@ -238,7 +243,7 @@ export function usePromisesPanel(
   watch(() => props.project, loadPromises);
   onMounted(loadPromises);
 
-  const promptAttachMilestone = (item: PlotPromise, stage: 'progression' | 'resolution') => {
+  const promptAttachMilestone = (item: RichPlotPromise, stage: 'progression' | 'resolution') => {
     if (!item.id) return;
     const sel = window.getSelection()?.toString().trim();
     const quote = sel || prompt(stage === 'progression' ? 'Введите цитату/текст упоминания:' : 'Введите цитату кульминации/выстрела:');

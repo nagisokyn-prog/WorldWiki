@@ -1,5 +1,6 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel';
 
 export interface PromiseTypeOption {
   kind: string;
@@ -38,13 +39,13 @@ export const promiseTypes: PromiseTypeOption[] = [
 export interface PromiseContextMenuProps {
   isOpen: boolean;
   position: { x: number; y: number };
-  existingPromises?: PlotPromise[];
+  existingPromises?: (PlotPromise | RichPlotPromise)[];
 }
 
 export interface PromiseContextMenuEmits {
   (e: 'close'): void;
   (e: 'select', item: PromiseTypeOption): void;
-  (e: 'link-milestone', payload: { promise: PlotPromise; stage: 'progression' | 'resolution' }): void;
+  (e: 'link-milestone', payload: { promise: PlotPromise | RichPlotPromise; stage: 'progression' | 'resolution' }): void;
 }
 
 export function usePromiseContextMenu(
@@ -73,7 +74,7 @@ export function usePromiseContextMenu(
     emit('close');
   };
 
-  const selectMilestone = (promise: PlotPromise, stage: 'progression' | 'resolution') => {
+  const selectMilestone = (promise: PlotPromise | RichPlotPromise, stage: 'progression' | 'resolution') => {
     emit('link-milestone', { promise, stage });
     emit('close');
   };

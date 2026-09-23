@@ -1,12 +1,11 @@
 /**
  * @file api.client.ts
- * @description Центральный типизированный клиент для Tauri invoke.
- * Реэкспортирует специализированные API-модули для разделения ответственностей.
+ * @description Декомпозированный фасад API-клиента для Tauri IPC.
  */
-export * from './api/api.types';
-export * from './api/api.projects';
-export * from './api/api.entities';
-export * from './api/api.chapters';
-export * from './api/api.ai';
-export * from './api/api.calendars';
-export * from './api/api.system';
+
+export * from './api/types';
+export * from './api/projects';
+export * from './api/entities';
+export * from './api/manuscript';
+export * from './api/ai';
+export * from './api/plot_calendar';

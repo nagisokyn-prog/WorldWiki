@@ -34,7 +34,7 @@
         </blockquote>
 
         <div class="step-actions">
-          <button class="btn-locate-step" @click="$emit('locate', item)">
+          <button class="btn-locate-step" @click="$emit('locate', { chapter_id: item.chapter_id, paragraph_index: item.paragraph_index, quote: item.quote, block_id: item.block_id })">
             📍 Перейти к сцене
           </button>
         </div>
@@ -70,7 +70,7 @@
           </blockquote>
 
           <div class="step-actions">
-            <button class="btn-locate-step" @click="$emit('locate', prog)">
+            <button class="btn-locate-step" @click="$emit('locate', { chapter_id: prog.chapter_id, paragraph_index: prog.paragraph_index, quote: prog.quote })">
               📍 Перейти
             </button>
           </div>
@@ -87,7 +87,7 @@
           <button 
             class="btn-delete-step" 
             title="Сбросить выстрел"
-            @click="$emit('removeMilestone', { item, milestoneId: item.resolution.id, stage: 'resolution' })"
+            @click="item.resolution && $emit('removeMilestone', { item, milestoneId: item.resolution.id, stage: 'resolution' })"
           >
             ✕
           </button>
@@ -98,7 +98,7 @@
         </blockquote>
 
         <div class="step-actions">
-          <button class="btn-locate-step" @click="$emit('locate', item.resolution)">
+          <button class="btn-locate-step" @click="item.resolution && $emit('locate', { chapter_id: item.resolution.chapter_id, paragraph_index: item.resolution.paragraph_index, quote: item.resolution.quote })">
             📍 Перейти к финалу
           </button>
         </div>
@@ -157,10 +157,10 @@
 </template>
 
 <script setup lang="ts">
-import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise } from '../usePromisesPanel';
 
 defineProps<{
-  item: PlotPromise;
+  item: RichPlotPromise;
   kindInfo: { label: string; icon: string };
   editingNoteId: string | null;
   noteDraft: string;
@@ -169,13 +169,13 @@ defineProps<{
 }>();
 
 defineEmits<{
-  (e: 'remove', item: PlotPromise): void;
+  (e: 'remove', item: RichPlotPromise): void;
   (e: 'locate', payload: { chapter_id: string; paragraph_index: number; quote: string; block_id?: string | null }): void;
-  (e: 'removeMilestone', payload: { item: PlotPromise; milestoneId: string; stage: 'progression' | 'resolution' }): void;
-  (e: 'promptAttachMilestone', payload: { item: PlotPromise; stage: 'progression' | 'resolution' }): void;
-  (e: 'startEditNote', item: PlotPromise): void;
+  (e: 'removeMilestone', payload: { item: RichPlotPromise; milestoneId: string; stage: 'progression' | 'resolution' }): void;
+  (e: 'promptAttachMilestone', payload: { item: RichPlotPromise; stage: 'progression' | 'resolution' }): void;
+  (e: 'startEditNote', item: RichPlotPromise): void;
   (e: 'cancelEditNote'): void;
-  (e: 'saveNote', item: PlotPromise): void;
+  (e: 'saveNote', item: RichPlotPromise): void;
   (e: 'update:noteDraft', val: string): void;
 }>();
 </script>

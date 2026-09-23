@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use worldwiki_domain::ai::{InstalledModelInfo, ModelKind, ModelLifecycleState};
 use worldwiki_domain::errors::DomainError;
 use worldwiki_ports::ai::LocalModelManagerPort;
@@ -7,11 +8,15 @@ use worldwiki_ports::ai::LocalModelManagerPort;
 #[derive(Clone)]
 pub struct FsLocalModelManager {
     models_dir: PathBuf,
+    states: Arc<Mutex<HashMap<String, ModelLifecycleState>>>,
 }
 
 impl FsLocalModelManager {
     pub fn new(models_dir: PathBuf) -> Self {
-        Self { models_dir }
+        Self {
+            models_dir,
+            states: Arc::new(Mutex::new(HashMap::new())),
+        }
     }
 
     pub fn default_dir() -> PathBuf {
@@ -148,9 +153,8 @@ fn scan_gguf_files_in_dir(
 
                 let metadata = std::fs::metadata(&path).ok();
                 let size_bytes = metadata.as_ref().map(|m| m.len()).unwrap_or(0);
-                let size_gb = ((size_bytes as f64 / (1024.0 * 1024.0 * 1024.0)) * 10.0)
-                    .round() as f32
-                    / 10.0;
+                let size_gb =
+                    ((size_bytes as f64 / (1024.0 * 1024.0 * 1024.0)) * 10.0).round() as f32 / 10.0;
 
                 let is_embed = filename.to_lowercase().contains("embed")
                     || filename.to_lowercase().contains("nomic")
@@ -189,10 +193,7 @@ fn scan_gguf_files_in_dir(
 
 impl LocalModelManagerPort for FsLocalModelManager {
     fn list_installed(&self) -> Result<Vec<InstalledModelInfo>, DomainError> {
-        let states = get_states_map()
-            .lock()
-            .map(|g| g.clone())
-            .unwrap_or_default();
+        let states = self.states.lock().map(|g| g.clone()).unwrap_or_default();
         let mut installed = Vec::new();
         let mut seen_filenames = HashSet::new();
 
@@ -213,7 +214,7 @@ impl LocalModelManagerPort for FsLocalModelManager {
             )));
         }
 
-        if let Ok(mut lock) = get_states_map().lock() {
+        if let Ok(mut lock) = self.states.lock() {
             lock.insert(filename.to_string(), ModelLifecycleState::Ready);
         }
 
@@ -221,7 +222,7 @@ impl LocalModelManagerPort for FsLocalModelManager {
     }
 
     fn unload_model(&self, filename: &str) -> Result<String, DomainError> {
-        if let Ok(mut lock) = get_states_map().lock() {
+        if let Ok(mut lock) = self.states.lock() {
             lock.insert(filename.to_string(), ModelLifecycleState::Installed);
         }
 
@@ -229,7 +230,7 @@ impl LocalModelManagerPort for FsLocalModelManager {
     }
 
     fn unload_all(&self) -> Result<String, DomainError> {
-        if let Ok(mut lock) = get_states_map().lock() {
+        if let Ok(mut lock) = self.states.lock() {
             lock.clear();
         }
         Ok("Все локальные модели выгружены".to_string())
@@ -262,7 +263,9 @@ mod tests {
     fn test_candidate_dirs_contains_appdata_and_configured() {
         let mgr = FsLocalModelManager::new(PathBuf::from("custom_models_path"));
         let dirs = mgr.candidate_dirs();
-        assert!(dirs.iter().any(|d| d == &PathBuf::from("custom_models_path")));
+        assert!(dirs
+            .iter()
+            .any(|d| d == &PathBuf::from("custom_models_path")));
         assert!(dirs.iter().any(|d| d.to_string_lossy().contains("models")));
     }
 
@@ -278,7 +281,9 @@ mod tests {
         let installed = mgr.list_installed().expect("list_installed must succeed");
 
         assert!(installed.iter().any(|m| m.filename == "test-model-q4.gguf"));
-        let found = installed.iter().find(|m| m.filename == "test-model-q4.gguf");
+        let found = installed
+            .iter()
+            .find(|m| m.filename == "test-model-q4.gguf");
         assert!(found.is_some());
         assert_eq!(found.unwrap().kind, ModelKind::Generation);
 

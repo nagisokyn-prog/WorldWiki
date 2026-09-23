@@ -8,6 +8,7 @@ import { createTiptapExtensions } from './hooks/useTiptapExtensionList';
 import { useTiptapKeyboard } from './hooks/useTiptapKeyboard';
 import { useTiptapLinks } from './hooks/useTiptapLinks';
 import type { PlotPromise } from '@/types/generated/PlotPromise';
+import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromisesPanel';
 
 export interface TiptapEditorProps {
   content?: string;
@@ -18,7 +19,7 @@ export interface TiptapEditorProps {
   initialScrollPos?: number;
   isLocked?: boolean;
   changedFields?: string[];
-  existingPromises?: PlotPromise[];
+  existingPromises?: (PlotPromise | RichPlotPromise)[];
 }
 
 export function useTiptapEditor(

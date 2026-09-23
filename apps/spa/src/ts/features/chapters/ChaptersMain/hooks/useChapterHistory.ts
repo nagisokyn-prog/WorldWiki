@@ -1,6 +1,6 @@
 import { ref, shallowRef, computed, type Ref } from 'vue';
 import * as api from '../../../../services/api.client';
-import type { Chapter } from '../../../../types/generated/Chapter';
+import type { ChapterWithHierarchy } from '../../../../stores/chapter.store';
 
 export interface ChapterRevisionContent {
   content?: string;
@@ -27,7 +27,7 @@ export interface ChapterRevision {
 export function useChapterHistory(
   project: string,
   currentChapterId: Ref<string | undefined>,
-  currentChapter: Ref<Chapter | null>
+  currentChapter: Ref<ChapterWithHierarchy | null>
 ) {
   const showHistory = ref(false);
   const isLoadingHistory = ref(false);
@@ -35,7 +35,7 @@ export function useChapterHistory(
   const previewingRevId = ref<string | null>(null);
   const maxSaves = ref(20);
 
-  const originalData = ref<{ content: string; title: string; footnotes: unknown } | null>(null);
+  const originalData = ref<{ content: string; title: string; footnotes: ChapterWithHierarchy['footnotes'] } | null>(null);
 
   const toggleHistory = () => {
     showHistory.value = !showHistory.value;

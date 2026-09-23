@@ -6,7 +6,7 @@
   "packageManager": "pnpm@9.4.0",
   "scripts": {
     "dev": "pnpm --filter @worldwiki/spa dev",
-    "build": "turbo build",
+    "build": "pnpm -r --stream build",
     "preview": "vp preview",
     "tauri": "tauri",
     "typecheck": "pnpm -r --stream typecheck",
@@ -14,7 +14,7 @@
     "lint:fix": "eslint . --fix",
     "lint:css": "npx stylelint \"packages/resources/src/styles/**/*.css\"",
     "format": "oxfmt --write src/ts",
-    "test": "turbo test",
+    "test": "pnpm -r --stream test",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:guard": "cargo test --manifest-path crates/Cargo.toml --workspace",

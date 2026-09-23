@@ -27,7 +27,7 @@
           </div>
           <div v-show="isTimelineOpen" class="panel-body-box">
             <TimelinePanel
-              :events="currentChapter.timeline_events"
+              :events="currentChapter.timeline_events || undefined"
               :project="project"
               @update:events="$emit('update:timeline-events', $event)"
               @change="$emit('markUnsaved')"
@@ -45,7 +45,7 @@
           </div>
           <div v-show="isParticipantsOpen" class="panel-body-box">
             <ParticipantsPanel
-              :participants="currentChapter.participants"
+              :participants="currentChapter.participants || undefined"
               :project="project"
               @update:participants="$emit('update:participants', $event)"
               @change="$emit('markUnsaved')"
@@ -120,10 +120,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import TimelinePanel from '../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
-import ParticipantsPanel from '../ParticipantsPanel/ParticipantsPanel.vue';
-import PromisesPanel from '../PromisesPanel/PromisesPanel.vue';
-import PlanningPanel from '../PlanningPanel/PlanningPanel.vue';
+import TimelinePanel from '../../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
+import type { TimelineEvent } from '../../../timeline/Calendars/TimelinePanel/useTimelinePanel';
+import ParticipantsPanel from '../../ParticipantsPanel/ParticipantsPanel.vue';
+import type { ParticipantItem } from '../../ParticipantsPanel/useParticipantsPanel';
+import PromisesPanel from '../../PromisesPanel/PromisesPanel.vue';
+import PlanningPanel from '../../PlanningPanel/PlanningPanel.vue';
 import type { ActiveTreeNode } from '../useChaptersMain';
 import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.store';
 
@@ -150,8 +152,8 @@ defineEmits<{
   (e: 'addVolumePlanItem'): void;
   (e: 'addChapterPlanItem'): void;
   (e: 'markUnsaved'): void;
-  (e: 'update:timeline-events', val: ChapterWithHierarchy['timeline_events']): void;
-  (e: 'update:participants', val: string[] | null): void;
+  (e: 'update:timeline-events', val: TimelineEvent[]): void;
+  (e: 'update:participants', val: ParticipantItem[]): void;
   (e: 'locatePromise', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
 }>();
 

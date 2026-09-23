@@ -2,7 +2,6 @@
 
 use std::env;
 use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
 use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
@@ -18,7 +17,7 @@ fn copy_file_to_zip(
 ) -> std::io::Result<()> {
     if let Ok(mut src_file) = fs::File::open(path) {
         zip.start_file(zip_entry_name, options)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
         std::io::copy(&mut src_file, zip)?;
     }
     Ok(())

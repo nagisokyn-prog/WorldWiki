@@ -13,7 +13,7 @@ export interface ParticipantItem {
 
 export interface ParticipantsPanelProps {
     project: string;
-    participants?: ParticipantItem[] | string[] | null;
+    participants?: (ParticipantItem | string)[] | null;
 }
 
 export function useParticipantsPanel(

@@ -6,6 +6,7 @@
 import { processIds, invoke, stringifyId } from '@worldwiki/components';
 import { projectRecordId } from './project.api';
 import type { Chapter } from '../../types/generated/Chapter';
+import type { ChapterWithHierarchy } from '../../stores/chapter.store';
 import * as api from '../api.client';
 
 export const chapterApi = {
@@ -20,7 +21,7 @@ export const chapterApi = {
     return c ? processIds(c) : null;
   },
 
-  saveChapter: async (project: string, chapterData: Partial<Chapter> & { volume_id?: string | null; [key: string]: unknown }): Promise<{ success: boolean; id?: string }> => {
+  saveChapter: async (project: string, chapterData: (Partial<Chapter> | Partial<ChapterWithHierarchy>) & { volume_id?: string | null; [key: string]: unknown }): Promise<{ success: boolean; id?: string }> => {
     const data = {
       ...chapterData,
       project_id: projectRecordId(project),

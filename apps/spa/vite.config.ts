@@ -1,10 +1,29 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
+import * as fs from 'node:fs';
 import vue from '@vitejs/plugin-vue';
 
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import VueDevTools from 'vite-plugin-vue-devtools';
+
+const compilerFs = {
+  fileExists: (file: string) => fs.existsSync(file),
+  readFile: (file: string) => {
+    try {
+      return fs.readFileSync(file, 'utf-8');
+    } catch {
+      return undefined;
+    }
+  },
+  realpath: (file: string) => {
+    try {
+      return fs.realpathSync(file);
+    } catch {
+      return file;
+    }
+  }
+};
 
 /**
  * Word-редактор (rk-editor-core + tiptap-pagination-plus на tiptap v2)
@@ -14,7 +33,11 @@ import VueDevTools from 'vite-plugin-vue-devtools';
  */
 export default defineConfig({
   plugins: [
-    vue(),
+    vue({
+      script: {
+        fs: compilerFs
+      }
+    }),
 
     VueDevTools(),
     AutoImport({

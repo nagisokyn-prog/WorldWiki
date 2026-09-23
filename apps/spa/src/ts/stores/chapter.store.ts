@@ -5,8 +5,13 @@ import { useTimelineStore } from './timeline.store';
 import * as api from '../services/api.client';
 import { useCalendarStore } from './calendar.store';
 import type { Chapter } from '../types/generated/Chapter';
+import type { TimelineEvent } from '@/features/timeline/Calendars/TimelinePanel/useTimelinePanel';
+import type { ParticipantItem } from '@/features/chapters/ParticipantsPanel/useParticipantsPanel';
 
-export type ChapterWithHierarchy = Chapter & {
+export type ChapterWithHierarchy = Omit<Chapter, 'timeline_events' | 'participants' | 'footnotes'> & {
+  timeline_events?: TimelineEvent[] | null;
+  participants?: (ParticipantItem | string)[] | null;
+  footnotes?: Record<string, { id: string; text: string }> | null;
   volume_id?: string | null;
   [key: string]: unknown;
 };
@@ -113,25 +118,30 @@ export const useChapterStore = defineStore('chapter', () => {
       await saveChapter(project);
     }
     try {
-      console.log('📖 openChapter: загружаю главу через chapterService.get');
-      const full = await chapterService.get(project, id);
-      if (!full) {
+      const rawFull = await chapterService.get(project, id);
+      if (!rawFull) {
         console.warn('⚠️ Глава не найдена или удалена:', id);
         return false;
       }
-      if (!full.timeline_events) full.timeline_events = [];
-      if (!full.participants) full.participants = [];
-      if (!full.footnotes) full.footnotes = {};
+      const full: ChapterWithHierarchy = {
+        ...rawFull,
+        timeline_events: Array.isArray(rawFull.timeline_events) ? (rawFull.timeline_events as unknown as TimelineEvent[]) : [],
+        participants: Array.isArray(rawFull.participants) ? rawFull.participants : [],
+        footnotes: (rawFull.footnotes as unknown as Record<string, { id: string; text: string }>) || {}
+      };
 
       const timelineStore = useTimelineStore();
       const autoParts = timelineStore.parseParticipants(full.content || '');
-      const partsList = (full.participants || []) as unknown as Array<{ id?: string; type?: string; name?: string; autoParsed?: boolean; [key: string]: unknown }>;
+      const partsList: (string | ParticipantItem)[] = [...(full.participants || [])];
       autoParts.forEach((p: { id?: string; type?: string; name?: string }) => {
-        if (!partsList.some((ep: { id?: string; type?: string; name?: string }) => (ep.id === p.id && ep.type === p.type) || (ep.name === p.name && ep.type === p.type))) {
-          partsList.push({ ...p, autoParsed: true });
+        if (!partsList.some((ep) => {
+          if (typeof ep === 'string') return ep === p.id || ep === p.name;
+          return (ep.id === p.id && ep.type === p.type) || (ep.name === p.name && ep.type === p.type);
+        })) {
+          partsList.push({ id: p.id || '', type: p.type || '', name: p.name, autoParsed: true });
         }
       });
-      full.participants = partsList as unknown as string[];
+      full.participants = partsList;
 
       currentChapter.value = JSON.parse(JSON.stringify(full));
       currentChapterId.value = id;
@@ -162,7 +172,12 @@ export const useChapterStore = defineStore('chapter', () => {
       }
     });
     const num = maxNum + 1;
-    const newCh: ChapterWithHierarchy = chapterService.createNew(`Глава ${num}`);
+    const newCh: ChapterWithHierarchy = {
+      ...chapterService.createNew(`Глава ${num}`),
+      timeline_events: [],
+      participants: [],
+      footnotes: {}
+    };
     if (volumeId) newCh.volume_id = volumeId;
 
     if (num === 1) {

@@ -28,14 +28,14 @@ export function cleanId(id: unknown): string {
   return (parts[parts.length - 1] || String(s)).replace(/["'`]/g, '').trim();
 }
 
-export interface UsePromiseFilteringOptions {
-  promises: Ref<PlotPromise[]>;
+export interface UsePromiseFilteringOptions<T extends { chapter_id: string; status: string; quote: string; id?: string | null } = PlotPromise> {
+  promises: Ref<T[]>;
   chapterId?: string | null;
   chapterTitle?: string | null;
   allChapters?: ChapterMetaItem[];
 }
 
-export function usePromiseFiltering(options: UsePromiseFilteringOptions) {
+export function usePromiseFiltering<T extends { chapter_id: string; status: string; quote: string; id?: string | null } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
   const scopeFilter = ref<'all' | 'current'>('all');
   const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
 

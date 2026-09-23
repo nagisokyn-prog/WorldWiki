@@ -11,7 +11,7 @@
         v-model:content="currentChapter.content"
         :project="project"
         :has-unsaved-changes="hasUnsavedChanges"
-        :footnotes-data="currentChapter.footnotes"
+        :footnotes-data="currentChapter.footnotes || undefined"
         :changed-fields="changedFields"
         :existing-promises="rightSidebarRef?.promisesPanelRef?.promises || []"
         @update:title="markUnsaved"

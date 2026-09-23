@@ -144,7 +144,6 @@ pub async fn download_hf_model(
     use tauri::{Emitter, Manager};
     use tokio::io::AsyncWriteExt;
     use std::path::PathBuf;
-    use worldwiki_domain::ai::types::DownloadProgressEvent;
 
     let models_dir = app
         .path()
@@ -187,7 +186,7 @@ pub async fn download_hf_model(
         )));
     }
 
-    #[derive(serde::Serialize)]
+    #[derive(Clone, serde::Serialize)]
     struct BorrowedProgressEvent<'a> {
         repo_id: &'a str,
         filename: &'a str,

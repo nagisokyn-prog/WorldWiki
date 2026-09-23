@@ -294,4 +294,24 @@ describe('usePromisesPanel', () => {
     expect(panel.isCurrentChapterPromise('chapters:ch_1')).toBe(true);
     expect(panel.isCurrentChapterPromise('ch_2')).toBe(false);
   });
+
+  it('resizes promisesHeight on mousemove and saves to localStorage on mouseup', () => {
+    localStorage.clear();
+    const panel = usePromisesPanel(props, emit);
+    expect(panel.promisesHeight.value).toBe(260);
+
+    const mousedownEv = new MouseEvent('mousedown', { clientY: 100 });
+    panel.startVerticalResize(mousedownEv);
+    expect(panel.isResizing.value).toBe(true);
+
+    const mousemoveEv = new MouseEvent('mousemove', { clientY: 180 });
+    document.dispatchEvent(mousemoveEv);
+
+    const mouseupEv = new MouseEvent('mouseup');
+    document.dispatchEvent(mouseupEv);
+
+    expect(panel.isResizing.value).toBe(false);
+    expect(panel.promisesHeight.value).toBe(340);
+    expect(localStorage.getItem('chapters-panel-promises-h')).toBe('340');
+  });
 });

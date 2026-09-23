@@ -37,7 +37,7 @@
       </div>
 
       <!-- Markdown Mode -->
-      <div v-else-if="editorMode === 'markdown'" class="flex-1 flex-col gap-3">
+      <div v-else-if="editorMode === 'markdown'" class="editor-wrapper markdown-mode-wrapper flex-1 flex flex-col h-full w-full min-h-0">
         <textarea 
           ref="markdownTextareaRef"
           v-model="markdownContent" 

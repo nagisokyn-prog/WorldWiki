@@ -41,7 +41,7 @@ class ChapterService {
       }).filter(Boolean);
     }
 
-    await api.saveChapter(project, data as unknown as Chapter);
+    await api.saveChapter(data as unknown as Chapter);
     return data.id;
   }
 

@@ -105,40 +105,54 @@
 }
 
 .project-card {
+    position: relative;
     cursor: pointer;
     min-height: 180px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-card);
+    transition: transform var(--anim-speed) var(--anim-ease), border-color var(--anim-speed) var(--anim-ease);
+}
+
+.project-card:hover {
+    border-color: var(--border-active);
+    transform: translateY(-2px);
 }
 
 .project-card .glass-card-content {
-    padding: calc(24px * var(--density-mult));
+    padding: calc(24px * var(--density-mult, 1));
     position: relative;
     z-index: 2;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .project-icon {
     font-size: 32px;
-    margin-bottom: calc(12px * var(--density-mult));
+    margin-bottom: calc(12px * var(--density-mult, 1));
 }
 
 .project-card h3 {
     font-size: 18px;
-    margin-bottom: calc(8px * var(--density-mult));
+    margin-bottom: calc(8px * var(--density-mult, 1));
     color: var(--text-heading);
 }
 
 .project-stats {
     display: flex;
-    gap: calc(12px * var(--density-mult));
+    gap: calc(12px * var(--density-mult, 1));
     font-size: 11px;
     color: var(--text-muted);
 }
 
 .project-actions {
     position: absolute;
-    top: calc(12px * var(--density-mult));
-    right: calc(12px * var(--density-mult));
+    top: calc(12px * var(--density-mult, 1));
+    right: calc(12px * var(--density-mult, 1));
+    left: auto;
     display: flex;
-    gap: calc(4px * var(--density-mult));
+    gap: calc(4px * var(--density-mult, 1));
     opacity: 0;
     transition: opacity var(--anim-speed) var(--anim-ease);
     z-index: 10;

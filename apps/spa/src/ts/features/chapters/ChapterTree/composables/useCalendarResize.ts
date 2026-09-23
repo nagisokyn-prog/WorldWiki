@@ -17,15 +17,28 @@ export function useCalendarResize() {
         const startY = e.clientY;
         const startHeight = calendarHeight.value;
 
+        let rafId: number | null = null;
+        let latestHeight = startHeight;
+
         const onMouseMove = (moveEvent: MouseEvent) => {
             const deltaY = moveEvent.clientY - startY;
-            const newHeight = Math.max(70, Math.min(500, startHeight + deltaY));
-            calendarHeight.value = newHeight;
+            latestHeight = Math.max(70, Math.min(500, startHeight + deltaY));
+            if (rafId === null) {
+                rafId = requestAnimationFrame(() => {
+                    calendarHeight.value = latestHeight;
+                    rafId = null;
+                });
+            }
         };
 
         const onMouseUp = () => {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            calendarHeight.value = latestHeight;
             if (typeof localStorage !== 'undefined') {
-                localStorage.setItem('worldwiki-calendar-widget-height', String(calendarHeight.value));
+                localStorage.setItem('worldwiki-calendar-widget-height', String(latestHeight));
             }
             if (cleanupResize) {
                 cleanupResize();
@@ -34,6 +47,10 @@ export function useCalendarResize() {
         };
 
         cleanupResize = () => {
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
             window.removeEventListener('mousemove', onMouseMove);
             window.removeEventListener('mouseup', onMouseUp);
         };

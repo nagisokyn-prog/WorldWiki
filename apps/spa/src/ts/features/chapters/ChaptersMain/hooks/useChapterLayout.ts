@@ -35,11 +35,25 @@ export function useChapterLayout() {
     const startW = chaptersSidebarWidth.value;
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'ew-resize';
+    let rafId: number | null = null;
+    let latestWidth = startW;
+
     const onMove = (ev: MouseEvent) => {
-      chaptersSidebarWidth.value = Math.max(180, Math.min(520, startW + (ev.clientX - startX)));
-      localStorage.setItem('chapters-sidebar-width', chaptersSidebarWidth.value.toString());
+      latestWidth = Math.max(180, Math.min(520, startW + (ev.clientX - startX)));
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          chaptersSidebarWidth.value = latestWidth;
+          rafId = null;
+        });
+      }
     };
     const onUp = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      chaptersSidebarWidth.value = latestWidth;
+      localStorage.setItem('chapters-sidebar-width', latestWidth.toString());
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       document.body.style.cursor = '';
@@ -87,11 +101,14 @@ export function useChapterLayout() {
   let isDragging = false;
   let startX = 0;
   let startWidth = 0;
+  let rightRafId: number | null = null;
+  let latestRightWidth = 320;
 
   const startResize = (e: MouseEvent) => {
     isDragging = true;
     startX = e.clientX;
     startWidth = rightPanelWidth.value;
+    latestRightWidth = startWidth;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
@@ -99,16 +116,26 @@ export function useChapterLayout() {
   const onMouseMove = (e: MouseEvent) => {
     if (!isDragging) return;
     const delta = startX - e.clientX;
-    const newW = Math.max(200, Math.min(600, startWidth + delta));
-    rightPanelWidth.value = newW;
+    latestRightWidth = Math.max(200, Math.min(600, startWidth + delta));
+    if (rightRafId === null) {
+      rightRafId = requestAnimationFrame(() => {
+        rightPanelWidth.value = latestRightWidth;
+        rightRafId = null;
+      });
+    }
   };
 
   const onMouseUp = () => {
     if (isDragging) {
       isDragging = false;
+      if (rightRafId !== null) {
+        cancelAnimationFrame(rightRafId);
+        rightRafId = null;
+      }
+      rightPanelWidth.value = latestRightWidth;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
-      localStorage.setItem('chapters-tools-panel-width', rightPanelWidth.value.toString());
+      localStorage.setItem('chapters-tools-panel-width', latestRightWidth.toString());
     }
   };
 

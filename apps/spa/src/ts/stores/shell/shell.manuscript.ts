@@ -92,7 +92,7 @@ export function useShellManuscript(deps: ManuscriptDeps) {
         participants: [],
         volume_id: volumeId || null,
       } as unknown as Chapter;
-      const saveRes = await api.saveChapter(deps.projectName.value, newCh);
+      const saveRes = await api.saveChapter(newCh);
       if (saveRes && saveRes.id) newCh.id = saveRes.id;
       if (volumeId && newCh.id) await api.assignChapter(deps.projectName.value, newCh.id, volumeId || null);
       deps.addLog('Manuscript -> Created new chapter', 'success');
@@ -168,7 +168,7 @@ export function useShellManuscript(deps: ManuscriptDeps) {
       const fullData = await api.getChapter(targetId);
       if (fullData) {
         fullData.title = newTitle;
-        await api.saveChapter(deps.projectName.value, fullData);
+        await api.saveChapter(fullData);
       }
       deps.addLog(`Chapter renamed: ${newTitle}`, 'success');
       if (deps.chapterTreeRef.value?.load) deps.chapterTreeRef.value.load();

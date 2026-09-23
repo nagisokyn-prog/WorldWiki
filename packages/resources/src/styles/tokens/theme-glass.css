@@ -9,7 +9,8 @@
     --glass-card-alpha: 0.04;
     --glass-border-alpha: 0.12;
 
-    --glass-bg: rgba(20, 20, 25, var(--glass-island-alpha));
+    --glass-island-base: 20, 20, 25;
+    --glass-bg: rgba(var(--glass-island-base), var(--glass-island-alpha));
     --glass-card: rgba(255, 255, 255, var(--glass-card-alpha));
     --glass-highlight: rgba(255, 255, 255, 0.08);
 

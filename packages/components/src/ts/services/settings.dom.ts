@@ -17,16 +17,31 @@ export function applySettingsToDOM(settings: AppSettings): void {
   const root = document.documentElement;
   const style = root.style;
 
-  // 1. Цвета темы
+  // 1. Атрибуты темы (активируют CSS-токены темы в :root[data-theme="..."])
+  if (settings.theme) {
+    root.setAttribute('data-theme', settings.theme);
+  }
+
+  // 2. Цвета темы (пользовательские оверрайды из настроек)
   if (settings.colors) {
     const c = settings.colors;
-    if (c.bgBase) style.setProperty('--bg-base', c.bgBase);
+    if (c.bgBase) {
+      style.setProperty('--bg-base', c.bgBase);
+      style.setProperty('--bg-main', c.bgBase);
+    }
     if (c.bgSecondary) style.setProperty('--bg-secondary', c.bgSecondary);
     if (c.bgPanel) style.setProperty('--bg-panel', c.bgPanel);
+    if (c.bgCard) style.setProperty('--bg-card', c.bgCard);
     if (c.bgInput) style.setProperty('--bg-input', c.bgInput);
+    if (c.bgSunken) style.setProperty('--bg-sunken', c.bgSunken);
+    if (c.bgHover) style.setProperty('--bg-hover', c.bgHover);
+    if (c.bgActive) style.setProperty('--bg-active', c.bgActive);
+    if (c.bgSelected) style.setProperty('--bg-selected', c.bgSelected);
+    if (c.modalBackdrop) style.setProperty('--modal-backdrop', c.modalBackdrop);
     if (c.textMain) style.setProperty('--text-main', c.textMain);
     if (c.textMuted) style.setProperty('--text-muted', c.textMuted);
     if (c.textHeading) style.setProperty('--text-heading', c.textHeading);
+    if (c.textDisabled) style.setProperty('--text-disabled', c.textDisabled);
     if (c.accent) style.setProperty('--accent', c.accent);
     if (c.accentHover) style.setProperty('--accent-hover', c.accentHover);
     if (c.accentActive) style.setProperty('--accent-active', c.accentActive);
@@ -38,7 +53,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
     if (c.shadowColor) style.setProperty('--shadow-color', c.shadowColor);
   }
 
-  // 2. Glass-эффекты
+  // 3. Glass-эффекты
   if (settings.glass) {
     const g = settings.glass;
     if (g.islandAlpha !== undefined) style.setProperty('--glass-island-alpha', String(g.islandAlpha));
@@ -98,17 +113,56 @@ export function applySettingsToDOM(settings: AppSettings): void {
     if (sp.gap !== undefined) style.setProperty('--spacing-gap', `${sp.gap}px`);
   }
 
-  // 8. Атрибуты темы и стилей
-  if (settings.theme) {
-    root.setAttribute('data-theme', settings.theme);
+  // 8. Компоновка (Layout)
+  if (settings.layout) {
+    const l = settings.layout;
+    if (l.columns !== undefined) {
+      style.setProperty('--layout-columns', String(l.columns));
+      root.setAttribute('data-layout-columns', String(l.columns));
+    }
+    if (l.sidebarPos) {
+      style.setProperty('--sidebar-pos', l.sidebarPos);
+      root.setAttribute('data-sidebar-pos', l.sidebarPos);
+    }
+    if (l.focusMode !== undefined) {
+      root.setAttribute('data-focus-mode', String(l.focusMode));
+    }
   }
+
+  // 9. Вкладки (Tabs)
+  if (settings.tabs) {
+    if (settings.tabs.pos) {
+      style.setProperty('--tab-pos', settings.tabs.pos);
+      root.setAttribute('data-tab-pos', settings.tabs.pos);
+    }
+  }
+
+  // 10. Кнопки (Buttons)
+  if (settings.buttons) {
+    const b = settings.buttons;
+    if (b.hoverScale !== undefined) {
+      root.setAttribute('data-btn-hover-scale', String(b.hoverScale));
+      root.classList.toggle('btn-hover-scale', b.hoverScale);
+    }
+    if (b.clickPress !== undefined) {
+      root.setAttribute('data-btn-click-press', String(b.clickPress));
+      root.classList.toggle('btn-click-press', b.clickPress);
+    }
+  }
+
+  // 11. Уведомления (Notifications)
+  if (settings.notifications) {
+    const n = settings.notifications;
+    if (n.position) {
+      root.setAttribute('data-toast-pos', n.position);
+    }
+  }
+
+  // 12. Инпуты (Inputs)
   if (settings.inputs?.style) {
     root.setAttribute('data-input-style', settings.inputs.style);
   }
-  if (settings.layout?.focusMode !== undefined) {
-    root.setAttribute('data-focus-mode', String(settings.layout.focusMode));
-  }
 
-  // 9. Пользовательский фон
+  // 13. Пользовательский фон
   applyCustomBackground(settings);
 }

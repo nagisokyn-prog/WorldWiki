@@ -105,8 +105,8 @@
 /* Form Grid & Layout */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(var(--layout-columns, 2), minmax(0, 1fr));
+  gap: var(--spacing-gap, 16px);
 }
 
 .form-group {

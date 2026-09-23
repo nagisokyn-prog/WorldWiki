@@ -30,7 +30,9 @@
 .editor-container {
   flex: 1;
   width: 100%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
   gap: 16px;
   overflow: hidden;
   min-width: 0;
@@ -41,27 +43,42 @@
   flex: 1;
   width: 100%;
   height: 100%;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   color: var(--text-main);
-  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.editor-content {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .editor-content .ProseMirror,
 .editor-content-split .ProseMirror {
+  flex: 1;
   min-height: 100%;
-  padding: 20px;
+  padding: 24px;
   outline: none;
   color: var(--text-main);
+  box-sizing: border-box;
 }
 .status-bar {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px;
+  align-items: center;
+  margin-top: auto;
+  flex-shrink: 0;
   font-size: 12px;
   color: var(--text-muted);
+  padding-top: 8px;
 }
 .footnotes-panel {
   margin-top: 20px;
@@ -73,6 +90,7 @@
   flex: 1;
   width: 100%;
   height: 100%;
+  min-height: 100%;
   background: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border-color);
@@ -94,11 +112,36 @@
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
   overflow: hidden;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background: var(--bg-card);
   min-height: 0;
+  min-width: 0;
+}
+.split-left-panel {
+  width: var(--split-left, 50%);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.split-middle-panel {
+  width: var(--split-right, 50%);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.split-middle-panel.is-full-width {
+  flex: 1;
+  width: auto;
 }
 .split-panel-header {
   background: var(--bg-sunken);
@@ -412,21 +455,6 @@
    и не получают атрибут data-v-xxx от scoped стилей компонента.
    ========================================================================== */
 
-/*
-  ГОСТ 7.32 — форматирование текста научного документа:
-  - Шрифт: Times New Roman 14pt, межстрочник 1.5
-  - Межабзацный интервал: 0 (только межстрочник)
-  - Красная строка: 1.25 см (задаётся линейкой через firstLineIndent attr)
-
-  ВАЖНО: эти стили ОБЯЗАНЫ быть здесь (в глобальном CSS), а не в scoped-блоке
-  компонента. Плагин Pagination из rk-editor-core измеряет РЕАЛЬНУЮ высоту
-  DOM-элементов для расчёта, где вставлять разделители страниц. Если font-size
-  и line-height не доходят до .ProseMirror (из-за scoped data-v-xxx),
-  контент рендерится в browser-default 16px/normal, pagination считает
-  неправильную высоту строки → вставляет spacer через каждые 2-3 абзаца.
-
-  Переопределяем rk-editor-ui: .ProseMirror p { margin: 0 0 .6em }
-*/
 .rk-editor-mount .ProseMirror {
   font-family: 'Times New Roman', Times, serif;
   font-size: 14pt;
@@ -493,15 +521,26 @@
 }
 
 .split-left-panel {
-  flex: 0 0 var(--split-left, 50%);
+  flex: 0 0 var(--split-left, 40%);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 160px;
+  overflow: hidden;
 }
 
 .split-middle-panel {
-  flex: 0 0 var(--split-right, 50%);
+  flex: 0 0 var(--split-right, 35%);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 160px;
+  overflow: hidden;
 }
 
 .split-middle-panel.is-full-width {
-  flex: 1;
+  flex: 1 1 auto;
+  width: auto;
 }
 
 .split-panel-header-structure {

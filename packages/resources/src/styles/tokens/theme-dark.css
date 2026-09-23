@@ -3,6 +3,7 @@
 :root {
     /* Фоновые цвета */
     --bg-base: #09090b;
+    --bg-main: var(--bg-base);
     --bg-secondary: #121214;
     --bg-panel: rgba(15, 15, 18, 0.7);
     --bg-card: rgba(22, 22, 26, 0.6);

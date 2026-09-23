@@ -35,86 +35,99 @@
 }
 
 /* 2. Стили инпутов (Inputs style) */
-body[data-input-style="filled"] input,
-body[data-input-style="filled"] textarea,
-body[data-input-style="filled"] select,
-body[data-input-style="filled"] .input-base,
-body[data-input-style="filled"] .input-control {
+[data-input-style="filled"] input,
+[data-input-style="filled"] textarea,
+[data-input-style="filled"] select,
+[data-input-style="filled"] .input-base,
+[data-input-style="filled"] .input-control {
   background: var(--bg-input, var(--bg-card));
   border: 1px solid transparent;
 }
 
-body[data-input-style="filled"] input:focus,
-body[data-input-style="filled"] textarea:focus,
-body[data-input-style="filled"] select:focus,
-body[data-input-style="filled"] .input-base:focus,
-body[data-input-style="filled"] .input-control:focus {
+[data-input-style="filled"] input:focus,
+[data-input-style="filled"] textarea:focus,
+[data-input-style="filled"] select:focus,
+[data-input-style="filled"] .input-base:focus,
+[data-input-style="filled"] .input-control:focus {
   border-color: var(--accent);
   background: var(--bg-hover);
 }
 
-body[data-input-style="outline"] input,
-body[data-input-style="outline"] textarea,
-body[data-input-style="outline"] select,
-body[data-input-style="outline"] .input-base,
-body[data-input-style="outline"] .input-control {
+[data-input-style="outline"] input,
+[data-input-style="outline"] textarea,
+[data-input-style="outline"] select,
+[data-input-style="outline"] .input-base,
+[data-input-style="outline"] .input-control {
   background: transparent;
   border: 1px solid var(--border-color);
 }
 
-body[data-input-style="outline"] input:focus,
-body[data-input-style="outline"] textarea:focus,
-body[data-input-style="outline"] select:focus,
-body[data-input-style="outline"] .input-base:focus,
-body[data-input-style="outline"] .input-control:focus {
+[data-input-style="outline"] input:focus,
+[data-input-style="outline"] textarea:focus,
+[data-input-style="outline"] select:focus,
+[data-input-style="outline"] .input-base:focus,
+[data-input-style="outline"] .input-control:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
 /* Анимация фокуса инпутов */
-body.input-focus-anim input,
-body.input-focus-anim textarea,
-body.input-focus-anim select,
-body.input-focus-anim .input-base {
+.input-focus-anim input,
+.input-focus-anim textarea,
+.input-focus-anim select,
+.input-focus-anim .input-base {
   transition: transform var(--anim-speed) var(--anim-ease), border-color var(--anim-speed);
 }
 
-body.input-focus-anim input:focus,
-body.input-focus-anim textarea:focus,
-body.input-focus-anim select:focus,
-body.input-focus-anim .input-base:focus {
+.input-focus-anim input:focus,
+.input-focus-anim textarea:focus,
+.input-focus-anim select:focus,
+.input-focus-anim .input-base:focus {
   transform: scale(1.015);
 }
 
 /* 3. Кнопки: Эффект наведения и нажатия (Buttons) */
-body.btn-hover-scale .btn,
-body.btn-hover-scale .btn-new,
-body.btn-hover-scale .create-btn,
-body.btn-hover-scale button:not(.no-anim),
-body.btn-hover-scale .interactive-el {
+[data-btn-hover-scale="true"] .btn,
+[data-btn-hover-scale="true"] .btn-new,
+[data-btn-hover-scale="true"] .create-btn,
+[data-btn-hover-scale="true"] button:not(.no-anim),
+[data-btn-hover-scale="true"] .interactive-el,
+.btn-hover-scale .btn,
+.btn-hover-scale .btn-new,
+.btn-hover-scale .create-btn,
+.btn-hover-scale button:not(.no-anim),
+.btn-hover-scale .interactive-el {
   transition: transform var(--anim-speed) var(--anim-ease), background var(--anim-speed);
 }
 
-body.btn-hover-scale .btn:hover,
-body.btn-hover-scale .btn-new:hover,
-body.btn-hover-scale .create-btn:hover,
-body.btn-hover-scale button:not(.no-anim):hover {
+[data-btn-hover-scale="true"] .btn:hover,
+[data-btn-hover-scale="true"] .btn-new:hover,
+[data-btn-hover-scale="true"] .create-btn:hover,
+[data-btn-hover-scale="true"] button:not(.no-anim):hover,
+.btn-hover-scale .btn:hover,
+.btn-hover-scale .btn-new:hover,
+.btn-hover-scale .create-btn:hover,
+.btn-hover-scale button:not(.no-anim):hover {
   transform: scale(var(--scale-pull, 1.05));
 }
 
-body.btn-click-press .btn:active,
-body.btn-click-press .btn-new:active,
-body.btn-click-press .create-btn:active,
-body.btn-click-press button:not(.no-anim):active {
+[data-btn-click-press="true"] .btn:active,
+[data-btn-click-press="true"] .btn-new:active,
+[data-btn-click-press="true"] .create-btn:active,
+[data-btn-click-press="true"] button:not(.no-anim):active,
+.btn-click-press .btn:active,
+.btn-click-press .btn-new:active,
+.btn-click-press .create-btn:active,
+.btn-click-press button:not(.no-anim):active {
   transform: scale(var(--scale-push, 0.95));
 }
 
 /* 4. Карточки и списки (Cards & Lists) */
-body.cards-compact .list-item,
-body.cards-compact .sidebar-item,
-body.cards-compact .chapter-item,
-body.cards-compact .tree-node,
-body.cards-compact .tree-node-row {
+.cards-compact .list-item,
+.cards-compact .sidebar-item,
+.cards-compact .chapter-item,
+.cards-compact .tree-node,
+.cards-compact .tree-node-row {
   padding-top: 4px;
   padding-bottom: 4px;
   min-height: 26px;
@@ -138,8 +151,8 @@ body:not(.cards-show-icons) .node-icon {
   pointer-events: none;
 }
 
-body[data-toast-pos="top-left"] .toast-container,
-body[data-toast-pos="top-left"] .toast-container-new {
+[data-toast-pos="top-left"] .toast-container,
+[data-toast-pos="top-left"] .toast-container-new {
   top: 24px;
   left: 24px;
   bottom: auto;
@@ -147,8 +160,8 @@ body[data-toast-pos="top-left"] .toast-container-new {
   flex-direction: column;
 }
 
-body[data-toast-pos="top-right"] .toast-container,
-body[data-toast-pos="top-right"] .toast-container-new {
+[data-toast-pos="top-right"] .toast-container,
+[data-toast-pos="top-right"] .toast-container-new {
   top: 24px;
   right: 24px;
   bottom: auto;
@@ -156,8 +169,8 @@ body[data-toast-pos="top-right"] .toast-container-new {
   flex-direction: column;
 }
 
-body[data-toast-pos="bottom-left"] .toast-container,
-body[data-toast-pos="bottom-left"] .toast-container-new {
+[data-toast-pos="bottom-left"] .toast-container,
+[data-toast-pos="bottom-left"] .toast-container-new {
   bottom: 24px;
   left: 24px;
   top: auto;
@@ -165,8 +178,8 @@ body[data-toast-pos="bottom-left"] .toast-container-new {
   flex-direction: column-reverse;
 }
 
-body[data-toast-pos="bottom-right"] .toast-container,
-body[data-toast-pos="bottom-right"] .toast-container-new {
+[data-toast-pos="bottom-right"] .toast-container,
+[data-toast-pos="bottom-right"] .toast-container-new {
   bottom: 24px;
   right: 24px;
   top: auto;
@@ -175,14 +188,15 @@ body[data-toast-pos="bottom-right"] .toast-container-new {
 }
 
 /* 6. Колонки ИСКЛЮЧИТЕЛЬНО для полей редактора сущностей */
-.form-grid.grid-dynamic,
-.form-grid,
-.entity-editor-fields,
-.entity-fields-grid,
-.schema-fields-grid,
-.form-fields-grid,
-.editor-fields-dynamic {
+:root .form-grid.grid-dynamic,
+:root .form-grid,
+:root .entity-editor-fields,
+:root .entity-fields-grid,
+:root .schema-fields-grid,
+:root .form-fields-grid,
+:root .editor-fields-dynamic,
+.entity-editor-wrapper .form-grid {
   display: grid;
-  grid-template-columns: repeat(var(--layout-columns, 2), 1fr);
-  gap: var(--gap-elements, 16px);
+  grid-template-columns: repeat(var(--layout-columns, 2), minmax(0, 1fr));
+  gap: var(--spacing-gap, 16px);
 }

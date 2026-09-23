@@ -134,4 +134,4 @@ const {
 } = useWordRibbonBar(props, emit);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/features/chapters/WordRibbonBar.css"></style>
+<style src="@worldwiki/resources/styles/features/chapters/WordRibbonBar.css"></style>

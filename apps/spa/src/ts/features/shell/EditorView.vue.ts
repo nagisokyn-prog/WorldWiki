@@ -192,6 +192,9 @@ export default defineComponent({
       isWowilonOpen,
       
       toggleWowilon: () => { shell.isWowilonOpen = !shell.isWowilonOpen; },
+      setActivePanelTab: (tab: string) => { shell.activePanelTab = tab; },
+      togglePanel: () => { shell.activePanelTab = shell.activePanelTab === '' ? 'console' : ''; },
+      toggleSidebar: () => { shell.sidebarVisible = !shell.sidebarVisible; },
 
       // Methods
       selectSidebarTab,

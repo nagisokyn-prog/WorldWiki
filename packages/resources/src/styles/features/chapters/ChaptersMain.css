@@ -32,10 +32,11 @@
 .parent-plans-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 14px 14px;
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border-color);
+  gap: 12px;
+  padding: 0;
+  margin-top: 4px;
+  background: transparent;
+  border-top: none;
   flex-shrink: 0;
 }
 
@@ -88,13 +89,11 @@
 
 .accordion-body {
   border-top: 1px solid var(--border-color);
-  height: 200px;
-  min-height: 100px;
-  max-height: 600px;
-  resize: vertical;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 80px;
 }
 
 .chapter-item:hover {
@@ -236,11 +235,27 @@
   border: none;
 }
 
+.chapter-panels-scroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  gap: 12px;
+  padding: 12px;
+  padding-bottom: 36px;
+}
+
 .panel-collapsible-wrapper {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
 }
 
 .panel-header-bar {
@@ -252,6 +267,7 @@
   user-select: none;
   background: var(--bg-sunken);
   transition: background var(--anim-speed, 0.2s) ease;
+  flex-shrink: 0;
 }
 
 .panel-header-bar:hover {
@@ -272,9 +288,62 @@
 
 .panel-body-box {
   padding: 0;
-  max-height: 280px;
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 80px;
+}
+
+.panel-resize-handle-vertical {
+  height: 8px;
+  width: 100%;
+  cursor: row-resize;
+  background: var(--bg-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background var(--anim-speed, 0.2s) ease;
+  user-select: none;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.panel-resize-handle-vertical::after {
+  content: '';
+  width: 36px;
+  height: 2px;
+  border-radius: var(--radius-round, 9999px);
+  background: var(--border-hover);
+  transition: background var(--anim-speed, 0.2s) ease, transform var(--anim-speed, 0.2s) ease;
+}
+
+.panel-resize-handle-vertical:hover {
+  background: var(--bg-hover);
+}
+
+.panel-resize-handle-vertical:hover::after,
+.panel-resize-handle-vertical.is-resizing::after {
+  background: var(--accent);
+  transform: scaleX(1.35);
+}
+
+.chapter-panels-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chapter-panels-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chapter-panels-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-round);
+}
+
+.chapter-panels-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
 }
 
 .panel-body-box::-webkit-scrollbar {

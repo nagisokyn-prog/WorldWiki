@@ -27,7 +27,7 @@ export const chapterApi = {
       project_id: projectRecordId(project),
     };
     
-    const res = await api.saveChapter(project, data as unknown as Chapter);
+    const res = await api.saveChapter(data as unknown as Chapter);
 
     if (data.volume_id) {
       try {

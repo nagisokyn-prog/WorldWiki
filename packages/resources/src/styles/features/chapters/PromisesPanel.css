@@ -47,8 +47,9 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 480px;
+  min-height: 80px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .section-content::-webkit-scrollbar {
@@ -349,6 +350,11 @@
 .card-quick-actions {
   display: flex;
   gap: 6px;
+  background: var(--bg-sunken);
+  padding: 6px 8px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+  margin-top: 6px;
 }
 
 .btn-quick {

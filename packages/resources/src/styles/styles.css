@@ -4,6 +4,7 @@
 @import "./tokens/typography.css";
 @import "./tokens/theme-dark.css";
 @import "./tokens/theme-glass.css";
+@import "./tokens/theme-light.css";
 @import "./base/reset.css";
 @import "./base/layout.css";
 @import "./base/flex.css";
@@ -14,6 +15,11 @@
 @import "./components/BaseUI.css";
 @import "./components/ExplorerTree.css";
 @import "./features/shell/EditorView.css";
+@import "./features/ai/WowilonPanel.css";
+@import "./features/chapters/ChaptersMain.css";
+@import "./features/chapters/EditorCoreTiptap.css";
+@import "./features/chapters/WordRibbonBar.css";
+@import "./features/chapters/RkWordEditor.css";
 
 /* ==========================================================================
    MAIN LAYOUT

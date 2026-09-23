@@ -11,10 +11,17 @@ export interface ColorSettings {
   bgBase: string;           // Основной фон
   bgSecondary: string;      // Вторичный фон
   bgPanel: string;          // Фон панелей
+  bgCard?: string;          // Фон карточек
   bgInput: string;          // Фон инпутов
+  bgSunken?: string;        // Утопленные блоки и подложки
+  bgHover?: string;         // Фон при наведении
+  bgActive?: string;        // Фон при нажатии
+  bgSelected?: string;       // Фон выбранных элементов
+  modalBackdrop?: string;   // Подложка модальных окон
   textMain: string;         // Основной текст
   textMuted: string;        // Второстепенный текст
   textHeading: string;      // Заголовки
+  textDisabled?: string;    // Неактивный текст
   accent: string;           // Цвет акцента
   accentHover: string;      // Акцент при наведении
   accentActive: string;     // Акцент при нажатии

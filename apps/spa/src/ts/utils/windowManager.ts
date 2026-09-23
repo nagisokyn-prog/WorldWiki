@@ -21,7 +21,8 @@ export async function openEntityEditorWindow(project: string, type: string, id: 
             minWidth: 400,
             minHeight: 300,
             decorations: true,
-            center: true
+            center: true,
+            backgroundColor: [15, 17, 23, 255]
         });
 
         webview.once('tauri://created', () => {

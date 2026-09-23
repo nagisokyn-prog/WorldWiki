@@ -195,20 +195,20 @@
       ></div>
       <div
         class="panel-header-new flex justify-between"
-        @click="activePanelTab = activePanelTab === '' ? 'console' : ''"
+        @click="togglePanel"
       >
         <div class="flex gap-2">
           <div
             class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'console' }"
-            @click.stop="activePanelTab = 'console'"
+            @click.stop="setActivePanelTab('console')"
           >
             💻 Терминал Системы
           </div>
           <div
             class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'stats' }"
-            @click.stop="activePanelTab = 'stats'"
+            @click.stop="setActivePanelTab('stats')"
           >
             📊 Аналитика
           </div>
@@ -244,8 +244,8 @@
       @new-entity="addNewEntity(currentSidebarTab || '')"
       @new-chapter="createChapterIn({})"
       @open-settings="toggleSettings()"
-      @toggle-sidebar="sidebarVisible = !sidebarVisible"
-      @toggle-panel="activePanelTab = activePanelTab === '' ? 'console' : ''"
+      @toggle-sidebar="toggleSidebar"
+      @toggle-panel="togglePanel"
       @close-all-tabs="closeAllTabs()"
       @zoom-in="applyZoom(zoomLevel + 0.1)"
       @zoom-out="applyZoom(zoomLevel - 0.1)"

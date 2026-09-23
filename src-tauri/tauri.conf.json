@@ -22,7 +22,8 @@
         "resizable": true,
         "url": "app.html",
         "dragDropEnabled": false,
-        "visible": false
+        "visible": true,
+        "backgroundColor": [15, 17, 23, 255]
       }
     ],
     "security": {

@@ -17,7 +17,11 @@
       </button>
     </div>
 
-    <div v-show="!isCollapsed" class="section-content">
+    <div
+      v-show="!isCollapsed"
+      class="section-content"
+      :style="{ height: promisesHeight + 'px' }"
+    >
       <!-- Фильтры: Область видимости и статус -->
       <PromiseFilterBar
         v-model:scope-filter="scopeFilter"
@@ -60,6 +64,14 @@
         />
       </div>
     </div>
+
+    <div
+      v-show="!isCollapsed"
+      class="panel-resize-handle-vertical"
+      :class="{ 'is-resizing': isResizing }"
+      title="Потяните для изменения высоты"
+      @mousedown="startVerticalResize"
+    ></div>
   </div>
 </template>
 
@@ -98,7 +110,10 @@ const {
   getKindInfo,
   getChapterTitle,
   isCurrentChapterPromise,
-  promptAttachMilestone
+  promptAttachMilestone,
+  promisesHeight,
+  isResizing,
+  startVerticalResize
 } = usePromisesPanel(props, emit);
 
 defineExpose({
@@ -110,3 +125,4 @@ defineExpose({
 </script>
 
 <style src="@worldwiki/resources/styles/features/chapters/PromisesPanel.css" scoped></style>
+<style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css" scoped></style>

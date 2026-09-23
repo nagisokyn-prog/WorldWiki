@@ -104,7 +104,7 @@ export function useShellEntityCrud(deps: EntityCrudDeps, isCreatingEntity: Ref<b
           participants: [],
           volume_id: null,
         } as unknown as Chapter;
-        await api.saveChapter(deps.projectName.value, newChapter);
+        await api.saveChapter(newChapter);
         deps.addLog(`Chapter -> Created [${newChapter.title}]`, 'success');
         deps.addToast(`Глава "${newChapter.title}" создана`, 'success');
         deps.chapters.value.push(newChapter);

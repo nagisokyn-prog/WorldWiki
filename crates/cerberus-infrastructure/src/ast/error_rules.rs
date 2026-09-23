@@ -544,12 +544,10 @@ mod tests {
         let syntax = syn::parse_file(code).unwrap();
         let checker = ErrorRulesChecker::new("src/lib.rs", "worldwiki-domain", &[]);
         let violations = checker.check_file(&syntax);
-
-        let err003_violations: Vec<_> = violations.iter().filter(|v| v.rule_id == "ERR-003").collect();
         assert!(
-            err003_violations.is_empty(),
-            "Private methods/functions or non-String error types must not trigger ERR-003: {:?}",
-            err003_violations
+            violations.is_empty(),
+            "Private methods/functions or non-String error types must not trigger any violations: {:?}",
+            violations
         );
     }
 

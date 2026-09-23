@@ -14,8 +14,9 @@
       />
     </div>
 
-    <!-- Глава открыта: единый скролл всех блоков (таймлайн → участники → обещания → планы) -->
+    <!-- Глава открыта: верхняя скролл-зона (таймлайн, участники, обещания) + зафиксированные планы внизу -->
     <div v-else-if="currentChapter" class="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <!-- 1. Верхняя прокручиваемая область с независимым скроллбаром -->
       <div class="chapter-panels-scroll flex-1 flex flex-col min-h-0 overflow-y-auto p-3 gap-3">
         <!-- Аккордеон: Таймлайн -->
         <div class="panel-collapsible-wrapper">
@@ -86,70 +87,70 @@
           @locate="$emit('locatePromise', $event)"
           @change="$emit('markUnsaved')"
         />
+      </div>
 
-        <!-- Блок планов тома / главы -->
-        <div class="parent-plans-container">
-          <!-- План тома -->
-          <div v-if="currentVolume" class="parent-plan-accordion">
-            <div class="accordion-header" @click="$emit('toggleVolumePlan')">
-              <span class="accordion-title"><i class="fas fa-book text-accent"></i> План тома: {{ currentVolume.title }}</span>
-              <div class="flex items-center gap-2">
-                <button class="add-from-header-btn" title="Добавить пункт" @click.stop="$emit('addVolumePlanItem')">+</button>
-                <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isVolumePlanOpen }">▼</span>
-              </div>
+      <!-- 2. Зафиксированный внизу сайдбара блок планов тома / главы -->
+      <div class="parent-plans-container flex-shrink-0">
+        <!-- План тома -->
+        <div v-if="currentVolume" class="parent-plan-accordion">
+          <div class="accordion-header" @click="$emit('toggleVolumePlan')">
+            <span class="accordion-title"><i class="fas fa-book text-accent"></i> План тома: {{ currentVolume.title }}</span>
+            <div class="flex items-center gap-2">
+              <button class="add-from-header-btn" title="Добавить пункт" @click.stop="$emit('addVolumePlanItem')">+</button>
+              <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isVolumePlanOpen }">▼</span>
             </div>
-            <div
-              v-show="isVolumePlanOpen"
-              class="accordion-body"
-              :style="{ height: volumePlanHeight + 'px' }"
-            >
-              <PlanningPanel
-                ref="volumePlanRef"
-                :project="project"
-                parent-type="volume"
-                :parent-id="currentVolume.id"
-                :parent-title="currentVolume.title"
-              />
-            </div>
-            <div
-              v-show="isVolumePlanOpen"
-              class="panel-resize-handle-vertical"
-              :class="{ 'is-resizing': activeResizing === 'volumePlan' }"
-              title="Потяните для изменения высоты"
-              @mousedown="startVerticalResize($event, 'volumePlan')"
-            ></div>
           </div>
+          <div
+            v-show="isVolumePlanOpen"
+            class="accordion-body"
+            :style="{ height: volumePlanHeight + 'px' }"
+          >
+            <PlanningPanel
+              ref="volumePlanRef"
+              :project="project"
+              parent-type="volume"
+              :parent-id="currentVolume.id"
+              :parent-title="currentVolume.title"
+            />
+          </div>
+          <div
+            v-show="isVolumePlanOpen"
+            class="panel-resize-handle-vertical"
+            :class="{ 'is-resizing': activeResizing === 'volumePlan' }"
+            title="Потяните для изменения высоты"
+            @mousedown="startVerticalResize($event, 'volumePlan')"
+          ></div>
+        </div>
 
-          <!-- План главы (сворачиваемый) -->
-          <div v-if="currentChapterId" class="parent-plan-accordion">
-            <div class="accordion-header" @click="$emit('toggleChapterPlan')">
-              <span class="accordion-title"><i class="fas fa-file-alt text-accent"></i> План главы</span>
-              <div class="flex items-center gap-2">
-                <button class="add-from-header-btn" title="Добавить пункт" @click.stop="$emit('addChapterPlanItem')">+</button>
-                <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isChapterPlanOpen }">▼</span>
-              </div>
+        <!-- План главы (сворачиваемый) -->
+        <div v-if="currentChapterId" class="parent-plan-accordion">
+          <div class="accordion-header" @click="$emit('toggleChapterPlan')">
+            <span class="accordion-title"><i class="fas fa-file-alt text-accent"></i> План главы</span>
+            <div class="flex items-center gap-2">
+              <button class="add-from-header-btn" title="Добавить пункт" @click.stop="$emit('addChapterPlanItem')">+</button>
+              <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isChapterPlanOpen }">▼</span>
             </div>
-            <div
-              v-show="isChapterPlanOpen"
-              class="accordion-body"
-              :style="{ height: chapterPlanHeight + 'px' }"
-            >
-              <PlanningPanel
-                ref="chapterPlanRef"
-                :project="project"
-                parent-type="chapter"
-                :parent-id="currentChapterId"
-                :parent-title="currentChapter?.title"
-              />
-            </div>
-            <div
-              v-show="isChapterPlanOpen"
-              class="panel-resize-handle-vertical"
-              :class="{ 'is-resizing': activeResizing === 'chapterPlan' }"
-              title="Потяните для изменения высоты"
-              @mousedown="startVerticalResize($event, 'chapterPlan')"
-            ></div>
           </div>
+          <div
+            v-show="isChapterPlanOpen"
+            class="accordion-body"
+            :style="{ height: chapterPlanHeight + 'px' }"
+          >
+            <PlanningPanel
+              ref="chapterPlanRef"
+              :project="project"
+              parent-type="chapter"
+              :parent-id="currentChapterId"
+              :parent-title="currentChapter?.title"
+            />
+          </div>
+          <div
+            v-show="isChapterPlanOpen"
+            class="panel-resize-handle-vertical"
+            :class="{ 'is-resizing': activeResizing === 'chapterPlan' }"
+            title="Потяните для изменения высоты"
+            @mousedown="startVerticalResize($event, 'chapterPlan')"
+          ></div>
         </div>
       </div>
     </div>

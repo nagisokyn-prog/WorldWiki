@@ -11,7 +11,8 @@ export interface MatrixChapter {
 
 export interface MatrixAppearance {
   chapter_id: string;
-  source: 'mention' | 'manual' | 'scene';
+  kind?: 'scene' | 'mention' | 'none' | 'deceased';
+  source?: 'mention' | 'manual' | 'scene' | string | null;
   role?: string | null;
 }
 
@@ -21,7 +22,8 @@ export interface MatrixEntity {
   entity_type: string;
   is_deceased?: boolean;
   death_m_abs?: number;
-  appearances: MatrixAppearance[];
+  appearances_by_chapter?: MatrixAppearance[];
+  appearances?: MatrixAppearance[];
 }
 
 export interface CrossReferenceMatrixData {

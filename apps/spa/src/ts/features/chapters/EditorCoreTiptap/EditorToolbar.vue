@@ -22,6 +22,14 @@
         >
       </div>
 
+      <!-- Chapter Arc Tags -->
+      <ChapterArcTags 
+        v-if="project && chapterId" 
+        :project="project" 
+        :chapter-id="chapterId" 
+        @change="$emit('change')" 
+      />
+
       <!-- Formatting Actions ONLY for wysiwyg and split (Word has its own Ribbon) -->
       <div v-if="editorMode === 'wysiwyg' || editorMode === 'split'" class="toolbar-actions">
         <button class="btn btn-icon interactive-el toolbar-btn" :class="{ 'is-active': editor?.isActive?.('bold') }" title="Жирный (Ctrl+B)" @click="commands.toggleBold?.()"><b>B</b></button>
@@ -84,6 +92,7 @@
 
 <script setup lang="ts">
 import { XboxWheel } from '@worldwiki/components';
+import ChapterArcTags from './components/ChapterArcTags.vue';
 import type { Editor } from '@tiptap/vue-3';
 import type { AppSettings } from '@worldwiki/components';
 
@@ -110,6 +119,8 @@ export interface EditorCommands {
 }
 
 defineProps<{
+  project?: string;
+  chapterId?: string | null;
   editor: Editor | null | undefined;
   editorMode: string;
   modeOptions: EditorModeOption[];
@@ -120,7 +131,8 @@ defineProps<{
   changedFields?: string[];
 }>();
 
-defineEmits(['update:editorMode', 'update:title', 'save', 'toggle-history', 'export']);
+defineEmits(['update:editorMode', 'update:title', 'save', 'toggle-history', 'export', 'change']);
 </script>
+
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/EditorToolbar.css"></style>

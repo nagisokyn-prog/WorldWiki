@@ -3,6 +3,7 @@ import type { RichPlotPromise } from '@/features/chapters/PromisesPanel/usePromi
 
 export interface EditorCoreTiptapProps {
   project: string;
+  chapterId?: string | null;
   title?: string;
   content?: string;
   hasUnsavedChanges?: boolean;
@@ -11,6 +12,7 @@ export interface EditorCoreTiptapProps {
   changedFields?: string[];
   existingPromises?: (PlotPromise | RichPlotPromise)[];
 }
+
 
 export interface EditorCoreTiptapEmits {
   (e: 'update:title', title: string): void;

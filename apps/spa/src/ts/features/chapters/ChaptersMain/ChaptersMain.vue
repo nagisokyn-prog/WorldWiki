@@ -10,13 +10,15 @@
         v-model:title="currentChapter.title"
         v-model:content="currentChapter.content"
         :project="project"
+        :chapter-id="currentChapterId"
         :has-unsaved-changes="hasUnsavedChanges"
         :footnotes-data="currentChapter.footnotes || undefined"
         :changed-fields="changedFields"
-        :existing-promises="rightSidebarRef?.promisesPanelRef?.promises || []"
+        :existing-promises="rightSidebarRef?.promises || []"
         @update:title="markUnsaved"
         @update:content="markUnsaved"
         @change="markUnsaved"
+
         @save="triggerSave"
         @open-entity="handleOpenEntity"
         @scroll-change="handleScrollChange"
@@ -120,7 +122,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import EditorCore from '../EditorCoreTiptap/EditorCoreTiptap.vue';
 import ExportModal from '../Export/ExportModal.vue';
 import FloatingEntityEditor from '../../entities/FloatingEntityEditor.vue';
@@ -129,6 +130,7 @@ import ChaptersHistoryDrawer from './components/ChaptersHistoryDrawer.vue';
 import QuickLinkHint from './components/QuickLinkHint.vue';
 import { useChaptersMain } from './useChaptersMain';
 import type { ActiveTreeNode, ChapterTreeNode } from './useChaptersMain';
+
 
 const props = withDefaults(defineProps<{
   project: string;
@@ -147,8 +149,6 @@ const emit = defineEmits<{
   'scroll-change': [scroll: number];
 }>();
 
-const rightSidebarRef = ref<InstanceType<typeof ChapterRightSidebar> | null>(null);
-
 const {
   chapters, currentChapterId, currentChapter,
   currentVolume, isVolumePlanOpen,
@@ -163,7 +163,7 @@ const {
   hideQuickLinkHintForever, dismissQuickLinkHintForever,
   markUnsaved, handleOpenEntity,
   handleExport, handleScrollChange, handleAddParticipant,
-  editorCoreRef, isTimelineOpen, isParticipantsOpen,
+  editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
   handleCreatePromise, handleLinkMilestone, handleLocatePromise
 } = useChaptersMain({
   project: props.project,
@@ -171,5 +171,6 @@ const {
   activeTreeNode: props.activeTreeNode || undefined
 }, emit as (event: string, ...args: unknown[]) => void);
 </script>
+
 
 <style src="@worldwiki/resources/styles/features/chapters/ChaptersMain.css" scoped></style>

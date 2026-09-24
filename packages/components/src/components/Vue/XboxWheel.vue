@@ -85,4 +85,4 @@ const {
 } = useXboxWheel(props, emit);
 </script>
 
-<style scoped src="@worldwiki/resources/styles/components/XboxWheel.css"></style>
+<style src="@worldwiki/resources/styles/components/XboxWheel.css"></style>

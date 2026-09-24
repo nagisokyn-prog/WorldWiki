@@ -14,144 +14,63 @@
       />
     </div>
 
-    <!-- Глава открыта: верхняя скролл-зона (таймлайн, участники, обещания) + зафиксированные планы внизу -->
+    <!-- Глава открыта: Единый Сценарный Хаб с табами -->
     <div v-else-if="currentChapter" class="flex-1 flex flex-col min-h-0 overflow-hidden">
-      <!-- 1. Верхняя прокручиваемая область с независимым скроллбаром -->
-      <div class="chapter-panels-scroll flex-1 flex flex-col min-h-0 overflow-y-auto p-3 gap-3">
-        <!-- Аккордеон: Таймлайн -->
-        <div class="panel-collapsible-wrapper">
-          <div class="panel-header-bar" @click="$emit('toggleTimeline')">
-            <span class="panel-header-title">
-              <i class="fas fa-calendar-alt text-accent mr-1"></i> Таймлайн главы
-            </span>
-            <span class="panel-header-arrow" :class="{ 'is-open': isTimelineOpen }">▼</span>
-          </div>
-          <div
-            v-show="isTimelineOpen"
-            class="panel-body-box"
-            :style="{ height: timelineHeight + 'px' }"
-          >
-            <TimelinePanel
-              :events="currentChapter.timeline_events || undefined"
-              :project="project"
-              @update:events="$emit('update:timeline-events', $event)"
-              @change="$emit('markUnsaved')"
-            />
-          </div>
-          <div
-            v-show="isTimelineOpen"
-            class="panel-resize-handle-vertical"
-            :class="{ 'is-resizing': activeResizing === 'timeline' }"
-            title="Потяните для изменения высоты"
-            @mousedown="startVerticalResize($event, 'timeline')"
-          ></div>
-        </div>
-
-        <!-- Аккордеон: Участники -->
-        <div class="panel-collapsible-wrapper">
-          <div class="panel-header-bar" @click="$emit('toggleParticipants')">
-            <span class="panel-header-title">
-              <i class="fas fa-users text-accent mr-1"></i> Участники
-            </span>
-            <span class="panel-header-arrow" :class="{ 'is-open': isParticipantsOpen }">▼</span>
-          </div>
-          <div
-            v-show="isParticipantsOpen"
-            class="panel-body-box"
-            :style="{ height: participantsHeight + 'px' }"
-          >
-            <ParticipantsPanel
-              :participants="currentChapter.participants || undefined"
-              :project="project"
-              @update:participants="$emit('update:participants', $event)"
-              @change="$emit('markUnsaved')"
-            />
-          </div>
-          <div
-            v-show="isParticipantsOpen"
-            class="panel-resize-handle-vertical"
-            :class="{ 'is-resizing': activeResizing === 'participants' }"
-            title="Потяните для изменения высоты"
-            @mousedown="startVerticalResize($event, 'participants')"
-          ></div>
-        </div>
-
-        <!-- Сюжетные обещания -->
-        <PromisesPanel
-          ref="promisesPanelRef"
-          :project="project"
-          :chapter-id="currentChapter.id"
-          :chapter-title="currentChapter.title"
-          :current-volume-id="currentVolume?.id"
-          :all-chapters="chapters"
-          @locate="$emit('locatePromise', $event)"
-          @change="$emit('markUnsaved')"
-        />
+      <!-- 1. Верхний переключатель режимов (Segmented Control) -->
+      <div class="sidebar-tab-bar flex-shrink-0 flex p-1.5 gap-1 border-b border-border bg-card">
+        <button
+          class="sidebar-tab-btn flex-1 py-1 px-2 text-xs rounded font-medium transition-colors flex items-center justify-center gap-1"
+          :class="activeTab === 'promises' ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-main hover:bg-hover'"
+          title="Сцены, чеховские ружья, конфликты и обещания"
+          @click="setSidebarTab('promises')"
+        >
+          <span>🎯</span>
+          <span>Сцены & Блоки</span>
+          <span v-if="promises.length > 0" class="badge badge-subtle ml-1 text-[10px] py-0 px-1">
+            {{ promises.length }}
+          </span>
+        </button>
+        <button
+          class="sidebar-tab-btn flex-1 py-1 px-2 text-xs rounded font-medium transition-colors flex items-center justify-center gap-1"
+          :class="activeTab === 'plans' ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-main hover:bg-hover'"
+          title="Матрица планов: том, арка, глава"
+          @click="setSidebarTab('plans')"
+        >
+          <span>📋</span>
+          <span>Планы</span>
+        </button>
       </div>
 
-      <!-- 2. Зафиксированный внизу сайдбара блок планов тома / главы -->
-      <div class="parent-plans-container flex-shrink-0">
-        <!-- План тома -->
-        <div v-if="currentVolume" class="parent-plan-accordion">
-          <div class="accordion-header" @click="$emit('toggleVolumePlan')">
-            <span class="accordion-title"><i class="fas fa-book text-accent"></i> План тома: {{ currentVolume.title }}</span>
-            <div class="flex items-center gap-2">
-              <button class="add-from-header-btn" title="Добавить пункт" @click.stop="$emit('addVolumePlanItem')">+</button>
-              <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isVolumePlanOpen }">▼</span>
-            </div>
-          </div>
-          <div
-            v-show="isVolumePlanOpen"
-            class="accordion-body"
-            :style="{ height: volumePlanHeight + 'px' }"
-          >
-            <PlanningPanel
-              ref="volumePlanRef"
-              :project="project"
-              parent-type="volume"
-              :parent-id="currentVolume.id"
-              :parent-title="currentVolume.title"
-            />
-          </div>
-          <div
-            v-show="isVolumePlanOpen"
-            class="panel-resize-handle-vertical"
-            :class="{ 'is-resizing': activeResizing === 'volumePlan' }"
-            title="Потяните для изменения высоты"
-            @mousedown="startVerticalResize($event, 'volumePlan')"
-          ></div>
+      <!-- 2. Контентная область вкладок -->
+      <div class="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <!-- ТАБ 1: СЦЕНЫ И СЮЖЕТНЫЕ БЛОКИ -->
+        <div v-if="activeTab === 'promises'" class="flex-1 flex flex-col min-h-0 overflow-hidden p-2">
+          <PromisesPanel
+            ref="promisesPanelRef"
+            :project="project"
+            :chapter-id="currentChapter.id"
+            :chapter-title="currentChapter.title"
+            :current-volume-id="currentVolume?.id"
+            :all-chapters="chapters"
+            @locate="$emit('locatePromise', $event)"
+            @change="$emit('markUnsaved')"
+          />
         </div>
 
-        <!-- План главы (сворачиваемый) -->
-        <div v-if="currentChapterId" class="parent-plan-accordion">
-          <div class="accordion-header" @click="$emit('toggleChapterPlan')">
-            <span class="accordion-title"><i class="fas fa-file-alt text-accent"></i> План главы</span>
-            <div class="flex items-center gap-2">
-              <button class="add-from-header-btn" title="Добавить пункт" @click.stop="$emit('addChapterPlanItem')">+</button>
-              <span class="text-xs text-muted accordion-arrow" :class="{ 'is-open': isChapterPlanOpen }">▼</span>
-            </div>
-          </div>
-          <div
-            v-show="isChapterPlanOpen"
-            class="accordion-body"
-            :style="{ height: chapterPlanHeight + 'px' }"
-          >
-            <PlanningPanel
-              ref="chapterPlanRef"
-              :project="project"
-              parent-type="chapter"
-              :parent-id="currentChapterId"
-              :parent-title="currentChapter?.title"
-            />
-          </div>
-          <div
-            v-show="isChapterPlanOpen"
-            class="panel-resize-handle-vertical"
-            :class="{ 'is-resizing': activeResizing === 'chapterPlan' }"
-            title="Потяните для изменения высоты"
-            @mousedown="startVerticalResize($event, 'chapterPlan')"
-          ></div>
-        </div>
+        <!-- ТАБ 2: ПЛАНЫ (Том / Арка / Глава) -->
+        <PlanningMatrixTab
+          v-else-if="activeTab === 'plans'"
+          :project="project"
+          :active-plan-scope="activePlanScope"
+          :selected-arc-id="selectedArcId"
+          :arcs-list="arcsList"
+          :current-arc-title="currentArcTitle"
+          :current-volume="currentVolume"
+          :current-chapter="currentChapter"
+          :current-chapter-id="currentChapterId"
+          @update:plan-scope="setPlanScope"
+          @select-arc="selectArc"
+        />
       </div>
     </div>
 
@@ -164,32 +83,45 @@
 </template>
 
 <script setup lang="ts">
-import TimelinePanel from '../../../timeline/Calendars/TimelinePanel/TimelinePanel.vue';
-import ParticipantsPanel from '../../ParticipantsPanel/ParticipantsPanel.vue';
 import PromisesPanel from '../../PromisesPanel/PromisesPanel.vue';
 import PlanningPanel from '../../PlanningPanel/PlanningPanel.vue';
+import PlanningMatrixTab from './tabs/PlanningMatrixTab.vue';
 import type { ChapterRightSidebarProps, ChapterRightSidebarEmits } from './ChapterRightSidebar.model';
 import { useChapterRightSidebar } from './useChapterRightSidebar';
 
-defineProps<ChapterRightSidebarProps>();
+const props = defineProps<ChapterRightSidebarProps>();
 defineEmits<ChapterRightSidebarEmits>();
 
 const {
   promisesPanelRef,
   volumePlanRef,
+  arcPlanRef,
   chapterPlanRef,
-  timelineHeight,
-  participantsHeight,
-  volumePlanHeight,
-  chapterPlanHeight,
-  activeResizing,
-  startVerticalResize
-} = useChapterRightSidebar();
+  activeTab,
+  activePlanScope,
+  selectedArcId,
+  arcsList,
+  currentArcTitle,
+  setSidebarTab,
+  setPlanScope,
+  selectArc,
+  addPromise,
+  addMilestone,
+  loadPromises,
+  promises
+} = useChapterRightSidebar(props);
 
 defineExpose({
   promisesPanelRef,
   volumePlanRef,
-  chapterPlanRef
+  arcPlanRef,
+  chapterPlanRef,
+  activeTab,
+  setSidebarTab,
+  addPromise,
+  addMilestone,
+  loadPromises,
+  promises
 });
 </script>
 

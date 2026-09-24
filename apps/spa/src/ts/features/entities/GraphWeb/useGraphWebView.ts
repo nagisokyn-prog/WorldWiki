@@ -166,6 +166,14 @@ export function useGraphWebView(projectId: string) {
       ctx.fillStyle = strength >= 0 ? successColor : dangerColor;
       ctx.fill();
 
+      // Render warning badge if edge needs timeline date resolution
+      if (e.needs_m_abs_warning) {
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⚠️', ctrlX, ctrlY - 8);
+      }
+
       ctx.restore();
     });
 

@@ -259,7 +259,7 @@
                                 v-else-if="tField.type === 'calendar_date' || tField.type === 'calendar_date_base' || tField.type === 'calendar_datetime'"
                                 :show-time="tField.type === 'calendar_datetime'"
                                 :model-value="getProp(item, tField.id || tField.class || '') as any"
-                                :project="project"
+                                :project="props.project"
                                 @update:model-value="(val: unknown) => { setProp(item, tField.id || tField.class || '', val); markModified(); }" />
 
                               <input

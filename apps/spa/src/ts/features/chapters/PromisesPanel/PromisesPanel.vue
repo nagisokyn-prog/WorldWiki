@@ -3,18 +3,27 @@
     <div class="section-header" @click="isCollapsed = !isCollapsed">
       <div class="flex items-center gap-2">
         <span class="collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
-        <span class="font-bold text-sm">🎯 Сюжетные обещания</span>
+        <span class="font-bold text-sm">🎯 Сцены & Блоки</span>
         <span v-if="promises.length > 0" class="badge badge-subtle">
           {{ promises.length }}
         </span>
       </div>
-      <button 
-        class="btn-icon-subtle text-xs" 
-        title="Обновить список" 
-        @click.stop="loadPromises"
-      >
-        🔄
-      </button>
+      <div class="flex items-center gap-1.5">
+        <button 
+          class="btn-xs btn-outline" 
+          title="Добавить новую сцену" 
+          @click.stop="addNewScene"
+        >
+          ＋ Сцена
+        </button>
+        <button 
+          class="btn-icon-subtle text-xs" 
+          title="Обновить список" 
+          @click.stop="loadPromises"
+        >
+          🔄
+        </button>
+      </div>
     </div>
 
     <div
@@ -48,12 +57,14 @@
         <PromiseCard
           v-for="item in filteredPromises" 
           :key="item.id || item.quote"
+          :project="project"
           :item="item"
           :kind-info="getKindInfo(item.kind)"
           :editing-note-id="editingNoteId"
           :note-draft="noteDraft"
           :get-chapter-title="getChapterTitle"
           :is-current-chapter-promise="isCurrentChapterPromise"
+          @update:item="updatePromise"
           @update:note-draft="noteDraft = $event"
           @remove="removePromise"
           @locate="locateSource"
@@ -102,6 +113,8 @@ const {
   categoryFilter,
   loadPromises,
   addPromise,
+  addNewScene,
+  updatePromise,
   addMilestone,
   removeMilestone,
   startEditNote,
@@ -121,6 +134,8 @@ const {
 defineExpose({
   promises,
   addPromise,
+  addNewScene,
+  updatePromise,
   addMilestone,
   loadPromises
 });

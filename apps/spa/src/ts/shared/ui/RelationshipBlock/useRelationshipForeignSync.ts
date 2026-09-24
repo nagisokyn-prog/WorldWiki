@@ -16,7 +16,7 @@ export function useRelationshipForeignSync(
   watch(
     foreignItem,
     (newVal) => {
-      if (newVal) {
+      if (newVal && !foreignLoading.value && foreignModified.value) {
         const targetId = getTargetForeignId();
         const tpl = props.templateConf;
         const linkField = tpl.fields?.find((f) => f.class === linkClass.value);
@@ -108,14 +108,17 @@ export function useRelationshipForeignSync(
       const parentDataPath = tpl.dataPath || tpl.id || tpl.template;
       let matched: Record<string, unknown> | null = null;
 
-      const rootObj = (targetData.data && typeof targetData.data === 'object') ? (targetData.data as Record<string, unknown>) : targetData;
-      let targetArr = (parentDataPath ? (rootObj[parentDataPath] as unknown[]) : null) || [];
-      if (!Array.isArray(targetArr) || targetArr.length === 0) {
-        for (const key of Object.keys(rootObj)) {
-          if (Array.isArray(rootObj[key]) && (rootObj[key] as unknown[]).length > 0) {
-            targetArr = rootObj[key] as unknown[];
-            break;
-          }
+      const rootObj: Record<string, unknown> = {
+        ...targetData,
+        ...(targetData.attributes && typeof targetData.attributes === 'object' ? (targetData.attributes as Record<string, unknown>) : {}),
+        ...(targetData.data && typeof targetData.data === 'object' ? (targetData.data as Record<string, unknown>) : {})
+      };
+      const candidatePaths = [parentDataPath, tpl.dataPath, tpl.id, tpl.template, 'characterRelationships', 'связи_с_персонажами', 'custom_dynamics'].filter(Boolean) as string[];
+      let targetArr: unknown[] = [];
+      for (const p of candidatePaths) {
+        if (Array.isArray(rootObj[p])) {
+          targetArr = rootObj[p] as unknown[];
+          break;
         }
       }
       const backLinkClass = tpl.bidirectionalLinkClass || linkClass.value;
@@ -158,6 +161,7 @@ export function useRelationshipForeignSync(
 
       const deepCopied = JSON.parse(JSON.stringify(matched)) as Record<string, unknown>;
       foreignItem.value = deepCopied;
+      foreignModified.value = false;
     } catch (err: unknown) {
       console.warn('[useRelationshipBlock] Failed to load foreign item:', err);
       foreignError.value = 'Ошибка загрузки: ' + String(err);
@@ -191,6 +195,7 @@ export function useRelationshipForeignSync(
   const updateForeignField = (fieldClass: string, val: unknown) => {
     if (foreignItem.value) {
       foreignItem.value[fieldClass] = val;
+      foreignModified.value = true;
       foreignItem.value = { ...foreignItem.value };
       emit('modified');
     }
@@ -198,6 +203,7 @@ export function useRelationshipForeignSync(
 
   const updateForeignNestedField = (nestedItem: Record<string, unknown>, fieldClass: string, val: unknown) => {
     nestedItem[fieldClass] = val;
+    foreignModified.value = true;
     if (foreignItem.value) {
       foreignItem.value = { ...foreignItem.value };
     }

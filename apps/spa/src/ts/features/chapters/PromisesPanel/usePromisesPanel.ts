@@ -89,6 +89,8 @@ export function usePromisesPanel(
     categoryFilter: filtering.categoryFilter,
     loadPromises,
     addPromise: actions.addPromise,
+    addNewScene: actions.addNewScene,
+    updatePromise: actions.updatePromise,
     addMilestone: actions.addMilestone,
     removeMilestone: actions.removeMilestone,
     updateStatus: actions.updateStatus,

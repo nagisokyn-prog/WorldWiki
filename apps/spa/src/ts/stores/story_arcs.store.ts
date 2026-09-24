@@ -11,33 +11,38 @@ import {
   getArcChapters,
   getArcEntities
 } from '../services/api.client';
+import type { StoryArc as GeneratedStoryArc } from '../types/generated/StoryArc';
 
 export interface StoryArc {
-  id?: string | null;
-  project_id?: string | null;
+  id: string | null;
+  project_id: string | null;
   title: string;
-  description?: string | null;
-  arc_type: 'character' | 'event' | 'relationship' | 'theme' | string;
-  status: 'planned' | 'in_progress' | 'completed' | 'abandoned' | string;
-  color?: string | null;
+  description: string | null;
+  arc_type: string;
+  status: string;
+  color: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
 export interface ArcChapterRelation {
   id?: string;
-  in: string; // arc_id
-  out: string; // chapter_id
-  project_id: string;
+  in?: string;
+  out?: string;
+  arc_id?: string;
+  chapter_id?: string;
+  project_id?: string;
   sort_order?: number;
   phase?: string | null; // 'setup' | 'escalation' | 'climax' | 'resolution'
 }
 
 export interface ArcEntityRelation {
   id?: string;
-  in: string; // arc_id
-  out: string; // entity_id
-  project_id: string;
+  in?: string;
+  out?: string;
+  arc_id?: string;
+  entity_id?: string;
+  project_id?: string;
   role?: string | null; // 'protagonist' | 'antagonist' | 'subject'
 }
 
@@ -58,7 +63,13 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     error.value = null;
     try {
       const data = await getStoryArcs(project);
-      arcs.value = Array.isArray(data) ? (data as unknown as StoryArc[]) : [];
+      arcs.value = (Array.isArray(data) ? (data as unknown as StoryArc[]) : []).map(a => ({
+        ...a,
+        id: a.id ?? null,
+        project_id: a.project_id ?? null,
+        description: a.description ?? null,
+        color: a.color ?? null
+      }));
       return arcs.value;
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -71,22 +82,31 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     }
   }
 
-  async function saveArc(arc: StoryArc): Promise<StoryArc | null> {
+  async function saveArc(arc: Partial<StoryArc> & { title: string }): Promise<StoryArc | null> {
     try {
-      const payload: import('../types/generated/StoryArc').StoryArc = {
-        id: arc.id ?? null,
-        project_id: arc.project_id ?? currentProject.value ?? null,
+      const now = new Date().toISOString();
+      const payload: GeneratedStoryArc = {
+        id: arc.id || '',
+        project_id: arc.project_id || currentProject.value || '',
         title: arc.title,
         description: arc.description ?? null,
-        arc_type: arc.arc_type,
-        status: arc.status,
-        color: arc.color ?? null,
+        arc_type: arc.arc_type || 'event',
+        status: arc.status || 'in_progress',
+        color: arc.color ?? null
       };
       const savedId = await saveStoryArc(payload);
       const saved: StoryArc = {
-        ...arc,
-        id: savedId || arc.id,
+        id: savedId || arc.id || null,
+        project_id: payload.project_id,
+        title: payload.title,
+        description: payload.description,
+        arc_type: payload.arc_type,
+        status: payload.status,
+        color: payload.color,
+        created_at: arc.created_at || now,
+        updated_at: now
       };
+
       const idx = arcs.value.findIndex(a => a.id === saved.id);
       if (idx !== -1) {
         arcs.value[idx] = saved;
@@ -127,29 +147,48 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
   }
 
   async function bindChapter(rel: ArcChapterRelation): Promise<void> {
-    await assignArcChapter(rel);
-    const existing = arcChapters.value.get(rel.in) || [];
+    const arcId = rel.arc_id || rel.in;
+    const chapterId = rel.chapter_id || rel.out;
+    const payload = {
+      arc_id: arcId,
+      chapter_id: chapterId,
+      sort_order: rel.sort_order ?? 0,
+      phase: rel.phase ?? null
+    };
+    await assignArcChapter(payload);
+    const inKey = rel.in || arcId || '';
+    if (!inKey) return;
+    const existing = arcChapters.value.get(inKey) || [];
     existing.push(rel);
-    arcChapters.value.set(rel.in, existing);
+    arcChapters.value.set(inKey, existing);
   }
 
   async function unbindChapter(arcId: string, chapterId: string): Promise<void> {
     await removeArcChapter(arcId, chapterId);
     const existing = arcChapters.value.get(arcId) || [];
-    arcChapters.value.set(arcId, existing.filter(r => r.out !== chapterId));
+    arcChapters.value.set(arcId, existing.filter(r => (r.out || r.chapter_id) !== chapterId));
   }
 
   async function bindEntity(rel: ArcEntityRelation): Promise<void> {
-    await assignArcEntity(rel);
-    const existing = arcEntities.value.get(rel.in) || [];
+    const arcId = rel.arc_id || rel.in;
+    const entityId = rel.entity_id || rel.out;
+    const payload = {
+      arc_id: arcId,
+      entity_id: entityId,
+      role: rel.role ?? null
+    };
+    await assignArcEntity(payload);
+    const inKey = rel.in || arcId || '';
+    if (!inKey) return;
+    const existing = arcEntities.value.get(inKey) || [];
     existing.push(rel);
-    arcEntities.value.set(rel.in, existing);
+    arcEntities.value.set(inKey, existing);
   }
 
   async function unbindEntity(arcId: string, entityId: string): Promise<void> {
     await removeArcEntity(arcId, entityId);
     const existing = arcEntities.value.get(arcId) || [];
-    arcEntities.value.set(arcId, existing.filter(r => r.out !== entityId));
+    arcEntities.value.set(arcId, existing.filter(r => (r.out || r.entity_id) !== entityId));
   }
 
   return {
@@ -169,3 +208,4 @@ export const useStoryArcsStore = defineStore('story_arcs', () => {
     unbindEntity,
   };
 });
+

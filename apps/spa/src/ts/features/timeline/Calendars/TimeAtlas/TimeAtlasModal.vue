@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="time-atlas-overlay" @click.self="$emit('close')">
-      <div class="time-atlas-modal glass-panel">
+      <div class="time-atlas-modal">
         <!-- Шапка модалки -->
         <div class="atlas-header">
           <div class="header-left">

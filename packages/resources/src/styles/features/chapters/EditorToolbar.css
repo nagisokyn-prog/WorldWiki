@@ -16,6 +16,21 @@
   flex: 1;
 }
 
+.toolbar-left-group .dropdown-container {
+  width: 130px;
+  min-width: 110px;
+  max-width: 140px;
+  flex-shrink: 0;
+}
+
+.toolbar-left-group .status-trigger {
+  min-height: 28px;
+  height: 28px;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs, 12px);
+  border-radius: var(--radius-xs);
+}
+
 .chapter-header-inline {
   display: flex;
   align-items: center;

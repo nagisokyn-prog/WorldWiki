@@ -7,7 +7,7 @@ import { useFloatingEntities } from './hooks/useFloatingEntities';
 import { useTimelineStore } from '../../../stores/timeline.store';
 import type { ExportPayload } from '../Export/useExportModal';
 import type { Chapter } from '../../../types/generated/Chapter';
-import type PromisesPanel from '../PromisesPanel/PromisesPanel.vue';
+import type ChapterRightSidebar from './components/ChapterRightSidebar.vue';
 
 export interface ChapterTreeNode {
   id?: string;
@@ -50,9 +50,10 @@ export function useChaptersMain(
   const chapterTreeRef = ref<{ load: () => Promise<void> } | null>(null);
 
   const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string) => void } | null>(null);
-  const promisesPanelRef = ref<InstanceType<typeof PromisesPanel> | null>(null);
+  const rightSidebarRef = ref<InstanceType<typeof ChapterRightSidebar> | null>(null);
   const isTimelineOpen = ref(true);
   const isParticipantsOpen = ref(true);
+
   
   let saveTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -206,7 +207,7 @@ export function useChaptersMain(
   };
 
   const handleCreatePromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
-    promisesPanelRef.value?.addPromise(payload);
+    rightSidebarRef.value?.addPromise(payload);
   };
 
   const handleLinkMilestone = (payload: {
@@ -216,7 +217,7 @@ export function useChaptersMain(
     paragraph_index: number;
     block_id?: string | null;
   }) => {
-    promisesPanelRef.value?.addMilestone({
+    rightSidebarRef.value?.addMilestone({
       ...payload,
       chapterId: currentChapter.value?.id || undefined
     });
@@ -261,7 +262,7 @@ export function useChaptersMain(
     loading, chapters, hierarchy, currentChapterId, currentChapter,
     hasUnsavedChanges, debugError, isSaving, localActiveTreeNode, chapterTreeRef,
     currentChapterNode, currentVolume,
-    editorCoreRef, promisesPanelRef, isTimelineOpen, isParticipantsOpen,
+    editorCoreRef, rightSidebarRef, isTimelineOpen, isParticipantsOpen,
     ...historyHook,
     ...layoutHook,
     ...floatingHook,
@@ -271,3 +272,4 @@ export function useChaptersMain(
     handleLinkMilestone, handleLocatePromise
   };
 }
+

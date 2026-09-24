@@ -55,19 +55,27 @@ export function useCrossReferenceMatrix(project: string) {
         let lastSeenIdx = -1;
         let maxGap = 0;
 
-        const appearancesMap = new Map<string, { source: 'mention' | 'manual' | 'scene'; role?: string | null }>();
-        entity.appearances.forEach(app => {
+        const rawApps = entity.appearances_by_chapter || entity.appearances || [];
+        const appearancesMap = new Map<string, { kind?: string; source?: string | null; role?: string | null }>();
+        rawApps.forEach(app => {
+          if (!app.chapter_id) return;
+          const cleanId = app.chapter_id.trim_start_matches ? app.chapter_id : app.chapter_id.replace(/^chapters:/, '');
           appearancesMap.set(app.chapter_id, app);
+          appearancesMap.set(cleanId, app);
+          appearancesMap.set(`chapters:${cleanId}`, app);
         });
 
         chs.forEach((ch, idx) => {
-          const app = appearancesMap.get(ch.id);
-          if (app) {
-            const status: AppearanceStatus = app.source === 'scene' || app.source === 'manual' ? 'scene' : 'mention';
+          const cleanChId = ch.id.replace(/^chapters:/, '');
+          const app = appearancesMap.get(ch.id) || appearancesMap.get(cleanChId) || appearancesMap.get(`chapters:${cleanChId}`);
+          
+          if (app && (app.kind === 'scene' || app.kind === 'mention' || app.source === 'scene' || app.source === 'mention' || app.source === 'manual')) {
+            const isScene = app.kind === 'scene' || app.source === 'scene' || app.source === 'manual';
+            const status: AppearanceStatus = isScene ? 'scene' : 'mention';
             cells.set(ch.id, {
               status,
               role: app.role,
-              label: app.source === 'scene' ? 'Сцена' : 'Упоминание',
+              label: isScene ? 'Сцена' : 'Упоминание',
             });
             total++;
 
@@ -76,7 +84,7 @@ export function useCrossReferenceMatrix(project: string) {
               if (gap > maxGap) maxGap = gap;
             }
             lastSeenIdx = idx;
-          } else if (entity.is_deceased) {
+          } else if (app?.kind === 'deceased' || entity.is_deceased) {
             cells.set(ch.id, {
               status: 'deceased',
               label: 'Мертв',

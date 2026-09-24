@@ -1,6 +1,8 @@
 <template>
   <div class="editor-core" :class="{ 'word-mode-active': editorMode === 'word' }">
     <EditorToolbar 
+      :project="project"
+      :chapter-id="chapterId"
       :editor="editor"
       :editor-mode="editorMode"
       :mode-options="modeOptions"
@@ -18,7 +20,9 @@
       @save="$emit('save')"
       @toggle-history="$emit('toggle-history')"
       @export="openExportModal"
+      @change="$emit('change')"
     />
+
 
     <EditorBody
       :editor="editor"
@@ -89,6 +93,7 @@ import { useEditorCoreTiptap } from './useEditorCoreTiptap';
 import type { EditorCoreTiptapProps, EditorCoreTiptapEmits } from './EditorCoreTiptap.model';
 
 const props = withDefaults(defineProps<EditorCoreTiptapProps>(), {
+  chapterId: null,
   title: '',
   content: '',
   hasUnsavedChanges: false,
@@ -97,6 +102,7 @@ const props = withDefaults(defineProps<EditorCoreTiptapProps>(), {
   changedFields: () => [],
   existingPromises: () => []
 });
+
 
 const emit = defineEmits<EditorCoreTiptapEmits>();
 

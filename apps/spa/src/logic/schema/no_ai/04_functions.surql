@@ -7,9 +7,13 @@
 -- 1. СБОР МАТРИЦЫ УЧАСТИЙ (CROSS-REFERENCE MATRIX & HEATMAP)
 DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>) {
     LET $chapters = (
-        SELECT id, title, sort_order, word_count 
+        SELECT 
+            id, 
+            title, 
+            IF sort_order != NONE { sort_order } ELSE { 0 } AS sort_order, 
+            IF word_count != NONE { word_count } ELSE { 0 } AS word_count 
         FROM chapters 
-        WHERE project_id = $proj 
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY sort_order ASC
     );
 
@@ -20,9 +24,9 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             entity_type,
             attributes.is_deceased AS is_deceased,
             attributes.death_m_abs AS death_m_abs,
-            (SELECT out AS chapter_id, source, role FROM ->appears_in) AS appearances
+            (SELECT IF out.id != NONE { out.id } ELSE { type::string(out) } AS chapter_id, source, role FROM ->appears_in) AS appearances
         FROM entities 
-        WHERE project_id = $proj 
+        WHERE project_id = $proj OR project_id = $proj.id OR project_id = type::string($proj)
         ORDER BY name ASC
     );
 
@@ -90,8 +94,11 @@ DEFINE FUNCTION OVERWRITE fn::get_graph_time_slice($proj: record<projects>) {
             start_chapter,
             start_chapter.sort_order AS start_order,
             end_chapter,
-            end_chapter.sort_order AS end_order,
-            (SELECT VALUE m_abs FROM timeline_events WHERE chapter_id = start_chapter LIMIT 1)[0] AS inferred_start_m_abs
+            IF attributes.start_m_abs != NONE {
+                attributes.start_m_abs
+            } ELSE {
+                (SELECT VALUE in.m_abs FROM revealed_in WHERE out = start_chapter LIMIT 1)[0]
+            } AS inferred_start_m_abs
         FROM entity_rel
         WHERE project_id = $proj
     );

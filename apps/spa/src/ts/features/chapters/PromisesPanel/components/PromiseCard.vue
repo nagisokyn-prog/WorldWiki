@@ -18,21 +18,15 @@
       </button>
     </div>
 
-    <!-- Секция контекста нарративного блока: участники, локация, событие таймлайна -->
-    <div v-if="(item.participant_ids && item.participant_ids.length > 0) || item.location_id || item.timeline_event_id || item.block_id" class="promise-meta-tags flex flex-wrap gap-1 px-3 py-1.5 bg-surface-subtle border-b border-subtle text-2xs">
-      <span v-if="item.block_id" class="badge-block font-mono text-muted" title="ID абзаца">
-        🧱 {{ item.block_id }}
-      </span>
-      <span v-if="item.location_id" class="badge-loc text-accent font-semibold" title="Локация сцены">
-        📍 {{ item.location_id.replace(/^entities:/, '') }}
-      </span>
-      <span v-if="item.timeline_event_id" class="badge-event text-warning font-semibold" title="Событие таймлайна">
-        ⏱️ {{ item.timeline_event_id.replace(/^timeline_events:/, '') }}
-      </span>
-      <span v-for="pid in (item.participant_ids || [])" :key="pid" class="badge-participant text-muted" title="Участник сцены">
-        👤 {{ pid.replace(/^entities:/, '') }}
-      </span>
-    </div>
+    <!-- Интерактивная мета-информация сцены: участники, гибридная локация, событие таймлайна, тип -->
+    <PromiseCardMeta
+      :project="project"
+      :item="item"
+      :chapter-id="item.chapter_id"
+      @update:item="$emit('update:item', $event)"
+      @change="$emit('change')"
+    />
+
 
     <!-- ХРОНОЛОГИЯ ЖИЗНИ ОБЕЩАНИЯ (МИНИ-ТАЙМЛАЙН) -->
     <div class="promise-timeline">
@@ -155,10 +149,12 @@
 </template>
 
 <script setup lang="ts">
+import PromiseCardMeta from './PromiseCardMeta.vue';
 import PromiseCardNote from './PromiseCardNote.vue';
 import type { RichPlotPromise } from '../usePromisesPanel';
 
 defineProps<{
+  project: string;
   item: RichPlotPromise;
   kindInfo: { label: string; icon: string };
   editingNoteId: string | null;
@@ -176,5 +172,8 @@ defineEmits<{
   (e: 'cancelEditNote'): void;
   (e: 'saveNote', item: RichPlotPromise): void;
   (e: 'update:noteDraft', val: string): void;
+  (e: 'update:item', val: RichPlotPromise): void;
+  (e: 'change'): void;
 }>();
 </script>
+

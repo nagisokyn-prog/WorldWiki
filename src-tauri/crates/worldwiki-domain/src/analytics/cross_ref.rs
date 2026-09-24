@@ -30,7 +30,9 @@ pub struct AbsenceWarningDto {
 pub struct ChapterHeaderDto {
     pub id: String,
     pub title: String,
+    #[serde(default)]
     pub sort_order: i32,
+    #[serde(default)]
     pub word_count: i32,
 }
 

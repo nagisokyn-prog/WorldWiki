@@ -59,8 +59,15 @@ export function useRelationshipNestedOps(
       }
     }
 
+    if (lastItem && lastItem['конечная_дата']) {
+      newItem['начальная_дата'] = typeof lastItem['конечная_дата'] === 'object' && lastItem['конечная_дата'] !== null
+        ? JSON.parse(JSON.stringify(lastItem['конечная_дата']))
+        : lastItem['конечная_дата'];
+      newItem['конечная_дата'] = null;
+    }
+
     (item[path] as Array<Record<string, unknown>>).push(newItem);
-    if (sourceItem && foreignItem.value) {
+    if (sourceItem && foreignItem.value && sourceItem === foreignItem.value) {
       foreignItem.value = { ...foreignItem.value };
     } else {
       emit('item-updated', { item: props.item, idx: props.idx });
@@ -75,7 +82,7 @@ export function useRelationshipNestedOps(
     if (!path) return;
     if (!item[path]) return;
     (item[path] as Array<Record<string, unknown>>).splice(idx, 1);
-    if (sourceItem && foreignItem.value) {
+    if (sourceItem && foreignItem.value && sourceItem === foreignItem.value) {
       foreignItem.value = { ...foreignItem.value };
     } else {
       emit('item-updated', { item: props.item, idx: props.idx });

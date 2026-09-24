@@ -411,3 +411,40 @@
   background: var(--error);
   color: var(--accent-text);
 }
+
+.sidebar-tab-bar {
+  background: var(--bg-sunken);
+  border-bottom: 1px solid var(--border-color);
+  padding: 6px 8px;
+}
+
+.sidebar-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px 8px;
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium, 500);
+  border-radius: var(--radius-xs, 4px);
+  transition: background-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+
+.sidebar-tab-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.sidebar-tab-btn.bg-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.plan-scope-selector {
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+  padding: 3px;
+  border-radius: var(--radius-sm, 6px);
+}

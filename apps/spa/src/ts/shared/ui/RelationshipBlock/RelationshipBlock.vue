@@ -87,6 +87,24 @@
                   <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full" :placeholder="nField.placeholder || ''" @input="(e) => { nItem[nField.class] = getInputValue(e); notifyNestedItemUpdate(subConf.dataPath || subConf.id); }">
                 </template>
               </div>
+
+              <!-- Диегетические даты мира (M_abs) для этапа отношений -->
+              <div class="nested-field-group">
+                <label class="nested-field-label">📅 Дата начала (по календарю мира)</label>
+                <UniversalDatePicker
+                  :model-value="(nItem['начальная_дата'] as any)"
+                  :project="props.project"
+                  @update:model-value="(val) => { nItem['начальная_дата'] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
+                />
+              </div>
+              <div class="nested-field-group">
+                <label class="nested-field-label">📅 Дата окончания (по календарю мира)</label>
+                <UniversalDatePicker
+                  :model-value="(nItem['конечная_дата'] as any)"
+                  :project="props.project"
+                  @update:model-value="(val) => { nItem['конечная_дата'] = val; notifyNestedItemUpdate(subConf.dataPath || subConf.id); }"
+                />
+              </div>
             </div>
             
             <button class="btn-new btn-outline-new interactive-el w-full text-xs btn-add-nested" @click="addNestedItem(item, subConf)">
@@ -174,6 +192,24 @@
                     <input v-else :value="(nItem[nField.class] as string) || ''" type="text" class="input-base interactive-el w-full text-xs p-1" :placeholder="nField.placeholder || ''" @input="(e) => updateForeignNestedField(nItem, nField.class, getInputValue(e))">
                   </template>
                 </div>
+
+                <!-- Диегетические даты мира (M_abs) для этапа отношений Стороны Б -->
+                <div class="nested-field-group">
+                  <label class="nested-field-label text-info">📅 Дата начала (по календарю мира)</label>
+                  <UniversalDatePicker
+                    :model-value="(nItem['начальная_дата'] as any)"
+                    :project="props.project"
+                    @update:model-value="(val) => updateForeignNestedField(nItem, 'начальная_дата', val)"
+                  />
+                </div>
+                <div class="nested-field-group">
+                  <label class="nested-field-label text-info">📅 Дата окончания (по календарю мира)</label>
+                  <UniversalDatePicker
+                    :model-value="(nItem['конечная_дата'] as any)"
+                    :project="props.project"
+                    @update:model-value="(val) => updateForeignNestedField(nItem, 'конечная_дата', val)"
+                  />
+                </div>
               </div>
               
               <button class="btn-new btn-outline-new interactive-el w-full text-xs btn-add-nested-info" @click="addNestedItem(foreignItem, subConf)">
@@ -198,6 +234,7 @@ import { useRelationshipBlock } from './useRelationshipBlock';
 import type { RelationshipBlockProps } from './RelationshipBlock.model';
 import { XboxWheel } from '@worldwiki/components';
 import ManuscriptPointPicker from '../ManuscriptPointPicker/ManuscriptPointPicker.vue';
+import UniversalDatePicker from '../UniversalDatePicker/UniversalDatePicker.vue';
 
 const props = withDefaults(defineProps<RelationshipBlockProps>(), {
     sandboxMode: false

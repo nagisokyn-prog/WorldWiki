@@ -68,16 +68,50 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       }
     }
 
-    if (selectedText) {
-      e.preventDefault();
-      selectedPromiseData.value = {
-        quote: selectedText,
-        paragraph_index: paragraphIndex,
-        block_id: blockId || `para-${paragraphIndex}`
-      };
-      promiseMenuPos.value = { x: e.clientX, y: e.clientY };
-      isPromiseMenuOpen.value = true;
+    if (!selectedText && (options.editorMode.value === 'wysiwyg' || options.editorMode.value === 'split')) {
+      const view = options.editor.value?.view;
+      if (view) {
+        const pos = view.posAtCoords({ left: e.clientX, top: e.clientY });
+        if (pos) {
+          const $pos = view.state.doc.resolve(pos.pos);
+          const parentNode = $pos.parent;
+          if (parentNode && parentNode.textContent) {
+            selectedText = parentNode.textContent.trim().substring(0, 140);
+            let count = 0;
+            view.state.doc.forEach((node, offset) => {
+              count++;
+              if (pos.pos >= offset && pos.pos <= offset + node.nodeSize) {
+                paragraphIndex = count;
+                const attrId = (node.attrs && (node.attrs.block_id || node.attrs.id)) as string | undefined;
+                blockId = attrId || `para-${count}`;
+              }
+            });
+          }
+        }
+      }
     }
+
+    if (!selectedText && options.markdownTextareaRef.value) {
+      const ta = options.markdownTextareaRef.value;
+      const lines = ta.value.split('\n');
+      const curLine = lines[paragraphIndex - 1] || lines[0] || '';
+      if (curLine.trim()) {
+        selectedText = curLine.trim().substring(0, 140);
+      }
+    }
+
+    if (!selectedText) {
+      selectedText = 'Сцена';
+    }
+
+    e.preventDefault();
+    selectedPromiseData.value = {
+      quote: selectedText,
+      paragraph_index: paragraphIndex,
+      block_id: blockId || `para-${paragraphIndex}`
+    };
+    promiseMenuPos.value = { x: e.clientX, y: e.clientY };
+    isPromiseMenuOpen.value = true;
   };
 
   const handlePromiseSelect = (option: PromiseTypeOption) => {

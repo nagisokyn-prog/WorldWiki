@@ -129,17 +129,19 @@ impl ChapterRepository for SurrealChapterRepository {
             return Ok(());
         }
 
+        let lower_names: Vec<String> = entity_names.iter().map(|n| n.to_lowercase()).collect();
+
         // 2. Fetch entity IDs matching names in the same project as chapter
         let insert_sql = r#"
             LET $ch_rec = type::record('chapters', $c_id);
-            LET $proj = (SELECT VALUE project_id FROM ONLY $ch_rec);
+            LET $proj = $ch_rec.project_id;
             LET $target_entities = (
                 SELECT id FROM entities 
-                WHERE project_id = $proj 
-                  AND name IN $names
+                WHERE (project_id = $proj OR project_id = type::record('projects', $proj) OR project_id.id = $proj.id)
+                  AND (name IN $names OR string::lowercase(name) IN $lower_names OR id IN $names)
             );
             FOR $ent IN $target_entities {
-                RELATE ($ent.id)->appears_in->($ch_rec) CONTENT {
+                RELATE $ent.id->appears_in->$ch_rec CONTENT {
                     source: 'mention',
                     created_at: time::now()
                 };
@@ -149,6 +151,7 @@ impl ChapterRepository for SurrealChapterRepository {
             .query(insert_sql)
             .bind(("c_id", clean_ch.to_string()))
             .bind(("names", entity_names.to_vec()))
+            .bind(("lower_names", lower_names))
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 

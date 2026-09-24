@@ -3,40 +3,44 @@
   transform: translate(-50%, -100%);
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--border-radius-lg);
-  backdrop-filter: var(--glass-blur);
-  box-shadow: var(--shadow-md);
-  z-index: 9999;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(var(--glass-blur, 16px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 16px));
+  box-shadow: var(--shadow-dropdown);
+  z-index: 10000;
   user-select: none;
+  color: var(--text-main);
 }
 
 .toolbar-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 5px 10px;
   background: transparent;
-  color: var(--color-text-primary);
-  border: none;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.8rem;
+  color: var(--text-main);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs, 12px);
   font-weight: 500;
   cursor: pointer;
-  transition: opacity var(--transition-fast), transform var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+  transition: background-color var(--transition-fast, 0.15s ease), color var(--transition-fast, 0.15s ease);
 }
 
 .toolbar-btn:hover {
-  background: var(--color-bg-tertiary);
-  color: var(--color-accent-primary);
+  background: var(--bg-hover);
+  color: var(--accent);
 }
 
 .toolbar-btn.primary {
-  background: var(--color-accent-primary);
-  color: var(--color-text-on-accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
 }
 
 .toolbar-btn.primary:hover {
@@ -44,5 +48,5 @@
 }
 
 .toolbar-btn.icon-only {
-  padding: 4px 6px;
+  padding: 5px 8px;
 }

@@ -65,4 +65,44 @@ describe('useChapterRightSidebar', () => {
     expect(timelineHeight.value).toBe(80);
     expect(localStorage.getItem('chapters-panel-timeline-h')).toBe('80');
   });
+
+  it('manages activeTab and persists to localStorage', () => {
+    const { activeTab, setSidebarTab } = useChapterRightSidebar();
+    expect(activeTab.value).toBe('scene');
+
+    setSidebarTab('promises');
+    expect(activeTab.value).toBe('promises');
+    expect(localStorage.getItem('chapters-sidebar-active-tab')).toBe('promises');
+
+    setSidebarTab('plans');
+    expect(activeTab.value).toBe('plans');
+    expect(localStorage.getItem('chapters-sidebar-active-tab')).toBe('plans');
+  });
+
+  it('manages activePlanScope and persists to localStorage', () => {
+    const { activePlanScope, setPlanScope } = useChapterRightSidebar();
+    expect(activePlanScope.value).toBe('volume');
+
+    setPlanScope('arc');
+    expect(activePlanScope.value).toBe('arc');
+    expect(localStorage.getItem('chapters-sidebar-plan-scope')).toBe('arc');
+
+    setPlanScope('chapter');
+    expect(activePlanScope.value).toBe('chapter');
+    expect(localStorage.getItem('chapters-sidebar-plan-scope')).toBe('chapter');
+  });
+
+  it('manages selectedArcId and persists to localStorage', () => {
+    const { selectedArcId, selectArc } = useChapterRightSidebar();
+    expect(selectedArcId.value).toBeNull();
+
+    selectArc('arc_42');
+    expect(selectedArcId.value).toBe('arc_42');
+    expect(localStorage.getItem('chapters-sidebar-selected-arc-id')).toBe('arc_42');
+
+    selectArc(null);
+    expect(selectedArcId.value).toBeNull();
+    expect(localStorage.getItem('chapters-sidebar-selected-arc-id')).toBeNull();
+  });
 });
+

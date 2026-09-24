@@ -20,9 +20,11 @@ export interface GraphWebEdge {
   is_auto_extend?: boolean;
   start_chapter?: string | null;
   start_order?: number | null;
-  end_chapter?: string | null;
   end_order?: number | null;
+  start_m_abs?: number | null;
+  end_m_abs?: number | null;
   inferred_start_m_abs?: number | null;
+  needs_m_abs_warning?: boolean;
 }
 
 export interface GraphWebData {

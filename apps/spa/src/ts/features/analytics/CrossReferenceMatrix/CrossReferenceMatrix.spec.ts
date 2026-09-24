@@ -87,4 +87,31 @@ describe('useCrossReferenceMatrix Composable', () => {
     expect(rows.value).toHaveLength(1);
     expect(rows.value[0].entity.name).toBe('Рудеус');
   });
+
+  it('supports appearances_by_chapter format returned by Rust backend DTO', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [
+        { id: 'chapters:1', title: 'Глава 1', sort_order: 1, word_count: 1000 },
+        { id: 'chapters:2', title: 'Глава 2', sort_order: 2, word_count: 1200 },
+      ],
+      entities: [
+        {
+          id: 'entities:veronika',
+          name: 'Вероника',
+          entity_type: 'character',
+          appearances_by_chapter: [
+            { chapter_id: 'chapters:1', kind: 'mention' },
+            { chapter_id: 'chapters:2', kind: 'none' },
+          ],
+        },
+      ],
+    };
+
+    const { rows } = useCrossReferenceMatrix('test_proj');
+    expect(rows.value).toHaveLength(1);
+    expect(rows.value[0].totalAppearances).toBe(1);
+    expect(rows.value[0].cells.get('chapters:1')?.status).toBe('mention');
+    expect(rows.value[0].cells.get('chapters:2')?.status).toBe('absent');
+  });
 });

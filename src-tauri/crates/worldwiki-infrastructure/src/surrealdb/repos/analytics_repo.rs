@@ -21,8 +21,29 @@ impl SurrealAnalyticsRepository {
 }
 
 #[derive(serde::Deserialize)]
+struct RawChapterHeader {
+    id: String,
+    title: String,
+    #[serde(default)]
+    sort_order: Option<i32>,
+    #[serde(default)]
+    word_count: Option<i32>,
+}
+
+impl RawChapterHeader {
+    fn into_dto(self) -> worldwiki_domain::analytics::ChapterHeaderDto {
+        worldwiki_domain::analytics::ChapterHeaderDto {
+            id: self.id,
+            title: self.title,
+            sort_order: self.sort_order.unwrap_or(0),
+            word_count: self.word_count.unwrap_or(0),
+        }
+    }
+}
+
+#[derive(serde::Deserialize)]
 struct CrossRefRaw {
-    chapters: Vec<worldwiki_domain::analytics::ChapterHeaderDto>,
+    chapters: Vec<RawChapterHeader>,
     entities: Vec<RawEntityRow>,
 }
 
@@ -51,7 +72,7 @@ struct RawAppearanceEdge {
 #[derive(serde::Deserialize)]
 struct TimelineRaw {
     events: Vec<RawTimelineEventNode>,
-    chapters: Vec<worldwiki_domain::analytics::ChapterHeaderDto>,
+    chapters: Vec<RawChapterHeader>,
 }
 
 #[derive(serde::Deserialize)]
@@ -162,6 +183,8 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
                             == ch.id.trim_start_matches("chapters:")
                 });
 
+                let ch_order = ch.sort_order.unwrap_or(0);
+
                 let (kind, src, role) =
                     if ent.is_deceased.unwrap_or(false) && ent.death_m_abs.is_some() {
                         (
@@ -171,7 +194,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
                         )
                     } else if let Some(app) = found_app {
                         appeared_in_any = true;
-                        last_seen_order = ch.sort_order;
+                        last_seen_order = ch_order;
                         let k = if app.source.as_deref() == Some("scene") {
                             worldwiki_domain::analytics::CellAppearanceKind::Scene
                         } else {
@@ -195,7 +218,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             }
 
             if appeared_in_any && !raw.chapters.is_empty() {
-                let latest_order = raw.chapters.last().map(|c| c.sort_order).unwrap_or(0);
+                let latest_order = raw.chapters.last().and_then(|c| c.sort_order).unwrap_or(0);
                 let gap = (latest_order - last_seen_order) as usize;
                 if gap >= 3 {
                     warnings.push(worldwiki_domain::analytics::AbsenceWarningDto {
@@ -204,7 +227,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
                         missing_since_chapter_id: raw
                             .chapters
                             .iter()
-                            .find(|c| c.sort_order == last_seen_order)
+                            .find(|c| c.sort_order.unwrap_or(0) == last_seen_order)
                             .map(|c| c.id.clone())
                             .unwrap_or_default(),
                         missing_since_order: last_seen_order,
@@ -224,7 +247,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         }
 
         Ok(CrossRefMatrixDto {
-            chapters: raw.chapters,
+            chapters: raw.chapters.into_iter().map(|c| c.into_dto()).collect(),
             entities: entities_dto,
             absence_warnings: warnings,
         })
@@ -284,7 +307,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
 
         Ok(TimelineInspectorDto {
             events: event_nodes,
-            chapters: raw.chapters,
+            chapters: raw.chapters.into_iter().map(|c| c.into_dto()).collect(),
             entity_swimlanes: Vec::new(),
             detected_crossings: crossings_count,
         })

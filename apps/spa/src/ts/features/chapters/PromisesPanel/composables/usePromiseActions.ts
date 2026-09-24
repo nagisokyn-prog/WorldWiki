@@ -225,11 +225,34 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     });
   };
 
+  const updatePromise = async (updatedItem: RichPlotPromise) => {
+    if (!updatedItem.id) return;
+    const index = promises.value.findIndex((p) => p.id === updatedItem.id);
+    if (index !== -1) {
+      promises.value[index] = { ...updatedItem };
+    }
+    try {
+      await api.savePlotPromise(getProject(), updatedItem as unknown as PlotPromise);
+    } catch { /* fallback to local */ }
+    syncLocalBackup();
+    emit('change');
+  };
+
+  const addNewScene = () => {
+    return addPromise({
+      kind: 'scene',
+      quote: 'Новая сцена',
+      paragraph_index: 1
+    });
+  };
+
   return {
     editingNoteId,
     noteDraft,
     syncLocalBackup,
     addPromise,
+    addNewScene,
+    updatePromise,
     addMilestone,
     removeMilestone,
     updateStatus,
@@ -241,3 +264,4 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     promptAttachMilestone
   };
 }
+

@@ -26,7 +26,9 @@ impl ManuscriptServices {
     }
 
     pub async fn save_chapter(&self, chapter: &Chapter) -> Result<(), ApplicationError> {
+        let mentions = worldwiki_domain::manuscript::TextBlock::extract_entity_mentions(&chapter.content);
         self.repo.save(chapter).await?;
+        self.repo.sync_mentions_appearances(&chapter.id, &mentions).await?;
         self.events
             .publish(ChapterUpdatedEvent {
                 chapter_id: chapter.id.clone(),

@@ -1,12 +1,55 @@
-import { ref, onMounted, onUnmounted } from 'vue';
-import type { PanelResizeType } from './ChapterRightSidebar.model';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import type { PanelResizeType, SidebarTabType, PlanScopeType } from './ChapterRightSidebar.model';
 import PromisesPanel from '../../PromisesPanel/PromisesPanel.vue';
 import PlanningPanel from '../../PlanningPanel/PlanningPanel.vue';
+import { useStoryArcsStore } from '@/stores/story_arcs.store';
 
-export function useChapterRightSidebar() {
+export function useChapterRightSidebar(props?: { project?: string }) {
+  const storyArcsStore = useStoryArcsStore();
+
   const promisesPanelRef = ref<InstanceType<typeof PromisesPanel> | null>(null);
   const volumePlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);
+  const arcPlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);
   const chapterPlanRef = ref<InstanceType<typeof PlanningPanel> | null>(null);
+
+  const activeTab = ref<SidebarTabType>(
+    ((localStorage.getItem('chapters-sidebar-active-tab') as SidebarTabType) === 'plans' ? 'plans' : 'promises')
+  );
+
+  const activePlanScope = ref<PlanScopeType>(
+    (localStorage.getItem('chapters-sidebar-plan-scope') as PlanScopeType) || 'volume'
+  );
+
+  const selectedArcId = ref<string | null>(
+    localStorage.getItem('chapters-sidebar-selected-arc-id') || null
+  );
+
+  const arcsList = computed(() => storyArcsStore.arcs);
+  const currentArcTitle = computed(() => {
+    if (!selectedArcId.value) return '';
+    const found = arcsList.value.find(a => a.id === selectedArcId.value);
+    return found?.title || 'Арка';
+  });
+
+
+  const setSidebarTab = (tab: SidebarTabType) => {
+    activeTab.value = tab;
+    localStorage.setItem('chapters-sidebar-active-tab', tab);
+  };
+
+  const setPlanScope = (scope: PlanScopeType) => {
+    activePlanScope.value = scope;
+    localStorage.setItem('chapters-sidebar-plan-scope', scope);
+  };
+
+  const selectArc = (arcId: string | null) => {
+    selectedArcId.value = arcId;
+    if (arcId) {
+      localStorage.setItem('chapters-sidebar-selected-arc-id', arcId);
+    } else {
+      localStorage.removeItem('chapters-sidebar-selected-arc-id');
+    }
+  };
 
   const timelineHeight = ref(parseInt(localStorage.getItem('chapters-panel-timeline-h') || '260', 10));
   const participantsHeight = ref(parseInt(localStorage.getItem('chapters-panel-participants-h') || '220', 10));
@@ -99,12 +142,41 @@ export function useChapterRightSidebar() {
     }
   };
 
+  const addPromise = (payload: { kind: string; quote: string; paragraph_index: number; block_id?: string | null }) => {
+    setSidebarTab('promises');
+    return promisesPanelRef.value?.addPromise(payload);
+  };
+
+  const addMilestone = (payload: {
+    promiseId: string;
+    stage: 'progression' | 'resolution';
+    quote: string;
+    paragraph_index: number;
+    block_id?: string | null;
+    chapterId?: string;
+  }) => {
+    setSidebarTab('promises');
+    return promisesPanelRef.value?.addMilestone(payload);
+  };
+
+  const loadPromises = () => {
+    return promisesPanelRef.value?.loadPromises();
+  };
+
+  const promises = computed(() => {
+    return promisesPanelRef.value?.promises || [];
+  });
+
   onMounted(() => {
     // validate parsed heights
     if (isNaN(timelineHeight.value) || timelineHeight.value < 80) timelineHeight.value = 260;
     if (isNaN(participantsHeight.value) || participantsHeight.value < 80) participantsHeight.value = 220;
     if (isNaN(volumePlanHeight.value) || volumePlanHeight.value < 80) volumePlanHeight.value = 220;
     if (isNaN(chapterPlanHeight.value) || chapterPlanHeight.value < 80) chapterPlanHeight.value = 220;
+
+    if (props?.project) {
+      void storyArcsStore.loadArcs(props.project);
+    }
   });
 
   onUnmounted(() => {
@@ -121,12 +193,27 @@ export function useChapterRightSidebar() {
   return {
     promisesPanelRef,
     volumePlanRef,
+    arcPlanRef,
     chapterPlanRef,
+    activeTab,
+    activePlanScope,
+    selectedArcId,
+    arcsList,
+    currentArcTitle,
+    setSidebarTab,
+    setPlanScope,
+    selectArc,
     timelineHeight,
     participantsHeight,
     volumePlanHeight,
     chapterPlanHeight,
     activeResizing,
-    startVerticalResize
+    startVerticalResize,
+    addPromise,
+    addMilestone,
+    loadPromises,
+    promises
   };
 }
+
+

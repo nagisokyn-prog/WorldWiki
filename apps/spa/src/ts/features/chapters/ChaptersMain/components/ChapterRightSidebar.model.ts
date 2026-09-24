@@ -3,7 +3,9 @@ import type { ChapterWithHierarchy, HierarchyVolume } from '@/stores/chapter.sto
 import type { TimelineEvent } from '../../../timeline/Calendars/TimelinePanel/useTimelinePanel';
 import type { ParticipantItem } from '../../ParticipantsPanel/useParticipantsPanel';
 
-export type PanelResizeType = 'timeline' | 'participants' | 'volumePlan' | 'chapterPlan';
+export type SidebarTabType = 'promises' | 'plans';
+export type PlanScopeType = 'volume' | 'arc' | 'chapter';
+export type PanelResizeType = 'timeline' | 'participants' | 'volumePlan' | 'chapterPlan' | 'general';
 
 export interface ChapterRightSidebarProps {
   project: string;
@@ -14,10 +16,10 @@ export interface ChapterRightSidebarProps {
   currentVolume?: HierarchyVolume | null;
   currentChapterId?: string | null;
   chapters: ChapterWithHierarchy[];
-  isTimelineOpen: boolean;
-  isParticipantsOpen: boolean;
-  isVolumePlanOpen: boolean;
-  isChapterPlanOpen: boolean;
+  isTimelineOpen?: boolean;
+  isParticipantsOpen?: boolean;
+  isVolumePlanOpen?: boolean;
+  isChapterPlanOpen?: boolean;
 }
 
 export interface ChapterRightSidebarEmits {
@@ -32,3 +34,4 @@ export interface ChapterRightSidebarEmits {
   (e: 'update:participants', val: ParticipantItem[]): void;
   (e: 'locatePromise', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
 }
+

@@ -233,13 +233,13 @@
         class="panel-header-new flex justify-between"
         @click="togglePanel"
       >
-        <div class="flex gap-2">
+        <div class="flex gap-2 flex-wrap">
           <div
             class="panel-tab-new interactive-el"
             :class="{ active: activePanelTab === 'console' }"
             @click.stop="setActivePanelTab('console')"
           >
-            💻 Терминал Системы
+            💻 Терминал
           </div>
           <div
             class="panel-tab-new interactive-el"
@@ -254,6 +254,27 @@
             @click.stop="setActivePanelTab('consistency')"
           >
             🛡️ Аудит Сюжета
+          </div>
+          <div
+            class="panel-tab-new interactive-el"
+            :class="{ active: activePanelTab === 'graph-web' }"
+            @click.stop="setActivePanelTab('graph-web')"
+          >
+            🕸️ Паутина Связей
+          </div>
+          <div
+            class="panel-tab-new interactive-el"
+            :class="{ active: activePanelTab === 'timeline-inspector' }"
+            @click.stop="setActivePanelTab('timeline-inspector')"
+          >
+            ⏳ Хроно-Инспектор
+          </div>
+          <div
+            class="panel-tab-new interactive-el"
+            :class="{ active: activePanelTab === 'arc-board' }"
+            @click.stop="setActivePanelTab('arc-board')"
+          >
+            📋 Канбан Арок
           </div>
         </div>
         <div class="text-xs pr-4 opacity-50">
@@ -277,6 +298,15 @@
         </div>
         <div v-else-if="activePanelTab === 'consistency'" class="h-full">
           <consistency-checker-vue :project="projectName || 'default'" />
+        </div>
+        <div v-else-if="activePanelTab === 'graph-web'" class="h-full">
+          <graph-web-view-vue :project-id="projectName || 'default'" />
+        </div>
+        <div v-else-if="activePanelTab === 'timeline-inspector'" class="h-full">
+          <timeline-inspector-vue :project-id="projectName || 'default'" />
+        </div>
+        <div v-else-if="activePanelTab === 'arc-board'" class="h-full">
+          <arc-board-vue :project-id="projectName || 'default'" />
         </div>
       </div>
     </div>

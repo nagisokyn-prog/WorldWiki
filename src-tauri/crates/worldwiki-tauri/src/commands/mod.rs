@@ -1,20 +1,25 @@
-pub mod manuscript;
-pub mod knowledge;
-pub mod calendar;
-pub mod plot;
 pub mod ai;
-pub mod chat;
-pub mod local_ai;
-pub mod documents;
+pub mod analytics;
 pub mod backup;
+pub mod calendar;
+pub mod chat;
+pub mod documents;
+pub mod knowledge;
+pub mod local_ai;
+pub mod manuscript;
+pub mod plot;
+pub mod story_arcs;
 
-pub use manuscript::*;
-pub use knowledge::*;
-pub use calendar::*;
-pub use plot::*;
 pub use ai::*;
-pub use chat::*;
-pub use local_ai::*;
-pub use documents::*;
+pub use analytics::*;
 pub use backup::*;
+pub use calendar::*;
+pub use chat::*;
+pub use documents::*;
+pub use knowledge::*;
+pub use local_ai::*;
+pub use manuscript::*;
+pub use plot::*;
+pub use story_arcs::*;
+
 

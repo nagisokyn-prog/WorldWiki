@@ -1,99 +1,1291 @@
 [
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/entities_crud.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/budget.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "2f2322068096d4f25b86085f3881e4817e45a72095e2db7decf7fb11973278d0"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "8c40e95fce4059e6922ee600b1bf3bb9155e448c9144866964fad36418a1c2e4"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/entities_crud.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/chat_services/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "405676c2bebec99dd2e11a77d172be51fe8b70a1d9966e81a4794a2c6c54a592"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "952dbff98324e156016c4311977745ae2775a3279b258a2971c6bac8db4c93fb"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/history_crud.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/lineage.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "3f18d010dec905ed82f3177e0487a54e5ed29044a9663845bd224da722cf5abc"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "d1526b6f0e47781feba9bbf5937979de2f8bde09e3085198266b5923ab6644ca"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/history_crud.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "e9c5fbde220d2d241641782facb1536a005e523c6361b291cda4d1658e896efd"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'assembler::*')",
+    "fingerprint": "a81ee349189ff9d17bacd502d4ebd9d476a316d63547325fd8360c5553afdecc"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/relations.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "d2a809aaed7e87670015cb6e0bc1764e0ea66cb735b823c6b9a0123b5e09a2ca"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'budget::*')",
+    "fingerprint": "041e69ac8c876db1c4d7f508c32939ad62b2de849bc4e960b5868edb9ecab083"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/relations.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "e492c54af1b38cafd6b5391bdbd72b545424c380aa14324a84d67edfbb2012df"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'chat_services::*')",
+    "fingerprint": "08e32e25cabb6c19bcf27cb9a37cffd7896ce2ec61d051e7540619765df62786"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/schemas_crud.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "694201fa9508945ebccf26e32a6b1ca2d98c06da95c7ed90d936428f000cba4e"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'lineage::*')",
+    "fingerprint": "b8d091c3ec50f9496e15bbfefe614ec7b7437c9250dbbe0b5fda15a3217be015"
   },
   {
-    "rule": "ARCH-001",
-    "file": "./src/logic/entities/schemas_crud.rs",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Domain crate 'world-wiki' cannot import external framework or I/O dependency 'surrealdb'",
-    "fingerprint": "724d29c98621a82896c9278ad8bde6cb4d48082d3d60ab4b8bb1ffebfeb0b506"
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'local_services::*')",
+    "fingerprint": "e16fe17a404b8ecd4383bd12e3f4a250143fb99cc2360730c522e7904da4e794"
   },
   {
-    "rule": "ARCH-002",
-    "file": "C:/Users/Kuzma/Desktop/WorldWiki/src-tauri/crates/worldwiki-application/Cargo.toml",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
     "line": 1,
-    "symbol": "worldwiki-application -> tokio",
-    "message": "Application crate 'worldwiki-application' declared unauthorized external dependency 'tokio' in Cargo.toml",
-    "fingerprint": "ca15c21071278d2bec483ef600fea19d0f332d123c19e50e8b5aa367cae17c32"
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'prompt::*')",
+    "fingerprint": "3b113fd2125a7996cc817d294a923a25e4ad1bf091bdea5b4d01d6701138a0db"
   },
   {
-    "rule": "ARCH-005",
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'research::*')",
+    "fingerprint": "94fe9af5533decd3f0a7fe4d4c75118659bde4c82b17ea8b117b0f1d5a795d12"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'schema_adapter::*')",
+    "fingerprint": "6375b7198def11b0cabfd7003d9441a4aac3943108d7b9039e2c9cff6cd5cb76"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/prompt/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "4b806399afabc5cf742ae9a2e024c312604f6997c751fc8055b2a9eb086d3b8a"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/research/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'orchestrator::*')",
+    "fingerprint": "5978c94b4f5ea72ade6a6fa21bca65c3afa9d77b82cc2ecc87b5c24182135129"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/research/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'ranker::*')",
+    "fingerprint": "0047d3ea0e910547958212a5de6932d1dae2cd08ce797324c87fd75d656736fa"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/research/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'stopping::*')",
+    "fingerprint": "b97efe6e93b53f9b08adf31505324bf875eda6ed0e9bb11dd024b0fff2f210ee"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/research/ranker.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "e781abe8811487f4b90a315a9a7aa770c00b8cae651dabd6b5085551f59d4f5a"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/ai/schema_adapter/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "06a1f161cab96f897bce20a9239a507382f650e0329ca7f3e646c646e0b48ee9"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-application/src/manuscript/mentions.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'application' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "7506a1286280e09e0a57cc37bf2bb9efa40fc5b1f0df0f10a37a9bfc74aca9aa"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'chat::*')",
+    "fingerprint": "9690d7abe1bdeea5a0f4b994eacfeb071f8d37285de519f7aa8387ceab02dcc7"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'context::*')",
+    "fingerprint": "cb6dade69fd2332f46c493812b406017f3d057dc94d2d1e73c639b97b3d2312b"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'research::*')",
+    "fingerprint": "fdcc7cafc53673da7730c0fd2a3a18d7b33b91d33cd2ac52817a12bae4f950c2"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'types::*')",
+    "fingerprint": "a668ed990927dd5a57cab2d760baac7b6532eebfa34e2a8de359185ec8cbf45b"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/analytics/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'character_journey::*')",
+    "fingerprint": "682e2152ccf156f8beff9c535275bf60204fa9ad16748e2acc67ec993b99aa96"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/analytics/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'consistency::*')",
+    "fingerprint": "8eef6b3b42b980b6be56de3eaec680e25e6648c063ddf5f8fe1524b5d677b9a1"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/analytics/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'cross_ref::*')",
+    "fingerprint": "77410156b1199f0cec25cd71ca5ddfb768ad3f66fe84abb1ca7e457d68292493"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/analytics/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'graph_slice::*')",
+    "fingerprint": "b146b2006df9808c32e5470cdaacbddbbf1337d4fac716a58c9afcb030ec637e"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/analytics/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'timeline_inspector::*')",
+    "fingerprint": "9e13fb518f190f99aed9517aefb4d7c303ba5e9e59309b2abaeb25960b204e1d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/calendar/math/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'crate::calendar::models::*')",
+    "fingerprint": "fd0101a15ad6ffc4fad601c32e8e4293336901ce4af25e674cedbb81ddc42f02"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/calendar/math/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "7cc79144d0e62624fc450b723f439ddb45fd0228e188889e756b07d6ca2d73ca"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/calendar/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'models::*')",
+    "fingerprint": "72d58adb785fdb950b816d401174f8aa7d2ab7b31df550539f7c45963dff2b84"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/document/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'ast::*')",
+    "fingerprint": "f795cec2df91f6653452041c81fafbb138c46183b31beb12c9b6e22d9aef7977"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/document/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'export::*')",
+    "fingerprint": "5f454d94cf5fd868740008f86c337bdc93092a9b3de539d3e79ac12b54ea18c8"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'crate::analytics::*')",
+    "fingerprint": "f3a2d0827440924922a56e2f0586930f176f223ef302438776b135d8cfbbf783"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-domain/src/manuscript/text_block.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'domain' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "53cbdf62897af26fae891a76e56d6986f012348a398fa4392f241807595db558"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/chunker.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "f8cfe7e8f8ac3fc7fba31bdd299946b1553d87d46344d7a09e0db7d753799669"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/client.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "a75474402ca01c87b02e8137f8dda2f15f70e41cb557765bcc2981156284b947"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/hub.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "d6608caa86eaa4a2453349a66bf626e743ff68c7dd59a50e5c2c29aad6ae5956"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/checkpoint.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "d605b90cacc5835eeeec7576562dc5aea74003a70ba853816fb7e4eb17a34c1d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/embeddings.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "ce2e9084a0ce31722f9d79f5925a0d0e52163081d931c642d4c7a47716883ba6"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/generator.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "2976e59b43bc23867c18ac8817986762d2cb362d4ce6de8a3e1983e8665bf3aa"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "4871507f97ae132f865aa757e0435de8b92f73e8e2758e5ca3346b375d58dd12"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/model.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "9f36cc8986009ef4ebb5d8dd4897c6683703be4777156cae799cd4f026611b51"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/sampler.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "d54af22f30d53ce5a970648e66f063e974672b0cd019243509317f01d12d250d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_llm/tokenizer.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'llama_sys::*')",
+    "fingerprint": "7091fbfbfba665b4b26e8e3e293619307defbc201b9805b7a447b7a67e6f707d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/local_manager.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "9c929acc8556733b7bbc3c9b291b9a7da676e8c17c9790eaf3c0cf5ae1066178"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/mock_ai.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'worldwiki_ports::ai::*')",
+    "fingerprint": "cc35d6665f40cc63ba4a6200036e78be3b7a5cf9bf7dc9edf703715a3650e346"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'chunker::*')",
+    "fingerprint": "2828a38001794935041ab379102c4806171d1b25ce237b4b14989e9eeca45a1e"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'client::*')",
+    "fingerprint": "489a3648f2d15e0f4f45dad84c1d623ba5ca2eaaae5a6e480d9030270d92e3e2"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'hub::*')",
+    "fingerprint": "2cf4cf2c013f37fa2a05b029022916823f97997de444f8fe80224cf4b236652a"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'local_llm::*')",
+    "fingerprint": "bcc91a220ef91ae3e55084930e4cf2fd73983c8eabf92286744c6d023bb33323"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'retrieval::*')",
+    "fingerprint": "1c0b45e215a48059c20d1824020690ddc0f51d75ff316a72356aa91256b009c3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/retrieval/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'embedder::*')",
+    "fingerprint": "67e03d19b6d534b30ff7d8bc4e769effef157d6e337e13e7517fe705305699c5"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/retrieval/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'indexer::*')",
+    "fingerprint": "065da77253e2ab8caf0bcae7fff24ab239ae8058bf7cf604e5fa7442d88989a6"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/retrieval/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'query_analyzer::*')",
+    "fingerprint": "c96b5a67543eeef486ce4fcbf40d3167b0fe62986757c8a433070232aab7b4b2"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/retrieval/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'router::*')",
+    "fingerprint": "a597fd161b523236fb02b7029c9c79820c2e2444cd369380f42c53b0f2521d33"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/retrieval/query_analyzer/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "fd6ba6e71661a05a85e09bf8bf0029256d4b63df77ca5d40bb9113eb38739344"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/ai/retrieval/router/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "bfd825ba97b3cfbdaec0a4a9d632dcd28b5b2859d30f46f06c9545e1573d8a4e"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/documents/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'utils::*')",
+    "fingerprint": "1ef67c929a99e2f384ce4f683179bc6e7b1c24279b29daf756854c1fe1feab0d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/storage/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'backup::*')",
+    "fingerprint": "d47dcbceaffbecbe10a2467bbc2d048721cd4bf15f0f21dffc18014cdf573a8e"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/storage/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'yandex::*')",
+    "fingerprint": "f30dc129da622971e3a027acd2d673b55ef1cb1579920a8e02c6c9f06fb8f631"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'auth::*')",
+    "fingerprint": "1d555c7e5d3642d99ca71b6e75b2b7c53015d73ee0e8163b05a5a7867ce34897"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'client::*')",
+    "fingerprint": "ed3c33854b3b626275776b6970d3d286e378fc752a167da45268e1497710ca0c"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/storage/yandex/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "a8a54bcb436a841d7ad756266c64dd9c4293d21b46252b0e38d96f889c496ba8"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/chat_repo.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "89ddf94142af830cf97d87ce304cbaf1ccc5af7bbda5c1faf2bd0196bc41804d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/memory_repos.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'worldwiki_ports::repositories::*')",
+    "fingerprint": "ce444e81e8ab34d4b1b67ea615a9e83efa554e439c1d62c7a4bef3a0527c49c5"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'chat_repo::*')",
+    "fingerprint": "95206da6459ca6920c6b2c3df81b59940fd42286399321d0532a48d9add26eb9"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'memory_repos::*')",
+    "fingerprint": "d29af3d9aa081fbbcb30b4002dfcbfcc541b2f120439c8b1b3a88a9c7450a126"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'profile_repo::*')",
+    "fingerprint": "dee43e065bb23239c0abcd932405f75c722c514e79c219840aec7866c1e5f2c4"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'repos::*')",
+    "fingerprint": "59bb9714b8b733f59eebacb07184a61a48dab75b6ff85e4fc9af81303b6fa642"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'skill_repo::*')",
+    "fingerprint": "7f172aed026cc894d19d6048d4b246a6a1800a1ba78c484994f11d85448e52ac"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'stemmer::*')",
+    "fingerprint": "5d53bb6ffdb0711e3a67bd621e95b17302d8a2aa69385ab8b80ade8140f0c7d4"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/profile_repo.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "3915f74168bd358661ac1d6e4effc1056730e06868a24cc4ff900ca7d3e04753"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/repos/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'helpers::*')",
+    "fingerprint": "c82a95f27158252c5de9b3bc1b05b706df89f52e1c0b0998c22593bf575a670d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/skill_repo.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "790b43fd48ed458bc37a0d4d051015827128e8dc20f66258341d2111969d5a60"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/surrealdb/stemmer/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "48c9e56dc26df34b18d9e41740e2ec9b500c6b028ee902ea660c0f5b68942c38"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-infrastructure/src/web/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'infrastructure' is not allowed to depend on layer '*' (import: 'scraper::*')",
+    "fingerprint": "75cd113beee2c821f9ec64289cabe47af63649013e43028f93bad0fd829f71dd"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'chat::*')",
+    "fingerprint": "78260ac0f68ac0b383e1811f794a96ddd472f47c2a6faa947e93f94a1ad672c7"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'inference::*')",
+    "fingerprint": "3eecc1041f1fbdd5e3d6c4a58ab1f4c8f10f603334bec592f082c5f7149c5796"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'models::*')",
+    "fingerprint": "0252d82eb422a5ea5dc9c1c06b395756ac8a84d1e97496829a4bd0034382e112"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'research::*')",
+    "fingerprint": "b24f6e5e605754ddda8a46f82d3dc076283f1f983bc129a7beb9ae83aac8b7fe"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'skills::*')",
+    "fingerprint": "45241a8f2cfd8de544c0b2fa4203ee7ffc1b5750311c99c779416b2d4d9685eb"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/ai/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'stream::*')",
+    "fingerprint": "ef1590c9bae2c00cc43b9bdaefa1141a78bd3615bd188f49f6862dc490dcd70c"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'ai::*')",
+    "fingerprint": "72543b962b9d1e1ce4f52773c8bfd7149b90fda0efefce00ad4532c03ab075aa"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'events::*')",
+    "fingerprint": "56fed391baaddfcebe1874085011e4c413381203a5db6d79921ba8f4a5fee8b2"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'repositories::*')",
+    "fingerprint": "1cb4bfea7d98bffec5cd55ce08079898f5abbf31206dab9d8e1954bd85bd2f16"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'storage::*')",
+    "fingerprint": "beb4a91c9af6aae0b293f50fbf942746c9599c8cb6821100356340964b024e7c"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/repositories/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'analytics::*')",
+    "fingerprint": "1962f731a3ce33b1f0f70ce88252f3c8396e6f21f9ef7ded30750a0b529b78c7"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/repositories/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'knowledge::*')",
+    "fingerprint": "beecec30b0ced488ed8ea95beabfc5ffbdc9c3bcd936af9c217cc0e1979a9a2c"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/repositories/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'manuscript::*')",
+    "fingerprint": "6554df6eb887f2500db13aa272db424ba390272da5ac839a80177981c421133d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/repositories/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'plot::*')",
+    "fingerprint": "00b1f96130711e4190a327f1446de3f34892819632bf0575399b2baff9f93de5"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-ports/src/repositories/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'ports' is not allowed to depend on layer '*' (import: 'timeline::*')",
+    "fingerprint": "e4172bf7010eaef5a53e56e96a2af8e9ca5d4a206b5b292b163f52990649fd70"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/chat/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'messages::*')",
+    "fingerprint": "b98f0e00da77273251df5d140eefbcc4622e01dcf2193a7a65107e0e8390885e"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/chat/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'profiles::*')",
+    "fingerprint": "c58c1ddc97f3b76bff2179190526d0d0a3b25f357b67020539e17cc1e52ce602"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/chat/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'sessions::*')",
+    "fingerprint": "3e1e0e6d72a84567e4c9b6c11534f2eb9ac25c233b04e25f87911d343bd00fca"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/chat/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'tools::*')",
+    "fingerprint": "5644ae9c6cae6d71fdb7c1ee8f230ad6556c0e4bef1f5096c921a333de151a16"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'ai::*')",
+    "fingerprint": "37d511f9fe06e40ae364950837b34e1aeed2a209f38863a1dcb6d6277b8ce5d3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'backup::*')",
+    "fingerprint": "48a8765b02df0cbba66d7fdf0552e6b06265d9e4a151c5d0c59cd64bdeda4502"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'calendar::*')",
+    "fingerprint": "322a408191711cc2b71d0ef6e1a62334d703e0d3fd3bfae71d460ed903156a6b"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'chat::*')",
+    "fingerprint": "2ebd1f221177d78cf8421663eb10765886a25cb69c405831da2889c5013c43ee"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'documents::*')",
+    "fingerprint": "6b8b6ce73007db0d7ce2e3546349df4d8078c077adf4a7c1a853962198103764"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'knowledge::*')",
+    "fingerprint": "bc6934222cc883a67daecf1038551810e4d2214b3e59b54f4b9c00879839fe73"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'local_ai::*')",
+    "fingerprint": "cf8a3b5b9fdc48d1e7f50898660762d65f4d0c684ae04a9a8de7bf7b6f078920"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'manuscript::*')",
+    "fingerprint": "d67d2fc5cccd8c314a65bf120c5debee2dcb179aefeb5ad28dc0d3bdc76a5ee3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./crates/worldwiki-tauri/src/commands/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'plot::*')",
+    "fingerprint": "9c451c172d89100b28a522acca9e2f9c4301c8da849080a77c2890d4244d7ba6"
+  },
+  {
+    "rule": "ARCH-007",
     "file": "./src/lib.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Crate 'world-wiki' is not authorized to import 'tauri'",
-    "fingerprint": "ebe48b2b22af7f0c65b749993dbd8c1bc1f3c2e7246f99963338e994b58d0285"
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::batch::*')",
+    "fingerprint": "a81f697778dc51225a24d6071e16657b0d856480ebf95d4a74faa51673d43460"
   },
   {
-    "rule": "ARCH-005",
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::chapters::*')",
+    "fingerprint": "503bcd7fcdf69795d3f57abc17bd0c9f3caa091fd909e8cac0f03676d06cf94b"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::connections::*')",
+    "fingerprint": "21b4f850d275810a1ee376dd198e0ef8d99d047e8857557fcdbc11d866109284"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::entities::*')",
+    "fingerprint": "91e90fe9c7b0c48c9de75f70e465321d2be99c8e7f0a266fa945ec6a6f985076"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::models::*')",
+    "fingerprint": "8042e417facec4830b1e057375f89ba65c196cad2463a43a6be2e98f561ad89d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::projects::*')",
+    "fingerprint": "db1791afd43b1c1af19667ba76af4c4ee3693b5cd67ea3cead1e7efe220f612a"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'logic::volumes::*')",
+    "fingerprint": "f1c25736d8bc736569da5b842d0143abe3efd66afcadb74ed5605dab27579db2"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/lib.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'tauri_shell::logic::system::*')",
+    "fingerprint": "c5f2427dcedd583022abaa8d31a12b59aefa7bd67e388ab92dbf67a234d39362"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/commands.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "ceccd63fd9fba7d86ca8d2c0e1a6122bcf90de70db5b72effd851122c9028686"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/executor.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::reader::*')",
+    "fingerprint": "9f629230a6747760dbf87d6f33ffa98eac86481701e4b236a34cfce1d15fda64"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/executor.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::writer::*')",
+    "fingerprint": "82de996863eca029f11317e9c7e9547883da988bac80a3315b15be67a3e0a7d0"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'commands::*')",
+    "fingerprint": "62e30e7cc57203f630a02f9224d5d935c322ea76df2400fcc17bf597f9bc955b"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'errors::*')",
+    "fingerprint": "353d9d72b0554c1b9d2d13aed9ee86f91bda33852b9143203b40142dea60d73a"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'reader::*')",
+    "fingerprint": "12390f6bd123596bfe289101a6ea716b8b6b9e063ab64cf3a72d6bb337fbe500"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "9db3d828269b6ed8ebdcc017449c8d387a560a25641f5f9252e137442b085ecf"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/batch/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'writer::*')",
+    "fingerprint": "3772f4f85ddf6893f58efa888b952c933ebc710b33a77abf69d0ffb0249e78c8"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/commands.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "8864190378311897c5a11d25cb73d211be8823152c208641b520eb56be7be8d7"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'commands::*')",
+    "fingerprint": "82b446ae0417dcbdb2721a935e8667874042576c830fc2cdfd75c7151620f354"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'crud::*')",
+    "fingerprint": "9ae173049bbdad0172413c0e6705071daf4a7850b7a4addab84f1b9ad8f4a2bd"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'errors::*')",
+    "fingerprint": "acc9025dea6f8da6caec28ba7f57561f537a3fa00921035969dee88b281e745d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'revisions::*')",
+    "fingerprint": "5f28258626760e1fa237abb2c6f78653f711c1a92df0f78f193bb0ff07471556"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "a833c89c251f4dffdf05a65ed7325675a74f333b1db897003318bc46a250a606"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'text_blocks::*')",
+    "fingerprint": "72aeb3e4bab19a6ce5196f5785f2b410d9541d42bfbd0960b7420d90ad6d1093"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/chapters/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'timeline::*')",
+    "fingerprint": "49e67572fe9239b77897e95471ce4175d11d570a5f68e14c148db1441a8608f3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/connections/commands.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "e7ddc8fe6bd182d370333199b8307aaccce61a56840fbd30cdc9c73550f22ce9"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/connections/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'commands::*')",
+    "fingerprint": "20083f33070e0fd1ae7abca418cfc8fc555bc91886ac90cb2d09398e91b6048d"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/connections/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'errors::*')",
+    "fingerprint": "0b23f6ed80f5dd9c0a4dec4840ca890726e72c91a36867d29baf1fa96857c254"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/connections/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "2882ab288ead2279cb389a3a298c4e3dac8a94e048c49349d7af6b68ebc4d97f"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'commands::*')",
+    "fingerprint": "75316f01eca050fb35a7ebfb18687145437ebc67b7b5ff103e9500fa30d12866"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'entities_crud::*')",
+    "fingerprint": "d091f8727cb4b303cf1a09492f735dc0a89f356e6ec08c17b033adf1bf0359c5"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'errors::*')",
+    "fingerprint": "90dae1e3ce301e3b163b9490f2ccfd7b3b5fa612806461ca83aaad2cb7127779"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'history_crud::*')",
+    "fingerprint": "05f4925538df2ebf289f36a682a1ef397fb64932f108475ab90500b17c12c7fc"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'relation_schemas::*')",
+    "fingerprint": "6a97f3dc6f2d7947d69677132431df9c617a347e6a6d11fc379645e91845c452"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'relations::*')",
+    "fingerprint": "6e47ec09ee4e6e70b9950faa97d09441c44428f9adea34a5c4b7dae69852c8a3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'schemas_crud::*')",
+    "fingerprint": "1e05b1b950a73cd5735276f0310747ade05d86ee7a4735454c3915ff1d82bf7b"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "bfc22a682247007a52a061b490ef555398823af304945081c55b151490a21c64"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'types::*')",
+    "fingerprint": "e16d14ef68e41a7a79071ce71dcd61ac4bf3ea20a0f4bef01fa84937fe7946b7"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/relation_schemas.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::types::*')",
+    "fingerprint": "0332e20a733cc774aa1e60a5c81c54e534bb9384b62c2fd270846d350739336e"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/entities/relations.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::types::*')",
+    "fingerprint": "b54c59ce67139a3c81970e2ef66c6aff24863e8313621819f59093838483f1be"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'worldwiki_application::ai::*')",
+    "fingerprint": "540ea225a9ee2bbf4feff81e690244b91ee679d0c459504a2ce6ad22be4ef678"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'worldwiki_domain::calendar::*')",
+    "fingerprint": "65d2790db85310a20e6c5295d7de5a3f9ad2e445b0f033419cc283f385c5eac3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'worldwiki_infrastructure::ai::*')",
+    "fingerprint": "d8225151026f6877831767f231c2edba9923947056c546e80b0254d02c35cd88"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'worldwiki_infrastructure::documents::*')",
+    "fingerprint": "b010939acac99f952f8db93c47050cac84bbaaa2ef5066f20da3ebe1b9d831f8"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'worldwiki_infrastructure::storage::*')",
+    "fingerprint": "423d6bac69d42e36527b2186059e4c42c90ff6d18c95b67e36da808b769597e7"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/models.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "b5c88826cb079b5bcb08039aec3000deae53c7e4b5b58016974972d29fe54fa3"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/projects/commands.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "80fa976d00411b27a6db7df7d2786f97633fd80b71eb5171ce3c18b33f8097a9"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/projects/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'commands::*')",
+    "fingerprint": "63a59db4ce368000a6f7e9a3c372c00c1b544f40503cfbcb06ef46aa42057a0a"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/projects/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'errors::*')",
+    "fingerprint": "858aedf99d2466dd71268d8415617070bd4f56fa5c704f56955a7a50014ad434"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/projects/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "53b085b27b728018cd6615c83ec583f3e68b36091a5c1298cfbabc28a1d84223"
+  },
+  {
+    "rule": "ARCH-007",
     "file": "./src/logic/volumes/commands.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Crate 'world-wiki' is not authorized to import 'tauri'",
-    "fingerprint": "4a4aaa799edeea708fbea7bc7d7747e9ccc425bb21af1bca2ad9e69cd42b9115"
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "153943c0074e73d9677cc5e556a985c2a38936227cbc76761238c8998377e8f2"
   },
   {
-    "rule": "ARCH-005",
-    "file": "./src/logic/volumes/commands.rs",
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
     "line": 1,
     "symbol": "use",
-    "message": "Crate 'world-wiki' is not authorized to import 'tauri'",
-    "fingerprint": "4a4aaa799edeea708fbea7bc7d7747e9ccc425bb21af1bca2ad9e69cd42b9115"
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'auto_extend::*')",
+    "fingerprint": "9bf836485cba1dd46e23718161a76340c6f44eaebcc64774530a1da762711583"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'commands::*')",
+    "fingerprint": "4adf284024781af4a0802a89005a52d25d0563ca2c9fa0158d0b83fe6417f4b8"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'errors::*')",
+    "fingerprint": "8c5eef3e8fdce643cd9871ad216519bbe536433cc2610ebd88fe2e3335471c46"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'hierarchy::*')",
+    "fingerprint": "b3a1fe97c64e0077d505b6ed18e117f9b73670c70ccd0a828aa3e45228863a74"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'lifecycle::*')",
+    "fingerprint": "867791b2373844bdd25b6242d13a34e74062c6ed22b309d88ab8d64c585c8cd6"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'reorder::*')",
+    "fingerprint": "4e4543d9299dbd36fe0ec7f0704be60f2cfa96145dfa739d5db670017e9f3663"
+  },
+  {
+    "rule": "ARCH-007",
+    "file": "./src/logic/volumes/mod.rs",
+    "line": 1,
+    "symbol": "use",
+    "message": "Layer topology violation: layer 'tauri' is not allowed to depend on layer '*' (import: 'super::*')",
+    "fingerprint": "d0bb4bf3e38f26a9dd594db75651a1b3d01021e8c81751c92a9c5cd2365b38f4"
   },
   {
     "rule": "ARCH-013",
@@ -102,845 +1294,5 @@
     "symbol": "worldwiki-domain",
     "message": "Package 'worldwiki-domain' has entered the Zone of Pain (High Coupling Ca=5, Instability I=0.00, Abstractness A=0.00)",
     "fingerprint": "7b453dfa98392c152ca767cc4f9f9e14abb028e981252b38490def1cef0e6c9f"
-  },
-  {
-    "rule": "ARCH-020",
-    "file": "C:/Users/Kuzma/Desktop/WorldWiki/src-tauri/crates/worldwiki-ports/Cargo.toml",
-    "line": 1,
-    "symbol": "worldwiki-ports -> tokio",
-    "message": "Ports crate 'worldwiki-ports' declared unauthorized external dependency 'tokio' in Cargo.toml",
-    "fingerprint": "348295e71ab953b83529c3a37a3903d1389958ada6c0b09f77c61895a7c0143c"
-  },
-  {
-    "rule": "ARCH-021",
-    "file": "C:/Users/Kuzma/Desktop/WorldWiki/src-tauri/llama-sys/Cargo.toml",
-    "line": 1,
-    "symbol": "llama-sys",
-    "message": "Crate 'llama-sys' is missing architectural layer metadata [package.metadata.cerberus].layer in Cargo.toml",
-    "fingerprint": "9cd970af3bc9bd8caeaecde1d4137d008f9180ea3a3430842f21e23f724c5993"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src/logic/batch/executor.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (245.1) exceeds warning limit (200.0)",
-    "fingerprint": "2168ed7703ac5a090cd5a75385ef2cb61b621e08eb164149849bce59d9a7bfad"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src/logic/entities/relations.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (201.9) exceeds warning limit (200.0)",
-    "fingerprint": "2a9aff5c43f6229a343b7a5232ebdab8b2e7316e8d9ff2ab0e1ec6c8157ef2a3"
-  },
-  {
-    "rule": "ARCH-030",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "file",
-    "message": "High Architectural Pressure S_arch (314.7) exceeds warning limit (200.0)",
-    "fingerprint": "bcf4876197666a5d0f2b03187d3b5bb7198a70d60d697890abdcefa527b80f5c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/lib.rs",
-    "line": 1,
-    "symbol": "apply_ddl_module",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cbaa608c3770a1d157f43e6eef38f4e4ae4eefdb922557860fae5c8924ef2f28"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/lib.rs",
-    "line": 1,
-    "symbol": "apply_schema_pipeline",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "eff0c65b84e4a152ece4c42f5245fc67bc7ce311e4bdce0358ed5e3cb324dfd2"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/batch/commands.rs",
-    "line": 1,
-    "symbol": "get_entities_batch",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "f2694d8ad3f930646014aa9d0473f1f7c21180dabce99ddafb00bc3fa8dd67ec"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/batch/commands.rs",
-    "line": 1,
-    "symbol": "save_entity_with_relations",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "c2baff57b8d125d1a7d71dbce95fa22775b75f7e18379e3bd93d6940b743b47d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/batch/commands.rs",
-    "line": 1,
-    "symbol": "upsert_connections_batch",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b8bdb514663dc7ad3a74020de0085ffd571ef86dcf15f5a54f33c21862e63436"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/batch/executor.rs",
-    "line": 1,
-    "symbol": "get_entities_batch_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "c9ed5ca32bc34ccff35d3b19338bddb349677a37664e01b8886d65324e0e768a"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/chapters/commands.rs",
-    "line": 1,
-    "symbol": "get_chapter_revisions",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "3acad65b2d743310c516b21beb3564c98885ddd6a29501b963ba40b55048a201"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/chapters/commands.rs",
-    "line": 1,
-    "symbol": "get_global_timeline",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a5c233df6586ffdae9df701563677d030afa37979f5a57acfbbeb1de21bc049e"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/chapters/commands.rs",
-    "line": 1,
-    "symbol": "save_global_timeline",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "805991a5a7504d0c25b74f4eb0d3af7ef070ccfe1d7506d3e593936c82464115"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/chapters/commands.rs",
-    "line": 1,
-    "symbol": "save_text_blocks",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "048be5f98077fbff89e13944a9997b36cd8daa95cc4f88360efd5b17b5eb7310"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/chapters/commands.rs",
-    "line": 1,
-    "symbol": "toggle_chapter_history_pin",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "1b07139b294fe5b49cd0b27dc7058747a9a62aef1d1002043b8ce6b02f68e296"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/connections/commands.rs",
-    "line": 1,
-    "symbol": "get_connections",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "bdd08849d668c3ae3417edc0cbb2a03de7292abf5bf58ab0c5e4a508182369ca"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/connections/commands.rs",
-    "line": 1,
-    "symbol": "remove_connections_by_source",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b2ae47e519bfde2234d69458df7806279ec49f9b8205981efbd8549ae9184304"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/connections/commands.rs",
-    "line": 1,
-    "symbol": "save_connections",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "94d2ab52a5bbaf91323673985838d70ee1d003b832c59d3f24e72b0af9fd24dd"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "get_connections_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "52c4e62c4c5581a547ab51175d00990dfba22e606ebe235184a94705aee8f6b2"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "create_entity_relation",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "f833b9a6e7d400c05b891727305d33dc05ac4a5b5550921615256a5c2675ee0a"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "delete_entity",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cf44e44fa02fb8d832ba94cdc639e27e3dbe384b9ee02af4323b8b7120c1571d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "delete_entity_relation",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "93aeb9bc0677121f29445e8cb5935e56bca08350499e54d7848aea3c8fb527e2"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "delete_entity_schema",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cc9974d680033413a21c46bf507d015c5465f3ef283062f7430d568026a96f96"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "delete_relation_schema",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "89f28489f4b882d226fcdd686cc2d9ce9906cf23e9c390acdc67addc76d07803"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_entities",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "6c7870d41af63bfe31d0c91eff37ed442490ee213e166824088067711786066f"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_entity",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "202b0a5aeeabf34bbb36a801d4650d3ef3b14d54c7a005b222e165bc6d4f734d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_entity_relations",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "e43eb62712212ca7353e40ae776047baa8f3e4f4642e51390005b63039975c55"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_entity_revisions",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "7df4b9bbb345f40c60364ea8092eb378f3bfb019d30ca6361fc275d1c8c7be4d"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_entity_schemas",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2e78bf20fe8671676c0062ad4f07c3a29fc1245d29277a7c55986dc298937bc4"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_relation_schemas",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "cbfd51b24d7b5fbd6861aaf1368b75a6940d6be0892adbcd434ba22e74dfadff"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "get_schema_history",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2a33143b303b11a5342e32953868e3e9c9372d1949df63b3ba94a980af6af43c"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "save_entity",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "aa6b2facc2cabcce92a5523de2e2fc57153427a1c935999ba3088ea8badb7c09"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "save_entity_schema",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "272a3c00ef05394a7f84802d8dd8ab5659028c20b66f79b46a5661de9e6626cd"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "save_relation_schema",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "ffc457b440f59fc064fe0c84c3585e3e71f6613dfd53568de11a46c3ded3c075"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "search_entities",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "4c15e6fb644b92263c7c6679ffbf1cad1fb110f432ca053777d81116d0059d50"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "toggle_entity_history_pin",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2edcd9198cc13c89819f31ff4510002da6c104f34402643615c03b79b730af77"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/commands.rs",
-    "line": 1,
-    "symbol": "toggle_schema_history_pin",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "382dcf81ab2e935d02f268d3c6533ec51a02bcee0f24eccb82cd210535091990"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "get_entities_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "caf0bad97616c88a298f5606eb6b2e035b69f2a5f178728ad802b0855c4ba46e"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "search_entities_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "dab03ee5a2cf0fcabc31952da6c6a823bcf25592231ce00e0df968203a3473fa"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/entities/relations.rs",
-    "line": 1,
-    "symbol": "get_entity_relations_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "9f517a6546132bd17beaf44d8cdda266fa0bc46da1ced25dcaabdcf4657e3fbc"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/projects/commands.rs",
-    "line": 1,
-    "symbol": "create_project",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "2d4c681ea3849fa91e0bc43a206a81802ea8c2ffc3cc77f495730f4b0460accb"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/projects/commands.rs",
-    "line": 1,
-    "symbol": "delete_project",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "5ee7c1385b93728f50ee270ac6a4ecac28ec1d64f07149daea877a013f82806a"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/projects/commands.rs",
-    "line": 1,
-    "symbol": "get_project_config",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "bc84065afc30e7a91be1e49a3f991756cd06ef196f254d38d09fc67f9121caae"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/projects/commands.rs",
-    "line": 1,
-    "symbol": "get_projects",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "a612a8edc3845be648c5c4eedce0d3de6a0979dc8e06a0451e05f89a6504a00e"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/projects/commands.rs",
-    "line": 1,
-    "symbol": "save_project_config",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "eaf94614350a637144b807a38a52ec632e3a0c05339a5fe6af9ba33b15c78712"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "assign_chapter",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "89fee6c3892794d885c5be5e23769549cfd649c1611d9eb7a6ff6523dda82bd5"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "auto_extend_timeline",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "74752dcdc0a1e2e1fadc3fd56a6fa3b48022d527646579f53d90478ac98e61c7"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "create_volume",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "971801313c21ecbb022ff781cfe4e3d330d7b47263d5d58e9f6882129c2f66a6"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "get_chapter_hierarchy",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "8308bc9c0adb6651b90940df68810724b5060a299f0903c1278fe5e182ecfe09"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "heal_deleted_chapter",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "68cfa28476b135374f7d2d61dcd6a8a8661d7be96880f45fe577f0751038d189"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "reorder_node",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "159e0846e42a7adde95b01cb66726467bab0bab459879231d3583f4aa9095f93"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/commands.rs",
-    "line": 1,
-    "symbol": "update_volume",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "3481ed29184d3b083aa8bc177d1ab67cbede8264e151d264e6597ffcfdde4274"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "assign_chapter_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "b2fba3f79d87345b6c13db58fbc78cc45ebeb87e94eff4d3aeefae8896d3f458"
-  },
-  {
-    "rule": "ERR-003",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "auto_extend_entities_inner",
-    "message": "Public function returns untyped 'Result<T, String>'. Untyped string errors break type-safe error matching.",
-    "fingerprint": "25099f293c6ed2c6cf84cd7c29fea9f8529d98b42431228b265df94e538f0728"
-  },
-  {
-    "rule": "ERR-005",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "panic",
-    "message": "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.",
-    "fingerprint": "cfd60516ebbe0231669581a1019a095649204088ddbafbb65b2587dcf096813a"
-  },
-  {
-    "rule": "ERR-005",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "panic",
-    "message": "Direct 'panic!' or 'unimplemented!' macro invoked inside library crate. Libraries must return Result<T, E>.",
-    "fingerprint": "cfd60516ebbe0231669581a1019a095649204088ddbafbb65b2587dcf096813a"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "25b10fd03540a8812f7480073450a8e472a21327c8ff55d6270304c7c2004305"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "2c6cb63a68aeb808af32109ed6a7ff7e32b88543a1601979ca9a5a5995b33ba5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "5c54d476b23349a3ef12dee3ee7009f860e5772b227bb905fcd9183a577d2b65"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "d40f7656d269928891a5ecd3d8abe93104b967f705dd65f452a70fe47f57b03b"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "5693b9bf60caa7d70513f33798c311719a82afa69f9eaa11aa9655ec5f2acb91"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "65ed626d8becfa1c94915b9b755f98a264947c7ac81091c50beb1c02e282c5f4"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./llama-sys/build.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "89f67b861206cbdfef67db986141ba1d47cba8903526f5a119255469f1d92962"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/lib.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "34ead1dd9c4f88d3b07dcdbb53c3b87e1bec12f4cfe1921024ce1f92172a66bf"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/lib.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "5edb43e6eae64a850d850109ba35bf7877f53d2cd41154d71e04af978a84b1aa"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/lib.rs",
-    "line": 1,
-    "symbol": "expect",
-    "message": "Direct .expect() call detected. Can trigger panic on runtime failure.",
-    "fingerprint": "6701b1b7b067f5b44a612a7a12af17a5ef335cd26c491d9be1c925dd9c5d316c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/batch/executor.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "c80d48d9b77fb1a2a1756b2d5853737ad8dd9b0d606054512c26d2729df5cddb"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/batch/executor.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "eea33c4f370219d342b1840b430d1106f0ec067caa84c41f0986bf4152c2d065"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "bbdba20b5b7e54720492556497a683418fac3a49f4a68585993f6a13caebf4f9"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "bbdba20b5b7e54720492556497a683418fac3a49f4a68585993f6a13caebf4f9"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/chapters/mod.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "c26a3c207e72d7c151077483b06e5d05f65c31d2e7c6b8f0c674bc95c5062283"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "103e022ce89c1cad316f94109b016b3d7406592f8a01faf1d8d601db176544fe"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "25ce6d3940f1abd150e42fa2f84884d4670fa292bf52d5207f8d73ffbcac106e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "25ce6d3940f1abd150e42fa2f84884d4670fa292bf52d5207f8d73ffbcac106e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "25ce6d3940f1abd150e42fa2f84884d4670fa292bf52d5207f8d73ffbcac106e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4948580c7739d476f40bc59c90ba0ca751a8eeee0ed4b17033b4a8dfaef9c9bd"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "4948580c7739d476f40bc59c90ba0ca751a8eeee0ed4b17033b4a8dfaef9c9bd"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "71b6e6097948092a45f996ce9cc325d2e86c4308ce3dc94a8d2efb4a82c1a133"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7ce84f1545428f4efcd99424221130db80d1d31e5cce254466e6f6b6b7b13bbe"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7ce84f1545428f4efcd99424221130db80d1d31e5cce254466e6f6b6b7b13bbe"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "7ce84f1545428f4efcd99424221130db80d1d31e5cce254466e6f6b6b7b13bbe"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8eb039e21540a01c5cda79a788bd47c4f068b9cf6499cc1054853a673d213504"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b03bf5efa1088ad4edef532583879d2d1abde5a56f1b2d790caf8962fd71f7cc"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "b576a0f3b861ae0f76ed4593d288296ee1adbdc230e85b3868acb5cc635d1586"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/connections/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "bc651afdb1bef232904af12edbb2452b35ed3c233ae315e63e96af586d192b9f"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "6396453330f13b020c0f1d632191fd6e821c721a4139878e9c8acb0a311b0f0c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "6396453330f13b020c0f1d632191fd6e821c721a4139878e9c8acb0a311b0f0c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/entities_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "6396453330f13b020c0f1d632191fd6e821c721a4139878e9c8acb0a311b0f0c"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/history_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8f3931b9223d9e6c9fa627c7847225bb92d0bd36e229652233e2d4e69f6d9122"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/history_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8f3931b9223d9e6c9fa627c7847225bb92d0bd36e229652233e2d4e69f6d9122"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/history_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8f3931b9223d9e6c9fa627c7847225bb92d0bd36e229652233e2d4e69f6d9122"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/relations.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ca11967efab5dd78b9962db7bdcf5521b9093145ff062d91b080027c21f6bf78"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/relations.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ca11967efab5dd78b9962db7bdcf5521b9093145ff062d91b080027c21f6bf78"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/schemas_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "af8e22a6067b2ab80c367f0167f920a47803cc25ac0f9e92978d64ff721fceed"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/schemas_crud.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "af8e22a6067b2ab80c367f0167f920a47803cc25ac0f9e92978d64ff721fceed"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/types.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "e8812825bac1eb345db3b8a7488acda0e27b3afbf06c30e58543f56c6dbacdf5"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/entities/types.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "fd7e91728d73a612b0d71020c69253ca2ff808559e18e14aebd742868a55806a"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/projects/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "9372351a3374b1d35bc23c690563e49d499c9deb92fb0afe5706b474cad8ca70"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "48e4a843f9719241199be3bbe4db0968f96e6bcc0145737478b718d3f127d9e1"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "566419a265fd502857665c9e6886c3d9ac936a6cd4b32b34e811ede6d328535e"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "8c1013f1a548c447aa1ecb1bcdb44a835b3fbf10731d5b39e16badefeead2d06"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "bed79fae303f2d7a394b203748edd8446b3f7f55658d9889cd7d473ae699009d"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "slice_index",
-    "message": "Unchecked slice indexing (vec[i]) risks panic on Out-Of-Bounds access.",
-    "fingerprint": "ecefd7894a3840ddfdcc619065126b855d58ecdf55f5c1e517c44ac645cda043"
-  },
-  {
-    "rule": "ROB-001",
-    "file": "./src/logic/volumes/mod.rs",
-    "line": 1,
-    "symbol": "unwrap",
-    "message": "Direct .unwrap() call detected. Can cause runtime panic without I/O error handling.",
-    "fingerprint": "5d58b047d8fa13d95774a31b12efdbb0a5a46f89cdc00c7c73c58371fad39e2a"
   }
 ]

@@ -9,6 +9,7 @@ pub trait ChapterRepository: Send + Sync {
     async fn delete(&self, id: &str) -> Result<(), DomainError>;
     async fn list_by_project(&self, project_id: &str) -> Result<Vec<Chapter>, DomainError>;
     async fn list_by_volume(&self, volume_id: &str) -> Result<Vec<Chapter>, DomainError>;
+    async fn sync_mentions_appearances(&self, chapter_id: &str, entity_names: &[String]) -> Result<(), DomainError>;
 }
 
 #[async_trait]

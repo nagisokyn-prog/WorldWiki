@@ -53,8 +53,28 @@ DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT 
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
-DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE option<array<object> | null> FLEXIBLE DEFAULT [];
-DEFINE FIELD OVERWRITE participants    ON chapters TYPE option<array<string> | null> DEFAULT [];
+
+-- 5. СЮЖЕТНЫЕ АРКИ (СТОРИЛАЙНЫ)
+DEFINE TABLE OVERWRITE story_arcs SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id    ON story_arcs TYPE record<projects>;
+DEFINE FIELD OVERWRITE title         ON story_arcs TYPE string;
+DEFINE FIELD OVERWRITE description   ON story_arcs TYPE option<string>;
+DEFINE FIELD OVERWRITE arc_type      ON story_arcs TYPE string DEFAULT 'character'; -- 'character' | 'event' | 'relationship' | 'theme'
+DEFINE FIELD OVERWRITE status        ON story_arcs TYPE string DEFAULT 'in_progress'; -- 'planned' | 'in_progress' | 'completed' | 'abandoned'
+DEFINE FIELD OVERWRITE color         ON story_arcs TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at    ON story_arcs TYPE datetime DEFAULT time::now();
+DEFINE FIELD OVERWRITE updated_at    ON story_arcs TYPE datetime DEFAULT time::now();
+
+-- 5.1. СВЯЗЬ АРКА -> СУЩНОСТИ (ФОКУС АРКИ: персонажи, пары персонажей, фракции)
+DEFINE TABLE OVERWRITE arc_entities TYPE RELATION IN story_arcs OUT entities SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON arc_entities TYPE record<projects>;
+DEFINE FIELD OVERWRITE role       ON arc_entities TYPE option<string>; -- 'protagonist' | 'antagonist' | 'subject'
+
+-- 5.2. СВЯЗЬ АРКА -> ГЛАВЫ (ОХВАТ ГЛАВ СТОРИЛАЙНОМ)
+DEFINE TABLE OVERWRITE arc_chapters TYPE RELATION IN story_arcs OUT chapters SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON arc_chapters TYPE record<projects>;
+DEFINE FIELD OVERWRITE sort_order ON arc_chapters TYPE int DEFAULT 0;
+DEFINE FIELD OVERWRITE phase      ON arc_chapters TYPE option<string>; -- 'setup' | 'escalation' | 'climax' | 'resolution'
 
 -- 6. БЛОКИ ТЕКСТА
 DEFINE TABLE OVERWRITE text_blocks SCHEMAFULL;
@@ -142,11 +162,12 @@ DEFINE FIELD OVERWRITE created_at     ON entity_rel TYPE datetime DEFAULT time::
 -- 14. УЧАСТИЕ В ГЛАВАХ
 DEFINE TABLE OVERWRITE appears_in TYPE RELATION IN entities OUT chapters SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON appears_in TYPE record<projects>;
+DEFINE FIELD OVERWRITE source     ON appears_in TYPE string DEFAULT 'mention'; -- 'mention' | 'manual' | 'scene'
 DEFINE FIELD OVERWRITE role       ON appears_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE notes      ON appears_in TYPE option<string | null>;
 DEFINE FIELD OVERWRITE created_at ON appears_in TYPE datetime DEFAULT time::now();
 
--- 14. ПЛАНЫ
+-- 15. ПЛАНЫ
 DEFINE TABLE OVERWRITE plans SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id  ON plans TYPE record<projects>;
 DEFINE FIELD OVERWRITE title       ON plans TYPE string;
@@ -157,25 +178,32 @@ DEFINE FIELD OVERWRITE completed   ON plans TYPE bool DEFAULT false;
 DEFINE FIELD OVERWRITE created_at  ON plans TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at  ON plans TYPE datetime DEFAULT time::now();
 
--- 15. ТАЙМЛАЙН СОБЫТИЙ
+-- 16. ТАЙМЛАЙН СОБЫТИЙ
 DEFINE TABLE OVERWRITE timeline_events SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id    ON timeline_events TYPE record<projects>;
 DEFINE FIELD OVERWRITE title         ON timeline_events TYPE string;
 DEFINE FIELD OVERWRITE description   ON timeline_events TYPE option<string>;
 DEFINE FIELD OVERWRITE m_abs         ON timeline_events TYPE int; -- Золотой эталон абсолютной минуты
 DEFINE FIELD OVERWRITE calendar_id   ON timeline_events TYPE record<calendars>;
-DEFINE FIELD OVERWRITE chapter_id    ON timeline_events TYPE option<record<chapters>>;
 DEFINE FIELD OVERWRITE block_id      ON timeline_events TYPE option<string>;
 DEFINE FIELD OVERWRITE created_at    ON timeline_events TYPE datetime DEFAULT time::now();
 
--- 16. УЧАСТИЕ В СОБЫТИЯХ ТАЙМЛАЙНА
+-- 17. РАСКРЫТИЕ СОБЫТИЙ В ГЛАВАХ (M:N СВЯЗЬ DIEGETIC СОБЫТИЙ С ГЛАВАМИ ЧТЕНИЯ)
+DEFINE TABLE OVERWRITE revealed_in TYPE RELATION IN timeline_events OUT chapters SCHEMAFULL;
+DEFINE FIELD OVERWRITE project_id ON revealed_in TYPE record<projects>;
+DEFINE FIELD OVERWRITE pov_id     ON revealed_in TYPE option<record<entities>>; -- От чьего лица раскрыто
+DEFINE FIELD OVERWRITE kind       ON revealed_in TYPE string DEFAULT 'direct'; -- 'direct' | 'flashback' | 'mention' | 'rumor'
+DEFINE FIELD OVERWRITE block_id   ON revealed_in TYPE option<string>;
+DEFINE FIELD OVERWRITE created_at ON revealed_in TYPE datetime DEFAULT time::now();
+
+-- 18. УЧАСТИЕ В СОБЫТИЯХ ТАЙМЛАЙНА
 DEFINE TABLE OVERWRITE participates_in TYPE RELATION IN entities OUT timeline_events SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id ON participates_in TYPE option<record<projects>>;
 DEFINE FIELD OVERWRITE role       ON participates_in TYPE option<string>;
 DEFINE FIELD OVERWRITE notes      ON participates_in TYPE option<string>;
 DEFINE FIELD OVERWRITE created_at ON participates_in TYPE datetime DEFAULT time::now();
 
--- 17. РЕВИЗИИ СУЩНОСТЕЙ
+-- 19. РЕВИЗИИ СУЩНОСТЕЙ
 DEFINE TABLE OVERWRITE entity_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_revisions TYPE record<entities>;
 DEFINE FIELD OVERWRITE project_id  ON entity_revisions TYPE record<projects>;
@@ -184,7 +212,7 @@ DEFINE FIELD OVERWRITE commit_msg  ON entity_revisions TYPE option<string>;
 DEFINE FIELD OVERWRITE created_at  ON entity_revisions TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE is_pinned   ON entity_revisions TYPE bool DEFAULT false;
 
--- 18. РЕВИЗИИ СВЯЗЕЙ СУЩНОСТЕЙ
+-- 20. РЕВИЗИИ СВЯЗЕЙ СУЩНОСТЕЙ
 DEFINE TABLE OVERWRITE entity_rel_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON entity_rel_revisions TYPE record<entity_rel>;
 DEFINE FIELD OVERWRITE project_id  ON entity_rel_revisions TYPE record<projects>;
@@ -195,7 +223,7 @@ DEFINE FIELD OVERWRITE content     ON entity_rel_revisions TYPE object FLEXIBLE 
 DEFINE FIELD OVERWRITE commit_msg  ON entity_rel_revisions TYPE option<string>;
 DEFINE FIELD OVERWRITE created_at  ON entity_rel_revisions TYPE datetime DEFAULT time::now();
 
--- 19. РЕВИЗИИ ГЛАВ РУКОПИСИ
+-- 21. РЕВИЗИИ ГЛАВ РУКОПИСИ
 DEFINE TABLE OVERWRITE chapter_revisions SCHEMAFULL;
 DEFINE FIELD OVERWRITE target_id   ON chapter_revisions TYPE record<chapters>;
 DEFINE FIELD OVERWRITE project_id  ON chapter_revisions TYPE record<projects>;
@@ -204,11 +232,11 @@ DEFINE FIELD OVERWRITE commit_msg  ON chapter_revisions TYPE option<string>;
 DEFINE FIELD OVERWRITE created_at  ON chapter_revisions TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE is_pinned   ON chapter_revisions TYPE bool DEFAULT false;
 
--- 20. СЮЖЕТНЫЕ ОБЕЩАНИЯ
+-- 22. СЮЖЕТНЫЕ ОБЕЩАНИЯ / НАРРАТИВНЫЕ БЛОКИ
 DEFINE TABLE OVERWRITE plot_promises SCHEMAFULL;
 DEFINE FIELD OVERWRITE project_id          ON plot_promises TYPE record<projects>;
 DEFINE FIELD OVERWRITE chapter_id          ON plot_promises TYPE record<chapters>;
-DEFINE FIELD OVERWRITE kind                ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question'
+DEFINE FIELD OVERWRITE kind                ON plot_promises TYPE string; -- 'gun' | 'foreshadowing' | 'mystery' | 'question' | 'scene' | 'conflict'
 DEFINE FIELD OVERWRITE quote               ON plot_promises TYPE string;
 DEFINE FIELD OVERWRITE paragraph_index     ON plot_promises TYPE int DEFAULT 1;
 DEFINE FIELD OVERWRITE block_id            ON plot_promises TYPE option<string>;
@@ -218,5 +246,8 @@ DEFINE FIELD OVERWRITE progressions        ON plot_promises TYPE array<object> F
 DEFINE FIELD OVERWRITE resolution          ON plot_promises TYPE option<object> FLEXIBLE;
 DEFINE FIELD OVERWRITE resolved_in_volume  ON plot_promises TYPE option<record<volumes>>;
 DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<record<chapters>>;
+DEFINE FIELD OVERWRITE participant_ids     ON plot_promises TYPE option<array<record<entities>>>;
+DEFINE FIELD OVERWRITE location_id         ON plot_promises TYPE option<record<entities>>;
+DEFINE FIELD OVERWRITE timeline_event_id   ON plot_promises TYPE option<record<timeline_events>>;
 DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at          ON plot_promises TYPE datetime DEFAULT time::now();

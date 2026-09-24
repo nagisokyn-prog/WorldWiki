@@ -109,4 +109,50 @@ impl ChapterRepository for SurrealChapterRepository {
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
+
+    async fn sync_mentions_appearances(&self, chapter_id: &str, entity_names: &[String]) -> Result<(), DomainError> {
+        let clean_ch = chapter_id.trim_start_matches("chapters:");
+        
+        // 1. Delete previous automatic mentions for this chapter
+        let del_sql = r#"
+            DELETE appears_in 
+            WHERE out = type::record('chapters', $c_id) 
+              AND source = 'mention';
+        "#;
+        self.db
+            .query(del_sql)
+            .bind(("c_id", clean_ch.to_string()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        if entity_names.is_empty() {
+            return Ok(());
+        }
+
+        // 2. Fetch entity IDs matching names in the same project as chapter
+        let insert_sql = r#"
+            LET $ch_rec = type::record('chapters', $c_id);
+            LET $proj = (SELECT VALUE project_id FROM ONLY $ch_rec);
+            LET $target_entities = (
+                SELECT id FROM entities 
+                WHERE project_id = $proj 
+                  AND name IN $names
+            );
+            FOR $ent IN $target_entities {
+                RELATE ($ent.id)->appears_in->($ch_rec) CONTENT {
+                    source: 'mention',
+                    created_at: time::now()
+                };
+            };
+        "#;
+        self.db
+            .query(insert_sql)
+            .bind(("c_id", clean_ch.to_string()))
+            .bind(("names", entity_names.to_vec()))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+
+        Ok(())
+    }
 }
+

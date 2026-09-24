@@ -1,4 +1,5 @@
 pub mod ai;
+pub mod analytics;
 pub mod calendar;
 pub mod document;
 pub mod errors;
@@ -11,9 +12,11 @@ pub use errors::DomainError;
 
 #[cfg(test)]
 mod tests {
+    use crate::analytics::*;
+    use crate::calendar::{EventReveal, TimelineEvent};
     use crate::knowledge::Entity;
-    use crate::manuscript::{Chapter, ManuscriptStatus, TextBlock};
-    use crate::plot::{Plan, PlanParentType, PlotPromise, PromiseKind, PromiseStatus};
+    use crate::manuscript::{AppearanceSource, Chapter, EntityAppearance, ManuscriptStatus, TextBlock};
+    use crate::plot::{ArcType, Plan, PlanParentType, PlotPromise, PromiseKind, PromiseStatus, StoryArc};
 
     #[test]
     fn test_extract_entity_mentions() {
@@ -50,6 +53,28 @@ mod tests {
     }
 
     #[test]
+    fn test_story_arc_creation() {
+        let arc = StoryArc::new("proj_1", "Поиск Грааля", ArcType::Theme);
+        assert_eq!(arc.title, "Поиск Грааля");
+        assert_eq!(arc.arc_type, ArcType::Theme);
+        assert_eq!(arc.status, crate::plot::ArcStatus::Planned);
+    }
+
+    #[test]
+    fn test_appearance_creation() {
+        let app = EntityAppearance::new("ent_1", "ch_1", AppearanceSource::Mention);
+        assert_eq!(app.source, AppearanceSource::Mention);
+        assert_eq!(app.entity_id, "ent_1");
+    }
+
+    #[test]
+    fn test_event_reveal_creation() {
+        let rev = EventReveal::new("ev_1", "ch_2", "flashback");
+        assert_eq!(rev.kind, "flashback");
+        assert_eq!(rev.event_id, "ev_1");
+    }
+
+    #[test]
     fn test_plan_completion() {
         let mut plan = Plan::new(
             "proj_1",
@@ -70,3 +95,4 @@ mod tests {
         assert_eq!(entity.type_key, "character");
     }
 }
+

@@ -20,6 +20,8 @@ pub enum PromiseKind {
     Foreshadowing, // Предзнаменование
     Mystery,       // Тайна / Загадка
     Question,      // Сюжетный вопрос
+    Scene,         // Сцена / Эпизод (блок текста)
+    Conflict,      // Драматургический конфликт
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -38,6 +40,10 @@ pub struct PlotPromise {
     pub resolution: Option<Value>,
     pub resolved_in_volume: Option<String>,
     pub resolved_in_chapter: Option<String>,
+    #[serde(default)]
+    pub participant_ids: Option<Vec<String>>,
+    pub location_id: Option<String>,
+    pub timeline_event_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -63,6 +69,9 @@ impl PlotPromise {
             resolution: None,
             resolved_in_volume: None,
             resolved_in_chapter: None,
+            participant_ids: None,
+            location_id: None,
+            timeline_event_id: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,
         }

@@ -62,11 +62,14 @@ pub async fn apply_schema_pipeline(
         include_str!("../../apps/spa/src/logic/schema/no_ai/02_indexes.surql");
     const DDL_NOAI_03_EVENTS: &str =
         include_str!("../../apps/spa/src/logic/schema/no_ai/03_events.surql");
+    const DDL_NOAI_04_FUNCTIONS: &str =
+        include_str!("../../apps/spa/src/logic/schema/no_ai/04_functions.surql");
 
     apply_ddl_module(db, "no_ai/00_analyzers", DDL_NOAI_00_ANALYZERS).await?;
     apply_ddl_module(db, "no_ai/01_tables", DDL_NOAI_01_TABLES).await?;
     apply_ddl_module(db, "no_ai/02_indexes", DDL_NOAI_02_INDEXES).await?;
     apply_ddl_module(db, "no_ai/03_events", DDL_NOAI_03_EVENTS).await?;
+    apply_ddl_module(db, "no_ai/04_functions", DDL_NOAI_04_FUNCTIONS).await?;
 
     // 2. ИИ-ПРОСТРАНСТВО (AI / ULTRA EDITION)
     const DDL_AI_01_WORKSPACE: &str =
@@ -290,6 +293,22 @@ pub fn run() {
             worldwiki_tauri::commands::plant_plot_promise,
             worldwiki_tauri::commands::complete_plan,
             worldwiki_tauri::commands::audit_volume_consistency,
+            // Сюжетные арки & Аналитика
+            worldwiki_tauri::commands::get_story_arcs,
+            worldwiki_tauri::commands::save_story_arc,
+            worldwiki_tauri::commands::delete_story_arc,
+            worldwiki_tauri::commands::assign_arc_chapter,
+            worldwiki_tauri::commands::remove_arc_chapter,
+            worldwiki_tauri::commands::assign_arc_entity,
+            worldwiki_tauri::commands::remove_arc_entity,
+            worldwiki_tauri::commands::get_arc_chapters,
+            worldwiki_tauri::commands::get_arc_entities,
+            worldwiki_tauri::commands::get_cross_reference_matrix,
+            worldwiki_tauri::commands::audit_manuscript_consistency,
+            worldwiki_tauri::commands::get_timeline_inspector_data,
+            worldwiki_tauri::commands::get_graph_time_slice,
+            worldwiki_tauri::commands::get_character_journey,
+            worldwiki_tauri::commands::get_manuscript_statistics,
             // 8 AI Facades
             worldwiki_tauri::commands::ai_query_world,
             worldwiki_tauri::commands::ai_inspect_entity,
@@ -301,9 +320,9 @@ pub fn run() {
             worldwiki_tauri::commands::ai_audit_consistency,
             worldwiki_tauri::commands::ai_delegate_task,
             // --- Генерируемые команды для системных сущностей ---
-            @entities: [Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
+            @entities: [StoryArc, Volume, Plan, PlotPromise, Tag, Calendar, Chat, AutoApprovalSetting, AiProfile, AiMode, Artifact, AiSkill],
             @searchable: [TextBlock, ChatMessage, AgentMemory, WebCache, DictionaryWord],
-            @relations: [Cites]
+            @relations: [Cites, ArcChapter, ArcEntity, RevealedIn]
 ])
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())

@@ -13,6 +13,15 @@ DEFINE INDEX OVERWRITE idx_chapter_project   ON chapters FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_chapter_ft        ON chapters COLUMNS content FULLTEXT ANALYZER ru_en_analyzer BM25;
 DEFINE INDEX OVERWRITE idx_chapter_title_ft  ON chapters COLUMNS title FULLTEXT ANALYZER ru_en_analyzer BM25;
 
+-- 1.1. СЮЖЕТНЫЕ АРКИ
+DEFINE INDEX OVERWRITE idx_arc_project         ON story_arcs FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_arc_entities_in     ON arc_entities FIELDS in;
+DEFINE INDEX OVERWRITE idx_arc_entities_out    ON arc_entities FIELDS out;
+DEFINE INDEX OVERWRITE idx_arc_entities_proj   ON arc_entities FIELDS project_id;
+DEFINE INDEX OVERWRITE idx_arc_chapters_in     ON arc_chapters FIELDS in;
+DEFINE INDEX OVERWRITE idx_arc_chapters_out    ON arc_chapters FIELDS out;
+DEFINE INDEX OVERWRITE idx_arc_chapters_proj   ON arc_chapters FIELDS project_id;
+
 -- 2. БЛОКИ ТЕКСТА
 DEFINE INDEX OVERWRITE idx_textblock_project ON text_blocks FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_textblock_chapter ON text_blocks FIELDS chapter_id;
@@ -47,10 +56,12 @@ DEFINE INDEX OVERWRITE idx_appears_in_out     ON appears_in FIELDS out;
 DEFINE INDEX OVERWRITE idx_plan_project ON plans FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_plan_parent  ON plans FIELDS parent_ref;
 
--- 9. ТАЙМЛАЙН И УЧАСТИЕ
+-- 9. ТАЙМЛАЙН, РАСКРЫТИЕ И УЧАСТИЕ
 DEFINE INDEX OVERWRITE idx_event_project       ON timeline_events FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_event_m_abs         ON timeline_events FIELDS project_id, m_abs;
-DEFINE INDEX OVERWRITE idx_event_chapter       ON timeline_events FIELDS chapter_id;
+DEFINE INDEX OVERWRITE idx_revealed_in_in      ON revealed_in FIELDS in;
+DEFINE INDEX OVERWRITE idx_revealed_in_out     ON revealed_in FIELDS out;
+DEFINE INDEX OVERWRITE idx_revealed_in_project ON revealed_in FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_participates_in_in  ON participates_in FIELDS in;
 DEFINE INDEX OVERWRITE idx_participates_in_out ON participates_in FIELDS out;
 
@@ -67,7 +78,7 @@ DEFINE INDEX OVERWRITE idx_rel_rev_out         ON entity_rel_revisions FIELDS ou
 DEFINE INDEX OVERWRITE idx_chapter_rev_target  ON chapter_revisions FIELDS target_id;
 DEFINE INDEX OVERWRITE idx_chapter_rev_project ON chapter_revisions FIELDS project_id;
 
--- 11. СЮЖЕТНЫЕ ОБЕЩАНИЯ
+-- 11. СЮЖЕТНЫЕ ОБЕЩАНИЯ / НАРРАТИВНЫЕ БЛОКИ
 DEFINE INDEX OVERWRITE idx_promise_project ON plot_promises FIELDS project_id;
 DEFINE INDEX OVERWRITE idx_promise_chapter ON plot_promises FIELDS chapter_id;
 DEFINE INDEX OVERWRITE idx_promise_status  ON plot_promises FIELDS project_id, status;

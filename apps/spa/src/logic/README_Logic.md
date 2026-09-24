@@ -51,23 +51,25 @@ apps/spa/src/logic/schema/
 
 GraphRAG в WorldWiki связывает **5 фундаментальных доменных слоев**:
 
-- 📚 **Иерархия Рукописи**: Проект $\to$ Тома $\to$ Арки $\to$ Главы $\to$ Текст-блоки.
+- 📚 **Иерархия Рукописи и Сторилайны**: Проект $\to$ Тома $\to$ Главы $\to$ Текст-блоки, а также сквозные Сюжетные Арки (`story_arcs` $\to$ `arc_chapters`, `arc_entities`).
 - 🧙‍♂️ **Граф Знаний (Lore Graph)**: Сущности и типизированные рёбра отношений (`entity_rel`).
-- ⏳ **Континуум Времени**: События таймлайна с абсолютной минутой ($M_{\text{abs}}$).
-- 🎯 **Сюжетные Обещания**: Чеховские ружья, тайны, предзнаменования (`plot_promises`).
+- ⏳ **Континуум Времени**: События таймлайна с абсолютной минутой ($M_{\text{abs}}$) и их нелинейное раскрытие в главах (`revealed_in`).
+- 🎯 **Нарративные Блоки и Обещания**: Чеховские ружья, тайны, сцены и конфликты (`plot_promises`).
 - 🤖 **AI-Контекст**: Деревья чатов, чанки RAG и память агента (`agent_memory`).
 
 ```mermaid
 flowchart TD
-    subgraph Narrative_Layer ["📚 Иерархия Рукописи (Narrative Tree)"]
+    subgraph Narrative_Layer ["📚 Иерархия Рукописи и Сторилайны"]
         Project["Проект (projects)"]
         Volume["Том (volumes)"]
         Chapter["Глава (chapters)"]
         TextBlock["Текст-блок (text_blocks)"]
+        StoryArc["Сюжетная Арка (story_arcs)"]
 
         Project -->|contains| Volume
         Volume -->|contains| Chapter
         Chapter -->|contains| TextBlock
+        StoryArc -.->|arc_chapters| Chapter
     end
 
     subgraph Knowledge_Layer ["🧙‍♂️ Граф Лора (Lore Graph)"]
@@ -77,6 +79,7 @@ flowchart TD
 
         EntityA ---|"entity_rel"| EntityB
         EntityA -->|"chunked_into"| EntityChunk
+        StoryArc -.->|arc_entities| EntityA
     end
 
     subgraph Timeline_Layer ["⏳ Континуум Времени (M_abs)"]
@@ -86,40 +89,44 @@ flowchart TD
         Calendar -->|"defines_time"| TimelineEvent
     end
 
-    subgraph Plot_Layer ["🎯 Сюжетные Обещания (Promises & Guns)"]
-        PlotPromise["Сюжетное Обещание (plot_promises)"]
+    subgraph Plot_Layer ["🎯 Нарративные Блоки (Scenes, Conflicts, Promises)"]
+        PlotPromise["Нарративный Блок (plot_promises)"]
     end
 
     %% Межслойные Графовые Связи для GraphRAG
     TextBlock -.->|"mentions ((Сущность))"| EntityA
-    Chapter -.->|"appears_in"| EntityA
+    EntityA -.->|"appears_in (source: mention/manual/scene)"| Chapter
 
-    Chapter -.->|"occurs_at"| TimelineEvent
+    TimelineEvent -.->|"revealed_in (POV, kind, block_id)"| Chapter
     EntityA -.->|"participates_in"| TimelineEvent
 
-    TextBlock -.->|"plants"| PlotPromise
-    Chapter -.->|"progressed_in"| PlotPromise
-    Chapter -.->|"resolves"| PlotPromise
+    PlotPromise -.->|"participant_ids"| EntityA
+    PlotPromise -.->|"location_id"| EntityB
+    PlotPromise -.->|"timeline_event_id"| TimelineEvent
+    Chapter -.->|"contains_block"| PlotPromise
 ```
 
 ---
 
 ## 📊 4. Спецификация Таблиц и Графовых Рёбер
 
-### 4.1. Узлы Рукописи (Narrative Nodes)
+### 4.1. Узлы Рукописи и Сторилайны (Narrative Nodes & Arcs)
 
 | Таблица | Тип | Назначение | Ключевые поля |
 |---|---|---|---|
 | **`projects`** | Узел | Корневой мир / проект | `name`, `genres`, `perfLevel`, `data` |
 | **`volumes`** | Узел | Том книги / часть эпопеи | `title`, `project_id` |
 | **`chapters`** | Узел | Глава рукописи (Единый Источник Правды AST) | `title`, `content`, `word_count`, `summary`, `embeddings` |
+| **`story_arcs`** | Узел | Сюжетная линия / сторилайн (персонажа, конфликта, темы) | `title`, `arc_type`, `status`, `color`, `project_id` |
+| **`arc_chapters`** | Ребро | Охват глав сторилайном (`story_arcs -> chapters`) | `sort_order`, `phase` ('setup' / 'climax' / ...) |
+| **`arc_entities`** | Ребро | Фокус арки на сущностях лора (`story_arcs -> entities`) | `role` ('protagonist' / 'antagonist' / ...) |
 | **`text_blocks`** | Индекс | Производный семантический индекс главы (RAG / стилометрия) | `chapter_id`, `block_type`, `order_index`, `embeddings` |
 
 > 💡 **Архитектурный Инвариант: Рукопись и Текст-Блоки**:
 > 1. **Единый Источник Правды**: Мастер-текстом рукописи является поле `chapters.content` (Tiptap JSON AST), где каждый абзац размечается через `SemanticParagraph` (`attrs.semanticTag` = `desc` | `dialog` | `thought`).
 > 2. **Роль `text_blocks`**: Это **вторичный производный индекс**, автоматически пересчитываемый при сохранении главы. Он необходим для гранулярного RAG-поиска по фрагментам и мгновенного расчета стилометрической структуры (соотношение диалогов, описаний и мыслей).
 > 3. **Версионирование блоков**: Блоки **не требуют** собственных ревизий и CHANGEFEED, так как полная история структуры и семантических тегов сохраняется в `chapter_revisions.content`. При откате главы `text_blocks` автоматически пересоздаются из сохраненного AST.
-> 4. **Денормализованный Read-Model кэш главы**: Поля `chapters.participants` и `chapters.timeline_events` являются **производным денормализованным снимком (Read-Model Cache)** для быстрого рендеринга карточки главы в редакторе без выполнения двух тяжелых графовых `JOIN`. **Единым Источником Правды (Single Source of Truth)** остаются нативные таблицы и рёбра `appears_in` (граф сущностей) и `timeline_events` (хронология таймлайна). При любых расхождениях безусловный приоритет имеет нормализованная графовая модель.
+> 4. **Нормализованная Графовая Модель**: Участие сущностей и события таймлайна хранятся строго в нативных реберных таблицах `appears_in` (с фиксацией `source: mention | manual | scene`) и `revealed_in` (с фиксацией POV и типа раскрытия).
 
 ---
 
@@ -144,25 +151,32 @@ DEFINE FIELD OVERWRITE sort_order ON contains TYPE int DEFAULT 0;
 | **`schema_history`** | Мета | История версий структуры карточек | `schema_id`, `snapshot`, `saved_at`, `commit_msg` |
 | **`entities`** | Узел | Карточка сущности (Лор) | `entity_type`, `name`, `description`, `attributes`, `tags` |
 | **`entity_chunks`** | Узел | Текстовый чанк для векторного RAG | `entity_id`, `chunk_index`, `content`, `embedding_*` |
+| **`relation_schemas`** | Мета | Спецификация типов отношений | `rel_key`, `rel_name`, `icon`, `directed`, `from_types`, `to_types` |
 | **`entity_rel`** | Ребро | Связь сущностей (`entities -> entities`) | `rel_type`, `description`, `strength`, `attributes`, `created_at` |
-| **`appears_in`** | Ребро | Участие в главе (`entities -> chapters`) | `role`, `notes`, `created_at` |
+| **`appears_in`** | Ребро | Участие в главе (`entities -> chapters`) | `source` ('mention' / 'manual' / 'scene'), `role`, `notes` |
 
 ---
 
-### 4.4. Таймлайн и Золотой Эталон Времени ($M_{\text{abs}}$)
+### 4.4. Таймлайн, Нелинейное Раскрытие и Золотой Эталон Времени ($M_{\text{abs}}$)
 
 * **Золотой инвариант времени**: Время измеряется исключительно в **Абсолютных Минутах ($M_{\text{abs}} \in \mathbb{Z}$)** от фиксированной точки сотворения мира.
 * **Календари (`calendars`)**: Являются **проекциями (View / Линзами)**, вычисляющими отображение $M_{\text{abs}} \leftrightarrow$ «14 день месяца Дракона». Изменение параметров календаря **не требует** перезаписи событий в базе — движок отображения рассчитывает новую строку на лету.
+* **Нелинейность повествования**: Событие происходит в мире в определенный момент $M_{\text{abs}}$ (diegetic time), но может раскрываться читателю в нескольких главах (narrative reading order) через ребро `revealed_in`.
 
 | Таблица | Тип | Назначение | Ключевые поля |
 |---|---|---|---|
 | **`calendars`** | Мета | Календарная система мира | `name`, `description`, `data`, `is_default`, `is_master` |
-| **`timeline_events`** | Узел | Событие хронологии | `title`, `description`, `m_abs`, `calendar_id`, `chapter_id` |
+| **`timeline_events`** | Узел | Событие хронологии ($M_{\text{abs}}$) | `title`, `description`, `m_abs`, `calendar_id`, `block_id` |
+| **`revealed_in`** | Ребро | Раскрытие события в главах (`events -> chapters`) | `pov_id`, `kind` ('direct' / 'flashback' / 'rumor'), `block_id` |
 | **`participates_in`** | Ребро | Участие в событии (`entities -> events`) | `role`, `notes`, `created_at` |
 
 ---
 
-### 4.5. Двухуровневая Модель Истории: CHANGEFEED vs Семантические Ревизии
+### 4.5. Нарративные Блоки и Сюжетные Обещания (`plot_promises`)
+
+| Таблица | Тип | Назначение | Ключевые поля |
+|---|---|---|---|
+| **`plot_promises`** | Узел | Нарративный контейнер (Чеховские ружья, сцены, конфликты) | `kind` ('gun' / 'scene' / 'conflict' / ...), `status`, `participant_ids`, `location_id`, `timeline_event_id`, `block_id` |
 
 Система разделяет поток событий и долговременную историю на **два изолированных слоя**:
 

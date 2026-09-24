@@ -1,3 +1,6 @@
+pub mod mentions;
+
+pub use mentions::SaveChapterWithMentionsWorkflow;
 use std::sync::Arc;
 use worldwiki_domain::manuscript::Chapter;
 use worldwiki_ports::repositories::ChapterRepository;

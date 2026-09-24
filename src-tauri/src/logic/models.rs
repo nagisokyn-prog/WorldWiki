@@ -245,6 +245,22 @@ surreal_entity! {
         #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub resolution: Option<serde_json::Value>,
         pub resolved_in_volume: Option<String>,
         pub resolved_in_chapter: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")] pub participant_ids: Option<Vec<String>>,
+        pub location_id: Option<String>,
+        pub timeline_event_id: Option<String>,
+    }
+}
+
+surreal_entity! {
+    #[table = "story_arcs"]
+    #[project_scoped]
+    #[tauri_commands]
+    pub struct StoryArc {
+        pub title: String,
+        pub description: Option<String>,
+        pub arc_type: String,
+        pub status: String,
+        pub color: Option<String>,
     }
 }
 
@@ -413,12 +429,35 @@ surreal_relation! {
 }
 
 surreal_relation! {
-    #[edge = "contains"]
-    #[from = chats]
-    #[to = chats]
+    #[edge = "arc_chapters"]
+    #[from = story_arcs]
+    #[to = chapters]
     #[tauri_commands]
-    pub struct ChatContainsChat {
+    pub struct ArcChapter {
         #[ts(type = "number")] pub sort_order: i64,
+        pub phase: Option<String>,
+    }
+}
+
+surreal_relation! {
+    #[edge = "arc_entities"]
+    #[from = story_arcs]
+    #[to = entities]
+    #[tauri_commands]
+    pub struct ArcEntity {
+        pub role: Option<String>,
+    }
+}
+
+surreal_relation! {
+    #[edge = "revealed_in"]
+    #[from = timeline_events]
+    #[to = chapters]
+    #[tauri_commands]
+    pub struct RevealedIn {
+        pub pov_id: Option<String>,
+        pub kind: String,
+        pub block_id: Option<String>,
     }
 }
 
@@ -426,11 +465,12 @@ surreal_schema! {
     entities: [
         TextBlock, ChatMessage, Chat, DictionaryWord, WebCache, AgentMemory,
         AutoApprovalSetting, AiProfile, Artifact, AiSkill,
-        Calendar, Volume, Chapter, Tag, Plan
+        Calendar, Volume, Chapter, Tag, Plan, PlotPromise, StoryArc
     ],
     relations: [
         Cites, VolumeContainsChapter, ProjectContainsChapter, ProjectContainsVolume,
-        ChatContainsMessage, MessageContainsMessage, ProjectContainsChat, ChatContainsChat
+        ChatContainsMessage, MessageContainsMessage, ProjectContainsChat, ChatContainsChat,
+        ArcChapter, ArcEntity, RevealedIn
     ]
 }
 
@@ -455,6 +495,11 @@ mod ts_export_tests {
         Artifact::export(&cfg).expect(export_err_msg);
         AiSkill::export(&cfg).expect(export_err_msg);
         Plan::export(&cfg).expect(export_err_msg);
+        PlotPromise::export(&cfg).expect(export_err_msg);
+        StoryArc::export(&cfg).expect(export_err_msg);
+        ArcChapter::export(&cfg).expect(export_err_msg);
+        ArcEntity::export(&cfg).expect(export_err_msg);
+        RevealedIn::export(&cfg).expect(export_err_msg);
         Volume::export(&cfg).expect(export_err_msg);
         Chapter::export(&cfg).expect(export_err_msg);
         Tag::export(&cfg).expect(export_err_msg);

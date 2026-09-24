@@ -3,11 +3,15 @@ use surrealdb::engine::local::Db;
 use surrealdb::Surreal;
 
 use worldwiki_application::ai::{AiToolFacades, ChatServices, LocalAiServices};
+use worldwiki_application::analytics::{
+    CharacterJourneyService, ConsistencyAuditWorkflow, CrossReferenceMatrixService,
+    GraphWebSliceService, ManuscriptAnalyticsService, TimelineInspectorService,
+};
 use worldwiki_application::calendar::CalendarServices;
 use worldwiki_application::common::JobManager;
 use worldwiki_application::knowledge::KnowledgeServices;
-use worldwiki_application::manuscript::ManuscriptServices;
-use worldwiki_application::plot::PlotServices;
+use worldwiki_application::manuscript::{ManuscriptServices, SaveChapterWithMentionsWorkflow};
+use worldwiki_application::plot::{PlotServices, StoryArcServices};
 use worldwiki_application::workflows::{
     EditManuscriptAtomicWorkflow, HybridSemanticSearchWorkflow,
 };
@@ -23,22 +27,32 @@ use worldwiki_infrastructure::surrealdb::memory_repos::{
 };
 use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepository;
 use worldwiki_infrastructure::surrealdb::repos::{
-    SurrealChapterRepository, SurrealEntityRepository, SurrealPlanRepository,
-    SurrealPlotPromiseRepository, SurrealRAGAdapter, SurrealRelationRepository,
+    SurrealAnalyticsRepository, SurrealChapterRepository, SurrealEntityRepository,
+    SurrealPlanRepository, SurrealPlotPromiseRepository, SurrealRAGAdapter,
+    SurrealRelationRepository, SurrealStoryArcRepository, SurrealTimelineRepository,
 };
 use worldwiki_infrastructure::surrealdb::skill_repo::SurrealSkillRepository;
 use worldwiki_ports::ai::RAGContextPort;
 use worldwiki_ports::events::EventPublisherPort;
 use worldwiki_ports::repositories::{
-    ChapterRepository, EntityRepository, PlanRepository, PlotPromiseRepository, RelationRepository,
+    AnalyticsRepositoryPort, ChapterRepository, EntityRepository, PlanRepository,
+    PlotPromiseRepository, RelationRepository, StoryArcRepository, TimelineEventRepository,
 };
 use worldwiki_tauri::state::AppServices;
 
 struct CoreDomainServices {
     manuscript: Arc<ManuscriptServices>,
+    save_chapter_workflow: Arc<SaveChapterWithMentionsWorkflow>,
     knowledge: Arc<KnowledgeServices>,
     calendar: Arc<CalendarServices>,
     plot: Arc<PlotServices>,
+    story_arcs: Arc<StoryArcServices>,
+    consistency_workflow: Arc<ConsistencyAuditWorkflow>,
+    cross_ref_service: Arc<CrossReferenceMatrixService>,
+    timeline_inspector_service: Arc<TimelineInspectorService>,
+    graph_web_slice_service: Arc<GraphWebSliceService>,
+    character_journey_service: Arc<CharacterJourneyService>,
+    manuscript_stats_service: Arc<ManuscriptAnalyticsService>,
     job_manager: Arc<JobManager>,
 }
 
@@ -48,23 +62,52 @@ fn build_core_domain(
     relation_repo: Arc<dyn RelationRepository>,
     promise_repo: Arc<dyn PlotPromiseRepository>,
     plan_repo: Arc<dyn PlanRepository>,
+    story_arc_repo: Arc<dyn StoryArcRepository>,
+    timeline_repo: Arc<dyn TimelineEventRepository>,
+    analytics_repo: Arc<dyn AnalyticsRepositoryPort>,
     events: Arc<dyn EventPublisherPort>,
 ) -> CoreDomainServices {
-    let manuscript = Arc::new(ManuscriptServices::new(chapter_repo, Arc::clone(&events)));
+    let manuscript = Arc::new(ManuscriptServices::new(Arc::clone(&chapter_repo), Arc::clone(&events)));
+    let save_chapter_workflow = Arc::new(SaveChapterWithMentionsWorkflow::new(Arc::clone(&chapter_repo), Arc::clone(&events)));
     let knowledge = Arc::new(KnowledgeServices::new(
-        entity_repo,
+        Arc::clone(&entity_repo),
         relation_repo,
         Arc::clone(&events),
     ));
     let calendar = Arc::new(CalendarServices::new());
-    let plot = Arc::new(PlotServices::new(promise_repo, plan_repo, events));
+    let plot = Arc::new(PlotServices::new(Arc::clone(&promise_repo), plan_repo, Arc::clone(&events)));
+    let story_arcs = Arc::new(StoryArcServices::new(story_arc_repo));
+    let consistency_workflow = Arc::new(ConsistencyAuditWorkflow::new(
+        Arc::clone(&analytics_repo),
+        Arc::clone(&entity_repo),
+        Arc::clone(&chapter_repo),
+        timeline_repo,
+        promise_repo,
+    ));
+    let cross_ref_service = Arc::new(CrossReferenceMatrixService::new(Arc::clone(&analytics_repo)));
+    let timeline_inspector_service = Arc::new(TimelineInspectorService::new(Arc::clone(&analytics_repo)));
+    let graph_web_slice_service = Arc::new(GraphWebSliceService::new(Arc::clone(&analytics_repo)));
+    let character_journey_service = Arc::new(CharacterJourneyService::new(analytics_repo));
+    let manuscript_stats_service = Arc::new(ManuscriptAnalyticsService::new(
+        chapter_repo,
+        entity_repo,
+        Arc::clone(&plot.promise_repo),
+    ));
     let job_manager = Arc::new(JobManager::new());
 
     CoreDomainServices {
         manuscript,
+        save_chapter_workflow,
         knowledge,
         calendar,
         plot,
+        story_arcs,
+        consistency_workflow,
+        cross_ref_service,
+        timeline_inspector_service,
+        graph_web_slice_service,
+        character_journey_service,
+        manuscript_stats_service,
         job_manager,
     }
 }
@@ -115,6 +158,9 @@ struct SurrealRepos {
     relation: Arc<SurrealRelationRepository>,
     promise: Arc<SurrealPlotPromiseRepository>,
     plan: Arc<SurrealPlanRepository>,
+    story_arc: Arc<SurrealStoryArcRepository>,
+    timeline: Arc<SurrealTimelineRepository>,
+    analytics: Arc<SurrealAnalyticsRepository>,
     rag: Arc<SurrealRAGAdapter>,
     chat: Arc<SurrealChatRepository>,
     profile: Arc<SurrealAiProfileRepository>,
@@ -129,57 +175,14 @@ impl SurrealRepos {
             relation: Arc::new(SurrealRelationRepository::new(Arc::clone(db))),
             promise: Arc::new(SurrealPlotPromiseRepository::new(Arc::clone(db))),
             plan: Arc::new(SurrealPlanRepository::new(Arc::clone(db))),
+            story_arc: Arc::new(SurrealStoryArcRepository::new(Arc::clone(db))),
+            timeline: Arc::new(SurrealTimelineRepository::new(Arc::clone(db))),
+            analytics: Arc::new(SurrealAnalyticsRepository::new(Arc::clone(db))),
             rag: Arc::new(SurrealRAGAdapter::new(Arc::clone(db))),
             chat: Arc::new(SurrealChatRepository::new(Arc::clone(db))),
             profile: Arc::new(SurrealAiProfileRepository::new(Arc::clone(db))),
             skill: Arc::new(SurrealSkillRepository::new(Arc::clone(db))),
         }
-    }
-}
-
-pub fn build_app_services() -> AppServices {
-    let events: Arc<dyn EventPublisherPort> = Arc::new(InMemoryEventPublisher);
-    let ai_adapter = Arc::new(MockAiAdapter);
-
-    let core = build_core_domain(
-        Arc::new(InMemoryChapterRepository::default()),
-        Arc::new(InMemoryEntityRepository::default()),
-        Arc::new(InMemoryRelationRepository::default()),
-        Arc::new(InMemoryPlotPromiseRepository::default()),
-        Arc::new(InMemoryPlanRepository::default()),
-        Arc::clone(&events),
-    );
-
-    let workflows =
-        build_workflows_and_tools(&core, Arc::clone(&ai_adapter) as Arc<dyn RAGContextPort>);
-
-    let dummy_db = Arc::new(Surreal::init());
-    let repos = SurrealRepos::new(&dummy_db);
-
-    let chat = Arc::new(ChatServices::new(
-        repos.chat,
-        repos.profile,
-        ai_adapter,
-        events,
-        None,
-        Some(repos.skill),
-        Some(Arc::clone(&workflows.ai_tools)),
-    ));
-
-    let local_ai = build_local_ai_layer();
-
-    AppServices {
-        manuscript: core.manuscript,
-        knowledge: core.knowledge,
-        calendar: core.calendar,
-        plot: core.plot,
-        edit_workflow: workflows.edit_workflow,
-        search_workflow: workflows.search_workflow,
-        job_manager: core.job_manager,
-        ai_tools: workflows.ai_tools,
-        chat,
-        local_ai,
-        db: dummy_db,
     }
 }
 
@@ -195,6 +198,9 @@ pub fn build_surreal_app_services(
         repos.relation,
         repos.promise,
         repos.plan,
+        repos.story_arc,
+        repos.timeline,
+        repos.analytics,
         Arc::clone(&event_publisher),
     );
 
@@ -217,9 +223,17 @@ pub fn build_surreal_app_services(
 
     AppServices {
         manuscript: core.manuscript,
+        save_chapter_workflow: core.save_chapter_workflow,
         knowledge: core.knowledge,
         calendar: core.calendar,
         plot: core.plot,
+        story_arcs: core.story_arcs,
+        consistency_workflow: core.consistency_workflow,
+        cross_ref_service: core.cross_ref_service,
+        timeline_inspector_service: core.timeline_inspector_service,
+        graph_web_slice_service: core.graph_web_slice_service,
+        character_journey_service: core.character_journey_service,
+        manuscript_stats_service: core.manuscript_stats_service,
         edit_workflow: workflows.edit_workflow,
         search_workflow: workflows.search_workflow,
         job_manager: core.job_manager,
@@ -229,3 +243,4 @@ pub fn build_surreal_app_services(
         db,
     }
 }
+

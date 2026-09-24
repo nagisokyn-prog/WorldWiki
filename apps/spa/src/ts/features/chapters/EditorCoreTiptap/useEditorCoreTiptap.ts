@@ -32,7 +32,7 @@ export function useEditorCoreTiptap(
     markdownTextareaRef,
     onOpenPromiseCreateModal: (payload) => {
       emit('create-promise', {
-        kind: 'foreshadowing',
+        kind: payload.kind || 'scene',
         quote: payload.quote,
         paragraph_index: payload.paragraph_index,
         block_id: payload.block_id
@@ -41,7 +41,7 @@ export function useEditorCoreTiptap(
     onLinkMilestone: (payload) => {
       emit('link-milestone', {
         promiseId: payload.promiseId,
-        stage: 'progression',
+        stage: payload.stage || 'progression',
         quote: payload.quote,
         paragraph_index: payload.paragraph_index,
         block_id: payload.block_id

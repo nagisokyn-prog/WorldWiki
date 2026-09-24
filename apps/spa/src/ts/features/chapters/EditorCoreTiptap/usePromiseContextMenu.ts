@@ -11,6 +11,18 @@ export interface PromiseTypeOption {
 
 export const promiseTypes: PromiseTypeOption[] = [
   {
+    kind: 'scene',
+    label: 'Сцена / Эпизод',
+    icon: '🎬',
+    description: 'Нарративная сцена с участниками, локацией и таймлайном'
+  },
+  {
+    kind: 'conflict',
+    label: 'Конфликт',
+    icon: '⚔️',
+    description: 'Столкновение сторон, мотивов или сил с фазами развития'
+  },
+  {
     kind: 'gun',
     label: 'Чеховское ружьё',
     icon: '🔫',

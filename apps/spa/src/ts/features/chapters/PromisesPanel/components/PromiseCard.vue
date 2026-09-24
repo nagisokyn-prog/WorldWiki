@@ -18,6 +18,22 @@
       </button>
     </div>
 
+    <!-- Секция контекста нарративного блока: участники, локация, событие таймлайна -->
+    <div v-if="(item.participant_ids && item.participant_ids.length > 0) || item.location_id || item.timeline_event_id || item.block_id" class="promise-meta-tags flex flex-wrap gap-1 px-3 py-1.5 bg-surface-subtle border-b border-subtle text-2xs">
+      <span v-if="item.block_id" class="badge-block font-mono text-muted" title="ID абзаца">
+        🧱 {{ item.block_id }}
+      </span>
+      <span v-if="item.location_id" class="badge-loc text-accent font-semibold" title="Локация сцены">
+        📍 {{ item.location_id.replace(/^entities:/, '') }}
+      </span>
+      <span v-if="item.timeline_event_id" class="badge-event text-warning font-semibold" title="Событие таймлайна">
+        ⏱️ {{ item.timeline_event_id.replace(/^timeline_events:/, '') }}
+      </span>
+      <span v-for="pid in (item.participant_ids || [])" :key="pid" class="badge-participant text-muted" title="Участник сцены">
+        👤 {{ pid.replace(/^entities:/, '') }}
+      </span>
+    </div>
+
     <!-- ХРОНОЛОГИЯ ЖИЗНИ ОБЕЩАНИЯ (МИНИ-ТАЙМЛАЙН) -->
     <div class="promise-timeline">
       <!-- 1. 🌱 ТОЧКА ПОСАДКИ (PLANT) -->
@@ -125,38 +141,21 @@
     </div>
 
     <!-- Заметка -->
-    <div class="card-note-section">
-      <div v-if="editingNoteId === item.id" class="note-edit-box">
-        <textarea 
-          :value="noteDraft" 
-          placeholder="Заметка к обещанию..."
-          class="note-textarea"
-          rows="2"
-          @input="$emit('update:noteDraft', ($event.target as HTMLTextAreaElement).value)"
-          @keydown.enter.ctrl.prevent="$emit('saveNote', item)"
-          @keydown.esc.prevent="$emit('cancelEditNote')"
-        ></textarea>
-        <div class="note-actions">
-          <button class="btn-xs btn-primary" @click="$emit('saveNote', item)">Сохранить</button>
-          <button class="btn-xs btn-ghost" @click="$emit('cancelEditNote')">Отмена</button>
-        </div>
-      </div>
-      <div v-else-if="item.note" class="note-display" @click="$emit('startEditNote', item)">
-        <span class="note-icon">📝</span>
-        <span class="note-text">{{ item.note }}</span>
-      </div>
-      <button 
-        v-else 
-        class="btn-add-note" 
-        @click="$emit('startEditNote', item)"
-      >
-        + Добавить заметку
-      </button>
-    </div>
+    <PromiseCardNote
+      :editing-note-id="editingNoteId"
+      :item-id="item.id"
+      :note="item.note"
+      :note-draft="noteDraft"
+      @update:note-draft="$emit('update:noteDraft', $event)"
+      @start-edit="$emit('startEditNote', item)"
+      @cancel-edit="$emit('cancelEditNote')"
+      @save="$emit('saveNote', item)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import PromiseCardNote from './PromiseCardNote.vue';
 import type { RichPlotPromise } from '../usePromisesPanel';
 
 defineProps<{

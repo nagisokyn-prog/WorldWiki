@@ -9,6 +9,8 @@ vi.mock('@worldwiki/components', () => ({
 describe('searchApi', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-url');
+    window.URL.revokeObjectURL = vi.fn();
   });
 
   describe('uploadPhoto', () => {

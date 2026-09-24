@@ -29,10 +29,8 @@ describe('useCharacterJourney Composable', () => {
       ],
     });
 
-    const { timelineItems, filterType } = useCharacterJourney('test_proj', 'ent:1');
-
-    // Wait for the async load
-    await new Promise(resolve => setTimeout(resolve, 0));
+    const { timelineItems, filterType, refresh } = useCharacterJourney('test_proj', 'ent:1');
+    await refresh();
 
     expect(timelineItems.value.length).toBe(5);
 

@@ -40,10 +40,9 @@ describe('useGraphWeb Composable', () => {
       ],
     });
 
-    const { filteredEdges, filteredNodes, filters } = useGraphWebView('test_proj');
+    const { filteredEdges, filteredNodes, filters, refresh } = useGraphWebView('test_proj');
+    await refresh();
 
-    // Wait for the async load
-    await new Promise(resolve => setTimeout(resolve, 0));
     expect(filteredNodes.value).toHaveLength(3);
 
     // Chapter 3 -> rel:1 is active (1..5), rel:2 is inactive (6..10)

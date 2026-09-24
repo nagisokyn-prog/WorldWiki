@@ -37,9 +37,10 @@ export interface UsePromiseFilteringOptions<T extends { chapter_id: string; stat
   allChapters?: ChapterMetaItem[];
 }
 
-export function usePromiseFiltering<T extends { chapter_id: string; status: string; quote: string; id?: string | null } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
+export function usePromiseFiltering<T extends { chapter_id: string; status: string; quote: string; kind?: string; id?: string | null } = PlotPromise>(options: UsePromiseFilteringOptions<T>) {
   const scopeFilter = ref<'all' | 'current'>('all');
   const statusFilter = ref<'all' | 'planted' | 'developed' | 'resolved'>('all');
+  const categoryFilter = ref<'all' | 'scenes' | 'promises'>('all');
 
   const isCurrentChapterPromise = (promiseChapterId: string) => {
     if (!options.chapterId) return false;
@@ -56,6 +57,12 @@ export function usePromiseFiltering<T extends { chapter_id: string; status: stri
 
     if (scopeFilter.value === 'current') {
       list = chapterPromises.value;
+    }
+
+    if (categoryFilter.value === 'scenes') {
+      list = list.filter((p) => p.kind === 'scene' || p.kind === 'conflict');
+    } else if (categoryFilter.value === 'promises') {
+      list = list.filter((p) => p.kind !== 'scene' && p.kind !== 'conflict');
     }
 
     if (statusFilter.value !== 'all') {
@@ -84,6 +91,7 @@ export function usePromiseFiltering<T extends { chapter_id: string; status: stri
   return {
     scopeFilter,
     statusFilter,
+    categoryFilter,
     isCurrentChapterPromise,
     chapterPromises,
     filteredPromises,

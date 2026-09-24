@@ -86,6 +86,7 @@ export function usePromisesPanel(
     noteDraft: actions.noteDraft,
     scopeFilter: filtering.scopeFilter,
     statusFilter: filtering.statusFilter,
+    categoryFilter: filtering.categoryFilter,
     loadPromises,
     addPromise: actions.addPromise,
     addMilestone: actions.addMilestone,

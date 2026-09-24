@@ -47,6 +47,8 @@ export function useGraphWebView(projectId: string) {
 
   const filteredEdges = computed<GraphWebEdge[]>(() => {
     const activeNodeIds = new Set<string>(filteredNodes.value.map((n: GraphWebNode) => n.id));
+    const currentOrder = filters.value.selectedChapterOrder;
+
     return edges.value.filter((edge: GraphWebEdge) => {
       if (!activeNodeIds.has(edge.source_id) || !activeNodeIds.has(edge.target_id)) {
         return false;
@@ -55,6 +57,16 @@ export function useGraphWebView(projectId: string) {
       if (st < filters.value.minStrength) {
         return false;
       }
+
+      if (filters.value.showOnlyActive && currentOrder !== null && currentOrder !== undefined) {
+        if (edge.start_order !== null && edge.start_order !== undefined && edge.start_order > currentOrder) {
+          return false;
+        }
+        if (edge.end_order !== null && edge.end_order !== undefined && edge.end_order < currentOrder) {
+          return false;
+        }
+      }
+
       return true;
     });
   });
@@ -95,25 +107,65 @@ export function useGraphWebView(projectId: string) {
     const surfaceColor = getCSSVariable('--color-surface') || 'currentColor';
     const textColor = getCSSVariable('--color-text-main') || 'currentColor';
 
-    // Draw edges (parallel Bezier curves)
+    // Draw edges (parallel Bezier curves with offset & arrows)
     activeEdges.forEach((e: GraphWebEdge) => {
       const p1 = nodePos.get(e.source_id);
       const p2 = nodePos.get(e.target_id);
       if (!p1 || !p2) return;
 
-      ctx.beginPath();
-      ctx.moveTo(p1.x, p1.y);
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const nx = -dy / dist;
+      const ny = dx / dist;
 
-      const midX = (p1.x + p2.x) / 2 + 15;
-      const midY = (p1.y + p2.y) / 2 - 15;
-      ctx.quadraticCurveTo(midX, midY, p2.x, p2.y);
+      // Offset curve perpendicular to line
+      const curvature = 18;
+      const ctrlX = (p1.x + p2.x) / 2 + nx * curvature;
+      const ctrlY = (p1.y + p2.y) / 2 + ny * curvature;
 
       const strength = e.strength ?? 0;
+      const currentOrder = filters.value.selectedChapterOrder;
+      const isUnrevealed = currentOrder !== null && currentOrder !== undefined && e.start_order !== null && e.start_order !== undefined && e.start_order > currentOrder;
+
       ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.quadraticCurveTo(ctrlX, ctrlY, p2.x, p2.y);
+
       ctx.strokeStyle = strength >= 0 ? successColor : dangerColor;
-      ctx.globalAlpha = 0.6;
-      ctx.lineWidth = Math.max(1, Math.min(5, Math.abs(strength) / 20));
+      ctx.globalAlpha = isUnrevealed ? 0.35 : 0.75;
+      ctx.lineWidth = Math.max(1, Math.min(6, Math.abs(strength) / 20));
+
+      if (isUnrevealed) {
+        ctx.setLineDash([4, 4]);
+      } else {
+        ctx.setLineDash([]);
+      }
+
       ctx.stroke();
+
+      // Draw arrowhead at target (directed)
+      const arrowAngle = Math.atan2(p2.y - ctrlY, p2.x - ctrlX);
+      const arrowLen = 8;
+      const targetRadius = 14;
+      const endX = p2.x - Math.cos(arrowAngle) * targetRadius;
+      const endY = p2.y - Math.sin(arrowAngle) * targetRadius;
+
+      ctx.beginPath();
+      ctx.moveTo(endX, endY);
+      ctx.lineTo(
+        endX - arrowLen * Math.cos(arrowAngle - Math.PI / 6),
+        endY - arrowLen * Math.sin(arrowAngle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        endX - arrowLen * Math.cos(arrowAngle + Math.PI / 6),
+        endY - arrowLen * Math.sin(arrowAngle + Math.PI / 6)
+      );
+      ctx.closePath();
+      ctx.fillStyle = strength >= 0 ? successColor : dangerColor;
+      ctx.fill();
+
       ctx.restore();
     });
 

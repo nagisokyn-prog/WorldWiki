@@ -22,10 +22,11 @@
       class="section-content"
       :style="{ height: promisesHeight + 'px' }"
     >
-      <!-- Фильтры: Область видимости и статус -->
+      <!-- Фильтры: Область видимости, категория и статус -->
       <PromiseFilterBar
         v-model:scope-filter="scopeFilter"
         v-model:status-filter="statusFilter"
+        v-model:category-filter="categoryFilter"
         :total-count="promises.length"
         :chapter-count="chapterPromises.length"
         :statuses="PROMISE_STATUSES"
@@ -37,9 +38,9 @@
 
       <div v-else-if="filteredPromises.length === 0" class="empty-state">
         <div class="text-xs text-muted">
-          {{ scopeFilter === 'current' ? 'В текущей главе нет сюжетных обещаний.' : 'В проекте пока нет сюжетных обещаний.' }}
+          {{ scopeFilter === 'current' ? 'В текущей главе нет сюжетных блоков.' : 'В проекте пока нет сюжетных блоков.' }}
           <br />
-          Выделите текст и нажмите <kbd class="kbd-hint">ПКМ</kbd>, чтобы добавить или развить.
+          Выделите текст и нажмите <kbd class="kbd-hint">ПКМ</kbd>, чтобы добавить сцену, конфликт или обещание.
         </div>
       </div>
 
@@ -98,6 +99,7 @@ const {
   noteDraft,
   scopeFilter,
   statusFilter,
+  categoryFilter,
   loadPromises,
   addPromise,
   addMilestone,

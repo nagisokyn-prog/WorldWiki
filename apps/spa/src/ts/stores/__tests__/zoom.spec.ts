@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { useZoomStore } from '../zoom';
+
+vi.mock('@tauri-apps/api/webview', () => ({
+  getCurrentWebview: () => ({
+    setZoom: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
 
 describe('zoom store', () => {
   let store: ReturnType<typeof useZoomStore>;

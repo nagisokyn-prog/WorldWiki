@@ -25,6 +25,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
   const handleContextMenu = (e: MouseEvent) => {
     let selectedText = '';
     let paragraphIndex = 1;
+    let blockId: string | null = null;
 
     if (options.editorMode.value === 'wysiwyg' || options.editorMode.value === 'split') {
       if (options.editor.value) {
@@ -38,6 +39,8 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
             blockCount++;
             if (selection.from >= offset && selection.from <= offset + node.nodeSize) {
               foundIdx = blockCount;
+              const attrId = (node.attrs && (node.attrs.block_id || node.attrs.id)) as string | undefined;
+              blockId = attrId || `para-${blockCount}`;
             }
           });
           paragraphIndex = Math.max(1, foundIdx);
@@ -54,6 +57,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
         const beforeText = ta.value.substring(0, start);
         const lines = beforeText.split('\n');
         paragraphIndex = Math.max(1, lines.length);
+        blockId = `para-${paragraphIndex}`;
       }
     }
 
@@ -69,7 +73,7 @@ export function useEditorPromiseMenu(options: UseEditorPromiseMenuOptions) {
       selectedPromiseData.value = {
         quote: selectedText,
         paragraph_index: paragraphIndex,
-        block_id: null
+        block_id: blockId || `para-${paragraphIndex}`
       };
       promiseMenuPos.value = { x: e.clientX, y: e.clientY };
       isPromiseMenuOpen.value = true;

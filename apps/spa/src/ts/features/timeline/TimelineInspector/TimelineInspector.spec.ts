@@ -40,10 +40,8 @@ describe('useTimelineInspector Composable', () => {
       ],
     });
 
-    const { filteredChapters, filteredEvents, connectionLines } = useTimelineInspector('test_proj');
-
-    // Wait for the async load
-    await new Promise(resolve => setTimeout(resolve, 0));
+    const { filteredChapters, filteredEvents, connectionLines, refresh } = useTimelineInspector('test_proj');
+    await refresh();
 
     expect(filteredChapters.value).toHaveLength(3);
     expect(filteredEvents.value).toHaveLength(2);

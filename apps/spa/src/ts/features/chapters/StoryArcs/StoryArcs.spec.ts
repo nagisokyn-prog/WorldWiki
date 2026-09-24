@@ -28,10 +28,8 @@ describe('useStoryArcs Composable', () => {
       { id: 'arc:3', project_id: 'test_proj', title: 'Арка 3', arc_type: 'theme', status: 'completed' },
     ]);
 
-    const { columns } = useArcBoard('test_proj');
-
-    // Wait for the async load
-    await new Promise(resolve => setTimeout(resolve, 0));
+    const { columns, refresh } = useArcBoard('test_proj');
+    await refresh();
 
     expect(columns.value).toHaveLength(4);
 
@@ -55,7 +53,8 @@ describe('useStoryArcs Composable', () => {
       id: 'arc:new',
     }));
 
-    const { createNewArc, updateArcStatus, columns } = useArcBoard('test_proj');
+    const { createNewArc, updateArcStatus, columns, refresh } = useArcBoard('test_proj');
+    await refresh();
 
     await createNewArc('Новая Арка', 'event');
 

@@ -40,8 +40,8 @@ export function extractRgb(colorStr?: string): [number, number, number] | null {
 export function toRgbaString(colorStr: string | undefined, alpha: number, fallbackRgb: [number, number, number]): string {
   const rgb = extractRgb(colorStr) || fallbackRgb;
   const clampedAlpha = Math.max(0, Math.min(1, alpha));
-  const prefix = 'rgb';
-  return `${prefix}(${rgb[0]} ${rgb[1]} ${rgb[2]} / ${clampedAlpha})`;
+  const fn = 'rgba';
+  return `${fn}(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${clampedAlpha})`;
 }
 
 /**

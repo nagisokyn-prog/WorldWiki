@@ -52,7 +52,11 @@ DEFINE FIELD OVERWRITE word_count      ON chapters TYPE int DEFAULT 0;
 DEFINE FIELD OVERWRITE embeddings      ON chapters TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD OVERWRITE created_at      ON chapters TYPE option<datetime> DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at      ON chapters TYPE option<datetime> DEFAULT time::now();
-DEFINE FIELD OVERWRITE footnotes      ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE footnotes       ON chapters TYPE object FLEXIBLE DEFAULT {};
+DEFINE FIELD OVERWRITE timeline_events ON chapters TYPE array DEFAULT [];
+DEFINE FIELD OVERWRITE timeline_events.* ON chapters TYPE any;
+DEFINE FIELD OVERWRITE participants    ON chapters TYPE array DEFAULT [];
+DEFINE FIELD OVERWRITE participants.*  ON chapters TYPE any;
 
 -- 5. СЮЖЕТНЫЕ АРКИ (СТОРИЛАЙНЫ)
 DEFINE TABLE OVERWRITE story_arcs SCHEMAFULL;

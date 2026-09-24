@@ -70,7 +70,8 @@ mod tests {
         let facades = setup_test_services();
 
         // 1. Create initial chapter
-        let chapter = Chapter::new("proj_1", "Глава 1: Начало", 1);
+        let mut chapter = Chapter::new("proj_1", "Глава 1: Начало", 1);
+        chapter.id = "ch_1".to_string();
         let ch_id = chapter.id.clone();
         facades.manuscript.save_chapter(&chapter).await.unwrap();
 
@@ -142,7 +143,8 @@ mod tests {
         assert_eq!(card["entity"]["name"], "Гэндальф");
 
         // 4. read_manuscript
-        let ch = Chapter::new("proj_1", "Глава A", 1);
+        let mut ch = Chapter::new("proj_1", "Глава A", 1);
+        ch.id = "ch_a".to_string();
         let ch_id = ch.id.clone();
         facades.manuscript.save_chapter(&ch).await.unwrap();
         let read_val = facades.read_manuscript("proj_1", &ch_id).await.unwrap();

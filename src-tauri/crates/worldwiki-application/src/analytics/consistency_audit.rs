@@ -87,10 +87,8 @@ impl ConsistencyAuditWorkflow {
         }
 
         // Rule 3: 🟡 Bilocation: Character in two different events at exact same m_abs
-        for i in 0..timeline_data.events.len() {
-            for j in (i + 1)..timeline_data.events.len() {
-                let ev1 = &timeline_data.events[i];
-                let ev2 = &timeline_data.events[j];
+        for (i, ev1) in timeline_data.events.iter().enumerate() {
+            for ev2 in timeline_data.events.iter().skip(i + 1) {
                 if ev1.m_abs == ev2.m_abs && ev1.event_id != ev2.event_id {
                     for p in &ev1.participants {
                         if ev2.participants.contains(p) {
@@ -162,7 +160,7 @@ mod tests {
             Ok(GraphTimeSliceDto { nodes: vec![], edges: vec![] })
         }
         async fn get_character_journey(&self, _proj: &str, _ent: &str) -> Result<CharacterJourneyDto, DomainError> {
-            unimplemented!()
+            Err(DomainError::Validation("Mock character journey not implemented".to_string()))
         }
     }
 
@@ -172,6 +170,8 @@ mod tests {
         async fn get_by_id(&self, _id: &str) -> Result<Option<Entity>, DomainError> { Ok(None) }
         async fn save(&self, _entity: &Entity) -> Result<(), DomainError> { Ok(()) }
         async fn delete(&self, _id: &str) -> Result<(), DomainError> { Ok(()) }
+        async fn search(&self, _project_id: &str, _query: &str, _top_k: usize) -> Result<Vec<Entity>, DomainError> { Ok(vec![]) }
+        async fn list_by_type(&self, _project_id: &str, _type_key: &str) -> Result<Vec<Entity>, DomainError> { Ok(vec![]) }
         async fn list_by_project(&self, _proj: &str) -> Result<Vec<Entity>, DomainError> { Ok(vec![]) }
     }
 

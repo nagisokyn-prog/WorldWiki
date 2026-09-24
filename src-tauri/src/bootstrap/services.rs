@@ -15,16 +15,11 @@ use worldwiki_application::plot::{PlotServices, StoryArcServices};
 use worldwiki_application::workflows::{
     EditManuscriptAtomicWorkflow, HybridSemanticSearchWorkflow,
 };
-use worldwiki_infrastructure::ai::mock_ai::MockAiAdapter;
 use worldwiki_infrastructure::ai::{
     FsLocalModelManager, StaticPermissionsCatalog, WinApiHardwareDetector,
 };
 use worldwiki_infrastructure::events::InMemoryEventPublisher;
 use worldwiki_infrastructure::surrealdb::chat_repo::SurrealChatRepository;
-use worldwiki_infrastructure::surrealdb::memory_repos::{
-    InMemoryChapterRepository, InMemoryEntityRepository, InMemoryPlanRepository,
-    InMemoryPlotPromiseRepository, InMemoryRelationRepository,
-};
 use worldwiki_infrastructure::surrealdb::profile_repo::SurrealAiProfileRepository;
 use worldwiki_infrastructure::surrealdb::repos::{
     SurrealAnalyticsRepository, SurrealChapterRepository, SurrealEntityRepository,
@@ -57,40 +52,53 @@ struct CoreDomainServices {
 }
 
 fn build_core_domain(
-    chapter_repo: Arc<dyn ChapterRepository>,
-    entity_repo: Arc<dyn EntityRepository>,
-    relation_repo: Arc<dyn RelationRepository>,
-    promise_repo: Arc<dyn PlotPromiseRepository>,
-    plan_repo: Arc<dyn PlanRepository>,
-    story_arc_repo: Arc<dyn StoryArcRepository>,
-    timeline_repo: Arc<dyn TimelineEventRepository>,
-    analytics_repo: Arc<dyn AnalyticsRepositoryPort>,
+    repos: &SurrealRepos,
     events: Arc<dyn EventPublisherPort>,
 ) -> CoreDomainServices {
-    let manuscript = Arc::new(ManuscriptServices::new(Arc::clone(&chapter_repo), Arc::clone(&events)));
-    let save_chapter_workflow = Arc::new(SaveChapterWithMentionsWorkflow::new(Arc::clone(&chapter_repo), Arc::clone(&events)));
+    let manuscript = Arc::new(ManuscriptServices::new(
+        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
+        Arc::clone(&events),
+    ));
+    let save_chapter_workflow = Arc::new(SaveChapterWithMentionsWorkflow::new(
+        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
+        Arc::clone(&events),
+    ));
     let knowledge = Arc::new(KnowledgeServices::new(
-        Arc::clone(&entity_repo),
-        relation_repo,
+        Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
+        Arc::clone(&repos.relation) as Arc<dyn RelationRepository>,
         Arc::clone(&events),
     ));
     let calendar = Arc::new(CalendarServices::new());
-    let plot = Arc::new(PlotServices::new(Arc::clone(&promise_repo), plan_repo, Arc::clone(&events)));
-    let story_arcs = Arc::new(StoryArcServices::new(story_arc_repo));
-    let consistency_workflow = Arc::new(ConsistencyAuditWorkflow::new(
-        Arc::clone(&analytics_repo),
-        Arc::clone(&entity_repo),
-        Arc::clone(&chapter_repo),
-        timeline_repo,
-        promise_repo,
+    let plot = Arc::new(PlotServices::new(
+        Arc::clone(&repos.promise) as Arc<dyn PlotPromiseRepository>,
+        Arc::clone(&repos.plan) as Arc<dyn PlanRepository>,
+        Arc::clone(&events),
     ));
-    let cross_ref_service = Arc::new(CrossReferenceMatrixService::new(Arc::clone(&analytics_repo)));
-    let timeline_inspector_service = Arc::new(TimelineInspectorService::new(Arc::clone(&analytics_repo)));
-    let graph_web_slice_service = Arc::new(GraphWebSliceService::new(Arc::clone(&analytics_repo)));
-    let character_journey_service = Arc::new(CharacterJourneyService::new(analytics_repo));
+    let story_arcs = Arc::new(StoryArcServices::new(
+        Arc::clone(&repos.story_arc) as Arc<dyn StoryArcRepository>,
+    ));
+    let consistency_workflow = Arc::new(ConsistencyAuditWorkflow::new(
+        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
+        Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
+        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
+        Arc::clone(&repos.timeline) as Arc<dyn TimelineEventRepository>,
+        Arc::clone(&repos.promise) as Arc<dyn PlotPromiseRepository>,
+    ));
+    let cross_ref_service = Arc::new(CrossReferenceMatrixService::new(
+        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
+    ));
+    let timeline_inspector_service = Arc::new(TimelineInspectorService::new(
+        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
+    ));
+    let graph_web_slice_service = Arc::new(GraphWebSliceService::new(
+        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
+    ));
+    let character_journey_service = Arc::new(CharacterJourneyService::new(
+        Arc::clone(&repos.analytics) as Arc<dyn AnalyticsRepositoryPort>,
+    ));
     let manuscript_stats_service = Arc::new(ManuscriptAnalyticsService::new(
-        chapter_repo,
-        entity_repo,
+        Arc::clone(&repos.chapter) as Arc<dyn ChapterRepository>,
+        Arc::clone(&repos.entity) as Arc<dyn EntityRepository>,
         Arc::clone(&plot.promise_repo),
     ));
     let job_manager = Arc::new(JobManager::new());
@@ -186,23 +194,18 @@ impl SurrealRepos {
     }
 }
 
+pub fn build_app_services() -> AppServices {
+    let events: Arc<dyn EventPublisherPort> = Arc::new(InMemoryEventPublisher);
+    let dummy_db = Arc::new(Surreal::init());
+    build_surreal_app_services(dummy_db, events)
+}
+
 pub fn build_surreal_app_services(
     db: Arc<Surreal<Db>>,
     event_publisher: Arc<dyn EventPublisherPort>,
 ) -> AppServices {
     let repos = SurrealRepos::new(&db);
-
-    let core = build_core_domain(
-        repos.chapter,
-        repos.entity,
-        repos.relation,
-        repos.promise,
-        repos.plan,
-        repos.story_arc,
-        repos.timeline,
-        repos.analytics,
-        Arc::clone(&event_publisher),
-    );
+    let core = build_core_domain(&repos, Arc::clone(&event_publisher));
 
     let workflows =
         build_workflows_and_tools(&core, Arc::clone(&repos.rag) as Arc<dyn RAGContextPort>);
@@ -243,4 +246,3 @@ pub fn build_surreal_app_services(
         db,
     }
 }
-

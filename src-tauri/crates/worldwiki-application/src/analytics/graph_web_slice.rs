@@ -39,19 +39,19 @@ impl GraphWebSliceService {
             });
         }
 
-        // 2. Compute bidirectional Bezier offsets (+6px / -6px)
-        for i in 0..slice.edges.len() {
-            let src = slice.edges[i].source_id.clone();
-            let tgt = slice.edges[i].target_id.clone();
-            
-            let has_reverse = slice.edges.iter().enumerate().any(|(j, e)| {
-                j != i && e.source_id == tgt && e.target_id == src
-            });
+        // 2. Compute bidirectional Bezier offsets (+6px / 0px)
+        let pairs: std::collections::HashSet<(String, String)> = slice
+            .edges
+            .iter()
+            .map(|e| (e.source_id.clone(), e.target_id.clone()))
+            .collect();
 
-            if has_reverse {
-                slice.edges[i].offset_px = 6.0;
+        for edge in &mut slice.edges {
+            let reverse_key = (edge.target_id.clone(), edge.source_id.clone());
+            if pairs.contains(&reverse_key) {
+                edge.offset_px = 6.0;
             } else {
-                slice.edges[i].offset_px = 0.0;
+                edge.offset_px = 0.0;
             }
         }
 

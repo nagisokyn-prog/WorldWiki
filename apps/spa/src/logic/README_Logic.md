@@ -30,7 +30,8 @@ apps/spa/src/logic/schema/
 │   ├── 00_analyzers.surql          # 🔤 Токенизаторы fulltext поиска (ru_en_analyzer, like)
 │   ├── 01_tables.surql             # 📑 Таблицы и поля ядра (проекты, тома, арки, главы, сущности, таймлайн)
 │   ├── 02_indexes.surql            # 🔍 B-Tree, Composite FK и BM25 Fulltext индексы ядра
-│   └── 03_events.surql             # ⚡ Set-based каскады и триггеры логирования ревизий
+│   ├── 03_events.surql             # ⚡ Set-based каскады и триггеры логирования ревизий
+│   └── 04_functions.surql          # 📊 Хранимые аналитические и графовые функции (fn::get_cross_reference_matrix, fn::get_timeline_inspector_data и др.)
 └── ai/                             # 🧠 ИИ-пространство (Ultra Edition: аддитивная надстройка)
     ├── 01_workspace_tables.surql   # 🤖 Таблицы чатов, профилей, памяти агента, навыков, словаря
     ├── 02_web_research_tables.surql # 🌐 Декларативные таблицы веб-кэша web_pages и фактов web_evidence

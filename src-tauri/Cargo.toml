@@ -78,3 +78,7 @@ llama-sys = { path = "llama-sys", optional = true }
 
 [dev-dependencies]
 mock-anthropic-service = { path = "../vendor/claw-code/rust/crates/mock-anthropic-service" }
+
+[profile.dev]
+debug = 1
+split-debuginfo = "unpacked"

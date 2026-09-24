@@ -12,7 +12,8 @@
 DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "DELETE" THEN {
     LET $pid = $before.id;
     
-    -- 1. Связи, участие и ревизии лора (удаляются до сущностей)
+    -- 1. Иерархия, связи, участие и ревизии лора (удаляются до сущностей)
+    DELETE contains WHERE in = $pid;
     DELETE entity_rel WHERE project_id = $pid;
     DELETE appears_in WHERE project_id = $pid;
     DELETE participates_in WHERE project_id = $pid;
@@ -42,6 +43,7 @@ DEFINE EVENT OVERWRITE cascade_project_delete ON TABLE projects WHEN $event = "D
 -- 2. КАСКАДЫ ИЕРАРХИИ СЮЖЕТА
 DEFINE EVENT OVERWRITE cascade_volume_delete ON TABLE volumes WHEN $event = "DELETE" THEN {
     DELETE ->contains->chapters;
+    DELETE contains WHERE in = $before.id OR out = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
 };
 
@@ -50,9 +52,15 @@ DEFINE EVENT OVERWRITE cascade_chapter_delete ON TABLE chapters WHEN $event = "D
     DELETE appears_in WHERE out = $before.id;
     DELETE arc_chapters WHERE out = $before.id;
     DELETE revealed_in WHERE out = $before.id;
+    DELETE contains WHERE out = $before.id;
     DELETE plans WHERE parent_ref = $before.id;
     DELETE plot_promises WHERE chapter_id = $before.id;
     DELETE chapter_revisions WHERE target_id = $before.id;
+
+    -- Разрыв ссылок на удаленную главу в сюжетных ружьях и временных границах связей
+    UPDATE plot_promises SET resolved_in_chapter = NONE WHERE resolved_in_chapter = $before.id;
+    UPDATE entity_rel SET start_chapter = NONE WHERE start_chapter = $before.id;
+    UPDATE entity_rel SET end_chapter = NONE WHERE end_chapter = $before.id;
 };
 
 -- 2.1. КАСКАД СЮЖЕТНЫХ АРОК
@@ -85,12 +93,18 @@ DEFINE EVENT OVERWRITE cascade_entity_delete ON TABLE entities WHEN $event = "DE
     DELETE entity_revisions WHERE target_id = $before.id;
     DELETE entity_rel_revisions WHERE in_id = $before.id;
     DELETE entity_rel_revisions WHERE out_id = $before.id;
+
+    -- Разрыв ссылок на удаленную сущность в сюжетных обещаниях
+    UPDATE plot_promises SET location_id = NONE WHERE location_id = $before.id;
 };
 
 -- 5.1. КАСКАД УДАЛЕНИЯ СОБЫТИЯ ТАЙМЛАЙНА
 DEFINE EVENT OVERWRITE cascade_timeline_event_delete ON TABLE timeline_events WHEN $event = "DELETE" THEN {
     DELETE participates_in WHERE out = $before.id;
     DELETE revealed_in WHERE in = $before.id;
+
+    -- Разрыв ссылок на удаленное событие в сюжетных обещаниях
+    UPDATE plot_promises SET timeline_event_id = NONE WHERE timeline_event_id = $before.id;
 };
 
 -- 6. ЛОГИРОВАНИЕ РЕВИЗИЙ СУЩНОСТЕЙ
@@ -212,6 +226,8 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters
         OR $before.content != $after.content 
         OR $before.summary != $after.summary 
         OR $before.footnotes != $after.footnotes
+        OR $before.timeline_events != $after.timeline_events
+        OR $before.participants != $after.participants
     ) 
     THEN {
         CREATE chapter_revisions SET 
@@ -222,7 +238,9 @@ DEFINE EVENT OVERWRITE log_chapter_revision ON TABLE chapters
                 content: $before.content,
                 summary: $before.summary,
                 footnotes: $before.footnotes,
-                word_count: $before.word_count
+                word_count: $before.word_count,
+                timeline_events: $before.timeline_events,
+                participants: $before.participants
             }, 
             created_at = time::now(), 
             commit_msg = NONE;

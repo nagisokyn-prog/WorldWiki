@@ -20,11 +20,7 @@ DEFINE FUNCTION OVERWRITE fn::get_cross_reference_matrix($proj: record<projects>
             entity_type,
             attributes.is_deceased AS is_deceased,
             attributes.death_m_abs AS death_m_abs,
-            ->appears_in.{
-                out AS chapter_id,
-                source,
-                role
-            } AS appearances
+            (SELECT out AS chapter_id, source, role FROM ->appears_in) AS appearances
         FROM entities 
         WHERE project_id = $proj 
         ORDER BY name ASC
@@ -45,15 +41,17 @@ DEFINE FUNCTION OVERWRITE fn::get_timeline_inspector_data($proj: record<projects
             description,
             m_abs,
             calendar_id,
-            ->revealed_in.{
-                out AS chapter_id,
-                out.title AS chapter_title,
-                out.sort_order AS chapter_order,
-                pov_id,
-                kind,
-                block_id
-            } AS reveals,
-            <-participates_in<-entities.{ id, name, entity_type } AS participants
+            (
+                SELECT 
+                    out AS chapter_id,
+                    out.title AS chapter_title,
+                    out.sort_order AS chapter_order,
+                    pov_id,
+                    kind,
+                    block_id
+                FROM ->revealed_in
+            ) AS reveals,
+            (SELECT id, name, entity_type FROM <-participates_in<-entities) AS participants
         FROM timeline_events
         WHERE project_id = $proj
         ORDER BY m_abs ASC

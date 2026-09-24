@@ -11,5 +11,9 @@ cov = "llvm-cov nextest --workspace"
 cov-html = "llvm-cov nextest --workspace --html --open"
 test-all = "nextest run --workspace"
 
+[build]
+rustc-wrapper = "sccache"
 
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "linker=lld-link.exe"]
 

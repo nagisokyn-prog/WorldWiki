@@ -146,14 +146,17 @@ pub async fn save_connections_inner(
         let desc_val = c.get("description").and_then(|v| v.as_str()).unwrap_or("");
 
         let sql = format!(
-            "RELATE type::record($src_node) -> entity_rel -> type::record($tgt_node) SET {}",
+            "RELATE $src_node -> entity_rel -> $tgt_node SET {}",
             set_clauses.join(", ")
         );
 
+        let src_record = surrealdb::types::RecordId::new("entities", s_id);
+        let tgt_record = surrealdb::types::RecordId::new("entities", t_id);
+
         let mut q = db
             .query(sql)
-            .bind(("src_node", format!("entities:{}", s_id)))
-            .bind(("tgt_node", format!("entities:{}", t_id)))
+            .bind(("src_node", src_record))
+            .bind(("tgt_node", tgt_record))
             .bind(("proj", proj_id.clone()))
             .bind(("role", role_val))
             .bind(("desc", desc_val));

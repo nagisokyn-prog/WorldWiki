@@ -429,6 +429,16 @@ surreal_relation! {
 }
 
 surreal_relation! {
+    #[edge = "contains"]
+    #[from = chats]
+    #[to = chats]
+    #[tauri_commands]
+    pub struct ChatContainsChat {
+        #[ts(type = "number")] pub sort_order: i64,
+    }
+}
+
+surreal_relation! {
     #[edge = "arc_chapters"]
     #[from = story_arcs]
     #[to = chapters]

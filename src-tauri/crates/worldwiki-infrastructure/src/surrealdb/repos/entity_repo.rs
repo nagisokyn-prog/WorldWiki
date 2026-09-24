@@ -159,4 +159,26 @@ impl EntityRepository for SurrealEntityRepository {
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
         take_list(&mut res, 0)
     }
+
+    async fn list_by_project(&self, project_id: &str) -> Result<Vec<Entity>, DomainError> {
+        let p_raw = project_id.to_string();
+        let p_clean = project_id
+            .strip_prefix("projects:")
+            .unwrap_or(project_id)
+            .trim_matches('`')
+            .trim_matches('⟨')
+            .trim_matches('⟩')
+            .trim()
+            .to_string();
+        let where_clause = project_where_clause("project_id");
+        let sql = format!("SELECT * FROM entities WHERE {where_clause} ORDER BY name ASC;");
+        let mut res = self
+            .db
+            .query(&sql)
+            .bind(("p_raw", p_raw))
+            .bind(("p_clean", p_clean))
+            .await
+            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        take_list(&mut res, 0)
+    }
 }

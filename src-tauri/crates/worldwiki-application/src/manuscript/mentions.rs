@@ -47,7 +47,6 @@ mod tests {
     use async_trait::async_trait;
     use tokio::sync::Mutex;
     use worldwiki_domain::errors::DomainError;
-    use worldwiki_ports::events::DomainEvent;
 
     struct MockChapterRepo {
         saved: Mutex<Option<Chapter>>,

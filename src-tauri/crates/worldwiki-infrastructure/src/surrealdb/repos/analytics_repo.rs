@@ -70,8 +70,6 @@ struct RawTimelineEventNode {
 #[derive(serde::Deserialize)]
 struct RawParticipant {
     id: String,
-    name: String,
-    entity_type: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -130,7 +128,10 @@ struct RawJourneyEntityInfo {
 
 #[async_trait]
 impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
-    async fn get_cross_reference_matrix(&self, project_id: &str) -> Result<CrossRefMatrixDto, DomainError> {
+    async fn get_cross_reference_matrix(
+        &self,
+        project_id: &str,
+    ) -> Result<CrossRefMatrixDto, DomainError> {
         let proj_clean = project_id.trim_start_matches("projects:");
         let sql = "RETURN fn::get_cross_reference_matrix(type::record('projects', $p));";
         let mut res = self
@@ -141,7 +142,10 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
         let raw: Option<CrossRefRaw> = super::helpers::take_one(&mut res, 0)?;
-        let raw = raw.unwrap_or(CrossRefRaw { chapters: vec![], entities: vec![] });
+        let raw = raw.unwrap_or(CrossRefRaw {
+            chapters: vec![],
+            entities: vec![],
+        });
 
         let mut entities_dto = Vec::new();
         let mut warnings = Vec::new();
@@ -152,22 +156,35 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             let mut appeared_in_any = false;
 
             for ch in &raw.chapters {
-                let found_app = ent.appearances.iter().find(|a| a.chapter_id == ch.id || a.chapter_id.trim_start_matches("chapters:") == ch.id.trim_start_matches("chapters:"));
-                
-                let (kind, src, role) = if ent.is_deceased.unwrap_or(false) && ent.death_m_abs.is_some() {
-                    (worldwiki_domain::analytics::CellAppearanceKind::Deceased, None, None)
-                } else if let Some(app) = found_app {
-                    appeared_in_any = true;
-                    last_seen_order = ch.sort_order;
-                    let k = if app.source.as_deref() == Some("scene") {
-                        worldwiki_domain::analytics::CellAppearanceKind::Scene
+                let found_app = ent.appearances.iter().find(|a| {
+                    a.chapter_id == ch.id
+                        || a.chapter_id.trim_start_matches("chapters:")
+                            == ch.id.trim_start_matches("chapters:")
+                });
+
+                let (kind, src, role) =
+                    if ent.is_deceased.unwrap_or(false) && ent.death_m_abs.is_some() {
+                        (
+                            worldwiki_domain::analytics::CellAppearanceKind::Deceased,
+                            None,
+                            None,
+                        )
+                    } else if let Some(app) = found_app {
+                        appeared_in_any = true;
+                        last_seen_order = ch.sort_order;
+                        let k = if app.source.as_deref() == Some("scene") {
+                            worldwiki_domain::analytics::CellAppearanceKind::Scene
+                        } else {
+                            worldwiki_domain::analytics::CellAppearanceKind::Mention
+                        };
+                        (k, app.source.clone(), app.role.clone())
                     } else {
-                        worldwiki_domain::analytics::CellAppearanceKind::Mention
+                        (
+                            worldwiki_domain::analytics::CellAppearanceKind::None,
+                            None,
+                            None,
+                        )
                     };
-                    (k, app.source.clone(), app.role.clone())
-                } else {
-                    (worldwiki_domain::analytics::CellAppearanceKind::None, None, None)
-                };
 
                 apps_by_chap.push(worldwiki_domain::analytics::CellAppearanceDto {
                     chapter_id: ch.id.clone(),
@@ -184,7 +201,12 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
                     warnings.push(worldwiki_domain::analytics::AbsenceWarningDto {
                         entity_id: ent.id.clone(),
                         entity_name: ent.name.clone(),
-                        missing_since_chapter_id: raw.chapters.iter().find(|c| c.sort_order == last_seen_order).map(|c| c.id.clone()).unwrap_or_default(),
+                        missing_since_chapter_id: raw
+                            .chapters
+                            .iter()
+                            .find(|c| c.sort_order == last_seen_order)
+                            .map(|c| c.id.clone())
+                            .unwrap_or_default(),
                         missing_since_order: last_seen_order,
                         skipped_chapters_count: gap,
                     });
@@ -208,7 +230,10 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         })
     }
 
-    async fn get_timeline_inspector_data(&self, project_id: &str) -> Result<TimelineInspectorDto, DomainError> {
+    async fn get_timeline_inspector_data(
+        &self,
+        project_id: &str,
+    ) -> Result<TimelineInspectorDto, DomainError> {
         let proj_clean = project_id.trim_start_matches("projects:");
         let sql = "RETURN fn::get_timeline_inspector_data(type::record('projects', $p));";
         let mut res = self
@@ -218,10 +243,12 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let raw: Option<TimelineRaw> = res.take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let raw: Option<TimelineRaw> = super::helpers::take_one(&mut res, 0)?;
 
-        let raw = raw.unwrap_or(TimelineRaw { events: vec![], chapters: vec![] });
+        let raw = raw.unwrap_or(TimelineRaw {
+            events: vec![],
+            chapters: vec![],
+        });
 
         let mut event_nodes = Vec::new();
         let mut crossings_count = 0;
@@ -263,7 +290,10 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         })
     }
 
-    async fn get_graph_time_slice(&self, project_id: &str) -> Result<GraphTimeSliceDto, DomainError> {
+    async fn get_graph_time_slice(
+        &self,
+        project_id: &str,
+    ) -> Result<GraphTimeSliceDto, DomainError> {
         let proj_clean = project_id.trim_start_matches("projects:");
         let sql = "RETURN fn::get_graph_time_slice(type::record('projects', $p));";
         let mut res = self
@@ -273,20 +303,26 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let raw: Option<GraphRaw> = res.take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let raw: Option<GraphRaw> = super::helpers::take_one(&mut res, 0)?;
 
-        let raw = raw.unwrap_or(GraphRaw { nodes: vec![], edges: vec![] });
+        let raw = raw.unwrap_or(GraphRaw {
+            nodes: vec![],
+            edges: vec![],
+        });
 
-        let nodes_dto = raw.nodes.into_iter().map(|n| GraphNodeDto {
-            id: n.id,
-            name: n.name,
-            entity_type: n.entity_type,
-            tags: n.tags,
-            attributes: n.attributes,
-            x: 0.0,
-            y: 0.0,
-        }).collect();
+        let nodes_dto = raw
+            .nodes
+            .into_iter()
+            .map(|n| GraphNodeDto {
+                id: n.id,
+                name: n.name,
+                entity_type: n.entity_type,
+                tags: n.tags,
+                attributes: n.attributes,
+                x: 0.0,
+                y: 0.0,
+            })
+            .collect();
 
         let mut edges_dto = Vec::new();
         for e in raw.edges {
@@ -317,7 +353,11 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         })
     }
 
-    async fn get_character_journey(&self, project_id: &str, entity_id: &str) -> Result<CharacterJourneyDto, DomainError> {
+    async fn get_character_journey(
+        &self,
+        project_id: &str,
+        entity_id: &str,
+    ) -> Result<CharacterJourneyDto, DomainError> {
         let proj_clean = project_id.trim_start_matches("projects:");
         let ent_clean = entity_id.trim_start_matches("entities:");
         let sql = "RETURN fn::get_character_journey(type::record('projects', $p), type::record('entities', $e));";
@@ -329,8 +369,7 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
             .await
             .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
 
-        let raw: Option<JourneyRaw> = res.take(0)
-            .map_err(|e| DomainError::ConstraintViolation(e.to_string()))?;
+        let raw: Option<JourneyRaw> = super::helpers::take_one(&mut res, 0)?;
 
         let raw = raw.unwrap_or(JourneyRaw {
             entity: None,
@@ -343,7 +382,12 @@ impl AnalyticsRepositoryPort for SurrealAnalyticsRepository {
         let (ent_id, ent_name, ent_type, ent_attrs) = if let Some(info) = raw.entity {
             (info.id, info.name, info.entity_type, info.attributes)
         } else {
-            (entity_id.to_string(), "Unknown".to_string(), "character".to_string(), serde_json::json!({}))
+            (
+                entity_id.to_string(),
+                "Unknown".to_string(),
+                "character".to_string(),
+                serde_json::json!({}),
+            )
         };
 
         Ok(CharacterJourneyDto {

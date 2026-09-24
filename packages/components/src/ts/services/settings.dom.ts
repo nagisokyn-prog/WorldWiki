@@ -40,7 +40,8 @@ export function extractRgb(colorStr?: string): [number, number, number] | null {
 export function toRgbaString(colorStr: string | undefined, alpha: number, fallbackRgb: [number, number, number]): string {
   const rgb = extractRgb(colorStr) || fallbackRgb;
   const clampedAlpha = Math.max(0, Math.min(1, alpha));
-  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${clampedAlpha})`;
+  const prefix = 'rgb';
+  return `${prefix}(${rgb[0]} ${rgb[1]} ${rgb[2]} / ${clampedAlpha})`;
 }
 
 /**
@@ -87,7 +88,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
   const computedBgCard = toRgbaString(c.bgCard, cardAlpha, [22, 22, 26]);
   const computedBgPanel = toRgbaString(c.bgPanel, islandAlpha, [15, 15, 18]);
   const computedGlassBg = toRgbaString(c.bgPanel, islandAlpha, [20, 20, 25]);
-  const computedBgInput = c.bgInput ? toRgbaString(c.bgInput, 0.6, [22, 22, 26]) : 'rgba(22, 22, 26, 0.6)';
+  const computedBgInput = toRgbaString(c.bgInput, 0.6, [22, 22, 26]);
 
   style.setProperty('--bg-card', computedBgCard);
   style.setProperty('--glass-card', computedBgCard);
@@ -255,7 +256,7 @@ export function applySettingsToDOM(settings: AppSettings): void {
     const op = ((100 - t) / 100).toFixed(1);
     style.setProperty('--dropdown-transparency', `${t}%`);
     style.setProperty('--dropdown-opacity', op);
-    style.setProperty('--dropdown-bg', `rgba(15, 15, 20, ${op})`);
+    style.setProperty('--dropdown-bg', toRgbaString(undefined, Number(op), [15, 15, 20]));
   }
 
   // 14. Классы на document.body для стилизации

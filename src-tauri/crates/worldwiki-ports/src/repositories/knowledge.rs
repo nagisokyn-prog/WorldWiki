@@ -9,6 +9,7 @@ pub trait EntityRepository: Send + Sync {
     async fn delete(&self, id: &str) -> Result<(), DomainError>;
     async fn search(&self, project_id: &str, query: &str, top_k: usize) -> Result<Vec<Entity>, DomainError>;
     async fn list_by_type(&self, project_id: &str, type_key: &str) -> Result<Vec<Entity>, DomainError>;
+    async fn list_by_project(&self, project_id: &str) -> Result<Vec<Entity>, DomainError>;
 }
 
 #[async_trait]

@@ -5,13 +5,11 @@ import { useZoomStore } from '../zoom';
 
 describe('zoom store', () => {
   let store: ReturnType<typeof useZoomStore>;
-  let appEl: HTMLDivElement;
 
   beforeEach(() => {
     setActivePinia(createPinia());
     localStorage.clear();
     document.body.innerHTML = '<div id="app"></div>';
-    appEl = document.getElementById('app') as HTMLDivElement;
     store = useZoomStore();
   });
 

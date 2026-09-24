@@ -165,6 +165,42 @@
                   ></schema-editor-main-vue>
                 </div>
               </template>
+
+              <template #arc-board="{ tab, groupId }">
+                <div class="chapter-editor flex-1 flex-col overflow-hidden">
+                  <arc-board-vue
+                    :key="tab.id + '-' + groupId"
+                    :project-id="projectName || 'default'"
+                  ></arc-board-vue>
+                </div>
+              </template>
+
+              <template #timeline-inspector="{ tab, groupId }">
+                <div class="chapter-editor flex-1 flex-col overflow-hidden">
+                  <timeline-inspector-vue
+                    :key="tab.id + '-' + groupId"
+                    :project-id="projectName || 'default'"
+                  ></timeline-inspector-vue>
+                </div>
+              </template>
+
+              <template #graph-web="{ tab, groupId }">
+                <div class="chapter-editor flex-1 flex-col overflow-hidden">
+                  <graph-web-view-vue
+                    :key="tab.id + '-' + groupId"
+                    :project-id="projectName || 'default'"
+                  ></graph-web-view-vue>
+                </div>
+              </template>
+
+              <template #matrix="{ tab, groupId }">
+                <div class="chapter-editor flex-1 flex-col overflow-hidden">
+                  <cross-reference-matrix-vue
+                    :key="tab.id + '-' + groupId"
+                    :project="projectName || 'default'"
+                  ></cross-reference-matrix-vue>
+                </div>
+              </template>
             </editor-group-pane-vue>
 
             <div
@@ -207,10 +243,17 @@
           </div>
           <div
             class="panel-tab-new interactive-el"
-            :class="{ active: activePanelTab === 'stats' }"
-            @click.stop="setActivePanelTab('stats')"
+            :class="{ active: activePanelTab === 'matrix' }"
+            @click.stop="setActivePanelTab('matrix')"
           >
-            📊 Аналитика
+            📊 Матрица Участий
+          </div>
+          <div
+            class="panel-tab-new interactive-el"
+            :class="{ active: activePanelTab === 'consistency' }"
+            @click.stop="setActivePanelTab('consistency')"
+          >
+            🛡️ Аудит Сюжета
           </div>
         </div>
         <div class="text-xs pr-4 opacity-50">
@@ -228,6 +271,12 @@
             <span class="console-time">[{{ log.timestamp }}]</span>
             <span>{{ log.text }}</span>
           </div>
+        </div>
+        <div v-else-if="activePanelTab === 'matrix'" class="h-full">
+          <cross-reference-matrix-vue :project="projectName || 'default'" />
+        </div>
+        <div v-else-if="activePanelTab === 'consistency'" class="h-full">
+          <consistency-checker-vue :project="projectName || 'default'" />
         </div>
       </div>
     </div>

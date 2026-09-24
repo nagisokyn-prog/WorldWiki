@@ -1,0 +1,90 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
+import { useCrossReferenceMatrix } from './useCrossReferenceMatrix';
+import { useAnalyticsStore } from '@/stores/analytics.store';
+
+vi.mock('@/services/api.client', () => ({
+  getCrossReferenceMatrix: vi.fn(),
+  auditManuscriptConsistency: vi.fn(),
+  getManuscriptStatistics: vi.fn(),
+}));
+
+describe('useCrossReferenceMatrix Composable', () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+  });
+
+  it('computes rows, total appearances, and gap warnings correctly', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [
+        { id: 'ch:1', title: 'Глава 1', sort_order: 1, word_count: 1000 },
+        { id: 'ch:2', title: 'Глава 2', sort_order: 2, word_count: 1200 },
+        { id: 'ch:3', title: 'Глава 3', sort_order: 3, word_count: 800 },
+        { id: 'ch:4', title: 'Глава 4', sort_order: 4, word_count: 1500 },
+        { id: 'ch:5', title: 'Глава 5', sort_order: 5, word_count: 1100 },
+      ],
+      entities: [
+        {
+          id: 'ent:rudeus',
+          name: 'Рудеус',
+          entity_type: 'character',
+          appearances: [
+            { chapter_id: 'ch:1', source: 'scene' },
+            { chapter_id: 'ch:5', source: 'mention' },
+          ],
+        },
+        {
+          id: 'ent:eris',
+          name: 'Эрис',
+          entity_type: 'character',
+          appearances: [
+            { chapter_id: 'ch:1', source: 'scene' },
+            { chapter_id: 'ch:2', source: 'scene' },
+          ],
+        },
+      ],
+    };
+
+    const { rows, chapters, availableEntityTypes } = useCrossReferenceMatrix('test_proj');
+
+    expect(chapters.value).toHaveLength(5);
+    expect(availableEntityTypes.value).toEqual(['character']);
+    expect(rows.value).toHaveLength(2);
+
+    const rudeusRow = rows.value.find(r => r.entity.name === 'Рудеус');
+    expect(rudeusRow).toBeDefined();
+    expect(rudeusRow?.totalAppearances).toBe(2);
+    // Gap from ch:1 to ch:5 is 3 chapters (ch:2, ch:3, ch:4) -> gap warning should be true!
+    expect(rudeusRow?.hasGapWarning).toBe(true);
+
+    const erisRow = rows.value.find(r => r.entity.name === 'Эрис');
+    expect(erisRow?.totalAppearances).toBe(2);
+    expect(erisRow?.hasGapWarning).toBe(false);
+  });
+
+  it('filters rows by entity type and search query', () => {
+    const store = useAnalyticsStore();
+    store.matrixData = {
+      chapters: [{ id: 'ch:1', title: 'Глава 1', sort_order: 1, word_count: 1000 }],
+      entities: [
+        { id: 'ent:1', name: 'Рудеус', entity_type: 'character', appearances: [] },
+        { id: 'ent:2', name: 'Северный Замок', entity_type: 'location', appearances: [] },
+      ],
+    };
+
+    const { rows, filters } = useCrossReferenceMatrix('test_proj');
+
+    expect(rows.value).toHaveLength(2);
+
+    filters.value.selectedEntityType = 'location';
+    expect(rows.value).toHaveLength(1);
+    expect(rows.value[0].entity.name).toBe('Северный Замок');
+
+    filters.value.selectedEntityType = 'all';
+    filters.value.searchQuery = 'руд';
+    expect(rows.value).toHaveLength(1);
+    expect(rows.value[0].entity.name).toBe('Рудеус');
+  });
+});

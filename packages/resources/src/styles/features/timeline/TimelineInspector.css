@@ -1,0 +1,24 @@
+.inspector-container {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+}
+
+.border-subtle {
+  border-color: var(--color-border);
+}
+
+.bg-surface-hover:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.line-direct {
+  stroke: var(--color-accent);
+  stroke-dasharray: none;
+  opacity: 0.6;
+}
+
+.line-flashback {
+  stroke: var(--color-warning);
+  stroke-dasharray: 4 4;
+  opacity: 0.85;
+}

@@ -69,5 +69,26 @@ export interface RibbonCommands {
   mergeCells?: () => void | boolean | undefined;
   splitCell?: () => void | boolean | undefined;
   setTableStyle?: (style: string) => void | boolean | undefined;
+  // Академические команды (ГОСТ)
+  insertFormula?: () => void | boolean | undefined;
+  insertFormulaWhere?: () => void | boolean | undefined;
+  insertTermDef?: () => void | boolean | undefined;
+  insertCitation?: () => void | boolean | undefined;
+  runGostCheck?: () => void | boolean | undefined;
+  toggleAcademicInspector?: () => void | boolean | undefined;
+  // Рецензирование и проверка
+  checkSpelling?: () => void | boolean | undefined;
+  openThesaurus?: () => void | boolean | undefined;
+  showWordCount?: () => void | boolean | undefined;
+  addComment?: () => void | boolean | undefined;
+  deleteComment?: () => void | boolean | undefined;
+  prevComment?: () => void | boolean | undefined;
+  nextComment?: () => void | boolean | undefined;
+  // Отслеживание изменений
+  toggleTrackChanges?: () => void | boolean | undefined;
+  acceptChange?: () => void | boolean | undefined;
+  rejectChange?: () => void | boolean | undefined;
+  prevChange?: () => void | boolean | undefined;
+  nextChange?: () => void | boolean | undefined;
   [key: string]: unknown;
 }

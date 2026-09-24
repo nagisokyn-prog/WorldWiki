@@ -1,0 +1,126 @@
+import { ref, computed, onMounted } from 'vue';
+import { useAnalyticsStore, type CrossReferenceMatrixData, type MatrixChapter, type MatrixEntity } from '@/stores/analytics.store';
+import type { CrossReferenceFilterState, EntityPresenceRow, CellStatusInfo, AppearanceStatus } from './CrossReferenceMatrix.model';
+
+export function useCrossReferenceMatrix(project: string) {
+  const store = useAnalyticsStore();
+
+  const filters = ref<CrossReferenceFilterState>({
+    searchQuery: '',
+    selectedEntityType: 'all',
+    selectedVolumeId: 'all',
+    showDeceasedOnly: false,
+    highlightGaps: true,
+  });
+
+  const matrixData = computed<CrossReferenceMatrixData | null>(() => store.matrixData);
+  const isLoading = computed(() => store.isLoading);
+  const error = computed(() => store.error);
+
+  const availableEntityTypes = computed(() => {
+    if (!matrixData.value) return [];
+    const set = new Set<string>();
+    matrixData.value.entities.forEach(e => {
+      if (e.entity_type) set.add(e.entity_type);
+    });
+    return Array.from(set).sort();
+  });
+
+  const chapters = computed<MatrixChapter[]>(() => {
+    if (!matrixData.value) return [];
+    return [...matrixData.value.chapters].sort((a, b) => a.sort_order - b.sort_order);
+  });
+
+  const rows = computed<EntityPresenceRow[]>(() => {
+    if (!matrixData.value) return [];
+    const chs = chapters.value;
+    const q = filters.value.searchQuery.toLowerCase().trim();
+
+    return matrixData.value.entities
+      .filter((entity: MatrixEntity) => {
+        if (filters.value.selectedEntityType !== 'all' && entity.entity_type !== filters.value.selectedEntityType) {
+          return false;
+        }
+        if (filters.value.showDeceasedOnly && !entity.is_deceased) {
+          return false;
+        }
+        if (q && !entity.name.toLowerCase().includes(q)) {
+          return false;
+        }
+        return true;
+      })
+      .map((entity: MatrixEntity): EntityPresenceRow => {
+        const cells = new Map<string, CellStatusInfo>();
+        let total = 0;
+        let lastSeenIdx = -1;
+        let maxGap = 0;
+
+        const appearancesMap = new Map<string, { source: 'mention' | 'manual' | 'scene'; role?: string | null }>();
+        entity.appearances.forEach(app => {
+          appearancesMap.set(app.chapter_id, app);
+        });
+
+        chs.forEach((ch, idx) => {
+          const app = appearancesMap.get(ch.id);
+          if (app) {
+            const status: AppearanceStatus = app.source === 'scene' || app.source === 'manual' ? 'scene' : 'mention';
+            cells.set(ch.id, {
+              status,
+              role: app.role,
+              label: app.source === 'scene' ? 'Сцена' : 'Упоминание',
+            });
+            total++;
+
+            if (lastSeenIdx !== -1) {
+              const gap = idx - lastSeenIdx - 1;
+              if (gap > maxGap) maxGap = gap;
+            }
+            lastSeenIdx = idx;
+          } else if (entity.is_deceased) {
+            cells.set(ch.id, {
+              status: 'deceased',
+              label: 'Мертв',
+            });
+          } else {
+            cells.set(ch.id, {
+              status: 'absent',
+              label: 'Отсутствует',
+            });
+          }
+        });
+
+        const hasGapWarning = filters.value.highlightGaps && maxGap >= 3 && total > 1;
+
+        return {
+          entity,
+          cells,
+          totalAppearances: total,
+          hasGapWarning,
+        };
+      })
+      .sort((a, b) => b.totalAppearances - a.totalAppearances);
+  });
+
+  const refresh = async () => {
+    if (project) {
+      await store.loadMatrix(project, true);
+    }
+  };
+
+  onMounted(() => {
+    if (project && (!store.matrixData || store.currentProject !== project)) {
+      void store.loadMatrix(project);
+    }
+  });
+
+  return {
+    filters,
+    matrixData,
+    chapters,
+    rows,
+    availableEntityTypes,
+    isLoading,
+    error,
+    refresh,
+  };
+}

@@ -16,6 +16,11 @@ import SchemaEditorMainVue from '@/features/schemas/SchemaEditor/SchemaEditorMai
 import { AppDialog, QuickOpen as QuickOpenVue, CommandPalette as CommandPaletteVue } from '@worldwiki/components';
 import TagsManagerModalVue from '@/features/entities/TagsManagerModal.vue';
 import WowilonPanelVue from '@/features/ai/WowilonPanel.vue';
+import CrossReferenceMatrixVue from '@/features/analytics/CrossReferenceMatrix/CrossReferenceMatrix.vue';
+import ConsistencyCheckerVue from '@/features/analytics/ConsistencyChecker/ConsistencyChecker.vue';
+import ArcBoardVue from '@/features/chapters/StoryArcs/ArcBoard.vue';
+import TimelineInspectorVue from '@/features/timeline/TimelineInspector/TimelineInspector.vue';
+import GraphWebViewVue from '@/features/entities/GraphWeb/GraphWebView.vue';
 
 export default defineComponent({
   name: 'EditorView',
@@ -25,6 +30,11 @@ export default defineComponent({
     ChaptersMainVue,
     EntityEditorVue,
     SchemaEditorMainVue,
+    CrossReferenceMatrixVue,
+    ConsistencyCheckerVue,
+    ArcBoardVue,
+    TimelineInspectorVue,
+    GraphWebViewVue,
     QuickOpenVue,
     CommandPaletteVue,
     TagsManagerModalVue,

@@ -150,7 +150,7 @@ class SettingsService {
     this.listeners = [];
   }
 
-  private deepMerge(target: any, source: any): any {
+  private deepMerge(target: AppSettings, source: Partial<AppSettings>): AppSettings {
     return deepMergeSettings(target, source);
   }
 

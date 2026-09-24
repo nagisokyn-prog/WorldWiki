@@ -1,0 +1,48 @@
+.arcboard-container {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+}
+
+.border-subtle {
+  border-color: var(--color-border);
+}
+
+.bg-surface-subtle {
+  background-color: var(--color-surface-hover);
+}
+
+.bg-surface-hover:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.bg-accent {
+  background-color: var(--color-accent);
+}
+
+.bg-backdrop {
+  background-color: var(--modal-backdrop);
+}
+
+.text-surface {
+  color: var(--color-surface);
+}
+
+.badge-muted {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-muted);
+}
+
+.badge-accent {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.badge-success {
+  background-color: var(--color-success);
+  color: var(--color-surface);
+}
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: var(--color-surface);
+}

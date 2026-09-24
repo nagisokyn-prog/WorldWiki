@@ -12,7 +12,9 @@ export const PROMISE_KINDS: Record<string, { label: string; icon: string }> = {
   gun: { label: 'Чеховское ружьё', icon: '🔫' },
   foreshadowing: { label: 'Предзнаменование', icon: '🔮' },
   mystery: { label: 'Тайна', icon: '🗝️' },
-  question: { label: 'Нераскрытый вопрос', icon: '❓' }
+  question: { label: 'Нераскрытый вопрос', icon: '❓' },
+  scene: { label: 'Сцена / Эпизод', icon: '🎬' },
+  conflict: { label: 'Конфликт / Столкновение', icon: '⚔️' }
 };
 
 export const PROMISE_STATUSES: Array<{ id: string; label: string; icon: string }> = [

@@ -68,11 +68,14 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       progressions: [],
       resolution: null,
       resolved_in_volume: null,
-      resolved_in_chapter: null
+      resolved_in_chapter: null,
+      participant_ids: null,
+      location_id: null,
+      timeline_event_id: null
     };
 
     try {
-      const created = await api.savePlotPromise(params.project, newPromise as unknown as PlotPromise);
+      const created = await api.savePlotPromise(params.project || '', newPromise as unknown as PlotPromise);
       if (created) {
         promises.value.push(created as unknown as RichPlotPromise);
       } else {
@@ -122,7 +125,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
 
     try {
-      await api.savePlotPromise(params.project, target as unknown as PlotPromise);
+      await api.savePlotPromise(params.project || '', target as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
@@ -146,7 +149,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
 
     try {
-      await api.savePlotPromise(params.project, promise as unknown as PlotPromise);
+      await api.savePlotPromise(params.project || '', promise as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
@@ -162,7 +165,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     }
 
     try {
-      await api.savePlotPromise(params.project, item as unknown as PlotPromise);
+      await api.savePlotPromise(params.project || '', item as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');
@@ -177,7 +180,7 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
     item.note = noteDraft.value.trim() || null;
     editingNoteId.value = null;
     try {
-      await api.savePlotPromise(params.project, item as unknown as PlotPromise);
+      await api.savePlotPromise(params.project || '', item as unknown as PlotPromise);
     } catch { /* fallback to local */ }
     syncLocalBackup();
     emit('change');

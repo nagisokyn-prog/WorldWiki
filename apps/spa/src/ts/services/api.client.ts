@@ -18,6 +18,7 @@ import type { Chat } from '../types/generated/Chat';
 import type { ChatMessage } from '../types/generated/ChatMessage';
 import type { AiProfile } from '../types/generated/AiProfile';
 import type { PlotPromise } from '../types/generated/PlotPromise';
+import type { StoryArc } from '../types/generated/StoryArc';
 import type { Plan } from '../types/generated/Plan';
 import type { Tag } from '../types/generated/Tag';
 import type { Calendar } from '../types/generated/Calendar';
@@ -30,6 +31,9 @@ import type { AgentMemory } from '../types/generated/AgentMemory';
 import type { WebCache } from '../types/generated/WebCache';
 import type { DictionaryWord } from '../types/generated/DictionaryWord';
 import type { Cites } from '../types/generated/Cites';
+import type { ArcChapter } from '../types/generated/ArcChapter';
+import type { ArcEntity } from '../types/generated/ArcEntity';
+import type { RevealedIn } from '../types/generated/RevealedIn';
 
 // --- Normal Commands ---
 export async function getProjects(): Promise<ProjectSummary[]> {
@@ -472,6 +476,66 @@ export async function auditVolumeConsistency(volumeId: string): Promise<unknown>
     return await invoke('audit_volume_consistency', { volumeId });
 }
 
+export async function getStoryArcs(projectId: string): Promise<StoryArc[]> {
+    return await invoke('get_story_arcs', { projectId });
+}
+
+export async function saveStoryArc(arc: StoryArc): Promise<string> {
+    return await invoke('save_story_arc', { arc });
+}
+
+export async function deleteStoryArc(id: string): Promise<void> {
+    return await invoke('delete_story_arc', { id });
+}
+
+export async function assignArcChapter(relation: unknown): Promise<void> {
+    return await invoke('assign_arc_chapter', { relation });
+}
+
+export async function removeArcChapter(arcId: string, chapterId: string): Promise<void> {
+    return await invoke('remove_arc_chapter', { arcId, chapterId });
+}
+
+export async function assignArcEntity(relation: unknown): Promise<void> {
+    return await invoke('assign_arc_entity', { relation });
+}
+
+export async function removeArcEntity(arcId: string, entityId: string): Promise<void> {
+    return await invoke('remove_arc_entity', { arcId, entityId });
+}
+
+export async function getArcChapters(arcId: string): Promise<unknown[]> {
+    return await invoke('get_arc_chapters', { arcId });
+}
+
+export async function getArcEntities(arcId: string): Promise<unknown[]> {
+    return await invoke('get_arc_entities', { arcId });
+}
+
+export async function getCrossReferenceMatrix(projectId: string): Promise<unknown> {
+    return await invoke('get_cross_reference_matrix', { projectId });
+}
+
+export async function auditManuscriptConsistency(projectId: string): Promise<unknown[]> {
+    return await invoke('audit_manuscript_consistency', { projectId });
+}
+
+export async function getTimelineInspectorData(projectId: string, readerChapterOrderLimit: number | null): Promise<unknown> {
+    return await invoke('get_timeline_inspector_data', { projectId, readerChapterOrderLimit });
+}
+
+export async function getGraphTimeSlice(projectId: string, readerChapterOrder: number | null, mAbsLimit: number | null): Promise<unknown> {
+    return await invoke('get_graph_time_slice', { projectId, readerChapterOrder, mAbsLimit });
+}
+
+export async function getCharacterJourney(projectId: string, entityId: string): Promise<unknown> {
+    return await invoke('get_character_journey', { projectId, entityId });
+}
+
+export async function getManuscriptStatistics(projectId: string): Promise<unknown> {
+    return await invoke('get_manuscript_statistics', { projectId });
+}
+
 export async function aiQueryWorld(projectId: string, query: string, scope: string, topK: number | null): Promise<unknown[]> {
     return await invoke('ai_query_world', { projectId, query, scope, topK });
 }
@@ -509,6 +573,10 @@ export async function aiDelegateTask(taskId: string, prompt: string): Promise<un
 }
 
 // --- Entities CRUD ---
+export async function getStoryArc(id: string): Promise<StoryArc | null> {
+    return await invoke('get_story_arc', { id });
+}
+
 export async function getVolumes(project: string): Promise<Volume[]> {
     return await invoke('get_volumes', { project });
 }
@@ -784,4 +852,36 @@ export async function createCite(fromId: string, toId: string, data: Cites): Pro
 
 export async function deleteCite(id: string): Promise<void> {
     return await invoke('delete_cite', { id });
+}
+
+export async function createArcChapter(fromId: string, toId: string, data: ArcChapter): Promise<ArcChapter> {
+    return await invoke('create_arc_chapter', { fromId, toId, data });
+}
+
+export async function deleteArcChapter(id: string): Promise<void> {
+    return await invoke('delete_arc_chapter', { id });
+}
+
+export async function getArcEntitys(fromId: string, toId: string): Promise<ArcEntity[]> {
+    return await invoke('get_arc_entitys', { fromId, toId });
+}
+
+export async function createArcEntity(fromId: string, toId: string, data: ArcEntity): Promise<ArcEntity> {
+    return await invoke('create_arc_entity', { fromId, toId, data });
+}
+
+export async function deleteArcEntity(id: string): Promise<void> {
+    return await invoke('delete_arc_entity', { id });
+}
+
+export async function getRevealedIns(fromId: string, toId: string): Promise<RevealedIn[]> {
+    return await invoke('get_revealed_ins', { fromId, toId });
+}
+
+export async function createRevealedIn(fromId: string, toId: string, data: RevealedIn): Promise<RevealedIn> {
+    return await invoke('create_revealed_in', { fromId, toId, data });
+}
+
+export async function deleteRevealedIn(id: string): Promise<void> {
+    return await invoke('delete_revealed_in', { id });
 }

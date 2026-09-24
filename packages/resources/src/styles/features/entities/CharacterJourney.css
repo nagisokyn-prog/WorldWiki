@@ -1,0 +1,57 @@
+.journey-container {
+  background-color: var(--color-surface);
+  color: var(--color-text-main);
+}
+
+.border-subtle {
+  border-color: var(--color-border);
+}
+
+.bg-surface-hover:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.dot-accent {
+  background-color: var(--color-accent);
+}
+
+.dot-warning {
+  background-color: var(--color-warning);
+}
+
+.dot-success {
+  background-color: var(--color-success);
+}
+
+.dot-danger {
+  background-color: var(--color-danger);
+}
+
+.dot-muted {
+  background-color: var(--color-border);
+}
+
+.badge-accent {
+  background-color: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.badge-warning {
+  background-color: var(--color-warning);
+  color: var(--color-surface);
+}
+
+.badge-success {
+  background-color: var(--color-success);
+  color: var(--color-surface);
+}
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: var(--color-surface);
+}
+
+.badge-muted {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-muted);
+}

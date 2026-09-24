@@ -59,7 +59,7 @@ export function useCrossReferenceMatrix(project: string) {
         const appearancesMap = new Map<string, { kind?: string; source?: string | null; role?: string | null }>();
         rawApps.forEach(app => {
           if (!app.chapter_id) return;
-          const cleanId = app.chapter_id.trim_start_matches ? app.chapter_id : app.chapter_id.replace(/^chapters:/, '');
+          const cleanId = app.chapter_id.replace(/^chapters:/, '');
           appearancesMap.set(app.chapter_id, app);
           appearancesMap.set(cleanId, app);
           appearancesMap.set(`chapters:${cleanId}`, app);

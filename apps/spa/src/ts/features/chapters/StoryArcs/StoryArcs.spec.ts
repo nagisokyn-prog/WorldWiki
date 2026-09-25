@@ -109,24 +109,49 @@ describe('useStoryArcs Composable', () => {
     expect(linked[0].quote).toBe('Начало арки');
   });
 
-  it('creates and updates arc status', async () => {
-    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([]);
-    vi.mocked(apiClient.saveStoryArc).mockImplementation(async (arc) => ({
-      ...(arc as Record<string, unknown>),
-      id: 'arc:new',
-    }));
+  it('handles a single scene block bound to multiple arcs simultaneously', async () => {
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([
+      { id: 'arc:1', project_id: 'test_proj', title: 'Арка А (Начало)', arc_type: 'character', status: 'planned' },
+      { id: 'arc:2', project_id: 'test_proj', title: 'Арка Б (Финал)', arc_type: 'event', status: 'planned' },
+    ]);
+    vi.mocked(apiClient.getPlotPromises).mockResolvedValueOnce([
+      {
+        id: 'p_multi',
+        project_id: 'test_proj',
+        chapter_id: 'ch1',
+        kind: 'scene',
+        quote: 'Кульминационная сцена битвы',
+        paragraph_index: 3,
+        block_id: 'b_multi',
+        note: null,
+        status: 'resolved',
+        progressions: [],
+        resolution: { note: 'Победа' },
+        resolved_in_volume: null,
+        resolved_in_chapter: null,
+        participant_ids: null,
+        location_id: null,
+        timeline_event_id: null,
+        arcs: [
+          { arc_id: 'arc:1', arc_phase: 'setup' },
+          { arc_id: 'arc:2', arc_phase: 'resolution' }
+        ]
+      }
+    ] as any);
 
-    const { createNewArc, updateArcStatus, columns, refresh } = useArcBoard('test_proj');
+    const { columns, getLinkedBlocks, refresh } = useArcBoard('test_proj');
     await refresh();
 
-    await createNewArc('Новая Арка', 'event');
-
-    const plannedCol = columns.value.find(c => c.status === 'planned');
-    expect(plannedCol?.arcs).toHaveLength(1);
-
-    await updateArcStatus(plannedCol!.arcs[0], 'in_progress');
-
+    // Arc 1 has phase setup -> in_progress
     const inProgressCol = columns.value.find(c => c.status === 'in_progress');
-    expect(inProgressCol?.arcs).toHaveLength(1);
+    expect(inProgressCol?.arcs.some(a => a.id === 'arc:1')).toBe(true);
+
+    // Arc 2 has phase resolution and status resolved -> completed
+    const completedCol = columns.value.find(c => c.status === 'completed');
+    expect(completedCol?.arcs.some(a => a.id === 'arc:2')).toBe(true);
+
+    // Both arcs link to this scene block
+    expect(getLinkedBlocks('arc:1')).toHaveLength(1);
+    expect(getLinkedBlocks('arc:2')).toHaveLength(1);
   });
 });

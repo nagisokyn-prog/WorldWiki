@@ -250,6 +250,7 @@ surreal_entity! {
         pub timeline_event_id: Option<String>,
         pub arc_id: Option<String>,
         pub arc_phase: Option<String>,
+        #[flexible] #[serde(skip_serializing_if = "Option::is_none")] pub arcs: Option<serde_json::Value>,
     }
 }
 

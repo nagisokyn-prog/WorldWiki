@@ -24,8 +24,8 @@
         @click.stop="$emit('locate', { chapterId: block.chapter_id, paragraphIndex: block.paragraph_index, quote: block.quote, blockId: block.block_id || undefined })"
       >
         <div class="flex items-center gap-1 min-w-0 flex-1">
-          <span class="font-medium whitespace-nowrap" :class="getPhaseInfo(block.arc_phase).class">
-            {{ getPhaseInfo(block.arc_phase).label }}
+          <span class="font-medium whitespace-nowrap" :class="getPhaseInfo(block, arc.id).class">
+            {{ getPhaseInfo(block, arc.id).label }}
           </span>
           <span class="text-muted truncate">
             {{ formatChapterName(block.chapter_id) }} · абз.{{ block.paragraph_index }}
@@ -78,7 +78,17 @@ defineEmits<{
   (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
 }>();
 
-const getPhaseInfo = (phase?: string | null) => {
+const getPhaseInfo = (block: PlotPromise, arcId?: string | null) => {
+  let phase = block.arc_phase;
+  if (Array.isArray(block.arcs) && block.arcs.length > 0 && arcId) {
+    const cleanArcId = arcId.replace(/^story_arcs:/, '');
+    const entry = block.arcs.find(a => {
+      const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
+      return aid === cleanArcId || aid === arcId;
+    });
+    if (entry?.arc_phase) phase = entry.arc_phase;
+  }
+
   switch (phase) {
     case 'setup':
       return { label: '🌱 Завязка', class: 'phase-setup' };

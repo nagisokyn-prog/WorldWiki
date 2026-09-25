@@ -25,6 +25,12 @@ export function computeArcKanbanStatus(
   const cleanArcId = arcId.replace(/^story_arcs:/, '');
 
   const linked = allPromises.filter(p => {
+    if (Array.isArray(p.arcs) && p.arcs.length > 0) {
+      return p.arcs.some(a => {
+        const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
+        return aid === cleanArcId || aid === arcId;
+      });
+    }
     if (!p.arc_id) return false;
     const pid = String(p.arc_id).replace(/^story_arcs:/, '');
     return pid === cleanArcId || pid === arcId;
@@ -34,9 +40,17 @@ export function computeArcKanbanStatus(
     return (arc.status as ArcStatus) || 'planned';
   }
 
-  const hasResolved = linked.some(
-    p => p.arc_phase === 'resolution' && (p.status === 'resolved' || p.resolution != null)
-  );
+  const hasResolved = linked.some(p => {
+    let phase = p.arc_phase;
+    if (Array.isArray(p.arcs) && p.arcs.length > 0) {
+      const entry = p.arcs.find(a => {
+        const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
+        return aid === cleanArcId || aid === arcId;
+      });
+      if (entry?.arc_phase) phase = entry.arc_phase;
+    }
+    return phase === 'resolution' && (p.status === 'resolved' || p.resolution != null);
+  });
 
   if (hasResolved) return 'completed';
 
@@ -77,6 +91,12 @@ export function useArcBoard(projectId: string) {
     if (!arcId) return [];
     const cleanArcId = arcId.replace(/^story_arcs:/, '');
     return promises.value.filter(p => {
+      if (Array.isArray(p.arcs) && p.arcs.length > 0) {
+        return p.arcs.some(a => {
+          const aid = String(a.arc_id || '').replace(/^story_arcs:/, '');
+          return aid === cleanArcId || aid === arcId;
+        });
+      }
       if (!p.arc_id) return false;
       const pid = String(p.arc_id).replace(/^story_arcs:/, '');
       return pid === cleanArcId || pid === arcId;

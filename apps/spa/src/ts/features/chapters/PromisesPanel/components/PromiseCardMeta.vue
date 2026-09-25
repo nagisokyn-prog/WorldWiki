@@ -23,38 +23,16 @@
       </span>
     </div>
 
-    <!-- 2. Сюжетная Арка и Фаза -->
-    <div class="meta-row flex items-center gap-2">
-      <div class="meta-field flex items-center gap-1.5 flex-1 min-w-0">
-        <span class="meta-icon text-accent text-sm" title="Сюжетная арка">🎭</span>
-        <select
-          v-model="localArcId"
-          class="meta-select-input flex-1 truncate"
-          title="Привязка к сюжетной арке"
-          @change="onArcChange"
-        >
-          <option :value="null">— без арки —</option>
-          <option v-for="arc in availableArcs" :key="arc.id || arc.title" :value="arc.id">
-            {{ arc.title }}
-          </option>
-        </select>
-      </div>
-
-      <div v-if="localArcId" class="meta-field flex items-center gap-1.5 flex-1 min-w-0">
-        <span class="meta-icon text-accent text-sm" title="Фаза сюжетной арки">📈</span>
-        <select
-          v-model="localArcPhase"
-          class="meta-select-input flex-1 truncate"
-          title="Фаза в рамках арки"
-          @change="onArcChange"
-        >
-          <option value="setup">🌱 Завязка</option>
-          <option value="escalation">⚡ Эскалация</option>
-          <option value="climax">🔥 Кульминация</option>
-          <option value="resolution">✅ Развязка</option>
-        </select>
-      </div>
-    </div>
+    <!-- 2. Сюжетные Арки и Фазы (Мульти-привязка к аркам сцены) -->
+    <PromiseCardArcTags
+      :project="project"
+      :arcs="item.arcs"
+      :available-arcs="availableArcs"
+      :legacy-arc-id="item.arc_id"
+      :legacy-arc-phase="item.arc_phase"
+      @update:arcs="onArcsUpdate"
+      @change="$emit('change')"
+    />
 
     <!-- 3. Участники сцены/блока -->
     <PromiseCardParticipants
@@ -98,6 +76,7 @@
 </template>
 
 <script setup lang="ts">
+import PromiseCardArcTags from './PromiseCardArcTags.vue';
 import PromiseCardParticipants from './PromiseCardParticipants.vue';
 import PromiseCardTimeline from './PromiseCardTimeline.vue';
 import { usePromiseCardMeta } from './usePromiseCardMeta';
@@ -112,8 +91,6 @@ const {
   isParticipantDropdownOpen,
   isDatePickerOpen,
   availableArcs,
-  localArcId,
-  localArcPhase,
   currentParticipants,
   availableCharacters,
   getParticipantDisplayName,
@@ -137,6 +114,6 @@ const {
   handleParticipantBackspace,
   onDateFieldsChange,
   toggleDatePicker,
-  onArcChange
+  onArcsUpdate
 } = usePromiseCardMeta(props, emit);
 </script>

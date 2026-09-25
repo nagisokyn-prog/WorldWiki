@@ -156,13 +156,26 @@ export function usePromiseCardMeta(
     emit('change');
   };
 
+  const onArcsUpdate = (newArcs: Array<{ arc_id: string; arc_phase?: string | null }>) => {
+    const first = newArcs[0];
+    const updated = {
+      ...props.item,
+      arcs: newArcs,
+      arc_id: first?.arc_id ? String(first.arc_id) : null,
+      arc_phase: first?.arc_id ? String(first.arc_phase || 'setup') : null
+    };
+    emit('update:item', updated);
+    emit('change');
+  };
+
   const onArcChange = () => {
     const aid = localArcId.value ? String(localArcId.value) : null;
     const aphase = aid ? (localArcPhase.value || 'setup') : null;
     const updated = {
       ...props.item,
       arc_id: aid,
-      arc_phase: aphase
+      arc_phase: aphase,
+      arcs: aid ? [{ arc_id: aid, arc_phase: aphase }] : []
     };
     emit('update:item', updated);
     emit('change');
@@ -211,6 +224,7 @@ export function usePromiseCardMeta(
     toggleDatePicker: dateTime.toggleDatePicker,
     saveLocation,
     updateKind,
-    onArcChange
+    onArcChange,
+    onArcsUpdate
   };
 }

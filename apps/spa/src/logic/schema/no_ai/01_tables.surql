@@ -256,5 +256,6 @@ DEFINE FIELD OVERWRITE timeline_event_id   ON plot_promises TYPE option<record<t
 DEFINE FIELD OVERWRITE arc_id              ON plot_promises TYPE option<record<story_arcs>>;
 DEFINE FIELD OVERWRITE arc_phase           ON plot_promises TYPE option<string>
   ASSERT $value IN [NONE, NULL, 'setup', 'escalation', 'climax', 'resolution'];
+DEFINE FIELD OVERWRITE arcs                ON plot_promises TYPE option<array<object>> DEFAULT [];
 DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at          ON plot_promises TYPE datetime DEFAULT time::now();

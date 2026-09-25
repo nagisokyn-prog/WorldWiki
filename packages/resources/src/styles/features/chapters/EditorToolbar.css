@@ -144,3 +144,216 @@
   border-color: var(--danger);
   color: var(--danger);
 }
+
+/* =====================================================
+   ТЕГИ АРОК ГЛАВЫ (ChapterArcTags)
+   ===================================================== */
+.chapter-arc-tags {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.chapter-arc-tags .arc-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  box-sizing: border-box;
+  padding: 2px 8px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-main);
+  font-size: var(--font-size-xs, 12px);
+  box-shadow: var(--shadow-sm);
+  transition: border-color var(--anim-speed-fast, 0.15s) ease, background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.chapter-arc-tags .arc-tag-badge:hover {
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+
+.chapter-arc-tags .arc-tag-badge .arc-icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.chapter-arc-tags .arc-tag-badge .arc-title {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.chapter-arc-tags .arc-tag-badge .arc-remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 2px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1;
+  transition: color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.chapter-arc-tags .arc-tag-badge .arc-remove-btn:hover {
+  color: var(--danger);
+}
+
+.chapter-arc-tags .popover-anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.chapter-arc-tags .btn-add-arc {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  box-sizing: border-box;
+  padding: 2px 8px;
+  background: var(--bg-sunken);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm, 4px);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs, 12px);
+  cursor: pointer;
+  transition: border-color var(--anim-speed-fast, 0.15s) ease, color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.chapter-arc-tags .btn-add-arc:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chapter-arc-tags .arc-picker-popover {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  width: 230px;
+  z-index: 100;
+  background: var(--dropdown-bg, var(--bg-panel));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm, 6px);
+  box-shadow: var(--shadow-dropdown);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.chapter-arc-tags .popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-bottom: 2px;
+}
+
+.chapter-arc-tags .popover-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0 2px;
+}
+
+.chapter-arc-tags .popover-close-btn:hover {
+  color: var(--text-main);
+}
+
+.chapter-arc-tags .popover-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.chapter-arc-tags .popover-list {
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chapter-arc-tags .popover-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-radius: var(--radius-xs, 3px);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background-color var(--anim-speed-fast, 0.15s) ease, border-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.chapter-arc-tags .popover-item:hover {
+  background: var(--bg-sunken);
+  border-color: var(--border-color);
+}
+
+.chapter-arc-tags .popover-item-type {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+  margin-left: 6px;
+  flex-shrink: 0;
+}
+
+.chapter-arc-tags .popover-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 4px 2px;
+}
+
+.chapter-arc-tags .popover-create-box {
+  display: flex;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-color);
+}
+
+.chapter-arc-tags .popover-input {
+  flex: 1;
+  padding: 4px 6px;
+  font-size: 11px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs, 3px);
+  color: var(--text-main);
+  outline: none;
+}
+
+.chapter-arc-tags .popover-input:focus {
+  border-color: var(--accent);
+}
+
+.chapter-arc-tags .popover-submit-btn {
+  padding: 2px 8px;
+  font-size: 11px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border: none;
+  border-radius: var(--radius-xs, 3px);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chapter-arc-tags .popover-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

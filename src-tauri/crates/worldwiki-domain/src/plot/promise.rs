@@ -44,6 +44,8 @@ pub struct PlotPromise {
     pub participant_ids: Option<Vec<String>>,
     pub location_id: Option<String>,
     pub timeline_event_id: Option<String>,
+    pub arc_id: Option<String>,
+    pub arc_phase: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -72,6 +74,8 @@ impl PlotPromise {
             participant_ids: None,
             location_id: None,
             timeline_event_id: None,
+            arc_id: None,
+            arc_phase: None,
             created_at: DateTime::UNIX_EPOCH,
             updated_at: DateTime::UNIX_EPOCH,
         }

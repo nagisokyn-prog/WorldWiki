@@ -10,7 +10,9 @@
   margin-bottom: 0;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 
 .section-header {
@@ -48,17 +50,26 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 80px;
+  min-height: 0;
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-active) var(--bg-card);
 }
 
 .section-content::-webkit-scrollbar {
-  width: 4px;
+  width: 6px;
+}
+.section-content::-webkit-scrollbar-track {
+  background: var(--bg-card);
 }
 .section-content::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: var(--radius-xs) ;
+  background: var(--border-active);
+  border-radius: var(--radius-xs);
+}
+.section-content::-webkit-scrollbar-thumb:hover {
+  background: var(--border-active);
 }
 
 .promise-filters-bar {
@@ -183,6 +194,11 @@
   position: relative;
 }
 
+.promise-card.is-card-collapsed {
+  padding: 6px 10px;
+  gap: 0;
+}
+
 .promise-card.status-planted {
   border-left: 3px solid var(--warning);
 }
@@ -200,6 +216,33 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
+  border-radius: var(--radius-xs);
+  transition: background var(--anim-speed-fast) ease;
+}
+
+.card-header:hover {
+  background: var(--bg-hover);
+}
+
+.collapse-card-icon {
+  font-size: 9px;
+  color: var(--text-muted);
+  width: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapsed-preview {
+  color: var(--accent);
+  font-weight: 500;
+  max-width: 110px;
+}
+
+.collapsed-quote {
+  color: var(--text-muted);
+  font-size: 11px;
 }
 
 .kind-icon {
@@ -300,8 +343,9 @@
   background: var(--bg-card);
   border-left: 2px solid var(--accent);
   border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
-  line-height: 1.4;
+  line-height: 1.5;
   word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .quote-small {
@@ -314,27 +358,80 @@
   background: var(--success-bg);
 }
 
+/* ─── Orphan: исходный параграф удалён из рукописи ─── */
+.quote-orphaned {
+  border-left-color: var(--warning);
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.orphan-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  font-size: 10.5px;
+}
+
+.orphan-icon {
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.orphan-text {
+  flex: 1;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.orphan-delete-btn {
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  color: var(--color-danger);
+  font-size: 10px;
+  cursor: pointer;
+  transition: background var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
+  flex-shrink: 0;
+}
+
+.orphan-delete-btn:hover {
+  background: var(--color-danger);
+  color: var(--color-surface);
+  border-color: var(--color-danger);
+}
+
 .step-actions {
   display: flex;
   margin-top: 4px;
 }
 
 .btn-locate-step {
-  background: var(--bg-sunken);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  color: var(--accent-light);
-  font-size: 10.5px;
-  font-weight: 500;
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   transition: opacity var(--anim-speed-fast) ease, transform var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease, color var(--anim-speed-fast) ease;
 }
 
 .btn-locate-step:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-active);
-  color: var(--text-main);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
 }
 
@@ -526,3 +623,302 @@
   background: var(--accent);
   box-shadow: 0 0 4px var(--accent-glow);
 }
+
+/* ==========================================================================
+   Promise Card Meta & Participant Tags
+   ========================================================================== */
+
+.promise-card-meta {
+  background: var(--bg-sunken);
+  border-color: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.promise-card-meta .meta-select-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 8px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease;
+}
+
+.promise-card-meta .meta-select-input:hover,
+.promise-card-meta .meta-select-input:focus {
+  border-color: var(--accent);
+}
+
+.promise-card-meta .meta-input-field {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  color: var(--text-main);
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease;
+}
+
+.promise-card-meta .meta-input-field:hover,
+.promise-card-meta .meta-input-field:focus {
+  border-color: var(--accent);
+}
+
+.promise-card-meta .tags-input-container {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  min-height: 36px;
+  padding: 4px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  cursor: text;
+  transition: border-color var(--anim-speed-fast) ease, background-color var(--anim-speed-fast) ease;
+}
+
+.promise-card-meta .tags-input-container:hover,
+.promise-card-meta .tags-input-container:focus-within {
+  border-color: var(--accent);
+}
+
+.promise-card-meta .tag-pill {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  padding: 2px 8px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promise-card-meta .tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-left: 2px;
+}
+
+.promise-card-meta .tag-remove:hover {
+  color: var(--color-danger);
+}
+
+.promise-card-meta .tags-input {
+  flex: 1;
+  min-width: 80px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  color: var(--text-main);
+  padding: 2px 4px;
+}
+
+.promise-card-meta .character-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: var(--dropdown-bg, var(--bg-panel));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-dropdown);
+  z-index: 50;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.promise-card-meta .char-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color var(--anim-speed-fast) ease;
+}
+
+.promise-card-meta .char-option:hover {
+  background: var(--bg-hover);
+}
+
+.promise-card-meta .create-custom-option {
+  border-top: 1px solid var(--border-color);
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.promise-card-meta .timeline-scene-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.promise-card-meta .btn-edit-date {
+  background: var(--bg-input);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: background-color var(--anim-speed-fast) ease, border-color var(--anim-speed-fast) ease;
+}
+
+.promise-card-meta .btn-edit-date:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-active);
+}
+
+.promise-card-meta .diegetic-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.promise-card-meta .badge-cal {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-sunken);
+  color: var(--accent);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.promise-card-meta .badge-season {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-xs);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.promise-card-meta .season-spring {
+  color: var(--color-success);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+}
+
+.promise-card-meta .season-summer {
+  color: var(--color-warning);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+}
+
+.promise-card-meta .season-autumn {
+  color: var(--color-warning);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+}
+
+.promise-card-meta .season-winter {
+  color: var(--color-info);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+}
+
+.promise-card-meta .season-default {
+  color: var(--text-muted);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-color);
+}
+
+.promise-card-meta .badge-time-of-day {
+  display: inline-flex;
+  align-items: center;
+  background: var(--bg-sunken);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xs);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.promise-card-meta .badge-date-text {
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.promise-card-meta .compact-wheels-grid {
+  background: var(--bg-sunken);
+  border-radius: var(--radius-xs);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.promise-card-meta .wheels-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.promise-card-meta .wheel-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.promise-card-meta .wheel-cell .wheel-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.promise-card-meta .wheel-cell .dropdown-container {
+  width: 100%;
+  min-width: 0;
+}
+
+.promise-card-meta .wheel-cell .status-trigger {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius-xs);
+  box-sizing: border-box;
+}
+
+.promise-card-meta .wheel-cell .status-trigger span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+

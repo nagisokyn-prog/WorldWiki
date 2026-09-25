@@ -225,5 +225,3 @@ export function useGraphWebView(projectId: string) {
     refresh: loadGraphSlice,
   };
 }
-
-export const useGraphWeb = useGraphWebView;

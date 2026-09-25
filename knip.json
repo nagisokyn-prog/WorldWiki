@@ -2,20 +2,28 @@
   "$schema": "https://unpkg.com/knip@5/overview/configuration-schema.json",
   "ignore": [
     "vendor/**",
-    "node_modules/**",
-    "coverage/**",
-    "dist/**"
+    "scripts/**",
+    "src-tauri/**",
+    "crates/**",
+    "tauri-surreal-kit/**",
+    "src/dist-check/**",
+    "test/**",
+    "*.cjs",
+    "*.mjs",
+    "*.js"
   ],
   "workspaces": {
     ".": {
       "ignoreDependencies": [
         "@types/dompurify",
         "@types/markdown-it",
+        "@types/katex",
         "@typescript/typescript6",
         "@vue/server-renderer",
         "@vue/test-utils",
         "markdown-coverage-reporter",
         "prettier",
+        "turbo",
         "vc-api-coverage",
         "vite-plugin-checker",
         "vite-plugin-dts",
@@ -56,31 +64,46 @@
       "entry": [
         "*.html",
         "src/ts/app/*.ts",
-        "src/ts/features/ai/FloatingWindowAI/ai.ts"
+        "src/ts/main.ts",
+        "src/ts/features/ai/FloatingWindowAI/ai.ts",
+        "src/**/*.spec.ts",
+        "src/**/*.test.ts"
       ],
       "project": [
         "src/**/*.{ts,vue}"
       ],
       "ignore": [
         "src/ts/types/generated/**"
+      ],
+      "ignoreDependencies": [
+        "@types/katex"
       ]
     },
     "packages/components": {
       "entry": [
         "src/index.ts",
         "src/components/Vue/*.vue",
-        "src/components/Vue/Settings/*.vue"
+        "src/components/Vue/Settings/*.vue",
+        "src/**/*.spec.ts"
       ],
       "project": [
         "src/**/*.{ts,vue}"
       ]
     },
     "packages/word-vibe": {
+      "entry": [
+        "src/index.ts",
+        "src/editor/RkWordEditor.vue",
+        "src/**/*.spec.ts"
+      ],
       "project": [
         "src/**/*.{ts,vue}"
       ]
     },
     "packages/resources": {
+      "entry": [
+        "src/index.ts"
+      ],
       "project": [
         "src/**/*.{ts,vue,css}"
       ]

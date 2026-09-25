@@ -59,6 +59,48 @@ describe('usePromisesPanel', () => {
     expect(emptyPanel.promises.value).toEqual([]);
   });
 
+  it('synchronizes multi-paragraph scene quotes with edited manuscript paragraphs', async () => {
+    // Цитата охватывает 3 параграфа через «—».
+    // Якорь начала: 'Фраза раз' (до первого «—»).
+    // Якорь конца:  'Фраза три' (после последнего «—»).
+    // После редактирования первого параграфа результат — объединение обновлённых текстов.
+    const mockList = [
+      { id: 'p1', chapter_id: 'ch_1', status: 'planted', kind: 'scene', quote: 'Фраза раз — Фраза два — Фраза три', paragraph_index: 1 }
+    ];
+    vi.mocked(api.getPlotPromises).mockResolvedValueOnce(mockList as any);
+
+    props.chapterData = {
+      id: 'ch_1',
+      content: '<p>Фраза раз обновленная</p><p>Фраза два</p><p>Фраза три</p>'
+    };
+
+    const panel = usePromisesPanel(props, emit);
+    await panel.loadPromises();
+
+    // Якорь начала 'фраза раз' найден в 'фраза раз обновленная' ✓
+    // Якорь конца  'фраза три' найден в 'фраза три' ✓
+    expect(panel.promises.value[0].quote).toBe('Фраза раз обновленная Фраза два Фраза три');
+    expect(panel.promises.value[0].paragraph_index).toBe(1);
+  });
+
+  it('synchronizes single-block promise via block_id without length restrictions', async () => {
+    // block_id-путь: всегда синкает, даже если текст сильно вырос
+    const mockList = [
+      { id: 'p1', chapter_id: 'ch_1', status: 'planted', kind: 'gun', block_id: 'blk-abc', quote: 'Короткая', paragraph_index: 2 }
+    ];
+    vi.mocked(api.getPlotPromises).mockResolvedValueOnce(mockList as any);
+
+    props.chapterData = {
+      id: 'ch_1',
+      content: '<p data-block-id="blk-abc">Очень длинный обновлённый текст, который значительно превышает исходную длину оригинала</p>'
+    };
+
+    const panel = usePromisesPanel(props, emit);
+    await panel.loadPromises();
+
+    expect(panel.promises.value[0].quote).toBe('Очень длинный обновлённый текст, который значительно превышает исходную длину оригинала');
+  });
+
   it('filters promises by scope (current vs all) and status', async () => {
     const mockList = [
       { id: 'p1', chapter_id: 'ch_1', status: 'planted', kind: 'gun', quote: 'Gun' },

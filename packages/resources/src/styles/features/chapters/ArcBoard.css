@@ -46,3 +46,37 @@
   background-color: var(--color-danger);
   color: var(--color-surface);
 }
+
+.arc-blocks-list {
+  border-top: 1px solid var(--color-border);
+}
+
+.arc-block-item {
+  transition: border-color var(--anim-speed-fast, 0.15s) ease, background-color var(--anim-speed-fast, 0.15s) ease;
+}
+
+.arc-block-item:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-accent);
+}
+
+.phase-setup {
+  color: var(--color-success);
+}
+
+.phase-escalation {
+  color: var(--color-accent);
+}
+
+.phase-climax {
+  color: var(--color-danger);
+}
+
+.phase-resolution {
+  color: var(--color-success);
+}
+
+.phase-default {
+  color: var(--color-text-muted);
+}
+

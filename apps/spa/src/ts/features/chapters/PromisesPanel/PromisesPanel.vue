@@ -1,5 +1,5 @@
 <template>
-  <div class="tool-section promises-section">
+  <div class="tool-section promises-section flex-1 min-h-0 flex flex-col">
     <div class="section-header" @click="isCollapsed = !isCollapsed">
       <div class="flex items-center gap-2">
         <span class="collapse-icon">{{ isCollapsed ? '▶' : '▼' }}</span>
@@ -28,8 +28,7 @@
 
     <div
       v-show="!isCollapsed"
-      class="section-content"
-      :style="{ height: promisesHeight + 'px' }"
+      class="section-content flex-1 min-h-0"
     >
       <!-- Фильтры: Область видимости, категория и статус -->
       <PromiseFilterBar
@@ -126,7 +125,6 @@ const {
   getChapterTitle,
   isCurrentChapterPromise,
   promptAttachMilestone,
-  promisesHeight,
   isResizing,
   startVerticalResize
 } = usePromisesPanel(props, emit);

@@ -15,6 +15,8 @@ export interface PromiseMilestone {
 export type RichPlotPromise = Omit<PlotPromise, 'progressions' | 'resolution'> & {
   progressions?: PromiseMilestone[] | null;
   resolution?: PromiseMilestone | null;
+  /** UI-флаг: текст был удалён из рукописи (не сохраняется в БД) */
+  is_orphaned?: boolean;
 };
 
 export interface UsePromiseActionsParams {
@@ -71,7 +73,9 @@ export function usePromiseActions(params: UsePromiseActionsParams) {
       resolved_in_chapter: null,
       participant_ids: null,
       location_id: null,
-      timeline_event_id: null
+      timeline_event_id: null,
+      arc_id: null,
+      arc_phase: null
     };
 
     try {

@@ -28,7 +28,7 @@ describe('useChapterArcTags', () => {
     ];
 
     store.arcChapters.set('arc_1', [
-      { in: 'arc_1', out: 'chapters:ch_1', project_id: 'test_proj' }
+      { arc_id: 'arc_1', chapter_id: 'chapters:ch_1', project_id: 'test_proj' }
     ]);
 
     const { boundArcs, availableArcs } = useChapterArcTags({
@@ -42,6 +42,25 @@ describe('useChapterArcTags', () => {
 
     expect(availableArcs.value).toHaveLength(1);
     expect(availableArcs.value[0].id).toBe('arc_2');
+  });
+
+  it('computes bound arcs when relations use out property (legacy)', async () => {
+    const store = useStoryArcsStore();
+    store.arcs = [
+      { id: 'arc_1', title: 'Арка Войны', arc_type: 'event', status: 'in_progress' }
+    ];
+
+    store.arcChapters.set('arc_1', [
+      { in: 'arc_1', out: 'chapters:ch_1', project_id: 'test_proj' }
+    ]);
+
+    const { boundArcs } = useChapterArcTags({
+      project: 'test_proj',
+      chapterId: 'ch_1'
+    });
+
+    expect(boundArcs.value).toHaveLength(1);
+    expect(boundArcs.value[0].arcId).toBe('arc_1');
   });
 
   it('binds and unbinds arcs', async () => {

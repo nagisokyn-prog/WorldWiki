@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useAiActionButtons } from './useAiActionButtons';
-import type { AiActionButtonsProps } from '../AiActionButtons.model';
+import type { AiActionButtonsProps } from './AiActionButtons.model';
 
 describe('useAiActionButtons', () => {
   it('computes isVisible correctly for various prop combinations', () => {

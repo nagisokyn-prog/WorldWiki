@@ -248,6 +248,8 @@ surreal_entity! {
         #[serde(skip_serializing_if = "Option::is_none")] pub participant_ids: Option<Vec<String>>,
         pub location_id: Option<String>,
         pub timeline_event_id: Option<String>,
+        pub arc_id: Option<String>,
+        pub arc_phase: Option<String>,
     }
 }
 

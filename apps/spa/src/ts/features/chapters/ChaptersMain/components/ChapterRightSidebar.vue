@@ -52,6 +52,7 @@
             :chapter-title="currentChapter.title"
             :current-volume-id="currentVolume?.id"
             :all-chapters="chapters"
+            :chapter-data="currentChapter"
             @locate="$emit('locatePromise', $event)"
             @change="$emit('markUnsaved')"
           />

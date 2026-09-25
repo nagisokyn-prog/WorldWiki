@@ -42,6 +42,8 @@ export function useTiptapEditor(
         emit('change');
         stateHook.updateStats();
         mdHook.syncMarkdownFromEditor();
+        // Резервный сигнал для PromisesPanel — после того как Vue обновит props через v-model
+        setTimeout(() => { document.dispatchEvent(new CustomEvent('ww:editor-content-updated')); }, 0);
       }
     }
   });

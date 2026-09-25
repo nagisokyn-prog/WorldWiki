@@ -13,6 +13,7 @@ vi.mock('@/services/api.client', () => ({
   removeArcEntity: vi.fn(),
   getArcChapters: vi.fn(),
   getArcEntities: vi.fn(),
+  getPlotPromises: vi.fn().mockResolvedValue([]),
 }));
 
 describe('useStoryArcs Composable', () => {
@@ -44,6 +45,68 @@ describe('useStoryArcs Composable', () => {
     const completedCol = columns.value.find(c => c.status === 'completed');
     expect(completedCol?.arcs).toHaveLength(1);
     expect(completedCol?.arcs[0].title).toBe('Арка 3');
+  });
+
+  it('automatically calculates arc status from linked plot promises', async () => {
+    vi.mocked(apiClient.getStoryArcs).mockResolvedValueOnce([
+      { id: 'arc:1', project_id: 'test_proj', title: 'Арка с блоком', arc_type: 'character', status: 'planned' },
+      { id: 'arc:2', project_id: 'test_proj', title: 'Завершённая арка', arc_type: 'event', status: 'planned' },
+    ]);
+    vi.mocked(apiClient.getPlotPromises).mockResolvedValueOnce([
+      {
+        id: 'p1',
+        project_id: 'test_proj',
+        chapter_id: 'ch1',
+        kind: 'scene',
+        quote: 'Начало арки',
+        paragraph_index: 1,
+        block_id: 'b1',
+        note: null,
+        status: 'planted',
+        progressions: [],
+        resolution: null,
+        resolved_in_volume: null,
+        resolved_in_chapter: null,
+        participant_ids: null,
+        location_id: null,
+        timeline_event_id: null,
+        arc_id: 'arc:1',
+        arc_phase: 'setup'
+      },
+      {
+        id: 'p2',
+        project_id: 'test_proj',
+        chapter_id: 'ch2',
+        kind: 'scene',
+        quote: 'Конец арки',
+        paragraph_index: 5,
+        block_id: 'b2',
+        note: null,
+        status: 'resolved',
+        progressions: [],
+        resolution: {},
+        resolved_in_volume: null,
+        resolved_in_chapter: null,
+        participant_ids: null,
+        location_id: null,
+        timeline_event_id: null,
+        arc_id: 'arc:2',
+        arc_phase: 'resolution'
+      }
+    ] as any);
+
+    const { columns, getLinkedBlocks, refresh } = useArcBoard('test_proj');
+    await refresh();
+
+    const inProgressCol = columns.value.find(c => c.status === 'in_progress');
+    expect(inProgressCol?.arcs.some(a => a.id === 'arc:1')).toBe(true);
+
+    const completedCol = columns.value.find(c => c.status === 'completed');
+    expect(completedCol?.arcs.some(a => a.id === 'arc:2')).toBe(true);
+
+    const linked = getLinkedBlocks('arc:1');
+    expect(linked).toHaveLength(1);
+    expect(linked[0].quote).toBe('Начало арки');
   });
 
   it('creates and updates arc status', async () => {

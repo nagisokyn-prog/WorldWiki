@@ -61,103 +61,35 @@
 
         <!-- Cards List -->
         <div class="col-body flex-1 overflow-y-auto p-3 space-y-3">
-          <div
+          <ArcCard
             v-for="arc in col.arcs"
             :key="arc.id || arc.title"
-            class="arc-card p-3 rounded border border-subtle bg-surface hover:bg-surface-hover shadow-xs transition-shadow flex flex-col gap-2 cursor-pointer"
-          >
-            <div class="flex items-start justify-between gap-2">
-              <span class="font-bold text-xs text-main">{{ arc.title }}</span>
-              <span class="text-2xs px-1.5 py-0.5 rounded bg-surface-hover text-muted capitalize">
-                {{ arc.arc_type }}
-              </span>
-            </div>
-
-            <p v-if="arc.description" class="text-xs text-muted m-0 line-clamp-2">
-              {{ arc.description }}
-            </p>
-
-            <!-- Card Actions / Move buttons -->
-            <div class="flex items-center justify-between pt-2 border-t border-subtle text-2xs text-muted">
-              <select
-                :value="arc.status"
-                class="status-quick-select text-2xs px-1.5 py-0.5 rounded border border-subtle bg-input text-main"
-                @change="updateArcStatus(arc, ($event.target as HTMLSelectElement).value as ArcStatus)"
-              >
-                <option value="planned">Запланировано</option>
-                <option value="in_progress">В Процессе</option>
-                <option value="completed">Завершено</option>
-                <option value="abandoned">Отменено</option>
-              </select>
-
-              <button
-                class="btn-del hover:text-danger cursor-pointer p-1"
-                title="Удалить арку"
-                @click.stop="deleteArc(arc.id)"
-              >
-                🗑️
-              </button>
-            </div>
-          </div>
+            :arc="arc"
+            :effective-status="getArcEffectiveStatus(arc)"
+            :linked-blocks="getLinkedBlocks(arc.id)"
+            @update-status="updateArcStatus"
+            @delete="deleteArc"
+            @locate="$emit('locate', $event)"
+          />
         </div>
       </div>
     </div>
 
     <!-- Simple Create Modal -->
-    <div
+    <ArcCreateModal
       v-if="showCreateModal"
-      class="fixed inset-0 bg-backdrop flex items-center justify-center z-50 p-4"
-      @click.self="showCreateModal = false"
-    >
-      <div class="modal-box p-6 rounded-lg border border-subtle bg-surface w-full max-w-md space-y-4 shadow-lg">
-        <h3 class="text-base font-bold m-0">Создать Сюжетную Линию (Арку)</h3>
-
-        <div class="space-y-2">
-          <label class="text-xs font-bold text-muted">Название арки:</label>
-          <input
-            v-model="newArcTitle"
-            type="text"
-            placeholder="Например: Арка Примирения с Эрис..."
-            class="w-full text-xs px-3 py-2 rounded border border-subtle bg-input text-main"
-          />
-        </div>
-
-        <div class="space-y-2">
-          <label class="text-xs font-bold text-muted">Тип арки:</label>
-          <select
-            v-model="newArcType"
-            class="w-full text-xs px-3 py-2 rounded border border-subtle bg-input text-main"
-          >
-            <option value="character">Персонаж (Character)</option>
-            <option value="event">Событие (Event)</option>
-            <option value="relationship">Отношения (Relationship)</option>
-            <option value="theme">Тема (Theme)</option>
-          </select>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-3">
-          <button
-            class="px-4 py-1.5 text-xs rounded border border-subtle bg-surface hover:bg-surface-hover text-main cursor-pointer"
-            @click="showCreateModal = false"
-          >
-            Отмена
-          </button>
-          <button
-            class="px-4 py-1.5 text-xs rounded font-bold bg-accent text-surface cursor-pointer"
-            :disabled="!newArcTitle.trim()"
-            @click="handleCreate"
-          >
-            Создать
-          </button>
-        </div>
-      </div>
-    </div>
+      v-model:title="newArcTitle"
+      v-model:arc-type="newArcType"
+      @close="showCreateModal = false"
+      @create="handleCreate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import ArcCard from './components/ArcCard.vue';
+import ArcCreateModal from './components/ArcCreateModal.vue';
 import { useArcBoard } from './useArcBoard';
-import type { ArcStatus } from './StoryArcs.model';
 
 const props = withDefaults(
   defineProps<{
@@ -168,6 +100,10 @@ const props = withDefaults(
   }
 );
 
+defineEmits<{
+  (e: 'locate', payload: { chapterId: string; paragraphIndex: number; quote: string; blockId?: string }): void;
+}>();
+
 const {
   filters,
   columns,
@@ -175,6 +111,8 @@ const {
   showCreateModal,
   newArcTitle,
   newArcType,
+  getArcEffectiveStatus,
+  getLinkedBlocks,
   handleCreate,
   updateArcStatus,
   deleteArc,
@@ -183,4 +121,3 @@ const {
 </script>
 
 <style scoped src="@worldwiki/resources/styles/features/chapters/ArcBoard.css"></style>
-

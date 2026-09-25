@@ -251,13 +251,14 @@ export function applySettingsToDOM(settings: AppSettings): void {
   }
 
   // 13. Выпадающие списки (Dropdowns)
-  if (settings.dropdowns?.transparency !== undefined) {
-    const t = settings.dropdowns.transparency;
-    const op = ((100 - t) / 100).toFixed(1);
-    style.setProperty('--dropdown-transparency', `${t}%`);
-    style.setProperty('--dropdown-opacity', op);
-    style.setProperty('--dropdown-bg', toRgbaString(undefined, Number(op), [15, 15, 20]));
-  }
+  const isLight = settings.theme === 'light' || root.getAttribute('data-theme') === 'light';
+  const defaultDropdownRgb: [number, number, number] = isLight ? [255, 255, 255] : [26, 26, 32];
+  const t = settings.dropdowns?.transparency !== undefined ? settings.dropdowns.transparency : 0;
+  const op = ((100 - t) / 100).toFixed(2);
+  style.setProperty('--dropdown-transparency', `${t}%`);
+  style.setProperty('--dropdown-opacity', op);
+  const baseDropdownColor = c.dropdownBg || c.bgCard || c.bgPanel;
+  style.setProperty('--dropdown-bg', toRgbaString(baseDropdownColor, Number(op), defaultDropdownRgb));
 
   // 14. Классы на document.body для стилизации
   if (typeof document !== 'undefined' && document.body) {

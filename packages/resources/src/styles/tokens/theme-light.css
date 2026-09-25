@@ -15,6 +15,7 @@
     --bg-hover: rgba(0, 0, 0, 0.04);
     --bg-active: rgba(0, 0, 0, 0.08);
     --bg-selected: rgba(124, 58, 237, 0.12);
+    --dropdown-bg: #ffffff;
     --modal-backdrop: rgba(0, 0, 0, 0.35);
 
     /* Цвета текста */

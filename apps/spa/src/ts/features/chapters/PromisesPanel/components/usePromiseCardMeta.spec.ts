@@ -1,10 +1,28 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { setActivePinia, createPinia } from 'pinia';
 import { usePromiseCardMeta } from './usePromiseCardMeta';
 import type { RichPlotPromise } from '../usePromisesPanel';
 
 vi.mock('@/services/api.client', () => ({
   getEntities: vi.fn().mockResolvedValue([]),
-  getGlobalTimeline: vi.fn().mockResolvedValue({ events: [] })
+  getGlobalTimeline: vi.fn().mockResolvedValue({ events: [] }),
+  getCalendars: vi.fn().mockResolvedValue([
+    {
+      id: 'cal:1',
+      name: 'Основной календарь',
+      is_default: true,
+      data: {
+        название: 'Основной календарь',
+        эпохи: [{ название: 'Новая Эра', год_начала: 1, год_конца: 2000 }],
+        месяцы: [
+          { название: 'Январь', дней: 30 },
+          { название: 'Февраль', дней: 30 }
+        ],
+        сезоны: [{ название: 'Зима', месяцы: [0, 1] }],
+        настройки_времени: { часов_в_сутках: 24, минут_в_часе: 60 }
+      }
+    }
+  ])
 }));
 
 describe('usePromiseCardMeta', () => {
@@ -28,6 +46,7 @@ describe('usePromiseCardMeta', () => {
   };
 
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.restoreAllMocks();
   });
 
@@ -64,7 +83,7 @@ describe('usePromiseCardMeta', () => {
     }));
   });
 
-  it('updates kind and timeline event', () => {
+  it('updates kind', () => {
     const emit = vi.fn();
     const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
 
@@ -72,10 +91,97 @@ describe('usePromiseCardMeta', () => {
     expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
       kind: 'conflict'
     }));
+  });
 
-    meta.updateTimelineEvent('ev_99');
+  it('removes last participant on backspace when input query is empty', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+    
+    meta.participantInputQuery.value = '';
+    meta.handleParticipantBackspace();
     expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
-      timeline_event_id: 'ev_99'
+      participant_ids: []
+    }));
+  });
+
+  it('toggles date picker open/closed state', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+    expect(meta.isDatePickerOpen.value).toBe(false);
+    meta.toggleDatePicker();
+    expect(meta.isDatePickerOpen.value).toBe(true);
+    meta.toggleDatePicker();
+    expect(meta.isDatePickerOpen.value).toBe(false);
+  });
+
+  it('handles onUniversalDateChange correctly', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+    meta.onUniversalDateChange({
+      calendar_id: 'cal:1',
+      absolute_minute: 1440,
+      original_input: {
+        era_index: 0,
+        year: 1,
+        month: 0,
+        day: 2,
+        hour: 14,
+        minute: 30
+      }
+    });
+
+    expect(meta.universalDateModel.value?.absolute_minute).toBe(1440);
+    expect(meta.currentHour.value).toBe(14);
+    expect(meta.currentMinute.value).toBe(30);
+    expect(emit).toHaveBeenCalledWith('change');
+  });
+
+  it('calculates diegetic badges correctly based on hour and season', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+    meta.currentHour.value = 0;
+    meta.currentMinute.value = 0;
+    
+    expect(meta.diegeticInfo.value?.timeOfDayName).toBe('🌙 Ночь');
+
+    meta.currentHour.value = 14;
+    expect(meta.diegeticInfo.value?.timeOfDayName).toBe('☀️ День');
+  });
+
+  it('resolves participant display names and deduplicates participants', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({
+      project: 'test_proj',
+      item: {
+        ...baseItem,
+        participant_ids: ['characters:hero_1', 'characters:hero_1', 'Герой']
+      }
+    }, emit);
+
+    expect(meta.getParticipantDisplayName('characters:hero_1')).toBe('hero_1');
+    expect(meta.currentParticipants.value.length).toBeLessThanOrEqual(2);
+  });
+
+  it('handles arc and phase changes and emits update:item', () => {
+    const emit = vi.fn();
+    const meta = usePromiseCardMeta({ project: 'test_proj', item: baseItem }, emit);
+
+    meta.localArcId.value = 'arc:1';
+    meta.localArcPhase.value = 'escalation';
+    meta.onArcChange();
+
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
+      arc_id: 'arc:1',
+      arc_phase: 'escalation'
+    }));
+    expect(emit).toHaveBeenCalledWith('change');
+
+    meta.localArcId.value = null;
+    meta.onArcChange();
+
+    expect(emit).toHaveBeenCalledWith('update:item', expect.objectContaining({
+      arc_id: null,
+      arc_phase: null
     }));
   });
 });

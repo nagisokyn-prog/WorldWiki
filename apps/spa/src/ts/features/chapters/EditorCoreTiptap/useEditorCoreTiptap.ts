@@ -131,54 +131,88 @@ export function useEditorCoreTiptap(
     document.dispatchEvent(new CustomEvent('ww:add-participant', { detail: { type: payload.type, id: payload.id, name: payload.name } }));
   };
 
-  const scrollToParagraph = (paragraphIndex: number, quote?: string) => {
+  const scrollToParagraph = (paragraphIndex: number, quote?: string, blockId?: string) => {
     if (tiptap.editorMode.value === 'wysiwyg' || tiptap.editorMode.value === 'split') {
       if (tiptap.editor.value) {
         const editorDom = tiptap.editor.value.view.dom;
-        const allNodes = Array.from(
-          editorDom.querySelectorAll('.semantic-paragraph-node, .ProseMirror > *, p, h1, h2, h3, h4, h5, h6, blockquote, li, tr')
-        ) as HTMLElement[];
-        let targetEl: HTMLElement | null = null;
+        const targetElements: HTMLElement[] = [];
 
-        if (quote && quote.trim()) {
-          const cleanQuote = quote.replace(/\s+/g, ' ').trim().toLowerCase();
-          for (const el of allNodes) {
-            const elText = (el.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
-            if (elText.includes(cleanQuote)) {
-              targetEl = el;
-              break;
+        // 1. Поиск по blockId (если указан)
+        if (blockId && blockId.trim()) {
+          const safeId = blockId.trim();
+          try {
+            const el = editorDom.querySelector(`[data-block-id="${safeId}"], [data-id="${safeId}"]`) as HTMLElement | null;
+            if (el) {
+              targetElements.push(el);
+            }
+          } catch {
+            // ignore invalid selector
+          }
+        }
+
+        // 2. Поиск по цитате (поддержка многострочных сцен, диалогов, тире и кавычек)
+        if (targetElements.length === 0 && quote && quote.trim()) {
+          const cleanString = (s: string) => s.replace(/[«»""'']/g, '').replace(/[—–−-]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+          const normQuote = cleanString(quote);
+
+          // Разбиваем цитату на фразы / реплики диалога
+          const quotePhrases = quote
+            .split(/[\r\n]+|[.!?—–]+\s+/)
+            .map(cleanString)
+            .filter(p => p.length > 5);
+
+          const topBlocks = Array.from(editorDom.querySelectorAll(':scope > *, .semantic-paragraph-node, p, blockquote, h1, h2, h3')) as HTMLElement[];
+          const uniqueTopBlocks = Array.from(new Set(topBlocks));
+
+          for (const el of uniqueTopBlocks) {
+            const elText = cleanString(el.textContent || '');
+            if (!elText || elText.length < 3) continue;
+
+            const isExactMatch = normQuote.length > 5 && (normQuote.includes(elText) || elText.includes(normQuote));
+            const isPhraseMatch = quotePhrases.some(phrase => phrase.length > 5 && (elText.includes(phrase) || phrase.includes(elText)));
+
+            if (isExactMatch || isPhraseMatch) {
+              if (!targetElements.includes(el)) {
+                targetElements.push(el);
+              }
             }
           }
         }
 
-        if (!targetEl) {
+        // 3. Fallback: по порядковому номеру абзаца
+        if (targetElements.length === 0) {
           const topBlocks = Array.from(editorDom.children) as HTMLElement[];
           if (topBlocks.length > 0) {
             const idx = Math.max(0, Math.min(topBlocks.length - 1, paragraphIndex - 1));
-            targetEl = topBlocks[idx] || null;
+            const el = topBlocks[idx] || null;
+            if (el) targetElements.push(el);
           }
         }
 
-        if (targetEl) {
+        if (targetElements.length > 0) {
+          const firstTarget = targetElements[0];
           const wrapper = (editorDom.closest('.editor-wrapper') || editorDom.parentElement) as HTMLElement | null;
           if (wrapper && wrapper.scrollHeight > wrapper.clientHeight) {
             const wrapperRect = wrapper.getBoundingClientRect();
-            const targetRect = targetEl.getBoundingClientRect();
+            const targetRect = firstTarget.getBoundingClientRect();
             const offsetTop = targetRect.top - wrapperRect.top + wrapper.scrollTop;
             wrapper.scrollTo({
               top: Math.max(0, offsetTop - wrapper.clientHeight / 2 + targetRect.height / 2),
               behavior: 'smooth'
             });
           } else {
-            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }
 
-          targetEl.classList.remove('promise-highlight-target');
-          void targetEl.offsetWidth;
-          targetEl.classList.add('promise-highlight-target');
-          setTimeout(() => {
-            targetEl?.classList.remove('promise-highlight-target');
-          }, 2500);
+          // Пульсирующая подсветка для ВСЕХ абзацев сцены одновременно
+          for (const el of targetElements) {
+            el.classList.remove('promise-highlight-target');
+            void el.offsetWidth;
+            el.classList.add('promise-highlight-target');
+            setTimeout(() => {
+              el.classList.remove('promise-highlight-target');
+            }, 2500);
+          }
         }
       }
     }
@@ -204,9 +238,9 @@ export function useEditorCoreTiptap(
   };
 
   const handleLocatePromiseEvent = (e: Event) => {
-    const detail = (e as CustomEvent<{ chapterId?: string; paragraphIndex: number; quote?: string }>).detail;
+    const detail = (e as CustomEvent<{ chapterId?: string; paragraphIndex: number; quote?: string; blockId?: string; block_id?: string }>).detail;
     if (!detail) return;
-    scrollToParagraph(detail.paragraphIndex, detail.quote);
+    scrollToParagraph(detail.paragraphIndex, detail.quote, detail.blockId || detail.block_id);
   };
 
   onMounted(() => {

@@ -36,8 +36,9 @@ export function useChapterArcTags(
       if (!arc.id) continue;
       const relations = store.arcChapters.get(arc.id) || [];
       const isBound = relations.some(r => {
-        if (!r.out) return false;
-        const outClean = r.out.includes(':') ? r.out : `chapters:${r.out}`;
+        const outCandidate = r.chapter_id || r.out;
+        if (!outCandidate) return false;
+        const outClean = outCandidate.includes(':') ? outCandidate : `chapters:${outCandidate}`;
         return outClean === cleanChapterId.value;
       });
 

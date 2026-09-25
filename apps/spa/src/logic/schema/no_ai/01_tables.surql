@@ -253,5 +253,8 @@ DEFINE FIELD OVERWRITE resolved_in_chapter ON plot_promises TYPE option<record<c
 DEFINE FIELD OVERWRITE participant_ids     ON plot_promises TYPE option<array<record<entities>>>;
 DEFINE FIELD OVERWRITE location_id         ON plot_promises TYPE option<record<entities>>;
 DEFINE FIELD OVERWRITE timeline_event_id   ON plot_promises TYPE option<record<timeline_events>>;
+DEFINE FIELD OVERWRITE arc_id              ON plot_promises TYPE option<record<story_arcs>>;
+DEFINE FIELD OVERWRITE arc_phase           ON plot_promises TYPE option<string>
+  ASSERT $value IN [NONE, NULL, 'setup', 'escalation', 'climax', 'resolution'];
 DEFINE FIELD OVERWRITE created_at          ON plot_promises TYPE datetime DEFAULT time::now();
 DEFINE FIELD OVERWRITE updated_at          ON plot_promises TYPE datetime DEFAULT time::now();

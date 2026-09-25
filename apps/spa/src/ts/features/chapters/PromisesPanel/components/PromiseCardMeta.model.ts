@@ -22,3 +22,12 @@ export interface TimelineEventOption {
   title: string;
   m_abs?: number;
 }
+
+export interface DiegeticDateBadgeInfo {
+  calendarName: string;
+  seasonName: string;
+  seasonClass: string;
+  timeOfDayName: string;
+  formattedDate: string;
+  mAbs: number;
+}

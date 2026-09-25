@@ -95,3 +95,4 @@ DEFINE INDEX OVERWRITE idx_promise_resolved_chapter ON plot_promises FIELDS reso
 DEFINE INDEX OVERWRITE idx_promise_resolved_volume  ON plot_promises FIELDS resolved_in_volume;
 DEFINE INDEX OVERWRITE idx_promise_location         ON plot_promises FIELDS location_id;
 DEFINE INDEX OVERWRITE idx_promise_timeline_event   ON plot_promises FIELDS timeline_event_id;
+DEFINE INDEX OVERWRITE idx_promise_arc              ON plot_promises FIELDS arc_id;

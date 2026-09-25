@@ -17,6 +17,7 @@ export interface ColorSettings {
   bgHover?: string;         // Фон при наведении
   bgActive?: string;        // Фон при нажатии
   bgSelected?: string;       // Фон выбранных элементов
+  dropdownBg?: string;       // Фон выпадающих списков
   modalBackdrop?: string;   // Подложка модальных окон
   textMain: string;         // Основной текст
   textMuted: string;        // Второстепенный текст

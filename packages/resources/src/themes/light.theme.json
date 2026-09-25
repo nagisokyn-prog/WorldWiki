@@ -25,7 +25,8 @@
     "borderColor": "rgba(15, 23, 42, 0.1)",
     "borderHover": "rgba(15, 23, 42, 0.2)",
     "borderActive": "rgba(124, 58, 237, 0.5)",
-    "shadowColor": "rgba(0, 0, 0, 0.15)"
+    "shadowColor": "rgba(0, 0, 0, 0.15)",
+    "dropdownBg": "rgba(255, 255, 255, 0.98)"
   },
   "glass": {
     "cardAlpha": 0.85,

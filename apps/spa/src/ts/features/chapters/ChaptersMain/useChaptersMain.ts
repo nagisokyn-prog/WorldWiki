@@ -49,7 +49,7 @@ export function useChaptersMain(
   const localActiveTreeNode = ref<ActiveTreeNode | undefined>(undefined);
   const chapterTreeRef = ref<{ load: () => Promise<void> } | null>(null);
 
-  const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string) => void } | null>(null);
+  const editorCoreRef = ref<{ scrollToParagraph: (idx: number, quote?: string, blockId?: string) => void } | null>(null);
   const rightSidebarRef = ref<InstanceType<typeof ChapterRightSidebar> | null>(null);
   const isTimelineOpen = ref(true);
   const isParticipantsOpen = ref(true);
@@ -255,7 +255,7 @@ export function useChaptersMain(
       }
     }
 
-    editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote);
+    editorCoreRef.value?.scrollToParagraph(payload.paragraphIndex, payload.quote, payload.blockId);
   };
 
   return {
